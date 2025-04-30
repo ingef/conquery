@@ -19,9 +19,7 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.io.result.json.ResultJsonDescriptionProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.resources.ResourceConstants;
 import io.dropwizard.auth.Auth;
 import lombok.RequiredArgsConstructor;
@@ -41,25 +39,15 @@ public class ResultJsonDescriptionResource {
 			@Auth Subject subject,
 			@PathParam(QUERY) ManagedExecution execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
-			@QueryParam("charset") String queryCharset
-	) {
+			@QueryParam("charset") String queryCharset) {
 
-		if(!subject.isPermitted(execution, Ability.JSON_RESULT)){
-			return Response.status(Response.Status.FORBIDDEN).build();
-		}
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 
-		//TODO handle ManagedForm separately
-		if (execution instanceof ManagedQuery managedQuery) {
-			log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
-
-			return processor.createResult(subject, managedQuery, determineCharset(userAgent, queryCharset));
-		}
-
-		//TODO response
-		return Response.status(Response.Status.BAD_REQUEST).build();
+		return processor.createResult(subject, execution, determineCharset(userAgent, queryCharset));
 	}
 
-	public static <E extends ManagedQuery> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+
+	public static URL getDownloadURL(UriBuilder uriBuilder, ManagedExecution exec) throws MalformedURLException {
 		return uriBuilder.path(ResultJsonDescriptionResource.class)
 						 .path(ResultJsonDescriptionResource.class, "getAsJson")
 						 .resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())

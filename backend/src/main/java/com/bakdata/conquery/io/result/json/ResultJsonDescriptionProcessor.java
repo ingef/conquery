@@ -15,7 +15,7 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ import org.eclipse.jetty.io.EofException;
 public class ResultJsonDescriptionProcessor {
 
 
-	public <E extends ManagedQuery> Response createResult(Subject subject, E exec, Charset charset) {
+	public Response createResult(Subject subject, ManagedExecution exec, Charset charset) {
 
 
 		ConqueryMDC.setLocation(subject.getName());
@@ -40,7 +40,7 @@ public class ResultJsonDescriptionProcessor {
 				Jackson.MAPPER.copy()
 							  .writerWithDefaultPrettyPrinter()
 							  .forType(QueryDescription.class)
-							  .writeValue(writer, exec.getQuery());
+							  .writeValue(writer, exec.getSubmitted());
 			}
 			catch (EofException e) {
 				log.trace("User canceled download");
@@ -61,4 +61,5 @@ public class ResultJsonDescriptionProcessor {
 		);
 
 	}
+
 }

@@ -19,8 +19,6 @@ public enum Ability {
 	DOWNLOAD,  // Allow download of per entity results
 	PRESERVE_ID,  // Needs extra implementation: Allow the user to see the real id of entities and externally resolve real ids into conquery
 
-	JSON_RESULT, // Is closer to a feature flag: Allows subject to download json-descriptions of queries through UI.
-
 	ENTITY_PREVIEW,
 	QUERY_PREVIEW, //TODO not yet implemented
 

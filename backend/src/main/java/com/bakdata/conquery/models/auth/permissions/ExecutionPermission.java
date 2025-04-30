@@ -18,8 +18,7 @@ public class ExecutionPermission extends StringPermissionBuilder {
 			Ability.SHARE,
 			Ability.TAG,
 			Ability.CANCEL,
-			Ability.LABEL,
-			Ability.JSON_RESULT
+			Ability.LABEL
 	);
 
 	public static final ExecutionPermission INSTANCE = new ExecutionPermission();
