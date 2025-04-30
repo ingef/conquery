@@ -12,7 +12,6 @@ import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.result.csv.ResultCsvProcessor;
-import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
@@ -27,7 +26,7 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 public class CsvResultProvider implements ResultRendererProvider {
 	private boolean hidden = false;
 
-	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, Subject viewer, UriBuilder uriBuilder, boolean allProviders)
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders)
 			throws MalformedURLException, URISyntaxException {
 		if (!(exec instanceof SingleTableResult)) {
 			return Collections.emptyList();

@@ -137,7 +137,7 @@ public class QueryProcessor {
 						final OverviewExecutionStatus status = mq.buildStatusOverview(subject);
 
 						if (mq.isReadyToDownload()) {
-							status.setResultUrls(getResultAssets(config.getResultProviders(), mq, subject, uriBuilder, allProviders));
+							status.setResultUrls(getResultAssets(config.getResultProviders(), mq, uriBuilder, allProviders));
 						}
 						return status;
 					}
@@ -177,19 +177,17 @@ public class QueryProcessor {
 	 *
 	 * @param renderer     The renderer that are requested for a result url generation.
 	 * @param exec         The execution that is used for generating the url
-	 * @param subject
 	 * @param uriBuilder   The Uribuilder with the base configuration to generate the urls
 	 * @param allProviders If true, forces {@link ResultRendererProvider} to return an URL if possible.
 	 * @return The modified status
 	 */
 	public static List<ResultAsset> getResultAssets(List<ResultRendererProvider> renderer, ManagedExecution exec,
-													Subject subject,
 													UriBuilder uriBuilder, boolean allProviders) {
 
 		return renderer.stream()
 					   .map(rendererProvider -> {
 						   try {
-							   return rendererProvider.generateResultURLs(exec, subject, uriBuilder.clone(), allProviders);
+							   return rendererProvider.generateResultURLs(exec, uriBuilder.clone(), allProviders);
 						   }
 						   catch (Exception e) {
 							   log.error("Cannot generate result urls for execution '{}' with provider {}", exec.getId(), rendererProvider, e);
@@ -304,7 +302,7 @@ public class QueryProcessor {
 		final FullExecutionStatus status = query.buildStatusFull(subject, namespace);
 
 		if (query.isReadyToDownload() && subject.isPermitted(namespace.getDataset(), Ability.DOWNLOAD)) {
-			status.setResultUrls(getResultAssets(config.getResultProviders(), query, subject, url, allProviders));
+			status.setResultUrls(getResultAssets(config.getResultProviders(), query, url, allProviders));
 		}
 		return status;
 	}
@@ -395,7 +393,7 @@ public class QueryProcessor {
 		executionFinished.initExecutable();
 
 		final FullExecutionStatus status = execution.buildStatusFull(subject, namespace);
-		status.setResultUrls(getResultAssets(config.getResultProviders(), executionFinished, subject, uriBuilder, false));
+		status.setResultUrls(getResultAssets(config.getResultProviders(), executionFinished, uriBuilder, false));
 		return status;
 	}
 
