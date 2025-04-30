@@ -17,7 +17,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class FilterId extends Id<Filter<?>> implements NamespacedId {
+public class FilterId extends NamespacedId<Filter<?>>  {
 
 	private final ConnectorId connector;
 	private final String filter;
@@ -39,7 +39,7 @@ public class FilterId extends Id<Filter<?>> implements NamespacedId {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 		connector.collectIds(collect);
 	}

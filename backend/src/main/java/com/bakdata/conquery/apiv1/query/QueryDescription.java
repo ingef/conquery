@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -82,7 +81,7 @@ public interface QueryDescription extends Visitable {
 		// Generate DatasetPermissions
 		final Set<Dataset> datasets = nsIdCollector.getIdentifiables().stream()
 												   .map(NamespacedIdentifiable::getDataset)
-												   .map(Id::resolve)
+												   .map(DatasetId::resolve)
 												   .collect(Collectors.toSet());
 
 		subject.authorize(datasets, Ability.READ);

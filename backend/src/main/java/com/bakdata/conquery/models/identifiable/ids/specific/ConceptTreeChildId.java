@@ -10,16 +10,14 @@ import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
-public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> implements NamespacedId {
+public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> {
 
-	private final ConceptElementId<?> parent;
+	private final ConceptElementId parent;
 	private final String name;
 	
 	@Override
@@ -28,12 +26,12 @@ public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> imple
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
+	public ConceptTreeChild get(NamespacedStorage storage) {
 		Concept<?> concept = storage.getConcept(findConcept());
 		if (concept == null) {
 			return null;
 		}
-		return concept.findById(this);
+		return (ConceptTreeChild) concept.findById(this);
 	}
 
 	@Override
@@ -48,7 +46,7 @@ public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> imple
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 		parent.collectIds(collect);
 	}
@@ -64,7 +62,7 @@ public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> imple
 		@Override
 		public ConceptTreeChildId parseInternally(IdIterator parts) {
 			String childName = parts.next();
-			ConceptElementId<?> parent = ConceptElementId.Parser.INSTANCE.parse(parts);
+			ConceptElementId parent = ConceptElementId.Parser.INSTANCE.parse(parts);
 			return new ConceptTreeChildId(parent, childName);
 		}
 	}

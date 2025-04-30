@@ -39,7 +39,7 @@ public class FilterSearchTest {
 		Column column = new Column();
 		Table table = new Table();
 		Dataset dataset = new Dataset("test_dataset");
-		dataset.setNamespacedStorageProvider(NAMESPACED_STORAGE);
+		dataset.setStorageProvider(NAMESPACED_STORAGE);
 		NAMESPACED_STORAGE.updateDataset(dataset);
 
 		table.setName("test_table");
@@ -97,7 +97,7 @@ public class FilterSearchTest {
 		Column column = new Column();
 		Table table = new Table();
 		Dataset dataset = new Dataset("test_dataset");
-		dataset.setNamespacedStorageProvider(NAMESPACED_STORAGE);
+		dataset.setStorageProvider(NAMESPACED_STORAGE);
 		NAMESPACED_STORAGE.updateDataset(dataset);
 
 		table.setName("test_table");

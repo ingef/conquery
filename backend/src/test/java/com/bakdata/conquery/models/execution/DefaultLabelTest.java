@@ -46,7 +46,8 @@ public class DefaultLabelTest {
 
 	@BeforeAll
 	public static void beforeAll() {
-		DATASET.setNamespacedStorageProvider(NS_ID_RESOLVER);
+		DATASET.setStorageProvider(NS_ID_RESOLVER);
+
 		NS_ID_RESOLVER.updateDataset(DATASET);
 
 
@@ -56,6 +57,7 @@ public class DefaultLabelTest {
 		CONCEPT.setDataset(DATASET.getId());
 		CONCEPT.setName("defaultconcept");
 		CONCEPT.setLabel("Default Concept");
+
 
 		NS_ID_RESOLVER.updateConcept(CONCEPT);
 

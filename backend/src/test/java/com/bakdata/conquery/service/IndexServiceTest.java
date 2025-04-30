@@ -66,7 +66,7 @@ public class IndexServiceTest {
 
 		NAMESPACE_STORAGE.openStores(null);
 
-		DATASET.setNamespacedStorageProvider(NAMESPACE_STORAGE);
+		DATASET.setStorageProvider(NAMESPACE_STORAGE);
 		NAMESPACE_STORAGE.updateDataset(DATASET);
 
 	}

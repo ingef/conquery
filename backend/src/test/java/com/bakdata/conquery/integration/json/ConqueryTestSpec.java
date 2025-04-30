@@ -179,7 +179,7 @@ public abstract class ConqueryTestSpec {
 
 		@Override
 		public Object handleWeirdStringValue(DeserializationContext ctxt, Class<?> targetType, String valueToConvert, String failureMsg) {
-			IdUtil.Parser<?> parser = IdUtil.<Id<Identifiable<?>>>createParser((Class) targetType);
+			IdUtil.Parser<?> parser = IdUtil.<Id<Identifiable<?>, ?>>createParser((Class) targetType);
 			return parser.parsePrefixed(support.getDataset().getId().getName(), valueToConvert);
 		}
 	}

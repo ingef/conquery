@@ -46,11 +46,11 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 	 * @param subject  The subject on whose behalf the patch is executed
 	 * @param <INST>   Type of the instance that is patched
 	 */
-	public <T extends MetaDataPatch, ID extends Id<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> void applyTo(INST instance, MetaStorage storage, Subject subject) {
+	public <T extends MetaDataPatch, ID extends Id, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> void applyTo(INST instance, MetaStorage storage, Subject subject) {
 		buildChain(QueryUtils.getNoOpEntryPoint(), storage, subject, instance).accept(this);
 	}
 
-	protected <T extends MetaDataPatch, ID extends Id<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> Consumer<T> buildChain(Consumer<T> patchConsumerChain, MetaStorage storage, Subject subject, INST instance) {
+	protected <T extends MetaDataPatch, ID extends Id, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> Consumer<T> buildChain(Consumer<T> patchConsumerChain, MetaStorage storage, Subject subject, INST instance) {
 		if (getTags() != null && subject.isPermitted(instance, Ability.TAG)) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.tagger());
 		}
@@ -65,7 +65,7 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 
 
 	@FunctionalInterface
-	public interface PermissionCreator<ID extends Id<?>> extends BiFunction<Set<Ability>, ID, ConqueryPermission> {
+	public interface PermissionCreator<ID extends Id> extends BiFunction<Set<Ability>, ID, ConqueryPermission> {
 
 	}
 }

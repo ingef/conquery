@@ -29,10 +29,9 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -268,7 +267,7 @@ public class UIProcessor {
 					// Per event an int array is stored marking the path to the concept child.
 					final double avgDepth = con.getConcept()
 											   .getAllChildren()
-											   .mapToInt(ConceptTreeNode::getDepth)
+											   .mapToInt(ConceptTreeChild::getDepth)
 											   .average()
 											   .orElse(1d);
 

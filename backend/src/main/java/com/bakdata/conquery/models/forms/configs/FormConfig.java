@@ -24,7 +24,7 @@ import com.bakdata.conquery.models.execution.Labelable;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.execution.Shareable;
 import com.bakdata.conquery.models.execution.Taggable;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.MetaIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
@@ -53,7 +53,7 @@ import org.jetbrains.annotations.Nullable;
 @ToString
 @EqualsAndHashCode(callSuper = false)
 @FieldNameConstants
-public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable, Owned {
+public class FormConfig extends MetaIdentifiable<FormConfigId> implements Shareable, Labelable, Taggable, Owned {
 
 	protected DatasetId dataset;
 	@NotEmpty
@@ -84,7 +84,6 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	@Override
 	public FormConfigId createId() {
 		FormConfigId formConfigId = new FormConfigId(dataset, formType, formId);
-		formConfigId.setMetaStorage(getMetaStorage());
 		return formConfigId;
 	}
 

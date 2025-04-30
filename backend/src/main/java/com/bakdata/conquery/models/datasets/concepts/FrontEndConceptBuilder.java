@@ -29,7 +29,7 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -51,7 +51,7 @@ public class FrontEndConceptBuilder {
 	public FrontendRoot createRoot(NamespaceStorage storage, Subject subject) {
 
 		final FrontendRoot root = new FrontendRoot();
-		final Map<Id<?>, FrontendNode> roots = root.getConcepts();
+		final Map<Id, FrontendNode> roots = root.getConcepts();
 		final List<? extends Concept<?>> allConcepts;
 		try(Stream<Concept<?>> conceptStream = storage.getAllConcepts()) {
 
@@ -135,8 +135,10 @@ public class FrontEndConceptBuilder {
 							.tables(concept.getConnectors().stream().map(this::createTable).collect(Collectors.toList()))
 							.build();
 
-		if (concept instanceof ConceptTreeNode<?> tree && tree.getChildren() != null) {
-			node.setChildren(tree.getChildren().stream().map(ConceptTreeChild::getId).toArray(ConceptTreeChildId[]::new));
+		if (concept instanceof TreeConcept tree && tree.getChildren() != null) {
+			node.setChildren(tree.getChildren().stream()
+								 .map(ConceptTreeChild::getId)
+								 .toArray(ConceptTreeChildId[]::new));
 		}
 		return node;
 	}
@@ -149,7 +151,7 @@ public class FrontEndConceptBuilder {
 	 * @param structureNode the node to process (and its children)
 	 * @param roots the map where the given and child nodes are inserted into.
 	 */
-	private void insertStructureNode(StructureNode structureNode, Map<Id<?>, FrontendNode> roots) {
+	private void insertStructureNode(StructureNode structureNode, Map<Id, FrontendNode> roots) {
 		final List<ConceptId> contained = new ArrayList<>();
 		for (ConceptId id : structureNode.getContainedRoots()) {
 			if (!roots.containsKey(id)) {
@@ -259,7 +261,7 @@ public class FrontEndConceptBuilder {
 		final FrontendNode n = nodeBuilder.build();
 
 
-		if (ce instanceof ConceptTreeNode<?> tree) {
+		if (ce instanceof ConceptTreeChild tree) {
 			if (tree.getChildren() != null) {
 				n.setChildren(tree.getChildren().stream().map(IdentifiableImpl::getId).toArray(ConceptTreeChildId[]::new));
 			}
@@ -278,8 +280,8 @@ public class FrontEndConceptBuilder {
 
 	private void fillTreeMap(ConceptElement<?> ce, FrontendList map) {
 		map.add(ce.getId(), createCTNode(ce));
-		if (ce instanceof ConceptTreeNode && ((ConceptTreeNode<?>) ce).getChildren() != null) {
-			for (ConceptTreeChild c : ((ConceptTreeNode<?>) ce).getChildren()) {
+		if (ce instanceof ConceptTreeChild && ((ConceptTreeChild) ce).getChildren() != null) {
+			for (ConceptTreeChild c : ((ConceptTreeChild) ce).getChildren()) {
 				fillTreeMap(c, map);
 			}
 		}

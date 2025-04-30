@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import static com.bakdata.conquery.models.identifiable.ids.NamespacedId.assertWorkerStorage;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -12,7 +10,6 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -20,7 +17,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class BucketId extends Id<Bucket> implements NamespacedId {
+public class BucketId extends NamespacedId<Bucket>  {
 
 	private final ImportId imp;
 	private final int bucket;
@@ -31,7 +28,7 @@ public class BucketId extends Id<Bucket> implements NamespacedId {
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
+	public Bucket get(NamespacedStorage storage) {
 		return assertWorkerStorage(storage).getBucket(this);
 	}
 
@@ -42,7 +39,7 @@ public class BucketId extends Id<Bucket> implements NamespacedId {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 		imp.collectIds(collect);
 	}

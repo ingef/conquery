@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendTable;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
@@ -16,6 +17,7 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.extensions.NamespaceStorageExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -25,19 +27,19 @@ public class FilterSearchItemTest {
 	@RegisterExtension
 	private static final NamespaceStorageExtension NAMESPACE_STORAGE_EXTENSION = new NamespaceStorageExtension();
 	private static final NamespacedStorage NAMESPACED_STORAGE = NAMESPACE_STORAGE_EXTENSION.getStorage();
+	public static final MetaStorage META_STORAGE = new MetaStorage(new NonPersistentStoreFactory());
 
 	@Test
 	public void sortedValidityDates() {
 
 		Dataset dataset = new Dataset();
 		dataset.setName("testDataset");
-		dataset.setNamespacedStorageProvider(NAMESPACED_STORAGE);
+
 		NAMESPACED_STORAGE.updateDataset(dataset);
 
 		Table table = new Table();
 		table.setDataset(dataset.getId());
 		table.setName("testTable");
-		NAMESPACED_STORAGE.addTable(table);
 
 		Column column = new Column();
 		column.setName("testColumn");
@@ -52,6 +54,9 @@ public class FilterSearchItemTest {
 		dateColumn2.setName("dateColumn2");
 		dateColumn2.setType(MajorTypeId.DATE);
 		dateColumn2.setTable(table);
+
+		NAMESPACED_STORAGE.addTable(table);
+
 
 		TreeConcept concept = new TreeConcept();
 		concept.setDataset(dataset.getId());
@@ -76,6 +81,9 @@ public class FilterSearchItemTest {
 		connector.setColumn(column.getId());
 		connector.setConcept(concept);
 		connector.setValidityDates(validityDates);
+
+		NAMESPACED_STORAGE.updateConcept(concept);
+
 
 		FrontendTable feTable = new FrontEndConceptBuilder(new ConqueryConfig()).createTable(connector);
 

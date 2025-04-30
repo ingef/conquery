@@ -1,15 +1,16 @@
 package com.bakdata.conquery.util;
 
+import jakarta.ws.rs.NotFoundException;
+
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.google.common.base.Preconditions;
-import jakarta.ws.rs.NotFoundException;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class ResourceUtil {
 
-	public static void throwNotFoundIfNull(@NonNull Id<?> id, Object identifiable) {
+	public static void throwNotFoundIfNull(@NonNull Id id, Object identifiable) {
 		if (identifiable == null) {
 			throw new NotFoundException(id.toString());
 		}

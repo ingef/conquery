@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -66,8 +67,10 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	 */
 	public abstract String printConceptLocalId(Object rawValue, PrintSettings printSettings);
 
-	public List<Select> getDefaultSelects() {
-		return getSelects().stream().filter(Select::isDefault).collect(Collectors.toList());
+	public List<SelectId<?>> getDefaultSelects() {
+		return getSelects().stream().filter(Select::isDefault)
+						   .map(select -> (SelectId<?>) select.getId())
+						   .collect(Collectors.toList());
 	}
 
 	public abstract List<? extends Select> getSelects();
@@ -126,5 +129,5 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 		return null;
 	}
 
-	public abstract ConceptElement<?> findById(ConceptElementId<?> id);
+	public abstract ConceptElement<?> findById(ConceptElementId id);
 }

@@ -90,10 +90,11 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		// Data starting with a is in reference csv
 		{
 			try (final Response fromCsvResponse = autocompleteRequestBuilder.post(Entity.entity(new FilterResource.AutocompleteRequest(
-					Optional.of("a"),
-					OptionalInt.empty(),
-					OptionalInt.empty()
-			), MediaType.APPLICATION_JSON_TYPE))) {
+																										Optional.of("a"),
+																										OptionalInt.empty(),
+																										OptionalInt.empty()
+																								), MediaType.APPLICATION_JSON_TYPE
+			))) {
 
 				final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 
@@ -111,10 +112,11 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		{
 			try (final Response fromCsvResponse = autocompleteRequestBuilder
 					.post(Entity.entity(new FilterResource.AutocompleteRequest(
-							Optional.of("f"),
-							OptionalInt.empty(),
-							OptionalInt.empty()
-					), MediaType.APPLICATION_JSON_TYPE))) {
+												Optional.of("f"),
+												OptionalInt.empty(),
+												OptionalInt.empty()
+										), MediaType.APPLICATION_JSON_TYPE
+					))) {
 
 				final ConceptsProcessor.AutoCompleteResult resolvedFromValues = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 
@@ -129,10 +131,11 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		{
 			try (final Response fromCsvResponse = autocompleteRequestBuilder
 					.post(Entity.entity(new FilterResource.AutocompleteRequest(
-							Optional.of(""),
-							OptionalInt.empty(),
-							OptionalInt.empty()
-					), MediaType.APPLICATION_JSON_TYPE))) {
+												Optional.of(""),
+												OptionalInt.empty(),
+												OptionalInt.empty()
+										), MediaType.APPLICATION_JSON_TYPE
+					))) {
 
 				final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 				// This is probably the insertion order
@@ -182,7 +185,10 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 		final FilterTemplate
 				filterTemplate =
-				new FilterTemplate(conquery.getDataset().getId(), "test", tmpCsv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService);
+				new FilterTemplate(tmpCsv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService);
+
+		filterTemplate.setDataset(conquery.getDataset().getId());
+		filterTemplate.setName("test");
 		filter.setTemplate(filterTemplate.getId());
 
 		// We need to persist the modification before we submit the update matching stats request
@@ -190,7 +196,8 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		namespaceStorage.updateConcept(concept);
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "postprocessNamespace")
+															, AdminDatasetResource.class, "postprocessNamespace"
+													)
 													.buildFromMap(Map.of(DATASET, conquery.getDataset().getId()));
 
 		conquery.getClient().target(matchingStatsUri)

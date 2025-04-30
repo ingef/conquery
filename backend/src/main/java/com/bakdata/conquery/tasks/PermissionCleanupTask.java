@@ -114,7 +114,7 @@ public class PermissionCleanupTask extends Task {
 	 *
 	 * @return The number of deleted permissions.
 	 */
-	public static <E extends IdentifiableImpl<ID> & Owned, ID extends Id<E>> int deletePermissionsOfOwnedInstances(MetaStorage storage, String permissionDomain, IdUtil.Parser<ID> idParser, Function<ID, E> instanceStorageExtractor) {
+	public static <E extends IdentifiableImpl<ID> & Owned, ID extends Id> int deletePermissionsOfOwnedInstances(MetaStorage storage, String permissionDomain, IdUtil.Parser<ID> idParser, Function<ID, E> instanceStorageExtractor) {
 		int countDeleted = 0;
 		for (Iterator<User> it = storage.getAllUsers().iterator(); it.hasNext(); ) {
 			User user = it.next();

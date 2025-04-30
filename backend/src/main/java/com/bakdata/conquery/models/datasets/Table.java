@@ -12,10 +12,9 @@ import jakarta.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.config.DatabaseConfig;
-import com.bakdata.conquery.models.identifiable.Labeled;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JacksonInject;
@@ -32,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @JsonDeserialize(converter = Table.Initializer.class)
-public class Table extends Labeled<TableId> implements NamespacedIdentifiable<TableId>, Initializing {
+public class Table extends NamespacedIdentifiable<TableId> implements Initializing {
 
 	// TODO: 10.01.2020 fk: register imports here?
 
@@ -91,7 +90,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 		final TableId thisId = getId();
 		return storage.getAllImports()
 					  .filter(imp -> imp.getTable().equals(thisId))
-					  .map(Id::resolve);
+					  .map(ImportId::resolve);
 	}
 
 	public Column getColumnByName(@NotNull String columnName) {

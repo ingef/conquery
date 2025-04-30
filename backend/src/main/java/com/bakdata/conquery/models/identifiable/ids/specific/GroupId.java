@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -31,12 +30,12 @@ public class GroupId extends PermissionOwnerId<Group> {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 	}
 
 	@Override
-	public Identifiable<?> get(MetaStorage storage) {
+	public Group get(MetaStorage storage) {
 		return storage.getGroup(this);
 	}
 

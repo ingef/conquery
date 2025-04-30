@@ -2,7 +2,6 @@ package com.bakdata.conquery.apiv1.frontend;
 
 import java.time.LocalDate;
 import java.util.List;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -18,12 +17,12 @@ import lombok.Data;
 @Data
 @Builder
 public class FrontendNode {
-	private Id<?> parent;
+	private Id parent;
 	@NotNull
 	private String label;
 	private String description;
 	private Boolean active;
-	private Id<?>[] children;
+	private Id[] children;
 	private List<KeyValue> additionalInfos;
 	private long matchingEntries;
 	private Range<LocalDate> dateRange;

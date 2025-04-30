@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.datasets;
 
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
@@ -15,7 +14,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @JsonIgnoreProperties({"searchDisabled", "generateSearchSuffixes", "searchMinSuffixLength"})
-public class SecondaryIdDescription extends Labeled<SecondaryIdDescriptionId> implements NamespacedIdentifiable<SecondaryIdDescriptionId> {
+public class SecondaryIdDescription extends NamespacedIdentifiable<SecondaryIdDescriptionId> {
 
 	private DatasetId dataset;
 

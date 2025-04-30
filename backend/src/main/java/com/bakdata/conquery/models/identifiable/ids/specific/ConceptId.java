@@ -14,14 +14,12 @@ import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
-public class ConceptId extends ConceptElementId<Concept<?>> implements NamespacedId, Authorized {
+public class ConceptId extends ConceptElementId<Concept<?>> implements Authorized {
 
 	private final DatasetId dataset;
 	private final String name;
@@ -32,7 +30,7 @@ public class ConceptId extends ConceptElementId<Concept<?>> implements Namespace
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
+	public Concept<?> get(NamespacedStorage storage) {
 		return storage.getConcept(this);
 	}
 
@@ -49,7 +47,7 @@ public class ConceptId extends ConceptElementId<Concept<?>> implements Namespace
 
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 		dataset.collectIds(collect);
 	}

@@ -18,7 +18,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class ValidityDateId extends Id<ValidityDate> implements NamespacedId {
+public class ValidityDateId extends NamespacedId<ValidityDate>  {
 	private final ConnectorId connector;
 	private final String validityDate;
 
@@ -28,7 +28,7 @@ public class ValidityDateId extends Id<ValidityDate> implements NamespacedId {
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
+	public ValidityDate get(NamespacedStorage storage) {
 		return storage.getConcept(getConnector().getConcept())
 					  .getConnectorByName(getConnector().getConnector())
 					  .getValidityDateByName(getValidityDate());
@@ -41,7 +41,7 @@ public class ValidityDateId extends Id<ValidityDate> implements NamespacedId {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 		connector.collectIds(collect);
 	}

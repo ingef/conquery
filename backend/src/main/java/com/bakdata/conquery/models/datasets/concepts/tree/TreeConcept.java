@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(id = "TREE", base = Concept.class)
 @JsonDeserialize(converter = TreeConcept.Initializer.class)
-public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId>, SelectHolder<UniversalSelect>, Initializing {
+public class TreeConcept extends Concept<ConceptTreeConnector> implements SelectHolder<UniversalSelect>, Initializing {
 
 	@JsonIgnore
 	@Getter
@@ -46,7 +46,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	private final int[] prefix = new int[]{0};
 
 	@JsonIgnore
-	private final List<ConceptTreeNode<?>> localIdMap = new ArrayList<>();
+	private final List<ConceptElement<?>> localIdMap = new ArrayList<>();
 	@Getter
 	@Setter
 	@Valid
@@ -69,8 +69,8 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return getConcept();
 	}
 
-	@Override
-	public ConceptTreeNode<?> getParent() {
+	@com.fasterxml.jackson.annotation.JsonBackReference
+	public ConceptTreeChild getParent() {
 		return null;
 	}
 
@@ -145,12 +145,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	 * @param ids the local id array to look for
 	 * @return the element matching the most specific local id in the array
 	 */
-	public ConceptTreeNode<?> getElementByLocalIdPath( int @NonNull [] ids) {
+	public ConceptElement<?> getElementByLocalIdPath(@NonNull int[] ids) {
 		final int mostSpecific = ids[ids.length - 1];
 		return getElementByLocalId(mostSpecific);
 	}
 
-	public ConceptTreeNode<?> getElementByLocalId(int localId) {
+	public ConceptElement<?> getElementByLocalId(int localId) {
 		return localIdMap.get(localId);
 	}
 
@@ -168,7 +168,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 		final int localId = (int) rawValue;
 
-		final ConceptTreeNode<?> node = getElementByLocalId(localId);
+		final ConceptElement  node = getElementByLocalId(localId);
 
 		if (!printSettings.isPrettyPrint()) {
 			return node.getId().toString();
@@ -232,7 +232,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return nChildren = 1 + (int) getAllChildren().count();
 	}
 
-	public ConceptElement<? extends ConceptElementId<? extends ConceptElement<?>>> findById(ConceptElementId<?> id) {
+	public ConceptElement<? extends ConceptElementId<? extends ConceptElement<?>>> findById(ConceptElementId id) {
 		List<Object> parts = new ArrayList<>();
 		id.collectComponents(parts);
 		final ConceptId conceptId = getId();

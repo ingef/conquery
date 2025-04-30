@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -26,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @NoArgsConstructor
 @Slf4j
-public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedIdentifiable<ValidityDateId>, DaterangeSelectOrFilter {
+public class ValidityDate extends NamespacedIdentifiable<ValidityDateId> implements DaterangeSelectOrFilter {
 
 	@Nullable
 	private ColumnId column;

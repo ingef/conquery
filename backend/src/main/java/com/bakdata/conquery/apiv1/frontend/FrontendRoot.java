@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-
 import jakarta.validation.Valid;
 
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -16,5 +15,5 @@ import lombok.Getter;
 @Getter
 public class FrontendRoot {
 	private final Set<FrontendSecondaryId> secondaryIds = new HashSet<>();
-	private final Map<Id<?>, @Valid FrontendNode> concepts = new LinkedHashMap<>();
+	private final Map<Id, @Valid FrontendNode> concepts = new LinkedHashMap<>();
 }

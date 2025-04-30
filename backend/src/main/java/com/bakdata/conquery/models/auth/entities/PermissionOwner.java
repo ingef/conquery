@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.MetaIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableSet;
@@ -33,7 +33,7 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements Comparable<PermissionOwner<?>> {
+public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends MetaIdentifiable<T> implements Comparable<PermissionOwner<?>> {
 
 	private static final Comparator<PermissionOwner<?>>
 			COMPARATOR =

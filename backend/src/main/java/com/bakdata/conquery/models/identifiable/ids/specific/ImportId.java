@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -18,7 +17,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class ImportId extends Id<Import> implements NamespacedId {
+public class ImportId extends NamespacedId<Import>  {
 
 	private final TableId table;
 	private final String tag;
@@ -29,7 +28,7 @@ public class ImportId extends Id<Import> implements NamespacedId {
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
+	public Import get(NamespacedStorage storage) {
 		return storage.getImport(this);
 	}
 
@@ -40,7 +39,7 @@ public class ImportId extends Id<Import> implements NamespacedId {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 		table.collectIds(collect);
 	}

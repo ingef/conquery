@@ -39,7 +39,7 @@ public interface NamespacedStorageProvider extends Injectable {
 	 * @param datasetId the dataset to query
 	 * @return The storage or null if no storage corresponds to the dataset
 	 *
-	 * @implNote Don't call {@link Dataset#getNamespacedStorageProvider()} as it is probably not yet set.
+	 * @implNote Don't call {@link Dataset#getStorageProvider()} as it is probably not yet set.
 	 */
 	NamespacedStorage getStorage(DatasetId datasetId);
 

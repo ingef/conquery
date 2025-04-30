@@ -1,31 +1,18 @@
 package com.bakdata.conquery.models.identifiable;
 
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
-import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
 import lombok.ToString;
 
 @NoArgsConstructor
-public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? extends ID>>> implements Identifiable<ID> {
+public abstract class IdentifiableImpl<ID extends Id> implements Identifiable<ID> {
 
 	@JsonIgnore
 	protected transient ID cachedId;
 	@JsonIgnore
 	private transient int cachedHash = Integer.MIN_VALUE;
 
-	@NonNull
-	@JacksonInject(useInput = OptBoolean.FALSE)
-	@Setter
-	@Getter(AccessLevel.PROTECTED)
-	@JsonIgnore
-	private transient MetaStorage metaStorage;
 
 	@Override
 	public int hashCode() {
@@ -48,7 +35,7 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		IdentifiableImpl<?> other = (IdentifiableImpl<?>) obj;
+		IdentifiableImpl other = (IdentifiableImpl) obj;
 		if (getId() == null) {
 			return other.getId() == null;
 		}
@@ -68,10 +55,12 @@ public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? ex
 	public ID getId() {
 		if (cachedId == null) {
 			cachedId = createId();
-			cachedId.setMetaStorage(getMetaStorage());
+			injectStore(cachedId);
 		}
 		return cachedId;
 	}
+
+	protected abstract void injectStore(ID id);
 
 	public abstract ID createId();
 }

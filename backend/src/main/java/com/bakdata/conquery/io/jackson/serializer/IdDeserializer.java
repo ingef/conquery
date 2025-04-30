@@ -4,14 +4,15 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
-import com.bakdata.conquery.models.identifiable.ids.IIdInterner;
 import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.IdInterner;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.MetaId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -30,7 +31,7 @@ import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> implements ContextualDeserializer {
+public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> implements ContextualDeserializer {
 
 	private Class<ID> idClass;
 	private IdUtil.Parser<ID> idParser;
@@ -45,8 +46,8 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 		while (type.isContainerType()) {
 			type = type.getContentType();
 		}
-		Class<Id<?>> idClass = (Class<Id<?>>) type.getRawClass();
-		IdUtil.Parser<Id<Identifiable<?>>> parser = IdUtil.createParser((Class) idClass);
+		Class<Id> idClass = (Class<Id>) type.getRawClass();
+		IdUtil.Parser<Id<Identifiable<?>, ?>> parser = IdUtil.createParser((Class) idClass);
 
 		return new IdDeserializer(
 				idClass,
@@ -81,25 +82,23 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 		}
 	}
 
-	public static void setResolver(Id<?> id, MetaStorage metaStorage, NamespacedStorageProvider namespacedStorageProvider) {
+	public static void setResolver(Id<?, ?> id, MetaStorage metaStorage, NamespacedStorageProvider namespacedStorageProvider) {
 		// Set resolvers in this id and subIds
-		final HashSet<Id<?>> ids = new HashSet<>();
+		final Set<Id<?, ?>> ids = new HashSet<>();
 		id.collectIds(ids);
-		for (Id<?> subId : ids) {
-			if (subId.getNamespacedStorageProvider() != null || subId.getMetaStorage() != null) {
-				// Ids are constructed of other ids that might already have a resolver set
-				continue;
+
+		for (Id<?, ?> subId : ids) {
+
+			if (subId instanceof NamespacedId<?> nsId) {
+				nsId.setNamespacedStorageProvider(namespacedStorageProvider);
 			}
-			if (subId instanceof NamespacedId) {
-				subId.setNamespacedStorageProvider(namespacedStorageProvider);
-			}
-			else if (subId instanceof MetaId) {
-				subId.setMetaStorage(metaStorage);
+			else if (subId instanceof MetaId<?> metaId) {
+				metaId.setStorage(metaStorage);
 			}
 		}
 	}
 
-	public static <ID extends Id<?>> ID deserializeId(String text, IdUtil.Parser<ID> idParser, boolean checkForInjectedPrefix, DeserializationContext ctx)
+	public static <ID extends Id> ID deserializeId(String text, IdUtil.Parser<ID> idParser, boolean checkForInjectedPrefix, DeserializationContext ctx)
 			throws JsonMappingException {
 
 		List<String> components = checkForInjectedPrefix ?
@@ -107,15 +106,15 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 								  IdUtil.Parser.asComponents(text);
 
 
-		IIdInterner iIdInterner = IIdInterner.get(ctx);
+		IdInterner interner = IdInterner.get(ctx);
 
-		if (iIdInterner == null) {
+		if (interner == null) {
 			// Parse directly, as no interner is available
 			return idParser.parse(components);
 		}
 
-		IIdInterner.ParserIIdInterner<ID> idParserIIdInterner = iIdInterner.forParser(idParser);
-		ID id = idParserIIdInterner.get(components);
+		IdInterner.ParserIdInterner<ID> idParserIdInterner = interner.forParser(idParser);
+		ID id = idParserIdInterner.get(components);
 
 		if (id != null) {
 			// Return cached id
@@ -124,7 +123,7 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 
 		// Parse and cache
 		id = idParser.parse(components);
-		idParserIIdInterner.putIfAbsent(components, id);
+		idParserIdInterner.putIfAbsent(components, id);
 
 		return id;
 	}

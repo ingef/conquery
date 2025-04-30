@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -80,7 +79,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	private List<CQTable> tables = Collections.emptyList();
 
 	@NotNull
-	private List<SelectId> selects = new ArrayList<>();
+	private List<SelectId<?>> selects = new ArrayList<>();
 
 	private boolean excludeFromTimeAggregation;
 
@@ -91,7 +90,9 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	@JsonView(View.InternalCommunication.class)
 	private boolean aggregateEventDates;
 
-	public static CQConcept forSelect(Select select) {
+	public static CQConcept forSelect(SelectId<?> selectId) {
+		Select select = selectId.resolve();
+
 		final CQConcept cqConcept = new CQConcept();
 		// TODO transform to use only ids here
 		cqConcept.setElements(List.of(select.getHolder().findConcept().getId()));
@@ -255,14 +256,14 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	public List<ResultInfo> getResultInfos() {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
 
-		for (SelectId select : selects) {
-			Select resolved = select.resolve();
+		for (SelectId<?> select : selects) {
+			Select resolved = (Select) select.resolve();
 			resultInfos.add(resolved.getResultInfo(this));
 		}
 
 		for (CQTable table : tables) {
-			for (SelectId sel : table.getSelects()) {
-				Select resolved = sel.resolve();
+			for (SelectId<?> sel : table.getSelects()) {
+				Select resolved = (Select) sel.resolve(); //TODO why does this not resolve to Select?
 				resultInfos.add(resolved.getResultInfo(this));
 			}
 		}
@@ -283,7 +284,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	 * Generates Aggregators from Selects. These are collected and also appended to the list of aggregators in the
 	 * query plan that contribute to columns the result.
 	 */
-	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId> selects) {
+	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId<?>> selects) {
 		return selects.stream()
 					  .map(SelectId::resolve)
 					  .map(Select::createAggregator)
@@ -334,10 +335,16 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	@Override
 	public void collectNamespacedObjects(Set<? super NamespacedIdentifiable<?>> identifiables) {
-		final List<ConceptElement<?>> list = elements.stream().<ConceptElement<?>>map(ConceptElementId::resolve).toList();
-		identifiables.addAll(list);
-		identifiables.addAll(selects.stream().map(Id::resolve).toList());
-		tables.forEach(table -> identifiables.add(table.getConnector().resolve()));
+		for (ConceptElementId<?> element : elements) {
+			identifiables.add(element.resolve());
+		}
+
+		for (SelectId<?> select : selects) {
+			identifiables.add(select.resolve());
+		}
+		for (CQTable table : tables) {
+			identifiables.add(table.getConnector().resolve());
+		}
 	}
 
 	@Override
@@ -351,8 +358,8 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			return;
 		}
 
-		final List<SelectId> cSelects = new ArrayList<>(getSelects());
-		cSelects.addAll(getConcept().getDefaultSelects().stream().map(Select::getId).toList());
+		final List<SelectId<?>> cSelects = new ArrayList<>(getSelects());
+		cSelects.addAll(getConcept().getDefaultSelects());
 
 		setSelects(cSelects);
 

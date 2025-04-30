@@ -18,7 +18,7 @@ import org.apache.commons.lang3.tuple.Pair;
 @SuperBuilder
 public class FrontendPermissionOwnerContent<OWNER extends PermissionOwner<?>> {
 	private String label;
-	private Id<?> id;
+	private Id id;
 	private boolean resolvable;
 
 	/**

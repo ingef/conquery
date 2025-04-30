@@ -125,9 +125,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 	@Override
 	public UserId createId() {
-		UserId userId = new UserId(name);
-		userId.setMetaStorage(getMetaStorage());
-		return userId;
+		return new UserId(name);
 	}
 
 	public boolean isPermittedAll(Collection<? extends Authorized> authorized, Ability ability) {

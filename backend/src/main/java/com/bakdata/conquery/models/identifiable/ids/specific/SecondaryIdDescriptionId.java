@@ -17,7 +17,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class SecondaryIdDescriptionId extends Id<SecondaryIdDescription> implements NamespacedId {
+public class SecondaryIdDescriptionId extends NamespacedId<SecondaryIdDescription>  {
 
 	private final DatasetId dataset;
 	private final String name;
@@ -29,7 +29,7 @@ public class SecondaryIdDescriptionId extends Id<SecondaryIdDescription> impleme
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 		dataset.collectIds(collect);
 	}

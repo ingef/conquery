@@ -86,11 +86,11 @@ public class FormConfigTest {
 		storage = new NonPersistentStoreFactory().createMetaStorage();
 
 		config.getFrontend().setManualUrl(new URL("http://example.org/manual/welcome"));
-		dataset.setMetaStorage(storage);
-		dataset1.setMetaStorage(storage);
 
-		datasetId = dataset.getId();
-		datasetId1 = dataset1.getId();
+		//TODO add missing NamespacedStorage
+
+		datasetId = new DatasetId("test");
+		datasetId1 = new DatasetId("test1");
 
 		// Mock DatasetRegistry for translation
 		DatasetRegistry<?> namespacesMock = Mockito.mock(DatasetRegistry.class);

@@ -42,7 +42,7 @@ public class SerialisationObjectsUtil {
 	@NotNull
 	public static Dataset createDataset(String name, NamespacedStorageImpl storage) {
 		Dataset dataset = new Dataset(name);
-		dataset.setNamespacedStorageProvider(storage);
+		dataset.setStorageProvider(storage);
 		storage.updateDataset(dataset);
 		return dataset;
 	}

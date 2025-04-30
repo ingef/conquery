@@ -8,7 +8,6 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -23,7 +22,7 @@ import lombok.Setter;
 @Getter @Setter
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class Dataset extends Labeled<DatasetId> implements Injectable, Authorized, NamespacedIdentifiable<DatasetId> {
+public class Dataset extends NamespacedIdentifiable<DatasetId> implements Injectable, Authorized {
 
 	/**
 	 * Used to programmatically generate proper {@link com.bakdata.conquery.models.identifiable.ids.NamespacedId}s.
@@ -43,7 +42,8 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 	@Setter
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
-	private transient NamespacedStorageProvider namespacedStorageProvider;
+	private NamespacedStorageProvider storageProvider;
+
 
 	public Dataset(String name) {
 		setName(name);
@@ -72,7 +72,7 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 	@Override
 	public DatasetId createId() {
 		DatasetId datasetId = new DatasetId(getName());
-		datasetId.setNamespacedStorageProvider(getNamespacedStorageProvider());
+		datasetId.setNamespacedStorageProvider(getStorageProvider());
 		return datasetId;
 	}
 

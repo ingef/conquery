@@ -185,9 +185,7 @@ public class DefaultColumnNameTest {
 				elements = List.of(concept);
 			}
 			final List<ConceptElementId<?>> list = (List<ConceptElementId<?>>) elements.stream().map(ConceptElement::getId).toList();
-			cqConcept.setElements(
-					list
-			);
+			cqConcept.setElements(list);
 
 			List<CQTable> tables = concept.getConnectors().stream()
 										  .map(con -> {
@@ -224,7 +222,7 @@ public class DefaultColumnNameTest {
 			Dataset DATASET = new Dataset() {
 				{
 					setName("test_" + DATASET_COUNTER.getAndIncrement());
-					setNamespacedStorageProvider(NS_ID_RESOLVER);
+					setStorageProvider(NS_ID_RESOLVER);
 					NS_ID_RESOLVER.updateDataset(this);
 				}
 			};

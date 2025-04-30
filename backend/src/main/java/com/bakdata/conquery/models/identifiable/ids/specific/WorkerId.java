@@ -3,21 +3,28 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
-import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.worker.Worker;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class WorkerId extends Id<WorkerInformation> {
+public class WorkerId extends NamespacedId<Worker> {
 
 	private final DatasetId dataset;
 	private final String worker;
+
+	@Override
+	public Worker get(NamespacedStorage namespacedStorage) {
+		throw new IllegalStateException("WorkerIds cannot be resolved.");
+	}
 
 	@Override
 	public void collectComponents(List<Object> components) {
@@ -26,7 +33,7 @@ public class WorkerId extends Id<WorkerInformation> {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 		dataset.collectIds(collect);
 	}

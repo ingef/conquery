@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -18,7 +17,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class ImportColumnId extends Id<ImportColumn> implements NamespacedId {
+public class ImportColumnId extends NamespacedId<ImportColumn>  {
 
 	private final ImportId imp;
 	private final String column;
@@ -29,7 +28,7 @@ public class ImportColumnId extends Id<ImportColumn> implements NamespacedId {
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
+	public ImportColumn get(NamespacedStorage storage) {
 		throw new UnsupportedOperationException("%s is never stored".formatted(this.getClass().getSimpleName()));
 	}
 
@@ -40,7 +39,7 @@ public class ImportColumnId extends Id<ImportColumn> implements NamespacedId {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 		imp.collectIds(collect);
 	}

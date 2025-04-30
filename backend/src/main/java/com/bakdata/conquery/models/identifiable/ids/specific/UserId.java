@@ -6,11 +6,11 @@ import java.util.List;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 
 @EqualsAndHashCode(callSuper=false)
 public class UserId extends PermissionOwnerId<User> {
@@ -31,12 +31,12 @@ public class UserId extends PermissionOwnerId<User> {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 	}
 
 	@Override
-	public Identifiable<?> get(MetaStorage storage) {
+	public User get(MetaStorage storage) {
 		return storage.getUser(this);
 	}
 

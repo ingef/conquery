@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -100,6 +99,7 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 
 	@Override
 	public void updateImport(Import imp) {
+
 		imports.update(imp);
 	}
 
@@ -112,18 +112,17 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 
 	@Override
 	public void updateDataset(Dataset dataset) {
+		dataset.setStorageProvider(this);
 		this.dataset.update(dataset);
 	}
 
-	public <ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id) {
+	public <ID extends NamespacedId<?>, VALUE> VALUE get(ID id) {
 		return (VALUE) id.get(this);
 	}
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return values
-				.add(NamespacedStorageProvider.class, this)
-				.add(NamespacedStorage.class, this);
+		return values.add(NamespacedStorageProvider.class, this).add(NamespacedStorage.class, this);
 	}
 
 	@Override
@@ -132,19 +131,13 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 	}
 
 
-	// Tables
-
 	@Override
 	public Stream<Table> getTables() {
 		return tables.getAllKeys().map(TableId.class::cast).map(this::getTable);
 	}
 
-		@Override
+	@Override
 	public Table getTable(TableId tableId) {
-		return getTableFromStorage(tableId);
-	}
-
-	private Table getTableFromStorage(TableId tableId) {
 		return tables.get(tableId);
 	}
 
@@ -209,6 +202,7 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 	@SneakyThrows
 	public void updateConcept(Concept<?> concept) {
 		log.debug("Updating Concept[{}]", concept.getId());
+
 		concepts.update(concept);
 	}
 
@@ -217,8 +211,6 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 		log.debug("Removing Concept[{}]", id);
 		concepts.remove(id);
 	}
-
-	// Utility
 
 
 	@Override

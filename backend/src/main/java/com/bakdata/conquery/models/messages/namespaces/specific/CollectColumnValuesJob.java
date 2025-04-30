@@ -41,7 +41,7 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
  * This Job collects the distinct values in the given columns and returns a {@link RegisterColumnValues} message for each column to the namespace on the manager.
  */
 @Slf4j
-@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @CPSType(id = "COLLECT_COLUMN_VALUES", base = NamespacedMessage.class)
 public class CollectColumnValuesJob extends WorkerMessage implements ActionReactionMessage {
 

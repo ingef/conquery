@@ -1,115 +1,86 @@
 package com.bakdata.conquery.models.identifiable.ids;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
 import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.identifiable.IdResolvingException;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.util.ConqueryEscape;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
 
 @JsonDeserialize(using = IdDeserializer.class)
-@NoArgsConstructor
-public abstract class Id<TYPE> {
+public sealed interface Id<TYPE, STORAGE> permits NamespacedId, MetaId {
 
-	/**
-	 * Holds the cached escaped value.
-	 *
-	 * @implNote needs to be initialized. Otherwise, SerializationTests fail, because assertj checks ignored types.
-	 */
-	@JsonIgnore
-	private WeakReference<String> escapedId = new WeakReference<>(null);
 
-	/**
-	 * Injected by deserializer
-	 */
-	@JsonIgnore
-	@Setter
-	@Getter
-	private NamespacedStorageProvider namespacedStorageProvider;
-
-	/**
-	 * Injected by deserializer for resolving meta Ids
-	 */
-	@NonNull
-	@JsonIgnore
-	@Setter
-	@Getter
-	private MetaStorage metaStorage;
-
+	STORAGE getStorage();
 
 	@Override
-	public abstract int hashCode();
+	int hashCode();
 
 	@Override
-	public abstract boolean equals(Object obj);
+	boolean equals(Object obj);
 
 	@Override
 	@JsonValue
-	public final String toString() {
-		final String escaped = escapedId.get();
-		if (escaped != null) {
-			return escaped;
-		}
+	String toString();
 
-		String escapedIdString = escapedIdString();
-		escapedId = new WeakReference<>(escapedIdString);
-		return escapedIdString;
-	}
-
-	private String escapedIdString() {
+	default String escapedIdString() {
 		List<Object> components = getComponents();
 		components.replaceAll(o -> ConqueryEscape.escape(Objects.toString(o)));
 		return IdUtil.JOINER.join(components);
 	}
 
-	public final List<Object> getComponents() {
+	default List<Object> getComponents() {
 		List<Object> components = new ArrayList<>();
-		this.collectComponents(components);
+		collectComponents(components);
 		return components;
 	}
 
-	public abstract void collectComponents(List<Object> components);
+	/**
+	 * Return the object identified by the given id from the given storage.
+	 *
+	 * @return the object or null if no object could be resolved. If the id type is not supported
+	 * throws a IllegalArgumentException
+	 */
+	TYPE get(STORAGE storage);
 
-	public final List<String> collectComponents() {
-		List<Object> components = getComponents();
-		List<String> result = new ArrayList<>(components.size());
 
-		for (Object component : components) {
-			result.add(ConqueryEscape.escape(Objects.toString(component)));
+	@NotNull
+	default TYPE resolve(STORAGE storage) {
+		try {
+			TYPE o = get(storage);
+			if (o == null) {
+				throw newIdResolveException();
+			}
+			return o;
 		}
-
-		return result;
+		catch (IdResolvingException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw newIdResolveException(e);
+		}
 	}
 
-	public TYPE resolve() {
-		if (this instanceof NamespacedId namespacedId) {
-			return (TYPE) namespacedId.resolve(getNamespacedStorageProvider().resolveStorage(namespacedId.getDataset()));
-		}
-		if (this instanceof MetaId) {
-			return metaStorage.resolve((Id<?> & MetaId) this);
-		}
-		throw new IllegalStateException("Tried to resolve an id that is neither NamespacedId not MetaId: %s".formatted(this));
+	default TYPE resolve() {
+		return resolve(getStorage());
 	}
 
-	public IdResolvingException newIdResolveException() {
+	default IdResolvingException newIdResolveException() {
 		return new IdResolvingException(this);
 	}
 
-	public IdResolvingException newIdResolveException(Exception e) {
+	default IdResolvingException newIdResolveException(Exception e) {
 		return new IdResolvingException(this, e);
 	}
 
-	public abstract void collectIds(Collection<? super Id<?>> collect);
+	void collectComponents(List<Object> components);
+
+	void collectIds(Collection<Id<?, ?>> collect);
+
+
 }

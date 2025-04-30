@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.index;
 import java.util.Collection;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.identifiable.Named;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -15,20 +14,17 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @CPSBase
 @JsonTypeInfo(property = "type", use = JsonTypeInfo.Id.CUSTOM)
-public interface InternToExternMapper extends NamespacedIdentifiable<InternToExternMapperId>, Named<InternToExternMapperId> {
+public abstract class InternToExternMapper extends NamespacedIdentifiable<InternToExternMapperId> {
 
-	boolean initialized();
+	public abstract boolean initialized();
 
-	void init();
+	public abstract void init();
 
-	String external(String key);
+	public abstract String external(String key);
 
-	Collection<String> externalMultiple(String key);
+	public abstract Collection<String> externalMultiple(String key);
 
-	@Override
-	InternToExternMapperId getId();
-
-	default Printer<String> createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
+	public Printer<String> createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		if (isAllowMultiple()) {
 			return new OneToManyMappingPrinter(this)
 					.andThen(printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
@@ -37,5 +33,5 @@ public interface InternToExternMapper extends NamespacedIdentifiable<InternToExt
 		return new OneToOneMappingPrinter(this, printerFactory.getStringPrinter(printSettings));
 	}
 
-	boolean isAllowMultiple();
+	public abstract boolean isAllowMultiple();
 }

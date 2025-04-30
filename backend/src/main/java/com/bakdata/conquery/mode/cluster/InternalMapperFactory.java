@@ -9,7 +9,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.identifiable.ids.IIdInterner;
+import com.bakdata.conquery.models.identifiable.ids.IdInterner;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.fasterxml.jackson.databind.DeserializationConfig;
@@ -37,7 +37,7 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 
 		injectableValues.add(Validator.class, validator);
 		config.injectInto(objectMapper);
-		new IIdInterner().injectInto(objectMapper);
+		new IdInterner().injectInto(objectMapper);
 
 		if (viewClass != null) {
 			setViewClass(objectMapper, viewClass);
@@ -129,7 +129,7 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 		objectMapper.setInjectableValues(injectableValues);
 		injectableValues.add(Validator.class, validator);
 
-		new IIdInterner().injectInto(objectMapper);
+		new IdInterner().injectInto(objectMapper);
 		datasetRegistry.injectInto(objectMapper);
 		metaStorage.injectInto(objectMapper);
 		config.injectInto(objectMapper);

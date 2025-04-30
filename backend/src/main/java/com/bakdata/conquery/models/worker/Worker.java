@@ -98,7 +98,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(workerStorage);
 		workerStorage.openStores(persistenceMapper);
 
-		dataset.setNamespacedStorageProvider(workerStorage);
+		dataset.setStorageProvider(workerStorage);
 
 		// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
 		WorkerInformation info = new WorkerInformation();

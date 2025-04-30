@@ -7,7 +7,6 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -36,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSBase
 @Slf4j
 @EqualsAndHashCode(callSuper = true)
-public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements NamespacedIdentifiable<FilterId> {
+public abstract class Filter<FILTER_VALUE> extends NamespacedIdentifiable<FilterId> {
 
 	private String unit;
 	@JsonAlias("description")

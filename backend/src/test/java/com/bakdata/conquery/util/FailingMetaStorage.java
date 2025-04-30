@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.MetaId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
@@ -173,7 +172,7 @@ public class FailingMetaStorage extends MetaStorage {
 	}
 
 	@Override
-	public <ID extends Id<?> & MetaId, VALUE> VALUE get(ID id) {
+	public <ID extends MetaId<?>, VALUE> VALUE get(ID id) {
 		throw new UnsupportedOperationException(ERROR_MSG);
 	}
 }

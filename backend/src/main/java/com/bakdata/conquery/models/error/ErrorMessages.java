@@ -63,5 +63,5 @@ public interface ErrorMessages {
 
 	@En("The id {0} could not be resolved'.")
 	@De("Die id {0} konnte nicht aufgelöst werden.")
-	String idUnresolvable(Id<?> id);
+	String idUnresolvable(Id id);
 }

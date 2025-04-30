@@ -61,13 +61,13 @@ public class AdminDatasetResource {
 	private final AdminDatasetProcessor processor;
 
 	@PathParam(DATASET)
-	private Dataset dataset;
+	private DatasetId dataset;
 
 	private Namespace namespace;
 
 	@PostConstruct
 	public void init() {
-		namespace = processor.getDatasetRegistry().get(dataset.getId());
+		namespace = processor.getDatasetRegistry().get(dataset);
 	}
 
 	@GET
@@ -191,7 +191,7 @@ public class AdminDatasetResource {
 
 	@GET
 	public Dataset getDatasetInfos() {
-		return dataset;
+		return dataset.resolve();
 	}
 
 	@POST
@@ -218,7 +218,7 @@ public class AdminDatasetResource {
 
 	@DELETE
 	public void delete() {
-		processor.deleteDataset(dataset);
+		processor.deleteDataset(dataset.resolve());
 	}
 
 	/**

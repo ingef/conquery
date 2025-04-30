@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -23,7 +22,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false, doNotUseGetters = true)
-public class DatasetId extends Id<Dataset> implements NamespacedId, Authorized {
+public class DatasetId extends NamespacedId<Dataset> implements Authorized {
 
 	private final String name;
 
@@ -34,7 +33,7 @@ public class DatasetId extends Id<Dataset> implements NamespacedId, Authorized {
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
+	public Dataset get(NamespacedStorage storage) {
 		return storage.getDataset();
 	}
 
@@ -44,7 +43,7 @@ public class DatasetId extends Id<Dataset> implements NamespacedId, Authorized {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 	}
 

@@ -3,7 +3,6 @@ package com.bakdata.conquery.apiv1.frontend;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import jakarta.ws.rs.core.EntityTag;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
@@ -16,12 +15,12 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class FrontendList implements JsonSerializable {
 
-	private final List<Pair<ConceptElementId<?>, FrontendNode>> content = new ArrayList<>();
+	private final List<Pair<ConceptElementId, FrontendNode>> content = new ArrayList<>();
 	@Getter(lazy = true)
 	private final EntityTag cacheId = new EntityTag(Integer.toString(content.hashCode()));
 
 
-	public void add(ConceptElementId<?> id, FrontendNode node) {
+	public void add(ConceptElementId id, FrontendNode node) {
 		content.add(Pair.of(id, node));
 	}
 
@@ -29,7 +28,7 @@ public class FrontendList implements JsonSerializable {
 	@Override
 	public void serialize(JsonGenerator gen, SerializerProvider serializers) throws IOException {
 		gen.writeStartObject();
-		for (Pair<ConceptElementId<?>, FrontendNode> e : content) {
+		for (Pair<ConceptElementId, FrontendNode> e : content) {
 			gen.writeFieldName(e.getKey().toString());
 			serializers.defaultSerializeValue(e.getValue(), gen);
 		}

@@ -11,7 +11,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -32,7 +31,7 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.MetaIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -72,7 +71,7 @@ import org.apache.shiro.authz.Permission;
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonIgnoreProperties("state")
-public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
+public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 
 	/**
 	 * Some unusual suffix. Its not too bad if someone actually uses this.
@@ -226,9 +225,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		if (queryId == null) {
 			queryId = UUID.randomUUID();
 		}
-		ManagedExecutionId managedExecutionId = new ManagedExecutionId(dataset, queryId);
-		managedExecutionId.setMetaStorage(getMetaStorage());
-		return managedExecutionId;
+		return new ManagedExecutionId(dataset, queryId);
 	}
 
 	/**

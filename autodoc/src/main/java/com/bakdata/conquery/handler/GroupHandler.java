@@ -22,7 +22,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.model.Base;
 import com.bakdata.conquery.model.Group;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.util.PrettyPrinter;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

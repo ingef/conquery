@@ -13,7 +13,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.util.io.FileUtil;
@@ -41,7 +40,7 @@ import org.jetbrains.annotations.TestOnly;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor(access = AccessLevel.PRIVATE, onConstructor_ = {@JsonCreator})
 @Setter
-public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper, Initializing {
+public class MapInternToExternMapper extends InternToExternMapper implements Initializing {
 
 
 	@ToString.Include

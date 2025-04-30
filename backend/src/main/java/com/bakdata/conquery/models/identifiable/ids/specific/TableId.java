@@ -18,7 +18,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class TableId extends Id<Table> implements NamespacedId {
+public class TableId extends NamespacedId<Table>  {
 
 	private final DatasetId dataset;
 	private final String table;
@@ -30,13 +30,13 @@ public class TableId extends Id<Table> implements NamespacedId {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 		dataset.collectIds(collect);
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
+	public Table get(NamespacedStorage storage) {
 		return storage.getTable(this);
 	}
 

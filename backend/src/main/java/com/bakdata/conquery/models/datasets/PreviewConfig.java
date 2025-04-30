@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
@@ -103,7 +102,7 @@ public class PreviewConfig {
 	 * @param label  User facing label of the select.
 	 * @param select Id (without dataset) of the select.
 	 */
-	public record InfoCardSelect(@NotNull String label, SelectId select, String description) {
+	public record InfoCardSelect(@NotNull String label, SelectId<?> select, String description) {
 	}
 
 
@@ -175,10 +174,9 @@ public class PreviewConfig {
 	 * Find infoCard-selects by id within Dataset.
 	 */
 	@JsonIgnore
-	public List<Select> getSelects() {
+	public List<SelectId<?>> getSelects() {
 		return getInfoCardSelects().stream()
 								   .map(InfoCardSelect::select)
-								   .map(SelectId::resolve)
 								   .collect(Collectors.toList());
 	}
 

@@ -140,7 +140,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		Dataset dataset = new Dataset();
 		dataset.setName("dataset");
 		dataset.setLabel("Dataset");
-		dataset.setNamespacedStorageProvider(getDatasetRegistry());
+		dataset.setStorageProvider(getDatasetRegistry());
 
 		SerializationTestUtil
 				.forType(Dataset.class)
@@ -661,7 +661,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final WorkerStorageImpl workerStorage = getWorkerStorage();
 
 		final Dataset dataset = new Dataset();
-		dataset.setNamespacedStorageProvider(workerStorage);
+		dataset.setStorageProvider(workerStorage);
 		dataset.setName("dataset");
 
 		final TreeConcept concept = new TreeConcept();

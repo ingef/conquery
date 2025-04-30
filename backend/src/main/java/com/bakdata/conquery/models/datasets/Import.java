@@ -4,7 +4,6 @@ package com.bakdata.conquery.models.datasets;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -24,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @Setter
-public class Import extends NamedImpl<ImportId> implements NamespacedIdentifiable<ImportId> {
+public class Import extends NamespacedIdentifiable<ImportId> {
 
 	@Valid
 	@NotNull
@@ -38,6 +37,7 @@ public class Import extends NamedImpl<ImportId> implements NamespacedIdentifiabl
 	@JsonManagedReference
 	@NotNull
 	private ImportColumn[] columns = new ImportColumn[0];
+
 
 	@Override
 	public ImportId createId() {
@@ -57,4 +57,5 @@ public class Import extends NamedImpl<ImportId> implements NamespacedIdentifiabl
 	public DatasetId getDataset() {
 		return getTable().getDataset();
 	}
+
 }

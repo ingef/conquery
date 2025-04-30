@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil.Parser;
 
-public class IdParamConverter<T extends Id<?>> implements ParamConverter<T> {
+public class IdParamConverter<T extends Id> implements ParamConverter<T> {
 
 	//TODO inject storage
 	private final Parser<T> parser;

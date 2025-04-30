@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.IdResolvingException;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.MetaId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
@@ -217,7 +216,7 @@ public class MetaStorage implements ConqueryStorage,  Injectable {
 	 * Almost identical to {@link MetaStorage#get(Id)}, but throws an IdResolvingException if no object could be resolved.
 	 * @return the object or throws an {@link IdResolvingException} if the Object could not be resolved.
 	 */
-	public <ID extends Id<?> & MetaId, VALUE> VALUE resolve(ID id) {
+	public <ID extends MetaId, VALUE> VALUE resolve(ID id) {
 		try {
 			VALUE o = get(id);
 			if (o == null) {
@@ -233,7 +232,7 @@ public class MetaStorage implements ConqueryStorage,  Injectable {
 		}
 	}
 
-	public <ID extends Id<?> & MetaId, VALUE> VALUE get(ID id) {
+	public <ID extends MetaId<?>, VALUE> VALUE get(ID id) {
 		return (VALUE) id.get(this);
 	}
 }

@@ -57,7 +57,7 @@ public class ReportConsistency extends NamespaceMessage {
 		throw new IllegalStateException("Detected inconsistency between manager and worker [" + workerId + "]");
 	}
 
-	private static <ID extends Id<?>> boolean isConsistent(String typeName, @NonNull Set<ID> managerIds, @NonNull Set<ID> workerIds, WorkerId workerId) {
+	private static <ID extends Id> boolean isConsistent(String typeName, @NonNull Set<ID> managerIds, @NonNull Set<ID> workerIds, WorkerId workerId) {
 		Sets.SetView<ID> notInWorker = Sets.difference(managerIds, workerIds);
 		Sets.SetView<ID> notInManager = Sets.difference(workerIds, managerIds);
 

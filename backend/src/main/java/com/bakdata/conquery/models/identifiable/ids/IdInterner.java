@@ -10,17 +10,17 @@ import com.bakdata.conquery.models.identifiable.ids.IdUtil.Parser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
-public class IIdInterner implements Injectable {
+public class IdInterner implements Injectable {
 	
-	private final Map<Parser<?>, ParserIIdInterner<?>> perParserInterner = new ConcurrentHashMap<>();
+	private final Map<Parser<?>, ParserIdInterner<?>> perParserInterner = new ConcurrentHashMap<>();
 
-	public static IIdInterner get(DeserializationContext context) throws JsonMappingException {
-		return (IIdInterner) context.findInjectableValue(IIdInterner.class, null, null);
+	public static IdInterner get(DeserializationContext context) throws JsonMappingException {
+		return (IdInterner) context.findInjectableValue(IdInterner.class, null, null);
 	}
 
 	@SuppressWarnings("unchecked")
-	public <ID extends Id<?>> ParserIIdInterner<ID> forParser(Parser<ID> parser) {
-		return (ParserIIdInterner<ID>) perParserInterner.computeIfAbsent(parser, k -> new ParserIIdInterner<>());
+	public <ID extends Id> ParserIdInterner<ID> forParser(Parser<ID> parser) {
+		return (ParserIdInterner<ID>) perParserInterner.computeIfAbsent(parser, k -> new ParserIdInterner<>());
 	}
 
 	@Override
@@ -28,7 +28,7 @@ public class IIdInterner implements Injectable {
 		return values.add(this.getClass(), this);
 	}
 
-	public static class ParserIIdInterner<ID extends Id<?>> {
+	public static class ParserIdInterner<ID extends Id> {
 		private final Map<List<String>, ID> interned = new ConcurrentHashMap<>();
 
 		public ID putIfAbsent(List<String> components, ID id) {
@@ -41,7 +41,7 @@ public class IIdInterner implements Injectable {
 			return old;
 		}
 
-		public static void checkConflict(Id<?> id, Id<?> cached) {
+		public static void checkConflict(Id id, Id cached) {
 			if (!cached.equals(id)) {
 				throw new IllegalStateException("The cached id '%s' (%s) conflicted with the new entry of '%s' (%s)"
 														.formatted(cached, cached.getClass().getSimpleName(), id, id.getClass().getSimpleName()));

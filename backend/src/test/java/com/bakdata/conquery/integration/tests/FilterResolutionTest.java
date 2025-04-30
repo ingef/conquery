@@ -79,14 +79,18 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		// Copy search csv from resources to tmp folder.
 		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
 		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines)
-								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE
+		);
 
 
 		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 
 		final FilterTemplate
 				filterTemplate =
-				new FilterTemplate(conquery.getDataset().getId(), "test", tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService);
+				new FilterTemplate(tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService);
+		filterTemplate.setDataset(conquery.getDataset().getId());
+		filterTemplate.setName("test");
+
 		filter.setTemplate(filterTemplate.getId());
 
 		// We need to persist the modification before we submit the update matching stats request
@@ -94,7 +98,8 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		namespaceStorage.updateConcept(concept);
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "postprocessNamespace")
+															, AdminDatasetResource.class, "postprocessNamespace"
+													)
 													.buildFromMap(Map.of(DATASET, conquery.getDataset().getId()));
 
 		final Response post = conquery.getClient().target(matchingStatsUri)

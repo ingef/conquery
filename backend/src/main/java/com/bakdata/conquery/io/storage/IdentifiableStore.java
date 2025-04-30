@@ -16,16 +16,16 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 @Setter
 @Getter
-public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludingStore<Id<VALUE>, VALUE> {
+public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludingStore<Id<VALUE, ?>, VALUE> {
 
 
-	public IdentifiableStore(Store<Id<VALUE>, VALUE> store) {
+	public IdentifiableStore(Store<Id<VALUE, ?>, VALUE> store) {
 		super(store);
 	}
 
 
 	@Override
-	protected Id<VALUE> extractKey(VALUE value) {
-		return (Id<VALUE>) value.getId();
+	protected Id<VALUE, ?> extractKey(VALUE value) {
+		return (Id<VALUE, ?>) value.getId();
 	}
 }
