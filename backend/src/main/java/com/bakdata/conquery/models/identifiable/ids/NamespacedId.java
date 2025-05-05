@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Marker interface for {@link Id}s that are bound to a {@link com.bakdata.conquery.models.worker.Namespace}/{@link com.bakdata.conquery.models.datasets.Dataset}.
  */
-public abstract non-sealed class NamespacedId<TYPE> implements Id<TYPE, NamespacedStorage> {
+public abstract non-sealed class NamespacedId<TYPE> implements Id<TYPE, NamespacedStorageProvider> {
 
 	public static WorkerStorage assertWorkerStorage(NamespacedStorage storage) {
 		if (!(storage instanceof WorkerStorage workerStorage)) {
@@ -52,8 +52,13 @@ public abstract non-sealed class NamespacedId<TYPE> implements Id<TYPE, Namespac
 
 	@Override
 	@JsonIgnore
-	public NamespacedStorage getStorage() {
+	public NamespacedStorageProvider getStorage() {
 		return namespacedStorageProvider.getStorage(getDataset());
+	}
+
+	@Override
+	public void setStorage(NamespacedStorageProvider namespacedStorage) {
+		namespacedStorageProvider = namespacedStorage;
 	}
 
 	@Override

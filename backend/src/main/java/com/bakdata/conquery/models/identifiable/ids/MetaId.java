@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 
 /**
@@ -20,7 +19,6 @@ public abstract non-sealed class MetaId<TYPE> implements Id<TYPE, MetaStorage> {
 	@Setter
 	@Getter
 	@JsonIgnore
-	@NonNull
 	private MetaStorage storage;
 	/**
 	 * Holds the cached escaped value.

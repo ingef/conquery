@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -28,8 +27,9 @@ public class BucketId extends NamespacedId<Bucket>  {
 	}
 
 	@Override
-	public Bucket get(NamespacedStorage storage) {
-		return assertWorkerStorage(storage).getBucket(this);
+	public Bucket get(NamespacedStorageProvider storage) {
+		return assertWorkerStorage(storage.getStorage(getDataset()))
+				.getBucket(this);
 	}
 
 	@Override

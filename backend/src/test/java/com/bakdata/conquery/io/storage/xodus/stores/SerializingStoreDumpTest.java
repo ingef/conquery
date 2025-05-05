@@ -40,9 +40,10 @@ public class SerializingStoreDumpTest {
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 	// Test data
 	private final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), new UserId("test"), new DatasetId("dataset"), STORAGE, null, null);
-	private final ConceptQuery cQuery = new ConceptQuery(
-			new CQReusedQuery(managedQuery.getId()));
+	private final ConceptQuery cQuery = new ConceptQuery(new CQReusedQuery(managedQuery.getId()));
+
 	private final User user = new User("username", "userlabel", STORAGE);
+
 	private File tmpDir;
 	private Environment env;
 	private XodusStoreFactory config;
@@ -83,10 +84,11 @@ public class SerializingStoreDumpTest {
 			// Open that store again, with a different config to insert a corrupt entry
 			// (UserId & ManagedQuery)
 			SerializingStore<UserId, QueryDescription> store = createSerializedStore(
-				config,
-				env,
-				Validators.newValidator(),
-				new StoreInfo<>(info.getName(), UserId.class, QueryDescription.class));
+					config,
+					env,
+					Validators.newValidator(),
+					new StoreInfo<>(info.getName(), UserId.class, QueryDescription.class)
+			);
 			store.add(invalidId, cQuery);
 		}
 
@@ -100,7 +102,8 @@ public class SerializingStoreDumpTest {
 			expectedResult.setFailedValues(1);
 
 			// Iterate (do nothing with the entries themselves)
-			IterationStatistic result = store.forEach((k, v, s) -> {});
+			IterationStatistic result = store.forEach((k, v, s) -> {
+			});
 			assertThat(result).isEqualTo(expectedResult);
 		}
 
@@ -122,11 +125,16 @@ public class SerializingStoreDumpTest {
 		assertThat((QueryDescription) Jackson.MAPPER.readerFor(QueryDescription.class).readValue(dumpFiles[0])).isEqualTo(cQuery);
 	}
 
-	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(XodusStoreFactory config, Environment environment, Validator validator, StoreInfo<KEY,VALUE> storeId) {
+	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(
+			XodusStoreFactory config,
+			Environment environment,
+			Validator validator,
+			StoreInfo<KEY, VALUE> storeId) {
 		return new SerializingStore<>(
 				new XodusStore(environment, storeId.getName(), (e) -> {
 				}, (e) -> {
-				}),
+				}
+				),
 				validator,
 				objectMapper,
 				storeId.getKeyType(),
@@ -157,10 +165,11 @@ public class SerializingStoreDumpTest {
 			// Open that store again, with a different config to insert a corrupt entry
 			// (String & ManagedQuery)
 			SerializingStore<String, QueryDescription> store = createSerializedStore(
-				config,
-				env,
-				Validators.newValidator(),
-				new StoreInfo<>(info.getName(), String.class, QueryDescription.class));
+					config,
+					env,
+					Validators.newValidator(),
+					new StoreInfo<>(info.getName(), String.class, QueryDescription.class)
+			);
 			store.add(invalidId, cQuery);
 		}
 
@@ -174,7 +183,8 @@ public class SerializingStoreDumpTest {
 			expectedResult.setFailedValues(0);
 
 			// Iterate (do nothing with the entries themselves)
-			IterationStatistic result = store.forEach((k, v, s) -> {});
+			IterationStatistic result = store.forEach((k, v, s) -> {
+			});
 			assertThat(result).isEqualTo(expectedResult);
 		}
 
@@ -184,7 +194,7 @@ public class SerializingStoreDumpTest {
 												 .listFiles(file -> file.getName().endsWith(SerializingStore.DUMP_FILE_EXTENSION));
 
 		final File[] exceptionFiles = SerializingStore.makeDumpFileName(invalidId, tmpDir, info.getName()).getParentFile()
-												 .listFiles(file -> file.getName().endsWith(SerializingStore.EXCEPTION_FILE_EXTENSION));
+													  .listFiles(file -> file.getName().endsWith(SerializingStore.EXCEPTION_FILE_EXTENSION));
 
 		assertThat(dumpFiles)
 				.isNotNull()
@@ -218,19 +228,21 @@ public class SerializingStoreDumpTest {
 			// corrupt value
 			{
 				SerializingStore<String, QueryDescription> store = createSerializedStore(
-					config,
-					env,
-					Validators.newValidator(),
-					new StoreInfo<>(USER_STORE_ID.getName(), String.class, QueryDescription.class));
+						config,
+						env,
+						Validators.newValidator(),
+						new StoreInfo<>(USER_STORE_ID.getName(), String.class, QueryDescription.class)
+				);
 				store.add("not a valid conquery Id", cQuery);
 			}
 
 			{
 				SerializingStore<UserId, QueryDescription> store = createSerializedStore(
-					config,
-					env,
-					Validators.newValidator(),
-					new StoreInfo<>(USER_STORE_ID.getName(), UserId.class, QueryDescription.class));
+						config,
+						env,
+						Validators.newValidator(),
+						new StoreInfo<>(USER_STORE_ID.getName(), UserId.class, QueryDescription.class)
+				);
 				store.add(new UserId("testU2"), cQuery);
 			}
 		}
@@ -245,7 +257,8 @@ public class SerializingStoreDumpTest {
 			expectedResult.setFailedValues(1);
 
 			// Iterate (do nothing with the entries themselves)
-			IterationStatistic result = store.forEach((k, v, s) -> {});
+			IterationStatistic result = store.forEach((k, v, s) -> {
+			});
 			assertThat(result).isEqualTo(expectedResult);
 		}
 
@@ -258,7 +271,8 @@ public class SerializingStoreDumpTest {
 			expectedResult.setFailedValues(0);
 
 			// Iterate (do nothing with the entries themselves)
-			IterationStatistic result = store.forEach((k, v, s) -> {});
+			IterationStatistic result = store.forEach((k, v, s) -> {
+			});
 			assertThat(result).isEqualTo(expectedResult);
 		}
 	}

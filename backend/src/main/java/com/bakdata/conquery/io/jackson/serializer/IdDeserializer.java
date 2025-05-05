@@ -92,7 +92,7 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 			if (subId instanceof NamespacedId<?> nsId) {
 				nsId.setNamespacedStorageProvider(namespacedStorageProvider);
 			}
-			else if (subId instanceof MetaId<?> metaId) {
+			if (subId instanceof MetaId<?> metaId) {
 				metaId.setStorage(metaStorage);
 			}
 		}

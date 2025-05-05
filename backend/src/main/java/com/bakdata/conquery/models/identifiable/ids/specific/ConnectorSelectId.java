@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -34,8 +33,8 @@ public class ConnectorSelectId extends SelectId<Select> {
 	}
 
 	@Override
-	public Select get(NamespacedStorage storage) {
-		return storage.getConcept(findConcept()).getConnectorByName(getConnector().getConnector()).getSelectByName(getSelect());
+	public Select get(NamespacedStorageProvider storage) {
+		return storage.getStorage(getDataset()).getConcept(findConcept()).getConnectorByName(getConnector().getConnector()).getSelectByName(getSelect());
 	}
 
 	@Override

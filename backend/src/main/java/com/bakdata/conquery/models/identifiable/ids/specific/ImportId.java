@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -28,8 +27,8 @@ public class ImportId extends NamespacedId<Import>  {
 	}
 
 	@Override
-	public Import get(NamespacedStorage storage) {
-		return storage.getImport(this);
+	public Import get(NamespacedStorageProvider storage) {
+		return storage.getStorage(getDataset()).getImport(this);
 	}
 
 	@Override

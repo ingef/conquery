@@ -83,7 +83,6 @@ public abstract class ConqueryTestSpec {
 			support.getNamespace().getStorage().injectInto(mapper);
 		}
 
-
 		T result = mapper.readerFor(expectedType).readValue(node);
 
 		if (modifierBeforeValidation != null) {

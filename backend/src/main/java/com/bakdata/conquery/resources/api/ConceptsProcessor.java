@@ -50,6 +50,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -135,8 +136,8 @@ public class ConceptsProcessor {
 						 .collect(Collectors.toList());
 	}
 
-	public FrontendPreviewConfig getEntityPreviewFrontendConfig(Dataset dataset) {
-		final Namespace namespace = namespaces.get(dataset.getId());
+	public FrontendPreviewConfig getEntityPreviewFrontendConfig(DatasetId dataset) {
+		final Namespace namespace = namespaces.get(dataset);
 		final PreviewConfig previewConfig = namespace.getPreviewConfig();
 
 		// Connectors only act as bridge to table for the fronted, but also provide ConceptColumnT semantic
@@ -293,7 +294,7 @@ public class ConceptsProcessor {
 
 	public ResolvedConceptsResult resolveConceptElements(TreeConcept concept, List<String> conceptCodes) {
 
-		final Set<ConceptElementId> resolvedCodes = new HashSet<>();
+		final Set<ConceptElementId<?>> resolvedCodes = new HashSet<>();
 		final Set<String> unknownCodes = new HashSet<>();
 
 		for (String conceptCode : conceptCodes) {
@@ -311,7 +312,7 @@ public class ConceptsProcessor {
 				log.error("Error while trying to resolve `{}`", conceptCode, e);
 			}
 		}
-		return new ResolvedConceptsResult(resolvedCodes,  unknownCodes);
+		return new ResolvedConceptsResult(resolvedCodes, unknownCodes);
 	}
 
 	/**
@@ -331,6 +332,11 @@ public class ConceptsProcessor {
 
 	}
 
-	public record ResolvedConceptsResult(Set<ConceptElementId> resolvedConcepts, Collection<String> unknownCodes) {
+	@Data
+	public static final class ResolvedConceptsResult {
+		private final Set<ConceptElementId<?>> resolvedConcepts;
+		private final Collection<String> unknownCodes;
+
+
 	}
 }

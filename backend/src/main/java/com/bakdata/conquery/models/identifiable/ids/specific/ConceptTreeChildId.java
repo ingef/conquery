@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
@@ -26,8 +25,9 @@ public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> {
 	}
 
 	@Override
-	public ConceptTreeChild get(NamespacedStorage storage) {
-		Concept<?> concept = storage.getConcept(findConcept());
+	public ConceptTreeChild get(NamespacedStorageProvider storage) {
+		Concept<?> concept = storage.getStorage(getDataset())
+									.getConcept(findConcept());
 		if (concept == null) {
 			return null;
 		}

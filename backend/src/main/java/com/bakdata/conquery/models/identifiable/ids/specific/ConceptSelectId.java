@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -34,8 +33,9 @@ public class ConceptSelectId extends SelectId<UniversalSelect> {
 	}
 
 	@Override
-	public UniversalSelect get(NamespacedStorage storage) {
-		return (UniversalSelect) storage.getConcept(concept).getSelectByName(getSelect());
+	public UniversalSelect get(NamespacedStorageProvider storage) {
+		return (UniversalSelect) storage.getStorage(getDataset())
+										.getConcept(concept).getSelectByName(getSelect());
 	}
 
 	@Override

@@ -37,6 +37,10 @@ public abstract class NamespacedIdentifiable<ID extends NamespacedId<?>>
 
 
 	public final void setLabel(String label) {
+		if (label == null) {
+			return;
+		}
+
 		this.label = label;
 		if (getName() == null) {
 			setName(makeDefaultName(label));
@@ -54,11 +58,13 @@ public abstract class NamespacedIdentifiable<ID extends NamespacedId<?>>
 	}
 
 	protected NamespacedStorageProvider getStorageProvider(){
+		//TODO make field?
 		return getDataset().getNamespacedStorageProvider();
 	}
 
 	@Override
 	protected void injectStore(ID id) {
-		id.setNamespacedStorageProvider(getStorageProvider());
+		NamespacedStorageProvider storageProvider = getStorageProvider();
+		id.setNamespacedStorageProvider(storageProvider);
 	}
 }

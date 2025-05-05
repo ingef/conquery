@@ -26,6 +26,7 @@ import com.bakdata.conquery.resources.api.MeResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 @CPSType(base = ResourcesProvider.class, id = "ApiV1")
@@ -50,6 +51,8 @@ public class ApiV1 extends ResourceConfig implements ResourcesProvider {
 			}
 		});
 
+		register(new MultiPartFeature());
+
 		jersey.register(CORSPreflightRequestFilter.class);
 		jersey.register(CORSResponseFilter.class);
 
@@ -64,8 +67,7 @@ public class ApiV1 extends ResourceConfig implements ResourcesProvider {
 		jersey.register(AuthFilter.class);
 		AuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, jersey.getResourceConfig());
 
-
-		jersey.register(new IdParamConverter.Provider());
+		jersey.register(new IdParamConverter.Provider(manager.getMetaStorage(), manager.getDatasetRegistry()));
 
 		jersey.register(QueryResource.class);
 		jersey.register(DatasetQueryResource.class);

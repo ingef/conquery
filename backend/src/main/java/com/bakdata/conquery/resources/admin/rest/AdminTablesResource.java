@@ -19,10 +19,10 @@ import jakarta.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -42,14 +42,14 @@ public class AdminTablesResource {
 	private final AdminDatasetProcessor processor;
 
 	@PathParam(DATASET)
-	protected Dataset dataset;
+	protected DatasetId dataset;
 	protected Namespace namespace;
 	@PathParam(TABLE)
 	protected TableId table;
 
 	@PostConstruct
 	public void init() {
-		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
+		this.namespace = processor.getDatasetRegistry().get(dataset);
 	}
 
 	@GET

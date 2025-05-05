@@ -104,12 +104,13 @@ public class DefaultLabelTest {
 		I18n.LOCALE.set(locale);
 
 		CQConcept concept = new CQConcept();
+
 		concept.setLabel(null);
 		concept.setElements(List.of(CONCEPT.getId()));
 		ConceptQuery cq = new ConceptQuery(concept);
 		ManagedQuery mQuery = cq.toManagedExecution(user.getId(), DATASET.getId(), STORAGE, null, CONFIG);
-		UUID uuid = UUID.randomUUID();
-		mQuery.setQueryId(uuid);
+		mQuery.setQueryId(UUID.randomUUID());
+		mQuery.setMetaStorage(STORAGE);
 
 		mQuery.setLabel(mQuery.makeAutoLabel(getPrintSettings(locale)));
 
@@ -167,6 +168,8 @@ public class DefaultLabelTest {
 		I18n.LOCALE.set(locale);
 
 		final ManagedQuery managedQuery = new ManagedQuery(null, new UserId("test"), DATASET.getId(), STORAGE, null, CONFIG);
+		managedQuery.setMetaStorage(STORAGE);
+
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		CQAnd and = new CQAnd();

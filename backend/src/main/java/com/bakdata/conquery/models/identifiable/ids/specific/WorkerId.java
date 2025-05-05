@@ -3,27 +3,29 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.worker.Worker;
+import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class WorkerId extends NamespacedId<Worker> {
+public class WorkerId extends NamespacedId<WorkerInformation> {
 
 	private final DatasetId dataset;
 	private final String worker;
 
 	@Override
-	public Worker get(NamespacedStorage namespacedStorage) {
-		throw new IllegalStateException("WorkerIds cannot be resolved.");
+	public WorkerInformation get(NamespacedStorageProvider namespacedStorage) {
+		//TODO dont think this is correct?
+		return assertWorkerStorage(namespacedStorage.getStorage(getDataset()))
+				.getWorker();
 	}
 
 	@Override
@@ -33,7 +35,7 @@ public class WorkerId extends NamespacedId<Worker> {
 	}
 
 	@Override
-	public void collectIds(Collection<Id<?,?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		dataset.collectIds(collect);
 	}

@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
@@ -34,8 +33,8 @@ public class InternToExternMapperId extends NamespacedId<InternToExternMapper>  
 	}
 
 	@Override
-	public InternToExternMapper get(NamespacedStorage storage) {
-		return assertNamespaceStorage(storage).getInternToExternMapper(this);
+	public InternToExternMapper get(NamespacedStorageProvider storage) {
+		return assertNamespaceStorage(storage.getStorage(getDataset())).getInternToExternMapper(this);
 	}
 
 	@Override

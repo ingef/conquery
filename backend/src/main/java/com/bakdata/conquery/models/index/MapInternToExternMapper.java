@@ -101,6 +101,7 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 			return;
 		}
 
+		//TODO fix assignment
 		dataset = storage.getDataset().getId();
 
 		final URI resolvedURI = FileUtil.getResolvedUri(config.getIndex().getBaseUrl(), csv);

@@ -13,8 +13,9 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -32,23 +33,25 @@ public class AdminConceptsResource {
 	private final AdminDatasetProcessor processor;
 
 	@PathParam(DATASET)
-	private Dataset dataset;
-	private Namespace namespace;
+	private DatasetId dataset;
 	@PathParam(CONCEPT)
-	private Concept<?> concept;
+	private ConceptId concept;
+
+	private Namespace namespace;
+
 
 	@PostConstruct
 	public void init() {
-		namespace = processor.getDatasetRegistry().get(dataset.getId());
+		namespace = processor.getDatasetRegistry().get(dataset);
 	}
 
 	@GET
 	public Concept<?> getConcept() {
-		return concept;
+		return concept.resolve();
 	}
 
 	@DELETE
 	public void removeConcept() {
-		processor.deleteConcept(concept.getId());
+		processor.deleteConcept(concept);
 	}
 }

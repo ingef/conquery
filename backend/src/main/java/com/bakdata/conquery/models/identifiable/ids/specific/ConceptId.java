@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
@@ -30,8 +29,9 @@ public class ConceptId extends ConceptElementId<Concept<?>> implements Authorize
 	}
 
 	@Override
-	public Concept<?> get(NamespacedStorage storage) {
-		return storage.getConcept(this);
+	public Concept<?> get(NamespacedStorageProvider storage) {
+		return storage.getStorage(getDataset())
+					  .getConcept(this);
 	}
 
 	@Override

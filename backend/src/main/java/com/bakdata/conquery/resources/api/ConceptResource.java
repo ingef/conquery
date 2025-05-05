@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -28,11 +27,10 @@ import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@Path("concepts/{" + CONCEPT + "}")
+@Path("concepts/{" + CONCEPT + "}/")
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ConceptResource extends HAuthorized {
 
@@ -56,7 +54,7 @@ public class ConceptResource extends HAuthorized {
 
 	@POST
 	@Path("resolve")
-	public ConceptsProcessor.ResolvedConceptsResult resolve(@PathParam(CONCEPT) ConceptId conceptId, @NotNull ConceptResource.ConceptCodeList conceptCodes) {
+	public ConceptsProcessor.ResolvedConceptsResult resolve(@PathParam(CONCEPT) ConceptId conceptId, ConceptResource.ConceptCodeList conceptCodes) {
 		final Concept<?> concept = conceptId.resolve();
 
 		subject.authorize(concept.getDataset(), Ability.READ);
@@ -73,7 +71,6 @@ public class ConceptResource extends HAuthorized {
 
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-	@ToString
 	public static class ConceptCodeList {
 		private final List<String> concepts;
 	}

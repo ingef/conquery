@@ -4,12 +4,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -33,8 +33,8 @@ public class DatasetId extends NamespacedId<Dataset> implements Authorized {
 	}
 
 	@Override
-	public Dataset get(NamespacedStorage storage) {
-		return storage.getDataset();
+	public Dataset get(NamespacedStorageProvider storage) {
+		return storage.getStorage(this).getDataset();
 	}
 
 	@Override

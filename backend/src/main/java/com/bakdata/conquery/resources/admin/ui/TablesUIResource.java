@@ -13,6 +13,7 @@ import jakarta.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import io.dropwizard.views.common.View;
@@ -32,14 +33,14 @@ public class TablesUIResource {
 	}
 
 	@GET
-	public View getTableView() {
-		return new UIView("table.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getTableStatistics(null));
+	public View getTableView(@PathParam(TABLE) TableId tableId) {
+		return new UIView("table.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getTableStatistics(tableId));
 	}
 
 	@GET
 	@Path("import/{" + IMPORT_ID + "}")
 	public View getImportView(@PathParam(IMPORT_ID) ImportId imp) {
 
-		return new UIView("import.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getImportStatistics(null));
+		return new UIView("import.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getImportStatistics(imp));
 	}
 }

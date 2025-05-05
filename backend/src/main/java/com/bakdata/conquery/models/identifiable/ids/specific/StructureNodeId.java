@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -25,7 +24,7 @@ public class StructureNodeId extends NamespacedId<StructureNode> {
 
 
 	@Override
-	public StructureNode get(NamespacedStorage namespacedStorage) {
+	public StructureNode get(NamespacedStorageProvider namespacedStorage) {
 		throw new UnsupportedOperationException();
 	}
 

@@ -52,14 +52,14 @@ public class ConquerySerializersModule extends SimpleModule {
 		addDeserializer(ClassToInstanceMap.class, new ClassToInstanceMapDeserializer());
 
 		//register IdKeySerializer for all id types
-		List<Class<?>> idTypes = CPSTypeIdResolver
-				.SCAN_RESULT
-				.getSubclasses(Id.class.getName())
-				.loadClasses();
+		List<Class<?>> idTypes =
+				CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(Id.class.getName())
+											 .loadClasses();
 
 		for (Class<?> type : idTypes) {
 			addKeyDeserializer(type, new IdKeyDeserializer<>());
 		}
+
 		addSerializer(new ConqueryDoubleSerializer());
 		addDeserializer(CharArrayBuffer.class, new CharArrayBufferDeserializer());
 		addSerializer(CharArrayBuffer.class, new CharArrayBufferSerializer());

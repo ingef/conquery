@@ -23,7 +23,7 @@ public class PermissionResource {
 	private final AdminProcessor processor;
 
 	@PathParam(OWNER_ID)
-	private PermissionOwnerId owner;
+	private PermissionOwnerId<?> owner;
 
 	/**
 	 * We let SHIRO parse the permission from a string, instead of letting Jackson map it directly to an object.

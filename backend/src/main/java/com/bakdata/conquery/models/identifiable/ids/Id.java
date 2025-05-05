@@ -17,6 +17,7 @@ public sealed interface Id<TYPE, STORAGE> permits NamespacedId, MetaId {
 
 
 	STORAGE getStorage();
+	void setStorage(STORAGE storage);
 
 	@Override
 	int hashCode();

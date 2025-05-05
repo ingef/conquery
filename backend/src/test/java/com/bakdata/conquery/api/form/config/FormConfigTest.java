@@ -23,6 +23,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -74,7 +75,10 @@ public class FormConfigTest {
 	private final Validator validator = Validators.newValidatorFactory().getValidator();
 	private final Dataset dataset = new Dataset("test");
 	private final Dataset dataset1 = new Dataset("test1");
-	private MetaStorage storage;
+
+	private MetaStorage metaStorage;
+	private NamespacedStorage namespacedStorage;
+
 	private FormConfigProcessor processor;
 	private DatasetId datasetId;
 	private DatasetId datasetId1;
@@ -83,13 +87,16 @@ public class FormConfigTest {
 
 	@BeforeAll
 	public void setupTestClass() throws Exception {
-		storage = new NonPersistentStoreFactory().createMetaStorage();
+		NonPersistentStoreFactory storeFactory = new NonPersistentStoreFactory();
+		metaStorage = storeFactory.createMetaStorage();
+		namespacedStorage = storeFactory.createNamespaceStorage();
 
 		config.getFrontend().setManualUrl(new URL("http://example.org/manual/welcome"));
 
 		//TODO add missing NamespacedStorage
 
 		datasetId = new DatasetId("test");
+
 		datasetId1 = new DatasetId("test1");
 
 		// Mock DatasetRegistry for translation
@@ -113,20 +120,25 @@ public class FormConfigTest {
 		when(namespacesMock.injectIntoNew(any(ObjectMapper.class))).thenCallRealMethod();
 		when(namespacesMock.inject(any(MutableInjectableValues.class))).thenCallRealMethod();
 
+		datasetId.setNamespacedStorageProvider(namespacesMock);
+		datasetId1.setNamespacedStorageProvider(namespacesMock);
+
+		dataset.setStorageProvider(namespacesMock);
+		dataset1.setStorageProvider(namespacesMock);
 
 		((MutableInjectableValues) FormConfigProcessor.getMAPPER().getInjectableValues()).add(NamespacedStorageProvider.class, namespacesMock);
-		processor = new FormConfigProcessor(validator, storage, namespacesMock);
-		AuthorizationController controller = new AuthorizationController(storage, config, new Environment(this.getClass().getSimpleName()), null);
-		controller.start();
+		processor = new FormConfigProcessor(validator, metaStorage, namespacesMock);
+		AuthorizationController controller = new AuthorizationController(metaStorage, config, new Environment(this.getClass().getSimpleName()), null);
 
+		controller.start();
 	}
 
 	@BeforeEach
 	public void setupTest() {
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, new UserId("test"), dataset.getId(), storage, null, config);
+		final ManagedQuery managedQuery = new ManagedQuery(null, new UserId("test"), dataset.getId(), metaStorage, null, config);
 
-		managedQuery.setMetaStorage(storage);
+		managedQuery.setMetaStorage(metaStorage);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		form = new ExportForm();
@@ -137,14 +149,14 @@ public class FormConfigTest {
 		mode.setForm(form);
 
 
-		user = new User("test", "test", storage);
-		user.setMetaStorage(storage);
-		storage.addUser(user);
+		user = new User("test", "test", metaStorage);
+		user.setMetaStorage(metaStorage);
+		metaStorage.addUser(user);
 	}
 
 	@AfterEach
 	public void cleanupTest() {
-		storage.clear();
+		metaStorage.clear();
 	}
 
 	@Test
@@ -156,7 +168,7 @@ public class FormConfigTest {
 
 		processor.addConfig(user, dataset.getId(), formConfig);
 
-		assertThat(storage.getAllFormConfigs()).containsExactly(formConfig.intern(user.getId(), dataset.getId()));
+		assertThat(metaStorage.getAllFormConfigs()).containsExactly(formConfig.intern(user.getId(), dataset.getId()));
 	}
 
 	@Test
@@ -168,16 +180,16 @@ public class FormConfigTest {
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), mapper.valueToTree(form));
 		formConfig.setDataset(dataset.getId());
 		formConfig.setOwner(user.getId());
-		formConfig.setMetaStorage(storage);
+		formConfig.setMetaStorage(metaStorage);
 
 		user.addPermission(formConfig.createPermission(AbilitySets.FORM_CONFIG_CREATOR));
-		storage.addFormConfig(formConfig);
+		metaStorage.addFormConfig(formConfig);
 
 		// EXECUTE
 		processor.deleteConfig(user, formConfig.getId());
 
 		// CHECK
-		assertThat(storage.getAllFormConfigs()).doesNotContain(formConfig);
+		assertThat(metaStorage.getAllFormConfigs()).doesNotContain(formConfig);
 
 		assertThat(user.getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formConfig.getId()));
 	}
@@ -191,11 +203,11 @@ public class FormConfigTest {
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
 
-		formConfig.setMetaStorage(storage);
+		formConfig.setMetaStorage(metaStorage);
 		formConfig.setDataset(dataset.getId());
 		formConfig.setOwner(user.getId());
 		user.addPermission(formConfig.createPermission(Ability.READ.asSet()));
-		storage.addFormConfig(formConfig);
+		metaStorage.addFormConfig(formConfig);
 
 		// EXECUTE
 		FormConfigFullRepresentation response = processor.getConfig(user, formConfig.getId());
@@ -296,10 +308,10 @@ public class FormConfigTest {
 
 		// PREPARE
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, datasetId));
-		Group group1 = new Group("test1", "test1", storage);
-		storage.addGroup(group1);
-		Group group2 = new Group("test2", "test2", storage);
-		storage.addGroup(group2);
+		Group group1 = new Group("test1", "test1", metaStorage);
+		metaStorage.addGroup(group1);
+		Group group2 = new Group("test2", "test2", metaStorage);
+		metaStorage.addGroup(group2);
 
 		group1.addMember(user.getId());
 		group2.addMember(user.getId());
@@ -333,10 +345,10 @@ public class FormConfigTest {
 
 		final String[] fieldsToIgnore = new String[]{FormConfig.Fields.creationTime, "cachedId", "metaStorage", "nsIdResolver"};
 		final FormConfigId formId = config.getId();
-		assertThat(storage.getFormConfig(formId)).usingRecursiveComparison().usingOverriddenEquals().ignoringFields(fieldsToIgnore).isEqualTo(patchedFormExpected);
+		assertThat(metaStorage.getFormConfig(formId)).usingRecursiveComparison().usingOverriddenEquals().ignoringFields(fieldsToIgnore).isEqualTo(patchedFormExpected);
 
-		assertThat(storage.getGroup(group1.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
-		assertThat(storage.getGroup(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
+		assertThat(metaStorage.getGroup(group1.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
+		assertThat(metaStorage.getGroup(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
 
 
 		// EXECUTE PART 2 (Unshare)
@@ -345,10 +357,10 @@ public class FormConfigTest {
 		// CHECK PART 2
 		patchedFormExpected.setShared(false);
 
-		assertThat(storage.getFormConfig(formId)).usingRecursiveComparison().ignoringFields(fieldsToIgnore).isEqualTo(patchedFormExpected);
+		assertThat(metaStorage.getFormConfig(formId)).usingRecursiveComparison().ignoringFields(fieldsToIgnore).isEqualTo(patchedFormExpected);
 
-		assertThat(storage.getGroup(group1.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
-		assertThat(storage.getGroup(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
+		assertThat(metaStorage.getGroup(group1.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
+		assertThat(metaStorage.getGroup(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
 	}
 
 }

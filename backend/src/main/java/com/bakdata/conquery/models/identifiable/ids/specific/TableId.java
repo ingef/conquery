@@ -3,14 +3,12 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -36,8 +34,8 @@ public class TableId extends NamespacedId<Table>  {
 	}
 
 	@Override
-	public Table get(NamespacedStorage storage) {
-		return storage.getTable(this);
+	public Table get(NamespacedStorageProvider storage) {
+		return storage.getStorage(getDataset()).getTable(this);
 	}
 
 	@Override

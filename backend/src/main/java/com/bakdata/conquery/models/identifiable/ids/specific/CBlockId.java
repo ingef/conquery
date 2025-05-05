@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -28,8 +27,9 @@ public class CBlockId extends NamespacedId<CBlock>  {
 	}
 
 	@Override
-	public CBlock get(NamespacedStorage storage) {
-		return assertWorkerStorage(storage).getCBlock(this);
+	public CBlock get(NamespacedStorageProvider storage) {
+		return assertWorkerStorage(storage.getStorage(getDataset()))
+				.getCBlock(this);
 	}
 
 	@Override

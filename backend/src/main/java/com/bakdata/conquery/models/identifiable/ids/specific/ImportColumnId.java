@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -28,7 +27,7 @@ public class ImportColumnId extends NamespacedId<ImportColumn>  {
 	}
 
 	@Override
-	public ImportColumn get(NamespacedStorage storage) {
+	public ImportColumn get(NamespacedStorageProvider storage) {
 		throw new UnsupportedOperationException("%s is never stored".formatted(this.getClass().getSimpleName()));
 	}
 

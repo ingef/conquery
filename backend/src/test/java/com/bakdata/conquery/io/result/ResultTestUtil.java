@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
@@ -26,6 +27,7 @@ import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
@@ -36,11 +38,18 @@ public class ResultTestUtil {
 
 	public static final DatasetId DATASET = new DatasetId("test_dataset");
 	private static final TreeConcept CONCEPT;
+	private static final NamespacedStorage STORAGE;
 
 	static {
+		STORAGE = new NonPersistentStoreFactory().createNamespaceStorage();
+
+		DATASET.setNamespacedStorageProvider(STORAGE);
+
 		CONCEPT = new TreeConcept();
+
 		CONCEPT.setName("concept");
 		CONCEPT.setDataset(DATASET);
+
 	}
 
 	public static List<ResultInfo> getIdFields() {
@@ -138,6 +147,7 @@ public class ResultTestUtil {
 		public List<ColumnId> getRequiredColumns() {
 			return Collections.emptyList();
 		}
+
 
 		@Override
 		public Aggregator<String> createAggregator() {

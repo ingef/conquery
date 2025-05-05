@@ -146,11 +146,13 @@ public class TestConquery {
 				name += "[" + count + "]";
 			}
 			Dataset dataset = new Dataset(name);
+			dataset.setStorageProvider(getDatasetRegistry());
+
 			waitUntilWorkDone();
 			LoadingUtil.importDataset(getClient(), defaultAdminURIBuilder(), dataset);
 
 			// Little detour here, but this way we get the correctly initialized dataset id
-			DatasetId datasetId = getDatasetRegistry().get(new DatasetId(dataset.getName())).getDataset().getId();
+			DatasetId datasetId = getDatasetRegistry().get(dataset.getId()).getDataset().getId();
 			waitUntilWorkDone();
 
 			return createSupport(datasetId, name);

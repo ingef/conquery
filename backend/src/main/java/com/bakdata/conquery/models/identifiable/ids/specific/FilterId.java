@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -28,8 +27,8 @@ public class FilterId extends NamespacedId<Filter<?>>  {
 	}
 
 	@Override
-	public Filter<?> get(NamespacedStorage storage) {
-		return storage.getConcept(connector.getConcept()).getConnectorByName(connector.getConnector()).getFilterByName(getFilter());
+	public Filter<?> get(NamespacedStorageProvider storage) {
+		return storage.getStorage(getDataset()).getConcept(connector.getConcept()).getConnectorByName(connector.getConnector()).getFilterByName(getFilter());
 	}
 
 	@Override

@@ -123,7 +123,7 @@ public class AdminServlet {
 					})
 					.register(AdminPermissionFilter.class)
 					.register(new MultiPartFeature())
-					.register(new IdParamConverter.Provider())
+					.register(new IdParamConverter.Provider(manager.getMetaStorage(), manager.getDatasetRegistry()))
 					.register(AuthCookieFilter.class)
 					.register(CsrfTokenCheckFilter.class);
 
@@ -139,7 +139,8 @@ public class AdminServlet {
 							  bind(manager.getConfig()).to(ConqueryConfig.class);
 						  }
 					  })
-					  .register(new IdParamConverter.Provider())
+					  .register(new MultiPartFeature())
+					  .register(new IdParamConverter.Provider(manager.getMetaStorage(), manager.getDatasetRegistry()))
 					  .register(AdminPermissionFilter.class)
 					  .register(AuthCookieFilter.class)
 					  .register(CsrfTokenSetFilter.class);

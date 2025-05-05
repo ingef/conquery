@@ -119,15 +119,6 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	@EqualsAndHashCode.Exclude
 	private transient ConqueryConfig config;
 
-	/**
-	 * TODO remove this when identifiables hold reference to meta storage (CentralRegistry removed)
-	 */
-	@JacksonInject(useInput = OptBoolean.FALSE)
-	@Setter
-	@Getter(AccessLevel.PROTECTED)
-	@JsonIgnore
-	@NotNull
-	private transient MetaStorage metaStorage;
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Setter
@@ -141,8 +132,8 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 		this.owner = owner;
 		this.dataset = dataset;
 		this.config = config;
-		this.metaStorage = metaStorage;
 		this.datasetRegistry = datasetRegistry;
+		setMetaStorage(metaStorage);
 	}
 
 	private static boolean canSubjectExpand(Subject subject, QueryDescription query) {
@@ -255,7 +246,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 		getExecutionManager().updateState(getId(), executionState);
 
 		// Persist state of this execution
-		metaStorage.updateExecution(this);
+		getMetaStorage().updateExecution(this);
 
 		// Signal to waiting threads that the execution finished
 		getExecutionManager().clearBarrier(getId());
@@ -312,7 +303,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 		status.setContainsDates(containsDates);
 
 		if (owner != null) {
-			User user = metaStorage.get(owner);
+			User user = getMetaStorage().get(owner);
 
 			if(user != null) {
 				status.setOwner(user.getId());

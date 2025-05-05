@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -35,8 +34,8 @@ public class SecondaryIdDescriptionId extends NamespacedId<SecondaryIdDescriptio
 	}
 
 	@Override
-	public SecondaryIdDescription get(NamespacedStorage storage) {
-		return storage.getSecondaryId(this);
+	public SecondaryIdDescription get(NamespacedStorageProvider storage) {
+		return storage.getStorage(getDataset()).getSecondaryId(this);
 	}
 
 	@Override

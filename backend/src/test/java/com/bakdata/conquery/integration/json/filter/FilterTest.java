@@ -27,7 +27,6 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
@@ -94,7 +93,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		concept = new TreeConcept();
 		concept.setLabel(CONCEPT_LABEL);
 
-		concept.setDataset(new DatasetId(support.getDataset().getId().getName()));
+		concept.setDataset(support.getDataset().getId());
 
 		rawConnector.put("name", "connector");
 		rawConnector.put(TABLE_NAME, TABLE_NAME);
