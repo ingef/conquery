@@ -40,6 +40,7 @@ public class ResourceConstants {
 	public static final String FILE_EXTENTION_PARQUET = "parquet";
 
 	public static final String FILE_EXTENTION_CSV = "csv";
+	public static final String FILE_EXTENTION_JSON = "json";
 
 	public static final String FILE_EXTENTION_XLSX = "xlsx";
 
@@ -48,7 +49,7 @@ public class ResourceConstants {
 	 * Method to generate a data-model of this class's static members so that they
 	 * are accessible from within a freemarker template.
 	 */
-	public static final TemplateModel getAsTemplateModel() {
+	public static TemplateModel getAsTemplateModel() {
 		try {
 			return new DefaultObjectWrapperBuilder(Freemarker.VERSION)
 				.build()

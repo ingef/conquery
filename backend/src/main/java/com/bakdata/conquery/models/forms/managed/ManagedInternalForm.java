@@ -113,18 +113,18 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	@NotNull
 	private Map<String, ManagedQuery> resolveOrCreateSubExecutions() {
-		if ( subQueries != null  && !subQueries.isEmpty()) {
+		if (subQueries != null && !subQueries.isEmpty()) {
 			// This execution was already executed once, to we resolve the corresponding subqueries
 			return subQueries.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> (ManagedQuery) e.getValue().resolve()));
 		}
 
 		return getSubmitted().createSubQueries()
 							 .entrySet()
-							 .stream().collect(Collectors.toMap(
-						Map.Entry::getKey,
-						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getMetaStorage(), getDatasetRegistry(), getConfig())
-
-				));
+							 .stream()
+							 .collect(Collectors.toMap(
+									 Map.Entry::getKey,
+									 e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getMetaStorage(), getDatasetRegistry(), getConfig())
+							 ));
 	}
 
 	@Override

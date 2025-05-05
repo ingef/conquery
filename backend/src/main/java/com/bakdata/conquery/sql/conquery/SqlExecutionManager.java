@@ -18,8 +18,8 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
+import com.bakdata.conquery.sql.execution.SqlExecutionExecutionInfo;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
-import com.bakdata.conquery.sql.execution.SqlExecutionState;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -39,7 +39,7 @@ public class SqlExecutionManager extends ExecutionManager {
 	@Override
 	protected <E extends ManagedExecution & InternalExecution> void doExecute(E execution) {
 
-		addState(execution.getId(), new SqlExecutionState());
+		addState(execution.getId(), new SqlExecutionExecutionInfo());
 
 		if (execution instanceof ManagedQuery managedQuery) {
 			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery);
@@ -49,7 +49,7 @@ public class SqlExecutionManager extends ExecutionManager {
 
 		if (execution instanceof ManagedInternalForm<?> managedForm) {
 			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(executionId -> {
-												   addState(executionId, new SqlExecutionState());
+												   addState(executionId, new SqlExecutionExecutionInfo());
 												   return executeAsync((ManagedQuery) executionId.resolve());
 
 											   })
@@ -69,10 +69,10 @@ public class SqlExecutionManager extends ExecutionManager {
 									ManagedExecutionId id = managedQuery.getId();
 
 									// We need to transfer the columns and data from the query result together with the execution lock to a new result
-									SqlExecutionState startResult = getResult(id);
-									SqlExecutionState
+									SqlExecutionExecutionInfo startResult = getExecutionInfo(id);
+									SqlExecutionExecutionInfo
 											finishResult =
-											new SqlExecutionState(ExecutionState.DONE, result.getColumnNames(), result.getTable(), startResult.getExecutingLock());
+											new SqlExecutionExecutionInfo(ExecutionState.DONE, result.getColumnNames(), result.getTable(), startResult.getExecutingLock());
 									addState(id, finishResult);
 
 									managedQuery.finish(ExecutionState.DONE);
