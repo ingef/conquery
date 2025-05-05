@@ -18,13 +18,7 @@
     "module": "ESNext",
     "target": "es6",
     "allowJs": true,
-    "lib": [
-      "es5",
-      "es6",
-      "dom",
-      "dom.iterable",
-      "es2019"
-    ],
+    "lib": ["es5", "es6", "dom", "dom.iterable", "es2019"],
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -39,11 +33,5 @@
     ".storybook/manager.js",
     ".storybook/preview.tsx"
   ],
-  "exclude": [
-    "node_modules",
-    "public",
-    ".cache",
-    ".idea",
-    "src/ignored/*"
-  ]
+  "exclude": ["node_modules", "public", ".cache", ".idea", "src/ignored/*"]
 }
