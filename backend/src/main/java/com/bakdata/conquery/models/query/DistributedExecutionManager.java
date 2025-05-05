@@ -91,7 +91,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 		}
 
 		ManagedExecutionId id = execution.getId();
-		Optional<ExecutionInfo> optInfo = tryGetState(id);
+		Optional<ExecutionInfo> optInfo = tryExecutionInfo(id);
 
 		if (optInfo.isEmpty()){
 			log.debug("Ignoring result {} because the corresponding state was not found (execution probably canceled)", result);

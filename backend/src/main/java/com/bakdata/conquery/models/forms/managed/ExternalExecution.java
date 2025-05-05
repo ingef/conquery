@@ -78,7 +78,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 			}
 
 			// Check after possible sync
-			final boolean isRunning = getExecutionManager().tryGetState(getId())
+			final boolean isRunning = getExecutionManager().tryExecutionInfo(getId())
 														   .map(ExecutionManager.ExecutionInfo::getExecutionState)
 														   .map(ExecutionState.RUNNING::equals).orElse(false);
 			if (isRunning) {
@@ -107,7 +107,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 	private synchronized void syncExternalState(ExecutionManager executionManager) {
 		Preconditions.checkNotNull(externalTaskId, "Cannot check external task, because no Id is present");
 
-		final Optional<ExternalExecutionInfo> state = executionManager.tryGetState(getId());
+		final Optional<ExternalExecutionInfo> state = executionManager.tryExecutionInfo(getId());
 		if (state.isPresent()) {
 			final ExternalTaskState formState = state.get().getApi().getFormState(externalTaskId);
 			updateStatus(formState);

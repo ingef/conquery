@@ -102,7 +102,7 @@ public abstract class ExecutionManager {
 		return (R) executionInfo;
 	}
 
-	public <R extends ExecutionInfo> Optional<R> tryGetState(ManagedExecutionId id) {
+	public <R extends ExecutionInfo> Optional<R> tryExecutionInfo(ManagedExecutionId id) {
 		return Optional.ofNullable((R) executionInfos.getIfPresent(id));
 	}
 
