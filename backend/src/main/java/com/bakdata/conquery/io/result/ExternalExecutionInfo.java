@@ -16,7 +16,7 @@ import it.unimi.dsi.fastutil.Pair;
 /**
  * Interface for executions, whose final result is produced externally.
  */
-public interface ExternalState extends ExecutionManager.State {
+public interface ExternalExecutionInfo extends ExecutionManager.ExecutionInfo {
 
 	/**
 	 * Returns the api object for the external form backend.
@@ -30,7 +30,7 @@ public interface ExternalState extends ExecutionManager.State {
 
 	/**
 	 * Returns assert builders for all results registered by an {@link com.bakdata.conquery.models.forms.managed.ExternalExecution} (see {@link AssetBuilder}).
-	 * The provided assetId is the one that is used by {@link ExternalState#fetchExternalResult(String)} to retrieve the download.
+	 * The provided assetId is the one that is used by {@link ExternalExecutionInfo#fetchExternalResult(String)} to retrieve the download.
 	 */
 	@JsonIgnore
 	Stream<AssetBuilder> getResultAssets();

@@ -41,9 +41,9 @@ public abstract class ExecutionManager {
 	private final ConqueryConfig config;
 
 	/**
-	 * Cache for execution states.
+	 * Cache for running and recent execution infos.
 	 */
-	private final Cache<ManagedExecutionId, State> executionStates =
+	private final Cache<ManagedExecutionId, ExecutionInfo> executionInfos =
 			CacheBuilder.newBuilder()
 						.softValues()
 						.removalListener(this::executionRemoved)
@@ -52,7 +52,7 @@ public abstract class ExecutionManager {
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
 	 */
-	private void executionRemoved(RemovalNotification<ManagedExecutionId, State> removalNotification) {
+	private void executionRemoved(RemovalNotification<ManagedExecutionId, ExecutionInfo> removalNotification) {
 		// If removal was done manually we assume it was also handled properly
 		if (!removalNotification.wasEvicted()) {
 			return;
@@ -84,30 +84,30 @@ public abstract class ExecutionManager {
 	}
 
 	public boolean isResultPresent(ManagedExecutionId id) {
-		return executionStates.getIfPresent(id) != null;
+		return executionInfos.getIfPresent(id) != null;
 	}
 
 	public void clearQueryResults(ManagedExecutionId execution) {
-		executionStates.invalidate(execution);
+		executionInfos.invalidate(execution);
 	}
 
 	/**
 	 * Returns the state or throws an NoSuchElementException if no state was found.
 	 */
-	public <R extends State> R getResult(ManagedExecutionId id) {
-		State state = executionStates.getIfPresent(id);
-		if (state == null) {
+	public <R extends ExecutionInfo> R getExecutionInfo(ManagedExecutionId id) {
+		ExecutionInfo executionInfo = executionInfos.getIfPresent(id);
+		if (executionInfo == null) {
 			throw new NoSuchElementException("No execution found for %s".formatted(id));
 		}
-		return (R) state;
+		return (R) executionInfo;
 	}
 
-	public <R extends State> Optional<R> tryGetResult(ManagedExecutionId id) {
-		return Optional.ofNullable((R) executionStates.getIfPresent(id));
+	public <R extends ExecutionInfo> Optional<R> tryExecutionInfo(ManagedExecutionId id) {
+		return Optional.ofNullable((R) executionInfos.getIfPresent(id));
 	}
 
-	public void addState(ManagedExecutionId id, State result) {
-		executionStates.put(id, result);
+	public void addState(ManagedExecutionId id, ExecutionInfo result) {
+		executionInfos.put(id, result);
 	}
 
 	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, UserId user, boolean system) {
@@ -184,24 +184,24 @@ public abstract class ExecutionManager {
 			externalExecution.cancel();
 			return;
 		}
-		executionStates.invalidate(execution.getId());
+		executionInfos.invalidate(execution.getId());
 		doCancelQuery(execution);
 	}
 
 	public abstract void doCancelQuery(final ManagedExecution execution);
 
 	public void updateState(ManagedExecutionId id, ExecutionState execState) {
-		State state = executionStates.getIfPresent(id);
-		if (state != null) {
-			state.setState(execState);
+		ExecutionInfo executionInfo = executionInfos.getIfPresent(id);
+		if (executionInfo != null) {
+			executionInfo.setExecutionState(execState);
 			return;
 		}
 
-		log.warn("Could not update execution state of {} to {}, because it had no state.", id, execState);
+		log.warn("Could not update execution executionInfo of {} to {}, because it had no executionInfo.", id, execState);
 	}
 
 	public <E extends ManagedExecution & InternalExecution> Stream<EntityResult> streamQueryResults(E execution) {
-		final InternalState resultParts = (InternalState) executionStates.getIfPresent(execution.getId());
+		final InternalExecutionInfo resultParts = (InternalExecutionInfo) executionInfos.getIfPresent(execution.getId());
 
 		return resultParts == null
 			   ? Stream.empty()
@@ -210,7 +210,7 @@ public abstract class ExecutionManager {
 	}
 
 	public void clearBarrier(ManagedExecutionId id) {
-		State result = Objects.requireNonNull(executionStates.getIfPresent(id), "Cannot clear lock on absent execution result");
+		ExecutionInfo result = Objects.requireNonNull(executionInfos.getIfPresent(id), "Cannot clear lock on absent execution result");
 
 		result.getExecutingLock().countDown();
 	}
@@ -220,41 +220,41 @@ public abstract class ExecutionManager {
 	 */
 	public ExecutionState awaitDone(ManagedExecution execution, int time, TimeUnit unit) {
 		ManagedExecutionId id = execution.getId();
-		State state = executionStates.getIfPresent(id);
-		if (state == null) {
+		ExecutionInfo executionInfo = executionInfos.getIfPresent(id);
+		if (executionInfo == null) {
 			return ExecutionState.NEW;
 		}
-		ExecutionState execState = state.getState();
+		ExecutionState execState = executionInfo.getExecutionState();
 		if (execState != ExecutionState.RUNNING) {
 			return execState;
 		}
 
-		State result = executionStates.getIfPresent(id);
+		ExecutionInfo result = executionInfos.getIfPresent(id);
 
 		if (result == null) {
 			throw new IllegalStateException("Execution is running, but no result is registered");
 		}
 		Uninterruptibles.awaitUninterruptibly(result.getExecutingLock(), time, unit);
 
-		State stateAfterWait = executionStates.getIfPresent(id);
-		if (stateAfterWait == null) {
+		ExecutionInfo executionInfoAfterWait = executionInfos.getIfPresent(id);
+		if (executionInfoAfterWait == null) {
 			return ExecutionState.NEW;
 		}
-		return stateAfterWait.getState();
+		return executionInfoAfterWait.getExecutionState();
 	}
 
 	/**
 	 * Holds all informations about an execution, which cannot/should not be serialized/cached in a store.
 	 */
-	public interface State {
+	public interface ExecutionInfo {
 
 		/**
 		 * The current {@link ExecutionState} of the execution.
 		 */
 		@NotNull
-		ExecutionState getState();
+		ExecutionState getExecutionState();
 
-		void setState(ExecutionState state);
+		void setExecutionState(ExecutionState state);
 
 		/**
 		 * Synchronization barrier for web requests.
@@ -264,7 +264,7 @@ public abstract class ExecutionManager {
 		CountDownLatch getExecutingLock();
 	}
 
-	public interface InternalState extends State {
+	public interface InternalExecutionInfo extends ExecutionInfo {
 		Stream<EntityResult> streamQueryResults();
 	}
 
