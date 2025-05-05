@@ -4,9 +4,8 @@ import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName
 
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
@@ -27,16 +26,16 @@ import org.eclipse.jetty.io.EofException;
 public class ResultJsonDescriptionProcessor {
 
 
-	public Response createResult(Subject subject, ManagedExecution exec, Charset charset) {
+	public Response createResult(Subject subject, ManagedExecution exec) {
 
 
 		ConqueryMDC.setLocation(subject.getName());
-		log.info("Downloading JSON Description for {}", exec.getId());
+		log.debug("Downloading JSON Description for {}", exec.getId());
 
 		ResultUtil.authorizeExecutable(subject, exec);
 
 		final StreamingOutput out = os -> {
-			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
+			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os))) {
 				Jackson.MAPPER.copy()
 							  .writerWithDefaultPrettyPrinter()
 							  .forType(QueryDescription.class)
@@ -46,7 +45,7 @@ public class ResultJsonDescriptionProcessor {
 				log.trace("User canceled download");
 			}
 			catch (Exception e) {
-				throw new WebApplicationException("Failed to load result", e);
+				throw new InternalServerErrorException("Failed to load result", e);
 			}
 			finally {
 				log.trace("FINISHED downloading {}", exec.getId());
