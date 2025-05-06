@@ -13,9 +13,32 @@ on:
       - ".github/workflows/test_backend.yml"
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+    - name: Cache local Maven repository
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Set up JDK
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+        overwrite-settings: false
+    - name: Build Backend
+      run: mvn -T 1C install -pl backend -DskipTests -am
+
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    needs: build
     strategy:
       fail-fast: true
       matrix:
@@ -45,7 +68,5 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
           overwrite-settings: false
-      - name: Build Backend
-        run: mvn -T 1C install -pl backend -DskipTests -am
       - name: ${{ matrix.test-group.name }}
         run: mvn test -T 1C -pl backend ${{ matrix.test-group.flags }}
