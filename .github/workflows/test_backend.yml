@@ -16,6 +16,18 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: true
+      matrix:
+        test-group:
+          - name: Unit Test
+            flags: -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON, INTEGRATION_SQL_BACKEND"
+          - name: Programmatic Integration Tests
+            flags: -Dgroups="INTEGRATION_PROGRAMMATIC"
+          - name: JSON based Integration Tests
+            flags: -Dgroups="INTEGRATION_JSON"
+          - name: SQL based Integration Tests
+            flags: -Dgroups="INTEGRATION_SQL_BACKEND"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,11 +47,5 @@ jobs:
           overwrite-settings: false
       - name: Build Backend
         run: mvn -T 1C install -pl backend -DskipTests -am
-      - name: Unit Test
-        run: mvn test -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON, INTEGRATION_SQL_BACKEND"
-      - name: Programmatic Integration Tests
-        run: mvn test -T 1C -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
-      - name: JSON based Integration Tests
-        run: mvn test -T 1C -pl backend -Dgroups="INTEGRATION_JSON"
-      - name: SQL based Integration Tests
-        run: mvn test -T 1C -pl backend -Dgroups="INTEGRATION_SQL_BACKEND"
+      - name: ${{ matrix.test-group.name }}
+        run: mvn test -T 1C -pl backend ${{ matrix.test-group.flag }}

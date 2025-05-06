@@ -230,7 +230,6 @@ public class TableExportQuery extends Query {
 	private List<ResultInfo> createResultInfos(Set<ColumnId> conceptColumns) {
 
 		final int size = calculateWidth(positions);
-		;
 
 		final ResultInfo[] infos = new ResultInfo[size];
 
