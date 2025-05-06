@@ -97,7 +97,7 @@ public class ArrayConceptQuery extends Query {
 
 		if(getResolvedDateAggregationMode() != DateAggregationMode.NONE){
 			// Add one DateInfo for the whole Query
-			resultInfos.add(0, dateInfo);
+			resultInfos.addFirst(dateInfo);
 		}
 		int lastIndex = resultInfos.size();
 

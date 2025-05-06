@@ -48,4 +48,4 @@ jobs:
       - name: Build Backend
         run: mvn -T 1C install -pl backend -DskipTests -am
       - name: ${{ matrix.test-group.name }}
-        run: mvn test -T 1C -pl backend ${{ matrix.test-group.flag }}
+        run: mvn test -T 1C -pl backend ${{ matrix.test-group.flags }}
