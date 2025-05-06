@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +14,6 @@ import jakarta.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
@@ -185,10 +185,7 @@ public class PreviewConfig {
 			return Collections.emptyList();
 		}
 
-		return searchFilters.stream()
-							.map(FilterId::resolve)
-							.map(Filter::getId)
-							.toList();
+		return new ArrayList(searchFilters);
 	}
 
 	public ConceptId resolveSearchConcept() {

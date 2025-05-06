@@ -4,8 +4,6 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondar
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Collection;
-import java.util.Map;
 import java.util.stream.Stream;
 import jakarta.ws.rs.WebApplicationException;
 
@@ -19,16 +17,12 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.bakdata.conquery.models.worker.Worker;
-import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
@@ -110,7 +104,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			// Delete the import.
 			// But, we do not allow deletion of tables with associated connectors, so this should throw!
-			assertThatThrownBy(() -> conquery.getAdminDatasetsProcessor().deleteDataset(dataset))
+			assertThatThrownBy(() -> conquery.getAdminDatasetsProcessor().deleteDataset(dataset.getId()))
 					.isInstanceOf(WebApplicationException.class);
 
 			//TODO use api
@@ -121,7 +115,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			conquery.waitUntilWorkDone();
 
 			// Finally delete dataset
-			conquery.getAdminDatasetsProcessor().deleteDataset(dataset);
+			conquery.getAdminDatasetsProcessor().deleteDataset(dataset.getId());
 
 			conquery.waitUntilWorkDone();
 

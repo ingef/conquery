@@ -96,11 +96,10 @@ public class AuthorizationHelper {
 		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 		visitable.visit(collector);
 
-		Set<Dataset> datasets =
+		Set<DatasetId> datasets =
 				collector.getIdentifiables()
 						 .stream()
 						 .map(NamespacedIdentifiable::getDataset)
-						 .map(DatasetId::resolve)
 						 .collect(Collectors.toSet());
 
 		subject.authorize(datasets, Ability.DOWNLOAD);

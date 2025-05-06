@@ -94,7 +94,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		Select select = selectId.resolve();
 
 		final CQConcept cqConcept = new CQConcept();
-		// TODO transform to use only ids here
+
 		cqConcept.setElements(List.of(select.getHolder().findConcept().getId()));
 
 		if (select.getHolder() instanceof Connector) {
@@ -277,7 +277,8 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 		return new RequiredEntities(context.getBucketManager()
 										   .getEntitiesWithConcepts(getElements(),
-																	connectors, context.getDateRestriction()));
+																	connectors, context.getDateRestriction()
+										   ));
 	}
 
 	/**

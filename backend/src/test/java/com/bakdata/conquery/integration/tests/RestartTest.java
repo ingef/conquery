@@ -197,12 +197,12 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		// We need to reassign the dataset processor because the instance prio to the restart became invalid
 		adminDatasetProcessor = testConquery.getStandaloneCommand().getManagerNode().getAdmin().getAdminDatasetProcessor();
 		// Cleanup
-		adminDatasetProcessor.deleteDataset(dataset1);
-		adminDatasetProcessor.deleteDataset(dataset2);
-		adminDatasetProcessor.deleteDataset(dataset3);
-		adminDatasetProcessor.deleteDataset(dataset4);
-		adminDatasetProcessor.deleteDataset(dataset5);
-		adminDatasetProcessor.deleteDataset(dataset6);
+		adminDatasetProcessor.deleteDataset(dataset1.getId());
+		adminDatasetProcessor.deleteDataset(dataset2.getId());
+		adminDatasetProcessor.deleteDataset(dataset3.getId());
+		adminDatasetProcessor.deleteDataset(dataset4.getId());
+		adminDatasetProcessor.deleteDataset(dataset5.getId());
+		adminDatasetProcessor.deleteDataset(dataset6.getId());
 	}
 
 	private static @NotNull ConqueryTestSpec setupTestQuery(DatasetId dataset, Validator validator, StandaloneSupport conquery, String testPath) throws Exception {

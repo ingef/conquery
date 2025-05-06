@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -48,13 +47,11 @@ public class ResultExcelProcessor {
 
 		final E exec = (E) execId.resolve();
 
-		final DatasetId datasetId = exec.getDataset();
-
 		log.info("Downloading results for {}", execId);
 
 		ResultUtil.authorizeExecutable(subject, exec);
 
-		final Namespace namespace = datasetRegistry.get(datasetId);
+		final Namespace namespace = datasetRegistry.get(exec.getDataset());
 		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, conqueryConfig.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();

@@ -87,8 +87,8 @@ public class AdminDatasetProcessor {
 	/**
 	 * Delete dataset if it is empty.
 	 */
-	public synchronized void deleteDataset(Dataset dataset) {
-		final Namespace namespace = datasetRegistry.get(dataset.getId());
+	public synchronized void deleteDataset(DatasetId dataset) {
+		final Namespace namespace = datasetRegistry.get(dataset);
 
 		try (Stream<Table> tableStream = namespace.getStorage().getTables()) {
 			List<Table> tables = tableStream.toList();
@@ -96,7 +96,7 @@ public class AdminDatasetProcessor {
 				throw new WebApplicationException(
 						String.format(
 								"Cannot delete dataset `%s`, because it still has tables: `%s`",
-								dataset.getId(),
+								dataset,
 								tables.stream()
 									  .map(Table::getId)
 									  .map(Objects::toString)
@@ -107,7 +107,7 @@ public class AdminDatasetProcessor {
 			}
 		}
 
-		datasetRegistry.removeNamespace(dataset.getId());
+		datasetRegistry.removeNamespace(dataset);
 
 	}
 

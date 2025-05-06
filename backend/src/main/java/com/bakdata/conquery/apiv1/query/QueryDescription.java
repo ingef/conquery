@@ -11,7 +11,6 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -79,9 +78,8 @@ public interface QueryDescription extends Visitable {
 		ExternalIdChecker externalIdChecker = QueryUtils.getVisitor(visitors, ExternalIdChecker.class);
 
 		// Generate DatasetPermissions
-		final Set<Dataset> datasets = nsIdCollector.getIdentifiables().stream()
+		final Set<DatasetId> datasets = nsIdCollector.getIdentifiables().stream()
 												   .map(NamespacedIdentifiable::getDataset)
-												   .map(DatasetId::resolve)
 												   .collect(Collectors.toSet());
 
 		subject.authorize(datasets, Ability.READ);

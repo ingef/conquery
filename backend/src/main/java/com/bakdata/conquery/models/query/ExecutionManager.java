@@ -185,10 +185,10 @@ public abstract class ExecutionManager {
 			return;
 		}
 		executionStates.invalidate(execution.getId());
-		doCancelQuery(execution);
+		doCancelQuery(execution.getId());
 	}
 
-	public abstract void doCancelQuery(final ManagedExecution execution);
+	public abstract void doCancelQuery(ManagedExecutionId managedExecutionId);
 
 	public void updateState(ManagedExecutionId id, ExecutionState execState) {
 		State state = executionStates.getIfPresent(id);
@@ -218,9 +218,8 @@ public abstract class ExecutionManager {
 	/**
 	 * Blocks until an execution finished of the specified timeout is reached. Return immediately if the execution is not running
 	 */
-	public ExecutionState awaitDone(ManagedExecution execution, int time, TimeUnit unit) {
-		ManagedExecutionId id = execution.getId();
-		State state = executionStates.getIfPresent(id);
+	public ExecutionState awaitDone(ManagedExecutionId execution, int time, TimeUnit unit) {
+		State state = executionStates.getIfPresent(execution);
 		if (state == null) {
 			return ExecutionState.NEW;
 		}
@@ -229,14 +228,14 @@ public abstract class ExecutionManager {
 			return execState;
 		}
 
-		State result = executionStates.getIfPresent(id);
+		State result = executionStates.getIfPresent(execution);
 
 		if (result == null) {
 			throw new IllegalStateException("Execution is running, but no result is registered");
 		}
 		Uninterruptibles.awaitUninterruptibly(result.getExecutingLock(), time, unit);
 
-		State stateAfterWait = executionStates.getIfPresent(id);
+		State stateAfterWait = executionStates.getIfPresent(execution);
 		if (stateAfterWait == null) {
 			return ExecutionState.NEW;
 		}

@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -42,15 +41,13 @@ public class ResultParquetProcessor {
 
 		final ManagedExecution execution = execId.resolve();
 
-		final DatasetId datasetId = execution.getDataset();
-
 		log.info("Downloading results for {}", execId);
 
 		ResultUtil.authorizeExecutable(subject, execution);
 
 		ResultUtil.checkSingleTableResult(execution);
 
-		final Namespace namespace = datasetRegistry.get(datasetId);
+		final Namespace namespace = datasetRegistry.get(execution.getDataset());
 
 		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, execution, namespace, config.getIdColumns().getIds());
 

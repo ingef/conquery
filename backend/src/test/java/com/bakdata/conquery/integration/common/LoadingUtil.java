@@ -42,6 +42,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
@@ -134,7 +135,7 @@ public class LoadingUtil {
 			if (autoConcept) {
 				final TreeConcept concept = AutoConceptUtil.createConcept(table);
 
-				uploadConcept(support, table.getDataset().resolve(), concept);
+				uploadConcept(support, table.getDataset(), concept);
 			}
 		}
 	}
@@ -152,9 +153,9 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void uploadConcept(StandaloneSupport support, Dataset dataset, Concept<?> concept) {
+	public static void uploadConcept(StandaloneSupport support, DatasetId dataset, Concept<?> concept) {
 		final URI uri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addConcept")
-									   .buildFromMap(Map.of(ResourceConstants.DATASET, dataset.getId().toString()));
+									   .buildFromMap(Map.of(ResourceConstants.DATASET, dataset.toString()));
 
 		final Invocation.Builder request = support.getClient().target(uri).request(MediaType.APPLICATION_JSON_TYPE);
 		try (final Response response = request.post(Entity.json(concept))) {
@@ -259,7 +260,6 @@ public class LoadingUtil {
 	}
 
 	public static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
-		Dataset dataset = support.getDataset();
 
 		List<Concept<?>> concepts = ConqueryTestSpec.parseSubTreeList(
 				support,
@@ -269,7 +269,7 @@ public class LoadingUtil {
 		);
 
 		for (Concept<?> concept : concepts) {
-			uploadConcept(support, dataset, concept);
+			uploadConcept(support, support.getDataset().getId(), concept);
 		}
 	}
 

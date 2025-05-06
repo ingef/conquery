@@ -218,7 +218,7 @@ public class AdminDatasetResource {
 
 	@DELETE
 	public void delete() {
-		processor.deleteDataset(dataset.resolve());
+		processor.deleteDataset(dataset.resolve().getId());
 	}
 
 	/**

@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -172,7 +171,7 @@ public class TableExportQuery extends Query {
 			  .flatMap(con -> con.getTables().stream())
 			  .flatMap(table -> Arrays.stream(table.getConnector().resolve().getResolvedTable().getColumns()))
 			  // Concept Columns are placed separately so they won't provide a secondaryId
-			  .filter(Predicate.not(conceptColumns::contains))
+			  .filter(col -> !conceptColumns.contains(col.getId()))
 			  .map(Column::getSecondaryId)
 			  .filter(Objects::nonNull)
 			  .map(SecondaryIdDescriptionId::resolve)

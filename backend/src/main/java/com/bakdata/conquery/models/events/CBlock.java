@@ -101,7 +101,7 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 		final Map<String, Long> includedConcepts = calculateConceptElementPathBloomFilter(bucketSize, bucket, mostSpecificChildren);
 		final Map<String, CDateRange> entitySpans = calculateEntityDateIndices(bucket);
 
-		final CBlock cBlock = new CBlock(bucket.getId(), connector.getId(), root, includedConcepts, entitySpans, mostSpecificChildren);
+		final CBlock cBlock = new CBlock(bucketId, connector.getId(), root, includedConcepts, entitySpans, mostSpecificChildren);
 		return cBlock;
 	}
 

@@ -119,5 +119,6 @@ public class Table extends LabeledNamespaceIdentifiable<TableId> implements Init
 		}
 	}
 
-	public static class Initializer extends Initializing.Converter<Table> {}
+	public static class Initializer extends Initializing.Converter<Table> {
+	}
 }

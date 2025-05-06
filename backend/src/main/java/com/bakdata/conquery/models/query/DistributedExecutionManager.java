@@ -66,10 +66,10 @@ public class DistributedExecutionManager extends ExecutionManager {
 	}
 
 	@Override
-	public void doCancelQuery(ManagedExecution execution) {
+	public void doCancelQuery(ManagedExecutionId executionId) {
 		log.debug("Sending cancel message to all workers.");
 
-		getWorkerHandler(execution.createId().getDataset()).sendToAll(new CancelQuery(execution.getId()));
+		getWorkerHandler(executionId.getDataset()).sendToAll(new CancelQuery(executionId));
 	}
 
 	/**

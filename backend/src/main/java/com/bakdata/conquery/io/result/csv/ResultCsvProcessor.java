@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -43,12 +42,10 @@ public class ResultCsvProcessor {
 	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, ManagedExecutionId execId, boolean pretty, Charset charset, OptionalLong limit) {
 		final E exec = (E) execId.resolve();
 
-		final DatasetId datasetId = exec.getDataset();
-
-		final Namespace namespace = datasetRegistry.get(datasetId);
+		final Namespace namespace = datasetRegistry.get(exec.getDataset());
 
 		ConqueryMDC.setLocation(subject.getName());
-		log.info("Downloading results for {}", exec.getId());
+		log.info("Downloading results for {}", execId);
 
 		ResultUtil.authorizeExecutable(subject, exec);
 

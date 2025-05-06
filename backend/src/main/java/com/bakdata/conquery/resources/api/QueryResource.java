@@ -3,10 +3,8 @@ package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
-import java.util.concurrent.TimeUnit;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
@@ -26,7 +24,6 @@ import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -60,18 +57,7 @@ public class QueryResource {
 	@Path("{" + QUERY + "}/statistics")
 	public Response getDescription(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId queryId) {
 
-		subject.authorize(queryId.getDataset(), Ability.READ);
-		subject.authorize(queryId, Ability.READ);
 
-		ManagedExecution query = queryId.resolve();
-
-		if (!(query instanceof SingleTableResult)) {
-			throw new BadRequestException("Statistics is only available for %s".formatted(SingleTableResult.class.getSimpleName()));
-		}
-
-		if (processor.awaitDone(queryId, 1, TimeUnit.SECONDS) != ExecutionState.DONE) {
-			return Response.status(Response.Status.CONFLICT.getStatusCode(), "Query is still running.").build(); // Request was submitted too early.
-		}
 
 		return Response.ok((processor.getResultStatistics(((ManagedExecution & SingleTableResult) query)))).build();
 	}
