@@ -19,6 +19,9 @@ import lombok.Setter;
 @JsonTypeInfo(property = "type", use = JsonTypeInfo.Id.CUSTOM)
 public abstract class InternToExternMapper extends NamespacedIdentifiable<InternToExternMapperId> {
 
+	@Getter @Setter
+	private String name;
+
 	@Getter
 	@Setter
 	private DatasetId dataset;

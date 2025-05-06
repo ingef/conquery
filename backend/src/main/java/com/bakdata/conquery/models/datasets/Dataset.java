@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -23,7 +23,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class Dataset extends NamespacedIdentifiable<DatasetId> implements Injectable, Authorized {
+public class Dataset extends LabeledNamespaceIdentifiable<DatasetId> implements Injectable, Authorized {
 
 	/**
 	 * Used to programmatically generate proper {@link com.bakdata.conquery.models.identifiable.ids.NamespacedId}s.

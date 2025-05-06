@@ -35,7 +35,8 @@ public class ImportColumn extends NamespacedIdentifiable<ImportColumnId> {
 
 	@Min(0)
 	private final long memorySizeBytes;
-	@Getter(onMethod_ = {@Override, @ToString.Include, @NotBlank})
+
+	@Getter(onMethod_ = {@ToString.Include, @NotBlank})
 	@Setter
 	private String name;
 

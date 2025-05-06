@@ -247,8 +247,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		table.setName("tableName");
 
 
-		Import imp = new Import(table.getId());
-		imp.setName("importTest");
+		Import imp = new Import("importTest", table.getId());
 
 
 		CompoundDateRangeStore compoundStore =
@@ -454,7 +453,8 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		final ExportForm exportForm = createExportForm(dataset, namespaceStorage);
 
-		ManagedInternalForm<ExportForm> execution = new ManagedInternalForm<>(exportForm, user.getId(), dataset.getId(), getMetaStorage(), getDatasetRegistry(), getConfig());
+		ManagedInternalForm<ExportForm> execution =
+				new ManagedInternalForm<>(exportForm, user.getId(), dataset.getId(), getMetaStorage(), getDatasetRegistry(), getConfig());
 		execution.setTags(new String[]{"test-tag"});
 
 		// Trigger UUID creation
@@ -475,7 +475,8 @@ public class SerializationTests extends AbstractSerializationTest {
 		JsonNodeFactory factory = new JsonNodeFactory(false);
 		ObjectNode node = new ObjectNode(factory, Map.of(
 				"some-other-member", new TextNode("some-other-value")
-		));
+		)
+		);
 
 		ExternalForm form = new ExternalForm(node, subType);
 		final Dataset dataset = createDataset(namespaceStorage);
@@ -675,8 +676,8 @@ public class SerializationTests extends AbstractSerializationTest {
 		table.setName("table");
 		table.setDataset(dataset.getId());
 
-		final Import imp = new Import(table.getId());
-		imp.setName("import");
+		final Import imp = new Import("import", table.getId());
+
 
 		workerStorage.updateDataset(dataset);
 		workerStorage.addTable(table);
@@ -725,11 +726,13 @@ public class SerializationTests extends AbstractSerializationTest {
 						new MultilineEntityResult("4", List.of(
 								new Object[]{0, 1, 2},
 								new Object[]{Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}
-						)),
+						)
+						),
 						new MultilineEntityResult("4", List.of(
 								new Object[]{0, 1, 2},
 								new Object[]{null, null, null}
-						))
+						)
+						)
 				);
 	}
 

@@ -65,9 +65,8 @@ public class PreprocessedHeader {
 	private NamespaceStorage namespaceStorage;
 
 	public Import createImportDescription(Table table, Map<String, ColumnStore> stores) {
-		final Import imp = new Import(table.getId());
+		final Import imp = new Import(getName(), table.getId());
 
-		imp.setName(getName());
 		imp.setNumberOfEntries(getRows());
 		imp.setNumberOfEntities(getNumberOfEntities());
 

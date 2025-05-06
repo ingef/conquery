@@ -25,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 public class Import extends NamespacedIdentifiable<ImportId> {
 
+	private final String name;
+
 	@Valid
 	@NotNull
 	private final TableId table;

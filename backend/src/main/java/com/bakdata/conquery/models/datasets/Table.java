@@ -12,7 +12,7 @@ import jakarta.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.config.DatabaseConfig;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @JsonDeserialize(converter = Table.Initializer.class)
-public class Table extends NamespacedIdentifiable<TableId> implements Initializing {
+public class Table extends LabeledNamespaceIdentifiable<TableId> implements Initializing {
 
 	// TODO: 10.01.2020 fk: register imports here?
 
