@@ -95,11 +95,12 @@ public class TestConquery {
 		Namespace ns = datasets.get(datasetId);
 
 		// make tmp subdir and change cfg accordingly
-		File localTmpDir = new File(tmpDir, "tmp_" + name);
+		String safeFileName = name.replaceAll("\\W", "");
+		File localTmpDir = new File(tmpDir, "tmp_" + safeFileName);
 
 		if (!localTmpDir.exists()) {
 			if (!localTmpDir.mkdir()) {
-				throw new IllegalStateException("Could not create directory for Support");
+				throw new IllegalStateException("Could not create directory for Support:" + localTmpDir);
 			}
 		}
 		else {
