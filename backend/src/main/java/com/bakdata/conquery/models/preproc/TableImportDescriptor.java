@@ -8,18 +8,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableImportDescriptorId;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +34,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 @Getter
 @Setter
 @Slf4j
-public class TableImportDescriptor implements Serializable, Identifiable<TableImportDescriptorId> {
+public class TableImportDescriptor extends NamespacedIdentifiable<TableImportDescriptorId> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -89,7 +88,7 @@ public class TableImportDescriptor implements Serializable, Identifiable<TableIm
 	/**
 	 * Calculate a hash of the descriptor. This is used to only recompute the import when files change.
 	 */
-	public int calculateValidityHash(Path csvDirectory, Optional<String> tag) throws IOException {
+	public int calculateValidityHash(Path csvDirectory, Optional<String> tag) {
 		HashCodeBuilder validityHashBuilder = new HashCodeBuilder();
 
 		validityHashBuilder.append(getName()).append(getTable());
@@ -107,7 +106,18 @@ public class TableImportDescriptor implements Serializable, Identifiable<TableIm
 	}
 
 	@Override
-	public TableImportDescriptorId getId() {
+	public TableImportDescriptorId createId() {
 		return new TableImportDescriptorId(getName());
+	}
+
+	@Override
+	@JsonIgnore
+	public DatasetId getDataset() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	protected void injectStore(TableImportDescriptorId id) {
+
 	}
 }

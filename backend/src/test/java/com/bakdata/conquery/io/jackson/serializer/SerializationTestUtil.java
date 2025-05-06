@@ -103,7 +103,7 @@ public class SerializationTestUtil<T> {
 
 	public void test(T value, T expected) throws JSONException, IOException {
 		if (objectMappers.isEmpty()) {
-			fail("No objectmappers were set");
+			fail("No ObjectMappers were provided.");
 		}
 
 		for (ObjectMapper objectMapper : objectMappers) {
@@ -144,7 +144,9 @@ public class SerializationTestUtil<T> {
 
 		// Preliminary check that ids of identifiables are equal
 		if (value instanceof IdentifiableImpl<?> identifiableValue) {
-			assertThat(((IdentifiableImpl<?>) copy).getId()).as("the serialized value").isEqualTo(identifiableValue.getId());
+			assertThat(((IdentifiableImpl<?>) copy).getId())
+					.as("the serialized value")
+					.isEqualTo(identifiableValue.getId());
 		}
 
 		RecursiveComparisonAssert<?> ass = assertThat(copy)

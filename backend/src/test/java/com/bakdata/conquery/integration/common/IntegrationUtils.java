@@ -102,7 +102,7 @@ public class IntegrationUtils {
 										  .get();
 
 
-		assertThat(response.getStatusInfo().getStatusCode()).as("Result of %s", allQueriesURI)
+		assertThat(response.getStatusInfo().getStatusCode()).as(() -> response.readEntity(String.class))
 															.isEqualTo(expectedResponseCode);
 
 		return response.readEntity(new GenericType<>() {

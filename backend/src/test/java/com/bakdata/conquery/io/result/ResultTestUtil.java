@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
@@ -39,9 +40,12 @@ public class ResultTestUtil {
 	public static final DatasetId DATASET = new DatasetId("test_dataset");
 	private static final TreeConcept CONCEPT;
 	private static final NamespacedStorage STORAGE;
+	private static final MetaStorage META_STORAGE;
 
 	static {
-		STORAGE = new NonPersistentStoreFactory().createNamespaceStorage();
+		NonPersistentStoreFactory storeFactory = new NonPersistentStoreFactory();
+		STORAGE = storeFactory.createNamespaceStorage();
+		META_STORAGE = storeFactory.createMetaStorage();
 
 		DATASET.setNamespacedStorageProvider(STORAGE);
 
@@ -49,20 +53,20 @@ public class ResultTestUtil {
 
 		CONCEPT.setName("concept");
 		CONCEPT.setDataset(DATASET);
-
 	}
 
 	public static List<ResultInfo> getIdFields() {
-		return Stream.of("id1", "id2").map(name -> {
-			ExternalResultInfo info = new ExternalResultInfo(name, ResultType.Primitive.STRING);
-			info.addSemantics(new SemanticType.IdT("ID"));
-			return info;
-		}).collect(Collectors.toList());
+		return Stream.of("id1", "id2")
+					 .map(name -> {
+						 ExternalResultInfo info = new ExternalResultInfo(name, ResultType.Primitive.STRING);
+						 info.addSemantics(new SemanticType.IdT("ID"));
+						 return info;
+					 }).collect(Collectors.toList());
 	}
 
 	@NotNull
 	public static ManagedQuery getTestQuery() {
-		return new ManagedQuery(null, new UserId("test_user"), DATASET, null, null, null) {
+		return new ManagedQuery(null, new UserId("test_user"), DATASET, META_STORAGE, null, null) {
 			@Override
 			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()
@@ -106,10 +110,12 @@ public class ResultTestUtil {
 							   List.of(true, false),
 							   List.of(List.of(345, 534), List.of(1, 2)),
 							   List.of("fizz", "buzz")
-					   }),
+					   }
+					   ),
 					   new SinglelineEntityResult("2", new Object[]{
 							   Boolean.FALSE, null, null, null, null, null, null, List.of(), List.of(List.of(1234, Integer.MAX_VALUE)), List.of()
-					   }),
+					   }
+					   ),
 					   new SinglelineEntityResult("2", new Object[]{Boolean.TRUE, null, null, null, null, null, null, List.of(false, false), null, null}),
 					   new MultilineEntityResult("3",
 												 List.of(new Object[]{Boolean.FALSE, null, null, null, null, null, null, List.of(false), null, null},

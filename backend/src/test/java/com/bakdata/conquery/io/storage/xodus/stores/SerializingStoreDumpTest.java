@@ -18,6 +18,7 @@ import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -38,6 +39,7 @@ public class SerializingStoreDumpTest {
 
 	public static final StoreInfo<UserId, User> USER_STORE_ID = StoreMappings.AUTH_USER.storeInfo();
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
+	private static final NamespacedStorageProvider NAMESPACED_STORAGE_PROVIDER = new NonPersistentStoreFactory().createNamespaceStorage();
 	// Test data
 	private final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), new UserId("test"), new DatasetId("dataset"), STORAGE, null, null);
 	private final ConceptQuery cQuery = new ConceptQuery(new CQReusedQuery(managedQuery.getId()));
@@ -47,14 +49,21 @@ public class SerializingStoreDumpTest {
 	private File tmpDir;
 	private Environment env;
 	private XodusStoreFactory config;
-	private ObjectMapper objectMapper;
+	private ObjectMapper binaryMapper;
+	private ObjectMapper stringMapper;
 
 	@BeforeEach
 	public void init() {
 		tmpDir = Files.createTempDir();
 		config = new XodusStoreFactory();
 		env = Environments.newInstance(tmpDir, config.getXodus().createConfig());
-		objectMapper = Jackson.BINARY_MAPPER.copy();
+		binaryMapper = Jackson.BINARY_MAPPER.copy();
+		stringMapper = Jackson.MAPPER.copy();
+
+		STORAGE.injectInto(binaryMapper);
+		STORAGE.injectInto(stringMapper);
+		NAMESPACED_STORAGE_PROVIDER.injectInto(binaryMapper);
+		NAMESPACED_STORAGE_PROVIDER.injectInto(stringMapper);
 	}
 
 	@AfterEach
@@ -72,7 +81,6 @@ public class SerializingStoreDumpTest {
 		config.setUnreadableDataDumpDirectory(tmpDir);
 		final StoreInfo<UserId, User> info = USER_STORE_ID;
 		final UserId invalidId = new UserId("testU2");
-
 
 		{
 			// Open a store and insert a valid key-value pair (UserId & User)
@@ -122,7 +130,7 @@ public class SerializingStoreDumpTest {
 				.hasSize(1);
 
 
-		assertThat((QueryDescription) Jackson.MAPPER.readerFor(QueryDescription.class).readValue(dumpFiles[0])).isEqualTo(cQuery);
+		assertThat(stringMapper.readValue(dumpFiles[0], QueryDescription.class)).isEqualTo(cQuery);
 	}
 
 	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(
@@ -131,12 +139,14 @@ public class SerializingStoreDumpTest {
 			Validator validator,
 			StoreInfo<KEY, VALUE> storeId) {
 		return new SerializingStore<>(
-				new XodusStore(environment, storeId.getName(), (e) -> {
-				}, (e) -> {
-				}
+				new XodusStore(environment, storeId.getName(),
+							   (e) -> {
+							   },
+							   (e) -> {
+							   }
 				),
 				validator,
-				objectMapper,
+				binaryMapper,
 				storeId.getKeyType(),
 				storeId.getValueType(),
 				config.isValidateOnWrite(),
@@ -205,7 +215,7 @@ public class SerializingStoreDumpTest {
 				.hasSize(1);
 
 
-		assertThat((QueryDescription) Jackson.MAPPER.readerFor(QueryDescription.class).readValue(dumpFiles[0])).isEqualTo(cQuery);
+		assertThat(stringMapper.readValue(dumpFiles[0], QueryDescription.class)).isEqualTo(cQuery);
 	}
 
 	/**

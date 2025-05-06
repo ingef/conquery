@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil.Parser;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
@@ -28,6 +29,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class IdTests {
+
+	public static final NamespacedStorageProvider STORAGE = new NonPersistentStoreFactory().createNamespaceStorage();
 
 	public static Stream<Arguments> reflectionTest() {
 		return CPSTypeIdResolver
@@ -134,7 +137,9 @@ public class IdTests {
 			"4"
 		);
 
-		ObjectMapper mapper = Jackson.MAPPER;
+		ObjectMapper mapper = Jackson.MAPPER.copy();
+		STORAGE.injectInto(mapper);
+
 		ConceptTreeChildId copy = mapper.readValue(mapper.writeValueAsBytes(id), ConceptTreeChildId.class);
 
 		assertThat(copy).isEqualTo(id);
@@ -148,6 +153,9 @@ public class IdTests {
 		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(new ConqueryConfig(), Validators.newValidator());
 		ObjectMapper objectMapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 		internalMapperFactory.customizeApiObjectMapper(objectMapper, mock(DatasetRegistry.class), new NonPersistentStoreFactory().createMetaStorage());
+
+		STORAGE.injectInto(objectMapper); // DatasetRegistry-mock doesn't properly inject itself
+
 
 		ObjectReader objectReader = objectMapper.readerFor(ConceptTreeChildId.class);
 
@@ -175,7 +183,9 @@ public class IdTests {
 			"4"
 		);
 
-		ObjectMapper mapper = Jackson.BINARY_MAPPER;
+		ObjectMapper mapper = Jackson.BINARY_MAPPER.copy();
+		STORAGE.injectInto(mapper);
+
 		ConceptTreeChildId copy = mapper.readValue(mapper.writeValueAsBytes(id), ConceptTreeChildId.class);
 
 		assertThat(copy).isEqualTo(id);

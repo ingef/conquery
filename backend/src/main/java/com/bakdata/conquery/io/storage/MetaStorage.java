@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.IdResolvingException;
 import com.bakdata.conquery.models.identifiable.ids.MetaId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
@@ -33,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class MetaStorage implements ConqueryStorage,  Injectable {
+public class MetaStorage implements ConqueryStorage, Injectable {
 
 	private final StoreFactory storageFactory;
 	private IdentifiableStore<ManagedExecution> executions;
@@ -90,7 +89,7 @@ public class MetaStorage implements ConqueryStorage,  Injectable {
 	public Stream<ManagedExecution> getAllExecutions() {
 		return executions.getAllKeys()
 						 .map(executions::get)
-				         .filter(Objects::nonNull);
+						 .filter(Objects::nonNull);
 	}
 
 	public synchronized void updateExecution(ManagedExecution query) {
@@ -205,31 +204,9 @@ public class MetaStorage implements ConqueryStorage,  Injectable {
 		formConfigs.add(formConfig);
 	}
 
-	// Utility
-
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
 		return values.add(MetaStorage.class, this);
-	}
-
-	/**
-	 * Almost identical to {@link MetaStorage#get(Id)}, but throws an IdResolvingException if no object could be resolved.
-	 * @return the object or throws an {@link IdResolvingException} if the Object could not be resolved.
-	 */
-	public <ID extends MetaId, VALUE> VALUE resolve(ID id) {
-		try {
-			VALUE o = get(id);
-			if (o == null) {
-				throw new IdResolvingException(id);
-			}
-			return o;
-		}
-		catch (IdResolvingException e) {
-			throw e;
-		}
-		catch (Exception e) {
-			throw new IdResolvingException(id, e);
-		}
 	}
 
 	public <ID extends MetaId<?>, VALUE> VALUE get(ID id) {

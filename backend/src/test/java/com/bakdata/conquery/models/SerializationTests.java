@@ -33,8 +33,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.io.AbstractSerializationTest;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.external.form.FormBackendVersion;
-import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -76,6 +74,7 @@ import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
@@ -140,11 +139,12 @@ public class SerializationTests extends AbstractSerializationTest {
 		Dataset dataset = new Dataset();
 		dataset.setName("dataset");
 		dataset.setLabel("Dataset");
-		dataset.setStorageProvider(getDatasetRegistry());
+		dataset.setStorageProvider(getWorkerStorage());
 
 		SerializationTestUtil
 				.forType(Dataset.class)
 				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
+				.customizingAssertion(assertion -> assertion.ignoringFields("storageProvider"))
 				.test(dataset);
 	}
 
@@ -216,8 +216,12 @@ public class SerializationTests extends AbstractSerializationTest {
 	@Test
 	@Tag("OBJECT_2_INT_MAP") // Bucket uses Object2IntMap
 	public void bucketCompoundDateRange() throws JSONException, IOException {
-		Dataset dataset = new Dataset();
-		dataset.setName("datasetName");
+		//TODO label and name of NamespacedIdentifiable are not compatible with current Bucket
+
+		final WorkerStorageImpl workerStorage = getWorkerStorage();
+
+		Dataset dataset = new Dataset("datasetName");
+		dataset.setStorageProvider(workerStorage);
 
 		Table table = new Table();
 
@@ -259,25 +263,17 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		compoundStore.setParent(bucket);
 
-		final WorkerStorageImpl workerStorage = getWorkerStorage();
-
 		workerStorage.updateDataset(dataset);
 		workerStorage.addTable(table);
 		workerStorage.addImport(imp);
 		workerStorage.addBucket(bucket);
-
 
 		final Validator validator = Validators.newValidator();
 
 		SerializationTestUtil
 				.forType(Bucket.class)
 				.objectMappers(getShardInternalMapper())
-				.injectables(new Injectable() {
-					@Override
-					public MutableInjectableValues inject(MutableInjectableValues values) {
-						return values.add(Validator.class, validator);
-					}
-				})
+				.injectables(values -> values.add(Validator.class, validator).add(NamespacedStorageProvider.class, workerStorage))
 				.test(bucket);
 
 	}
@@ -290,7 +286,6 @@ public class SerializationTests extends AbstractSerializationTest {
 			Dataset dataset = createDataset(namespaceStorage);
 
 			Table table = getTable(dataset);
-			table.setStorage(namespaceStorage);
 
 			table.init();
 
@@ -306,7 +301,6 @@ public class SerializationTests extends AbstractSerializationTest {
 			Dataset dataset = createDataset(workerStorage);
 
 			Table table = getTable(dataset);
-			table.setStorage(workerStorage);
 
 			workerStorage.addTable(table);
 
@@ -359,6 +353,7 @@ public class SerializationTests extends AbstractSerializationTest {
 			SerializationTestUtil
 					.forType(Concept.class)
 					.objectMappers(getNamespaceInternalMapper(), getApiMapper())
+					.injectables(dataset)
 					.test(concept);
 		}
 
@@ -607,10 +602,12 @@ public class SerializationTests extends AbstractSerializationTest {
 	public void testFormQuery() throws IOException, JSONException {
 		CQConcept concept = new CQConcept();
 		final TreeConcept testConcept = new TreeConcept();
-		Dataset dataset = new Dataset();
-		dataset.setName("testDataset");
+		Dataset dataset = new Dataset("testDataset");
+		dataset.setStorageProvider(getNamespaceStorage());
+
 		testConcept.setDataset(dataset.getId());
 		testConcept.setName("concept");
+
 		final ConceptTreeConnector connector = new ConceptTreeConnector();
 		connector.setConcept(testConcept);
 		connector.setName("connector1");

@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.util.CalculatedValue;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -69,7 +70,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Select
 		return getConcept();
 	}
 
-	@com.fasterxml.jackson.annotation.JsonBackReference
+	@JsonBackReference
 	public ConceptTreeChild getParent() {
 		return null;
 	}

@@ -54,9 +54,9 @@ public interface NamespaceHandler<N extends Namespace> {
 		}
 
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
-
 		FilterSearch filterSearch = new FilterSearch(config.getIndex());
-		return new NamespaceSetupData(injectables, communicationMapper, preprocessMapper, jobManager, filterSearch);
+
+		return new NamespaceSetupData(communicationMapper, preprocessMapper, jobManager, filterSearch);
 	}
 
 	N createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<N> datasetRegistry, Environment environment);

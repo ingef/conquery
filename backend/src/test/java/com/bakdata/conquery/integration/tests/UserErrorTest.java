@@ -23,8 +23,6 @@ import org.apache.http.HttpStatus;
 public class UserErrorTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
-
-
 		{
 			final URI postQueryUri = getPostQueryURI(conquery);
 			// Send the wrong request body and expect a BAD_REQUEST (400)
@@ -34,7 +32,10 @@ public class UserErrorTest extends IntegrationTest.Simple implements Programmati
 			try (final Response response = request
 					.post(Entity.entity(new CQAnd(), MediaType.APPLICATION_JSON_TYPE))) {
 				assertThat(response.getStatus()).isEqualTo(HttpStatus.SC_BAD_REQUEST);
-				assertThat(response.readEntity(HttpError.class)).isEqualTo(new HttpError(400,"Unable to process JSON", "There is no type AND for [simple type, class com.bakdata.conquery.apiv1.query.QueryDescription]. Try: [ABSOLUTE_FORM_QUERY, ARRAY_CONCEPT_QUERY, CONCEPT_QUERY, ENTITY_DATE_QUERY, ENTITY_PREVIEW, EXPORT_FORM, EXTERNAL_FORM, FULL_EXPORT_FORM, RELATIVE_FORM_QUERY, SECONDARY_ID_QUERY, TABLE_EXPORT, TEST_FORM_ABS_URL, TEST_FORM_REL_URL]"));
+				assertThat(response.readEntity(HttpError.class)).isEqualTo(new HttpError(400,
+																						 "Unable to process JSON",
+																						 "There is no type AND for [simple type, class com.bakdata.conquery.apiv1.query.QueryDescription]. Try: [ABSOLUTE_FORM_QUERY, ARRAY_CONCEPT_QUERY, CONCEPT_QUERY, ENTITY_DATE_QUERY, ENTITY_PREVIEW, EXPORT_FORM, EXTERNAL_FORM, FULL_EXPORT_FORM, RELATIVE_FORM_QUERY, SECONDARY_ID_QUERY, TABLE_EXPORT, TEST_FORM_ABS_URL, TEST_FORM_REL_URL]"
+				));
 			}
 		}
 
@@ -50,10 +51,12 @@ public class UserErrorTest extends IntegrationTest.Simple implements Programmati
 																	   ResourceConstants.CONCEPT, unknownConcept.toString()
 															   )
 													   ).request(MediaType.APPLICATION_JSON_TYPE);
-			try (final Response response = request
-					.get()) {
-				assertThat(response.getStatus()).isEqualTo(HttpStatus.SC_NOT_FOUND);
-				assertThat(response.readEntity(HttpError.class)).isEqualTo(new HttpError(404, "Unable to resolve id: UserErrorTest.unknown_concept", null));
+			try (final Response response = request.get()) {
+				assertThat(response.getStatus())
+						.describedAs(() -> response.readEntity(String.class))
+						.isEqualTo(HttpStatus.SC_NOT_FOUND);
+				assertThat(response.readEntity(HttpError.class))
+						.isEqualTo(new HttpError(404, "The id UserErrorTest.unknown_concept could not be resolved.", null));
 			}
 		}
 

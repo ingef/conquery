@@ -69,12 +69,14 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 				ObjectNode columnNode = Jackson.MAPPER.createObjectNode();
 				columnNode.put("name", "column");
 				columnNode.put("type", MajorTypeId.INTEGER.name());
-				columnNode.put("secondaryId", description.getId().toStringWithoutDataset());
+				columnNode.put("secondaryId", description.getId().toString());
 
 				tableNode.put("columns", columnNode);
 
 				final Response response = uploadTable(conquery, tableNode);
-				assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+				assertThat(response.getStatusInfo().getFamily())
+						.describedAs(() -> response.readEntity(String.class))
+						.isEqualTo(Response.Status.Family.SUCCESSFUL);
 			}
 		}
 		{

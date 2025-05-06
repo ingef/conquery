@@ -122,7 +122,8 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return values.add(NamespacedStorageProvider.class, this).add(NamespacedStorage.class, this);
+		return values.add(NamespacedStorageProvider.class, this)
+					 .add(NamespacedStorage.class, this);
 	}
 
 	@Override

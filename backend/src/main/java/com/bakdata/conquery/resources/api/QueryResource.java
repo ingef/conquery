@@ -29,7 +29,6 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
@@ -49,32 +48,41 @@ public class QueryResource {
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus getStatus(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId queryId, @QueryParam("all-providers") @DefaultValue("false") boolean allProviders) {
+	public FullExecutionStatus getStatus(
+			@Auth Subject subject,
+			@PathParam(QUERY) ManagedExecutionId queryId,
+			@QueryParam("all-providers") @DefaultValue("false") boolean allProviders) {
 
 		return processor.getQueryFullStatus(queryId, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders, true);
 	}
 
 	@GET
 	@Path("{" + QUERY + "}/statistics")
-	public Response getDescription(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId query) {
+	public Response getDescription(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId queryId) {
+
+		subject.authorize(queryId.getDataset(), Ability.READ);
+		subject.authorize(queryId, Ability.READ);
+
+		ManagedExecution query = queryId.resolve();
 
 		if (!(query instanceof SingleTableResult)) {
 			throw new BadRequestException("Statistics is only available for %s".formatted(SingleTableResult.class.getSimpleName()));
 		}
 
-		subject.authorize(query.getDataset(), Ability.READ);
-		subject.authorize(query, Ability.READ);
-
-		if (processor.awaitDone(query, 1, TimeUnit.SECONDS) != ExecutionState.DONE) {
+		if (processor.awaitDone(queryId, 1, TimeUnit.SECONDS) != ExecutionState.DONE) {
 			return Response.status(Response.Status.CONFLICT.getStatusCode(), "Query is still running.").build(); // Request was submitted too early.
 		}
 
-		return Response.ok((processor.getResultStatistics(((ManagedExecution & SingleTableResult) query.resolve())))).build();
+		return Response.ok((processor.getResultStatistics(((ManagedExecution & SingleTableResult) query)))).build();
 	}
 
 	@PATCH
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus patchQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId query, @QueryParam("all-providers") @DefaultValue("false") boolean allProviders, MetaDataPatch patch) {
+	public FullExecutionStatus patchQuery(
+			@Auth Subject subject,
+			@PathParam(QUERY) ManagedExecutionId query,
+			@QueryParam("all-providers") @DefaultValue("false") boolean allProviders,
+			MetaDataPatch patch) {
 		subject.authorize(query.getDataset(), Ability.READ);
 		subject.authorize(query, Ability.READ);
 
@@ -94,7 +102,10 @@ public class QueryResource {
 
 	@POST
 	@Path("{" + QUERY + "}/reexecute")
-	public FullExecutionStatus reexecute(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId query, @QueryParam("all-providers") @DefaultValue("false") boolean allProviders) {
+	public FullExecutionStatus reexecute(
+			@Auth Subject subject,
+			@PathParam(QUERY) ManagedExecutionId query,
+			@QueryParam("all-providers") @DefaultValue("false") boolean allProviders) {
 		subject.authorize(query.getDataset(), Ability.READ);
 		subject.authorize(query, Ability.READ);
 

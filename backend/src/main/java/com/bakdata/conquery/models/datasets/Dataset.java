@@ -19,7 +19,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Dataset extends NamespacedIdentifiable<DatasetId> implements Injectable, Authorized {
@@ -49,7 +50,7 @@ public class Dataset extends NamespacedIdentifiable<DatasetId> implements Inject
 		setName(name);
 	}
 
-	public static boolean isAllIdsTable(Table table){
+	public static boolean isAllIdsTable(Table table) {
 		return table.getName().equalsIgnoreCase(ConqueryConstants.ALL_IDS_TABLE);
 	}
 
@@ -66,7 +67,9 @@ public class Dataset extends NamespacedIdentifiable<DatasetId> implements Inject
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues mutableInjectableValues) {
-		return mutableInjectableValues.add(Dataset.class, this);
+		return mutableInjectableValues
+				.add(Dataset.class, this)
+				.add(DatasetId.class, getId());
 	}
 
 	@Override

@@ -29,7 +29,7 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 
 	@JsonCreator
 	private Group(String name, String label) {
-		this(name, label, null);
+		super(name, label);
 	}
 
 	public Group(String name, String label, MetaStorage storage) {

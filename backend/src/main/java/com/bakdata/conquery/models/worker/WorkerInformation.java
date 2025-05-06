@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.mina.MessageSender;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @NoArgsConstructor
 @Slf4j
-public class WorkerInformation extends IdentifiableImpl<WorkerId> implements MessageSender.Transforming<WorkerMessage, MessageToShardNode>, com.bakdata.conquery.models.identifiable.Identifiable<WorkerId> {
+public class WorkerInformation extends NamespacedIdentifiable<WorkerId> implements MessageSender.Transforming<WorkerMessage, MessageToShardNode>, com.bakdata.conquery.models.identifiable.Identifiable<WorkerId> {
 	@NotNull
 	private DatasetId dataset;
 	@NotNull

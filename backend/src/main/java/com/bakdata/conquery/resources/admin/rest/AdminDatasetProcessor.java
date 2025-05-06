@@ -206,6 +206,7 @@ public class AdminDatasetProcessor {
 	 */
 	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept, boolean force) {
 		concept.setDataset(dataset.getId());
+
 		ValidatorHelper.failOnError(log, environment.getValidator().validate(concept));
 
 		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
@@ -337,6 +338,8 @@ public class AdminDatasetProcessor {
 	}
 
 	public void addInternToExternMapping(Namespace namespace, InternToExternMapper internToExternMapper) {
+		internToExternMapper.setDataset(namespace.getDataset().getId());
+
 		ValidatorHelper.failOnError(log, environment.getValidator().validate(internToExternMapper));
 
 		if (namespace.getStorage().getInternToExternMapper(internToExternMapper.getId()) != null) {

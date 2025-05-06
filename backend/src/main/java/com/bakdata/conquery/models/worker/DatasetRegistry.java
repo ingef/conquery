@@ -132,7 +132,8 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 
 	@Override
 	public NamespacedStorage getStorage(DatasetId datasetId) {
-		return datasets.get(datasetId).getStorage();
+		N namespace = datasets.get(datasetId);
+		return namespace.getStorage();
 	}
 
 	@Override

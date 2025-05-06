@@ -132,7 +132,6 @@ public class IndexServiceTest {
 	private static void injectComponents(MapInternToExternMapper mapInternToExternMapper, IndexService indexService)
 			throws NoSuchFieldException, IllegalAccessException {
 
-		mapInternToExternMapper.setStorage(NAMESPACE_STORAGE);
 
 		final Field indexServiceField = MapInternToExternMapper.class.getDeclaredField(MapInternToExternMapper.Fields.mapIndex);
 		indexServiceField.setAccessible(true);

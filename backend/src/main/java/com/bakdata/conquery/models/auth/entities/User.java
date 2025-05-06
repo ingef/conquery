@@ -46,7 +46,8 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 	@JsonCreator
 	protected User(String name, String label) {
-		this(name, label, null);
+		super(name, label);
+		this.shiroUserAdapter = new ShiroUserAdapter();
 	}
 
 	public User(String name, String label, MetaStorage storage) {

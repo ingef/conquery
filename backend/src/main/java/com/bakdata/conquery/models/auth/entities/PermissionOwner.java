@@ -11,6 +11,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.ids.MetaIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableSet;
 import lombok.AccessLevel;
@@ -60,6 +61,12 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	@NotNull
 	private Set<ConqueryPermission> permissions = new HashSet<>();
 
+
+	@JsonCreator
+	public PermissionOwner(String name, String label) {
+		this.name = name;
+		this.label = label;
+	}
 
 	public PermissionOwner(String name, String label, MetaStorage storage) {
 		this.name = name;

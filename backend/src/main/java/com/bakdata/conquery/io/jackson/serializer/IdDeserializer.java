@@ -88,7 +88,6 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 		id.collectIds(ids);
 
 		for (Id<?, ?> subId : ids) {
-
 			if (subId instanceof NamespacedId<?> nsId) {
 				nsId.setNamespacedStorageProvider(namespacedStorageProvider);
 			}

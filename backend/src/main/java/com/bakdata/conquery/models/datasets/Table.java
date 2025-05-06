@@ -17,10 +17,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
@@ -37,10 +35,6 @@ public class Table extends NamespacedIdentifiable<TableId> implements Initializi
 
 	private DatasetId dataset;
 
-	@JacksonInject(useInput = OptBoolean.FALSE)
-	@JsonIgnore
-	private NamespacedStorage storage;
-
 	@NotNull
 	@Valid
 	@JsonManagedReference
@@ -52,6 +46,7 @@ public class Table extends NamespacedIdentifiable<TableId> implements Initializi
 	@Nullable
 	@JsonManagedReference
 	private Column primaryColumn;
+
 
 	@ValidationMethod(message = "More than one column map to the same secondaryId")
 	@JsonIgnore
@@ -119,12 +114,6 @@ public class Table extends NamespacedIdentifiable<TableId> implements Initializi
 
 	@Override
 	public void init() {
-		if (dataset == null) {
-			dataset = storage.getDataset().getId();
-		} else if (storage != null && !dataset.equals(storage.getDataset().getId())) {
-			throw new IllegalStateException("Datasets don't match. Namespace: %s  Table: %s".formatted(storage.getDataset().getId(), dataset));
-		}
-
 		for (Column column : columns) {
 			column.init();
 		}

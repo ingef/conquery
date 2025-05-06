@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@Path("concepts/{" + CONCEPT + "}/")
+@Path("concepts/{" + CONCEPT + "}")
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ConceptResource extends HAuthorized {
 

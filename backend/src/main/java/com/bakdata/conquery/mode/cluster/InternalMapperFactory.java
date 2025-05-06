@@ -20,10 +20,10 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 
 	public ObjectMapper createShardCommunicationMapper(ShardWorkers workers) {
 		ObjectMapper objectMapper = createInternalObjectMapper(View.InternalCommunication.class);
-		
+
 		workers.injectInto(objectMapper);
 		return objectMapper;
-		
+
 	}
 
 	/**

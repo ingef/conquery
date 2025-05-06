@@ -248,7 +248,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");
 
 			// Issue a query and assert that it is failing.
-			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 400);
+			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 404);
 		}
 
 
@@ -289,7 +289,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				log.info("Executing query after restart (EXPECTING AN EXCEPTION IN THE LOGS!)");
 
 				// Issue a query and assert that it is failing.
-				IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 400);
+				IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 404);
 			}
 		}
 	}

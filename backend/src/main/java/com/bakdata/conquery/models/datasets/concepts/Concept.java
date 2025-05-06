@@ -27,9 +27,11 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.queryplan.specific.Leaf;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -57,6 +59,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	@Valid
 	private List<CONNECTOR> connectors = Collections.emptyList();
 
+	@JacksonInject(useInput = OptBoolean.TRUE)
 	private DatasetId dataset;
 
 	/**
@@ -67,6 +70,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	 */
 	public abstract String printConceptLocalId(Object rawValue, PrintSettings printSettings);
 
+	@JsonIgnore
 	public List<SelectId<?>> getDefaultSelects() {
 		return getSelects().stream().filter(Select::isDefault)
 						   .map(select -> (SelectId<?>) select.getId())
