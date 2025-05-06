@@ -192,8 +192,8 @@ public class TestConquery {
 
 		busy |= standaloneCommand.getManager().getDatasetRegistry().getNamespaces().stream()
 								 .map(Namespace::getExecutionManager)
-								 .flatMap(e -> e.getExecutionStates().asMap().values().stream())
-								 .map(ExecutionManager.State::getState)
+								 .flatMap(e -> e.getExecutionInfos().asMap().values().stream())
+								 .map(ExecutionManager.ExecutionInfo::getExecutionState)
 								 .anyMatch(ExecutionState.RUNNING::equals);
 
 		for (Namespace namespace : standaloneCommand.getManagerNode().getDatasetRegistry().getNamespaces()) {

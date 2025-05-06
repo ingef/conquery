@@ -164,8 +164,8 @@ public class StoredQueriesProcessorTest {
 
 	private static void setState(ExecutionState execState, ManagedExecutionId id) {
 		if (execState != NEW) {
-			DistributedExecutionManager.DistributedState state = new DistributedExecutionManager.DistributedState();
-			state.setState(execState);
+			DistributedExecutionManager.DistributedExecutionInfo state = new DistributedExecutionManager.DistributedExecutionInfo();
+			state.setExecutionState(execState);
 			state.getExecutingLock().countDown();
 
 			DATASET_REGISTRY.get(id.getDataset()).getExecutionManager().addState(id, state);

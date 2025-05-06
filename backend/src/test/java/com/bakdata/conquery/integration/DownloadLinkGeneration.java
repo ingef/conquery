@@ -63,8 +63,8 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		{
 			// Tinker the state of the execution and try again: still not possible because of missing permissions
-			DistributedExecutionManager.DistributedState distributedState = new DistributedExecutionManager.DistributedState();
-			distributedState.setState(ExecutionState.DONE);
+			DistributedExecutionManager.DistributedExecutionInfo distributedState = new DistributedExecutionManager.DistributedExecutionInfo();
+			distributedState.setExecutionState(ExecutionState.DONE);
 			distributedState.getExecutingLock().countDown();
 			conquery.getNamespace().getExecutionManager().addState(exec.getId(), distributedState);
 

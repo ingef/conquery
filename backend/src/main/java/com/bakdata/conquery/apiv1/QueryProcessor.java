@@ -181,7 +181,8 @@ public class QueryProcessor {
 	 * @param allProviders If true, forces {@link ResultRendererProvider} to return an URL if possible.
 	 * @return The modified status
 	 */
-	public static List<ResultAsset> getResultAssets(List<ResultRendererProvider> renderer, ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
+	public static List<ResultAsset> getResultAssets(List<ResultRendererProvider> renderer, ManagedExecution exec,
+													UriBuilder uriBuilder, boolean allProviders) {
 
 		return renderer.stream()
 					   .map(rendererProvider -> {
