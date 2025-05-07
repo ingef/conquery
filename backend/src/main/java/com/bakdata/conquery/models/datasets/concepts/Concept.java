@@ -128,5 +128,5 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 		return null;
 	}
 
-	public abstract ConceptElement<?> findById(ConceptElementId id);
+	public abstract ConceptElement<?> findById(ConceptElementId<?> id);
 }

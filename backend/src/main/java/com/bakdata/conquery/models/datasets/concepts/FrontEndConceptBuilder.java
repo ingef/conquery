@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
@@ -169,16 +170,17 @@ public class FrontEndConceptBuilder {
 		// Add Children to root
         structureNode.getChildren().forEach(n -> this.insertStructureNode(n, roots));
 
-		FrontendNode currentNode = FrontendNode.builder()
-				.active(false)
-				.description(structureNode.getDescription())
-				.label(structureNode.getLabel())
-				.detailsAvailable(Boolean.FALSE)
-				.codeListResolvable(false)
-				.additionalInfos(structureNode.getAdditionalInfos())
-				.parent(structureNode.getParent() == null ? null : structureNode.getParent().getId())
-				.children(Stream.concat(structureNode.getChildren().stream().map(IdentifiableImpl::getId), contained.stream()).toArray(Id[]::new))
-				.build();
+		FrontendNode currentNode =
+				FrontendNode.builder()
+							.active(false)
+							.description(structureNode.getDescription())
+							.label(structureNode.getLabel())
+							.detailsAvailable(Boolean.FALSE)
+							.codeListResolvable(false)
+							.additionalInfos(structureNode.getAdditionalInfos())
+							.parent(structureNode.getParent() == null ? null : structureNode.getParent().getId())
+							.children(Stream.concat(structureNode.getChildren().stream().map(IdentifiableImpl::getId), contained.stream()).toArray(NamespacedId[]::new))
+							.build();
 
 		roots.put(structureNode.getId(), currentNode);
 	}

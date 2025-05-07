@@ -184,7 +184,7 @@ public class DefaultColumnNameTest {
 			if (elements.isEmpty()) {
 				elements = List.of(concept);
 			}
-			final List<ConceptElementId> list = (List<ConceptElementId>) elements.stream().map(ConceptElement::getId).toList();
+			final List<ConceptElementId<?>> list = (List<ConceptElementId<?>>) elements.stream().map(ConceptElement::getId).toList();
 			cqConcept.setElements(list);
 
 			List<CQTable> tables = concept.getConnectors().stream()

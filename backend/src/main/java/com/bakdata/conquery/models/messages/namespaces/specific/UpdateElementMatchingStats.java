@@ -29,16 +29,16 @@ public class UpdateElementMatchingStats extends NamespaceMessage {
 	private final WorkerId source;
 
 	@ToString.Exclude
-	private final Map<ConceptElementId, MatchingStats.Entry> values;
+	private final Map<ConceptElementId<?>, MatchingStats.Entry> values;
 
 	@Override
 	public void react(DistributedNamespace context) throws Exception {
 		// We collect the concepts outside the loop to update the storage afterward
 		Map<ConceptId, Concept<?>> conceptsToUpdate = new HashMap<>();
 
-		for (Entry<ConceptElementId, MatchingStats.Entry> entry : values.entrySet()) {
+		for (Entry<ConceptElementId<?>, MatchingStats.Entry> entry : values.entrySet()) {
 			try {
-				ConceptElementId element = entry.getKey();
+				ConceptElementId<?> element = entry.getKey();
 				ConceptId conceptId = element.findConcept();
 
 				// mapping function cannot use Id::resolve here yet, somehow the nsIdResolver is not set because it

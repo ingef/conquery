@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
@@ -76,7 +75,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 							.collect(Collectors.toMap(Functions.identity(),
 													  concept -> CompletableFuture.runAsync(() -> {
 														  final Concept<?> resolved = concept.resolve();
-														  final Map<ConceptElementId, MatchingStats.Entry>
+														  final Map<ConceptElementId<?>, MatchingStats.Entry>
 																  matchingStats =
 																  new HashMap<>(resolved.countElements());
 
@@ -128,7 +127,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 			return String.format("Calculate Matching Stats for %s", worker.getInfo().getDataset());
 		}
 
-		private static void calculateConceptMatches(Concept<?> concept, Map<ConceptElementId, MatchingStats.Entry> results, Worker worker) {
+		private static void calculateConceptMatches(Concept<?> concept, Map<ConceptElementId<?>, MatchingStats.Entry> results, Worker worker) {
 			log.debug("BEGIN calculating for `{}`", concept.getId());
 
 			try(Stream<CBlock> allCBlocks = worker.getStorage().getAllCBlocks();) {

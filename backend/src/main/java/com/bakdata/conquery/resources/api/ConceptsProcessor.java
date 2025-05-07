@@ -294,7 +294,7 @@ public class ConceptsProcessor {
 
 	public ResolvedConceptsResult resolveConceptElements(TreeConcept concept, List<String> conceptCodes) {
 
-		final Set<ConceptElementId> resolvedCodes = new HashSet<>();
+		final Set<ConceptElementId<?>> resolvedCodes = new HashSet<>();
 		final Set<String> unknownCodes = new HashSet<>();
 
 		for (String conceptCode : conceptCodes) {
@@ -334,7 +334,7 @@ public class ConceptsProcessor {
 
 	@Data
 	public static final class ResolvedConceptsResult {
-		private final Set<ConceptElementId> resolvedConcepts;
+		private final Set<ConceptElementId<?>> resolvedConcepts;
 		private final Collection<String> unknownCodes;
 
 

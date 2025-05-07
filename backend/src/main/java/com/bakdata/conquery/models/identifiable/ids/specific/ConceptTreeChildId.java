@@ -14,9 +14,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
-public class ConceptTreeChildId extends ConceptElementId {
+public final class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> {
 
-	private final ConceptElementId parent;
+	private final ConceptElementId<?> parent;
 	private final String name;
 	
 	@Override
@@ -58,7 +58,7 @@ public class ConceptTreeChildId extends ConceptElementId {
 		@Override
 		public ConceptTreeChildId parseInternally(IdIterator parts) {
 			String childName = parts.next();
-			ConceptElementId parent = ConceptElementId.Parser.INSTANCE.parse(parts);
+			ConceptElementId<?> parent = ConceptElementId.Parser.INSTANCE.parse(parts);
 			return new ConceptTreeChildId(parent, childName);
 		}
 	}

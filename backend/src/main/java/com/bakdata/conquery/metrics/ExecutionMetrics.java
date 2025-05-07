@@ -82,7 +82,7 @@ public class ExecutionMetrics {
 				reportedIds.add(((ConceptTreeChildId) id).findConcept());
 			}
 			else if (id instanceof ConceptElementId) {
-				reportedIds.add(((ConceptElementId) id).findConcept());
+				reportedIds.add(((ConceptElementId<?>) id).findConcept());
 			}
 			else if (id instanceof ConnectorId) {
 				reportedIds.add(((ConnectorId) id).getConcept());

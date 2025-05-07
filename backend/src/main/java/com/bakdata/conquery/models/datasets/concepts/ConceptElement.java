@@ -18,7 +18,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public abstract class ConceptElement<ID extends ConceptElementId>
+public abstract class ConceptElement<ID extends ConceptElementId<?>>
 		extends LabeledNamespaceIdentifiable<ID> {
 
 	private String description;

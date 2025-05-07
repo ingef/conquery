@@ -70,7 +70,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	 */
 	@JsonProperty("ids")
 	@NotEmpty
-	private List<ConceptElementId> elements = Collections.emptyList();
+	private List<ConceptElementId<?>> elements = Collections.emptyList();
 
 	@Valid
 	@NotEmpty
@@ -148,7 +148,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		builder.append(getConcept().getLabel());
 		builder.append(" ");
 
-		for (ConceptElementId id : elements) {
+		for (ConceptElementId<?> id : elements) {
 			if (id.equals(getConceptId())) {
 				continue;
 			}
@@ -336,7 +336,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	@Override
 	public void collectNamespacedObjects(Set<? super NamespacedIdentifiable<?>> identifiables) {
-		for (ConceptElementId element : elements) {
+		for (ConceptElementId<?> element : elements) {
 			identifiables.add(element.resolve());
 		}
 

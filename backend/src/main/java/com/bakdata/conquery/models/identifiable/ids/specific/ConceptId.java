@@ -17,16 +17,13 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
-public class ConceptId extends ConceptElementId implements Authorized {
+@Getter
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
+public final class ConceptId extends ConceptElementId<Concept<?>> implements Authorized {
 
 	private final DatasetId dataset;
 	private final String name;
-
-	@Override
-	public DatasetId getDataset() {
-		return dataset;
-	}
 
 	@Override
 	public Concept<?> get(NamespacedStorageProvider storage) {
@@ -35,10 +32,15 @@ public class ConceptId extends ConceptElementId implements Authorized {
 	}
 
 	@Override
+	public DatasetId getDataset() {
+		return dataset;
+	}
+
+	@Override
 	public ConceptId findConcept() {
 		return this;
 	}
-	
+
 	@Override
 	public void collectComponents(List<Object> components) {
 		dataset.collectComponents(components);
@@ -47,7 +49,7 @@ public class ConceptId extends ConceptElementId implements Authorized {
 
 
 	@Override
-	public void collectIds(Collection<Id<?,?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		dataset.collectIds(collect);
 	}
