@@ -36,8 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "CSV_TEMPLATE", base = SearchIndex.class)
 public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements Searchable<FrontendValue>, SearchIndex {
 
-	private static final long serialVersionUID = 1L;
-
 	@NotNull
 	private DatasetId dataset;
 
