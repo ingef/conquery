@@ -60,7 +60,7 @@ public class Column extends LabeledNamespaceIdentifiable<ColumnId> implements Se
 
 	@Override
 	public String toString() {
-		return "Column(id = " + getId() + ", type = " + getType() + ")";
+		return "Column(id = %s, type = %s, secondaryId = %s)".formatted(getId(), getType(), getSecondaryId());
 	}
 
 	/**
