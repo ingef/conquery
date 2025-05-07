@@ -86,7 +86,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 
 		final FilterTemplate
 				filterTemplate =
-				new FilterTemplate(conquery.getDataset().getId(), "test", tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService);
+				new FilterTemplate(conquery.getDataset().getId(), "test", tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService, conquery.getConfig());
 		filter.setTemplate(filterTemplate.getId());
 
 		// We need to persist the modification before we submit the update matching stats request

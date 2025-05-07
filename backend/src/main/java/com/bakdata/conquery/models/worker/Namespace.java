@@ -18,9 +18,9 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.FilterSearch;
+import com.bakdata.conquery.models.query.InternalFilterSearch;
+import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +43,7 @@ public abstract class Namespace {
 	// TODO: 01.07.2020 FK: This is not used a lot, as NamespacedMessages are highly convoluted and hard to decouple as is.
 	private final JobManager jobManager;
 
-	private final FilterSearch filterSearch;
+	private final SearchProcessor filterSearch;
 
 	private final EntityResolver entityResolver;
 
@@ -89,7 +89,7 @@ public abstract class Namespace {
 	}
 
 	public void updateInternToExternMappings() {
-		try(Stream<Concept<?>> allConcepts = storage.getAllConcepts();) {
+		try(Stream<Concept<?>> allConcepts = storage.getAllConcepts()) {
 			allConcepts
 					.flatMap(c -> c.getConnectors().stream())
 					.flatMap(con -> con.getSelects().stream())
@@ -99,7 +99,7 @@ public abstract class Namespace {
 
 		}
 
-		try(Stream<SecondaryIdDescription> secondaryIds = storage.getSecondaryIds();) {
+		try(Stream<SecondaryIdDescription> secondaryIds = storage.getSecondaryIds()) {
 			secondaryIds
 					.filter(desc -> desc.getMapping() != null)
 					.forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping().resolve()::init)));
@@ -110,7 +110,7 @@ public abstract class Namespace {
 	 * Issues a job that initializes the search that is used by the frontend for recommendations in the filter interface of a concept.
 	 */
 	final void updateFilterSearch() {
-		getJobManager().addSlowJob(new UpdateFilterSearchJob(this, getFilterSearch().getIndexConfig(), this::registerColumnValuesInSearch));
+		getJobManager().addSlowJob(filterSearch.createUpdateFilterSearchJob(storage, this::registerColumnValuesInSearch));
 	}
 
 	/**
@@ -120,8 +120,8 @@ public abstract class Namespace {
 
 	/**
 	 * This collects the string values of the given {@link Column}s (each is a {@link com.bakdata.conquery.models.datasets.concepts.Searchable})
-	 * and registers them in the namespace's {@link FilterSearch#registerValues(Searchable, Collection)}.
-	 * After value registration for a column is complete, {@link FilterSearch#shrinkSearch(Searchable)} should be called.
+	 * and registers them in the namespace's {@link InternalFilterSearch#registerValues(Searchable, Collection)}.
+	 * After value registration for a column is complete, {@link InternalFilterSearch#finalizeSearch(Searchable)} should be called.
 	 */
 	abstract void registerColumnValuesInSearch(Set<Column> columns);
 
@@ -134,7 +134,7 @@ public abstract class Namespace {
 	public void postprocessData() {
 
 		getJobManager().addSlowJob(new SimpleJob(
-				"Initiate Update Matching Stats and FilterSearch",
+				"Initiate Update Matching Stats and InternalFilterSearch",
 				() -> {
 					updateInternToExternMappings();
 					updateMatchingStats();

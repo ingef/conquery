@@ -117,6 +117,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@Getter
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
 	private transient ConqueryConfig config;
 
 	/**
@@ -127,6 +128,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@Getter(AccessLevel.PROTECTED)
 	@JsonIgnore
 	@NotNull
+	@ToString.Exclude
 	private transient MetaStorage metaStorage;
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
@@ -134,6 +136,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@Getter(AccessLevel.PROTECTED)
 	@JsonIgnore
 	@NotNull
+	@ToString.Exclude
 	private transient DatasetRegistry<?> datasetRegistry;
 
 

@@ -19,6 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter @Setter
 @NoArgsConstructor
@@ -43,6 +44,7 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 	@Setter
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
 	private transient NamespacedStorageProvider namespacedStorageProvider;
 
 	public Dataset(String name) {
