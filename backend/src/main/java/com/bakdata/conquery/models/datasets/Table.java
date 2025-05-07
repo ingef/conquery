@@ -12,7 +12,7 @@ import jakarta.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.config.DatabaseConfig;
-import com.bakdata.conquery.models.identifiable.ids.LabeledNamespaceIdentifiable;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;

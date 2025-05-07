@@ -7,7 +7,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.identifiable.ids.LabeledNamespaceIdentifiable;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;

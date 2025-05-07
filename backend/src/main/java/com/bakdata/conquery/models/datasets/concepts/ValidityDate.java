@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.ids.LabeledNamespaceIdentifiable;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;

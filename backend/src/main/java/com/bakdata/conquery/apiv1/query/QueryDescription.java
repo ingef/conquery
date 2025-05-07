@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;

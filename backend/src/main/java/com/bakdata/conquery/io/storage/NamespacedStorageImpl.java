@@ -121,7 +121,8 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 
 	@Override
 	public Dataset getDataset() {
-		return dataset.get();
+		Dataset dataset = this.dataset.get();
+		return dataset;
 	}
 
 

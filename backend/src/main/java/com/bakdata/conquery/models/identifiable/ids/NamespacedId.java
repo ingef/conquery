@@ -27,11 +27,7 @@ public abstract non-sealed class NamespacedId<TYPE> extends Id<TYPE, NamespacedS
 	}
 
 	@Override
-	protected NamespacedStorageProvider getDomain() {
-		return getNamespacedStorageProvider();
-	}
-
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
+	public NamespacedStorageProvider getDomain() {
 		return getDataset().getNamespacedStorageProvider();
 	}
 

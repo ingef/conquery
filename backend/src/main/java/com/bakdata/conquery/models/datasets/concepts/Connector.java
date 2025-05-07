@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.IdMap;
-import com.bakdata.conquery.models.identifiable.ids.LabeledNamespaceIdentifiable;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;

@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.identifiable.ids.LabeledNamespaceIdentifiable;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;

@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.google.common.base.Joiner;
 import lombok.experimental.UtilityClass;

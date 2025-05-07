@@ -19,7 +19,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;

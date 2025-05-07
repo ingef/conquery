@@ -1,8 +1,10 @@
-package com.bakdata.conquery.models.identifiable.ids;
+package com.bakdata.conquery.models.identifiable;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.google.common.base.CharMatcher;
 import lombok.Getter;
 import lombok.Setter;

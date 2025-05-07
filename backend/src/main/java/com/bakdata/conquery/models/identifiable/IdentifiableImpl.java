@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @NoArgsConstructor
-public abstract class IdentifiableImpl<ID extends Id<?, ?>> implements Identifiable<ID> {
+public sealed abstract class IdentifiableImpl<ID extends Id<?, DOMAIN>, DOMAIN> implements Identifiable<ID, DOMAIN>
+permits NamespacedIdentifiable, MetaIdentifiable
+{
 
 	@JsonIgnore
 	protected transient ID cachedId;
@@ -35,7 +37,7 @@ public abstract class IdentifiableImpl<ID extends Id<?, ?>> implements Identifia
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		IdentifiableImpl<?> other = (IdentifiableImpl) obj;
+		IdentifiableImpl<?, ?> other = (IdentifiableImpl) obj;
 		if (getId() == null) {
 			return other.getId() == null;
 		}
@@ -55,12 +57,10 @@ public abstract class IdentifiableImpl<ID extends Id<?, ?>> implements Identifia
 	public ID getId() {
 		if (cachedId == null) {
 			cachedId = createId();
-			injectDomain(cachedId);
+			cachedId.setDomain(getDomain());
 		}
 		return cachedId;
 	}
-
-	protected abstract void injectDomain(ID id);
 
 	public abstract ID createId();
 }

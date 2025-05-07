@@ -8,7 +8,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.KeyValue;
-import com.bakdata.conquery.models.identifiable.ids.LabeledNamespaceIdentifiable;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;

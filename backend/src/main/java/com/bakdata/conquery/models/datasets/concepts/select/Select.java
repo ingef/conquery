@@ -8,7 +8,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
-import com.bakdata.conquery.models.identifiable.ids.LabeledNamespaceIdentifiable;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;

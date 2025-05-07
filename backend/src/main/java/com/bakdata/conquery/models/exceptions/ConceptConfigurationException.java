@@ -16,7 +16,7 @@ public class ConceptConfigurationException extends JSONException {
 		super("In Node "+node+": "+message, cause);
 	}
 	
-	public ConceptConfigurationException(Identifiable<?> node, String message, Throwable cause) {
+	public ConceptConfigurationException(Identifiable<?, ?> node, String message, Throwable cause) {
 		this(node.toString()+"("+node+")", message, cause);
 	}
 
@@ -24,7 +24,7 @@ public class ConceptConfigurationException extends JSONException {
 		this(node, message, null);
 	}
 	
-	public ConceptConfigurationException(Identifiable<?> node, String message) {
+	public ConceptConfigurationException(Identifiable<?, ?> node, String message) {
 		this(node.toString()+"("+node+")", message, null);
 	}
 

@@ -6,7 +6,7 @@ import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.apiv1.KeyValue;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
-import com.bakdata.conquery.models.identifiable.ids.LabeledNamespaceIdentifiable;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;

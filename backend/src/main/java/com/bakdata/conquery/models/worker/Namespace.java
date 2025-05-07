@@ -47,7 +47,7 @@ public abstract class Namespace {
 
 	public Dataset getDataset() {
 		Dataset dataset = storage.getDataset();
-		dataset.setStorageProvider(getStorage()); //TODO this is incorrect but somehow it's not properly injected atm
+//		dataset.setStorageProvider(getStorage()); //TODO this is incorrect but somehow it's not properly injected atm
 		return dataset;
 	}
 

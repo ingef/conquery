@@ -119,7 +119,7 @@ public class PermissionCleanupTask extends Task {
 	 *
 	 * @return The number of deleted permissions.
 	 */
-	public static <E extends IdentifiableImpl<ID> & Owned, ID extends Id<?, ?>> int deletePermissionsOfOwnedInstances(
+	public static <E extends IdentifiableImpl<ID, ?> & Owned, ID extends Id<?, ?>> int deletePermissionsOfOwnedInstances(
 			MetaStorage storage,
 			String permissionDomain,
 			IdUtil.Parser<ID> idParser,

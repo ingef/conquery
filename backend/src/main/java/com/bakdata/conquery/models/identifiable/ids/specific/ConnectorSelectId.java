@@ -34,7 +34,10 @@ public class ConnectorSelectId extends SelectId<Select> {
 
 	@Override
 	public Select get(NamespacedStorageProvider storage) {
-		return storage.getStorage(getDataset()).getConcept(findConcept()).getConnectorByName(getConnector().getConnector()).getSelectByName(getSelect());
+		return storage.getStorage(getDataset())
+					  .getConcept(findConcept())
+					  .getConnectorByName(getConnector().getConnector())
+					  .getSelectByName(getSelect());
 	}
 
 	@Override

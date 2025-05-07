@@ -19,7 +19,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;

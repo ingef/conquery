@@ -31,7 +31,7 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.MetaIdentifiable;
+import com.bakdata.conquery.models.identifiable.MetaIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;

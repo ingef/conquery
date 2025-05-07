@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportColumnId;
 import com.fasterxml.jackson.annotation.JsonBackReference;

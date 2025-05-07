@@ -8,8 +8,8 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
-import com.bakdata.conquery.models.identifiable.ids.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -85,11 +85,11 @@ public class Dataset extends LabeledNamespaceIdentifiable<DatasetId> implements 
 	@JsonIgnore
 	@Override
 	public DatasetId getDataset() {
-		return this.getId();
+		return getId();
 	}
 
 	@Override
-	protected void injectDomain(DatasetId id) {
-		id.setDomain(getStorageProvider());
+	public NamespacedStorageProvider getDomain() {
+		return getStorageProvider();
 	}
 }

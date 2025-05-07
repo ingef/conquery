@@ -22,7 +22,7 @@ import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;

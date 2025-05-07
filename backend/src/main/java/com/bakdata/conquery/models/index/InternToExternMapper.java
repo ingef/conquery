@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.index;
 import java.util.Collection;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.query.PrintSettings;

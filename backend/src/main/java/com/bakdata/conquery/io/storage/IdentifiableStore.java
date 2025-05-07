@@ -16,7 +16,7 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 @Setter
 @Getter
-public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludingStore<Id<VALUE, ?>, VALUE> {
+public class IdentifiableStore<VALUE extends Identifiable<?, ?>> extends KeyIncludingStore<Id<VALUE, ?>, VALUE> {
 
 
 	public IdentifiableStore(Store<Id<VALUE, ?>, VALUE> store) {

@@ -25,7 +25,7 @@ import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.MoneyStore;
 import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;

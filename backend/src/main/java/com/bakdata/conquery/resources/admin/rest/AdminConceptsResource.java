@@ -3,7 +3,6 @@ package com.bakdata.conquery.resources.admin.rest;
 import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -16,7 +15,6 @@ import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -37,13 +35,6 @@ public class AdminConceptsResource {
 	@PathParam(CONCEPT)
 	private ConceptId concept;
 
-	private Namespace namespace;
-
-
-	@PostConstruct
-	public void init() {
-		namespace = processor.getDatasetRegistry().get(dataset);
-	}
 
 	@GET
 	public Concept<?> getConcept() {

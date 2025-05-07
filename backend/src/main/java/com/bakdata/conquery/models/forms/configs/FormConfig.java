@@ -24,7 +24,7 @@ import com.bakdata.conquery.models.execution.Labelable;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.execution.Shareable;
 import com.bakdata.conquery.models.execution.Taggable;
-import com.bakdata.conquery.models.identifiable.ids.MetaIdentifiable;
+import com.bakdata.conquery.models.identifiable.MetaIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;

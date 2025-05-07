@@ -4,7 +4,7 @@ package com.bakdata.conquery.models.datasets;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
