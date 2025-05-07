@@ -103,11 +103,9 @@ public class Table extends LabeledNamespaceIdentifiable<TableId> implements Init
 	public Column findSecondaryIdColumn(SecondaryIdDescriptionId secondaryId) {
 
 		for (Column col : columns) {
-			if (col.getSecondaryId() == null || !secondaryId.equals(col.getSecondaryId())) {
-				continue;
+			if (secondaryId.equals(col.getSecondaryId())) {
+				return col;
 			}
-
-			return col;
 		}
 
 		return null;

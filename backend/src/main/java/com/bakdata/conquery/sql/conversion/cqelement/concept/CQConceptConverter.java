@@ -183,7 +183,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		convertConnectorCondition(cqTable, functionProvider).ifPresent(conditions::add);
 
 		for (ConceptElement<?> conceptElement : conceptElements) {
-			collectConditions(cqTable, (ConceptTreeChild) conceptElement, functionProvider)
+			collectConditions(cqTable, conceptElement, functionProvider)
 					.reduce(WhereCondition::and)
 					.ifPresent(conditions::add);
 		}
