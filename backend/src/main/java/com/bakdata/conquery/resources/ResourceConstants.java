@@ -39,6 +39,7 @@ public class ResourceConstants {
 	public static final String FILE_EXTENTION_PARQUET = "parquet";
 
 	public static final String FILE_EXTENTION_CSV = "csv";
+	public static final String FILE_EXTENTION_JSON = "json";
 
 	public static final String FILE_EXTENTION_XLSX = "xlsx";
 

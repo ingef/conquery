@@ -3,7 +3,7 @@ package com.bakdata.conquery.io.result.external;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 
-import com.bakdata.conquery.io.result.ExternalState;
+import com.bakdata.conquery.io.result.ExternalExecutionInfo;
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -23,7 +23,8 @@ public class ExternalResultProcessor {
 		ResultUtil.authorizeExecutable(subject, execution);
 
 		ExecutionManager executionManager = datasetRegistry.get(execId.getDataset()).getExecutionManager();
+		ExternalExecutionInfo externalResult = executionManager.getExecutionInfo(execution.getId());
 
-		return executionManager.<ExternalState>getResult(execId).fetchExternalResult(fileName);
+		return externalResult.fetchExternalResult(fileName);
 	}
 }

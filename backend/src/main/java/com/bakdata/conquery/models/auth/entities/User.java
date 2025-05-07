@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -23,7 +22,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
-import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -142,10 +140,13 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	public boolean[] isPermitted(List<? extends Authorized> authorizeds, Ability ability) {
-		return authorizeds.stream()
-						  .map(auth -> isPermitted(auth, ability))
-						  .collect(Collectors.toCollection(BooleanArrayList::new))
-						  .toBooleanArray();
+		boolean[] permitted = new boolean[authorizeds.size()];
+
+		for (int index = 0; index < authorizeds.size(); index++) {
+			permitted[index] = isPermitted(authorizeds.get(index), ability);
+		}
+
+		return permitted;
 	}
 
 	@JsonIgnore

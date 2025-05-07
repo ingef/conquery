@@ -1,0 +1,55 @@
+{
+	"type": "FORM_TEST",
+	"label": "ABS-EXPORT-FORM WITH NESTING DATE_RESTRICTION -> AND",
+	"expectedCsv": {
+		"results": "tests/form/EXPORT_FORM/ABSOLUT/SIMPLE_DATE_RESTRICTION/expected.csv"
+	},
+	"form": {
+		"type": "EXPORT_FORM",
+		"queryGroup": "00000000-0000-0000-0000-000000000001",
+		"resolution": "QUARTERS",
+		"alsoCreateCoarserSubdivisions": true,
+		"features": [
+			{
+				"type": "DATE_RESTRICTION",
+				"dateRange": {
+					"min": "2012-01-16",
+					"max": "2012-12-17"
+				},
+				"child": {
+					"type": "AND",
+					"children": {
+						"ids": [
+							"alter"
+						],
+						"type": "CONCEPT",
+						"tables": [
+							{
+								"id": "alter.alter",
+								"filters": []
+							}
+						]
+					}
+				}
+			}
+		],
+		"timeMode": {
+			"value": "ABSOLUTE",
+			"dateRange": {
+				"min": "2012-01-16",
+				"max": "2012-12-17"
+			}
+		}
+	},
+	"concepts": [
+		"/tests/form/shared/alter.concept.json"
+	],
+	"content": {
+		"tables": [
+			"/tests/form/shared/vers_stamm.table.json"
+		],
+		"previousQueryResults": [
+			"tests/form/EXPORT_FORM/ABSOLUT/SIMPLE_DATE_RESTRICTION/query_results_1.csv"
+		]
+	}
+}

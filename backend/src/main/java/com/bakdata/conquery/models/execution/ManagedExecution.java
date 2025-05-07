@@ -224,7 +224,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	 */
 	public void fail(ConqueryErrorInfo error) {
 		if (this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
-			// Warn only again if the error is different (failed might by called per collected result)
+			// Warn only again if the error is different (failed might be called per collected shard result)
 			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
 		}
 		else {
@@ -269,7 +269,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 
 			if (getExecutionManager().isResultPresent(getId())) {
-				Preconditions.checkArgument(getExecutionManager().getResult(getId()).getState() != ExecutionState.RUNNING);
+				Preconditions.checkArgument(getExecutionManager().getExecutionInfo(getId()).getExecutionState() != ExecutionState.RUNNING);
 			}
 
 			startTime = LocalDateTime.now();
@@ -279,7 +279,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	}
 
 	/**
-	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
+	 * Renders a lightweight status with meta information about this query.
 	 */
 	public OverviewExecutionStatus buildStatusOverview(Subject subject) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
@@ -331,11 +331,11 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 			return ExecutionState.NEW;
 		}
 
-		return getExecutionManager().getResult(getId()).getState();
+		return getExecutionManager().getExecutionInfo(getId()).getExecutionState();
 	}
 
 	/**
-	 * Renders an extensive status of this query (see {@link FullExecutionStatus}. The rendering can be computation intensive and can produce a large
+	 * Renders an extensive status of this query (see {@link FullExecutionStatus}). The rendering can be computation intensive and can produce a large
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
 	public FullExecutionStatus buildStatusFull(Subject subject, Namespace namespace) {

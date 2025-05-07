@@ -349,7 +349,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	}
 
 	@Override
-	public void setDefaultExists() {
+	public void setDefaultSelects() {
 		final boolean allTablesEmpty = getTables().stream()
 												  .map(CQTable::getSelects)
 												  .allMatch(List::isEmpty);

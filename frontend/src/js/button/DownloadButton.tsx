@@ -4,6 +4,7 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faDownload,
   faFileArchive,
+  faFileCode,
   faFileCsv,
   faFileDownload,
   faFileExcel,
@@ -39,6 +40,7 @@ function useFileIcon(url: string): FileIcon {
       XLSX: { icon: faFileExcel, color: theme.col.fileTypes.xlsx },
       PDF: { icon: faFilePdf, color: theme.col.fileTypes.pdf },
       CSV: { icon: faFileCsv, color: theme.col.fileTypes.csv },
+      JSON: { icon: faFileCode, color: theme.col.fileTypes.json },
     }),
     [theme],
   );

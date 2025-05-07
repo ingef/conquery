@@ -30,7 +30,7 @@ import org.glassfish.jersey.spi.Contract;
 /**
  * The {@link RedirectingAuthFilter} first delegates a request to the actual authentication filter.
  * If that filter is unable to map a user to the request, this filter checks if this request is in
- * the phase of a multi-step authentication, such as the OAuth-Code-Flow, or if a new login procedure
+ * the phase of a multistep authentication, such as the OAuth-Code-Flow, or if a new login procedure
  * must be initiated.
  * <p>
  * Depending on the configuration, none, one or multiple login schemas are available. If none is configured,
@@ -48,7 +48,7 @@ public class RedirectingAuthFilter extends io.dropwizard.auth.AuthFilter<Authent
 
 	public static final String REDIRECT_URI = "redirect_uri";
 	/**
-	 * Request processors that check if a request belongs to its multi-step authentication schema.
+	 * Request processors that check if a request belongs to its multistep authentication schema.
 	 * E.g. the request contains an authorization code, then this checker tries to redeem the code for an access token.
 	 * If that succeeds, it produces a response that sets a cookie with the required authentication data for that schema.
 	 * <p>
@@ -95,7 +95,7 @@ public class RedirectingAuthFilter extends io.dropwizard.auth.AuthFilter<Authent
 		//TODO shouldn't this be something with NotAuthenticated?
 		catch (NotAuthorizedException e) {
 			// The request could not be authenticated
-			// First check if the request belongs to a multi-step authentication
+			// First check if the request belongs to a multistep authentication
 			final List<Response> authenticatedRedirects = new ArrayList<>();
 
 			for (Function<ContainerRequestContext, Response> authAttemptChecker : authAttemptCheckers) {
@@ -108,12 +108,12 @@ public class RedirectingAuthFilter extends io.dropwizard.auth.AuthFilter<Authent
 			}
 
 			if (authenticatedRedirects.size() == 1) {
-				// The request qualified as a multi-step authentication, so the user is redirected to proceed the authentication.
-				throw new RedirectionException(authenticatedRedirects.get(0));
+				// The request qualified as a multistep authentication, so the user is redirected to proceed the authentication.
+				throw new RedirectionException(authenticatedRedirects.getFirst());
 			}
 			else if (authenticatedRedirects.size() > 1) {
 				log.error("Multiple authenticated redirects generated. Only one should be possible");
-				throw new BadRequestException("The request triggered more than one multi-step authentication schema, which is not allowed.");
+				throw new BadRequestException("The request triggered more than one multistep authentication schema, which is not allowed.");
 			}
 
 			// The request was not authenticated, nor was it a step towards an authentication, so we redirect the user to a login.
@@ -137,7 +137,7 @@ public class RedirectingAuthFilter extends io.dropwizard.auth.AuthFilter<Authent
 
 			// shortcut when only one login provider is configured
 			if (loginRedirects.size() == 1) {
-				final URI loginUri = loginRedirects.get(0);
+				final URI loginUri = loginRedirects.getFirst();
 				log.trace("One login redirect configured. Short cutting to: {}", loginUri);
 				throw new WebApplicationException(Response.seeOther(loginUri).build());
 			}

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.util;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -24,12 +23,8 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.internationalization.CQElementC10n;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
@@ -45,7 +40,6 @@ import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.google.common.base.Strings;
 import com.google.common.collect.MoreCollectors;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,26 +58,21 @@ public class QueryUtils {
 	/**
 	 * Gets the specified visitor from the map. If none was found an exception is raised.
 	 */
-	public static <T extends QueryVisitor> T getVisitor(List<QueryVisitor> visitors, Class<T> clazz){
+	public static <T extends QueryVisitor> T getVisitor(List<QueryVisitor> visitors, Class<T> clazz) {
 		return (T) visitors.stream().filter(clazz::isInstance).collect(MoreCollectors.onlyElement());
 	}
 
-	public static String createDefaultMultiLabel(List<CQElement> elements, String delimiter, Locale locale) {
-			return elements.stream().map(elt -> elt.getUserOrDefaultLabel(locale)).collect(Collectors.joining(delimiter));
+	/**
+	 * Create label for children preferring the children's user label if provided.
+	 */
+	public static String createUserMultiLabel(List<CQElement> elements, String delimiter, String postfix, Locale locale) {
+		return elements.stream().map(elt -> elt.userLabel(locale)).collect(Collectors.joining(delimiter,"", postfix));
 	}
-
-	public static String createTotalDefaultMultiLabel(List<CQElement> elements, String delimiter, Locale locale) {
-		return elements.stream().map(elt -> elt.defaultLabel(locale)).collect(Collectors.joining(delimiter));
-	}
-
-	public static void generateConceptReadPermissions(@NonNull QueryUtils.NamespacedIdentifiableCollector idCollector, @NonNull Collection<ConqueryPermission> collectPermissions){
-		idCollector.getIdentifiables().stream()
-				   .filter(id -> id instanceof ConceptElement)
-				   .map(ConceptElement.class::cast)
-				   .<Concept<?>>map(ConceptElement::getConcept)
-				   .map(cId -> cId.createPermission(Ability.READ.asSet()))
-				   .distinct()
-				   .collect(Collectors.toCollection(() -> collectPermissions));
+	/**
+	 * Create label for children the children's default label ignoring user provided label.
+	 */
+	public static String createDefaultMultiLabel(List<CQElement> elements, String delimiter, String postfix, Locale locale) {
+		return elements.stream().map(elt -> elt.defaultLabel(locale)).collect(Collectors.joining(delimiter, "", postfix));
 	}
 
 	public static QueryExecutionContext determineDateAggregatorForContext(QueryExecutionContext ctx, Supplier<Optional<Aggregator<CDateSet>>> altValidityDateAggregator) {
@@ -160,7 +149,7 @@ public class QueryUtils {
 	}
 
 	private static String makeLabelWithRootAndChild(CQConcept cqConcept, PrintSettings cfg) {
-		String label = cqConcept.getUserOrDefaultLabel(cfg.getLocale());
+		String label = cqConcept.userLabel(cfg.getLocale());
 
 		if (label == null) {
 			label = cqConcept.getConcept().getLabel();
@@ -172,8 +161,6 @@ public class QueryUtils {
 	
 	/**
 	 * Checks if the query requires to resolve external ids.
-	 *
-	 * @return True if a {@link CQExternal} is found.
 	 */
 	public static class ExternalIdChecker implements QueryVisitor {
 
@@ -186,6 +173,9 @@ public class QueryUtils {
 			}
 		}
 
+		/***
+		 * @return True if a {@link CQExternal} is found.
+		 */
 		public boolean resolvesExternalIds() {
 			return !elements.isEmpty();
 		}
@@ -207,7 +197,7 @@ public class QueryUtils {
 
 			if (element instanceof CQReusedQuery) {
 				// We would have to reason way too much about the sent query so we just reexecute it.
-				containsOthersElements = containsOthersElements || ((CQReusedQuery) element).isExcludeFromSecondaryId();
+				containsOthersElements = ((CQReusedQuery) element).isExcludeFromSecondaryId();
 
 				if (reusedQuery == null) {
 					reusedQuery = (CQReusedQuery) element;

@@ -10,12 +10,15 @@ import com.bakdata.conquery.models.query.DistributedExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
 @CPSType(id = "FORM_SHARD_RESULT", base = NamespacedMessage.class)
 @EqualsAndHashCode(callSuper = true)
 @Getter
+@ToString(onlyExplicitlyIncluded = true, callSuper = true)
 public class FormShardResult extends ShardResult {
 
+	@ToString.Include
 	private final ManagedExecutionId formId;
 
 	public FormShardResult(ManagedExecutionId formId, ManagedExecutionId subQueryId, WorkerId workerId) {
