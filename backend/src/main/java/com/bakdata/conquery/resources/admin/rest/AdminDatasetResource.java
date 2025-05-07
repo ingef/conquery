@@ -156,7 +156,7 @@ public class AdminDatasetResource {
 
 	@POST
 	@Path("concepts")
-	public void addConcept(@QueryParam("force") @DefaultValue("false") boolean force, Concept concept) {
+	public void addConcept(@QueryParam("force") @DefaultValue("false") boolean force, Concept<?> concept) {
 		processor.addConcept(namespace.getDataset(), concept, force);
 	}
 

@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public abstract class ConceptElementId<T extends ConceptElement<?>> extends NamespacedId<T> {
+public abstract class ConceptElementId extends NamespacedId<ConceptElement<?>> {
 
 	public abstract ConceptId findConcept();
 

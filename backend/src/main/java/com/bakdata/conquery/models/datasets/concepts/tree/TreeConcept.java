@@ -195,7 +195,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Select
 	}
 
 	@Override
-	public ConceptElement<? extends ConceptElementId<? extends ConceptElement<?>>> findById(ConceptElementId<?> id) {
+	public ConceptElement<? extends ConceptElementId> findById(ConceptElementId id) {
 		List<Object> parts = new ArrayList<>();
 		id.collectComponents(parts);
 

@@ -162,7 +162,7 @@ public class ConceptsProcessor {
 	 * The user will upload a file and expect only well-corresponding resolutions.
 	 */
 	public ResolvedFilterValues resolveFilterValues(FilterId filterId, List<String> searchTerms) {
-		SelectFilter filter = (SelectFilter) filterId.resolve();
+		SelectFilter<?> filter = (SelectFilter<?>) filterId.resolve();
 
 		// search in the full text engine
 		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
@@ -203,7 +203,7 @@ public class ConceptsProcessor {
 		Preconditions.checkArgument(pageNumber >= 0, "Page number must be 0 or a positive integer.");
 		Preconditions.checkArgument(itemsPerPage > 1, "Must at least have one item per page.");
 
-		final SelectFilter filter = (SelectFilter) filterId.resolve();
+		final SelectFilter<?> filter = (SelectFilter<?>) filterId.resolve();
 
 		log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, filterId, pageNumber, itemsPerPage);
 
@@ -294,7 +294,7 @@ public class ConceptsProcessor {
 
 	public ResolvedConceptsResult resolveConceptElements(TreeConcept concept, List<String> conceptCodes) {
 
-		final Set<ConceptElementId<?>> resolvedCodes = new HashSet<>();
+		final Set<ConceptElementId> resolvedCodes = new HashSet<>();
 		final Set<String> unknownCodes = new HashSet<>();
 
 		for (String conceptCode : conceptCodes) {
@@ -334,7 +334,7 @@ public class ConceptsProcessor {
 
 	@Data
 	public static final class ResolvedConceptsResult {
-		private final Set<ConceptElementId<?>> resolvedConcepts;
+		private final Set<ConceptElementId> resolvedConcepts;
 		private final Collection<String> unknownCodes;
 
 

@@ -102,7 +102,7 @@ public class PreviewConfig {
 	 * @param label  User facing label of the select.
 	 * @param select Id (without dataset) of the select.
 	 */
-	public record InfoCardSelect(@NotNull String label, SelectId<?> select, String description) {
+	public record InfoCardSelect(@NotNull String label, SelectId select, String description) {
 	}
 
 
@@ -174,7 +174,7 @@ public class PreviewConfig {
 	 * Find infoCard-selects by id within Dataset.
 	 */
 	@JsonIgnore
-	public List<SelectId<?>> getSelects() {
+	public List<SelectId> getSelects() {
 		return getInfoCardSelects().stream()
 								   .map(InfoCardSelect::select)
 								   .collect(Collectors.toList());
@@ -185,7 +185,7 @@ public class PreviewConfig {
 			return Collections.emptyList();
 		}
 
-		return new ArrayList(searchFilters);
+		return new ArrayList<>(searchFilters);
 	}
 
 	public ConceptId resolveSearchConcept() {

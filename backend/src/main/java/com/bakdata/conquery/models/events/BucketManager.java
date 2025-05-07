@@ -282,7 +282,7 @@ public class BucketManager {
 	/**
 	 * Collects all Entites, that have any of the concepts on the connectors in a specific time.
 	 */
-	public Set<String> getEntitiesWithConcepts(Collection<ConceptElementId<?>> concepts, Set<ConnectorId> connectors, CDateSet restriction) {
+	public Set<String> getEntitiesWithConcepts(Collection<ConceptElementId> concepts, Set<ConnectorId> connectors, CDateSet restriction) {
 		List<ConceptElement<?>> resolvedConcepts =
 				concepts.stream()
 						.<ConceptElement<?>>map(ConceptElementId::resolve)

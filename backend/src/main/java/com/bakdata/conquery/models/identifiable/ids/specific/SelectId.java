@@ -13,12 +13,12 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public abstract class SelectId<T extends Select> extends NamespacedId<T>  {
+public sealed abstract class SelectId extends NamespacedId<Select>
+		permits ConceptSelectId, ConnectorSelectId {
 
 	private final String select;
 
 	public abstract ConceptId findConcept();
-
 
 
 	@Override

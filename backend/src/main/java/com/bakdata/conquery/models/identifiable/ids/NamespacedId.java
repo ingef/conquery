@@ -13,17 +13,19 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public abstract non-sealed class NamespacedId<TYPE> extends Id<TYPE, NamespacedStorageProvider> {
 
 	public static WorkerStorage assertWorkerStorage(NamespacedStorage storage) {
-		if (!(storage instanceof WorkerStorage workerStorage)) {
-			throw new IllegalArgumentException("Cannot be retrieved from %s".formatted(storage));
+		if (storage instanceof WorkerStorage workerStorage) {
+			return workerStorage;
 		}
-		return workerStorage;
+
+		throw new IllegalArgumentException("Cannot be retrieved from %s".formatted(storage));
 	}
 
 	public static NamespaceStorage assertNamespaceStorage(NamespacedStorage storage) {
-		if (!(storage instanceof NamespaceStorage namespaceStorage)) {
-			throw new IllegalArgumentException("Cannot be retrieved from %s".formatted(storage));
+		if (storage instanceof NamespaceStorage namespaceStorage) {
+			return namespaceStorage;
 		}
-		return namespaceStorage;
+
+		throw new IllegalArgumentException("Cannot be retrieved from %s".formatted(storage));
 	}
 
 	@Override

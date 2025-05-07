@@ -13,6 +13,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+@SuppressWarnings("rawtypes")
 @Getter
 @ToString
 @EqualsAndHashCode(callSuper = true)

@@ -37,7 +37,7 @@ import org.eclipse.jetty.io.EofException;
 public class ResultCsvProcessor {
 
 	private final ConqueryConfig config;
-	private final DatasetRegistry datasetRegistry;
+	private final DatasetRegistry<?> datasetRegistry;
 
 	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, ManagedExecutionId execId, boolean pretty, Charset charset, OptionalLong limit) {
 		final E exec = (E) execId.resolve();

@@ -34,7 +34,7 @@ public class DatasetResource extends HAuthorized {
 	private final ConceptsProcessor processor;
 
 	@Inject
-	private DatasetRegistry datasetRegistry;
+	private DatasetRegistry<?> datasetRegistry;
 
 	@PathParam(DATASET)
 	private DatasetId dataset;

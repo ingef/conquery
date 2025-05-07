@@ -78,7 +78,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 
 	private final Map<String, AbsoluteFormQuery> timeOverViews;
 
-	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<ConnectorId> sources, List<SelectId<?>> infos, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry<?> datasetRegistry) {
+	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<ConnectorId> sources, List<SelectId> infos, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry<?> datasetRegistry) {
 
 		// We use this query to filter for the single selected query.
 		final Query entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
@@ -104,7 +104,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@NotNull
-	private static AbsoluteFormQuery createInfoCardQuery(Range<LocalDate> dateRange, List<SelectId<?>> infos, Query entitySelectQuery) {
+	private static AbsoluteFormQuery createInfoCardQuery(Range<LocalDate> dateRange, List<SelectId> infos, Query entitySelectQuery) {
 		// Query exporting a few additional infos on the entity.
 		return new AbsoluteFormQuery(entitySelectQuery, dateRange,
 							 ArrayConceptQuery.createFromFeatures(

@@ -61,9 +61,9 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	private DatasetId dataset;
 
 	@JsonIgnore
-	public List<SelectId<?>> getDefaultSelects() {
+	public List<SelectId> getDefaultSelects() {
 		return getSelects().stream().filter(Select::isDefault)
-						   .map(select -> (SelectId<?>) select.getId())
+						   .map(select -> (SelectId) select.getId())
 						   .collect(Collectors.toList());
 	}
 
@@ -128,5 +128,5 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 		return null;
 	}
 
-	public abstract ConceptElement<?> findById(ConceptElementId<?> id);
+	public abstract ConceptElement<?> findById(ConceptElementId id);
 }

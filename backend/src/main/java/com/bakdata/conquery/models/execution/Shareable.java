@@ -31,9 +31,9 @@ public interface  Shareable extends Authorized {
 	 */
 	void setShared(boolean shared);
 
-	default <ID extends Id, S extends Identifiable<? extends ID, ?> & Shareable & Authorized> Consumer<ShareInformation> sharer(MetaStorage storage, Subject subject) {
+	default <ID extends Id<?,?>, S extends Identifiable<? extends ID, ?> & Shareable & Authorized> Consumer<ShareInformation> sharer(MetaStorage storage, Subject subject) {
 		if (!(this instanceof Identifiable<?, ?>)) {
-			log.warn("Cannot share {} ({}) because it does not implement Identifiable", this.getClass(), this.toString());
+			log.warn("Cannot share {} ({}) because it does not implement Identifiable", getClass(), this);
 			return QueryUtils.getNoOpEntryPoint();
 		}
 

@@ -51,7 +51,7 @@ public class FrontEndConceptBuilder {
 	public FrontendRoot createRoot(NamespaceStorage storage, Subject subject) {
 
 		final FrontendRoot root = new FrontendRoot();
-		final Map<Id, FrontendNode> roots = root.getConcepts();
+		final Map<Id<?, ?>, FrontendNode> roots = root.getConcepts();
 		final List<? extends Concept<?>> allConcepts;
 		try(Stream<Concept<?>> conceptStream = storage.getAllConcepts()) {
 
@@ -151,7 +151,7 @@ public class FrontEndConceptBuilder {
 	 * @param structureNode the node to process (and its children)
 	 * @param roots the map where the given and child nodes are inserted into.
 	 */
-	private void insertStructureNode(StructureNode structureNode, Map<Id, FrontendNode> roots) {
+	private void insertStructureNode(StructureNode structureNode, Map<Id<?, ?>, FrontendNode> roots) {
 		final List<ConceptId> contained = new ArrayList<>();
 		for (ConceptId id : structureNode.getContainedRoots()) {
 			if (!roots.containsKey(id)) {

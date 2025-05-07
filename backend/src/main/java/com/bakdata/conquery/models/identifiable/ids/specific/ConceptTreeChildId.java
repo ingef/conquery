@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
-public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> {
+public class ConceptTreeChildId extends ConceptElementId {
 
 	private final ConceptElementId parent;
 	private final String name;

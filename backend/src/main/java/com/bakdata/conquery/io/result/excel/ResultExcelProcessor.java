@@ -36,7 +36,7 @@ public class ResultExcelProcessor {
 	public static final MediaType MEDIA_TYPE = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
 	private final MetaStorage metaStorage;
-	private final DatasetRegistry datasetRegistry;
+	private final DatasetRegistry<?> datasetRegistry;
 	private final ConqueryConfig conqueryConfig;
 
 	private final ExcelConfig excelConfig;

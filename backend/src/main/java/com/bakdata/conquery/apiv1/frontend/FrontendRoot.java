@@ -15,5 +15,5 @@ import lombok.Getter;
 @Getter
 public class FrontendRoot {
 	private final Set<FrontendSecondaryId> secondaryIds = new HashSet<>();
-	private final Map<Id, @Valid FrontendNode> concepts = new LinkedHashMap<>();
+	private final Map<Id<?, ?>, @Valid FrontendNode> concepts = new LinkedHashMap<>();
 }

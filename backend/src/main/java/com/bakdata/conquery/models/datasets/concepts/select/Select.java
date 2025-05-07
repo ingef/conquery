@@ -38,7 +38,7 @@ import org.jetbrains.annotations.NotNull;
 @CPSBase
 @Slf4j
 @EqualsAndHashCode(callSuper = true)
-public abstract class Select extends LabeledNamespaceIdentifiable<SelectId<?>> {
+public abstract class Select extends LabeledNamespaceIdentifiable<SelectId> {
 
 	@EqualsAndHashCode.Exclude
 	@JsonBackReference

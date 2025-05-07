@@ -7,8 +7,7 @@ import lombok.ToString;
 
 @NoArgsConstructor
 public sealed abstract class IdentifiableImpl<ID extends Id<?, DOMAIN>, DOMAIN> implements Identifiable<ID, DOMAIN>
-permits NamespacedIdentifiable, MetaIdentifiable
-{
+		permits NamespacedIdentifiable, MetaIdentifiable {
 
 	@JsonIgnore
 	protected transient ID cachedId;
@@ -26,31 +25,6 @@ permits NamespacedIdentifiable, MetaIdentifiable
 		return cachedHash;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		IdentifiableImpl<?, ?> other = (IdentifiableImpl) obj;
-		if (getId() == null) {
-			return other.getId() == null;
-		}
-		else {
-			return getId().equals(other.getId());
-		}
-	}
-
-	@Override
-	public String toString() {
-		return this.getClass().getSimpleName() + "[" + getId() + "]";
-	}
-
 	@ToString.Include
 	@JsonIgnore
 	@Override
@@ -63,4 +37,29 @@ permits NamespacedIdentifiable, MetaIdentifiable
 	}
 
 	public abstract ID createId();
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		IdentifiableImpl<?, ?> other = (IdentifiableImpl<?, ?>) obj;
+		if (getId() == null) {
+			return other.getId() == null;
+		}
+		else {
+			return getId().equals(other.getId());
+		}
+	}
+
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + "[" + getId() + "]";
+	}
 }

@@ -72,7 +72,7 @@ public class ExecutionMetrics {
 
 		for (NamespacedIdentifiable<?> identifiable : foundIds) {
 
-			NamespacedId id = identifiable.getId();
+			NamespacedId<?> id = identifiable.getId();
 			// We don't want to report the whole tree, as that would be spammy and potentially wrong.
 
 			if (id instanceof ConceptId) {

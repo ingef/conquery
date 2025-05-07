@@ -57,6 +57,11 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 		);
 	}
 
+	@Override
+	public ID deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
+		return this.deserialize(p, ctxt);
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public ID deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
@@ -82,23 +87,7 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 		}
 	}
 
-	public static void setResolver(Id<?, ?> id, MetaStorage metaStorage, NamespacedStorageProvider namespacedStorageProvider) {
-		// Set resolvers in this id and subIds
-		final Set<Id<?, ?>> ids = new HashSet<>();
-		id.collectIds(ids);
-
-		for (Id<?, ?> subId : ids) {
-			// NamespacedIds always recur to the root, which is the DatasetId
-			if (subId instanceof NamespacedId<?> nsId) {
-				nsId.setDomain(namespacedStorageProvider);
-			}
-			if (subId instanceof MetaId<?> metaId) {
-				metaId.setDomain(metaStorage);
-			}
-		}
-	}
-
-	public static <ID extends Id> ID deserializeId(String text, IdUtil.Parser<ID> idParser, boolean checkForInjectedPrefix, DeserializationContext ctx)
+	public static <ID extends Id<?, ?>> ID deserializeId(String text, IdUtil.Parser<ID> idParser, boolean checkForInjectedPrefix, DeserializationContext ctx)
 			throws JsonMappingException {
 
 		List<String> components = checkForInjectedPrefix ?
@@ -128,6 +117,22 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 		return id;
 	}
 
+	public static void setResolver(Id<?, ?> id, MetaStorage metaStorage, NamespacedStorageProvider namespacedStorageProvider) {
+		// Set resolvers in this id and subIds
+		final Set<Id<?, ?>> ids = new HashSet<>();
+		id.collectIds(ids);
+
+		for (Id<?, ?> subId : ids) {
+			// NamespacedIds always recur to the root, which is the DatasetId
+			if (subId instanceof NamespacedId<?> nsId) {
+				nsId.setDomain(namespacedStorageProvider);
+			}
+			if (subId instanceof MetaId<?> metaId) {
+				metaId.setDomain(metaStorage);
+			}
+		}
+	}
+
 	private static String findDatasetName(DeserializationContext ctx) throws JsonMappingException {
 		Dataset dataset = Jackson.findInjectable(ctx, Dataset.class);
 
@@ -143,11 +148,6 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 			return id.getName();
 		}
 		return null;
-	}
-
-	@Override
-	public ID deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
-		return this.deserialize(p, ctxt);
 	}
 
 

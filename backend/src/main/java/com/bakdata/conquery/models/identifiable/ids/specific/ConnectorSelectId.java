@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter @EqualsAndHashCode(callSuper=true)
-public class ConnectorSelectId extends SelectId<Select> {
+public final class ConnectorSelectId extends SelectId {
 
 	private final ConnectorId connector;
 	

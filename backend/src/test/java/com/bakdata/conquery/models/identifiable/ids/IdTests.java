@@ -195,9 +195,9 @@ public class IdTests {
 
 	@ParameterizedTest
 	@MethodSource
-	public void reflectionTest(Class<?> modelClass, Class<? extends Id> expectedIdClass) {
+	public void reflectionTest(Class<?> modelClass, Class<? extends Id<?,?>> expectedIdClass) {
 
-		Class<? extends Id> idClass = IdUtil.findIdClass(modelClass);
+		Class<? extends Id<?,?>> idClass = IdUtil.findIdClass(modelClass);
 		assertThat(idClass).isSameAs(expectedIdClass);
 		assertThat(IdUtil.createParser(idClass)).isInstanceOf(Parser.class);
 	}

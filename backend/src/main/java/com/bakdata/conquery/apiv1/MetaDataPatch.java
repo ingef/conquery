@@ -1,8 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
 import java.util.List;
-import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -10,7 +8,6 @@ import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.execution.Labelable;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.execution.Shareable;
@@ -46,11 +43,11 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 	 * @param subject  The subject on whose behalf the patch is executed
 	 * @param <INST>   Type of the instance that is patched
 	 */
-	public <T extends MetaDataPatch, ID extends Id, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID, ?> & Owned & Authorized> void applyTo(INST instance, MetaStorage storage, Subject subject) {
+	public <DOMAIN, ID extends Id<?,DOMAIN>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID, DOMAIN> & Owned & Authorized> void applyTo(INST instance, MetaStorage storage, Subject subject) {
 		buildChain(QueryUtils.getNoOpEntryPoint(), storage, subject, instance).accept(this);
 	}
 
-	protected <T extends MetaDataPatch, ID extends Id, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID, ?> & Owned & Authorized> Consumer<T> buildChain(Consumer<T> patchConsumerChain, MetaStorage storage, Subject subject, INST instance) {
+	protected <DOMAIN, T extends MetaDataPatch, ID extends Id<?,DOMAIN>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID, DOMAIN> & Owned & Authorized> Consumer<T> buildChain(Consumer<T> patchConsumerChain, MetaStorage storage, Subject subject, INST instance) {
 		if (getTags() != null && subject.isPermitted(instance, Ability.TAG)) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.tagger());
 		}
@@ -61,11 +58,5 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 			patchConsumerChain = patchConsumerChain.andThen(instance.sharer(storage, subject));
 		}
 		return patchConsumerChain;
-	}
-
-
-	@FunctionalInterface
-	public interface PermissionCreator<ID extends Id> extends BiFunction<Set<Ability>, ID, ConqueryPermission> {
-
 	}
 }

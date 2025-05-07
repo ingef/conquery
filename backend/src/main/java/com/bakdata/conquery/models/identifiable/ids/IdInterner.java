@@ -19,7 +19,7 @@ public class IdInterner implements Injectable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <ID extends Id> ParserIdInterner<ID> forParser(Parser<ID> parser) {
+	public <ID extends Id<?,?>> ParserIdInterner<ID> forParser(Parser<ID> parser) {
 		return (ParserIdInterner<ID>) perParserInterner.computeIfAbsent(parser, k -> new ParserIdInterner<>());
 	}
 
@@ -28,7 +28,7 @@ public class IdInterner implements Injectable {
 		return values.add(this.getClass(), this);
 	}
 
-	public static class ParserIdInterner<ID extends Id> {
+	public static class ParserIdInterner<ID extends Id<?,?>> {
 		private final Map<List<String>, ID> interned = new ConcurrentHashMap<>();
 
 		public ID putIfAbsent(List<String> components, ID id) {
@@ -41,7 +41,7 @@ public class IdInterner implements Injectable {
 			return old;
 		}
 
-		public static void checkConflict(Id id, Id cached) {
+		public static void checkConflict(Id<?,?> id, Id<?,?> cached) {
 			if (!cached.equals(id)) {
 				throw new IllegalStateException("The cached id '%s' (%s) conflicted with the new entry of '%s' (%s)"
 														.formatted(cached, cached.getClass().getSimpleName(), id, id.getClass().getSimpleName()));

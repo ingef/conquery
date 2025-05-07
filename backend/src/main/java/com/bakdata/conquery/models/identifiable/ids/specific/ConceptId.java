@@ -18,7 +18,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
-public class ConceptId extends ConceptElementId<Concept<?>> implements Authorized {
+public class ConceptId extends ConceptElementId implements Authorized {
 
 	private final DatasetId dataset;
 	private final String name;

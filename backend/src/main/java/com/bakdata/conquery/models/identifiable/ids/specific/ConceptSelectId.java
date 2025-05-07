@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter @EqualsAndHashCode(callSuper=true)
-public class ConceptSelectId extends SelectId<UniversalSelect> {
+public final class ConceptSelectId extends SelectId {
 
 	private final ConceptId concept;
 	

@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.KeyValue;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.Builder;
 import lombok.Data;
 
@@ -17,12 +17,12 @@ import lombok.Data;
 @Data
 @Builder
 public class FrontendNode {
-	private Id parent;
+	private NamespacedId<?> parent;
 	@NotNull
 	private String label;
 	private String description;
 	private Boolean active;
-	private Id[] children;
+	private NamespacedId<?>[] children;
 	private List<KeyValue> additionalInfos;
 	private long matchingEntries;
 	private Range<LocalDate> dateRange;

@@ -70,7 +70,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	 */
 	@JsonProperty("ids")
 	@NotEmpty
-	private List<ConceptElementId<?>> elements = Collections.emptyList();
+	private List<ConceptElementId> elements = Collections.emptyList();
 
 	@Valid
 	@NotEmpty
@@ -79,7 +79,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	private List<CQTable> tables = Collections.emptyList();
 
 	@NotNull
-	private List<SelectId<?>> selects = new ArrayList<>();
+	private List<SelectId> selects = new ArrayList<>();
 
 	private boolean excludeFromTimeAggregation;
 
@@ -90,7 +90,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	@JsonView(View.InternalCommunication.class)
 	private boolean aggregateEventDates;
 
-	public static CQConcept forSelect(SelectId<?> selectId) {
+	public static CQConcept forSelect(SelectId selectId) {
 		Select select = selectId.resolve();
 
 		final CQConcept cqConcept = new CQConcept();
@@ -148,7 +148,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		builder.append(getConcept().getLabel());
 		builder.append(" ");
 
-		for (ConceptElementId<?> id : elements) {
+		for (ConceptElementId id : elements) {
 			if (id.equals(getConceptId())) {
 				continue;
 			}
@@ -256,13 +256,13 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	public List<ResultInfo> getResultInfos() {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
 
-		for (SelectId<?> select : selects) {
+		for (SelectId select : selects) {
 			Select resolved = select.resolve();
 			resultInfos.add(resolved.getResultInfo(this));
 		}
 
 		for (CQTable table : tables) {
-			for (SelectId<?> sel : table.getSelects()) {
+			for (SelectId sel : table.getSelects()) {
 				Select resolved = sel.resolve();
 				resultInfos.add(resolved.getResultInfo(this));
 			}
@@ -285,7 +285,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	 * Generates Aggregators from Selects. These are collected and also appended to the list of aggregators in the
 	 * query plan that contribute to columns the result.
 	 */
-	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId<?>> selects) {
+	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId> selects) {
 		return selects.stream()
 					  .map(SelectId::resolve)
 					  .map(Select::createAggregator)
@@ -336,11 +336,11 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	@Override
 	public void collectNamespacedObjects(Set<? super NamespacedIdentifiable<?>> identifiables) {
-		for (ConceptElementId<?> element : elements) {
+		for (ConceptElementId element : elements) {
 			identifiables.add(element.resolve());
 		}
 
-		for (SelectId<?> select : selects) {
+		for (SelectId select : selects) {
 			identifiables.add(select.resolve());
 		}
 		for (CQTable table : tables) {
@@ -359,7 +359,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			return;
 		}
 
-		final List<SelectId<?>> cSelects = new ArrayList<>(getSelects());
+		final List<SelectId> cSelects = new ArrayList<>(getSelects());
 		cSelects.addAll(getConcept().getDefaultSelects());
 
 		setSelects(cSelects);

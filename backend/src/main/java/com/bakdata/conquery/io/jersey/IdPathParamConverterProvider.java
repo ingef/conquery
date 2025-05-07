@@ -11,38 +11,32 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.MetaId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import lombok.Data;
 
-@Data
-public class IdPathParamConverterProvider implements ParamConverterProvider {
+public record IdPathParamConverterProvider(MetaStorage metaStorage, NamespacedStorageProvider namespacedStorageProvider)
+		implements ParamConverterProvider {
 
-	private final MetaStorage metaStorage;
-	private final NamespacedStorageProvider namespacedStorageProvider;
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({"raw", "unchecked"})
 	@Override
 	public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
+		if (!Id.class.isAssignableFrom(rawType)) {
+			return null;
+		}
+
+		Object storage = null;
+
 		if (MetaId.class.isAssignableFrom(rawType)) {
-			return new IdPathParamConverter(rawType, getMetaStorage());
+			storage = metaStorage();
 		}
 
 		if (NamespacedId.class.isAssignableFrom(rawType)) {
-			return new IdPathParamConverter(rawType, getNamespacedStorageProvider());
+			storage = namespacedStorageProvider();
 		}
 
-		return null;
+		return new IdPathParamConverter(IdUtil.createParser((Class<? extends Id<?,?>>) rawType), storage);
 	}
 
-	//TODO use IdInterner
-	public static class IdPathParamConverter<T extends Id<?, STORAGE>, STORAGE> implements ParamConverter<T> {
-
-		private final IdUtil.Parser<T> parser;
-		private final STORAGE storage;
-
-		public IdPathParamConverter(Class<T> type, STORAGE storage) {
-			parser = IdUtil.createParser(type);
-			this.storage = storage;
-		}
+	public record IdPathParamConverter<T extends Id<?, STORAGE>, STORAGE>(IdUtil.Parser<T> parser, STORAGE storage)
+			implements ParamConverter<T> {
 
 		@Override
 		public T fromString(String value) {
