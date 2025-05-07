@@ -15,24 +15,22 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 public record IdPathParamConverterProvider(MetaStorage metaStorage, NamespacedStorageProvider namespacedStorageProvider)
 		implements ParamConverterProvider {
 
-	@SuppressWarnings({"raw", "unchecked"})
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
 	public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
 		if (!Id.class.isAssignableFrom(rawType)) {
 			return null;
 		}
 
-		Object storage = null;
-
 		if (MetaId.class.isAssignableFrom(rawType)) {
-			storage = metaStorage();
+			return new IdPathParamConverter(IdUtil.createParser((Class<? extends MetaId<?>>) rawType), metaStorage());
 		}
 
 		if (NamespacedId.class.isAssignableFrom(rawType)) {
-			storage = namespacedStorageProvider();
+			return new IdPathParamConverter(IdUtil.createParser((Class<? extends NamespacedId<?>>) rawType), namespacedStorageProvider());
 		}
 
-		return new IdPathParamConverter(IdUtil.createParser((Class<? extends Id<?,?>>) rawType), storage);
+		throw new IllegalStateException("Unsupported Id-type %s".formatted(rawType));
 	}
 
 	public record IdPathParamConverter<T extends Id<?, STORAGE>, STORAGE>(IdUtil.Parser<T> parser, STORAGE storage)
