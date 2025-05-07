@@ -88,18 +88,12 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 	}
 
 	@Override
-	public Stream<ImportId> getAllImportIds() {
-		return imports.getAllKeys().map(ImportId.class::cast);
-	}
-
-	@Override
 	public Stream<ImportId> getAllImports() {
 		return imports.getAllKeys().map(ImportId.class::cast);
 	}
 
 	@Override
 	public void updateImport(Import imp) {
-
 		imports.update(imp);
 	}
 
@@ -112,7 +106,6 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 
 	@Override
 	public void updateDataset(Dataset dataset) {
-		dataset.setStorageProvider(this);
 		this.dataset.update(dataset);
 	}
 

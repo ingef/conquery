@@ -216,7 +216,7 @@ public class FrontEndConceptBuilder {
 															 .collect(Collectors.toList())));
 
 			if (!result.getDateColumn().getOptions().isEmpty()) {
-				result.getDateColumn().setDefaultValue(result.getDateColumn().getOptions().get(0).getValue());
+				result.getDateColumn().setDefaultValue(result.getDateColumn().getOptions().getFirst().getValue());
 			}
 		}
 
@@ -280,8 +280,8 @@ public class FrontEndConceptBuilder {
 
 	private void fillTreeMap(ConceptElement<?> ce, FrontendList map) {
 		map.add(ce.getId(), createCTNode(ce));
-		if (ce instanceof ConceptTreeChild && ((ConceptTreeChild) ce).getChildren() != null) {
-			for (ConceptTreeChild c : ((ConceptTreeChild) ce).getChildren()) {
+		if (ce instanceof ConceptTreeChild && ce.getChildren() != null) {
+			for (ConceptTreeChild c : ce.getChildren()) {
 				fillTreeMap(c, map);
 			}
 		}

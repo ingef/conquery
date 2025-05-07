@@ -67,8 +67,8 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 		String text = parser.getText();
 
 		// We need to assign resolvers for namespaced and meta ids because meta-objects might reference namespaced objects (e.g. ExecutionsId)
-		NamespacedStorageProvider namespacedStorageProvider = NamespacedStorageProvider.getResolver(ctxt);
-		MetaStorage metaStorage = MetaStorage.get(ctxt);
+		NamespacedStorageProvider namespacedStorageProvider = NamespacedStorageProvider.getInjected(ctxt);
+		MetaStorage metaStorage = MetaStorage.getInjected(ctxt);
 
 		try {
 			final ID id = deserializeId(text, idParser, isNamespacedId, ctxt);
@@ -88,11 +88,12 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 		id.collectIds(ids);
 
 		for (Id<?, ?> subId : ids) {
-			if (subId instanceof NamespacedId<?> nsId) {
-				nsId.setNamespacedStorageProvider(namespacedStorageProvider);
+			// NamespacedIds always recur to the root, which is the DatasetId
+			if (subId instanceof DatasetId nsId) {
+				nsId.setDomain(namespacedStorageProvider);
 			}
 			if (subId instanceof MetaId<?> metaId) {
-				metaId.setStorage(metaStorage);
+				metaId.setDomain(metaStorage);
 			}
 		}
 	}

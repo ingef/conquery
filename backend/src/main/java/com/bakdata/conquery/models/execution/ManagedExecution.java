@@ -74,7 +74,7 @@ import org.apache.shiro.authz.Permission;
 public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 
 	/**
-	 * Some unusual suffix. Its not too bad if someone actually uses this.
+	 * Some unusual suffix. It's not too bad if someone actually uses this.
 	 */
 	public static final String AUTO_LABEL_SUFFIX = "\t@§$";
 

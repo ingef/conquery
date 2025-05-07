@@ -74,9 +74,7 @@ public class Dataset extends LabeledNamespaceIdentifiable<DatasetId> implements 
 
 	@Override
 	public DatasetId createId() {
-		DatasetId datasetId = new DatasetId(getName());
-		datasetId.setNamespacedStorageProvider(getStorageProvider());
-		return datasetId;
+		return new DatasetId(getName());
 	}
 
 	@Override
@@ -88,5 +86,10 @@ public class Dataset extends LabeledNamespaceIdentifiable<DatasetId> implements 
 	@Override
 	public DatasetId getDataset() {
 		return this.getId();
+	}
+
+	@Override
+	protected void injectDomain(DatasetId id) {
+		id.setDomain(getStorageProvider());
 	}
 }

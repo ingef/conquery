@@ -37,10 +37,6 @@ public class InternToExternMapperId extends NamespacedId<InternToExternMapper>  
 		return assertNamespaceStorage(storage.getStorage(getDataset())).getInternToExternMapper(this);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return dataset.getNamespacedStorageProvider();
-	}
 
 	public enum Parser implements IdUtil.Parser<InternToExternMapperId> {
 		INSTANCE;

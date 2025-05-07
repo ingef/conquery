@@ -57,10 +57,6 @@ public class ConceptId extends ConceptElementId<Concept<?>> implements Authorize
 		return ConceptPermission.onInstance(abilities, this);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return dataset.getNamespacedStorageProvider();
-	}
 
 	public enum Parser implements IdUtil.Parser<ConceptId> {
 		INSTANCE;

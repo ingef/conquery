@@ -20,7 +20,7 @@ public abstract class MetaIdentifiable<ID extends MetaId<?>> extends Identifiabl
 	private MetaStorage metaStorage;
 
 	@Override
-	protected void injectStore(MetaId id) {
-		id.setStorage(metaStorage);
+	protected void injectDomain(MetaId id) {
+		id.setDomain(metaStorage);
 	}
 }

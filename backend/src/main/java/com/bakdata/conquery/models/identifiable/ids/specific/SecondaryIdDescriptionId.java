@@ -38,11 +38,6 @@ public class SecondaryIdDescriptionId extends NamespacedId<SecondaryIdDescriptio
 		return storage.getStorage(getDataset()).getSecondaryId(this);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return dataset.getNamespacedStorageProvider();
-	}
-
 	public static enum Parser implements IdUtil.Parser<SecondaryIdDescriptionId> {
 		INSTANCE;
 

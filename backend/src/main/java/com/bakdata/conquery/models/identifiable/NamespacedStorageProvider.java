@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface NamespacedStorageProvider extends Injectable {
 
-	static NamespacedStorageProvider getResolver(DeserializationContext ctxt) throws JsonMappingException {
+	static NamespacedStorageProvider getInjected(DeserializationContext ctxt) throws JsonMappingException {
 		return (NamespacedStorageProvider) ctxt
 				.findInjectableValue(NamespacedStorageProvider.class.getName(), null, null);
 	}

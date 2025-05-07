@@ -43,10 +43,6 @@ public class FilterId extends NamespacedId<Filter<?>>  {
 		connector.collectIds(collect);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return connector.getNamespacedStorageProvider();
-	}
 
 	public static enum Parser implements IdUtil.Parser<FilterId> {
 		INSTANCE;

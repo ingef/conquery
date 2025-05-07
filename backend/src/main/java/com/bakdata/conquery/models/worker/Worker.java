@@ -186,10 +186,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		bucketManager.updateConcept(concept);
 	}
 
-	public void updateDataset(Dataset dataset) {
-		storage.updateDataset(dataset);
-	}
-
 	public void updateWorkerInfo(WorkerInformation info) {
 		storage.updateWorker(info);
 	}

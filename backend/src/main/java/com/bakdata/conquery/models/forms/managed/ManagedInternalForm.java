@@ -61,7 +61,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	 */
 	@JsonIgnore
 	@Getter(AccessLevel.PROTECTED)
-	private  Map<String, ManagedQuery> initializedSubQueryHardRef;
+	private Map<String, ManagedQuery> initializedSubQueryHardRef;
 
 	public ManagedInternalForm(F form, UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
 		super(form, user, submittedDataset, storage, datasetRegistry, config);
@@ -83,9 +83,12 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		}
 		if (subQueries.size() != 1) {
 			// The sub-query size might also be zero if the backend just delegates the form further to another backend. Forms with more subqueries are not yet supported
-			log.trace("Column description is not generated for {} ({} from Form {}), because the form does not consits of a single subquery. Subquery size was {}.", subQueries
+			log.trace("Column description is not generated for {} ({} from Form {}), because the form does not consits of a single subquery. Subquery size was {}.",
+					  subQueries
 							  .size(),
-					  this.getClass().getSimpleName(), getId(), getSubmitted().getClass().getSimpleName()
+					  this.getClass().getSimpleName(),
+					  getId(),
+					  getSubmitted().getClass().getSimpleName()
 			);
 			return;
 		}
@@ -113,18 +116,18 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	@NotNull
 	private Map<String, ManagedQuery> resolveOrCreateSubExecutions() {
-		if ( subQueries != null  && !subQueries.isEmpty()) {
+		if (subQueries != null && !subQueries.isEmpty()) {
 			// This execution was already executed once, to we resolve the corresponding subqueries
 			return subQueries.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> (ManagedQuery) e.getValue().resolve()));
 		}
 
 		return getSubmitted().createSubQueries()
 							 .entrySet()
-							 .stream().collect(Collectors.toMap(
-						Map.Entry::getKey,
-						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getMetaStorage(), getDatasetRegistry(), getConfig())
-
-				));
+							 .stream()
+							 .collect(Collectors.toMap(
+									 Map.Entry::getKey,
+									 e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getMetaStorage(), getDatasetRegistry(), getConfig())
+							 ));
 	}
 
 	@Override
@@ -178,8 +181,9 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	public ExecuteForm createExecutionMessage() {
 		Preconditions.checkState(isInitialized(), "Was not initialized");
 		return new ExecuteForm(getId(), initializedSubQueryHardRef.values()
-												 .stream()
-												 .collect(Collectors.toMap(ManagedExecution::getId, ManagedQuery::getQuery)));
+																  .stream()
+																  .collect(Collectors.toMap(ManagedExecution::getId, ManagedQuery::getQuery))
+		);
 	}
 
 }

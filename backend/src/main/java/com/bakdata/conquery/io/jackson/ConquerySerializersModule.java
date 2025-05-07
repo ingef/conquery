@@ -53,7 +53,7 @@ public class ConquerySerializersModule extends SimpleModule {
 
 		//register IdKeySerializer for all id types
 		List<Class<?>> idTypes =
-				CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(Id.class.getName())
+				CPSTypeIdResolver.SCAN_RESULT.getSubclasses(Id.class.getName())
 											 .loadClasses();
 
 		for (Class<?> type : idTypes) {

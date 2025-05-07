@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -273,7 +274,7 @@ public class TableExportQuery extends Query {
 
 			final ResultInfo columnResultInfo;
 			if (connectorColumns.containsKey(column)) {
-				final Concept<?> concept = connectorColumns.get(column).getConcept();
+				final TreeConcept concept = (TreeConcept) connectorColumns.get(column).getConcept();
 
 				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.
 				columnResultInfo = new ColumnResultInfo(column, ResultType.Primitive.STRING, column.getDescription(), isRawConceptValues() ? null : concept);

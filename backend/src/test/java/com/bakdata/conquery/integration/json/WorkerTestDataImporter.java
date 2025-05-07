@@ -68,7 +68,7 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		);
 		test.getConcept().setConnectors(Collections.singletonList((ConceptTreeConnector) test.getConnector()));
 
-		waitUntilDone(support, () -> LoadingUtil.uploadConcept(support, support.getDataset(), test.getConcept()));
+		waitUntilDone(support, () -> LoadingUtil.uploadConcept(support, support.getDataset().getId(), test.getConcept()));
 		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, content.getTables()));
 		waitUntilDone(support, () -> LoadingUtil.updateMatchingStats(support));
 	}

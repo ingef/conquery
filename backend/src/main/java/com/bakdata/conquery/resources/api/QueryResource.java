@@ -15,7 +15,6 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
@@ -24,9 +23,8 @@ import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.SingleTableResult;
+import com.bakdata.conquery.models.query.statistics.ResultStatistics;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 import lombok.RequiredArgsConstructor;
@@ -55,11 +53,8 @@ public class QueryResource {
 
 	@GET
 	@Path("{" + QUERY + "}/statistics")
-	public Response getDescription(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId queryId) {
-
-
-
-		return Response.ok((processor.getResultStatistics(((ManagedExecution & SingleTableResult) query)))).build();
+	public ResultStatistics getDescription(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId queryId) {
+		return processor.getResultStatistics(queryId, subject);
 	}
 
 	@PATCH

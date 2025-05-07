@@ -41,7 +41,7 @@ public class MetaStorage implements ConqueryStorage, Injectable {
 	private IdentifiableStore<Role> authRole;
 	private IdentifiableStore<Group> authGroup;
 
-	public static MetaStorage get(DeserializationContext ctxt) throws JsonMappingException {
+	public static MetaStorage getInjected(DeserializationContext ctxt) throws JsonMappingException {
 		return (MetaStorage) ctxt
 				.findInjectableValue(MetaStorage.class.getName(), null, null);
 	}

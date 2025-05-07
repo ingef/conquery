@@ -14,7 +14,7 @@ import lombok.Getter;
 
 @Getter
 @EqualsAndHashCode(callSuper=false)
-public class RoleId extends PermissionOwnerId<Role> {
+public final class RoleId extends PermissionOwnerId<Role> {
 	public static final String TYPE = "role";
 	
 	private final String role;
@@ -48,8 +48,4 @@ public class RoleId extends PermissionOwnerId<Role> {
 		}
 	}
 
-	@Override
-	public Role getPermissionOwner(MetaStorage storage) {
-		return storage.getRole(this);
-	}
 }

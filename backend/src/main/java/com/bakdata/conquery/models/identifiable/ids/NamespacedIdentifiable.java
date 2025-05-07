@@ -8,15 +8,12 @@ public abstract class NamespacedIdentifiable<ID extends NamespacedId<?>> extends
 
 	public abstract DatasetId getDataset();
 
-
 	protected NamespacedStorageProvider getStorageProvider() {
-		//TODO make field?
 		return getDataset().getNamespacedStorageProvider();
 	}
 
 	@Override
-	protected void injectStore(ID id) {
-		NamespacedStorageProvider storageProvider = getStorageProvider();
-		id.setNamespacedStorageProvider(storageProvider);
+	protected void injectDomain(ID id) {
+		// only implemented for DatasetId
 	}
 }

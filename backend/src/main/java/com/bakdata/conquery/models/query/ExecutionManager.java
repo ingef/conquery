@@ -168,7 +168,6 @@ public abstract class ExecutionManager {
 		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset().getId(), storage, datasetRegistry, getConfig());
 		managed.setSystem(system);
 		managed.setQueryId(queryId);
-		managed.setMetaStorage(storage);
 
 		// Store the execution
 		storage.addExecution(managed);

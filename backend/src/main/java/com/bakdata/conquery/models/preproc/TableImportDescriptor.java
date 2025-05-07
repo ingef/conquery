@@ -13,9 +13,6 @@ import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableImportDescriptorId;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -34,7 +31,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 @Getter
 @Setter
 @Slf4j
-public class TableImportDescriptor extends NamespacedIdentifiable<TableImportDescriptorId> implements Serializable {
+public class TableImportDescriptor implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -103,21 +100,5 @@ public class TableImportDescriptor extends NamespacedIdentifiable<TableImportDes
 		}
 
 		return validityHashBuilder.toHashCode();
-	}
-
-	@Override
-	public TableImportDescriptorId createId() {
-		return new TableImportDescriptorId(getName());
-	}
-
-	@Override
-	@JsonIgnore
-	public DatasetId getDataset() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	protected void injectStore(TableImportDescriptorId id) {
-
 	}
 }

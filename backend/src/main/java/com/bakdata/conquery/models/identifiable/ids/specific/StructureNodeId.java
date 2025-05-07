@@ -50,10 +50,6 @@ public class StructureNodeId extends NamespacedId<StructureNode> {
 		}
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return dataset.getNamespacedStorageProvider();
-	}
 
 	public static enum Parser implements IdUtil.Parser<StructureNodeId> {
 		INSTANCE;

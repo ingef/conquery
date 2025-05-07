@@ -14,13 +14,14 @@ import com.bakdata.conquery.models.identifiable.ids.MetaId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.Data;
 
-
-public class IdParamConverter<T extends Id<?, STORAGE>, STORAGE> implements ParamConverter<T> {
+//TODO invert these classes
+//TODO use IdInterner
+public class IdPathParamConverter<T extends Id<?, STORAGE>, STORAGE> implements ParamConverter<T> {
 
 	private final Parser<T> parser;
 	private final STORAGE storage;
 
-	public IdParamConverter(Class<T> type, STORAGE storage) {
+	public IdPathParamConverter(Class<T> type, STORAGE storage) {
 		parser = IdUtil.createParser(type);
 		this.storage = storage;
 	}
@@ -28,7 +29,7 @@ public class IdParamConverter<T extends Id<?, STORAGE>, STORAGE> implements Para
 	@Override
 	public T fromString(String value) {
 		T parsed = parser.parse(value);
-		parsed.setStorage(storage);
+		parsed.setDomain(storage);
 		return parsed;
 	}
 
@@ -47,11 +48,11 @@ public class IdParamConverter<T extends Id<?, STORAGE>, STORAGE> implements Para
 		@Override
 		public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
 			if (MetaId.class.isAssignableFrom(rawType)) {
-				return new IdParamConverter(rawType, getMetaStorage());
+				return new IdPathParamConverter(rawType, getMetaStorage());
 			}
 
 			if (NamespacedId.class.isAssignableFrom(rawType)) {
-				return new IdParamConverter(rawType, getNamespacedStorageProvider());
+				return new IdPathParamConverter(rawType, getNamespacedStorageProvider());
 			}
 
 			return null;

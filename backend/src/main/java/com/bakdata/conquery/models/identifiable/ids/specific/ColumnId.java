@@ -44,11 +44,6 @@ public class ColumnId extends NamespacedId<Column> {
 		table.collectIds(collect);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return table.getNamespacedStorageProvider();
-	}
-
 	public static enum Parser implements IdUtil.Parser<ColumnId> {
 		INSTANCE;
 

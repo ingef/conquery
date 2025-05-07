@@ -13,7 +13,7 @@ import lombok.Getter;
 
 @Getter
 @EqualsAndHashCode(callSuper=false)
-public class GroupId extends PermissionOwnerId<Group> {
+public final class GroupId extends PermissionOwnerId<Group> {
 
 	public static final String TYPE = "group";
 	
@@ -48,8 +48,4 @@ public class GroupId extends PermissionOwnerId<Group> {
 		}
 	}
 
-	@Override
-	public Group getPermissionOwner(MetaStorage storage) {
-		return storage.getGroup(this);
-	}
 }

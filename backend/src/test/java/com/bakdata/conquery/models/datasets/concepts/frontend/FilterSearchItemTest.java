@@ -34,6 +34,7 @@ public class FilterSearchItemTest {
 
 		Dataset dataset = new Dataset();
 		dataset.setName("testDataset");
+		dataset.setStorageProvider(NAMESPACED_STORAGE);
 
 		NAMESPACED_STORAGE.updateDataset(dataset);
 

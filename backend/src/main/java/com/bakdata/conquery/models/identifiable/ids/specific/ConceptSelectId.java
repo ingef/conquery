@@ -38,10 +38,6 @@ public class ConceptSelectId extends SelectId<UniversalSelect> {
 										.getConcept(concept).getSelectByName(getSelect());
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return concept.getNamespacedStorageProvider();
-	}
 
 	@Override
 	public ConceptId findConcept() {

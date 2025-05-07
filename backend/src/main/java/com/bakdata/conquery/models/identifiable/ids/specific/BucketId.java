@@ -44,10 +44,6 @@ public class BucketId extends NamespacedId<Bucket>  {
 		imp.collectIds(collect);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return imp.getNamespacedStorageProvider();
-	}
 
 	public static enum Parser implements IdUtil.Parser<BucketId> {
 		INSTANCE;

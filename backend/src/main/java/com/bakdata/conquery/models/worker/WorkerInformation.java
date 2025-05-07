@@ -55,7 +55,7 @@ public class WorkerInformation extends NamespacedIdentifiable<WorkerId> implemen
 	}
 
 	@Override
-	protected void injectStore(WorkerId id) {
+	protected void injectDomain(WorkerId id) {
 		// does nothing
 	}
 }

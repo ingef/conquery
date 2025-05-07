@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.identifiable.ids;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -8,50 +9,57 @@ import java.util.Objects;
 import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
 import com.bakdata.conquery.models.identifiable.IdResolvingException;
 import com.bakdata.conquery.util.ConqueryEscape;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.jetbrains.annotations.NotNull;
 
 @JsonDeserialize(using = IdDeserializer.class)
-public sealed interface Id<TYPE, STORAGE> permits NamespacedId, MetaId {
+public sealed abstract class Id<TYPE, STORAGE> permits NamespacedId, MetaId {
 
 
-	STORAGE getStorage();
-	void setStorage(STORAGE storage);
+	/**
+	 * Holds the cached escaped value.
+	 *
+	 * @implNote needs to be initialized. Otherwise, SerializationTests fail, because assertj checks ignored types.
+	 */
+	@JsonIgnore
+	private WeakReference<String> escapedId = new WeakReference<>(null);
 
 	@Override
-	int hashCode();
+	public abstract int hashCode();
 
 	@Override
-	boolean equals(Object obj);
+	public abstract boolean equals(Object obj);
 
 	@Override
 	@JsonValue
-	String toString();
+	public final String toString() {
+		final String escaped = escapedId.get();
+		if (escaped != null) {
+			return escaped;
+		}
 
-	default String escapedIdString() {
+		String escapedIdString = escapedIdString();
+		escapedId = new WeakReference<>(escapedIdString);
+		return escapedIdString;
+	}
+
+	public final String escapedIdString() {
 		List<Object> components = getComponents();
 		components.replaceAll(o -> ConqueryEscape.escape(Objects.toString(o)));
 		return IdUtil.JOINER.join(components);
 	}
 
-	default List<Object> getComponents() {
+	public final List<Object> getComponents() {
 		List<Object> components = new ArrayList<>();
 		collectComponents(components);
 		return components;
 	}
 
-	/**
-	 * Return the object identified by the given id from the given storage.
-	 *
-	 * @return the object or null if no object could be resolved. If the id type is not supported
-	 * throws a IllegalArgumentException
-	 */
-	TYPE get(STORAGE storage);
+	public abstract void collectComponents(List<Object> components);
 
-
-	@NotNull
-	default TYPE resolve(STORAGE storage) {
+	public final TYPE resolve() {
+		STORAGE storage = getDomain();
 		try {
 			TYPE o = get(storage);
 			if (o == null) {
@@ -67,21 +75,27 @@ public sealed interface Id<TYPE, STORAGE> permits NamespacedId, MetaId {
 		}
 	}
 
-	default TYPE resolve() {
-		return resolve(getStorage());
-	}
+	protected abstract STORAGE getDomain();
 
-	default IdResolvingException newIdResolveException() {
+	public abstract void setDomain(STORAGE storage);
+
+	/**
+	 * Return the object identified by the given id from the given storage.
+	 *
+	 * @return the object or null if no object could be resolved. If the id type is not supported
+	 * throws a IllegalArgumentException
+	 */
+	public abstract TYPE get(STORAGE storage);
+
+	public final IdResolvingException newIdResolveException() {
 		return new IdResolvingException(this);
 	}
 
-	default IdResolvingException newIdResolveException(Exception e) {
+	public final IdResolvingException newIdResolveException(Exception e) {
 		return new IdResolvingException(this, e);
 	}
 
-	void collectComponents(List<Object> components);
-
-	void collectIds(Collection<Id<?, ?>> collect);
+	public abstract void collectIds(Collection<Id<?, ?>> collect);
 
 
 }

@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @NoArgsConstructor
-public abstract class IdentifiableImpl<ID extends Id> implements Identifiable<ID> {
+public abstract class IdentifiableImpl<ID extends Id<?, ?>> implements Identifiable<ID> {
 
 	@JsonIgnore
 	protected transient ID cachedId;
@@ -16,7 +16,7 @@ public abstract class IdentifiableImpl<ID extends Id> implements Identifiable<ID
 
 	@Override
 	public int hashCode() {
-		if(cachedHash == Integer.MIN_VALUE) {
+		if (cachedHash == Integer.MIN_VALUE) {
 			int result = 1;
 			result = 31 * result + ((getId() == null) ? 0 : getId().hashCode());
 			cachedHash = result;
@@ -35,7 +35,7 @@ public abstract class IdentifiableImpl<ID extends Id> implements Identifiable<ID
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		IdentifiableImpl other = (IdentifiableImpl) obj;
+		IdentifiableImpl<?> other = (IdentifiableImpl) obj;
 		if (getId() == null) {
 			return other.getId() == null;
 		}
@@ -46,7 +46,7 @@ public abstract class IdentifiableImpl<ID extends Id> implements Identifiable<ID
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName()+"["+ getId() + "]";
+		return this.getClass().getSimpleName() + "[" + getId() + "]";
 	}
 
 	@ToString.Include
@@ -55,12 +55,12 @@ public abstract class IdentifiableImpl<ID extends Id> implements Identifiable<ID
 	public ID getId() {
 		if (cachedId == null) {
 			cachedId = createId();
-			injectStore(cachedId);
+			injectDomain(cachedId);
 		}
 		return cachedId;
 	}
 
-	protected abstract void injectStore(ID id);
+	protected abstract void injectDomain(ID id);
 
 	public abstract ID createId();
 }

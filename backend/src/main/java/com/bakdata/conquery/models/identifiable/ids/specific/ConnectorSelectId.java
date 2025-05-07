@@ -48,10 +48,6 @@ public class ConnectorSelectId extends SelectId<Select> {
 		super.collectComponents(components);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return connector.getNamespacedStorageProvider();
-	}
 
 	public enum Parser implements IdUtil.Parser<ConnectorSelectId> {
 		INSTANCE;

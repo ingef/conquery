@@ -37,10 +37,6 @@ public class SearchIndexId extends NamespacedId<SearchIndex>  {
 		return assertNamespaceStorage(storage.getStorage(getDataset())).getSearchIndex(this);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return dataset.getNamespacedStorageProvider();
-	}
 
 	public enum Parser implements IdUtil.Parser<SearchIndexId> {
 		INSTANCE;

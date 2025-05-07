@@ -45,11 +45,6 @@ public class CBlockId extends NamespacedId<CBlock>  {
 		connector.collectIds(collect);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return bucket.getNamespacedStorageProvider();
-	}
-
 	public static enum Parser implements IdUtil.Parser<CBlockId> {
 		INSTANCE;
 

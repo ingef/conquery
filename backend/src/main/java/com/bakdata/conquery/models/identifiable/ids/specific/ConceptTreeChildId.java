@@ -51,10 +51,6 @@ public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> {
 		parent.collectIds(collect);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return parent.getNamespacedStorageProvider();
-	}
 
 	public static enum Parser implements IdUtil.Parser<ConceptTreeChildId> {
 		INSTANCE;

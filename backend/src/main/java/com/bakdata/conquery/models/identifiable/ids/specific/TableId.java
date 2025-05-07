@@ -38,10 +38,6 @@ public class TableId extends NamespacedId<Table>  {
 		return storage.getStorage(getDataset()).getTable(this);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return dataset.getNamespacedStorageProvider();
-	}
 
 	public static enum Parser implements IdUtil.Parser<TableId> {
 		INSTANCE;

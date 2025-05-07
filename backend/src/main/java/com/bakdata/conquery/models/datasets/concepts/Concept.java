@@ -12,14 +12,12 @@ import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -62,14 +60,6 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	@JacksonInject(useInput = OptBoolean.TRUE)
 	private DatasetId dataset;
 
-	/**
-	 * rawValue is expected to be an Integer, expressing a localId for {@link TreeConcept#getElementByLocalId(int)}.
-	 *
-	 * <p>
-	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} is used to print.
-	 */
-	public abstract String printConceptLocalId(Object rawValue, PrintSettings printSettings);
-
 	@JsonIgnore
 	public List<SelectId<?>> getDefaultSelects() {
 		return getSelects().stream().filter(Select::isDefault)
@@ -97,6 +87,11 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	@JsonIgnore
 	public Concept<?> getConcept() {
 		return this;
+	}
+
+	@Override
+	public ConceptElement<?> getParent() {
+		return null;
 	}
 
 	@Override
@@ -133,5 +128,5 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 		return null;
 	}
 
-	public abstract ConceptElement<?> findById(ConceptElementId id);
+	public abstract ConceptElement<?> findById(ConceptElementId<?> id);
 }

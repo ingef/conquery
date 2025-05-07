@@ -21,16 +21,16 @@ public class ValidityDateId extends NamespacedId<ValidityDate> {
 	private final String validityDate;
 
 	@Override
-	public DatasetId getDataset() {
-		return connector.getDataset();
-	}
-
-	@Override
 	public ValidityDate get(NamespacedStorageProvider storage) {
 		return storage.getStorage(getDataset())
 					  .getConcept(getConnector().getConcept())
 					  .getConnectorByName(getConnector().getConnector())
 					  .getValidityDateByName(getValidityDate());
+	}
+
+	@Override
+	public DatasetId getDataset() {
+		return connector.getDataset();
 	}
 
 	@Override
@@ -45,10 +45,6 @@ public class ValidityDateId extends NamespacedId<ValidityDate> {
 		connector.collectIds(collect);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return connector.getNamespacedStorageProvider();
-	}
 
 	public static enum Parser implements IdUtil.Parser<ValidityDateId> {
 		INSTANCE;

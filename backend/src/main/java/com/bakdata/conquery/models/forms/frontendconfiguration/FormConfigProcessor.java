@@ -55,7 +55,7 @@ public class FormConfigProcessor {
 	@Inject
 	private MetaStorage storage;
 	@Inject
-	private DatasetRegistry datasetRegistry;
+	private DatasetRegistry<?> datasetRegistry;
 
 	/**
 	 * Return an overview of all form config available to the subject. The selection can be reduced by setting a specific formType.
@@ -69,7 +69,7 @@ public class FormConfigProcessor {
 
 		if (requestedFormType.isEmpty()) {
 			// If no specific form type is provided, show all types the subject is permitted to create.
-			// However if a subject queries for specific form types, we will show all matching regardless whether
+			// However, if a subject queries for specific form types, we will show all matching regardless whether
 			// the form config can be used by the subject again.
 			final Set<String> allowedFormTypes = new HashSet<>();
 
@@ -112,7 +112,6 @@ public class FormConfigProcessor {
 	 */
 	public FormConfig addConfig(Subject subject, DatasetId targetDataset, FormConfigAPI config) {
 
-		//TODO clear this up
 		final Namespace namespace = datasetRegistry.get(targetDataset);
 
 		subject.authorize(namespace.getDataset(), Ability.READ);
@@ -127,13 +126,11 @@ public class FormConfigProcessor {
 	/**
 	 * Adds a formular configuration under a specific dataset to the storage and grants the user the rights to manage/patch it.
 	 */
-	private FormConfigId addConfigToDataset(FormConfig internalConfig) {
-
+	private void addConfigToDataset(FormConfig internalConfig) {
 		ValidatorHelper.failOnError(log, validator.validate(internalConfig));
-		internalConfig.setMetaStorage(storage); //TODO unify in MetaStorage?
-		storage.addFormConfig(internalConfig);
 
-		return internalConfig.getId();
+		internalConfig.setMetaStorage(storage);
+		storage.addFormConfig(internalConfig);
 	}
 
 	/**

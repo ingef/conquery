@@ -57,11 +57,15 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName());
 		final ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(datasetStorage);
 
+		dataset.setStorageProvider(datasetStorage);
+
 		// Each store injects its own IdResolveCtx so each needs its own mapper
 		datasetStorage.openStores(Jackson.copyMapperAndInjectables((persistenceMapper)));
+
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap(datasetStorage));
 		datasetStorage.setPreviewConfig(new PreviewConfig());
+
 		datasetStorage.close();
 
 		return createNamespace(datasetStorage, metaStorage, environment);

@@ -43,10 +43,6 @@ public class ImportId extends NamespacedId<Import>  {
 		table.collectIds(collect);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return table.getNamespacedStorageProvider();
-	}
 
 	public static enum Parser implements IdUtil.Parser<ImportId> {
 		INSTANCE;

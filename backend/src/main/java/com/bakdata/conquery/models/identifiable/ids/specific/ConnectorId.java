@@ -43,10 +43,6 @@ public class ConnectorId extends NamespacedId<Connector>  {
 		concept.collectIds(collect);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return concept.getNamespacedStorageProvider();
-	}
 
 	public static enum Parser implements IdUtil.Parser<ConnectorId> {
 		INSTANCE;

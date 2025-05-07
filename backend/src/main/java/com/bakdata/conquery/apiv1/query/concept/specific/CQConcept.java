@@ -257,13 +257,13 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		final List<ResultInfo> resultInfos = new ArrayList<>();
 
 		for (SelectId<?> select : selects) {
-			Select resolved = (Select) select.resolve();
+			Select resolved = select.resolve();
 			resultInfos.add(resolved.getResultInfo(this));
 		}
 
 		for (CQTable table : tables) {
 			for (SelectId<?> sel : table.getSelects()) {
-				Select resolved = (Select) sel.resolve(); //TODO why does this not resolve to Select?
+				Select resolved = sel.resolve();
 				resultInfos.add(resolved.getResultInfo(this));
 			}
 		}
@@ -366,7 +366,12 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 		for (CQTable t : getTables()) {
 			final List<ConnectorSelectId> conSelects = new ArrayList<>(t.getSelects());
-			conSelects.addAll(t.getConnector().resolve().getDefaultSelects().stream().map(Select::getId).map(ConnectorSelectId.class::cast).toList());
+			conSelects.addAll(t.getConnector().resolve()
+							   .getDefaultSelects().stream()
+							   .map(Select::getId)
+							   .map(ConnectorSelectId.class::cast)
+							   .toList());
+
 			t.setSelects(conSelects);
 		}
 	}
