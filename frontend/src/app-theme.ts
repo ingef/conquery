@@ -32,6 +32,7 @@ export const theme: Theme = {
       pdf: "#d73a49",
       zip: "#6f42c1",
       xlsx: "#28a745",
+      json: "#1f5f30",
     },
     bgAlt: "#f4f6f5",
     blueGrayDark: "#1f5f30",
