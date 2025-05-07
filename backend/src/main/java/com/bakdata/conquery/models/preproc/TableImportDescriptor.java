@@ -36,7 +36,10 @@ public class TableImportDescriptor implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@NotEmpty
-	protected String name;
+	private String name;
+
+
+	private String label;
 
 	/**
 	 * Target table to load the import to.
