@@ -9,6 +9,7 @@ import jakarta.validation.Validator;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.freemarker.Freemarker;
+import com.bakdata.conquery.io.jackson.serializer.DatasetParamInjector;
 import com.bakdata.conquery.io.jersey.IdPathParamConverterProvider;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -125,7 +126,8 @@ public class AdminServlet {
 					.register(new MultiPartFeature())
 					.register(new IdPathParamConverterProvider(manager.getMetaStorage(), manager.getDatasetRegistry()))
 					.register(AuthCookieFilter.class)
-					.register(CsrfTokenCheckFilter.class);
+					.register(CsrfTokenCheckFilter.class)
+					.register(DatasetParamInjector.class);
 
 
 		jerseyConfigUI.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)))
@@ -143,7 +145,8 @@ public class AdminServlet {
 					  .register(new IdPathParamConverterProvider(manager.getMetaStorage(), manager.getDatasetRegistry()))
 					  .register(AdminPermissionFilter.class)
 					  .register(AuthCookieFilter.class)
-					  .register(CsrfTokenSetFilter.class);
+					  .register(CsrfTokenSetFilter.class)
+					  .register(DatasetParamInjector.class);
 
 	}
 

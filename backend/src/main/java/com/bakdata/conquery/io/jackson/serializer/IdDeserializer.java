@@ -90,8 +90,14 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 	public static <ID extends Id<?, ?>> ID deserializeId(String text, IdUtil.Parser<ID> idParser, boolean checkForInjectedPrefix, DeserializationContext ctx)
 			throws JsonMappingException {
 
-		List<String> components = checkForInjectedPrefix ?
-								  IdUtil.Parser.asComponents(findDatasetName(ctx), text) :
+		String prefix = null;
+
+		if (checkForInjectedPrefix) {
+			prefix = findDatasetName(ctx);
+		}
+
+		List<String> components = prefix != null ?
+								  IdUtil.Parser.asComponents(prefix, text) :
 								  IdUtil.Parser.asComponents(text);
 
 
@@ -141,7 +147,6 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 		}
 
 		// Sometimes injected via @PathParam
-
 		DatasetId id = Jackson.findInjectable(ctx, DatasetId.class);
 
 		if (id != null) {

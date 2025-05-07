@@ -57,7 +57,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	protected String label;
 
 	@ToString.Exclude
-	@Getter(AccessLevel.PRIVATE) // So only Jackson can use this to deserialize
 	@NotNull
 	private Set<ConqueryPermission> permissions = new HashSet<>();
 
@@ -97,23 +96,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 				.add(permission)
 				.build();
 		updateStorage();
-	}
-
-	/**
-	 * Removes permissions from the owner object and from the persistent storage.
-	 *
-	 * @param permissions The permission to remove.
-	 * @return Returns the added Permission
-	 */
-	public boolean removePermissions(Set<ConqueryPermission> permissions) {
-		boolean ret = false;
-		synchronized (this) {
-			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions);
-			ret = newSet.removeAll(permissions);
-			this.permissions = newSet;
-			updateStorage();
-		}
-		return ret;
 	}
 
 	public boolean removePermission(Permission permission) {

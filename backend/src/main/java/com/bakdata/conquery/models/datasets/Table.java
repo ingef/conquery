@@ -17,8 +17,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
@@ -31,8 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @JsonDeserialize(converter = Table.Initializer.class)
 public class Table extends LabeledNamespaceIdentifiable<TableId> implements Initializing {
 
-	// TODO: 10.01.2020 fk: register imports here?
-
+	@JacksonInject(useInput = OptBoolean.TRUE)
 	private DatasetId dataset;
 
 	@NotNull
