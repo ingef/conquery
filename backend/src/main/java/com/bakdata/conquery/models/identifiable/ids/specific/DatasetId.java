@@ -24,15 +24,15 @@ import lombok.Setter;
 
 @RequiredArgsConstructor
 @Getter
-@EqualsAndHashCode(callSuper = false, doNotUseGetters = true)
+@EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
 public class DatasetId extends NamespacedId<Dataset> implements Authorized {
 
+	@EqualsAndHashCode.Include
 	private final String name;
 
 	@Setter
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@JsonIgnore
-	@EqualsAndHashCode.Exclude
 	private NamespacedStorageProvider namespacedStorageProvider;
 
 	@JsonIgnore

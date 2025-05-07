@@ -5,7 +5,9 @@ import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,8 +18,8 @@ import lombok.Setter;
 @JsonIgnoreProperties({"searchDisabled", "generateSearchSuffixes", "searchMinSuffixLength"})
 public class SecondaryIdDescription extends LabeledNamespaceIdentifiable<SecondaryIdDescriptionId> {
 
+	@JacksonInject(useInput = OptBoolean.TRUE)
 	private DatasetId dataset;
-
 	private String description;
 
 	@View.ApiManagerPersistence

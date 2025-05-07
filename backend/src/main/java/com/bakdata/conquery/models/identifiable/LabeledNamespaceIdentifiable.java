@@ -25,10 +25,15 @@ public abstract class LabeledNamespaceIdentifiable<ID extends NamespacedId<?>> e
 	@Setter
 	private String name;
 
-	protected static String makeDefaultName(String label) {
-		return DEFAULT_NAME_UNWANTED.replaceFrom(label.toLowerCase(), "_");
-	}
+	@NotEmpty
+	@ToString.Include
+	public final String getLabel() {
+		if (label == null) {
+			return getName();
+		}
 
+		return label;
+	}
 
 	public final void setLabel(String label) {
 		if (label == null) {
@@ -41,13 +46,7 @@ public abstract class LabeledNamespaceIdentifiable<ID extends NamespacedId<?>> e
 		}
 	}
 
-	@NotEmpty
-	@ToString.Include
-	public String getLabel() {
-		if (label == null) {
-			return getName();
-		}
-
-		return label;
+	public static String makeDefaultName(String label) {
+		return DEFAULT_NAME_UNWANTED.replaceFrom(label.toLowerCase(), "_");
 	}
 }

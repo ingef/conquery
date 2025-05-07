@@ -12,12 +12,14 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
 public class SecondaryIdDescriptionId extends NamespacedId<SecondaryIdDescription>  {
 
+	@NonNull
 	private final DatasetId dataset;
 	private final String name;
 
