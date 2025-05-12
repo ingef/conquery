@@ -26,7 +26,6 @@ import com.bakdata.conquery.resources.api.MeResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 @CPSType(base = ResourcesProvider.class, id = "ApiV1")
@@ -50,8 +49,6 @@ public class ApiV1 extends ResourceConfig implements ResourcesProvider {
 				bindAsContract(FormProcessor.class);
 			}
 		});
-
-		register(new MultiPartFeature());
 
 		jersey.register(CORSPreflightRequestFilter.class);
 		jersey.register(CORSResponseFilter.class);

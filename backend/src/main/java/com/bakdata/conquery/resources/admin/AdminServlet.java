@@ -51,7 +51,6 @@ import io.dropwizard.views.common.ViewMessageBodyWriter;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 /**
@@ -123,7 +122,6 @@ public class AdminServlet {
 						}
 					})
 					.register(AdminPermissionFilter.class)
-					.register(new MultiPartFeature())
 					.register(new IdPathParamConverterProvider(manager.getMetaStorage(), manager.getDatasetRegistry()))
 					.register(AuthCookieFilter.class)
 					.register(CsrfTokenCheckFilter.class)
@@ -141,7 +139,6 @@ public class AdminServlet {
 							  bind(manager.getConfig()).to(ConqueryConfig.class);
 						  }
 					  })
-					  .register(new MultiPartFeature())
 					  .register(new IdPathParamConverterProvider(manager.getMetaStorage(), manager.getDatasetRegistry()))
 					  .register(AdminPermissionFilter.class)
 					  .register(AuthCookieFilter.class)
