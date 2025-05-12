@@ -29,7 +29,6 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -53,14 +52,12 @@ public class FrontEndConceptBuilder {
 
 		final FrontendRoot root = new FrontendRoot();
 		final Map<Id<?, ?>, FrontendNode> roots = root.getConcepts();
-		final List<? extends Concept<?>> allConcepts;
-		try(Stream<Concept<?>> conceptStream = storage.getAllConcepts()) {
 
-			allConcepts = conceptStream
-					// Remove any hidden concepts
-					.filter(Predicate.not(Concept::isHidden))
-					.toList();
-		}
+		final List<? extends Concept<?>> allConcepts =
+				storage.getAllConcepts()
+					   // Remove any hidden concepts
+					   .filter(Predicate.not(Concept::isHidden))
+					   .toList();
 
 		if (allConcepts.isEmpty()) {
 			log.warn("There are no displayable concepts in the dataset {}", storage.getDataset().getId());
@@ -78,8 +75,11 @@ public class FrontEndConceptBuilder {
 			roots.put(concept.getId(), createConceptRoot(concept, storage.getStructure()));
 		}
 		if (roots.isEmpty()) {
-			log.warn("No concepts could be collected for {} on dataset {}. The subject is possibly lacking the permission to use them.", subject.getId(), storage.getDataset()
-																																								 .getId());
+			log.warn("No concepts could be collected for {} on dataset {}. The subject is possibly lacking the permission to use them.",
+					 subject.getId(),
+					 storage.getDataset()
+							.getId()
+			);
 		}
 		else {
 			log.trace("Collected {} concepts for {} on dataset {}.", roots.size(), subject.getId(), storage.getDataset().getId());
@@ -89,7 +89,7 @@ public class FrontEndConceptBuilder {
 			insertStructureNode(sn, roots);
 		}
 		//add all secondary IDs
-		try(Stream<SecondaryIdDescription> secondaryIds = storage.getSecondaryIds()) {
+		try (Stream<SecondaryIdDescription> secondaryIds = storage.getSecondaryIds()) {
 			root.getSecondaryIds()
 				.addAll(secondaryIds
 								.filter(sid -> !sid.isHidden())
@@ -102,9 +102,6 @@ public class FrontEndConceptBuilder {
 
 	private FrontendNode createConceptRoot(Concept<?> concept, StructureNode[] structureNodes) {
 
-		final MatchingStats matchingStats = concept.getMatchingStats();
-
-
 		final StructureNodeId
 				structureParent =
 				Arrays.stream(structureNodes)
@@ -114,15 +111,18 @@ public class FrontEndConceptBuilder {
 					  .map(StructureNode::getId)
 					  .orElse(null);
 
+		final MatchingStats matchingStats = concept.getMatchingStats();
+		boolean hasStats = matchingStats != null;
+
 		final FrontendNode node =
 				FrontendNode.builder()
 							.active(true)
 							.description(concept.getDescription())
 							.label(concept.getLabel())
 							.additionalInfos(concept.getAdditionalInfos())
-							.matchingEntries(matchingStats != null ? matchingStats.countEvents() : 0)
-							.matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
-							.dateRange(matchingStats != null && matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
+							.matchingEntries(hasStats ? matchingStats.countEvents() : 0)
+							.matchingEntities(hasStats ? matchingStats.countEntities() : 0)
+							.dateRange(hasStats && matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
 							.detailsAvailable(Boolean.TRUE)
 							.codeListResolvable(concept.countElements() > 1)
 							.parent(structureParent)
@@ -136,10 +136,10 @@ public class FrontEndConceptBuilder {
 							.tables(concept.getConnectors().stream().map(this::createTable).collect(Collectors.toList()))
 							.build();
 
-		if (concept instanceof TreeConcept tree && tree.getChildren() != null) {
-			node.setChildren(tree.getChildren().stream()
-								 .map(ConceptTreeChild::getId)
-								 .toArray(ConceptTreeChildId[]::new));
+		if (concept.getChildren() != null) {
+			node.setChildren(concept.getChildren().stream()
+									.map(ConceptTreeChild::getId)
+									.toArray(ConceptTreeChildId[]::new));
 		}
 		return node;
 	}
@@ -149,8 +149,9 @@ public class FrontEndConceptBuilder {
 	 * This method puts the given {@link StructureNode} and its children into the given root.
 	 * If the node references only instances not contained in the given roots element, it is skipped.
 	 * This method calls itself recursively.
+	 *
 	 * @param structureNode the node to process (and its children)
-	 * @param roots the map where the given and child nodes are inserted into.
+	 * @param roots         the map where the given and child nodes are inserted into.
 	 */
 	private void insertStructureNode(StructureNode structureNode, Map<Id<?, ?>, FrontendNode> roots) {
 		final List<ConceptId> contained = new ArrayList<>();
@@ -168,7 +169,9 @@ public class FrontEndConceptBuilder {
 		}
 
 		// Add Children to root
-        structureNode.getChildren().forEach(n -> this.insertStructureNode(n, roots));
+		for (StructureNode n : structureNode.getChildren()) {
+			insertStructureNode(n, roots);
+		}
 
 		FrontendNode currentNode =
 				FrontendNode.builder()
@@ -215,7 +218,8 @@ public class FrontEndConceptBuilder {
 			result.setDateColumn(new FrontendValidityDate(con.getValidityDatesDescription(), null,
 														  con.getValidityDates().stream()
 															 .map(vd -> new FrontendValue(vd.getId().toString(), vd.getLabel()))
-															 .collect(Collectors.toList())));
+															 .collect(Collectors.toList())
+			));
 
 			if (!result.getDateColumn().getOptions().isEmpty()) {
 				result.getDateColumn().setDefaultValue(result.getDateColumn().getOptions().getFirst().getValue());
@@ -236,16 +240,17 @@ public class FrontEndConceptBuilder {
 
 	private FrontendNode createCTNode(ConceptElement<?> ce) {
 		final MatchingStats matchingStats = ce.getMatchingStats();
-		FrontendNode.FrontendNodeBuilder nodeBuilder = FrontendNode.builder()
-																   .active(null)
-																   .description(ce.getDescription())
-																   .label(ce.getLabel())
-																   .additionalInfos(ce.getAdditionalInfos())
-																   .matchingEntries(matchingStats != null ? matchingStats.countEvents() : 0)
-																   .matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
-																   .dateRange(matchingStats != null && matchingStats.spanEvents() != null
-																			  ? matchingStats.spanEvents().toSimpleRange()
-																			  : null);
+		FrontendNode.FrontendNodeBuilder nodeBuilder =
+				FrontendNode.builder()
+							.active(null)
+							.description(ce.getDescription())
+							.label(ce.getLabel())
+							.additionalInfos(ce.getAdditionalInfos())
+							.matchingEntries(matchingStats != null ? matchingStats.countEvents() : 0)
+							.matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
+							.dateRange(matchingStats != null && matchingStats.spanEvents() != null
+									   ? matchingStats.spanEvents().toSimpleRange()
+									   : null);
 
 
 		if (ce instanceof Concept<?> concept) {
@@ -259,19 +264,14 @@ public class FrontEndConceptBuilder {
 			nodeBuilder = nodeBuilder.excludeFromTimeAggregation(concept.isDefaultExcludeFromTimeAggregation() || anyValidityDates);
 		}
 
-
-		final FrontendNode n = nodeBuilder.build();
-
-
-		if (ce instanceof ConceptTreeChild tree) {
-			if (tree.getChildren() != null) {
-				n.setChildren(tree.getChildren().stream().map(IdentifiableImpl::getId).toArray(ConceptTreeChildId[]::new));
-			}
-			if (tree.getParent() != null) {
-				n.setParent(tree.getParent().getId());
-			}
+		if (ce.getChildren() != null) {
+			nodeBuilder = nodeBuilder.children(ce.getChildren().stream().map(ConceptElement::getId).toArray(ConceptTreeChildId[]::new));
 		}
-		return n;
+		if (ce.getParent() != null) {
+			nodeBuilder = nodeBuilder.parent(ce.getParent().getId());
+		}
+
+		return nodeBuilder.build();
 	}
 
 	public FrontendList createTreeMap(Concept<?> concept) {
@@ -282,7 +282,7 @@ public class FrontEndConceptBuilder {
 
 	private void fillTreeMap(ConceptElement<?> ce, FrontendList map) {
 		map.add(ce.getId(), createCTNode(ce));
-		if (ce instanceof ConceptTreeChild && ce.getChildren() != null) {
+		if (ce.getChildren() != null) {
 			for (ConceptTreeChild c : ce.getChildren()) {
 				fillTreeMap(c, map);
 			}
