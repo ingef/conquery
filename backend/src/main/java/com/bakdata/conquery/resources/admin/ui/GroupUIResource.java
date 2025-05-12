@@ -30,7 +30,7 @@ public class GroupUIResource {
 
 	@GET
 	public View getGroups() {
-		return new UIView("groups.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getAdminProcessor()
+		return new UIView<>("groups.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getAdminProcessor()
 																																		   .getAllGroups());
 	}
 
@@ -43,6 +43,6 @@ public class GroupUIResource {
 	@Path("{" + GROUP_ID + "}")
 	@GET
 	public View getGroup(@PathParam(GROUP_ID) GroupId group) {
-		return new UIView("group.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getGroupContent(group.resolve()));
+		return new UIView<>("group.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getGroupContent(group.resolve()));
 	}
 }

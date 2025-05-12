@@ -32,26 +32,26 @@ public class AdminUIResource {
 	private ContainerRequestContext requestContext;
 	@GET
 	public View getIndex() {
-		return new UIView("index.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)));
+		return new UIView<>("index.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)));
 	}
 
 	@GET
 	@Path("script")
 	public View getScript() {
-		return new UIView("script.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)));
+		return new UIView<>("script.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)));
 	}
 
 	@GET
 	@Path("jobs")
 	public View getJobs() {
-		return new UIView("jobs.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getAdminProcessor()
-																																		 .getJobs());
+		return new UIView<>("jobs.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getAdminProcessor()
+																																		   .getJobs());
 	}
 
 	@GET
 	@Path("queries")
 	public View getQueries() {
-		return new UIView("queries.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)));
+		return new UIView<>("queries.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)));
 	}
 
 

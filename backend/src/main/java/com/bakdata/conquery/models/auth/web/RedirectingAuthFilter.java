@@ -143,7 +143,7 @@ public class RedirectingAuthFilter extends io.dropwizard.auth.AuthFilter<Authent
 			}
 
 			// Give the user a choice to choose between them.
-			throw new WebApplicationException(Response.ok(new UIView("logins.html.ftl", null, loginRedirects)).build());
+			throw new WebApplicationException(Response.ok(new UIView<>("logins.html.ftl", null, loginRedirects)).build());
 		}
 	}
 

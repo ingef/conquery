@@ -43,7 +43,7 @@ public class ConnectorUIResource {
 
 	@GET
 	public View getConnectorView() {
-		return new UIView(
+		return new UIView<>(
 				"connector.html.ftl",
 				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
 				connector.resolve()

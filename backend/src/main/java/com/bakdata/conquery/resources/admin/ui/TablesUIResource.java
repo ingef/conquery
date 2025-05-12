@@ -34,13 +34,13 @@ public class TablesUIResource {
 
 	@GET
 	public View getTableView(@PathParam(TABLE) TableId tableId) {
-		return new UIView("table.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getTableStatistics(tableId));
+		return new UIView<>("table.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getTableStatistics(tableId));
 	}
 
 	@GET
 	@Path("import/{" + IMPORT_ID + "}")
 	public View getImportView(@PathParam(IMPORT_ID) ImportId imp) {
 
-		return new UIView("import.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getImportStatistics(imp));
+		return new UIView<>("import.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getImportStatistics(imp));
 	}
 }

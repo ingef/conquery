@@ -58,7 +58,7 @@ public class DatasetsUIResource {
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public View listDatasetsUI() {
-		return new UIView(
+		return new UIView<>(
 				"datasets.html.ftl",
 				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
 				uiProcessor.getDatasetRegistry().getAllDatasets()
@@ -70,7 +70,7 @@ public class DatasetsUIResource {
 	@Path("{" + DATASET + "}")
 	public View getDataset(@PathParam(DATASET) DatasetId dataset) {
 		final Namespace namespace = uiProcessor.getDatasetRegistry().get(dataset);
-		return new UIView(
+		return new UIView<>(
 				"dataset.html.ftl",
 				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
 				new DatasetInfos(
@@ -114,9 +114,9 @@ public class DatasetsUIResource {
 		final UIContext uiContext = uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext));
 
 		if (mapping != null && mapping.getInternalToPrint() != null) {
-			return new UIView("idmapping.html.ftl", uiContext, mapping.getInternalToPrint());
+			return new UIView<>("idmapping.html.ftl", uiContext, mapping.getInternalToPrint());
 		}
-		return new UIView("add_idmapping.html.ftl", uiContext, namespace.getDataset().getId());
+		return new UIView<>("add_idmapping.html.ftl", uiContext, namespace.getDataset().getId());
 	}
 
 	@Data

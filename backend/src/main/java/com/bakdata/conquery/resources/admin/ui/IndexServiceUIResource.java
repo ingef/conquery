@@ -33,7 +33,7 @@ public class IndexServiceUIResource {
 	@Path(INDEX_SERVICE_PATH_ELEMENT)
 	public View getIndexService() {
 		final IndexServiceUIContent content = new IndexServiceUIContent(uiProcessor.getIndexServiceStatistics(), uiProcessor.getLoadedIndexes());
-		return new UIView("indexService.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), content);
+		return new UIView<>("indexService.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), content);
 	}
 
 	/**
