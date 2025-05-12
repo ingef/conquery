@@ -93,7 +93,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		concept = new TreeConcept();
 		concept.setLabel(CONCEPT_LABEL);
 
-		concept.setDataset(support.getDataset().getId());
+		concept.setDataset(support.getDataset());
 
 		rawConnector.put("name", "connector");
 		rawConnector.put(TABLE_NAME, TABLE_NAME);

@@ -112,14 +112,14 @@ public class IntegrationUtils {
 	public static URI getPostQueryURI(StandaloneSupport conquery) {
 		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetQueryResource.class, "postQuery")
 							  .buildFromMap(Map.of(
-									  "dataset", conquery.getDataset().getId()
+									  "dataset", conquery.getDataset()
 							  ));
 	}
 
 	private static URI getAllQueriesURI(StandaloneSupport conquery) {
 		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetQueryResource.class, "getAllQueries")
 							  .buildFromMap(Map.of(
-									  "dataset", conquery.getDataset().getId()
+									  "dataset", conquery.getDataset()
 							  ));
 	}
 
@@ -150,14 +150,14 @@ public class IntegrationUtils {
 	private static URI getQueryStatusURI(StandaloneSupport conquery, String id) {
 		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "getStatus")
 							  .buildFromMap(Map.of(
-									  "query", id, "dataset", conquery.getDataset().getId()
+									  "query", id, "dataset", conquery.getDataset()
 							  ));
 	}
 
 	private static URI getQueryCancelURI(StandaloneSupport conquery, String id) {
 		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "cancel")
 							  .buildFromMap(Map.of(
-									  "query", id, "dataset", conquery.getDataset().getId()
+									  "query", id, "dataset", conquery.getDataset()
 							  ));
 	}
 

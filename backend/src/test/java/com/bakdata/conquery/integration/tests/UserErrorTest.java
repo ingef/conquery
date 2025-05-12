@@ -41,13 +41,13 @@ public class UserErrorTest extends IntegrationTest.Simple implements Programmati
 
 		{
 			// Request a non existed item
-			final ConceptId unknownConcept = new ConceptId(conquery.getDataset().getId(), "unknown_concept");
+			final ConceptId unknownConcept = new ConceptId(conquery.getDataset(), "unknown_concept");
 			final UriBuilder getConceptNodeUri = HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), ConceptResource.class, "getNode");
 			final Invocation.Builder request = conquery.getClient()
 													   .target(getConceptNodeUri)
 													   .resolveTemplates(
 															   Map.of(
-																	   ResourceConstants.DATASET, conquery.getDataset().getId().toString(),
+																	   ResourceConstants.DATASET, conquery.getDataset().toString(),
 																	   ResourceConstants.CONCEPT, unknownConcept.toString()
 															   )
 													   ).request(MediaType.APPLICATION_JSON_TYPE);

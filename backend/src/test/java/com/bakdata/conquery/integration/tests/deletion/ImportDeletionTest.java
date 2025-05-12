@@ -27,11 +27,10 @@ import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
@@ -63,7 +62,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 
-		final Dataset dataset = conquery.getDataset();
+		final DatasetId dataset = conquery.getDataset();
 		final Namespace namespace = conquery.getNamespace();
 
 		final ImportId importId = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table2", "test_table2");
@@ -112,7 +111,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
-					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
+					if (!worker.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -120,10 +119,10 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-							.filteredOn(block -> block.getBucket().getDataset().equals(dataset.getId()))
+							.filteredOn(block -> block.getBucket().getDataset().equals(dataset))
 							.isNotEmpty();
 					assertThat(workerStorage.getAllBuckets())
-							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset.getId()))
+							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
 							.isNotEmpty();
 
@@ -145,7 +144,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			final URI deleteImportUri =
 					HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminTablesResource.class, "deleteImport")
 								   .buildFromMap(Map.of(
-										   ResourceConstants.DATASET, conquery.getDataset().getId(),
+										   ResourceConstants.DATASET, conquery.getDataset(),
 										   ResourceConstants.TABLE, importId.getTable(),
 										   ResourceConstants.IMPORT_ID, importId
 								   ));
@@ -174,7 +173,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
-					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
+					if (!worker.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -263,7 +262,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
-					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
+					if (!worker.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -272,7 +271,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 					assertThat(workerStorage.getAllBuckets())
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
 							.filteredOn(bucket -> bucket.getImp().equals(importId))
-							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset.getId()))
+							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
 							.isNotEmpty();
 				}
 			}
@@ -290,7 +289,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			//restart
 			testConquery.beforeAll();
 
-			StandaloneSupport conquery2 = testConquery.openDataset(dataset.getId());
+			StandaloneSupport conquery2 = testConquery.openDataset(dataset);
 			log.info("Checking state after re-start");
 
 			{
@@ -301,7 +300,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 				for (ShardNode node : conquery2.getShardNodes()) {
 					for (Worker worker : node.getWorkers().getWorkers().values()) {
 
-						if (!worker.getInfo().getDataset().equals(dataset.getId()))
+						if (!worker.getInfo().getDataset().equals(dataset))
 							continue;
 
 						final ModificationShieldedWorkerStorage workerStorage = worker.getStorage();
@@ -309,7 +308,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 						try(Stream<Bucket> allBuckets = workerStorage.getAllBuckets()) {
 							assertThat(allBuckets)
 									.describedAs("Buckets for Worker %s", worker.getInfo().getId())
-									.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset.getId()))
+									.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
 									.filteredOn(bucket -> bucket.getImp().equals(importId))
 									.isNotEmpty();
 						}

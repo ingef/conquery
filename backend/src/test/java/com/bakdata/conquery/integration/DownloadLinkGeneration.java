@@ -48,12 +48,12 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		Query query = ConqueryTestSpec.parseSubTree(conquery, test.getRawQuery(), Query.class, false);
 
 		// Create execution for download
-		ManagedQuery exec = new ManagedQuery(query, user.getId(), conquery.getDataset().getId(), storage, conquery.getDatasetRegistry(), conquery.getConfig());
+		ManagedQuery exec = new ManagedQuery(query, user.getId(), conquery.getDataset(), storage, conquery.getDatasetRegistry(), conquery.getConfig());
 		exec.setLastResultCount(100L);
 
 		storage.addExecution(exec);
 
-		user.addPermission(DatasetPermission.onInstance(Set.of(Ability.READ), conquery.getDataset().getId()));
+		user.addPermission(DatasetPermission.onInstance(Set.of(Ability.READ), conquery.getDataset()));
 
 		{
 			// Try to generate a download link: should not be possible, because the execution isn't run yet
@@ -74,7 +74,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		{
 			// Add permission to download: now it should be possible
-			user.addPermission(DatasetPermission.onInstance(Set.of(Ability.DOWNLOAD), conquery.getDataset().getId()));
+			user.addPermission(DatasetPermission.onInstance(Set.of(Ability.DOWNLOAD), conquery.getDataset()));
 
 			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
 			// This Url is missing the `/api` path part, because we use the standard UriBuilder here

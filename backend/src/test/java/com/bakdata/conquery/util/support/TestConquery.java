@@ -115,7 +115,7 @@ public class TestConquery {
 				mode,
 				this,
 				ns,
-				ns.getStorage().getDataset(),
+				ns.getStorage().getDataset().getId(),
 				localTmpDir,
 				localCfg,
 				// Getting the User from AuthorizationConfig
@@ -279,7 +279,7 @@ public class TestConquery {
 
 	@SneakyThrows
 	public void removeSupportDataset(StandaloneSupport support) {
-		standaloneCommand.getManagerNode().getDatasetRegistry().removeNamespace(support.getDataset().getId());
+		standaloneCommand.getManagerNode().getDatasetRegistry().removeNamespace(support.getDataset());
 	}
 
 	public void removeSupport(StandaloneSupport support) {

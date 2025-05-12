@@ -3,18 +3,18 @@ package com.bakdata.conquery.util.support;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.dropwizard.core.setup.Environment;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
@@ -31,7 +31,7 @@ public class StandaloneSupport implements TestSupport {
 	@Getter
 	private final Namespace namespace;
 	@Getter
-	private final Dataset dataset;
+	private final DatasetId dataset;
 	@Getter
 	private final File tmpDir;
 	@Getter
@@ -67,7 +67,7 @@ public class StandaloneSupport implements TestSupport {
 	}
 
 	public NamespaceStorage getNamespaceStorage() {
-		return getStandaloneCommand().getManagerNode().getDatasetRegistry().get(dataset.getId()).getStorage();
+		return getStandaloneCommand().getManagerNode().getDatasetRegistry().get(dataset).getStorage();
 	}
 
 	public AuthorizationController getAuthorizationController() {

@@ -19,9 +19,9 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
@@ -44,13 +44,12 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 		String testJson = In.resource("/tests/query/UPDATE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
 
-		final Dataset dataset = conquery.getDataset();
+		final DatasetId dataset = conquery.getDataset();
 		final Namespace namespace = conquery.getNamespace();
 
 		final ImportId importId1 = ImportId.Parser.INSTANCE.parse(dataset.getName(), "table1", "table1");
-		final ImportId importId2 = ImportId.Parser.INSTANCE.parse(dataset.getName(), "table2", "table2");
 
-		QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
+		QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 
 		final List<RequiredTable> tables = test.getContent().getTables();
 		assertThat(tables.size()).isEqualTo(2);
@@ -95,7 +94,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
-					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
+					if (!worker.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -103,11 +102,11 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-							.filteredOn(block -> block.getBucket().getDataset().equals(dataset.getId()))
+							.filteredOn(block -> block.getBucket().getDataset().equals(dataset))
 							.isNotEmpty();
 
 					assertThat(workerStorage.getAllBuckets())
-							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset.getId()))
+							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
 							.isNotEmpty();
 
@@ -188,7 +187,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
-					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
+					if (!worker.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -196,11 +195,11 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-							.filteredOn(block -> block.getBucket().getDataset().equals(dataset.getId()))
+							.filteredOn(block -> block.getBucket().getDataset().equals(dataset))
 							.isNotEmpty();
 
 					assertThat(workerStorage.getAllBuckets())
-							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset.getId()))
+							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
 							.isNotEmpty();
 

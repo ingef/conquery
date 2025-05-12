@@ -142,7 +142,7 @@ public class LoadingUtil {
 
 	private static void uploadTable(StandaloneSupport support, Table table) {
 		final URI uri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addTable")
-									   .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getId()));
+									   .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset()));
 
 		final Invocation.Builder request = support.getClient().target(uri).request(MediaType.APPLICATION_JSON_TYPE);
 		try (final Response response = request.post(Entity.json(table))) {
@@ -232,7 +232,7 @@ public class LoadingUtil {
 
 		final URI addImport =
 				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, methodName)
-							   .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getId()));
+							   .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset()));
 
 		final Entity<FileInputStream> entity;
 		try {
@@ -265,11 +265,11 @@ public class LoadingUtil {
 				support,
 				rawConcepts,
 				Concept.class,
-				c -> c.setDataset(support.getDataset().getDataset())
+				c -> c.setDataset(support.getDataset())
 		);
 
 		for (Concept<?> concept : concepts) {
-			uploadConcept(support, support.getDataset().getId(), concept);
+			uploadConcept(support, support.getDataset(), concept);
 		}
 	}
 
@@ -288,7 +288,7 @@ public class LoadingUtil {
 				support,
 				rawConcepts,
 				Concept.class,
-				c -> c.setDataset(support.getDataset().getDataset())
+				c -> c.setDataset(support.getDataset())
 		);
 	}
 
@@ -297,7 +297,7 @@ public class LoadingUtil {
 				conceptURI =
 				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "updateConcept")
 							   .buildFromMap(Map.of(
-									   ResourceConstants.DATASET, support.getDataset().getId()
+									   ResourceConstants.DATASET, support.getDataset()
 							   ));
 
 		final Invocation.Builder request = support.getClient()
@@ -342,7 +342,7 @@ public class LoadingUtil {
 				conceptURI =
 				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addSecondaryId")
 							   .buildFromMap(Map.of(
-									   ResourceConstants.DATASET, support.getDataset().getId()
+									   ResourceConstants.DATASET, support.getDataset()
 							   ));
 
 		final Invocation.Builder request = support.getClient()
@@ -369,7 +369,7 @@ public class LoadingUtil {
 				conceptURI =
 				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addInternToExternMapping")
 							   .buildFromMap(Map.of(
-									   ResourceConstants.DATASET, support.getDataset().getId()
+									   ResourceConstants.DATASET, support.getDataset()
 							   ));
 
 		final Invocation.Builder request = support.getClient()
@@ -396,7 +396,7 @@ public class LoadingUtil {
 				conceptURI =
 				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addSearchIndex")
 							   .buildFromMap(Map.of(
-									   ResourceConstants.DATASET, support.getDataset().getId()
+									   ResourceConstants.DATASET, support.getDataset()
 							   ));
 
 		final Response response = support.getClient()
@@ -411,7 +411,7 @@ public class LoadingUtil {
 	public static void updateMatchingStats(@NonNull StandaloneSupport support) {
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "postprocessNamespace")
-													.buildFromMap(Map.of(DATASET, support.getDataset().getId()));
+													.buildFromMap(Map.of(DATASET, support.getDataset()));
 
 		final Response post = support.getClient().target(matchingStatsUri)
 									 .request(MediaType.APPLICATION_JSON_TYPE)

@@ -55,7 +55,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 				  .withUTF8()
 				  .readAll();
 
-		final DatasetId dataset = conquery.getDataset().getId();
+		final DatasetId dataset = conquery.getDataset();
 
 		final ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
 
@@ -88,7 +88,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		final FilterTemplate
 				filterTemplate =
 				new FilterTemplate(tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService);
-		filterTemplate.setDataset(conquery.getDataset().getId());
+		filterTemplate.setDataset(conquery.getDataset());
 		filterTemplate.setName("test");
 
 		filter.setTemplate(filterTemplate.getId());
@@ -100,7 +100,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "postprocessNamespace"
 													)
-													.buildFromMap(Map.of(DATASET, conquery.getDataset().getId()));
+													.buildFromMap(Map.of(DATASET, conquery.getDataset()));
 
 		final Response post = conquery.getClient().target(matchingStatsUri)
 									  .request(MediaType.APPLICATION_JSON_TYPE)
@@ -116,7 +116,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 							   )
 							   .buildFromMap(
 									   Map.of(
-											   DATASET, conquery.getDataset().getId(),
+											   DATASET, conquery.getDataset(),
 											   CONCEPT, concept.getId(),
 											   TABLE, filter.getConnector().getResolvedTable().getId(),
 											   FILTER, filter.getId()

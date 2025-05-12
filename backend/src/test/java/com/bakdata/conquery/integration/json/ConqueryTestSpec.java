@@ -73,7 +73,8 @@ public abstract class ConqueryTestSpec {
 		final ObjectMapper mapper = om.addHandler(new DatasetPlaceHolderFiller(support));
 
 		support.getConfig().injectInto(mapper);
-		support.getDataset().injectInto(mapper);
+		support.getNamespace().getDataset().injectInto(mapper);
+
 		if (usePlaceholderResolvers) {
 			FailingProvider.INSTANCE.injectInto(mapper);
 			FailingMetaStorage.INSTANCE.injectInto(mapper);
@@ -179,7 +180,7 @@ public abstract class ConqueryTestSpec {
 		@Override
 		public Object handleWeirdStringValue(DeserializationContext ctxt, Class<?> targetType, String valueToConvert, String failureMsg) {
 			IdUtil.Parser<?> parser = IdUtil.<Id<Identifiable<?, ?>, ?>>createParser((Class) targetType);
-			return parser.parsePrefixed(support.getDataset().getId().getName(), valueToConvert);
+			return parser.parsePrefixed(support.getDataset().getName(), valueToConvert);
 		}
 	}
 }

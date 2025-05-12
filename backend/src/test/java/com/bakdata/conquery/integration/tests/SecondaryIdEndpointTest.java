@@ -39,7 +39,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 		description.setName("description-NAME");
 		description.setLabel("description-LABEL");
 
-		final SecondaryIdDescriptionId id = new SecondaryIdDescriptionId(conquery.getDataset().getId(), description.getName());
+		final SecondaryIdDescriptionId id = new SecondaryIdDescriptionId(conquery.getDataset(), description.getName());
 
 		final Response post = uploadDescription(conquery, description);
 
@@ -54,7 +54,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			final Set<FrontendSecondaryId> secondaryIds = fetchSecondaryIdDescriptions(conquery);
 
 			log.info("{}", secondaryIds);
-			description.setDataset(conquery.getDataset().getId());
+			description.setDataset(conquery.getDataset());
 			assertThat(secondaryIds)
 					.extracting(FrontendSecondaryId::getId)
 					.containsExactly(description.getId().toString());
@@ -93,7 +93,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			assertThat(deleteDescription(conquery, id))
 					.returns(Response.Status.Family.CLIENT_ERROR, response -> response.getStatusInfo().getFamily());
 
-			deleteTable(conquery, new TableId(conquery.getDataset().getId(),"table"));
+			deleteTable(conquery, new TableId(conquery.getDataset(),"table"));
 
 			// We've deleted the table, now it should be successful
 			assertThat(deleteDescription(conquery, id))
@@ -135,7 +135,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 
 		// The injection is necessary to deserialize the dataset.
 		ObjectMapper mapper = conquery.getDatasetRegistry().injectIntoNew(Jackson.MAPPER);
-		mapper = conquery.getDataset().injectIntoNew(mapper);
+		mapper = conquery.getNamespace().getDataset().injectIntoNew(mapper);
 
 		return objectNode.get("secondaryIds")
 						 .traverse(mapper.getFactory().getCodec())

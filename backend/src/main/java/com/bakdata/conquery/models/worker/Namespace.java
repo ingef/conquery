@@ -46,9 +46,7 @@ public abstract class Namespace {
 	private final EntityResolver entityResolver;
 
 	public Dataset getDataset() {
-		Dataset dataset = storage.getDataset();
-//		dataset.setStorageProvider(getStorage()); //TODO this is incorrect but somehow it's not properly injected atm
-		return dataset;
+		return storage.getDataset();
 	}
 
 	public void close() {

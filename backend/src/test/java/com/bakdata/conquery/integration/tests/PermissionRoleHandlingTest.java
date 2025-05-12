@@ -6,7 +6,7 @@ import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 
 public class PermissionRoleHandlingTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
@@ -22,7 +22,7 @@ public class PermissionRoleHandlingTest extends IntegrationTest.Simple implement
 		MetaStorage storage = conquery.getMetaStorage();
 		Role mandator1 = new Role("company", "company", storage);
 		TestUser user1 = new TestUser(storage);
-		Dataset dataset = conquery.getDataset();
+		DatasetId dataset = conquery.getDataset();
 
 		try {
 
