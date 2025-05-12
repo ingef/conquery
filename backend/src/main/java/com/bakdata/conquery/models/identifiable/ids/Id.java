@@ -75,7 +75,7 @@ public sealed abstract class Id<TYPE, DOMAIN> permits NamespacedId, MetaId {
 		}
 	}
 
-	protected abstract DOMAIN getDomain();
+	public abstract DOMAIN getDomain();
 
 	public abstract void setDomain(DOMAIN DOMAIN);
 

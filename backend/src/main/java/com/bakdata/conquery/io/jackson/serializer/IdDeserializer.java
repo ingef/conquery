@@ -66,9 +66,11 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 	@Override
 	public ID deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
 		JsonToken currentToken = parser.getCurrentToken();
+
 		if (currentToken != JsonToken.VALUE_STRING) {
 			return (ID) ctxt.handleUnexpectedToken(Id.class, currentToken, parser, "name references should be strings. Was: " + currentToken);
 		}
+
 		String text = parser.getText();
 
 		// We need to assign resolvers for namespaced and meta ids because meta-objects might reference namespaced objects (e.g. ExecutionsId)
@@ -78,7 +80,9 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 		try {
 			final ID id = deserializeId(text, idParser, isNamespacedId, ctxt);
 
-			setResolver(id, metaStorage, namespacedStorageProvider);
+			if (id.getDomain() == null) {
+				setResolver(id, metaStorage, namespacedStorageProvider);
+			}
 
 			return id;
 		}
@@ -109,16 +113,7 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 		}
 
 		IdInterner.ParserIdInterner<ID> idParserIdInterner = interner.forParser(idParser);
-		ID id = idParserIdInterner.get(components);
-
-		if (id != null) {
-			// Return cached id
-			return id;
-		}
-
-		// Parse and cache
-		id = idParser.parse(components);
-		idParserIdInterner.putIfAbsent(components, id);
+		ID id = idParserIdInterner.parse(components);
 
 		return id;
 	}

@@ -16,7 +16,7 @@ public abstract non-sealed class MetaId<TYPE> extends Id<TYPE, MetaStorage> {
 	@JsonIgnore
 	private MetaStorage domain;
 
-	protected MetaStorage getDomain() {
+	public MetaStorage getDomain() {
 		return domain;
 	}
 }
