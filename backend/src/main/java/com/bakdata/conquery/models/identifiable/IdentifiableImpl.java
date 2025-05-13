@@ -60,6 +60,6 @@ public sealed abstract class IdentifiableImpl<ID extends Id<?, DOMAIN>, DOMAIN> 
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + "[" + getId() + "]";
+		return getClass().getSimpleName() + "[" + getId() + "]";
 	}
 }

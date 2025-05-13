@@ -129,7 +129,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		if (cqConcept.isExcludeFromSecondaryId()
 			|| conversionContext.getSecondaryIdDescription() == null
-			|| !cqTable.hasSelectedSecondaryId(conversionContext.getSecondaryIdDescription())
+			|| !cqTable.hasSelectedSecondaryId(conversionContext.getSecondaryIdDescription().getId())
 		) {
 			return new SqlIdColumns(primaryColumn).withAlias();
 		}

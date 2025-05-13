@@ -49,8 +49,8 @@ public class ValidityDate extends LabeledNamespaceIdentifiable<ValidityDateId> i
 
 	public static ValidityDate create(Column startColumn, Column endColumn) {
 		final ValidityDate validityDate = new ValidityDate();
-		validityDate.setColumn(startColumn.getId());
-		validityDate.setColumn(endColumn.getId());
+		validityDate.setStartColumn(startColumn.getId());
+		validityDate.setEndColumn(endColumn.getId());
 		return validityDate;
 	}
 
@@ -73,10 +73,10 @@ public class ValidityDate extends LabeledNamespaceIdentifiable<ValidityDateId> i
 	public boolean isForConnectorsTable() {
 
 		final boolean anyColumnNotForConnector =
-				(startColumn != null && !startColumn.getTable().equals(connector.getResolvedTable().getId()))
-				|| (endColumn != null && !endColumn.getTable().equals(connector.getResolvedTable().getId()));
+				(startColumn != null && !startColumn.getTable().equals(connector.getTableId()))
+				|| (endColumn != null && !endColumn.getTable().equals(connector.getTableId()));
 
-		final boolean columnNotForConnector = column != null && !column.getTable().equals(connector.getResolvedTableId());
+		final boolean columnNotForConnector = column != null && !column.getTable().equals(connector.getTableId());
 
 		return !anyColumnNotForConnector && !columnNotForConnector;
 	}

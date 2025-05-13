@@ -153,8 +153,8 @@ public class FormConfigProcessor {
 		FormConfig config = configId.resolve();
 		final User user = storage.getUser(subject.getId());
 
-		user.authorize(config, Ability.DELETE);
-		storage.removeFormConfig(config.getId());
+		user.authorize(configId, Ability.DELETE);
+		storage.removeFormConfig(configId);
 		// Delete corresponding permissions (Maybe better to put it into a slow job)
 		for (ConqueryPermission permission : user.getPermissions()) {
 
@@ -163,14 +163,14 @@ public class FormConfigProcessor {
 			if (!wpermission.getDomains().contains(FormConfigPermission.DOMAIN.toLowerCase())) {
 				continue;
 			}
-			if (!wpermission.getInstances().contains(config.getId().toString().toLowerCase())) {
+			if (!wpermission.getInstances().contains(configId.toString().toLowerCase())) {
 				continue;
 			}
 
 			if (!wpermission.getInstances().isEmpty()) {
 				// Create new permission if it was a composite permission
 				final Set<String> instancesCleared = new HashSet<>(wpermission.getInstances());
-				instancesCleared.remove(config.getId().toString());
+				instancesCleared.remove(configId.toString());
 				final WildcardPermission clearedPermission =
 						new WildcardPermission(List.of(wpermission.getDomains(), wpermission.getAbilities(), instancesCleared), Instant.now());
 				user.addPermission(clearedPermission);

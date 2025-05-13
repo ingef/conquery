@@ -26,11 +26,11 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -197,19 +197,19 @@ public class TableExportQuery extends Query {
 
 				// Set column positions, set SecondaryId positions to precomputed ones.
 				for (Column column : table.getConnector().resolve().getResolvedTable().getColumns()) {
+					final ColumnId columnId = column.getId();
 
 					// ValidityDates are handled separately in column=0
-					if (validityDates.stream().anyMatch(vd -> vd.containsColumn(column.getId()))) {
+					if (validityDates.stream().anyMatch(vd -> vd.containsColumn(columnId))) {
 						continue;
 					}
 
-					final ColumnId columnId = column.getId();
 					if (positions.containsKey(columnId)) {
 						continue;
 					}
 
 					// We want to have ConceptColumns separate here.
-					if (column.getSecondaryId() != null && !conceptColumns.contains(column.getId())) {
+					if (column.getSecondaryId() != null && !conceptColumns.contains(columnId)) {
 						positions.putIfAbsent(columnId, secondaryIdPositions.get(column.getSecondaryId()));
 						continue;
 					}
@@ -245,19 +245,21 @@ public class TableExportQuery extends Query {
 		}
 
 
-		final Map<Column, Concept<?>> connectorColumns = tables.stream()
-															   .flatMap(con -> con.getTables().stream())
-															   .map(CQTable::getConnector)
-															   .map(ConnectorId::resolve)
-															   .filter(con -> con.getColumn() != null)
-															   .collect(Collectors.toMap(con -> con.getColumn().resolve(), Connector::getConcept));
+		final Map<ColumnId, ConceptId> connectorColumns = tables.stream()
+																.flatMap(con -> con.getTables().stream())
+																.map(CQTable::getConnector)
+																.map(ConnectorId::resolve)
+																.filter(con -> con.getColumn() != null)
+																.collect(Collectors.toMap(Connector::getColumn,
+																						 (Connector connector) -> connector.getConcept().getId()
+															   ));
 
 
 		for (Map.Entry<ColumnId, Integer> entry : positions.entrySet()) {
 
 			final int position = entry.getValue();
 
-			ColumnId columnId = entry.getKey();
+			final ColumnId columnId = entry.getKey();
 			final Column column = columnId.resolve();
 
 			if (position == 0) {
@@ -271,14 +273,14 @@ public class TableExportQuery extends Query {
 			}
 
 			final ResultInfo columnResultInfo;
-			if (connectorColumns.containsKey(column)) {
-				final TreeConcept concept = (TreeConcept) connectorColumns.get(column).getConcept();
+			if (connectorColumns.containsKey(columnId)) {
+				final ConceptId concept = connectorColumns.get(columnId);
 
 				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.
-				columnResultInfo = new ColumnResultInfo(column, ResultType.Primitive.STRING, column.getDescription(), isRawConceptValues() ? null : concept);
+				columnResultInfo = new ColumnResultInfo(column, ResultType.Primitive.STRING, column.getDescription(), isRawConceptValues() ? null : (TreeConcept) concept.resolve());
 
 				// Columns that are used to build concepts are marked as ConceptColumn.
-				columnResultInfo.addSemantics(new SemanticType.ConceptColumnT(concept.getId()));
+				columnResultInfo.addSemantics(new SemanticType.ConceptColumnT(concept));
 
 				infos[position] = columnResultInfo;
 			}

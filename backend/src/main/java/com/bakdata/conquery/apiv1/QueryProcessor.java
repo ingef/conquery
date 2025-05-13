@@ -608,8 +608,7 @@ public class QueryProcessor {
 
 	public <E extends ManagedExecution & SingleTableResult> ResultStatistics getResultStatistics(ManagedExecutionId queryId, Subject subject) {
 
-		subject.authorize(queryId.getDataset(), Ability.READ);
-		subject.authorize(queryId, Ability.READ);
+
 
 		ManagedExecution maybeManagedQuery = queryId.resolve();
 
@@ -619,7 +618,7 @@ public class QueryProcessor {
 
 		E managedQuery = (E) maybeManagedQuery;
 
-		if (awaitDone(queryId, 1, TimeUnit.SECONDS) != ExecutionState.DONE) {
+		if (managedQuery.getState() != ExecutionState.DONE) {
 			throw new BadRequestException("The query is still running");
 		}
 

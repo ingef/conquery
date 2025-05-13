@@ -131,6 +131,7 @@ public class ConceptsProcessor {
 		return namespaces.getAllDatasets()
 						 .stream()
 						 .filter(d -> subject.isPermitted(d, Ability.READ))
+						 .map(DatasetId::resolve)
 						 .sorted(Comparator.comparing(Dataset::getWeight).thenComparing(Dataset::getLabel))
 						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))
 						 .collect(Collectors.toList());
@@ -152,7 +153,7 @@ public class ConceptsProcessor {
 							 .stream()
 							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), id.resolve().getResolvedTable().getLabel()))
 							 .collect(Collectors.toSet()),
-				previewConfig.resolveSearchFilters(),
+				previewConfig.getSearchFilters(),
 				previewConfig.resolveSearchConcept()
 		);
 	}

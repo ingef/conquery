@@ -56,7 +56,7 @@ public class Dataset extends LabeledNamespaceIdentifiable<DatasetId> implements 
 
 	@JsonIgnore
 	public Table getAllIdsTable() {
-		//TODO store this somehow? / Add this at dataset creation
+		// TODO migrate to NamespaceStorage
 		final Table table = new Table();
 		table.setDataset(this.getId());
 		table.setName(ConqueryConstants.ALL_IDS_TABLE);

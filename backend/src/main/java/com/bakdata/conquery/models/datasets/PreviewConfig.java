@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +12,6 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
@@ -27,7 +25,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
-import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Sets;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
@@ -89,12 +86,12 @@ public class PreviewConfig {
 	@NotNull
 	private DatasetRegistry<Namespace> datasetRegistry;
 
-	public boolean isGroupingColumn(SecondaryIdDescription desc) {
-		return getGrouping().contains(desc.getId());
+	public boolean isGroupingColumn(SecondaryIdDescriptionId descId) {
+		return getGrouping().contains(descId);
 	}
 
-	public boolean isHidden(Column column) {
-		return getHidden().contains(column.getId());
+	public boolean isHidden(ColumnId columnId) {
+		return getHidden().contains(columnId);
 	}
 
 
@@ -180,25 +177,15 @@ public class PreviewConfig {
 								   .collect(Collectors.toList());
 	}
 
-	public List<FilterId> resolveSearchFilters() {
-		if (searchFilters == null) {
-			return Collections.emptyList();
-		}
-
-		return new ArrayList<>(searchFilters);
-	}
-
 	public ConceptId resolveSearchConcept() {
 		if (searchFilters == null) {
 			return null;
 		}
 
+		if (searchFilters.isEmpty()){
+			return null;
+		}
 
-		return searchFilters.stream()
-							.map(FilterId::resolve)
-							.map(filter -> filter.getConnector().getConcept())
-							.distinct()
-							.map(Concept::getId)
-							.collect(MoreCollectors.toOptional()).orElse(null);
+		return searchFilters.iterator().next().getConnector().getConcept();
 	}
 }

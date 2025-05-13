@@ -42,7 +42,7 @@ public class ResultCsvProcessor {
 	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, ManagedExecutionId execId, boolean pretty, Charset charset, OptionalLong limit) {
 		final E exec = (E) execId.resolve();
 
-		final Namespace namespace = datasetRegistry.get(exec.getDataset());
+		final Namespace namespace = exec.getNamespace();
 
 		ConqueryMDC.setLocation(subject.getName());
 		log.info("Downloading results for {}", execId);

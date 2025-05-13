@@ -84,8 +84,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		if (subQueries.size() != 1) {
 			// The sub-query size might also be zero if the backend just delegates the form further to another backend. Forms with more subqueries are not yet supported
 			log.trace("Column description is not generated for {} ({} from Form {}), because the form does not consits of a single subquery. Subquery size was {}.",
-					  subQueries
-							  .size(),
+					  subQueries.size(),
 					  this.getClass().getSimpleName(),
 					  getId(),
 					  getSubmitted().getClass().getSimpleName()

@@ -78,7 +78,7 @@ public abstract class Filter<FILTER_VALUE> extends LabeledNamespaceIdentifiable<
 		boolean valid = true;
 
 		for (ColumnId column : getRequiredColumns()) {
-			TableId tableId = connector.getResolvedTable().getId();
+			TableId tableId = connector.getTableId();
 			if (column == null || column.getTable().equals(tableId)) {
 				continue;
 			}

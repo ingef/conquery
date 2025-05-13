@@ -11,9 +11,14 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.MetaId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import lombok.NonNull;
 
-public record IdPathParamConverterProvider(MetaStorage metaStorage, NamespacedStorageProvider namespacedStorageProvider)
-		implements ParamConverterProvider {
+/**
+ * Generic provider to allow strictly typed {@link Id} usage in resource definitions.
+ * <p>
+ * Registered into a server, it will hook into any Param definition for {@link Id}, use an appropriate parser and set their provided domain.
+ */
+public record IdPathParamConverterProvider(@NonNull MetaStorage metaStorage, @NonNull NamespacedStorageProvider namespacedStorageProvider) implements ParamConverterProvider {
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
@@ -33,8 +38,7 @@ public record IdPathParamConverterProvider(MetaStorage metaStorage, NamespacedSt
 		throw new IllegalStateException("Unsupported Id-type %s".formatted(rawType));
 	}
 
-	public record IdPathParamConverter<T extends Id<?, STORAGE>, STORAGE>(IdUtil.Parser<T> parser, STORAGE storage)
-			implements ParamConverter<T> {
+	public record IdPathParamConverter<T extends Id<?, STORAGE>, STORAGE>(IdUtil.Parser<T> parser, STORAGE storage) implements ParamConverter<T> {
 
 		@Override
 		public T fromString(String value) {

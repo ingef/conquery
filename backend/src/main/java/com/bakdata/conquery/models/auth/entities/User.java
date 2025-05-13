@@ -119,6 +119,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	public boolean isOwner(Authorized object) {
+		//TODO this can be moved to the UserId
 		return object instanceof Owned && getId().equals(((Owned) object).getOwner());
 	}
 

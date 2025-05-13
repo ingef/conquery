@@ -57,7 +57,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 			form.getSubQueries().values().forEach((query) -> addState(query, new DistributedExecutionInfo()));
 		}
 
-		final WorkerHandler workerHandler = getWorkerHandler(execution.getId().getDataset());
+		final WorkerHandler workerHandler = getWorkerHandler(execution.getDataset());
 
 		workerHandler.sendToAll(execution.createExecutionMessage());
 	}
@@ -90,8 +90,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 			return;
 		}
 
-		ManagedExecutionId id = execution.getId();
-		Optional<ExecutionInfo> optInfo = tryGetExecutionInfo(id);
+		Optional<ExecutionInfo> optInfo = tryGetExecutionInfo(execution.getId());
 
 		if (optInfo.isEmpty()){
 			log.debug("Ignoring result {} because the corresponding state was not found (execution probably canceled)", result);
@@ -104,7 +103,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 		ExecutionState execState = distributedInfo.executionState;
 		if (execState != ExecutionState.RUNNING) {
-			log.warn("Received result form '{}' for Query[{}] that is not RUNNING but {}", result.getWorkerId(), id, execState);
+			log.warn("Received result form '{}' for Query[{}] that is not RUNNING but {}", result.getWorkerId(), execution.getId(), execState);
 			return;
 		}
 
@@ -125,7 +124,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 		}
 
 		// State changed to DONE or FAILED
-		ExecutionState execStateAfterResultCollect = getExecutionInfo(id).getExecutionState();
+		ExecutionState execStateAfterResultCollect = getExecutionInfo(execution.getId()).getExecutionState();
 		if (execStateAfterResultCollect != ExecutionState.RUNNING) {
 			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner().resolve(), getStorage()).map(Group::getName).orElse("none");
 

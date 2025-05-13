@@ -82,14 +82,13 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 		final List<? extends ListenableFuture<?>> futures =
 				columns.stream()
-					   .filter(column -> table2Buckets.get(column.getTable()) != null)
-					   .map(ColumnId::resolve)
+					   .filter(column -> table2Buckets.containsKey(column.getTable()))
 					   .map(column -> jobsExecutorService.submit(() -> {
-								final List<BucketId> buckets = table2Buckets.get(column.getTable().getId());
+								final List<BucketId> buckets = table2Buckets.get(column.getTable());
 
 								final Set<String> values = buckets.stream()
 																  .map(BucketId::resolve)
-																  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
+																  .flatMap(bucket -> ((StringStore) bucket.getStore(column.resolve())).streamValues())
 																  .collect(Collectors.toSet());
 
 								log.trace("Finished collecting {} values for column {}", values.size(), column);
@@ -98,18 +97,18 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 								final Iterable<List<String>> partition = Iterables.partition(values, columValueChunkSize);
 
 								log.trace("BEGIN Sending column values for {}. {} total values in {} sized batches",
-										  column.getId(), values.size(), columValueChunkSize
+										  column, values.size(), columValueChunkSize
 								);
 
 								int i = 0;
 								for (List<String> chunk : partition) {
 									// Send values to manager
 									final RegisterColumnValues message =
-											new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column.getId(), chunk);
+											new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column, chunk);
 
 									context.send(message);
 
-									log.trace("Finished sending chunk {} for column '{}'", i++, column.getId());
+									log.trace("Finished sending chunk {} for column '{}'", i++, column);
 								}
 
 								getProgressReporter().report(1);

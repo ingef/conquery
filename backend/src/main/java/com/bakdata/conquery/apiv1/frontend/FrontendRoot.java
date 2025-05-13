@@ -15,5 +15,10 @@ import lombok.Getter;
 @Getter
 public class FrontendRoot {
 	private final Set<FrontendSecondaryId> secondaryIds = new HashSet<>();
+	/**
+	 * Can be:
+	 * 	- {@link com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId}
+	 * 	- {@link com.bakdata.conquery.models.identifiable.ids.specific.ConceptId}
+	 */
 	private final Map<Id<?, ?>, @Valid FrontendNode> concepts = new LinkedHashMap<>();
 }

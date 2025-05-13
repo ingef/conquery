@@ -102,8 +102,8 @@ public class AuthorizationHelper {
 
 	public static boolean registerForAuthentication(UserManageable userManager, User user, CredentialType credentials, boolean override) {
 		if(override) {
-			return userManager.updateUser(user, credentials);
+			return userManager.updateUser(user.getId(), credentials);
 		}
-		return userManager.addUser(user, credentials);
+		return userManager.addUser(user.getId(), credentials);
 	}
 }

@@ -94,8 +94,11 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 		}
 	}
 
-	public List<Dataset> getAllDatasets() {
-		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toList());
+	public List<DatasetId> getAllDatasets() {
+		return datasets.values().stream()
+					   .map(Namespace::getStorage)
+					   .map(namespaceStorage -> namespaceStorage.getDataset().getId())
+					   .collect(Collectors.toList());
 	}
 
 	public Collection<N> getNamespaces() {

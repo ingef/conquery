@@ -54,6 +54,9 @@ public class QueryResource {
 	@GET
 	@Path("{" + QUERY + "}/statistics")
 	public ResultStatistics getDescription(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId queryId) {
+		subject.authorize(queryId.getDataset(), Ability.READ);
+		subject.authorize(queryId, Ability.READ);
+
 		return processor.getResultStatistics(queryId, subject);
 	}
 

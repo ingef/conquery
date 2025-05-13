@@ -19,6 +19,10 @@ import com.fasterxml.jackson.jakarta.rs.cfg.ObjectReaderInjector;
 import com.fasterxml.jackson.jakarta.rs.cfg.ObjectReaderModifier;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * This filter will detect usages of {@link DatasetId} on Resources and inject them into the downstream mapper.
+ * With this, we can use implicit references to {@link DatasetId}.
+ */
 public class DatasetParamInjector implements ContainerRequestFilter {
 
 	@Inject
@@ -33,13 +37,12 @@ public class DatasetParamInjector implements ContainerRequestFilter {
 	public static class Modifier extends ObjectReaderModifier implements Injectable {
 
 		private final MultivaluedMap<String, String> pathParams;
-
 		public final DatasetRegistry<?> registry;
 
 		@Override
 		public ObjectReader modify(EndpointConfigBase<?> endpoint, MultivaluedMap<String, String> httpHeaders, JavaType resultType, ObjectReader reader, JsonParser p)
 				throws IOException {
-			return this.injectIntoNew(reader);
+			return injectIntoNew(reader);
 		}
 
 		@Override
@@ -48,6 +51,7 @@ public class DatasetParamInjector implements ContainerRequestFilter {
 				final DatasetId datasetId = DatasetId.Parser.INSTANCE.parse(pathParams.getFirst(ResourceConstants.DATASET));
 				datasetId.setDomain(registry);
 
+				// this is just interning
 				registry.get(datasetId).getDataset().inject(values);
 			}
 			return values;

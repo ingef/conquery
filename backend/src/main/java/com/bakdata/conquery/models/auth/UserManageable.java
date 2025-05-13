@@ -16,17 +16,18 @@ public interface UserManageable {
 	/**
 	 * Add a user to an authenticating realm. The realm is responsible for picking the appropriate {@link CredentialType} from the argument.
 	 * If not fitting type was found the user should not be added.
-	 * @param user The user which should be added.
+	 *
 	 * @param credentials A List of credentials that are provided by the user.
+	 * @param userId
 	 * @return True upon successful adding of the user. False if the user could not be added or was already present.
 	 */
-	boolean addUser(User user, CredentialType credential);
+	boolean addUser(UserId userId, CredentialType credential);
 
 	
 	/**
 	 * Similar to {@link UserManageable#addUser(User, List)} but if the user already existed it is overridden, when a fitting {@link CredentialType} was found.
 	 */
-	boolean updateUser(User user, CredentialType credential);
+	boolean updateUser(UserId user, CredentialType credential);
 
 	/**
 	 * Removes a user from the realm only but not from the local permission storage (i.e. {@link MetaStorage}).

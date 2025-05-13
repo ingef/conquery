@@ -55,11 +55,12 @@ public class ConceptColumnSelect extends UniversalSelect {
 
 	@Override
 	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
+
 		if (isAsIds()) {
-			return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConcept().getId())));
+			return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConceptId())));
 		}
 
-		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConcept().getId())));
+		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConceptId())));
 	}
 
 	@JsonIgnore

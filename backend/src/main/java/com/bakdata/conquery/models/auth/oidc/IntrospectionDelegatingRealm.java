@@ -334,17 +334,18 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 		}
 
 		private synchronized Group createGroup(String name, String label) {
-			// TODO mark group as managed by keycloak
-			final Group group = new Group(name, label, storage);
+			GroupId groupId = new GroupId(name);
 
-			// Recheck group existence in synchronized part
-			final Group existing = storage.getGroup(group.getId());
+			final Group existing = storage.get(groupId);
 
 			if (existing != null) {
 				// Found existing group
-				log.debug("Skip group creation, because group '{}' existed", group.getId());
+				log.debug("Skip group creation, because group '{}' existed", groupId);
 				return existing;
 			}
+
+			// TODO mark group as managed by keycloak
+			final Group group = new Group(name, label, storage);
 
 			log.info("Creating new Group: {}", group);
 			group.updateStorage();

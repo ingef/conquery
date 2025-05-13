@@ -25,6 +25,7 @@ public interface WorkerStorage extends NamespacedStorage, Closeable {
 
 	void removeBucket(BucketId id);
 
+	//TODO this is TestOnly
 	Stream<Bucket> getAllBuckets();
 
 	Stream<BucketId> getAllBucketIds();

@@ -116,7 +116,7 @@ public class FormConfigTest {
 			}
 			return namespaceMock;
 		}).when(namespacesMock).get(any(DatasetId.class));
-		when(namespacesMock.getAllDatasets()).thenReturn(List.of(dataset, dataset1));
+		when(namespacesMock.getAllDatasets()).thenReturn(List.of(datasetId, datasetId1));
 		when(namespacesMock.injectIntoNew(any(ObjectMapper.class))).thenCallRealMethod();
 		when(namespacesMock.inject(any(MutableInjectableValues.class))).thenCallRealMethod();
 

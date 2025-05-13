@@ -143,8 +143,7 @@ public abstract class ExecutionManager {
 			throw e;
 		}
 
-		ManagedExecutionId executionId = execution.getId();
-		log.info("Starting execution[{}]", executionId);
+		log.info("Starting execution[{}]", execution.getId());
 		try {
 
 			execution.start();
@@ -158,7 +157,7 @@ public abstract class ExecutionManager {
 
 		}
 		catch (Exception e) {
-			log.warn("Failed to execute '{}'", executionId);
+			log.warn("Failed to execute '{}'", execution.getId());
 			execution.fail(ConqueryError.asConqueryError(e));
 		}
 	}

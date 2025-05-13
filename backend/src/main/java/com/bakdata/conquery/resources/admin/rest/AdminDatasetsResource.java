@@ -1,7 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -35,6 +34,6 @@ public class AdminDatasetsResource {
 
 	@GET
 	public List<DatasetId> listDatasets() {
-		return processor.getDatasetRegistry().getAllDatasets().stream().map(Dataset::getId).collect(Collectors.toList());
+		return processor.getDatasetRegistry().getAllDatasets();
 	}
 }

@@ -111,7 +111,7 @@ public abstract class Connector extends LabeledNamespaceIdentifiable<ConnectorId
 
 	public abstract Table getResolvedTable();
 
-	public abstract TableId getResolvedTableId();
+	public abstract TableId getTableId();
 
 	@JsonIgnore
 	@ValidationMethod(message = "Filter names are not unique.")

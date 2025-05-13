@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -199,8 +198,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Select
 		List<Object> parts = new ArrayList<>();
 		id.collectComponents(parts);
 
-		final ConceptId conceptId = getId();
-		List<Object> components = conceptId.getComponents();
+		List<Object> components = getId().getComponents();
 
 		// Check if dataset and concept name match
 		if (!(parts.get(0).equals(components.get(0)) && parts.get(1).equals(components.get(1)))) {

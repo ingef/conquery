@@ -21,7 +21,9 @@ public abstract class LabeledNamespaceIdentifiable<ID extends NamespacedId<?>> e
 	 */
 	private String label;
 
-	@Getter(onMethod_ = {@ToString.Include, @NotBlank})
+	@ToString.Include
+	@NotBlank
+	@Getter
 	@Setter
 	private String name;
 

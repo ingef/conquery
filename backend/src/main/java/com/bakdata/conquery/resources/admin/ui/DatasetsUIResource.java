@@ -61,7 +61,7 @@ public class DatasetsUIResource {
 		return new UIView<>(
 				"datasets.html.ftl",
 				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
-				uiProcessor.getDatasetRegistry().getAllDatasets()
+				uiProcessor.getDatasetRegistry().getAllDatasets().stream().map(DatasetId::resolve).toList()
 		);
 	}
 

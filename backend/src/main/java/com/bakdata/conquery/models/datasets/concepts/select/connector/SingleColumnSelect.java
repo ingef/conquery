@@ -7,12 +7,11 @@ import java.util.Set;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -82,8 +81,8 @@ public abstract class SingleColumnSelect extends Select {
 	@ValidationMethod(message = "Columns is not for Connectors' Table.")
 	public boolean isForConnectorTable() {
 
-		Table resolvedTable = ((Connector) getHolder()).getResolvedTable();
-		if (getColumn().getTable().equals(resolvedTable.getId())) {
+		TableId resolvedTable = ((Connector) getHolder()).getTableId();
+		if (getColumn().getTable().equals(resolvedTable)) {
 			return true;
 		}
 

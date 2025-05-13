@@ -30,7 +30,7 @@ import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -182,7 +182,7 @@ public class FrontEndConceptBuilder {
 							.codeListResolvable(false)
 							.additionalInfos(structureNode.getAdditionalInfos())
 							.parent(structureNode.getParent() == null ? null : structureNode.getParent().getId())
-							.children(Stream.concat(structureNode.getChildren().stream().map(IdentifiableImpl::getId), contained.stream()).toArray(NamespacedId[]::new))
+							.children(Stream.concat(structureNode.getChildren().stream().map(Identifiable::getId), contained.stream()).toArray(NamespacedId[]::new))
 							.build();
 
 		roots.put(structureNode.getId(), currentNode);
@@ -202,7 +202,7 @@ public class FrontEndConceptBuilder {
 		final FrontendTable
 				result =
 				FrontendTable.builder()
-							 .id(con.getResolvedTableId())
+							 .id(con.getTableId())
 							 .connectorId(con.getId())
 							 .label(con.getLabel())
 							 .isDefault(con.isDefault())

@@ -143,7 +143,8 @@ public class FormConfig extends MetaIdentifiable<FormConfigId> implements Sharea
 		}
 
 		return FormConfigFullRepresentation.builder()
-										   .id(getId()).formType(formType)
+										   .id(getId())
+										   .formType(formType)
 										   .label(label)
 										   .tags(tags)
 										   .ownerName(ownerName)

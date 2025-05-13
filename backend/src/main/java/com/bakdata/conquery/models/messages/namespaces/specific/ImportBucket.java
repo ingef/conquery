@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -19,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImportBucket extends WorkerMessage {
 
-	private final String name;
+	private final BucketId name;
 
 	private final Bucket bucket;
 
@@ -32,7 +33,7 @@ public class ImportBucket extends WorkerMessage {
 			return;
 		}
 
-		context.getJobManager().addSlowJob(new SimpleJob("Adding Bucket " + bucket.getId(), () -> {
+		context.getJobManager().addSlowJob(new SimpleJob("Adding Bucket %s".formatted(bucket.getId()), () -> {
 			log.debug("BEGIN adding Bucket {}", bucket.getId());
 			context.addBucket(bucket);
 			log.trace("DONE adding Bucket {}", bucket.getId());

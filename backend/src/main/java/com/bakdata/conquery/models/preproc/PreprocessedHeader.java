@@ -6,15 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
-import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -60,12 +58,8 @@ public class PreprocessedHeader {
 	 */
 	private final int validityHash;
 
-	@JsonIgnore
-	@JacksonInject
-	private NamespaceStorage namespaceStorage;
-
-	public Import createImportDescription(Table table, Map<String, ColumnStore> stores) {
-		final Import imp = new Import(getName(), table.getId());
+	public Import createImportDescription(TableId tableId, Map<String, ColumnStore> stores) {
+		final Import imp = new Import(getName(), tableId);
 
 		imp.setNumberOfEntries(getRows());
 		imp.setNumberOfEntities(getNumberOfEntities());
