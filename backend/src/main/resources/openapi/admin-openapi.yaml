@@ -1,0 +1,147 @@
+openapi: 3.0.4
+info:
+  description: Partial description of the conquery admin REST api
+  version: 1.0.0
+  title: Conquery Admin
+servers:
+  - url: /admin
+tags:
+  - name: config
+    description: Operations about configuration
+paths:
+  /script:
+    post:
+      tags:
+        - script
+      summary: >-
+        Execute groovy scripts in the backend. Returns either the .toString()
+        representation or the Json representation (if possible)
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      operationId: executeScript
+      responses:
+        '200':
+          description: Script return value
+          content:
+            text/plain:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+  /busy:
+    get:
+      tags:
+        - jobs
+        - status
+      summary: 'returns ''true'', if the backend is currently working on any jobs'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: boolean
+                description: Retrieved backend status
+  /config/plugins/form-backend:
+    post:
+      tags:
+        - config
+      summary: adds a form backend configurations (change is not persisted)
+      operationId: registerFormBackend
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormBackendConfig'
+      responses:
+        '200':
+          description: Id of the registered form backend configuration
+          content:
+            application/json:
+              schema:
+                type: string
+    get:
+      tags:
+        - config
+      summary: lists all registered form backend configurations
+      operationId: listFormBackends
+      responses:
+        '200':
+          description: Ids of the registered form providers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  '/config/plugins/form-backend/{configId}':
+    delete:
+      tags:
+        - config
+      summary: Unregister form backend configuration (change is not persisted)
+      operationId: deleteFormBackend
+      parameters:
+        - in: path
+          name: configId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+                description: Id of the deleted form backend configuration
+components:
+  schemas:
+    FormBackendConfig:
+      type: object
+      x-discriminator-value: type
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        baseURI:
+          type: string
+          format: uri
+        conqueryApiUrl:
+          type: string
+          format: uri
+        formConfigPath:
+          type: string
+          format: uri
+          default: form-config
+        postFormPath:
+          type: string
+          format: uri
+          default: task
+        statusTemplatePath:
+          type: string
+          format: uri
+          default: 'task/{task-id}'
+        cancelTaskPath:
+          type: string
+          format: uri
+          default: 'task/{task-id}/cancel'
+        healthCheckPath:
+          type: string
+          format: uri
+          default: health
+        versionPath:
+          type: string
+          format: uri
+          default: version
+      required:
+        - type
+        - id
+        - baseURI
+        - conqueryApiUrl
