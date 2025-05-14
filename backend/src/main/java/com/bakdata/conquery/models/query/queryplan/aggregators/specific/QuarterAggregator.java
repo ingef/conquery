@@ -21,7 +21,7 @@ import lombok.ToString;
  * Samples the incoming dates outputting the year-quarter of the sample.
  */
 @Data
-@ToString(of = {"sampler", "column"})
+@ToString(of = {"sampler", "validityDate"})
 public class QuarterAggregator extends Aggregator<String> {
 
 	private final TemporalSamplerFactory samplerFactory;
