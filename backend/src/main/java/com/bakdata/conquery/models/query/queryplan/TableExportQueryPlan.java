@@ -81,7 +81,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 			final Map<BucketId, CBlockId> cblocks = ctx.getBucketManager().getEntityCBlocksForConnector(entity, cqTable.getConnector());
 			final Connector connector = cqTable.getConnector().resolve();
 
-			for (BucketId bucketId : ctx.getEntityBucketsForTable(entity, connector.getTableId())) {
+			for (BucketId bucketId : ctx.getEntityBucketsForTable(entity, connector.resolveTableId())) {
 				Bucket bucket = bucketId.resolve();
 				CBlock cBlock = cblocks.get(bucketId).resolve();
 

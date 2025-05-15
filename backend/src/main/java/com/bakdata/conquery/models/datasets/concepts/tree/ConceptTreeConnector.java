@@ -69,7 +69,7 @@ public class ConceptTreeConnector extends Connector {
 
 	@Override
 	@JsonIgnore
-	public TableId getTableId() {
+	public TableId resolveTableId() {
 		if (column != null) {
 			return column.getTable();
 		}

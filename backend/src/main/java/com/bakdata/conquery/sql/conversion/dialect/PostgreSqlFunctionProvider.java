@@ -312,7 +312,7 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
-		String tableName = validityDate.getConnector().getTableId().getTable();
+		String tableName = validityDate.getConnector().resolveTableId().getTable();
 
 		if (validityDate.getColumn() != null) {
 			return ofSingleColumn(tableName, validityDate.getColumn().resolve());

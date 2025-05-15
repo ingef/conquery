@@ -79,7 +79,7 @@ class TablePath {
 	private static TablePathInfo collectConnectorTables(CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
 
 		TablePathInfo tableInfo = new TablePathInfo();
-		tableInfo.setRootTable(cqTable.getConnector().resolve().getTableId().getTable());
+		tableInfo.setRootTable(cqTable.getConnector().resolve().resolveTableId().getTable());
 		tableInfo.addWithDefaultMapping(MANDATORY_STEPS);
 
 		boolean eventDateSelectsPresent = cqTable.getSelects().stream().map(SelectId::resolve).anyMatch(Select::isEventDateSelect);

@@ -177,7 +177,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			ConversionContext context
 	) {
 		final SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
-		final Table<Record> connectorTable = DSL.table(DSL.name(cqTable.getConnector().resolve().getTableId().getTable()));
+		final Table<Record> connectorTable = DSL.table(DSL.name(cqTable.getConnector().resolve().resolveTableId().getTable()));
 		final Table<Record> convertedPrerequisiteTable = DSL.table(DSL.name(convertedPrerequisite.getCteName()));
 
 		final ColumnDateRange validityDate = functionProvider.forValidityDate(cqTable.findValidityDate());
@@ -204,7 +204,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	}
 
 	private static Field<String> createSourceInfoSelect(CQTable cqTable) {
-		final String tableName = cqTable.getConnector().resolve().getTableId().getTable();
+		final String tableName = cqTable.getConnector().resolve().resolveTableId().getTable();
 		return DSL.val(tableName).as(SharedAliases.SOURCE.getAlias());
 	}
 

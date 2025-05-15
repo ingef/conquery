@@ -245,7 +245,7 @@ public class UIProcessor {
 				storage.getAllConcepts()
 					   .map(Concept::getConnectors)
 					   .flatMap(Collection::stream)
-					   .filter(conn -> conn.getTableId().equals(tableId))
+					   .filter(conn -> conn.resolveTableId().equals(tableId))
 					   .map(Connector::getConcept).collect(Collectors.toSet())
 
 		);
@@ -262,7 +262,7 @@ public class UIProcessor {
 		return concepts
 				.filter(TreeConcept.class::isInstance)
 				.flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
-				.filter(con -> con.getTableId().equals(imp.getTable()))
+				.filter(con -> con.resolveTableId().equals(imp.getTable()))
 				.mapToLong(con -> {
 					// Per event an int array is stored marking the path to the concept child.
 					final double avgDepth = con.getConcept()

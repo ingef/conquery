@@ -92,11 +92,11 @@ public abstract class Select extends LabeledNamespaceIdentifiable<SelectId> {
 
 		for (ColumnId column : getRequiredColumns()) {
 
-			if (column == null || column.getTable().equals(connector.getTableId())) {
+			if (column == null || column.getTable().equals(connector.resolveTableId())) {
 				continue;
 			}
 
-			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable(), connector.getId(), connector.getTableId());
+			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable(), connector.getId(), connector.resolveTableId());
 
 			valid = false;
 		}

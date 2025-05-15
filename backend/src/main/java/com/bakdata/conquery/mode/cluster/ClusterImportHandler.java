@@ -166,7 +166,7 @@ public class ClusterImportHandler implements ImportHandler {
 	private static void clearDependentConcepts(Stream<Concept<?>> allConcepts, TableId table) {
 		allConcepts.map(Concept::getConnectors)
 				   .flatMap(List::stream)
-				   .filter(con -> con.getTableId().equals(table))
+				   .filter(con -> con.resolveTableId().equals(table))
 				   .map(Connector::getConcept)
 				   .forEach(Concept::clearMatchingStats);
 	}

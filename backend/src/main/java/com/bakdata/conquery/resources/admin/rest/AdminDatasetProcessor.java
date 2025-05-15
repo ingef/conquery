@@ -296,7 +296,7 @@ public class AdminDatasetProcessor {
 		final List<Concept<?>> dependentConcepts;
 		try (Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts()) {
 			dependentConcepts = allConcepts.flatMap(c -> c.getConnectors().stream())
-										   .filter(con -> con.getTableId().equals(table))
+										   .filter(con -> con.resolveTableId().equals(table))
 										   .map(Connector::getConcept)
 										   .collect(Collectors.toList());
 		}
