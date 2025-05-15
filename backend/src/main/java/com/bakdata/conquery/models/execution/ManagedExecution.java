@@ -188,18 +188,12 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 
 	private static boolean containsDates(QueryDescription query) {
 		return Visitable.stream(query)
-						.anyMatch(visitable -> {
-
-							if (visitable instanceof CQConcept cqConcept) {
-								return !cqConcept.isExcludeFromTimeAggregation();
-							}
-
-							if (visitable instanceof CQExternal external) {
-								return external.containsDates();
-							}
-
-							return false;
-						});
+						.anyMatch(visitable ->
+										  switch (visitable) {
+											  case CQConcept cqConcept -> !cqConcept.isExcludeFromTimeAggregation();
+											  case CQExternal external -> external.containsDates();
+											  default -> false;
+										  });
 	}
 
 	/**
@@ -305,7 +299,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 		if (owner != null) {
 			User user = getMetaStorage().get(owner);
 
-			if(user != null) {
+			if (user != null) {
 				status.setOwner(user.getId());
 				status.setOwnerName(user.getLabel());
 			}
@@ -376,7 +370,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 		 */
 		List<GroupId> permittedGroups = new ArrayList<>();
 
-		try(Stream<Group> allGroups = getMetaStorage().getAllGroups()) {
+		try (Stream<Group> allGroups = getMetaStorage().getAllGroups()) {
 			for (Group group : allGroups.toList()) {
 				for (Permission perm : group.getPermissions()) {
 					if (perm.implies(createPermission(Ability.READ.asSet()))) {

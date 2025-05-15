@@ -124,7 +124,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	public static CQConcept forConnector(ConnectorId source) {
 		final CQConcept cqConcept = new CQConcept();
-		// TODO transform to use only ids here
+
 		cqConcept.setElements(List.of(source.getConcept()));
 		final CQTable cqTable = new CQTable();
 		cqTable.setConcept(cqConcept);

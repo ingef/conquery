@@ -65,7 +65,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 			permissions = Sets.union(permissions, role.getEffectivePermissions());
 		}
 
-		try(Stream<Group> allGroups = getMetaStorage().getAllGroups()){
+		try (Stream<Group> allGroups = getMetaStorage().getAllGroups()) {
 
 			for (Iterator<Group> it = allGroups.iterator(); it.hasNext(); ) {
 				Group group = it.next();
@@ -119,8 +119,11 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	public boolean isOwner(Authorized object) {
-		//TODO this can be moved to the UserId
-		return object instanceof Owned && getId().equals(((Owned) object).getOwner());
+		if (object instanceof Owned owned) {
+			return getId().equals(owned.getOwner());
+		}
+
+		return false;
 	}
 
 	@Override

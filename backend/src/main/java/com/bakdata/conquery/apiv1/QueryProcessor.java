@@ -374,9 +374,6 @@ public class QueryProcessor {
 			DatasetId dataset,
 			Range<LocalDate> dateRange) {
 
-		subject.authorize(dataset, Ability.ENTITY_PREVIEW);
-		subject.authorize(dataset, Ability.PRESERVE_ID);
-
 		final Namespace namespace = datasetRegistry.get(dataset);
 		final PreviewConfig previewConfig = namespace.getPreviewConfig();
 		final EntityPreviewForm form =
