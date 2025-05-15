@@ -150,6 +150,11 @@ public class ClusterImportHandler implements ImportHandler {
 			collectedEntities.put(bucket.getBucket(), bucket.entities());
 		}
 
+		if (imp == null){
+			log.warn("Import {} is not empty.", header.getName());
+			return;
+		}
+
 		namespace.getJobManager().addSlowJob(new RegisterImportEntities(collectedEntities, namespace, imp.getId()));
 
 		log.debug("Successfully read {} Buckets, containing {} entities for `{}`", header.getNumberOfBuckets(), header.getNumberOfEntities(), imp.getId());
