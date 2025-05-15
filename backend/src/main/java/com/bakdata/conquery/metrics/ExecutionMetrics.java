@@ -74,20 +74,17 @@ public class ExecutionMetrics {
 			NamespacedId<?> id = identifiable.getId();
 			// We don't want to report the whole tree, as that would be spammy and potentially wrong.
 
-			if (id instanceof ConceptId conceptId) {
-				reportedIds.add(conceptId);
-			}
-			else if (id instanceof ConceptTreeChildId conceptTreeChildId) {
-				reportedIds.add(conceptTreeChildId.findConcept());
-			}
-			else if (id instanceof ConnectorId connectorId) {
-				reportedIds.add(connectorId.getConcept());
-			}
-			else if (id instanceof SelectId selectId) {
-				reportedIds.add(selectId.findConcept());
-			}
-			else if (id instanceof FilterId filterId) {
-				reportedIds.add(filterId.getConnector().getConcept());
+			ConceptId cId = switch (id) {
+				case ConceptId conceptId -> conceptId;
+				case ConceptTreeChildId conceptTreeChildId -> conceptTreeChildId.findConcept();
+				case ConnectorId connectorId -> connectorId.getConcept();
+				case SelectId selectId -> selectId.findConcept();
+				case FilterId filterId -> filterId.getConnector().getConcept();
+				case null, default -> null;
+			};
+
+			if (cId != null) {
+				reportedIds.add(cId);
 			}
 		}
 

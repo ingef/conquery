@@ -159,15 +159,12 @@ public class QueryProcessor {
 
 		final Query query = ((ManagedQuery) q).getQuery();
 
-		if (query instanceof ConceptQuery) {
-			return isFrontendStructure(((ConceptQuery) query).getRoot());
-		}
+		return switch (query) {
+			case ConceptQuery conceptQuery -> isFrontendStructure(conceptQuery.getRoot());
+			case SecondaryIdQuery secondaryIdQuery -> isFrontendStructure(secondaryIdQuery.getRoot());
+			case null, default -> false;
+		};
 
-		if (query instanceof SecondaryIdQuery) {
-			return isFrontendStructure(((SecondaryIdQuery) query).getRoot());
-		}
-
-		return false;
 	}
 
 	/**
@@ -492,8 +489,8 @@ public class QueryProcessor {
 		}
 
 		// If SecondaryIds differ from selected and prior, we cannot reuse them.
-		if (query instanceof SecondaryIdQuery) {
-			final SecondaryIdDescriptionId selectedSecondaryId = ((SecondaryIdQuery) query).getSecondaryId();
+		if (query instanceof SecondaryIdQuery secondaryIdQuery) {
+			final SecondaryIdDescriptionId selectedSecondaryId = secondaryIdQuery.getSecondaryId();
 			final SecondaryIdDescriptionId reusedSecondaryId = ((SecondaryIdQuery) execution.getSubmitted()).getSecondaryId();
 
 			if (!selectedSecondaryId.equals(reusedSecondaryId)) {

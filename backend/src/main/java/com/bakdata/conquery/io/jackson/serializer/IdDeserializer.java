@@ -125,11 +125,9 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 
 		for (Id<?, ?> subId : ids) {
 			// NamespacedIds always recur to the root, which is the DatasetId
-			if (subId instanceof NamespacedId<?> nsId) {
-				nsId.setDomain(namespacedStorageProvider);
-			}
-			if (subId instanceof MetaId<?> metaId) {
-				metaId.setDomain(metaStorage);
+			switch (subId) {
+				case NamespacedId<?> nsId -> nsId.setDomain(namespacedStorageProvider);
+				case MetaId<?> metaId -> metaId.setDomain(metaStorage);
 			}
 		}
 	}

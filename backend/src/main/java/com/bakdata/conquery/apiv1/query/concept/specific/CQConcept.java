@@ -96,25 +96,27 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 		cqConcept.setElements(List.of(selectId.findConcept()));
 
-		if (selectId instanceof ConnectorSelectId connectorSelectId) {
-			final CQTable table = new CQTable();
-			cqConcept.setTables(List.of(table));
+		switch (selectId){
+			case ConceptSelectId conceptSelectId -> {
+				cqConcept.setTables(conceptSelectId.getConcept().resolve()
+												   .getConnectors().stream()
+												   .map(conn -> {
+													   final CQTable table = new CQTable();
+													   table.setConnector(conn.getId());
+													   return table;
+												   }).toList());
 
-			table.setConnector(connectorSelectId.getConnector());
+				cqConcept.setSelects(List.of(conceptSelectId));
+			}
+			case ConnectorSelectId connectorSelectId -> {
+				final CQTable table = new CQTable();
+				cqConcept.setTables(List.of(table));
 
-			table.setSelects(List.of(connectorSelectId));
-			table.setConcept(cqConcept);
-		}
-		else if(selectId instanceof ConceptSelectId conceptSelectId) {
-			cqConcept.setTables(conceptSelectId.getConcept().resolve()
-											   .getConnectors().stream()
-											   .map(conn -> {
-												   final CQTable table = new CQTable();
-												   table.setConnector(conn.getId());
-												   return table;
-											   }).toList());
+				table.setConnector(connectorSelectId.getConnector());
 
-			cqConcept.setSelects(List.of(conceptSelectId));
+				table.setSelects(List.of(connectorSelectId));
+				table.setConcept(cqConcept);
+			}
 		}
 
 		return cqConcept;
