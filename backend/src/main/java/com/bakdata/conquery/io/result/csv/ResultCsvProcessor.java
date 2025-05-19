@@ -23,7 +23,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -37,12 +36,12 @@ import org.eclipse.jetty.io.EofException;
 public class ResultCsvProcessor {
 
 	private final ConqueryConfig config;
-	private final DatasetRegistry<?> datasetRegistry;
 
-	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, ManagedExecutionId execId, boolean pretty, Charset charset, OptionalLong limit) {
-		final E exec = (E) execId.resolve();
+	public <E extends ManagedExecution & SingleTableResult> Response createResult(E exec, Subject subject, boolean pretty, Charset charset, OptionalLong limit) {
 
+		ManagedExecutionId execId = exec.getId();
 		final Namespace namespace = exec.getNamespace();
+
 
 		ConqueryMDC.setLocation(subject.getName());
 		log.info("Downloading results for {}", execId);
@@ -77,7 +76,11 @@ public class ResultCsvProcessor {
 			}
 		};
 
-		return makeResponseWithFileName(Response.ok(out), String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_CSV), new MediaType("text", "csv", charset.toString()), ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(Response.ok(out),
+										String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_CSV),
+										new MediaType("text", "csv", charset.toString()),
+										ResultUtil.ContentDispositionOption.ATTACHMENT
+		);
 
 	}
 }

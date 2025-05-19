@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1.query;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -47,9 +48,11 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SecondaryIdResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -90,7 +93,8 @@ public class TableExportQuery extends Query {
 	@NotEmpty
 	@Valid
 	@ToString.Include
-	private List<CQConcept> tables;
+	@JsonAlias("tables")
+	private List<CQConcept> concepts;
 
 	/**
 	 * @see TableExportQueryPlan#isRawConceptValues()
@@ -117,9 +121,9 @@ public class TableExportQuery extends Query {
 	@Override
 	public TableExportQueryPlan createQueryPlan(QueryPlanContext context) {
 
-		final Map<CQTable, QPNode> filterQueryNodes = new HashMap<>(tables.size());
+		final Map<CQTable, QPNode> filterQueryNodes = new HashMap<>(concepts.size());
 
-		for (CQConcept cqConcept : tables) {
+		for (CQConcept cqConcept : concepts) {
 			for (CQTable table : cqConcept.getTables()) {
 				// We use this query just to properly Construct a QPNode, filtering is done manually inside TableQueryPlan
 				final ConceptQuery tableFilterQuery = new ConceptQuery(cqConcept, DateAggregationMode.NONE);
@@ -144,26 +148,32 @@ public class TableExportQuery extends Query {
 		final AtomicInteger currentPosition = new AtomicInteger(2);
 
 		// We need to know if a column is a concept column, so we can prioritize it, if it is also a SecondaryId
-		conceptColumns = tables.stream()
-							   .map(CQConcept::getTables)
-							   .flatMap(Collection::stream)
-							   .map(CQTable::getConnector)
-							   .map(ConnectorId::resolve)
-							   .map(Connector::getColumn)
-							   .filter(Objects::nonNull)
-							   .collect(Collectors.toSet());
+		conceptColumns = concepts.stream()
+								 .map(CQConcept::getTables)
+								 .flatMap(Collection::stream)
+								 .map(CQTable::getConnector)
+								 .map(ConnectorId::resolve)
+								 .map(Connector::getColumn)
+								 .filter(Objects::nonNull)
+								 .collect(Collectors.toSet());
 
-		secondaryIdPositions = calculateSecondaryIdPositions(currentPosition, conceptColumns, tables);
+		secondaryIdPositions = calculateSecondaryIdPositions(currentPosition, conceptColumns, concepts);
 
-		final Set<ValidityDate> validityDates =
-				tables.stream().map(CQConcept::getTables).flatMap(Collection::stream).map(CQTable::findValidityDate).filter(Objects::nonNull).collect(Collectors.toSet());
+		final Set<ValidityDate> validityDates = concepts.stream()
+														.map(CQConcept::getTables)
+														.flatMap(Collection::stream)
+														.map(CQTable::findValidityDate)
+														.filter(Objects::nonNull)
+														.collect(Collectors.toSet());
 
 
-		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions, conceptColumns, validityDates);
+		positions = calculateColumnPositions(currentPosition, concepts, secondaryIdPositions, conceptColumns, validityDates);
 	}
 
 	private static Map<SecondaryIdDescriptionId, Integer> calculateSecondaryIdPositions(
-			AtomicInteger currentPosition, Set<ColumnId> conceptColumns, List<CQConcept> tables) {
+			AtomicInteger currentPosition,
+			Set<ColumnId> conceptColumns,
+			List<CQConcept> tables) {
 		final Map<SecondaryIdDescriptionId, Integer> secondaryIdPositions = new HashMap<>();
 
 		// SecondaryIds are pulled to the front and grouped over all tables
@@ -245,14 +255,14 @@ public class TableExportQuery extends Query {
 		}
 
 
-		final Map<ColumnId, ConceptId> connectorColumns = tables.stream()
-																.flatMap(con -> con.getTables().stream())
-																.map(CQTable::getConnector)
-																.map(ConnectorId::resolve)
-																.filter(con -> con.getColumn() != null)
-																.collect(Collectors.toMap(Connector::getColumn,
-																						 (Connector connector) -> connector.getConcept().getId()
-															   ));
+		final Map<ColumnId, ConceptId> connectorColumns = concepts.stream()
+																  .flatMap(con -> con.getTables().stream())
+																  .map(CQTable::getConnector)
+																  .map(ConnectorId::resolve)
+																  .filter(con -> con.getColumn() != null)
+																  .collect(Collectors.toMap(Connector::getColumn,
+																							(Connector connector) -> connector.getConcept().getId()
+																  ));
 
 
 		for (Map.Entry<ColumnId, Integer> entry : positions.entrySet()) {
@@ -277,7 +287,8 @@ public class TableExportQuery extends Query {
 				final ConceptId concept = connectorColumns.get(columnId);
 
 				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.
-				columnResultInfo = new ColumnResultInfo(column, ResultType.Primitive.STRING, column.getDescription(), isRawConceptValues() ? null : (TreeConcept) concept.resolve());
+				columnResultInfo =
+						new ColumnResultInfo(column, ResultType.Primitive.STRING, column.getDescription(), isRawConceptValues() ? null : (TreeConcept) concept.resolve());
 
 				// Columns that are used to build concepts are marked as ConceptColumn.
 				columnResultInfo.addSemantics(new SemanticType.ConceptColumnT(concept));
@@ -291,8 +302,6 @@ public class TableExportQuery extends Query {
 			}
 
 			infos[position] = columnResultInfo;
-
-
 		}
 
 		return List.of(infos);
@@ -311,5 +320,25 @@ public class TableExportQuery extends Query {
 	@Override
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
 		return query.collectRequiredEntities(context);
+	}
+
+	@ValidationMethod(message = "Multiple columns map to the same concept.")
+	@JsonIgnore
+	public boolean isConceptColumnsSingletons() {
+		final Map<ColumnId, List<ConceptId>> connectorColumns = new HashMap<>();
+		for (CQConcept con : concepts) {
+			for (CQTable cqTable : con.getTables()) {
+				Connector resolve = cqTable.getConnector().resolve();
+				if (resolve.getColumn() == null) {
+					continue;
+				}
+				connectorColumns.computeIfAbsent(resolve.getColumn(), ignored -> new ArrayList<>())
+								.add(cqTable.getConnector().getConcept());
+			}
+		}
+
+		return connectorColumns.values()
+							   .stream()
+							   .map(List::size).allMatch(s -> s == 1);
 	}
 }

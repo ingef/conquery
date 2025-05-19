@@ -44,7 +44,7 @@ public class MeProcessor {
 	public FrontendMeInformation getUserInformation(@NonNull User user) {
 		// Compute dataset ablilities
 		Map<DatasetId, FrontendDatasetAbility> datasetAblilites = new HashMap<>();
-		for (DatasetId dataset : datasetRegistry.getAllDatasets()) {
+		for (DatasetId dataset : datasetRegistry.getAllDatasets().toList()) {
 			if (!user.isPermitted(dataset, Ability.READ)) {
 				// User is not allowed to use dataset
 				continue;

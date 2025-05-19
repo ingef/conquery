@@ -105,7 +105,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 							.filteredOn(block -> block.getBucket().getDataset().equals(dataset))
 							.isNotEmpty();
 
-					assertThat(workerStorage.getAllBuckets())
+					assertThat(IntegrationUtils.getAllBuckets(workerStorage))
 							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
 							.isNotEmpty();
@@ -198,7 +198,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 							.filteredOn(block -> block.getBucket().getDataset().equals(dataset))
 							.isNotEmpty();
 
-					assertThat(workerStorage.getAllBuckets())
+					assertThat(IntegrationUtils.getAllBuckets(workerStorage))
 							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
 							.isNotEmpty();

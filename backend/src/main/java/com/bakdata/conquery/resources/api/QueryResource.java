@@ -48,6 +48,9 @@ public class QueryResource {
 			@PathParam(QUERY) ManagedExecutionId queryId,
 			@QueryParam("all-providers") @DefaultValue("false") boolean allProviders) {
 
+		subject.authorize(queryId.getDataset(), Ability.READ);
+		subject.authorize(queryId, Ability.READ);
+
 		return processor.getQueryFullStatus(queryId, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders, true);
 	}
 

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
@@ -18,7 +19,9 @@ import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -33,6 +36,11 @@ import lombok.extern.slf4j.Slf4j;
 @UtilityClass
 @Slf4j
 public class IntegrationUtils {
+
+
+	public static Stream<Bucket> getAllBuckets(WorkerStorage workerStorage) {
+		return workerStorage.getAllBucketIds().map(workerStorage::getBucket);
+	}
 
 
 	public static Query parseQuery(StandaloneSupport support, JsonNode rawQuery) throws JSONException, IOException {

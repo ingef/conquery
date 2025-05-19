@@ -100,7 +100,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
 							.isNotEmpty();
-					assertThat(workerStorage.getAllBuckets())
+					assertThat(IntegrationUtils.getAllBuckets(workerStorage))
 							.describedAs("Buckets for Worker %s", value.getInfo().getId())
 							.isNotEmpty();
 				}
@@ -175,7 +175,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
 					// No bucket should be found referencing the import.
-					try(Stream<Bucket> allBuckets = workerStorage.getAllBuckets()) {
+					try(Stream<Bucket> allBuckets = IntegrationUtils.getAllBuckets(workerStorage)) {
 
 						assertThat(allBuckets)
 								.describedAs("Buckets for Worker %s", value.getInfo().getId())
@@ -251,7 +251,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-					try(Stream<Bucket> allBuckets = workerStorage.getAllBuckets()) {
+					try(Stream<Bucket> allBuckets = IntegrationUtils.getAllBuckets(workerStorage)) {
 						assertThat(allBuckets.filter(bucket -> bucket.getImp().getTable().equals(tableId)))
 								.describedAs("Buckets for Worker %s", value.getInfo().getId())
 								.isNotEmpty();
@@ -290,7 +290,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 						final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-						try(Stream<Bucket> allBuckets = workerStorage.getAllBuckets()) {
+						try(Stream<Bucket> allBuckets = IntegrationUtils.getAllBuckets(workerStorage)) {
 							assertThat(allBuckets.filter(bucket -> bucket.getImp().getTable().equals(tableId)))
 									.describedAs("Buckets for Worker %s", value.getInfo().getId())
 									.isNotEmpty();

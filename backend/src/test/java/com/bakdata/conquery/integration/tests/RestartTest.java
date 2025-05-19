@@ -106,15 +106,15 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			adminProcessor.addGroup(group);
 			adminProcessor.addGroup(groupToDelete);
 
-			adminProcessor.addRoleTo(user, role.getId());
-			adminProcessor.addRoleTo(user, roleToDelete.getId());
-			adminProcessor.addRoleTo(userToDelete, role.getId());
-			adminProcessor.addRoleTo(userToDelete, roleToDelete.getId());
+			adminProcessor.addRoleToUser(user.getId(), role.getId());
+			adminProcessor.addRoleToUser(user.getId(), roleToDelete.getId());
+			adminProcessor.addRoleToUser(userToDelete.getId(), role.getId());
+			adminProcessor.addRoleToUser(userToDelete.getId(), roleToDelete.getId());
 
-			adminProcessor.addRoleTo(group, role.getId());
-			adminProcessor.addRoleTo(group, roleToDelete.getId());
-			adminProcessor.addRoleTo(groupToDelete, role.getId());
-			adminProcessor.addRoleTo(groupToDelete, roleToDelete.getId());
+			adminProcessor.addRoleToGroup(group.getId(), role.getId());
+			adminProcessor.addRoleToGroup(group.getId(), roleToDelete.getId());
+			adminProcessor.addRoleToGroup(groupToDelete.getId(), role.getId());
+			adminProcessor.addRoleToGroup(groupToDelete.getId(), roleToDelete.getId());
 
 			adminProcessor.addUserToGroup(group.getId(), user.getId());
 			adminProcessor.addUserToGroup(group.getId(), userToDelete.getId());

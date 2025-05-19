@@ -97,11 +97,6 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	public Stream<Bucket> getAllBuckets() {
-		return buckets.getAllKeys().map(BucketId.class::cast).map(this::getBucket);
-	}
-
-	@Override
 	public Bucket getBucket(BucketId id) {
 		return buckets.get(id);
 	}

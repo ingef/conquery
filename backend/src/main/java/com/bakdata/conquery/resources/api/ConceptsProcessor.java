@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import jakarta.inject.Inject;
 import jakarta.validation.Validator;
 
@@ -127,14 +128,12 @@ public class ConceptsProcessor {
 		}
 	}
 
-	public List<IdLabel<DatasetId>> getDatasets(Subject subject) {
+	public Stream<IdLabel<DatasetId>> getDatasets(Subject subject) {
 		return namespaces.getAllDatasets()
-						 .stream()
 						 .filter(d -> subject.isPermitted(d, Ability.READ))
 						 .map(DatasetId::resolve)
 						 .sorted(Comparator.comparing(Dataset::getWeight).thenComparing(Dataset::getLabel))
-						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))
-						 .collect(Collectors.toList());
+						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()));
 	}
 
 	public FrontendPreviewConfig getEntityPreviewFrontendConfig(DatasetId dataset) {

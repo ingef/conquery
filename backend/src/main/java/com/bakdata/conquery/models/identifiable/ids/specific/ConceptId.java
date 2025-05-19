@@ -22,6 +22,7 @@ import lombok.Getter;
 @EqualsAndHashCode(callSuper = false)
 public final class ConceptId extends ConceptElementId<Concept<?>> implements Authorized {
 
+	@Getter
 	private final DatasetId dataset;
 	private final String name;
 
@@ -29,11 +30,6 @@ public final class ConceptId extends ConceptElementId<Concept<?>> implements Aut
 	public Concept<?> get(NamespacedStorageProvider storage) {
 		return storage.getStorage(getDataset())
 					  .getConcept(this);
-	}
-
-	@Override
-	public DatasetId getDataset() {
-		return dataset;
 	}
 
 	@Override

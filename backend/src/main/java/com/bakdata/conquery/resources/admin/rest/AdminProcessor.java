@@ -20,7 +20,6 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -135,7 +134,7 @@ public class AdminProcessor {
 				addUser(user);
 			}
 			catch (Exception e) {
-				log.error(String.format("Failed to add User: %s", user), e);
+				log.error("Failed to add User: {}", user, e);
 			}
 		}
 	}
@@ -150,13 +149,12 @@ public class AdminProcessor {
 	}
 
 	public void addGroups(List<Group> groups) {
-
 		for (Group group : groups) {
 			try {
 				addGroup(group);
 			}
 			catch (Exception e) {
-				log.error(String.format("Failed to add Group: %s", group), e);
+				log.error("Failed to add Group: {}", group, e);
 			}
 		}
 	}
@@ -169,13 +167,14 @@ public class AdminProcessor {
 	}
 
 	public void addUserToGroup(GroupId groupId, UserId user) {
-		final Group group = storage.getGroup(groupId);
+		final Group group = groupId.resolve();
+
 		group.addMember(user);
 		log.trace("Added user {} to group {}", user, group);
 	}
 
 	public void deleteUserFromGroup(GroupId groupId, UserId user) {
-		final Group group = storage.getGroup(groupId);
+		final Group group = groupId.resolve();
 
 		group.removeMember(user);
 		log.trace("Removed user {} from group {}", user, group);
@@ -186,14 +185,24 @@ public class AdminProcessor {
 		log.trace("Removed group {}", group);
 	}
 
-	public void deleteRoleFrom(RoleOwner owner, RoleId role) {
-		owner.removeRole(role);
+	public void deleteRoleFromGroup(GroupId owner, RoleId role) {
+		owner.resolve().removeRole(role);
 		log.trace("Removed role {} from {}", role, owner);
 	}
 
-	public void addRoleTo(RoleOwner owner, RoleId role) {
-		owner.addRole(role);
+	public void addRoleToGroup(GroupId owner, RoleId role) {
+		owner.resolve().addRole(role);
 		log.trace("Added role {} to {}", role, owner);
+	}
+
+	public void addRoleToUser(UserId owner, RoleId role) {
+		owner.resolve().addRole(role);
+		log.trace("Added role {} to {}", role, owner);
+	}
+
+	public void deleteRoleFromUser(UserId owner, RoleId role) {
+		owner.resolve().removeRole(role);
+		log.trace("Removed role {} from {}", role, owner);
 	}
 
 	/**

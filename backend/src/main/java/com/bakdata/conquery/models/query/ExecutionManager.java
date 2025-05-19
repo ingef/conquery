@@ -218,18 +218,18 @@ public abstract class ExecutionManager {
 	 */
 	public ExecutionState awaitDone(ManagedExecutionId id, int time, TimeUnit unit) {
 
-		ExecutionInfo result = executionInfos.getIfPresent(id);
-		if (result == null) {
+		ExecutionInfo executionInfo = executionInfos.getIfPresent(id);
+		if (executionInfo == null) {
 			return ExecutionState.NEW;
 		}
 
-		ExecutionState execState = result.getExecutionState();
+		ExecutionState execState = executionInfo.getExecutionState();
 
 		if (execState != ExecutionState.RUNNING) {
 			return execState;
 		}
 
-		Uninterruptibles.awaitUninterruptibly(result.getExecutingLock(), time, unit);
+		Uninterruptibles.awaitUninterruptibly(executionInfo.getExecutingLock(), time, unit);
 
 		ExecutionInfo executionInfoAfterWait = executionInfos.getIfPresent(id);
 		if (executionInfoAfterWait == null) {

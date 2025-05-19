@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
+
 public interface WorkerStorage extends NamespacedStorage, Closeable {
 	void addCBlock(CBlock cBlock);
 
@@ -25,8 +26,6 @@ public interface WorkerStorage extends NamespacedStorage, Closeable {
 
 	void removeBucket(BucketId id);
 
-	//TODO this is TestOnly
-	Stream<Bucket> getAllBuckets();
 
 	Stream<BucketId> getAllBucketIds();
 

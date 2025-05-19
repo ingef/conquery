@@ -94,7 +94,7 @@ public class FullExportForm extends Form implements InternalForm {
 		final TableExportQuery exportQuery = new TableExportQuery(query);
 		exportQuery.setDateRange(getDateRange());
 
-		exportQuery.setTables(tables);
+		exportQuery.setConcepts(tables);
 
 
 		return Map.of(

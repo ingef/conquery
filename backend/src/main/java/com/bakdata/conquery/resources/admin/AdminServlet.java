@@ -108,6 +108,8 @@ public class AdminServlet {
 				manager.getEnvironment()
 		);
 
+		IdPathParamConverterProvider idPathParamConverterProvider = new IdPathParamConverterProvider(manager.getMetaStorage(), manager.getDatasetRegistry());
+
 		jerseyConfig.register(new AbstractBinder() {
 						@Override
 						protected void configure() {
@@ -122,7 +124,7 @@ public class AdminServlet {
 						}
 					})
 					.register(AdminPermissionFilter.class)
-					.register(new IdPathParamConverterProvider(manager.getMetaStorage(), manager.getDatasetRegistry()))
+					.register(idPathParamConverterProvider)
 					.register(AuthCookieFilter.class)
 					.register(CsrfTokenCheckFilter.class)
 					.register(DatasetParamInjector.class);
@@ -139,7 +141,7 @@ public class AdminServlet {
 							  bind(manager.getConfig()).to(ConqueryConfig.class);
 						  }
 					  })
-					  .register(new IdPathParamConverterProvider(manager.getMetaStorage(), manager.getDatasetRegistry()))
+					  .register(idPathParamConverterProvider)
 					  .register(AdminPermissionFilter.class)
 					  .register(AuthCookieFilter.class)
 					  .register(CsrfTokenSetFilter.class)

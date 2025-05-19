@@ -59,7 +59,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		final Map<ColumnId, Integer> positions = tableExportQuery.getPositions();
 		final CDateRange dateRestriction = CDateRange.of(tableExportQuery.getDateRange());
 
-		final List<QueryStep> convertedTables = tableExportQuery.getTables().stream()
+		final List<QueryStep> convertedTables = tableExportQuery.getConcepts().stream()
 																.flatMap(concept -> concept.getTables().stream().map(table -> convertTable(
 																		table,
 																		concept,

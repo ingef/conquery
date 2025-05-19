@@ -3,11 +3,10 @@ package com.bakdata.conquery.models.worker;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -94,11 +93,10 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 		}
 	}
 
-	public List<DatasetId> getAllDatasets() {
+	public Stream<DatasetId> getAllDatasets() {
 		return datasets.values().stream()
 					   .map(Namespace::getStorage)
-					   .map(namespaceStorage -> namespaceStorage.getDataset().getId())
-					   .collect(Collectors.toList());
+					   .map(namespaceStorage -> namespaceStorage.getDataset().getId());
 	}
 
 	public Collection<N> getNamespaces() {

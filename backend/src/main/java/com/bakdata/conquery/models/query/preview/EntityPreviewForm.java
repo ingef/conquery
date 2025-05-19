@@ -98,7 +98,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
 
 		exportQuery.setDateRange(dateRange);
-		exportQuery.setTables(sources.stream().map(CQConcept::forConnector).collect(Collectors.toList()));
+		exportQuery.setConcepts(sources.stream().map(CQConcept::forConnector).collect(Collectors.toList()));
 		exportQuery.setRawConceptValues(false);
 		return exportQuery;
 	}

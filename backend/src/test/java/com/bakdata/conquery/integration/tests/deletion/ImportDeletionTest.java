@@ -121,7 +121,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
 							.filteredOn(block -> block.getBucket().getDataset().equals(dataset))
 							.isNotEmpty();
-					assertThat(workerStorage.getAllBuckets())
+					assertThat(IntegrationUtils.getAllBuckets(workerStorage))
 							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
 							.isNotEmpty();
@@ -180,7 +180,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 					final ModificationShieldedWorkerStorage workerStorage = worker.getStorage();
 
 					// No bucket should be found referencing the import.
-					assertThat(workerStorage.getAllBuckets())
+					assertThat(IntegrationUtils.getAllBuckets(workerStorage))
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
 							.filteredOn(bucket -> bucket.getImp().equals(importId))
 							.isEmpty();
@@ -268,7 +268,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 					final ModificationShieldedWorkerStorage workerStorage = worker.getStorage();
 
-					assertThat(workerStorage.getAllBuckets())
+					assertThat(IntegrationUtils.getAllBuckets(workerStorage))
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
 							.filteredOn(bucket -> bucket.getImp().equals(importId))
 							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
@@ -305,7 +305,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 						final ModificationShieldedWorkerStorage workerStorage = worker.getStorage();
 
-						try(Stream<Bucket> allBuckets = workerStorage.getAllBuckets()) {
+						try(Stream<Bucket> allBuckets = IntegrationUtils.getAllBuckets(workerStorage)) {
 							assertThat(allBuckets)
 									.describedAs("Buckets for Worker %s", worker.getInfo().getId())
 									.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))

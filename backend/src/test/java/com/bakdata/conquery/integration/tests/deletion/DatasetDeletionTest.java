@@ -87,7 +87,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
 							.isNotEmpty();
-					assertThat(workerStorage.getAllBuckets())
+					assertThat(IntegrationUtils.getAllBuckets(workerStorage))
 							.describedAs("Buckets for Worker %s", value.getInfo().getId())
 							.isNotEmpty();
 				}
@@ -211,7 +211,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 						final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-						assertThat(workerStorage.getAllBuckets().filter(bucket -> bucket.getTable().getDataset().equals(dataset)))
+						assertThat(IntegrationUtils.getAllBuckets(workerStorage).filter(bucket -> bucket.getTable().getDataset().equals(dataset)))
 								.describedAs("Buckets for Worker %s", value.getInfo().getId())
 								.isNotEmpty();
 					}

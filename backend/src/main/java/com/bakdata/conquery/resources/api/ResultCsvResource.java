@@ -52,16 +52,17 @@ public class ResultCsvResource {
 	@Produces(AdditionalMediaTypes.CSV)
 	public Response getAsCsv(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecutionId execution,
+			@PathParam(QUERY) ManagedExecutionId executionId,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("charset") String queryCharset,
 			@QueryParam("pretty") @DefaultValue("true") boolean pretty,
 			@QueryParam("limit") OptionalLong limit
 	) {
 
-		checkSingleTableResult(execution.resolve());
-		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
+		ManagedExecution execution = executionId.resolve();
+		checkSingleTableResult(execution);
+		log.info("Result for {} download on dataset {} by subject {} ({}).", executionId, execution.getDataset(), subject.getId(), subject.getName());
 
-		return processor.createResult(subject, execution, pretty, determineCharset(userAgent, queryCharset), limit);
+		return processor.createResult((ManagedExecution & SingleTableResult) execution, subject, pretty, determineCharset(userAgent, queryCharset), limit);
 	}
 }

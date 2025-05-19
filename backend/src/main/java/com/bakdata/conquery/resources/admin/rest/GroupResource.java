@@ -19,8 +19,6 @@ import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.RequiredArgsConstructor;
 
 @Produces(MediaType.APPLICATION_JSON)
@@ -69,12 +67,12 @@ public class GroupResource {
 	@Path("{" + GROUP_ID + "}/" + ROLES_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@DELETE
 	public void deleteRoleFromGroup(@PathParam(GROUP_ID) GroupId group, @PathParam(ROLE_ID) RoleId role) {
-		processor.deleteRoleFrom(group.resolve(), role);
+		processor.deleteRoleFromGroup(group, role);
 	}
 
 	@Path("{" + GROUP_ID + "}/" + ROLES_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@POST
 	public void addRoleToUser(@PathParam(GROUP_ID) GroupId group, @PathParam(ROLE_ID) RoleId role) {
-		processor.addRoleTo(group.resolve(), role);
+		processor.addRoleToGroup(group, role);
 	}
 }

@@ -151,7 +151,7 @@ public class ClusterImportHandler implements ImportHandler {
 		}
 
 		if (imp == null){
-			log.warn("Import {} is not empty.", header.getName());
+			log.warn("Import {} is empty.", header.getName());
 			return;
 		}
 
@@ -175,9 +175,8 @@ public class ClusterImportHandler implements ImportHandler {
 	 * select, then send buckets.
 	 */
 	public static WriteFuture sendBucket(Bucket bucket, WorkerInformation responsibleWorker) {
-
 		log.trace("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
-		return responsibleWorker.send(new ImportBucket(bucket.getId(), bucket));
+		return responsibleWorker.send(new ImportBucket(bucket));
 
 	}
 

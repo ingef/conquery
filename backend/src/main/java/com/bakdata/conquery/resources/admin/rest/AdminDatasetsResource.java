@@ -1,6 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import java.util.List;
+import java.util.stream.Stream;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -33,7 +33,7 @@ public class AdminDatasetsResource {
 	}
 
 	@GET
-	public List<DatasetId> listDatasets() {
+	public Stream<DatasetId> listDatasets() {
 		return processor.getDatasetRegistry().getAllDatasets();
 	}
 }

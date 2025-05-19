@@ -15,9 +15,11 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -31,20 +33,21 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 @Getter
 @Setter
 @Slf4j
+@JsonIgnoreProperties({"label"})
+@ToString(onlyExplicitlyIncluded = true)
 public class TableImportDescriptor implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	@NotEmpty
+	@ToString.Include
 	private String name;
-
-
-	private String label;
 
 	/**
 	 * Target table to load the import to.
 	 */
 	@NotEmpty
+	@ToString.Include
 	private String table;
 
 	/**
@@ -77,12 +80,6 @@ public class TableImportDescriptor implements Serializable {
 			types.add(inp);
 		}
 		return true;
-	}
-
-
-	@Override
-	public String toString() {
-		return "ImportDescriptor [table=" + table + ", name=" + getName() + "]";
 	}
 
 	/**

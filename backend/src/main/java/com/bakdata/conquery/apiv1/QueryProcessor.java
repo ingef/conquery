@@ -300,8 +300,7 @@ public class QueryProcessor {
 
 	public FullExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, Subject subject, UriBuilder url, Boolean allProviders, boolean await) {
 
-		subject.authorize(queryId.getDataset(), Ability.READ);
-		subject.authorize(queryId, Ability.READ);
+
 
 		if (await) {
 			awaitDone(queryId, 1, TimeUnit.SECONDS);

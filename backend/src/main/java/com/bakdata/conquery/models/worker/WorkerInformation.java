@@ -34,8 +34,10 @@ public class WorkerInformation extends NamespacedIdentifiable<WorkerId> implemen
 	@Min(0)
 	private int entityBucketSize;
 
-	@Getter(onMethod_ = {@ToString.Include, @NotBlank})
+	@Getter
 	@Setter
+	@ToString.Include
+	@NotBlank
 	private String name;
 
 

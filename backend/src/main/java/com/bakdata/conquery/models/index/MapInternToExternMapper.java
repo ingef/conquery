@@ -91,7 +91,7 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 		}
 
 		final URI resolvedURI = FileUtil.getResolvedUri(config.getIndex().getBaseUrl(), csv);
-//TODO fix injection order, then getId() doesn't crash anymore		log.trace("Resolved mapping reference csv url '{}': {}", getId(), resolvedURI);
+		log.trace("Resolved mapping reference csv url '{}': {}", getName(), resolvedURI);
 
 		final IndexKey key = new MapIndexKey(resolvedURI, internalColumn, externalTemplate, allowMultiple);
 

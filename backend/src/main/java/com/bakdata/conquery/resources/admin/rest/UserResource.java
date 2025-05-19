@@ -15,11 +15,6 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
-import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -63,12 +58,12 @@ public class UserResource {
 	@Path("{" + USER_ID + "}/" + ROLES_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@DELETE
 	public void deleteRoleFromUser(@PathParam(USER_ID) UserId user, @PathParam(ROLE_ID) RoleId role) {
-		processor.deleteRoleFrom(user.resolve(), role);
+		processor.deleteRoleFromUser(user, role);
 	}
 
 	@Path("{" + USER_ID + "}/" + ROLES_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@POST
 	public void addRoleToUser(@PathParam(USER_ID) UserId user, @PathParam(ROLE_ID) RoleId role) {
-		processor.addRoleTo(user.resolve(), role);
+		processor.addRoleToUser(user, role);
 	}
 }
