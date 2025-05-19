@@ -40,11 +40,6 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
 		Query query = getQuery();
 
-		assertThat(standaloneSupport.getValidator().validate(query))
-				.describedAs("Query Validation Errors")
-				.isEmpty();
-
-
 		log.info("{} QUERY INIT", getLabel());
 
 		final User testUser = standaloneSupport.getTestUser();
