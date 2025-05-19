@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -22,10 +21,8 @@ public class WorkerId extends NamespacedId<WorkerInformation> {
 	private final String worker;
 
 	@Override
-	public WorkerInformation get(NamespacedStorageProvider namespacedStorage) {
-		//TODO dont think this is correct?
-		return assertWorkerStorage(namespacedStorage.getStorage(getDataset()))
-				.getWorker();
+	public WorkerInformation get() {
+		return assertWorkerStorage(getDomain().getStorage(getDataset())).getWorker();
 	}
 
 	@Override
@@ -42,7 +39,7 @@ public class WorkerId extends NamespacedId<WorkerInformation> {
 
 
 
-	public static enum Parser implements IdUtil.Parser<WorkerId> {
+	public enum Parser implements IdUtil.Parser<WorkerId> {
 		INSTANCE;
 
 		@Override

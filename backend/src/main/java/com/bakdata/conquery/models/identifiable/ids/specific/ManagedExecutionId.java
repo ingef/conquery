@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
@@ -40,8 +39,8 @@ public class ManagedExecutionId extends MetaId<ManagedExecution> implements Owne
 	}
 
 	@Override
-	public ManagedExecution get(MetaStorage storage) {
-		return storage.getExecution(this);
+	public ManagedExecution get() {
+		return getDomain().getExecution(this);
 	}
 
 	@Override

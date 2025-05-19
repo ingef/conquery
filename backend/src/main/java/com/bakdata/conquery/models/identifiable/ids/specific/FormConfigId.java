@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
@@ -44,8 +43,8 @@ public class FormConfigId extends MetaId<FormConfig> implements Owned {
 	}
 
 	@Override
-	public FormConfig get(MetaStorage storage) {
-		return storage.getFormConfig(this);
+	public FormConfig get() {
+		return getDomain().getFormConfig(this);
 	}
 
 	@Override

@@ -47,8 +47,8 @@ public class DatasetId extends NamespacedId<Dataset> implements Authorized {
 	}
 
 	@Override
-	public Dataset get(NamespacedStorageProvider storage) {
-		return storage.getStorage(this).getDataset();
+	public Dataset get() {
+		return getDomain().getStorage(this).getDataset();
 	}
 
 	@Override
@@ -66,7 +66,7 @@ public class DatasetId extends NamespacedId<Dataset> implements Authorized {
 		return DatasetPermission.onInstance(abilities, this);
 	}
 
-	public static enum Parser implements IdUtil.Parser<DatasetId> {
+	public enum Parser implements IdUtil.Parser<DatasetId> {
 		INSTANCE;
 
 		@Override

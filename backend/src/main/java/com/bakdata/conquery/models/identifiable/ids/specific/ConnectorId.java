@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -27,8 +26,8 @@ public class ConnectorId extends NamespacedId<Connector>  {
 	}
 
 	@Override
-	public Connector get(NamespacedStorageProvider storage) {
-		return storage.getStorage(getDataset()).getConcept(getConcept()).getConnectorByName(getConnector());
+	public Connector get() {
+		return getDomain().getStorage(getDataset()).getConcept(getConcept()).getConnectorByName(getConnector());
 	}
 
 	@Override
@@ -44,7 +43,7 @@ public class ConnectorId extends NamespacedId<Connector>  {
 	}
 
 
-	public static enum Parser implements IdUtil.Parser<ConnectorId> {
+	public enum Parser implements IdUtil.Parser<ConnectorId> {
 		INSTANCE;
 
 		@Override

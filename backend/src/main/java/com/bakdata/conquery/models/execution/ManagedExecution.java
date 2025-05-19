@@ -297,7 +297,8 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 		status.setContainsDates(containsDates);
 
 		if (owner != null) {
-			User user = getMetaStorage().get(owner);
+			//TODO why is this nullable?
+			User user = getMetaStorage().getUser(owner);
 
 			if (user != null) {
 				status.setOwner(user.getId());

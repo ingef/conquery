@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -24,7 +23,7 @@ public class StructureNodeId extends NamespacedId<StructureNode> {
 
 
 	@Override
-	public StructureNode get(NamespacedStorageProvider namespacedStorage) {
+	public StructureNode get() {
 		throw new UnsupportedOperationException();
 	}
 
@@ -51,7 +50,7 @@ public class StructureNodeId extends NamespacedId<StructureNode> {
 	}
 
 
-	public static enum Parser implements IdUtil.Parser<StructureNodeId> {
+	public enum Parser implements IdUtil.Parser<StructureNodeId> {
 		INSTANCE;
 
 		@Override

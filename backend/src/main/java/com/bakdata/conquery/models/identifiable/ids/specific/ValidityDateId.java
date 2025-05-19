@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -21,8 +20,8 @@ public class ValidityDateId extends NamespacedId<ValidityDate> {
 	private final String validityDate;
 
 	@Override
-	public ValidityDate get(NamespacedStorageProvider storage) {
-		return storage.getStorage(getDataset())
+	public ValidityDate get() {
+		return getDomain().getStorage(getDataset())
 					  .getConcept(getConnector().getConcept())
 					  .getConnectorByName(getConnector().getConnector())
 					  .getValidityDateByName(getValidityDate());
@@ -46,7 +45,7 @@ public class ValidityDateId extends NamespacedId<ValidityDate> {
 	}
 
 
-	public static enum Parser implements IdUtil.Parser<ValidityDateId> {
+	public enum Parser implements IdUtil.Parser<ValidityDateId> {
 		INSTANCE;
 
 		@Override

@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -107,10 +106,6 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 	@Override
 	public void updateDataset(Dataset dataset) {
 		this.dataset.update(dataset);
-	}
-
-	public <ID extends NamespacedId<?>, VALUE> VALUE get(ID id) {
-		return (VALUE) id.get(this);
 	}
 
 	@Override

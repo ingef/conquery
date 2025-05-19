@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -27,8 +26,8 @@ public final class ConceptId extends ConceptElementId<Concept<?>> implements Aut
 	private final String name;
 
 	@Override
-	public Concept<?> get(NamespacedStorageProvider storage) {
-		return storage.getStorage(getDataset())
+	public Concept<?> get() {
+		return getDomain().getStorage(getDataset())
 					  .getConcept(this);
 	}
 

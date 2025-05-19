@@ -336,7 +336,7 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 		private synchronized Group createGroup(String name, String label) {
 			GroupId groupId = new GroupId(name);
 
-			final Group existing = storage.get(groupId);
+			final Group existing = storage.getGroup(groupId);
 
 			if (existing != null) {
 				// Found existing group

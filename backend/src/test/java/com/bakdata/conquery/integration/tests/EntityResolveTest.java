@@ -76,7 +76,8 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 
 		// Api uses NsIdRef, so we have to use the real objects here.
 		FilterId filterId = FilterId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.values-filter");
-		Filter<?> filter = filterId.get(conquery.getNamespaceStorage());
+		filterId.setDomain(conquery.getDatasetRegistry());
+		Filter<?> filter = filterId.resolve();
 
 
 		final List<Map<String, String>> result;

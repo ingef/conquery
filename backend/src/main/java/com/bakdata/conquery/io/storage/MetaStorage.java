@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.ids.MetaId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -209,7 +208,4 @@ public class MetaStorage implements ConqueryStorage, Injectable {
 		return values.add(MetaStorage.class, this);
 	}
 
-	public <ID extends MetaId<?>, VALUE> VALUE get(ID id) {
-		return (VALUE) id.get(this);
-	}
 }

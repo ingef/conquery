@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -27,8 +26,8 @@ public class BucketId extends NamespacedId<Bucket>  {
 	}
 
 	@Override
-	public Bucket get(NamespacedStorageProvider storage) {
-		return assertWorkerStorage(storage.getStorage(getDataset()))
+	public Bucket get() {
+		return assertWorkerStorage(getDomain().getStorage(getDataset()))
 				.getBucket(this);
 	}
 
@@ -45,7 +44,7 @@ public class BucketId extends NamespacedId<Bucket>  {
 	}
 
 
-	public static enum Parser implements IdUtil.Parser<BucketId> {
+	public enum Parser implements IdUtil.Parser<BucketId> {
 		INSTANCE;
 
 		@Override

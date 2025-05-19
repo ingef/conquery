@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.ImportColumn;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -27,7 +26,7 @@ public class ImportColumnId extends NamespacedId<ImportColumn>  {
 	}
 
 	@Override
-	public ImportColumn get(NamespacedStorageProvider storage) {
+	public ImportColumn get() {
 		throw new UnsupportedOperationException("%s is never stored".formatted(this.getClass().getSimpleName()));
 	}
 
@@ -44,7 +43,7 @@ public class ImportColumnId extends NamespacedId<ImportColumn>  {
 	}
 
 
-	public static enum Parser implements IdUtil.Parser<ImportColumnId> {
+	public enum Parser implements IdUtil.Parser<ImportColumnId> {
 		INSTANCE;
 
 		@Override

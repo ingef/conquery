@@ -12,7 +12,6 @@ import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.NonNull;
 
 @JsonDeserialize(using = IdDeserializer.class)
 public sealed abstract class Id<TYPE, DOMAIN> permits NamespacedId, MetaId {
@@ -59,9 +58,8 @@ public sealed abstract class Id<TYPE, DOMAIN> permits NamespacedId, MetaId {
 	public abstract void collectComponents(List<Object> components);
 
 	public final TYPE resolve() {
-		@NonNull DOMAIN domain = getDomain();
 		try {
-			TYPE o = get(domain);
+			TYPE o = get();
 			if (o == null) {
 				throw newIdResolveException();
 			}
@@ -82,10 +80,9 @@ public sealed abstract class Id<TYPE, DOMAIN> permits NamespacedId, MetaId {
 	/**
 	 * Return the object identified by the given id from the given storage.
 	 *
-	 * @return the object or null if no object could be resolved. If the id type is not supported
-	 * throws a IllegalArgumentException
+	 * @return the object or null if no object could be resolved.
 	 */
-	public abstract TYPE get(DOMAIN DOMAIN);
+	protected abstract TYPE get();
 
 	public final IdResolvingException newIdResolveException() {
 		return new IdResolvingException(this);

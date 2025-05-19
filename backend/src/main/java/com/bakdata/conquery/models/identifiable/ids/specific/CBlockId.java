@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -27,8 +26,8 @@ public class CBlockId extends NamespacedId<CBlock>  {
 	}
 
 	@Override
-	public CBlock get(NamespacedStorageProvider storage) {
-		return assertWorkerStorage(storage.getStorage(getDataset()))
+	public CBlock get() {
+		return assertWorkerStorage(getDomain().getStorage(getDataset()))
 				.getCBlock(this);
 	}
 
@@ -45,7 +44,7 @@ public class CBlockId extends NamespacedId<CBlock>  {
 		connector.collectIds(collect);
 	}
 
-	public static enum Parser implements IdUtil.Parser<CBlockId> {
+	public enum Parser implements IdUtil.Parser<CBlockId> {
 		INSTANCE;
 
 		@Override

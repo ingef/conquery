@@ -114,7 +114,7 @@ public class FormConfig extends MetaIdentifiable<FormConfigId> implements Sharea
 			return null;
 		}
 
-		User resolved = metaStorage.get(owner);
+		User resolved = metaStorage.getUser(owner);
 
 		if (resolved == null){
 			return null;

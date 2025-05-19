@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
@@ -35,8 +34,8 @@ public final class RoleId extends PermissionOwnerId<Role> {
 	}
 
 	@Override
-	public Role get(MetaStorage storage) {
-		return storage.getRole(this);
+	public Role get() {
+		return getDomain().getRole(this);
 	}
 
 	enum Parser implements IdUtil.Parser<RoleId> {

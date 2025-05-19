@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -25,8 +24,8 @@ public final class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild>
 	}
 
 	@Override
-	public ConceptTreeChild get(NamespacedStorageProvider storage) {
-		Concept<?> concept = storage.getStorage(getDataset())
+	public ConceptTreeChild get() {
+		Concept<?> concept = getDomain().getStorage(getDataset())
 									.getConcept(findConcept());
 		if (concept == null) {
 			return null;
@@ -52,7 +51,7 @@ public final class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild>
 	}
 
 
-	public static enum Parser implements IdUtil.Parser<ConceptTreeChildId> {
+	public enum Parser implements IdUtil.Parser<ConceptTreeChildId> {
 		INSTANCE;
 
 		@Override

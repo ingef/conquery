@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -33,8 +32,8 @@ public class SearchIndexId extends NamespacedId<SearchIndex>  {
 	}
 
 	@Override
-	public SearchIndex get(NamespacedStorageProvider storage) {
-		return assertNamespaceStorage(storage.getStorage(getDataset())).getSearchIndex(this);
+	public SearchIndex get() {
+		return assertNamespaceStorage(getDomain().getStorage(getDataset())).getSearchIndex(this);
 	}
 
 

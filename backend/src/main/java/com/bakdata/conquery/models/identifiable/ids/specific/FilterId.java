@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -27,8 +26,10 @@ public class FilterId extends NamespacedId<Filter<?>>  {
 	}
 
 	@Override
-	public Filter<?> get(NamespacedStorageProvider storage) {
-		return storage.getStorage(getDataset()).getConcept(connector.getConcept()).getConnectorByName(connector.getConnector()).getFilterByName(getFilter());
+	public Filter<?> get() {
+		return getDomain().getStorage(getDataset())
+						  .getConcept(connector.getConcept()).getConnectorByName(connector.getConnector())
+						  .getFilterByName(getFilter());
 	}
 
 	@Override
@@ -44,7 +45,7 @@ public class FilterId extends NamespacedId<Filter<?>>  {
 	}
 
 
-	public static enum Parser implements IdUtil.Parser<FilterId> {
+	public enum Parser implements IdUtil.Parser<FilterId> {
 		INSTANCE;
 
 		@Override

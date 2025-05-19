@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -36,11 +35,11 @@ public class SecondaryIdDescriptionId extends NamespacedId<SecondaryIdDescriptio
 	}
 
 	@Override
-	public SecondaryIdDescription get(NamespacedStorageProvider storage) {
-		return storage.getStorage(getDataset()).getSecondaryId(this);
+	public SecondaryIdDescription get() {
+		return getDomain().getStorage(getDataset()).getSecondaryId(this);
 	}
 
-	public static enum Parser implements IdUtil.Parser<SecondaryIdDescriptionId> {
+	public enum Parser implements IdUtil.Parser<SecondaryIdDescriptionId> {
 		INSTANCE;
 
 		@Override
