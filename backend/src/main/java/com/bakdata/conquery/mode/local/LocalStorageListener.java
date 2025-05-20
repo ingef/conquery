@@ -17,11 +17,13 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.LocalNamespace;
+import groovy.util.logging.Slf4j;
 import lombok.Data;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Named;
 
+@Slf4j
 @Data
 public class LocalStorageListener implements StorageListener {
 
@@ -43,12 +45,13 @@ public class LocalStorageListener implements StorageListener {
 		List<org.jooq.Table<?>> tables = dslContext.meta()
 												   .getTables(table.getName());
 
+
 		if (tables.isEmpty()) {
-			throw new NotFoundException("The table %s does not exist.".formatted(table.getId()));
+			throw new NotFoundException("No table matching name=%s does exist for %s.".formatted(table.getName(), table.getId()));
 		}
 
 		if (tables.size() > 1) {
-			throw new BadRequestException("Found multiple tables matching %s.".formatted(table.getId()));
+			throw new BadRequestException("Found multiple tables matching name=%s for table %s.".formatted(table.getName(), table.getId()));
 		}
 
 		org.jooq.Table<?> sqlTable = tables.getFirst();
