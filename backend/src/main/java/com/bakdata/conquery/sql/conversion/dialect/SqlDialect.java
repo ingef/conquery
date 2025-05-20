@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.Converter;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
@@ -28,10 +29,13 @@ import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 
 public interface SqlDialect {
 
 	SystemDateNowSupplier SYSTEM_DATE_NOW_SUPPLIER = new SystemDateNowSupplier();
+
+	boolean isTypeCompatible(Field<?> field, MajorTypeId type);
 
 	SqlFunctionProvider getFunctionProvider();
 

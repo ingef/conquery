@@ -13,17 +13,15 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.LocalNamespace;
-import groovy.util.logging.Slf4j;
+import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import lombok.Data;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Named;
 
-@Slf4j
 @Data
 public class LocalStorageListener implements StorageListener {
 
@@ -40,8 +38,10 @@ public class LocalStorageListener implements StorageListener {
 	@Override
 	public void onAddTable(Table table) {
 		LocalNamespace namespace = datasetRegistry.get(table.getDataset());
+		SqlDialect dialect = namespace.getDialect();
 
 		DSLContext dslContext = namespace.getDslContextWrapper().getDslContext();
+
 		List<org.jooq.Table<?>> tables = dslContext.meta()
 												   .getTables(table.getName());
 
@@ -74,7 +74,7 @@ public class LocalStorageListener implements StorageListener {
 				continue;
 			}
 
-			if (!isTypeCompatible(field, column.getType())) {
+			if (!dialect.isTypeCompatible(field, column.getType())) {
 				violations.add("%s does not match provided type %s".formatted(column, field.getDataType()));
 			}
 		}
@@ -86,19 +86,6 @@ public class LocalStorageListener implements StorageListener {
 		String body = String.join("\n - ", violations);
 
 		throw new BadRequestException("Failed to validate %s:\n%s".formatted(table.getId(), body));
-	}
-
-	private static boolean isTypeCompatible(Field<?> field, MajorTypeId type) {
-		return switch (type) {
-			case STRING -> field.getDataType().isString();
-			case INTEGER -> field.getDataType().isInteger();
-			case BOOLEAN -> field.getDataType().isBoolean();
-			case REAL -> field.getDataType().isFloat();
-			case DECIMAL -> field.getDataType().isDecimal();
-			case MONEY -> field.getDataType().isDecimal(); //TODO how to verify this properly?
-			case DATE -> field.getDataType().isDate();
-			case DATE_RANGE -> throw new IllegalStateException("Not implemented for SQL.");
-		};
 	}
 
 	@Override

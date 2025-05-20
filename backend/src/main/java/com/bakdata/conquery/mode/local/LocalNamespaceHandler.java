@@ -58,6 +58,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 		SqlEntityResolver sqlEntityResolver = new SqlEntityResolver(idColumns, dslContext, sqlDialect, sqlExecutionService);
 
 		return new LocalNamespace(
+				sqlDialect,
 				namespaceData.getPreprocessMapper(),
 				namespaceStorage,
 				executionManager,
