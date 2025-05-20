@@ -106,9 +106,9 @@ public class ConceptsProcessor {
 
 	});
 
-	public FrontendRoot getRoot(NamespaceStorage storage, Subject subject) {
+	public FrontendRoot getRoot(NamespaceStorage storage, Subject subject, boolean showHidden) {
 
-		final FrontendRoot root = getFrontEndConceptBuilder().createRoot(storage, subject);
+		final FrontendRoot root = getFrontEndConceptBuilder().createRoot(storage, subject, showHidden);
 
 		// Report Violation
 		ValidatorHelper.createViolationsString(validator.validate(root), log.isTraceEnabled()).ifPresent(log::warn);
@@ -224,7 +224,7 @@ public class ConceptsProcessor {
 			return new AutoCompleteResult(fullResult.subList(startIncl, Math.min(fullResult.size(), endExcl)), fullResult.size());
 		}
 		catch (ExecutionException e) {
-			log.warn("Failed to search for \"{}\".", maybeText, (Exception) (log.isTraceEnabled() ? e : null));
+			log.warn("Failed to search for \"{}\".", maybeText, log.isTraceEnabled() ? e : null);
 			return new AutoCompleteResult(Collections.emptyList(), 0);
 		}
 	}

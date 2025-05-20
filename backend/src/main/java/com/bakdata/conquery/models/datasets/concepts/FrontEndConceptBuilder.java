@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,18 +47,15 @@ public class FrontEndConceptBuilder {
 
 	private final ConqueryConfig conqueryConfig;
 
-	public FrontendRoot createRoot(NamespaceStorage storage, Subject subject) {
+	public FrontendRoot createRoot(NamespaceStorage storage, Subject subject, boolean showHidden) {
 
 		final FrontendRoot root = new FrontendRoot();
 		final Map<Id<?>, FrontendNode> roots = root.getConcepts();
-		final List<? extends Concept<?>> allConcepts;
-		try(Stream<Concept<?>> conceptStream = storage.getAllConcepts()) {
-
-			allConcepts = conceptStream
-					// Remove any hidden concepts
-					.filter(Predicate.not(Concept::isHidden))
-					.toList();
-		}
+		final List<? extends Concept<?>> allConcepts =
+				storage.getAllConcepts()
+					   // Remove any hidden concepts
+					   .filter(c -> !c.isHidden() || showHidden)
+					   .toList();
 
 		if (allConcepts.isEmpty()) {
 			log.warn("There are no displayable concepts in the dataset {}", storage.getDataset().getId());
@@ -77,8 +73,11 @@ public class FrontEndConceptBuilder {
 			roots.put(concept.getId(), createConceptRoot(concept, storage.getStructure()));
 		}
 		if (roots.isEmpty()) {
-			log.warn("No concepts could be collected for {} on dataset {}. The subject is possibly lacking the permission to use them.", subject.getId(), storage.getDataset()
-																																								 .getId());
+			log.warn("No concepts could be collected for {} on dataset {}. The subject is possibly lacking the permission to use them.",
+					 subject.getId(),
+					 storage.getDataset()
+							.getId()
+			);
 		}
 		else {
 			log.trace("Collected {} concepts for {} on dataset {}.", roots.size(), subject.getId(), storage.getDataset().getId());
@@ -88,10 +87,10 @@ public class FrontEndConceptBuilder {
 			insertStructureNode(sn, roots);
 		}
 		//add all secondary IDs
-		try(Stream<SecondaryIdDescription> secondaryIds = storage.getSecondaryIds()) {
+		try (Stream<SecondaryIdDescription> secondaryIds = storage.getSecondaryIds()) {
 			root.getSecondaryIds()
 				.addAll(secondaryIds
-								.filter(sid -> !sid.isHidden())
+								.filter(sid -> !sid.isHidden() || showHidden)
 								.map(sid -> new FrontendSecondaryId(sid.getId().toString(), sid.getLabel(), sid.getDescription()))
 								.collect(Collectors.toSet()));
 		}
@@ -165,18 +164,19 @@ public class FrontEndConceptBuilder {
 		}
 
 		// Add Children to root
-        structureNode.getChildren().forEach(n -> this.insertStructureNode(n, roots));
+		structureNode.getChildren().forEach(n -> this.insertStructureNode(n, roots));
 
 		FrontendNode currentNode = FrontendNode.builder()
-				.active(false)
-				.description(structureNode.getDescription())
-				.label(structureNode.getLabel())
-				.detailsAvailable(Boolean.FALSE)
-				.codeListResolvable(false)
-				.additionalInfos(structureNode.getAdditionalInfos())
-				.parent(structureNode.getParent() == null ? null : structureNode.getParent().getId())
-				.children(Stream.concat(structureNode.getChildren().stream().map(IdentifiableImpl::getId), contained.stream()).toArray(Id[]::new))
-				.build();
+											   .active(false)
+											   .description(structureNode.getDescription())
+											   .label(structureNode.getLabel())
+											   .detailsAvailable(Boolean.FALSE)
+											   .codeListResolvable(false)
+											   .additionalInfos(structureNode.getAdditionalInfos())
+											   .parent(structureNode.getParent() == null ? null : structureNode.getParent().getId())
+											   .children(Stream.concat(structureNode.getChildren().stream().map(IdentifiableImpl::getId), contained.stream())
+															   .toArray(Id[]::new))
+											   .build();
 
 		roots.put(structureNode.getId(), currentNode);
 	}
@@ -211,7 +211,8 @@ public class FrontEndConceptBuilder {
 			result.setDateColumn(new FrontendValidityDate(con.getValidityDatesDescription(), null,
 														  con.getValidityDates().stream()
 															 .map(vd -> new FrontendValue(vd.getId().toString(), vd.getLabel()))
-															 .collect(Collectors.toList())));
+															 .collect(Collectors.toList())
+			));
 
 			if (!result.getDateColumn().getOptions().isEmpty()) {
 				result.getDateColumn().setDefaultValue(result.getDateColumn().getOptions().get(0).getValue());
