@@ -90,7 +90,7 @@ public class ClusterImportHandler implements ImportHandler {
 			final String errorsMessage = String.join("\n - ", errors);
 
 			log.error("Problems concerning Import `{}`:\n{}", importId, errorsMessage);
-			throw new BadRequestException("Headers[%s] do not match Table[%s]:\n%s".formatted(importId, table.getId(), errorsMessage));
+			throw new BadRequestException("Headers[%s] do not match Table[%s]:\n%s".formatted(importId, tableId, errorsMessage));
 		}
 
 		final Import processedImport = namespace.getStorage().getImport(importId);
@@ -101,7 +101,7 @@ public class ClusterImportHandler implements ImportHandler {
 			}
 
 			// before updating the import, make sure that all workers removed the prior import
-			namespace.getWorkerHandler().sendToAll(new RemoveImportJob(processedImport.getId()));
+			namespace.getWorkerHandler().sendToAll(new RemoveImportJob(importId));
 			namespace.getStorage().removeImport(importId);
 		}
 		else if (processedImport != null) {
@@ -112,8 +112,7 @@ public class ClusterImportHandler implements ImportHandler {
 	}
 
 	private static void readAndDistributeImport(DistributedNamespace namespace, Table table, PreprocessedHeader header, PreprocessedReader reader) {
-		final TableId tableId = new TableId(namespace.getDataset().getId(), header.getTable());
-		final ImportId importId = new ImportId(tableId, header.getName());
+		final TableId tableId = table.getId();
 
 		log.info("BEGIN importing {} into {}", header.getName(), table);
 
@@ -125,7 +124,7 @@ public class ClusterImportHandler implements ImportHandler {
 
 			if (imp == null) {
 				// We need a container to create a description.
-				imp = header.createImportDescription(table, container.getStores());
+				imp = header.createImportDescription(tableId, container.getStores());
 
 				namespace.getWorkerHandler().sendToAll(new AddImport(imp));
 				namespace.getStorage().updateImport(imp);
@@ -151,9 +150,14 @@ public class ClusterImportHandler implements ImportHandler {
 			collectedEntities.put(bucket.getBucket(), bucket.entities());
 		}
 
-		namespace.getJobManager().addSlowJob(new RegisterImportEntities(collectedEntities, namespace, importId));
+		if (imp == null){
+			log.warn("Import {} is empty.", header.getName());
+			return;
+		}
 
-		log.debug("Successfully read {} Buckets, containing {} entities for `{}`", header.getNumberOfBuckets(), header.getNumberOfEntities(), importId);
+		namespace.getJobManager().addSlowJob(new RegisterImportEntities(collectedEntities, namespace, imp.getId()));
+
+		log.debug("Successfully read {} Buckets, containing {} entities for `{}`", header.getNumberOfBuckets(), header.getNumberOfEntities(), imp.getId());
 
 		namespace.getWorkerHandler().sendUpdatedWorkerInformation();
 
@@ -162,7 +166,7 @@ public class ClusterImportHandler implements ImportHandler {
 	private static void clearDependentConcepts(Stream<Concept<?>> allConcepts, TableId table) {
 		allConcepts.map(Concept::getConnectors)
 				   .flatMap(List::stream)
-				   .filter(con -> con.getResolvedTableId().equals(table))
+				   .filter(con -> con.resolveTableId().equals(table))
 				   .map(Connector::getConcept)
 				   .forEach(Concept::clearMatchingStats);
 	}
@@ -171,9 +175,8 @@ public class ClusterImportHandler implements ImportHandler {
 	 * select, then send buckets.
 	 */
 	public static WriteFuture sendBucket(Bucket bucket, WorkerInformation responsibleWorker) {
-
 		log.trace("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
-		return responsibleWorker.send(new ImportBucket(bucket.getId().toString(), bucket));
+		return responsibleWorker.send(new ImportBucket(bucket));
 
 	}
 
@@ -184,7 +187,7 @@ public class ClusterImportHandler implements ImportHandler {
 	}
 
 	@Override
-	public void deleteImport(Import imp) {
+	public void deleteImport(ImportId imp) {
 
 		final DatasetId id = imp.getTable().getDataset();
 		final DistributedNamespace namespace = datasetRegistry.get(id);
@@ -193,8 +196,8 @@ public class ClusterImportHandler implements ImportHandler {
 			clearDependentConcepts(allConcepts, imp.getTable());
 		}
 
-		namespace.getStorage().removeImport(imp.getId());
-		namespace.getWorkerHandler().sendToAll(new RemoveImportJob(imp.getId()));
+		namespace.getStorage().removeImport(imp);
+		namespace.getWorkerHandler().sendToAll(new RemoveImportJob(imp));
 
 		// Remove bucket assignments for consistency report
 		namespace.getWorkerHandler().removeBucketAssignmentsForImportFormWorkers(imp);

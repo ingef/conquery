@@ -3,7 +3,6 @@ package com.bakdata.conquery.apiv1.frontend;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import jakarta.ws.rs.core.EntityTag;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;

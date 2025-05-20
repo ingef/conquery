@@ -23,7 +23,7 @@ public class RegisterWorker extends MessageToManagerNode {
 		ShardNodeInformation node = getShardNode(context);
 		
 		if(node == null) {
-			throw new IllegalStateException("Could not find the slave "+context.getRemoteAddress()+" to register worker "+info.getId());
+			throw new IllegalStateException("Received worker %s from unknown shard %s".formatted(info.getId(), context.getRemoteAddress()));
 		}
 
 		info.setConnectedShardNode(node);

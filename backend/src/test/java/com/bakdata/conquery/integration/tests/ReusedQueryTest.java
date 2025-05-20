@@ -27,7 +27,6 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -35,6 +34,7 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -64,10 +64,10 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 		final String testJson = In.resource("/tests/query/SECONDARY_ID_MIXED/SECONDARY_IDS_MIXED.test.json").withUTF8().readAll();
 
-		final Dataset dataset = conquery.getDataset();
+		final DatasetId dataset = conquery.getDataset();
 
 
-		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
+		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
@@ -137,7 +137,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 			// We select only a single event of the query by the exact filtering.
 			final CQConcept cqConcept = new CQConcept();
-			final ConceptId conceptId = new ConceptId(conquery.getDataset().getId(), "concept");
+			final ConceptId conceptId = new ConceptId(conquery.getDataset(), "concept");
 			final NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
 			final Concept<?> concept = namespaceStorage.getConcept(conceptId);
 			cqConcept.setElements(List.of(concept.getId()));
@@ -145,7 +145,8 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			cqTable.setConcept(cqConcept);
 
 			ConnectorId connector1 = new ConnectorId(conceptId, "connector1");
-			final Connector connector = connector1.get(namespaceStorage);
+			connector1.setDomain(conquery.getDatasetRegistry());
+			final Connector connector = connector1.resolve();
 			cqTable.setConnector(connector.getId());
 			cqTable.setFilters(List.of(new FilterValue.CQRealRangeFilter(new FilterId(connector.getId(), "filter"), new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d)))));
 
@@ -195,7 +196,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 				reusedDiffId.setRoot(new CQReusedQuery(execution1.getId()));
 
 				// ignored is a single global value and therefore the same as by-PID
-				reusedDiffId.setSecondaryId(new SecondaryIdDescriptionId(conquery.getDataset().getId(), "ignored"));
+				reusedDiffId.setSecondaryId(new SecondaryIdDescriptionId(conquery.getDataset(), "ignored"));
 
 				final ManagedExecutionId
 						executionId =

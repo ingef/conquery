@@ -3,14 +3,11 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -18,20 +15,21 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class ValidityDateId extends Id<ValidityDate> implements NamespacedId {
+public class ValidityDateId extends NamespacedId<ValidityDate> {
 	private final ConnectorId connector;
 	private final String validityDate;
 
 	@Override
-	public DatasetId getDataset() {
-		return connector.getDataset();
+	public ValidityDate get() {
+		return getDomain().getStorage(getDataset())
+					  .getConcept(getConnector().getConcept())
+					  .getConnectorByName(getConnector().getConnector())
+					  .getValidityDateByName(getValidityDate());
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
-		return storage.getConcept(getConnector().getConcept())
-					  .getConnectorByName(getConnector().getConnector())
-					  .getValidityDateByName(getValidityDate());
+	public DatasetId getDataset() {
+		return connector.getDataset();
 	}
 
 	@Override
@@ -41,17 +39,13 @@ public class ValidityDateId extends Id<ValidityDate> implements NamespacedId {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		connector.collectIds(collect);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return connector.getNamespacedStorageProvider();
-	}
 
-	public static enum Parser implements IdUtil.Parser<ValidityDateId> {
+	public enum Parser implements IdUtil.Parser<ValidityDateId> {
 		INSTANCE;
 
 		@Override

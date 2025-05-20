@@ -12,9 +12,6 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
@@ -28,7 +25,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
-import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Sets;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
@@ -44,7 +40,7 @@ public class PreviewConfig {
 
 
 	/**
-	 * Selects to be used in {@link com.bakdata.conquery.apiv1.QueryProcessor#getSingleEntityExport(Subject, UriBuilder, String, String, List, Dataset, Range)}.
+	 * Selects to be used in {@link com.bakdata.conquery.apiv1.QueryProcessor#getSingleEntityExport(Subject, UriBuilder, String, String, List, com.bakdata.conquery.models.identifiable.ids.specific.DatasetId, Range)}.
 	 * To be displayed as additional infos.
 	 *
 	 * @implSpec the order of selects is the order of the output fields.
@@ -90,12 +86,12 @@ public class PreviewConfig {
 	@NotNull
 	private DatasetRegistry<Namespace> datasetRegistry;
 
-	public boolean isGroupingColumn(SecondaryIdDescription desc) {
-		return getGrouping().contains(desc.getId());
+	public boolean isGroupingColumn(SecondaryIdDescriptionId descId) {
+		return getGrouping().contains(descId);
 	}
 
-	public boolean isHidden(Column column) {
-		return getHidden().contains(column.getId());
+	public boolean isHidden(ColumnId columnId) {
+		return getHidden().contains(columnId);
 	}
 
 
@@ -175,22 +171,10 @@ public class PreviewConfig {
 	 * Find infoCard-selects by id within Dataset.
 	 */
 	@JsonIgnore
-	public List<Select> getSelects() {
+	public List<SelectId> getSelects() {
 		return getInfoCardSelects().stream()
 								   .map(InfoCardSelect::select)
-								   .map(SelectId::resolve)
 								   .collect(Collectors.toList());
-	}
-
-	public List<FilterId> resolveSearchFilters() {
-		if (searchFilters == null) {
-			return Collections.emptyList();
-		}
-
-		return searchFilters.stream()
-							.map(FilterId::resolve)
-							.map(Filter::getId)
-							.toList();
 	}
 
 	public ConceptId resolveSearchConcept() {
@@ -198,12 +182,10 @@ public class PreviewConfig {
 			return null;
 		}
 
+		if (searchFilters.isEmpty()){
+			return null;
+		}
 
-		return searchFilters.stream()
-							.map(FilterId::resolve)
-							.map(filter -> filter.getConnector().getConcept())
-							.distinct()
-							.map(Concept::getId)
-							.collect(MoreCollectors.toOptional()).orElse(null);
+		return searchFilters.iterator().next().getConnector().getConcept();
 	}
 }

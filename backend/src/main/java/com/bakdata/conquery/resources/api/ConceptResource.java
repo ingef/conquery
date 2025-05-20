@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -23,11 +22,11 @@ import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -37,15 +36,12 @@ public class ConceptResource extends HAuthorized {
 
 	private final ConceptsProcessor processor;
 
-	@PathParam(CONCEPT)
-	protected Concept<?> concept;
-
 	@GET
-	public Response getNode() {
+	public Response getNode(@PathParam(CONCEPT) ConceptId concept) {
 		subject.authorize(concept.getDataset(), Ability.READ);
 		subject.authorize(concept, Ability.READ);
 
-		final FrontendList result = processor.getNode(concept);
+		final FrontendList result = processor.getNode(concept.resolve());
 
 		// check if browser still has this version cached
 		if (request.getHeaderString(HttpHeaders.IF_NONE_MATCH) != null && result.getCacheId()
@@ -58,7 +54,9 @@ public class ConceptResource extends HAuthorized {
 
 	@POST
 	@Path("resolve")
-	public ConceptsProcessor.ResolvedConceptsResult resolve(@NotNull ConceptResource.ConceptCodeList conceptCodes) {
+	public ConceptsProcessor.ResolvedConceptsResult resolve(@PathParam(CONCEPT) ConceptId conceptId, ConceptResource.ConceptCodeList conceptCodes) {
+		final Concept<?> concept = conceptId.resolve();
+
 		subject.authorize(concept.getDataset(), Ability.READ);
 		subject.authorize(concept, Ability.READ);
 
@@ -73,7 +71,6 @@ public class ConceptResource extends HAuthorized {
 
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-	@ToString
 	public static class ConceptCodeList {
 		private final List<String> concepts;
 	}

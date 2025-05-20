@@ -1,12 +1,22 @@
 package com.bakdata.conquery.models.identifiable.ids;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.Setter;
 
 /**
  * Marker interface for Ids that are resolvable in a {@link com.bakdata.conquery.io.storage.MetaStorage}
  */
-public interface MetaId {
+public abstract non-sealed class MetaId<TYPE> extends Id<TYPE, MetaStorage> {
 
-	Identifiable<?> get(MetaStorage storage);
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@Setter
+	@JsonIgnore
+	private MetaStorage domain;
+
+	public MetaStorage getDomain() {
+		return domain;
+	}
 }

@@ -7,23 +7,18 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import lombok.SneakyThrows;
 
-public interface NamespacedStorage extends ConqueryStorage, NamespacedStorageProvider {
+public interface NamespacedStorage extends ConqueryStorage {
 	void addImport(Import imp);
 
 	Import getImport(ImportId id);
 
-	Stream<Import> getAllImports();
-
-	Stream<ImportId> getAllImportIds();
+	Stream<ImportId> getAllImports();
 
 	void updateImport(Import imp);
 
@@ -57,15 +52,6 @@ public interface NamespacedStorage extends ConqueryStorage, NamespacedStoragePro
 	void updateConcept(Concept<?> concept);
 
 	void removeConcept(ConceptId id);
-
-	@Override
-	default NamespacedStorage getStorage(DatasetId datasetId) {
-		if (getDataset() == null || datasetId.getName().equals(getDataset().getName())) {
-			// Storage was empty (new Worker/Namespace) or it matches
-			return this;
-		}
-		return null;
-	}
 
 	Dataset getDataset();
 }

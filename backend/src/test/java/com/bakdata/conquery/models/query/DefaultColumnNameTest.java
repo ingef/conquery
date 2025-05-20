@@ -38,6 +38,7 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -170,7 +171,7 @@ public class DefaultColumnNameTest {
 
 
 	private static class TestCQConcept extends CQConcept {
-		private static CQConcept  create(boolean withLabel, TestConcept concept) {
+		private static CQConcept create(boolean withLabel, TestConcept concept) {
 			CQConcept cqConcept = new CQConcept();
 			if (withLabel) {
 				cqConcept.setLabel("TestCQLabel");
@@ -185,9 +186,7 @@ public class DefaultColumnNameTest {
 				elements = List.of(concept);
 			}
 			final List<ConceptElementId<?>> list = (List<ConceptElementId<?>>) elements.stream().map(ConceptElement::getId).toList();
-			cqConcept.setElements(
-					list
-			);
+			cqConcept.setElements(list);
 
 			List<CQTable> tables = concept.getConnectors().stream()
 										  .map(con -> {
@@ -217,20 +216,19 @@ public class DefaultColumnNameTest {
 		private final BiFunction<TestConcept, CQConcept, Select> selectExtractor;
 
 		private TestConcept(BiFunction<TestConcept, CQConcept, Select> selectExtractor) {
-			final NamespaceStorage NS_ID_RESOLVER = new NonPersistentStoreFactory().createNamespaceStorage();
+			final NamespaceStorage storage = new NonPersistentStoreFactory().createNamespaceStorage();
+
 			this.selectExtractor = selectExtractor;
 			setName("TestConceptName");
 			setLabel("TestConceptLabel");
-			Dataset DATASET = new Dataset() {
-				{
-					setName("test_" + DATASET_COUNTER.getAndIncrement());
-					setNamespacedStorageProvider(NS_ID_RESOLVER);
-					NS_ID_RESOLVER.updateDataset(this);
-				}
-			};
-			setDataset(DATASET.getId());
+			Dataset dataset = new Dataset("test_" + DATASET_COUNTER.getAndIncrement());
 
-			NS_ID_RESOLVER.updateConcept(this);
+			dataset.setStorageProvider(new TestNamespacedStorageProvider(storage));
+			storage.updateDataset(dataset);
+
+			setDataset(dataset.getId());
+
+			storage.updateConcept(this);
 
 			setSelects(List.of(new TestUniversalSelect(this)));
 		}

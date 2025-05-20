@@ -79,7 +79,7 @@ public enum StoreMappings {
 	/**
 	 * Store for identifiable values, with injectors.
 	 */
-	public static <T extends Identifiable<?>> IdentifiableStore<T> identifiable(Store<Id<T>, T> baseStore) {
+	public static <T extends Identifiable<?, ?>> IdentifiableStore<T> identifiable(Store<Id<T, ?>, T> baseStore) {
 		return new IdentifiableStore<>(baseStore);
 	}
 

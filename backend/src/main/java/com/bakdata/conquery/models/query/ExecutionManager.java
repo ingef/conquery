@@ -143,8 +143,7 @@ public abstract class ExecutionManager {
 			throw e;
 		}
 
-		ManagedExecutionId executionId = execution.getId();
-		log.info("Starting execution[{}]", executionId);
+		log.info("Starting execution[{}]", execution.getId());
 		try {
 
 			execution.start();
@@ -158,7 +157,7 @@ public abstract class ExecutionManager {
 
 		}
 		catch (Exception e) {
-			log.warn("Failed to execute '{}'", executionId);
+			log.warn("Failed to execute '{}'", execution.getId());
 			execution.fail(ConqueryError.asConqueryError(e));
 		}
 	}
@@ -168,7 +167,6 @@ public abstract class ExecutionManager {
 		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset().getId(), storage, datasetRegistry, getConfig());
 		managed.setSystem(system);
 		managed.setQueryId(queryId);
-		managed.setMetaStorage(storage);
 
 		// Store the execution
 		storage.addExecution(managed);
@@ -185,10 +183,10 @@ public abstract class ExecutionManager {
 			return;
 		}
 		executionInfos.invalidate(execution.getId());
-		doCancelQuery(execution);
+		doCancelQuery(execution.getId());
 	}
 
-	public abstract void doCancelQuery(final ManagedExecution execution);
+	public abstract void doCancelQuery(ManagedExecutionId managedExecutionId);
 
 	public void updateState(ManagedExecutionId id, ExecutionState execState) {
 		ExecutionInfo executionInfo = executionInfos.getIfPresent(id);
@@ -218,23 +216,20 @@ public abstract class ExecutionManager {
 	/**
 	 * Blocks until an execution finished of the specified timeout is reached. Return immediately if the execution is not running
 	 */
-	public ExecutionState awaitDone(ManagedExecution execution, int time, TimeUnit unit) {
-		ManagedExecutionId id = execution.getId();
+	public ExecutionState awaitDone(ManagedExecutionId id, int time, TimeUnit unit) {
+
 		ExecutionInfo executionInfo = executionInfos.getIfPresent(id);
 		if (executionInfo == null) {
 			return ExecutionState.NEW;
 		}
+
 		ExecutionState execState = executionInfo.getExecutionState();
+
 		if (execState != ExecutionState.RUNNING) {
 			return execState;
 		}
 
-		ExecutionInfo result = executionInfos.getIfPresent(id);
-
-		if (result == null) {
-			throw new IllegalStateException("Execution is running, but no result is registered");
-		}
-		Uninterruptibles.awaitUninterruptibly(result.getExecutingLock(), time, unit);
+		Uninterruptibles.awaitUninterruptibly(executionInfo.getExecutingLock(), time, unit);
 
 		ExecutionInfo executionInfoAfterWait = executionInfos.getIfPresent(id);
 		if (executionInfoAfterWait == null) {

@@ -1,8 +1,6 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.EVENT_FILTER;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.INTERVAL_PACKING_SELECTS;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.UNNEST_DATE;
+import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.*;
 import static com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep.INTERVAL_COMPLETE;
 
 import java.math.BigDecimal;
@@ -15,7 +13,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
-import com.bakdata.conquery.models.identifiable.Named;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.IntervalPackingSelectsCte;
@@ -41,7 +39,7 @@ class DaterangeSelectUtil {
 	 * Aggregates the daterange of a corresponding {@link DaterangeSelectOrFilter} and applies the respective converted aggregation via
 	 * {@link IntervalPackingSelectsCte}s using additional predecessor tables.
 	 */
-	public static <S extends DaterangeSelectOrFilter & Named<?>> ConnectorSqlSelects createConnectorSqlSelects(
+	public static <S extends Select & DaterangeSelectOrFilter> ConnectorSqlSelects createConnectorSqlSelects(
 			S select,
 			AggregationFunction aggregationFunction,
 			SelectContext<ConnectorSqlTables> context

@@ -10,12 +10,12 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
@@ -38,17 +38,16 @@ public class ExecutionMetrics {
 	private static final String STATE = "state";
 	private static final String TIME = "time";
 
+	public static Counter getRunningQueriesCounter(String group) {
+		return SharedMetricRegistries.getDefault().counter(nameWithGroupTag(MetricRegistry.name(QUERIES, RUNNING), group));
+	}
+
 	/**
 	 * Add group to name.
 	 */
 	private static String nameWithGroupTag(String name, String group) {
 		return String.format("%s.%s", name, group);
 	}
-
-	public static Counter getRunningQueriesCounter(String group) {
-		return SharedMetricRegistries.getDefault().counter(nameWithGroupTag(MetricRegistry.name(QUERIES, RUNNING), group));
-	}
-
 
 	public static Histogram getQueriesTimeHistogram(String group) {
 		return SharedMetricRegistries.getDefault().histogram(nameWithGroupTag(MetricRegistry.name(QUERIES, TIME), group));
@@ -72,23 +71,20 @@ public class ExecutionMetrics {
 
 		for (NamespacedIdentifiable<?> identifiable : foundIds) {
 
-			NamespacedId id = identifiable.getId();
+			NamespacedId<?> id = identifiable.getId();
 			// We don't want to report the whole tree, as that would be spammy and potentially wrong.
 
-			if (id instanceof ConceptId) {
-				reportedIds.add(((ConceptId) id));
-			}
-			else if (id instanceof ConceptTreeChildId) {
-				reportedIds.add(((ConceptTreeChildId) id).findConcept());
-			}
-			else if (id instanceof ConceptElementId) {
-				reportedIds.add(((ConceptElementId<?>) id).findConcept());
-			}
-			else if (id instanceof ConnectorId) {
-				reportedIds.add(((ConnectorId) id).getConcept());
-			}
-			else if (id instanceof SelectId) {
-				reportedIds.add(((SelectId) id).findConcept());
+			ConceptId cId = switch (id) {
+				case ConceptId conceptId -> conceptId;
+				case ConceptTreeChildId conceptTreeChildId -> conceptTreeChildId.findConcept();
+				case ConnectorId connectorId -> connectorId.getConcept();
+				case SelectId selectId -> selectId.findConcept();
+				case FilterId filterId -> filterId.getConnector().getConcept();
+				case null, default -> null;
+			};
+
+			if (cId != null) {
+				reportedIds.add(cId);
 			}
 		}
 

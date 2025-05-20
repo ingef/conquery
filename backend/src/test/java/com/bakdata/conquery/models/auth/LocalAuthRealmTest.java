@@ -74,13 +74,13 @@ public class LocalAuthRealmTest {
 		user1 = new User("TestUser", "Test User", storage);
 		PasswordCredential user1Password = new PasswordCredential("testPassword");
 		storage.addUser(user1);
-		realm.addUser(user1, user1Password);
+		realm.addUser(user1.getId(), user1Password);
 	}
 
 	@AfterEach
 	public void cleanUpEach() {
 		// Well there is an extra test case for this, but let's do it like this for now.
-		realm.removeUser(user1);
+		realm.removeUser(user1.getId());
 	}
 
 	@AfterAll
@@ -127,7 +127,7 @@ public class LocalAuthRealmTest {
 	@Test
 	public void testUserUpdate() {
 
-		realm.updateUser(user1, new PasswordCredential("newTestPassword"));
+		realm.updateUser(user1.getId(), new PasswordCredential("newTestPassword"));
 		// Wrong (old) password
 		assertThatThrownBy(() -> realm.createAccessToken("TestUser", "testPassword"))
 				.isInstanceOf(IncorrectCredentialsException.class).hasMessageContaining("Password was was invalid for user");
@@ -139,7 +139,7 @@ public class LocalAuthRealmTest {
 
 	@Test
 	public void testRemoveUser() {
-		realm.removeUser(user1);
+		realm.removeUser(user1.getId());
 		// Wrong password
 		assertThatThrownBy(() -> realm.createAccessToken("TestUser", "testPassword"))
 				.isInstanceOf(CredentialsException.class).hasMessageContaining("No password hash was found for user");

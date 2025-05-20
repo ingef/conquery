@@ -12,7 +12,6 @@ import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -21,8 +20,10 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -63,14 +64,16 @@ public class GroovyIndexedTest {
 		ObjectNode node = mapper.readerFor(ObjectNode.class).readValue(In.resource(GroovyIndexedTest.class, CONCEPT_SOURCE).asStream());
 
 		// load concept tree from json
-		final NamespaceStorage storage = new NamespaceStorage(new NonPersistentStoreFactory(), "GroovyIndexedTest");
+		final NamespaceStorage storage = new NonPersistentStoreFactory().createNamespaceStorage();
+		final NamespacedStorageProvider storageProvider = new TestNamespacedStorageProvider(storage);
+
 		storage.openStores(mapper);
 		Table table = new Table();
 
 		table.setName("the_table");
-		Dataset dataset = new Dataset();
+		Dataset dataset = new Dataset("the_dataset");
+		dataset.setStorageProvider(storageProvider);
 
-		dataset.setName("the_dataset");
 		dataset.injectInto(mapper);
 
 		storage.updateDataset(dataset);
@@ -88,12 +91,7 @@ public class GroovyIndexedTest {
 
 		// Prepare Serdes injections
 		final Validator validator = Validators.newValidator();
-		final ObjectReader conceptReader = new Injectable(){
-			@Override
-			public MutableInjectableValues inject(MutableInjectableValues values) {
-				return values.add(Validator.class, validator);
-			}
-		}.injectInto(mapper).readerFor(Concept.class);
+		final ObjectReader conceptReader = ((Injectable) values -> values.add(Validator.class, validator)).injectInto(mapper).readerFor(Concept.class);
 
 		// load tree twice to to avoid references
 		indexedConcept = conceptReader.readValue(node);

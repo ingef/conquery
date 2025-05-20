@@ -1,7 +1,6 @@
 package com.bakdata.conquery.util.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
@@ -10,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import jakarta.validation.Validator;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.core.UriBuilder;
@@ -115,7 +114,7 @@ public class TestConquery {
 				mode,
 				this,
 				ns,
-				ns.getStorage().getDataset(),
+				ns.getStorage().getDataset().getId(),
 				localTmpDir,
 				localCfg,
 				// Getting the User from AuthorizationConfig
@@ -133,8 +132,7 @@ public class TestConquery {
 		ClusterState clusterState = manager.getConnectionManager().getClusterState();
 		assertThat(clusterState.getShardNodes()).hasSize(2);
 
-		await().atMost(10, TimeUnit.SECONDS)
-			   .until(() -> clusterState.getWorkerHandlers().get(datasetId).getWorkers().size() == clusterState.getShardNodes().size());
+		waitUntil(() -> clusterState.getWorkerHandlers().get(datasetId).getWorkers().size() == clusterState.getShardNodes().size());
 
 		return buildSupport(datasetId, name, StandaloneSupport.Mode.WORKER);
 	}
@@ -147,12 +145,13 @@ public class TestConquery {
 				name += "[" + count + "]";
 			}
 			Dataset dataset = new Dataset(name);
-			waitUntilWorkDone();
+			dataset.setStorageProvider(getDatasetRegistry());
+
 			LoadingUtil.importDataset(getClient(), defaultAdminURIBuilder(), dataset);
+			waitUntilWorkDone();
 
 			// Little detour here, but this way we get the correctly initialized dataset id
-			DatasetId datasetId = getDatasetRegistry().get(new DatasetId(dataset.getName())).getDataset().getId();
-			waitUntilWorkDone();
+			DatasetId datasetId = getDatasetRegistry().get(dataset.getId()).getDataset().getId();
 
 			return createSupport(datasetId, name);
 		}
@@ -161,18 +160,31 @@ public class TestConquery {
 		}
 	}
 
+	@SneakyThrows
 	public void waitUntilWorkDone() {
-		log.info("Waiting for jobs to finish");
-		//sample multiple times from the job queues to make sure we are done with everything and don't miss late arrivals
-		for (int i = 0; i < 5; i++) {
+		log.trace("Waiting for jobs to finish");
+		waitUntil(() -> !isBusy());
+	}
 
-			await().atMost(10, TimeUnit.SECONDS)
-				   .pollDelay(1, TimeUnit.MILLISECONDS)
-				   .pollInterval(5, TimeUnit.MILLISECONDS)
-				   .until(() -> !isBusy());
+	@SneakyThrows
+	public static void waitUntil(Supplier<Boolean> condition) {
+		int done = 0;
+
+		for (int cycle = 0; cycle < 10_000 / 5; cycle++) {
+			if (!condition.get()) {
+				Thread.sleep(2);
+				continue;
+			}
+
+			//sample multiple times from the job queues to make sure we are done with everything and don't miss late arrivals
+			done++;
+			if (done > 5) {
+				log.trace("All jobs finished");
+				return;
+			}
 		}
 
-		log.trace("All jobs finished");
+		throw new IllegalStateException("Jobs did not finish within expected time.");
 	}
 
 	public UriBuilder defaultAdminURIBuilder() {
@@ -278,7 +290,7 @@ public class TestConquery {
 
 	@SneakyThrows
 	public void removeSupportDataset(StandaloneSupport support) {
-		standaloneCommand.getManagerNode().getDatasetRegistry().removeNamespace(support.getDataset().getId());
+		standaloneCommand.getManagerNode().getDatasetRegistry().removeNamespace(support.getDataset());
 	}
 
 	public void removeSupport(StandaloneSupport support) {

@@ -19,14 +19,11 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(id = "TREE", base = Concept.class)
 @JsonDeserialize(converter = TreeConcept.Initializer.class)
-public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId>, SelectHolder<UniversalSelect>, Initializing {
+public class TreeConcept extends Concept<ConceptTreeConnector> implements SelectHolder<UniversalSelect>, Initializing {
 
 	@JsonIgnore
 	@Getter
@@ -46,7 +43,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	private final int[] prefix = new int[]{0};
 
 	@JsonIgnore
-	private final List<ConceptTreeNode<?>> localIdMap = new ArrayList<>();
+	private final List<ConceptElement<?>> localIdMap = new ArrayList<>();
 	@Getter
 	@Setter
 	@Valid
@@ -69,10 +66,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return getConcept();
 	}
 
-	@Override
-	public ConceptTreeNode<?> getParent() {
-		return null;
-	}
 
 	@Override
 	public void clearMatchingStats() {
@@ -91,16 +84,13 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	}
 
 	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
-		return findMostSpecificChild(stringValue, rowMap, null, getChildren());
+		return findMostSpecificChild(stringValue, rowMap, getChildren());
 	}
 
-	private ConceptTreeChild findMostSpecificChild(
-			String stringValue,
-			CalculatedValue<Map<String, Object>> rowMap,
-			ConceptTreeChild best,
-			List<ConceptTreeChild> currentList
-	)
+	private ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap, List<ConceptTreeChild> currentList)
 			throws ConceptConfigurationException {
+
+		ConceptTreeChild best = null;
 
 		while (currentList != null && !currentList.isEmpty()) {
 			ConceptTreeChild match = null;
@@ -113,7 +103,8 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 				if (match != null) {
 					failed = true;
 					log.error("Value '{}' matches the two nodes {} and {} in the tree {} (row={}))"
-							, stringValue, match.getId(), n.getId(), n.getConcept().getId(), rowMap.getValue());
+							, stringValue, match.getId(), n.getId(), n.getConcept().getId(), rowMap.getValue()
+					);
 					continue;
 				}
 
@@ -137,7 +128,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	}
 
 
-
 	/**
 	 * Method to get the element of this concept tree that has the specified local ID.
 	 * This should only be used by the query engine itself as an index.
@@ -145,41 +135,13 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	 * @param ids the local id array to look for
 	 * @return the element matching the most specific local id in the array
 	 */
-	public ConceptTreeNode<?> getElementByLocalIdPath( int @NonNull [] ids) {
+	public ConceptElement<?> getElementByLocalIdPath(int[] ids) {
 		final int mostSpecific = ids[ids.length - 1];
 		return getElementByLocalId(mostSpecific);
 	}
 
-	public ConceptTreeNode<?> getElementByLocalId(int localId) {
+	public ConceptElement<?> getElementByLocalId(int localId) {
 		return localIdMap.get(localId);
-	}
-
-	/**
-	 * rawValue is expected to be an Integer, expressing a localId for {@link TreeConcept#getElementByLocalId(int)}.
-	 * <p>
-	 * If {@link PrintSettings#isPrettyPrint()} is true, {@link ConceptElement#getLabel()} is used to print.
-	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} is used to print.
-	 */
-	public String printConceptLocalId(Object rawValue, PrintSettings printSettings) {
-
-		if (rawValue == null) {
-			return null;
-		}
-
-		final int localId = (int) rawValue;
-
-		final ConceptTreeNode<?> node = getElementByLocalId(localId);
-
-		if (!printSettings.isPrettyPrint()) {
-			return node.getId().toString();
-		}
-
-		if (node.getDescription() == null) {
-			return node.getLabel();
-		}
-
-		return node.getLabel() + " - " + node.getDescription();
-
 	}
 
 	@Override
@@ -212,10 +174,9 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 				ctc.setDepth(ctc.getParent().getDepth() + 1);
 
 				ctc.init();
-
 			}
 			catch (Exception e) {
-				throw new RuntimeException("Error trying to consolidate the node " + ctc.getLabel() + " in " + getLabel(), e);
+				throw new RuntimeException("Error trying to consolidate the node %s in %s".formatted(ctc.getLabel(), getLabel()), e);
 			}
 
 			openList.addAll((openList.get(i)).getChildren());
@@ -232,11 +193,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return nChildren = 1 + (int) getAllChildren().count();
 	}
 
-	public ConceptElement<? extends ConceptElementId<? extends ConceptElement<?>>> findById(ConceptElementId<?> id) {
+	@Override
+	public ConceptElement<? extends ConceptElementId<?>> findById(ConceptElementId<?> id) {
 		List<Object> parts = new ArrayList<>();
 		id.collectComponents(parts);
-		final ConceptId conceptId = getId();
-		List<Object> components = conceptId.getComponents();
+
+		List<Object> components = getId().getComponents();
 
 		// Check if dataset and concept name match
 		if (!(parts.get(0).equals(components.get(0)) && parts.get(1).equals(components.get(1)))) {

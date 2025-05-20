@@ -56,7 +56,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		// Span date-column
 		final ListenableFuture<Range<LocalDate>> futureSpan;
 
-		final boolean containsDates = dateInfo.isPresent();
+		final boolean containsDates = dateInfo.isPresent() && dateIndex.isPresent();
 
 		if (containsDates) {
 			futureSpan = executorService.submit(() -> calculateDateSpan(managedQuery, dateInfo, dateIndex.get(), printSettings));

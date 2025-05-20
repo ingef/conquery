@@ -7,8 +7,7 @@ import javax.annotation.Nullable;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.Labeled;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
@@ -26,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @NoArgsConstructor
 @Slf4j
-public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedIdentifiable<ValidityDateId>, DaterangeSelectOrFilter {
+public class ValidityDate extends LabeledNamespaceIdentifiable<ValidityDateId> implements DaterangeSelectOrFilter {
 
 	@Nullable
 	private ColumnId column;
@@ -50,8 +49,8 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 
 	public static ValidityDate create(Column startColumn, Column endColumn) {
 		final ValidityDate validityDate = new ValidityDate();
-		validityDate.setColumn(startColumn.getId());
-		validityDate.setColumn(endColumn.getId());
+		validityDate.setStartColumn(startColumn.getId());
+		validityDate.setEndColumn(endColumn.getId());
 		return validityDate;
 	}
 
@@ -74,10 +73,10 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 	public boolean isForConnectorsTable() {
 
 		final boolean anyColumnNotForConnector =
-				(startColumn != null && !startColumn.getTable().equals(connector.getResolvedTable().getId()))
-				|| (endColumn != null && !endColumn.getTable().equals(connector.getResolvedTable().getId()));
+				(startColumn != null && !startColumn.getTable().equals(connector.resolveTableId()))
+				|| (endColumn != null && !endColumn.getTable().equals(connector.resolveTableId()));
 
-		final boolean columnNotForConnector = column != null && !column.getTable().equals(connector.getResolvedTableId());
+		final boolean columnNotForConnector = column != null && !column.getTable().equals(connector.resolveTableId());
 
 		return !anyColumnNotForConnector && !columnNotForConnector;
 	}

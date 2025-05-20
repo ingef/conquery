@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class IdKeyDeserializer<ID extends Id<?>> extends KeyDeserializer implements ContextualKeyDeserializer {
+public class IdKeyDeserializer<ID extends Id<?,?>> extends KeyDeserializer implements ContextualKeyDeserializer {
 
 	private Class<ID> idClass;
 	private Parser<ID> idParser;

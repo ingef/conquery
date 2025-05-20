@@ -122,7 +122,7 @@ public class JobExecutor extends Thread {
 					catch (Throwable e) {
 						ConqueryMDC.setLocation(this.getName());
 
-						log.error("Job "+job+" failed", e);
+						log.error("Job {} failed", job, e);
 						if (failOnError) {
 							log.error("Propagating Error inner loop");
 							throw e;

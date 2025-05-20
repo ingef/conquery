@@ -69,7 +69,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 
 	@Override
 	public Stream<CBlock> getAllCBlocks() {
-		return cBlocks.getAllKeys().map(CBlockId.class::cast).map(this::getCBlock);
+		return cBlocks.getAllKeys().map(CBlockId.class::cast).map(CBlockId::resolve);
 	}
 
 @Override
@@ -94,11 +94,6 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	public void removeBucket(BucketId id) {
 		log.trace("Removing Bucket[{}]", id);
 		buckets.remove(id);
-	}
-
-	@Override
-	public Stream<Bucket> getAllBuckets() {
-		return buckets.getAllKeys().map(BucketId.class::cast).map(this::getBucket);
 	}
 
 	@Override

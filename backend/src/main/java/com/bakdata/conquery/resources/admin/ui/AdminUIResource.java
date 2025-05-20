@@ -2,15 +2,6 @@ package com.bakdata.conquery.resources.admin.ui;
 
 import java.net.URI;
 import java.util.Objects;
-
-import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
-import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
-import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.resources.admin.rest.UIProcessor;
-import com.bakdata.conquery.resources.admin.ui.model.UIView;
-import io.dropwizard.auth.Auth;
-import io.dropwizard.views.common.View;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -20,6 +11,15 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
+
+import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
+import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
+import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.admin.rest.UIProcessor;
+import com.bakdata.conquery.resources.admin.ui.model.UIView;
+import io.dropwizard.auth.Auth;
+import io.dropwizard.views.common.View;
 import lombok.RequiredArgsConstructor;
 
 @Produces(MediaType.TEXT_HTML)

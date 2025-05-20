@@ -4,14 +4,15 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
-import com.bakdata.conquery.models.identifiable.ids.IIdInterner;
 import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.IdInterner;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.MetaId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -30,7 +31,7 @@ import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> implements ContextualDeserializer {
+public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> implements ContextualDeserializer {
 
 	private Class<ID> idClass;
 	private IdUtil.Parser<ID> idParser;
@@ -45,8 +46,8 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 		while (type.isContainerType()) {
 			type = type.getContentType();
 		}
-		Class<Id<?>> idClass = (Class<Id<?>>) type.getRawClass();
-		IdUtil.Parser<Id<Identifiable<?>>> parser = IdUtil.createParser((Class) idClass);
+		Class<Id> idClass = (Class<Id>) type.getRawClass();
+		IdUtil.Parser<Id<Identifiable<?, ?>, ?>> parser = IdUtil.createParser((Class) idClass);
 
 		return new IdDeserializer(
 				idClass,
@@ -56,23 +57,32 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 		);
 	}
 
+	@Override
+	public ID deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
+		return this.deserialize(p, ctxt);
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public ID deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
 		JsonToken currentToken = parser.getCurrentToken();
+
 		if (currentToken != JsonToken.VALUE_STRING) {
 			return (ID) ctxt.handleUnexpectedToken(Id.class, currentToken, parser, "name references should be strings. Was: " + currentToken);
 		}
+
 		String text = parser.getText();
 
 		// We need to assign resolvers for namespaced and meta ids because meta-objects might reference namespaced objects (e.g. ExecutionsId)
-		NamespacedStorageProvider namespacedStorageProvider = NamespacedStorageProvider.getResolver(ctxt);
-		MetaStorage metaStorage = MetaStorage.get(ctxt);
+		NamespacedStorageProvider namespacedStorageProvider = NamespacedStorageProvider.getInjected(ctxt);
+		MetaStorage metaStorage = MetaStorage.getInjected(ctxt);
 
 		try {
 			final ID id = deserializeId(text, idParser, isNamespacedId, ctxt);
 
-			setResolver(id, metaStorage, namespacedStorageProvider);
+			if (id.getDomain() == null) {
+				setResolver(id, metaStorage, namespacedStorageProvider);
+			}
 
 			return id;
 		}
@@ -81,52 +91,54 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 		}
 	}
 
-	public static void setResolver(Id<?> id, MetaStorage metaStorage, NamespacedStorageProvider namespacedStorageProvider) {
-		// Set resolvers in this id and subIds
-		final HashSet<Id<?>> ids = new HashSet<>();
-		id.collectIds(ids);
-		for (Id<?> subId : ids) {
-			if (subId.getNamespacedStorageProvider() != null || subId.getMetaStorage() != null) {
-				// Ids are constructed of other ids that might already have a resolver set
-				continue;
-			}
-			if (subId instanceof NamespacedId) {
-				subId.setNamespacedStorageProvider(namespacedStorageProvider);
-			}
-			else if (subId instanceof MetaId) {
-				subId.setMetaStorage(metaStorage);
-			}
-		}
-	}
-
-	public static <ID extends Id<?>> ID deserializeId(String text, IdUtil.Parser<ID> idParser, boolean checkForInjectedPrefix, DeserializationContext ctx)
+	public static <ID extends Id<?, ?>> ID deserializeId(String text, IdUtil.Parser<ID> idParser, boolean checkForInjectedPrefix, DeserializationContext ctx)
 			throws JsonMappingException {
 
-		List<String> components = checkForInjectedPrefix ?
-								  IdUtil.Parser.asComponents(findDatasetName(ctx), text) :
+		String prefix = null;
+
+		if (checkForInjectedPrefix) {
+			prefix = findDatasetName(ctx);
+		}
+
+		List<String> components = prefix != null ?
+								  IdUtil.Parser.asComponents(prefix, text) :
 								  IdUtil.Parser.asComponents(text);
 
 
-		IIdInterner iIdInterner = IIdInterner.get(ctx);
+		IdInterner interner = IdInterner.get(ctx);
 
-		if (iIdInterner == null) {
+		if (interner == null) {
 			// Parse directly, as no interner is available
 			return idParser.parse(components);
 		}
 
-		IIdInterner.ParserIIdInterner<ID> idParserIIdInterner = iIdInterner.forParser(idParser);
-		ID id = idParserIIdInterner.get(components);
-
-		if (id != null) {
-			// Return cached id
-			return id;
-		}
-
-		// Parse and cache
-		id = idParser.parse(components);
-		idParserIIdInterner.putIfAbsent(components, id);
+		IdInterner.ParserIdInterner<ID> idParserIdInterner = interner.forParser(idParser);
+		ID id = idParserIdInterner.parse(components);
 
 		return id;
+	}
+
+	public static void setResolver(Id<?, ?> id, MetaStorage metaStorage, NamespacedStorageProvider namespacedStorageProvider) {
+		// Set resolvers in this id and subIds
+		final Set<Id<?, ?>> ids = new HashSet<>();
+		id.collectIds(ids);
+
+		for (Id<?, ?> subId : ids) {
+			switch (subId) {
+				// NamespacedIds always recur to the root, which is the DatasetId
+				case DatasetId nsId -> {
+					if (namespacedStorageProvider == null) {
+						continue;
+					}
+					nsId.setDomain(namespacedStorageProvider);
+				}
+				case MetaId<?> metaId -> {
+					metaId.setDomain(metaStorage);
+				}
+				default -> {
+				}
+			}
+		}
 	}
 
 	private static String findDatasetName(DeserializationContext ctx) throws JsonMappingException {
@@ -137,18 +149,12 @@ public class IdDeserializer<ID extends Id<?>> extends JsonDeserializer<ID> imple
 		}
 
 		// Sometimes injected via @PathParam
-
 		DatasetId id = Jackson.findInjectable(ctx, DatasetId.class);
 
 		if (id != null) {
 			return id.getName();
 		}
 		return null;
-	}
-
-	@Override
-	public ID deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
-		return this.deserialize(p, ctxt);
 	}
 
 

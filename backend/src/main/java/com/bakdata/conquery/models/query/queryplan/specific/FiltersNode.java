@@ -78,11 +78,9 @@ public class FiltersNode extends QPNode {
 
 		// Event and AggregationResultFilterNodes are used differently
 		for (FilterNode<?> filter : filters) {
-			if (filter instanceof EventFilterNode<?> ef) {
-				eventFilters.add(ef);
-			}
-			else if (filter instanceof AggregationResultFilterNode<?,?> af){
-				aggregationFilters.add(af);
+			switch (filter) {
+				case EventFilterNode<?> ef -> eventFilters.add(ef);
+				case AggregationResultFilterNode<?, ?> af -> aggregationFilters.add(af);
 			}
 		}
 

@@ -23,12 +23,12 @@ import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.preview.EntityPreviewStatus;
@@ -56,7 +56,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		final String testJson = In.resource("/tests/query/ENTITY_EXPORT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
 
-		final Dataset dataset = conquery.getDataset();
+		final DatasetId dataset = conquery.getDataset();
 
 		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 
@@ -88,7 +88,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 			conquery.waitUntilWorkDone();
 
 			final URI setPreviewConfig = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminDatasetResource.class, "setPreviewConfig")
-														.buildFromMap(Map.of(ResourceConstants.DATASET, dataset.getId()));
+														.buildFromMap(Map.of(ResourceConstants.DATASET, dataset));
 
 			final PreviewConfig previewConfig = new PreviewConfig();
 

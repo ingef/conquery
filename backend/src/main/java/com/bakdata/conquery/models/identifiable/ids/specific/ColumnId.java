@@ -3,9 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -17,7 +15,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class ColumnId extends Id<Column> implements NamespacedId {
+public class ColumnId extends NamespacedId<Column> {
 
 	private final TableId table;
 	private final String column;
@@ -28,8 +26,10 @@ public class ColumnId extends Id<Column> implements NamespacedId {
 	}
 
 	@Override
-	public Column get(NamespacedStorage storage) {
-		return storage.getTable(getTable()).getColumnByName(getColumn());
+	public Column get() {
+		return getDomain().getStorage(getDataset())
+						  .getTable(getTable())
+						  .getColumnByName(getColumn());
 	}
 
 	@Override
@@ -39,17 +39,12 @@ public class ColumnId extends Id<Column> implements NamespacedId {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		table.collectIds(collect);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return table.getNamespacedStorageProvider();
-	}
-
-	public static enum Parser implements IdUtil.Parser<ColumnId> {
+	public enum Parser implements IdUtil.Parser<ColumnId> {
 		INSTANCE;
 
 		@Override

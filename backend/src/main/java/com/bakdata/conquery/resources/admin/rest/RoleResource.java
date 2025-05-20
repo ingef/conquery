@@ -39,8 +39,8 @@ public class RoleResource {
 
 	@Path("{" + ROLE_ID + "}")
 	@GET
-	public Role getRole(@PathParam(ROLE_ID) Role role) throws JSONException {
-		return role;
+	public Role getRole(@PathParam(ROLE_ID) RoleId role) throws JSONException {
+		return role.resolve();
 	}
 
 	@Path("{" + ROLE_ID + "}")

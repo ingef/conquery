@@ -85,7 +85,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			if (descriptor.getSemantics()
 						  .stream()
 						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc
-													&& previewConfig.isGroupingColumn(desc.getSecondaryId().resolve())
+													&& previewConfig.isGroupingColumn(desc.getSecondaryId())
 						  )) {
 				descriptor.getSemantics().add(new SemanticType.GroupT());
 			}
@@ -93,7 +93,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			// Add hidden semantics to fields flagged for hiding.
 			if (descriptor.getSemantics()
 						  .stream()
-						  .anyMatch(semanticType -> semanticType instanceof SemanticType.ColumnT desc && previewConfig.isHidden(desc.getColumn().resolve()))) {
+						  .anyMatch(semanticType -> semanticType instanceof SemanticType.ColumnT desc && previewConfig.isHidden(desc.getColumn()))) {
 				descriptor.getSemantics().add(new SemanticType.HiddenT());
 			}
 		}

@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.junit.jupiter.api.Test;
 
@@ -32,8 +31,8 @@ public class CopyUserTest {
 		// Create original user with role and group mapping
 		User originUser = new User("user", "user", storage);
 		storage.addUser(originUser);
-		originUser.addRole(role);
-		group.addMember(originUser);
+		originUser.addRole(role.getId());
+		group.addMember(originUser.getId());
 
 		// Do copy
 		User copy = AuthorizationController.flatCopyUser(originUser, "copytest", storage);
@@ -42,7 +41,7 @@ public class CopyUserTest {
 		assertThat(copy).usingRecursiveComparison().ignoringFieldsOfTypes(User.ShiroUserAdapter.class).isNotEqualTo(originUser);
 
 		// Check that the copy does not have any mappings
-		assertThat(group.containsMember(copy)).isFalse();
+		assertThat(group.containsUser(copy.getId())).isFalse();
 		assertThat(copy.getRoles()).isEmpty();
 
 		// Check that the flat map worked
