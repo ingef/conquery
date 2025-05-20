@@ -10,9 +10,12 @@ import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 
 public interface TestSupport {
+
+	DatasetRegistry<?> getDatasetRegistry();
 
 	DatasetId getDataset();
 

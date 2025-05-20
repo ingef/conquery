@@ -69,7 +69,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 
 	@Override
 	public Stream<CBlock> getAllCBlocks() {
-		return cBlocks.getAllKeys().map(CBlockId.class::cast).map(this::getCBlock);
+		return cBlocks.getAllKeys().map(CBlockId.class::cast).map(CBlockId::resolve);
 	}
 
 @Override

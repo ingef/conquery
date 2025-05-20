@@ -120,8 +120,8 @@ public class FormConfigTest {
 		when(namespacesMock.injectIntoNew(any(ObjectMapper.class))).thenCallRealMethod();
 		when(namespacesMock.inject(any(MutableInjectableValues.class))).thenCallRealMethod();
 
-		datasetId.setNamespacedStorageProvider(namespacesMock);
-		datasetId1.setNamespacedStorageProvider(namespacesMock);
+		datasetId.setDomain(namespacesMock);
+		datasetId1.setDomain(namespacesMock);
 
 		dataset.setStorageProvider(namespacesMock);
 		dataset1.setStorageProvider(namespacesMock);

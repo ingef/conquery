@@ -199,4 +199,5 @@ public class NonPersistentStoreFactory implements StoreFactory {
 		storage.openStores(null);
 		return storage;
 	}
+
 }

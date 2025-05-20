@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.dropwizard.jersey.validation.Validators;
@@ -30,7 +31,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class IdTests {
 
-	public static final NamespacedStorageProvider STORAGE = new NonPersistentStoreFactory().createNamespaceStorage();
+	public static final NamespacedStorageProvider STORAGE = new TestNamespacedStorageProvider();
 
 	public static Stream<Arguments> reflectionTest() {
 		return CPSTypeIdResolver

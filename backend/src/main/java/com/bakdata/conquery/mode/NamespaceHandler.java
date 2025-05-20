@@ -32,9 +32,9 @@ public interface NamespaceHandler<N extends Namespace> {
 		injectables.add(datasetRegistry);
 		injectables.add(storage);
 
-		ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(storage);
-		ObjectMapper communicationMapper = internalMapperFactory.createNamespaceCommunicationMapper(storage);
-		ObjectMapper preprocessMapper = internalMapperFactory.createPreprocessMapper(storage);
+		ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(storage, datasetRegistry);
+		ObjectMapper communicationMapper = internalMapperFactory.createNamespaceCommunicationMapper(storage, datasetRegistry);
+		ObjectMapper preprocessMapper = internalMapperFactory.createPreprocessMapper(storage, datasetRegistry);
 
 		// Todo remove these
 		injectables.forEach(i -> {

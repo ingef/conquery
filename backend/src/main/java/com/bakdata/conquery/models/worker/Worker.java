@@ -63,7 +63,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			int entityBucketSize,
 			ObjectMapper persistenceMapper,
 			int secondaryIdSubPlanLimit,
-			boolean loadStorage
+			boolean loadStorage,
+			ShardWorkers shardWorkers
 	) {
 		this.storage = storage;
 		this.jobsExecutorService = jobsExecutorService;
@@ -76,6 +77,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		if (loadStorage) {
 			storage.loadData();
 		}
+
+		shardWorkers.addWorker(this); // TODO: annoying indirection with BucketManager.create, but would exceed scope
 
 		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 		queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);
@@ -92,13 +95,14 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			boolean failOnError,
 			int entityBucketSize,
 			InternalMapperFactory internalMapperFactory,
-			int secondaryIdSubPlanLimit) {
+			int secondaryIdSubPlanLimit, ShardWorkers shardWorkers) {
 
-		WorkerStorageImpl workerStorage = new WorkerStorageImpl(config, directory);
-		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(workerStorage);
+		final WorkerStorageImpl workerStorage = new WorkerStorageImpl(config, directory);
+		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(shardWorkers);
+
 		workerStorage.openStores(persistenceMapper);
 
-		dataset.setStorageProvider(workerStorage);
+		dataset.setStorageProvider(shardWorkers);
 
 		// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
 		WorkerInformation info = new WorkerInformation();
@@ -111,7 +115,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 
 		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, secondaryIdSubPlanLimit,
-						  config.isLoadStoresOnStart());
+						  config.isLoadStoresOnStart(), shardWorkers
+		);
 	}
 
 	public ModificationShieldedWorkerStorage getStorage() {

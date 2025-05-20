@@ -22,7 +22,7 @@ public class CBlockId extends NamespacedId<CBlock>  {
 
 	@Override
 	public DatasetId getDataset() {
-		return connector.getDataset();
+		return bucket.getDataset();
 	}
 
 	@Override

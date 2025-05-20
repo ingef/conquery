@@ -19,7 +19,7 @@ public class SuperPermissionTest extends IntegrationTest.Simple implements Progr
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		Dataset dataset1 = new Dataset("dataset1");
-		dataset1.setStorageProvider(conquery.getNamespaceStorage());
+		dataset1.setStorageProvider(conquery.getDatasetRegistry());
 
 		MetaStorage storage = conquery.getMetaStorage();
 

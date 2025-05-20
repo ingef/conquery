@@ -10,7 +10,7 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.io.storage.NamespacedStorageImpl;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.forms.util.ResolutionShortNames;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.fasterxml.jackson.databind.node.TextNode;
 import lombok.experimental.UtilityClass;
@@ -35,20 +36,16 @@ public class SerialisationObjectsUtil {
 
 
 	@NotNull
-	public static Dataset createDataset(NamespacedStorageImpl storage) {
-		return createDataset("test-dataset", storage);
-	}
-
-	@NotNull
-	public static Dataset createDataset(String name, NamespacedStorageImpl storage) {
-		Dataset dataset = new Dataset(name);
-		dataset.setStorageProvider(storage);
+	public static Dataset createDataset(NamespacedStorage storage, NamespacedStorageProvider storageProvider) {
+		Dataset dataset = new Dataset("test-dataset");
+		dataset.setStorageProvider(storageProvider);
 		storage.updateDataset(dataset);
+
 		return dataset;
 	}
 
 	@NotNull
-	public static ExportForm createExportForm(Dataset dataset, NamespacedStorageImpl storage) {
+	public static ExportForm createExportForm(Dataset dataset, NamespacedStorage storage) {
 		final TreeConcept concept = createConcept(dataset, storage);
 		final ExportForm exportForm = new ExportForm();
 		final AbsoluteMode mode = new AbsoluteMode();
@@ -81,7 +78,7 @@ public class SerialisationObjectsUtil {
 	 * Otherwise, it might clash during serdes because init was not executed
 	 */
 	@NotNull
-	public static TreeConcept createConcept(Dataset dataset, NamespacedStorageImpl storage) {
+	public static TreeConcept createConcept(Dataset dataset, NamespacedStorage storage) {
 		TreeConcept concept = new TreeConcept();
 
 		concept.setDataset(dataset.getId());

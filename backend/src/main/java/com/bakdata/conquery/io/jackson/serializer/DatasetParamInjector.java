@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.jakarta.rs.cfg.EndpointConfigBase;
 import com.fasterxml.jackson.jakarta.rs.cfg.ObjectReaderInjector;
 import com.fasterxml.jackson.jakarta.rs.cfg.ObjectReaderModifier;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -37,6 +38,7 @@ public class DatasetParamInjector implements ContainerRequestFilter {
 	public static class Modifier extends ObjectReaderModifier implements Injectable {
 
 		private final MultivaluedMap<String, String> pathParams;
+		@NonNull
 		public final DatasetRegistry<?> registry;
 
 		@Override

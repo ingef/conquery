@@ -7,8 +7,8 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.IdInterner;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.ShardWorkers;
@@ -62,18 +62,19 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 		objectMapper.setConfig(deserializationConfig);
 	}
 
-	public ObjectMapper createWorkerPersistenceMapper(WorkerStorage storage) {
+	public ObjectMapper createWorkerPersistenceMapper(NamespacedStorageProvider shardWorkers) {
 		final ObjectMapper objectMapper = createInternalObjectMapper(View.Persistence.Shard.class);
 
-		storage.injectInto(objectMapper);
+		shardWorkers.injectInto(objectMapper);
 
 		return objectMapper;
 	}
 
-	public ObjectMapper createNamespacePersistenceMapper(NamespaceStorage namespaceStorage) {
+	public ObjectMapper createNamespacePersistenceMapper(NamespaceStorage namespaceStorage, DatasetRegistry<?> datasetRegistry) {
 		final ObjectMapper objectMapper = createInternalObjectMapper(View.Persistence.Manager.class);
 
 		namespaceStorage.injectInto(objectMapper);
+		datasetRegistry.injectInto(objectMapper);
 
 		return objectMapper;
 	}
@@ -83,6 +84,7 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 
 		datasetRegistry.injectInto(objectMapper);
 		metaStorage.injectInto(objectMapper);
+
 
 		return objectMapper;
 	}
@@ -95,18 +97,21 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 		return objectMapper;
 	}
 
-	public ObjectMapper createNamespaceCommunicationMapper(NamespaceStorage namespaceStorage) {
+	public ObjectMapper createNamespaceCommunicationMapper(NamespaceStorage namespaceStorage, DatasetRegistry<?> datasetRegistry) {
 		ObjectMapper objectMapper = createInternalObjectMapper(View.InternalCommunication.class);
 
 		namespaceStorage.injectInto(objectMapper);
+		datasetRegistry.injectInto(objectMapper);
 
 		return objectMapper;
 	}
 
-	public ObjectMapper createPreprocessMapper(NamespaceStorage namespaceStorage) {
+	public ObjectMapper createPreprocessMapper(NamespaceStorage namespaceStorage, DatasetRegistry<?> datasetRegistry) {
 		ObjectMapper objectMapper = createInternalObjectMapper(null);
 
 		namespaceStorage.injectInto(objectMapper);
+		datasetRegistry.injectInto(objectMapper);
+
 
 		return objectMapper;
 	}

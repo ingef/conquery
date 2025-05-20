@@ -63,17 +63,24 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 
 	public Worker createWorker(WorkerStorage storage, boolean failOnError, boolean loadStorage) {
 
-		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(storage);
+		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(this);
 
 		final Worker worker =
-				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, secondaryIdSubPlanRetention, loadStorage);
-
-		addWorker(worker);
+				new Worker(queryThreadPoolDefinition,
+						   storage,
+						   jobsThreadPool,
+						   failOnError,
+						   entityBucketSize,
+						   persistenceMapper,
+						   secondaryIdSubPlanRetention,
+						   loadStorage,
+						   this
+				);
 
 		return worker;
 	}
 
-	private void addWorker(Worker worker) {
+	public void addWorker(Worker worker) {
 		nextWorker.incrementAndGet();
 		workers.put(worker.getInfo().getId(), worker);
 		dataset2Worker.put(worker.getStorage().getDataset().getId(), worker);
@@ -83,7 +90,17 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 
 		final Worker
 				worker =
-				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, failOnError, entityBucketSize, internalMapperFactory, secondaryIdSubPlanRetention);
+				Worker.newWorker(dataset,
+								 queryThreadPoolDefinition,
+								 jobsThreadPool,
+								 storageConfig,
+								 name,
+								 failOnError,
+								 entityBucketSize,
+								 internalMapperFactory,
+								 secondaryIdSubPlanRetention,
+								 this
+				);
 
 		addWorker(worker);
 

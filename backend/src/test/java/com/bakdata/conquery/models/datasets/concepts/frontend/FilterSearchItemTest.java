@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendTable;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
@@ -17,7 +16,8 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
+import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import com.bakdata.conquery.util.extensions.NamespaceStorageExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -27,14 +27,15 @@ public class FilterSearchItemTest {
 	@RegisterExtension
 	private static final NamespaceStorageExtension NAMESPACE_STORAGE_EXTENSION = new NamespaceStorageExtension();
 	private static final NamespacedStorage NAMESPACED_STORAGE = NAMESPACE_STORAGE_EXTENSION.getStorage();
-	public static final MetaStorage META_STORAGE = new MetaStorage(new NonPersistentStoreFactory());
+	public static final NamespacedStorageProvider STORAGE_PROVIDER = new TestNamespacedStorageProvider(NAMESPACED_STORAGE);
+
 
 	@Test
 	public void sortedValidityDates() {
 
 		Dataset dataset = new Dataset();
 		dataset.setName("testDataset");
-		dataset.setStorageProvider(NAMESPACED_STORAGE);
+		dataset.setStorageProvider(STORAGE_PROVIDER);
 
 		NAMESPACED_STORAGE.updateDataset(dataset);
 

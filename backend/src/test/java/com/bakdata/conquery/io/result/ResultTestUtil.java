@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -29,6 +30,7 @@ import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
@@ -41,13 +43,16 @@ public class ResultTestUtil {
 	private static final TreeConcept CONCEPT;
 	private static final NamespacedStorage STORAGE;
 	private static final MetaStorage META_STORAGE;
+	public static final NamespacedStorageProvider STORAGE_PROVIDER;
+
 
 	static {
 		NonPersistentStoreFactory storeFactory = new NonPersistentStoreFactory();
 		STORAGE = storeFactory.createNamespaceStorage();
 		META_STORAGE = storeFactory.createMetaStorage();
+		STORAGE_PROVIDER = new TestNamespacedStorageProvider(STORAGE);
 
-		DATASET.setNamespacedStorageProvider(STORAGE);
+		DATASET.setDomain(STORAGE_PROVIDER);
 
 		CONCEPT = new TreeConcept();
 

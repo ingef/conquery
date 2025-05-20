@@ -82,6 +82,7 @@ public abstract class ConqueryTestSpec {
 		else {
 			support.getMetaStorage().injectInto(mapper);
 			support.getNamespace().getStorage().injectInto(mapper);
+			support.getDatasetRegistry().injectInto(mapper);
 		}
 
 		T result = mapper.readerFor(expectedType).readValue(node);

@@ -5,15 +5,19 @@ import jakarta.validation.Validator;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.io.storage.WorkerStorageImpl;
 import com.bakdata.conquery.mode.cluster.ClusterNamespaceHandler;
 import com.bakdata.conquery.mode.cluster.ClusterState;
 import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.Getter;
@@ -28,6 +32,7 @@ public abstract class AbstractSerializationTest {
 	private NamespaceStorage namespaceStorage;
 	private MetaStorage metaStorage;
 	private WorkerStorageImpl workerStorage;
+	private NamespacedStorageProvider shardNamespacedStorageProvider;
 
 	private ObjectMapper managerInternalMapper;
 	private ObjectMapper namespaceInternalMapper;
@@ -45,18 +50,26 @@ public abstract class AbstractSerializationTest {
 		workerStorage = new WorkerStorageImpl(storageFactory, "serializationTestWorker");
 
 		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, internalMapperFactory);
-		datasetRegistry = new DatasetRegistry<>(0, config, internalMapperFactory, clusterNamespaceHandler, indexService);
+		datasetRegistry = new DatasetRegistry<>(0, config, internalMapperFactory, clusterNamespaceHandler, indexService) {
+			@Override
+			public NamespacedStorage getStorage(DatasetId datasetId) {
+				return getNamespaceStorage();
+			}
+		};
+
 
 		managerInternalMapper = internalMapperFactory.createManagerPersistenceMapper(datasetRegistry, metaStorage);
 		metaStorage.openStores(managerInternalMapper);
 
-		namespaceInternalMapper = internalMapperFactory.createNamespacePersistenceMapper(namespaceStorage);
+		namespaceInternalMapper = internalMapperFactory.createNamespacePersistenceMapper(namespaceStorage, datasetRegistry);
 		namespaceStorage.openStores(namespaceInternalMapper);
 
 		// Prepare worker persistence mapper
 		workerStorage.openStores(shardInternalMapper);
 
-		shardInternalMapper = internalMapperFactory.createWorkerPersistenceMapper(workerStorage);
+		shardNamespacedStorageProvider = new TestNamespacedStorageProvider(getWorkerStorage());
+
+		shardInternalMapper = internalMapperFactory.createWorkerPersistenceMapper(shardNamespacedStorageProvider);
 
 		// Prepare api response mapper
 		apiMapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);

@@ -20,7 +20,6 @@ import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 @RequiredArgsConstructor
 @Getter
@@ -30,10 +29,9 @@ public class DatasetId extends NamespacedId<Dataset> implements Authorized {
 	@EqualsAndHashCode.Include
 	private final String name;
 
-	@Setter
-	@JacksonInject(useInput = OptBoolean.FALSE)
 	@JsonIgnore
-	private NamespacedStorageProvider namespacedStorageProvider;
+	@Getter
+	private NamespacedStorageProvider domain;
 
 	@JsonIgnore
 	@Override
@@ -41,10 +39,12 @@ public class DatasetId extends NamespacedId<Dataset> implements Authorized {
 		return this;
 	}
 
+	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Override
 	public void setDomain(NamespacedStorageProvider provider) {
-		setNamespacedStorageProvider(provider);
+		domain = provider;
 	}
+
 
 	@Override
 	public Dataset get() {

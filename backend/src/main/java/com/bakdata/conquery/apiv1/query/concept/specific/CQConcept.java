@@ -66,9 +66,6 @@ import lombok.extern.slf4j.Slf4j;
 @EqualsAndHashCode(callSuper = true, doNotUseGetters = true)
 public class CQConcept extends CQElement implements NamespacedIdentifiableHolding, ExportForm.DefaultSelectSettable {
 
-	/**
-	 * @implNote FK: this is a schema migration problem I'm not interested fixing right now.
-	 */
 	@JsonProperty("ids")
 	@NotEmpty
 	private List<ConceptElementId<?>> elements = Collections.emptyList();

@@ -20,8 +20,10 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -63,12 +65,14 @@ public class GroovyIndexedTest {
 
 		// load concept tree from json
 		final NamespaceStorage storage = new NonPersistentStoreFactory().createNamespaceStorage();
+		final NamespacedStorageProvider storageProvider = new TestNamespacedStorageProvider(storage);
+
 		storage.openStores(mapper);
 		Table table = new Table();
 
 		table.setName("the_table");
 		Dataset dataset = new Dataset("the_dataset");
-		dataset.setStorageProvider(storage);
+		dataset.setStorageProvider(storageProvider);
 
 		dataset.injectInto(mapper);
 

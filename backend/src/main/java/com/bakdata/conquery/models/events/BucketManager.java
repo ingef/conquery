@@ -141,7 +141,7 @@ public class BucketManager {
 
 	@SneakyThrows
 	public void fullUpdate() {
-		log.info("Performing full update for cblocks");
+		log.debug("Performing full update for cblocks");
 
 		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 		try (Stream<BucketId> allBucketIds = storage.getAllBucketIds()) {
@@ -172,13 +172,13 @@ public class BucketManager {
 			}
 
 		}
-		log.info("Gathered all infos for full update for cblocks job");
+		log.trace("Gathered all infos for full update for cblocks job");
 
 		if (job.isEmpty()) {
-			log.info("No Concepts/CBlocks need to be updated, skipping job.");
+			log.trace("No Concepts/CBlocks need to be updated, skipping job.");
 			return;
 		}
-		log.info("Found {} tasks, queuing job", job.getTasks().size());
+		log.trace("Found {} tasks, queuing job", job.getTasks().size());
 		jobManager.addSlowJob(job);
 	}
 

@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
 import io.dropwizard.jersey.validation.Validators;
@@ -39,7 +40,7 @@ public class SerializingStoreDumpTest {
 
 	public static final StoreInfo<UserId, User> USER_STORE_ID = StoreMappings.AUTH_USER.storeInfo();
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
-	private static final NamespacedStorageProvider NAMESPACED_STORAGE_PROVIDER = new NonPersistentStoreFactory().createNamespaceStorage();
+	private static final NamespacedStorageProvider NAMESPACED_STORAGE_PROVIDER = new TestNamespacedStorageProvider();
 	// Test data
 	private final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), new UserId("test"), new DatasetId("dataset"), STORAGE, null, null);
 	private final ConceptQuery cQuery = new ConceptQuery(new CQReusedQuery(managedQuery.getId()));

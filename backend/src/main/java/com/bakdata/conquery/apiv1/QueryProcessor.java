@@ -177,8 +177,9 @@ public class QueryProcessor {
 	 * @param allProviders If true, forces {@link ResultRendererProvider} to return an URL if possible.
 	 * @return The modified status
 	 */
-	public static List<ResultAsset> getResultAssets(List<ResultRendererProvider> renderer, ManagedExecution exec,
-													UriBuilder uriBuilder, boolean allProviders) {
+	public static List<ResultAsset> getResultAssets(
+			List<ResultRendererProvider> renderer, ManagedExecution exec,
+			UriBuilder uriBuilder, boolean allProviders) {
 
 		return renderer.stream()
 					   .map(rendererProvider -> {
@@ -212,9 +213,9 @@ public class QueryProcessor {
 		// Does not make sense to cancel a query that isn't running.
 		final ExecutionManager executionManager = datasetRegistry.get(queryId.getDataset()).getExecutionManager();
 
-		final ManagedExecution execution = executionManager.getExecution(queryId);
+		final ManagedExecution execution = queryId.resolve();
 
-		if (!execution.getState().equals(ExecutionState.RUNNING)) {
+		if (!ExecutionState.RUNNING.equals(execution.getState())) {
 			return;
 		}
 
@@ -272,7 +273,7 @@ public class QueryProcessor {
 
 		log.info("User[{}] re-executed Query[{}]", subject.getId(), queryId);
 
-		if (query.getState().equals(ExecutionState.RUNNING)) {
+		if (ExecutionState.RUNNING.equals(query.getState())) {
 			return;
 		}
 
@@ -292,21 +293,14 @@ public class QueryProcessor {
 		storage.removeExecution(executionId);
 	}
 
-	public ExecutionState awaitDone(ManagedExecutionId queryId, int time, TimeUnit unit) {
-
-		final Namespace namespace = datasetRegistry.get(queryId.getDataset());
-		return namespace.getExecutionManager().awaitDone(queryId, time, unit);
-	}
 
 	public FullExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, Subject subject, UriBuilder url, Boolean allProviders, boolean await) {
-
-
+		final Namespace namespace = datasetRegistry.get(queryId.getDataset());
 
 		if (await) {
-			awaitDone(queryId, 1, TimeUnit.SECONDS);
+			namespace.getExecutionManager().awaitDone(queryId, 1, TimeUnit.SECONDS);
 		}
 
-		final Namespace namespace = datasetRegistry.get(queryId.getDataset());
 		final ManagedExecution query = queryId.resolve();
 
 		query.initExecutable();
@@ -600,7 +594,6 @@ public class QueryProcessor {
 	}
 
 	public <E extends ManagedExecution & SingleTableResult> ResultStatistics getResultStatistics(ManagedExecutionId queryId, Subject subject) {
-
 
 
 		ManagedExecution maybeManagedQuery = queryId.resolve();
