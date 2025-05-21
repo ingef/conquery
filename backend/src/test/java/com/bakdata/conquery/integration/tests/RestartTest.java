@@ -147,7 +147,6 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		final StandaloneSupport support = testConquery.openDataset(dataset);
 
-
 		log.info("Restart complete");
 
 		DatasetRegistry<?> datasetRegistry = support.getDatasetRegistry();

@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
@@ -29,6 +30,8 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -62,20 +65,12 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			boolean failOnError,
 			int entityBucketSize,
 			ObjectMapper persistenceMapper,
-			int secondaryIdSubPlanLimit,
-			boolean loadStorage
+			int secondaryIdSubPlanLimit
 	) {
 		this.storage = storage;
 		this.jobsExecutorService = jobsExecutorService;
 
-
 		storage.openStores(persistenceMapper);
-
-		storage.loadKeys();
-
-		if (loadStorage) {
-			storage.loadData();
-		}
 
 		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 		queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);
@@ -94,14 +89,14 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			InternalMapperFactory internalMapperFactory,
 			int secondaryIdSubPlanLimit) {
 
-		WorkerStorageImpl workerStorage = new WorkerStorageImpl(config, directory);
+		final WorkerStorageImpl workerStorage = new WorkerStorageImpl(config, directory);
 		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(workerStorage);
 		workerStorage.openStores(persistenceMapper);
 
 		dataset.setNamespacedStorageProvider(workerStorage);
 
 		// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
-		WorkerInformation info = new WorkerInformation();
+		final WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());
 		info.setName(directory);
 		info.setEntityBucketSize(entityBucketSize);
@@ -110,8 +105,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		workerStorage.close();
 
 
-		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, secondaryIdSubPlanLimit,
-						  config.isLoadStoresOnStart());
+		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, secondaryIdSubPlanLimit);
 	}
 
 	public ModificationShieldedWorkerStorage getStorage() {
@@ -228,5 +222,42 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 	public void removeSecondaryId(SecondaryIdDescriptionId secondaryId) {
 		storage.removeSecondaryId(secondaryId);
+	}
+
+	public void load(boolean loadStoresOnStart) {
+		jobManager.addSlowJob(new LoadWorkerStorageJob(loadStoresOnStart));
+
+	}
+
+	@Data
+	private final class LoadWorkerStorageJob extends Job {
+		private final boolean alsoLoadStorage;
+
+		@Override
+		public void execute() throws Exception {
+			log.info("BEGIN loading keys for {}", Worker.this);
+
+			final Stopwatch timer = Stopwatch.createStarted();
+
+			getStorage().loadKeys();
+
+			log.debug("DONE loading keys for {} within {}", Worker.this, timer);
+
+
+			if (alsoLoadStorage) {
+				timer.reset();
+
+				log.info("BEGIN loading data for {}", Worker.this);
+
+				getStorage().loadData();
+
+				log.debug("DONE loading keys for {} within {}", Worker.this, timer);
+			}
+		}
+
+		@Override
+		public String getLabel() {
+			return "Load WorkerStorage %s".formatted(Worker.this);
+		}
 	}
 }
