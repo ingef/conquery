@@ -4,10 +4,10 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.query.DistributedExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -26,8 +26,8 @@ public class FormShardResult extends ShardResult {
 	@ToString.Include
 	private ManagedExecutionId formId;
 
-	public FormShardResult(ManagedExecutionId formId, ManagedExecutionId subQueryId, Worker worker) {
-		super(subQueryId, worker);
+	public FormShardResult(ManagedExecutionId formId, ManagedExecutionId subQueryId, WorkerId workerId) {
+		super(subQueryId, workerId);
 		this.formId = formId;
 	}
 

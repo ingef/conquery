@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.Worker;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.MoreExecutors;
 import lombok.Data;
@@ -49,7 +50,7 @@ public class QueryExecutor implements Closeable {
 		return cancelledQueries.contains(query);
 	}
 
-	public boolean execute(Query query, QueryExecutionContext executionContext, ShardResult result, Set<Entity> entities) {
+	public boolean execute(Query query, Worker worker, QueryExecutionContext executionContext, ShardResult result, Set<Entity> entities) {
 
 		log.info("Received query: {}", query);
 
@@ -73,7 +74,7 @@ public class QueryExecutor implements Closeable {
 					entities.stream()
 							.map(entity -> new QueryJob(executionContext, plan, entity))
 							.map(job -> CompletableFuture.supplyAsync(job, executor))
-							.collect(Collectors.toList());
+							.toList();
 
 			final CompletableFuture<Void> allDone = CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
 
@@ -81,7 +82,8 @@ public class QueryExecutor implements Closeable {
 												  .map(CompletableFuture::join)
 												  .flatMap(Optional::stream)
 												  .collect(Collectors.toList()))
-				   .whenComplete((results, exc) -> result.finish(Objects.requireNonNullElse(results, Collections.emptyList()), Optional.ofNullable(exc)));
+				   .whenComplete((results, exc) -> result.finish(Objects.requireNonNullElse(results, Collections.emptyList()), Optional.ofNullable(exc), worker
+				   ));
 
 
 			return true;
@@ -89,13 +91,13 @@ public class QueryExecutor implements Closeable {
 		catch (Exception e) {
 			ConqueryError err = asConqueryError(e);
 			log.warn("Error while executing {}", executionContext.getExecutionId(), err);
-			sendFailureToManagerNode(result, asConqueryError(err));
+			sendFailureToManagerNode(result, asConqueryError(err), worker);
 			return false;
 		}
 	}
 
-	public void sendFailureToManagerNode(ShardResult result, ConqueryError error) {
-		result.finish(Collections.emptyList(), Optional.of(error));
+	public void sendFailureToManagerNode(ShardResult result, ConqueryError error, Worker worker) {
+		result.finish(Collections.emptyList(), Optional.of(error), worker);
 	}
 
 	@Override

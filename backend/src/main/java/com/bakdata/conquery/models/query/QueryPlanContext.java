@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.query;
 
 import javax.annotation.Nullable;
 
-import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -16,7 +16,7 @@ import lombok.With;
 @AllArgsConstructor @RequiredArgsConstructor
 public class QueryPlanContext {
 
-	private final ModificationShieldedWorkerStorage storage;
+	private final WorkerStorage storage;
 	private final int secondaryIdSubPlanRetention;
 
 	private CDateRange dateRestriction = CDateRange.all();

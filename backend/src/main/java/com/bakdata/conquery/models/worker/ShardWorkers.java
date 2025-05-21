@@ -91,10 +91,8 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 
 	@SneakyThrows
 	public Worker createWorker(Dataset dataset, @NonNull String name, StoreFactory storageConfig, boolean failOnError) {
-		dataset.setStorageProvider(this);
-
 		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(this);
-		final WorkerStorageImpl workerStorage = new WorkerStorageImpl(storageConfig, name);
+		final WorkerStorage workerStorage = new WorkerStorageImpl(storageConfig, name);
 
 		try (workerStorage) {
 			workerStorage.openStores(persistenceMapper);

@@ -46,7 +46,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	 * Pool that can be used in Jobs to execute a job in parallel.
 	 */
 	private final ExecutorService jobsExecutorService;
-	private QueryExecutor queryExecutor;
+	private final QueryExecutor queryExecutor;
 	private BucketManager bucketManager;
 	@Setter
 	private NetworkSession session;
@@ -70,12 +70,13 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			storage.loadData();
 		}
 
-		JobManager jobManager = new JobManager(storage.getWorker().getName(), failOnError);
-
-		Worker worker = new Worker(storage, jobManager, jobsExecutorService);
+		Worker worker = new Worker(storage,
+								   new JobManager(storage.getWorker().getName(), failOnError),
+								   jobsExecutorService,
+								   new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit)
+		);
 		shardWorkers.addWorker(worker);
 
-		worker.queryExecutor = new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);
 		// BucketManager.create loads NamespacedStorage, which requires the WorkerStorage to be registered.
 		worker.bucketManager = BucketManager.create(worker, storage, entityBucketSize);
 

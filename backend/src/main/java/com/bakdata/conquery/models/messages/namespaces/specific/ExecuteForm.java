@@ -54,7 +54,7 @@ public class ExecuteForm extends WorkerMessage {
 		// Execute all plans.
 		for (Entry<ManagedExecutionId, Query> entry : queries.entrySet()) {
 			final Query query = entry.getValue();
-			final ShardResult result = createResult(worker, entry.getKey());
+			final ShardResult result = new FormShardResult(getFormId(), entry.getKey(), worker.getInfo().getId());
 
 			// Before we start the query, we create it once to test if it will succeed before creating it multiple times for evaluation per core.
 			try {
@@ -63,7 +63,7 @@ public class ExecuteForm extends WorkerMessage {
 			catch (Exception e) {
 				ConqueryError err = asConqueryError(e);
 				log.warn("Failed to create query plans for {}.", formId, err);
-				queryExecutor.sendFailureToManagerNode(result, err);
+				queryExecutor.sendFailureToManagerNode(result, err, worker);
 				return;
 			}
 
@@ -73,14 +73,10 @@ public class ExecuteForm extends WorkerMessage {
 
 			Set<Entity> entities = query.collectRequiredEntities(subQueryContext).resolve(worker.getBucketManager());
 
-			if (!queryExecutor.execute(query, subQueryContext, result, entities)) {
+			if (!queryExecutor.execute(query, worker, subQueryContext, result, entities)) {
 				return;
 			}
 		}
-	}
-
-	private FormShardResult createResult(Worker worker, ManagedExecutionId subQueryId) {
-		return new FormShardResult(getFormId(), subQueryId, worker);
 	}
 
 

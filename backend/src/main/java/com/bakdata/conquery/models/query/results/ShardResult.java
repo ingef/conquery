@@ -17,7 +17,6 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,17 +52,13 @@ public class ShardResult  extends NamespaceMessage {
 
 	private Optional<ConqueryError> error = Optional.empty();
 
-	@JsonIgnore
-	private Worker worker;
 
-
-	public ShardResult(ManagedExecutionId queryId, Worker worker) {
+	public ShardResult(ManagedExecutionId queryId, WorkerId workerId) {
 		this.queryId = queryId;
-		this.workerId = worker.getInfo().getId();
-		this.worker = worker;
+		this.workerId = workerId;
 	}
 
-	public synchronized void finish(@NonNull List<EntityResult> results, Optional<Throwable> maybeError) {
+	public synchronized void finish(@NonNull List<EntityResult> results, Optional<Throwable> maybeError, Worker worker) {
 		if (worker.getQueryExecutor().isCancelled(getQueryId())) {
 			// Query is done so we no longer need the cancellation entry.
 			worker.getQueryExecutor().unsetQueryCancelled(getQueryId());
