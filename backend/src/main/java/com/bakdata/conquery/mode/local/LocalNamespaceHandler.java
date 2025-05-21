@@ -37,7 +37,11 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 	private final SqlDialectFactory dialectFactory;
 
 	@Override
-	public LocalNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<LocalNamespace> datasetRegistry, Environment environment) {
+	public LocalNamespace createNamespace(
+			NamespaceStorage namespaceStorage,
+			MetaStorage metaStorage,
+			DatasetRegistry<LocalNamespace> datasetRegistry,
+			Environment environment) {
 
 		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, internalMapperFactory, datasetRegistry, environment);
 
@@ -60,6 +64,11 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 		return new LocalNamespace(
 				namespaceData.getPreprocessMapper(),
 				namespaceStorage,
+				config.getQueries().getExecutionPool(),
+				sqlConnectorConfig,
+				databaseConfig,
+				sqlDialect,
+				sqlExecutionService,
 				executionManager,
 				dslContextWrapper,
 				sqlStorageHandler,

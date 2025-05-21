@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -59,6 +61,11 @@ public class PrefixRangeCondition implements CTCondition {
 		String pattern = buildSqlRegexPattern(context.getFunctionProvider());
 		Condition regexCondition = context.getFunctionProvider().likeRegex(field, pattern);
 		return new WhereConditionWrapper(regexCondition, ConditionType.PREPROCESSING);
+	}
+
+	@Override
+	public Set<String> getAuxillaryColumns() {
+		return Collections.emptySet();
 	}
 
 	private String buildSqlRegexPattern(SqlFunctionProvider functionProvider) {
