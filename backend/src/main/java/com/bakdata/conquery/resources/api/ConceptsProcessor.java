@@ -224,7 +224,7 @@ public class ConceptsProcessor {
 			return new AutoCompleteResult(fullResult.subList(startIncl, Math.min(fullResult.size(), endExcl)), fullResult.size());
 		}
 		catch (ExecutionException e) {
-			log.warn("Failed to search for \"{}\".", maybeText, log.isTraceEnabled() ? e : null);
+			log.warn("Failed to search for `{}`.", maybeText, log.isTraceEnabled() ? e : null);
 			return new AutoCompleteResult(Collections.emptyList(), 0);
 		}
 	}
@@ -307,7 +307,7 @@ public class ConceptsProcessor {
 				log.error("Error while trying to resolve `{}`", conceptCode, e);
 			}
 		}
-		return new ResolvedConceptsResult(resolvedCodes,  unknownCodes);
+		return new ResolvedConceptsResult(resolvedCodes, unknownCodes);
 	}
 
 	/**

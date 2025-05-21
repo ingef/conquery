@@ -5,6 +5,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -30,7 +31,7 @@ public class DatasetResource extends HDatasets {
 
 	@GET
 	@Path("concepts")
-	public FrontendRoot getRoot(@QueryParam("showHidden") boolean showHidden) {
+	public FrontendRoot getRoot(@QueryParam("showHidden") @DefaultValue("false") boolean showHidden) {
 		return processor.getRoot(getNamespace().getStorage(), subject, showHidden);
 	}
 

@@ -59,6 +59,7 @@ public class FrontEndConceptBuilder {
 
 		if (allConcepts.isEmpty()) {
 			log.warn("There are no displayable concepts in the dataset {}", storage.getDataset().getId());
+			return root;
 		}
 
 		// Submit all permissions to Shiro
@@ -72,16 +73,17 @@ public class FrontEndConceptBuilder {
 			Concept<?> concept = allConcepts.get(i);
 			roots.put(concept.getId(), createConceptRoot(concept, storage.getStructure()));
 		}
+
 		if (roots.isEmpty()) {
-			log.warn("No concepts could be collected for {} on dataset {}. The subject is possibly lacking the permission to use them.",
+			log.warn("The subject {} does not have permissions to see any concepts on {}.",
 					 subject.getId(),
 					 storage.getDataset()
 							.getId()
 			);
+			return root;
 		}
-		else {
-			log.trace("Collected {} concepts for {} on dataset {}.", roots.size(), subject.getId(), storage.getDataset().getId());
-		}
+
+		log.trace("Collected {} concepts for {} on dataset {}.", roots.size(), subject.getId(), storage.getDataset().getId());
 		//add the structure tree
 		for (StructureNode sn : storage.getStructure()) {
 			insertStructureNode(sn, roots);
@@ -152,7 +154,7 @@ public class FrontEndConceptBuilder {
 		final List<ConceptId> contained = new ArrayList<>();
 		for (ConceptId id : structureNode.getContainedRoots()) {
 			if (!roots.containsKey(id)) {
-				log.trace("Concept from structure node can not be found: {}", id);
+				log.trace("Cannot find concept {} for StructureNode {}", id, structureNode.getId());
 				continue;
 			}
 			contained.add(id);
