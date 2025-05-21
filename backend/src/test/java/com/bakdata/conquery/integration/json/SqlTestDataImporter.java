@@ -1,11 +1,13 @@
 package com.bakdata.conquery.integration.json;
 
 import java.util.Collection;
+import java.util.List;
 
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.filter.FilterTest;
 import com.bakdata.conquery.integration.sql.CsvTableImporter;
+import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -47,6 +49,14 @@ public class SqlTestDataImporter implements TestDataImporter {
 	@Override
 	public void importFilterTestData(StandaloneSupport support, FilterTest filterTest) {
 		throw new UnsupportedOperationException("Not implemented yet.");
+	}
+
+	@Override
+	public void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
+		for (RequiredTable table : tables) {
+			csvTableImporter.createTable(table);
+		}
+		TestDataImporter.super.importTables(support, tables, autoConcept);
 	}
 
 	@Override

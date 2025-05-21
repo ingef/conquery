@@ -45,7 +45,7 @@ public class LocalManagerProvider implements ManagerProvider {
 				datasetRegistry,
 				storage,
 				new FailingImportHandler(),
-				new LocalStorageListener(),
+				new LocalStorageListener(datasetRegistry),
 				EMPTY_NODE_PROVIDER,
 				List.of(),
 				internalMapperFactory,

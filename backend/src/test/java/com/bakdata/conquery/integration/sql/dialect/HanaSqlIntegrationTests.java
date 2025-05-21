@@ -65,28 +65,6 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		super(ConqueryIntegrationTests.DEFAULT_SQL_TEST_ROOT, "com.bakdata.conquery.integration");
 	}
 
-	@TestFactory
-	@Tag(TestTags.INTEGRATION_SQL_BACKEND)
-	public Stream<DynamicNode> sqlBackendTests() {
-
-		TestContextProvider provider = useLocalHanaDb
-									   ? new HanaTestcontainerContextProvider()
-									   : new RemoteHanaContextProvider();
-
-		log.info("Running HANA tests with %s.".formatted(provider.getClass().getSimpleName()));
-
-		dslContextWrapper = provider.getDslContextWrapper();
-		DatabaseConfig databaseConfig = provider.getDatabaseConfig();
-		TestSqlConnectorConfig config = provider.getSqlConnectorConfig();
-		TestHanaDialect testHanaDialect = new TestHanaDialect();
-		TestDataImporter testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContextWrapper.getDslContext(), testHanaDialect, databaseConfig));
-
-		return Stream.concat(
-				super.sqlProgrammaticTests(databaseConfig, config, testDataImporter),
-				super.sqlQueryTests(databaseConfig, config, testDataImporter).stream()
-		);
-	}
-
 	@SneakyThrows
 	@BeforeAll
 	public static void prepareTmpHanaDir() {
@@ -117,6 +95,28 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 				.map(Path::toFile)
 				.forEach(File::delete);
 		}
+	}
+
+	@TestFactory
+	@Tag(TestTags.INTEGRATION_SQL_BACKEND)
+	public Stream<DynamicNode> sqlBackendTests() {
+
+		TestContextProvider provider = useLocalHanaDb
+									   ? new HanaTestcontainerContextProvider()
+									   : new RemoteHanaContextProvider();
+
+		log.info("Running HANA tests with %s.".formatted(provider.getClass().getSimpleName()));
+
+		dslContextWrapper = provider.getDslContextWrapper();
+		DatabaseConfig databaseConfig = provider.getDatabaseConfig();
+		TestSqlConnectorConfig config = provider.getSqlConnectorConfig();
+		TestHanaDialect testHanaDialect = new TestHanaDialect();
+		TestDataImporter testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContextWrapper.getDslContext(), testHanaDialect, databaseConfig));
+
+		return Stream.concat(
+				super.sqlProgrammaticTests(databaseConfig, config, testDataImporter),
+				super.sqlQueryTests(databaseConfig, config, testDataImporter).stream()
+		);
 	}
 
 	public static class TestHanaDialect extends HanaSqlDialect implements TestSqlDialect {
