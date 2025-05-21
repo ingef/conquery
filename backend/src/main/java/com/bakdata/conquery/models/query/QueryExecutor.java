@@ -23,7 +23,6 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
-import com.bakdata.conquery.models.worker.Worker;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.MoreExecutors;
 import lombok.Data;
@@ -32,9 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Data
 public class QueryExecutor implements Closeable {
-
-	private final Worker worker;
-
 	private final ThreadPoolExecutor executor;
 
 	private final int secondaryIdSubPlanLimit;
@@ -58,7 +54,8 @@ public class QueryExecutor implements Closeable {
 		log.info("Received query: {}", query);
 
 		Stopwatch stopwatch = Stopwatch.createStarted();
-		final ThreadLocal<QueryPlan<?>> plan = ThreadLocal.withInitial(() -> query.createQueryPlan(new QueryPlanContext(worker, secondaryIdSubPlanLimit)));
+		final ThreadLocal<QueryPlan<?>> plan =
+				ThreadLocal.withInitial(() -> query.createQueryPlan(new QueryPlanContext(executionContext.getStorage(), secondaryIdSubPlanLimit)));
 		log.trace("Created query plan in {}", stopwatch);
 
 		if (entities.isEmpty()) {
@@ -84,7 +81,7 @@ public class QueryExecutor implements Closeable {
 												  .map(CompletableFuture::join)
 												  .flatMap(Optional::stream)
 												  .collect(Collectors.toList()))
-				   .whenComplete((results, exc) -> result.finish(Objects.requireNonNullElse(results, Collections.emptyList()), Optional.ofNullable(exc), worker));
+				   .whenComplete((results, exc) -> result.finish(Objects.requireNonNullElse(results, Collections.emptyList()), Optional.ofNullable(exc)));
 
 
 			return true;
@@ -98,7 +95,7 @@ public class QueryExecutor implements Closeable {
 	}
 
 	public void sendFailureToManagerNode(ShardResult result, ConqueryError error) {
-		result.finish(Collections.emptyList(), Optional.of(error), worker);
+		result.finish(Collections.emptyList(), Optional.of(error));
 	}
 
 	@Override

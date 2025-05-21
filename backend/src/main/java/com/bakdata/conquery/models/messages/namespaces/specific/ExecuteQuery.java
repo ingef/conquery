@@ -54,7 +54,7 @@ public class ExecuteQuery extends WorkerMessage {
 		// Before we start the query, we create it once to test if it will succeed before creating it multiple times for evaluation per core.
 		try {
 			Stopwatch stopwatch = Stopwatch.createStarted();
-			query.createQueryPlan(new QueryPlanContext(worker, queryExecutor.getSecondaryIdSubPlanLimit()));
+			query.createQueryPlan(new QueryPlanContext(worker.getStorage(), queryExecutor.getSecondaryIdSubPlanLimit()));
 			log.trace("Created query plan in {}", stopwatch);
 		}
 		catch (Exception e) {
@@ -74,9 +74,7 @@ public class ExecuteQuery extends WorkerMessage {
 	}
 
 	private ShardResult createShardResult(Worker worker) {
-		final ShardResult result = new ShardResult(id, worker.getInfo().getId());
-
-		return result;
+		return new ShardResult(id, worker);
 	}
 
 }

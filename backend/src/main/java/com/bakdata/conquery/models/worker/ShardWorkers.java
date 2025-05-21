@@ -11,6 +11,7 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.io.storage.WorkerStorageImpl;
 import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
@@ -24,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.lifecycle.Managed;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -47,8 +49,12 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 	private final int secondaryIdSubPlanRetention;
 	private final AtomicInteger nextWorker = new AtomicInteger(0);
 
-	
-	public ShardWorkers(ThreadPoolDefinition queryThreadPoolDefinition, InternalMapperFactory internalMapperFactory, int entityBucketSize, int secondaryIdSubPlanRetention) {
+
+	public ShardWorkers(
+			ThreadPoolDefinition queryThreadPoolDefinition,
+			InternalMapperFactory internalMapperFactory,
+			int entityBucketSize,
+			int secondaryIdSubPlanRetention) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
 
 		// TODO This shouldn't be coupled to the query thread pool definition
@@ -61,23 +67,20 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 		jobsThreadPool.prestartAllCoreThreads();
 	}
 
-	public Worker createWorker(WorkerStorage storage, boolean failOnError, boolean loadStorage) {
+	public Worker openWorker(WorkerStorage storage, boolean failOnError, boolean loadStorage) {
 
 		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(this);
 
-		final Worker worker =
-				new Worker(queryThreadPoolDefinition,
-						   storage,
-						   jobsThreadPool,
-						   failOnError,
-						   entityBucketSize,
-						   persistenceMapper,
-						   secondaryIdSubPlanRetention,
-						   loadStorage,
-						   this
-				);
-
-		return worker;
+		return Worker.create(queryThreadPoolDefinition,
+							 storage,
+							 jobsThreadPool,
+							 failOnError,
+							 entityBucketSize,
+							 persistenceMapper,
+							 secondaryIdSubPlanRetention,
+							 loadStorage,
+							 this
+		);
 	}
 
 	public void addWorker(Worker worker) {
@@ -86,25 +89,37 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 		dataset2Worker.put(worker.getStorage().getDataset().getId(), worker);
 	}
 
-	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, boolean failOnError) {
+	@SneakyThrows
+	public Worker createWorker(Dataset dataset, @NonNull String name, StoreFactory storageConfig, boolean failOnError) {
+		dataset.setStorageProvider(this);
 
-		final Worker
-				worker =
-				Worker.newWorker(dataset,
-								 queryThreadPoolDefinition,
-								 jobsThreadPool,
-								 storageConfig,
-								 name,
-								 failOnError,
-								 entityBucketSize,
-								 internalMapperFactory,
-								 secondaryIdSubPlanRetention,
-								 this
-				);
+		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(this);
+		final WorkerStorageImpl workerStorage = new WorkerStorageImpl(storageConfig, name);
 
-		addWorker(worker);
+		try (workerStorage) {
+			workerStorage.openStores(persistenceMapper);
 
-		return worker;
+			// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
+			WorkerInformation info = new WorkerInformation();
+			info.setDataset(dataset.getId());
+			info.setName(name);
+			info.setEntityBucketSize(entityBucketSize);
+
+			workerStorage.updateDataset(dataset);
+			workerStorage.setWorker(info);
+		}
+
+
+		return Worker.create(queryThreadPoolDefinition,
+							 workerStorage,
+							 jobsThreadPool,
+							 failOnError,
+							 entityBucketSize,
+							 persistenceMapper,
+							 secondaryIdSubPlanRetention,
+							 true,
+							 this
+		);
 	}
 
 	public Worker getWorker(WorkerId worker) {
@@ -129,14 +144,14 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 		try {
 			removed.remove();
 		}
-		catch(Exception e) {
+		catch (Exception e) {
 			log.error("Failed to remove storage {}", removed, e);
 		}
 	}
-	
+
 	public boolean isBusy() {
-		for( Worker worker : workers.values()) {
-			if(worker.isBusy()) {
+		for (Worker worker : workers.values()) {
+			if (worker.isBusy()) {
 				return true;
 			}
 		}
