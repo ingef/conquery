@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
@@ -59,7 +58,6 @@ public class FrontEndConceptBuilder {
 
 		if (allConcepts.isEmpty()) {
 			log.warn("There are no displayable concepts in the dataset {}", storage.getDataset().getId());
-			return root;
 		}
 
 		// Submit all permissions to Shiro
@@ -74,13 +72,11 @@ public class FrontEndConceptBuilder {
 			roots.put(concept.getId(), createConceptRoot(concept, storage.getStructure()));
 		}
 
-		if (roots.isEmpty()) {
+		if (!allConcepts.isEmpty() && roots.isEmpty()) {
 			log.warn("The subject {} does not have permissions to see any concepts on {}.",
 					 subject.getId(),
-					 storage.getDataset()
-							.getId()
+					 storage.getDataset().getId()
 			);
-			return root;
 		}
 
 		log.trace("Collected {} concepts for {} on dataset {}.", roots.size(), subject.getId(), storage.getDataset().getId());
@@ -89,13 +85,11 @@ public class FrontEndConceptBuilder {
 			insertStructureNode(sn, roots);
 		}
 		//add all secondary IDs
-		try (Stream<SecondaryIdDescription> secondaryIds = storage.getSecondaryIds()) {
-			root.getSecondaryIds()
-				.addAll(secondaryIds
-								.filter(sid -> !sid.isHidden() || showHidden)
-								.map(sid -> new FrontendSecondaryId(sid.getId().toString(), sid.getLabel(), sid.getDescription()))
-								.collect(Collectors.toSet()));
-		}
+		root.getSecondaryIds()
+			.addAll(storage.getSecondaryIds()
+						   .filter(sid -> !sid.isHidden() || showHidden)
+						   .map(sid -> new FrontendSecondaryId(sid.getId().toString(), sid.getLabel(), sid.getDescription()))
+						   .collect(Collectors.toSet()));
 
 		return root;
 	}
