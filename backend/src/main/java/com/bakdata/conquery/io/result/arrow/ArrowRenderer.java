@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.result.arrow;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -85,61 +86,82 @@ public class ArrowRenderer {
 		writer.start();
 		int batchCount = 0;
 		int batchLineCount = 0;
+		int lineCount = 0;
+		int currentRow = 0;
+		EntityResult currentEntityResult = null;
+		Object[] currentEntityResultLine = null;
+		Object currentValue = null;
+
 		final Iterator<EntityResult> resultIterator = results.iterator();
 
-		while (resultIterator.hasNext()) {
-			final EntityResult cer = resultIterator.next();
+		try {
+			while (resultIterator.hasNext()) {
+				final EntityResult cer = resultIterator.next();
+				currentEntityResult = cer;
 
-			final Object[] printedExternalId = getPrintedExternalId(idWriters, idMapper, printers, cer);
+				final Object[] printedExternalId = getPrintedExternalId(idWriters, idMapper, printers, cer);
 
-			for (Object[] line : cer.listResultLines()) {
-				Preconditions.checkState(
-						line.length == valueWriters.length,
-						"The number of value writers and values in a result line differs. Writers: %d Line: %d".formatted(valueWriters.length, line.length)
-				);
+				for (Object[] line : cer.listResultLines()) {
+					currentEntityResultLine = line;
+					Preconditions.checkState(
+							line.length == valueWriters.length,
+							"The number of value writers and values in a result line differs. Writers: %d Line: %d".formatted(valueWriters.length, line.length)
+					);
 
-				for (int index = 0; index < idWriters.length; index++) {
-					if (printedExternalId[index] == null) {
-						continue;
+					for (int index = 0; index < idWriters.length; index++) {
+						if (printedExternalId[index] == null) {
+							continue;
+						}
+
+						idWriters[index].accept(batchLineCount, printedExternalId[index]);
 					}
 
-					idWriters[index].accept(batchLineCount, printedExternalId[index]);
-				}
+					for (int rowIndex = 0; rowIndex < valueWriters.length; rowIndex++) {
+						currentRow = rowIndex;
+						final int colId = rowIndex + idWriters.length;
+						// In this case, the printer normalizes and adjusts values.
 
-				for (int index = 0; index < valueWriters.length; index++) {
-					final int colId = index + idWriters.length;
-					// In this case, the printer normalizes and adjusts values.
+						final Object value = line[rowIndex];
+						currentValue = value;
 
-					final Object value = line[index];
+						Object printed = null;
 
-					Object printed = null;
+						if (value != null) {
+							Printer printer = printers.get(colId);
+							printed = printer.apply(value);
+						}
 
-					if (value != null) {
-						Printer printer = printers.get(colId);
-						printed = printer.apply(value);
+						valueWriters[rowIndex].accept(batchLineCount, printed);
 					}
 
-					valueWriters[index].accept(batchLineCount, printed);
-				}
+					batchLineCount++;
+					lineCount++;
 
-				batchLineCount++;
-
-				if (batchLineCount >= batchSize) {
-					root.setRowCount(batchLineCount);
-					writer.writeBatch();
-					root.clear();
-					batchLineCount = 0;
+					if (batchLineCount >= batchSize) {
+						root.setRowCount(batchLineCount);
+						writer.writeBatch();
+						root.clear();
+						batchLineCount = 0;
+						batchCount++;
+					}
 				}
 			}
+			if (batchLineCount > 0) {
+				root.setRowCount(batchLineCount);
+				writer.writeBatch();
+				root.clear();
+				batchCount++;
+			}
 		}
-		if (batchLineCount > 0) {
-			root.setRowCount(batchLineCount);
-			writer.writeBatch();
-			root.clear();
-			batchCount++;
+		catch (Exception e) {
+			throw new IllegalStateException("Failed to write results. Failed at line-number=%s, row-number=%d, batch-number=%d, batch-line-number=%d, entity=%s, line-content=%s, value=%s".formatted(
+					lineCount, currentRow, batchCount, batchLineCount, currentEntityResult.getEntityId(), Arrays.toString(currentEntityResultLine), currentValue
+			), e);
 		}
-		log.trace("Wrote {} batches of size {} (last batch might be smaller)", batchCount, batchSize);
-		writer.end();
+		finally {
+			log.trace("Wrote {} batches of size {} (last batch might be smaller)", batchCount, batchSize);
+			writer.end();
+		}
 	}
 
 	@NotNull
