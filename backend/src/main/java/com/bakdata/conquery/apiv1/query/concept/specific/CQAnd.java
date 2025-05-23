@@ -7,6 +7,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
@@ -32,8 +34,6 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Preconditions;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -58,7 +58,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 	private DateAggregationAction dateAction;
 
 	@Override
-	public void setDefaultExists() {
+	public void setDefaultSelects() {
 		if (createExists.isEmpty()) {
 			createExists = Optional.of(true);
 		}
@@ -122,7 +122,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 			resultInfos.add(new FixedLabelResultInfo(ResultType.Primitive.BOOLEAN, Set.of()) {
 				@Override
 				public String userColumnName(PrintSettings printSettings) {
-					return getUserOrDefaultLabel(printSettings.getLocale());
+					return userLabel(printSettings.getLocale());
 				}
 
 				@Override
@@ -135,18 +135,20 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 	}
 
 	@Override
-	public String getUserOrDefaultLabel(Locale locale) {
+	public String userLabel(Locale locale) {
 		// Prefer the user label
 		if (getLabel() != null) {
 			return getLabel();
 		}
-		return QueryUtils.createDefaultMultiLabel(children, " " + C10nCache.getLocalized(CQElementC10n.class, locale).and() + " ", locale);
+		CQElementC10n localized = C10nCache.getLocalized(CQElementC10n.class, locale);
+		return QueryUtils.createUserMultiLabel(children, " " + localized.and() + " ", " " + localized.exists(), locale);
 	}
 
 	@Override
 	public String defaultLabel(Locale locale) {
 		// This forces the default label on children even if there was a user label
-		return QueryUtils.createTotalDefaultMultiLabel(children, " " + C10nCache.getLocalized(CQElementC10n.class, locale).and() + " ", locale);
+		CQElementC10n localized = C10nCache.getLocalized(CQElementC10n.class, locale);
+		return QueryUtils.createDefaultMultiLabel(children, " " + localized.and() + " ", " " + localized.exists(), locale);
 	}
 
 	@Override

@@ -80,7 +80,17 @@ configurations, such as:
 
 ### Testing
 
-Apart from separate frontend and backend tests, the project also contains end-to-end tests powered by cypress.
+#### Integration Tests
+To develop tests that run against external services like an SQL-Server, a Form-Backend or Keycloak we use these techniques:
+- [testcontainers](https://testcontainers.com/):  
+  Enables the configuration and orchestration of real service instances during test initialization.
+  This approach integrates seamlessly with continuous integration (CI) pipelines. For local development or environments without access to a container engine, a test should implement configurable flags which allow the use of a externally managed service instances.
+- [mockserver](https://www.mock-server.com/):  
+  Supports the programmatic or declarative definition of request/response mappings, including OpenAPI specification-based configurations, to simulate external service behavior.
+
+#### End-to-End Tests
+
+Apart from separate frontend and backend tests, the project also contains end-to-end tests powered by [cypress](https://www.cypress.io/).
 
 To run the end-to-end test locally:
 

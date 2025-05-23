@@ -121,8 +121,7 @@ public class QueryProcessor {
 			boolean allProviders) {
 
 		return allQueries
-				.filter(Objects::nonNull)
-				// The following only checks the dataset, under which the query was submitted, but a query can target more that
+				// The following only checks the dataset, under which the query was submitted, but a query can target more than
 				// one dataset.
 				.filter(q -> q.getDataset().equals(datasetId))
 				// to exclude subtypes from somewhere else
@@ -182,7 +181,8 @@ public class QueryProcessor {
 	 * @param allProviders If true, forces {@link ResultRendererProvider} to return an URL if possible.
 	 * @return The modified status
 	 */
-	public static List<ResultAsset> getResultAssets(List<ResultRendererProvider> renderer, ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
+	public static List<ResultAsset> getResultAssets(List<ResultRendererProvider> renderer, ManagedExecution exec,
+													UriBuilder uriBuilder, boolean allProviders) {
 
 		return renderer.stream()
 					   .map(rendererProvider -> {

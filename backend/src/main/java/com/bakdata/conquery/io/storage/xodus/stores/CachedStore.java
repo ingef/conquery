@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -57,7 +58,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	private VALUE getFromStore(KEY key) {
-		final Stopwatch stopwatch = Stopwatch.createStarted();
+		final Stopwatch stopwatch = log.isTraceEnabled() ? Stopwatch.createStarted() : null;
 		final VALUE value = store.get(key);
 		log.trace("Loaded {} from store {} in {}", key, store, stopwatch);
 
@@ -126,11 +127,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public Stream<KEY> getAllKeys() {
-		// We need to synchronize around this and mutations to avoid ConcurrentModificationExceptions.
-		synchronized (backingKeys) {
-			// This creates a humongous copy, but avoids concurrent modification and simplifies usage.
-			return Set.copyOf(keys).stream();
-		}
+		return (Stream<KEY>) Arrays.stream(keys.toArray());
 	}
 
 	@Override

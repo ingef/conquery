@@ -10,10 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
 @Slf4j
-public record DateRangeStringPrinter(DateStringPrinter datePrinter, PrintSettings cfg) implements Printer<List<Integer>> {
+public record DateRangeStringPrinter(
+		String negativeInf, String positiveInf,
+		DateStringPrinter datePrinter, PrintSettings cfg) implements Printer<List<Integer>> {
 
-	public DateRangeStringPrinter(PrintSettings printSettings) {
-		this(new DateStringPrinter(printSettings), printSettings);
+	public DateRangeStringPrinter(PrintSettings printSettings, String negativeInf, String positiveInf) {
+		this(negativeInf, positiveInf, new DateStringPrinter(printSettings), printSettings);
 	}
 
 	@Override
@@ -24,13 +26,13 @@ public record DateRangeStringPrinter(DateStringPrinter datePrinter, PrintSetting
 		final Integer max = f.get(1);
 
 		// Compute minString first because we need it either way
-		final String minString = min == null || min == CDateRange.NEGATIVE_INFINITY ? "-∞" : datePrinter.apply(min);
+		final String minString = min == null || min == CDateRange.NEGATIVE_INFINITY ? negativeInf : datePrinter.apply(min);
 
 		if (cfg.isPrettyPrint() && min != null && min.equals(max)) {
 			// If the min and max are the same we print it like a singe date, not a range (only in pretty printing)
 			return minString;
 		}
-		final String maxString = max == null || max == CDateRange.POSITIVE_INFINITY ? "+∞" : datePrinter.apply(max);
+		final String maxString = max == null || max == CDateRange.POSITIVE_INFINITY ? positiveInf : datePrinter.apply(max);
 
 		return minString + cfg.getDateRangeSeparator() + maxString;
 	}
