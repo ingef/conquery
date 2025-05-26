@@ -11,10 +11,9 @@ import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
-import com.bakdata.conquery.io.result.csv.ResultCsvProcessor;
+import com.bakdata.conquery.io.result.json.ResultJsonDescriptionProcessor;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.resources.api.ResultCsvResource;
+import com.bakdata.conquery.resources.api.ResultJsonDescriptionResource;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -22,21 +21,18 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 @Slf4j
 @Data
-@CPSType(base = ResultRendererProvider.class, id = "CSV")
-public class CsvResultProvider implements ResultRendererProvider {
+@CPSType(base = ResultRendererProvider.class, id = "JSON")
+public class JsonDescriptionResultProvider implements ResultRendererProvider {
 	private boolean hidden = false;
 
 	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders)
 			throws MalformedURLException, URISyntaxException {
-		if (!(exec instanceof SingleTableResult)) {
-			return Collections.emptyList();
-		}
 
 		if (hidden && !allProviders) {
 			return Collections.emptyList();
 		}
 
-		return List.of(new ResultAsset("CSV", ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution & SingleTableResult) exec).toURI()));
+		return List.of(new ResultAsset("JSON", ResultJsonDescriptionResource.getDownloadURL(uriBuilder, exec).toURI()));
 	}
 
 	@Override
@@ -45,9 +41,10 @@ public class CsvResultProvider implements ResultRendererProvider {
 		environment.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
-				bindAsContract(ResultCsvProcessor.class);
+				bindAsContract(ResultJsonDescriptionProcessor.class);
 			}
 		});
-		environment.register(ResultCsvResource.class);
+		environment.register(ResultJsonDescriptionResource.class);
 	}
+
 }
