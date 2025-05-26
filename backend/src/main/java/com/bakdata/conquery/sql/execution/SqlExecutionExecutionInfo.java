@@ -11,25 +11,25 @@ import lombok.Data;
 import lombok.Setter;
 
 @Data
-public class SqlExecutionState implements ExecutionManager.InternalState {
+public class SqlExecutionExecutionInfo implements ExecutionManager.InternalExecutionInfo {
 
 	@Setter
-	ExecutionState state;
+	ExecutionState executionState;
 	List<String> columnNames;
 	List<EntityResult> table;
 	int rowCount;
 	CountDownLatch executingLock;
 
-	public SqlExecutionState() {
-		this.state = ExecutionState.RUNNING;
+	public SqlExecutionExecutionInfo() {
+		this.executionState = ExecutionState.RUNNING;
 		this.columnNames = null;
 		this.table = null;
 		this.executingLock = new CountDownLatch(1);
 		rowCount = 0;
 	}
 
-	public SqlExecutionState(ExecutionState state, List<String> columnNames, List<EntityResult> table, CountDownLatch executingLock) {
-		this.state = state;
+	public SqlExecutionExecutionInfo(ExecutionState executionState, List<String> columnNames, List<EntityResult> table, CountDownLatch executingLock) {
+		this.executionState = executionState;
 		this.columnNames = columnNames;
 		this.table = table;
 		this.executingLock = executingLock;

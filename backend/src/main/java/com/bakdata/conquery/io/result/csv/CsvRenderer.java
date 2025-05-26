@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.result.csv;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -25,14 +26,14 @@ public class CsvRenderer {
 	private final CsvWriter writer;
 	private final PrintSettings cfg;
 
-	public void toCSV(List<ResultInfo> idHeaders, List<ResultInfo> infos, Stream<EntityResult> resultStream, PrintSettings printSettings) {
+	public void toCSV(List<ResultInfo> idHeaders, List<ResultInfo> infos, Stream<EntityResult> resultStream, PrintSettings printSettings, Charset charset) {
 
 		UniqueNamer uniqNamer = new UniqueNamer(cfg);
 		final String[] headers = Stream.concat(idHeaders.stream(), infos.stream()).map(info -> uniqNamer.getUniqueName(info, printSettings)).toArray(String[]::new);
 
 		writer.writeHeaders(headers);
 
-		createCSVBody(cfg, infos, resultStream, printSettings, new StringResultPrinters());
+		createCSVBody(cfg, infos, resultStream, printSettings, StringResultPrinters.forCharset(charset));
 	}
 
 	private void createCSVBody(PrintSettings cfg, List<ResultInfo> infos, Stream<EntityResult> results, PrintSettings printSettings,

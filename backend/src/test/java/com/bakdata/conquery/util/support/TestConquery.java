@@ -95,11 +95,12 @@ public class TestConquery {
 		Namespace ns = datasets.get(datasetId);
 
 		// make tmp subdir and change cfg accordingly
-		File localTmpDir = new File(tmpDir, "tmp_" + name);
+		String safeFileName = name.replaceAll("\\W", "");
+		File localTmpDir = new File(tmpDir, "tmp_" + safeFileName);
 
 		if (!localTmpDir.exists()) {
 			if (!localTmpDir.mkdir()) {
-				throw new IllegalStateException("Could not create directory for Support");
+				throw new IllegalStateException("Could not create directory for Support:" + localTmpDir);
 			}
 		}
 		else {
@@ -191,8 +192,8 @@ public class TestConquery {
 
 		busy |= standaloneCommand.getManager().getDatasetRegistry().getNamespaces().stream()
 								 .map(Namespace::getExecutionManager)
-								 .flatMap(e -> e.getExecutionStates().asMap().values().stream())
-								 .map(ExecutionManager.State::getState)
+								 .flatMap(e -> e.getExecutionInfos().asMap().values().stream())
+								 .map(ExecutionManager.ExecutionInfo::getExecutionState)
 								 .anyMatch(ExecutionState.RUNNING::equals);
 
 		for (Namespace namespace : standaloneCommand.getManagerNode().getDatasetRegistry().getNamespaces()) {
@@ -244,7 +245,7 @@ public class TestConquery {
 
 		// The test user is recreated after each test, in the storage, but its id stays the same.
 		// Here we register the client filter once for that test user id.
-		UserId testUserId = config.getAuthorizationRealms().getInitialUsers().get(0).createId();
+		UserId testUserId = config.getAuthorizationRealms().getInitialUsers().getFirst().createId();
 		client.register(new ConqueryAuthenticationFilter(() -> getAuthorizationController().getConqueryTokenRealm().createTokenForUser(testUserId)));
 
 		testUser = getMetaStorage().getUser(testUserId);
@@ -295,7 +296,7 @@ public class TestConquery {
 
 		// MetaStorage is cleared after each test, so we need to add the test user again
 		final MetaStorage storage = standaloneCommand.getManagerNode().getMetaStorage();
-		testUser = standaloneCommand.getManagerNode().getConfig().getAuthorizationRealms().getInitialUsers().get(0).createOrOverwriteUser(storage);
+		testUser = standaloneCommand.getManagerNode().getConfig().getAuthorizationRealms().getInitialUsers().getFirst().createOrOverwriteUser(storage);
 	}
 
 	public Validator getValidator() {
