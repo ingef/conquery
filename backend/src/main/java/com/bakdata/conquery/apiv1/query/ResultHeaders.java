@@ -1,4 +1,4 @@
-package com.bakdata.conquery;
+package com.bakdata.conquery.apiv1.query;
 
 import java.util.Set;
 
