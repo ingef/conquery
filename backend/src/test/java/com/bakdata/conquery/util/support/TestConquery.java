@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import jakarta.validation.Validator;
 import jakarta.ws.rs.client.Client;
@@ -38,6 +39,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.util.io.Cloner;
+import com.google.common.base.Stopwatch;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.core.cli.Command;
 import io.dropwizard.testing.DropwizardTestSupport;
@@ -121,7 +123,6 @@ public class TestConquery {
 				testDataImporter
 		);
 
-		support.waitUntilWorkDone();
 		openSupports.add(support);
 		return support;
 	}
@@ -135,6 +136,27 @@ public class TestConquery {
 		waitUntil(() -> clusterState.getWorkerHandlers().get(datasetId).getWorkers().size() == clusterState.getShardNodes().size());
 
 		return buildSupport(datasetId, name, StandaloneSupport.Mode.WORKER);
+	}
+
+	@SneakyThrows
+	public static void waitUntil(Supplier<Boolean> condition) {
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		int done = 0;
+
+		while (stopwatch.elapsed(TimeUnit.SECONDS) < 10) {
+			Thread.sleep(2);
+			if (!condition.get()) {
+				continue;
+			}
+
+			//sample multiple times from the job queues to make sure we are done with everything and don't miss late arrivals
+			done++;
+			if (done > 5) {
+				return;
+			}
+		}
+
+		throw new IllegalStateException("Jobs did not finish within expected time.");
 	}
 
 	public synchronized StandaloneSupport getSupport(String name) {
@@ -160,31 +182,8 @@ public class TestConquery {
 		}
 	}
 
-	@SneakyThrows
-	public void waitUntilWorkDone() {
-		log.trace("Waiting for jobs to finish");
-		waitUntil(() -> !isBusy());
-	}
-
-	@SneakyThrows
-	public static void waitUntil(Supplier<Boolean> condition) {
-		int done = 0;
-
-		for (int cycle = 0; cycle < 10_000 / 5; cycle++) {
-			if (!condition.get()) {
-				Thread.sleep(2);
-				continue;
-			}
-
-			//sample multiple times from the job queues to make sure we are done with everything and don't miss late arrivals
-			done++;
-			if (done > 5) {
-				log.trace("All jobs finished");
-				return;
-			}
-		}
-
-		throw new IllegalStateException("Jobs did not finish within expected time.");
+	public DatasetRegistry<?> getDatasetRegistry() {
+		return getStandaloneCommand().getManagerNode().getDatasetRegistry();
 	}
 
 	public UriBuilder defaultAdminURIBuilder() {
@@ -194,8 +193,10 @@ public class TestConquery {
 						 .port(dropwizard.getAdminPort());
 	}
 
-	public DatasetRegistry<?> getDatasetRegistry() {
-		return getStandaloneCommand().getManagerNode().getDatasetRegistry();
+	@SneakyThrows
+	public void waitUntilWorkDone() {
+		log.trace("Waiting for jobs to finish");
+		waitUntil(() -> !isBusy());
 	}
 
 	private boolean isBusy() {
@@ -284,7 +285,7 @@ public class TestConquery {
 			}
 			openSupports.clear();
 		}
-		this.getStandaloneCommand().getManagerNode().getMetaStorage().clear();
+		getStandaloneCommand().getManagerNode().getMetaStorage().clear();
 		waitUntilWorkDone();
 	}
 
@@ -297,7 +298,6 @@ public class TestConquery {
 		synchronized (openSupports) {
 			openSupports.remove(support);
 			removeSupportDataset(support);
-			waitUntilWorkDone();
 		}
 	}
 

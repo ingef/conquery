@@ -39,10 +39,6 @@ public class StandaloneSupport implements TestSupport {
 	@Getter
 	private final TestDataImporter testImporter;
 
-	public void waitUntilWorkDone() {
-		testConquery.waitUntilWorkDone();
-	}
-
 	public void preprocessTmp(File tmpDir, List<File> descriptions) throws Exception {
 		final Environment env = testConquery.getDropwizard().getEnvironment();
 		final net.sourceforge.argparse4j.inf.Namespace namespace = new net.sourceforge.argparse4j.inf.Namespace(
