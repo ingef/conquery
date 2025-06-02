@@ -49,7 +49,6 @@ public class ConqueryEscapeTest {
 	 * Here '@' raises a warning because it should have been '$40'
 	 */
 	@Test
-	@SuppressWarnings("unused") // _unescaped
 	public void testEscapingWarningUnescaped() {
 		Logger conqueryEscapeLog = (Logger) LoggerFactory.getLogger(ConqueryEscape.class);
 
@@ -59,7 +58,7 @@ public class ConqueryEscapeTest {
 		conqueryEscapeLog.addAppender(listAppender);
 
 		try {
-			String _unescaped = ConqueryEscape.unescape("test@example$2eorg");
+			String ignore = ConqueryEscape.unescape("test@example$2eorg");
 
 			assertThat(listAppender.list.getFirst())
 					.extracting(
