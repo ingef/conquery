@@ -52,15 +52,29 @@ public class ConqueryEscapeTest {
 	@SuppressWarnings("unused") // _unescaped
 	public void testEscapingWarningUnescaped() {
 		Logger conqueryEscapeLog = (Logger) LoggerFactory.getLogger(ConqueryEscape.class);
-		// create and start a ListAppender
+
+		// Add appender to capture warning
 		ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
 		listAppender.start();
-
-		// add the appender to the logger
 		conqueryEscapeLog.addAppender(listAppender);
-		String _unescaped = ConqueryEscape.unescape("test@example$2eorg");
 
-		assertThat(listAppender.list.getFirst()).extracting(ILoggingEvent::getLevel, ILoggingEvent::getFormattedMessage)
-												.containsExactly(ch.qos.logback.classic.Level.WARN, "Unescaped character '64' at 4 in 'test@example$2eorg'");
+		try {
+			String _unescaped = ConqueryEscape.unescape("test@example$2eorg");
+
+			assertThat(listAppender.list.getFirst())
+					.extracting(
+							ILoggingEvent::getLevel,
+							ILoggingEvent::getFormattedMessage
+					)
+					.containsExactly(
+							ch.qos.logback.classic.Level.WARN,
+							"Unescaped character '64' at 4 in 'test@example$2eorg'"
+					);
+		}
+		finally {
+			// Cleanup appender
+			conqueryEscapeLog.detachAppender(listAppender);
+			listAppender.stop();
+		}
 	}
 }
