@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.worker;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -30,9 +29,6 @@ public class WorkerInformation extends NamespacedIdentifiable<WorkerId> implemen
 	private IntArraySet includedBuckets = new IntArraySet();
 	@JsonIgnore
 	private transient ShardNodeInformation connectedShardNode;
-
-	@Min(0)
-	private int entityBucketSize;
 
 	@Getter
 	@Setter

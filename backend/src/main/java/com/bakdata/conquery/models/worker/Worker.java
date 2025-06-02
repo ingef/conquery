@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -46,39 +45,25 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	 * Pool that can be used in Jobs to execute a job in parallel.
 	 */
 	private final ExecutorService jobsExecutorService;
-	private final QueryExecutor queryExecutor;
+
+	private QueryExecutor queryExecutor;
 	private BucketManager bucketManager;
 	@Setter
 	private NetworkSession session;
 
 	public static Worker create(
-			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-			@NonNull WorkerStorage storage,
+			@NonNull WorkerStorage storage, ShardWorkers shardWorkers, @NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 			@NonNull ExecutorService jobsExecutorService,
 			boolean failOnError,
-			int entityBucketSize,
-			ObjectMapper persistenceMapper,
-			int secondaryIdSubPlanLimit,
-			boolean loadStorage,
-			ShardWorkers shardWorkers
-	) {
-		storage.openStores(persistenceMapper);
+			int secondaryIdSubPlanLimit) {
 
-		storage.loadKeys();
+		Worker worker = new Worker(storage, new JobManager(storage.getWorker().getName(), failOnError), jobsExecutorService);
+		worker.queryExecutor = new QueryExecutor(worker, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);
 
-		if (loadStorage) {
-			storage.loadData();
-		}
-
-		Worker worker = new Worker(storage,
-								   new JobManager(storage.getWorker().getName(), failOnError),
-								   jobsExecutorService,
-								   new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit)
-		);
 		shardWorkers.addWorker(worker);
 
 		// BucketManager.create loads NamespacedStorage, which requires the WorkerStorage to be registered.
-		worker.bucketManager = BucketManager.create(worker, storage, entityBucketSize);
+		worker.bucketManager = BucketManager.create(worker, storage);
 
 		return worker;
 	}

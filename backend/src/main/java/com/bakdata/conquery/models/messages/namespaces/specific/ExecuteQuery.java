@@ -66,7 +66,7 @@ public class ExecuteQuery extends WorkerMessage {
 
 		final Set<Entity> entities = query.collectRequiredEntities(executionContext).resolve(worker.getBucketManager());
 
-		queryExecutor.execute(query, worker, executionContext, result, entities);
+		queryExecutor.execute(query, executionContext, result, entities);
 	}
 
 }

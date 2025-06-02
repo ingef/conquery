@@ -32,11 +32,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Data
 public class QueryExecutor implements Closeable {
+
+	private final Worker worker;
+
 	private final ThreadPoolExecutor executor;
 
 	private final int secondaryIdSubPlanLimit;
 
 	private final Set<ManagedExecutionId> cancelledQueries = new HashSet<>();
+
 
 	public void unsetQueryCancelled(ManagedExecutionId query) {
 		cancelledQueries.remove(query);
@@ -50,7 +54,7 @@ public class QueryExecutor implements Closeable {
 		return cancelledQueries.contains(query);
 	}
 
-	public boolean execute(Query query, Worker worker, QueryExecutionContext executionContext, ShardResult result, Set<Entity> entities) {
+	public boolean execute(Query query, QueryExecutionContext executionContext, ShardResult result, Set<Entity> entities) {
 
 		log.info("Received query: {}", query);
 
@@ -71,19 +75,12 @@ public class QueryExecutor implements Closeable {
 			}
 
 			final List<CompletableFuture<Optional<EntityResult>>> futures =
-					entities.stream()
-							.map(entity -> new QueryJob(executionContext, plan, entity))
-							.map(job -> CompletableFuture.supplyAsync(job, executor))
-							.toList();
+					entities.stream().map(entity -> new QueryJob(executionContext, plan, entity)).map(job -> CompletableFuture.supplyAsync(job, executor)).toList();
 
 			final CompletableFuture<Void> allDone = CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
 
-			allDone.thenApply((ignored) -> futures.stream()
-												  .map(CompletableFuture::join)
-												  .flatMap(Optional::stream)
-												  .collect(Collectors.toList()))
-				   .whenComplete((results, exc) -> result.finish(Objects.requireNonNullElse(results, Collections.emptyList()), Optional.ofNullable(exc), worker
-				   ));
+			allDone.thenApply((ignored) -> futures.stream().map(CompletableFuture::join).flatMap(Optional::stream).collect(Collectors.toList()))
+				   .whenComplete((results, exc) -> result.finish(Objects.requireNonNullElse(results, Collections.emptyList()), Optional.ofNullable(exc), worker));
 
 
 			return true;

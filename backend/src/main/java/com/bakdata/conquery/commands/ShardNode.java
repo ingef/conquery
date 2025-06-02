@@ -55,7 +55,6 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 		workers = new ShardWorkers(
 				config.getQueries().getExecutionPool(),
 				internalMapperFactory,
-				config.getCluster().getEntityBucketSize(),
 				config.getQueries().getSecondaryIdSubPlanRetention()
 		);
 

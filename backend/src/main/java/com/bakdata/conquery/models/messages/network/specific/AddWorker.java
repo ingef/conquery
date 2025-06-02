@@ -27,13 +27,13 @@ public class AddWorker extends MessageToShardNode.Slow {
 
 		dataset.setStorageProvider(context.getWorkers());
 
-		Worker worker = context.getWorkers().createWorker(dataset, createWorkerName(), context.getConfig().getStorage(), context.getConfig().isFailOnError());
-		worker.setSession(context.getSession());
+		Worker worker =
+				context.getWorkers().newWorker(dataset, createWorkerName(), context.getSession(), context.getConfig().getStorage(), context.getConfig().isFailOnError());
 
 		context.send(new RegisterWorker(worker.getInfo()));
 	}
 
 	private String createWorkerName() {
-		return "worker_%s_%s".formatted(dataset.getName(), UUID.randomUUID().toString()); //TODO use name of shard or something more descriptive than a UUID.
+		return "worker_%s_%s".formatted(dataset.getName(), UUID.randomUUID());
 	}
 }

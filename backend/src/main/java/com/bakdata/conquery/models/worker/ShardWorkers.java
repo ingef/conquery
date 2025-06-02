@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.io.storage.WorkerStorageImpl;
@@ -25,7 +26,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.lifecycle.Managed;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -45,7 +45,6 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 	private final ThreadPoolExecutor jobsThreadPool;
 	private final ThreadPoolDefinition queryThreadPoolDefinition;
 	private final InternalMapperFactory internalMapperFactory;
-	private final int entityBucketSize;
 	private final int secondaryIdSubPlanRetention;
 	private final AtomicInteger nextWorker = new AtomicInteger(0);
 
@@ -53,7 +52,6 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 	public ShardWorkers(
 			ThreadPoolDefinition queryThreadPoolDefinition,
 			InternalMapperFactory internalMapperFactory,
-			int entityBucketSize,
 			int secondaryIdSubPlanRetention) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
 
@@ -61,7 +59,6 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 		jobsThreadPool = queryThreadPoolDefinition.createService("Workers");
 
 		this.internalMapperFactory = internalMapperFactory;
-		this.entityBucketSize = entityBucketSize;
 		this.secondaryIdSubPlanRetention = secondaryIdSubPlanRetention;
 
 		jobsThreadPool.prestartAllCoreThreads();
@@ -71,16 +68,15 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 
 		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(this);
 
-		return Worker.create(queryThreadPoolDefinition,
-							 storage,
-							 jobsThreadPool,
-							 failOnError,
-							 entityBucketSize,
-							 persistenceMapper,
-							 secondaryIdSubPlanRetention,
-							 loadStorage,
-							 this
-		);
+		storage.openStores(persistenceMapper);
+
+		storage.loadKeys();
+
+		if (loadStorage) {
+			storage.loadData();
+		}
+
+		return Worker.create(storage, this, queryThreadPoolDefinition, jobsThreadPool, failOnError, secondaryIdSubPlanRetention);
 	}
 
 	public void addWorker(Worker worker) {
@@ -89,35 +85,24 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 		dataset2Worker.put(worker.getStorage().getDataset().getId(), worker);
 	}
 
-	@SneakyThrows
-	public Worker createWorker(Dataset dataset, @NonNull String name, StoreFactory storageConfig, boolean failOnError) {
+	public Worker newWorker(Dataset dataset, @NonNull String name, @NonNull NetworkSession session, StoreFactory storageConfig, boolean failOnError) {
 		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(this);
 		final WorkerStorage workerStorage = new WorkerStorageImpl(storageConfig, name);
 
-		try (workerStorage) {
-			workerStorage.openStores(persistenceMapper);
+		workerStorage.openStores(persistenceMapper);
 
-			// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
-			WorkerInformation info = new WorkerInformation();
-			info.setDataset(dataset.getId());
-			info.setName(name);
-			info.setEntityBucketSize(entityBucketSize);
+		// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
+		WorkerInformation info = new WorkerInformation();
+		info.setDataset(dataset.getId());
+		info.setName(name);
 
-			workerStorage.updateDataset(dataset);
-			workerStorage.setWorker(info);
-		}
+		workerStorage.updateDataset(dataset);
+		workerStorage.setWorker(info);
 
+		Worker worker = Worker.create(workerStorage, this, queryThreadPoolDefinition, jobsThreadPool, failOnError, secondaryIdSubPlanRetention);
+		worker.setSession(session);
 
-		return Worker.create(queryThreadPoolDefinition,
-							 workerStorage,
-							 jobsThreadPool,
-							 failOnError,
-							 entityBucketSize,
-							 persistenceMapper,
-							 secondaryIdSubPlanRetention,
-							 true,
-							 this
-		);
+		return worker;
 	}
 
 	public Worker getWorker(WorkerId worker) {

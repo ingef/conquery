@@ -73,7 +73,7 @@ public class ExecuteForm extends WorkerMessage {
 
 			Set<Entity> entities = query.collectRequiredEntities(subQueryContext).resolve(worker.getBucketManager());
 
-			if (!queryExecutor.execute(query, worker, subQueryContext, result, entities)) {
+			if (!queryExecutor.execute(query, subQueryContext, result, entities)) {
 				return;
 			}
 		}
