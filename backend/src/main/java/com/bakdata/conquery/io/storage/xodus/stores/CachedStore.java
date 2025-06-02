@@ -132,7 +132,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public void loadData() {
 		final LongAdder totalSize = new LongAdder();
 		final int count = count();
-		final ProgressBar bar = count > 100 ? new ProgressBar(100) : null;
+		final ProgressBar bar = count > 100 ? new ProgressBar(count) : null;
 
 		log.info("BEGIN loading store {}", this);
 
