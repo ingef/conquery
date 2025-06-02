@@ -13,7 +13,7 @@ import org.junit.jupiter.api.TestFactory;
 
 public class ConqueryIntegrationTests extends IntegrationTests {
 
-	public static final String DEFAULT_SQL_TEST_ROOT = "tests/sql/";
+	public static final String DEFAULT_SQL_TEST_ROOT = "tests/";
 	public static final TestDataImporter WORKER_TEST_DATA_IMPORTER = new WorkerTestDataImporter();
 
 	public ConqueryIntegrationTests() {

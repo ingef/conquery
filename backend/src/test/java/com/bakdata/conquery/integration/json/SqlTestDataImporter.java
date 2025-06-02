@@ -1,11 +1,17 @@
 package com.bakdata.conquery.integration.json;
 
-import java.util.Collection;
+import static com.bakdata.conquery.integration.common.LoadingUtil.importInternToExternMappers;
 
+import java.util.Collection;
+import java.util.Collections;
+
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.filter.FilterTest;
 import com.bakdata.conquery.integration.sql.CsvTableImporter;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -45,8 +51,29 @@ public class SqlTestDataImporter implements TestDataImporter {
 	}
 
 	@Override
-	public void importFilterTestData(StandaloneSupport support, FilterTest filterTest) {
-		throw new UnsupportedOperationException("Not implemented yet.");
+	public void importFilterTestData(StandaloneSupport support, FilterTest test) throws Exception {
+		RequiredData content = test.getContent();
+
+		importInternToExternMappers(support, test.getInternToExternMappings());
+		importSearchIndexes(support, test.getSearchIndices());
+		importTables(support, content.getTables(), content.isAutoConcept());
+
+		test.setConnector(ConqueryTestSpec.parseSubTree(
+								  support,
+								  test.getRawConnector(),
+								  ConceptTreeConnector.class,
+								  conn -> {
+									  conn.setTable(new TableId(support.getDataset().getDataset(), FilterTest.TABLE_NAME));
+									  conn.setConcept(test.getConcept());
+								  },
+								  true
+						  )
+		);
+		test.getConcept().setConnectors(Collections.singletonList((ConceptTreeConnector) test.getConnector()));
+
+		waitUntilDone(support, () -> LoadingUtil.uploadConcept(support, support.getDataset(), test.getConcept()));
+		importTableContents(support, content.getTables());
+
 	}
 
 	@Override
