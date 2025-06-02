@@ -2,9 +2,10 @@ package com.bakdata.conquery.io.storage.xodus.stores;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Stream;
 
@@ -19,6 +20,7 @@ import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.github.benmanes.caffeine.cache.stats.StatsCounter;
 import com.google.common.base.Stopwatch;
+import com.google.common.util.concurrent.Futures;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -31,13 +33,10 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private static final ProgressBar PROGRESS_BAR = new ProgressBar(0);
 
-	private final LoadingCache<KEY, VALUE> cache;
+	private final LoadingCache<KEY, Future<VALUE>> cache;
 
-	/**
-	 * Do not edit this directly, we have to keep it outside for synchronization purposes.
-	 */
-	private final Set<KEY> backingKeys = new HashSet<>();
-	private final Set<KEY> keys = Collections.synchronizedSet(backingKeys);
+
+	private final Set<KEY> keys;
 
 	@ToString.Include
 	private final Store<KEY, VALUE> store;
@@ -48,13 +47,15 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		final StatsCounter statsCounter =
 				metricRegistry != null ? new MetricsStatsCounter(metricRegistry, "cache." + store.toString()) : StatsCounter.disabledStatsCounter();
 
-		final Caffeine<KEY, VALUE> caffeine = Caffeine.from(caffeineSpec)
+		final Caffeine<KEY, Future<VALUE>> caffeine = Caffeine.from(caffeineSpec)
 													  .recordStats(() -> statsCounter)
 													  .evictionListener(
 															  (k, v, cause) ->
 																	  log.trace("Evicting {} from cache for {} (cause: {})", k, store.toString(), cause));
 
-		cache = caffeine.build(this::getFromStore);
+		cache = caffeine.build(key -> CompletableFuture.completedFuture(getFromStore(key)));
+		keys = cache.asMap().keySet();
+
 	}
 
 	private VALUE getFromStore(KEY key) {
@@ -80,7 +81,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	private void added(KEY key, VALUE value) {
-		cache.put(key, value);
+		cache.put(key, CompletableFuture.completedFuture(value));
 		keys.add(key);
 	}
 
@@ -93,7 +94,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public VALUE get(KEY key) {
-		return cache.get(key);
+		return Futures.getUnchecked(cache.get(key));
 	}
 
 	@Override
@@ -120,14 +121,12 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		log.info("BEGIN loading keys {}", this);
 
-		store.getAllKeys().forEach(keys::add);
+		store.getAllKeys()
+			 .forEach(key -> {
+				 cache.put(key, new FutureTask<>(() -> getFromStore(key)));
+			 });
 
 		log.debug("DONE loading keys from {} in {}", this, stopwatch);
-	}
-
-	@Override
-	public Stream<KEY> getAllKeys() {
-		return (Stream<KEY>) Arrays.stream(keys.toArray());
 	}
 
 	@Override
@@ -180,7 +179,12 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public Stream<VALUE> getAll() {
-		return getAllKeys().map(cache::get);
+		return getAllKeys().map(cache::get).map(Futures::getUnchecked);
+	}
+
+	@Override
+	public Stream<KEY> getAllKeys() {
+		return (Stream<KEY>) Arrays.stream(keys.toArray());
 	}
 
 	@Override
