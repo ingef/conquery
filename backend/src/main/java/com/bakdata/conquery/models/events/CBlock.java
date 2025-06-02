@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
@@ -48,6 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
+@JsonIgnoreProperties({"root"})
 public class CBlock extends NamespacedIdentifiable<CBlockId> {
 	//TODO Index per StringStore for isOfInterest
 	@ToString.Include
@@ -55,11 +57,7 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 	@NotNull
 	@ToString.Include
 	private final ConnectorId connector;
-	/**
-	 * We leverage the fact that a Bucket contains entities from bucketSize * {@link Bucket#getBucket()} to (1 + bucketSize) * {@link Bucket#getBucket()} - 1 to layout our internal structure.
-	 * This is maps the first Entities entry in this bucket to 0.
-	 */
-	private final int root;
+
 	/**
 	 * Crude Bloomfilter for Concept inclusion per Entity: Each set bit denotes that the concept (with localId <= 64) or a descendant of that concept (with localId > 64) is present for the entity in this Bucket.
 	 */
@@ -91,34 +89,16 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 	}
 
 	public static CBlock createCBlock(ConceptTreeConnector connector, BucketId bucketId, BucketManager bucketManager) {
-		final int bucketSize = bucketManager.getEntityBucketSize();
-		final int root = bucketId.getBucket() * bucketSize;
 
-		Bucket bucket = bucketId.resolve();
+		final Bucket bucket = bucketId.resolve();
 
 		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector, bucketManager);
 		//TODO Object2LongMap
-		final Map<String, Long> includedConcepts = calculateConceptElementPathBloomFilter(bucketSize, bucket, mostSpecificChildren);
+		final Map<String, Long> includedConcepts = calculateConceptElementPathBloomFilter(bucket, mostSpecificChildren);
 		final Map<String, CDateRange> entitySpans = calculateEntityDateIndices(bucket);
 
-		final CBlock cBlock = new CBlock(bucketId, connector.getId(), root, includedConcepts, entitySpans, mostSpecificChildren);
+		final CBlock cBlock = new CBlock(bucketId, connector.getId(), includedConcepts, entitySpans, mostSpecificChildren);
 		return cBlock;
-	}
-
-	/**
-	 *
-	 * @return All entities that are included in the {@link Bucket} referenced by {@link CBlock#getBucket()}.
-	 *
-	 * @apiNote If you have not resolved the {@link Bucket} yet use this method to get the entities because resolving a large bucket is more expensive.
-	 */
-	@JsonIgnore
-	Set<String> getEntities() {
-		return ImmutableSet.copyOf(includedConceptElementsPerEntity.keySet());
-	}
-
-
-	public boolean containsEntity(String entity) {
-		return includedConceptElementsPerEntity.containsKey(entity);
 	}
 
 	/**
@@ -139,8 +119,8 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 	 * This is used in the evaluation of a query to quickly decide if an event is of interest by logically ANDing
 	 * the bitmask of the event with the bitmask calculated by {@link ConceptNode#calculateBitMask(Collection)}
 	 */
-	private static Map<String, Long> calculateConceptElementPathBloomFilter(int bucketSize, Bucket bucket, int[][] mostSpecificChildren) {
-		final Map<String, Long> includedConcepts = new HashMap<>(bucketSize);
+	private static Map<String, Long> calculateConceptElementPathBloomFilter(Bucket bucket, int[][] mostSpecificChildren) {
+		final Map<String, Long> includedConcepts = new HashMap<>(bucket.entities().size());
 
 		for (String entity : bucket.entities()) {
 
@@ -337,6 +317,21 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 		}
 
 		return 0;
+	}
+
+	/**
+	 *
+	 * @return All entities that are included in the {@link Bucket} referenced by {@link CBlock#getBucket()}.
+	 *
+	 * @apiNote If you have not resolved the {@link Bucket} yet use this method to get the entities because resolving a large bucket is more expensive.
+	 */
+	@JsonIgnore
+	Set<String> getEntities() {
+		return ImmutableSet.copyOf(includedConceptElementsPerEntity.keySet());
+	}
+
+	public boolean containsEntity(String entity) {
+		return includedConceptElementsPerEntity.containsKey(entity);
 	}
 
 	public int[] getPathToMostSpecificChild(int event) {

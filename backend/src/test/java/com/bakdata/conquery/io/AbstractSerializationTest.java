@@ -50,7 +50,7 @@ public abstract class AbstractSerializationTest {
 		workerStorage = new WorkerStorageImpl(storageFactory, "serializationTestWorker");
 
 		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, internalMapperFactory);
-		datasetRegistry = new DatasetRegistry<>(0, config, internalMapperFactory, clusterNamespaceHandler, indexService) {
+		datasetRegistry = new DatasetRegistry<>(config, internalMapperFactory, clusterNamespaceHandler, indexService) {
 			@Override
 			public NamespacedStorage getStorage(DatasetId datasetId) {
 				return getNamespaceStorage();

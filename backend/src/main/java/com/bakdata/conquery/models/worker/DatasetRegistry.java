@@ -38,8 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 public class DatasetRegistry<N extends Namespace> implements Closeable, NamespacedStorageProvider, Injectable {
 
 	private final ConcurrentMap<DatasetId, N> datasets = new ConcurrentHashMap<>();
-	@Getter
-	private final int entityBucketSize;
 
 	@Getter
 	private final ConqueryConfig config;

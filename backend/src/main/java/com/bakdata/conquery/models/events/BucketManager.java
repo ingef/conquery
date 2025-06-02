@@ -36,7 +36,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -70,12 +69,9 @@ public class BucketManager {
 	 */
 	private final Map<TableId, Int2ObjectMap<Set<BucketId>>> tableToBuckets;
 
-	@Getter
-	private final int entityBucketSize;
-
 	private final Map<ConceptId, Map<ImportId, ConceptTreeCache>> treeCaches = new ConcurrentHashMap<>();
 
-	public static BucketManager create(Worker worker, WorkerStorage storage, int entityBucketSize) {
+	public static BucketManager create(Worker worker, WorkerStorage storage) {
 		final Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlockId>>> connectorCBlocks = new HashMap<>();
 		final Map<TableId, Int2ObjectMap<Set<BucketId>>> tableBuckets = new HashMap<>();
 		final Object2IntMap<String> entity2Bucket = new Object2IntOpenHashMap<>();
@@ -98,7 +94,7 @@ public class BucketManager {
 		}
 		log.debug("FINISHED Register cblocks for {}", worker.getInfo().getId());
 
-		return new BucketManager(worker.getJobManager(), storage, worker, entity2Bucket, connectorCBlocks, tableBuckets, entityBucketSize);
+		return new BucketManager(worker.getJobManager(), storage, worker, entity2Bucket, connectorCBlocks, tableBuckets);
 	}
 
 

@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.messages.network.specific;
 import java.util.UUID;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
@@ -25,16 +24,16 @@ public class AddWorker extends MessageToShardNode.Slow {
 	@Override
 	public void react(ShardNodeNetworkContext context) throws Exception {
 		log.info("creating a new worker for {}", dataset);
-		ConqueryConfig config = context.getConfig();
 
-		Worker worker = context.getWorkers().createWorker(dataset, config.getStorage(), createWorkerName(), config.isFailOnError());
+		dataset.setStorageProvider(context.getWorkers());
 
-		worker.setSession(context.getSession());
+		Worker worker =
+				context.getWorkers().newWorker(dataset, createWorkerName(), context.getSession(), context.getConfig().getStorage(), context.getConfig().isFailOnError());
 
 		context.send(new RegisterWorker(worker.getInfo()));
 	}
 
 	private String createWorkerName() {
-		return "worker_" + dataset.getName() + "_" + UUID.randomUUID().toString(); //TODO use name of shard or something more descriptive than a UUID.
+		return "worker_%s_%s".formatted(dataset.getName(), UUID.randomUUID());
 	}
 }

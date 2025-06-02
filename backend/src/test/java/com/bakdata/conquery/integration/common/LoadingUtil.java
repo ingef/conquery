@@ -119,11 +119,6 @@ public class LoadingUtil {
 				fail("Query failed");
 			}
 		}
-
-		// wait only if we actually did anything
-		if (!content.getPreviousQueryResults().isEmpty()) {
-			support.waitUntilWorkDone();
-		}
 	}
 
 	public static void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
