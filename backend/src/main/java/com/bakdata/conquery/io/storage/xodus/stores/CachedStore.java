@@ -62,11 +62,6 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		final Stopwatch stopwatch = log.isTraceEnabled() ? Stopwatch.createStarted() : null;
 		final VALUE value = store.get(key);
 		log.trace("Loaded {} from store {} in {}", key, store, stopwatch);
-
-		if (value != null) {
-			keys.add(key);
-		}
-
 		return value;
 	}
 
@@ -82,7 +77,6 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private void added(KEY key, VALUE value) {
 		cache.put(key, CompletableFuture.completedFuture(value));
-		keys.add(key);
 	}
 
 	@Override
@@ -113,7 +107,6 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private void removed(KEY key) {
 		cache.invalidate(key);
 
-		keys.remove(key);
 	}
 
 	public void loadKeys() {
@@ -191,7 +184,6 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public void clear() {
 		store.clear();
 		cache.invalidateAll();
-		keys.clear();
 	}
 
 	@Override
@@ -210,14 +202,12 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public void removeStore() {
 		store.removeStore();
 		cache.invalidateAll();
-		keys.clear();
 	}
 
 	@Override
 	public void close() throws IOException {
 		store.close();
 		cache.invalidateAll();
-		keys.clear();
 	}
 
 
