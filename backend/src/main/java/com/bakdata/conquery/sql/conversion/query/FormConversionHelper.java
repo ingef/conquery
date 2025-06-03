@@ -63,7 +63,15 @@ public class FormConversionHelper {
 											 .collect(Collectors.toList());
 
 		// filter out entries with a null validity date
-		Condition dateNotNullCondition = prerequisiteSelects.getValidityDate().get().isNotNull();
+		Optional<ColumnDateRange> columnDateRange = prerequisiteSelects.getValidityDate();
+		Condition dateNotNullCondition;
+
+		if (columnDateRange.isPresent()) {
+			dateNotNullCondition = columnDateRange.get().isNotNull();
+		}
+		else {
+			dateNotNullCondition = DSL.falseCondition();
+		}
 
 		return QueryStep.builder()
 						.cteName(FormCteStep.EXTRACT_IDS.getSuffix())
