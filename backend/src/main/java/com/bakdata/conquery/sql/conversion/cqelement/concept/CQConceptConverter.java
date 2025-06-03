@@ -171,7 +171,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	private static Optional<SqlFilters> collectConditionFilters(List<ConceptElement<?>> conceptElements, CQTable cqTable, SqlFunctionProvider functionProvider) {
 		return collectConditions(conceptElements, cqTable, functionProvider)
 				.stream()
-				.reduce(WhereCondition::or)
+				.reduce(WhereCondition::and)
 				.map(whereCondition -> new SqlFilters(
 						ConnectorSqlSelects.none(),
 						WhereClauses.builder().preprocessingCondition(whereCondition).build()

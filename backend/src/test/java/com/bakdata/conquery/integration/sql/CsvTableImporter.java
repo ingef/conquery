@@ -98,7 +98,7 @@ public class CsvTableImporter {
 			List<Object> castEntriesOfRow = new ArrayList<>(requiredColumns.size());
 
 			for (RequiredColumn column : requiredColumns) {
-				castEntriesOfRow.add(castEntryAccordingToColumnType(record.getValue(column.getName(), null), column.getType()));
+				castEntriesOfRow.add(castEntryAccordingToColumnType(record.getString(column.getName()), column.getType()));
 			}
 
 			castedContent.add(castEntriesOfRow);
@@ -154,21 +154,6 @@ public class CsvTableImporter {
 		return DSL.field(DSL.name(requiredColumn.getName()), dataType);
 	}
 
-	/**
-	 * Casts all values of each row to the corresponding type of the column the value refers to.
-	 */
-	private List<List<Object>> castContent(List<String[]> rawContent, List<RequiredColumn> requiredColumns) {
-		List<List<Object>> castedContent = new ArrayList<>(rawContent.size());
-		for (String[] row : rawContent) {
-			List<Object> castEntriesOfRow = new ArrayList<>(row.length);
-			for (int i = 0; i < row.length; i++) {
-				MajorTypeId type = requiredColumns.get(i).getType();
-				castEntriesOfRow.add(this.castEntryAccordingToColumnType(row[i], type));
-			}
-			castedContent.add(castEntriesOfRow);
-		}
-		return castedContent;
-	}
 
 	private Object castEntryAccordingToColumnType(String entry, MajorTypeId type) {
 

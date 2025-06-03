@@ -25,15 +25,6 @@ import org.jooq.impl.DSL;
 @NoArgsConstructor
 public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterConverter<CountFilter, Range.LongRange>, SqlAggregator {
 
-	public enum CountType {
-		DEFAULT,
-		DISTINCT;
-
-		public static CountType fromBoolean(boolean value) {
-			return value ? DISTINCT : DEFAULT;
-		}
-	}
-
 	@Override
 	public ConnectorSqlSelects connectorSelect(CountSelect countSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
@@ -52,6 +43,23 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 								  .aggregationSelect(countAggregationSelect.getGroupBy())
 								  .finalSelect(finalSelect)
 								  .build();
+	}
+
+	private CommonAggregationSelect<Integer> createCountAggregationSelect(Column countColumn, CountType countType, String alias, ConnectorSqlTables tables) {
+
+		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), countColumn.getName(), Object.class);
+
+
+		Field<?> qualifiedRootSelect = rootSelect.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
+		Field<Integer> countField = countType == CountType.DISTINCT
+									? DSL.countDistinct(qualifiedRootSelect)
+									: DSL.count(qualifiedRootSelect);
+		FieldWrapper<Integer> countGroupBy = new FieldWrapper<>(DSL.nullif(countField, 0).as(alias), countColumn.getName());
+
+		return CommonAggregationSelect.<Integer>builder()
+									  .rootSelect(rootSelect)
+									  .groupBy(countGroupBy)
+									  .build();
 	}
 
 	@Override
@@ -83,20 +91,13 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 		return new CountCondition(field, filterContext.getValue()).condition();
 	}
 
-	private CommonAggregationSelect<Integer> createCountAggregationSelect(Column countColumn, CountType countType, String alias, ConnectorSqlTables tables) {
+	public enum CountType {
+		DEFAULT,
+		DISTINCT;
 
-		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), countColumn.getName(), Object.class);
-
-		Field<?> qualifiedRootSelect = rootSelect.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
-		Field<Integer> countField = countType == CountType.DISTINCT
-									? DSL.countDistinct(qualifiedRootSelect)
-									: DSL.count(qualifiedRootSelect);
-		FieldWrapper<Integer> countGroupBy = new FieldWrapper<>(countField.as(alias), countColumn.getName());
-
-		return CommonAggregationSelect.<Integer>builder()
-									  .rootSelect(rootSelect)
-									  .groupBy(countGroupBy)
-									  .build();
+		public static CountType fromBoolean(boolean value) {
+			return value ? DISTINCT : DEFAULT;
+		}
 	}
 
 }
