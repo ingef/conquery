@@ -10,39 +10,7 @@
     }
   },
   "concepts": [
-    {
-      "label": "test_tree",
-      "type": "TREE",
-      "connectors": {
-        "label": "tree_label",
-        "name": "test_column",
-        "column": "test_table.test_column",
-        "validityDates": {
-          "label": "datum",
-          "column": "test_table.datum"
-        }
-      },
-      "children": [
-        {
-          "label": "test_child1",
-          "description": " ",
-          "condition": {
-            "type": "PREFIX_LIST",
-            "prefixes": "A1"
-          },
-          "children": []
-        },
-        {
-          "label": "test_child2",
-          "description": " ",
-          "condition": {
-            "type": "PREFIX_LIST",
-            "prefixes": "B2"
-          },
-          "children": []
-        }
-      ]
-    }
+
   ],
   "content": {
     "tables": [
@@ -55,11 +23,7 @@
         },
         "columns": [
           {
-            "name": "datum",
-            "type": "DATE"
-          },
-          {
-            "name": "test_column",
+            "name": "empty_column",
             "type": "STRING"
           }
         ]

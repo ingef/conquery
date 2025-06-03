@@ -30,12 +30,15 @@ public class SqlTestDataImporter implements TestDataImporter {
 		RequiredData content = test.getContent();
 		content.getTables().add(ALL_IDS_TABLE);
 		importSecondaryIds(support, content.getSecondaryIds());
+		importSearchIndexes(support, test.getSearchIndexes());
 		importTables(support, content.getTables(), true);
 		importConcepts(support, test.getRawConcepts());
 		importTableContents(support, content.getTables());
 
 		importSearchIndexes(support, test.getSearchIndexes());
 		importIdMapping(support, content);
+
+		importPreviousQueries(support, content);
 	}
 
 	@Override
@@ -43,6 +46,7 @@ public class SqlTestDataImporter implements TestDataImporter {
 		RequiredData content = test.getContent();
 		content.getTables().add(ALL_IDS_TABLE);
 		importSecondaryIds(support, content.getSecondaryIds());
+
 		importTables(support, content.getTables(), true);
 		importConcepts(support, test.getRawConcepts());
 		importTableContents(support, content.getTables());
@@ -73,6 +77,8 @@ public class SqlTestDataImporter implements TestDataImporter {
 
 		waitUntilDone(support, () -> LoadingUtil.uploadConcept(support, support.getDataset(), test.getConcept()));
 		importTableContents(support, content.getTables());
+		importIdMapping(support, content);
+
 
 	}
 
