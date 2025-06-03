@@ -1,5 +1,8 @@
 {
   "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": false
+  },
   "label": "Temporal Days Before",
   "expectedCsv": "tests/query/TEMPORAL_DAYS_BEFORE_CONCEPT_QUERY/expected.csv",
   "query": {

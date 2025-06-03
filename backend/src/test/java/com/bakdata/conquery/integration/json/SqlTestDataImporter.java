@@ -25,10 +25,11 @@ public class SqlTestDataImporter implements TestDataImporter {
 
 	private final CsvTableImporter csvTableImporter;
 
+
 	@Override
 	public void importQueryTestData(StandaloneSupport support, QueryTest test) throws Exception {
 		RequiredData content = test.getContent();
-		content.getTables().add(ALL_IDS_TABLE);
+
 		importSecondaryIds(support, content.getSecondaryIds());
 		importSearchIndexes(support, test.getSearchIndexes());
 		importTables(support, content.getTables(), true);
@@ -44,7 +45,6 @@ public class SqlTestDataImporter implements TestDataImporter {
 	@Override
 	public void importFormTestData(StandaloneSupport support, FormTest test) throws Exception {
 		RequiredData content = test.getContent();
-		content.getTables().add(ALL_IDS_TABLE);
 		importSecondaryIds(support, content.getSecondaryIds());
 
 		importTables(support, content.getTables(), true);
@@ -84,6 +84,8 @@ public class SqlTestDataImporter implements TestDataImporter {
 
 	@Override
 	public void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
+		csvTableImporter.importAllIds(tables);
+
 		for (RequiredTable table : tables) {
 			csvTableImporter.importTableIntoDatabase(table);
 		}

@@ -7,7 +7,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.integration.common.RequiredColumn;
@@ -52,6 +56,72 @@ public class CsvTableImporter {
 		this.csvReader = new CSVConfig().withParseHeaders(true).createParser();
 		this.testSqlDialect = testSqlDialect;
 		this.databaseConfig = databaseConfig;
+	}
+
+	public void importAllIds(Collection<RequiredTable> tables) {
+
+		Set<String> allIds = tables.stream()
+								   .flatMap(table -> collectAllIds(table.getCsv(), table.getPrimaryColumn()).stream())
+								   .collect(Collectors.toSet());
+
+		Table<Record> table = DSL.table(DSL.name("entities"));
+		List<Field<?>> columns = List.of(DSL.field("pid", String.class));
+
+		List<RowN> content = allIds.stream()
+								   .map(Collections::singletonList)
+								   .map(DSL::row)
+								   .toList();
+
+		// we directly use JDBC because JOOQ can't cope with some custom types like daterange
+		dslContext.connection((Connection connection) -> {
+			try (Statement statement = connection.createStatement()) {
+				dropTable(table, statement);
+				createTable(table, columns, statement);
+				insertValuesIntoTable(table, columns, content, statement);
+			}
+		});
+	}
+
+	@SneakyThrows
+	public Set<String> collectAllIds(ResourceFile csvFile, RequiredColumn idColumn) {
+		Set<String> allIds = new HashSet<>();
+
+		List<com.univocity.parsers.common.record.Record> records = csvReader.parseAllRecords(csvFile.stream());
+
+		for (com.univocity.parsers.common.record.Record record : records) {
+
+			String raw = record.getString(idColumn.getName());
+
+			allIds.add(raw);
+		}
+
+		return allIds;
+	}
+
+	private void dropTable(Table<Record> table, Statement statement) {
+		try {
+			String dropTableStatement = testSqlDialect.getTestFunctionProvider().createDropTableStatement(table, dslContext);
+			statement.execute(dropTableStatement);
+		}
+		catch (SQLException e) {
+			log.debug("Dropping table {} failed.", table.getName(), e);
+		}
+	}
+
+	private void createTable(Table<Record> table, List<Field<?>> columns, Statement statement) throws SQLException {
+		String createTableStatement = testSqlDialect.getTestFunctionProvider().createTableStatement(table, columns, dslContext);
+
+		log.debug("Creating table: {}", createTableStatement);
+		statement.execute(createTableStatement);
+	}
+
+	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
+		// encountered empty new line
+		if (content.isEmpty()) {
+			return;
+		}
+		log.debug("Inserting into table: {}", content);
+		testSqlDialect.getTestFunctionProvider().insertValuesIntoTable(table, columns, content, statement, dslContext);
 	}
 
 	/**
@@ -110,32 +180,6 @@ public class CsvTableImporter {
 		return castedContent.stream()
 							.map(DSL::row)
 							.toList();
-	}
-
-	private void dropTable(Table<Record> table, Statement statement) {
-		try {
-			String dropTableStatement = testSqlDialect.getTestFunctionProvider().createDropTableStatement(table, dslContext);
-			statement.execute(dropTableStatement);
-		}
-		catch (SQLException e) {
-			log.debug("Dropping table {} failed.", table.getName(), e);
-		}
-	}
-
-	private void createTable(Table<Record> table, List<Field<?>> columns, Statement statement) throws SQLException {
-		String createTableStatement = testSqlDialect.getTestFunctionProvider().createTableStatement(table, columns, dslContext);
-
-		log.debug("Creating table: {}", createTableStatement);
-		statement.execute(createTableStatement);
-	}
-
-	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
-		// encountered empty new line
-		if (content.isEmpty()) {
-			return;
-		}
-		log.debug("Inserting into table: {}", content);
-		testSqlDialect.getTestFunctionProvider().insertValuesIntoTable(table, columns, content, statement, dslContext);
 	}
 
 	private Field<?> createField(RequiredColumn requiredColumn) {

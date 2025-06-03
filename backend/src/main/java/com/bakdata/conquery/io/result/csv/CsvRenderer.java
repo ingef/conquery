@@ -36,8 +36,9 @@ public class CsvRenderer {
 		createCSVBody(cfg, infos, resultStream, printSettings, StringResultPrinters.forCharset(charset));
 	}
 
-	private void createCSVBody(PrintSettings cfg, List<ResultInfo> infos, Stream<EntityResult> results, PrintSettings printSettings,
-							   PrinterFactory printerFactory) {
+	private void createCSVBody(
+			PrintSettings cfg, List<ResultInfo> infos, Stream<EntityResult> results, PrintSettings printSettings,
+			PrinterFactory printerFactory) {
 		final Printer[] printers = infos.stream().map(info -> info.createPrinter(printerFactory, printSettings)).toArray(Printer[]::new);
 
 		results.map(result -> Pair.of(cfg.getIdMapper().map(result), result))
@@ -52,20 +53,19 @@ public class CsvRenderer {
 	public void printLine(EntityPrintId entity, Printer[] printers, Object[] values) {
 		// Cast here to Object[] so it is clear to intellij that the varargs call is intended
 		writer.addValues((Object[]) entity.getExternalId());
-		try {
-			for (int i = 0; i < printers.length; i++) {
-				final Object value = values[i];
+		for (int i = 0; i < printers.length; i++) {
+			final Object value = values[i];
 
-				if (value == null) {
-					writer.addValue("");
-					continue;
-				}
-
+			if (value == null) {
+				writer.addValue("");
+				continue;
+			}
+			try {
 				writer.addValue(printers[i].apply(value));
 			}
-		}
-		catch (Exception e) {
-			throw new IllegalStateException("Unable to print line " + Arrays.deepToString(values), e);
+			catch (Exception e) {
+				throw new IllegalStateException("Failed to print column %s of line %s".formatted(i, Arrays.deepToString(values)), e);
+			}
 		}
 
 		writer.writeValuesToRow();

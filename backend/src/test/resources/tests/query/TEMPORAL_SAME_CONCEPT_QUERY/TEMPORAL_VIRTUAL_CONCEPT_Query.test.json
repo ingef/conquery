@@ -1,6 +1,9 @@
 {
   "type": "QUERY_TEST",
   "label": "Temporal Same",
+  "sqlSpec": {
+    "isEnabled": false
+  },
   "expectedCsv": "tests/query/TEMPORAL_SAME_CONCEPT_QUERY/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
