@@ -19,7 +19,8 @@ import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
+import com.bakdata.conquery.models.preproc.parser.specific.BooleanParser;
+import com.bakdata.conquery.util.DateReader;
 import com.google.common.base.Strings;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.SneakyThrows;
@@ -40,14 +41,14 @@ public class CsvTableImporter {
 
 	private static final int DEFAULT_VARCHAR_LENGTH = 25; // HANA will use 1 as default otherwise
 	private final DSLContext dslContext;
-	private final DateRangeParser dateRangeParser;
+	private final DateReader dateReader;
 	private final CsvParser csvReader;
 	private final TestSqlDialect testSqlDialect;
 	private final DatabaseConfig databaseConfig;
 
-	public CsvTableImporter(DSLContext dslContext, TestSqlDialect testSqlDialect, DatabaseConfig databaseConfig) {
+	public CsvTableImporter(DSLContext dslContext, TestSqlDialect testSqlDialect, DatabaseConfig databaseConfig, ConqueryConfig config) {
 		this.dslContext = dslContext;
-		this.dateRangeParser = new DateRangeParser(new ConqueryConfig());
+		this.dateReader = config.getLocale().getDateReader();
 		this.csvReader = new CSVConfig().withParseHeaders(true).createParser();
 		this.testSqlDialect = testSqlDialect;
 		this.databaseConfig = databaseConfig;
@@ -98,7 +99,9 @@ public class CsvTableImporter {
 			List<Object> castEntriesOfRow = new ArrayList<>(requiredColumns.size());
 
 			for (RequiredColumn column : requiredColumns) {
-				castEntriesOfRow.add(castEntryAccordingToColumnType(record.getString(column.getName()), column.getType()));
+				String raw = record.getString(column.getName());
+				Object parsed = castEntryAccordingToColumnType(raw, column.getType());
+				castEntriesOfRow.add(parsed);
 			}
 
 			castedContent.add(castEntriesOfRow);
@@ -164,13 +167,13 @@ public class CsvTableImporter {
 
 		return switch (type) {
 			case STRING -> entry;
-			case BOOLEAN -> Boolean.valueOf(entry);
+			case BOOLEAN -> BooleanParser.parseBoolean(entry);
 			case INTEGER -> Integer.valueOf(entry);
 			case REAL -> Float.valueOf(entry);
 			case DECIMAL, MONEY -> new BigDecimal(entry);
-			case DATE -> Date.valueOf(entry);
+			case DATE -> dateReader.parseToLocalDate(entry);
 			case DATE_RANGE -> {
-				CDateRange dateRange = this.dateRangeParser.parse(entry);
+				CDateRange dateRange = dateReader.parseToCDateRange(entry);
 				yield DateRange.dateRange(dateRange.getMin() != null ? Date.valueOf(dateRange.getMin()) : null,
 										  dateRange.getMax() != null ? Date.valueOf(dateRange.getMax()) : null
 				);

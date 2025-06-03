@@ -21,6 +21,7 @@ import com.bakdata.conquery.integration.json.SqlTestDataImporter;
 import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.integration.sql.CsvTableImporter;
 import com.bakdata.conquery.integration.sql.testcontainer.hana.HanaContainer;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.sql.DSLContextWrapper;
@@ -79,7 +80,9 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		DatabaseConfig databaseConfig = provider.getDatabaseConfig();
 		TestSqlConnectorConfig config = provider.getSqlConnectorConfig();
 		TestHanaDialect testHanaDialect = new TestHanaDialect();
-		TestDataImporter testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContextWrapper.getDslContext(), testHanaDialect, databaseConfig));
+		TestDataImporter testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContextWrapper.getDslContext(), testHanaDialect, databaseConfig,
+																						 new ConqueryConfig()
+		));
 
 		return Stream.concat(
 				super.sqlProgrammaticTests(databaseConfig, config, testDataImporter),
