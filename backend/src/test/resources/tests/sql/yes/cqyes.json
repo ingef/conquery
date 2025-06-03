@@ -13,7 +13,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/yes/no-op.csv",
+        "csv": "tests/sql/yes/entities.csv",
         "name": "no-op",
         "primaryColumn": {
           "name": "pid",

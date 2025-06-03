@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.model.select;
 
 import java.util.Collections;
 import java.util.List;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
@@ -48,6 +49,6 @@ public class ExistsSqlSelect implements SingleColumnSqlSelect {
 
 	@Override
 	public SqlSelect connectorAggregate() {
-		return new ExistsSqlSelect(DSL.max(select()).as(alias), alias);
+		return new ExistsSqlSelect(DSL.max(DSL.coalesce(select(), DSL.value(0))).as(alias), alias);
 	}
 }

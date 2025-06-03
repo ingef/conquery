@@ -104,7 +104,7 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 		String aggregatingOperator = switch (dateAggregationAction) {
 			case MERGE -> " + ";
 			case INTERSECT -> " * ";
-			default -> throw new IllegalStateException("Unexpected aggregation mode: " + dateAggregationAction);
+			case BLOCK, NEGATE -> throw new IllegalStateException("Unexpected aggregation mode: " + dateAggregationAction);
 		};
 
 		String aggregatedExpression = dateAggregationDates.qualify(joinedStepCteName)
@@ -118,8 +118,7 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 	}
 
 	private static String createEmptyRangeForNullValues(Field<?> field) {
-		return DSL.when(field.isNull(), DSL.field("'{}'::{0}", DSL.keyword("datemultirange")))
-				  .otherwise(field)
+		return DSL.coalesce(field, DSL.field("'{}'::{0}", DSL.keyword("datemultirange")))
 				  .toString();
 	}
 

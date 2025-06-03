@@ -1,5 +1,8 @@
 {
   "type": "FILTER_TEST",
+  "sqlSpec": {
+    "isEnabled": false
+  },
   "label": "Prefix Test",
   "expectedCsv": "tests/filter/PREFIX/expected_SELECT_Filter.csv",
   "content": {

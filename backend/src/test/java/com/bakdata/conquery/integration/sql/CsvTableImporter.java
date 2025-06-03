@@ -1,5 +1,19 @@
 package com.bakdata.conquery.integration.sql;
 
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
@@ -9,18 +23,10 @@ import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
+import com.bakdata.conquery.models.preproc.parser.specific.BooleanParser;
+import com.bakdata.conquery.util.DateReader;
 import com.google.common.base.Strings;
 import com.univocity.parsers.csv.CsvParser;
-import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
@@ -39,17 +45,83 @@ public class CsvTableImporter {
 
 	private static final int DEFAULT_VARCHAR_LENGTH = 25; // HANA will use 1 as default otherwise
 	private final DSLContext dslContext;
-	private final DateRangeParser dateRangeParser;
+	private final DateReader dateReader;
 	private final CsvParser csvReader;
 	private final TestSqlDialect testSqlDialect;
 	private final DatabaseConfig databaseConfig;
 
-	public CsvTableImporter(DSLContext dslContext, TestSqlDialect testSqlDialect, DatabaseConfig databaseConfig) {
+	public CsvTableImporter(DSLContext dslContext, TestSqlDialect testSqlDialect, DatabaseConfig databaseConfig, ConqueryConfig config) {
 		this.dslContext = dslContext;
-		this.dateRangeParser = new DateRangeParser(new ConqueryConfig());
-		this.csvReader = new CSVConfig().withSkipHeader(true).createParser();
+		this.dateReader = config.getLocale().getDateReader();
+		this.csvReader = new CSVConfig().withParseHeaders(true).createParser();
 		this.testSqlDialect = testSqlDialect;
 		this.databaseConfig = databaseConfig;
+	}
+
+	public void importAllIds(Collection<RequiredTable> tables) {
+
+		Set<String> allIds = tables.stream()
+								   .flatMap(table -> collectAllIds(table.getCsv(), table.getPrimaryColumn()).stream())
+								   .collect(Collectors.toSet());
+
+		Table<Record> table = DSL.table(DSL.name("entities"));
+		List<Field<?>> columns = List.of(DSL.field("pid", String.class));
+
+		List<RowN> content = allIds.stream()
+								   .map(Collections::singletonList)
+								   .map(DSL::row)
+								   .toList();
+
+		// we directly use JDBC because JOOQ can't cope with some custom types like daterange
+		dslContext.connection((Connection connection) -> {
+			try (Statement statement = connection.createStatement()) {
+				dropTable(table, statement);
+				createTable(table, columns, statement);
+				insertValuesIntoTable(table, columns, content, statement);
+			}
+		});
+	}
+
+	@SneakyThrows
+	public Set<String> collectAllIds(ResourceFile csvFile, RequiredColumn idColumn) {
+		Set<String> allIds = new HashSet<>();
+
+		List<com.univocity.parsers.common.record.Record> records = csvReader.parseAllRecords(csvFile.stream());
+
+		for (com.univocity.parsers.common.record.Record record : records) {
+
+			String raw = record.getString(idColumn.getName());
+
+			allIds.add(raw);
+		}
+
+		return allIds;
+	}
+
+	private void dropTable(Table<Record> table, Statement statement) {
+		try {
+			String dropTableStatement = testSqlDialect.getTestFunctionProvider().createDropTableStatement(table, dslContext);
+			statement.execute(dropTableStatement);
+		}
+		catch (SQLException e) {
+			log.debug("Dropping table {} failed.", table.getName(), e);
+		}
+	}
+
+	private void createTable(Table<Record> table, List<Field<?>> columns, Statement statement) throws SQLException {
+		String createTableStatement = testSqlDialect.getTestFunctionProvider().createTableStatement(table, columns, dslContext);
+
+		log.debug("Creating table: {}", createTableStatement);
+		statement.execute(createTableStatement);
+	}
+
+	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
+		// encountered empty new line
+		if (content.isEmpty()) {
+			return;
+		}
+		log.debug("Inserting into table: {}", content);
+		testSqlDialect.getTestFunctionProvider().insertValuesIntoTable(table, columns, content, statement, dslContext);
 	}
 
 	/**
@@ -73,30 +145,11 @@ public class CsvTableImporter {
 		});
 	}
 
-	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
-		// encountered empty new line
-		if (content.isEmpty()) {
-			return;
-		}
-		log.debug("Inserting into table: {}", content);
-		testSqlDialect.getTestFunctionProvider().insertValuesIntoTable(table, columns, content, statement, dslContext);
-	}
-
-	private void createTable(Table<Record> table, List<Field<?>> columns, Statement statement) throws SQLException {
-		String createTableStatement = testSqlDialect.getTestFunctionProvider().createTableStatement(table, columns, dslContext);
-
-		log.debug("Creating table: {}", createTableStatement);
-		statement.execute(createTableStatement);
-	}
-
-	private void dropTable(Table<Record> table, Statement statement) {
-		try {
-			String dropTableStatement = testSqlDialect.getTestFunctionProvider().createDropTableStatement(table, dslContext);
-			statement.execute(dropTableStatement);
-		}
-		catch (SQLException e) {
-			log.debug("Dropping table {} failed.", table.getName(), e);
-		}
+	private List<RequiredColumn> getAllRequiredColumns(RequiredTable table) {
+		ArrayList<RequiredColumn> requiredColumns = new ArrayList<>();
+		requiredColumns.add(table.getPrimaryColumn());
+		requiredColumns.addAll(Arrays.stream(table.getColumns()).toList());
+		return requiredColumns;
 	}
 
 	private List<Field<?>> createFieldsForColumns(List<RequiredColumn> requiredColumns) {
@@ -105,11 +158,28 @@ public class CsvTableImporter {
 							  .collect(Collectors.toList());
 	}
 
-	private List<RequiredColumn> getAllRequiredColumns(RequiredTable table) {
-		ArrayList<RequiredColumn> requiredColumns = new ArrayList<>();
-		requiredColumns.add(table.getPrimaryColumn());
-		requiredColumns.addAll(Arrays.stream(table.getColumns()).toList());
-		return requiredColumns;
+	@SneakyThrows
+	private List<RowN> getTablesContentFromCSV(ResourceFile csvFile, List<RequiredColumn> requiredColumns) {
+
+		List<List<Object>> castedContent = new ArrayList<>();
+
+		List<com.univocity.parsers.common.record.Record> records = csvReader.parseAllRecords(csvFile.stream());
+
+		for (com.univocity.parsers.common.record.Record record : records) {
+			List<Object> castEntriesOfRow = new ArrayList<>(requiredColumns.size());
+
+			for (RequiredColumn column : requiredColumns) {
+				String raw = record.getString(column.getName());
+				Object parsed = castEntryAccordingToColumnType(raw, column.getType());
+				castEntriesOfRow.add(parsed);
+			}
+
+			castedContent.add(castEntriesOfRow);
+		}
+
+		return castedContent.stream()
+							.map(DSL::row)
+							.toList();
 	}
 
 	private Field<?> createField(RequiredColumn requiredColumn) {
@@ -131,30 +201,6 @@ public class CsvTableImporter {
 		return DSL.field(DSL.name(requiredColumn.getName()), dataType);
 	}
 
-	@SneakyThrows
-	private List<RowN> getTablesContentFromCSV(ResourceFile csvFile, List<RequiredColumn> requiredColumns) {
-		List<String[]> rawContent = this.csvReader.parseAll(csvFile.stream());
-		List<List<Object>> castedContent = this.castContent(rawContent, requiredColumns);
-		return castedContent.stream()
-							.map(DSL::row)
-							.toList();
-	}
-
-	/**
-	 * Casts all values of each row to the corresponding type of the column the value refers to.
-	 */
-	private List<List<Object>> castContent(List<String[]> rawContent, List<RequiredColumn> requiredColumns) {
-		List<List<Object>> castedContent = new ArrayList<>(rawContent.size());
-		for (String[] row : rawContent) {
-			List<Object> castEntriesOfRow = new ArrayList<>(row.length);
-			for (int i = 0; i < row.length; i++) {
-				MajorTypeId type = requiredColumns.get(i).getType();
-				castEntriesOfRow.add(this.castEntryAccordingToColumnType(row[i], type));
-			}
-			castedContent.add(castEntriesOfRow);
-		}
-		return castedContent;
-	}
 
 	private Object castEntryAccordingToColumnType(String entry, MajorTypeId type) {
 
@@ -165,14 +211,16 @@ public class CsvTableImporter {
 
 		return switch (type) {
 			case STRING -> entry;
-			case BOOLEAN -> Boolean.valueOf(entry);
+			case BOOLEAN -> BooleanParser.parseBoolean(entry);
 			case INTEGER -> Integer.valueOf(entry);
 			case REAL -> Float.valueOf(entry);
 			case DECIMAL, MONEY -> new BigDecimal(entry);
-			case DATE -> Date.valueOf(entry);
+			case DATE -> dateReader.parseToLocalDate(entry);
 			case DATE_RANGE -> {
-				CDateRange dateRange = this.dateRangeParser.parse(entry);
-				yield DateRange.dateRange(Date.valueOf(dateRange.getMin()), Date.valueOf(dateRange.getMax()));
+				CDateRange dateRange = dateReader.parseToCDateRange(entry);
+				yield DateRange.dateRange(dateRange.getMin() != null ? Date.valueOf(dateRange.getMin()) : null,
+										  dateRange.getMax() != null ? Date.valueOf(dateRange.getMax()) : null
+				);
 			}
 		};
 	}

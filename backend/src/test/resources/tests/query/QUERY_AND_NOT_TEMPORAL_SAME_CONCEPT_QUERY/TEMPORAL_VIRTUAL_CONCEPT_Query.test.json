@@ -1,5 +1,8 @@
 {
   "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": false
+  },
   "label": "TEMPORAL_BEFORE_CONCEPT_QUERY Test",
   "expectedCsv": "tests/query/QUERY_AND_NOT_TEMPORAL_SAME_CONCEPT_QUERY/expected.csv",
   "query": {

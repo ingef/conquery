@@ -1,14 +1,15 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.google.common.collect.ImmutableSet;
 import lombok.ToString;
 
 /**
@@ -17,7 +18,7 @@ import lombok.ToString;
  * @param <VALUE> Value type of the column.
  */
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
-public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE>> {
+public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<List<VALUE>> {
 
 	private final Set<VALUE> entries = new HashSet<>();
 
@@ -38,8 +39,8 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	}
 
 	@Override
-	public Set<VALUE> createAggregationResult() {
-		return entries.isEmpty() ? null : ImmutableSet.copyOf(entries);
+	public List<VALUE> createAggregationResult() {
+		return entries.isEmpty() ? null : entries.stream().sorted().collect(Collectors.toList());
 	}
 
 }

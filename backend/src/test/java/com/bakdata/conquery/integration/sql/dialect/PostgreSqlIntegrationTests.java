@@ -9,6 +9,7 @@ import com.bakdata.conquery.integration.ConqueryIntegrationTests;
 import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.integration.json.SqlTestDataImporter;
 import com.bakdata.conquery.integration.sql.CsvTableImporter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -75,7 +76,8 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		sqlConfig = new TestSqlConnectorConfig(databaseConfig);
 		dslContextWrapper = DslContextFactory.create(databaseConfig, sqlConfig, null);
 		testSqlDialect = new TestPostgreSqlDialect();
-		testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContextWrapper.getDslContext(), testSqlDialect, databaseConfig));
+		//TODO (FK): Move creation to IntegrationTests, such that ConqueryConfig is the one used in the test - with the respective overrides.
+		testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContextWrapper.getDslContext(), testSqlDialect, databaseConfig, new ConqueryConfig()));
 	}
 
 	@AfterAll
