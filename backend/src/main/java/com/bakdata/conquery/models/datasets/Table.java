@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.datasets;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
@@ -19,8 +18,8 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.util.validation.ValidSqlTable;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -30,15 +29,13 @@ import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.DSLContext;
 
 @Getter
 @Setter
 @Slf4j
 @JsonDeserialize(converter = Table.Initializer.class)
+@ValidSqlTable(groups = {ValidationMode.Local.class})
 public class Table extends Labeled<TableId> implements NamespacedIdentifiable<TableId>, Initializing {
-
-	// TODO: 10.01.2020 fk: register imports here?
 
 	private DatasetId dataset;
 
@@ -86,31 +83,6 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 		return true;
 	}
 
-	@ValidationMethod(message = "SQL Table does not exist.", groups = {ValidationMode.Local.class})
-	@JsonIgnore
-	public boolean isExistingSqlTable() {
-		LocalNamespace localNamespace = (LocalNamespace) namespace;
-		DSLContext dslContext = localNamespace.getDslContextWrapper().getDslContext();
-
-		List<org.jooq.Table<?>> tables = dslContext.meta()
-												   .getTables(getName());
-
-
-		return !tables.isEmpty();
-	}
-
-	@ValidationMethod(message = "Multiple matching SQL Tables exist.", groups = {ValidationMode.Local.class})
-	@JsonIgnore
-	public boolean isOneSqlTable() {
-		LocalNamespace localNamespace = (LocalNamespace) namespace;
-		DSLContext dslContext = localNamespace.getDslContextWrapper().getDslContext();
-
-		List<org.jooq.Table<?>> tables = dslContext.meta()
-												   .getTables(getName());
-
-
-		return tables.size() == 1;
-	}
 
 	@Override
 	public TableId createId() {
@@ -145,6 +117,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 
 		return null;
 	}
+
 
 	@Override
 	public void init() {
