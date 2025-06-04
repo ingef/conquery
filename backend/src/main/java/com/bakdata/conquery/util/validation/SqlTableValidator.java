@@ -14,6 +14,10 @@ import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.exception.DataAccessException;
+import org.jooq.impl.DSL;
 
 @Slf4j
 public class SqlTableValidator implements ConstraintValidator<ValidSqlTable, Table> {
@@ -31,28 +35,25 @@ public class SqlTableValidator implements ConstraintValidator<ValidSqlTable, Tab
 		final DSLContext dslContext = localNamespace.getDslContextWrapper().getDslContext();
 		final SqlDialect dialect = localNamespace.getDialect();
 
-		final List<org.jooq.Table<?>> tables = dslContext.meta()
-														 .getTables(value.getName());
-
-		log.trace("DONE fetching meta for {} within {}", value, stopwatch.elapsed());
-
-
-		if (tables.isEmpty()) {
+		final Result<Record> result;
+		try {
+			// We don't use DSL.meta here because that can be excessively slow.
+			result = dslContext.select(DSL.asterisk())
+							   .from(DSL.name(value.getName()))
+							   .limit(0)
+							   .fetch();
+		}
+		catch (DataAccessException e) {
 			context.buildConstraintViolationWithTemplate("SQL table does not exist")
 				   .addPropertyNode("name")
 				   .addConstraintViolation();
 			return false;
 		}
-		else if (tables.size() > 1) {
-			context.buildConstraintViolationWithTemplate("Multiple matching SQL table exist")
-				   .addPropertyNode("name")
-				   .addConstraintViolation();
-			return false;
-		}
+
+		log.trace("DONE fetching meta for {} within {}", value, stopwatch.elapsed());
+
 
 		boolean valid = true;
-
-		final org.jooq.Table<?> table = tables.getFirst();
 
 		final List<Column> columns = new ArrayList<>(Arrays.asList(value.getColumns()));
 
@@ -61,22 +62,15 @@ public class SqlTableValidator implements ConstraintValidator<ValidSqlTable, Tab
 		for (int index = 0; index < columns.size(); index++) {
 			Column column = columns.get(index);
 
-			Field<?>[] matching = table.fields(column.getName());
+			final Field<?> field = result.field(column.getName());
 
-			if (matching.length == 0 || matching[0] == null) {
+			if (field == null) {
 				context.buildConstraintViolationWithTemplate("SQL Column does not exist")
 					   .addContainerElementNode("columns", List.class, index)
 					   .addConstraintViolation();
 				valid = false;
 			}
-			else if (matching.length > 1) {
-				context.buildConstraintViolationWithTemplate("Multiple matching SQL Columns")
-					   .addPropertyNode("columns")
-					   .addContainerElementNode("columns", List.class, index)
-					   .addConstraintViolation();
-				valid = false;
-			}
-			else if (!dialect.isTypeCompatible(matching[0], column.getType())) {
+			else if (!dialect.isTypeCompatible(field, column.getType())) {
 				context.buildConstraintViolationWithTemplate("SQL Column does not match required type")
 					   .addPropertyNode("columns")
 					   .addContainerElementNode("columns", List.class, index)
