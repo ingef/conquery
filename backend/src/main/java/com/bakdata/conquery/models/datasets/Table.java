@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.datasets;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
@@ -11,12 +12,15 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.mode.ValidationMode;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.worker.LocalNamespace;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -26,6 +30,7 @@ import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.DSLContext;
 
 @Getter
 @Setter
@@ -39,7 +44,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@JsonIgnore
-	private NamespacedStorage storage;
+	private Namespace namespace;
 
 	@NotNull
 	@Valid
@@ -81,6 +86,32 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 		return true;
 	}
 
+	@ValidationMethod(message = "SQL Table does not exist.", groups = {ValidationMode.Local.class})
+	@JsonIgnore
+	public boolean isExistingSqlTable() {
+		LocalNamespace localNamespace = (LocalNamespace) namespace;
+		DSLContext dslContext = localNamespace.getDslContextWrapper().getDslContext();
+
+		List<org.jooq.Table<?>> tables = dslContext.meta()
+												   .getTables(getName());
+
+
+		return !tables.isEmpty();
+	}
+
+	@ValidationMethod(message = "Multiple matching SQL Tables exist.", groups = {ValidationMode.Local.class})
+	@JsonIgnore
+	public boolean isOneSqlTable() {
+		LocalNamespace localNamespace = (LocalNamespace) namespace;
+		DSLContext dslContext = localNamespace.getDslContextWrapper().getDslContext();
+
+		List<org.jooq.Table<?>> tables = dslContext.meta()
+												   .getTables(getName());
+
+
+		return tables.size() == 1;
+	}
+
 	@Override
 	public TableId createId() {
 		return new TableId(dataset, getName());
@@ -118,9 +149,10 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	@Override
 	public void init() {
 		if (dataset == null) {
-			dataset = storage.getDataset().getId();
-		} else if (storage != null && !dataset.equals(storage.getDataset().getId())) {
-			throw new IllegalStateException("Datasets don't match. Namespace: %s  Table: %s".formatted(storage.getDataset().getId(), dataset));
+			dataset = namespace.getDataset().getId();
+		}
+		else if (namespace != null && !dataset.equals(namespace.getDataset().getId())) {
+			throw new IllegalStateException("Datasets don't match. Namespace: %s  Table: %s".formatted(namespace.getDataset().getId(), dataset));
 		}
 
 		for (Column column : columns) {
@@ -128,5 +160,6 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 		}
 	}
 
-	public static class Initializer extends Initializing.Converter<Table> {}
+	public static class Initializer extends Converter<Table> {
+	}
 }

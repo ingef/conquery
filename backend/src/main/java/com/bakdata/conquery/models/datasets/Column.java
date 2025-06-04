@@ -1,9 +1,11 @@
 package com.bakdata.conquery.models.datasets;
 
+import java.util.List;
 import javax.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.mode.ValidationMode;
 import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -12,15 +14,19 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.worker.LocalNamespace;
+import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jooq.DSLContext;
 
 @Getter
 @Setter
@@ -84,5 +90,41 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	@Override
 	public ColumnId createId() {
 		return new ColumnId(table.getId(), getName());
+	}
+
+
+	@ValidationMethod(message = "SQL column does not exist.", groups = {ValidationMode.Local.class})
+	@JsonIgnore
+	public boolean isExistingSqlColumn() {
+		LocalNamespace localNamespace = (LocalNamespace) table.getNamespace();
+
+		DSLContext dslContext = localNamespace.getDslContextWrapper().getDslContext();
+
+		List<org.jooq.Table<?>> tables = dslContext.meta()
+												   .getTables(getTable().getName());
+
+		if (tables.isEmpty()) {
+			return false;
+		}
+
+
+		return tables.getLast().fields(getName()).length > 0;
+	}
+
+	@ValidationMethod(message = "SQL column does not match required type.", groups = {ValidationMode.Local.class})
+	@JsonIgnore
+	public boolean isMatchingSqlType() {
+		LocalNamespace localNamespace = (LocalNamespace) table.getNamespace();
+		SqlDialect dialect = localNamespace.getDialect();
+
+		DSLContext dslContext = localNamespace.getDslContextWrapper().getDslContext();
+
+		List<org.jooq.Table<?>> tables = dslContext.meta()
+												   .getTables(getTable().getName());
+
+		if (tables.isEmpty()) {
+			return false;
+		}
+		return dialect.isTypeCompatible(tables.getFirst().fields(getName())[0], getType());
 	}
 }

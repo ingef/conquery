@@ -287,7 +287,6 @@ public class SerializationTests extends AbstractSerializationTest {
 			Dataset dataset = createDataset(namespaceStorage);
 
 			Table table = getTable(dataset);
-			table.setStorage(namespaceStorage);
 
 			table.init();
 
@@ -303,7 +302,6 @@ public class SerializationTests extends AbstractSerializationTest {
 			Dataset dataset = createDataset(workerStorage);
 
 			Table table = getTable(dataset);
-			table.setStorage(workerStorage);
 
 			workerStorage.addTable(table);
 

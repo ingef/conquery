@@ -18,6 +18,7 @@ import jakarta.ws.rs.core.Response;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.mode.StorageListener;
+import com.bakdata.conquery.mode.ValidationMode;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -40,6 +41,8 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
+import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.univocity.parsers.csv.CsvParser;
 import io.dropwizard.core.setup.Environment;
@@ -67,7 +70,6 @@ public class AdminDatasetProcessor {
 	private final Environment environment;
 
 
-
 	/**
 	 * Creates and initializes a new dataset if it does not already exist.
 	 */
@@ -88,7 +90,7 @@ public class AdminDatasetProcessor {
 	public synchronized void deleteDataset(Dataset dataset) {
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
-		try(Stream<Table> tableStream = namespace.getStorage().getTables()) {
+		try (Stream<Table> tableStream = namespace.getStorage().getTables()) {
 			List<Table> tables = tableStream.toList();
 			if (!tables.isEmpty()) {
 				throw new WebApplicationException(
@@ -96,9 +98,9 @@ public class AdminDatasetProcessor {
 								"Cannot delete dataset `%s`, because it still has tables: `%s`",
 								dataset.getId(),
 								tables.stream()
-										 .map(Table::getId)
-										 .map(Objects::toString)
-										 .collect(Collectors.joining(","))
+									  .map(Table::getId)
+									  .map(Objects::toString)
+									  .collect(Collectors.joining(","))
 						),
 						Response.Status.CONFLICT
 				);
@@ -134,11 +136,11 @@ public class AdminDatasetProcessor {
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
 		final List<Column> dependents;
-		try(Stream<Table> tables = namespace.getStorage().getTables()) {
+		try (Stream<Table> tables = namespace.getStorage().getTables()) {
 
-												 dependents = tables.map(Table::getColumns).flatMap(Arrays::stream)
-												 .filter(column -> secondaryId.getId().equals(column.getSecondaryId()))
-												 .toList();
+			dependents = tables.map(Table::getColumns).flatMap(Arrays::stream)
+							   .filter(column -> secondaryId.getId().equals(column.getSecondaryId()))
+							   .toList();
 		}
 
 		if (!dependents.isEmpty()) {
@@ -178,7 +180,14 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Table already exists", Response.Status.CONFLICT);
 		}
 
-		ValidatorHelper.failOnError(log, environment.getValidator().validate(table));
+		Class<? extends ValidationMode> mode =
+				switch (namespace) {
+					case LocalNamespace ignored -> ValidationMode.Local.class;
+					case DistributedNamespace ignored -> ValidationMode.Clustered.class;
+					default -> null;
+				};
+
+		ValidatorHelper.failOnError(log, environment.getValidator().validate(table, mode));
 
 		namespace.getStorage().addTable(table);
 		storageListener.onAddTable(table);
@@ -292,11 +301,11 @@ public class AdminDatasetProcessor {
 
 		TableId tableId = table.getId();
 		final List<Concept<?>> dependentConcepts;
-		try(Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts()) {
+		try (Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts()) {
 			dependentConcepts = allConcepts.flatMap(c -> c.getConnectors().stream())
-																  .filter(con -> con.getResolvedTableId().equals(tableId))
-																  .map(Connector::getConcept)
-																  .collect(Collectors.toList());
+										   .filter(con -> con.getResolvedTableId().equals(tableId))
+										   .map(Connector::getConcept)
+										   .collect(Collectors.toList());
 		}
 
 		if (force || dependentConcepts.isEmpty()) {
@@ -304,7 +313,7 @@ public class AdminDatasetProcessor {
 				deleteConcept(concept.getId());
 			}
 
-			try(Stream<Import> allImports = namespace.getStorage().getAllImports()) {
+			try (Stream<Import> allImports = namespace.getStorage().getAllImports()) {
 				allImports
 						.filter(imp -> imp.getTable().equals(tableId))
 						.forEach(this::deleteImport);

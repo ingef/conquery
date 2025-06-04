@@ -1,26 +1,13 @@
 package com.bakdata.conquery.mode.local;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.NotFoundException;
-
 import com.bakdata.conquery.mode.StorageListener;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.LocalNamespace;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import lombok.Data;
-import org.jooq.DSLContext;
-import org.jooq.Field;
-import org.jooq.Named;
 
 @Data
 public class LocalStorageListener implements StorageListener {
@@ -37,55 +24,7 @@ public class LocalStorageListener implements StorageListener {
 
 	@Override
 	public void onAddTable(Table table) {
-		LocalNamespace namespace = datasetRegistry.get(table.getDataset());
-		SqlDialect dialect = namespace.getDialect();
 
-		DSLContext dslContext = namespace.getDslContextWrapper().getDslContext();
-
-		List<org.jooq.Table<?>> tables = dslContext.meta()
-												   .getTables(table.getName());
-
-
-		if (tables.isEmpty()) {
-			throw new NotFoundException("No table matching name=%s does exist for %s.".formatted(table.getName(), table.getId()));
-		}
-
-		if (tables.size() > 1) {
-			throw new BadRequestException("Found multiple tables matching name=%s for table %s.".formatted(table.getName(), table.getId()));
-		}
-
-		org.jooq.Table<?> sqlTable = tables.getFirst();
-
-		Map<String, Field<?>> fieldMap = sqlTable.fieldStream()
-												 .collect(Collectors.toMap(Named::getName, Function.identity()));
-
-		List<String> violations = new ArrayList<>();
-
-		List<Column> columns = new ArrayList<>(List.of(table.getColumns()));
-		if (table.getPrimaryColumn() != null) {
-			columns.add(table.getPrimaryColumn());
-		}
-
-		for (Column column : columns) {
-			Field<?> field = fieldMap.get(column.getName());
-
-			if (field == null) {
-				violations.add("Missing Column %s".formatted(column.getName()));
-				continue;
-			}
-
-			if (!dialect.isTypeCompatible(field, column.getType())) {
-				violations.add("%s does not match provided type %s".formatted(column, field.getDataType()));
-			}
-		}
-
-		if (violations.isEmpty()) {
-			return;
-		}
-
-		String body = String.join("\n - ", violations);
-
-		throw new BadRequestException("Failed to validate %s:\n%s".formatted(table.getId(), body));
 	}
 
 	@Override

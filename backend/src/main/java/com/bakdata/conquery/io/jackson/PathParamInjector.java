@@ -1,6 +1,10 @@
 package com.bakdata.conquery.io.jackson;
 
 import java.io.IOException;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -11,16 +15,12 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.jakarta.rs.cfg.EndpointConfigBase;
 import com.fasterxml.jackson.jakarta.rs.cfg.ObjectReaderInjector;
 import com.fasterxml.jackson.jakarta.rs.cfg.ObjectReaderModifier;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.container.ContainerRequestFilter;
-import jakarta.ws.rs.core.MultivaluedMap;
 import lombok.RequiredArgsConstructor;
 
 public class PathParamInjector implements ContainerRequestFilter {
 
 	@Inject
-	public DatasetRegistry registry;
+	public DatasetRegistry<?> registry;
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -32,7 +32,7 @@ public class PathParamInjector implements ContainerRequestFilter {
 
 		private final MultivaluedMap<String, String> pathParams;
 
-		public final DatasetRegistry registry;
+		public final DatasetRegistry<?> registry;
 
 		@Override
 		public ObjectReader modify(EndpointConfigBase<?> endpoint, MultivaluedMap<String, String> httpHeaders, JavaType resultType, ObjectReader reader, JsonParser p)
@@ -46,7 +46,7 @@ public class PathParamInjector implements ContainerRequestFilter {
 				final DatasetId datasetId = DatasetId.Parser.INSTANCE.parse(pathParams.getFirst(ResourceConstants.DATASET));
 				values.add(DatasetId.class, datasetId);
 				if (registry != null) {
-					registry.get(datasetId).getInjectables().forEach(i -> i.inject(values));
+					registry.get(datasetId).inject(values);
 				}
 			}
 			return values;
