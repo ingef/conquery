@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @ToString
 public class UpdateElementMatchingStats extends NamespaceMessage {
+
 	private final WorkerId source;
 
 	@ToString.Exclude
@@ -56,8 +57,9 @@ public class UpdateElementMatchingStats extends NamespaceMessage {
 					matchingStats = new MatchingStats();
 					target.setMatchingStats(matchingStats);
 				}
-				matchingStats.putEntry(source, value);
-			} catch (Exception e) {
+				matchingStats.putEntry(source.getWorker(), value);
+			}
+			catch (Exception e) {
 				log.error("Failed to set matching stats for '{}' (enable TRACE for exception)", entry.getKey(), (Exception) (log.isTraceEnabled() ? e : null));
 			}
 		}

@@ -36,6 +36,8 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	private static final String INFINITY_DATE_VALUE = "infinity";
 	private static final String MINUS_INFINITY_DATE_VALUE = "-infinity";
 	private static final String ANY_CHAR_REGEX = "%";
+	private static final String RANGE_EXCLUSIVE_END = "[)";
+	private static final String RANGE_INCLUSIVE_END = "[]";
 
 	@Override
 	public String getMaxDateExpression() {
@@ -90,7 +92,7 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 				Object.class,
 				DSL.val(startDateExpression),
 				DSL.val(endDateExpression),
-				DSL.val("[]")
+				DSL.val(RANGE_INCLUSIVE_END)
 		);
 
 		return ColumnDateRange.of(daterangeField);
@@ -136,6 +138,12 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public ColumnDateRange nulled(ColumnDateRange columnDateRange) {
+		ensureIsSingleColumnRange(columnDateRange);
+		return ColumnDateRange.of(DSL.field("null::daterange")).as(columnDateRange.getAlias());
+	}
+
+	@Override
 	public ColumnDateRange toDualColumn(ColumnDateRange columnDateRange) {
 		Field<?> daterange = columnDateRange.getRange();
 		Field<Date> start = DSL.function("lower", Date.class, daterange);
@@ -178,10 +186,14 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Field<String> daterangeStringExpression(ColumnDateRange columnDateRange) {
+		Field<?> daterange;
 		if (!columnDateRange.isSingleColumnRange()) {
-			throw new UnsupportedOperationException("All column date ranges should have been converted to single column ranges.");
+			daterange = daterange(columnDateRange.getStart(), columnDateRange.getEnd(), RANGE_EXCLUSIVE_END);
 		}
-		Field<String> aggregatedValidityDate = DSL.field("({0})::{1}", String.class, columnDateRange.getRange(), DSL.keyword("varchar"));
+		else {
+			daterange = columnDateRange.getRange();
+		}
+		Field<String> aggregatedValidityDate = DSL.field("({0})::{1}", String.class, daterange, DSL.keyword("varchar"));
 		return replace(aggregatedValidityDate, INFINITY_DATE_VALUE, INFINITY_SIGN);
 	}
 
@@ -305,7 +317,7 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 				Object.class,
 				toDateField(startDateExpression),
 				toDateField(endDateExpression),
-				DSL.val("[]")
+				DSL.val(RANGE_INCLUSIVE_END)
 		);
 
 		return ColumnDateRange.of(dateRestrictionRange);
@@ -337,14 +349,14 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 						DSL.function("upper", Date.class, daterange),
 						toDateField(INFINITY_DATE_VALUE)
 				);
-				yield daterange(startColumn, endColumn, "[]");
+				yield daterange(startColumn, endColumn, RANGE_INCLUSIVE_END);
 			}
 			// if the validity date column is not of daterange type, we construct it manually
 			case DATE -> {
 				Field<Date> singleDate = DSL.field(DSL.name(tableName, column.getName()), Date.class);
 				Field<Date> startColumn = DSL.coalesce(singleDate, toDateField(MINUS_INFINITY_DATE_VALUE));
 				Field<Date> endColumn = DSL.coalesce(singleDate, toDateField(INFINITY_DATE_VALUE));
-				yield daterange(startColumn, endColumn, "[]");
+				yield daterange(startColumn, endColumn, RANGE_INCLUSIVE_END);
 			}
 			default -> throw new IllegalArgumentException(
 					"Given column type '%s' can't be converted to a proper date restriction.".formatted(column.getType())
@@ -365,13 +377,13 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 				toDateField(INFINITY_DATE_VALUE)
 		);
 
-		return ColumnDateRange.of(daterange(start, end, "[]"));
+		return ColumnDateRange.of(daterange(start, end, RANGE_INCLUSIVE_END));
 	}
 
 	private ColumnDateRange ensureIsSingleColumnRange(ColumnDateRange daterange) {
 		return daterange.isSingleColumnRange()
 			   ? daterange
-			   : ColumnDateRange.of(daterange(daterange.getStart(), daterange.getEnd(), "[)")); // end is already exclusive
+			   : ColumnDateRange.of(daterange(daterange.getStart(), daterange.getEnd(), RANGE_EXCLUSIVE_END)); // end is already exclusive
 	}
 
 }

@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.Map;
-
+import java.util.Set;
 import jakarta.validation.Valid;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -16,10 +16,12 @@ import lombok.Setter;
 /**
  * This condition matches if its child does not.
  */
-@CPSType(id="NOT", base=CTCondition.class)
+@CPSType(id = "NOT", base = CTCondition.class)
 public class NotCondition implements CTCondition {
 
-	@Setter @Getter @Valid
+	@Setter
+	@Getter
+	@Valid
 	private CTCondition condition;
 
 	@Override
@@ -36,5 +38,10 @@ public class NotCondition implements CTCondition {
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
 		WhereCondition whereCondition = condition.convertToSqlCondition(context);
 		return whereCondition.negate();
+	}
+
+	@Override
+	public Set<String> getAuxillaryColumns() {
+		return condition.getAuxillaryColumns();
 	}
 }

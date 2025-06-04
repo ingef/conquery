@@ -1,8 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Set;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 
@@ -52,5 +53,14 @@ public class OrCondition implements CTCondition {
 						 .orElseThrow(
 								 () -> new IllegalStateException("At least one condition is required to convert %s to a SQL condition.".formatted(getClass()))
 						 );
+	}
+
+	@Override
+	public Set<String> getAuxillaryColumns() {
+		final Set<String> columns = new HashSet<>();
+		for (CTCondition ctCondition : conditions) {
+			columns.addAll(ctCondition.getAuxillaryColumns());
+		}
+		return columns;
 	}
 }

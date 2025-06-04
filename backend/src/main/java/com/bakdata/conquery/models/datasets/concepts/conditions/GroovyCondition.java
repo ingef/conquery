@@ -2,8 +2,8 @@ package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
-
 import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -81,6 +81,10 @@ public class GroovyCondition implements CTCondition {
 		throw new UnsupportedOperationException("SQL conversion of CTCondition %s not supported yet.".formatted(getClass()));
 	}
 
+	@Override
+	public Set<String> getAuxillaryColumns() {
+		return Set.of();
+	}
 
 	public abstract static class ConditionScript extends Script {
 

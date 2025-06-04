@@ -1,7 +1,9 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -11,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -142,6 +145,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 					try {
 						final Bucket bucket = cBlock.getBucket().resolve();
 						final Table table = bucket.getTable().resolve();
+					final List<Column> dateColumns = Arrays.stream(table.getColumns()).filter(c -> c.getType().isDateCompatible()).toList();
 
 						for (String entity : bucket.entities()) {
 
@@ -153,7 +157,8 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 
 								if (!(concept instanceof TreeConcept) || localIds == null) {
-									results.computeIfAbsent(concept.getId(), (ignored) -> new MatchingStats.Entry()).addEvent(table, bucket, event, entity);
+									results.computeIfAbsent(concept.getId(), (ignored) -> new MatchingStats.Entry())
+									   .addEventFromBucket(entity, bucket, event, dateColumns);
 									continue;
 								}
 
@@ -165,7 +170,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 								while (element != null) {
 									results.computeIfAbsent(((ConceptElement<?>) element).getId(), (ignored) -> new MatchingStats.Entry())
-										   .addEvent(table, bucket, event, entity);
+										   .addEventFromBucket(entity, bucket, event, dateColumns);
 									element = element.getParent();
 								}
 							}
