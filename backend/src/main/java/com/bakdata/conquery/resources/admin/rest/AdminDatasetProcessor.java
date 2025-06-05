@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.validation.groups.Default;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
@@ -184,10 +185,10 @@ public class AdminDatasetProcessor {
 				switch (namespace) {
 					case LocalNamespace ignored -> ValidationMode.Local.class;
 					case DistributedNamespace ignored -> ValidationMode.Clustered.class;
-					default -> null;
+					default -> throw new IllegalStateException("Unexpected Namespace class %s".formatted(namespace.getClass()));
 				};
 
-		ValidatorHelper.failOnError(log, environment.getValidator().validate(table, mode));
+		ValidatorHelper.failOnError(log, environment.getValidator().validate(table, Default.class, mode));
 
 		namespace.getStorage().addTable(table);
 		storageListener.onAddTable(table);

@@ -46,8 +46,7 @@ public class HanaSqlDialect implements SqlDialect {
 			case DECIMAL -> field.getDataType().isDecimal();
 			case MONEY -> field.getDataType().isDecimal();
 			case DATE -> field.getDataType().isDate();
-			//TODO is this available for Hana?
-			case DATE_RANGE -> field.getDataType().getTypeName().equals("daterange");
+			case DATE_RANGE -> false; // HANA does not support single-column DateRange
 		};
 	}
 

@@ -29,7 +29,8 @@ public class LocalNamespace extends Namespace {
 	private final SqlStorageHandler storageHandler;
 
 	public LocalNamespace(
-			SqlDialect dialect, ObjectMapper preprocessMapper,
+			SqlDialect dialect,
+			ObjectMapper preprocessMapper,
 			NamespaceStorage storage,
 			ExecutionManager executionManager,
 			DSLContextWrapper dslContextWrapper,
