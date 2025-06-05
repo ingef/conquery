@@ -4,13 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.validation.groups.Default;
 import jakarta.inject.Inject;
+import jakarta.validation.ConstraintViolation;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
@@ -188,7 +189,12 @@ public class AdminDatasetProcessor {
 					default -> throw new IllegalStateException("Unexpected Namespace class %s".formatted(namespace.getClass()));
 				};
 
-		ValidatorHelper.failOnError(log, environment.getValidator().validate(table, Default.class, mode));
+
+		Set<ConstraintViolation<Table>> violations = new HashSet<>();
+		// Default.class isn't properly packaged, so do it manually
+		violations.addAll(environment.getValidator().validate(table));
+		violations.addAll(environment.getValidator().validate(table, mode));
+		ValidatorHelper.failOnError(log, violations);
 
 		namespace.getStorage().addTable(table);
 		storageListener.onAddTable(table);

@@ -3,7 +3,6 @@ package com.bakdata.conquery.util.validation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 import com.bakdata.conquery.models.datasets.Column;
@@ -12,6 +11,7 @@ import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.constraintvalidation.HibernateConstraintValidator;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -20,15 +20,12 @@ import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 
 @Slf4j
-public class SqlTableValidator implements ConstraintValidator<ValidSqlTable, Table> {
+public class SqlTableValidator implements HibernateConstraintValidator<ValidSqlTable, Table> {
 
-
-	@Override
-	public void initialize(ValidSqlTable constraintAnnotation) {
-	}
 
 	@Override
 	public boolean isValid(Table value, ConstraintValidatorContext context) {
+
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final LocalNamespace localNamespace = (LocalNamespace) value.getNamespace();
@@ -44,7 +41,7 @@ public class SqlTableValidator implements ConstraintValidator<ValidSqlTable, Tab
 							   .fetch();
 		}
 		catch (DataAccessException e) {
-			context.buildConstraintViolationWithTemplate("SQL table does not exist")
+			context.buildConstraintViolationWithTemplate("SQL table %s does not exist".formatted(value.getName()))
 				   .addPropertyNode("name")
 				   .addConstraintViolation();
 			return false;
@@ -59,21 +56,26 @@ public class SqlTableValidator implements ConstraintValidator<ValidSqlTable, Tab
 
 		columns.add(value.getPrimaryColumn());
 
-		for (int index = 0; index < columns.size(); index++) {
-			Column column = columns.get(index);
-
+		for (Column column : columns) {
+			// NOTE: The Path to the property is not factually correct, but the error messages are much more readable that way.
 			final Field<?> field = result.field(column.getName());
 
 			if (field == null) {
-				context.buildConstraintViolationWithTemplate("SQL Column does not exist")
-					   .addContainerElementNode("columns", List.class, index)
+				context.buildConstraintViolationWithTemplate("SQL Column `%s.%s` does not exist".formatted(value.getName(), column.getName()))
+					   .addPropertyNode("columns")
+					   .addPropertyNode(column.getName())
 					   .addConstraintViolation();
 				valid = false;
 			}
 			else if (!dialect.isTypeCompatible(field, column.getType())) {
-				context.buildConstraintViolationWithTemplate("SQL Column does not match required type")
+				context.buildConstraintViolationWithTemplate("SQL Column `%s %s.%s` does not match required type %s".formatted(
+							   field.getDataType(),
+							   value.getName(),
+							   column.getName(),
+							   column.getType().name()
+					   ))
 					   .addPropertyNode("columns")
-					   .addContainerElementNode("columns", List.class, index)
+					   .addPropertyNode(column.getName())
 					   .addConstraintViolation();
 				valid = false;
 			}
