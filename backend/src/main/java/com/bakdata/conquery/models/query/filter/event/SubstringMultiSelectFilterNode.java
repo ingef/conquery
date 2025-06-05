@@ -56,19 +56,22 @@ public class SubstringMultiSelectFilterNode extends EventFilterNode<Set<String>>
 
 		final String string = bucket.getString(event, getColumn());
 
-		final String substr;
-
-		int min = Math.max(0, range.getMin());
-		int max = Math.min(string.length() - 1, range.getMax());
-
-		if (min > string.length()) {
-			substr = "";
-		}
-		else {
-			substr = string.substring(min, max);
-		}
+		final String substr = getSubstringFromRange(string, range);
 
 		return getFilterValue().contains(substr);
+	}
+
+	//TODO move to util
+	public static String getSubstringFromRange(String string, Range.IntegerRange range) {
+
+		final int min = Math.max(0, range.getMin());
+		final int max = Math.min(string.length() - 1, range.getMax());
+
+		if (min > string.length()) {
+			return "";
+		}
+
+		return string.substring(min, max);
 	}
 
 

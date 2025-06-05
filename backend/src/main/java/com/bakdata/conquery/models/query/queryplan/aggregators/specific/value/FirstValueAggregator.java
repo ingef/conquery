@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
+import static com.bakdata.conquery.models.query.filter.event.SubstringMultiSelectFilterNode.getSubstringFromRange;
+
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
@@ -19,6 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
+	private final Range.IntegerRange substring;
+
+
 	private int selectedEvent = -1;
 	private Bucket selectedBucket;
 
@@ -26,8 +32,9 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	private ValidityDate validityDate;
 
-	public FirstValueAggregator(Column column) {
+	public FirstValueAggregator(Column column, Range.IntegerRange substring) {
 		super(column);
+		this.substring = substring;
 	}
 
 	@Override
@@ -82,6 +89,11 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	public VALUE createAggregationResult() {
 		if (selectedBucket == null) {
 			return null;
+		}
+
+		if (substring != null) {
+			String string = selectedBucket.getString(selectedEvent, getColumn());
+			return (VALUE) getSubstringFromRange(string, substring);
 		}
 
 		return (VALUE) selectedBucket.createScriptValue(selectedEvent, getColumn());

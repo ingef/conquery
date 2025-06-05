@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
@@ -24,13 +25,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public class DistinctSelect extends MappableSingleColumnSelect {
 
 	@JsonCreator
-	public DistinctSelect(ColumnId column, InternToExternMapperId mapping) {
-		super(column, mapping);
+	public DistinctSelect(ColumnId column, InternToExternMapperId mapping, Range.IntegerRange substring) {
+		super(column, mapping, substring);
 	}
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new AllValuesAggregator<>(getColumn().resolve());
+		return new AllValuesAggregator<>(getColumn().resolve(), getSubstring());
 	}
 
 	@Override
