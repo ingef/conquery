@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
-import java.util.OptionalInt;
-
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
@@ -21,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
-	private OptionalInt selectedEvent = OptionalInt.empty();
+	private int selectedEvent = -1;
 	private Bucket selectedBucket;
 
 	private int date = CDateRange.POSITIVE_INFINITY;
@@ -34,7 +32,7 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
-		selectedEvent = OptionalInt.empty();
+		selectedEvent = -1;
 		date = CDateRange.POSITIVE_INFINITY;
 		selectedBucket = null;
 	}
@@ -52,19 +50,19 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 		if (validityDate == null) {
 			// If there is no validity date, take the first possible value
-			if(selectedBucket == null) {
+			if (selectedBucket == null) {
 				selectedBucket = bucket;
-				selectedEvent = OptionalInt.of(event);
-			} else {
+				selectedEvent = event;
+			}
+			else {
 				log.trace("There is more than one value for the {}. Choosing the very first one encountered", getClass().getSimpleName());
 			}
 			return;
 		}
 
-
 		final CDateRange dateRange = validityDate.getValidityDate(event, bucket);
 
-		if (dateRange == null){
+		if (dateRange == null) {
 			return;
 		}
 
@@ -72,7 +70,7 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 		if (next < date) {
 			date = next;
-			selectedEvent = OptionalInt.of(event);
+			selectedEvent = event;
 			selectedBucket = bucket;
 		}
 		else if (next == date) {
@@ -82,11 +80,11 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	@Override
 	public VALUE createAggregationResult() {
-		if (selectedBucket == null && selectedEvent.isEmpty()) {
+		if (selectedBucket == null) {
 			return null;
 		}
 
-		return (VALUE) selectedBucket.createScriptValue(selectedEvent.getAsInt(), getColumn());
+		return (VALUE) selectedBucket.createScriptValue(selectedEvent, getColumn());
 	}
 
 }
