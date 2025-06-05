@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.filter.event;
 import java.util.Set;
 import jakarta.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
@@ -19,19 +20,21 @@ import org.apache.logging.log4j.util.Strings;
  */
 
 @ToString(callSuper = true, of = "column")
-public class MultiSelectFilterNode extends EventFilterNode<Set<String>> {
+public class SubstringMultiSelectFilterNode extends EventFilterNode<Set<String>> {
 
+	private final Range.IntegerRange range;
 	@NotNull
 	@Getter
 	@Setter
 	private Column column;
-
 	private final boolean empty;
-	
 
-	public MultiSelectFilterNode(Column column, Set<String> filterValue) {
+
+	public SubstringMultiSelectFilterNode(Column column, Set<String> filterValue, Range.IntegerRange range) {
 		super(filterValue);
 		this.column = column;
+		this.range = range;
+
 		empty = filterValue.stream().anyMatch(Strings::isEmpty);
 	}
 
@@ -51,18 +54,26 @@ public class MultiSelectFilterNode extends EventFilterNode<Set<String>> {
 			return empty;
 		}
 
-		final String stringToken = bucket.getString(event, getColumn());
+		final String string = bucket.getString(event, getColumn());
 
-		return getFilterValue().contains(stringToken);
+		final String substr;
+
+		int min = Math.max(0, range.getMin());
+		int max = Math.min(string.length() - 1, range.getMax());
+
+		if (min > string.length()) {
+			substr = "";
+		}
+		else {
+			substr = string.substring(min, max);
+		}
+
+		return getFilterValue().contains(substr);
 	}
 
-	@Override
-	public boolean isOfInterest(Bucket bucket) {
-		return true;
-	}
 
 	@Override
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		requiredTables.add(column.getTable());
 	}
-	}
+}

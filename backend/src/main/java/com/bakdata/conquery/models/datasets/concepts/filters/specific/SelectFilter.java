@@ -5,12 +5,14 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.LabelMap;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
@@ -35,6 +37,9 @@ import org.jetbrains.annotations.NotNull;
 @Slf4j
 @JsonIgnoreProperties({"searchType"})
 public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> {
+
+	@CheckForNull
+	private Range.IntegerRange substring = null;
 
 	/**
 	 * user given mapping from the values in the columns to shown labels

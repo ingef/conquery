@@ -6,6 +6,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
+import com.bakdata.conquery.models.query.filter.event.SubstringMultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.MultiSelectFilterConverter;
@@ -30,7 +31,11 @@ public class MultiSelectFilter extends SelectFilter<Set<String>> {
 	}
 
 	@Override
-	public FilterNode<?> createFilterNode(Set<String> value) {
+	public FilterNode<Set<String>> createFilterNode(Set<String> value) {
+		if (getSubstring() != null && !getSubstring().isAll()) {
+			return new SubstringMultiSelectFilterNode(getColumn().resolve(), value, getSubstring());
+		}
+
 		return new MultiSelectFilterNode(getColumn().resolve(), value);
 	}
 
