@@ -127,4 +127,9 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	public void updateWorker(WorkerInformation worker) {
 		this.worker.update(worker);
 	}
+
+	@Override
+	public boolean hasCBlock(CBlockId id) {
+		return cBlocks.contains(id);
+	}
 }
