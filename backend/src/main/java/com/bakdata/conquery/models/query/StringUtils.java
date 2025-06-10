@@ -10,9 +10,29 @@ public class StringUtils {
 	 * Min is silently truncated to 0 and any overflow results in empty strings.
 	 */
 	public static String getSubstringFromRange(String string, Range.IntegerRange range) {
+		if (range.isAll()) {
+			return string;
+		}
 
-		final int min = Math.max(0, range.getMin());
-		final int max = Math.min(string.length(), range.getMax());
+		int length = string.length();
+
+		final int min;
+
+		if (range.getMin() == null || range.getMin() < 0) {
+			min = 0;
+		}
+		else {
+			min = range.getMin();
+		}
+
+		final int max;
+		if (range.getMax() == null || range.getMax() > length) {
+			max = length;
+		}
+		else {
+			max = range.getMax();
+		}
+
 
 		// Happens when string is shorter than min.
 		if (min > max) {
