@@ -1,0 +1,69 @@
+{
+  "type": "QUERY_TEST",
+  "label": "FIRST Substring",
+  "expectedCsv": "tests/aggregator/SUBSTRING/FIRST/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector",
+          "selects": [
+            "concept.connector.select"
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "connector",
+          "table": "table",
+          "validityDates": {
+            "label": "datum",
+            "column": "table.datum"
+          },
+          "selects": {
+            "name": "select",
+            "type": "FIRST",
+            "column": "table.value",
+            "substring": {
+              "min": 2,
+              "max": 4
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/aggregator/SUBSTRING/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "value",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

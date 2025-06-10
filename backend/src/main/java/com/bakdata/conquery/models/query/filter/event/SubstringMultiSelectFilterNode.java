@@ -65,9 +65,9 @@ public class SubstringMultiSelectFilterNode extends EventFilterNode<Set<String>>
 	public static String getSubstringFromRange(String string, Range.IntegerRange range) {
 
 		final int min = Math.max(0, range.getMin());
-		final int max = Math.min(string.length() - 1, range.getMax());
+		final int max = Math.min(string.length(), range.getMax());
 
-		if (min > string.length()) {
+		if (min > max) {
 			return "";
 		}
 

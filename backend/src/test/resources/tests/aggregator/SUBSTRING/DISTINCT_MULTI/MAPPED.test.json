@@ -1,0 +1,78 @@
+{
+  "type": "QUERY_TEST",
+  "label": "DISTINCT Substring MULTI MAPPED",
+  "expectedCsv": "tests/aggregator/SUBSTRING/DISTINCT_MULTI/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector",
+          "selects": [
+            "concept.connector.select"
+          ]
+        }
+      ]
+    }
+  },
+  "internToExternMappings": {
+    "name": "test_map",
+    "type": "CSV_MAP",
+    "internalColumn": "internal",
+    "externalTemplate": "{{external}}",
+    "allowMultiple" : true,
+    "csv": "classpath:/tests/aggregator/SUBSTRING/mapping.csv"
+  },
+  "concepts": [
+    {
+      "label": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "connector",
+          "table": "table",
+          "validityDates": {
+            "label": "datum",
+            "column": "table.datum"
+          },
+          "selects": {
+            "name": "select",
+            "type": "DISTINCT",
+            "column": "table.value",
+            "mapping": "test_map",
+            "substring" : {
+              "min" : 2,
+              "max" : 4
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/aggregator/SUBSTRING/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "value",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}
