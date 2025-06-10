@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
-import static com.bakdata.conquery.models.query.filter.event.SubstringMultiSelectFilterNode.getSubstringFromRange;
+import static com.bakdata.conquery.models.query.StringUtils.getSubstringFromRange;
 
 import java.util.HashSet;
 import java.util.Set;

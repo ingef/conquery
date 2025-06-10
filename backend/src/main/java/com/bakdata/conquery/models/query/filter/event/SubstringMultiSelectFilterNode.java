@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.StringUtils;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
@@ -56,22 +57,9 @@ public class SubstringMultiSelectFilterNode extends EventFilterNode<Set<String>>
 
 		final String string = bucket.getString(event, getColumn());
 
-		final String substr = getSubstringFromRange(string, range);
+		final String substr = StringUtils.getSubstringFromRange(string, range);
 
 		return getFilterValue().contains(substr);
-	}
-
-	//TODO move to util
-	public static String getSubstringFromRange(String string, Range.IntegerRange range) {
-
-		final int min = Math.max(0, range.getMin());
-		final int max = Math.min(string.length(), range.getMax());
-
-		if (min > max) {
-			return "";
-		}
-
-		return string.substring(min, max);
 	}
 
 

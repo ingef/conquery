@@ -35,6 +35,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	private final InternToExternMapperId mapping;
 
 	@Nullable
+	@Valid
 	private final Range.IntegerRange substring;
 
 

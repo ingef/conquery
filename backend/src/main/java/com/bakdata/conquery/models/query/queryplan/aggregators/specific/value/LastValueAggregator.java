@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
-import static com.bakdata.conquery.models.query.filter.event.SubstringMultiSelectFilterNode.getSubstringFromRange;
+import static com.bakdata.conquery.models.query.StringUtils.getSubstringFromRange;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
