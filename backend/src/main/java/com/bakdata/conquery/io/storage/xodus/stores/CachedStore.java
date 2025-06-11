@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
 public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
+	public static final ProgressBar PROGRESS_BAR = new ProgressBar(0);
 
 	private final LoadingCache<KEY, VALUE> cache;
 
@@ -132,7 +133,16 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public void loadData() {
 		final LongAdder totalSize = new LongAdder();
 		final int count = count();
-		final ProgressBar bar = count > 100 ? new ProgressBar(count) : null;
+		final ProgressBar bar;
+
+		if (count < 100) {
+			bar = null;
+		}
+		else {
+			bar = PROGRESS_BAR;
+			bar.addMaxValue(count);
+		}
+
 
 		log.info("BEGIN loading store {}", this);
 
