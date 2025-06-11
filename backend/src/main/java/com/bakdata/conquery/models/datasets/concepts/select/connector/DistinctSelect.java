@@ -31,7 +31,7 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new AllValuesAggregator<>(getColumn().resolve(), getSubstring());
+		return new AllValuesAggregator<>(getColumn().resolve(), getSubstringRange());
 	}
 
 	@Override

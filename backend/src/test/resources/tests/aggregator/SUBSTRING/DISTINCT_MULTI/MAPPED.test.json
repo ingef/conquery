@@ -44,7 +44,7 @@
             "type": "DISTINCT",
             "column": "table.value",
             "mapping": "test_map",
-            "substring" : {
+            "substringRange" : {
               "min" : 2,
               "max" : 4
             }

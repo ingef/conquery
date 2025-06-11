@@ -26,7 +26,7 @@ public class FirstValueSelect extends MappableSingleColumnSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new FirstValueAggregator<>(getColumn().resolve(), getSubstring());
+		return new FirstValueAggregator<>(getColumn().resolve(), getSubstringRange());
 	}
 
 	@Override

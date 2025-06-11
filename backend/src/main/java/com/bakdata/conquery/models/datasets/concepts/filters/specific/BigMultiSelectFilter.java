@@ -33,8 +33,8 @@ public class BigMultiSelectFilter extends SelectFilter<Set<String>> {
 
 	@Override
 	public FilterNode<Set<String>> createFilterNode(Set<String> value) {
-		if (getSubstring() != null && !getSubstring().isAll()) {
-			return new SubstringMultiSelectFilterNode(getColumn().resolve(), value, getSubstring());
+		if (getSubstringRange() != null && !getSubstringRange().isAll()) {
+			return new SubstringMultiSelectFilterNode(getColumn().resolve(), value, getSubstringRange());
 		}
 
 		return new MultiSelectFilterNode(getColumn().resolve(), value);

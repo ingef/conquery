@@ -24,7 +24,7 @@ public class RandomValueSelect extends MappableSingleColumnSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new RandomValueAggregator<>(getColumn().resolve(), getSubstring());
+		return new RandomValueAggregator<>(getColumn().resolve(), getSubstringRange());
 	}
 
 	@Override

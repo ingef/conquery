@@ -36,13 +36,13 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 
 	@Nullable
 	@Valid
-	private final Range.IntegerRange substring;
+	private final Range.IntegerRange substringRange;
 
 
-	public MappableSingleColumnSelect(ColumnId column, @Nullable InternToExternMapperId mapping, @Nullable Range.IntegerRange substring) {
+	public MappableSingleColumnSelect(ColumnId column, @Nullable InternToExternMapperId mapping, @Nullable Range.IntegerRange substringRange) {
 		super(column);
 		this.mapping = mapping;
-		this.substring = substring;
+		this.substringRange = substringRange;
 	}
 
 	@Override
@@ -83,7 +83,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	@JsonIgnore
 	@ValidationMethod(message = "Selects using Substrings must be based on STRING columns.")
 	public boolean isStringIfSubstring() {
-		if (getSubstring() == null) {
+		if (getSubstringRange() == null) {
 			return true;
 		}
 

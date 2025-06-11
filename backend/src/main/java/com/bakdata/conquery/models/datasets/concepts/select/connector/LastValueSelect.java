@@ -25,7 +25,7 @@ public class LastValueSelect extends MappableSingleColumnSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new LastValueAggregator<>(getColumn().resolve(), getSubstring());
+		return new LastValueAggregator<>(getColumn().resolve(), getSubstringRange());
 	}
 
 	@Override

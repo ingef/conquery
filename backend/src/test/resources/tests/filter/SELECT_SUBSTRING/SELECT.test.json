@@ -31,7 +31,7 @@
     "filters": {
       "column": "table.value",
       "type": "SINGLE_SELECT",
-      "substring": {
+      "substringRange": {
         "min" : 1
       }
     }

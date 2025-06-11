@@ -22,8 +22,8 @@ public class SingleSelectFilter extends SelectFilter<String> {
 
 	@Override
 	public FilterNode<?> createFilterNode(String value) {
-		if (getSubstring() != null && !getSubstring().isAll()) {
-			return new SubstringMultiSelectFilterNode(getColumn().resolve(), Collections.singleton(value), getSubstring());
+		if (getSubstringRange() != null && !getSubstringRange().isAll()) {
+			return new SubstringMultiSelectFilterNode(getColumn().resolve(), Collections.singleton(value), getSubstringRange());
 		}
 
 		return new MultiSelectFilterNode(getColumn().resolve(), Collections.singleton(value));

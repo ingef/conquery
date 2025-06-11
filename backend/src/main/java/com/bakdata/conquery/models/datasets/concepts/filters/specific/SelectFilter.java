@@ -39,7 +39,7 @@ import org.jetbrains.annotations.NotNull;
 public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> {
 
 	@CheckForNull
-	private Range.IntegerRange substring = null;
+	private Range.IntegerRange substringRange = null;
 
 	/**
 	 * user given mapping from the values in the columns to shown labels
