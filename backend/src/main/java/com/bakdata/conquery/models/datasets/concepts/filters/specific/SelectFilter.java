@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
+import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.LabelMap;
@@ -39,6 +40,7 @@ import org.jetbrains.annotations.NotNull;
 public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> {
 
 	@CheckForNull
+	@Valid
 	private Range.IntegerRange substringRange = null;
 
 	/**
@@ -119,5 +121,18 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		}
 
 		return (getTemplate() == null) != labels.isEmpty();
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Substrings must start at 0.")
+	public boolean isMinPositive() {
+		if (getSubstringRange() == null) {
+			return true;
+		}
+		if (getSubstringRange().getMin() == null) {
+			return true;
+		}
+
+		return getSubstringRange().getMin() >= 0;
 	}
 }

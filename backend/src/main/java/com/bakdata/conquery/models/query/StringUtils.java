@@ -10,7 +10,7 @@ public class StringUtils {
 	 * Min is silently truncated to 0 and any overflow results in empty strings.
 	 */
 	public static String getSubstringFromRange(String string, Range.IntegerRange range) {
-		if (range.isAll()) {
+		if (range == null || range.isAll()) {
 			return string;
 		}
 
@@ -25,18 +25,16 @@ public class StringUtils {
 			min = range.getMin();
 		}
 
+		if (min > length) {
+			return "";
+		}
+
 		final int max;
 		if (range.getMax() == null || range.getMax() > length) {
 			max = length;
 		}
 		else {
 			max = range.getMax();
-		}
-
-
-		// Happens when string is shorter than min.
-		if (min > max) {
-			return "";
 		}
 
 		return string.substring(min, max);

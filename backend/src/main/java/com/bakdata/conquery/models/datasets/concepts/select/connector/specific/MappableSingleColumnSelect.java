@@ -68,7 +68,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 
 	@Override
 	public ResultType getResultType() {
-		if(mapping == null){
+		if (mapping == null) {
 			return ResultType.resolveResultType(getColumn().resolve().getType());
 		}
 		return ResultType.Primitive.STRING;
@@ -98,5 +98,18 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 		}
 
 		return getColumn().resolve().getType().equals(MajorTypeId.STRING);
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Substrings must start at 0.")
+	public boolean isMinPositive() {
+		if (getSubstringRange() == null) {
+			return true;
+		}
+		if (getSubstringRange().getMin() == null) {
+			return true;
+		}
+
+		return getSubstringRange().getMin() >= 0;
 	}
 }
