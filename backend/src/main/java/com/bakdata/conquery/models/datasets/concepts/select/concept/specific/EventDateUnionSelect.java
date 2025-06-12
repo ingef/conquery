@@ -22,11 +22,16 @@ public class EventDateUnionSelect extends UniversalSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new EventDateUnionAggregator(getHolder().findConcept()
-													   .getConnectors()
-													   .stream()
-													   .map(Connector::getResolvedTable)
-													   .collect(Collectors.toSet()));
+		EventDateUnionAggregator dateUnionAggregator = new EventDateUnionAggregator();
+
+		dateUnionAggregator.setRequiredTables(getHolder().findConcept()
+														 .getConnectors()
+														 .stream()
+														 .map(Connector::getResolvedTable)
+														 .collect(Collectors.toSet()));
+
+
+		return dateUnionAggregator;
 	}
 
 	@Override
