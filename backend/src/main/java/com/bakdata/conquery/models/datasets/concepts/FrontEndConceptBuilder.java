@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,7 +24,6 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
@@ -48,7 +46,7 @@ public class FrontEndConceptBuilder {
 
 	private final ConqueryConfig conqueryConfig;
 
-	public FrontendRoot createRoot(NamespaceStorage storage, Subject subject) {
+	public FrontendRoot createRoot(NamespaceStorage storage, Subject subject, boolean showHidden) {
 
 		final FrontendRoot root = new FrontendRoot();
 		final Map<Id<?, ?>, FrontendNode> roots = root.getConcepts();
@@ -56,7 +54,7 @@ public class FrontEndConceptBuilder {
 		final List<? extends Concept<?>> allConcepts =
 				storage.getAllConcepts()
 					   // Remove any hidden concepts
-					   .filter(Predicate.not(Concept::isHidden))
+					   .filter(c -> !c.isHidden() || showHidden)
 					   .toList();
 
 		if (allConcepts.isEmpty()) {
@@ -74,28 +72,26 @@ public class FrontEndConceptBuilder {
 			Concept<?> concept = allConcepts.get(i);
 			roots.put(concept.getId(), createConceptRoot(concept, storage.getStructure()));
 		}
-		if (roots.isEmpty()) {
-			log.warn("No concepts could be collected for {} on dataset {}. The subject is possibly lacking the permission to use them.",
+
+		if (!allConcepts.isEmpty() && roots.isEmpty()) {
+			log.warn("The subject {} does not have permissions to see any concepts on {}.",
 					 subject.getId(),
 					 storage.getDataset()
 							.getId()
 			);
 		}
-		else {
-			log.trace("Collected {} concepts for {} on dataset {}.", roots.size(), subject.getId(), storage.getDataset().getId());
-		}
+
+		log.trace("Collected {} concepts for {} on dataset {}.", roots.size(), subject.getId(), storage.getDataset().getId());
 		//add the structure tree
 		for (StructureNode sn : storage.getStructure()) {
 			insertStructureNode(sn, roots);
 		}
 		//add all secondary IDs
-		try (Stream<SecondaryIdDescription> secondaryIds = storage.getSecondaryIds()) {
-			root.getSecondaryIds()
-				.addAll(secondaryIds
-								.filter(sid -> !sid.isHidden())
-								.map(sid -> new FrontendSecondaryId(sid.getId().toString(), sid.getLabel(), sid.getDescription()))
-								.collect(Collectors.toSet()));
-		}
+		root.getSecondaryIds()
+			.addAll(storage.getSecondaryIds()
+						   .filter(sid -> !sid.isHidden() || showHidden)
+						   .map(sid -> new FrontendSecondaryId(sid.getId().toString(), sid.getLabel(), sid.getDescription()))
+						   .collect(Collectors.toSet()));
 
 		return root;
 	}
@@ -157,7 +153,7 @@ public class FrontEndConceptBuilder {
 		final List<ConceptId> contained = new ArrayList<>();
 		for (ConceptId id : structureNode.getContainedRoots()) {
 			if (!roots.containsKey(id)) {
-				log.trace("Concept from structure node can not be found: {}", id);
+				log.trace("Cannot find concept {} for StructureNode {}", id, structureNode.getId());
 				continue;
 			}
 			contained.add(id);
@@ -182,7 +178,8 @@ public class FrontEndConceptBuilder {
 							.codeListResolvable(false)
 							.additionalInfos(structureNode.getAdditionalInfos())
 							.parent(structureNode.getParent() == null ? null : structureNode.getParent().getId())
-							.children(Stream.concat(structureNode.getChildren().stream().map(Identifiable::getId), contained.stream()).toArray(NamespacedId[]::new))
+							.children(Stream.concat(structureNode.getChildren().stream().map(Identifiable::getId), contained.stream())
+															   .toArray(NamespacedId[]::new))
 							.build();
 
 		roots.put(structureNode.getId(), currentNode);

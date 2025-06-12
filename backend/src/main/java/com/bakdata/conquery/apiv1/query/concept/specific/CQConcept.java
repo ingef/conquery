@@ -16,7 +16,6 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -93,7 +92,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 		cqConcept.setElements(List.of(selectId.findConcept()));
 
-		switch (selectId){
+		switch (selectId) {
 			case ConceptSelectId conceptSelectId -> {
 				cqConcept.setTables(conceptSelectId.getConcept().resolve()
 												   .getConnectors().stream()
@@ -200,22 +199,28 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 					connectorAggregators.stream()
 										.filter(ExistsAggregator.class::isInstance)
 										.map(ExistsAggregator.class::cast)
-										.collect(Collectors.toList());
+										.toList();
 
 			aggregators.addAll(connectorAggregators);
 
 			aggregators.removeIf(ExistsAggregator.class::isInstance);
 
 
-			final List<Aggregator<CDateSet>> eventDateUnionAggregators =
-					aggregateEventDates ? List.of(new EventDateUnionAggregator(Set.of(table.getConnector().resolve().getResolvedTable())))
-										: Collections.emptyList();
+			final EventDateUnionAggregator eventDateUnionAggregator =
+					aggregateEventDates ? new EventDateUnionAggregator()
+										: null;
 
-			aggregators.addAll(eventDateUnionAggregators);
+			if (aggregateEventDates) {
+				aggregators.add(eventDateUnionAggregator);
+			}
 
 			final QPNode
 					conceptSpecificNode =
-					getConcept().createConceptQuery(context, filters, aggregators, eventDateUnionAggregators, selectValidityDate(table));
+					getConcept().createConceptQuery(context, filters, aggregators, eventDateUnionAggregator, selectValidityDate(table));
+
+			if (eventDateUnionAggregator != null) {
+				eventDateUnionAggregator.setOwner(conceptSpecificNode);
+			}
 
 			// Link up the ExistsAggregators to the node
 			existsAggregators.forEach(agg -> agg.setReference(conceptSpecificNode));
@@ -243,6 +248,32 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 						  .forEach(aggregator -> ((ExistsAggregator) aggregator).setReference(outNode));
 
 		return outNode;
+	}
+
+	/**
+	 * Generates Aggregators from Selects. These are collected and also appended to the list of aggregators in the
+	 * query plan that contribute to columns the result.
+	 */
+	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId> selects) {
+		return selects.stream()
+					  .map(SelectId::resolve)
+					  .map(Select::createAggregator)
+					  .peek(plan::registerAggregator)
+					  .collect(Collectors.toList());
+	}
+
+	private ValidityDate selectValidityDate(CQTable table) {
+		if (table.getDateColumn() != null) {
+			return table.getDateColumn().getValue().resolve();
+		}
+
+		//else use this first defined validity date column
+		final Connector connector = table.getConnector().resolve();
+		if (!connector.getValidityDates().isEmpty()) {
+			return connector.getValidityDates().get(0);
+		}
+
+		return null;
 	}
 
 	@Override
@@ -279,31 +310,6 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 										   ));
 	}
 
-	/**
-	 * Generates Aggregators from Selects. These are collected and also appended to the list of aggregators in the
-	 * query plan that contribute to columns the result.
-	 */
-	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId> selects) {
-		return selects.stream()
-					  .map(SelectId::resolve)
-					  .map(Select::createAggregator)
-					  .peek(plan::registerAggregator)
-					  .collect(Collectors.toList());
-	}
-
-	private ValidityDate selectValidityDate(CQTable table) {
-		if (table.getDateColumn() != null) {
-			return table.getDateColumn().getValue().resolve();
-		}
-
-		//else use this first defined validity date column
-		final Connector connector = table.getConnector().resolve();
-		if (!connector.getValidityDates().isEmpty()) {
-			return connector.getValidityDates().get(0);
-		}
-
-		return null;
-	}
 
 	@JsonIgnore
 	@ValidationMethod(message = "Not all Selects belong to the Concept.")
