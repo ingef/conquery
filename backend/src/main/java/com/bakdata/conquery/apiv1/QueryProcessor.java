@@ -210,11 +210,11 @@ public class QueryProcessor {
 	 * Cancel a running query: Sending cancellation to shards, which will cause them to stop executing them, results are not sent back, and incoming results will be discarded.
 	 */
 	public void cancel(Subject subject, ManagedExecutionId queryId) {
-		// Does not make sense to cancel a query that isn't running.
 		final ExecutionManager executionManager = datasetRegistry.get(queryId.getDataset()).getExecutionManager();
 
 		final ManagedExecution execution = queryId.resolve();
 
+		// No point to cancel a query that isn't running.
 		if (!ExecutionState.RUNNING.equals(execution.getState())) {
 			return;
 		}
@@ -274,6 +274,7 @@ public class QueryProcessor {
 		log.info("User[{}] re-executed Query[{}]", subject.getId(), queryId);
 
 		if (ExecutionState.RUNNING.equals(query.getState())) {
+			log.trace("Skipping re-execution of execution {}, because it is already running.", queryId);
 			return;
 		}
 

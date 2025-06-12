@@ -83,16 +83,15 @@ public class FormConfig extends MetaIdentifiable<FormConfigId> implements Sharea
 
 	@Override
 	public FormConfigId createId() {
-		FormConfigId formConfigId = new FormConfigId(dataset, formType, formId);
-		return formConfigId;
+		return new FormConfigId(dataset, formType, formId);
 	}
 
 	/**
 	 * Provides an overview (meta data) of this form configuration without the
 	 * actual form field values.
 	 */
-	public FormConfigOverviewRepresentation overview(MetaStorage storage, Subject subject) {
-		String ownerName = getOwnerName(storage);
+	public FormConfigOverviewRepresentation overview(Subject subject) {
+		String ownerName = getOwnerName();
 
 		return FormConfigOverviewRepresentation.builder()
 											   .id(getId())
@@ -109,12 +108,12 @@ public class FormConfig extends MetaIdentifiable<FormConfigId> implements Sharea
 
 	@JsonIgnore
 	@Nullable
-	private String getOwnerName(MetaStorage metaStorage) {
+	private String getOwnerName() {
 		if (owner == null){
 			return null;
 		}
 
-		User resolved = metaStorage.getUser(owner);
+		User resolved = owner.get();
 
 		if (resolved == null){
 			return null;
@@ -127,7 +126,7 @@ public class FormConfig extends MetaIdentifiable<FormConfigId> implements Sharea
 	 * Return the full representation of the configuration with the configured form fields and meta data.
 	 */
 	public FormConfigFullRepresentation fullRepresentation(MetaStorage storage, Subject requestingUser){
-		String ownerName = getOwnerName(storage);
+		String ownerName = getOwnerName();
 
 		/* Calculate which groups can see this query.
 		 * This is usually not done very often and should be reasonable fast, so don't cache this.

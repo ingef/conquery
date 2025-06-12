@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
@@ -262,7 +263,7 @@ public class AdminProcessor {
 	 */
 	public String getPermissionOverviewAsCSV(GroupId groupId) {
 		final Group group = storage.getGroup(groupId);
-		return getPermissionOverviewAsCSV(group.getMembers().stream().map(storage::getUser));
+		return getPermissionOverviewAsCSV(group.getMembers().stream().map(Id::get));
 	}
 
 	public boolean isBusy() {

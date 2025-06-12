@@ -40,7 +40,10 @@ public class FormShardResult extends ShardResult {
 		final ManagedQuery subQuery = managedInternalForm.getSubQuery(getQueryId());
 
 		if (subQuery == null) {
-			throw new IllegalStateException("Subquery %s did not belong to form %s. Known subqueries: %s".formatted(getQueryId(), formId, managedInternalForm.getSubQueries()));
+			throw new IllegalStateException("Subquery %s did not belong to form %s. Known subqueries: %s".formatted(getQueryId(),
+																													formId,
+																													managedInternalForm.getSubQueries()
+			));
 		}
 
 
@@ -48,11 +51,7 @@ public class FormShardResult extends ShardResult {
 
 		// Fail the whole execution if a subquery fails
 		if (ExecutionState.FAILED.equals(subQuery.getState())) {
-			managedInternalForm.fail(
-					getError().orElseThrow(
-							() -> new IllegalStateException(String.format("Query[%s] failed but no error was set.", subQuery.getId()))
-					)
-			);
+			managedInternalForm.fail(getError().orElseThrow(() -> new IllegalStateException(String.format("Query[%s] failed but no error was set.", subQuery.getId()))));
 		}
 
 		if (managedInternalForm.allSubQueriesDone()) {

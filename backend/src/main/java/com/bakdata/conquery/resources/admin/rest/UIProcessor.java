@@ -107,7 +107,7 @@ public class UIProcessor {
 
 		List<FrontendUserContent> members = membersIds.stream()
 													  .map(id -> {
-														  User user = getStorage().getUser(id);
+														  User user = id.get();
 														  if (user != null) {
 															  return getUserContent(user);
 														  }
@@ -143,7 +143,7 @@ public class UIProcessor {
 
 
 	public FrontendUserContent getUserContent(UserId id) {
-		User user = getStorage().getUser(id);
+		User user = id.get();
 		if (user != null) {
 			return getUserContent(user);
 		}

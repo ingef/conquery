@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.jersey;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.ext.ParamConverter;
 import jakarta.ws.rs.ext.ParamConverterProvider;
 
@@ -18,7 +19,8 @@ import lombok.NonNull;
  * <p>
  * Registered into a server, it will hook into any Param definition for {@link Id}, use an appropriate parser and set their provided domain.
  */
-public record IdPathParamConverterProvider(@NonNull MetaStorage metaStorage, @NonNull NamespacedStorageProvider namespacedStorageProvider) implements ParamConverterProvider {
+public record IdPathParamConverterProvider(@Inject @NonNull MetaStorage metaStorage,
+										   @Inject @NonNull NamespacedStorageProvider namespacedStorageProvider) implements ParamConverterProvider {
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override

@@ -23,7 +23,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -77,7 +76,6 @@ public class FormConfigTest {
 	private final Dataset dataset1 = new Dataset("test1");
 
 	private MetaStorage metaStorage;
-	private NamespacedStorage namespacedStorage;
 
 	private FormConfigProcessor processor;
 	private DatasetId datasetId;
@@ -89,22 +87,23 @@ public class FormConfigTest {
 	public void setupTestClass() throws Exception {
 		NonPersistentStoreFactory storeFactory = new NonPersistentStoreFactory();
 		metaStorage = storeFactory.createMetaStorage();
-		namespacedStorage = storeFactory.createNamespaceStorage();
 
 		config.getFrontend().setManualUrl(new URL("http://example.org/manual/welcome"));
 
-		//TODO add missing NamespacedStorage
-
-		datasetId = new DatasetId("test");
-
-		datasetId1 = new DatasetId("test1");
 
 		// Mock DatasetRegistry for translation
 		DatasetRegistry<?> namespacesMock = Mockito.mock(DatasetRegistry.class);
 
+		dataset.setStorageProvider(namespacesMock);
+		dataset1.setStorageProvider(namespacesMock);
+
+		datasetId = dataset.getId();
+		datasetId1 = dataset1.getId();
+
 		doAnswer(invocation -> {
 			final DatasetId id = invocation.getArgument(0);
 			Namespace namespaceMock = Mockito.mock(LocalNamespace.class);
+
 			if (id.equals(datasetId)) {
 				when(namespaceMock.getDataset()).thenReturn(dataset);
 			}
@@ -120,11 +119,6 @@ public class FormConfigTest {
 		when(namespacesMock.injectIntoNew(any(ObjectMapper.class))).thenCallRealMethod();
 		when(namespacesMock.inject(any(MutableInjectableValues.class))).thenCallRealMethod();
 
-		datasetId.setDomain(namespacesMock);
-		datasetId1.setDomain(namespacesMock);
-
-		dataset.setStorageProvider(namespacesMock);
-		dataset1.setStorageProvider(namespacesMock);
 
 		((MutableInjectableValues) FormConfigProcessor.getMAPPER().getInjectableValues()).add(NamespacedStorageProvider.class, namespacesMock);
 		processor = new FormConfigProcessor(validator, metaStorage, namespacesMock);

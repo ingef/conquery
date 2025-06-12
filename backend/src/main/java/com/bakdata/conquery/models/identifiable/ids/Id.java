@@ -82,7 +82,7 @@ public sealed abstract class Id<TYPE, DOMAIN> permits NamespacedId, MetaId {
 	 *
 	 * @return the object or null if no object could be resolved.
 	 */
-	protected abstract TYPE get();
+	public abstract TYPE get();
 
 	public final IdResolvingException newIdResolveException() {
 		return new IdResolvingException(this);

@@ -91,7 +91,7 @@ public class FormConfigProcessor {
 												 .filter(c -> subject.isPermitted(c, Ability.READ));
 
 
-		return stream.map(c -> c.overview(storage, subject));
+		return stream.map(c -> c.overview(subject));
 	}
 
 	/**
@@ -150,8 +150,7 @@ public class FormConfigProcessor {
 	 * Deletes a configuration from the storage and all permissions, that have this configuration as target.
 	 */
 	public void deleteConfig(Subject subject, FormConfigId configId) {
-		FormConfig config = configId.resolve();
-		final User user = storage.getUser(subject.getId());
+		final User user = subject.getUser();
 
 		user.authorize(configId, Ability.DELETE);
 		storage.removeFormConfig(configId);

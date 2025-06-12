@@ -64,7 +64,7 @@ public class ApiV1 extends ResourceConfig implements ResourcesProvider {
 		jersey.register(AuthFilter.class);
 		AuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, jersey.getResourceConfig());
 
-		jersey.register(new IdPathParamConverterProvider(manager.getMetaStorage(), manager.getDatasetRegistry()));
+		jersey.register(IdPathParamConverterProvider.class);
 
 		jersey.register(QueryResource.class);
 		jersey.register(DatasetQueryResource.class);
