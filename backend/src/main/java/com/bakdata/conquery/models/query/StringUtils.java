@@ -14,14 +14,11 @@ public class StringUtils {
 			return string;
 		}
 
-		int length = string.length();
+		final int length = string.length();
 
-		final int min;
+		int min = 0;
 
-		if (range.getMin() == null || range.getMin() < 0) {
-			min = 0;
-		}
-		else {
+		if (range.getMin() != null && range.getMin() > 0) {
 			min = range.getMin();
 		}
 
@@ -29,11 +26,8 @@ public class StringUtils {
 			return "";
 		}
 
-		final int max;
-		if (range.getMax() == null || range.getMax() > length) {
-			max = length;
-		}
-		else {
+		int max = length;
+		if (range.getMax() != null && range.getMax() < length) {
 			max = range.getMax();
 		}
 
