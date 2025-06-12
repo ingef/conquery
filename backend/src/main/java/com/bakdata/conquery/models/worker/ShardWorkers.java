@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.lifecycle.Managed;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -65,18 +66,15 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 	}
 
 	public Worker openWorker(WorkerStorage storage, boolean failOnError, boolean loadStorage) {
-
-		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(this);
-
-		storage.openStores(persistenceMapper);
-
-		storage.loadKeys();
-
-		if (loadStorage) {
-			storage.loadData();
-		}
-
-		return Worker.create(storage, this, queryThreadPoolDefinition, jobsThreadPool, failOnError, secondaryIdSubPlanRetention);
+		return Worker.create(storage,
+							 this,
+							 queryThreadPoolDefinition,
+							 jobsThreadPool,
+							 failOnError,
+							 secondaryIdSubPlanRetention,
+							 internalMapperFactory.createWorkerPersistenceMapper(this),
+							 loadStorage
+		);
 	}
 
 	public void addWorker(Worker worker) {
@@ -85,24 +83,35 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 		dataset2Worker.put(worker.getStorage().getDataset().getId(), worker);
 	}
 
+	@SneakyThrows
 	public Worker newWorker(Dataset dataset, @NonNull String name, @NonNull NetworkSession session, StoreFactory storageConfig, boolean failOnError) {
 		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(this);
-		final WorkerStorage workerStorage = new WorkerStorageImpl(storageConfig, name);
 
-		workerStorage.openStores(persistenceMapper);
+		try (final WorkerStorage workerStorage = new WorkerStorageImpl(storageConfig, name)) {
+			workerStorage.openStores(persistenceMapper);
 
-		// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
-		WorkerInformation info = new WorkerInformation();
-		info.setDataset(dataset.getId());
-		info.setName(name);
+			// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
+			WorkerInformation info = new WorkerInformation();
+			info.setDataset(dataset.getId());
+			info.setName(name);
 
-		workerStorage.updateDataset(dataset);
-		workerStorage.setWorker(info);
+			workerStorage.updateDataset(dataset);
+			workerStorage.setWorker(info);
+		}
 
-		Worker worker = Worker.create(workerStorage, this, queryThreadPoolDefinition, jobsThreadPool, failOnError, secondaryIdSubPlanRetention);
+		final Worker worker = Worker.create(new WorkerStorageImpl(storageConfig, name),
+											this,
+											queryThreadPoolDefinition,
+											jobsThreadPool,
+											failOnError,
+											secondaryIdSubPlanRetention,
+											persistenceMapper,
+											true
+		);
 		worker.setSession(session);
 
 		return worker;
+
 	}
 
 	public Worker getWorker(WorkerId worker) {

@@ -7,12 +7,12 @@ import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.Getter;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-@Getter
-@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @CPSType(id="CANCEL_JOB", base= NetworkMessage.class)
+@Data
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class CancelJobMessage extends MessageToShardNode {
 
 	private final UUID jobId;

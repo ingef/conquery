@@ -9,13 +9,13 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ShardNodeNetworkContext;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.Getter;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id = "ADD_WORKER", base = NetworkMessage.class)
+@Data
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-@Getter
 @Slf4j
 public class AddWorker extends MessageToShardNode.Slow {
 

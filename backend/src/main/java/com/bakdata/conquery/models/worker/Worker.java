@@ -24,43 +24,59 @@ import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class Worker implements MessageSender.Transforming<NamespaceMessage, NetworkMessage<?>>, Closeable {
 	// Making this private to have more control over adding and deleting and keeping a consistent state
 	@Getter(AccessLevel.NONE)
-	private final WorkerStorage storage;
-
-	private final JobManager jobManager;
+	private WorkerStorage storage;
 	/**
 	 * Pool that can be used in Jobs to execute a job in parallel.
 	 */
-	private final ExecutorService jobsExecutorService;
+	private ExecutorService jobsExecutorService;
+
+	private JobManager jobManager;
 
 	private QueryExecutor queryExecutor;
 	private BucketManager bucketManager;
 	@Setter
 	private NetworkSession session;
 
+	/**
+	 * @implSpec storage must not be open yet.
+	 */
 	public static Worker create(
 			@NonNull WorkerStorage storage, ShardWorkers shardWorkers, @NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 			@NonNull ExecutorService jobsExecutorService,
 			boolean failOnError,
-			int secondaryIdSubPlanLimit) {
+			int secondaryIdSubPlanLimit, ObjectMapper persistenceMapper, boolean loadStorage) {
 
-		Worker worker = new Worker(storage, new JobManager(storage.getWorker().getName(), failOnError), jobsExecutorService);
+
+		final Worker worker = new Worker();
+
+		worker.storage = storage;
+		worker.jobsExecutorService = jobsExecutorService;
 		worker.queryExecutor = new QueryExecutor(worker, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);
 
+		// The order of the remaining code cannot be changed, there are dependencies throughout.
+		storage.openStores(persistenceMapper);
+		storage.loadKeys();
+
 		shardWorkers.addWorker(worker);
+
+		if (loadStorage) {
+			storage.loadData();
+		}
+
+		worker.jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 
 		// BucketManager.create loads NamespacedStorage, which requires the WorkerStorage to be registered.
 		worker.bucketManager = BucketManager.create(worker, storage);
