@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import { getFileRows } from "../../common/helpers/fileHelper";
+import { useDebounce } from "../../common/helpers/useDebounce";
 import FaIcon from "../../icon/FaIcon";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 import DropzoneWithFileInput from "../DropzoneWithFileInput";
@@ -231,6 +232,16 @@ const InputMultiSelect = ({
       }
     },
   });
+
+  useDebounce(
+    () => {
+      if (onLoadMore && isOpen && !loading) {
+        onLoadMore(inputValue, { shouldReset: true });
+      }
+    },
+    350,
+    [inputValue, isOpen],
+  );
 
   useLoadMoreInitially({ onLoadMore, isOpen, optionsLength: options.length });
 
