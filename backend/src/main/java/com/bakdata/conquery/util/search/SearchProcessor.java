@@ -17,22 +17,22 @@ import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import io.dropwizard.lifecycle.Managed;
 
+import javax.annotation.CheckForNull;
+
 public interface SearchProcessor extends Managed {
 	void clearSearch();
 
 	Job createUpdateFilterSearchJob(NamespaceStorage storage, Consumer<Set<Column>> columnsConsumer);
 
-	void registerValues(Searchable<FrontendValue> searchable, Collection<String> values);
+	void registerValues(Searchable searchable, Collection<String> values);
 
 	long getTotal(SelectFilter<?> filter);
 
-	List<Search<FrontendValue>> getSearchesFor(SelectFilter<?> searchable);
+	void finalizeSearch(Searchable searchable);
 
-	void finalizeSearch(Searchable<FrontendValue> searchable);
-
-	void indexManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState, ProgressReporter progressReporter) throws InterruptedException;
+	void indexManagerResidingSearches(Set<Searchable> managerSearchables, AtomicBoolean cancelledState, ProgressReporter progressReporter) throws InterruptedException;
 
 	List<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm);
 
-	ConceptsProcessor.AutoCompleteResult query(SelectFilter<?> searchable, Optional<String> maybeText, int itemsPerPage, int pageNumber);
+	ConceptsProcessor.AutoCompleteResult query(SelectFilter<?> searchable, @CheckForNull String maybeText, int itemsPerPage, int pageNumber);
 }

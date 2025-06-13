@@ -119,7 +119,7 @@ public class SolrTest {
 
 			@SneakyThrows(URISyntaxException.class)
 			@Override
-			public List<Searchable<FrontendValue>> getSearchReferences() {
+			public List<Searchable> getSearchReferences() {
 				LabelMap labelMap = new LabelMap(getId(), ImmutableBiMap.of(
 						"a", "Map A",
 						"map b", "Map B",
@@ -137,7 +137,7 @@ public class SolrTest {
 				index.setDataset(DATASET_ID);
 				index.setConfig(CONQUERY_CONFIG);
 
-				return List.of(labelMap, index, SolrTest.SEARCHABLE);
+				return new ArrayList<>(List.of(labelMap, index, SolrTest.SEARCHABLE));
 			}
 
 			@Override
@@ -151,7 +151,7 @@ public class SolrTest {
 	@Order(0)
 	public void addData() throws InterruptedException, SolrServerException, IOException {
 		// Index values from concept/reference
-		Set<Searchable<FrontendValue>> managerSearchables = FILTER.getSearchReferences().stream().filter(ref -> !(ref instanceof Column)).collect(Collectors.toSet());
+		Set<Searchable> managerSearchables = FILTER.getSearchReferences().stream().filter(ref -> !(ref instanceof Column)).collect(Collectors.toSet());
 		searchProcessor.indexManagerResidingSearches(managerSearchables, new AtomicBoolean(false), new ProgressReporterImpl());
 
 		// Index values from column
@@ -207,8 +207,60 @@ public class SolrTest {
 
 	@Test
 	@Order(2)
+	public void findEmptyTermFirstPage() {
+		AutoCompleteResult actual = searchProcessor.query(FILTER, "", 5, 0);
+
+		assertThat(actual).satisfies(uut -> {
+					assertThat(uut.values()).isEqualTo(List.of(
+							new FrontendValue("", "No Value", null),
+							new FrontendValue("a", "Map A", null),
+							new FrontendValue("map b", "Map B", null),
+							new FrontendValue("map c", "Map C", null),
+							new FrontendValue("data a", "data a", "data a")
+					));
+					assertThat(uut.total()).isEqualTo(13);
+				}
+		);
+	}
+
+	@Test
+	@Order(2)
+	public void findEmptyTermSecondPage() {
+		AutoCompleteResult actual = searchProcessor.query(FILTER, "", 5, 1);
+
+		assertThat(actual).satisfies(uut -> {
+					assertThat(uut.values()).isEqualTo(List.of(
+							new FrontendValue("b", "Data b", "b"),
+							new FrontendValue("data c", "Data C", "data c"),
+							new FrontendValue("data d", "data d", "data d"),
+							new FrontendValue("","internal", null),
+							new FrontendValue("external-null", "external-null", "external-null")
+					));
+					assertThat(uut.total()).isEqualTo(13);
+				}
+		);
+	}
+
+	@Test
+	@Order(2)
+	public void findEmptyTermThirdPage() {
+		AutoCompleteResult actual = searchProcessor.query(FILTER, "", 5, 2);
+
+		assertThat(actual).satisfies(uut -> {
+					assertThat(uut.values()).isEqualTo(List.of(
+							new FrontendValue("column c", "column c", "null"),
+							new FrontendValue("column ab", "column ab", "null"),
+							new FrontendValue("column ba", "column ba", "null")
+					));
+					assertThat(uut.total()).isEqualTo(13);
+				}
+		);
+	}
+
+	@Test
+	@Order(2)
 	public void findTerm1() {
-		AutoCompleteResult actual = searchProcessor.query(FILTER, Optional.of("a"), 25, 0);
+		AutoCompleteResult actual = searchProcessor.query(FILTER, "a", 25, 0);
 
 		assertThat(actual).isEqualTo(
 				new AutoCompleteResult(
@@ -220,12 +272,13 @@ public class SolrTest {
 								new FrontendValue("b", "Data b", "b"),
 								new FrontendValue("data c", "Data C", "data c"),
 								new FrontendValue("data d", "data d", "data d"),
+								new FrontendValue("", "internal", null),
 								new FrontendValue("external-null", "external-null", "external-null"),
 								new FrontendValue("column ab", "column ab", "null"),
 								new FrontendValue("column ba", "column ba", "null"),
 								new FrontendValue("column c", "column c", "null")
 						),
-						11
+						12
 				)
 		);
 	}
@@ -233,7 +286,7 @@ public class SolrTest {
 	@Test
 	@Order(2)
 	public void findTerm2() {
-		AutoCompleteResult actual = searchProcessor.query(FILTER, Optional.of("ab"), 25, 0);
+		AutoCompleteResult actual = searchProcessor.query(FILTER, "ab", 25, 0);
 
 		assertThat(actual).isEqualTo(
 				new AutoCompleteResult(
@@ -257,7 +310,7 @@ public class SolrTest {
 	@Test
 	@Order(2)
 	public void findPhrase1() {
-		AutoCompleteResult actual = searchProcessor.query(FILTER, Optional.of("column a"), 25, 0);
+		AutoCompleteResult actual = searchProcessor.query(FILTER, "column a", 25, 0);
 
 		assertThat(actual).isEqualTo(
 				new AutoCompleteResult(
@@ -274,7 +327,7 @@ public class SolrTest {
 	@Test
 	@Order(2)
 	public void findPhrase1LimitPage0() {
-		AutoCompleteResult actual = searchProcessor.query(FILTER, Optional.of("column a"), 2, 0);
+		AutoCompleteResult actual = searchProcessor.query(FILTER, "column a", 2, 0);
 
 		assertThat(actual).isEqualTo(
 				new AutoCompleteResult(
@@ -290,7 +343,7 @@ public class SolrTest {
 	@Test
 	@Order(2)
 	public void findPhrase1LimitPage1() {
-		AutoCompleteResult actual = searchProcessor.query(FILTER, Optional.of("column a"), 2, 1);
+		AutoCompleteResult actual = searchProcessor.query(FILTER, "column a", 2, 1);
 
 		assertThat(actual).isEqualTo(
 				new AutoCompleteResult(

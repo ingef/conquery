@@ -55,7 +55,6 @@ public class InternalFilterSearch implements SearchProcessor {
 
 	@Getter
 	private final InternalSearchConfig searchConfig;
-//	private final IndexConfig indexConfig;
 
 	/**
 	 * We tag our searches based on references collected in getSearchReferences. We do not mash them all together to allow for sharing and prioritising different sources.
@@ -63,7 +62,7 @@ public class InternalFilterSearch implements SearchProcessor {
 	 * In the code below, the keys of this map will usually be called "reference".
 	 */
 	@JsonIgnore
-	private ConcurrentMap<Searchable<FrontendValue>, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
+	private ConcurrentMap<Searchable, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
 	private ConcurrentMap<SelectFilter<?>, Integer> totals = new ConcurrentHashMap<>();
 
 
@@ -85,6 +84,7 @@ public class InternalFilterSearch implements SearchProcessor {
 				}
 
 			});
+
 	/**
 	 * Cache of raw listing of values on a filter.
 	 * We use Cursor here to reduce strain on memory and increase response time.
@@ -118,7 +118,7 @@ public class InternalFilterSearch implements SearchProcessor {
 	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
 	 */
 	public final List<Search<FrontendValue>> getSearchesFor(SelectFilter<?> searchable) {
-		final List<? extends Searchable<FrontendValue>> references = searchable.getSearchReferences();
+		final List<? extends Searchable> references = searchable.getSearchReferences();
 
 		if (log.isTraceEnabled()) {
 			log.trace("Got {} as searchables for {}", references.stream().map(Searchable::toString).collect(Collectors.toList()), searchable.getId());
@@ -147,8 +147,8 @@ public class InternalFilterSearch implements SearchProcessor {
 		final Iterator<FrontendValue> searches = Iterators.concat(Iterators.transform(searchList.iterator(), Search::iterator));
 		final Iterator<FrontendValue> iterators =
 				Iterators.concat(
-						// We are always leading with the empty value.
-						// Iterators.singletonIterator(new FrontendValue("", indexConfig.getEmptyLabel())),
+						 // We are always leading with the empty value.
+						 Iterators.singletonIterator(new FrontendValue("", searchConfig.getEmptyLabel())),
 						searches
 				);
 
@@ -174,7 +174,7 @@ public class InternalFilterSearch implements SearchProcessor {
 	/**
 	 * Add ready searches to the cache. This assumes that the search already has been shrunken.
 	 */
-	public synchronized void addSearches(Map<Searchable<FrontendValue>, TrieSearch<FrontendValue>> searchCache) {
+	public synchronized void addSearches(Map<Searchable, TrieSearch<FrontendValue>> searchCache) {
 
 		this.searchCache.putAll(searchCache);
 	}
@@ -185,7 +185,7 @@ public class InternalFilterSearch implements SearchProcessor {
 	 * In order for this to work an existing search is not allowed to be shrunken yet, because shrinking
 	 * prevents from adding new values.
 	 */
-	public void registerValues(Searchable<FrontendValue> searchable, Collection<String> values) {
+	public void registerValues(Searchable searchable, Collection<String> values) {
 		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> searchConfig.createSearch(searchable));
 
 		synchronized (search) {
@@ -198,7 +198,7 @@ public class InternalFilterSearch implements SearchProcessor {
 	/**
 	 * Shrink the memory footprint of a search. After this action, no values can be registered anymore to a search.
 	 */
-	public void finalizeSearch(Searchable<FrontendValue> searchable) {
+	public void finalizeSearch(Searchable searchable) {
 		final Search<FrontendValue> search = searchCache.get(searchable);
 
 		if (search == null) {
@@ -238,12 +238,14 @@ public class InternalFilterSearch implements SearchProcessor {
 		return new UpdateFilterSearchJob(storage, this, columnsConsumer);
 	}
 
-	public void indexManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState, ProgressReporter progressReporter) throws InterruptedException {
+	public void indexManagerResidingSearches(Set<Searchable> managerSearchables, AtomicBoolean cancelledState, ProgressReporter progressReporter) throws InterruptedException {
+
+
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 		try(final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1)) {
 
-			final Map<Searchable<FrontendValue>, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
-			for (Searchable<FrontendValue> searchable : managerSearchables) {
+			final Map<Searchable, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
+			for (Searchable searchable : managerSearchables) {
 				if (searchable instanceof Column) {
 					throw new IllegalStateException("Columns should have been grouped out previously");
 				}
@@ -306,21 +308,21 @@ public class InternalFilterSearch implements SearchProcessor {
 	}
 
 	@Override
-	public ConceptsProcessor.AutoCompleteResult query(SelectFilter<?> searchable, Optional<String> maybeText, int itemsPerPage, int pageNumber) {
+	public ConceptsProcessor.AutoCompleteResult query(SelectFilter<?> searchable, String maybeText, int itemsPerPage, int pageNumber) {
 		final int startIncl = itemsPerPage * pageNumber;
 		final int endExcl = startIncl + itemsPerPage;
 
 		try {
 
 			// If we have none or a blank query string we list all values.
-			if (maybeText.isEmpty() || maybeText.get().isBlank()) {
+			if (maybeText == null || maybeText.isBlank()) {
 				final CursorAndLength cursorAndLength = listResults.get(searchable);
 				final Cursor<FrontendValue> cursor = cursorAndLength.values();
 
 				return new ConceptsProcessor.AutoCompleteResult(cursor.get(startIncl, endExcl), cursorAndLength.size());
 			}
 
-			final List<FrontendValue> fullResult = searchResults.get(Pair.of(searchable, maybeText.get()));
+			final List<FrontendValue> fullResult = searchResults.get(Pair.of(searchable, maybeText));
 
 			if (startIncl >= fullResult.size()) {
 				return new ConceptsProcessor.AutoCompleteResult(Collections.emptyList(), fullResult.size());

@@ -10,7 +10,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -55,7 +54,7 @@ public class UpdateFilterSearchJob extends Job {
 
 
 		// Unfortunately the is no ClassToInstanceMultimap yet
-		final Map<Class<?>, Set<Searchable<FrontendValue>>> collectedSearchables =
+		final Map<Class<?>, Set<Searchable>> collectedSearchables =
 				allSelectFilters.stream()
 								.map(SelectFilter::getSearchReferences)
 								.flatMap(Collection::stream)
@@ -65,7 +64,7 @@ public class UpdateFilterSearchJob extends Job {
 
 		log.debug("Found {} searchable Objects.", collectedSearchables.values().stream().mapToLong(Set::size).sum());
 
-		Set<Searchable<FrontendValue>> managerSearchables = collectedSearchables.getOrDefault(Searchable.class, Collections.emptySet());
+		Set<Searchable> managerSearchables = collectedSearchables.getOrDefault(Searchable.class, Collections.emptySet());
 
 
 		searchProcessor.indexManagerResidingSearches(managerSearchables, getCancelledState(), getProgressReporter());

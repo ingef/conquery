@@ -76,8 +76,8 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	 * @implSpec The order of objects returned is used to also sort search results from different sources.
 	 */
 	@JsonIgnore
-	public List<Searchable<FrontendValue>> getSearchReferences() {
-		final List<Searchable<FrontendValue>> out = new ArrayList<>();
+	public List<Searchable> getSearchReferences() {
+		final List<Searchable> out = new ArrayList<>();
 
 		if (getTemplate() != null) {
 			final FilterTemplate index = (FilterTemplate) getTemplate().resolve();

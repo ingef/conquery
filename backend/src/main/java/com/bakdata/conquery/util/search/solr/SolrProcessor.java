@@ -5,7 +5,6 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -60,6 +59,8 @@ public class SolrProcessor implements SearchProcessor {
 
 	private final boolean combineEquallyNamedColumns;
 
+	private final String emptyLabel;
+
 	private final Map<String, Search<FrontendValue>> searches = new ConcurrentHashMap<>();
 
 	@Override
@@ -79,7 +80,7 @@ public class SolrProcessor implements SearchProcessor {
 	}
 
 	@Override
-	public void registerValues(Searchable<FrontendValue> searchable, Collection<String> values) {
+	public void registerValues(Searchable searchable, Collection<String> values) {
 
 		SolrSearch search = (SolrSearch) getSearchFor(searchable);
 
@@ -94,22 +95,16 @@ public class SolrProcessor implements SearchProcessor {
 	}
 
 
-	@Override
-	public List<Search<FrontendValue>> getSearchesFor(SelectFilter<?> searchable) {
-		List<Searchable<FrontendValue>> searchReferences = searchable.getSearchReferences();
-		return searchReferences.stream().map(this::getSearchFor).toList();
-	}
-
 	/**
 	 * Helper to build referable names for search sources which may allow abstraction.
 	 * E.g. if column names are used across multiple tables and holds the same set of values, we may want to create only a single document in solr not one for every column.
 	 * @param searchable The searchable whose name is created.
 	 * @return the name vor the searchable
 	 */
-	private String buildNameForSearchable(Searchable<?> searchable) {
+	private String buildNameForSearchable(Searchable searchable) {
 		String name = switch (searchable) {
-			case Column column -> combineEquallyNamedColumns ? "column_"+column.getName() : column.getId().toString();
-			default -> searchable.getId().toString();
+			case Column column -> combineEquallyNamedColumns ? "column_"+column.getName() : column.getSearchHandle();
+			default -> searchable.getSearchHandle();
 		};
 
 		name = ClientUtils.escapeQueryChars(name);
@@ -117,22 +112,24 @@ public class SolrProcessor implements SearchProcessor {
 		return name;
 	}
 
-	private static int getSourcePriority(Searchable<?> searchable) {
+	static int getSourcePriority(Searchable searchable) {
 		return switch (searchable) {
-			case LabelMap _l -> 1;
-			case FilterTemplate _f -> 2;
-			case Column _c -> 3;
+			case SolrEmptySeachable ignore -> 0;
+			case LabelMap ignore -> 1;
+			case FilterTemplate ignore -> 2;
+			case Column ignore -> 3;
 			default -> Integer.MAX_VALUE;
 		};
 	}
 
-	private Search<FrontendValue> getSearchFor(Searchable<FrontendValue> searchable) {
+	/*package*/ Search<FrontendValue> getSearchFor(Searchable searchable) {
 		String nameForSearchable = buildNameForSearchable(searchable);
 		int sourcePriority = getSourcePriority(searchable);
 		return searches.computeIfAbsent(nameForSearchable, searchRef -> new SolrSearch(solrClient, nameForSearchable, sourcePriority, commitWithin, updateChunkSize));
 	}
+
 	@Override
-	public void finalizeSearch(Searchable<FrontendValue> searchable) {
+	public void finalizeSearch(Searchable searchable) {
 		String nameForSearchable = buildNameForSearchable(searchable);
 		log.info("Finalizing Search for {}", searchable);
 		Search<FrontendValue> frontendValueSearch = searches.get(nameForSearchable);
@@ -152,14 +149,17 @@ public class SolrProcessor implements SearchProcessor {
 	}
 
 	@Override
-	public void indexManagerResidingSearches(Set<Searchable<FrontendValue>> managerSearchables, AtomicBoolean cancelledState, ProgressReporter progressReporter) throws InterruptedException {
+	public void indexManagerResidingSearches(Set<Searchable> managerSearchables, AtomicBoolean cancelledState, ProgressReporter progressReporter) throws InterruptedException {
+
+		// Index an empty result for all searches
+		indexEmptyLabel();
 
 		progressReporter.setMax(managerSearchables.size());
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 		try(final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1)) {
 
-			final Map<Searchable<FrontendValue>, Search<FrontendValue>> searchCache = new ConcurrentHashMap<>();
-			for (Searchable<FrontendValue> searchable : managerSearchables) {
+			final Map<Searchable, Search<FrontendValue>> searchCache = new ConcurrentHashMap<>();
+			for (Searchable searchable : managerSearchables) {
 				if (searchable instanceof Column) {
 					throw new IllegalStateException("Columns should have been grouped out previously");
 				}
@@ -220,7 +220,14 @@ public class SolrProcessor implements SearchProcessor {
 
 	}
 
-	private void indexLabelMap(Searchable<FrontendValue> searchable, LabelMap labelMap) {
+	private void indexEmptyLabel() {
+		Search<FrontendValue> search = getSearchFor(SolrEmptySeachable.INSTANCE);
+		search.addItem(new FrontendValue("", emptyLabel), List.of(""));
+
+		search.finalizeSearch();
+	}
+
+	private void indexLabelMap(Searchable searchable, LabelMap labelMap) {
 		Search<FrontendValue> search = getSearchFor(searchable);
 
 		BiMap<String, String> delegate = labelMap.getDelegate();
@@ -249,12 +256,12 @@ public class SolrProcessor implements SearchProcessor {
 		log.trace("DONE commit for {} in {}", id, timer);
 	}
 
-	private void indexFilterTemplate(Searchable<FrontendValue> searchable, FilterTemplate temp) {
+	private void indexFilterTemplate(Searchable searchable, FilterTemplate temp) {
 		final URI resolvedURI = temp.getResolvedUri();
 		log.trace("Resolved filter template reference url for search '{}': {}", temp.getId(), resolvedURI);
 
 		try {
-			final FrontendValueIndex search_ = temp.getIndexService().getIndex(new FrontendValueIndexKey(
+			final FrontendValueIndex ignore = temp.getIndexService().getIndex(new FrontendValueIndexKey(
 					resolvedURI,
 					temp.getColumnValue(),
 					temp.getValue(),
@@ -276,10 +283,10 @@ public class SolrProcessor implements SearchProcessor {
 	}
 
 	@Override
-	public AutoCompleteResult query(SelectFilter<?> searchable, Optional<String> maybeText, int itemsPerPage, int pageNumber) {
+	public AutoCompleteResult query(SelectFilter<?> searchable, String maybeText, int itemsPerPage, int pageNumber) {
 
 		int start = itemsPerPage * pageNumber;
-		return topItems(searchable, maybeText.orElse(null), start, itemsPerPage);
+		return topItems(searchable, maybeText, start, itemsPerPage);
 	}
 
 	/**

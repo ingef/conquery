@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.util.search.Search;
@@ -39,7 +40,7 @@ public class CombinedSolrSearch {
 
 	public long getTotal() {
 
-		String searchables = buildFilterQuery();
+		String searchables = buildFilterQuery(true);
 
 		// We query all documents that reference the searchables of the filter
 		SolrQuery query = new SolrQuery(searchables);
@@ -56,14 +57,25 @@ public class CombinedSolrSearch {
 		}
 	}
 
+	public List<Search<FrontendValue>> getSearchesFor(SelectFilter<?> searchable, boolean withEmptySource) {
+		List<Searchable> searchReferences = searchable.getSearchReferences();
+
+		if (withEmptySource) {
+			// Patchup searchables
+			searchReferences.add(SolrEmptySeachable.INSTANCE);
+		}
+
+		return searchReferences.stream().map(processor::getSearchFor).toList();
+	}
+
 
 	/**
 	 * Creates a filter query (which is cached by solr) for the subset of documents originating from the searchables related to this query.
 	 *
 	 * @return Query string that is a group of the searchable ids for the {@link CombinedSolrSearch#filter}.
 	 */
-	private @NotNull String buildFilterQuery() {
-		List<Search<FrontendValue>> searches = processor.getSearchesFor(filter);
+	private @NotNull String buildFilterQuery(boolean withEmptySource) {
+		List<Search<FrontendValue>> searches = getSearchesFor(filter, withEmptySource);
 		String searchables = searches.stream()
 									 .map(SolrSearch.class::cast)
 									 .map(SolrSearch::getSearchable)
@@ -81,7 +93,9 @@ public class CombinedSolrSearch {
 
 		if (StringUtils.isBlank(term)) {
 			// Fallback to wild card if search term is blank search for everything
-			term = "_text_:*";
+			term = "_text_:* " + "%s:%d^100".formatted(SolrFrontendValue.Fields.sourcePriority_i, SolrProcessor.getSourcePriority(SolrEmptySeachable.INSTANCE));
+
+			return sendQuery(term, start, limit, true);
 		}
 		else {
 			term = Arrays.stream(term.split("\\s"))
@@ -92,22 +106,23 @@ public class CombinedSolrSearch {
 						 // Wildcard regex each term (maybe combine with fuzzy search)
 						 .map(queryTemplate::formatted)
 						 .collect(Collectors.joining(" AND "));
+			return sendQuery(term, start, limit, false);
 		}
-
-		return sendQuery(term, start, limit);
 	}
 
-	private @NotNull AutoCompleteResult sendQuery(String queryString, Integer start, @org.jetbrains.annotations.Nullable Integer limit) {
-		String filterQuery = buildFilterQuery();
+	private @NotNull AutoCompleteResult sendQuery(String queryString, Integer start, @org.jetbrains.annotations.Nullable Integer limit, boolean withEmptySource) {
+		String filterQuery = buildFilterQuery(withEmptySource);
 		SolrQuery query = buildSolrQuery(filterQuery, queryString, start, limit);
-		log.info("Query [{}] created: {}", queryString.hashCode(), URLDecoder.decode(String.valueOf(query), StandardCharsets.UTF_8));
+		String decodedQuery = URLDecoder.decode(String.valueOf(query), StandardCharsets.UTF_8);
+		int queryHash = decodedQuery.hashCode();
+		log.info("Query [{}] created: {}", queryHash, decodedQuery);
 
 		try {
 			QueryResponse response = solrClient.query(query);
 			List<SolrFrontendValue> beans = response.getBeans(SolrFrontendValue.class);
 
 			long numFound = response.getResults().getNumFound();
-			log.info("Query [{}] Found: {} | Collected: {} | QTime: {} | ElapsedTime: {}", queryString.hashCode(), numFound, beans.size(), response.getQTime(), response.getElapsedTime());
+			log.info("Query [{}] Found: {} | Collected: {} | QTime: {} | ElapsedTime: {}", queryHash, numFound, beans.size(), response.getQTime(), response.getElapsedTime());
 
 			List<FrontendValue> values = beans.stream().map(SolrFrontendValue::toFrontendValue).toList();
 			return new AutoCompleteResult(values, numFound);
@@ -129,7 +144,8 @@ public class CombinedSolrSearch {
 
 		// Collapse the results with equal "value" field. Only the one with the highest score remains.
 		// This only works if solr is not sharded (or collapsing documents are on the same shard)
-		query.addFilterQuery("{!collapse field=%s min=%s}".formatted(SolrFrontendValue.Fields.value_s, SolrFrontendValue.Fields.sourcePriority_i));
+		// We set 'nullPolicy=expand' so we do not suppress the empty label entry
+		query.addFilterQuery("{!collapse field=%s min=%s nullPolicy=expand}".formatted(SolrFrontendValue.Fields.value_s, SolrFrontendValue.Fields.sourcePriority_i));
 
 		return query;
 	}
@@ -152,6 +168,6 @@ public class CombinedSolrSearch {
 							   .map(field -> "%s:\"%s\"".formatted(field, finalTerm))
 							   .collect(Collectors.joining(" OR ", "(", ")"));
 
-		return sendQuery(collect, start, limit);
+		return sendQuery(collect, start, limit, true);
 	}
 }

@@ -1,19 +1,17 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
-import jakarta.validation.constraints.Min;
-
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.query.InternalFilterSearch;
 import com.bakdata.conquery.util.search.internal.TrieSearch;
+import jakarta.validation.constraints.Min;
 
 /**
  * @implNote This class is tightly coupled with {@link InternalFilterSearch} and {@link com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter}.
  * <p>
  * Searchable classes describe how a search should be constructed, and provide the values with getSearchValues.
  */
-public interface Searchable<T> {
+public interface Searchable {
 
-	Id<?> getId();
+	String getSearchHandle();
 
 	/**
 	 * Parameter used in the construction of {@link TrieSearch}, defining the shortest suffix to create.

@@ -39,6 +39,12 @@ public class SolrConfig implements SearchConfig {
 	private int updateChunkSize = 100;
 
 	/**
+	 * Label for the special empty value to filter for empty entries.
+	 */
+	@NotNull
+	private String emptyLabel = "No Value";
+
+	/**
 	 * Effectively the query that is sent to solr after we split the users search phrase into terms on whitespaces and join them together again after template resolving.
 	 * Joining involves a boolean operator, so parentheses might be needed.
 	 * The format string only gets a single argument, so refer to the argument using <code>%1$s</code> if you want to use it multiple times.
@@ -60,7 +66,7 @@ public class SolrConfig implements SearchConfig {
 	public SolrProcessor createSearchProcessor(Environment environment, DatasetId datasetId) {
 		try {
 			SolrClient client = createManagedSearchClient(environment, datasetId.getName());
-			return new SolrProcessor(client, commitWithin, updateChunkSize, queryTemplate, combineEquallyNamedColumns);
+			return new SolrProcessor(client, commitWithin, updateChunkSize, queryTemplate, combineEquallyNamedColumns, emptyLabel);
 		}
 		catch (MalformedURLException e) {
 			throw new RuntimeException(e);
@@ -88,9 +94,7 @@ public class SolrConfig implements SearchConfig {
 			builder.withBasicAuthCredentials(username, password);
 		}
 
-		SolrClient client = builder.build();
-
-		return client;
+        return builder.build();
 	}
 
 	public HealthCheck createHealthCheck(SolrClient client) {

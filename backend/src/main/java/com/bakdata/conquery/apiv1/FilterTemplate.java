@@ -4,7 +4,6 @@ import java.net.URI;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
@@ -34,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @ToString
 @Slf4j
 @CPSType(id = "CSV_TEMPLATE", base = SearchIndex.class)
-public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements Searchable<FrontendValue>, SearchIndex {
+public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements Searchable, SearchIndex {
 
 	@NotNull
 	private DatasetId dataset;
@@ -95,5 +94,11 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	@JsonIgnore
 	public URI getResolvedUri() {
 		return FileUtil.getResolvedUri(config.getIndex().getBaseUrl(), filePath);
+	}
+
+	@JsonIgnore
+	@Override
+	public String getSearchHandle() {
+		return getId().toString();
 	}
 }

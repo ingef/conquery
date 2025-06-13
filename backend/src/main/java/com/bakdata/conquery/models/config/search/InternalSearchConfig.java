@@ -23,6 +23,7 @@ import com.bakdata.conquery.util.search.internal.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.google.common.collect.BiMap;
 import io.dropwizard.core.setup.Environment;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
@@ -39,6 +40,9 @@ public class InternalSearchConfig implements SearchConfig {
 	@Nullable
 	private String searchSplitChars = "(),;.:\"'/";
 
+	@NotNull
+	private String emptyLabel = "No Value";
+
 
 
 	@Override
@@ -47,7 +51,7 @@ public class InternalSearchConfig implements SearchConfig {
 	}
 
 
-	public TrieSearch<FrontendValue> createSearch(Searchable<FrontendValue> searchable) {
+	public TrieSearch<FrontendValue> createSearch(Searchable searchable) {
 		if (searchable instanceof FilterTemplate temp) {
 
 			return getFilterTemplateSearch(temp);

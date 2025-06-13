@@ -41,6 +41,12 @@ public class SolrSearch extends Search<FrontendValue> {
 	 */
 	private final LinkedList<SolrFrontendValue> openDocs = new LinkedList<>();
 
+
+	/**
+	 * Keep track of empty value
+	 */
+	private boolean seenEmpty = false;
+
 	/**
 	 * We keep track of values that we send to solr to lower network traffic.
 	 * Because we receive values individually from the shards, a value is probably seen multiple times.
@@ -92,9 +98,14 @@ public class SolrSearch extends Search<FrontendValue> {
 	@Override
 	public void addItem(FrontendValue feValue, List<String> _keywords) {
 		if (feValue.getValue().isEmpty()) {
-			log.warn("Skip indexing of {} for {}, because its 'value' is empty.", feValue, searchable);
-			return;
+			if (seenEmpty) {
+				log.trace("Skip indexing of {} for {}, because its 'value' is empty and was already added.", feValue, searchable);
+				return;
+			}
+			seenEmpty = true;
+
 		}
+
 		if (!seenValues.add(feValue.getValue())) {
 			log.trace("Skip indexing of {} for {}, because its 'value' has already been submitted to solr.", feValue, searchable);
 			return;
