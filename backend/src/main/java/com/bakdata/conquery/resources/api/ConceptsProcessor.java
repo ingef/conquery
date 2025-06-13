@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -156,7 +155,7 @@ public class ConceptsProcessor {
 
 	public AutoCompleteResult autocompleteTextFilter(
 			SelectFilter<?> searchable,
-			Optional<String> maybeText,
+			String maybeText,
 			OptionalInt pageNumberOpt,
 			OptionalInt itemsPerPageOpt
 	) {
