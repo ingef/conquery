@@ -71,9 +71,9 @@ public class ConceptsProcessor {
 			});
 
 
-	public FrontendRoot getRoot(NamespaceStorage storage, Subject subject) {
+	public FrontendRoot getRoot(NamespaceStorage storage, Subject subject, boolean showHidden) {
 
-		final FrontendRoot root = getFrontEndConceptBuilder().createRoot(storage, subject);
+		final FrontendRoot root = getFrontEndConceptBuilder().createRoot(storage, subject, showHidden);
 
 		// Report Violation
 		ValidatorHelper.createViolationsString(validator.validate(root), log.isTraceEnabled()).ifPresent(log::warn);
@@ -191,7 +191,7 @@ public class ConceptsProcessor {
 				log.error("Error while trying to resolve `{}`", conceptCode, e);
 			}
 		}
-		return new ResolvedConceptsResult(resolvedCodes,  unknownCodes);
+		return new ResolvedConceptsResult(resolvedCodes, unknownCodes);
 	}
 
 	public record AutoCompleteResult(List<FrontendValue> values, long total) {

@@ -10,7 +10,6 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
@@ -22,6 +21,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.queryplan.specific.Leaf;
@@ -104,12 +104,27 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	/**
 	 * Allows concepts to create their own altered FiltersNode if necessary.
 	 */
-	public QPNode createConceptQuery(QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators, ValidityDate validityDate) {
-		final QPNode child = filters.isEmpty() && aggregators.isEmpty() ? new Leaf() : FiltersNode.create(filters, aggregators, eventDateAggregators);
+	public QPNode createConceptQuery(
+			QueryPlanContext context,
+			List<FilterNode<?>> filters,
+			List<Aggregator<?>> aggregators,
+			EventDateUnionAggregator eventDateAggregators,
+			ValidityDate validityDate) {
+		final QPNode child;
+		if (filters.isEmpty() && aggregators.isEmpty()) {
+			child = new Leaf();
+		}
+		else {
+			child = FiltersNode.create(filters, aggregators, eventDateAggregators);
+		}
 
 
 		// Only if a validityDateColumn exists, capsule children in ValidityDateNode
-		return validityDate != null ? new ValidityDateNode(validityDate, child) : child;
+		if (validityDate != null) {
+			return new ValidityDateNode(validityDate, child);
+		}
+
+		return child;
 	}
 
 	@Override
