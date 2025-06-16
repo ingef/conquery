@@ -188,8 +188,7 @@ public class SolrProcessor implements SearchProcessor {
 						searchCache.put(searchable, search);
 
 						log.debug(
-								"DONE collecting {} entries for `{}`, within {}",
-								search.calculateSize(),
+								"DONE collecting entries for `{}`, within {}",
 								searchable,
 								watch
 						);
