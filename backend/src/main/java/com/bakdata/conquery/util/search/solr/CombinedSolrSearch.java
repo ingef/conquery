@@ -77,12 +77,11 @@ public class CombinedSolrSearch {
 	 */
 	private @NotNull String buildFilterQuery(boolean withEmptySource) {
 		List<Search<FrontendValue>> searches = getSearchesFor(filter, withEmptySource);
-		String searchables = searches.stream()
-									 .map(SolrSearch.class::cast)
-									 .map(SolrSearch::getSearchable)
-									 // The name of the searchable was already escaped at the creation of SolrSearch
-									 .collect(Collectors.joining(" ", "%s:(".formatted(SolrFrontendValue.Fields.searchable_s), ")"));
-		return searchables;
+		return searches.stream()
+				.map(SolrSearch.class::cast)
+				.map(SolrSearch::getSearchable)
+				// The name of the searchable was already escaped at the creation of SolrSearch
+				.collect(Collectors.joining(" ", "%s:(".formatted(SolrFrontendValue.Fields.searchable_s), ")"));
 	}
 
 	/**
@@ -90,16 +89,14 @@ public class CombinedSolrSearch {
 	 */
 	public AutoCompleteResult topItems(String text, Integer start, @Nullable Integer limit) {
 
-		String term = text;
-
-		if (StringUtils.isBlank(term)) {
+		if (StringUtils.isBlank(text)) {
 			// Fallback to wild card if search term is blank search for everything
-			term = "_text_:*";
+			text = "_text_:*";
 
-			return sendQuery(term, start, limit, true, true);
+			return sendQuery(text, start, limit, true, true);
 		}
 		else {
-			term = Arrays.stream(term.split("\\s"))
+			text = Arrays.stream(text.split("\\s"))
 						 // Skip blanks
 						 .filter(Predicate.not(String::isBlank))
 						 // Escape
@@ -107,7 +104,7 @@ public class CombinedSolrSearch {
 						 // Wildcard regex each term (maybe combine with fuzzy search)
 						 .map(queryTemplate::formatted)
 						 .collect(Collectors.joining(" AND "));
-			return sendQuery(term, start, limit, false, false);
+			return sendQuery(text, start, limit, false, false);
 		}
 	}
 
@@ -156,8 +153,7 @@ public class CombinedSolrSearch {
 		return query;
 	}
 
-	public AutoCompleteResult topItemsExact(String text, Integer start, @Nullable Integer limit) {
-		String term = text;
+	public AutoCompleteResult topItemsExact(String term, Integer start, @Nullable Integer limit) {
 
 		if (StringUtils.isBlank(term)) {
 			return new AutoCompleteResult(List.of(), 0);
