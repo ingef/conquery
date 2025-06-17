@@ -9,7 +9,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -18,7 +17,7 @@ import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.LabelMap;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.search.SolrConfig;
+import com.bakdata.conquery.models.config.search.solr.SolrConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
@@ -59,16 +58,16 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
-public class SolrTest {
+public class SolrFilterValueTest {
 
 
 	public static final String MAPPING_PATH = "/shared/mapping.csv";
 	public static final DatasetId DATASET_ID = new DatasetId("core1");
 	public static final Column SEARCHABLE = createSearchable();
-	public static final Environment ENVIRONMENT = new Environment(SolrTest.class.getSimpleName());
+	public static final Environment ENVIRONMENT = new Environment(SolrFilterValueTest.class.getSimpleName());
 	public static final ConqueryConfig CONQUERY_CONFIG = new ConqueryConfig();
 	@RegisterExtension
-	private static final MockServerExtension REF_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(), SolrTest::initRefServer);
+	private static final MockServerExtension REF_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(), SolrFilterValueTest::initRefServer);
 	@RegisterExtension
 	private static final SolrServerExtension SOLR_SERVER = new SolrServerExtension(DATASET_ID.toString());
 	private static final IndexService INDEX_SERVICE = new IndexService(new CsvParserSettings(){{setDelimiterDetectionEnabled(true);setLineSeparatorDetectionEnabled(true);}}, "emptyDefaultLabel");
@@ -96,8 +95,9 @@ public class SolrTest {
 
 		String baseSolrUrl = SOLR_SERVER.getSolrBaseUrl();
 		solrConfig = new SolrConfig(baseSolrUrl, "solr", "SolrRocks");
+		solrConfig.getFilterValue().setQueryTemplate("( %1$s^3 *%1$s*^2 %1$s~^1 )");
 		CONQUERY_CONFIG.setSearch(solrConfig);
-		solrBundle.run(CONQUERY_CONFIG, new Environment(SolrTest.class.getSimpleName()));
+		solrBundle.run(CONQUERY_CONFIG, new Environment(SolrFilterValueTest.class.getSimpleName()));
 		searchProcessor = solrConfig.createSearchProcessor(ENVIRONMENT, DATASET_ID);
 
 		// Cleanup core
@@ -137,7 +137,7 @@ public class SolrTest {
 				index.setDataset(DATASET_ID);
 				index.setConfig(CONQUERY_CONFIG);
 
-				return new ArrayList<>(List.of(labelMap, index, SolrTest.SEARCHABLE));
+				return new ArrayList<>(List.of(labelMap, index, SolrFilterValueTest.SEARCHABLE));
 			}
 
 			@Override
@@ -216,7 +216,7 @@ public class SolrTest {
 							new FrontendValue("a", "Map A", null),
 							new FrontendValue("map b", "Map B", null),
 							new FrontendValue("map c", "Map C", null),
-							new FrontendValue("data a", "data a", "data a")
+							new FrontendValue("b", "Data b", "b")
 					));
 					assertThat(uut.total()).isEqualTo(13);
 				}
@@ -230,11 +230,11 @@ public class SolrTest {
 
 		assertThat(actual).satisfies(uut -> {
 					assertThat(uut.values()).isEqualTo(List.of(
-							new FrontendValue("b", "Data b", "b"),
+							new FrontendValue("data a", "data a", "data a"),
 							new FrontendValue("data c", "Data C", "data c"),
 							new FrontendValue("data d", "data d", "data d"),
-							new FrontendValue("","internal", null),
-							new FrontendValue("external-null", "external-null", "external-null")
+							new FrontendValue("external-null", "external-null", "external-null"),
+							new FrontendValue("","internal", null)
 					));
 					assertThat(uut.total()).isEqualTo(13);
 				}
@@ -248,9 +248,9 @@ public class SolrTest {
 
 		assertThat(actual).satisfies(uut -> {
 					assertThat(uut.values()).isEqualTo(List.of(
-							new FrontendValue("column c", "column c", "null"),
 							new FrontendValue("column ab", "column ab", "null"),
-							new FrontendValue("column ba", "column ba", "null")
+							new FrontendValue("column ba", "column ba", "null"),
+							new FrontendValue("column c", "column c", "null")
 					));
 					assertThat(uut.total()).isEqualTo(13);
 				}

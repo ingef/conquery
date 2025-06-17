@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.models.config.search.solr.FilterValueConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
@@ -31,12 +32,12 @@ import org.jetbrains.annotations.NotNull;
  */
 @AllArgsConstructor
 @Slf4j
-public class CombinedSolrSearch {
+public class FilterValueSearch {
 
 	private final SelectFilter<?> filter;
 	private final SolrProcessor processor;
 	private final SolrClient solrClient;
-	private final String queryTemplate;
+	private final FilterValueConfig filterValueConfig;
 
 	public long getTotal() {
 
@@ -73,13 +74,13 @@ public class CombinedSolrSearch {
 	 * Creates a filter query (which is cached by solr) for the subset of documents originating from the searchables related to this query.
 	 *
 	 * @param withEmptySource Also include the special empty value source in the results, which allows in conquery to filter for empty fields.
-	 * @return Query string that is a group of the searchable ids for the {@link CombinedSolrSearch#filter}.
+	 * @return Query string that is a group of the searchable ids for the {@link FilterValueSearch#filter}.
 	 */
 	private @NotNull String buildFilterQuery(boolean withEmptySource) {
 		List<Search<FrontendValue>> searches = getSearchesFor(filter, withEmptySource);
 		return searches.stream()
-				.map(SolrSearch.class::cast)
-				.map(SolrSearch::getSearchable)
+				.map(FilterValueIndexer.class::cast)
+				.map(FilterValueIndexer::getSearchable)
 				// The name of the searchable was already escaped at the creation of SolrSearch
 				.collect(Collectors.joining(" ", "%s:(".formatted(SolrFrontendValue.Fields.searchable_s), ")"));
 	}
@@ -102,7 +103,7 @@ public class CombinedSolrSearch {
 						 // Escape
 						 .map(ClientUtils::escapeQueryChars)
 						 // Wildcard regex each term (maybe combine with fuzzy search)
-						 .map(queryTemplate::formatted)
+						 .map(filterValueConfig.getQueryTemplate()::formatted)
 						 .collect(Collectors.joining(" AND "));
 			return sendQuery(text, start, limit, false, false);
 		}
@@ -131,7 +132,7 @@ public class CombinedSolrSearch {
 		}
 	}
 
-	private static @NotNull SolrQuery buildSolrQuery(String filterQuery, String queryString, Integer start, @org.jetbrains.annotations.Nullable Integer limit, boolean sort) {
+	private @NotNull SolrQuery buildSolrQuery(String filterQuery, String queryString, Integer start, @org.jetbrains.annotations.Nullable Integer limit, boolean sort) {
 		SolrQuery query = new SolrQuery(queryString);
 		query.addFilterQuery(filterQuery);
 		query.addField(SolrFrontendValue.Fields.value_s);
@@ -142,7 +143,7 @@ public class CombinedSolrSearch {
 
 		if (sort) {
 			query.setSort(SolrQuery.SortClause.asc(SolrFrontendValue.Fields.sourcePriority_i));
-			query.addSort(SolrQuery.SortClause.asc(SolrFrontendValue.Fields.label_t));
+			query.addSort(SolrQuery.SortClause.asc(filterValueConfig.getDefaultSearchSortField()));
 		}
 
 		// Collapse the results with equal "value" field. Only the one with the highest score remains.

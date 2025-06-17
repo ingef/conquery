@@ -1,7 +1,7 @@
 package com.bakdata.conquery.util.search.solr;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.search.SolrConfig;
+import com.bakdata.conquery.models.config.search.solr.SolrConfig;
 import io.dropwizard.core.ConfiguredBundle;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;

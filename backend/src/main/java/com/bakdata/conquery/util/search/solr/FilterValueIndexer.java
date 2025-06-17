@@ -25,7 +25,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 
 @Slf4j
 @RequiredArgsConstructor
-public class SolrSearch extends Search<FrontendValue> {
+public class FilterValueIndexer extends Search<FrontendValue> {
 
 	private final SolrClient solrClient;
 
@@ -37,7 +37,7 @@ public class SolrSearch extends Search<FrontendValue> {
 	public final int updateChunkSize;
 
 	/**
-	 * Buffer docs to send larger update chunks (size {@link SolrSearch#updateChunkSize}).
+	 * Buffer docs to send larger update chunks (size {@link FilterValueIndexer#updateChunkSize}).
 	 */
 	private final LinkedList<SolrFrontendValue> openDocs = new LinkedList<>();
 
@@ -87,12 +87,12 @@ public class SolrSearch extends Search<FrontendValue> {
 
 	@Override
 	public List<FrontendValue> findExact(String searchTerm, int maxValue) {
-		throw new UnsupportedOperationException("Must not be used. Use " + CombinedSolrSearch.class);
+		throw new UnsupportedOperationException("Must not be used. Use " + FilterValueSearch.class);
 	}
 
 	@Override
 	public Iterator<FrontendValue> iterator() {
-		throw new UnsupportedOperationException("Must not be used. Use " + CombinedSolrSearch.class);
+		throw new UnsupportedOperationException("Must not be used. Use " + FilterValueSearch.class);
 	}
 
 	@Override

@@ -1,10 +1,11 @@
-package com.bakdata.conquery.models.config.search;
+package com.bakdata.conquery.models.config.search.solr;
 
 import java.net.MalformedURLException;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+
+import com.bakdata.conquery.models.config.search.SearchConfig;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -38,35 +39,15 @@ public class SolrConfig implements SearchConfig {
 	@Min(1)
 	private int updateChunkSize = 100;
 
-	/**
-	 * Label for the special empty value to filter for empty entries.
-	 */
 	@NotNull
-	private String emptyLabel = "No Value";
-
-	/**
-	 * Effectively the query that is sent to solr after we split the users search phrase into terms on whitespaces and join them together again after template resolving.
-	 * Joining involves a boolean operator, so parentheses might be needed.
-	 * The format string only gets a single argument, so refer to the argument using <code>%1$s</code> if you want to use it multiple times.
-	 */
-	@NotEmpty
-	private String queryTemplate = "( %1$s^3 *%1$s*^2 %1$s~^1 )";
-
-	/**
-	 * By default, for each value in a column a solr document is created. The id of this solr-document uses the column id and the column value.
-	 * This can cause a large number of documents, many referring to the same <code>value</code>.
-	 * When this flag is <code>true</code>, not the column id but its name is used to form the document id, hence abstracting over all columns of the same name.
-	 * <p/>
-	 * Beware that you need to ensure that equally named columns used in filters are also based on the same set of values. Otherwise, you might encounter unexpected
-	 * query results.
-	 */
-	private boolean combineEquallyNamedColumns = false;
+	@NotNull
+	private FilterValueConfig filterValue = new FilterValueConfig();
 
 	@Override
 	public SolrProcessor createSearchProcessor(Environment environment, DatasetId datasetId) {
 		try {
 			SolrClient client = createManagedSearchClient(environment, datasetId.getName());
-			return new SolrProcessor(client, commitWithin, updateChunkSize, queryTemplate, combineEquallyNamedColumns, emptyLabel);
+			return new SolrProcessor(client, commitWithin, updateChunkSize, filterValue);
 		}
 		catch (MalformedURLException e) {
 			throw new RuntimeException(e);
