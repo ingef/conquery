@@ -22,6 +22,7 @@ import com.bakdata.conquery.util.search.SearchProcessor;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.Sets;
+import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.util.Duration;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -43,14 +44,18 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
-public class SolrProcessor implements SearchProcessor {
+public class SolrProcessor implements SearchProcessor, Managed {
 
 	@NonNull
-	private final SolrClient solrClient;
+	private final Supplier<SolrClient> solrSearchClientFactory;
+
+	@NonNull
+	private final Supplier<SolrClient> solrIndexClientFactory;
 
 	private final Duration commitWithin;
 
@@ -60,15 +65,31 @@ public class SolrProcessor implements SearchProcessor {
 
 	private final Map<String, Search<FrontendValue>> searches = new ConcurrentHashMap<>();
 
+	private SolrClient solrSearchClient;
+
+	private SolrClient solrIndexClient;
+
+	@Override
+	public void start() throws Exception {
+		solrSearchClient = solrSearchClientFactory.get();
+		solrIndexClient = solrIndexClientFactory.get();
+	}
+
+	@Override
+	public void stop() throws Exception {
+		solrSearchClient.close();
+		solrIndexClient.close();
+	}
+
 	@Override
 	public void clearSearch() {
-		try {
-			log.info("Clearing collection: {}", solrClient.getDefaultCollection());
-			solrClient.deleteByQuery("*:*");
-		}
-		catch (SolrServerException | IOException e) {
-			throw new RuntimeException(e);
-		}
+
+        try (SolrClient solrClient = solrSearchClientFactory.get()) {
+            log.info("Clearing collection: {}", solrClient.getDefaultCollection());
+            solrClient.deleteByQuery("*:*");
+        } catch (SolrServerException | IOException e) {
+            throw new RuntimeException(e);
+        }
 	}
 
 	@Override
@@ -86,8 +107,7 @@ public class SolrProcessor implements SearchProcessor {
 
 	@Override
 	public long getTotal(SelectFilter<?> filter) {
-		FilterValueSearch filterValueSearch = new FilterValueSearch(filter, this, solrClient, filterValueConfig);
-
+		FilterValueSearch filterValueSearch = new FilterValueSearch(filter, this, solrSearchClient, filterValueConfig);
 		return filterValueSearch.getTotal();
 	}
 
@@ -100,7 +120,15 @@ public class SolrProcessor implements SearchProcessor {
 	 */
 	private String buildNameForSearchable(Searchable searchable) {
 		String name = switch (searchable) {
-			case Column column -> filterValueConfig.isCombineEquallyNamedColumns() ? "column_"+column.getName() : column.getSearchHandle();
+			case Column column -> {
+
+				String columnGroup = filterValueConfig.getColumnGroup(column);
+				if (columnGroup == null) {
+					yield column.getSearchHandle();
+				}
+				log.trace("Mapping column {} to search group {}", column.getId(), columnGroup);
+				yield "shared_column_" + columnGroup;
+			}
 			default -> searchable.getSearchHandle();
 		};
 
@@ -122,7 +150,7 @@ public class SolrProcessor implements SearchProcessor {
 	/*package*/ Search<FrontendValue> getSearchFor(Searchable searchable) {
 		String nameForSearchable = buildNameForSearchable(searchable);
 		int sourcePriority = getSourcePriority(searchable);
-		return searches.computeIfAbsent(nameForSearchable, searchRef -> new FilterValueIndexer(solrClient, nameForSearchable, sourcePriority, commitWithin, updateChunkSize));
+		return searches.computeIfAbsent(nameForSearchable, searchRef -> new FilterValueIndexer(solrIndexClient, nameForSearchable, sourcePriority, commitWithin, updateChunkSize));
 	}
 
 	@Override
@@ -140,7 +168,7 @@ public class SolrProcessor implements SearchProcessor {
 	}
 
 	public AutoCompleteResult topItems(SelectFilter<?> filter, String text, Integer start, Integer limit) {
-		FilterValueSearch filterValueSearch = new FilterValueSearch(filter, this, solrClient, filterValueConfig);
+		FilterValueSearch filterValueSearch = new FilterValueSearch(filter, this, solrSearchClient, filterValueConfig);
 
 		return filterValueSearch.topItems(text, start, limit);
 	}
@@ -272,7 +300,7 @@ public class SolrProcessor implements SearchProcessor {
 
 	@Override
 	public List<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm) {
-		FilterValueSearch filterValueSearch = new FilterValueSearch(filter, this, solrClient, filterValueConfig);
+		FilterValueSearch filterValueSearch = new FilterValueSearch(filter, this, solrSearchClient, filterValueConfig);
 
 		return filterValueSearch.topItemsExact(searchTerm, 0, 10).values();
 
@@ -290,9 +318,9 @@ public class SolrProcessor implements SearchProcessor {
 	 */
 	public void explicitCommit() throws SolrServerException, IOException {
 		Stopwatch stopwatch = Stopwatch.createStarted();
-		log.info("BEGIN explicit commit to core/collection {}", solrClient.getDefaultCollection());
-		solrClient.commit();
-		log.info("DONE explicit commit to core/collection {} in {}", solrClient.getDefaultCollection(), stopwatch);
+		log.info("BEGIN explicit commit to core/collection {}", solrSearchClient.getDefaultCollection());
+		solrSearchClient.commit();
+		log.info("DONE explicit commit to core/collection {} in {}", solrSearchClient.getDefaultCollection(), stopwatch);
 
 	}
 }

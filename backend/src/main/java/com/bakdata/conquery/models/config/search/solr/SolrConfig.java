@@ -1,26 +1,25 @@
 package com.bakdata.conquery.models.config.search.solr;
 
-import java.net.MalformedURLException;
-import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
-
-import com.bakdata.conquery.models.config.search.SearchConfig;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.config.search.SearchConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.util.search.solr.ManagedSolrClient;
 import com.bakdata.conquery.util.search.solr.SolrProcessor;
 import com.codahale.metrics.health.HealthCheck;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.util.Duration;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.request.HealthCheckRequest;
 import org.apache.solr.common.util.NamedList;
+
+import javax.annotation.Nullable;
+import java.util.concurrent.TimeUnit;
 
 @CPSType(id = "SOLR", base = SearchConfig.class)
 @Data
@@ -45,19 +44,9 @@ public class SolrConfig implements SearchConfig {
 
 	@Override
 	public SolrProcessor createSearchProcessor(Environment environment, DatasetId datasetId) {
-		try {
-			SolrClient client = createManagedSearchClient(environment, datasetId.getName());
-			return new SolrProcessor(client, commitWithin, updateChunkSize, filterValue);
-		}
-		catch (MalformedURLException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public synchronized ManagedSolrClient createManagedSearchClient(Environment environment, String collection) throws MalformedURLException {
-		ManagedSolrClient managedSolrClient = new ManagedSolrClient(createSearchClient(collection));
-		environment.lifecycle().manage(managedSolrClient);
-		return managedSolrClient;
+		SolrProcessor solrProcessor = new SolrProcessor(() -> createSearchClient(datasetId.getName()),() -> createIndexClient(datasetId.getName()), commitWithin, updateChunkSize, filterValue);
+		environment.lifecycle().manage(solrProcessor);
+		return solrProcessor;
 	}
 
 	public SolrClient createSearchClient(@Nullable String collection) {
@@ -76,6 +65,27 @@ public class SolrConfig implements SearchConfig {
 		}
 
         return builder.build();
+	}
+
+	public SolrClient createIndexClient(@Nullable String collection) {
+		log.info("Creating solr index client. Base url: {}, Collection: {})", baseSolrUrl, collection);
+
+		Http2SolrClient.Builder http2Builder = new Http2SolrClient.Builder(baseSolrUrl)
+				.withConnectionTimeout(connectionTimeout.toSeconds(), TimeUnit.SECONDS)
+				.withRequestTimeout(requestTimeout.toSeconds(), TimeUnit.SECONDS);
+
+		if (username != null) {
+			http2Builder.withBasicAuthCredentials(username, password);
+		}
+
+		Http2SolrClient http2Client = http2Builder.build();
+
+		ConcurrentUpdateHttp2SolrClient.Builder concurrentClientBuilder = new ConcurrentUpdateHttp2SolrClient.Builder(baseSolrUrl, http2Client)
+				.withDefaultCollection(collection)
+				.withThreadCount(Runtime.getRuntime().availableProcessors());
+
+
+		return concurrentClientBuilder.build();
 	}
 
 	public HealthCheck createHealthCheck(SolrClient client) {

@@ -1,15 +1,5 @@
 package com.bakdata.conquery.util.search.solr;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
-
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
@@ -22,6 +12,11 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -52,6 +47,8 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 	 * Because we receive values individually from the shards, a value is probably seen multiple times.
 	 */
 	private final Set<String> seenValues = ConcurrentHashMap.newKeySet();
+
+	Throwable clientError = null;
 
 
 	@Override
@@ -97,21 +94,28 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 
 	@Override
 	public void addItem(FrontendValue feValue, List<String> _keywords) {
-		if (feValue.getValue().isEmpty()) {
+
+		SolrFrontendValue solrFrontendValue = new SolrFrontendValue(searchable, sourcePriority, feValue);
+
+		scheduleForIndex(solrFrontendValue);
+
+	}
+
+	private void scheduleForIndex(SolrFrontendValue solrFrontendValue) {
+
+		if (solrFrontendValue.value_s.isEmpty()) {
 			if (seenEmpty) {
-				log.trace("Skip indexing of {} for {}, because its 'value' is empty and was already added.", feValue, searchable);
+				log.trace("Skip indexing of {} for {}, because its 'value' is empty and was already added.", solrFrontendValue, searchable);
 				return;
 			}
 			seenEmpty = true;
 
 		}
 
-		if (!seenValues.add(feValue.getValue())) {
-			log.trace("Skip indexing of {} for {}, because its 'value' has already been submitted to solr.", feValue, searchable);
+		if (!seenValues.add(solrFrontendValue.value_s)) {
+			log.trace("Skip indexing of {} for {}, because its 'value' has already been submitted to solr.", solrFrontendValue, searchable);
 			return;
 		}
-
-		SolrFrontendValue solrFrontendValue = new SolrFrontendValue(searchable, sourcePriority, feValue);
 
 		openDocs.add(solrFrontendValue);
 
@@ -123,7 +127,6 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 			registerValues(openDocs);
 			openDocs.clear();
 		}
-
 	}
 
 	private int getCommitWithinMs() {
@@ -138,10 +141,15 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 														   .map(value -> new SolrFrontendValue(searchable, sourcePriority, value, null, null))
 														   .toList();
 
-		registerValues(solrFrontendValues);
+		solrFrontendValues.forEach(this::scheduleForIndex);
 	}
 
-	public void registerValues(Collection<SolrFrontendValue> solrFrontendValues) {
+	private void registerValues(Collection<SolrFrontendValue> solrFrontendValues) {
+		if (clientError != null) {
+			log.error("Cannot index value for {}, because client had an error previously", searchable);
+			return;
+		}
+
 		if (solrFrontendValues.isEmpty()) {
 			// Avoid "BaseHttpSolrClient$RemoteSolrException: ... missing content stream" on empty collection
 			return;
@@ -149,11 +157,17 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 
 		try {
 			Stopwatch stopwatch = Stopwatch.createStarted();
-			log.info("BEGIN registering {} values to {} for {} {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable.getClass().getSimpleName(), searchable);
+			log.info("BEGIN registering {} values to {} for {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable);
 			solrClient.addBeans(solrFrontendValues, getCommitWithinMs());
-			log.info("DONE registering {} values to {} for {} {} in {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable.getClass().getSimpleName(), searchable, stopwatch);
+			log.trace("DONE registering {} values to {} for {} in {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable, stopwatch);
 		}
 		catch (SolrServerException | IOException e) {
+			clientError = e;
+			try {
+				solrClient.close();
+			} catch (IOException ex) {
+				throw new RuntimeException(ex);
+			}
 			throw new IllegalStateException("Unable to register values for searchable '%s'".formatted(searchable), e);
 		}
 	}

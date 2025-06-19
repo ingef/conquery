@@ -38,6 +38,6 @@ public class LabelMap implements Searchable {
 
 	@Override
 	public String getSearchHandle() {
-		return id.toString();
+		return "label_map_" + id.toString();
 	}
 }

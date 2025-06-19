@@ -1,8 +1,5 @@
 package com.bakdata.conquery.models.datasets;
 
-import javax.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.Labeled;
@@ -12,12 +9,16 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 
 @Getter
 @Setter
@@ -48,6 +49,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	 * if this is set this column counts as the secondary id of the given name for this
 	 * table
 	 */
+	@CheckForNull
 	private SecondaryIdDescriptionId secondaryId;
 
 	@JsonIgnore
@@ -78,6 +80,6 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	@JsonIgnore
 	@Override
 	public String getSearchHandle() {
-		return getId().toString();
+		return "column_" + getId().toString();
 	}
 }

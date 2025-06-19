@@ -13,6 +13,7 @@ public class SolrBundle implements ConfiguredBundle<ConqueryConfig>, Managed {
 
 	private Environment environment;
 	private SolrConfig solrConfig;
+	private SolrClient solrClient;
 
 	@Override
 	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
@@ -23,7 +24,8 @@ public class SolrBundle implements ConfiguredBundle<ConqueryConfig>, Managed {
 		}
 		this.solrConfig = config;
 
-		SolrClient solrClient = config.createManagedSearchClient(environment, null);
+		// This client is not bound to any collection, because it just pings solr
+		solrClient = config.createSearchClient(null);
 
 		environment.healthChecks().register(config.getBaseSolrUrl(), config.createHealthCheck(solrClient));
 
@@ -34,5 +36,6 @@ public class SolrBundle implements ConfiguredBundle<ConqueryConfig>, Managed {
 	public void stop() throws Exception {
 		log.info("Unregister health check for {}", solrConfig.getBaseSolrUrl());
 		environment.healthChecks().unregister(solrConfig.getBaseSolrUrl());
+		solrClient.close();
 	}
 }

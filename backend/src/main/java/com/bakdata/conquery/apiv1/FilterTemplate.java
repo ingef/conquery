@@ -1,9 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import java.net.URI;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
@@ -13,17 +9,13 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.util.io.FileUtil;
-import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.OptBoolean;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+
+import java.net.URI;
 
 @Data
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
@@ -99,6 +91,6 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	@JsonIgnore
 	@Override
 	public String getSearchHandle() {
-		return getId().toString();
+		return "filter_template_" + getId().toString();
 	}
 }
