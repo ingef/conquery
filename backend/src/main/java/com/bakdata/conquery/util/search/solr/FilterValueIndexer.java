@@ -137,7 +137,6 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 		List<SolrFrontendValue> solrFrontendValues = values.stream()
 														   .filter(Objects::nonNull)
 														   .filter(Predicate.not(String::isBlank))
-														   .filter(seenValues::add)
 														   .map(value -> new SolrFrontendValue(searchable, sourcePriority, value, null, null))
 														   .toList();
 
