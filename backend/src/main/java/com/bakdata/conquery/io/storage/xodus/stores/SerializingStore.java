@@ -550,6 +550,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
+	public boolean contains(KEY key) {
+		return store.contains(writeKey(key));
+	}
+
+	@Override
 	public void removeStore() {
 		store.removeStore();
 	}

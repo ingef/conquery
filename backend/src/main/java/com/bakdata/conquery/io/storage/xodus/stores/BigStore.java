@@ -225,6 +225,11 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	}
 
 	@Override
+	public boolean contains(KEY key) {
+		return metaStore.contains(key);
+	}
+
+	@Override
 	public void invalidateCache() {
 		metaStore.invalidateCache();
 		dataStore.invalidateCache();

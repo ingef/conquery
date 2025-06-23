@@ -183,7 +183,7 @@ public class BucketManager {
 	}
 
 	public boolean hasCBlock(CBlockId id) {
-		return storage.getCBlock(id) != null;
+		return storage.hasCBlock(id);
 	}
 
 	public synchronized void addCalculatedCBlock(CBlock cBlock) {
