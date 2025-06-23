@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * @param <T> The intermediate representation of the type we are printing.
  */
 @FunctionalInterface
+@SuppressWarnings("raw")
 public interface Printer<T> extends Function<T, Object> {
 	Object apply(@NotNull T value);
 

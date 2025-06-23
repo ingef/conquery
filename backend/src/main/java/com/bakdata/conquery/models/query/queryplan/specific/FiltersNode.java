@@ -82,6 +82,7 @@ public class FiltersNode extends QPNode {
 		}
 	}
 
+
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		super.nextTable(ctx, currentTable);

@@ -21,10 +21,10 @@ import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -65,9 +65,6 @@ import lombok.extern.slf4j.Slf4j;
 @EqualsAndHashCode(callSuper = true, doNotUseGetters = true)
 public class CQConcept extends CQElement implements NamespacedIdentifiableHolding, ExportForm.DefaultSelectSettable {
 
-	/**
-	 * @implNote FK: this is a schema migration problem I'm not interested fixing right now.
-	 */
 	@JsonProperty("ids")
 	@NotEmpty
 	private List<ConceptElementId<?>> elements = Collections.emptyList();
@@ -90,42 +87,44 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	@JsonView(View.InternalCommunication.class)
 	private boolean aggregateEventDates;
 
-	public static CQConcept forSelect(Select select) {
+	public static CQConcept forSelect(SelectId selectId) {
 		final CQConcept cqConcept = new CQConcept();
-		// TODO transform to use only ids here
-		cqConcept.setElements(List.of(select.getHolder().findConcept().getId()));
 
-		if (select.getHolder() instanceof Connector) {
-			final CQTable table = new CQTable();
-			cqConcept.setTables(List.of(table));
+		cqConcept.setElements(List.of(selectId.findConcept()));
 
-			table.setConnector(((Connector) select.getHolder()).getId());
+		switch (selectId) {
+			case ConceptSelectId conceptSelectId -> {
+				cqConcept.setTables(conceptSelectId.getConcept().resolve()
+												   .getConnectors().stream()
+												   .map(conn -> {
+													   final CQTable table = new CQTable();
+													   table.setConnector(conn.getId());
+													   return table;
+												   }).toList());
 
-			table.setSelects(List.of((ConnectorSelectId) select.getId()));
-			table.setConcept(cqConcept);
-		}
-		else {
-			cqConcept.setTables(((Concept<?>) select.getHolder())
-										.getConnectors().stream()
-										.map(conn -> {
-											final CQTable table = new CQTable();
-											table.setConnector(conn.getId());
-											return table;
-										}).toList());
+				cqConcept.setSelects(List.of(conceptSelectId));
+			}
+			case ConnectorSelectId connectorSelectId -> {
+				final CQTable table = new CQTable();
+				cqConcept.setTables(List.of(table));
 
-			cqConcept.setSelects(List.of(select.getId()));
+				table.setConnector(connectorSelectId.getConnector());
+
+				table.setSelects(List.of(connectorSelectId));
+				table.setConcept(cqConcept);
+			}
 		}
 
 		return cqConcept;
 	}
 
-	public static CQConcept forConnector(Connector source) {
+	public static CQConcept forConnector(ConnectorId source) {
 		final CQConcept cqConcept = new CQConcept();
-		// TODO transform to use only ids here
-		cqConcept.setElements(List.of(source.getConcept().getId()));
+
+		cqConcept.setElements(List.of(source.getConcept()));
 		final CQTable cqTable = new CQTable();
 		cqTable.setConcept(cqConcept);
-		cqTable.setConnector(source.getId());
+		cqTable.setConnector(source);
 		cqConcept.setTables(List.of(cqTable));
 
 		return cqConcept;
@@ -227,7 +226,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			existsAggregators.forEach(agg -> agg.setReference(conceptSpecificNode));
 
 			// Select if matching secondaryId available
-			final boolean hasSelectedSecondaryId = table.hasSelectedSecondaryId(context.getSelectedSecondaryId());
+			final boolean hasSelectedSecondaryId = context.getSelectedSecondaryId() != null && table.hasSelectedSecondaryId(context.getSelectedSecondaryId().getId());
 
 			final ConceptNode node = new ConceptNode(
 					conceptSpecificNode,
@@ -311,6 +310,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 										   ));
 	}
 
+
 	@JsonIgnore
 	@ValidationMethod(message = "Not all Selects belong to the Concept.")
 	public boolean isAllSelectsForConcept() {
@@ -340,10 +340,16 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	@Override
 	public void collectNamespacedObjects(Set<? super NamespacedIdentifiable<?>> identifiables) {
-		final List<ConceptElement<?>> list = elements.stream().<ConceptElement<?>>map(ConceptElementId::resolve).toList();
-		identifiables.addAll(list);
-		identifiables.addAll(selects.stream().map(Id::resolve).toList());
-		tables.forEach(table -> identifiables.add(table.getConnector().resolve()));
+		for (ConceptElementId<?> element : elements) {
+			identifiables.add(element.resolve());
+		}
+
+		for (SelectId select : selects) {
+			identifiables.add(select.resolve());
+		}
+		for (CQTable table : tables) {
+			identifiables.add(table.getConnector().resolve());
+		}
 	}
 
 	@Override
@@ -358,13 +364,18 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		}
 
 		final List<SelectId> cSelects = new ArrayList<>(getSelects());
-		cSelects.addAll(getConcept().getDefaultSelects().stream().map(Select::getId).toList());
+		cSelects.addAll(getConcept().getDefaultSelects());
 
 		setSelects(cSelects);
 
 		for (CQTable t : getTables()) {
 			final List<ConnectorSelectId> conSelects = new ArrayList<>(t.getSelects());
-			conSelects.addAll(t.getConnector().resolve().getDefaultSelects().stream().map(Select::getId).map(ConnectorSelectId.class::cast).toList());
+			conSelects.addAll(t.getConnector().resolve()
+							   .getDefaultSelects().stream()
+							   .map(Select::getId)
+							   .map(ConnectorSelectId.class::cast)
+							   .toList());
+
 			t.setSelects(conSelects);
 		}
 	}

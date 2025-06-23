@@ -6,8 +6,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
@@ -39,8 +38,8 @@ public class ReportConsistency extends NamespaceMessage {
 
 	@Override
 	public void react(DistributedNamespace context) throws Exception {
-		try (Stream<Import> allImports = context.getStorage().getAllImports()) {
-			Set<ImportId> managerImports = allImports.map(Import::getId).collect(Collectors.toSet());
+		try (Stream<ImportId> allImports = context.getStorage().getAllImports()) {
+			Set<ImportId> managerImports = allImports.collect(Collectors.toSet());
 
 			Set<BucketId> assignedWorkerBuckets = context.getWorkerHandler().getBucketsForWorker(workerId);
 
@@ -58,7 +57,7 @@ public class ReportConsistency extends NamespaceMessage {
 		throw new IllegalStateException("Detected inconsistency between manager and worker [" + workerId + "]");
 	}
 
-	private static <ID extends Id<?>> boolean isConsistent(String typeName, @NonNull Set<ID> managerIds, @NonNull Set<ID> workerIds, WorkerId workerId) {
+	private static <ID extends NamespacedId<?>> boolean isConsistent(String typeName, @NonNull Set<ID> managerIds, @NonNull Set<ID> workerIds, WorkerId workerId) {
 		Sets.SetView<ID> notInWorker = Sets.difference(managerIds, workerIds);
 		Sets.SetView<ID> notInManager = Sets.difference(workerIds, managerIds);
 

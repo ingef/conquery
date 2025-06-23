@@ -19,7 +19,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
@@ -103,7 +103,7 @@ public class SerializationTestUtil<T> {
 
 	public void test(T value, T expected) throws JSONException, IOException {
 		if (objectMappers.isEmpty()) {
-			fail("No objectmappers were set");
+			fail("No ObjectMappers were provided.");
 		}
 
 		for (ObjectMapper objectMapper : objectMappers) {
@@ -143,8 +143,10 @@ public class SerializationTestUtil<T> {
 		}
 
 		// Preliminary check that ids of identifiables are equal
-		if (value instanceof IdentifiableImpl<?> identifiableValue) {
-			assertThat(((IdentifiableImpl<?>) copy).getId()).as("the serialized value").isEqualTo(identifiableValue.getId());
+		if (value instanceof Identifiable<?, ?> identifiableValue) {
+			assertThat(((Identifiable<?, ?>) copy).getId())
+					.as("the serialized value")
+					.isEqualTo(identifiableValue.getId());
 		}
 
 		RecursiveComparisonAssert<?> ass = assertThat(copy)
