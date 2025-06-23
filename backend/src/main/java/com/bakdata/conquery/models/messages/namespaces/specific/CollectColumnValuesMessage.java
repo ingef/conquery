@@ -43,7 +43,7 @@ import java.util.stream.Stream;
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @CPSType(id = "COLLECT_COLUMN_VALUES", base = NamespacedMessage.class)
-public class CollectColumnValuesJob extends WorkerMessage implements ActionReactionMessage {
+public class CollectColumnValuesMessage extends WorkerMessage implements ActionReactionMessage {
 
 	public final int columValueChunkSize;
 	/**
@@ -60,77 +60,93 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 	@JsonIgnore
 	private final Namespace namespace;
 
-
 	@Override
 	public void react(Worker context) throws Exception {
-		final Map<TableId, List<BucketId>> table2Buckets;
-		try (Stream<BucketId> allBuckets = context.getStorage().getAllBucketIds()) {
-			table2Buckets = allBuckets
-					.collect(Collectors.groupingBy(bucketId -> bucketId.getImp().getTable()));
+		context.getJobManager().addSlowJob(new CollectColumnValuesJob(context));
+	}
+
+	@RequiredArgsConstructor
+	public class CollectColumnValuesJob extends Job {
+
+		private final Worker context;
+
+		@Override
+		public void execute() throws Exception {
+			final Map<TableId, List<BucketId>> table2Buckets;
+			try (Stream<BucketId> allBuckets = context.getStorage().getAllBucketIds()) {
+				table2Buckets = allBuckets
+						.collect(Collectors.groupingBy(bucketId -> bucketId.getImp().getTable()));
+			}
+
+			final BasicThreadFactory threadFactory =
+					new BasicThreadFactory.Builder()
+							.namingPattern(getClass().getSimpleName() + "-%s".formatted(context.getInfo().getName()) + "-Worker-%d").build();
+
+			final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(MAX_THREADS, threadFactory));
+
+			final AtomicInteger done = new AtomicInteger();
+
+			getProgressReporter().setMax(columns.stream()
+					.filter(column -> table2Buckets.get(column.getTable()) != null).count());
+
+
+			log.info("BEGIN collecting values from {}", Arrays.toString(columns.toArray()));
+
+			final List<? extends ListenableFuture<?>> futures =
+					columns.stream()
+							.filter(column -> table2Buckets.get(column.getTable()) != null)
+							.map(ColumnId::resolve)
+							.map(column -> jobsExecutorService.submit(() -> {
+										final List<BucketId> buckets = table2Buckets.get(column.getTable().getId());
+
+										final Set<String> values = buckets.stream()
+												.map(BucketId::resolve)
+												.flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
+												.collect(Collectors.toSet());
+
+										log.trace("Finished collecting {} values for column {}", values.size(), column);
+
+										// Chunk values, to produce smaller messages
+										final Iterable<List<String>> partition = Iterables.partition(values, columValueChunkSize);
+
+										log.trace("BEGIN Sending column values for {}. {} total values in {} sized batches",
+												column.getId(), values.size(), columValueChunkSize
+										);
+
+										int i = 0;
+										for (List<String> chunk : partition) {
+											// Send values to manager
+											final RegisterColumnValues message =
+													new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column.getId(), chunk);
+
+											context.send(message);
+
+											log.trace("Finished sending chunk {} for column '{}'", i++, column.getId());
+										}
+
+										getProgressReporter().report(1);
+										log.trace("FINISH collections values for column {} as number {}", column, done.incrementAndGet());
+									})
+							)
+							.toList();
+
+
+			// We may do this, because we own this specific ExecutorService.
+			jobsExecutorService.shutdown();
+
+			while (!jobsExecutorService.awaitTermination(30, TimeUnit.SECONDS)) {
+				log.debug("Still waiting for jobs on '{}': {} of {} done", context.getInfo().getName(), done.get(), futures.size());
+			}
+
+			log.info("FINISH collecting values from {}", Arrays.toString(columns.toArray()));
+			context.send(new FinalizeReactionMessage(getMessageId(), context.getInfo().getId()));
 		}
 
-		final BasicThreadFactory threadFactory =
-				new BasicThreadFactory.Builder()
-						.namingPattern(getClass().getSimpleName() + "-%s".formatted(context.getInfo().getName()) + "-Worker-%d").build();
 
-		final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(MAX_THREADS, threadFactory));
-
-		final AtomicInteger done = new AtomicInteger();
-
-		getProgressReporter().setMax(columns.stream()
-											.filter(column -> table2Buckets.get(column.getTable()) != null).count());
-
-
-		log.info("BEGIN collecting values from {}", Arrays.toString(columns.toArray()));
-
-		final List<? extends ListenableFuture<?>> futures =
-				columns.stream()
-					   .filter(column -> table2Buckets.get(column.getTable()) != null)
-					   .map(ColumnId::resolve)
-					   .map(column -> jobsExecutorService.submit(() -> {
-								final List<BucketId> buckets = table2Buckets.get(column.getTable().getId());
-
-								final Set<String> values = buckets.stream()
-																  .map(BucketId::resolve)
-																  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
-																  .collect(Collectors.toSet());
-
-								log.trace("Finished collecting {} values for column {}", values.size(), column);
-
-								// Chunk values, to produce smaller messages
-								final Iterable<List<String>> partition = Iterables.partition(values, columValueChunkSize);
-
-								log.trace("BEGIN Sending column values for {}. {} total values in {} sized batches",
-										  column.getId(), values.size(), columValueChunkSize
-								);
-
-								int i = 0;
-								for (List<String> chunk : partition) {
-									// Send values to manager
-									final RegisterColumnValues message =
-											new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column.getId(), chunk);
-
-									context.send(message);
-
-									log.trace("Finished sending chunk {} for column '{}'", i++, column.getId());
-								}
-
-								getProgressReporter().report(1);
-								log.trace("FINISH collections values for column {} as number {}", column, done.incrementAndGet());
-							})
-					   )
-					   .toList();
-
-
-		// We may do this, because we own this specific ExecutorService.
-		jobsExecutorService.shutdown();
-
-		while (!jobsExecutorService.awaitTermination(30, TimeUnit.SECONDS)) {
-			log.debug("Still waiting for jobs on '{}': {} of {} done", context.getInfo().getName(), done.get(), futures.size());
+		@Override
+		public String getLabel() {
+			return this.getClass().getSimpleName();
 		}
-
-		log.info("FINISH collecting values from {}", Arrays.toString(columns.toArray()));
-		context.send(new FinalizeReactionMessage(getMessageId(), context.getInfo().getId()));
 	}
 
 	@Override
