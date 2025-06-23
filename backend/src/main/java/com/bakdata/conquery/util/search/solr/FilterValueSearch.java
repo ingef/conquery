@@ -1,21 +1,10 @@
 package com.bakdata.conquery.util.search.solr;
 
-import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.annotation.Nullable;
-
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.config.search.solr.FilterValueConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
-import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +15,16 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Helper class to abstract/capsule the searchables of the filter away
@@ -58,7 +57,7 @@ public class FilterValueSearch {
 		}
 	}
 
-	public List<Search<FrontendValue>> getSearchesFor(SelectFilter<?> searchable, boolean withEmptySource) {
+	public List<FilterValueIndexer> getSearchesFor(SelectFilter<?> searchable, boolean withEmptySource) {
 		List<Searchable> searchReferences = searchable.getSearchReferences();
 
 		if (withEmptySource) {
@@ -66,7 +65,7 @@ public class FilterValueSearch {
 			searchReferences.add(SolrEmptySeachable.INSTANCE);
 		}
 
-		return searchReferences.stream().map(processor::getSearchFor).toList();
+		return searchReferences.stream().map(processor::getIndexerFor).toList();
 	}
 
 
@@ -77,9 +76,8 @@ public class FilterValueSearch {
 	 * @return Query string that is a group of the searchable ids for the {@link FilterValueSearch#filter}.
 	 */
 	private @NotNull String buildFilterQuery(boolean withEmptySource) {
-		List<Search<FrontendValue>> searches = getSearchesFor(filter, withEmptySource);
-		return searches.stream()
-				.map(FilterValueIndexer.class::cast)
+		List<FilterValueIndexer> indexers = getSearchesFor(filter, withEmptySource);
+		return indexers.stream()
 				.map(FilterValueIndexer::getSearchable)
 				// The name of the searchable was already escaped at the creation of SolrSearch
 				.collect(Collectors.joining(" ", "%s:(".formatted(SolrFrontendValue.Fields.searchable_s), ")"));

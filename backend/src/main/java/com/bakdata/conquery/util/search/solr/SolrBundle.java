@@ -27,7 +27,7 @@ public class SolrBundle implements ConfiguredBundle<ConqueryConfig>, Managed {
 		// This client is not bound to any collection, because it just pings solr
 		solrClient = config.createSearchClient(null);
 
-		environment.healthChecks().register(config.getBaseSolrUrl(), config.createHealthCheck(solrClient));
+		environment.healthChecks().register("solr", config.createHealthCheck(solrClient));
 
 		environment.lifecycle().manage(this);
 	}

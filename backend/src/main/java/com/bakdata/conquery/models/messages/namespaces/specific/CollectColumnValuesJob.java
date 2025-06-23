@@ -1,16 +1,5 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
@@ -32,10 +21,21 @@ import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This Job collects the distinct values in the given columns and returns a {@link RegisterColumnValues} message for each column to the namespace on the manager.
@@ -71,7 +71,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 		final BasicThreadFactory threadFactory =
 				new BasicThreadFactory.Builder()
-						.namingPattern(getClass().getSimpleName() + "-Worker-%d").build();
+						.namingPattern(getClass().getSimpleName() + "-%s".formatted(context.getInfo().getName()) + "-Worker-%d").build();
 
 		final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(MAX_THREADS, threadFactory));
 
@@ -79,6 +79,9 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 
 		getProgressReporter().setMax(columns.stream()
 											.filter(column -> table2Buckets.get(column.getTable()) != null).count());
+
+
+		log.info("BEGIN collecting values from {}", Arrays.toString(columns.toArray()));
 
 		final List<? extends ListenableFuture<?>> futures =
 				columns.stream()
@@ -113,7 +116,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 								}
 
 								getProgressReporter().report(1);
-								log.trace("Finished collections values for column {} as number {}", column, done.incrementAndGet());
+								log.trace("FINISH collections values for column {} as number {}", column, done.incrementAndGet());
 							})
 					   )
 					   .toList();
@@ -123,10 +126,10 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 		jobsExecutorService.shutdown();
 
 		while (!jobsExecutorService.awaitTermination(30, TimeUnit.SECONDS)) {
-			log.debug("Still waiting for jobs: {} of {} done", done.get(), futures.size());
+			log.debug("Still waiting for jobs on '{}': {} of {} done", context.getInfo().getName(), done.get(), futures.size());
 		}
 
-		log.info("Finished collecting values from {}", Arrays.toString(columns.toArray()));
+		log.info("FINISH collecting values from {}", Arrays.toString(columns.toArray()));
 		context.send(new FinalizeReactionMessage(getMessageId(), context.getInfo().getId()));
 	}
 

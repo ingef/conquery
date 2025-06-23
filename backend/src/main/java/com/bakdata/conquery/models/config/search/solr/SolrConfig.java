@@ -94,7 +94,7 @@ public class SolrConfig implements SearchConfig {
 			protected Result check() throws Exception {
 				NamedList<Object> response = client.request(new HealthCheckRequest());
 				String status = (String) response.get("status");
-				if ("healthy".equals(status)) {
+				if (("healthy".equalsIgnoreCase(status) || "ok".equalsIgnoreCase(status))) {
 					return Result.builder().healthy().build();
 				}
 				else {

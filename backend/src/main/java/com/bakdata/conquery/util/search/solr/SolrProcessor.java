@@ -63,7 +63,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 
 	private final FilterValueConfig filterValueConfig;
 
-	private final Map<String, Search<FrontendValue>> searches = new ConcurrentHashMap<>();
+	private final Map<String, FilterValueIndexer> indexers = new ConcurrentHashMap<>();
 
 	private SolrClient solrSearchClient;
 
@@ -71,8 +71,28 @@ public class SolrProcessor implements SearchProcessor, Managed {
 
 	@Override
 	public void start() throws Exception {
+		refreshClients();
+	}
+
+	private synchronized void refreshClients() {
+		if (solrSearchClient != null) {
+			try {
+				solrSearchClient.close();
+			} catch (Exception e) {
+				log.warn("Failed to close solr search client", e);
+			}
+		}
+		if (solrIndexClient != null) {
+			try {
+				solrIndexClient.close();
+			} catch (Exception e) {
+				log.warn("Failed to close solr index client", e);
+			}
+		}
+
 		solrSearchClient = solrSearchClientFactory.get();
 		solrIndexClient = solrIndexClientFactory.get();
+
 	}
 
 	@Override
@@ -94,15 +114,17 @@ public class SolrProcessor implements SearchProcessor, Managed {
 
 	@Override
 	public Job createUpdateFilterSearchJob(NamespaceStorage storage, Consumer<Set<Column>> columnsConsumer) {
+		refreshClients();
+		indexers.clear();
 		return new UpdateFilterSearchJob(storage, this, columnsConsumer);
 	}
 
 	@Override
 	public void registerValues(Searchable searchable, Collection<String> values) {
 
-		FilterValueIndexer search = (FilterValueIndexer) getSearchFor(searchable);
+		FilterValueIndexer indexer = getIndexerFor(searchable);
 
-		search.registerValuesRaw(values);
+		indexer.registerValuesRaw(values);
 	}
 
 	@Override
@@ -147,17 +169,18 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		};
 	}
 
-	/*package*/ Search<FrontendValue> getSearchFor(Searchable searchable) {
+	/*package*/ FilterValueIndexer getIndexerFor(Searchable searchable) {
 		String nameForSearchable = buildNameForSearchable(searchable);
 		int sourcePriority = getSourcePriority(searchable);
-		return searches.computeIfAbsent(nameForSearchable, searchRef -> new FilterValueIndexer(solrIndexClient, nameForSearchable, sourcePriority, commitWithin, updateChunkSize));
+
+        return indexers.computeIfAbsent(nameForSearchable, searchRef -> new FilterValueIndexer(solrIndexClient, nameForSearchable, sourcePriority, commitWithin, updateChunkSize));
 	}
 
 	@Override
 	public void finalizeSearch(Searchable searchable) {
 		String nameForSearchable = buildNameForSearchable(searchable);
 		log.info("Finalizing Search for {}", searchable);
-		Search<FrontendValue> frontendValueSearch = searches.get(nameForSearchable);
+		Search<FrontendValue> frontendValueSearch = indexers.get(nameForSearchable);
 
 		if (frontendValueSearch == null) {
 			log.info("Skipping finalization of {}, because it does not exist", searchable);
@@ -180,6 +203,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		indexEmptyLabel();
 
 		progressReporter.setMax(managerSearchables.size());
+		progressReporter.start();
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 		try(final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1)) {
 
@@ -207,7 +231,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 							return;
 						}
 
-						final Search<FrontendValue> search = getSearchFor(searchable);
+						final Search<FrontendValue> search = getIndexerFor(searchable);
 
 
 						searchCache.put(searchable, search);
@@ -245,14 +269,14 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	}
 
 	private void indexEmptyLabel() {
-		Search<FrontendValue> search = getSearchFor(SolrEmptySeachable.INSTANCE);
+		Search<FrontendValue> search = getIndexerFor(SolrEmptySeachable.INSTANCE);
 		search.addItem(new FrontendValue("", filterValueConfig.getEmptyLabel()), List.of(""));
 
 		search.finalizeSearch();
 	}
 
 	private void indexLabelMap(Searchable searchable, LabelMap labelMap) {
-		Search<FrontendValue> search = getSearchFor(searchable);
+		Search<FrontendValue> search = getIndexerFor(searchable);
 
 		BiMap<String, String> delegate = labelMap.getDelegate();
 		FilterId id = labelMap.getId();
@@ -290,7 +314,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 					temp.getColumnValue(),
 					temp.getValue(),
 					temp.getOptionValue(),
-					() -> getSearchFor(searchable)
+					() -> getIndexerFor(searchable)
 			));
 		}
 		catch (IndexCreationException e) {
