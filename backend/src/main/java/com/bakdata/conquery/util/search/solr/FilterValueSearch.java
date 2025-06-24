@@ -9,6 +9,7 @@ import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringSubstitutor;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -22,6 +23,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -100,8 +102,12 @@ public class FilterValueSearch {
 						 .filter(Predicate.not(String::isBlank))
 						 // Escape
 						 .map(ClientUtils::escapeQueryChars)
-						 // Wildcard regex each term (maybe combine with fuzzy search)
-						 .map(filterValueConfig.getQueryTemplate()::formatted)
+						 //
+						 .map((term) -> {
+							 Map<String, String> valuesMap = Map.of("term", term);
+							 StringSubstitutor sub = new StringSubstitutor(valuesMap);
+							 return sub.replace(filterValueConfig.getQueryTemplate());
+						 })
 						 .collect(Collectors.joining(" AND "));
 			return sendQuery(text, start, limit, false, false);
 		}

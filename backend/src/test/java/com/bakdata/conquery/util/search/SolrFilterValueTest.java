@@ -91,7 +91,7 @@ public class SolrFilterValueTest {
 
 		String baseSolrUrl = SOLR_SERVER.getSolrBaseUrl();
 		solrConfig = new SolrConfig(baseSolrUrl, "solr", "SolrRocks");
-		solrConfig.getFilterValue().setQueryTemplate("( %1$s^3 *%1$s*^2 %1$s~^1 )");
+		solrConfig.getFilterValue().setQueryTemplate("( ${term}^3 *${term}*^2 ${term}~^1 )");
 		CONQUERY_CONFIG.setSearch(solrConfig);
 		solrBundle.run(CONQUERY_CONFIG, new Environment(SolrFilterValueTest.class.getSimpleName()));
 		searchProcessor = solrConfig.createSearchProcessor(ENVIRONMENT, DATASET_ID);

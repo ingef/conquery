@@ -10,7 +10,6 @@ import lombok.Data;
 
 import javax.annotation.CheckForNull;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -28,10 +27,10 @@ public class FilterValueConfig {
     /**
      * Effectively the query that is sent to solr after we split the users search phrase into terms on whitespaces and join them together again after template resolving.
      * Joining involves a boolean operator, so parentheses might be needed.
-     * The format string only gets a single argument, so refer to the argument using <code>%1$s</code> if you want to use it multiple times.
+     * The format string only gets a single argument, so refer to the argument using <code>${term}</code>. The template is interpreted by {@link org.apache.commons.text.StringSubstitutor}.
      */
     @NotEmpty
-    private String queryTemplate = "%1$s value_s:\"%1$s\"^100";
+    private String queryTemplate = "${term} value_s:\"${term}\"^100";
 
     /**
      * Determines the field by which the results of the default query (no user input, just results) are sorted.
@@ -40,7 +39,7 @@ public class FilterValueConfig {
     @CheckForNull
     private String defaultSearchSortField = SolrFrontendValue.Fields.value_s;
 
-    private boolean sharedDocumentsOnSecondaryId = true;
+    private boolean sharedDocumentsOnSecondaryId = false;
 
     /**
      * By default, for each value in a column a solr document is created. The id of this solr-document uses the column id and the column value.
@@ -64,7 +63,7 @@ public class FilterValueConfig {
      *     }
      * </code>
      */
-    private Map<@NotBlank String,Map<@NotBlank String,@NotBlank String>> sharedColumnDocuments = new HashMap<>();
+    private Map<@NotBlank String,Map<@NotBlank String,@NotBlank String>> sharedColumnDocuments = Collections.emptyMap();
 
     /**
      * Returns the shared group for the column, if documents should be shared.
