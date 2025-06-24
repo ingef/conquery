@@ -14,6 +14,7 @@ import io.dropwizard.lifecycle.Managed;
 import jakarta.validation.constraints.NotNull;
 
 import javax.annotation.CheckForNull;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +22,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public interface SearchProcessor extends Managed {
+
+	/**
+	 * From a given {@link FrontendValue} extract all relevant keywords.
+	 */
+	static List<String> extractKeywords(FrontendValue value) {
+		final List<String> keywords = new ArrayList<>(3);
+
+		keywords.add(value.getLabel());
+		keywords.add(value.getValue());
+
+		if (value.getOptionValue() != null) {
+			keywords.add(value.getOptionValue());
+		}
+
+		return keywords;
+	}
 
 	/**
 	 * Removes all indexed data for this dataset

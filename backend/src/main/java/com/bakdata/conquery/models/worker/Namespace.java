@@ -1,11 +1,5 @@
 package com.bakdata.conquery.models.worker;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -19,13 +13,18 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.M
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.InternalFilterSearch;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 @Slf4j
 @Getter
@@ -120,8 +119,8 @@ public abstract class Namespace {
 
 	/**
 	 * This collects the string values of the given {@link Column}s (each is a {@link com.bakdata.conquery.models.datasets.concepts.Searchable})
-	 * and registers them in the namespace's {@link InternalFilterSearch#registerValues(Searchable, Collection)}.
-	 * After value registration for a column is complete, {@link InternalFilterSearch#finalizeSearch(Searchable)} should be called.
+	 * and registers them in the namespace's {@link SearchProcessor#registerValues(Searchable, Collection)}.
+	 * After value registration for a column is complete, {@link SearchProcessor#finalizeSearch(Searchable)} should be called.
 	 */
 	abstract void registerColumnValuesInSearch(Set<Column> columns);
 

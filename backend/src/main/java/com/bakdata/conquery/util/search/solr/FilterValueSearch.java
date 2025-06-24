@@ -17,6 +17,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -39,25 +40,6 @@ public class FilterValueSearch {
 	private final SolrProcessor processor;
 	private final SolrClient solrClient;
 	private final FilterValueConfig filterValueConfig;
-
-	public long getTotal() {
-
-		String searchables = buildFilterQuery(true);
-
-		// We query all documents that reference the searchables of the filter
-		SolrQuery query = new SolrQuery(searchables);
-
-		// Set rows to 0 because we don't want actual results, we are only interested in the total number
-		query.setRows(0);
-
-		try {
-			QueryResponse response = solrClient.query(query);
-			return response.getResults().getNumFound();
-		}
-		catch (SolrServerException | IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
 
 	public List<FilterValueIndexer> getSearchesFor(SelectFilter<?> searchable, boolean withEmptySource) {
 		List<Searchable> searchReferences = searchable.getSearchReferences();
@@ -113,19 +95,19 @@ public class FilterValueSearch {
 		}
 	}
 
-	private @NotNull AutoCompleteResult sendQuery(String queryString, Integer start, @org.jetbrains.annotations.Nullable Integer limit, boolean withEmptySource, boolean sort) {
+	private @NotNull AutoCompleteResult sendQuery(String queryString, Integer start, @CheckForNull Integer limit, boolean withEmptySource, boolean sort) {
 		String filterQuery = buildFilterQuery(withEmptySource);
 		SolrQuery query = buildSolrQuery(filterQuery, queryString, start, limit, sort);
 		String decodedQuery = URLDecoder.decode(String.valueOf(query), StandardCharsets.UTF_8);
 		int queryHash = decodedQuery.hashCode();
-		log.info("Query [{}] created: {}", queryHash, decodedQuery);
+		log.debug("Query [{}] created: {}", queryHash, decodedQuery);
 
 		try {
 			QueryResponse response = solrClient.query(query);
 			List<SolrFrontendValue> beans = response.getBeans(SolrFrontendValue.class);
 
 			long numFound = response.getResults().getNumFound();
-			log.info("Query [{}] Found: {} | Collected: {} | QTime: {} | ElapsedTime: {}", queryHash, numFound, beans.size(), response.getQTime(), response.getElapsedTime());
+			log.debug("Query [{}] Found: {} | Collected: {} | QTime: {} | ElapsedTime: {}", queryHash, numFound, beans.size(), response.getQTime(), response.getElapsedTime());
 
 			List<FrontendValue> values = beans.stream().map(SolrFrontendValue::toFrontendValue).toList();
 			return new AutoCompleteResult(values, numFound);
@@ -136,7 +118,7 @@ public class FilterValueSearch {
 		}
 	}
 
-	private @NotNull SolrQuery buildSolrQuery(String filterQuery, String queryString, Integer start, @org.jetbrains.annotations.Nullable Integer limit, boolean sort) {
+	private @NotNull SolrQuery buildSolrQuery(String filterQuery, String queryString, Integer start, @CheckForNull Integer limit, boolean sort) {
 		SolrQuery query = new SolrQuery(queryString);
 		query.addFilterQuery(filterQuery);
 		query.addField(SolrFrontendValue.Fields.value_s);

@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
-import com.bakdata.conquery.models.query.InternalFilterSearch;
+import com.bakdata.conquery.util.search.internal.InternalFilterSearch;
 import com.bakdata.conquery.util.search.internal.TrieSearch;
 import jakarta.validation.constraints.Min;
 

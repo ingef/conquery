@@ -1,17 +1,17 @@
 package com.bakdata.conquery.models.index;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.models.query.InternalFilterSearch;
 import com.bakdata.conquery.util.search.Search;
+import com.bakdata.conquery.util.search.SearchProcessor;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @ToString
@@ -49,7 +49,7 @@ public class FrontendValueIndex implements Index<FrontendValue> {
 				templateToConcrete.get(optionValueTemplate)
 		);
 
-		delegate.addItem(feValue, InternalFilterSearch.extractKeywords(feValue));
+		delegate.addItem(feValue, SearchProcessor.extractKeywords(feValue));
 	}
 
 	@Override

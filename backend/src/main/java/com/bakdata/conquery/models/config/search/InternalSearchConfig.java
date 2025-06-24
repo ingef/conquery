@@ -11,8 +11,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.index.FrontendValueIndex;
 import com.bakdata.conquery.models.index.FrontendValueIndexKey;
 import com.bakdata.conquery.models.index.IndexCreationException;
-import com.bakdata.conquery.models.query.InternalFilterSearch;
 import com.bakdata.conquery.util.search.SearchProcessor;
+import com.bakdata.conquery.util.search.internal.InternalFilterSearch;
 import com.bakdata.conquery.util.search.internal.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.google.common.collect.BiMap;
@@ -83,7 +83,7 @@ public class InternalSearchConfig implements SearchConfig {
 		StopWatch timer = StopWatch.createStarted();
 		log.trace("START-SELECT ADDING_ITEMS for {}", id);
 
-		collected.forEach(feValue -> search.addItem(feValue, InternalFilterSearch.extractKeywords(feValue)));
+		collected.forEach(feValue -> search.addItem(feValue, SearchProcessor.extractKeywords(feValue)));
 
 		log.trace("DONE-SELECT ADDING_ITEMS for {} in {}", id, timer);
 

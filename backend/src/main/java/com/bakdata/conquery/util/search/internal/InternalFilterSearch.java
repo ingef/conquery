@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.query;
+package com.bakdata.conquery.util.search.internal;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -15,8 +15,6 @@ import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.SearchProcessor;
-import com.bakdata.conquery.util.search.internal.Cursor;
-import com.bakdata.conquery.util.search.internal.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -87,22 +85,6 @@ public class InternalFilterSearch implements SearchProcessor {
 		}
 
 	});
-
-	/**
-	 * From a given {@link FrontendValue} extract all relevant keywords.
-	 */
-	public static List<String> extractKeywords(FrontendValue value) {
-		final List<String> keywords = new ArrayList<>(3);
-
-		keywords.add(value.getLabel());
-		keywords.add(value.getValue());
-
-		if (value.getOptionValue() != null) {
-			keywords.add(value.getOptionValue());
-		}
-
-		return keywords;
-	}
 
 	/**
 	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
@@ -181,7 +163,7 @@ public class InternalFilterSearch implements SearchProcessor {
 		synchronized (search) {
 			values.stream()
 				  .map(value -> new FrontendValue(value, value))
-				  .forEach(value -> search.addItem(value, extractKeywords(value)));
+				  .forEach(value -> search.addItem(value, SearchProcessor.extractKeywords(value)));
 		}
 	}
 

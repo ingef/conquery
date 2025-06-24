@@ -1,10 +1,5 @@
 package com.bakdata.conquery.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-import java.util.Map;
-
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.config.search.InternalSearchConfig;
 import com.bakdata.conquery.models.datasets.Column;
@@ -14,11 +9,16 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilt
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SingleSelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.query.InternalFilterSearch;
 import com.bakdata.conquery.util.extensions.NamespaceStorageExtension;
+import com.bakdata.conquery.util.search.internal.InternalFilterSearch;
 import com.google.common.collect.ImmutableBiMap;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InternalFilterSearchTest {
 

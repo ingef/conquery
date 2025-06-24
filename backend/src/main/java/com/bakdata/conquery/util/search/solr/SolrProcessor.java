@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
-import com.bakdata.conquery.models.query.InternalFilterSearch;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
@@ -115,12 +114,12 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	@Override
 	public void clearSearch() {
 
-        try (SolrClient solrClient = solrSearchClientFactory.get()) {
-            log.info("Clearing collection: {}", solrClient.getDefaultCollection());
-            solrClient.deleteByQuery("*:*");
-        } catch (SolrServerException | IOException e) {
-            throw new RuntimeException(e);
-        }
+		try (SolrClient solrClient = solrSearchClientFactory.get()) {
+			log.info("Clearing collection: {}", solrClient.getDefaultCollection());
+			solrClient.deleteByQuery("*:*");
+		} catch (SolrServerException | IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -296,7 +295,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		StopWatch timer = StopWatch.createStarted();
 		log.trace("BEGIN ADDING_ITEMS for {}", id);
 
-		collected.forEach(feValue -> search.addItem(feValue, InternalFilterSearch.extractKeywords(feValue)));
+		collected.forEach(feValue -> search.addItem(feValue, SearchProcessor.extractKeywords(feValue)));
 
 		log.trace("DONE ADDING_ITEMS for {} in {}", id, timer);
 

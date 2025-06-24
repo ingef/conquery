@@ -160,7 +160,7 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 
 		try {
 			Stopwatch stopwatch = Stopwatch.createStarted();
-			log.info("BEGIN registering {} values to {} for {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable);
+			log.debug("BEGIN registering {} values to {} for {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable);
 			solrClient.addBeans(solrFrontendValues, getCommitWithinMs());
 			log.trace("DONE registering {} values to {} for {} in {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable, stopwatch);
 		}
