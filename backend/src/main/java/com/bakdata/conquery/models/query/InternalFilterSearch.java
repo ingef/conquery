@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
+@Deprecated
 public class InternalFilterSearch implements SearchProcessor {
 
 	@Getter

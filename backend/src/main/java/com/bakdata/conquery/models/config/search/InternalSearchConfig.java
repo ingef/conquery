@@ -1,12 +1,6 @@
 package com.bakdata.conquery.models.config.search;
 
 
-import java.net.URI;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import jakarta.validation.constraints.Min;
-
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.LabelMap;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
@@ -23,14 +17,21 @@ import com.bakdata.conquery.util.search.internal.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.google.common.collect.BiMap;
 import io.dropwizard.core.setup.Environment;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 
+import javax.annotation.Nullable;
+import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Data
 @CPSType(id = "INTERNAL", base = SearchConfig.class)
 @Slf4j
+@Deprecated
 public class InternalSearchConfig implements SearchConfig {
 
 	@JsonAlias("searchSuffixLength")

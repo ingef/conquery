@@ -91,6 +91,6 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	@JsonIgnore
 	@Override
 	public String getSearchHandle() {
-		return "filter_template_" + getId().toString();
+		return "filter_template_%s".formatted(getId());
 	}
 }
