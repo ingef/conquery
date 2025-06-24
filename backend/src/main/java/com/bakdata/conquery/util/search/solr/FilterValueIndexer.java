@@ -18,6 +18,10 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
+
+/**
+ * Helper class to index {@link com.bakdata.conquery.apiv1.query.concept.filter.FilterValue}s
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class FilterValueIndexer extends Search<FrontendValue> {

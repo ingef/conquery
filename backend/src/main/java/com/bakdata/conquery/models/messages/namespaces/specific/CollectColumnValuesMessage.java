@@ -1,20 +1,16 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.Job;
-import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.models.messages.namespaces.ActionReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
-import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Iterables;
@@ -152,57 +148,7 @@ public class CollectColumnValuesMessage extends WorkerMessage implements ActionR
 	@Override
 	public void afterAllReaction() {
 
-		// Run this in a job, so it is definitely processed after UpdateFilterSearchJob
-		namespace.getJobManager().addSlowJob(new SearchShrinker());
+		namespace.getJobManager().addSlowJob(namespace.getFilterSearch().createFinalizeFilterSearchJob(namespace, columns));
 	}
 
-	private class SearchShrinker extends Job {
-
-		@Override
-		public void execute() {
-
-			final List<SelectFilter<?>> allSelectFilters = UpdateFilterSearchJob.getAllSelectFilters(namespace.getStorage());
-			final SearchProcessor filterSearch = namespace.getFilterSearch();
-
-			getProgressReporter().setMax(allSelectFilters.size() + columns.size());
-
-			log.debug("{} shrinking searches", this);
-
-			for (ColumnId columnId : columns) {
-				final Column column = columnId.resolve();
-				try {
-					filterSearch.finalizeSearch(column);
-				}
-				catch (Exception e) {
-					log.warn("Unable to shrink search for {}", column, e);
-				}
-				finally {
-					getProgressReporter().report(1);
-				}
-			}
-
-			log.info("BEGIN counting search totals on {}", namespace.getDataset().getId());
-
-			for (SelectFilter<?> filter : allSelectFilters) {
-				log.trace("Calculate totals for filter: {}", filter.getId());
-				try {
-					final long total = namespace.getFilterSearch().getTotal(filter);
-					log.trace("Filter '{}' totals: {}", filter, total);
-				}
-				catch (Exception e) {
-					log.warn("Unable to calculate totals for filter '{}'", filter.getId(), e);
-				}
-				finally {
-					getProgressReporter().report(1);
-				}
-			}
-
-			log.debug("FINISHED counting search totals on {}", namespace.getDataset().getId());
-		}
-
-		@Override
-		public String getLabel() {
-			return "Finalize Search update";
-		}
-	}
 }

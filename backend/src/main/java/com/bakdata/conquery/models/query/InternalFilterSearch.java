@@ -1,33 +1,16 @@
 package com.bakdata.conquery.models.query;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.search.InternalSearchConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.bakdata.conquery.util.search.Search;
@@ -47,6 +30,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -308,7 +297,7 @@ public class InternalFilterSearch implements SearchProcessor {
 	}
 
 	@Override
-	public ConceptsProcessor.AutoCompleteResult query(SelectFilter<?> searchable, String maybeText, int itemsPerPage, int pageNumber) {
+	public ConceptsProcessor.AutoCompleteResult query(SelectFilter<?> filter, String maybeText, int itemsPerPage, int pageNumber) {
 		final int startIncl = itemsPerPage * pageNumber;
 		final int endExcl = startIncl + itemsPerPage;
 
@@ -316,13 +305,13 @@ public class InternalFilterSearch implements SearchProcessor {
 
 			// If we have none or a blank query string we list all values.
 			if (maybeText == null || maybeText.isBlank()) {
-				final CursorAndLength cursorAndLength = listResults.get(searchable);
+				final CursorAndLength cursorAndLength = listResults.get(filter);
 				final Cursor<FrontendValue> cursor = cursorAndLength.values();
 
 				return new ConceptsProcessor.AutoCompleteResult(cursor.get(startIncl, endExcl), cursorAndLength.size());
 			}
 
-			final List<FrontendValue> fullResult = searchResults.get(Pair.of(searchable, maybeText));
+			final List<FrontendValue> fullResult = searchResults.get(Pair.of(filter, maybeText));
 
 			if (startIncl >= fullResult.size()) {
 				return new ConceptsProcessor.AutoCompleteResult(Collections.emptyList(), fullResult.size());
@@ -336,11 +325,70 @@ public class InternalFilterSearch implements SearchProcessor {
 		}
 	}
 
-
+	@Override
+	public Job createFinalizeFilterSearchJob(Namespace namespace, Set<ColumnId> columns) {
+		return new SearchShrinker(namespace.getStorage(), this, columns);
+	}
 
 	/**
 	 * Container class to pair number of available values and Cursor for those values.
 	 */
 	private record CursorAndLength(Cursor<FrontendValue> values, long size) {
+	}
+
+
+	@RequiredArgsConstructor
+	private static class SearchShrinker extends Job {
+
+		private final NamespaceStorage storage;
+		private final InternalFilterSearch filterSearch;
+		private final Set<ColumnId> columns;
+
+		@Override
+		public void execute() {
+
+			final List<SelectFilter<?>> allSelectFilters = UpdateFilterSearchJob.getAllSelectFilters(storage);
+
+			getProgressReporter().setMax(allSelectFilters.size() + columns.size());
+
+			log.debug("{} shrinking searches", this);
+
+			for (ColumnId columnId : columns) {
+				final Column column = columnId.resolve();
+				try {
+					filterSearch.finalizeSearch(column);
+				}
+				catch (Exception e) {
+					log.warn("Unable to shrink search for {}", column, e);
+				}
+				finally {
+					getProgressReporter().report(1);
+				}
+			}
+
+			DatasetId datasetId = storage.getDataset().getId();
+			log.info("BEGIN counting search totals on {}", datasetId);
+
+			for (SelectFilter<?> filter : allSelectFilters) {
+				log.trace("Calculate totals for filter: {}", filter.getId());
+				try {
+					final long total = filterSearch.getTotal(filter);
+					log.trace("Filter '{}' totals: {}", filter, total);
+				}
+				catch (Exception e) {
+					log.warn("Unable to calculate totals for filter '{}'", filter.getId(), e);
+				}
+				finally {
+					getProgressReporter().report(1);
+				}
+			}
+
+			log.debug("FINISHED counting search totals on {}", datasetId);
+		}
+
+		@Override
+		public String getLabel() {
+			return "Finalize Search update";
+		}
 	}
 }

@@ -8,13 +8,16 @@ import com.bakdata.conquery.models.config.search.solr.FilterValueConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.index.FrontendValueIndex;
 import com.bakdata.conquery.models.index.FrontendValueIndexKey;
 import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.models.jobs.Job;
+import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.models.query.InternalFilterSearch;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.bakdata.conquery.util.search.Search;
@@ -47,6 +50,10 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+/**
+ * Entrypoint for searches that are handled by solr.
+ * Each dataset has its own {@link SolrProcessor} and a corresponding collection.
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class SolrProcessor implements SearchProcessor, Managed {
@@ -74,6 +81,10 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		refreshClients();
 	}
 
+	/**
+	 * {@link SolrClient}s might fall into an error state, from which they cannot recover.
+	 * This method recreated the clients.
+	 */
 	private synchronized void refreshClients() {
 		if (solrSearchClient != null) {
 			try {
@@ -126,13 +137,6 @@ public class SolrProcessor implements SearchProcessor, Managed {
 
 		indexer.registerValuesRaw(values);
 	}
-
-	@Override
-	public long getTotal(SelectFilter<?> filter) {
-		FilterValueSearch filterValueSearch = new FilterValueSearch(filter, this, solrSearchClient, filterValueConfig);
-		return filterValueSearch.getTotal();
-	}
-
 
 	/**
 	 * Helper to build referable names for search sources which may allow abstraction.
@@ -331,20 +335,31 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	}
 
 	@Override
-	public AutoCompleteResult query(SelectFilter<?> searchable, String maybeText, int itemsPerPage, int pageNumber) {
+	public AutoCompleteResult query(SelectFilter<?> filter, String maybeText, int itemsPerPage, int pageNumber) {
 
 		int start = itemsPerPage * pageNumber;
-		return topItems(searchable, maybeText, start, itemsPerPage);
+		return topItems(filter, maybeText, start, itemsPerPage);
+	}
+
+	@Override
+	public Job createFinalizeFilterSearchJob(Namespace namespace, Set<ColumnId> columns) {
+		return new SimpleJob("Final commit on collection %s".formatted(solrIndexClient.getDefaultCollection()), () -> {
+			try {
+				explicitCommit();
+			} catch (Exception e) {
+				log.error("Unable to issue explicit commit on collection {}", solrIndexClient.getDefaultCollection(), e);
+			}
+		});
 	}
 
 	/**
-	 * Intended for tests only to ensure everything is commited.
+	 * Public only for tests purposes, to ensure everything is commited.
 	 */
 	public void explicitCommit() throws SolrServerException, IOException {
 		Stopwatch stopwatch = Stopwatch.createStarted();
-		log.info("BEGIN explicit commit to core/collection {}", solrSearchClient.getDefaultCollection());
-		solrSearchClient.commit();
-		log.info("DONE explicit commit to core/collection {} in {}", solrSearchClient.getDefaultCollection(), stopwatch);
+		log.info("BEGIN explicit commit to core/collection {}", solrIndexClient.getDefaultCollection());
+		solrIndexClient.commit();
+		log.info("DONE explicit commit to core/collection {} in {}", solrIndexClient.getDefaultCollection(), stopwatch);
 
 	}
 }

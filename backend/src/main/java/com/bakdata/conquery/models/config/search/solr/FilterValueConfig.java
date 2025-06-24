@@ -13,6 +13,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Solr search and index configurations that are specific to {@link com.bakdata.conquery.apiv1.query.concept.filter.FilterValue}s.
+ */
 @Data
 public class FilterValueConfig {
 
