@@ -2,12 +2,10 @@ package com.bakdata.conquery.models.worker;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.cluster.ClusterEntityResolver;
 import com.bakdata.conquery.models.config.ClusterConfig;
@@ -47,10 +45,9 @@ public class DistributedNamespace extends Namespace {
 			JobManager jobManager,
 			FilterSearch filterSearch,
 			ClusterEntityResolver clusterEntityResolver,
-			List<Injectable> injectables,
 			WorkerHandler workerHandler,
 			ClusterConfig clusterConfig) {
-		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, clusterEntityResolver, injectables);
+		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, clusterEntityResolver);
 		this.executionManager = executionManager;
 		this.workerHandler = workerHandler;
 		this.clusterConfig = clusterConfig;

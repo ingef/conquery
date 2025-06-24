@@ -8,39 +8,46 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.identifiable.Labeled;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableImportDescriptorId;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Combines potentially multiple input files to be loaded into a single table. Describing their respective transformation. All Inputs must produce the same types of outputs.
- *
+ * <p>
  * For further detail see {@link TableInputDescriptor}, and {@link Preprocessor}.
- *
+ * <p>
  * This file describes an `import.json` used as description for the `preprocess` command.
  */
 @Getter
 @Setter
 @Slf4j
-public class TableImportDescriptor extends Labeled<TableImportDescriptorId> implements Serializable {
+@JsonIgnoreProperties({"label"})
+@ToString(onlyExplicitlyIncluded = true)
+public class TableImportDescriptor implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+
+	@NotEmpty
+	@ToString.Include
+	private String name;
 
 	/**
 	 * Target table to load the import to.
 	 */
 	@NotEmpty
+	@ToString.Include
 	private String table;
 
 	/**
@@ -51,8 +58,7 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 	private TableInputDescriptor[] inputs;
 
 	public static TableImportDescriptor read(File descriptionFile) throws IOException {
-		return Jackson.MAPPER.readerFor(TableImportDescriptor.class)
-							 .readValue(descriptionFile);
+		return Jackson.MAPPER.readerFor(TableImportDescriptor.class).readValue(descriptionFile);
 	}
 
 	@JsonIgnore
@@ -64,9 +70,7 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 		List<MajorTypeId[]> types = new ArrayList<>();
 
 		for (TableInputDescriptor input : inputs) {
-			MajorTypeId[] inp = Arrays.stream(input.getOutput())
-									  .map(OutputDescription::getResultType)
-									  .toArray(MajorTypeId[]::new);
+			MajorTypeId[] inp = Arrays.stream(input.getOutput()).map(OutputDescription::getResultType).toArray(MajorTypeId[]::new);
 
 			for (MajorTypeId[] out : types) {
 				if (!Arrays.equals(inp, out)) {
@@ -78,26 +82,13 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 		return true;
 	}
 
-	@Override
-	public TableImportDescriptorId createId() {
-		return new TableImportDescriptorId(getName());
-	}
-
-	@Override
-	public String toString() {
-		return "ImportDescriptor [table=" + table + ", name=" + getName() + "]";
-	}
-
 	/**
 	 * Calculate a hash of the descriptor. This is used to only recompute the import when files change.
 	 */
-	public int calculateValidityHash(Path csvDirectory, Optional<String> tag) throws IOException {
+	public int calculateValidityHash(Path csvDirectory, Optional<String> tag) {
 		HashCodeBuilder validityHashBuilder = new HashCodeBuilder();
 
-		validityHashBuilder
-				.append(getName())
-				.append(getTable())
-		;
+		validityHashBuilder.append(getName()).append(getTable());
 
 		for (TableInputDescriptor input : getInputs()) {
 			validityHashBuilder.append(input.hashCode());
@@ -110,5 +101,4 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 
 		return validityHashBuilder.toHashCode();
 	}
-
 }

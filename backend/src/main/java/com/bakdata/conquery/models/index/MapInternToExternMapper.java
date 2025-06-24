@@ -11,11 +11,7 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Initializing;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.identifiable.NamedImpl;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -41,7 +37,7 @@ import org.jetbrains.annotations.TestOnly;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor(access = AccessLevel.PRIVATE, onConstructor_ = {@JsonCreator})
 @Setter
-public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper, Initializing {
+public class MapInternToExternMapper extends InternToExternMapper implements Initializing {
 
 
 	@ToString.Include
@@ -70,15 +66,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	@Setter(onMethod_ = @TestOnly)
 	@EqualsAndHashCode.Exclude
 	private ConqueryConfig config;
-	@JsonIgnore
-	@JacksonInject(useInput = OptBoolean.FALSE)
-	@NotNull
-	@Setter(onMethod_ = @TestOnly)
-	@EqualsAndHashCode.Exclude
-	private NamespaceStorage storage;
-	@JsonIgnore
-	@NotNull
-	private DatasetId dataset;
+
 	//Manager only
 	@JsonIgnore
 	@Getter(onMethod_ = {@TestOnly})
@@ -102,26 +90,23 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 			return;
 		}
 
-		dataset = storage.getDataset().getId();
-
 		final URI resolvedURI = FileUtil.getResolvedUri(config.getIndex().getBaseUrl(), csv);
-		log.trace("Resolved mapping reference csv url '{}': {}", getId(), resolvedURI);
+		log.trace("Resolved mapping reference csv url '{}': {}", getName(), resolvedURI);
 
 		final IndexKey key = new MapIndexKey(resolvedURI, internalColumn, externalTemplate, allowMultiple);
 
 		int2ext = CompletableFuture.supplyAsync(() -> {
-									   try {
-										   return mapIndex.<Index<String>>getIndex(key);
-									   }
-									   catch (IndexCreationException e) {
-										   throw new IllegalStateException(e);
-									   }
-								   })
-								   .whenComplete((m, e) -> {
-									   if (e != null) {
-										   log.warn("Unable to get index: {} (enable TRACE for exception)", key, log.isTraceEnabled() ? e : null);
-									   }
-								   });
+			try {
+				return mapIndex.<Index<String>>getIndex(key);
+			}
+			catch (IndexCreationException e) {
+				throw new IllegalStateException(e);
+			}
+		}).whenComplete((m, e) -> {
+			if (e != null) {
+				log.warn("Unable to get index: {} (enable TRACE for exception)", key, log.isTraceEnabled() ? e : null);
+			}
+		});
 	}
 
 	@Override
@@ -178,10 +163,6 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 		return internalValue;
 	}
 
-	@Override
-	public InternToExternMapperId createId() {
-		return new InternToExternMapperId(getDataset(), getName());
-	}
 
 	public static class Initializer extends Initializing.Converter<MapInternToExternMapper> {
 	}

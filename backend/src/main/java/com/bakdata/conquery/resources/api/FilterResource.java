@@ -18,8 +18,8 @@ import jakarta.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -38,15 +38,15 @@ public class FilterResource extends HAuthorized {
 
 	@ToString.Include
 	@PathParam(FILTER)
-	protected Filter<?> filter;
+	protected FilterId filter;
 
 	@POST
 	@Path("resolve")
 	public ConceptsProcessor.ResolvedFilterValues resolveFilterValues(FilterValues filterValues) {
 		subject.isPermitted(filter.getDataset(), Ability.READ);
-		subject.isPermitted(filter.getConnector().findConcept(), Ability.READ);
+		subject.isPermitted(filter.getConnector().getConcept(), Ability.READ);
 
-		return processor.resolveFilterValues((SelectFilter<?>) filter, filterValues.values());
+		return processor.resolveFilterValues(filter, filterValues.values());
 	}
 
 	//TODO migrate from filter to searchable
@@ -54,15 +54,15 @@ public class FilterResource extends HAuthorized {
 	@Path("autocomplete")
 	public ConceptsProcessor.AutoCompleteResult autocompleteTextFilter(@Valid FilterResource.AutocompleteRequest request) {
 		subject.isPermitted(filter.getDataset(), Ability.READ);
-		subject.isPermitted(filter.getConnector().findConcept(), Ability.READ);
+		subject.isPermitted(filter.getConnector().getConcept(), Ability.READ);
 
-		if (!(filter instanceof SelectFilter)) {
-			throw new WebApplicationException(filter.getId() + " is not a SELECT filter, but " + filter.getClass().getSimpleName() + ".", Status.BAD_REQUEST);
+		if (!(filter.resolve() instanceof SelectFilter)) {
+			throw new WebApplicationException(filter + " is not a SELECT filter, but " + filter.getClass().getSimpleName() + ".", Status.BAD_REQUEST);
 		}
 
 
 		try {
-			return processor.autocompleteTextFilter((SelectFilter<?>) filter, request.text(), request.page(), request.pageSize());
+			return processor.autocompleteTextFilter(filter, request.text(), request.page(), request.pageSize());
 		}
 		catch (IllegalArgumentException e) {
 			throw new BadRequestException(e);

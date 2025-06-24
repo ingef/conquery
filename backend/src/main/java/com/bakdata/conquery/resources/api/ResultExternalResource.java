@@ -18,6 +18,7 @@ import jakarta.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.io.result.external.ExternalResultProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.forms.managed.ExternalExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.resources.ResourceConstants;
 import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
@@ -56,7 +57,7 @@ public class ResultExternalResource {
 	@Path("{" + QUERY + "}/{" + FILENAME + "}")
 	public Response download(
 			@Auth Subject subject,
-			@PathParam(QUERY) ExternalExecution execution,
+			@PathParam(QUERY) ManagedExecutionId execution,
 			@PathParam(FILENAME) String fileName,
 			@HeaderParam("user-agent") String userAgent,
 			@QueryParam("charset") String queryCharset

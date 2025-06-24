@@ -3,18 +3,15 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter @EqualsAndHashCode(callSuper=true)
-public class ConnectorSelectId extends SelectId implements NamespacedId {
+public final class ConnectorSelectId extends SelectId {
 
 	private final ConnectorId connector;
 	
@@ -24,7 +21,7 @@ public class ConnectorSelectId extends SelectId implements NamespacedId {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 		connector.collectIds(collect);
 	}
@@ -35,8 +32,11 @@ public class ConnectorSelectId extends SelectId implements NamespacedId {
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
-		return storage.getConcept(findConcept()).getConnectorByName(getConnector().getConnector()).getSelectByName(getSelect());
+	public Select get() {
+		return getDomain().getStorage(getDataset())
+					  .getConcept(findConcept())
+					  .getConnectorByName(getConnector().getConnector())
+					  .getSelectByName(getSelect());
 	}
 
 	@Override
@@ -50,10 +50,6 @@ public class ConnectorSelectId extends SelectId implements NamespacedId {
 		super.collectComponents(components);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return connector.getNamespacedStorageProvider();
-	}
 
 	public enum Parser implements IdUtil.Parser<ConnectorSelectId> {
 		INSTANCE;

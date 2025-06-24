@@ -28,7 +28,6 @@ public interface ManagerProvider {
 	) {
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), config.getIndex().getEmptyLabel());
 		return new DatasetRegistry<>(
-				config.getCluster().getEntityBucketSize(),
 				config,
 				internalMapperFactory,
 				namespaceHandler,
