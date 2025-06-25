@@ -9,12 +9,12 @@ import com.bakdata.conquery.integration.json.filter.FilterTest;
 import com.bakdata.conquery.integration.sql.CsvTableImporter;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.support.StandaloneSupport;
-import lombok.RequiredArgsConstructor;
+import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor
+@Data
 public class SqlTestDataImporter implements TestDataImporter {
 
 	private static final RequiredTable ALL_IDS_TABLE = importRequiredTable("/shared/entities.table.json");

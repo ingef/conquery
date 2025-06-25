@@ -14,14 +14,14 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import net.minidev.json.annotate.JsonIgnore;
 
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
+@Builder
 public class RequiredTable {
 
 	@NotNull

@@ -7,11 +7,13 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolation;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
@@ -197,7 +199,12 @@ public class AdminDatasetProcessor {
 		// Default.class isn't properly packaged, so do it manually
 		violations.addAll(environment.getValidator().validate(table));
 		violations.addAll(environment.getValidator().validate(table, mode));
-		ValidatorHelper.failOnError(log, violations);
+
+		Optional<String> maybeViolations = ValidatorHelper.createViolationsString(violations, false);
+
+		if (maybeViolations.isPresent()) {
+			throw new BadRequestException(maybeViolations.get());
+		}
 
 		namespace.getStorage().addTable(table);
 		storageListener.onAddTable(table);

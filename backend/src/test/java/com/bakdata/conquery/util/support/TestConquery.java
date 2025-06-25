@@ -60,6 +60,7 @@ public class TestConquery {
 	private static final ConcurrentHashMap<String, Integer> NAME_COUNTS = new ConcurrentHashMap<>();
 	private final File tmpDir;
 	private final ConqueryConfig config;
+	@Getter
 	private final TestDataImporter testDataImporter;
 	private final Set<StandaloneSupport> openSupports = new HashSet<>();
 	@Getter

@@ -54,13 +54,16 @@ public class SqlTableValidator implements HibernateConstraintValidator<ValidSqlT
 
 		final List<Column> columns = new ArrayList<>(Arrays.asList(value.getColumns()));
 
-		columns.add(value.getPrimaryColumn());
+		if (value.getPrimaryColumn() != null) {
+			// If null, it's provided by config.
+			columns.add(value.getPrimaryColumn());
+		}
 
 		for (Column column : columns) {
-			// NOTE: The Path to the property is not factually correct, but the error messages are much more readable that way.
 			final Field<?> field = result.field(column.getName());
 
 			if (field == null) {
+				// NOTE: The Path to the property is not factually correct, but the error messages are much more readable that way.
 				context.buildConstraintViolationWithTemplate("SQL Column `%s.%s` does not exist".formatted(value.getName(), column.getName()))
 					   .addPropertyNode("columns")
 					   .addPropertyNode(column.getName())
