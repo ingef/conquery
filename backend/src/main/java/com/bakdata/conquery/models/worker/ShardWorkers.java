@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.lifecycle.Managed;
@@ -150,13 +149,6 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 		return false;
 	}
 
-	@Override
-	public void start() throws Exception {
-
-		for (Worker value : getWorkers().values()) {
-			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
-		}
-	}
 
 	@Override
 	public void stop() {
