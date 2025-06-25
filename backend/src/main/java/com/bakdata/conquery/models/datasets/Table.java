@@ -126,9 +126,6 @@ public class Table extends LabeledNamespaceIdentifiable<TableId> implements Init
 		if (this.dataset == null) {
 			this.dataset = namespace.getDataset().getId();
 		}
-		else if (!dataset.equals(namespace.getDataset().getId())) {
-			throw new IllegalArgumentException("Table is for the wrong dataset");
-		}
 
 		for (Column column : columns) {
 			column.init();
