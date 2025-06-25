@@ -28,9 +28,12 @@ public class FilterValueConfig {
      * Effectively the query that is sent to solr after we split the users search phrase into terms on whitespaces and join them together again after template resolving.
      * Joining involves a boolean operator, so parentheses might be needed.
      * The format string only gets a single argument, so refer to the argument using <code>${term}</code>. The template is interpreted by {@link org.apache.commons.text.StringSubstitutor}.
+     *
+     * An incoming search string is split on white spaces into terms. These terms are each (<code>${term}</code>) escaped and applied to this template and then concatenated with an <code> AND </code>.
+     * If you have a complex expression, consider to surround your template with parentheses, so the concatenating "AND"s apply to the whole template.
      */
     @NotEmpty
-    private String queryTemplate = "${term} value_s:\"${term}\"^100";
+    private String queryTemplate = "( ${term} value_s:\"${term}\"^100 )";
 
     /**
      * Determines the field by which the results of the default query (no user input, just results) are sorted.
