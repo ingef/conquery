@@ -19,28 +19,28 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImportBucket extends WorkerMessage {
 
-	private final String name;
-
 	private final Bucket bucket;
 
 	@Override
 	public void react(Worker context) throws Exception {
 		log.debug("Received {}, containing {} entities", bucket.getId(), bucket.entities().size());
 
-		if (context.getStorage().getImport(bucket.getImp()) == null){
+		if (context.getStorage().getImport(bucket.getImp()) == null) {
 			log.error("Received {} with unknown Import `{}`.", bucket, bucket.getImp());
 			return;
 		}
 
-		context.getJobManager().addSlowJob(new SimpleJob("Adding Bucket " + bucket.getId(), () -> {
-			log.debug("BEGIN adding Bucket {}", bucket.getId());
-			context.addBucket(bucket);
-			log.trace("DONE adding Bucket {}", bucket.getId());
-		}));
+		context.getJobManager()
+			   .addSlowJob(new SimpleJob("Adding Bucket %s".formatted(bucket.getId()), () -> {
+				   log.debug("BEGIN adding Bucket {}", bucket.getId());
+				   context.addBucket(bucket);
+				   log.trace("DONE adding Bucket {}", bucket.getId());
+			   }
+			   ));
 	}
 
 	@Override
 	public String toString() {
-		return String.format("Importing Bucket[%s]", getName());
+		return String.format("Importing Bucket[%s]", getBucket().getId());
 	}
 }

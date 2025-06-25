@@ -1,12 +1,10 @@
 package com.bakdata.conquery.models.worker;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.local.SqlEntityResolver;
 import com.bakdata.conquery.mode.local.SqlStorageHandler;
@@ -37,10 +35,9 @@ public class LocalNamespace extends Namespace {
 			SqlStorageHandler storageHandler,
 			JobManager jobManager,
 			FilterSearch filterSearch,
-			SqlEntityResolver sqlEntityResolver,
-			List<Injectable> injectables
+			SqlEntityResolver sqlEntityResolver
 	) {
-		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, sqlEntityResolver, injectables);
+		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, sqlEntityResolver);
 		this.dslContextWrapper = dslContextWrapper;
 		this.storageHandler = storageHandler;
 		this.dialect = dialect;

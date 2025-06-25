@@ -27,7 +27,7 @@ public class MetadataCollectionTest extends IntegrationTest.Simple implements Pr
 		//read test sepcification
 		String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 
-		DatasetId dataset = conquery.getDataset().getId();
+		DatasetId dataset = conquery.getDataset();
 
 		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));

@@ -7,15 +7,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
+import jakarta.ws.rs.core.UriBuilder;
 
 import c10n.C10N;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.statistics.DateColumnStatsCollector;
 import com.bakdata.conquery.models.query.statistics.HistogramColumnDescription;
@@ -27,7 +28,6 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -41,7 +41,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 
 		final String testJson = In.resource("/tests/query/QUERY_STATISTICS_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
 
-		final Dataset dataset = conquery.getDataset();
+		final DatasetId dataset = conquery.getDataset();
 
 		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));

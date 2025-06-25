@@ -14,7 +14,7 @@ import lombok.ToString;
 @CPSBase
 @Getter
 @Setter
-@ToString(onlyExplicitlyIncluded = true)
+@ToString
 public abstract class NetworkMessage<CTX extends NetworkMessageContext<?>> implements Message {
 
 	@ToString.Include
@@ -22,5 +22,6 @@ public abstract class NetworkMessage<CTX extends NetworkMessageContext<?>> imple
 	private UUID messageId = UUID.randomUUID();
 
 	public abstract void react(CTX context) throws Exception;
+
 
 }

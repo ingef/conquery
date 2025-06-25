@@ -26,8 +26,8 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ExcelConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -114,7 +114,7 @@ public class ExcelResultRenderTest {
 		User user = new User("test", "test", metaStorage);
 		user.updateStorage();
 
-		return new ManagedQuery(mock(Query.class), user.getId(), new Dataset(ExcelResultRenderTest.class.getSimpleName()).getId(), metaStorage, null, CONFIG) {
+		return new ManagedQuery(mock(Query.class), user.getId(), new DatasetId(ExcelResultRenderTest.class.getSimpleName()), metaStorage, null, CONFIG) {
 			@Override
 			public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
 				return results.stream();
@@ -161,7 +161,7 @@ public class ExcelResultRenderTest {
 		final List<String> expected = new ArrayList<>();
 		expected.add(String.join("\t", printIdFields) + "\t" + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")));
 		results.stream()
-			   .map(EntityResult.class::cast)
+			   .map(entityResult -> entityResult)
 			   .forEach(res -> {
 
 				   for (Object[] line : res.listResultLines()) {

@@ -65,15 +65,14 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 
 		return new LocalNamespace(
 				sqlDialect,
-				namespaceData.getPreprocessMapper(),
+				namespaceData.preprocessMapper(),
 				namespaceStorage,
 				executionManager,
 				dslContextWrapper,
 				sqlStorageHandler,
-				namespaceData.getJobManager(),
-				namespaceData.getFilterSearch(),
-				sqlEntityResolver,
-				namespaceData.getInjectables()
+				namespaceData.jobManager(),
+				namespaceData.filterSearch(),
+				sqlEntityResolver
 		);
 	}
 

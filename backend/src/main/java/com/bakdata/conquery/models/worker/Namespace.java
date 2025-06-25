@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -48,15 +47,10 @@ public abstract class Namespace implements Injectable {
 
 	private final EntityResolver entityResolver;
 
-	// Jackson's injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
-	private final List<Injectable> injectables;
-
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
-		for (Injectable i : getInjectables()) {
-			i.inject(values);
-		}
+		storage.getDataset().inject(values);
 		return values.add(Namespace.class, this);
 	}
 
