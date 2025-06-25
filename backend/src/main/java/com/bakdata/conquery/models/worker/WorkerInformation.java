@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @NoArgsConstructor
 @Slf4j
+@JsonIgnoreProperties("entityBucketSize")
 public class WorkerInformation extends NamespacedIdentifiable<WorkerId> implements MessageSender.Transforming<WorkerMessage, MessageToShardNode> {
 	@NotNull
 	private DatasetId dataset;
