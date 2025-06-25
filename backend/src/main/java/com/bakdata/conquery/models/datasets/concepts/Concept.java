@@ -11,13 +11,12 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -26,9 +25,11 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.queryplan.specific.Leaf;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -56,18 +57,14 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	@Valid
 	private List<CONNECTOR> connectors = Collections.emptyList();
 
+	@JacksonInject(useInput = OptBoolean.TRUE)
 	private DatasetId dataset;
 
-	/**
-	 * rawValue is expected to be an Integer, expressing a localId for {@link TreeConcept#getElementByLocalId(int)}.
-	 *
-	 * <p>
-	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} is used to print.
-	 */
-	public abstract String printConceptLocalId(Object rawValue, PrintSettings printSettings);
-
-	public List<Select> getDefaultSelects() {
-		return getSelects().stream().filter(Select::isDefault).collect(Collectors.toList());
+	@JsonIgnore
+	public List<SelectId> getDefaultSelects() {
+		return getSelects().stream().filter(Select::isDefault)
+						   .map(select -> (SelectId) select.getId())
+						   .collect(Collectors.toList());
 	}
 
 	public abstract List<? extends Select> getSelects();
@@ -90,6 +87,11 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	@JsonIgnore
 	public Concept<?> getConcept() {
 		return this;
+	}
+
+	@Override
+	public ConceptElement<?> getParent() {
+		return null;
 	}
 
 	@Override

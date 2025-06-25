@@ -5,10 +5,12 @@ import java.util.List;
 import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.apiv1.KeyValue;
-import com.bakdata.conquery.models.identifiable.Labeled;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,7 +18,8 @@ import lombok.Setter;
 @Setter
 @Getter
 @EqualsAndHashCode(callSuper = true)
-public abstract class ConceptElement<ID extends ConceptElementId<? extends ConceptElement<? extends ID>>> extends Labeled<ID> implements NamespacedIdentifiable<ID> {
+public abstract class ConceptElement<ID extends ConceptElementId<?>>
+		extends LabeledNamespaceIdentifiable<ID> {
 
 	private String description;
 	private List<KeyValue> additionalInfos = Collections.emptyList();
@@ -29,20 +32,25 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 
 	public abstract void clearMatchingStats();
 
-	@Override
-	public String toString() {
-		return String.format("%s[%s]", this.getClass().getSimpleName(), getLabel());
-	}
-
 	@JsonIgnore
 	public abstract Concept<?> getConcept();
 
+	@JsonIgnore
 	public abstract int[] getPrefix();
 
 	public abstract boolean matchesPrefix(int[] conceptPrefix);
 
-	@Override
-	public abstract ID createId();
 
+	@JsonManagedReference
+	public abstract List<ConceptTreeChild> getChildren();
+
+	public abstract int getLocalId();
+
+	public abstract int getDepth();
+
+	@JsonBackReference
+	public abstract ConceptElement<?> getParent();
+
+	public abstract void setLocalId(int size);
 
 }

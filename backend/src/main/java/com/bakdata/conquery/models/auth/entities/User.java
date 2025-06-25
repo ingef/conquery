@@ -44,7 +44,8 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 	@JsonCreator
 	protected User(String name, String label) {
-		this(name, label, null);
+		super(name, label);
+		this.shiroUserAdapter = new ShiroUserAdapter();
 	}
 
 	public User(String name, String label, MetaStorage storage) {
@@ -64,11 +65,11 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 			permissions = Sets.union(permissions, role.getEffectivePermissions());
 		}
 
-		try(Stream<Group> allGroups = getMetaStorage().getAllGroups()){
+		try (Stream<Group> allGroups = getMetaStorage().getAllGroups()) {
 
 			for (Iterator<Group> it = allGroups.iterator(); it.hasNext(); ) {
 				Group group = it.next();
-				if (!group.containsMember(this)) {
+				if (!group.containsUser(getId())) {
 					continue;
 				}
 				permissions = Sets.union(permissions, group.getEffectivePermissions());
@@ -79,9 +80,9 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 		return permissions;
 	}
 
-	public synchronized void addRole(Role role) {
-		if (roles.add(role.getId())) {
-			log.trace("Added role {} to user {}", role.getId(), getId());
+	public synchronized void addRole(RoleId role) {
+		if (roles.add(role)) {
+			log.trace("Added role {} to user {}", role, getId());
 			updateStorage();
 		}
 	}
@@ -118,14 +119,16 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	public boolean isOwner(Authorized object) {
-		return object instanceof Owned && getId().equals(((Owned) object).getOwner());
+		if (object instanceof Owned owned) {
+			return getId().equals(owned.getOwner());
+		}
+
+		return false;
 	}
 
 	@Override
 	public UserId createId() {
-		UserId userId = new UserId(name);
-		userId.setMetaStorage(getMetaStorage());
-		return userId;
+		return new UserId(name);
 	}
 
 	public boolean isPermittedAll(Collection<? extends Authorized> authorized, Ability ability) {

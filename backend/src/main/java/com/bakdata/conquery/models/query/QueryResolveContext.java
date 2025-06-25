@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,4 @@ public class QueryResolveContext {
 	@With
 	private final DateAggregationMode dateAggregationMode;
 
-	public Dataset getDataset() {
-		return namespace.getDataset();
-	}
 }

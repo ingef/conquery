@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.worker;
 
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.ReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.ActionReactionMessage;
@@ -82,12 +82,12 @@ public class WorkerHandler {
 
 	}
 
-	public synchronized void removeBucketAssignmentsForImportFormWorkers(@NonNull Import importId) {
+	public synchronized void removeBucketAssignmentsForImportFormWorkers(ImportId importId) {
 		final WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
 		if (workerBuckets == null) {
 			return;
 		}
-		workerBuckets.removeBucketsOfImport(importId.getId());
+		workerBuckets.removeBucketsOfImport(importId);
 
 		storage.setWorkerToBucketsMap(workerBuckets);
 

@@ -8,9 +8,8 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.identifiable.Labeled;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -21,10 +20,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class Dataset extends Labeled<DatasetId> implements Injectable, Authorized, NamespacedIdentifiable<DatasetId> {
+public class Dataset extends LabeledNamespaceIdentifiable<DatasetId> implements Injectable, Authorized {
 
 	/**
 	 * Used to programmatically generate proper {@link com.bakdata.conquery.models.identifiable.ids.NamespacedId}s.
@@ -45,19 +45,20 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
-	private transient NamespacedStorageProvider namespacedStorageProvider;
+	private NamespacedStorageProvider storageProvider;
+
 
 	public Dataset(String name) {
 		setName(name);
 	}
 
-	public static boolean isAllIdsTable(Table table){
+	public static boolean isAllIdsTable(Table table) {
 		return table.getName().equalsIgnoreCase(ConqueryConstants.ALL_IDS_TABLE);
 	}
 
 	@JsonIgnore
 	public Table getAllIdsTable() {
-		//TODO store this somehow? / Add this at dataset creation
+		// TODO migrate to NamespaceStorage
 		final Table table = new Table();
 		table.setDataset(this.getId());
 		table.setName(ConqueryConstants.ALL_IDS_TABLE);
@@ -68,14 +69,14 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues mutableInjectableValues) {
-		return mutableInjectableValues.add(Dataset.class, this);
+		return mutableInjectableValues
+				.add(Dataset.class, this)
+				.add(DatasetId.class, getId());
 	}
 
 	@Override
 	public DatasetId createId() {
-		DatasetId datasetId = new DatasetId(getName());
-		datasetId.setNamespacedStorageProvider(getNamespacedStorageProvider());
-		return datasetId;
+		return new DatasetId(getName());
 	}
 
 	@Override
@@ -86,6 +87,11 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 	@JsonIgnore
 	@Override
 	public DatasetId getDataset() {
-		return this.getId();
+		return getId();
+	}
+
+	@Override
+	public NamespacedStorageProvider getDomain() {
+		return getStorageProvider();
 	}
 }

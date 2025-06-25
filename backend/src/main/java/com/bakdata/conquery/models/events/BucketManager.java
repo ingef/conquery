@@ -36,7 +36,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -70,12 +69,9 @@ public class BucketManager {
 	 */
 	private final Map<TableId, Int2ObjectMap<Set<BucketId>>> tableToBuckets;
 
-	@Getter
-	private final int entityBucketSize;
-
 	private final Map<ConceptId, Map<ImportId, ConceptTreeCache>> treeCaches = new ConcurrentHashMap<>();
 
-	public static BucketManager create(Worker worker, WorkerStorage storage, int entityBucketSize) {
+	public static BucketManager create(Worker worker, WorkerStorage storage) {
 		final Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlockId>>> connectorCBlocks = new HashMap<>();
 		final Map<TableId, Int2ObjectMap<Set<BucketId>>> tableBuckets = new HashMap<>();
 		final Object2IntMap<String> entity2Bucket = new Object2IntOpenHashMap<>();
@@ -98,7 +94,7 @@ public class BucketManager {
 		}
 		log.debug("FINISHED Register cblocks for {}", worker.getInfo().getId());
 
-		return new BucketManager(worker.getJobManager(), storage, worker, entity2Bucket, connectorCBlocks, tableBuckets, entityBucketSize);
+		return new BucketManager(worker.getJobManager(), storage, worker, entity2Bucket, connectorCBlocks, tableBuckets);
 	}
 
 
@@ -141,7 +137,7 @@ public class BucketManager {
 
 	@SneakyThrows
 	public void fullUpdate() {
-		log.info("Performing full update for cblocks");
+		log.debug("Performing full update for cblocks");
 
 		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 		try (Stream<BucketId> allBucketIds = storage.getAllBucketIds()) {
@@ -156,7 +152,7 @@ public class BucketManager {
 
 							   final CBlockId cBlockId = new CBlockId(bucketId, connector.getId());
 
-							   if (!connector.getResolvedTableId().equals(bucketId.getImp().getTable())) {
+							   if (!connector.resolveTableId().equals(bucketId.getImp().getTable())) {
 								   return;
 							   }
 
@@ -172,13 +168,13 @@ public class BucketManager {
 			}
 
 		}
-		log.info("Gathered all infos for full update for cblocks job");
+		log.trace("Gathered all infos for full update for cblocks job");
 
 		if (job.isEmpty()) {
-			log.info("No Concepts/CBlocks need to be updated, skipping job.");
+			log.trace("No Concepts/CBlocks need to be updated, skipping job.");
 			return;
 		}
-		log.info("Found {} tasks, queuing job", job.getTasks().size());
+		log.trace("Found {} tasks, queuing job", job.getTasks().size());
 		jobManager.addSlowJob(job);
 	}
 
@@ -203,7 +199,7 @@ public class BucketManager {
 			allConcepts
 					.filter(TreeConcept.class::isInstance)
 					.flatMap(concept -> concept.getConnectors().stream())
-					.filter(connector -> connector.getResolvedTableId().equals(bucket.getTable()))
+					.filter(connector -> connector.resolveTableId().equals(bucket.getTable()))
 					.filter(connector -> !hasCBlock(new CBlockId(bucket.getId(), connector.getId())))
 					.forEach(connector -> job.addCBlock(bucket.getId(), (ConceptTreeConnector) connector));
 		}
@@ -283,9 +279,10 @@ public class BucketManager {
 	 * Collects all Entites, that have any of the concepts on the connectors in a specific time.
 	 */
 	public Set<String> getEntitiesWithConcepts(Collection<ConceptElementId<?>> concepts, Set<ConnectorId> connectors, CDateSet restriction) {
-		List<ConceptElement<?>> resolvedConcepts = concepts.stream()
-											   .<ConceptElement<?>>map(ConceptElementId::resolve)
-											   .toList();
+		List<ConceptElement<?>> resolvedConcepts =
+				concepts.stream()
+						.<ConceptElement<?>>map(ConceptElementId::resolve)
+						.toList();
 
 		final long requiredBits = ConceptNode.calculateBitMask(resolvedConcepts);
 
@@ -370,7 +367,7 @@ public class BucketManager {
 
 			try(Stream<BucketId> allBuckets = storage.getAllBucketIds()) {
 				allBuckets
-						.filter(bucketId -> bucketId.getImp().getTable().equals(connector.getResolvedTableId()))
+						.filter(bucketId -> bucketId.getImp().getTable().equals(connector.resolveTableId()))
 						.filter(bucketId -> !hasCBlock(new CBlockId(bucketId, connector.getId())))
 						.forEach(bucket -> job.addCBlock(bucket, connector));
 			}
@@ -380,7 +377,8 @@ public class BucketManager {
 
 
 	public ConceptTreeCache getConceptTreeCache(TreeConcept concept, ImportId imp) {
-		return treeCaches.computeIfAbsent(concept.getId(), (ignored) -> new ConcurrentHashMap<>()).computeIfAbsent(imp, (ignored) -> new ConceptTreeCache(concept));
+		return treeCaches.computeIfAbsent(concept.getId(), (ignored) -> new ConcurrentHashMap<>())
+						 .computeIfAbsent(imp, (ignored) -> new ConceptTreeCache(concept));
 	}
 
 	public void removeConceptTreeCacheByImport(ConceptId concept, ImportId imp) {

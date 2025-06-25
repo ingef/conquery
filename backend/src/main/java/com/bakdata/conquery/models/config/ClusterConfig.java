@@ -36,8 +36,6 @@ public class ClusterConfig extends Configuration {
 	@Valid
 	@NotNull
 	private DefaultSocketSessionConfig mina = new DefaultSocketSessionConfig();
-	@Min(1)
-	private int entityBucketSize = 1000;
 
 	private Duration idleTimeOut = Duration.minutes(5);
 	private Duration heartbeatTimeout = Duration.minutes(1);

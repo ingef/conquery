@@ -1,21 +1,26 @@
 package com.bakdata.conquery.apiv1;
 
+import java.net.URI;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.util.io.FileUtil;
-import com.fasterxml.jackson.annotation.*;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-
-import java.net.URI;
 
 @Data
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
@@ -25,13 +30,7 @@ import java.net.URI;
 @ToString
 @Slf4j
 @CPSType(id = "CSV_TEMPLATE", base = SearchIndex.class)
-public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements Searchable, SearchIndex {
-
-	@NotNull
-	private DatasetId dataset;
-
-	@NotEmpty
-	private final String name;
+public class FilterTemplate extends SearchIndex implements Searchable {
 
 	/**
 	 * Path to CSV File.
@@ -44,11 +43,13 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	 */
 	@NotEmpty
 	private final String columnValue;
+
 	/**
 	 * Value displayed in Select list. Usually concise display.
 	 */
 	@NotEmpty
 	private final String value;
+
 	/**
 	 * More detailed value. Displayed when value is selected.
 	 */
@@ -76,11 +77,6 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	@JsonIgnore
 	public boolean isSearchDisabled() {
 		return false;
-	}
-
-	@Override
-	public SearchIndexId createId() {
-		return new SearchIndexId(dataset, name);
 	}
 
 	@JsonIgnore

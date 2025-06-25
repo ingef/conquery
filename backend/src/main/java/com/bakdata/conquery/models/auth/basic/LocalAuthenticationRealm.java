@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.UserManageable;
 import com.bakdata.conquery.models.auth.basic.PasswordHasher.HashEntry;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -158,16 +157,16 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 	}
 
 	@Override
-	public boolean addUser(@NonNull User user, @NonNull CredentialType credential) {
+	public boolean addUser(UserId user, @NonNull CredentialType credential) {
 
 		try {
 			final HashEntry hashEntry = toHashEntry(credential);
-			passwordStore.add(user.getId(), hashEntry);
-			log.debug("Added user to realm: {}", user.getId());
+			passwordStore.add(user, hashEntry);
+			log.debug("Added user to realm: {}", user);
 			return true;
 		}
 		catch (IllegalArgumentException e) {
-			log.warn("Unable to add user '{}'", user.getId(), e);
+			log.warn("Unable to add user '{}'", user, e);
 		}
 		return false;
 	}
@@ -193,28 +192,28 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 	}
 
 	@Override
-	public boolean updateUser(User user, CredentialType credential) {
+	public boolean updateUser(UserId user, CredentialType credential) {
 
 		if (credential == null) {
-			log.warn("Skipping user '{}' because no credential was provided", user.getId());
+			log.warn("Skipping user '{}' because no credential was provided", user);
 			return false;
 		}
 
 		try {
 			final HashEntry hashEntry = toHashEntry(credential);
-			passwordStore.update(user.getId(), hashEntry);
+			passwordStore.update(user, hashEntry);
 			return true;
 		}
 		catch (IllegalArgumentException e) {
-			log.warn("Unable to update user '{}'", user.getId(), e);
+			log.warn("Unable to update user '{}'", user, e);
 		}
 		return false;
 
 	}
 
 	@Override
-	public boolean removeUser(User user) {
-		passwordStore.remove(user.getId());
+	public boolean removeUser(UserId user) {
+		passwordStore.remove(user);
 		return true;
 	}
 
