@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.worker;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
