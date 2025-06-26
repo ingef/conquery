@@ -7,13 +7,10 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.LocalNamespace;
 import lombok.Data;
 
 @Data
 public class LocalStorageListener implements StorageListener {
-
 
 	@Override
 	public void onAddSecondaryId(SecondaryIdDescription secondaryId) {
