@@ -3,21 +3,17 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
-public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> implements NamespacedId {
+public final class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> {
 
 	private final ConceptElementId<?> parent;
 	private final String name;
@@ -28,12 +24,13 @@ public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> imple
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
-		Concept<?> concept = storage.getConcept(findConcept());
+	public ConceptTreeChild get() {
+		Concept<?> concept = getDomain().getStorage(getDataset())
+									.getConcept(findConcept());
 		if (concept == null) {
 			return null;
 		}
-		return concept.findById(this);
+		return (ConceptTreeChild) concept.findById(this);
 	}
 
 	@Override
@@ -48,17 +45,13 @@ public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> imple
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 		parent.collectIds(collect);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return parent.getNamespacedStorageProvider();
-	}
 
-	public static enum Parser implements IdUtil.Parser<ConceptTreeChildId> {
+	public enum Parser implements IdUtil.Parser<ConceptTreeChildId> {
 		INSTANCE;
 
 		@Override

@@ -5,13 +5,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -23,7 +21,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class FormConfigId extends Id<FormConfig> implements MetaId, Owned {
+public class FormConfigId extends MetaId<FormConfig> implements Owned {
 
 
 	private final DatasetId dataset;
@@ -39,14 +37,14 @@ public class FormConfigId extends Id<FormConfig> implements MetaId, Owned {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 		dataset.collectIds(collect);
 	}
 
 	@Override
-	public Identifiable<?> get(MetaStorage storage) {
-		return storage.getFormConfig(this);
+	public FormConfig get() {
+		return getDomain().getFormConfig(this);
 	}
 
 	@Override

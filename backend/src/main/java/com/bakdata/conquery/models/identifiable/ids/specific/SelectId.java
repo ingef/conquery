@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -14,11 +13,13 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public abstract class SelectId extends Id<Select> implements NamespacedId {
+public sealed abstract class SelectId extends NamespacedId<Select>
+		permits ConceptSelectId, ConnectorSelectId {
 
 	private final String select;
 
 	public abstract ConceptId findConcept();
+
 
 	@Override
 	public void collectComponents(List<Object> components) {

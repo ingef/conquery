@@ -3,18 +3,15 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
+import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter @EqualsAndHashCode(callSuper=true)
-public class ConceptSelectId extends SelectId implements NamespacedId {
+public final class ConceptSelectId extends SelectId {
 
 	private final ConceptId concept;
 	
@@ -24,7 +21,7 @@ public class ConceptSelectId extends SelectId implements NamespacedId {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?,?>> collect) {
 		collect.add(this);
 		concept.collectIds(collect);
 	}
@@ -35,14 +32,11 @@ public class ConceptSelectId extends SelectId implements NamespacedId {
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
-		return storage.getConcept(concept).getSelectByName(getSelect());
+	public UniversalSelect get() {
+		return (UniversalSelect) getDomain().getStorage(getDataset())
+										.getConcept(concept).getSelectByName(getSelect());
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return concept.getNamespacedStorageProvider();
-	}
 
 	@Override
 	public ConceptId findConcept() {

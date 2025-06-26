@@ -3,18 +3,17 @@ package com.bakdata.conquery.apiv1.query.concept.filter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import javax.annotation.CheckForNull;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -89,16 +88,11 @@ public class CQTable {
 		return null;
 	}
 
-	public boolean hasSelectedSecondaryId(SecondaryIdDescription secondaryId) {
-		if (secondaryId == null) {
-			return false;
-		}
-
+	public boolean hasSelectedSecondaryId(SecondaryIdDescriptionId secondaryId) {
 		final Connector resolvedConnector = connector.resolve();
 		return Arrays.stream(resolvedConnector.getResolvedTable().getColumns())
 					 .map(Column::getSecondaryId)
-					 .filter(Objects::nonNull)
-					 .anyMatch(o -> Objects.equals(secondaryId.getId(), o));
+					 .anyMatch(secondaryId::equals);
 	}
 
 }

@@ -31,7 +31,7 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.MetaIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -71,7 +71,7 @@ import org.apache.shiro.authz.Permission;
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonIgnoreProperties("state")
-public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
+public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 
 	/**
 	 * Some unusual suffix. It's not too bad if someone actually uses this.
@@ -119,15 +119,6 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@EqualsAndHashCode.Exclude
 	private transient ConqueryConfig config;
 
-	/**
-	 * TODO remove this when identifiables hold reference to meta storage (CentralRegistry removed)
-	 */
-	@JacksonInject(useInput = OptBoolean.FALSE)
-	@Setter
-	@Getter(AccessLevel.PROTECTED)
-	@JsonIgnore
-	@NotNull
-	private transient MetaStorage metaStorage;
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Setter
@@ -141,8 +132,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		this.owner = owner;
 		this.dataset = dataset;
 		this.config = config;
-		this.metaStorage = metaStorage;
 		this.datasetRegistry = datasetRegistry;
+		setMetaStorage(metaStorage);
 	}
 
 	private static boolean canSubjectExpand(Subject subject, QueryDescription query) {
@@ -197,18 +188,12 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	private static boolean containsDates(QueryDescription query) {
 		return Visitable.stream(query)
-						.anyMatch(visitable -> {
-
-							if (visitable instanceof CQConcept cqConcept) {
-								return !cqConcept.isExcludeFromTimeAggregation();
-							}
-
-							if (visitable instanceof CQExternal external) {
-								return external.containsDates();
-							}
-
-							return false;
-						});
+						.anyMatch(visitable ->
+										  switch (visitable) {
+											  case CQConcept cqConcept -> !cqConcept.isExcludeFromTimeAggregation();
+											  case CQExternal external -> external.containsDates();
+											  default -> false;
+										  });
 	}
 
 	/**
@@ -225,9 +210,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		if (queryId == null) {
 			queryId = UUID.randomUUID();
 		}
-		ManagedExecutionId managedExecutionId = new ManagedExecutionId(dataset, queryId);
-		managedExecutionId.setMetaStorage(getMetaStorage());
-		return managedExecutionId;
+		return new ManagedExecutionId(dataset, queryId);
 	}
 
 	/**
@@ -257,7 +240,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		getExecutionManager().updateState(getId(), executionState);
 
 		// Persist state of this execution
-		metaStorage.updateExecution(this);
+		getMetaStorage().updateExecution(this);
 
 		// Signal to waiting threads that the execution finished
 		getExecutionManager().clearBarrier(getId());
@@ -314,9 +297,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setContainsDates(containsDates);
 
 		if (owner != null) {
-			User user = metaStorage.get(owner);
+			User user = owner.get();
 
-			if(user != null) {
+			if (user != null) {
 				status.setOwner(user.getId());
 				status.setOwnerName(user.getLabel());
 			}
@@ -387,7 +370,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		 */
 		List<GroupId> permittedGroups = new ArrayList<>();
 
-		try(Stream<Group> allGroups = getMetaStorage().getAllGroups()) {
+		try (Stream<Group> allGroups = getMetaStorage().getAllGroups()) {
 			for (Group group : allGroups.toList()) {
 				for (Permission perm : group.getPermissions()) {
 					if (perm.implies(createPermission(Ability.READ.asSet()))) {

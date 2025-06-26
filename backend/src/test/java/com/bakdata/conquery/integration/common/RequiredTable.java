@@ -10,9 +10,9 @@ import jakarta.validation.constraints.NotNull;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -49,10 +49,10 @@ public class RequiredTable {
 		);
 	}
 
-	public Table toTable(Dataset dataset, NamespacedStorageProvider idResolver) {
+	public Table toTable(DatasetId dataset, NamespacedStorageProvider idResolver) {
 		Table table = new Table();
 		table.setPrimaryColumn(primaryColumn.toColumn(table, idResolver));
-		table.setDataset(dataset.getId());
+		table.setDataset(dataset);
 		table.setName(name);
 		table.setColumns(Arrays.stream(columns)
 							   .map(col -> col.toColumn(table, idResolver)).toArray(Column[]::new));

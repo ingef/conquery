@@ -2,12 +2,10 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver;
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -46,9 +44,6 @@ public abstract class Namespace {
 	private final FilterSearch filterSearch;
 
 	private final EntityResolver entityResolver;
-
-	// Jackson's injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
-	private final List<Injectable> injectables;
 
 	public Dataset getDataset() {
 		return storage.getDataset();

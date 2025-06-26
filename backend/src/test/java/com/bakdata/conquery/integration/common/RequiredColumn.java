@@ -52,7 +52,8 @@ public class RequiredColumn {
 
 		if (!Strings.isNullOrEmpty(secondaryId)) {
 			SecondaryIdDescriptionId secondaryIdDescriptionId = new SecondaryIdDescriptionId(table.getDataset(), secondaryId);
-			final SecondaryIdDescription description = secondaryIdDescriptionId.get(idResolver.getStorage(table.getDataset()));
+			secondaryIdDescriptionId.setDomain(idResolver);
+			final SecondaryIdDescription description = secondaryIdDescriptionId.resolve();
 
 			col.setSecondaryId(description.getId());
 		}

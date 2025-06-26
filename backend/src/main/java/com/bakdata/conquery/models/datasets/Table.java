@@ -12,9 +12,9 @@ import jakarta.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.config.DatabaseConfig;
-import com.bakdata.conquery.models.identifiable.Labeled;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JacksonInject;
@@ -31,15 +31,10 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @JsonDeserialize(converter = Table.Initializer.class)
-public class Table extends Labeled<TableId> implements NamespacedIdentifiable<TableId>, Initializing {
+public class Table extends LabeledNamespaceIdentifiable<TableId> implements Initializing {
 
-	// TODO: 10.01.2020 fk: register imports here?
-
+	@JacksonInject(useInput = OptBoolean.TRUE)
 	private DatasetId dataset;
-
-	@JacksonInject(useInput = OptBoolean.FALSE)
-	@JsonIgnore
-	private NamespacedStorage storage;
 
 	@NotNull
 	@Valid
@@ -52,6 +47,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	@Nullable
 	@JsonManagedReference
 	private Column primaryColumn;
+
 
 	@ValidationMethod(message = "More than one column map to the same secondaryId")
 	@JsonIgnore
@@ -87,8 +83,10 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	}
 
 	public Stream<Import> findImports(NamespacedStorage storage) {
-		TableId thisId = this.getId();
-		return storage.getAllImports().filter(imp -> imp.getTable().equals(thisId));
+		final TableId thisId = getId();
+		return storage.getAllImports()
+					  .filter(imp -> imp.getTable().equals(thisId))
+					  .map(ImportId::resolve);
 	}
 
 	public Column getColumnByName(@NotNull String columnName) {
@@ -105,11 +103,9 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	public Column findSecondaryIdColumn(SecondaryIdDescriptionId secondaryId) {
 
 		for (Column col : columns) {
-			if (col.getSecondaryId() == null || !secondaryId.equals(col.getSecondaryId())) {
-				continue;
+			if (secondaryId.equals(col.getSecondaryId())) {
+				return col;
 			}
-
-			return col;
 		}
 
 		return null;
@@ -117,16 +113,11 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 
 	@Override
 	public void init() {
-		if (dataset == null) {
-			dataset = storage.getDataset().getId();
-		} else if (storage != null && !dataset.equals(storage.getDataset().getId())) {
-			throw new IllegalStateException("Datasets don't match. Namespace: %s  Table: %s".formatted(storage.getDataset().getId(), dataset));
-		}
-
 		for (Column column : columns) {
 			column.init();
 		}
 	}
 
-	public static class Initializer extends Initializing.Converter<Table> {}
+	public static class Initializer extends Initializing.Converter<Table> {
+	}
 }

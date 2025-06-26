@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.filter.event;
 
 import java.util.Set;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
@@ -8,7 +9,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -26,7 +26,7 @@ public class MultiSelectFilterNode extends EventFilterNode<Set<String>> {
 	@Setter
 	private Column column;
 
-	private boolean empty;
+	private final boolean empty;
 	
 
 	public MultiSelectFilterNode(Column column, Set<String> filterValue) {
@@ -58,14 +58,6 @@ public class MultiSelectFilterNode extends EventFilterNode<Set<String>> {
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		//TODO
-//		for (String selected : getFilterValue()) {
-//			StringStore stringStore = (StringStore) bucket.getStores()[getColumn().getPosition()];
-//			if(stringStore.getId(selected) != -1) {
-//				return true;
-//			}
-//		}
-
 		return true;
 	}
 

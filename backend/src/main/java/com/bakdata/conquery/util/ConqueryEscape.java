@@ -5,16 +5,19 @@ import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
 import java.util.stream.IntStream;
 
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
- * We use a custom escaping for the parts an {@link com.bakdata.conquery.models.identifiable.ids.Id} consists of.
+ * We use a custom escaping for the parts an {@link Id} consists of.
  * This way, we ensure, that the {@link com.bakdata.conquery.models.identifiable.ids.IdUtil#JOIN_CHAR} is not confused and that the resulting id
  * can be used safely in a URL path or query without further encoding.
  */
 @UtilityClass
+@Slf4j
 public class ConqueryEscape {
 
 	private static final byte ESCAPER = '$';
@@ -91,6 +94,18 @@ public class ConqueryEscape {
 		}
 		
 		byte[] bytes = word.getBytes(StandardCharsets.US_ASCII);
+
+		for (int i = 0; i < bytes.length; i++) {
+			byte aByte = bytes[i];
+			if (aByte == ESCAPER){
+				continue;
+			}
+			if (dontNeedEncoding(aByte)) {
+				continue;
+			}
+			log.warn("Unescaped character '{}' at {} in '{}'", aByte, i, word);
+		}
+
 		if(!ArrayUtils.contains(bytes, ESCAPER)) {
 			return word;
 		}
