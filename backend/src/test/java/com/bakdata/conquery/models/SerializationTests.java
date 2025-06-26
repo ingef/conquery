@@ -281,6 +281,7 @@ public class SerializationTests extends AbstractSerializationTest {
 			Dataset dataset = createDataset(getNamespaceStorage(), getDatasetRegistry());
 
 			Table table = getTable(dataset);
+			table.setDataset(dataset.getId());
 
 			table.init();
 
@@ -295,6 +296,8 @@ public class SerializationTests extends AbstractSerializationTest {
 			Dataset dataset = createDataset(getWorkerStorage(), getShardNamespacedStorageProvider());
 
 			Table table = getTable(dataset);
+			table.setDataset(dataset.getId());
+			table.init();
 
 			getWorkerStorage().addTable(table);
 

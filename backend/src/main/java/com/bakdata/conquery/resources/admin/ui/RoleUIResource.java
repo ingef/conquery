@@ -31,7 +31,8 @@ public class RoleUIResource {
 	@GET
 	public View getRoles() {
 		return new UIView<>("roles.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getAdminProcessor()
-																																		  .getAllRoles());
+																																			.getAllRoles()
+		);
 	}
 
 	/**

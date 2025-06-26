@@ -123,8 +123,8 @@ public class ResultArrowProcessor {
 				throw new IllegalStateException("Failed streaming the result for execution %s requested by %s after %s".formatted(exec.getId(),
 																																  subject.getId(),
 																																  DataSize.bytes(countingOutputStream.getCount())
-					),
-					e
+				),
+												e
 				);
 			}
 			finally {

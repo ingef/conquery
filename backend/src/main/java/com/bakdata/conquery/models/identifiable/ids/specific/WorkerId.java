@@ -38,7 +38,6 @@ public class WorkerId extends NamespacedId<WorkerInformation> {
 	}
 
 
-
 	public enum Parser implements IdUtil.Parser<WorkerId> {
 		INSTANCE;
 

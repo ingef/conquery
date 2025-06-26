@@ -14,7 +14,7 @@ public sealed abstract class ConceptElementId<ELEMENT extends ConceptElement<?>>
 	@JsonIgnore
 	public abstract String getName();
 
-	public static enum Parser implements IdUtil.Parser<ConceptElementId<?>> {
+	public enum Parser implements IdUtil.Parser<ConceptElementId<?>> {
 		INSTANCE;
 
 		@Override

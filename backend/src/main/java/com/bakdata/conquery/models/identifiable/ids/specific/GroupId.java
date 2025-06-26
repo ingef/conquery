@@ -29,7 +29,7 @@ public final class GroupId extends PermissionOwnerId<Group> {
 	}
 
 	@Override
-	public void collectIds(Collection<Id<?,?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 	}
 

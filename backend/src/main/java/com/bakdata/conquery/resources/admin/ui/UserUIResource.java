@@ -31,7 +31,8 @@ public class UserUIResource {
 	@GET
 	public View getUsers() {
 		return new UIView<>("users.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getAdminProcessor()
-																																		  .getAllUsers());
+																																			.getAllUsers()
+		);
 	}
 
 	/**

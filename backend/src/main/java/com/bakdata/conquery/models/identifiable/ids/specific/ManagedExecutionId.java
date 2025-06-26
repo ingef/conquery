@@ -33,7 +33,7 @@ public class ManagedExecutionId extends MetaId<ManagedExecution> implements Owne
 	}
 
 	@Override
-	public void collectIds(Collection<Id<?,?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		dataset.collectIds(collect);
 	}

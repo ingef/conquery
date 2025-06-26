@@ -54,7 +54,7 @@ public class DatasetParamInjector implements ContainerRequestFilter {
 				datasetId.setDomain(registry);
 
 				// this is just interning
-				registry.get(datasetId).getDataset().inject(values);
+				registry.get(datasetId).inject(values);
 			}
 			return values;
 		}

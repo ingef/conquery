@@ -15,7 +15,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class CBlockId extends NamespacedId<CBlock>  {
+public class CBlockId extends NamespacedId<CBlock> {
 
 	private final BucketId bucket;
 	private final ConnectorId connector;
@@ -38,7 +38,7 @@ public class CBlockId extends NamespacedId<CBlock>  {
 	}
 
 	@Override
-	public void collectIds(Collection<Id<?,?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		bucket.collectIds(collect);
 		connector.collectIds(collect);

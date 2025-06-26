@@ -21,7 +21,7 @@ public final class ConnectorSelectId extends SelectId {
 	}
 
 	@Override
-	public void collectIds(Collection<Id<?,?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		connector.collectIds(collect);
 	}
@@ -34,9 +34,9 @@ public final class ConnectorSelectId extends SelectId {
 	@Override
 	public Select get() {
 		return getDomain().getStorage(getDataset())
-					  .getConcept(findConcept())
-					  .getConnectorByName(getConnector().getConnector())
-					  .getSelectByName(getSelect());
+						  .getConcept(findConcept())
+						  .getConnectorByName(getConnector().getConnector())
+						  .getSelectByName(getSelect());
 	}
 
 	@Override
