@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 
 public class LocalStorageListener implements StorageListener {
 
-	// When running without shards, no further actions are required
 
 	@Override
 	public void onAddSecondaryId(SecondaryIdDescription secondaryId) {

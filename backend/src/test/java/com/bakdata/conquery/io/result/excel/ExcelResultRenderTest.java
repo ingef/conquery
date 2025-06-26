@@ -52,7 +52,7 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 public class ExcelResultRenderTest {
 
-	public static final ConqueryConfig CONFIG = new ConqueryConfig(){{
+	public static final ConqueryConfig CONFIG = new ConqueryConfig() {{
 		// Suppress java.lang.NoClassDefFoundError: com/bakdata/conquery/io/jackson/serializer/CurrencyUnitDeserializer
 		setStorage(new NonPersistentStoreFactory());
 	}};
@@ -101,7 +101,11 @@ public class ExcelResultRenderTest {
 														   (selectInfo) -> selectInfo.getSelect().getLabel()
 		);
 
-		final List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(), tsvPrintSettings, new StringResultPrinters(ExcelResultPrinters.NEGATIVE_INF, ExcelResultPrinters.POSITIVE_INF));
+		final List<String> expected = generateExpectedTSV(results,
+														  mquery.getResultInfos(),
+														  tsvPrintSettings,
+														  new StringResultPrinters(ExcelResultPrinters.NEGATIVE_INF, ExcelResultPrinters.POSITIVE_INF)
+		);
 
 		log.info("Wrote and than read this excel data: {}", computed);
 
@@ -160,27 +164,25 @@ public class ExcelResultRenderTest {
 			List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings printSettings, PrinterFactory printerFactory) {
 		final List<String> expected = new ArrayList<>();
 		expected.add(String.join("\t", printIdFields) + "\t" + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")));
-		results.stream()
-			   .map(EntityResult.class::cast)
-			   .forEach(res -> {
 
-				   for (Object[] line : res.listResultLines()) {
-					   final StringJoiner valueJoiner = new StringJoiner("\t");
+		for (EntityResult res : results) {
+			for (Object[] line : res.listResultLines()) {
+				final StringJoiner valueJoiner = new StringJoiner("\t");
 
-					   valueJoiner.add(String.valueOf(res.getEntityId()));
-					   valueJoiner.add(String.valueOf(res.getEntityId()));
+				valueJoiner.add(String.valueOf(res.getEntityId()));
+				valueJoiner.add(String.valueOf(res.getEntityId()));
 
-					   for (int lIdx = 0; lIdx < line.length; lIdx++) {
-						   final Object val = line[lIdx];
+				for (int lIdx = 0; lIdx < line.length; lIdx++) {
+					final Object val = line[lIdx];
 
-						   final ResultInfo info = resultInfos.get(lIdx);
-						   final String printed = printValue(val, info, printSettings, printerFactory);
+					final ResultInfo info = resultInfos.get(lIdx);
+					final String printed = printValue(val, info, printSettings, printerFactory);
 
-						   valueJoiner.add(printed);
-					   }
-					   expected.add(valueJoiner.toString());
-				   }
-			   });
+					valueJoiner.add(printed);
+				}
+				expected.add(valueJoiner.toString());
+			}
+		}
 
 		return expected;
 	}
