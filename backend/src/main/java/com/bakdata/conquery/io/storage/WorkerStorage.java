@@ -26,7 +26,6 @@ public interface WorkerStorage extends NamespacedStorage, Closeable {
 
 	void removeBucket(BucketId id);
 
-
 	Stream<BucketId> getAllBucketIds();
 
 	WorkerInformation getWorker();
@@ -34,4 +33,8 @@ public interface WorkerStorage extends NamespacedStorage, Closeable {
 	void setWorker(WorkerInformation worker);
 
 	void updateWorker(WorkerInformation worker);
+
+	Stream<String> getAllEntities();
+
+	boolean hasCBlock(CBlockId id);
 }
