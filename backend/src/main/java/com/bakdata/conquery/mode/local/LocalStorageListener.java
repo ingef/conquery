@@ -14,7 +14,6 @@ import lombok.Data;
 @Data
 public class LocalStorageListener implements StorageListener {
 
-	private final DatasetRegistry<LocalNamespace> datasetRegistry;
 
 	@Override
 	public void onAddSecondaryId(SecondaryIdDescription secondaryId) {

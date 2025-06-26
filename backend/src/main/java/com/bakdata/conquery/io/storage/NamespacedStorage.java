@@ -48,6 +48,12 @@ public interface NamespacedStorage extends ConqueryStorage {
 
 	boolean hasConcept(ConceptId id);
 
+	void addEntityToBucket(String entity, int bucket);
+
+	boolean hasEntity(String entity);
+
+	int getEntityBucket(String entity);
+
 	@SneakyThrows
 	void updateConcept(Concept<?> concept);
 

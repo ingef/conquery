@@ -108,6 +108,11 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		return remove;
 	}
 
+	@Override
+	public boolean hasKey(KEY key) {
+		return keys.contains(key);
+	}
+
 	private void removed(KEY key) {
 		cache.invalidate(key);
 
