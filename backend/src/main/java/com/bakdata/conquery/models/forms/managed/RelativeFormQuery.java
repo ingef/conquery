@@ -4,13 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.ResultHeaders;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.ResultHeaders;
 import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
@@ -23,9 +26,6 @@ import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

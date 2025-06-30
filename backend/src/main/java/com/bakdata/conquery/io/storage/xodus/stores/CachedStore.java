@@ -60,7 +60,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private VALUE getFromStore(KEY key) {
 		final Stopwatch stopwatch = log.isTraceEnabled() ? Stopwatch.createStarted() : null;
 		final VALUE value = store.get(key);
-		log.trace("Loaded {} from store {} in {}", key, store, stopwatch);
+		log.trace("Loaded {} from store {} in {} (is null: {})", key, store, stopwatch, value == null);
 
 		if (value != null) {
 			keys.add(key);
@@ -193,6 +193,11 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public String getName() {
 		return store.getName();
+	}
+
+	@Override
+	public boolean contains(KEY key) {
+		return keys.contains(key);
 	}
 
 	@Override

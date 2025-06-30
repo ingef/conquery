@@ -51,4 +51,8 @@ public abstract class KeyIncludingStore<KEY, VALUE> implements Closeable, Manage
 			return null;
 		}
 	}
+
+    public boolean contains(KEY key) {
+		return store.contains(key);
+    }
 }

@@ -34,4 +34,6 @@ public interface WorkerStorage extends NamespacedStorage, Closeable {
 	void setWorker(WorkerInformation worker);
 
 	void updateWorker(WorkerInformation worker);
+
+	boolean hasCBlock(CBlockId id);
 }
