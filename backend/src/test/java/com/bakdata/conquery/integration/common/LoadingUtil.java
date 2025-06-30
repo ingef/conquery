@@ -166,9 +166,7 @@ public class LoadingUtil {
 	}
 
 	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
-		List<File> cqpps = generateCqpp(support, tables);
-
-		importCqppFiles(support, cqpps);
+		support.getTestImporter().importTableContents(support, tables);
 	}
 
 	public static List<File> generateCqpp(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {

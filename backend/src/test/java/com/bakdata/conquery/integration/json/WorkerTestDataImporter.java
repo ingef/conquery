@@ -26,7 +26,7 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		importSearchIndexes(support, test.getSearchIndexes());
 		importTables(support, content.getTables(), content.isAutoConcept());
 		importConcepts(support, test.getRawConcepts());
-		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, content.getTables()));
+		waitUntilDone(support, () -> importTableContents(support, content.getTables()));
 		importIdMapping(support, content);
 		importPreviousQueries(support, content);
 		waitUntilDone(support, () -> LoadingUtil.updateMatchingStats(support));
@@ -40,7 +40,7 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		importSecondaryIds(support, content.getSecondaryIds());
 		importTables(support, content.getTables(), content.isAutoConcept());
 		importConcepts(support, test.getRawConcepts());
-		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, content.getTables()));
+		waitUntilDone(support, () -> importTableContents(support, content.getTables()));
 		importIdMapping(support, content);
 		importPreviousQueries(support, content);
 	}
@@ -69,7 +69,7 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		test.getConcept().setConnectors(Collections.singletonList((ConceptTreeConnector) test.getConnector()));
 
 		waitUntilDone(support, () -> LoadingUtil.uploadConcept(support, support.getDataset(), test.getConcept()));
-		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, content.getTables()));
+		waitUntilDone(support, () -> importTableContents(support, content.getTables()));
 		waitUntilDone(support, () -> LoadingUtil.updateMatchingStats(support));
 	}
 
