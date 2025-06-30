@@ -1,88 +1,86 @@
-{  
-   "type":"QUERY_TEST",
-   "label":"SUM_EMPTY_DATE_CONCEPT_QUERY Test",
-   "expectedCsv":"tests/query/SUM_EMPTY_DATE_CONCEPT_QUERY/expected.csv",
-   "query":{  
-      "type":"CONCEPT_QUERY",
+{
+  "type": "QUERY_TEST",
+  "label": "SUM_EMPTY_DATE_CONCEPT_QUERY Test",
+  "expectedCsv": "tests/query/SUM_EMPTY_DATE_CONCEPT_QUERY/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
     "root": {
       "type": "AND",
       "children": [
         {
-            "type":"DATE_RESTRICTION",
-            "dateRange":{  
-            "min":"2010-01-01",
-            "max":"2010-01-31"
-            },
-            "child":{  
-                  
-                     "ids":[  
-                        "sum"
-                     ],
-                     "type":"CONCEPT",
-                     "label":"vs",
-                     "tables":[  
-                        {  
-                           "id":"sum.sum_connector",
-                           "filters":[  
-                              {  
-                                 "filter":"sum.sum_connector.value",
-                                 "type":"REAL_RANGE",
-                                 "value":{  
-                                    "min": 2,
-									"max": 2
-                                 }
-                              }
-                           ]
-                        }
-                     ]
-                  
-               }
-            }
-         ]
-      }
-   },
-   "concepts":[  
-      {  
-         "label":"sum",
-         "type":"TREE",
-         "connectors":[  
-            {  
-               "label":"sum_connector",
-               "table":"table1",
-               "validityDates":{  
-                  "label":"datum",
-                  "column":"table1.datum"
-               },
-               "filters":{
-                  "label":"value",
-                  "description":"xy",
-                  "column":"table1.value",
-                  "type":"SUM"
-               }
-            }
-         ]
-      }
-   ],
-   "content":{  
-      "tables":[  
-         {  
-            "csv":"tests/query/SUM_EMPTY_DATE_CONCEPT_QUERY/content.csv",
-            "name":"table1",
-            "primaryColumn":{  
-               "name":"pid",
-               "type":"STRING"
-            },
-            "columns": [
-        {
-          "name": "value",
-          "type": "REAL"
-        },
-        {
-          "name": "datum",
-          "type": "DATE"
+          "type": "DATE_RESTRICTION",
+          "dateRange": {
+            "min": "2010-01-01",
+            "max": "2010-01-31"
+          },
+          "child": {
+            "ids": [
+              "sum"
+            ],
+            "type": "CONCEPT",
+            "label": "vs",
+            "tables": [
+              {
+                "id": "sum.sum_connector",
+                "filters": [
+                  {
+                    "filter": "sum.sum_connector.value",
+                    "type": "REAL_RANGE",
+                    "value": {
+                      "min": 2,
+                      "max": 2
+                    }
+                  }
+                ]
+              }
+            ]
+          }
         }
       ]
-         }
+    }
+  },
+  "concepts": [
+    {
+      "label": "sum",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "sum_connector",
+          "table": "table1",
+          "validityDates": {
+            "label": "datum",
+            "column": "table1.datum"
+          },
+          "filters": {
+            "label": "value",
+            "description": "xy",
+            "column": "table1.value",
+            "type": "SUM"
+          }
+        }
       ]
-   }
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/SUM_EMPTY_DATE_CONCEPT_QUERY/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
 }
