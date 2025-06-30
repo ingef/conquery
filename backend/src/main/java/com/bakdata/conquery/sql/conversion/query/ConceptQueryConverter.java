@@ -39,6 +39,11 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 		ConversionContext contextAfterConversion = context.getNodeConversions().convert(conceptQuery.getRoot(), context);
 
 		QueryStep preFinalStep = contextAfterConversion.getLastConvertedStep();
+        // negation of a single node results in an anti-join with all ids table
+        if (preFinalStep.isNegate()) {
+            preFinalStep = QueryStepJoiner.antiJoinWithAllIdsTable(preFinalStep, contextAfterConversion);
+        }
+
 		Selects preFinalSelects = getPreFinalSelects(preFinalStep, contextAfterConversion);
 		List<QueryStep> predecessors = Stream.concat(Stream.of(preFinalStep), Stream.ofNullable(contextAfterConversion.getExternalExtras())).toList();
 

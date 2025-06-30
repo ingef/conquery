@@ -1,12 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.aggregation.DateAggregationDates;
@@ -14,7 +9,14 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.google.common.base.Preconditions;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jooq.Condition;
+import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.TableLike;
@@ -22,6 +24,29 @@ import org.jooq.TableOnConditionStep;
 import org.jooq.impl.DSL;
 
 public class QueryStepJoiner {
+
+    private static final String NEGATED_CTE_SUFFIX = "_negated";
+
+    public static QueryStep antiJoinWithAllIdsTable(QueryStep queryStep, ConversionContext context) {
+
+        Field<Object> queryStepPrimaryColumn = queryStep.getQualifiedSelects().getIds().getPrimaryColumn();
+        ColumnConfig idColumnConfig = context.getIdColumns().findPrimaryIdColumn();
+        Field<Object> allIdsPrimaryColumn = DSL.field(DSL.name(idColumnConfig.getField()));
+
+        Table<?> table = DSL.table(DSL.name(context.getIdColumns().getTable()))
+                .leftOuterJoin(DSL.table(DSL.name(queryStep.getCteName())))
+                .on(queryStepPrimaryColumn.eq(allIdsPrimaryColumn));
+
+        Condition antiJoinCondition = queryStepPrimaryColumn.isNull();
+
+        return QueryStep.builder()
+                .cteName(queryStep.getCteName() + NEGATED_CTE_SUFFIX)
+                .selects(Selects.builder().ids(new SqlIdColumns(allIdsPrimaryColumn)).build())
+                .fromTable(table)
+                .conditions(List.of(antiJoinCondition))
+                .predecessor(queryStep)
+                .build();
+    }
 
 	public static QueryStep joinChildren(
 			Iterable<CQElement> children,
@@ -49,6 +74,30 @@ public class QueryStepJoiner {
 		if (queriesToJoin.size() == 1) {
 			return queriesToJoin.get(0);
 		}
+
+        // keep all entries from group A (non-negate steps), whose entity has no matching entry in group B (negate steps)
+        if (queriesToJoin.stream().anyMatch(QueryStep::isNegate)) {
+            List<QueryStep> nonNegateSteps = queriesToJoin.stream().filter(Predicate.not(QueryStep::isNegate)).toList();
+            List<QueryStep> negateSteps = queriesToJoin.stream().filter(QueryStep::isNegate).toList();
+
+            QueryStep nonNegateJoined = joinSteps(nonNegateSteps, logicalOperation, dateAggregationAction, context);
+            QueryStep negateJoined = joinSteps(negateSteps, logicalOperation, dateAggregationAction, context);
+
+            Table<?> table = DSL.table(DSL.name(nonNegateJoined.getCteName()))
+                    .leftOuterJoin(DSL.table(DSL.name(negateJoined.getCteName())))
+                    .on(nonNegateJoined.getQualifiedSelects().getIds().getPrimaryColumn()
+                            .eq(negateJoined.getQualifiedSelects().getIds().getPrimaryColumn()));
+
+            Condition antiJoinCondition = negateJoined.getQualifiedSelects().getIds().getPrimaryColumn().isNull();
+
+            return QueryStep.builder()
+                    .cteName(context.getNameGenerator().joinedNodeName(logicalOperation) + NEGATED_CTE_SUFFIX)
+                    .selects(nonNegateJoined.getQualifiedSelects())
+                    .fromTable(table)
+                    .conditions(List.of(antiJoinCondition))
+                    .predecessors(List.of(nonNegateJoined, negateJoined))
+                    .build();
+        }
 
 		String joinedNodeName = context.getNameGenerator().joinedNodeName(logicalOperation);
 		SqlIdColumns ids = coalesceIds(queriesToJoin);

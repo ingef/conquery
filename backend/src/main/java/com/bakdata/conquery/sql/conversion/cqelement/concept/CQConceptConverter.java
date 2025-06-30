@@ -119,6 +119,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 						.fromTable(joinedTable)
 					    .groupBy(groupByFields)
 						.predecessors(queriesToJoin)
+                        .negate(context.isNegation())
 						.build();
 	}
 
