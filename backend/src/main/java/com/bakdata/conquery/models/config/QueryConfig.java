@@ -1,11 +1,17 @@
 package com.bakdata.conquery.models.config;
 
+import jakarta.validation.constraints.NotEmpty;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.util.Duration;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter @Setter @ToString
+@Getter
+@Setter
+@ToString
 public class QueryConfig {
 
 	private ThreadPoolDefinition executionPool = new ThreadPoolDefinition();
@@ -19,4 +25,17 @@ public class QueryConfig {
 	 * TODO Implement global limit of active secondaryId sub plans
 	 */
 	private int secondaryIdSubPlanRetention = 15;
+
+	@NotEmpty
+	private String softResultCacheSpec = "softValues";
+	@NotEmpty
+	private String hardResultCacheSpec = "expireAfterAccess=10m";
+
+	@JsonIgnore
+	@ValidationMethod(message = "SoftResultCache is required to be soft.")
+	public boolean isSoftSpecSoft() {
+		return softResultCacheSpec.contains("softValues");
+	}
+
+
 }
