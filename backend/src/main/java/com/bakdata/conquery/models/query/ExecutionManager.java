@@ -1,7 +1,8 @@
 package com.bakdata.conquery.models.query;
 
+import static com.bakdata.conquery.models.execution.ExecutionState.RUNNING;
+
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -28,7 +29,9 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.util.concurrent.Uninterruptibles;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,14 +43,39 @@ public abstract class ExecutionManager {
 	private final DatasetRegistry<?> datasetRegistry;
 	private final ConqueryConfig config;
 
-	/**
-	 * Cache for running and recent execution infos.
-	 */
-	private final Cache<ManagedExecutionId, ExecutionInfo> executionInfos =
+	@Getter(AccessLevel.NONE)
+	private final Cache<ManagedExecutionId, ExecutionInfo> executionInfosSoft =
 			CacheBuilder.newBuilder()
 						.softValues()
 						.removalListener(this::executionRemoved)
 						.build();
+
+	@Getter(AccessLevel.NONE)
+	private final Cache<ManagedExecutionId, ExecutionInfo> executionInfosHard =
+			CacheBuilder.newBuilder()
+						.expireAfterAccess(10, TimeUnit.SECONDS) // TODO from config!
+						.removalListener(this::executionTimedOut)
+						.build();
+
+	private void executionTimedOut(RemovalNotification<ManagedExecutionId, ExecutionInfo> removalNotification) {
+		// If removal was done manually we assume it was also handled properly
+		if (!removalNotification.wasEvicted()) {
+			return;
+		}
+
+		log.trace("Query {} timed out, demoting to soft cache.", removalNotification.getKey());
+
+		if (getExecution(removalNotification.getKey()) == null) {
+			// Execution already deleted.
+			return;
+		}
+
+		executionInfosSoft.put(removalNotification.getKey(), removalNotification.getValue());
+	}
+
+	public ManagedExecution getExecution(ManagedExecutionId execution) {
+		return storage.getExecution(execution);
+	}
 
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
@@ -70,10 +98,6 @@ public abstract class ExecutionManager {
 		}
 	}
 
-	public ManagedExecution getExecution(ManagedExecutionId execution) {
-		return storage.getExecution(execution);
-	}
-
 	public void reset(ManagedExecutionId id) {
 		// This avoids endless loops with already reset queries
 		if (!isResultPresent(id)) {
@@ -84,30 +108,48 @@ public abstract class ExecutionManager {
 	}
 
 	public boolean isResultPresent(ManagedExecutionId id) {
-		return executionInfos.getIfPresent(id) != null;
+		return tryGetExecutionInfo(id).isPresent();
 	}
 
 	public void clearQueryResults(ManagedExecutionId execution) {
-		executionInfos.invalidate(execution);
+		executionInfosSoft.invalidate(execution);
+		executionInfosSoft.invalidate(execution);
+	}
+
+	public <R extends ExecutionInfo> Optional<R> tryGetExecutionInfo(ManagedExecutionId id) {
+		ExecutionInfo maybeInfo = executionInfosSoft.getIfPresent(id);
+
+		if (maybeInfo != null) {
+			return Optional.of((R) maybeInfo);
+		}
+
+		maybeInfo = executionInfosHard.getIfPresent(id);
+
+		if (maybeInfo != null) {
+			return Optional.of((R) maybeInfo);
+		}
+
+		return Optional.empty();
 	}
 
 	/**
 	 * Returns the state or throws an NoSuchElementException if no state was found.
 	 */
 	public <R extends ExecutionInfo> R getExecutionInfo(ManagedExecutionId id) {
-		ExecutionInfo executionInfo = executionInfos.getIfPresent(id);
-		if (executionInfo == null) {
-			throw new NoSuchElementException("No execution found for %s".formatted(id));
+		Optional<R> maybeInfo = tryGetExecutionInfo(id);
+
+		if (maybeInfo.isPresent()) {
+			return maybeInfo.get();
 		}
-		return (R) executionInfo;
+
+		throw new NoSuchElementException("Could not find Execution %s".formatted(id));
 	}
 
-	public <R extends ExecutionInfo> Optional<R> tryGetExecutionInfo(ManagedExecutionId id) {
-		return Optional.ofNullable((R) executionInfos.getIfPresent(id));
-	}
 
 	public void addState(ManagedExecutionId id, ExecutionInfo result) {
-		executionInfos.put(id, result);
+		clearQueryResults(id);
+
+		executionInfosHard.put(id, result);
 	}
 
 	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, UserId user, boolean system) {
@@ -182,35 +224,34 @@ public abstract class ExecutionManager {
 			externalExecution.cancel();
 			return;
 		}
-		executionInfos.invalidate(execution.getId());
+
+		clearQueryResults(execution.getId());
+
 		doCancelQuery(execution.getId());
 	}
 
 	public abstract void doCancelQuery(ManagedExecutionId managedExecutionId);
 
 	public void updateState(ManagedExecutionId id, ExecutionState execState) {
-		ExecutionInfo executionInfo = executionInfos.getIfPresent(id);
-		if (executionInfo != null) {
-			executionInfo.setExecutionState(execState);
-			return;
-		}
+		Optional<ExecutionInfo> executionInfo = tryGetExecutionInfo(id);
 
-		log.warn("Could not update execution executionInfo of {} to {}, because it had no executionInfo.", id, execState);
+		executionInfo.ifPresentOrElse(
+				info -> info.setExecutionState(execState),
+				() -> log.warn("Could not update execution executionInfo of {} to {}, because it had no executionInfo.", id, execState)
+		);
 	}
 
 	public <E extends ManagedExecution & InternalExecution> Stream<EntityResult> streamQueryResults(E execution) {
-		final InternalExecutionInfo resultParts = (InternalExecutionInfo) executionInfos.getIfPresent(execution.getId());
+		Optional<InternalExecutionInfo> maybeInfo = tryGetExecutionInfo(execution.getId());
 
-		return resultParts == null
-			   ? Stream.empty()
-			   : resultParts.streamQueryResults();
-
+		return maybeInfo.map(InternalExecutionInfo::streamQueryResults)
+						.orElseGet(Stream::empty);
 	}
 
 	public void clearBarrier(ManagedExecutionId id) {
-		ExecutionInfo result = Objects.requireNonNull(executionInfos.getIfPresent(id), "Cannot clear lock on absent execution result");
+		ExecutionInfo executionInfo = getExecutionInfo(id);
 
-		result.getExecutingLock().countDown();
+		executionInfo.getExecutingLock().countDown();
 	}
 
 	/**
@@ -218,24 +259,33 @@ public abstract class ExecutionManager {
 	 */
 	public ExecutionState awaitDone(ManagedExecutionId id, int time, TimeUnit unit) {
 
-		ExecutionInfo executionInfo = executionInfos.getIfPresent(id);
-		if (executionInfo == null) {
+		Optional<ExecutionInfo> maybeExecutionInfo = tryGetExecutionInfo(id);
+
+		if (maybeExecutionInfo.isEmpty()) {
 			return ExecutionState.NEW;
 		}
 
+		ExecutionInfo executionInfo = maybeExecutionInfo.get();
 		ExecutionState execState = executionInfo.getExecutionState();
 
-		if (execState != ExecutionState.RUNNING) {
+		if (execState != RUNNING) {
 			return execState;
 		}
 
 		Uninterruptibles.awaitUninterruptibly(executionInfo.getExecutingLock(), time, unit);
 
-		ExecutionInfo executionInfoAfterWait = executionInfos.getIfPresent(id);
-		if (executionInfoAfterWait == null) {
-			return ExecutionState.NEW;
+		Optional<ExecutionInfo> maybeExecutionInfoAfterWait = tryGetExecutionInfo(id);
+		return maybeExecutionInfoAfterWait
+				.map(ExecutionInfo::getExecutionState)
+				.orElse(ExecutionState.NEW);
+	}
+
+	public boolean hasRunningQueries() {
+		if (executionInfosSoft.asMap().values().stream().map(ExecutionInfo::getExecutionState).anyMatch(RUNNING::equals)) {
+			return true;
 		}
-		return executionInfoAfterWait.getExecutionState();
+
+		return executionInfosHard.asMap().values().stream().map(ExecutionInfo::getExecutionState).anyMatch(RUNNING::equals);
 	}
 
 	/**
@@ -262,8 +312,6 @@ public abstract class ExecutionManager {
 	public interface InternalExecutionInfo extends ExecutionInfo {
 		Stream<EntityResult> streamQueryResults();
 	}
-
-
 
 
 }
