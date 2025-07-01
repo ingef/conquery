@@ -52,7 +52,7 @@ public class IntegrationTests {
 
 	public static final ObjectMapper MAPPER;
 	public static final String JSON_TEST_PATTERN = ".*\\.test\\.json$";
-	public static final String SQL_TEST_PATTERN = ".*\\.json$";
+	public static final String SQL_TEST_PATTERN = ".*\\.test\\.json$";
 	private static final ObjectWriter CONFIG_WRITER;
 
 	static {

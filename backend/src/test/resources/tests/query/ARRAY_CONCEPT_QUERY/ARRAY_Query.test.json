@@ -1,108 +1,111 @@
 {
-    "type": "QUERY_TEST",
-    "label": "ARRAY_CONCEPT_QUERY Test",
-    "expectedCsv": "tests/query/ARRAY_CONCEPT_QUERY/expected.csv",
-    "query": {
-        "type": "ARRAY_CONCEPT_QUERY",
-        "dateAggregationMode": "MERGE",
-        "childQueries": [
+  "type": "QUERY_TEST",
+  "label": "ARRAY_CONCEPT_QUERY Test",
+  "expectedCsv": "tests/query/ARRAY_CONCEPT_QUERY/expected.csv",
+  "sqlSpec": {
+    "isEnabled": false
+  },
+  "query": {
+    "type": "ARRAY_CONCEPT_QUERY",
+    "dateAggregationMode": "MERGE",
+    "childQueries": [
+      {
+        "type": "CONCEPT_QUERY",
+        "root": {
+          "ids": [
+            "select"
+          ],
+          "type": "CONCEPT",
+          "label": "select",
+          "tables": [
             {
-                "type": "CONCEPT_QUERY",
-                "root": {
-                    "ids": [
-                        "select"
-                    ],
-                    "type": "CONCEPT",
-                    "label": "select",
-                    "tables": [
-                        {
-                            "id": "select.connector",
-                            "selects": [
-                                "select.connector.count_genders"
-                            ]
-                        }
-                    ]
-                }
-			},
-			{
-                "type": "CONCEPT_QUERY",
-                "root": {
-                    "ids": [
-                        "select"
-                    ],
-                    "type": "CONCEPT",
-                    "label": "select",
-                    "tables": [
-                        {
-							"id": "select.connector",
-							"filters":[
-								{
-								"type": "INTEGER_RANGE",
-								"filter":"select.connector.geschlecht",
-								"value": {
-									"min": 2,
-									"max": 6
-								  }
-							}
-							],
-                            "selects": [
-                                "select.connector.count_genders"
-                            ]
-                        }
-                    ]
-                }
+              "id": "select.connector",
+              "selects": [
+                "select.connector.count_genders"
+              ]
             }
-        ]
-    },
-    "concepts": [
-        {
-            "label": "select",
-            "type": "TREE",
-            "connectors": [
-                {
-                    "label": "connector",
-                    "table": "table1",
-                    "validityDates": {
-                        "label": "datum",
-                        "column": "table1.datum"
-					},
-					"filters": {
-						"label": "geschlecht",
-						"type": "COUNT",
-						"column": "table1.geschlecht",
-						"distinct": false
-					},
-                    "selects": [
-                        {
-                            "name": "count_genders",
-                            "type": "COUNT",
-                            "column": "table1.geschlecht"
-                        }
-                    ]
-                }
-            ]
+          ]
         }
-    ],
-    "content": {
-        "tables": [
+      },
+      {
+        "type": "CONCEPT_QUERY",
+        "root": {
+          "ids": [
+            "select"
+          ],
+          "type": "CONCEPT",
+          "label": "select",
+          "tables": [
             {
-                "csv": "tests/query/ARRAY_CONCEPT_QUERY/content.csv",
-                "name": "table1",
-                "primaryColumn": {
-                    "name": "pid",
-                    "type": "STRING"
-                },
-                "columns": [
-                    {
-                        "name": "datum",
-                        "type": "DATE"
-                    },
-                    {
-                        "name": "geschlecht",
-                        "type": "STRING"
-                    }
-                ]
+              "id": "select.connector",
+              "filters": [
+                {
+                  "type": "INTEGER_RANGE",
+                  "filter": "select.connector.geschlecht",
+                  "value": {
+                    "min": 2,
+                    "max": 6
+                  }
+                }
+              ],
+              "selects": [
+                "select.connector.count_genders"
+              ]
             }
-        ]
+          ]
+        }
+      }
+    ]
+  },
+  "concepts": [
+    {
+      "label": "select",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "connector",
+          "table": "table1",
+          "validityDates": {
+            "label": "datum",
+            "column": "table1.datum"
+          },
+          "filters": {
+            "label": "geschlecht",
+            "type": "COUNT",
+            "column": "table1.geschlecht",
+            "distinct": false
+          },
+          "selects": [
+            {
+              "name": "count_genders",
+              "type": "COUNT",
+              "column": "table1.geschlecht"
+            }
+          ]
+        }
+      ]
     }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/ARRAY_CONCEPT_QUERY/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "geschlecht",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
 }
