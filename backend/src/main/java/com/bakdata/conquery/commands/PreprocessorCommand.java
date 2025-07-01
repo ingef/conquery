@@ -34,6 +34,8 @@ import com.jakewharton.byteunits.BinaryByteUnit;
 import io.dropwizard.core.setup.Environment;
 import jakarta.validation.ValidationException;
 import jakarta.validation.Validator;
+
+import io.dropwizard.util.DataSize;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +46,7 @@ import net.sourceforge.argparse4j.impl.type.StringArgumentType;
 import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
+import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 
 @Slf4j
@@ -260,7 +263,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 								   .mapToLong(PreprocessingJob::estimateTotalCsvSizeBytes)
 								   .sum();
 
-		log.info("Required to preprocess {} in total", BinaryByteUnit.format(totalSize));
+		log.info("Required to preprocess {} in total", FileUtils.byteCountToDisplaySize(totalSize));
 
 		final ProgressBar totalProgress = new ProgressBar(totalSize);
 
