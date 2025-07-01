@@ -7,13 +7,13 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.identifiable.Labeled;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -24,9 +24,9 @@ import org.apache.commons.lang3.ArrayUtils;
 
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(onConstructor_ = {@JsonCreator})
 @Slf4j
-public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId>, Searchable {
+public class Column extends LabeledNamespaceIdentifiable<ColumnId> implements Searchable {
 
 	public static final int UNKNOWN_POSITION = -1;
 
@@ -45,7 +45,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	private boolean searchDisabled = false;
 
 	@JsonIgnore
-	private int position = -1;
+	private int position = UNKNOWN_POSITION;
 
 	/**
 	 * if this is set this column counts as the secondary id of the given name for this
@@ -61,7 +61,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 	@Override
 	public String toString() {
-		return "Column(id = " + getId() + ", type = " + getType() + ")";
+		return "Column(id = %s, type = %s, secondaryId = %s)".formatted(getId(), getType(), getSecondaryId());
 	}
 
 	/**
@@ -85,4 +85,5 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	public ColumnId createId() {
 		return new ColumnId(table.getId(), getName());
 	}
+
 }

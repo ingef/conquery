@@ -5,7 +5,7 @@ import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.Getter;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,8 +16,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Deprecated
 @CPSType(id = "REMOVE_SHARD_NODE", base = NetworkMessage.class)
+@Data
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-@Getter
 @Slf4j
 public class RemoveShardNode extends MessageToManagerNode {
 

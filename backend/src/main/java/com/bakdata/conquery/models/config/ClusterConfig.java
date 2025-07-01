@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.mina.MdcFilter;
@@ -35,8 +34,6 @@ public class ClusterConfig extends Configuration {
 	@Valid
 	@NotNull
 	private DefaultSocketSessionConfig mina = new DefaultSocketSessionConfig();
-	@Min(1)
-	private int entityBucketSize = 1000;
 
 	private Duration idleTimeOut = Duration.minutes(5);
 	private Duration heartbeatTimeout = Duration.minutes(1);

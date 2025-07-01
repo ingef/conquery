@@ -16,7 +16,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -36,22 +36,22 @@ public class ResultExcelProcessor {
 	public static final MediaType MEDIA_TYPE = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
 	private final MetaStorage metaStorage;
-	private final DatasetRegistry datasetRegistry;
+	private final DatasetRegistry<?> datasetRegistry;
 	private final ConqueryConfig conqueryConfig;
 
 	private final ExcelConfig excelConfig;
 
-	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty, OptionalLong limit) {
+	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, ManagedExecutionId execId, boolean pretty, OptionalLong limit) {
 
 		ConqueryMDC.setLocation(subject.getName());
 
-		final DatasetId datasetId = exec.getDataset();
+		final E exec = (E) execId.resolve();
 
-		log.info("Downloading results for {}", exec.getId());
+		log.info("Downloading results for {}", execId);
 
 		ResultUtil.authorizeExecutable(subject, exec);
 
-		final Namespace namespace = datasetRegistry.get(datasetId);
+		final Namespace namespace = datasetRegistry.get(exec.getDataset());
 		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, conqueryConfig.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();

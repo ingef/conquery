@@ -21,6 +21,7 @@ public interface Store<KEY, VALUE> extends ManagedStore {
 
 	boolean remove(KEY key);
 
+	boolean hasKey(KEY key);
 
 	int count();
 

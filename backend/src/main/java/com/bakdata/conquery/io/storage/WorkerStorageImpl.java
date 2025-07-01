@@ -36,6 +36,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 				imports,
 				concepts,
 
+				entity2Bucket,
 				worker,
 				buckets,
 				cBlocks
@@ -61,6 +62,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		log.trace("Adding CBlock[{}]", cBlock.getId());
 		cBlocks.add(cBlock);
 	}
+
 	@Override
 	public void removeCBlock(CBlockId id) {
 		log.trace("Removing CBlock[{}]", id);
@@ -69,10 +71,10 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 
 	@Override
 	public Stream<CBlock> getAllCBlocks() {
-		return cBlocks.getAllKeys().map(CBlockId.class::cast).map(this::getCBlock);
+		return cBlocks.getAllKeys().map(CBlockId.class::cast).map(CBlockId::resolve);
 	}
 
-@Override
+	@Override
 	public CBlock getCBlock(CBlockId id) {
 		return cBlocks.get(id);
 	}
@@ -82,7 +84,6 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		return cBlocks.getAllKeys().map(CBlockId.class::cast);
 	}
 
-	// Buckets
 
 	@Override
 	public void addBucket(Bucket bucket) {
@@ -97,11 +98,6 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	public Stream<Bucket> getAllBuckets() {
-		return buckets.getAllKeys().map(BucketId.class::cast).map(this::getBucket);
-	}
-
-	@Override
 	public Bucket getBucket(BucketId id) {
 		return buckets.get(id);
 	}
@@ -111,11 +107,10 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		return buckets.getAllKeys().map(BucketId.class::cast);
 	}
 
-	// Worker
 
 	@Override
 	public WorkerInformation getWorker() {
-		return  worker.get();
+		return worker.get();
 	}
 
 	@Override
@@ -127,9 +122,12 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	public void updateWorker(WorkerInformation worker) {
 		this.worker.update(worker);
 	}
+  
+	public Stream<String> getAllEntities() {
+		return entity2Bucket.getAllKeys();
+	}
 
-	@Override
 	public boolean hasCBlock(CBlockId id) {
-		return cBlocks.contains(id);
+		return cBlocks.hasKey(id);
 	}
 }

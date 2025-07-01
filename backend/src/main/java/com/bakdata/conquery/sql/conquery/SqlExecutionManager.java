@@ -86,9 +86,9 @@ public class SqlExecutionManager extends ExecutionManager {
 	}
 
 	@Override
-	public void doCancelQuery(ManagedExecution execution) {
+	public void doCancelQuery(ManagedExecutionId managedExecutionId) {
 
-		CompletableFuture<Void> sqlQueryExecution = runningExecutions.remove(execution.getId());
+		CompletableFuture<Void> sqlQueryExecution = runningExecutions.remove(managedExecutionId);
 
 		// already finished/canceled
 		if (sqlQueryExecution == null) {

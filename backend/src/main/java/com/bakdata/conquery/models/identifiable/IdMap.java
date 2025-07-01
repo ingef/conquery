@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
-
 import jakarta.validation.Valid;
 
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -19,7 +18,7 @@ import com.google.common.collect.ForwardingMap;
  *
  * @implNote implementation of {@link Iterable} is dropped, because hibernate could not decide on how to validate this map (either with an map-extractor or an iterable-extractor).
  */
-public class IdMap<ID extends Id<? super V>, V extends Identifiable<? extends ID>> extends ForwardingMap<ID, V> {
+public class IdMap<ID extends Id, V extends Identifiable<? extends ID, ?>> extends ForwardingMap<ID, V> {
 
 	@Valid
 	private final ConcurrentMap<ID, V> map;
@@ -51,7 +50,7 @@ public class IdMap<ID extends Id<? super V>, V extends Identifiable<? extends ID
 	
 	@Override
 	public int size() {
-		return map.values().size();
+		return map.size();
 	}
 
 	public V getOrFail(ID id) {
@@ -80,7 +79,7 @@ public class IdMap<ID extends Id<? super V>, V extends Identifiable<? extends ID
 	}
 	
 	public V update(V entry) {
-		return map.put((ID)entry.getId(), entry);
+		return map.put(entry.getId(), entry);
 	}
 	
 	public V remove(ID id) {

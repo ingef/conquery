@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -68,12 +69,13 @@ public class FullExportForm extends Form implements InternalForm {
 	private Range<LocalDate> dateRange = Range.all();
 
 	@NotEmpty
-	private List<CQConcept> tables = ImmutableList.of();
+	@JsonAlias("tables")
+	private List<CQConcept> concepts = ImmutableList.of();
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
-		tables.forEach(feature -> feature.visit(visitor));
+		concepts.forEach(feature -> feature.visit(visitor));
 	}
 
 
@@ -94,7 +96,7 @@ public class FullExportForm extends Form implements InternalForm {
 		final TableExportQuery exportQuery = new TableExportQuery(query);
 		exportQuery.setDateRange(getDateRange());
 
-		exportQuery.setTables(tables);
+		exportQuery.setConcepts(concepts);
 
 
 		return Map.of(

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jackson.Injectable;
@@ -13,11 +11,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
-import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -49,6 +43,8 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 	protected IdentifiableStore<Table> tables;
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
+	protected Store<String, Integer> entity2Bucket;
+
 
 	public NamespacedStorageImpl(StoreFactory storageFactory, String pathName) {
 		this.pathName = pathName;
@@ -57,7 +53,7 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 
 	@Override
 	public ImmutableList<ManagedStore> getStores() {
-		return ImmutableList.of(dataset, secondaryIds, tables, imports, concepts);
+		return ImmutableList.of(dataset, secondaryIds, tables, imports, concepts, entity2Bucket);
 	}
 
 	public void openStores(ObjectMapper objectMapper) {
@@ -70,6 +66,7 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 		tables = storageFactory.createTableStore(pathName, objectMapper);
 		imports = storageFactory.createImportStore(pathName, objectMapper);
 		concepts = storageFactory.createConceptStore(pathName, objectMapper);
+		entity2Bucket = storageFactory.createEntity2BucketStore(pathName, objectMapper);
 	}
 
 	// Imports
@@ -89,13 +86,8 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 	}
 
 	@Override
-	public Stream<ImportId> getAllImportIds() {
+	public Stream<ImportId> getAllImports() {
 		return imports.getAllKeys().map(ImportId.class::cast);
-	}
-
-	@Override
-	public Stream<Import> getAllImports() {
-		return imports.getAll();
 	}
 
 	@Override
@@ -115,36 +107,24 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 		this.dataset.update(dataset);
 	}
 
-	public <ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id) {
-		return (VALUE) id.get(this);
-	}
-
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return values
-				.add(NamespacedStorageProvider.class, this)
-				.add(NamespacedStorage.class, this);
+		return values.add(NamespacedStorage.class, this);
 	}
 
 	@Override
 	public Dataset getDataset() {
-		return dataset.get();
+		return this.dataset.get();
 	}
 
-
-	// Tables
 
 	@Override
 	public Stream<Table> getTables() {
 		return tables.getAllKeys().map(TableId.class::cast).map(this::getTable);
 	}
 
-		@Override
+	@Override
 	public Table getTable(TableId tableId) {
-		return getTableFromStorage(tableId);
-	}
-
-	private Table getTableFromStorage(TableId tableId) {
 		return tables.get(tableId);
 	}
 
@@ -209,6 +189,7 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 	@SneakyThrows
 	public void updateConcept(Concept<?> concept) {
 		log.debug("Updating Concept[{}]", concept.getId());
+
 		concepts.update(concept);
 	}
 
@@ -218,11 +199,18 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 		concepts.remove(id);
 	}
 
-	// Utility
-
+	@Override
+	public int getEntityBucket(String entity) {
+		return entity2Bucket.get(entity);
+	}
 
 	@Override
-	public Collection<DatasetId> getAllDatasetIds() {
-		return List.of(dataset.get().getId());
+	public void addEntityToBucket(String entity, int bucket) {
+		entity2Bucket.add(entity, bucket);
+	}
+
+	@Override
+	public boolean hasEntity(String entity) {
+		return entity2Bucket.hasKey(entity);
 	}
 }

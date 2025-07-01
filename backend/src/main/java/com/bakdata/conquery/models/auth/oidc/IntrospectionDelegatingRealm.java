@@ -223,7 +223,7 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 			final String groupIdAttribute = authProviderConf.getGroupIdAttribute();
 			if (Strings.isNotBlank(groupIdAttribute)) {
 				final Set<Group> memberships = getUserGroups(claimsSet, groupIdAttribute);
-				syncGroupMappings(user, memberships);
+				syncGroupMappings(user.getId(), memberships);
 			}
 
 			return claimsSet;
@@ -270,25 +270,26 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 								 .collect(Collectors.toSet());
 		}
 
-		private void syncGroupMappings(User user, Set<Group> mappedGroupsToDo) {
+		private void syncGroupMappings(UserId userId, Set<Group> mappedGroupsToDo) {
 			// TODO mark mappings as managed by keycloak
 			storage.getAllGroups().forEach((group) -> {
+				if (!group.containsUser(userId)) {
+					return;
+				}
 
-											   if (group.containsMember(user)) {
-												   if (mappedGroupsToDo.contains(group)) {
-													   // Mapping is still valid, remove from todo-list
-													   mappedGroupsToDo.remove(group);
-												   }
-												   else {
-													   // Mapping is not valid any more remove user from group
-													   group.removeMember(user.getId());
-												   }
+				if (mappedGroupsToDo.contains(group)) {
+					// Mapping is still valid, remove from todo-list
+					mappedGroupsToDo.remove(group);
+				}
+				else {
+					// Mapping is not valid any more remove user from group
+					group.removeMember(userId);
 											   }
 										   }
 			);
 
 			for (Group group : mappedGroupsToDo) {
-				group.addMember(user);
+				group.addMember(userId);
 			}
 		}
 
@@ -333,17 +334,18 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 		}
 
 		private synchronized Group createGroup(String name, String label) {
-			// TODO mark group as managed by keycloak
-			final Group group = new Group(name, label, storage);
+			GroupId groupId = new GroupId(name);
 
-			// Recheck group existence in synchronized part
-			final Group existing = storage.getGroup(group.getId());
+			final Group existing = storage.getGroup(groupId);
 
 			if (existing != null) {
 				// Found existing group
-				log.debug("Skip group creation, because group '{}' existed", group.getId());
+				log.debug("Skip group creation, because group '{}' existed", groupId);
 				return existing;
 			}
+
+			// TODO mark group as managed by keycloak
+			final Group group = new Group(name, label, storage);
 
 			log.info("Creating new Group: {}", group);
 			group.updateStorage();

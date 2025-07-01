@@ -1,12 +1,10 @@
 package com.bakdata.conquery.models.worker;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.local.SqlEntityResolver;
 import com.bakdata.conquery.mode.local.SqlStorageHandler;
@@ -15,6 +13,7 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.sql.DSLContextWrapper;
+import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +22,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LocalNamespace extends Namespace {
 
+	private final SqlDialect dialect;
 	private final DSLContextWrapper dslContextWrapper;
 	private final SqlStorageHandler storageHandler;
 
 	public LocalNamespace(
+			SqlDialect dialect,
 			ObjectMapper preprocessMapper,
 			NamespaceStorage storage,
 			ExecutionManager executionManager,
@@ -34,12 +35,12 @@ public class LocalNamespace extends Namespace {
 			SqlStorageHandler storageHandler,
 			JobManager jobManager,
 			FilterSearch filterSearch,
-			SqlEntityResolver sqlEntityResolver,
-			List<Injectable> injectables
+			SqlEntityResolver sqlEntityResolver
 	) {
-		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, sqlEntityResolver, injectables);
+		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, sqlEntityResolver);
 		this.dslContextWrapper = dslContextWrapper;
 		this.storageHandler = storageHandler;
+		this.dialect = dialect;
 	}
 
 	@Override
@@ -66,12 +67,6 @@ public class LocalNamespace extends Namespace {
 		super.close();
 	}
 
-	@Override
-	public void remove() {
-		closeDslContextWrapper();
-		super.remove();
-	}
-
 	private void closeDslContextWrapper() {
 		try {
 			dslContextWrapper.close();
@@ -79,6 +74,12 @@ public class LocalNamespace extends Namespace {
 		catch (IOException e) {
 			log.warn("Could not  close namespace's {} DSLContext/Datasource directly", getDataset().getId(), e);
 		}
+	}
+
+	@Override
+	public void remove() {
+		closeDslContextWrapper();
+		super.remove();
 	}
 
 }
