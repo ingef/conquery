@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.model.aggregator;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -14,6 +15,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.NumberMapUtil;
@@ -111,8 +113,9 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		CommonAggregationSelect<BigDecimal> sumAggregationSelect;
 
 		if (!distinctByColumns.isEmpty()) {
-			SqlIdColumns ids = selectContext.getIds();
-			sumAggregationSelect = createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, ids, tables, nameGenerator);
+			SqlIdColumns ids = selectContext.getIds(ConceptCteStep.EVENT_FILTER);
+			Optional<ColumnDateRange> stratificationDate = selectContext.getStratificationDate(ConceptCteStep.EVENT_FILTER);
+			sumAggregationSelect = createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, ids, stratificationDate, tables, nameGenerator);
 			ExtractingSqlSelect<BigDecimal> finalSelect = createFinalSelect(sumAggregationSelect, tables);
 			return ConnectorSqlSelects.builder()
 									  .preprocessingSelects(sumAggregationSelect.getRootSelects())
@@ -137,15 +140,17 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		Column sumColumn = sumFilter.getColumn().resolve();
 		Column subtractColumn = sumFilter.getSubtractColumn() != null ? sumFilter.getSubtractColumn().resolve() : null;
 		List<Column> distinctByColumns = sumFilter.getDistinctByColumn().stream().map(ColumnId::resolve).toList();
-		String alias = filterContext.getNameGenerator().selectName(sumFilter);
+		NameGenerator nameGenerator = filterContext.getNameGenerator();
+		String alias = nameGenerator.selectName(sumFilter);
 		ConnectorSqlTables tables = filterContext.getTables();
 
 		CommonAggregationSelect<BigDecimal> sumAggregationSelect;
 		ConnectorSqlSelects selects;
 
 		if (!distinctByColumns.isEmpty()) {
-			sumAggregationSelect =
-					createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, filterContext.getIds(), tables, filterContext.getNameGenerator());
+			SqlIdColumns ids = filterContext.getIds(ConceptCteStep.EVENT_FILTER);
+			Optional<ColumnDateRange> stratificationDate = filterContext.getStratificationDate(ConceptCteStep.EVENT_FILTER);
+			sumAggregationSelect = createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, ids, stratificationDate, tables, nameGenerator);
 			selects = ConnectorSqlSelects.builder()
 										 .preprocessingSelects(sumAggregationSelect.getRootSelects())
 										 .additionalPredecessor(sumAggregationSelect.getAdditionalPredecessor())
@@ -230,6 +235,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 			List<Column> distinctByColumns,
 			String alias,
 			SqlIdColumns ids,
+			Optional<ColumnDateRange> stratificationDate,
 			ConnectorSqlTables tables,
 			NameGenerator nameGenerator
 	) {
@@ -245,7 +251,8 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 								 .collect(Collectors.toList());
 		preprocessingSelects.addAll(distinctByRootSelects);
 
-		QueryStep rowNumberCte = createRowNumberCte(ids, rootSelect, distinctByRootSelects, alias, tables, nameGenerator);
+
+		QueryStep rowNumberCte = createRowNumberCte(ids, stratificationDate, rootSelect, distinctByRootSelects, alias, tables, nameGenerator);
 		Field<? extends Number> rootSelectQualified = rootSelect.qualify(rowNumberCte.getCteName()).select();
 		FieldWrapper<BigDecimal> sumGroupBy = new FieldWrapper<>(DSL.sum(rootSelectQualified).as(alias));
 		QueryStep rowNumberFilteredCte = createRowNumberFilteredCte(rowNumberCte, sumGroupBy, alias, nameGenerator);
@@ -263,6 +270,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	 */
 	private static QueryStep createRowNumberCte(
 			SqlIdColumns ids,
+			Optional<ColumnDateRange> stratificationDate,
 			SingleColumnSqlSelect sumColumnRootSelect,
 			List<ExtractingSqlSelect<?>> distinctByRootSelects,
 			String alias,
@@ -285,6 +293,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 
 		Selects rowNumberAssignedSelects = Selects.builder()
 												  .ids(qualifiedIds)
+												  .stratificationDate(stratificationDate)
 												  .sqlSelects(List.of(qualifiedSumRootSelect, rowNumber))
 												  .build();
 
@@ -304,15 +313,24 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 			String alias,
 			NameGenerator nameGenerator
 	) {
-		SqlIdColumns ids = rowNumberCte.getQualifiedSelects().getIds();
+		Selects predecessorSelects = rowNumberCte.getQualifiedSelects();
+		SqlIdColumns ids = predecessorSelects.getIds();
 
 		Selects rowNumberFilteredSelects = Selects.builder()
 												  .ids(ids)
+												  .stratificationDate(predecessorSelects.getStratificationDate())
 												  .sqlSelects(List.of(sumSelect))
 												  .build();
 
 		Condition firstOccurrence = DSL.field(DSL.name(rowNumberCte.getCteName(), ROW_NUMBER_ALIAS))
 									   .eq(DSL.val(1));
+
+		List<Field<?>> groupByFields =
+				Stream.concat(
+							  ids.toFields().stream(),
+							  predecessorSelects.getStratificationDate().stream().flatMap(range -> range.toFields().stream())
+					  )
+					  .toList();
 
 		return QueryStep.builder()
 						.cteName(nameGenerator.cteStepName(SumDistinctCteStep.ROW_NUMBER_FILTERED, alias))
@@ -320,7 +338,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 						.fromTable(QueryStep.toTableLike(rowNumberCte.getCteName()))
 						.conditions(List.of(firstOccurrence))
 						.predecessors(List.of(rowNumberCte))
-						.groupBy(ids.toFields())
+						.groupBy(groupByFields)
 						.build();
 	}
 
