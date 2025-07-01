@@ -209,11 +209,6 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public boolean contains(KEY key) {
-		return keys.contains(key);
-	}
-
-	@Override
 	public synchronized void invalidateCache() {
 		// There might be another cache we delegate to, so we invalidate that too
 		store.invalidateCache();

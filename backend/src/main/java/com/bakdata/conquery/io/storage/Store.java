@@ -33,8 +33,6 @@ public interface Store<KEY, VALUE> extends ManagedStore {
 
 	String getName();
 
-	boolean contains(KEY key);
-
 	/**
 	 * Consumer of key-value pairs stored in this Store. Used in conjunction with for-each.
 	 */

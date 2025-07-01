@@ -100,11 +100,6 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public boolean contains(KEY key) {
-		return map.containsKey(key);
-	}
-
-	@Override
 	public void invalidateCache() {
 		/* Do nothing (semantically this is not a cache, although we hold everything in memory) */
 	}

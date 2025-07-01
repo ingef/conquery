@@ -130,11 +130,6 @@ public class XodusStore implements com.bakdata.conquery.io.storage.Store<ByteIte
 	}
 
 	@Override
-	public boolean contains(ByteIterable key) {
-		return get(key) != null;
-	}
-
-	@Override
 	public void invalidateCache() {
 		/* Do nothing, no caches here */
 	}
