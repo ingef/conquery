@@ -4,6 +4,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;

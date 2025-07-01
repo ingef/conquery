@@ -15,6 +15,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
+import jakarta.validation.ValidationException;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -30,12 +32,7 @@ import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jakewharton.byteunits.BinaryByteUnit;
 import io.dropwizard.core.setup.Environment;
-import jakarta.validation.ValidationException;
-import jakarta.validation.Validator;
-
-import io.dropwizard.util.DataSize;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
