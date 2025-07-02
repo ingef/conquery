@@ -1,21 +1,5 @@
 package com.bakdata.conquery.resources.api;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.OptionalInt;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import jakarta.inject.Inject;
-import jakarta.validation.Validator;
-
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.frontend.FrontendList;
 import com.bakdata.conquery.apiv1.frontend.FrontendPreviewConfig;
@@ -46,10 +30,18 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Getter
 @Slf4j
@@ -128,32 +120,16 @@ public class ConceptsProcessor {
 	public ResolvedFilterValues resolveFilterValues(FilterId filterId, List<String> searchTerms) {
 		SelectFilter<?> filter = (SelectFilter<?>) filterId.resolve();
 
-		// search in the full text engine
-		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
 
 		final Namespace namespace = namespaces.get(filter.getDataset());
 
-		final List<FrontendValue> out = new ArrayList<>();
-
-
 		SearchProcessor filterSearch = namespace.getFilterSearch();
 
-		for (final Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext(); ) {
-
-			final String searchTerm = iterator.next();
-			final List<FrontendValue> results = filterSearch.findExact(filter, searchTerm);
-
-			if (results.isEmpty()) {
-				continue;
-			}
-
-			iterator.remove();
-			out.addAll(results);
-		}
+		final ExactFilterValueResult exactResult = filterSearch.findExact(filter, searchTerms);
 
 		final ConnectorId connectorId = filter.getConnector().getId();
 
-		return new ResolvedFilterValues(new ResolvedFilterResult(connectorId, filter.getId().toString(), out), openSearchTerms);
+		return new ResolvedFilterValues(new ResolvedFilterResult(connectorId, filter.getId().toString(), exactResult.resolved), exactResult.unresolved);
 	}
 
 	public AutoCompleteResult autocompleteTextFilter(
@@ -206,6 +182,13 @@ public class ConceptsProcessor {
 	}
 
 	public record ResolvedFilterValues(ResolvedFilterResult resolvedFilter, Collection<String> unknownCodes) {
+
+	}
+
+	/**
+	 * Internal Container for {@link SearchProcessor#findExact}
+	 */
+	public record ExactFilterValueResult(Collection<FrontendValue> resolved, Collection<String> unresolved) {
 
 	}
 

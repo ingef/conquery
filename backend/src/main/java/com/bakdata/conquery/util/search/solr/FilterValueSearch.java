@@ -4,8 +4,10 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.config.search.solr.FilterValueConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
+import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
+import com.google.common.collect.Iterables;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -13,8 +15,10 @@ import org.apache.commons.text.StringSubstitutor;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.StreamingResponseCallback;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
+import org.apache.solr.common.SolrDocument;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.CheckForNull;
@@ -22,9 +26,9 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -96,21 +100,32 @@ public class FilterValueSearch {
 	}
 
 	private @NotNull AutoCompleteResult sendQuery(String queryString, Integer start, @CheckForNull Integer limit, boolean withEmptySource, boolean sort) {
-		String filterQuery = buildFilterQuery(withEmptySource);
-		SolrQuery query = buildSolrQuery(filterQuery, queryString, start, limit, sort);
+		SolrQuery query = buildSolrQuery(queryString, start, limit, sort, withEmptySource, true);
+
 		String decodedQuery = URLDecoder.decode(String.valueOf(query), StandardCharsets.UTF_8);
 		int queryHash = decodedQuery.hashCode();
-		log.debug("Query [{}] created: {}", queryHash, decodedQuery);
+		log.info("Query [{}] created: {}", queryHash, decodedQuery);
 
 		try {
-			QueryResponse response = solrClient.query(query);
-			List<SolrFrontendValue> beans = response.getBeans(SolrFrontendValue.class);
 
-			long numFound = response.getResults().getNumFound();
-			log.debug("Query [{}] Found: {} | Collected: {} | QTime: {} | ElapsedTime: {}", queryHash, numFound, beans.size(), response.getQTime(), response.getElapsedTime());
+			List<FrontendValue> beans = new ArrayList<>();
+			final AtomicLong numFound = new AtomicLong();
+			QueryResponse response = solrClient.queryAndStreamResponse(query, new StreamingResponseCallback() {
+				@Override
+				public void streamSolrDocument(SolrDocument doc) {
+					SolrFrontendValue bean = solrClient.getBinder().getBean(SolrFrontendValue.class, doc);
+					beans.add(bean.toFrontendValue());
+				}
 
-			List<FrontendValue> values = beans.stream().map(SolrFrontendValue::toFrontendValue).toList();
-			return new AutoCompleteResult(values, numFound);
+				@Override
+				public void streamDocListInfo(long numFoundCallBack, long start, Float maxScore) {
+					numFound.set(numFoundCallBack);
+				}
+			});
+
+			log.debug("Query [{}] Found: {} | Collected: {} | QTime: {} | ElapsedTime: {}", queryHash, numFound.get(), beans.size(), response.getQTime(), response.getElapsedTime());
+
+			return new AutoCompleteResult(beans, numFound.get());
 
 		}
 		catch (SolrServerException | IOException e) {
@@ -118,7 +133,14 @@ public class FilterValueSearch {
 		}
 	}
 
-	private @NotNull SolrQuery buildSolrQuery(String filterQuery, String queryString, Integer start, @CheckForNull Integer limit, boolean sort) {
+	/**
+	 *
+	 * @param collapseSources Collapse documents on {@link SolrFrontendValue#value_s} by source priority. Different sources can hold documents to the same value. Then <code>true</code> the document with the highest priority is included.
+	 * @return
+	 */
+	private @NotNull SolrQuery buildSolrQuery(String queryString, Integer start, @CheckForNull Integer limit, boolean sort, boolean withEmptySource, boolean collapseSources) {
+		String filterQuery = buildFilterQuery(withEmptySource);
+
 		SolrQuery query = new SolrQuery(queryString);
 		query.addFilterQuery(filterQuery);
 		query.addField(SolrFrontendValue.Fields.value_s);
@@ -132,10 +154,12 @@ public class FilterValueSearch {
 			query.addSort(SolrQuery.SortClause.asc(filterValueConfig.getDefaultSearchSortField()));
 		}
 
-		// Collapse the results with equal "value" field. Only the one with the highest score remains.
-		// This only works if solr is not sharded (or collapsing documents are on the same shard)
-		// We set 'nullPolicy=expand' so we do not suppress the empty label entry
-		query.addFilterQuery("{!collapse field=%s min=%s nullPolicy=expand}".formatted(SolrFrontendValue.Fields.value_s, SolrFrontendValue.Fields.sourcePriority_i));
+		if(collapseSources) {
+			// Collapse the results with equal "value" field. Only the one with the highest score remains.
+			// This only works if solr is not sharded (or collapsing documents are on the same shard)
+			// We set 'nullPolicy=expand' so we do not suppress the empty label entry
+			query.addFilterQuery("{!collapse field=%s min=%s nullPolicy=expand}".formatted(SolrFrontendValue.Fields.value_s, SolrFrontendValue.Fields.sourcePriority_i));
+		}
 
 		return query;
 	}
@@ -159,4 +183,126 @@ public class FilterValueSearch {
 
 		return sendQuery(collect, start, limit, true, false);
 	}
+
+	public AutoCompleteResult topItemsExact(List<String> terms, Integer start, @Nullable Integer limit) {
+
+		if (terms == null || terms.isEmpty()) {
+			return new AutoCompleteResult(List.of(), 0);
+		}
+
+		String finalTerms = terms.stream()
+				.filter(Predicate.not(String::isBlank))
+				.map(ClientUtils::escapeQueryChars)
+				.map("\"%s\""::formatted)
+				.collect(Collectors.joining(" ", "(", ")"));
+
+		if (StringUtils.isBlank(finalTerms)) {
+			return new AutoCompleteResult(List.of(), 0);
+		}
+
+		String collect = Stream.of(
+						SolrFrontendValue.Fields.value_s,
+						SolrFrontendValue.Fields.label_t
+				)
+				.map(field -> "%s:%s".formatted(field, finalTerms))
+				.collect(Collectors.joining(" OR ", "(", ")"));
+
+		return sendQuery(collect, start, limit, true, false);
+	}
+
+	public ConceptsProcessor.ExactFilterValueResult exact(Collection<String> terms){
+				if (terms == null || terms.isEmpty()) {
+			return new ConceptsProcessor.ExactFilterValueResult(List.of(), terms);
+		}
+
+		final List<String> escapedTerms = terms.stream()
+				.filter(Predicate.not(String::isBlank))
+				.distinct()
+				.map(ClientUtils::escapeQueryChars)
+				.toList();
+
+		// Build map of all values (normalized to original) where we remove the one we found from. This leaves us with the unresolved values in the end
+		final Map<String, String> unresolvedMap = terms.stream().collect(Collectors.toMap(String::toLowerCase, Function.identity(), (v1, v2) -> v1));
+		final List<FrontendValue> resolved = new ArrayList<>(terms.size());
+
+		/*
+		We chunk the values for resolving here so that the request does not bust any URI or query limitations (e.g. "too many boolean operators")
+		 */
+		int chunkSize = 200;
+		final Iterable<List<String>> partition = Iterables.partition(escapedTerms, chunkSize);
+		for (List<String> chunk : partition) {
+
+			String finalTerms = chunk.stream().collect(Collectors.joining(" ", "(", ")"));
+
+			if (StringUtils.isBlank(finalTerms)) {
+				return new ConceptsProcessor.ExactFilterValueResult(List.of(), terms);
+			}
+
+			String collect = Stream.of(
+							SolrFrontendValue.Fields.value_s,
+							SolrFrontendValue.Fields.label_t
+					)
+					.map(field -> "%s:%s".formatted(field, finalTerms))
+					.collect(Collectors.joining(" OR ", "(", ")^=1"));
+
+
+			int start = 0;
+			// The batchsize is twice the size of the chunk size because a term is often found in two documents (from the column and from a mapping)
+			final int batchSize = chunkSize*2;
+
+			final AtomicLong numFound = new AtomicLong();
+			try {
+				List<FrontendValue> resolvedValues = new ArrayList<>();
+				do { // TODO remove the loop, as the batch size is now dependent on the chunksize
+
+					SolrQuery solrQuery = buildSolrQuery(collect, start, batchSize, false, false, false);
+
+					String decodedQuery = URLDecoder.decode(String.valueOf(solrQuery), StandardCharsets.UTF_8);
+					int queryHash = decodedQuery.hashCode();
+					log.info("Query [{}] created: {}", queryHash, decodedQuery);
+
+					QueryResponse response = solrClient.queryAndStreamResponse(solrQuery, new StreamingResponseCallback() {
+						@Override
+						public void streamSolrDocument(SolrDocument doc) {
+							if (unresolvedMap.isEmpty()) {
+								// Shortcut: everything was resolved
+								return;
+							}
+
+							SolrFrontendValue bean = solrClient.getBinder().getBean(SolrFrontendValue.class, doc);
+
+
+							// Remove from unresolved and add to resolved values if either value or label matches
+							if (unresolvedMap.remove(bean.value_s.toLowerCase()) != null || (bean.label_t != null && unresolvedMap.remove(bean.label_t.toLowerCase()) != null)) {
+
+								FrontendValue frontendValue = bean.toFrontendValue();
+								resolvedValues.add(frontendValue);
+
+							}
+
+						}
+
+						@Override
+						public void streamDocListInfo(long numFoundCallBack, long start, Float maxScore) {
+							numFound.set(numFoundCallBack);
+							if (numFoundCallBack > batchSize) {
+								log.warn("Query found more documents ({}) than expected ({}). We expect a term to be found in at most 2 documents (from a column and a mapping).", numFoundCallBack, batchSize);
+							}
+						}
+					});
+					log.debug("Query [{}] Found: {} | Collected: {} | QTime: {} | ElapsedTime: {}", queryHash, numFound.get(), resolvedValues.size(), response.getQTime(), response.getElapsedTime());
+
+					start += batchSize;
+					resolved.addAll(resolvedValues);
+				}
+				while (start < numFound.get() && !unresolvedMap.isEmpty());
+
+			} catch (SolrServerException | IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		return new ConceptsProcessor.ExactFilterValueResult(resolved, unresolvedMap.values());
+    }
+
 }

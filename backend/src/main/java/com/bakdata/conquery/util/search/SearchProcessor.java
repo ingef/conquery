@@ -70,8 +70,12 @@ public interface SearchProcessor extends Managed {
 	 * @param filter The filter to the resulting value must correspond to (domain of the {@link FrontendValue})
 	 * @param searchTerm The exact term to match
 	 * @return Exact matches or an empty list.
+	 *
+	 * TODO Remove this in favour of {@link SearchProcessor#findExact(SelectFilter, List)}
 	 */
 	List<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm);
+
+	ConceptsProcessor.ExactFilterValueResult findExact(SelectFilter<?> filter, List<String> searchTerms);
 
 	/**
 	 * Query for close matches or general recommendations (empty search)

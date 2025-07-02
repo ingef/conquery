@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.util.extensions.MockServerExtension;
 import com.bakdata.conquery.util.extensions.SolrServerExtension;
@@ -382,6 +383,15 @@ public class SolrFilterValueTest {
 		List<FrontendValue> actual = searchProcessor.findExact(FILTER, "MAP A");
 
 		assertThat(actual).containsExactly(new FrontendValue("a", "Map A"));
+	}
+
+	@Test
+	@Order(3)
+	public void findExactMultiple() {
+
+		ConceptsProcessor.ExactFilterValueResult actual = searchProcessor.findExact(FILTER, List.of("MAP A", "z"));
+
+		assertThat(actual).usingRecursiveComparison().isEqualTo(new ConceptsProcessor.ExactFilterValueResult(List.of(new FrontendValue("a", "Map A")),Set.of("z")));
 	}
 
 	@Test

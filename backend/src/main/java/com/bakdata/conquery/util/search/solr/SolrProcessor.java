@@ -17,15 +17,18 @@ import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.BiMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.util.Duration;
+import it.unimi.dsi.fastutil.Pair;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,18 +39,13 @@ import org.apache.solr.client.solrj.util.ClientUtils;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Entrypoint for searches that are handled by solr.
@@ -330,7 +328,13 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		FilterValueSearch filterValueSearch = new FilterValueSearch(filter, this, solrSearchClient, filterValueConfig);
 
 		return filterValueSearch.topItemsExact(searchTerm, 0, 10).values();
+	}
 
+	@Override
+	public ConceptsProcessor.ExactFilterValueResult findExact(SelectFilter<?> filter, List<String> searchTerms) {
+		FilterValueSearch filterValueSearch = new FilterValueSearch(filter, this, solrSearchClient, filterValueConfig);
+
+		return filterValueSearch.exact(searchTerms);
 	}
 
 	@Override
