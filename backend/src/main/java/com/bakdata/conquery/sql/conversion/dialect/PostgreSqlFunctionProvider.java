@@ -1,11 +1,5 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
-import java.sql.Date;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -15,6 +9,11 @@ import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import java.sql.Date;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
 import org.jooq.DataType;
@@ -284,6 +283,10 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		);
 	}
 
+	private static Field<Object> emptyDateRange() {
+		return DSL.field("{0}::daterange", DSL.val("empty"));
+	}
+
 	private Field<Object> rangeAgg(ColumnDateRange columnDateRange) {
 		return DSL.function("range_agg", Object.class, columnDateRange.getRange());
 	}
@@ -336,22 +339,24 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 			// if validityDateColumn is a DATE_RANGE we can make use of Postgres' integrated daterange type, but the upper bound is exclusive by default
 			case DATE_RANGE -> {
 				Field<Object> daterange = DSL.field(DSL.name(column.getName()));
-				Field<Date> startColumn = DSL.coalesce(
+				Field<Date> withOpenLowerEnd = DSL.coalesce(
 						DSL.function("lower", Date.class, daterange),
 						toDateField(MINUS_INFINITY_DATE_VALUE)
 				);
-				Field<Date> endColumn = DSL.coalesce(
+				Field<Date> withOpenUpperEnd = DSL.coalesce(
 						DSL.function("upper", Date.class, daterange),
 						toDateField(INFINITY_DATE_VALUE)
 				);
-				yield daterange(startColumn, endColumn, "[]");
+				yield DSL.when(daterange.isNull(), emptyDateRange())
+						.otherwise(daterange(withOpenLowerEnd, withOpenUpperEnd, "[]"));
 			}
 			// if the validity date column is not of daterange type, we construct it manually
 			case DATE -> {
 				Field<Date> singleDate = DSL.field(DSL.name(tableName, column.getName()), Date.class);
-				Field<Date> startColumn = DSL.coalesce(singleDate, toDateField(MINUS_INFINITY_DATE_VALUE));
-				Field<Date> endColumn = DSL.coalesce(singleDate, toDateField(INFINITY_DATE_VALUE));
-				yield daterange(startColumn, endColumn, "[]");
+				Field<Date> withOpenLowerEnd = DSL.coalesce(singleDate, toDateField(MINUS_INFINITY_DATE_VALUE));
+				Field<Date> withOpenUpperEnd = DSL.coalesce(singleDate, toDateField(INFINITY_DATE_VALUE));
+				yield DSL.when(singleDate.isNull(), emptyDateRange())
+						.otherwise(daterange(withOpenLowerEnd, withOpenUpperEnd, "[]"));
 			}
 			default -> throw new IllegalArgumentException(
 					"Given column type '%s' can't be converted to a proper date restriction.".formatted(column.getType())
@@ -363,16 +368,15 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
 
-		Field<?> start = DSL.coalesce(
-				DSL.field(DSL.name(tableName, startColumn.getName())),
-				toDateField(MINUS_INFINITY_DATE_VALUE)
-		);
-		Field<?> end = DSL.coalesce(
-				DSL.field(DSL.name(tableName, endColumn.getName())),
-				toDateField(INFINITY_DATE_VALUE)
-		);
+		Field<Object> startField = DSL.field(DSL.name(tableName, startColumn.getName()));
+		Field<?> withOpenLowerEnd = DSL.coalesce(startField, toDateField(MINUS_INFINITY_DATE_VALUE));
+		Field<Object> endField = DSL.field(DSL.name(tableName, endColumn.getName()));
+		Field<?> withOpenUpperEnd = DSL.coalesce(endField, toDateField(INFINITY_DATE_VALUE));
 
-		return ColumnDateRange.of(daterange(start, end, "[]"));
+		return ColumnDateRange.of(
+				DSL.when(startField.isNull().and(endField.isNull()), emptyDateRange())
+						.otherwise(this.daterange(withOpenLowerEnd, withOpenUpperEnd, "[]"))
+		);
 	}
 
 	private ColumnDateRange ensureIsSingleColumnRange(ColumnDateRange daterange) {
