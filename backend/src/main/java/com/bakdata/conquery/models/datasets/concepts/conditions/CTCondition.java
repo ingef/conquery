@@ -17,7 +17,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @CPSBase
 public interface CTCondition {
 
-	default void init(ConceptElement<?> node) throws ConceptConfigurationException {}
+	default void init(ConceptElement<?> node) throws ConceptConfigurationException {
+	}
 	
 	boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException;
 

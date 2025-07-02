@@ -78,7 +78,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 		worker.jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 
-		// BucketManager.create loads NamespacedStorage, which requires the WorkerStorage to be registered.
+		// BucketManager.create loads NamespacedStorage keys
 		worker.bucketManager = BucketManager.create(worker, storage);
 
 		return worker;

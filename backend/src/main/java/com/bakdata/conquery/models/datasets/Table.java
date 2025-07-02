@@ -11,12 +11,15 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.mode.ValidationMode;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.util.validation.ValidSqlTable;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -31,10 +34,15 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @JsonDeserialize(converter = Table.Initializer.class)
+@ValidSqlTable(groups = {ValidationMode.Local.class})
 public class Table extends LabeledNamespaceIdentifiable<TableId> implements Initializing {
 
 	@JacksonInject(useInput = OptBoolean.TRUE)
 	private DatasetId dataset;
+
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@JsonIgnore
+	private Namespace namespace;
 
 	@NotNull
 	@Valid
@@ -77,6 +85,7 @@ public class Table extends LabeledNamespaceIdentifiable<TableId> implements Init
 		return true;
 	}
 
+
 	@Override
 	public TableId createId() {
 		return new TableId(dataset, getName());
@@ -111,13 +120,18 @@ public class Table extends LabeledNamespaceIdentifiable<TableId> implements Init
 		return null;
 	}
 
+
 	@Override
 	public void init() {
+		if (this.dataset == null) {
+			this.dataset = namespace.getDataset().getId();
+		}
+
 		for (Column column : columns) {
 			column.init();
 		}
 	}
 
-	public static class Initializer extends Initializing.Converter<Table> {
+	public static class Initializer extends Converter<Table> {
 	}
 }

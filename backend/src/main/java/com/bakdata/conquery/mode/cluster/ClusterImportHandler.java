@@ -64,7 +64,7 @@ public class ClusterImportHandler implements ImportHandler {
 
 			readAndDistributeImport(((DistributedNamespace) namespace), table, header, parser);
 
-			try(Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts();) {
+			try(Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts()) {
 				clearDependentConcepts(allConcepts, table.getId());
 			}
 		}
@@ -150,7 +150,7 @@ public class ClusterImportHandler implements ImportHandler {
 			collectedEntities.put(bucket.getBucket(), bucket.entities());
 		}
 
-		if (imp == null){
+		if (imp == null) {
 			log.warn("Import {} is empty.", header.getName());
 			return;
 		}

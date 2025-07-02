@@ -1,7 +1,5 @@
 package com.bakdata.conquery.util;
 
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ManagedExecution;

@@ -1,5 +1,14 @@
 package com.bakdata.conquery.util.search;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import javax.annotation.CheckForNull;
+import jakarta.validation.constraints.NotNull;
+
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
@@ -11,15 +20,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import io.dropwizard.lifecycle.Managed;
-import jakarta.validation.constraints.NotNull;
-
-import javax.annotation.CheckForNull;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 public interface SearchProcessor extends Managed {
 

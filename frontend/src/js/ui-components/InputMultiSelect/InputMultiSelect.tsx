@@ -1,31 +1,27 @@
 import styled from "@emotion/styled";
-import {
-  faChevronDown,
-  faSpinner,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
-import { useCombobox, useMultipleSelection } from "downshift";
-import { Fragment, memo, useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
+import {faChevronDown, faSpinner, faTimes,} from "@fortawesome/free-solid-svg-icons";
+import {useCombobox, useMultipleSelection} from "downshift";
+import {Fragment, memo, useEffect, useRef, useState} from "react";
+import {useTranslation} from "react-i18next";
 
-import type { SelectOptionT } from "../../api/types";
-import { exists } from "../../common/helpers/exists";
-import { getFileRows } from "../../common/helpers/fileHelper";
-import { useDebounce } from "../../common/helpers/useDebounce";
+import type {SelectOptionT} from "../../api/types";
+import {exists} from "../../common/helpers/exists";
+import {getFileRows} from "../../common/helpers/fileHelper";
+import {useDebounce} from "../../common/helpers/useDebounce";
 import FaIcon from "../../icon/FaIcon";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 import DropzoneWithFileInput from "../DropzoneWithFileInput";
 import {
-  Control,
-  DropdownToggleButton,
-  Input,
-  ItemsInputContainer,
-  List,
-  Menu,
-  MenuContainer,
-  ResetButton,
-  SelectContainer,
-  VerticalSeparator,
+    Control,
+    DropdownToggleButton,
+    Input,
+    ItemsInputContainer,
+    List,
+    Menu,
+    MenuContainer,
+    ResetButton,
+    SelectContainer,
+    VerticalSeparator,
 } from "../InputSelect/InputSelectComponents";
 import Labeled from "../Labeled";
 import EmptyPlaceholder from "../SelectEmptyPlaceholder";
@@ -35,10 +31,10 @@ import ListItem from "./ListItem";
 import LoadMoreSentinel from "./LoadMoreSentinel";
 import MenuActionBar from "./MenuActionBar";
 import SelectedItem from "./SelectedItem";
-import { useCloseOnClickOutside } from "./useCloseOnClickOutside";
-import { useFilteredOptions } from "./useFilteredOptions";
-import { useLoadMoreInitially } from "./useLoadMoreInitially";
-import { useResolvableSelect } from "./useResolvableSelect";
+import {useCloseOnClickOutside} from "./useCloseOnClickOutside";
+import {useFilteredOptions} from "./useFilteredOptions";
+import {useLoadMoreInitially} from "./useLoadMoreInitially";
+import {useResolvableSelect} from "./useResolvableSelect";
 
 const MAX_SELECTED_ITEMS_LIMIT = 200;
 
@@ -126,16 +122,6 @@ const InputMultiSelect = ({
       }
     },
   });
-
-  useDebounce(
-    () => {
-      if (onLoadMore && !loading) {
-        onLoadMore(inputValue, { shouldReset: true });
-      }
-    },
-    350,
-    [inputValue],
-  );
 
   const filteredOptions = useFilteredOptions({
     options,
@@ -242,6 +228,16 @@ const InputMultiSelect = ({
       }
     },
   });
+
+  useDebounce(
+    () => {
+      if (onLoadMore && isOpen && !loading) {
+        onLoadMore(inputValue, { shouldReset: true });
+      }
+    },
+    350,
+    [inputValue, isOpen],
+  );
 
   useLoadMoreInitially({ onLoadMore, isOpen, optionsLength: options.length });
 

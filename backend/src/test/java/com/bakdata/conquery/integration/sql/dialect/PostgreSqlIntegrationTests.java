@@ -64,7 +64,6 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	}
 
 
-
 	@BeforeAll
 	static void before() {
 		TestContextProvider provider = useLocalPostgresDb
@@ -151,11 +150,11 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 					.withPassword(PASSWORD);
 			this.postgreSQLContainer.start();
 			this.databaseConfig = DatabaseConfig.builder()
-										   .dialect(Dialect.POSTGRESQL)
-										   .jdbcConnectionUrl(postgreSQLContainer.getJdbcUrl())
-										   .databaseUsername(USERNAME)
-										   .databasePassword(PASSWORD)
-										   .build();
+												.dialect(Dialect.POSTGRESQL)
+												.jdbcConnectionUrl(postgreSQLContainer.getJdbcUrl())
+												.databaseUsername(USERNAME)
+												.databasePassword(PASSWORD)
+												.build();
 
 			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
 			this.dslContextWrapper = DslContextFactory.create(this.databaseConfig, sqlConnectorConfig, null);

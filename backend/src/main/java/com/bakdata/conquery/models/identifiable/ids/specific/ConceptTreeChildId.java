@@ -26,7 +26,7 @@ public final class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild>
 	@Override
 	public ConceptTreeChild get() {
 		Concept<?> concept = getDomain().getStorage(getDataset())
-									.getConcept(findConcept());
+										.getConcept(findConcept());
 		if (concept == null) {
 			return null;
 		}
@@ -45,7 +45,7 @@ public final class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild>
 	}
 
 	@Override
-	public void collectIds(Collection<Id<?,?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		parent.collectIds(collect);
 	}

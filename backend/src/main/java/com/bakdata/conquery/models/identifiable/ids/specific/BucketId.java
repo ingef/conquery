@@ -15,7 +15,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class BucketId extends NamespacedId<Bucket>  {
+public class BucketId extends NamespacedId<Bucket> {
 
 	private final ImportId imp;
 	private final int bucket;
@@ -38,7 +38,7 @@ public class BucketId extends NamespacedId<Bucket>  {
 	}
 
 	@Override
-	public void collectIds(Collection<Id<?,?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		imp.collectIds(collect);
 	}

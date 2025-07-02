@@ -68,6 +68,10 @@ public class ResultParquetProcessor {
 		};
 
 
-		return makeResponseWithFileName(Response.ok(out), String.join(".", execution.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_PARQUET), PARQUET_MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(Response.ok(out),
+										String.join(".", execution.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_PARQUET),
+										PARQUET_MEDIA_TYPE,
+										ResultUtil.ContentDispositionOption.ATTACHMENT
+		);
 	}
 }

@@ -182,7 +182,7 @@ public class PreviewConfig {
 			return null;
 		}
 
-		if (searchFilters.isEmpty()){
+		if (searchFilters.isEmpty()) {
 			return null;
 		}
 

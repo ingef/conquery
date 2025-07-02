@@ -49,6 +49,12 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 		DSLContext dslContext = dslContextWrapper.getDslContext();
 		SqlDialect sqlDialect = dialectFactory.createSqlDialect(databaseConfig.getDialect());
 
+		boolean valid = dslContext.connectionResult(connection -> connection.isValid(1));
+
+		if (!valid) {
+			throw new IllegalStateException("Unable to connect to %s".formatted(databaseConfig));
+		}
+
 		ResultSetProcessor resultSetProcessor = ResultSetProcessorFactory.create(config, sqlDialect);
 		SqlExecutionService sqlExecutionService = new SqlExecutionService(dslContext, resultSetProcessor);
 		NodeConversions nodeConversions = new NodeConversions(idColumns, sqlDialect, dslContext, databaseConfig, sqlExecutionService);
@@ -58,6 +64,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 		SqlEntityResolver sqlEntityResolver = new SqlEntityResolver(idColumns, dslContext, sqlDialect, sqlExecutionService);
 
 		return new LocalNamespace(
+				sqlDialect,
 				namespaceData.preprocessMapper(),
 				namespaceStorage,
 				executionManager,

@@ -1,5 +1,9 @@
 package com.bakdata.conquery.models.datasets;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
+import jakarta.validation.constraints.NotNull;
+
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
@@ -7,8 +11,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,12 +20,9 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
-
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(onConstructor_ = {@JsonCreator})
 @Slf4j
 public class Column extends LabeledNamespaceIdentifiable<ColumnId> implements Searchable {
 

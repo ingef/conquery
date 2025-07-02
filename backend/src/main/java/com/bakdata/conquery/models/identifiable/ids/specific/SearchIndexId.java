@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode
-public class SearchIndexId extends NamespacedId<SearchIndex>  {
+public class SearchIndexId extends NamespacedId<SearchIndex> {
 	@Getter
 	private final DatasetId dataset;
 	private final String name;
@@ -26,7 +26,7 @@ public class SearchIndexId extends NamespacedId<SearchIndex>  {
 	}
 
 	@Override
-	public void collectIds(Collection<Id<?,?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		dataset.collectIds(collect);
 	}
