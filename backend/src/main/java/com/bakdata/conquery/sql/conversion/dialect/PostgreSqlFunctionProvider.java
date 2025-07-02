@@ -109,7 +109,8 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate) {
-		return toColumnDateRange(validityDate);
+		// if there is no validity date, each entity has the max range {-inf/inf} as validity date
+		return validityDate == null ? maxRange() : toColumnDateRange(validityDate);
 	}
 
 	@Override
@@ -119,7 +120,8 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction) {
-		ColumnDateRange validityDateRange = toColumnDateRange(validityDate);
+		// if there is no validity date, each entity has the max range {-inf/inf} as validity date
+		ColumnDateRange validityDateRange = validityDate == null ? maxRange() : toColumnDateRange(validityDate);
 		ColumnDateRange restriction = toColumnDateRange(dateRestriction);
 		return intersection(validityDateRange, restriction);
 	}

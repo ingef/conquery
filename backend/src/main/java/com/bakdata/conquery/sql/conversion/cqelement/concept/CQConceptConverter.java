@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
@@ -37,7 +38,6 @@ import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -150,17 +150,15 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 	private static Optional<ColumnDateRange> convertValidityDate(CQTable cqTable, String connectorLabel, ConversionContext context) {
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
-		if (Objects.isNull(cqTable.findValidityDate())) {
-			return Optional.of(functionProvider.maxRange().asValidityDateRange(connectorLabel));
-		}
-		ColumnDateRange validityDate;
+		ValidityDate validityDate = cqTable.findValidityDate();
+		ColumnDateRange sqlValidityDate;
 		if (context.getDateRestrictionRange() != null) {
-			validityDate = functionProvider.forValidityDate(cqTable.findValidityDate(), context.getDateRestrictionRange()).asValidityDateRange(connectorLabel);
+			sqlValidityDate = functionProvider.forValidityDate(validityDate, context.getDateRestrictionRange());
 		}
 		else {
-			validityDate = functionProvider.forValidityDate(cqTable.findValidityDate()).asValidityDateRange(connectorLabel);
+			sqlValidityDate = functionProvider.forValidityDate(validityDate);
 		}
-		return Optional.of(validityDate);
+		return Optional.of(sqlValidityDate.asValidityDateRange(connectorLabel));
 	}
 
 	private static boolean dateRestrictionApplicable(boolean dateRestrictionRequired, Optional<ColumnDateRange> validityDateSelect) {
