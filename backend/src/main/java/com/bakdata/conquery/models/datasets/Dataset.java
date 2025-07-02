@@ -18,6 +18,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
@@ -43,6 +44,7 @@ public class Dataset extends LabeledNamespaceIdentifiable<DatasetId> implements 
 	@Setter
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
 	private NamespacedStorageProvider storageProvider;
 
 

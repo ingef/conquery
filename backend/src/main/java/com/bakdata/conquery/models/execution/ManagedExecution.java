@@ -117,14 +117,22 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	@Getter
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
 	private transient ConqueryConfig config;
-
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@Setter
+	@Getter(AccessLevel.PROTECTED)
+	@JsonIgnore
+	@NotNull
+	@ToString.Exclude
+	private transient MetaStorage metaStorage;
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Setter
 	@Getter(AccessLevel.PROTECTED)
 	@JsonIgnore
 	@NotNull
+	@ToString.Exclude
 	private transient DatasetRegistry<?> datasetRegistry;
 
 

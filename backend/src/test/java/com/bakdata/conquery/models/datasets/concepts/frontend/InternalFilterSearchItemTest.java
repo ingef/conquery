@@ -22,7 +22,7 @@ import com.bakdata.conquery.util.extensions.NamespaceStorageExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-public class FilterSearchItemTest {
+public class InternalFilterSearchItemTest {
 
 	@RegisterExtension
 	private static final NamespaceStorageExtension NAMESPACE_STORAGE_EXTENSION = new NamespaceStorageExtension();
