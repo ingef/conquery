@@ -15,6 +15,7 @@ import com.bakdata.conquery.util.search.SearchProcessor;
 import com.bakdata.conquery.util.search.internal.InternalFilterSearch;
 import com.bakdata.conquery.util.search.internal.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.BiMap;
 import io.dropwizard.core.setup.Environment;
 import jakarta.validation.constraints.Min;
@@ -52,18 +53,13 @@ public class InternalSearchConfig implements SearchConfig {
 	}
 
 
+	@VisibleForTesting
 	public TrieSearch<FrontendValue> createSearch(Searchable searchable) {
-		if (searchable instanceof FilterTemplate temp) {
-
-			return getFilterTemplateSearch(temp);
-		}
-
-		if (searchable instanceof LabelMap labelMap) {
-			return getLabelMapSearch(labelMap);
-		}
-
-		return new TrieSearch<>(searchable.isGenerateSuffixes() ? getNgramLength() : Integer.MAX_VALUE, getSearchSplitChars());
-
+		return switch(searchable) {
+			case FilterTemplate temp -> getFilterTemplateSearch(temp);
+			case LabelMap labelMap -> getLabelMapSearch(labelMap);
+			default -> new TrieSearch<>(searchable.isGenerateSuffixes() ? getNgramLength() : Integer.MAX_VALUE, getSearchSplitChars());
+		};
 	}
 
 	private TrieSearch<FrontendValue> getLabelMapSearch(LabelMap labelMap) {

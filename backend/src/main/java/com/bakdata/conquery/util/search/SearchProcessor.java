@@ -64,17 +64,14 @@ public interface SearchProcessor extends Managed {
 	 */
 	void indexManagerResidingSearches(Set<Searchable> managerSearchables, AtomicBoolean cancelledState, ProgressReporter progressReporter) throws InterruptedException;
 
+
 	/**
 	 * Query for an exact matching {@link FrontendValue}.
-	 * Matches {@link FrontendValue#getValue()} or {@link FrontendValue#getLabel()}
+	 * Matches {@link FrontendValue#getValue()} or {@link FrontendValue#getLabel()} but case-insensitive.
 	 * @param filter The filter to the resulting value must correspond to (domain of the {@link FrontendValue})
-	 * @param searchTerm The exact term to match
-	 * @return Exact matches or an empty list.
-	 *
-	 * TODO Remove this in favour of {@link SearchProcessor#findExact(SelectFilter, List)}
+	 * @param searchTerms The exact terms to match
+	 * @return A container with the exact matches and unmatched values.
 	 */
-	List<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm);
-
 	ConceptsProcessor.ExactFilterValueResult findExact(SelectFilter<?> filter, List<String> searchTerms);
 
 	/**

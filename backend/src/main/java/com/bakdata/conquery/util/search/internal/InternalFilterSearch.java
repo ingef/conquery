@@ -267,7 +267,6 @@ public class InternalFilterSearch implements SearchProcessor {
 		}
 	}
 
-	@Override
 	public List<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm) {
 
 		final List<FrontendValue> out = new ArrayList<>();

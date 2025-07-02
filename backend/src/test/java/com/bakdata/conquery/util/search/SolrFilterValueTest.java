@@ -1,18 +1,5 @@
 package com.bakdata.conquery.util.search;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockserver.model.HttpRequest.request;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.LabelMap;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
@@ -45,16 +32,26 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.MediaType;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockserver.model.HttpRequest.request;
 
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -189,7 +186,7 @@ public class SolrFilterValueTest {
 	@Order(1)
 	public void findExactColumn() {
 
-		List<FrontendValue> actual = searchProcessor.findExact(FILTER, "column c");
+		Collection<FrontendValue> actual = searchProcessor.findExact(FILTER, "column c");
 
 		assertThat(actual).containsExactly(new FrontendValue("column c", "column c"));
 	}
@@ -197,12 +194,12 @@ public class SolrFilterValueTest {
 	@Test
 	@Order(1)
 	public void findExactMap() {
-		List<FrontendValue> actualLabel = searchProcessor.findExact(FILTER, "Map A");
+		Collection<FrontendValue> actualLabel = searchProcessor.findExact(FILTER, "Map A");
 
 		assertThat(actualLabel).containsExactly(new FrontendValue("a", "Map A"));
 
 
-		List<FrontendValue> actualValue = searchProcessor.findExact(FILTER, "map a");
+		Collection<FrontendValue> actualValue = searchProcessor.findExact(FILTER, "map a");
 
 		assertThat(actualValue).containsExactly(new FrontendValue("a", "Map A"));
 	}
@@ -362,7 +359,7 @@ public class SolrFilterValueTest {
 	@Order(3)
 	public void findExactNothing() {
 
-		List<FrontendValue> actual = searchProcessor.findExact(FILTER, "");
+		Collection<FrontendValue> actual = searchProcessor.findExact(FILTER, "");
 
 		assertThat(actual).isEmpty();
 	}
@@ -371,7 +368,7 @@ public class SolrFilterValueTest {
 	@Order(3)
 	public void findExactUnknown() {
 
-		List<FrontendValue> actual = searchProcessor.findExact(FILTER, "z");
+		Collection<FrontendValue> actual = searchProcessor.findExact(FILTER, "z");
 
 		assertThat(actual).isEmpty();
 	}
@@ -380,7 +377,7 @@ public class SolrFilterValueTest {
 	@Order(3)
 	public void findExactUppercase() {
 
-		List<FrontendValue> actual = searchProcessor.findExact(FILTER, "MAP A");
+		Collection<FrontendValue> actual = searchProcessor.findExact(FILTER, "MAP A");
 
 		assertThat(actual).containsExactly(new FrontendValue("a", "Map A"));
 	}

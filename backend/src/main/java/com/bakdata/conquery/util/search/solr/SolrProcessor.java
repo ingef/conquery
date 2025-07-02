@@ -24,11 +24,9 @@ import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.BiMap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.util.Duration;
-import it.unimi.dsi.fastutil.Pair;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,13 +37,18 @@ import org.apache.solr.client.solrj.util.ClientUtils;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Entrypoint for searches that are handled by solr.
@@ -139,7 +142,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	 * Helper to build referable names for search sources which may allow abstraction.
 	 * E.g. if column names are used across multiple tables and holds the same set of values, we may want to create only a single document in solr not one for every column.
 	 * @param searchable The searchable whose name is created.
-	 * @return the name vor the searchable
+	 * @return the name for the searchable
 	 */
 	private String buildNameForSearchable(Searchable searchable) {
 		String name = switch (searchable) {
@@ -160,7 +163,12 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		return name;
 	}
 
-	static int getSourcePriority(Searchable searchable) {
+	/**
+	 * Higher priority for lower number
+	 * @param searchable The searchable entity that is map to a priority
+	 * @return The priority
+	 */
+	static int getFilterValueSourcePriority(Searchable searchable) {
 		return switch (searchable) {
 			case SolrEmptySeachable ignore -> 0;
 			case LabelMap ignore -> 1;
@@ -172,7 +180,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 
 	/*package*/ FilterValueIndexer getIndexerFor(Searchable searchable) {
 		String nameForSearchable = buildNameForSearchable(searchable);
-		int sourcePriority = getSourcePriority(searchable);
+		int sourcePriority = getFilterValueSourcePriority(searchable);
 
         return indexers.computeIfAbsent(nameForSearchable, searchRef -> new FilterValueIndexer(solrIndexClient, nameForSearchable, sourcePriority, commitWithin, updateChunkSize));
 	}
@@ -323,11 +331,9 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		}
 	}
 
-	@Override
-	public List<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm) {
-		FilterValueSearch filterValueSearch = new FilterValueSearch(filter, this, solrSearchClient, filterValueConfig);
+	public Collection<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm) {
 
-		return filterValueSearch.topItemsExact(searchTerm, 0, 10).values();
+		return findExact(filter, List.of(searchTerm)).resolved();
 	}
 
 	@Override
@@ -348,7 +354,9 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	public Job createFinalizeFilterSearchJob(Namespace namespace, Set<ColumnId> columns) {
 		return new SimpleJob("Final commit on collection %s".formatted(solrIndexClient.getDefaultCollection()), () -> {
 			try {
+				Stopwatch stopwatch = Stopwatch.createStarted();
 				explicitCommit();
+				log.info("Finished commit on collection {} in {}", solrIndexClient.getDefaultCollection(), stopwatch);
 			} catch (Exception e) {
 				log.error("Unable to issue explicit commit on collection {}", solrIndexClient.getDefaultCollection(), e);
 			}
