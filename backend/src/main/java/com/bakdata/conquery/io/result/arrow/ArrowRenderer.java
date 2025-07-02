@@ -57,11 +57,13 @@ public class ArrowRenderer {
 		final RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), idHeaders);
 		final RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size(), resultInfo);
 
-		final List<Printer> printers = Stream.concat(idHeaders.stream(), resultInfo.stream()).map(info -> info.createPrinter(printerFactory, printSettings)).toList();
+		final List<Printer> idPrinters = idHeaders.stream().map(info -> info.createPrinter(printerFactory, printSettings)).toList();
+		final List<Printer> resultPrinters = resultInfo.stream().map(info -> info.createPrinter(printerFactory, printSettings)).toList();
+
 
 		// Write the data
 		try (ArrowWriter writer = writerProducer.apply(root)) {
-			write(writer, root, idWriters, valueWriter, printSettings.getIdMapper(), printers, results, arrowConfig.getBatchSize());
+			write(writer, root, idWriters, valueWriter, printSettings.getIdMapper(), idPrinters, resultPrinters, results, arrowConfig.getBatchSize());
 		}
 
 	}
@@ -73,7 +75,8 @@ public class ArrowRenderer {
 			RowConsumer[] idWriters,
 			RowConsumer[] valueWriters,
 			PrintIdMapper idMapper,
-			List<Printer> printers,
+			List<Printer> idPrinters,
+			List<Printer> resultPrinters,
 			Stream<EntityResult> results,
 			int batchSize) throws IOException {
 		Preconditions.checkArgument(batchSize > 0, "Batch size needs be larger than 0.");
@@ -100,7 +103,7 @@ public class ArrowRenderer {
 				final EntityResult cer = resultIterator.next();
 				currentEntityResult = cer;
 
-				final Object[] printedExternalId = getPrintedExternalId(idWriters, idMapper, printers, cer);
+				final Object[] printedExternalId = getPrintedExternalId(idWriters, idMapper, idPrinters, cer);
 
 				for (Object[] line : cer.listResultLines()) {
 					currentEntityResultLine = line;
@@ -118,19 +121,19 @@ public class ArrowRenderer {
 						idWriters[index].accept(batchLineCount, printedExternalId[index]);
 					}
 
-					for (int rowIndex = 0; rowIndex < valueWriters.length; rowIndex++) {
-						currentRow = rowIndex;
-						final int colId = rowIndex + idWriters.length;
-						// In this case, the printer normalizes and adjusts values.
-
-						value = line[rowIndex];
+					for (int index = 0; index < valueWriters.length; index++) {
+						value = line[index];
 
 						if (value != null) {
-							printer = printers.get(colId);
+							printer = resultPrinters.get(index);
+							// In this case, the printer normalizes and adjusts values.
 							printed = printer.apply(value);
 						}
+						else {
+							printed = null;
+						}
 
-						valueWriters[rowIndex].accept(batchLineCount, printed);
+						valueWriters[index].accept(batchLineCount, printed);
 					}
 
 					batchLineCount++;
@@ -347,7 +350,6 @@ public class ArrowRenderer {
 			case NUMERIC -> float8VectorFiller((Float8Vector) vector);
 			case STRING -> varCharVectorFiller(((VarCharVector) vector));
 			case DATE_RANGE -> dateRangeVectorFiller((StructVector) vector);
-
 		};
 
 
