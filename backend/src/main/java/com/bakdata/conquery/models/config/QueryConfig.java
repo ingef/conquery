@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.config;
 
-import jakarta.validation.constraints.NotEmpty;
-
+import com.bakdata.conquery.util.validation.ValidCaffeineSpec;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.util.Duration;
 import io.dropwizard.validation.ValidationMethod;
@@ -26,15 +25,15 @@ public class QueryConfig {
 	 */
 	private int secondaryIdSubPlanRetention = 15;
 
-	@NotEmpty
-	private String softResultCacheSpec = "softValues";
-	@NotEmpty
-	private String hardResultCacheSpec = "expireAfterAccess=10m";
+	@ValidCaffeineSpec
+	private String L2CacheSpec = "softValues";
+	@ValidCaffeineSpec
+	private String L1CacheSpec = "expireAfterAccess=10m";
 
 	@JsonIgnore
 	@ValidationMethod(message = "SoftResultCache is required to be soft.")
 	public boolean isSoftSpecSoft() {
-		return softResultCacheSpec.contains("softValues");
+		return L2CacheSpec.contains("softValues");
 	}
 
 

@@ -25,9 +25,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalNotification;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -44,60 +44,43 @@ public abstract class ExecutionManager {
 	private final ConqueryConfig config;
 
 	@Getter(AccessLevel.NONE)
-	private final Cache<ManagedExecutionId, ExecutionInfo> executionInfosSoft;
+	private final Cache<ManagedExecutionId, ExecutionInfo> executionInfosL2;
 	@Getter(AccessLevel.NONE)
-	private final Cache<ManagedExecutionId, ExecutionInfo> executionInfosHard;
+	private final Cache<ManagedExecutionId, ExecutionInfo> executionInfosL1;
 
 	public ExecutionManager(MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
 		this.storage = storage;
 		this.datasetRegistry = datasetRegistry;
 		this.config = config;
 
-		// for some reason, the builder in field initialization causes formatters to go bananas.
-
-
-		executionInfosSoft = CacheBuilder.from(config.getQueries().getSoftResultCacheSpec())
-										 .removalListener(this::executionRemoved).build();
-
-		executionInfosHard = CacheBuilder.from(config.getQueries().getHardResultCacheSpec())
-										 .removalListener(this::executionTimedOut).build();
+		executionInfosL2 = Caffeine.from(config.getQueries().getL2CacheSpec())
+								   .removalListener(this::evictionSoft)
+								   .build();
+		executionInfosL1 = Caffeine.from(config.getQueries().getL1CacheSpec())
+								   .removalListener(this::evictionHard)
+								   .build();
 	}
 
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
 	 */
-	private void executionRemoved(RemovalNotification<ManagedExecutionId, ExecutionInfo> removalNotification) {
+	private void evictionSoft(ManagedExecutionId executionId, ExecutionInfo resultInfo, RemovalCause cause) {
+
 		// If removal was done manually we assume it was also handled properly
-		if (!removalNotification.wasEvicted()) {
+		if (!cause.wasEvicted()) {
 			return;
 		}
 
-		final ManagedExecutionId executionId = removalNotification.getKey();
-
-		log.trace("Evicted Results for Query[{}] (Reason: {})", executionId, removalNotification.getCause());
-
-		final ManagedExecution execution = getExecution(executionId);
-
-		// The query might already be deleted
-		if (execution != null) {
-			reset(executionId);
-		}
+		log.trace("Evicted Query[{}] results from soft cache (Reason: {})", executionId, cause);
 	}
 
-	private void executionTimedOut(RemovalNotification<ManagedExecutionId, ExecutionInfo> removalNotification) {
+	private void evictionHard(ManagedExecutionId executionId, ExecutionInfo resultInfo, RemovalCause cause) {
 		// If removal was done manually we assume it was also handled properly
-		if (!removalNotification.wasEvicted()) {
+		if (!cause.wasEvicted()) {
 			return;
 		}
 
-		log.trace("Query {} timed out, demoting to soft cache.", removalNotification.getKey());
-
-		if (getExecution(removalNotification.getKey()) == null) {
-			// Execution already deleted.
-			return;
-		}
-
-		executionInfosSoft.put(removalNotification.getKey(), removalNotification.getValue());
+		log.trace("Evicted Query[{}] results from hard cache (Reason: {})", executionId, cause);
 	}
 
 	public ManagedExecution getExecution(ManagedExecutionId execution) {
@@ -118,18 +101,19 @@ public abstract class ExecutionManager {
 	}
 
 	public void clearQueryResults(ManagedExecutionId execution) {
-		executionInfosSoft.invalidate(execution);
-		executionInfosSoft.invalidate(execution);
+		executionInfosL2.invalidate(execution);
+		executionInfosL1.invalidate(execution);
 	}
 
 	public <R extends ExecutionInfo> Optional<R> tryGetExecutionInfo(ManagedExecutionId id) {
-		ExecutionInfo maybeInfo = executionInfosSoft.getIfPresent(id);
+		// Access hard before soft, to keep things "touched"
+		ExecutionInfo maybeInfo = executionInfosL1.getIfPresent(id);
 
 		if (maybeInfo != null) {
 			return Optional.of((R) maybeInfo);
 		}
 
-		maybeInfo = executionInfosHard.getIfPresent(id);
+		maybeInfo = executionInfosL2.getIfPresent(id);
 
 		if (maybeInfo != null) {
 			return Optional.of((R) maybeInfo);
@@ -139,9 +123,8 @@ public abstract class ExecutionManager {
 	}
 
 	public void addState(ManagedExecutionId id, ExecutionInfo result) {
-		clearQueryResults(id);
-
-		executionInfosHard.put(id, result);
+		executionInfosL1.put(id, result);
+		executionInfosL2.put(id, result);
 	}
 
 	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, UserId user, boolean system) {
@@ -282,11 +265,11 @@ public abstract class ExecutionManager {
 	}
 
 	public boolean hasRunningQueries() {
-		if (executionInfosSoft.asMap().values().stream().map(ExecutionInfo::getExecutionState).anyMatch(RUNNING::equals)) {
+		if (executionInfosL2.asMap().values().stream().map(ExecutionInfo::getExecutionState).anyMatch(RUNNING::equals)) {
 			return true;
 		}
 
-		return executionInfosHard.asMap().values().stream().map(ExecutionInfo::getExecutionState).anyMatch(RUNNING::equals);
+		return executionInfosL1.asMap().values().stream().map(ExecutionInfo::getExecutionState).anyMatch(RUNNING::equals);
 	}
 
 	/**
