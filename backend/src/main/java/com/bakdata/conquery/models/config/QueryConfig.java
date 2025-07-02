@@ -25,16 +25,10 @@ public class QueryConfig {
 	 */
 	private int secondaryIdSubPlanRetention = 15;
 
-	@ValidCaffeineSpec
+	@ValidCaffeineSpec(softValue=true)
 	private String L2CacheSpec = "softValues";
 	@ValidCaffeineSpec
 	private String L1CacheSpec = "expireAfterAccess=10m";
-
-	@JsonIgnore
-	@ValidationMethod(message = "SoftResultCache is required to be soft.")
-	public boolean isSoftSpecSoft() {
-		return L2CacheSpec.contains("softValues");
-	}
 
 
 }
