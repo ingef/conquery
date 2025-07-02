@@ -75,6 +75,11 @@ public interface SqlFunctionProvider {
 	ColumnDateRange forValidityDate(ValidityDate validityDate);
 
 	/**
+	 * Creates a {@link ColumnDateRange} of maximum range.
+	 */
+	ColumnDateRange maxRange();
+
+	/**
 	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date. The validity dates bounds will be restricted by the given date
 	 * restriction.
 	 */

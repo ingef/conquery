@@ -1,13 +1,5 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
@@ -43,6 +35,13 @@ import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Preconditions;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -150,10 +149,10 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	}
 
 	private static Optional<ColumnDateRange> convertValidityDate(CQTable cqTable, String connectorLabel, ConversionContext context) {
-		if (Objects.isNull(cqTable.findValidityDate())) {
-			return Optional.empty();
-		}
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+		if (Objects.isNull(cqTable.findValidityDate())) {
+			return Optional.of(functionProvider.maxRange().asValidityDateRange(connectorLabel));
+		}
 		ColumnDateRange validityDate;
 		if (context.getDateRestrictionRange() != null) {
 			validityDate = functionProvider.forValidityDate(cqTable.findValidityDate(), context.getDateRestrictionRange()).asValidityDateRange(connectorLabel);

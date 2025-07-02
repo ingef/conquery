@@ -113,6 +113,11 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public ColumnDateRange maxRange() {
+		return ColumnDateRange.of(daterange(toDateField(MINUS_INFINITY_DATE_VALUE), toDateField(INFINITY_DATE_VALUE), "[]"));
+	}
+
+	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction) {
 		ColumnDateRange validityDateRange = toColumnDateRange(validityDate);
 		ColumnDateRange restriction = toColumnDateRange(dateRestriction);

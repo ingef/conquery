@@ -87,8 +87,8 @@ class TablePath {
 		tableInfo.addWithDefaultMapping(MANDATORY_STEPS);
 
 		boolean eventDateSelectsPresent = cqTable.getSelects().stream().map(SelectId::resolve).anyMatch(Select::isEventDateSelect);
-		// no validity date aggregation possible nor necessary
-		if (cqTable.findValidityDate() == null || (!cqConcept.isAggregateEventDates() && !eventDateSelectsPresent)) {
+		// no validity date aggregation necessary
+		if (!cqConcept.isAggregateEventDates() && !eventDateSelectsPresent) {
 			return tableInfo;
 		}
 
