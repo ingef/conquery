@@ -109,10 +109,10 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	private <T> List<T> fromString(ResultSet resultSet, int columnIndex, Function<String, T> parseFunction) throws SQLException {
 		String arrayExpression = resultSet.getString(columnIndex);
-		if (arrayExpression == null) {
+		if (arrayExpression == null || arrayExpression.chars().allMatch(c -> c == UNIT_SEPARATOR)) {
 			return null;
 		}
-		return Arrays.stream(arrayExpression.split(String.valueOf(ResultSetProcessor.UNIT_SEPARATOR)))
+		return Arrays.stream(arrayExpression.split(String.valueOf(UNIT_SEPARATOR)))
 					 .filter(Predicate.not(String::isBlank))
 					 .map(parseFunction)
 					 .toList();
