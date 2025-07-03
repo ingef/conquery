@@ -218,8 +218,8 @@ public class CsvTableImporter {
 			case DATE -> dateReader.parseToLocalDate(entry);
 			case DATE_RANGE -> {
 				CDateRange dateRange = dateReader.parseToCDateRange(entry);
-				yield DateRange.dateRange(dateRange.getMin() != null ? Date.valueOf(dateRange.getMin()) : null,
-										  dateRange.getMax() != null ? Date.valueOf(dateRange.getMax()) : null
+				yield DateRange.dateRange(dateRange.getMin() != null ? Date.valueOf(dateRange.getMin()) : null, true,
+										  dateRange.getMax() != null ? Date.valueOf(dateRange.getMax()) : null, true
 				);
 			}
 		};

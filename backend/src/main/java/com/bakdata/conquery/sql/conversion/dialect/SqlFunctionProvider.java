@@ -1,10 +1,5 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
-import java.sql.Date;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -14,6 +9,10 @@ import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
+import java.sql.Date;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
