@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.index;
 
+import static com.bakdata.conquery.util.io.LogUtil.passExceptionOnTrace;
 
 import java.net.URI;
 import java.util.Collection;
@@ -53,6 +54,7 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 	@NotEmpty
 	private String externalTemplate;
 	private boolean allowMultiple;
+
 	// We inject the service as a non-final property so, jackson will never try to create a serializer for it (in contrast to constructor injection)
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
@@ -60,6 +62,7 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 	@Setter(onMethod_ = @TestOnly)
 	@EqualsAndHashCode.Exclude
 	private IndexService mapIndex;
+
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@NotNull
@@ -104,7 +107,7 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 			}
 		}).whenComplete((m, e) -> {
 			if (e != null) {
-				log.warn("Unable to get index: {} (enable TRACE for exception)", key, log.isTraceEnabled() ? e : null);
+				log.warn("Unable to get index: {} (enable TRACE for exception)", key, passExceptionOnTrace(log,e));
 			}
 		});
 	}
@@ -123,7 +126,7 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 			}
 			catch (InterruptedException | ExecutionException e) {
 				// Should never be reached
-				log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, log.isTraceEnabled() ? e : null);
+				log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, passExceptionOnTrace(log,e));
 			}
 		}
 
@@ -156,7 +159,7 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 			}
 			catch (InterruptedException | ExecutionException e) {
 				// Should never be reached
-				log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, log.isTraceEnabled() ? e : null);
+				log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, passExceptionOnTrace(log,e));
 			}
 		}
 

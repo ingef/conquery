@@ -66,7 +66,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminDatasetProcessor {
 
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
-	private static final String ABBREVIATION_MARKER = "\u2026";
+	private static final String ABBREVIATION_MARKER = "…";
 
 	private final ConqueryConfig config;
 	private final DatasetRegistry<? extends Namespace> datasetRegistry;
@@ -362,7 +362,8 @@ public class AdminDatasetProcessor {
 	}
 
 	public void addInternToExternMapping(Namespace namespace, InternToExternMapper internToExternMapper) {
-		internToExternMapper.setDataset(namespace.getDataset().getId());
+		// TODO Use DatasetParamInjector on admin-api to avoid manual setup of dataset/storage
+		internToExternMapper.setStorage(namespace.getStorage());
 
 		ValidatorHelper.failOnError(log, environment.getValidator().validate(internToExternMapper));
 

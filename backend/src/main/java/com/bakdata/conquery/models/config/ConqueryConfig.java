@@ -148,7 +148,7 @@ public class ConqueryConfig extends Configuration implements Injectable {
 		return true;
 	}
 
-	public <T extends PluginConfig> Optional<T> getPluginConfig(Class<T> type) {
+	public <T extends PluginConfig > Optional < T > getPluginConfig(Class < T > type) {
 		return plugins.stream()
 					  .filter(c -> type.isAssignableFrom(c.getClass()))
 					  .map(type::cast)

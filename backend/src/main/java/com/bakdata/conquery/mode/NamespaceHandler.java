@@ -36,7 +36,6 @@ public interface NamespaceHandler<N extends Namespace> {
 		ObjectMapper communicationMapper = internalMapperFactory.createNamespaceCommunicationMapper(storage, datasetRegistry);
 		ObjectMapper preprocessMapper = internalMapperFactory.createPreprocessMapper(storage, datasetRegistry);
 
-		// Todo remove these
 		injectables.forEach(i -> {
 			i.injectInto(persistenceMapper);
 			i.injectInto(communicationMapper);
