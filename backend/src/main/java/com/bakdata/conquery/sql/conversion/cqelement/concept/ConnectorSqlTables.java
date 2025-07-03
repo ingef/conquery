@@ -22,6 +22,11 @@ public class ConnectorSqlTables extends SqlTables {
 	private final boolean withIntervalPacking;
 
 	/**
+	 * True if these tables should not propagate a present validity date.
+	 */
+	private final boolean excludedFromTimeAggregation;
+
+	/**
 	 * Corresponding {@link Connector} of these {@link SqlTables}.
 	 */
 	private final Connector connector;
@@ -32,12 +37,14 @@ public class ConnectorSqlTables extends SqlTables {
 			String rootTable,
 			Map<CteStep, String> cteNameMap,
 			Map<CteStep, CteStep> predecessorMap,
-			boolean containsIntervalPacking
+			boolean containsIntervalPacking,
+			boolean excludedFromTimeAggregation
 	) {
 		super(rootTable, cteNameMap, predecessorMap);
 		this.connector = connector;
 		this.label = conceptConnectorLabel;
 		this.withIntervalPacking = containsIntervalPacking;
+		this.excludedFromTimeAggregation = excludedFromTimeAggregation;
 	}
 
 }

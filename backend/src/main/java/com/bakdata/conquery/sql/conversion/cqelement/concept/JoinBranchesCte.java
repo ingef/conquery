@@ -72,6 +72,11 @@ class JoinBranchesCte extends ConnectorCte {
 			if (intervalPackingSelectsStep != lastIntervalPackingStep) {
 				queriesToJoin.add(intervalPackingSelectsStep);
 			}
+
+			// interval packing was required for event date selects, but we won't propagate it
+			if (tableContext.getConnectorTables().isExcludedFromTimeAggregation()) {
+				validityDate = Optional.empty();
+			}
 		}
 
 		// additional preceding tables

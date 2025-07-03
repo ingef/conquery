@@ -61,7 +61,8 @@ class TablePath {
 				tableInfo.getRootTable(),
 				cteNameMap,
 				tableInfo.getMappings(),
-				tableInfo.isContainsIntervalPacking()
+				tableInfo.isContainsIntervalPacking(),
+				tableInfo.isExcludedFromTimeAggregation()
 		);
 	}
 
@@ -92,9 +93,14 @@ class TablePath {
 			return tableInfo;
 		}
 
-		// interval packing required
+		// interval packing requiredw
 		tableInfo.setContainsIntervalPacking(true);
 		tableInfo.addMappings(IntervalPackingCteStep.getMappings(EVENT_FILTER, context.getSqlDialect()));
+
+		// validity date propagation not necessary
+		if (!cqConcept.isAggregateEventDates()) {
+			tableInfo.setExcludedFromTimeAggregation(true);
+		}
 
 		if (!eventDateSelectsPresent) {
 			return tableInfo;
@@ -163,6 +169,11 @@ class TablePath {
 		 * True if this path info contains CTEs from {@link IntervalPackingCteStep}.
 		 */
 		private boolean containsIntervalPacking;
+
+		/**
+		 * True if these tables should not propagate a present validity date.
+		 */
+		private boolean excludedFromTimeAggregation;
 
 		public TablePathInfo() {
 			this.mappings = new HashMap<>();
