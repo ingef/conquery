@@ -166,7 +166,6 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 		return internalValue;
 	}
 
-
 	public static class Initializer extends Initializing.Converter<MapInternToExternMapper> {
 	}
 }

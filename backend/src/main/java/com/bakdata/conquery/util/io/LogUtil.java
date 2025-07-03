@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 @UtilityClass
 public class LogUtil {
 
+
 	/**
 	 * Helper method to avoid compiler warnings of either:
 	 * <ul>
@@ -21,9 +22,11 @@ public class LogUtil {
 	 * @param log The logger to test the level on
 	 * @param e The exception to pass if logger threshold is satisfied
 	 * @return The exception if the trace level is enabled otherwise <code>null</code>
+	 *
+	 * @implNote this method needs to be explicitly declared <code>static</code>, otherwise it cannot be imported statically, despite of being in an <code>@UtilityClass</code>.
 	 */
 	@Nullable
-	public Throwable passExceptionOnTrace(Logger log, Throwable e) {
+	public static Throwable passExceptionOnTrace(Logger log, Throwable e) {
 		return log.isTraceEnabled() ? e : null;
 	}
 
