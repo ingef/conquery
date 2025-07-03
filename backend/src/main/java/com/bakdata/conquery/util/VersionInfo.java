@@ -1,6 +1,6 @@
 package com.bakdata.conquery.util;
 
-import java.io.BufferedReader;
+import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,10 +9,10 @@ import java.util.Properties;
 import java.util.TreeMap;
 
 import com.bakdata.conquery.apiv1.frontend.VersionContainer;
-import com.github.powerlibraries.io.In;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 
 @ToString
 @Getter
@@ -22,7 +22,7 @@ public class VersionInfo {
 	public final static VersionInfo INSTANCE = new VersionInfo();
 
 	private ZonedDateTime buildTime;
-	private String projectVersion;
+	private final String projectVersion;
 
 	/**
 	 * Form backend id -> version
@@ -34,7 +34,7 @@ public class VersionInfo {
 	private VersionInfo() {
 		try {
 			Properties properties = new Properties();
-			try (BufferedReader in = In.resource("/git.properties").withUTF8().asReader()) {
+			try (InputStream in = IOUtils.resourceToURL("/git.properties").openStream()) {
 				properties.load(in);
 			}
 

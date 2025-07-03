@@ -4,9 +4,9 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -31,8 +31,8 @@ import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 
 @Slf4j
 public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
@@ -73,11 +73,9 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 								 .acceptLanguage(Locale.ENGLISH)
 								 .get();
 
-		List<String> actual = In.stream(((InputStream) csvResponse.getEntity())).readLines();
+		List<String> actual = IOUtils.readLines((InputStream) csvResponse.getEntity(), StandardCharsets.UTF_8);
 
-		ResourceFile expectedCsv = getExpectedCsv();
-
-		List<String> expected = In.stream(expectedCsv.stream()).readLines();
+		List<String> expected = IOUtils.readLines(getExpectedCsv().stream(), StandardCharsets.UTF_8);
 
 		assertThat(actual).as("Results for %s are not as expected.", this)
 						  .containsExactlyInAnyOrderElementsOf(expected);
