@@ -19,6 +19,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.json.TestDataImporter;
@@ -44,7 +45,6 @@ import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -62,7 +62,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
 
-		final String testJson = In.resource("/tests/query/SECONDARY_ID_MIXED/SECONDARY_IDS_MIXED.test.json").withUTF8().readAll();
+		final String testJson = LoadingUtil.readResource("/tests/query/SECONDARY_ID_MIXED/SECONDARY_IDS_MIXED.test.json");
 
 		final DatasetId dataset = conquery.getDataset();
 

@@ -21,6 +21,7 @@ import jakarta.ws.rs.core.Response;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.integration.IntegrationTest;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -37,7 +38,6 @@ import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -148,10 +148,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 	private static SelectFilter<?> setupSearch(StandaloneSupport conquery) throws Exception {
 		//read test specification
 		final String testJson =
-				In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json")
-				  .withUTF8()
-				  .readAll();
-
+				LoadingUtil.readResource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json");
 		final DatasetId dataset = conquery.getDataset();
 
 		final ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
