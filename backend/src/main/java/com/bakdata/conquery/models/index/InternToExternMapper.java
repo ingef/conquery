@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.OneToManyMappingPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.OneToOneMappingPrinter;
 import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.AccessLevel;
@@ -32,6 +33,7 @@ public abstract class InternToExternMapper extends NamespacedIdentifiable<Intern
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	private NamespacedStorage storage;
 
+	@JsonIgnore
 	@Override
 	public DatasetId getDataset() {
 		return storage.getDataset().getId();
