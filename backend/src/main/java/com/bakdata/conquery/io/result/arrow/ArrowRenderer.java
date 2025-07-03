@@ -154,9 +154,12 @@ public class ArrowRenderer {
 			}
 		}
 		catch (Exception e) {
-			throw new IllegalStateException("Failed to write results. Failed at line-number=%s, row-number=%d, batch-number=%d, batch-line-number=%d, entity=%s, line-content=%s, value=%s".formatted(
-					lineCount, currentRow, batchCount, batchLineCount, currentEntityResult.getEntityId(), Arrays.toString(currentEntityResultLine), currentValue
-			), e);
+			throw new IllegalStateException(
+					"Failed to write results. Failed at line-number=%s, row-number=%d, batch-number=%d, batch-line-number=%d, entity=%s, line-content=%s, value=%s".formatted(
+							lineCount, currentRow, batchCount, batchLineCount, currentEntityResult.getEntityId(), Arrays.toString(currentEntityResultLine), currentValue
+					),
+					e
+			);
 		}
 		finally {
 			log.trace("Wrote {} batches of size {} (last batch might be smaller)", batchCount, batchSize);

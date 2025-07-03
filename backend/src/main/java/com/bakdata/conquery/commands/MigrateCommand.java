@@ -139,7 +139,7 @@ public class MigrateCommand extends ConqueryCommand {
 			  .forEach(xenv ->
 					   {
 						   final File environmentDirectory = new File(outStoreDirectory, xenv.getName());
-						   if(!environmentDirectory.mkdirs()) {
+						   if (!environmentDirectory.mkdirs()) {
 							   throw new IllegalArgumentException("Cannot create environment directory: " + environmentDirectory.getAbsolutePath());
 						   }
 
@@ -148,18 +148,26 @@ public class MigrateCommand extends ConqueryCommand {
 
 	}
 
-	private void processEnvironment(File inStoreDirectory, long logSize, File outStoreDirectory, Function4<String, String, JsonNode, JsonNode, Tuple<JsonNode>> migrator, ObjectMapper mapper, boolean inGzip, boolean outGzip) {
+	private void processEnvironment(
+			File inStoreDirectory,
+			long logSize,
+			File outStoreDirectory,
+			Function4<String, String, JsonNode, JsonNode, Tuple<JsonNode>> migrator,
+			ObjectMapper mapper,
+			boolean inGzip,
+			boolean outGzip) {
 		final jetbrains.exodus.env.Environment inEnvironment;
 		try {
 			inEnvironment = Environments.newInstance(
 					inStoreDirectory,
 					new EnvironmentConfig().setLogFileSize(logSize)
-							.setEnvIsReadonly(true)
-							.setEnvCompactOnOpen(false)
-							.setEnvCloseForcedly(true)
-							.setGcEnabled(false)
+										   .setEnvIsReadonly(true)
+										   .setEnvCompactOnOpen(false)
+										   .setEnvCloseForcedly(true)
+										   .setGcEnabled(false)
 			);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new IllegalArgumentException("Unable to open store in " + inStoreDirectory, e);
 		}
 
@@ -169,9 +177,10 @@ public class MigrateCommand extends ConqueryCommand {
 			outEnvironment = Environments.newInstance(
 					outStoreDirectory,
 					new EnvironmentConfig().setLogFileSize(logSize)
-							.setGcEnabled(false)
+										   .setGcEnabled(false)
 			);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new IllegalArgumentException("Unable to open store in " + outStoreDirectory, e);
 		}
 
@@ -215,7 +224,13 @@ public class MigrateCommand extends ConqueryCommand {
 		inEnvironment.close();
 	}
 
-	private void migrateStore(Store inStore, Store outStore, Function4<String, String, JsonNode, JsonNode, Tuple<JsonNode>> migrator, ObjectMapper mapper, boolean inGzip, boolean outGzip) {
+	private void migrateStore(
+			Store inStore,
+			Store outStore,
+			Function4<String, String, JsonNode, JsonNode, Tuple<JsonNode>> migrator,
+			ObjectMapper mapper,
+			boolean inGzip,
+			boolean outGzip) {
 
 		final Environment inEnvironment = inStore.getEnvironment();
 		final Environment outEnvironment = outStore.getEnvironment();

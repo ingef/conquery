@@ -101,7 +101,12 @@ public class DatasetQueryResource {
 
 		final ManagedExecution execution = processor.postQuery(dataset, query, subject, false);
 
-		return Response.ok(processor.getQueryFullStatus(execution.getId(), subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false), false))
+		return Response.ok(processor.getQueryFullStatus(execution.getId(),
+														subject,
+														RequestAwareUriBuilder.fromRequest(servletRequest),
+														allProviders.orElse(false),
+														false
+					   ))
 					   .status(Response.Status.CREATED)
 					   .build();
 	}

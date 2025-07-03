@@ -185,7 +185,9 @@ public class AdminDatasetResource {
 
 	@DELETE
 	@Path("internToExtern/{" + INTERN_TO_EXTERN_ID + "}")
-	public List<ConceptId> deleteInternToExternMapping(@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapperId internToExternMapper, @QueryParam("force") @DefaultValue("false") boolean force) {
+	public List<ConceptId> deleteInternToExternMapping(
+			@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapperId internToExternMapper,
+			@QueryParam("force") @DefaultValue("false") boolean force) {
 		return processor.deleteInternToExternMapping(internToExternMapper, force);
 	}
 

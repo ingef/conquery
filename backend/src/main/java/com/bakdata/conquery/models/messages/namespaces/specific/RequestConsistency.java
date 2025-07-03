@@ -21,8 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 @EqualsAndHashCode
 public class RequestConsistency extends WorkerMessage {
 
-    @Override
-    public void react(Worker context) throws Exception {
+	@Override
+	public void react(Worker context) throws Exception {
 		log.info("BEGIN Gather consistency information");
 
 		// Gather ImportIds

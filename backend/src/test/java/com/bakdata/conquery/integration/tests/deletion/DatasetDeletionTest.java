@@ -140,7 +140,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 						continue;
 					}
 
-//TODO					assertThat(datasetIdStream).as("No worker for the dataset %s should exist", dataset).doesNotContain(dataset);
+					//TODO					assertThat(datasetIdStream).as("No worker for the dataset %s should exist", dataset).doesNotContain(dataset);
 
 
 					// Try to execute the query after deletion

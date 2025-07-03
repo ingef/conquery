@@ -21,7 +21,7 @@ public final class ConceptSelectId extends SelectId {
 	}
 
 	@Override
-	public void collectIds(Collection<Id<?,?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		concept.collectIds(collect);
 	}
@@ -34,7 +34,7 @@ public final class ConceptSelectId extends SelectId {
 	@Override
 	public UniversalSelect get() {
 		return (UniversalSelect) getDomain().getStorage(getDataset())
-										.getConcept(concept).getSelectByName(getSelect());
+											.getConcept(concept).getSelectByName(getSelect());
 	}
 
 

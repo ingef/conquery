@@ -50,7 +50,7 @@ public class IdMap<ID extends Id, V extends Identifiable<? extends ID, ?>> exten
 	
 	@Override
 	public int size() {
-		return map.values().size();
+		return map.size();
 	}
 
 	public V getOrFail(ID id) {
@@ -79,7 +79,7 @@ public class IdMap<ID extends Id, V extends Identifiable<? extends ID, ?>> exten
 	}
 	
 	public V update(V entry) {
-		return map.put((ID)entry.getId(), entry);
+		return map.put(entry.getId(), entry);
 	}
 	
 	public V remove(ID id) {

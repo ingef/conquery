@@ -63,7 +63,7 @@ public class ConceptResource extends HAuthorized {
 		final List<String> codes = conceptCodes.getConcepts().stream().map(String::trim).collect(Collectors.toList());
 
 		if (concept instanceof TreeConcept treeConcept && treeConcept.countElements() > 1) {
-			return processor.resolveConceptElements((TreeConcept) concept, codes);
+			return processor.resolveConceptElements(treeConcept, codes);
 		}
 		throw new WebApplicationException("can only resolved elements on tree concepts", Response.Status.BAD_REQUEST);
 	}

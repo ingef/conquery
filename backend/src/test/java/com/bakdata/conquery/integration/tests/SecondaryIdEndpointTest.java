@@ -98,8 +98,8 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 
 			final Response response = uploadTable(conquery, tableNode);
 			assertThat(response.getStatusInfo().getFamily())
-						.describedAs(() -> response.readEntity(String.class))
-						.isEqualTo(Response.Status.Family.SUCCESSFUL);
+					.describedAs(() -> response.readEntity(String.class))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
 		}
 		{
 			final URI uri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), DatasetsUIResource.class, "getDataset")

@@ -179,13 +179,13 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 	private HashEntry toHashEntry(CredentialType credential) {
 
 
-		if (credential instanceof PasswordCredential passwordCredential) {
-			return new HashEntry(Password.hash(passwordCredential.password())
+		if (credential instanceof PasswordCredential(String password)) {
+			return new HashEntry(Password.hash(password)
 										 .with(defaultHashingFunction)
 										 .getResult());
 		}
-		else if (credential instanceof PasswordHashCredential passwordHashCredential) {
-			return new HashEntry(passwordHashCredential.hash());
+		else if (credential instanceof PasswordHashCredential(String hash)) {
+			return new HashEntry(hash);
 		}
 
 		throw new IllegalArgumentException("CredentialType not supported yet: " + credential.getClass());

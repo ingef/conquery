@@ -29,7 +29,7 @@ public final class RoleId extends PermissionOwnerId<Role> {
 	}
 
 	@Override
-	public void collectIds(Collection<Id<?,?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 	}
 

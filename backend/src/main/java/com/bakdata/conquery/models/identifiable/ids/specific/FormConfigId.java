@@ -37,7 +37,7 @@ public class FormConfigId extends MetaId<FormConfig> implements Owned {
 	}
 
 	@Override
-	public void collectIds(Collection<Id<?,?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		dataset.collectIds(collect);
 	}
