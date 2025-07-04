@@ -80,6 +80,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 	@JsonIgnore
 	private Connector connector;
+
 	@JsonIgnore
 	private TreeConcept concept;
 
@@ -93,7 +94,8 @@ public class FilterTest extends AbstractQueryEngineTest {
 		concept = new TreeConcept();
 		concept.setLabel(CONCEPT_LABEL);
 
-		concept.setDataset(support.getDataset());
+		concept.setNamespacedStorageProvider(support.getNamespaceStorage());
+		concept.init();
 
 		rawConnector.put("name", "connector");
 		rawConnector.put(TABLE_NAME, TABLE_NAME);
@@ -139,7 +141,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
 		try {
-			final Connector internalConnector = standaloneSupport.getNamespace().getStorage().getAllConcepts().findFirst().get().getConnectors().get(0);
+			final Connector internalConnector = standaloneSupport.getNamespace().getStorage().getAllConcepts().findFirst().get().getConnectors().getFirst();
 			final FrontendFilterConfiguration.Top actual = internalConnector.getFilters().iterator().next().createFrontendConfig(standaloneSupport.getConfig());
 
 			if (expectedFrontendConfig != null) {

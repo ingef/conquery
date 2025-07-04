@@ -10,7 +10,6 @@ import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.storage.FailingProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.IdColumnConfig;
@@ -18,7 +17,6 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
-import com.bakdata.conquery.util.FailingMetaStorage;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestSupport;
@@ -76,8 +74,8 @@ public abstract class ConqueryTestSpec {
 		support.getNamespace().getDataset().injectInto(mapper);
 
 		if (usePlaceholderResolvers) {
-			FailingProvider.INSTANCE.injectInto(mapper);
-			FailingMetaStorage.INSTANCE.injectInto(mapper);
+//			FailingProvider.INSTANCE.injectInto(mapper);
+//			FailingMetaStorage.INSTANCE.injectInto(mapper);
 		}
 		else {
 			support.getMetaStorage().injectInto(mapper);
@@ -109,9 +107,9 @@ public abstract class ConqueryTestSpec {
 		final ObjectMapper mapper = om.addHandler(new DatasetPlaceHolderFiller(support));
 
 		// Inject dataset, so that namespaced ids that are not prefixed with in the test-spec are get prefixed
-		support.getNamespace().getDataset().injectInto(mapper);
-		FailingProvider.INSTANCE.injectInto(mapper);
-		FailingMetaStorage.INSTANCE.injectInto(mapper);
+		support.getNamespace().injectInto(mapper);
+//		FailingProvider.INSTANCE.injectInto(mapper);
+//		FailingMetaStorage.INSTANCE.injectInto(mapper);
 
 		mapper.setConfig(mapper.getDeserializationConfig().withView(View.Api.class));
 

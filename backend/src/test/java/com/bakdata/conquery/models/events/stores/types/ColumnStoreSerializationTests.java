@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.WorkerStorageImpl;
 import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -34,7 +35,6 @@ import com.bakdata.conquery.models.events.stores.specific.QuarterDateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.RebasingIntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.ScaledDecimalStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
@@ -66,7 +66,7 @@ public class ColumnStoreSerializationTests {
 		// Prepare shard node internal mapper
 		config = new ConqueryConfig();
 		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, Validators.newValidator());
-		shardInternalMapper = internalMapperFactory.createWorkerPersistenceMapper(mock(ShardWorkers.class));
+		shardInternalMapper = internalMapperFactory.createWorkerPersistenceMapper(mock(WorkerStorageImpl.class));
 	}
 
 	@Test

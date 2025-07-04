@@ -171,7 +171,6 @@ public class SqlSchemaValidationTest implements ProgrammaticIntegrationTest {
 			// We insert the valid table last, just so we don't have to delete it.
 			Table table = new Table();
 			table.setName(tableName);
-			table.setDataset(support.getDataset());
 			table.setPrimaryColumn(new Column() {
 				{
 					setName("pid");

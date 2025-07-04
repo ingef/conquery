@@ -20,6 +20,7 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.mode.StorageListener;
 import com.bakdata.conquery.mode.ValidationMode;
@@ -172,15 +173,8 @@ public class AdminDatasetProcessor {
 	 */
 	@SneakyThrows
 	public synchronized void addTable(@NonNull Table table, Namespace namespace) {
-		final Dataset dataset = namespace.getDataset();
 
-		final DatasetId datasetId = dataset.getId();
-		if (table.getDataset() == null) {
-			table.setDataset(datasetId);
-		}
-		else if (!table.getDataset().equals(datasetId)) {
-			throw new IllegalArgumentException();
-		}
+		ValidatorHelper.failOnError(log, environment.getValidator().validate(table));
 
 
 		if (namespace.getStorage().getTable(table.getId()) != null) {
@@ -215,25 +209,25 @@ public class AdminDatasetProcessor {
 	 * update a concept of the given dataset.
 	 * Therefore, the concept will be deleted first then added
 	 */
-	public synchronized void updateConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
-		concept.setDataset(dataset.getId());
-		if (!datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
+	public synchronized void updateConcept(@NonNull Namespace namespace, @NonNull Concept<?> concept) {
+
+		if (!namespace.getStorage().hasConcept(concept.getId())) {
 			throw new NotFoundException("Can't find the concept in the dataset " + concept.getId());
 		}
 
 		//adds new content of the content
-		addConcept(dataset, concept, true);
+		addConcept(namespace, concept, true);
 	}
 
 	/**
 	 * Add the concept to the dataset if it does not exist yet
 	 */
-	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept, boolean force) {
-		concept.setDataset(dataset.getId());
+	public synchronized void addConcept(@NonNull Namespace namespace, @NonNull Concept<?> concept, boolean force) {
+		NamespaceStorage namespaceStorage = namespace.getStorage();
 
 		ValidatorHelper.failOnError(log, environment.getValidator().validate(concept));
 
-		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
+		if (namespaceStorage.hasConcept(concept.getId())) {
 			if (!force) {
 				throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
 			}
@@ -242,7 +236,7 @@ public class AdminDatasetProcessor {
 		}
 
 		// Register the Concept in the ManagerNode and Workers
-		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
+		namespaceStorage.updateConcept(concept);
 		storageListener.onAddConcept(concept);
 	}
 
