@@ -56,7 +56,7 @@ public class SerialisationObjectsUtil {
 
 		final CQTable table = new CQTable();
 		table.setConcept(cqConcept);
-		table.setConnector(concept.getConnectors().get(0).getId());
+		table.setConnector(concept.getConnectors().getFirst().getId());
 
 		// Use ArrayList instead of ImmutableList here because they use different hash code implementations
 		cqConcept.setTables(new ArrayList<>(List.of(table)));
@@ -81,7 +81,7 @@ public class SerialisationObjectsUtil {
 	public static TreeConcept createConcept(Dataset dataset, NamespacedStorage storage) {
 		TreeConcept concept = new TreeConcept();
 
-		concept.setDataset(dataset.getId());
+		concept.setNamespacedStorageProvider(storage);
 		concept.setLabel("conceptLabel");
 		concept.setName("conceptName");
 
@@ -107,7 +107,7 @@ public class SerialisationObjectsUtil {
 		table.setColumns(new Column[]{column, dateColumn});
 		table.setLabel("tableLabel");
 		table.setName("tableName");
-		table.setDataset(dataset.getId());
+		table.setNamespacedStorageProvider(storage);
 
 		column.setTable(table);
 
@@ -120,6 +120,7 @@ public class SerialisationObjectsUtil {
 
 		storage.updateDataset(dataset);
 		storage.addSecondaryId(secondaryIdDescription);
+		table.init();
 		storage.addTable(table);
 
 		// Set/Create ids after setting id resolver

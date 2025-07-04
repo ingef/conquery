@@ -23,6 +23,7 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -33,16 +34,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(id = "TREE", base = Concept.class)
 @JsonDeserialize(converter = TreeConcept.Initializer.class)
-public class TreeConcept extends Concept<ConceptTreeConnector> implements SelectHolder<UniversalSelect>, Initializing {
+@EqualsAndHashCode(callSuper=true)
+public class TreeConcept extends Concept<ConceptTreeConnector> implements SelectHolder<UniversalSelect> {
 
 	@JsonIgnore
 	@Getter
+	@EqualsAndHashCode.Exclude
 	private final int depth = 0;
 
 	@Getter
 	private final int[] prefix = new int[]{0};
 
+
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private final List<ConceptElement<?>> localIdMap = new ArrayList<>();
 	@Getter
 	@Setter
@@ -146,6 +151,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Select
 
 	@Override
 	public void init() throws Exception {
+		super.init();
 		initElements();
 	}
 

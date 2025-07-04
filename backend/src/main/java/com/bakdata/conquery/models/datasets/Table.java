@@ -10,10 +10,12 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.Initializing;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.mode.ValidationMode;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -23,9 +25,12 @@ import com.bakdata.conquery.util.validation.ValidSqlTable;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -35,14 +40,23 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @JsonDeserialize(converter = Table.Initializer.class)
 @ValidSqlTable(groups = {ValidationMode.Local.class})
+@EqualsAndHashCode(callSuper=false)
 public class Table extends LabeledNamespaceIdentifiable<TableId> implements Initializing {
 
-	@JacksonInject(useInput = OptBoolean.TRUE)
-	private DatasetId dataset;
+	/**
+	 * Needed for SQL-Validation
+	 */
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@JsonIgnore
+	@Setter(AccessLevel.PRIVATE)
+	@EqualsAndHashCode.Exclude
+	private Namespace namespace;
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@JsonIgnore
-	private Namespace namespace;
+	@Getter(AccessLevel.PRIVATE)
+	@EqualsAndHashCode.Exclude
+	private NamespacedStorageProvider namespacedStorageProvider;
 
 	@NotNull
 	@Valid
@@ -55,6 +69,10 @@ public class Table extends LabeledNamespaceIdentifiable<TableId> implements Init
 	@Nullable
 	@JsonManagedReference
 	private Column primaryColumn;
+
+	@JsonView(View.InternalCommunication.class)
+	@Setter(AccessLevel.PRIVATE)
+	private DatasetId dataset;
 
 
 	@ValidationMethod(message = "More than one column map to the same secondaryId")
@@ -88,7 +106,7 @@ public class Table extends LabeledNamespaceIdentifiable<TableId> implements Init
 
 	@Override
 	public TableId createId() {
-		return new TableId(dataset, getName());
+		return new TableId(getDataset(), getName());
 	}
 
 	public Stream<Import> findImports(NamespacedStorage storage) {
@@ -123,8 +141,9 @@ public class Table extends LabeledNamespaceIdentifiable<TableId> implements Init
 
 	@Override
 	public void init() {
-		if (this.dataset == null) {
-			this.dataset = namespace.getDataset().getId();
+
+		if (this.dataset == null && namespacedStorageProvider != null) {
+			this.dataset = namespacedStorageProvider.getStorage(null).getDataset().getId();
 		}
 
 		for (Column column : columns) {

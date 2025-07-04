@@ -260,7 +260,7 @@ public class LoadingUtil {
 				support,
 				rawConcepts,
 				Concept.class,
-				c -> c.setDataset(support.getDataset())
+				c -> {}
 		);
 
 		for (Concept<?> concept : concepts) {
@@ -283,7 +283,7 @@ public class LoadingUtil {
 				support,
 				rawConcepts,
 				Concept.class,
-				c -> c.setDataset(support.getDataset())
+				c -> {}
 		);
 	}
 
@@ -394,13 +394,12 @@ public class LoadingUtil {
 									   ResourceConstants.DATASET, support.getDataset()
 							   ));
 
-		final Response response = support.getClient()
-										 .target(conceptURI)
-										 .request(MediaType.APPLICATION_JSON)
-										 .post(Entity.entity(searchIndex, MediaType.APPLICATION_JSON_TYPE));
-
-
-		assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+		Invocation.Builder request = support.getClient()
+											.target(conceptURI)
+											.request(MediaType.APPLICATION_JSON);
+		try(final Response response = request.post(Entity.entity(searchIndex, MediaType.APPLICATION_JSON_TYPE))) {
+			assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+		}
 	}
 
 	public static void updateMatchingStats(@NonNull StandaloneSupport support) {

@@ -71,7 +71,7 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 							 jobsThreadPool,
 							 failOnError,
 							 secondaryIdSubPlanRetention,
-							 internalMapperFactory.createWorkerPersistenceMapper(this),
+							 internalMapperFactory.createWorkerPersistenceMapper(storage),
 							 loadStorage
 		);
 	}
@@ -84,9 +84,10 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 
 	@SneakyThrows
 	public Worker newWorker(Dataset dataset, @NonNull String name, @NonNull NetworkSession session, StoreFactory storageConfig, boolean failOnError) {
-		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(this);
 
+		// Create a new worker storage with minimal information and close it immediately so we can pass it to the normal method, that is used to instantiate existing workers
 		try (final WorkerStorage workerStorage = new WorkerStorageImpl(storageConfig, name)) {
+			final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(workerStorage);
 			workerStorage.openStores(persistenceMapper);
 
 			// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
@@ -98,7 +99,10 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 			workerStorage.setWorker(info);
 		}
 
-		final Worker worker = Worker.create(new WorkerStorageImpl(storageConfig, name),
+		//
+		WorkerStorageImpl workerStorage = new WorkerStorageImpl(storageConfig, name);
+		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(workerStorage);
+		final Worker worker = Worker.create(workerStorage,
 											this,
 											queryThreadPoolDefinition,
 											jobsThreadPool,

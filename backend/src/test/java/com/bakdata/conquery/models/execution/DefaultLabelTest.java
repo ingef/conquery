@@ -48,7 +48,7 @@ public class DefaultLabelTest {
 	private static final TreeConcept CONCEPT = new TreeConcept();
 
 	@BeforeAll
-	public static void beforeAll() {
+	public static void beforeAll() throws Exception {
 		DATASET.setStorageProvider(STORAGE_PROVIDER);
 
 		NAMESPACE_STORAGE.updateDataset(DATASET);
@@ -57,7 +57,8 @@ public class DefaultLabelTest {
 		// no mapper required
 		META_STORAGE.openStores(null);
 
-		CONCEPT.setDataset(DATASET.getId());
+		CONCEPT.setNamespacedStorageProvider(NAMESPACE_STORAGE);
+		CONCEPT.init();
 		CONCEPT.setName("defaultconcept");
 		CONCEPT.setLabel("Default Concept");
 

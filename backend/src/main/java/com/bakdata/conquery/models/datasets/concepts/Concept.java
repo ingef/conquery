@@ -4,15 +4,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import jakarta.validation.Valid;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.jackson.Initializing;
+import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -29,7 +34,9 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,7 +51,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
-public abstract class Concept<CONNECTOR extends Connector> extends ConceptElement<ConceptId> implements Authorized {
+public abstract class Concept<CONNECTOR extends Connector> extends ConceptElement<ConceptId> implements Authorized, Initializing {
 
 	/**
 	 * Display Concept for users.
@@ -57,8 +64,26 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	@Valid
 	private List<CONNECTOR> connectors = Collections.emptyList();
 
-	@JacksonInject(useInput = OptBoolean.TRUE)
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@JsonIgnore
+	@EqualsAndHashCode.Exclude
+	@Getter(AccessLevel.PRIVATE)
+	private NamespacedStorageProvider namespacedStorageProvider;
+
+	@JsonView(View.InternalCommunication.class)
+	@Setter(AccessLevel.PRIVATE)
+	@Nullable
 	private DatasetId dataset;
+
+	@Override
+	public void init() throws Exception {
+
+		if (this.dataset == null && this.namespacedStorageProvider != null) {
+			NamespacedStorage namespacedStorage = namespacedStorageProvider.getStorage(null);
+			this.dataset = namespacedStorage.getDataset().getId();
+		}
+
+	}
 
 	@JsonIgnore
 	public List<SelectId> getDefaultSelects() {
@@ -96,7 +121,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 
 	@Override
 	public ConceptId createId() {
-		return new ConceptId(dataset, getName());
+		return new ConceptId(getDataset(), getName());
 	}
 
 	public int countElements() {

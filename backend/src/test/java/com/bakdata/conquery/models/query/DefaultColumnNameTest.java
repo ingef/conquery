@@ -55,15 +55,15 @@ public class DefaultColumnNameTest {
 
 	private static final BiFunction<TestConcept, CQConcept, Select> CONCEPT_SELECT_SELECTOR =
 			(concept, cq) -> {
-				final UniversalSelect select = concept.getSelects().get(0);
+				final UniversalSelect select = concept.getSelects().getFirst();
 				cq.setSelects(List.of(select.getId()));
 				return select;
 			};
 
 	private static final BiFunction<TestConcept, CQConcept, Select> CONNECTOR_SELECT_SELECTOR =
 			(concept, cq) -> {
-				final Select select = concept.getConnectors().get(0).getSelects().get(0);
-				cq.getTables().get(0).setSelects(List.of((ConnectorSelectId) select.getId()));
+				final Select select = concept.getConnectors().getFirst().getSelects().getFirst();
+				cq.getTables().getFirst().setSelects(List.of((ConnectorSelectId) select.getId()));
 				return select;
 			};
 
@@ -185,7 +185,7 @@ public class DefaultColumnNameTest {
 			if (elements.isEmpty()) {
 				elements = List.of(concept);
 			}
-			final List<ConceptElementId<?>> list = (List<ConceptElementId<?>>) elements.stream().map(ConceptElement::getId).toList();
+			final List<ConceptElementId<?>> list = elements.stream().<ConceptElementId<?>>map(ConceptElement::getId).toList();
 			cqConcept.setElements(list);
 
 			List<CQTable> tables = concept.getConnectors().stream()
@@ -215,7 +215,7 @@ public class DefaultColumnNameTest {
 
 		private final BiFunction<TestConcept, CQConcept, Select> selectExtractor;
 
-		private TestConcept(BiFunction<TestConcept, CQConcept, Select> selectExtractor) {
+		private TestConcept(BiFunction<TestConcept, CQConcept, Select> selectExtractor) throws Exception {
 			final NamespaceStorage storage = new NonPersistentStoreFactory().createNamespaceStorage();
 
 			this.selectExtractor = selectExtractor;
@@ -226,7 +226,9 @@ public class DefaultColumnNameTest {
 			dataset.setStorageProvider(new TestNamespacedStorageProvider(storage));
 			storage.updateDataset(dataset);
 
-			setDataset(dataset.getId());
+			setNamespacedStorageProvider(storage);
+
+			init();
 
 			storage.updateConcept(this);
 

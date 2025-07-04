@@ -7,5 +7,5 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Data required for the set-up of a namespace.
  */
-public record NamespaceSetupData(ObjectMapper communicationMapper, ObjectMapper preprocessMapper, JobManager jobManager, FilterSearch filterSearch) {
+public record NamespaceSetupData(ObjectMapper preprocessMapper, JobManager jobManager, FilterSearch filterSearch) {
 }
