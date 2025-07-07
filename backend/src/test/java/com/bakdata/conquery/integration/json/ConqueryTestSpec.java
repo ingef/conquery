@@ -49,9 +49,9 @@ public abstract class ConqueryTestSpec {
 	// default IdColumnConfig for SQL mode
 	private IdColumnConfig idColumns = null;
 
-	public static <T> T parseSubTree(TestSupport support, JsonNode node, Class<T> expectedClass, boolean usePlaceholderResolvers)
+	public static <T> T parseSubTree(TestSupport support, JsonNode node, Class<T> expectedClass, boolean injectResolvers)
 			throws IOException {
-		return parseSubTree(support, node, expectedClass, null, usePlaceholderResolvers);
+		return parseSubTree(support, node, expectedClass, null, injectResolvers);
 	}
 
 	public static <T> T parseSubTree(
@@ -59,25 +59,21 @@ public abstract class ConqueryTestSpec {
 			JsonNode node,
 			Class<T> expectedClass,
 			Consumer<T> modifierBeforeValidation,
-			boolean usePlaceholderResolvers
+			boolean injectResolvers
 	) throws IOException {
 		return parseSubTree(support, node, Jackson.MAPPER.getTypeFactory()
-														 .constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation, usePlaceholderResolvers);
+														 .constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation, injectResolvers);
 	}
 
 	public static <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation,
-									 boolean usePlaceholderResolvers) throws IOException {
+									 boolean injectResolvers) throws IOException {
 		final ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 		final ObjectMapper mapper = om.addHandler(new DatasetPlaceHolderFiller(support));
 
 		support.getConfig().injectInto(mapper);
 		support.getNamespace().getDataset().injectInto(mapper);
 
-		if (usePlaceholderResolvers) {
-//			FailingProvider.INSTANCE.injectInto(mapper);
-//			FailingMetaStorage.INSTANCE.injectInto(mapper);
-		}
-		else {
+		if (injectResolvers) {
 			support.getMetaStorage().injectInto(mapper);
 			support.getNamespace().getStorage().injectInto(mapper);
 			support.getDatasetRegistry().injectInto(mapper);
@@ -89,16 +85,16 @@ public abstract class ConqueryTestSpec {
 			modifierBeforeValidation.accept(result);
 		}
 
-		if (!usePlaceholderResolvers) {
+		if (injectResolvers) {
 			// With placeholders the validation likely fails, so we skip it there
 			ValidatorHelper.failOnError(log, support.getValidator().validate(result));
 		}
 		return result;
 	}
 
-	public static <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, boolean usePlaceholderResolvers)
+	public static <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, boolean injectResolvers)
 			throws IOException {
-		return parseSubTree(support, node, expectedType, null, usePlaceholderResolvers);
+		return parseSubTree(support, node, expectedType, null, injectResolvers);
 	}
 
 	public static <T> List<T> parseSubTreeList(TestSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation)
@@ -108,8 +104,6 @@ public abstract class ConqueryTestSpec {
 
 		// Inject dataset, so that namespaced ids that are not prefixed with in the test-spec are get prefixed
 		support.getNamespace().injectInto(mapper);
-//		FailingProvider.INSTANCE.injectInto(mapper);
-//		FailingMetaStorage.INSTANCE.injectInto(mapper);
 
 		mapper.setConfig(mapper.getDeserializationConfig().withView(View.Api.class));
 

@@ -26,7 +26,6 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
@@ -89,7 +88,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		((ObjectNode) rawContent.get("tables")).put("name", TABLE_NAME);
 
-		content = parseSubTree(support, rawContent, RequiredData.class, true);
+		content = parseSubTree(support, rawContent, RequiredData.class, false);
 
 		concept = new TreeConcept();
 		concept.setLabel(CONCEPT_LABEL);
@@ -108,7 +107,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 	}
 
 
-	private Query parseQuery(StandaloneSupport support) throws JSONException, IOException {
+	private Query parseQuery(StandaloneSupport support) throws IOException {
 		final String filterId = support.getDataset().getName() + ".concept.connector.filter";
 		rawFilterValue.put("filter", filterId);
 
@@ -117,7 +116,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		}
 
 
-		FilterValue<?> result = parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class), false);
+		FilterValue<?> result = parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class), true);
 
 		CQTable cqTable = new CQTable();
 

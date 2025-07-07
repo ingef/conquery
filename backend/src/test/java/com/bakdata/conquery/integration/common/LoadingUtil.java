@@ -105,7 +105,7 @@ public class LoadingUtil {
 
 		for (JsonNode queryNode : content.getPreviousQueries()) {
 
-			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class, false);
+			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class, true);
 
 			// Since we don't submit the query but injecting it into the manager we need to set the id resolver
 			UUID queryId = new UUID(0L, id++);
