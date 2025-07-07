@@ -258,6 +258,16 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		return DSL.field("{0}::{1}", Date.class, DSL.val(dateValue), DSL.keyword("date"));
 	}
 
+	@Override
+	public Field<Date> upper(Field<?> daterange) {
+		return DSL.function("upper", Date.class, daterange);
+	}
+
+	@Override
+	public Field<Date> lower(Field<?> daterange) {
+		return DSL.function("lower", Date.class, daterange);
+	}
+
 	public Field<?> daterange(Field<?> startColumn, Field<?> endColumn, String bounds) {
 		return DSL.function(
 				"daterange",
@@ -293,14 +303,6 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	private static Field<?> unnest(Field<?> multirange) {
 		return DSL.function("unnest", Object.class, multirange);
-	}
-
-	private static Field<Date> upper(Field<Object> daterange) {
-		return DSL.function("upper", Date.class, daterange);
-	}
-
-	private static Field<Date> lower(Field<Object> daterange) {
-		return DSL.function("lower", Date.class, daterange);
 	}
 
 	private ColumnDateRange toColumnDateRange(CDateRange dateRestriction) {

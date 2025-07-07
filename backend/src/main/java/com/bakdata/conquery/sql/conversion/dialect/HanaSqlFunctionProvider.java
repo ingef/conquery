@@ -233,6 +233,16 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Field<Date> lower(Field<?> daterange) {
+		throw new UnsupportedOperationException("HANA does not support single-column date ranges.");
+	}
+
+	@Override
+	public Field<Date> upper(Field<?> daterange) {
+		throw new UnsupportedOperationException("HANA does not support single-column date ranges.");
+	}
+
+	@Override
 	public Field<Date> toDateField(String dateExpression) {
 		return DSL.function(
 				"TO_DATE",

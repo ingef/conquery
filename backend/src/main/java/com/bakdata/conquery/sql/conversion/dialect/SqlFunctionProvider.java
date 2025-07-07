@@ -132,6 +132,16 @@ public interface SqlFunctionProvider {
 	 */
 	Field<Integer> dateDistance(ChronoUnit datePart, Field<Date> startDate, Field<Date> endDate);
 
+	/**
+	 * Extract the lower inclusive bound of a daterange field. Not supported for dialects without range type support.
+	 */
+	Field<Date> lower(Field<?> daterange);
+
+	/**
+	 * Extract the upper exclusive bound of a daterange field. Not supported for dialects without range type support.
+	 */
+	Field<Date> upper(Field<?> daterange);
+
 	Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays);
 
 	<T> Field<T> first(Field<T> field, List<Field<?>> orderByColumn);
