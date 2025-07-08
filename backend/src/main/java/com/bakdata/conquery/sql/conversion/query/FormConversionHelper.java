@@ -127,7 +127,7 @@ public class FormConversionHelper {
 
 		QueryStep finalStep = QueryStep.builder()
 									   .cteName(null)  // the final QueryStep won't be converted to a CTE
-									   .selects(getFinalSelects(formType, stratificationTable, convertedFeatures, functionProvider))
+									   .selects(getFinalSelects(formType, stratificationTable, convertedFeatures, functionProvider).toFinalRepresentation())
 									   .fromTable(joinedTable)
 									   .predecessors(queriesToJoin)
 									   .build();
