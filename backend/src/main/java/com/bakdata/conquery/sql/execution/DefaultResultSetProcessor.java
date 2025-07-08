@@ -45,10 +45,7 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	@Override
 	public Boolean getBoolean(ResultSet resultSet, int columnIndex) throws SQLException {
-		if (resultSet.getObject(columnIndex) == null) {
-			return false;
-		}
-		return resultSet.getBoolean(columnIndex);
+		return checkForNullElseGet(resultSet, columnIndex, resultSet::getBoolean, Boolean.class);
 	}
 
 	@Override
