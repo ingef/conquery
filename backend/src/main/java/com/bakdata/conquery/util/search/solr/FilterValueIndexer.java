@@ -1,10 +1,19 @@
 package com.bakdata.conquery.util.search.solr;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
+
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
 import com.google.common.base.Stopwatch;
-import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,11 +21,6 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 
 
 /**
@@ -32,7 +36,6 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 	private final String searchable;
 	private final int sourcePriority;
 
-	private final Duration commitWithin;
 	public final int updateChunkSize;
 
 	/**
@@ -133,10 +136,6 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 		}
 	}
 
-	private int getCommitWithinMs() {
-		return (int) Math.min(commitWithin.toMilliseconds(), Integer.MAX_VALUE);
-	}
-
 	public void registerValuesRaw(Collection<String> values) {
 		List<SolrFrontendValue> solrFrontendValues = values.stream()
 														   .filter(Objects::nonNull)
@@ -161,7 +160,7 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 		try {
 			Stopwatch stopwatch = Stopwatch.createStarted();
 			log.debug("BEGIN registering {} values to {} for {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable);
-			solrClient.addBeans(solrFrontendValues, getCommitWithinMs());
+			solrClient.addBeans(solrFrontendValues, -1); // do not commit yet
 			log.trace("DONE registering {} values to {} for {} in {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable, stopwatch);
 		}
 		catch (SolrServerException | IOException e) {

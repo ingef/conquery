@@ -64,6 +64,10 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	@NonNull
 	private final Supplier<SolrClient> solrIndexClientFactory;
 
+	/**
+	 * Currently unused
+	 */
+	@SuppressWarnings("unused")
 	private final Duration commitWithin;
 
 	private final int updateChunkSize;
@@ -182,7 +186,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		String nameForSearchable = buildNameForSearchable(searchable);
 		int sourcePriority = getFilterValueSourcePriority(searchable);
 
-        return indexers.computeIfAbsent(nameForSearchable, searchRef -> new FilterValueIndexer(solrIndexClient, nameForSearchable, sourcePriority, commitWithin, updateChunkSize));
+        return indexers.computeIfAbsent(nameForSearchable, searchRef -> new FilterValueIndexer(solrIndexClient, nameForSearchable, sourcePriority, updateChunkSize));
 	}
 
 	@Override
