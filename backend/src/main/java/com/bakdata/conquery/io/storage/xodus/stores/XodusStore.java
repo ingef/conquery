@@ -98,6 +98,17 @@ public class XodusStore implements com.bakdata.conquery.io.storage.Store<ByteIte
 		return environment.computeInTransaction(t -> store.delete(t, key));
 	}
 
+	@Override
+	public boolean hasKey(ByteIterable byteIterable) {
+		// This is hopefully never called.
+		return environment.computeInReadonlyTransaction(tx -> {
+			try (Cursor cursor = store.openCursor(tx)) {
+				cursor.getSearchKey(byteIterable);
+				return byteIterable.equals(cursor.getKey());
+			}
+		});
+	}
+
 	public int count() {
 		return Ints.checkedCast(environment.computeInReadonlyTransaction(store::count));
 	}
@@ -116,11 +127,6 @@ public class XodusStore implements com.bakdata.conquery.io.storage.Store<ByteIte
 				}
 			}
 		});
-	}
-
-	@Override
-	public boolean contains(ByteIterable key) {
-		return get(key) != null;
 	}
 
 	@Override

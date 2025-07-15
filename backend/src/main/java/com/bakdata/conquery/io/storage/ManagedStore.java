@@ -1,7 +1,5 @@
 package com.bakdata.conquery.io.storage;
 
-import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
-
 import java.io.IOException;
 
 /**

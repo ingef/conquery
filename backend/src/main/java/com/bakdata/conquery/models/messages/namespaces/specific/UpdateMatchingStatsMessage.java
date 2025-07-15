@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
@@ -131,7 +130,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 		private static void calculateConceptMatches(Concept<?> concept, Map<ConceptElementId<?>, MatchingStats.Entry> results, Worker worker) {
 			log.debug("BEGIN calculating for `{}`", concept.getId());
 
-			try(Stream<CBlock> allCBlocks = worker.getStorage().getAllCBlocks();) {
+			try(Stream<CBlock> allCBlocks = worker.getStorage().getAllCBlocks()) {
 
 				for (CBlock cBlock : allCBlocks.toList()) {
 
@@ -161,10 +160,10 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 									continue;
 								}
 
-								ConceptTreeNode<?> element = ((TreeConcept) concept).getElementByLocalIdPath(localIds);
+								ConceptElement<?> element = ((TreeConcept) concept).getElementByLocalIdPath(localIds);
 
 								while (element != null) {
-									results.computeIfAbsent(((ConceptElement<?>) element).getId(), (ignored) -> new MatchingStats.Entry())
+									results.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Entry())
 										   .addEvent(table, bucket, event, entity);
 									element = element.getParent();
 								}

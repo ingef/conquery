@@ -1,0 +1,43 @@
+{
+  "type": "FILTER_TEST",
+  "label": "SELECT Substring",
+  "expectedCsv": "tests/filter/SELECT_SUBSTRING/expected.csv",
+  "content": {
+    "tables":
+      {
+        "csv": "tests/filter/SELECT_SUBSTRING/content.csv",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "value",
+            "type": "STRING"
+          },
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+
+  },
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filters": {
+      "column": "table.value",
+      "type": "SINGLE_SELECT",
+      "substringRange": {
+        "min" : 1
+      }
+    }
+  },
+  "filterValue": {
+    "type": "SELECT",
+    "value": "1"
+  }
+}

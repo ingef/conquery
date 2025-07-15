@@ -31,9 +31,6 @@ public final class ConfigOverride {
 		config.getStandalone().setNumberOfShardNodes(2);
 		// configure logging
 		config.setLoggingFactory(new TestLoggingFactory());
-
-		config.getCluster().setEntityBucketSize(3);
-
 	}
 
 	@SneakyThrows

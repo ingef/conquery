@@ -305,6 +305,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		return store.remove(writeKey(key));
 	}
 
+	@Override
+	public boolean hasKey(KEY key) {
+		return store.hasKey(writeKey(key));
+	}
+
 	/**
 	 * Try read value with reader.
 	 */
@@ -547,11 +552,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public String getName() {
 		return store.getName();
-	}
-
-	@Override
-	public boolean contains(KEY key) {
-		return store.contains(writeKey(key));
 	}
 
 	@Override

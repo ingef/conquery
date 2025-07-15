@@ -42,6 +42,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
@@ -104,7 +105,7 @@ public class LoadingUtil {
 
 		for (JsonNode queryNode : content.getPreviousQueries()) {
 
-			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class, false);
+			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class, true);
 
 			// Since we don't submit the query but injecting it into the manager we need to set the id resolver
 			UUID queryId = new UUID(0L, id++);
@@ -118,30 +119,25 @@ public class LoadingUtil {
 				fail("Query failed");
 			}
 		}
-
-		// wait only if we actually did anything
-		if (!content.getPreviousQueryResults().isEmpty()) {
-			support.waitUntilWorkDone();
-		}
 	}
 
 	public static void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
 
 		for (RequiredTable rTable : tables) {
-			final Table table = rTable.toTable(support.getDataset(), support.getNamespace().getStorage());
+			final Table table = rTable.toTable(support.getDataset(), support.getDatasetRegistry());
 			uploadTable(support, table);
 
 			if (autoConcept) {
 				final TreeConcept concept = AutoConceptUtil.createConcept(table);
 
-				uploadConcept(support, table.getDataset().resolve(), concept);
+				uploadConcept(support, table.getDataset(), concept);
 			}
 		}
 	}
 
 	private static void uploadTable(StandaloneSupport support, Table table) {
 		final URI uri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addTable")
-									   .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getId()));
+									   .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset()));
 
 		final Invocation.Builder request = support.getClient().target(uri).request(MediaType.APPLICATION_JSON_TYPE);
 		try (final Response response = request.post(Entity.json(table))) {
@@ -152,9 +148,9 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void uploadConcept(StandaloneSupport support, Dataset dataset, Concept<?> concept) {
+	public static void uploadConcept(StandaloneSupport support, DatasetId dataset, Concept<?> concept) {
 		final URI uri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addConcept")
-									   .buildFromMap(Map.of(ResourceConstants.DATASET, dataset.getId().toString()));
+									   .buildFromMap(Map.of(ResourceConstants.DATASET, dataset.toString()));
 
 		final Invocation.Builder request = support.getClient().target(uri).request(MediaType.APPLICATION_JSON_TYPE);
 		try (final Response response = request.post(Entity.json(concept))) {
@@ -231,7 +227,7 @@ public class LoadingUtil {
 
 		final URI addImport =
 				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, methodName)
-							   .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getId()));
+							   .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset()));
 
 		final Entity<FileInputStream> entity;
 		try {
@@ -259,17 +255,16 @@ public class LoadingUtil {
 	}
 
 	public static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
-		Dataset dataset = support.getDataset();
 
 		List<Concept<?>> concepts = ConqueryTestSpec.parseSubTreeList(
 				support,
 				rawConcepts,
 				Concept.class,
-				c -> c.setDataset(support.getDataset().getDataset())
+				c -> {}
 		);
 
 		for (Concept<?> concept : concepts) {
-			uploadConcept(support, dataset, concept);
+			uploadConcept(support, support.getDataset(), concept);
 		}
 	}
 
@@ -288,7 +283,7 @@ public class LoadingUtil {
 				support,
 				rawConcepts,
 				Concept.class,
-				c -> c.setDataset(support.getDataset().getDataset())
+				c -> {}
 		);
 	}
 
@@ -297,7 +292,7 @@ public class LoadingUtil {
 				conceptURI =
 				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "updateConcept")
 							   .buildFromMap(Map.of(
-									   ResourceConstants.DATASET, support.getDataset().getId()
+									   ResourceConstants.DATASET, support.getDataset()
 							   ));
 
 		final Invocation.Builder request = support.getClient()
@@ -342,7 +337,7 @@ public class LoadingUtil {
 				conceptURI =
 				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addSecondaryId")
 							   .buildFromMap(Map.of(
-									   ResourceConstants.DATASET, support.getDataset().getId()
+									   ResourceConstants.DATASET, support.getDataset()
 							   ));
 
 		final Invocation.Builder request = support.getClient()
@@ -369,7 +364,7 @@ public class LoadingUtil {
 				conceptURI =
 				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addInternToExternMapping")
 							   .buildFromMap(Map.of(
-									   ResourceConstants.DATASET, support.getDataset().getId()
+									   ResourceConstants.DATASET, support.getDataset()
 							   ));
 
 		final Invocation.Builder request = support.getClient()
@@ -396,22 +391,21 @@ public class LoadingUtil {
 				conceptURI =
 				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addSearchIndex")
 							   .buildFromMap(Map.of(
-									   ResourceConstants.DATASET, support.getDataset().getId()
+									   ResourceConstants.DATASET, support.getDataset()
 							   ));
 
-		final Response response = support.getClient()
-										 .target(conceptURI)
-										 .request(MediaType.APPLICATION_JSON)
-										 .post(Entity.entity(searchIndex, MediaType.APPLICATION_JSON_TYPE));
-
-
-		assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+		Invocation.Builder request = support.getClient()
+											.target(conceptURI)
+											.request(MediaType.APPLICATION_JSON);
+		try(final Response response = request.post(Entity.entity(searchIndex, MediaType.APPLICATION_JSON_TYPE))) {
+			assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+		}
 	}
 
 	public static void updateMatchingStats(@NonNull StandaloneSupport support) {
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "postprocessNamespace")
-													.buildFromMap(Map.of(DATASET, support.getDataset().getId()));
+													.buildFromMap(Map.of(DATASET, support.getDataset()));
 
 		final Response post = support.getClient().target(matchingStatsUri)
 									 .request(MediaType.APPLICATION_JSON_TYPE)

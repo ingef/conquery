@@ -17,7 +17,6 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
@@ -130,7 +129,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		if (cqConcept.isExcludeFromSecondaryId()
 			|| conversionContext.getSecondaryIdDescription() == null
-			|| !cqTable.hasSelectedSecondaryId(conversionContext.getSecondaryIdDescription())
+			|| !cqTable.hasSelectedSecondaryId(conversionContext.getSecondaryIdDescription().getId())
 		) {
 			return new SqlIdColumns(primaryColumn).withAlias();
 		}
@@ -184,7 +183,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		convertConnectorCondition(cqTable, functionProvider).ifPresent(conditions::add);
 
 		for (ConceptElement<?> conceptElement : conceptElements) {
-			collectConditions(cqTable, (ConceptTreeNode<?>) conceptElement, functionProvider)
+			collectConditions(cqTable, conceptElement, functionProvider)
 					.reduce(WhereCondition::and)
 					.ifPresent(conditions::add);
 		}
@@ -195,7 +194,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	/**
 	 * Collects all conditions of a given {@link ConceptTreeNode} by resolving the condition of the given node and all of its parent nodes.
 	 */
-	private static Stream<WhereCondition> collectConditions(CQTable cqTable, ConceptTreeNode<?> conceptElement, SqlFunctionProvider functionProvider) {
+	private static Stream<WhereCondition> collectConditions(CQTable cqTable, ConceptElement<?> conceptElement, SqlFunctionProvider functionProvider) {
 		if (!(conceptElement instanceof ConceptTreeChild child)) {
 			return Stream.empty();
 		}

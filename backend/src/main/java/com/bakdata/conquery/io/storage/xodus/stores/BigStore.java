@@ -142,6 +142,11 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	}
 
 	@Override
+	public boolean hasKey(KEY key) {
+		return metaStore.hasKey(key);
+	}
+
+	@Override
 	public boolean add(KEY key, VALUE value) {
 		if (metaStore.get(key) != null) {
 			throw new IllegalArgumentException("There is already a value associated with " + key);
@@ -222,11 +227,6 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	@Override
 	public String getName() {
 		return storeInfo.getName();
-	}
-
-	@Override
-	public boolean contains(KEY key) {
-		return metaStore.contains(key);
 	}
 
 	@Override

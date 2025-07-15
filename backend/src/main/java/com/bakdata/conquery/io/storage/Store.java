@@ -21,6 +21,7 @@ public interface Store<KEY, VALUE> extends ManagedStore {
 
 	boolean remove(KEY key);
 
+	boolean hasKey(KEY key);
 
 	int count();
 
@@ -31,8 +32,6 @@ public interface Store<KEY, VALUE> extends ManagedStore {
 	void clear();
 
 	String getName();
-
-	boolean contains(KEY key);
 
 	/**
 	 * Consumer of key-value pairs stored in this Store. Used in conjunction with for-each.

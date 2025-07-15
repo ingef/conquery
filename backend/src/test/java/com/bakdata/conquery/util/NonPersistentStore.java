@@ -55,6 +55,11 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
+	public boolean hasKey(KEY key) {
+		return map.containsKey(key);
+	}
+
+	@Override
 	public int count() {
 		return map.size();
 	}
@@ -92,11 +97,6 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public String getName() {
 		return this.getClass().getSimpleName();
-	}
-
-	@Override
-	public boolean contains(KEY key) {
-		return map.containsKey(key);
 	}
 
 	@Override

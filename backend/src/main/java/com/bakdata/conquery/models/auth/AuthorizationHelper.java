@@ -1,10 +1,7 @@
 package com.bakdata.conquery.models.auth;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,12 +15,9 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -96,46 +90,20 @@ public class AuthorizationHelper {
 		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 		visitable.visit(collector);
 
-		Set<Dataset> datasets =
+		Set<DatasetId> datasets =
 				collector.getIdentifiables()
 						 .stream()
 						 .map(NamespacedIdentifiable::getDataset)
-						 .map(DatasetId::resolve)
 						 .collect(Collectors.toSet());
 
 		subject.authorize(datasets, Ability.DOWNLOAD);
 	}
 
 
-	/**
-	 * Calculates the abilities on all datasets a subject has based on its permissions.
-	 */
-	public static Map<DatasetId, Set<Ability>> buildDatasetAbilityMap(Subject subject, DatasetRegistry<? extends Namespace> datasetRegistry) {
-		HashMap<DatasetId, Set<Ability>> datasetAbilities = new HashMap<>();
-		for (Dataset dataset : datasetRegistry.getAllDatasets()) {
-
-			Set<Ability> abilities = datasetAbilities.computeIfAbsent(dataset.getId(), (k) -> new HashSet<>());
-
-			if(subject.isPermitted(dataset,Ability.READ)) {
-				abilities.add(Ability.READ);
-			}
-
-			if (subject.isPermitted(dataset,Ability.DOWNLOAD)){
-				abilities.add(Ability.DOWNLOAD);
-			}
-
-			if (subject.isPermitted(dataset,Ability.PRESERVE_ID)) {
-				abilities.add(Ability.PRESERVE_ID);
-			}
-		}
-		return datasetAbilities;
-	}
-
-
 	public static boolean registerForAuthentication(UserManageable userManager, User user, CredentialType credentials, boolean override) {
 		if(override) {
-			return userManager.updateUser(user, credentials);
+			return userManager.updateUser(user.getId(), credentials);
 		}
-		return userManager.addUser(user, credentials);
+		return userManager.addUser(user.getId(), credentials);
 	}
 }

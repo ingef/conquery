@@ -170,7 +170,8 @@ public class ArrowRenderer {
 								  value,
 								  printed,
 								  printer
-					), e
+					),
+					e
 			);
 		}
 		finally {

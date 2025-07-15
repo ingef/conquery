@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
@@ -14,17 +15,18 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 @CPSType(id = "FIRST", base = Select.class)
 public class FirstValueSelect extends MappableSingleColumnSelect {
 
+
 	@JsonCreator
 	public FirstValueSelect(
 			ColumnId column,
-			InternToExternMapperId mapping
+			InternToExternMapperId mapping, Range.IntegerRange substring
 	) {
-		super(column, mapping);
+		super(column, mapping, substring);
 	}
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new FirstValueAggregator<>(getColumn().resolve());
+		return new FirstValueAggregator<>(getColumn().resolve(), getSubstringRange());
 	}
 
 	@Override
