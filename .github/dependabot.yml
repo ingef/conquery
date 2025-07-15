@@ -6,9 +6,6 @@ updates:
       interval: daily
       time: "04:00"
     open-pull-requests-limit: 10
-    reviewers:
-      - awildturtok
-      - thoniTUB
     assignees:
       - awildturtok
       - thoniTUB
@@ -82,8 +79,6 @@ updates:
       interval: daily
       time: "04:00"
     open-pull-requests-limit: 0
-    reviewers:
-      - Kadrian
     assignees:
       - Kadrian
     labels:

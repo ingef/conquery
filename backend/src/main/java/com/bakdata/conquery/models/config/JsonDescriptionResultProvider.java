@@ -25,6 +25,7 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 public class JsonDescriptionResultProvider implements ResultRendererProvider {
 	private boolean hidden = false;
 
+	@Override
 	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders)
 			throws MalformedURLException, URISyntaxException {
 
@@ -32,7 +33,7 @@ public class JsonDescriptionResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
-		return List.of(new ResultAsset("JSON", ResultJsonDescriptionResource.getDownloadURL(uriBuilder, exec).toURI()));
+		return List.of(new ResultAsset("JSON", ResultJsonDescriptionResource.getDownloadURL(uriBuilder, exec.getId()).toURI()));
 	}
 
 	@Override

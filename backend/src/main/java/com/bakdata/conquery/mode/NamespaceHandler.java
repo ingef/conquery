@@ -32,14 +32,11 @@ public interface NamespaceHandler<N extends Namespace> {
 		injectables.add(datasetRegistry);
 		injectables.add(storage);
 
-		ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(storage);
-		ObjectMapper communicationMapper = internalMapperFactory.createNamespaceCommunicationMapper(storage);
-		ObjectMapper preprocessMapper = internalMapperFactory.createPreprocessMapper(storage);
+		ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(storage, datasetRegistry);
+		ObjectMapper preprocessMapper = internalMapperFactory.createPreprocessMapper(storage, datasetRegistry);
 
-		// Todo remove these
 		injectables.forEach(i -> {
 			i.injectInto(persistenceMapper);
-			i.injectInto(communicationMapper);
 			i.injectInto(preprocessMapper);
 		});
 
@@ -54,9 +51,9 @@ public interface NamespaceHandler<N extends Namespace> {
 		}
 
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
-
 		FilterSearch filterSearch = new FilterSearch(config.getIndex());
-		return new NamespaceSetupData(injectables, communicationMapper, preprocessMapper, jobManager, filterSearch);
+
+		return new NamespaceSetupData(preprocessMapper, jobManager, filterSearch);
 	}
 
 	N createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<N> datasetRegistry, Environment environment);

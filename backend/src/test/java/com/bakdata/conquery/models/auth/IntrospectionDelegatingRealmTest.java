@@ -258,7 +258,7 @@ public class IntrospectionDelegatingRealmTest {
 
 	@Test
 	public void tokenIntrospectionGroupedUserRemoveGroupMapping() {
-		GROUP_1_EXISTING_EXTENSION.getGroup().addMember(USER_3_EXTENSION.getUser());
+		GROUP_1_EXISTING_EXTENSION.getGroup().addMember(USER_3_EXTENSION.getUser().getId());
 
 		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_1)).getMembers()).contains(new UserId(USER_3_NAME));
 

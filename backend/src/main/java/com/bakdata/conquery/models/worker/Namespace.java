@@ -2,12 +2,12 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver;
 import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @RequiredArgsConstructor
-public abstract class Namespace {
+public abstract class Namespace implements Injectable {
 
 	private final ObjectMapper preprocessMapper;
 
@@ -47,8 +47,13 @@ public abstract class Namespace {
 
 	private final EntityResolver entityResolver;
 
-	// Jackson's injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
-	private final List<Injectable> injectables;
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		storage.getDataset().inject(values);
+		storage.inject(values);
+		return values.add(Namespace.class, this);
+	}
 
 	public Dataset getDataset() {
 		return storage.getDataset();
@@ -89,7 +94,7 @@ public abstract class Namespace {
 	}
 
 	public void updateInternToExternMappings() {
-		try(Stream<Concept<?>> allConcepts = storage.getAllConcepts();) {
+		try(Stream<Concept<?>> allConcepts = storage.getAllConcepts()) {
 			allConcepts
 					.flatMap(c -> c.getConnectors().stream())
 					.flatMap(con -> con.getSelects().stream())
@@ -99,7 +104,7 @@ public abstract class Namespace {
 
 		}
 
-		try(Stream<SecondaryIdDescription> secondaryIds = storage.getSecondaryIds();) {
+		try(Stream<SecondaryIdDescription> secondaryIds = storage.getSecondaryIds()) {
 			secondaryIds
 					.filter(desc -> desc.getMapping() != null)
 					.forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping().resolve()::init)));

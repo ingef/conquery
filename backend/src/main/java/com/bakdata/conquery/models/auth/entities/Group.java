@@ -29,7 +29,7 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 
 	@JsonCreator
 	private Group(String name, String label) {
-		this(name, label, null);
+		super(name, label);
 	}
 
 	public Group(String name, String label, MetaStorage storage) {
@@ -45,9 +45,10 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 		return permissions;
 	}
 
-	public synchronized void addMember(User user) {
-		if (members.add(user.getId())) {
-			log.trace("Added user {} to group {}", user.getId(), getId());
+
+	public synchronized void addMember(UserId user) {
+		if (members.add(user)) {
+			log.trace("Added user {} to group {}", user, getId());
 			updateStorage();
 		}
 	}
@@ -69,17 +70,17 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 		}
 	}
 
-	public boolean containsMember(User user) {
-		return members.contains(user.getId());
+	public boolean containsUser(UserId user) {
+		return members.contains(user);
 	}
 
 	public Set<UserId> getMembers() {
 		return Collections.unmodifiableSet(members);
 	}
 
-	public synchronized void addRole(Role role) {
-		if (roles.add(role.getId())) {
-			log.trace("Added role {} to group {}", role.getId(), getId());
+	public synchronized void addRole(RoleId role) {
+		if (roles.add(role)) {
+			log.trace("Added role {} to group {}", role, getId());
 			updateStorage();
 		}
 	}

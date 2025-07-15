@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -12,38 +13,51 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 
 @ToString(of = {"filters", "aggregators"})
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public class FiltersNode extends QPNode {
 
+	@Getter
+	private final List<? extends FilterNode<?>> filters;
+	private final List<Aggregator<?>> aggregators;
+	private final List<EventFilterNode<?>> eventFilters;
+	private final List<AggregationResultFilterNode<?, ?>> aggregationFilters;
+	private final EventDateUnionAggregator eventDateAggregator;
 	private boolean hit = false;
 
-	@Getter
-	@Setter(AccessLevel.PRIVATE)
-	private List<? extends FilterNode<?>> filters;
+	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators, EventDateUnionAggregator eventDateAggregator) {
+		if (filters.isEmpty() && aggregators.isEmpty()) {
+			throw new IllegalStateException("Unable to create FilterNode without filters or aggregators.");
+		}
 
-	@Setter(AccessLevel.PRIVATE)
-	private List<Aggregator<?>> aggregators;
+		final List<EventFilterNode<?>> eventFilters = new ArrayList<>(filters.size());
+		final List<AggregationResultFilterNode<?, ?>> aggregationFilters = new ArrayList<>(filters.size());
 
-	@Setter(AccessLevel.PRIVATE)
-	private List<EventFilterNode<?>> eventFilters;
+		// Event and AggregationResultFilterNodes are used differently
+		for (FilterNode<?> filter : filters) {
+			switch (filter) {
+				case EventFilterNode<?> ef -> eventFilters.add(ef);
+				case AggregationResultFilterNode<?, ?> af -> aggregationFilters.add(af);
+			}
+		}
 
-	@Setter(AccessLevel.PRIVATE)
-	private List<AggregationResultFilterNode<?,?>> aggregationFilters;
-
-
-	@Setter(AccessLevel.PRIVATE)
-	private List<Aggregator<CDateSet>> eventDateAggregators;
+		return new FiltersNode(
+				filters,
+				aggregators,
+				eventFilters,
+				aggregationFilters,
+				eventDateAggregator
+		);
+	}
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
@@ -63,37 +77,9 @@ public class FiltersNode extends QPNode {
 			eventFilter.init(entity, context);
 		}
 
-		for (Aggregator<CDateSet> child : eventDateAggregators) {
-			child.init(entity, context);
+		if (eventDateAggregator != null) {
+			eventDateAggregator.init(entity, context);
 		}
-	}
-
-	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators) {
-		if (filters.isEmpty() && aggregators.isEmpty()) {
-			throw new IllegalStateException("Unable to create FilterNode without filters or aggregators.");
-		}
-
-		final List<EventFilterNode<?>> eventFilters = new ArrayList<>(filters.size());
-		final List<AggregationResultFilterNode<?,?>> aggregationFilters = new ArrayList<>(filters.size());
-
-		// Event and AggregationResultFilterNodes are used differently
-		for (FilterNode<?> filter : filters) {
-			if (filter instanceof EventFilterNode<?> ef) {
-				eventFilters.add(ef);
-			}
-			else if (filter instanceof AggregationResultFilterNode<?,?> af){
-				aggregationFilters.add(af);
-			}
-		}
-
-		final FiltersNode filtersNode = new FiltersNode();
-		filtersNode.setAggregators(aggregators);
-		filtersNode.setFilters(filters);
-		filtersNode.setEventFilters(eventFilters);
-		filtersNode.setEventDateAggregators(eventDateAggregators);
-		filtersNode.setAggregationFilters(aggregationFilters);
-
-		return filtersNode;
 	}
 
 
@@ -131,7 +117,7 @@ public class FiltersNode extends QPNode {
 			}
 		}
 
-		for (AggregationResultFilterNode<?,?> f : aggregationFilters) {
+		for (AggregationResultFilterNode<?, ?> f : aggregationFilters) {
 			f.acceptEvent(bucket, event);
 		}
 		for (Aggregator<?> a : aggregators) {
@@ -145,7 +131,7 @@ public class FiltersNode extends QPNode {
 
 	@Override
 	public boolean isContained() {
-		for (AggregationResultFilterNode<?,?> f : aggregationFilters) {
+		for (AggregationResultFilterNode<?, ?> f : aggregationFilters) {
 			if (!f.isContained()) {
 				return false;
 			}
@@ -156,7 +142,11 @@ public class FiltersNode extends QPNode {
 
 	@Override
 	public Collection<Aggregator<CDateSet>> getDateAggregators() {
-		return eventDateAggregators;
+		if (eventDateAggregator == null) {
+			return Collections.emptyList();
+		}
+
+		return List.of(eventDateAggregator);
 	}
 
 	@Override
@@ -174,7 +164,7 @@ public class FiltersNode extends QPNode {
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		if(!bucket.containsEntity(entity.getId())){
+		if (!bucket.containsEntity(entity.getId())) {
 			return false;
 		}
 
