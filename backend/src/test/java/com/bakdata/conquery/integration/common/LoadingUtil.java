@@ -105,7 +105,7 @@ public class LoadingUtil {
 
 		for (JsonNode queryNode : content.getPreviousQueries()) {
 
-			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class, false);
+			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class, true);
 
 			// Since we don't submit the query but injecting it into the manager we need to set the id resolver
 			UUID queryId = new UUID(0L, id++);
@@ -260,7 +260,7 @@ public class LoadingUtil {
 				support,
 				rawConcepts,
 				Concept.class,
-				c -> c.setDataset(support.getDataset())
+				c -> {}
 		);
 
 		for (Concept<?> concept : concepts) {
@@ -283,7 +283,7 @@ public class LoadingUtil {
 				support,
 				rawConcepts,
 				Concept.class,
-				c -> c.setDataset(support.getDataset())
+				c -> {}
 		);
 	}
 
@@ -394,13 +394,12 @@ public class LoadingUtil {
 									   ResourceConstants.DATASET, support.getDataset()
 							   ));
 
-		final Response response = support.getClient()
-										 .target(conceptURI)
-										 .request(MediaType.APPLICATION_JSON)
-										 .post(Entity.entity(searchIndex, MediaType.APPLICATION_JSON_TYPE));
-
-
-		assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+		Invocation.Builder request = support.getClient()
+											.target(conceptURI)
+											.request(MediaType.APPLICATION_JSON);
+		try(final Response response = request.post(Entity.entity(searchIndex, MediaType.APPLICATION_JSON_TYPE))) {
+			assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+		}
 	}
 
 	public static void updateMatchingStats(@NonNull StandaloneSupport support) {

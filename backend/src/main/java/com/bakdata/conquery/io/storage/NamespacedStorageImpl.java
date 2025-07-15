@@ -1,8 +1,10 @@
 package com.bakdata.conquery.io.storage;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
@@ -11,7 +13,9 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -30,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class NamespacedStorageImpl implements Injectable, NamespacedStorage {
+public abstract class NamespacedStorageImpl implements NamespacedStorage {
 
 	@Getter
 	@ToString.Include
@@ -69,6 +73,28 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 		entity2Bucket = storageFactory.createEntity2BucketStore(pathName, objectMapper);
 	}
 
+
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return values.add(NamespacedStorage.class, this)
+					 .add(NamespacedStorageProvider.class,this);
+	}
+
+	@Override
+	public NamespacedStorage getStorage(@Nullable DatasetId datasetId) {
+		DatasetId thisDatasetId = getDataset().getId();
+		if (datasetId != null && !datasetId.equals(thisDatasetId)) {
+			throw new IllegalArgumentException("Dataset id mismatch: expected " + thisDatasetId + " but got " + datasetId);
+		}
+		return this;
+	}
+
+	@Override
+	public Collection<DatasetId> getAllDatasetIds() {
+		return List.of(getDataset().getId());
+	}
+
 	// Imports
 
 	@Override
@@ -105,11 +131,6 @@ public abstract class NamespacedStorageImpl implements Injectable, NamespacedSto
 	@Override
 	public void updateDataset(Dataset dataset) {
 		this.dataset.update(dataset);
-	}
-
-	@Override
-	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return values.add(NamespacedStorage.class, this);
 	}
 
 	@Override
