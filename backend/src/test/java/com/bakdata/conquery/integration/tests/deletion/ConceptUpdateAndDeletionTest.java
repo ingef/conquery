@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -42,8 +41,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		StandaloneSupport conquery = testConquery.getSupport(name);
 
 		// Read two JSONs with different Trees
-		final String testJson = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
-		final String testJson2 = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_2_Query.json").withUTF8().readAll();
+		final String testJson = LoadingUtil.readResource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json");
+		final String testJson2 = LoadingUtil.readResource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_2_Query.json");
 
 		final DatasetId dataset = conquery.getDataset();
 		final Namespace namespace = conquery.getNamespace();

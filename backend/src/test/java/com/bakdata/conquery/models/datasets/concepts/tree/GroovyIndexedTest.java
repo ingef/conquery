@@ -27,7 +27,6 @@ import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
@@ -61,7 +60,7 @@ public class GroovyIndexedTest {
 	@BeforeAll
 	public static void init() throws IOException, JSONException, ConfigurationException {
 		final ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
-		ObjectNode node = mapper.readerFor(ObjectNode.class).readValue(In.resource(GroovyIndexedTest.class, CONCEPT_SOURCE).asStream());
+		ObjectNode node = mapper.readerFor(ObjectNode.class).readValue(GroovyIndexedTest.class.getResourceAsStream(CONCEPT_SOURCE));
 
 		// load concept tree from json
 		final NamespaceStorage storage = new NonPersistentStoreFactory().createNamespaceStorage();

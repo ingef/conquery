@@ -11,6 +11,7 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import c10n.C10N;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.models.common.Range;
@@ -27,7 +28,6 @@ import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -39,7 +39,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final String testJson = In.resource("/tests/query/QUERY_STATISTICS_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
+		final String testJson = LoadingUtil.readResource("/tests/query/QUERY_STATISTICS_TESTS/SIMPLE_TREECONCEPT_Query.json");
 
 		final DatasetId dataset = conquery.getDataset();
 
