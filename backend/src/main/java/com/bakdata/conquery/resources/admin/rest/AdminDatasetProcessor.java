@@ -345,10 +345,16 @@ public class AdminDatasetProcessor {
 	/**
 	 * Issues a postprocessing of the imported data for initializing certain internal modules that are either expensive or need the whole data present.
 	 */
-	public void postprocessNamespace(DatasetId dataset) {
+	public void updateMatchingStats(DatasetId dataset) {
 		final Namespace ns = getDatasetRegistry().get(dataset);
 
-		ns.postprocessData();
+		ns.initializeUpdateMatchingStats();
+	}
+
+	public void initializeIndices(Dataset dataset) {
+		final Namespace ns = getDatasetRegistry().get(dataset.getId());
+
+		ns.updateIndexes();
 	}
 
 	public EntityIdMap getIdMapping(Namespace namespace) {

@@ -13,6 +13,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.integration.IntegrationTest;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -20,7 +21,6 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.api.ConceptResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
@@ -43,13 +43,7 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 
 		test.importRequiredData(conquery);
 
-		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "postprocessNamespace")
-													.buildFromMap(Map.of(DATASET, conquery.getDataset()));
-
-		conquery.getClient().target(matchingStatsUri)
-				.request(MediaType.APPLICATION_JSON_TYPE)
-				.post(null);
+		LoadingUtil.initializeIndices(conquery);
 
 		conquery.waitUntilWorkDone();
 

@@ -230,8 +230,15 @@ public class AdminDatasetResource {
 	@POST
 	@Path("/update-matching-stats")
 	@Consumes(MediaType.WILDCARD)
-	public void postprocessNamespace(@PathParam(DATASET) DatasetId dataset) {
-		processor.postprocessNamespace(dataset);
+	public void updateMatchingStats(@PathParam(DATASET) DatasetId dataset) {
+		processor.updateMatchingStats(dataset);
+	}
+
+	@POST
+	@Path("/initialize-indices")
+	@Consumes(MediaType.WILDCARD)
+	public void initializeIndices(@PathParam(DATASET) Dataset dataset) {
+		processor.initializeIndices(dataset);
 	}
 
 	@POST

@@ -161,6 +161,11 @@
   },
   {
     "method": "POST",
+    "path": "/datasets/{dataset}/initialize-indices",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "POST",
     "path": "/datasets/{dataset}/weight",
     "clazz": "AdminDatasetResource"
   },
