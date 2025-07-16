@@ -64,19 +64,20 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 		// Schedule ShardNode and Worker registration, so we don't block this thread which does the actual sending
 		scheduler.schedule(() -> {
-			context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, environment);
-			log.info("Connected to ManagerNode @ `{}`", session.getRemoteAddress());
+							   context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, environment);
+							   log.info("Connected to ManagerNode @ `{}`", session.getRemoteAddress());
 
-			// Authenticate with ManagerNode
-			context.send(new AddShardNode());
+							   // Authenticate with ManagerNode
+							   context.send(new AddShardNode());
 
-			for (Worker w : workers.getWorkers().values()) {
-				w.setSession(networkSession);
-				WorkerInformation info = w.getInfo();
-				log.info("Sending worker identity '{}'", info.getName());
-				networkSession.send(new RegisterWorker(info));
-			}
-		}, 0, TimeUnit.SECONDS);
+							   for (Worker w : workers.getWorkers().values()) {
+								   w.setSession(networkSession);
+								   WorkerInformation info = w.getInfo();
+								   log.info("Sending worker identity '{}'", info.getName());
+								   networkSession.send(new RegisterWorker(info));
+							   }
+						   }, 0, TimeUnit.SECONDS
+		);
 
 
 		scheduleIdleLogger(scheduler, session, config.getCluster().getIdleTimeOut());
@@ -162,7 +163,7 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 
 	@NotNull
 	private NioSocketConnector getClusterConnector() {
-		ObjectMapper om = internalMapperFactory.createShardCommunicationMapper();
+		ObjectMapper om = internalMapperFactory.createInternalCommunicationMapper(workers);
 
 		return config.getCluster().getClusterConnector(om, this, "Shard");
 	}
@@ -232,14 +233,15 @@ public class ClusterConnectionShard implements Managed, IoHandler {
 			return;
 		}
 
+		// No Jobs are handled at Shard-level, this is in effect just a heartbeat.
+		context.trySend(new UpdateJobManagerStatus(JobManagerStatus.builder().build()));
 
 		// Collect the ShardNode and all its workers jobs into a single queue
-
 		for (Worker worker : workers.getWorkers().values()) {
-			final JobManagerStatus jobManagerStatus = new JobManagerStatus(
-					null, worker.getInfo().getDataset(),
-					worker.getJobManager().getJobStatus()
-			);
+			final JobManagerStatus jobManagerStatus = JobManagerStatus.builder()
+																	  .dataset(worker.getInfo().getDataset())
+																	  .jobs(worker.getJobManager().getJobStatus())
+																	  .build();
 
 			try {
 				context.trySend(new UpdateJobManagerStatus(jobManagerStatus));

@@ -4,6 +4,7 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondar
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Objects;
+import java.util.stream.Stream;
 import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.query.Query;
@@ -14,11 +15,12 @@ import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -43,11 +45,11 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		final String testJson = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
 		final String testJson2 = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_2_Query.json").withUTF8().readAll();
 
-		final Dataset dataset = conquery.getDataset();
+		final DatasetId dataset = conquery.getDataset();
 		final Namespace namespace = conquery.getNamespace();
 
 
-		final ConceptId conceptId = ConceptId.Parser.INSTANCE.parse(dataset.getName(), "test_tree");
+		final ConceptId conceptId = new ConceptId(dataset, "test_tree");
 
 		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 		final QueryTest test2 = JsonIntegrationTest.readJson(dataset, testJson2);
@@ -88,7 +90,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().equals(dataset.getId())) {
+					if (!value.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -133,14 +135,13 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
-					if (!value.getInfo().getDataset().equals(dataset.getId())) {
+					if (!value.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-					assertThat(workerStorage.getConcept(conceptId))
-							.isNotNull();
+					assertThat(workerStorage.getConcept(conceptId)).isNotNull();
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
@@ -167,7 +168,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			testConquery.shutdown();
 			//restart
 			testConquery.beforeAll();
-			conquery = testConquery.openDataset(dataset.getId());
+			conquery = testConquery.openDataset(dataset);
 
 			log.info("Checking state after re-start");
 
@@ -182,7 +183,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 				for (ShardNode node : conquery.getShardNodes()) {
 					for (Worker value : node.getWorkers().getWorkers().values()) {
-						if (!value.getInfo().getDataset().equals(dataset.getId())) {
+						if (!value.getInfo().getDataset().equals(dataset)) {
 							continue;
 						}
 
@@ -230,20 +231,24 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			assertThat(
 					conquery.getShardNodes().stream()
 							.flatMap(node -> node.getWorkers().getWorkers().values().stream())
-							.filter(worker -> worker.getInfo().getDataset().equals(dataset.getId()))
+							.filter(worker -> worker.getInfo().getDataset().equals(dataset))
 							.map(Worker::getStorage)
 			)
 					// Concept is deleted on Workers
 					.noneMatch(workerStorage -> workerStorage.getConcept(conceptId) != null)
 					// CBlocks of Concept are deleted on Workers
-					.noneMatch(workerStorage -> workerStorage.getAllCBlocks()
-															 .anyMatch(cBlock -> cBlock.getConnector().getConcept().equals(conceptId)));
+					.noneMatch(workerStorage -> {
+						try(Stream<CBlock> allCBlocks = workerStorage.getAllCBlocks())
+						{
+							return allCBlocks.anyMatch(cBlock -> cBlock.getConnector().getConcept().equals(conceptId));
+						}
+					});
 
 
 			log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");
 
 			// Issue a query and assert that it is failing.
-			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 400);
+			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 404);
 		}
 
 
@@ -253,7 +258,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				testConquery.shutdown();
 				//restart
 				testConquery.beforeAll();
-				conquery = testConquery.openDataset(dataset.getId());
+				conquery = testConquery.openDataset(dataset);
 			}
 
 			// Check state after restart.
@@ -271,7 +276,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				assertThat(
 						conquery.getShardNodes().stream()
 								.flatMap(node -> node.getWorkers().getWorkers().values().stream())
-								.filter(worker -> worker.getInfo().getDataset().equals(dataset.getId()))
+								.filter(worker -> worker.getInfo().getDataset().equals(dataset))
 								.map(Worker::getStorage)
 				)
 						// Concept is deleted on Workers
@@ -284,7 +289,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				log.info("Executing query after restart (EXPECTING AN EXCEPTION IN THE LOGS!)");
 
 				// Issue a query and assert that it is failing.
-				IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 400);
+				IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 404);
 			}
 		}
 	}

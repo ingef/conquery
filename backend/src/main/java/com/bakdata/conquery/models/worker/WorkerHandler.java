@@ -11,15 +11,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.ReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.ActionReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
@@ -35,7 +34,6 @@ import org.jetbrains.annotations.NotNull;
 @RequiredArgsConstructor
 public class WorkerHandler {
 
-	private final ObjectMapper communicationMapper;
 	/**
 	 * All known {@link Worker}s that are part of this Namespace.
 	 */
@@ -91,12 +89,12 @@ public class WorkerHandler {
 
 	}
 
-	public synchronized void removeBucketAssignmentsForImportFormWorkers(@NonNull Import importId) {
+	public synchronized void removeBucketAssignmentsForImportFormWorkers(ImportId importId) {
 		final WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
 		if (workerBuckets == null) {
 			return;
 		}
-		workerBuckets.removeBucketsOfImport(importId.getId());
+		workerBuckets.removeBucketsOfImport(importId);
 
 		storage.setWorkerToBucketsMap(workerBuckets);
 
@@ -173,8 +171,6 @@ public class WorkerHandler {
 	public synchronized void addWorker(WorkerInformation info) {
 		Objects.requireNonNull(info.getConnectedShardNode(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
 
-		info.setCommunicationWriter(communicationMapper.writer());
-
 		workers.add(info);
 
 		for (Integer bucket : info.getIncludedBuckets()) {
@@ -206,6 +202,10 @@ public class WorkerHandler {
 		registerBucketForWorker(responsibleWorkerForBucket.getId(), bucket);
 
 		return responsibleWorkerForBucket;
+	}
+
+	public boolean hasPendingMessages() {
+		return !pendingReactions.isEmpty();
 	}
 
 	private record PendingReaction(UUID callerId, Set<WorkerId> pendingWorkers, ActionReactionMessage parent) {

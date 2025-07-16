@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.model;
 
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -68,6 +69,24 @@ public class Selects {
 					 .collect(Collectors.toList());
 	}
 
+	/**
+	 * All {@link Select}s that have not been explicitly selected (IDs, validity/stratification dates).
+	 */
+	public List<Field<?>> nonExplicitSelects() {
+		return Stream.of(
+							this.ids.toFields().stream(),
+							this.stratificationDate.stream().flatMap(range -> range.toFields().stream()),
+							this.validityDate.stream().flatMap(range -> range.toFields().stream())
+					 )
+					 .flatMap(Function.identity())
+					 .map(select -> (Field<?>) select)
+					 .distinct()
+					 .collect(Collectors.toList());
+	}
+
+	/**
+	 * All explicitly selected and converted {@link Select}s.
+	 */
 	public List<Field<?>> explicitSelects() {
 		return this.sqlSelects.stream()
 							  .flatMap(sqlSelect -> sqlSelect.toFields().stream())

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Map;
 import java.util.OptionalLong;
@@ -92,7 +93,7 @@ public class FormTest extends ConqueryTestSpec {
 	}
 
 	private Form parseForm(StandaloneSupport support) throws IOException {
-		return parseSubTree(support, rawForm, Form.class, true);
+		return parseSubTree(support, rawForm, Form.class, false);
 	}
 
 	private void checkResults(StandaloneSupport standaloneSupport, ManagedInternalForm<?> managedForm, User user) throws IOException {
@@ -127,7 +128,7 @@ public class FormTest extends ConqueryTestSpec {
 			renderer.toCSV(
 					config.getIdColumns().getIdResultInfos(),
 					managedForm.getResultInfos(),
-					managedForm.streamResults(OptionalLong.empty()), printSettings
+					managedForm.streamResults(OptionalLong.empty()), printSettings, StandardCharsets.UTF_8
 			);
 
 			writer.close();

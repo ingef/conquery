@@ -46,7 +46,7 @@ import org.jetbrains.annotations.NotNull;
  * Command allowing script based migration of databases. Especially useful for data that cannot be easily recreated after reimports, such as {@link com.bakdata.conquery.models.auth.entities.User}s and {@link com.bakdata.conquery.models.execution.ManagedExecution}s.
  * <p>
  * The supplied groovy scripts is expected to return a closure in the form of
- *
+ * <p>
  * <code>
  * return {
  * String env, String store, String key, ObjectNode value -> return new Tuple(key,value)
@@ -71,6 +71,7 @@ public class MigrateCommand extends ConqueryCommand {
 
 	@Override
 	public void configure(Subparser subparser) {
+
 		subparser
 				.addArgument("--in")
 				.help("Input storage directory.")
@@ -129,7 +130,7 @@ public class MigrateCommand extends ConqueryCommand {
 
 		final MigrationScriptFactory factory = (MigrationScriptFactory) groovy.parse(In.file((File) namespace.get("script")).readAll());
 
-		final Function4<String, String, JsonNode, JsonNode, Tuple> migrator = factory.run();
+		final Function4<String, String, JsonNode, JsonNode, Tuple<JsonNode>> migrator = factory.run();
 
 		final ObjectMapper mapper = Jackson.BINARY_MAPPER;
 
@@ -138,29 +139,50 @@ public class MigrateCommand extends ConqueryCommand {
 			  .forEach(xenv ->
 					   {
 						   final File environmentDirectory = new File(outStoreDirectory, xenv.getName());
-						   environmentDirectory.mkdirs();
+						   if (!environmentDirectory.mkdirs()) {
+							   throw new IllegalArgumentException("Cannot create environment directory: " + environmentDirectory.getAbsolutePath());
+						   }
 
 						   processEnvironment(xenv, logsize, environmentDirectory, migrator, mapper, inGzip, outGzip);
 					   });
 
 	}
 
-	private void processEnvironment(File inStoreDirectory, long logSize, File outStoreDirectory, Function4<String, String, JsonNode, JsonNode, Tuple> migrator, ObjectMapper mapper, boolean inGzip, boolean outGzip) {
-		final jetbrains.exodus.env.Environment inEnvironment = Environments.newInstance(
-				inStoreDirectory,
-				new EnvironmentConfig().setLogFileSize(logSize)
-									   .setEnvIsReadonly(true)
-									   .setEnvCompactOnOpen(false)
-									   .setEnvCloseForcedly(true)
-									   .setGcEnabled(false)
-		);
+	private void processEnvironment(
+			File inStoreDirectory,
+			long logSize,
+			File outStoreDirectory,
+			Function4<String, String, JsonNode, JsonNode, Tuple<JsonNode>> migrator,
+			ObjectMapper mapper,
+			boolean inGzip,
+			boolean outGzip) {
+		final jetbrains.exodus.env.Environment inEnvironment;
+		try {
+			inEnvironment = Environments.newInstance(
+					inStoreDirectory,
+					new EnvironmentConfig().setLogFileSize(logSize)
+										   .setEnvIsReadonly(true)
+										   .setEnvCompactOnOpen(false)
+										   .setEnvCloseForcedly(true)
+										   .setGcEnabled(false)
+			);
+		}
+		catch (Exception e) {
+			throw new IllegalArgumentException("Unable to open store in " + inStoreDirectory, e);
+		}
 
-		// we dump first, then enable GC.
-		final jetbrains.exodus.env.Environment outEnvironment = Environments.newInstance(
-				outStoreDirectory,
-				new EnvironmentConfig().setLogFileSize(logSize)
-									   .setGcEnabled(false)
-		);
+		final jetbrains.exodus.env.Environment outEnvironment;
+		try {
+			// we dump first, then enable GC.
+			outEnvironment = Environments.newInstance(
+					outStoreDirectory,
+					new EnvironmentConfig().setLogFileSize(logSize)
+										   .setGcEnabled(false)
+			);
+		}
+		catch (Exception e) {
+			throw new IllegalArgumentException("Unable to open store in " + outStoreDirectory, e);
+		}
 
 
 		final List<String> stores = inEnvironment.computeInReadonlyTransaction(inEnvironment::getAllStoreNames);
@@ -202,7 +224,13 @@ public class MigrateCommand extends ConqueryCommand {
 		inEnvironment.close();
 	}
 
-	private void migrateStore(Store inStore, Store outStore, Function4<String, String, JsonNode, JsonNode, Tuple> migrator, ObjectMapper mapper, boolean inGzip, boolean outGzip) {
+	private void migrateStore(
+			Store inStore,
+			Store outStore,
+			Function4<String, String, JsonNode, JsonNode, Tuple<JsonNode>> migrator,
+			ObjectMapper mapper,
+			boolean inGzip,
+			boolean outGzip) {
 
 		final Environment inEnvironment = inStore.getEnvironment();
 		final Environment outEnvironment = outStore.getEnvironment();
@@ -239,13 +267,6 @@ public class MigrateCommand extends ConqueryCommand {
 				final byte[] keyWritten = write(mapper, ((JsonNode) migrated.get(0)), outGzip);
 
 				final byte[] valueWritten = write(mapper, ((JsonNode) migrated.get(1)), outGzip);
-
-				if (log.isTraceEnabled()) {
-					log.trace("Mapped `{}` to \n{}", new String(keyWritten), new String(valueWritten));
-				}
-				else if	(log.isDebugEnabled()) {
-					log.debug("Mapped `{}`", new String(keyWritten));
-				}
 
 				outStore.put(writeTx, new ArrayByteIterable(keyWritten), new ArrayByteIterable(valueWritten));
 
@@ -302,6 +323,6 @@ public class MigrateCommand extends ConqueryCommand {
 		 * Environment -> Store -> Key -> Value -> (Key, Value)
 		 */
 		@Override
-		public abstract Function4<String, String, JsonNode, JsonNode, Tuple> run();
+		public abstract Function4<String, String, JsonNode, JsonNode, Tuple<JsonNode>> run();
 	}
 }

@@ -1,0 +1,104 @@
+{
+  "type": "QUERY_TEST",
+  "label": "MULTI-Connector Query (DateAggregation with AggregationFilters)",
+  "expectedCsv": "tests/query/MULTI_CONNECTOR_QUERY/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "test_tree"
+      ],
+      "tables": [
+        {
+          "id": "test_tree.connector1",
+          "selects": [
+          ]
+        },
+        {
+          "id": "test_tree.connector2",
+          "filters": [
+            {
+              "type": "INTEGER_RANGE",
+              "filter": "test_tree.connector2.sum",
+              "value": {
+                "max": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "test_tree",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector1",
+          "table": "test_table",
+          "validityDates": {
+            "label": "datum",
+            "column": "test_table.datum"
+          },
+          "selects": [
+          ]
+        },
+        {
+          "name": "connector2",
+          "table": "test_table2",
+          "validityDates": {
+            "label": "datum",
+            "column": "test_table2.datum"
+          },
+          "filters": [
+            {
+              "type": "SUM",
+              "column": "test_table2.val",
+              "name": "sum"
+            }
+          ]
+        }
+      ],
+      "children": [
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/MULTI_CONNECTOR_QUERY/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      },
+      {
+        "csv": "tests/query/MULTI_CONNECTOR_QUERY/content2.csv",
+        "name": "test_table2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "val",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    ]
+  }
+}

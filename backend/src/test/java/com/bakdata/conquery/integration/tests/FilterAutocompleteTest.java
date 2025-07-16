@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.stream.Stream;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.core.MediaType;
@@ -77,7 +78,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 							   )
 							   .buildFromMap(
 									   Map.of(
-											   DATASET, conquery.getDataset().getId(),
+											   DATASET, conquery.getDataset(),
 											   CONCEPT, concept.getId(),
 											   TABLE, filter.getConnector().getResolvedTable().getId(),
 											   FILTER, filter.getId()
@@ -89,10 +90,11 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		// Data starting with a is in reference csv
 		{
 			try (final Response fromCsvResponse = autocompleteRequestBuilder.post(Entity.entity(new FilterResource.AutocompleteRequest(
-					Optional.of("a"),
-					OptionalInt.empty(),
-					OptionalInt.empty()
-			), MediaType.APPLICATION_JSON_TYPE))) {
+																										Optional.of("a"),
+																										OptionalInt.empty(),
+																										OptionalInt.empty()
+																								), MediaType.APPLICATION_JSON_TYPE
+			))) {
 
 				final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 
@@ -110,10 +112,11 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		{
 			try (final Response fromCsvResponse = autocompleteRequestBuilder
 					.post(Entity.entity(new FilterResource.AutocompleteRequest(
-							Optional.of("f"),
-							OptionalInt.empty(),
-							OptionalInt.empty()
-					), MediaType.APPLICATION_JSON_TYPE))) {
+												Optional.of("f"),
+												OptionalInt.empty(),
+												OptionalInt.empty()
+										), MediaType.APPLICATION_JSON_TYPE
+					))) {
 
 				final ConceptsProcessor.AutoCompleteResult resolvedFromValues = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 
@@ -128,10 +131,11 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		{
 			try (final Response fromCsvResponse = autocompleteRequestBuilder
 					.post(Entity.entity(new FilterResource.AutocompleteRequest(
-							Optional.of(""),
-							OptionalInt.empty(),
-							OptionalInt.empty()
-					), MediaType.APPLICATION_JSON_TYPE))) {
+												Optional.of(""),
+												OptionalInt.empty(),
+												OptionalInt.empty()
+										), MediaType.APPLICATION_JSON_TYPE
+					))) {
 
 				final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 				// This is probably the insertion order
@@ -148,7 +152,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 				  .withUTF8()
 				  .readAll();
 
-		final DatasetId dataset = conquery.getDataset().getId();
+		final DatasetId dataset = conquery.getDataset();
 
 		final ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
 
@@ -161,7 +165,9 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		final CSVConfig csvConf = conquery.getConfig().getCsv();
 
 		NamespaceStorage namespaceStorage = conquery.getNamespace().getStorage();
-		final Concept<?> concept = namespaceStorage.getAllConcepts().filter(c -> c.getName().equals("geschlecht_select")).findFirst().orElseThrow();
+		Stream<Concept<?>> allConcepts = namespaceStorage.getAllConcepts();
+		final Concept<?> concept = allConcepts.filter(c -> c.getName().equals("geschlecht_select")).findFirst().orElseThrow();
+		allConcepts.close();
 		final Connector connector = concept.getConnectors().iterator().next();
 		final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
 
@@ -179,7 +185,10 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 		final FilterTemplate
 				filterTemplate =
-				new FilterTemplate(conquery.getDataset().getId(), "test", tmpCsv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService);
+				new FilterTemplate(tmpCsv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService);
+
+		filterTemplate.setDataset(conquery.getDataset());
+		filterTemplate.setName("test");
 		filter.setTemplate(filterTemplate.getId());
 
 		// We need to persist the modification before we submit the update matching stats request

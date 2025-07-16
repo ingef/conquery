@@ -1,7 +1,6 @@
 package com.bakdata.conquery.resources.unprotected;
 
 import java.net.URI;
-
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;

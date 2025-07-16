@@ -7,12 +7,18 @@ import com.bakdata.conquery.models.types.ResultType;
 
 /**
  * This class is a mess because Excel supports some of our types natively.
- *
+ * <p>
  * With LIST types we fall back onto the StringResultPrinter, as Excel does not support Lists, BUT we also cannot use the {@link IdentityPrinter} inside the list, as some of our printers are native types.
  */
 public class ExcelResultPrinters extends StringResultPrinters {
 
-	private final PrinterFactory partialDelegate = new StringResultPrinters();
+	public static final String NEGATIVE_INF = "-∞";
+	public static final String POSITIVE_INF = "+∞";
+	private final PrinterFactory partialDelegate = new StringResultPrinters(NEGATIVE_INF, POSITIVE_INF);
+
+	public ExcelResultPrinters() {
+		super(NEGATIVE_INF, POSITIVE_INF);
+	}
 
 	public Printer<?> printerFor(ResultType type, PrintSettings printSettings) {
 		if (type instanceof ResultType.ListT<?> listT) {
@@ -37,12 +43,12 @@ public class ExcelResultPrinters extends StringResultPrinters {
 	}
 
 	@Override
-	public Printer<Number> getNumericPrinter(PrintSettings printSettings) {
+	public Printer<Number> getIntegerPrinter(PrintSettings printSettings) {
 		return new IdentityPrinter<>();
 	}
 
 	@Override
-	public Printer<Number> getMoneyPrinter(PrintSettings printSettings) {
+	public Printer<Number> getNumericPrinter(PrintSettings printSettings) {
 		return new IdentityPrinter<>();
 	}
 
@@ -51,9 +57,9 @@ public class ExcelResultPrinters extends StringResultPrinters {
 		return new DatePrinter();
 	}
 
+
 	@Override
-	public Printer<Number> getIntegerPrinter(PrintSettings printSettings) {
+	public Printer<Number> getMoneyPrinter(PrintSettings printSettings) {
 		return new IdentityPrinter<>();
 	}
-
 }

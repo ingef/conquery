@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
@@ -29,26 +28,14 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 	protected SingletonStore<PreviewConfig> preview;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
 
-	protected Store<String, Integer> entity2Bucket;
 
 	public NamespaceStorage(StoreFactory storageFactory, String pathName) {
 		super(storageFactory, pathName);
 	}
 
-
-	private void decorateIdMapping(SingletonStore<EntityIdMap> idMapping) {
-		idMapping
-				.onAdd(mapping -> mapping.setStorage(this));
-	}
-
-	private void decorateInternToExternMappingStore(IdentifiableStore<InternToExternMapper> store) {
-		// We don't call internToExternMapper::init this is done by the first select that needs the mapping
-	}
-
-
 	@Override
-	public void openStores(ObjectMapper objectMapper, MetricRegistry metricRegistry) {
-		super.openStores(objectMapper, metricRegistry);
+	public void openStores(ObjectMapper objectMapper) {
+		super.openStores(objectMapper);
 
 		internToExternMappers = getStorageFactory().createInternToExternMappingStore(super.getPathName(), objectMapper);
 		searchIndexes = getStorageFactory().createSearchIndexStore(super.getPathName(), objectMapper);
@@ -56,10 +43,6 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 		structure = getStorageFactory().createStructureStore(super.getPathName(), objectMapper);
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
 		preview = getStorageFactory().createPreviewStore(super.getPathName(), objectMapper);
-		entity2Bucket = getStorageFactory().createEntity2BucketStore(super.getPathName(), objectMapper);
-
-		decorateInternToExternMappingStore(internToExternMappers);
-		decorateIdMapping(idMapping);
 	}
 
 	@Override
@@ -112,7 +95,7 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 
 
 	public boolean containsEntity(String entity) {
-		return entity2Bucket.get(entity) != null;
+		return entity2Bucket.hasKey(entity);
 	}
 
 	public void registerEntity(String entity, int bucket) {
@@ -175,12 +158,12 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 
 	// PreviewConfig
 
-	public void setPreviewConfig(PreviewConfig previewConfig){
-		preview.update(previewConfig);
-	}
-
 	public PreviewConfig getPreviewConfig() {
 		return preview.get();
+	}
+
+	public void setPreviewConfig(PreviewConfig previewConfig){
+		preview.update(previewConfig);
 	}
 
 	public void removePreviewConfig() {

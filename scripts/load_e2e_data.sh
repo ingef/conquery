@@ -33,7 +33,10 @@ echo "Creating mappings"
 curl --fail -X POST  "$admin_api/datasets/dataset1/internToExtern" -H "$h_ct" -H "$h_auth" -d "@./cypress/support/test_data/mapping.mapping.json"
 sleep 3
 
- # TODO secondary ID
+echo "Creating secondary ids"
+curl --fail -X POST  "$admin_api/datasets/dataset1/secondaryId" -H "$h_ct" -H "$h_auth" -d "@./cypress/support/test_data/sid.secondaryId.json"
+sleep 1
+
 echo "Creating tables"
 for table_json in `ls ./cypress/support/test_data/*.table.json`
 do
@@ -41,17 +44,18 @@ do
 done
 sleep 3
 
-echo "Creating concepts"
-for concept_json in `ls ./cypress/support/test_data/*.concept.json`
-do
-    curl --fail -X POST  "$admin_api/datasets/dataset1/concepts" -H "$h_ct" -H "$h_auth" -d "@$concept_json"
-done
-
 echo "Upload test data"
 for cqpp in `ls ./cypress/support/test_data/*.cqpp`
 do
     curl --fail -X POST --compressed "$admin_api/datasets/dataset1/cqpp" -H "content-type:application/octet-stream" -H "$h_auth" --data-binary "@$cqpp"
 done
+
+echo "Creating concepts"
+for concept_json in `ls ./cypress/support/test_data/*.concept.json`
+do
+    curl --fail -X POST  "$admin_api/datasets/dataset1/concepts" -H "$h_ct" -H "$h_auth" -d "@$concept_json"
+done
+sleep 3
 
 echo "Init Matching Stats and Search"
 curl --fail -X POST  "$admin_api/datasets/dataset1/update-matching-stats" -H "$h_ct" -H "$h_auth"

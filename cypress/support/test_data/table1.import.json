@@ -9,6 +9,12 @@
                     "operation": "COPY"
                 },
                 {
+                    "inputColumn": "sid",
+                    "name": "sid",
+                    "inputType": "STRING",
+                    "operation": "COPY"
+                },
+                {
                     "inputColumn": "STRING",
                     "name": "STRING",
                     "inputType": "STRING",
@@ -25,7 +31,6 @@
 			"sourceFile": "table1.csv"
         }
     ],
-	"label": "Table 1",
 	"name": "table1",
 	"table": "table1"
 }

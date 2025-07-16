@@ -7,20 +7,14 @@ import java.util.List;
 import java.util.Objects;
 
 import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.identifiable.IdResolvingException;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
-@RequiredArgsConstructor
 @JsonDeserialize(using = IdDeserializer.class)
-public abstract class Id<TYPE> {
+public sealed abstract class Id<TYPE, DOMAIN> permits NamespacedId, MetaId {
 
 	/**
 	 * Holds the cached escaped value.
@@ -29,22 +23,6 @@ public abstract class Id<TYPE> {
 	 */
 	@JsonIgnore
 	private WeakReference<String> escapedId = new WeakReference<>(null);
-
-	/**
-	 * Injected by deserializer
-	 */
-	@JsonIgnore
-	@Setter
-	@Getter
-	private NamespacedStorageProvider namespacedStorageProvider;
-
-	/**
-	 * Injected by deserializer for resolving meta Ids
-	 */
-	@JsonIgnore
-	@Setter
-	@Getter
-	private MetaStorage metaStorage;
 
 	@Override
 	public abstract int hashCode();
@@ -65,7 +43,7 @@ public abstract class Id<TYPE> {
 		return escapedIdString;
 	}
 
-	private String escapedIdString() {
+	public final String escapedIdString() {
 		List<Object> components = getComponents();
 		components.replaceAll(o -> ConqueryEscape.escape(Objects.toString(o)));
 		return IdUtil.JOINER.join(components);
@@ -73,40 +51,48 @@ public abstract class Id<TYPE> {
 
 	public final List<Object> getComponents() {
 		List<Object> components = new ArrayList<>();
-		this.collectComponents(components);
+		collectComponents(components);
 		return components;
 	}
 
 	public abstract void collectComponents(List<Object> components);
 
-	public final List<String> collectComponents() {
-		List<Object> components = getComponents();
-		List<String> result = new ArrayList<>(components.size());
-
-		for (Object component : components) {
-			result.add(ConqueryEscape.escape(Objects.toString(component)));
+	public final TYPE resolve() {
+		try {
+			TYPE o = get();
+			if (o == null) {
+				throw newIdResolveException();
+			}
+			return o;
 		}
-
-		return result;
+		catch (IdResolvingException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw newIdResolveException(e);
+		}
 	}
 
-	public TYPE resolve() {
-		if (this instanceof NamespacedId namespacedId) {
-			return (TYPE) namespacedId.resolve(getNamespacedStorageProvider().getStorage(namespacedId.getDataset()));
-		}
-		if (this instanceof MetaId) {
-			return metaStorage.resolve((Id<?> & MetaId)this);
-		}
-		throw new IllegalStateException("Tried to resolve an id that is neither NamespacedId not MetaId: %s".formatted(this));
-	}
+	public abstract DOMAIN getDomain();
 
-	public IdResolvingException newIdResolveException() {
+	public abstract void setDomain(DOMAIN DOMAIN);
+
+	/**
+	 * Return the object identified by the given id from the given storage.
+	 *
+	 * @return the object or null if no object could be resolved.
+	 */
+	public abstract TYPE get();
+
+	public final IdResolvingException newIdResolveException() {
 		return new IdResolvingException(this);
 	}
 
-	public IdResolvingException newIdResolveException(Exception e) {
+	public final IdResolvingException newIdResolveException(Exception e) {
 		return new IdResolvingException(this, e);
 	}
 
-	public abstract void collectIds(Collection<? super Id<?>> collect);
+	public abstract void collectIds(Collection<Id<?, ?>> collect);
+
+
 }

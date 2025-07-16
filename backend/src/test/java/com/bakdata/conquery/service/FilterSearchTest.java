@@ -14,8 +14,10 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilt
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SingleSelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.models.query.FilterSearch;
+import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import com.bakdata.conquery.util.extensions.NamespaceStorageExtension;
 import com.google.common.collect.ImmutableBiMap;
 import org.junit.jupiter.api.Test;
@@ -26,9 +28,10 @@ public class FilterSearchTest {
 	@RegisterExtension
 	private static final NamespaceStorageExtension NAMESPACE_STORAGE_EXTENSION = new NamespaceStorageExtension();
 	private static final NamespacedStorage NAMESPACED_STORAGE = NAMESPACE_STORAGE_EXTENSION.getStorage();
+	public static final NamespacedStorageProvider STORAGE_PROVIDER = new TestNamespacedStorageProvider(NAMESPACED_STORAGE);
 
 	@Test
-	public void totals() {
+	public void totals() throws Exception {
 		final IndexConfig indexConfig = new IndexConfig();
 		FilterSearch search = new FilterSearch(indexConfig);
 
@@ -39,20 +42,23 @@ public class FilterSearchTest {
 		Column column = new Column();
 		Table table = new Table();
 		Dataset dataset = new Dataset("test_dataset");
-		dataset.setNamespacedStorageProvider(NAMESPACED_STORAGE);
+		dataset.setStorageProvider(STORAGE_PROVIDER);
 		NAMESPACED_STORAGE.updateDataset(dataset);
 
 		table.setName("test_table");
-		table.setDataset(dataset.getId());
+		table.setNamespacedStorageProvider(NAMESPACED_STORAGE);
+		table.init();
 		table.setColumns(new Column[]{column});
-		concept.setDataset(dataset.getId());
+		concept.setNamespacedStorageProvider(NAMESPACED_STORAGE);
 		concept.setName("test_concept");
+		concept.init();
 		concept.setConnectors(List.of(connector));
 		connector.setName("test_connector");
 		connector.setFilters(List.of(filter));
 		connector.setConcept(concept);
 		column.setTable(table);
 		column.setName("test_column");
+		table.init();
 		NAMESPACED_STORAGE.addTable(table);
 		filter.setColumn(column.getId());
 		filter.setConnector(connector);
@@ -86,7 +92,7 @@ public class FilterSearchTest {
 	}
 
 	@Test
-	public void totalsEmptyFiler() {
+	public void totalsEmptyFiler() throws Exception {
 		final IndexConfig indexConfig = new IndexConfig();
 		FilterSearch search = new FilterSearch(indexConfig);
 
@@ -97,14 +103,16 @@ public class FilterSearchTest {
 		Column column = new Column();
 		Table table = new Table();
 		Dataset dataset = new Dataset("test_dataset");
-		dataset.setNamespacedStorageProvider(NAMESPACED_STORAGE);
+		dataset.setStorageProvider(STORAGE_PROVIDER);
 		NAMESPACED_STORAGE.updateDataset(dataset);
 
 		table.setName("test_table");
-		table.setDataset(dataset.getId());
+		table.setNamespacedStorageProvider(NAMESPACED_STORAGE);
+		table.init();
 		table.setColumns(new Column[]{column});
-		concept.setDataset(dataset.getId());
+		concept.setNamespacedStorageProvider(NAMESPACED_STORAGE);
 		concept.setName("test_concept");
+		concept.init();
 		concept.setConnectors(List.of(connector));
 		connector.setName("test_connector");
 		connector.setFilters(List.of(filter));
@@ -112,6 +120,7 @@ public class FilterSearchTest {
 		column.setTable(table);
 		column.setName("test_column");
 		column.setSearchDisabled(true);
+		table.init();
 		NAMESPACED_STORAGE.addTable(table);
 
 		filter.setColumn(column.getId());

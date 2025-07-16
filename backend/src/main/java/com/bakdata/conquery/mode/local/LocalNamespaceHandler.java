@@ -49,24 +49,30 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 		DSLContext dslContext = dslContextWrapper.getDslContext();
 		SqlDialect sqlDialect = dialectFactory.createSqlDialect(databaseConfig.getDialect());
 
+		boolean valid = dslContext.connectionResult(connection -> connection.isValid(1));
+
+		if (!valid) {
+			throw new IllegalStateException("Unable to connect to %s".formatted(databaseConfig));
+		}
+
 		ResultSetProcessor resultSetProcessor = ResultSetProcessorFactory.create(config, sqlDialect);
 		SqlExecutionService sqlExecutionService = new SqlExecutionService(dslContext, resultSetProcessor);
 		NodeConversions nodeConversions = new NodeConversions(idColumns, sqlDialect, dslContext, databaseConfig, sqlExecutionService);
 		SqlConverter sqlConverter = new SqlConverter(nodeConversions, config);
-		ExecutionManager executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage, datasetRegistry);
+		ExecutionManager executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage, datasetRegistry, config);
 		SqlStorageHandler sqlStorageHandler = new SqlStorageHandler(sqlExecutionService);
 		SqlEntityResolver sqlEntityResolver = new SqlEntityResolver(idColumns, dslContext, sqlDialect, sqlExecutionService);
 
 		return new LocalNamespace(
-				namespaceData.getPreprocessMapper(),
+				sqlDialect,
+				namespaceData.preprocessMapper(),
 				namespaceStorage,
 				executionManager,
 				dslContextWrapper,
 				sqlStorageHandler,
-				namespaceData.getJobManager(),
-				namespaceData.getFilterSearch(),
-				sqlEntityResolver,
-				namespaceData.getInjectables()
+				namespaceData.jobManager(),
+				namespaceData.filterSearch(),
+				sqlEntityResolver
 		);
 	}
 

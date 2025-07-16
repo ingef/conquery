@@ -34,6 +34,10 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
@@ -57,13 +61,13 @@ public class AdminDatasetResource {
 	private final AdminDatasetProcessor processor;
 
 	@PathParam(DATASET)
-	private Dataset dataset;
+	private DatasetId dataset;
 
 	private Namespace namespace;
 
 	@PostConstruct
 	public void init() {
-		namespace = processor.getDatasetRegistry().get(dataset.getId());
+		namespace = processor.getDatasetRegistry().get(dataset);
 	}
 
 	@GET
@@ -152,25 +156,25 @@ public class AdminDatasetResource {
 
 	@POST
 	@Path("concepts")
-	public void addConcept(@QueryParam("force") @DefaultValue("false") boolean force, Concept concept) {
-		processor.addConcept(namespace.getDataset(), concept, force);
+	public void addConcept(@QueryParam("force") @DefaultValue("false") boolean force, Concept<?> concept) {
+		processor.addConcept(namespace, concept, force);
 	}
 
 	@PUT
 	@Path("concepts")
 	public void updateConcept(Concept<?> concept) {
-		processor.updateConcept(namespace.getDataset(), concept);
+		processor.updateConcept(namespace, concept);
 	}
 
 	@DELETE
 	@Path("secondaryId/{" + SECONDARY_ID + "}")
-	public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescription secondaryId) {
+	public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescriptionId secondaryId) {
 		processor.deleteSecondaryId(secondaryId);
 	}
 
 	@DELETE
 	@Path("searchIndex/{" + SEARCH_INDEX_ID + "}")
-	public List<ConceptId> deleteSearchIndex(@PathParam(SEARCH_INDEX_ID) SearchIndex searchIndex, @QueryParam("force") @DefaultValue("false") boolean force) {
+	public List<ConceptId> deleteSearchIndex(@PathParam(SEARCH_INDEX_ID) SearchIndexId searchIndex, @QueryParam("force") @DefaultValue("false") boolean force) {
 
 		final List<ConceptId> conceptIds = processor.deleteSearchIndex(searchIndex, force);
 		if (!conceptIds.isEmpty() && !force) {
@@ -182,14 +186,14 @@ public class AdminDatasetResource {
 	@DELETE
 	@Path("internToExtern/{" + INTERN_TO_EXTERN_ID + "}")
 	public List<ConceptId> deleteInternToExternMapping(
-			@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapper internToExternMapper,
+			@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapperId internToExternMapper,
 			@QueryParam("force") @DefaultValue("false") boolean force) {
 		return processor.deleteInternToExternMapping(internToExternMapper, force);
 	}
 
 	@GET
 	public Dataset getDatasetInfos() {
-		return dataset;
+		return dataset.resolve();
 	}
 
 	@POST
@@ -226,7 +230,7 @@ public class AdminDatasetResource {
 	@POST
 	@Path("/update-matching-stats")
 	@Consumes(MediaType.WILDCARD)
-	public void updateMatchingStats(@PathParam(DATASET) Dataset dataset) {
+	public void updateMatchingStats(@PathParam(DATASET) DatasetId dataset) {
 		processor.updateMatchingStats(dataset);
 	}
 

@@ -108,6 +108,11 @@ public class DateReader {
 	private CDateRange parseToCDateRange(String value, String sep) {
 
 		// Shorthand formats for open ranges without resorting to two-column formats
+
+		if (value.equals(sep)) {
+			return CDateRange.all();
+		}
+
 		if (value.startsWith(sep)) {
 			return CDateRange.atMost(parseToLocalDate(value.substring(sep.length())));
 		}

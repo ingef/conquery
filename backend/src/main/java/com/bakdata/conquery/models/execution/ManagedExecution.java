@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
@@ -30,7 +31,7 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.MetaIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -70,10 +71,10 @@ import org.apache.shiro.authz.Permission;
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonIgnoreProperties("state")
-public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
+public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 
 	/**
-	 * Some unusual suffix. Its not too bad if someone actually uses this.
+	 * Some unusual suffix. It's not too bad if someone actually uses this.
 	 */
 	public static final String AUTO_LABEL_SUFFIX = "\t@§$";
 
@@ -111,19 +112,13 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@EqualsAndHashCode.Exclude
 	private transient boolean initialized = false;
 
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@Setter
+	@Getter
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	private transient ConqueryConfig config;
 
-	/**
-	 * TODO remove this when identifiables hold reference to meta storage (CentralRegistry removed)
-	 */
-	@JacksonInject(useInput = OptBoolean.FALSE)
-	@Setter
-	@Getter(AccessLevel.PROTECTED)
-	@JsonIgnore
-	@NotNull
-	private transient MetaStorage metaStorage;
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Setter
@@ -133,11 +128,12 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	private transient DatasetRegistry<?> datasetRegistry;
 
 
-	public ManagedExecution(@NonNull UserId owner, @NonNull DatasetId dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry) {
+	public ManagedExecution(@NonNull UserId owner, @NonNull DatasetId dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
 		this.owner = owner;
 		this.dataset = dataset;
-		this.metaStorage = metaStorage;
+		this.config = config;
 		this.datasetRegistry = datasetRegistry;
+		setMetaStorage(metaStorage);
 	}
 
 	private static boolean canSubjectExpand(Subject subject, QueryDescription query) {
@@ -158,7 +154,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	/**
 	 * Executed right before execution submission.
 	 */
-	public final void initExecutable(ConqueryConfig config) {
+	public final void initExecutable() {
 
 		synchronized (this) {
 			if (initialized) {
@@ -169,7 +165,6 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 				// IdMapper is not necessary here
 				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), config, null, null));
 			}
-			this.config = config;
 
 			doInitExecutable();
 
@@ -193,18 +188,12 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	private static boolean containsDates(QueryDescription query) {
 		return Visitable.stream(query)
-						.anyMatch(visitable -> {
-
-							if (visitable instanceof CQConcept cqConcept) {
-								return !cqConcept.isExcludeFromTimeAggregation();
-							}
-
-							if (visitable instanceof CQExternal external) {
-								return external.containsDates();
-							}
-
-							return false;
-						});
+						.anyMatch(visitable ->
+										  switch (visitable) {
+											  case CQConcept cqConcept -> !cqConcept.isExcludeFromTimeAggregation();
+											  case CQExternal external -> external.containsDates();
+											  default -> false;
+										  });
 	}
 
 	/**
@@ -221,9 +210,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		if (queryId == null) {
 			queryId = UUID.randomUUID();
 		}
-		ManagedExecutionId managedExecutionId = new ManagedExecutionId(dataset, queryId);
-		managedExecutionId.setMetaStorage(getMetaStorage());
-		return managedExecutionId;
+		return new ManagedExecutionId(dataset, queryId);
 	}
 
 	/**
@@ -231,12 +218,12 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	 */
 	public void fail(ConqueryErrorInfo error) {
 		if (this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
-			// Warn only again if the error is different (failed might by called per collected result)
+			// Warn only again if the error is different (failed might be called per collected shard result)
 			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
 		}
 		else {
 			this.error = error;
-			// Log the error, so its id is atleast once in the logs
+			// Log the error, so its id is at least once in the logs
 			log.warn("The execution [{}] failed with:\n\t{}", getId(), getError());
 		}
 
@@ -245,14 +232,15 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	public synchronized void finish(ExecutionState executionState) {
 
+		// Modify state
 		finishTime = LocalDateTime.now();
 		progress = null;
 
-		// Set execution state before acting on the latch to prevent a race condition
-		// Not sure if also the storage needs an update first
-		getMetaStorage().updateExecution(this);
-
+		// Set execution state before acting on the latch (to prevent a race condition - should not happen as the CachedStore uses softValues)
 		getExecutionManager().updateState(getId(), executionState);
+
+		// Persist state of this execution
+		getMetaStorage().updateExecution(this);
 
 		// Signal to waiting threads that the execution finished
 		getExecutionManager().clearBarrier(getId());
@@ -275,7 +263,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 
 			if (getExecutionManager().isResultPresent(getId())) {
-				Preconditions.checkArgument(getExecutionManager().getResult(getId()).getState() != ExecutionState.RUNNING);
+				Preconditions.checkArgument(getExecutionManager().getExecutionInfo(getId()).getExecutionState() != ExecutionState.RUNNING);
 			}
 
 			startTime = LocalDateTime.now();
@@ -285,7 +273,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	/**
-	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
+	 * Renders a lightweight status with meta information about this query.
 	 */
 	public OverviewExecutionStatus buildStatusOverview(Subject subject) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
@@ -309,9 +297,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setContainsDates(containsDates);
 
 		if (owner != null) {
-			User user = metaStorage.get(owner);
+			User user = owner.get();
 
-			if(user != null) {
+			if (user != null) {
 				status.setOwner(user.getId());
 				status.setOwnerName(user.getLabel());
 			}
@@ -337,11 +325,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			return ExecutionState.NEW;
 		}
 
-		return getExecutionManager().getResult(getId()).getState();
+		return getExecutionManager().getExecutionInfo(getId()).getExecutionState();
 	}
 
 	/**
-	 * Renders an extensive status of this query (see {@link FullExecutionStatus}. The rendering can be computation intensive and can produce a large
+	 * Renders an extensive status of this query (see {@link FullExecutionStatus}). The rendering can be computation intensive and can produce a large
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
 	public FullExecutionStatus buildStatusFull(Subject subject, Namespace namespace) {
@@ -381,10 +369,13 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		 * This is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
 		List<GroupId> permittedGroups = new ArrayList<>();
-		for (Group group : getMetaStorage().getAllGroups().toList()) {
-			for (Permission perm : group.getPermissions()) {
-				if (perm.implies(createPermission(Ability.READ.asSet()))) {
-					permittedGroups.add(group.getId());
+
+		try (Stream<Group> allGroups = getMetaStorage().getAllGroups()) {
+			for (Group group : allGroups.toList()) {
+				for (Permission perm : group.getPermissions()) {
+					if (perm.implies(createPermission(Ability.READ.asSet()))) {
+						permittedGroups.add(group.getId());
+					}
 				}
 			}
 		}
@@ -417,17 +408,4 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
 		return ExecutionPermission.onInstance(abilities, getId());
 	}
-
-	//// Shortcut helper methods
-
-	public void reset() {
-		// This avoids endless loops with already reset queries
-		if (getState().equals(ExecutionState.NEW)) {
-			return;
-		}
-
-		getExecutionManager().clearQueryResults(this);
-	}
-
-	public abstract void cancel();
 }

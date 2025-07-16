@@ -13,7 +13,7 @@ import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
@@ -27,26 +27,6 @@ class QueryCleanupTaskTest {
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
 	private final Duration queryExpiration = Duration.ofDays(30);
-
-
-
-	private ManagedQuery createManagedQuery() {
-		final CQAnd root = new CQAnd();
-		root.setChildren(new ArrayList<>());
-
-		ConceptQuery query = new ConceptQuery(root);
-
-		final ManagedQuery managedQuery = new ManagedQuery(query, new UserId("test"), new Dataset("test").getId(), STORAGE, null);
-
-		managedQuery.setCreationTime(LocalDateTime.now().minus(queryExpiration).minusDays(1));
-
-		STORAGE.addExecution(managedQuery);
-		managedQuery.setMetaStorage(STORAGE);
-
-		return managedQuery;
-	}
-
-
 
 	@AfterEach
 	public void teardownAfterEach() {
@@ -67,6 +47,22 @@ class QueryCleanupTaskTest {
 		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(QueryCleanupTask.EXPIRATION_PARAM, List.of("PT719H")), null);
 
 		assertThat(STORAGE.getAllExecutions()).isEmpty();
+	}
+
+	private ManagedQuery createManagedQuery() {
+		final CQAnd root = new CQAnd();
+		root.setChildren(new ArrayList<>());
+
+		ConceptQuery query = new ConceptQuery(root);
+
+		final ManagedQuery managedQuery = new ManagedQuery(query, new UserId("test"), new DatasetId("test"), STORAGE, null, null);
+
+		managedQuery.setCreationTime(LocalDateTime.now().minus(queryExpiration).minusDays(1));
+
+		STORAGE.addExecution(managedQuery);
+		managedQuery.setMetaStorage(STORAGE);
+
+		return managedQuery;
 	}
 
 	@Test

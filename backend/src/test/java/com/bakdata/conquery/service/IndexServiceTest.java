@@ -15,10 +15,12 @@ import java.util.concurrent.TimeUnit;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.index.Index;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.index.MapInternToExternMapper;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import com.bakdata.conquery.util.extensions.MockServerExtension;
 import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvParserSettings;
@@ -43,6 +45,8 @@ public class IndexServiceTest {
 	public static final String MAPPING_PATH = "/tests/aggregator/MAPPED/mapping.csv";
 
 	private static final NamespaceStorage NAMESPACE_STORAGE = new NamespaceStorage(new NonPersistentStoreFactory(), IndexServiceTest.class.getName());
+	public static final NamespacedStorageProvider STORAGE_PROVIDER = new TestNamespacedStorageProvider(NAMESPACE_STORAGE);
+
 	private static final Dataset DATASET = new Dataset("dataset");
 	private static final ConqueryConfig CONFIG = new ConqueryConfig();
 	private final IndexService indexService = new IndexService(new CsvParserSettings(), "emptyDefaultLabel");
@@ -64,16 +68,16 @@ public class IndexServiceTest {
 
 		CONFIG.getIndex().setBaseUrl(new URI(String.format("http://localhost:%d/", REF_SERVER.getPort())));
 
-		NAMESPACE_STORAGE.openStores(null, null);
+		NAMESPACE_STORAGE.openStores(null);
 
-		DATASET.setNamespacedStorageProvider(NAMESPACE_STORAGE);
+		DATASET.setStorageProvider(STORAGE_PROVIDER);
 		NAMESPACE_STORAGE.updateDataset(DATASET);
 
 	}
 
 	@Test
 	@Order(0)
-	void testLoading() throws NoSuchFieldException, IllegalAccessException, URISyntaxException, IOException, ExecutionException, InterruptedException {
+	void testLoading() throws NoSuchFieldException, IllegalAccessException, URISyntaxException, IOException {
 		log.info("Test loading of mapping");
 
 		try (InputStream inputStream = In.resource(MAPPING_PATH).asStream()) {
@@ -132,7 +136,6 @@ public class IndexServiceTest {
 	private static void injectComponents(MapInternToExternMapper mapInternToExternMapper, IndexService indexService)
 			throws NoSuchFieldException, IllegalAccessException {
 
-		mapInternToExternMapper.setStorage(NAMESPACE_STORAGE);
 
 		final Field indexServiceField = MapInternToExternMapper.class.getDeclaredField(MapInternToExternMapper.Fields.mapIndex);
 		indexServiceField.setAccessible(true);

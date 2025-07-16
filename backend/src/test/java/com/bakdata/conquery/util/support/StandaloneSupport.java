@@ -11,7 +11,7 @@ import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.dropwizard.core.setup.Environment;
@@ -31,17 +31,13 @@ public class StandaloneSupport implements TestSupport {
 	@Getter
 	private final Namespace namespace;
 	@Getter
-	private final Dataset dataset;
+	private final DatasetId dataset;
 	@Getter
 	private final File tmpDir;
 	@Getter
 	private final ConqueryConfig config;
 	@Getter
 	private final TestDataImporter testImporter;
-
-	public void waitUntilWorkDone() {
-		testConquery.waitUntilWorkDone();
-	}
 
 	public void preprocessTmp(File tmpDir, List<File> descriptions) throws Exception {
 		final Environment env = testConquery.getDropwizard().getEnvironment();
@@ -67,13 +63,19 @@ public class StandaloneSupport implements TestSupport {
 	}
 
 	public NamespaceStorage getNamespaceStorage() {
-		return getStandaloneCommand().getManagerNode().getDatasetRegistry().get(dataset.getId()).getStorage();
+		return getStandaloneCommand().getManagerNode().getDatasetRegistry().get(dataset).getStorage();
 	}
 
 	public AuthorizationController getAuthorizationController() {
 		return testConquery.getStandaloneCommand().getManagerNode().getAuthController();
 	}
 
+	/**
+	 * Returns a http client with registered authentication.
+	 * The user is by default the initial user with a super permission.
+	 *
+	 * @return The http client
+	 */
 	public Client getClient() {
 		return testConquery.getClient();
 	}

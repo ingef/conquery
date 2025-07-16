@@ -3,7 +3,6 @@ package com.bakdata.conquery.util.extensions;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
-import com.codahale.metrics.MetricRegistry;
 import lombok.Getter;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -16,7 +15,7 @@ public class NamespaceStorageExtension implements BeforeAllCallback, BeforeEachC
 
 	@Override
 	public void beforeAll(ExtensionContext context) throws Exception {
-		storage.openStores(Jackson.MAPPER, new MetricRegistry());
+		storage.openStores(Jackson.MAPPER);
 	}
 
 	@Override

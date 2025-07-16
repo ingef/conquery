@@ -8,15 +8,23 @@ import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.query.DistributedExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @CPSType(id = "FORM_SHARD_RESULT", base = NamespacedMessage.class)
 @EqualsAndHashCode(callSuper = true)
-@Getter
+@ToString(onlyExplicitlyIncluded = true, callSuper = true)
+@NoArgsConstructor(onConstructor_ = {@JsonCreator})
 public class FormShardResult extends ShardResult {
 
-	private final ManagedExecutionId formId;
+	@Getter
+	@Setter
+	@ToString.Include
+	private ManagedExecutionId formId;
 
 	public FormShardResult(ManagedExecutionId formId, ManagedExecutionId subQueryId, WorkerId workerId) {
 		super(subQueryId, workerId);
@@ -32,7 +40,10 @@ public class FormShardResult extends ShardResult {
 		final ManagedQuery subQuery = managedInternalForm.getSubQuery(getQueryId());
 
 		if (subQuery == null) {
-			throw new IllegalStateException("Subquery %s did not belong to form %s. Known subqueries: %s".formatted(getQueryId(), formId, managedInternalForm.getSubQueries()));
+			throw new IllegalStateException("Subquery %s did not belong to form %s. Known subqueries: %s".formatted(getQueryId(),
+																													formId,
+																													managedInternalForm.getSubQueries()
+			));
 		}
 
 
@@ -40,11 +51,7 @@ public class FormShardResult extends ShardResult {
 
 		// Fail the whole execution if a subquery fails
 		if (ExecutionState.FAILED.equals(subQuery.getState())) {
-			managedInternalForm.fail(
-					getError().orElseThrow(
-							() -> new IllegalStateException(String.format("Query[%s] failed but no error was set.", subQuery.getId()))
-					)
-			);
+			managedInternalForm.fail(getError().orElseThrow(() -> new IllegalStateException(String.format("Query[%s] failed but no error was set.", subQuery.getId()))));
 		}
 
 		if (managedInternalForm.allSubQueriesDone()) {

@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -54,7 +55,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 				  .withUTF8()
 				  .readAll();
 
-		final DatasetId dataset = conquery.getDataset().getId();
+		final DatasetId dataset = conquery.getDataset();
 
 		final ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
 
@@ -69,21 +70,27 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		// Prepare the concept by injecting a filter template
 
 		NamespaceStorage namespaceStorage = conquery.getNamespace().getStorage();
-		final Concept<?> concept = namespaceStorage.getAllConcepts().iterator().next();
-		final Connector connector = concept.getConnectors().iterator().next();
+		Stream<Concept<?>> allConcepts = namespaceStorage.getAllConcepts();
+		final Concept<?> concept = allConcepts.findFirst().orElseThrow();
+		allConcepts.close();
+		final Connector connector = concept.getConnectors().getFirst();
 		final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
 
 		// Copy search csv from resources to tmp folder.
 		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
 		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines)
-								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE
+		);
 
 
 		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 
 		final FilterTemplate
 				filterTemplate =
-				new FilterTemplate(conquery.getDataset().getId(), "test", tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService);
+				new FilterTemplate(tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService);
+		filterTemplate.setDataset(conquery.getDataset());
+		filterTemplate.setName("test");
+
 		filter.setTemplate(filterTemplate.getId());
 
 		// We need to persist the modification before we submit the update matching stats request
@@ -101,7 +108,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 							   )
 							   .buildFromMap(
 									   Map.of(
-											   DATASET, conquery.getDataset().getId(),
+											   DATASET, conquery.getDataset(),
 											   CONCEPT, concept.getId(),
 											   TABLE, filter.getConnector().getResolvedTable().getId(),
 											   FILTER, filter.getId()
@@ -109,10 +116,11 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 							   );
 
 		// from csv
-		{
-			final Response fromCsvResponse = conquery.getClient().target(resolveUri)
-													 .request(MediaType.APPLICATION_JSON_TYPE)
-													 .post(Entity.entity(new FilterResource.FilterValues(List.of("a", "aaa", "unknown")), MediaType.APPLICATION_JSON_TYPE));
+		try (final Response fromCsvResponse = conquery.getClient().target(resolveUri)
+													  .request(MediaType.APPLICATION_JSON_TYPE)
+													  .post(Entity.entity(new FilterResource.FilterValues(List.of("a", "aaa", "unknown")),
+																		  MediaType.APPLICATION_JSON_TYPE
+													  ))) {
 
 			final ConceptsProcessor.ResolvedFilterValues resolved = fromCsvResponse.readEntity(ConceptsProcessor.ResolvedFilterValues.class);
 
@@ -123,10 +131,9 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		}
 
 		// from column values
-		{
-			final Response fromCsvResponse = conquery.getClient().target(resolveUri)
-													 .request(MediaType.APPLICATION_JSON_TYPE)
-													 .post(Entity.entity(new FilterResource.FilterValues(List.of("f", "unknown")), MediaType.APPLICATION_JSON_TYPE));
+		try (final Response fromCsvResponse = conquery.getClient().target(resolveUri)
+													  .request(MediaType.APPLICATION_JSON_TYPE)
+													  .post(Entity.entity(new FilterResource.FilterValues(List.of("f", "unknown")), MediaType.APPLICATION_JSON_TYPE))) {
 
 			final ConceptsProcessor.ResolvedFilterValues resolved = fromCsvResponse.readEntity(ConceptsProcessor.ResolvedFilterValues.class);
 

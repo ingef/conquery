@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.query.DistributedExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Worker;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
-@NoArgsConstructor
+@NoArgsConstructor(onConstructor_ = {@JsonCreator})
 public class ShardResult  extends NamespaceMessage {
 
 
@@ -57,7 +58,7 @@ public class ShardResult  extends NamespaceMessage {
 		this.workerId = workerId;
 	}
 
-	public synchronized void finish(@NonNull List<EntityResult> results, Optional<Throwable> exc, Worker worker) {
+	public synchronized void finish(@NonNull List<EntityResult> results, Optional<Throwable> maybeError, Worker worker) {
 		if (worker.getQueryExecutor().isCancelled(getQueryId())) {
 			// Query is done so we no longer need the cancellation entry.
 			worker.getQueryExecutor().unsetQueryCancelled(getQueryId());
@@ -66,10 +67,10 @@ public class ShardResult  extends NamespaceMessage {
 
 		finishTime = LocalDateTime.now();
 
-		if (exc.isPresent()) {
-			log.warn("FAILED Query[{}] within {}", queryId, Duration.between(startTime, finishTime));
+		if (maybeError.isPresent()) {
+			log.warn("FAILED Query[{}] within {}", queryId, Duration.between(startTime, finishTime), maybeError.get());
 
-			setError(exc.map(ConqueryError::asConqueryError));
+			setError(maybeError.map(ConqueryError::asConqueryError));
 		}
 		else {
 			log.info("FINISHED Query[{}] with {} results within {}", queryId, results.size(), Duration.between(startTime, finishTime));

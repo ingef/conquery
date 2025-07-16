@@ -12,11 +12,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -138,12 +140,14 @@ public class UpdateFilterSearchJob extends Job {
 
 	@NotNull
 	public static List<SelectFilter<?>> getAllSelectFilters(NamespaceStorage storage) {
-		return storage.getAllConcepts()
-					  .flatMap(c -> c.getConnectors().stream())
-					  .flatMap(co -> co.collectAllFilters().stream())
-					  .filter(SelectFilter.class::isInstance)
-					  .map(f -> ((SelectFilter<?>) f))
-					  .collect(Collectors.toList());
+		try(Stream<Concept<?>> allConcepts = storage.getAllConcepts();) {
+			return allConcepts
+					.flatMap(c -> c.getConnectors().stream())
+					.flatMap(co -> co.collectAllFilters().stream())
+					.filter(SelectFilter.class::isInstance)
+					.map(f -> ((SelectFilter<?>) f))
+					.collect(Collectors.toList());
+		}
 	}
 
 	@Override

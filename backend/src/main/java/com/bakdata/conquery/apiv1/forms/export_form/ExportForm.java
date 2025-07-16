@@ -21,9 +21,12 @@ import com.bakdata.conquery.apiv1.query.CQYes;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQNegation;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
@@ -101,7 +104,7 @@ public class ExportForm extends Form implements InternalForm {
 	 * 						Note that this alignment is chosen when a resolution is equal or coarser.
 	 * @return The given resolutions mapped to a fitting calendar alignment.
 	 */
-	public static List<ExportForm.ResolutionAndAlignment> getResolutionAlignmentMap(List<Resolution> resolutions, Alignment alignmentHint) {
+	public static List<ResolutionAndAlignment> getResolutionAlignmentMap(List<Resolution> resolutions, Alignment alignmentHint) {
 
 		return resolutions.stream()
 				.map(r -> ResolutionAndAlignment.of(r, getFittingAlignment(alignmentHint, r)))
@@ -136,8 +139,9 @@ public class ExportForm extends Form implements InternalForm {
 	}
 
 	@Override
-	public ManagedInternalForm<ExportForm> toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
-		return new ManagedInternalForm<>(this, user, submittedDataset, storage, datasetRegistry);
+	public ManagedInternalForm<ExportForm> toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry,
+															  ConqueryConfig config) {
+		return new ManagedInternalForm<>(this, user, submittedDataset, storage, datasetRegistry, config);
 	}
 
 	@Override
@@ -161,7 +165,7 @@ public class ExportForm extends Form implements InternalForm {
 
 
 		// Apply defaults to user concept
-		ExportForm.DefaultSelectSettable.enable(features);
+		DefaultSelectSettable.enable(features);
 
 		timeMode.resolve(context);
 
@@ -175,7 +179,7 @@ public class ExportForm extends Form implements InternalForm {
 			if (resolutionsFlat.size() != 1) {
 				throw new IllegalStateException("Abort Form creation, because coarser subdivision are requested and multiple resolutions are given. With 'alsoCreateCoarserSubdivisions' set to true, provide only one resolution.");
 			}
-			resolvedResolutions = resolutionsFlat.get(0).getThisAndCoarserSubdivisions();
+			resolvedResolutions = resolutionsFlat.getFirst().getThisAndCoarserSubdivisions();
 		}
 		else {
 			resolvedResolutions = resolutionsFlat;
@@ -185,16 +189,25 @@ public class ExportForm extends Form implements InternalForm {
 	/**
 	 * Classes that can be used as Features in ExportForm, having default-exists, are triggered this way.
 	 */
-	public static interface DefaultSelectSettable {
-		public static void enable(List<CQElement> features) {
-			for (CQElement feature : features) {
-				if(feature instanceof DefaultSelectSettable){
-					((DefaultSelectSettable) feature).setDefaultExists();
-				}
+	public interface DefaultSelectSettable {
+
+		static void enable(CQElement feature) {
+			switch (feature) {
+				case DefaultSelectSettable settable  -> settable.setDefaultSelects();
+				// CQNegation and CQDateRestriction chain CQElements and don't have selects themselves
+				case CQNegation negation -> enable(negation.getChild());
+				case CQDateRestriction dr -> enable(dr.getChild());
+				default -> {}
 			}
 		}
 
-		void setDefaultExists();
+		static void enable(List<CQElement> features) {
+			for (CQElement feature : features) {
+				enable(feature);
+			}
+		}
+
+		void setDefaultSelects();
 	}
 
 	/**
