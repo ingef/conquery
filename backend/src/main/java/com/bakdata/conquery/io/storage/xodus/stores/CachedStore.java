@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Stream;
 
@@ -153,14 +154,15 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		final Stopwatch timer = Stopwatch.createStarted();
 
-		final Set<KEY> dupes = new HashSet<>();
+		final Object VALUE_DUMMY = new Object();
+		final ConcurrentHashMap<KEY,Object> dupes = new ConcurrentHashMap<>();
 
 		store.forEach((key, value, size) -> {
 			try {
 				totalSize.add(size);
 				added(key, value);
 
-				if (!dupes.add(key)) {
+				if (dupes.put(key, VALUE_DUMMY) != null) {
 					log.warn("Multiple Keys deserialize to `{}`", key);
 				}
 			}
