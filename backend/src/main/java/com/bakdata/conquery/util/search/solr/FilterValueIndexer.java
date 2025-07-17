@@ -65,7 +65,7 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 		}
 
 		// Commit what is left
-		log.info("Commiting the last {} documents of {}", openDocs.size(), searchable);
+		log.trace("Commiting the last {} documents of {}", openDocs.size(), searchable);
 		registerValues(openDocs);
 		openDocs.clear();
 		seenValues.clear();
