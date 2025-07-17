@@ -157,13 +157,13 @@ public class AdminDatasetResource {
 	@POST
 	@Path("concepts")
 	public void addConcept(@QueryParam("force") @DefaultValue("false") boolean force, Concept<?> concept) {
-		processor.addConcept(namespace.getDataset(), concept, force);
+		processor.addConcept(namespace, concept, force);
 	}
 
 	@PUT
 	@Path("concepts")
 	public void updateConcept(Concept<?> concept) {
-		processor.updateConcept(namespace.getDataset(), concept);
+		processor.updateConcept(namespace, concept);
 	}
 
 	@DELETE

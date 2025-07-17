@@ -59,11 +59,11 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	@Override
 	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
 
-		if (!isCategorical()) {
-			return new SelectResultInfo(this, cqConcept, Collections.emptySet());
+		if (isCategorical()) {
+			return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()));
 		}
+		return new SelectResultInfo(this, cqConcept, Collections.emptySet());
 
-		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()));
 	}
 
 	@Override
@@ -71,6 +71,13 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 		if (mapping == null) {
 			return ResultType.resolveResultType(getColumn().resolve().getType());
 		}
+
+		InternToExternMapper resolved = mapping.resolve();
+
+		if (resolved.isAllowMultiple()) {
+			return new ResultType.ListT<>(ResultType.Primitive.STRING);
+		}
+
 		return ResultType.Primitive.STRING;
 	}
 

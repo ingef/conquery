@@ -50,6 +50,7 @@ public abstract class Namespace implements Injectable {
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
 		storage.getDataset().inject(values);
+		storage.inject(values);
 		return values.add(Namespace.class, this);
 	}
 

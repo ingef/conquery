@@ -45,7 +45,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		test.importRequiredData(conquery);
 
 		// Parse the query in the context of the conquery instance, not the test, to have the IdResolver properly set
-		Query query = ConqueryTestSpec.parseSubTree(conquery, test.getRawQuery(), Query.class, false);
+		Query query = ConqueryTestSpec.parseSubTree(conquery, test.getRawQuery(), Query.class, true);
 
 		// Create execution for download
 		ManagedQuery exec = new ManagedQuery(query, user.getId(), conquery.getDataset(), storage, conquery.getDatasetRegistry(), conquery.getConfig());

@@ -60,8 +60,9 @@ public class Dataset extends LabeledNamespaceIdentifiable<DatasetId> implements 
 	public Table getAllIdsTable() {
 		// TODO migrate to NamespaceStorage
 		final Table table = new Table();
-		table.setDataset(this.getId());
+		table.setNamespacedStorageProvider(storageProvider.getStorage(getDataset()));
 		table.setName(ConqueryConstants.ALL_IDS_TABLE);
+		table.init();
 
 		// We could use the resolvers of this dataset, but actually this table's id should never be resolved
 		return table;
