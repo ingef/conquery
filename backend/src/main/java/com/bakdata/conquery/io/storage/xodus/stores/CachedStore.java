@@ -154,15 +154,14 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		final Stopwatch timer = Stopwatch.createStarted();
 
-		final Object VALUE_DUMMY = new Object();
-		final ConcurrentHashMap<KEY,Object> dupes = new ConcurrentHashMap<>();
+		final Set<KEY> dupes = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
 		store.forEach((key, value, size) -> {
 			try {
 				totalSize.add(size);
 				added(key, value);
 
-				if (dupes.put(key, VALUE_DUMMY) != null) {
+				if (!dupes.add(key)) {
 					log.warn("Multiple Keys deserialize to `{}`", key);
 				}
 			}
