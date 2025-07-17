@@ -122,12 +122,7 @@ public class QueryCleanupTask extends Task {
 			}
 
 			if (dryRun) {
-			if (dryRun) {
 				log.info("Dry Run: Cleanup would delete {} Executions", toDelete.size());
-				return;
-			}
-
-log.info("Deleting {} Executions", toDelete.size());
 				return;
 			}
 
