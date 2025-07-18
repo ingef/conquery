@@ -17,6 +17,7 @@ public enum ConceptCteStep implements CteStep {
 	AGGREGATION_SELECT("group_select", EVENT_FILTER),
 	JOIN_BRANCHES("join_branches", AGGREGATION_SELECT),
 	AGGREGATION_FILTER("group_filter", JOIN_BRANCHES),
+	NEGATION("negation", AGGREGATION_FILTER),
 
 	// interval packing selects
 	UNNEST_DATE("unnested", null),
