@@ -14,6 +14,11 @@ public interface Store<KEY, VALUE> extends ManagedStore {
 
 	VALUE get(KEY key);
 
+	/**
+	 * Iterate over all key-value pairs in the store.
+	 * @param consumer Key-value consumer.
+	 * @implSpec    The consumer must be thread-safe
+	 */
 	IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer);
 
 	// TODO: 08.01.2020 fk: Is this still necessary? The implementation in XodusStore uses different methods that in our context don't act differently.
