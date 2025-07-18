@@ -1,8 +1,5 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
-import java.util.Collection;
-import java.util.UUID;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
@@ -17,8 +14,11 @@ import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collection;
+import java.util.UUID;
+
 /**
- * This message returns the result of the {@link CollectColumnValuesJob} to the namespace on the manager.
+ * This message returns the result of the {@link CollectColumnValuesMessage} to the namespace on the manager.
  */
 @CPSType(id = "REGISTER_COLUMN_VALUES", base = NamespacedMessage.class)
 @AllArgsConstructor(onConstructor_ = @JsonCreator)

@@ -62,7 +62,7 @@ public class FilterResource extends HAuthorized {
 
 
 		try {
-			return processor.autocompleteTextFilter(filter, request.text(), request.page(), request.pageSize());
+			return processor.autocompleteTextFilter(filter, request.text().orElse(null), request.page(), request.pageSize());
 		}
 		catch (IllegalArgumentException e) {
 			throw new BadRequestException(e);

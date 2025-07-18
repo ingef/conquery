@@ -177,6 +177,7 @@ public abstract class FilterValue<VALUE> {
 		@NotNull
 		@EqualsAndHashCode.Exclude
 		@Setter(onMethod_ = {@TestOnly})
+		@ToString.Exclude
 		private ConqueryConfig config;
 
 		@JsonCreator
