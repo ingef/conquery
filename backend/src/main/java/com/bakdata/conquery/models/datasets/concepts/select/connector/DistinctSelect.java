@@ -51,7 +51,11 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 
 	@Override
 	public ResultType getResultType() {
-		return new ResultType.ListT<>(super.getResultType());
+		if (getMapping() == null) {
+			return new ResultType.ListT<>(ResultType.resolveResultType(getColumn().resolve().getType()));
+		}
+
+		return new ResultType.ListT<>(ResultType.Primitive.STRING);
 	}
 
 	/**

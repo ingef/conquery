@@ -31,7 +31,7 @@ public class FilterSearchItemTest {
 
 
 	@Test
-	public void sortedValidityDates() {
+	public void sortedValidityDates() throws Exception {
 
 		Dataset dataset = new Dataset();
 		dataset.setName("testDataset");
@@ -40,7 +40,7 @@ public class FilterSearchItemTest {
 		NAMESPACED_STORAGE.updateDataset(dataset);
 
 		Table table = new Table();
-		table.setDataset(dataset.getId());
+		table.setNamespacedStorageProvider(NAMESPACED_STORAGE);
 		table.setName("testTable");
 
 		Column column = new Column();
@@ -57,11 +57,13 @@ public class FilterSearchItemTest {
 		dateColumn2.setType(MajorTypeId.DATE);
 		dateColumn2.setTable(table);
 
+		table.init();
+
 		NAMESPACED_STORAGE.addTable(table);
 
 
 		TreeConcept concept = new TreeConcept();
-		concept.setDataset(dataset.getId());
+		concept.setNamespacedStorageProvider(NAMESPACED_STORAGE);
 		concept.setName("testConcept");
 
 		ConceptTreeConnector connector = new ConceptTreeConnector();
@@ -83,6 +85,8 @@ public class FilterSearchItemTest {
 		connector.setColumn(column.getId());
 		connector.setConcept(concept);
 		connector.setValidityDates(validityDates);
+
+		concept.init();
 
 		NAMESPACED_STORAGE.updateConcept(concept);
 

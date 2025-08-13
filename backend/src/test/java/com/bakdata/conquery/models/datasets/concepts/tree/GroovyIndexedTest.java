@@ -77,7 +77,8 @@ public class GroovyIndexedTest {
 
 		storage.updateDataset(dataset);
 
-		table.setDataset(dataset.getId());
+		table.setNamespacedStorageProvider(storage);
+		table.init();
 
 		Column column = new Column();
 		column.setName("the_column");
@@ -95,12 +96,12 @@ public class GroovyIndexedTest {
 		// load tree twice to to avoid references
 		indexedConcept = conceptReader.readValue(node);
 
-		indexedConcept.setDataset(dataset.getId());
+		indexedConcept.setNamespacedStorageProvider(storage);
 		indexedConcept.initElements();
 
 		oldConcept = conceptReader.readValue(node);
 
-		oldConcept.setDataset(dataset.getId());
+		oldConcept.setNamespacedStorageProvider(storage);
 		oldConcept.initElements();
 	}
 

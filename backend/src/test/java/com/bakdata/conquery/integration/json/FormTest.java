@@ -93,7 +93,7 @@ public class FormTest extends ConqueryTestSpec {
 	}
 
 	private Form parseForm(StandaloneSupport support) throws IOException {
-		return parseSubTree(support, rawForm, Form.class, true);
+		return parseSubTree(support, rawForm, Form.class, false);
 	}
 
 	private void checkResults(StandaloneSupport standaloneSupport, ManagedInternalForm<?> managedForm, User user) throws IOException {
