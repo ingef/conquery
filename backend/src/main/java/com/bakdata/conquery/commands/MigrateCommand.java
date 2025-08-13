@@ -138,6 +138,9 @@ public class MigrateCommand extends ConqueryCommand {
 			  .forEach(xenv ->
 					   {
 						   final File environmentDirectory = new File(outStoreDirectory, xenv.getName());
+						   if (environmentDirectory.exists()) {
+							   throw new IllegalArgumentException("File or folder already exists. Cannot create environment: " + environmentDirectory.getAbsolutePath());
+						   }
 						   if (!environmentDirectory.mkdirs()) {
 							   throw new IllegalArgumentException("Cannot create environment directory: " + environmentDirectory.getAbsolutePath());
 						   }
