@@ -21,7 +21,7 @@ public class VersionInfo {
 
 	public final static VersionInfo INSTANCE = new VersionInfo();
 
-	private ZonedDateTime buildTime;
+	private final ZonedDateTime buildTime;
 	private final String projectVersion;
 
 	/**
@@ -39,12 +39,14 @@ public class VersionInfo {
 			}
 
 			String timeProp = properties.getProperty("build.time");
+			ZonedDateTime parsedBuildTime = null;
 			try {
-				buildTime = ZonedDateTime.parse(timeProp);
+				parsedBuildTime = ZonedDateTime.parse(timeProp);
 			}
 			catch (Exception e) {
 				log.error("Could not parse date time from git.properties", e);
 			}
+			buildTime = parsedBuildTime;
 			projectVersion = properties.getProperty("project.version");
 		}
 		catch (Exception e) {
