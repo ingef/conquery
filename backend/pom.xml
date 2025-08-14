@@ -52,6 +52,7 @@
                         <configuration>
                             <excludes>
                                 <exclude>tests/**/*</exclude>
+                                <exclude>com/bakdata/conquery/frontend/form/**/*</exclude>
                                 <exclude>com/bakdata/conquery/integration/ConqueryIntegrationTests</exclude>
                             </excludes>
                         </configuration>
