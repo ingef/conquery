@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.LabelMap;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.search.solr.SolrConfig;
 import com.bakdata.conquery.models.datasets.Column;
@@ -36,7 +37,6 @@ import com.bakdata.conquery.util.extensions.SolrServerExtension;
 import com.bakdata.conquery.util.progressreporter.ProgressReporterImpl;
 import com.bakdata.conquery.util.search.solr.SolrBundle;
 import com.bakdata.conquery.util.search.solr.SolrProcessor;
-import com.github.powerlibraries.io.In;
 import com.google.common.collect.ImmutableBiMap;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.dropwizard.core.setup.Environment;
@@ -80,7 +80,7 @@ public class SolrFilterValueTest {
 	@SneakyThrows(IOException.class)
 	public static void initRefServer(ClientAndServer mockServer) {
 
-		try (InputStream inputStream = In.resource(MAPPING_PATH).asStream()) {
+		try (InputStream inputStream = LoadingUtil.openResource(MAPPING_PATH)) {
 			mockServer.when(request().withPath("/mapping.csv"))
 					  .respond(HttpResponse.response().withContentType(new MediaType("text", "csv")).withBody(inputStream.readAllBytes()));
 		}

@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,9 +60,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.assertj.core.description.LazyTextDescription;
 
 @Slf4j
@@ -411,6 +414,16 @@ public class LoadingUtil {
 									 .request(MediaType.APPLICATION_JSON_TYPE)
 									 .post(null);
 		post.close();
+	}
+
+	@SneakyThrows
+	public static InputStream openResource(String path) {
+		return IOUtils.resourceToURL(path).openStream();
+	}
+
+	@SneakyThrows
+	public static String readResource(String path) {
+		return IOUtils.resourceToString(path, StandardCharsets.UTF_8);
 	}
 
 }

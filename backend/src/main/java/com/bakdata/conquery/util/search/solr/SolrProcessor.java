@@ -149,22 +149,23 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	 * @return the name for the searchable
 	 */
 	private String buildNameForSearchable(Searchable searchable) {
-		String name = switch (searchable) {
-			case Column column -> {
 
-				String columnGroup = filterValueConfig.getColumnGroup(column);
-				if (columnGroup == null) {
-					yield column.getSearchHandle();
-				}
-				log.trace("Mapping column {} to search group {}", column.getId(), columnGroup);
-				yield "shared_column_" + columnGroup;
-			}
-			default -> searchable.getSearchHandle();
-		};
+		String name = searchable instanceof Column column
+					  ? getNameFromColumn(column)
+					  : searchable.getSearchHandle();
 
 		name = ClientUtils.escapeQueryChars(name);
 
 		return name;
+	}
+
+	private String getNameFromColumn(Column column) {
+		String columnGroup = filterValueConfig.getColumnGroup(column);
+		if (columnGroup == null) {
+			return column.getSearchHandle();
+		}
+		log.trace("Mapping column {} to search group {}", column.getId(), columnGroup);
+		return "shared_column_" + columnGroup;
 	}
 
 	/**
