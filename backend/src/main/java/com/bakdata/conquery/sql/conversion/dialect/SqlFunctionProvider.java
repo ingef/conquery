@@ -75,6 +75,11 @@ public interface SqlFunctionProvider {
 	ColumnDateRange forValidityDate(ValidityDate validityDate);
 
 	/**
+	 * Creates a {@link ColumnDateRange} of maximum range.
+	 */
+	ColumnDateRange maxRange();
+
+	/**
 	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date. The validity dates bounds will be restricted by the given date
 	 * restriction.
 	 */
@@ -93,6 +98,8 @@ public interface SqlFunctionProvider {
 	ColumnDateRange toDualColumn(ColumnDateRange columnDateRange);
 
 	ColumnDateRange intersection(ColumnDateRange left, ColumnDateRange right);
+
+	Condition isNotEmptyDateRange(List<Field<?>> field);
 
 	/**
 	 * @param predecessor The predeceasing step containing the aggregated {@link ColumnDateRange}.
