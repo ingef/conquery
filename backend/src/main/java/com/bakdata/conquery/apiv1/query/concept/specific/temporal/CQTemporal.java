@@ -118,6 +118,7 @@ public class CQTemporal extends CQElement {
 	}
 
 	private List<ConstantValueAggregator<List>> createShimAggregators() {
+		//TODO Don't create list, if it's not ALL?
 		return compare.getResultInfos()
 					  .stream()
 					  .map(info -> new ConstantValueAggregator<List>(new ArrayList<>(), new ResultType.ListT(info.getType())))

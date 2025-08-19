@@ -1,0 +1,99 @@
+{
+  "type": "QUERY_TEST",
+  "label": "Temporal ALL Before",
+  "expectedCsv": "tests/query/TEMPORAL/ALL_BEFORE_ALL/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "TEMPORAL",
+      "indexSelector": "ALL",
+      "compareSelector": "ALL",
+      "mode": {
+        "type": "BEFORE",
+        "days": {
+          "min": 1,
+          "max" : 4
+        }
+      },
+      "index": {
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "concept.connector",
+            "filters": [
+              {
+                "filter": "concept.connector.filter",
+                "type": "SELECT",
+                "value": "f"
+              }
+            ]
+          }
+        ]
+      },
+      "compare": {
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "concept.connector",
+            "filters": [
+              {
+                "filter": "concept.connector.filter",
+                "type": "SELECT",
+                "value": "m"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "table",
+          "validityDates": {
+            "name": "datum",
+            "column": "table.datum"
+          },
+          "filters": {
+            "name": "filter",
+            "column": "table.value",
+            "type": "SINGLE_SELECT"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/TEMPORAL/ALL_BEFORE_ALL/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "value",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}
