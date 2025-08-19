@@ -66,13 +66,14 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 		// I use arrays here as they are much easier to keep aligned and their size is known ahead of time
 		final CDateRange[] periods = indexSelector.sample(indexSubPlan.getDateAggregator().createAggregationResult());
-		final boolean[] results = new boolean[periods.length];
+
 		final CDateRange[] convertedPeriods = indexMode.convert(periods, CDateRange::getMinValue, indexSelector);
+		final boolean[] results = new boolean[convertedPeriods.length];
 
 		log.trace("Querying {} for {} => {}", entity, periods, convertedPeriods);
 
 		// First execute sub-query with index's sub-period
-		// to extract compares's sub-periods which are then used to evaluate compare for aggregation/inclusion.
+		// to extract compares sub-periods which are then used to evaluate compare for aggregation/inclusion.
 		for (int current = 0; current < convertedPeriods.length; current++) {
 			final CDateRange indexPeriod = convertedPeriods[current];
 
