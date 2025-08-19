@@ -1,16 +1,21 @@
 package com.bakdata.conquery.util.search.solr;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Predicate;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.models.messages.namespaces.specific.RegisterColumnValues;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
 import com.google.common.base.Stopwatch;
@@ -39,9 +44,15 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 	public final int updateChunkSize;
 
 	/**
-	 * Buffer docs to send larger update chunks (size {@link FilterValueIndexer#updateChunkSize}).
+	 * Current chunk that is filled with column values through {@link RegisterColumnValues} -- only a single thread/job accesses it at a time.
+	 * A filled chunk is inserted into {@link FilterValueIndexer#openChunks} and is concurrently extracted by {@link FilterValueIndexer#submitter}
 	 */
-	private final LinkedList<SolrFrontendValue> openDocs = new LinkedList<>();
+	private Collection<SolrFrontendValue> openChunk = new ArrayList<>();
+
+	/**
+	 * Buffer docs to send repartitioned update chunks.
+	 */
+	private final Queue<Collection<SolrFrontendValue>> openChunks = new ConcurrentLinkedQueue<>();
 
 
 	/**
@@ -55,19 +66,32 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 	 */
 	private final Set<String> seenValues = ConcurrentHashMap.newKeySet();
 
-	Throwable clientError = null;
+	private Throwable clientError = null;
+
+	/**
+	 * Single threaded runtime for the chunk submitter.
+	 */
+	private final ExecutorService executor;
+
+	/**
+	 * Asynchronous submitter for solr docs.
+	 */
+	private CompletableFuture<Void> submitter = CompletableFuture.completedFuture(null);
 
 
 	@Override
 	public void finalizeSearch() {
-		if (openDocs.isEmpty()) {
+		if (openChunk.isEmpty() && openChunks.isEmpty()) {
 			return;
 		}
 
+		openChunks.add(openChunk);
+
 		// Commit what is left
-		log.trace("Commiting the last {} documents of {}", openDocs.size(), searchable);
-		registerValues(openDocs);
-		openDocs.clear();
+		log.trace("Commiting the last {} documents of {}", openChunk.size(), searchable);
+		openChunk = new ArrayList<>();
+		submitChunk().join();
+		openChunks.clear();
 		seenValues.clear();
 	}
 
@@ -104,11 +128,11 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 
 		SolrFrontendValue solrFrontendValue = new SolrFrontendValue(searchable, sourcePriority, feValue);
 
-		scheduleForIndex(solrFrontendValue);
+		insertIntoChunk(solrFrontendValue);
 
 	}
 
-	private void scheduleForIndex(SolrFrontendValue solrFrontendValue) {
+	private void insertIntoChunk(SolrFrontendValue solrFrontendValue) {
 
 		if (solrFrontendValue.value_s.isEmpty()) {
 			if (seenEmpty) {
@@ -124,26 +148,50 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 			return;
 		}
 
-		openDocs.add(solrFrontendValue);
+		openChunk.add(solrFrontendValue);
 
-		// We chunk here for performance.
-		// Too many small document request cause a lot of overhead.
-		// A too large chunk slows request submission and solr.
-		while (openDocs.size() >= updateChunkSize) {
-			log.trace("Adding {} documents for {}", openDocs.size(), searchable);
-			registerValues(openDocs);
-			openDocs.clear();
+		if (openChunk.size() >= updateChunkSize) {
+			openChunks.add(openChunk);
+			openChunk = new ArrayList<>(updateChunkSize);
 		}
 	}
 
-	public void registerValuesRaw(Collection<String> values) {
-		List<SolrFrontendValue> solrFrontendValues = values.stream()
-														   .filter(Objects::nonNull)
-														   .filter(Predicate.not(String::isBlank))
-														   .map(value -> new SolrFrontendValue(searchable, sourcePriority, value, null, null))
-														   .toList();
+	private synchronized CompletableFuture<Void> submitChunk() {
+		submitter =  submitter.thenRunAsync(
+				() -> {
+					if (openChunks.isEmpty()) {
+						return;
+					}
 
-		solrFrontendValues.forEach(this::scheduleForIndex);
+					// We chunk here for performance.
+					// Too many small document request cause a lot of overhead.
+					// A too large chunk slows request submission and solr.
+					do  {
+						int chunksCount = openChunks.size();
+
+						Collection<SolrFrontendValue> chunk = openChunks.poll();
+						log.debug("Adding {} (of currently ca. {}) documents for {}", chunk.size(), chunksCount*updateChunkSize, searchable);
+						registerValues(chunk);
+					} while (!openChunks.isEmpty());
+				},
+				executor
+		);
+
+		return submitter;
+	}
+
+	public void registerValuesRaw(Collection<String> values) {
+		values.stream()
+			   .filter(Objects::nonNull)
+			   .filter(Predicate.not(String::isBlank))
+			   .map(value -> new SolrFrontendValue(searchable, sourcePriority, value, null, null))
+			   .forEach(this::insertIntoChunk);
+
+		// Check if there is already a submitter working on pending docs
+		if (submitter.isDone()) {
+			// Start submitting so we can start free pending documents
+			submitChunk();
+		}
 	}
 
 	private void registerValues(Collection<SolrFrontendValue> solrFrontendValues) {
@@ -159,8 +207,8 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 
 		try {
 			Stopwatch stopwatch = Stopwatch.createStarted();
-			log.debug("BEGIN registering {} values to {} for {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable);
-			solrClient.addBeans(solrFrontendValues, -1); // do not commit yet
+			log.trace("BEGIN registering {} values to {} for {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable);
+			solrClient.addBeans(solrFrontendValues); // do not commit yet
 			log.trace("DONE registering {} values to {} for {} in {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable, stopwatch);
 		}
 		catch (SolrServerException | IOException e) {

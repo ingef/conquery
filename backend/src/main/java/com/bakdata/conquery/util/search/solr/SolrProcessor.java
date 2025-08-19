@@ -29,7 +29,6 @@ import com.bakdata.conquery.models.index.FrontendValueIndex;
 import com.bakdata.conquery.models.index.FrontendValueIndexKey;
 import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.models.jobs.Job;
-import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
@@ -40,6 +39,7 @@ import com.bakdata.conquery.util.search.SearchProcessor;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.util.Duration;
 import lombok.NonNull;
@@ -70,8 +70,6 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	@SuppressWarnings("unused")
 	private final Duration commitWithin;
 
-	private final int updateChunkSize;
-
 	private final FilterValueConfig filterValueConfig;
 
 	private final Map<String, FilterValueIndexer> indexers = new ConcurrentHashMap<>();
@@ -80,8 +78,19 @@ public class SolrProcessor implements SearchProcessor, Managed {
 
 	private SolrClient solrIndexClient;
 
+	/**
+	 * Single threaded runtime for the chunk submitter.
+	 * This is mainly used to decouple mina threads from the solr client in order to prevent blocking and to convert between {@link com.bakdata.conquery.models.messages.namespaces.specific.RegisterColumnValues}'s
+	 * and solr chunk sizes.
+	 */
+	private ExecutorService chunkDecoupleExecutor;
+
 	@Override
 	public void start() throws Exception {
+		chunkDecoupleExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
+																		  .setNameFormat("solr-submitter-%d")
+																		  .setDaemon(true)
+																		  .build());
 		refreshClients();
 	}
 
@@ -112,6 +121,8 @@ public class SolrProcessor implements SearchProcessor, Managed {
 
 	@Override
 	public void stop() throws Exception {
+		List<Runnable> runnables = chunkDecoupleExecutor.shutdownNow();
+		log.debug("Cancelling {} runnables for solr", runnables.size());
 		solrSearchClient.close();
 		solrIndexClient.close();
 	}
@@ -187,21 +198,21 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		String nameForSearchable = buildNameForSearchable(searchable);
 		int sourcePriority = getFilterValueSourcePriority(searchable);
 
-        return indexers.computeIfAbsent(nameForSearchable, searchRef -> new FilterValueIndexer(solrIndexClient, nameForSearchable, sourcePriority, updateChunkSize));
+        return indexers.computeIfAbsent(nameForSearchable, searchRef -> new FilterValueIndexer(solrIndexClient, nameForSearchable, sourcePriority, filterValueConfig.getUpdateChunkSize(),chunkDecoupleExecutor));
 	}
 
 	@Override
 	public void finalizeSearch(Searchable searchable) {
 		String nameForSearchable = buildNameForSearchable(searchable);
 		log.info("Finalizing Search for {}", searchable);
-		Search<FrontendValue> frontendValueSearch = indexers.get(nameForSearchable);
+		FilterValueIndexer indexer = indexers.get(nameForSearchable);
 
-		if (frontendValueSearch == null) {
+		if (indexer == null) {
 			log.info("Skipping finalization of {}, because it does not exist", searchable);
 			return;
 		}
 
-		frontendValueSearch.finalizeSearch();
+		indexer.finalizeSearch();
 	}
 
 	public AutoCompleteResult topItems(SelectFilter<?> filter, String text, Integer start, Integer limit) {
@@ -357,15 +368,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 
 	@Override
 	public Job createFinalizeFilterSearchJob(Namespace namespace, Set<ColumnId> columns) {
-		return new SimpleJob("Final commit on collection %s".formatted(solrIndexClient.getDefaultCollection()), () -> {
-			try {
-				Stopwatch stopwatch = Stopwatch.createStarted();
-				explicitCommit();
-				log.info("Finished commit on collection {} in {}", solrIndexClient.getDefaultCollection(), stopwatch);
-			} catch (Exception e) {
-				log.error("Unable to issue explicit commit on collection {}", solrIndexClient.getDefaultCollection(), e);
-			}
-		});
+		return new FinalizeColumnValuesIndexJob(columns, this);
 	}
 
 	/**
@@ -377,5 +380,39 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		solrIndexClient.commit();
 		log.info("DONE explicit commit to core/collection {} in {}", solrIndexClient.getDefaultCollection(), stopwatch);
 
+	}
+
+	@RequiredArgsConstructor
+	public static class FinalizeColumnValuesIndexJob extends Job {
+
+		private final Collection<ColumnId> columns;
+		private final SolrProcessor solrProcessor;
+
+		@Override
+		public void execute() throws Exception {
+			getProgressReporter().setMax(columns.size() + 1 /* final commit */);
+			try {
+
+				Stopwatch stopwatch = Stopwatch.createStarted();
+				try(ExecutorService executorService = Executors.newFixedThreadPool(4)) {
+					for (ColumnId columnId : columns) {
+						executorService.submit(() -> {
+							solrProcessor.finalizeSearch(columnId.resolve());
+							getProgressReporter().report(1);
+						});
+					}
+				}
+				solrProcessor.explicitCommit();
+				getProgressReporter().report(1);
+				log.info("Finished commit on collection {} in {}", solrProcessor.solrIndexClient.getDefaultCollection(), stopwatch);
+			} catch (Exception e) {
+				log.error("Unable to issue explicit commit on collection {}", solrProcessor.solrIndexClient.getDefaultCollection(), e);
+			}
+		}
+
+		@Override
+		public String getLabel() {
+			return "FinalizeColumnValuesIndexJob on %d columns".formatted(columns.size());
+		}
 	}
 }

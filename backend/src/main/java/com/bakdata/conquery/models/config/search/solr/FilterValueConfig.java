@@ -1,16 +1,17 @@
 package com.bakdata.conquery.models.config.search.solr;
 
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Collections;
+import java.util.Map;
+import javax.annotation.CheckForNull;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
 
-import javax.annotation.CheckForNull;
-import java.util.Collections;
-import java.util.Map;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
 
 /**
  * Solr search and index configurations that are specific to {@link com.bakdata.conquery.apiv1.query.concept.filter.FilterValue}s.
@@ -28,7 +29,7 @@ public class FilterValueConfig {
      * Effectively the query that is sent to solr after we split the users search phrase into terms on whitespaces and join them together again after template resolving.
      * Joining involves a boolean operator, so parentheses might be needed.
      * The format string only gets a single argument, so refer to the argument using <code>${term}</code>. The template is interpreted by {@link org.apache.commons.text.StringSubstitutor}.
-     *
+     * <p/>
      * An incoming search string is split on white spaces into terms. These terms are each (<code>${term}</code>) escaped and applied to this template and then concatenated with an <code> AND </code>.
      * If you have a complex expression, consider to surround your template with parentheses, so the concatenating "AND"s apply to the whole template.
      */
@@ -67,6 +68,16 @@ public class FilterValueConfig {
      * </code>
      */
     private Map<@NotBlank String,Map<@NotBlank String,@NotBlank String>> sharedColumnDocuments = Collections.emptyMap();
+
+
+
+	/**
+	 * Number of documents in an update request to solr.
+	 * @implNote It seems that the number of documents per update request is a more limiting rather than the size of each document. So while sending batches of 100
+	 * "larger" documents might go through, sending batches of 200 smaller documents may lead to connection losses / timeouts.
+	 */
+	@Min(1)
+	private int updateChunkSize = 100;
 
     /**
      * Returns the shared group for the column, if documents should be shared.
