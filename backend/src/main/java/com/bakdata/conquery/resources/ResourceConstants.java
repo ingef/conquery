@@ -13,7 +13,6 @@ public class ResourceConstants {
 	public static final String TABLE = "table";
 	public static final String FILTER	=	"filter";
 	public static final String QUERY	=	"query";
-	public static final String QUERIES_MONITOR_PATH_ELEMENT	=	"queries";
 	public static final String FORM_CONFIG	=	"form-config";
 	public static final String FILENAME	=	"filename";
 	public static final String API		=	"api";
@@ -23,6 +22,7 @@ public class ResourceConstants {
 	public static final String GROUPS_PATH_ELEMENT = "groups";
 	public static final String USERS_PATH_ELEMENT = "users";
 	public static final String ROLES_PATH_ELEMENT = "roles";
+	public static final String INDEX_SERVICE_PATH_ELEMENT = "index-service";
 	public static final String AUTH_OVERVIEW_PATH_ELEMENT = "auth-overview";
 	public static final String USER_ID = "userId";
 	public static final String ROLE_ID = "roleId";
@@ -39,6 +39,7 @@ public class ResourceConstants {
 	public static final String FILE_EXTENTION_PARQUET = "parquet";
 
 	public static final String FILE_EXTENTION_CSV = "csv";
+	public static final String FILE_EXTENTION_JSON = "json";
 
 	public static final String FILE_EXTENTION_XLSX = "xlsx";
 
@@ -47,7 +48,7 @@ public class ResourceConstants {
 	 * Method to generate a data-model of this class's static members so that they
 	 * are accessible from within a freemarker template.
 	 */
-	public static final TemplateModel getAsTemplateModel() {
+	public static TemplateModel getAsTemplateModel() {
 		try {
 			return new DefaultObjectWrapperBuilder(Freemarker.VERSION)
 				.build()

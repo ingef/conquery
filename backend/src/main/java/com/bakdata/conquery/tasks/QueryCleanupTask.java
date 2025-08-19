@@ -7,17 +7,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.util.QueryUtils;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import io.dropwizard.servlets.tasks.Task;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -34,12 +31,10 @@ import org.apache.commons.lang3.ArrayUtils;
 public class QueryCleanupTask extends Task {
 
 	public static final String EXPIRATION_PARAM = "expiration";
-	private static final Predicate<String>
-			UUID_PATTERN =
-			Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$").asPredicate();
+	public static final String DRY_RUN_PARAM = "dry-run";
 
 	private final MetaStorage storage;
-	private Duration queryExpiration;
+	private final Duration queryExpiration;
 
 	public QueryCleanupTask(MetaStorage storage, Duration queryExpiration) {
 		super("query-cleanup");
@@ -47,12 +42,10 @@ public class QueryCleanupTask extends Task {
 		this.queryExpiration = queryExpiration;
 	}
 
-	public static boolean isDefaultLabel(String label) {
-		return UUID_PATTERN.test(label);
-	}
-
 	@Override
 	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
+
+		boolean dryRun = Optional.ofNullable(parameters.get(DRY_RUN_PARAM)).filter(Predicate.not(List::isEmpty)).map(List::getFirst).map(Boolean::parseBoolean).orElse(false);
 
 		Duration queryExpiration = this.queryExpiration;
 
@@ -61,31 +54,25 @@ public class QueryCleanupTask extends Task {
 				log.warn("Will not respect more than one expiration time. Have `{}`", parameters.get(EXPIRATION_PARAM));
 			}
 
-			queryExpiration = Duration.parse(parameters.get(EXPIRATION_PARAM).get(0));
+			queryExpiration = Duration.parse(parameters.get(EXPIRATION_PARAM).getFirst());
 		}
 
 		if (queryExpiration == null) {
 			throw new IllegalArgumentException("Query Expiration may not be null");
 		}
 
-		log.info("Starting deletion of queries older than {} of {}", queryExpiration, storage.getAllExecutions().size());
+		log.info("Starting deletion of queries older than {} of {}", queryExpiration, storage.getAllExecutions().count());
 
 		// Iterate for as long as no changes are needed (this is because queries can be referenced by other queries)
 		while (true) {
-			final QueryUtils.AllReusedFinder reusedChecker = new QueryUtils.AllReusedFinder();
-			Set<ManagedExecution> toDelete = new HashSet<>();
+			final Set<ManagedExecutionId> requiredQueries = new HashSet<>();
 
-			for (ManagedExecution execution : storage.getAllExecutions()) {
+			final Set<ManagedExecution> toDelete = new HashSet<>();
+
+			for (ManagedExecution execution : storage.getAllExecutions().toList()) {
 
 				// Gather all referenced queries via reused checker.
-				if (execution instanceof ManagedQuery) {
-					((ManagedQuery) execution).getQuery().visit(reusedChecker);
-				}
-				else if (execution instanceof ManagedInternalForm<?> internalForm) {
-					internalForm.getFlatSubQueries().values()
-								.forEach(q -> q.getQuery().visit(reusedChecker));
-				}
-
+				requiredQueries.addAll(execution.getSubmitted().collectRequiredQueries());
 
 				if (execution.isSystem()) {
 					// System Queries will always be deleted.
@@ -106,10 +93,10 @@ public class QueryCleanupTask extends Task {
 				}
 				log.trace("{} has no tags", execution.getId());
 
-				if (execution.getLabel() != null && !isDefaultLabel(execution.getLabel())) {
+				if (execution.getLabel() != null && !execution.isAutoLabeled()) {
 					continue;
 				}
-				log.trace("{} has no label", execution.getId());
+				log.trace("{} has no custom label", execution.getId());
 
 
 				if (LocalDateTime.now().minus(queryExpiration).isBefore(execution.getCreationTime())) {
@@ -122,10 +109,9 @@ public class QueryCleanupTask extends Task {
 
 			// remove all queries referenced in reused queries.
 			final Collection<ManagedExecution> referenced =
-					reusedChecker.getReusedElements().stream()
-								 .map(CQReusedQuery::getQueryId)
-								 .map(storage::getExecution)
-								 .collect(Collectors.toSet());
+					requiredQueries.stream()
+								   .map(storage::getExecution)
+								   .collect(Collectors.toSet());
 
 			toDelete.removeAll(referenced);
 
@@ -133,6 +119,11 @@ public class QueryCleanupTask extends Task {
 			if (toDelete.isEmpty()) {
 				log.info("No queries to delete");
 				break;
+			}
+
+			if (dryRun) {
+				log.info("Dry Run: Cleanup would delete {} Executions", toDelete.size());
+				return;
 			}
 
 			log.info("Deleting {} Executions", toDelete.size());

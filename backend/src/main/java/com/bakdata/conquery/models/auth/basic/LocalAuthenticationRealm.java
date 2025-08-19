@@ -3,43 +3,46 @@ package com.bakdata.conquery.models.auth.basic;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Executors;
-
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
+import com.bakdata.conquery.apiv1.auth.PasswordHashCredential;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.Store;
-import com.bakdata.conquery.io.storage.StoreMappings;
+import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.UserManageable;
-import com.bakdata.conquery.models.auth.basic.PasswordHasher.HashedEntry;
+import com.bakdata.conquery.models.auth.basic.PasswordHasher.HashEntry;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.MoreCollectors;
+import com.password4j.HashingFunction;
+import com.password4j.Password;
 import io.dropwizard.util.Duration;
 import jetbrains.exodus.ExodusException;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.EnvironmentClosedException;
 import jetbrains.exodus.env.Environments;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.CredentialsException;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.lang.util.Destroyable;
 import org.apache.shiro.realm.AuthenticatingRealm;
-import org.apache.shiro.util.Destroyable;
 
 /**
  * This realm stores credentials in a local database ({@link XodusStore}). Upon
@@ -49,43 +52,46 @@ import org.apache.shiro.util.Destroyable;
  * authorization related user information that is saved in the
  * {@link MetaStorage}. So adding or removing a user in this realm does
  * not change the {@link MetaStorage}. {@link Conquery} interacts with
- * this realm using the Shiro frame work. However, endusers can interface it
+ * this realm using the Shiro framework. However, endusers can interface it
  * through specific endpoints that are registerd by this realm.
  */
 @Slf4j
 public class LocalAuthenticationRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm, UserManageable, AccessTokenCreator, Destroyable {
 
-	private static final int ENVIRONMNENT_CLOSING_RETRYS = 2;
-	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
-	// Get the path for the storage here so it is set when as soon the first class is instantiated (in the ManagerNode)
-	// In the StandaloneCommand this directory is overriden multiple times before LocalAuthenticationRealm::onInit for the ShardNodes, so this is a problem.
-	private final File storageDir;
+	private static final int ENVIRONMENT_CLOSING_RETRIES = 2;
+	private static final Duration ENVIRONMENT_CLOSING_TIMEOUT = Duration.seconds(2);
 
+	// Get the path for the storage here, so it is set as soon the first class is instantiated (in the ManagerNode)
+	// In the DistributedStandaloneCommand this directory is overriden multiple times before LocalAuthenticationRealm::onInit for the ShardNodes, so this is a problem.
+	private final File storageDir;
 	private final XodusConfig passwordStoreConfig;
 	private final String storeName;
-
-	@JsonIgnore
-	private Environment passwordEnvironment;
-	@JsonIgnore
-	private Store<UserId, PasswordHasher.HashedEntry> passwordStore;
-
-	@JsonIgnore
 	private final ConqueryTokenRealm centralTokenRealm;
 	private final Duration validDuration;
 	private final Validator validator;
 	private final ObjectMapper mapper;
+	private final HashingFunction defaultHashingFunction;
+	private final CaffeineSpec caffeineSpec;
+	private final MetricRegistry metricRegistry;
+
+	private Environment passwordEnvironment;
+	private Store<UserId, HashEntry> passwordStore;
 
 	//////////////////// INITIALIZATION ////////////////////
 
-	public LocalAuthenticationRealm(Validator validator, ObjectMapper mapper, ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig, Duration validDuration) {
+	public LocalAuthenticationRealm(Validator validator, ObjectMapper mapper, ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig, Duration validDuration, HashingFunction defaultHashingFunction,
+									CaffeineSpec caffeineSpec, MetricRegistry metricRegistry) {
 		this.validator = validator;
 		this.mapper = mapper;
+		this.defaultHashingFunction = defaultHashingFunction;
 		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 		this.storeName = storeName;
 		this.storageDir = storageDir;
 		this.centralTokenRealm = centralTokenRealm;
 		this.passwordStoreConfig = passwordStoreConfig;
 		this.validDuration = validDuration;
+		this.caffeineSpec = caffeineSpec;
+		this.metricRegistry = metricRegistry;
 	}
 
 	@Override
@@ -94,7 +100,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 		// Open/create the database/store
 		File passwordStoreFile = new File(storageDir, storeName);
 		passwordEnvironment = Environments.newInstance(passwordStoreFile, passwordStoreConfig.createConfig());
-		passwordStore = StoreMappings.cached(
+		passwordStore = new CachedStore<>(
 				new SerializingStore<>(
 						new XodusStore(
 								passwordEnvironment,
@@ -106,11 +112,14 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 						validator,
 						mapper,
 						UserId.class,
-						PasswordHasher.HashedEntry.class,
+						HashEntry.class,
 						false,
 						true,
 						null, Executors.newSingleThreadExecutor()
-				));
+				),
+				caffeineSpec,
+				metricRegistry
+		);
 	}
 
 	//////////////////// AUTHENTICATION ////////////////////
@@ -126,78 +135,91 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 
 	//////////////////// FOR USERNAME/PASSWORD
 
-	public String createAccessToken(String username, char[] password) {
-		// Check the password which is afterwards cleared
-		if (!CredentialChecker.validUsernamePassword(username, password, passwordStore)) {
-			throw new AuthenticationException("Provided username or password was not valid.");
+	public String createAccessToken(String username, String password) {
+		if (username.isEmpty()) {
+			throw new IncorrectCredentialsException("Username was empty");
 		}
-		// The username is in this case the email
-		return centralTokenRealm.createTokenForUser(new UserId(username), validDuration);
+		if (password.isEmpty()) {
+			throw new IncorrectCredentialsException("Password was empty");
+		}
+		final UserId userId = new UserId(username);
+		HashEntry hashedEntry = passwordStore.get(userId);
+		if (hashedEntry == null) {
+			throw new CredentialsException("No password hash was found for user: " + username);
+		}
+
+		final String hash = hashedEntry.hash();
+		if (!Password.check(password.getBytes(), hash.getBytes()).with(PasswordHelper.getHashingFunction(hash))) {
+			throw new IncorrectCredentialsException("Password was was invalid for user: " + userId);
+		}
+
+		return centralTokenRealm.createTokenForUser(userId, validDuration);
 	}
 
-	/**
-	 * Converts the provided password to a Xodus compatible hash.
-	 */
-	private static HashedEntry passwordToHashedEntry(PasswordCredential credential) {
-		return PasswordHasher.generateHashedEntry(credential.getPassword());
-	}
+	@Override
+	public boolean addUser(UserId user, @NonNull CredentialType credential) {
 
-	/**
-	 * Checks the provided credentials for the realm-compatible
-	 * {@link PasswordCredential}. However only one credential of this type is
-	 * allowed to be provided.
-	 *
-	 * @param credentials
-	 *            A list of possible credentials.
-	 * @return The password credential.
-	 */
-	private static Optional<PasswordCredential> getTypePassword(List<CredentialType> credentials) {
-		if(credentials == null) {
-			return Optional.empty();
+		try {
+			final HashEntry hashEntry = toHashEntry(credential);
+			passwordStore.add(user, hashEntry);
+			log.debug("Added user to realm: {}", user);
+			return true;
 		}
-		return credentials.stream()
-			.filter(PasswordCredential.class::isInstance)
-			.map(PasswordCredential.class::cast)
-			.collect(MoreCollectors.toOptional());
+		catch (IllegalArgumentException e) {
+			log.warn("Unable to add user '{}'", user, e);
+		}
+		return false;
 	}
 
 	//////////////////// USER MANAGEMENT ////////////////////
 
-	@Override
-	public boolean addUser(User user, List<CredentialType> credentials) {
-		Optional<PasswordCredential> optPassword = getTypePassword(credentials);
-		if (optPassword.isEmpty()) {
-			log.trace("No password credential provided. Not adding {} to {}", user.getName(), getName());
-			return false;
+	/**
+	 * Converts the provided password to a Xodus compatible hash.
+	 */
+	private HashEntry toHashEntry(CredentialType credential) {
+
+
+		if (credential instanceof PasswordCredential(String password)) {
+			return new HashEntry(Password.hash(password)
+										 .with(defaultHashingFunction)
+										 .getResult());
 		}
-		HashedEntry passwordByteIt = optPassword.map(LocalAuthenticationRealm::passwordToHashedEntry).get();
-		passwordStore.add(user.getId(), passwordByteIt);
-		return true;
+		else if (credential instanceof PasswordHashCredential(String hash)) {
+			return new HashEntry(hash);
+		}
+
+		throw new IllegalArgumentException("CredentialType not supported yet: " + credential.getClass());
 	}
 
 	@Override
-	public boolean updateUser(User user, List<CredentialType> credentials) {
-		Optional<PasswordCredential> optPassword = getTypePassword(credentials);
-		if (optPassword.isEmpty()) {
-			log.trace("No password credential provided. Not adding {} to {}", user.getName(), getName());
+	public boolean updateUser(UserId user, CredentialType credential) {
+
+		if (credential == null) {
+			log.warn("Skipping user '{}' because no credential was provided", user);
 			return false;
 		}
-		HashedEntry passwordByteIt = optPassword.map(LocalAuthenticationRealm::passwordToHashedEntry).get();
 
-		passwordStore.update(user.getId(), passwordByteIt);
-		return true;
+		try {
+			final HashEntry hashEntry = toHashEntry(credential);
+			passwordStore.update(user, hashEntry);
+			return true;
+		}
+		catch (IllegalArgumentException e) {
+			log.warn("Unable to update user '{}'", user, e);
+		}
+		return false;
 
 	}
 
 	@Override
-	public boolean removeUser(User user) {
-		passwordStore.remove(user.getId());
+	public boolean removeUser(UserId user) {
+		passwordStore.remove(user);
 		return true;
 	}
 
 	@Override
 	public List<UserId> getAllUsers() {
-		return ImmutableList.copyOf(passwordStore.getAllKeys());
+		return ImmutableList.copyOf(passwordStore.getAllKeys().toList());
 	}
 
 
@@ -207,7 +229,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 	@Override
 	@SneakyThrows(IOException.class)
 	public void destroy() throws InterruptedException {
-		for(int retries = 0; retries < ENVIRONMNENT_CLOSING_RETRYS; retries++) {			
+		for(int retries = 0; retries < ENVIRONMENT_CLOSING_RETRIES; retries++) {
 			try {
 				log.info("Closing the password environment.");
 				passwordStore.close();
@@ -221,8 +243,9 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 				if (retries == 0) {
 					log.info("The environment is still working on some transactions. Retry");				
 				}
-				log.info("Waiting for {} seconds to retry.", ENVIRONMNENT_CLOSING_TIMEOUT);
-				Thread.sleep(ENVIRONMNENT_CLOSING_TIMEOUT*1000 /* milliseconds */);
+				log.info("Waiting for {} seconds to retry.", ENVIRONMENT_CLOSING_TIMEOUT);
+
+				Thread.sleep(ENVIRONMENT_CLOSING_TIMEOUT.toJavaDuration());
 			}
 		}
 		// Close the environment with force

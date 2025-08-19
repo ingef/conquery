@@ -1,24 +1,17 @@
 package com.bakdata.conquery.sql.conversion.model.filter;
 
 import com.bakdata.conquery.models.common.IRange;
-import lombok.RequiredArgsConstructor;
-import org.jooq.Condition;
 import org.jooq.Field;
 
-@RequiredArgsConstructor
-public class SumCondition implements FilterCondition {
+public class SumCondition extends RangeCondition {
 
-	private final Field<? extends Number> sumColumn;
-	private final IRange<? extends Number, ?> range;
-
-	@Override
-	public Condition filterCondition() {
-		return ConditionUtil.rangeCondition(sumColumn, range);
+	public SumCondition(Field<? extends Number> column, IRange<? extends Number, ?> range) {
+		super(column, range);
 	}
 
 	@Override
-	public FilterType type() {
-		return FilterType.GROUP;
+	public ConditionType type() {
+		return ConditionType.GROUP;
 	}
 
 }

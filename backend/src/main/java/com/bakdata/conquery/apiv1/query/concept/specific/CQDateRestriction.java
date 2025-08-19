@@ -3,16 +3,18 @@ package com.bakdata.conquery.apiv1.query.concept.specific;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.function.Consumer;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -48,6 +50,11 @@ public class CQDateRestriction extends CQElement {
 	}
 
 	@Override
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+		child.collectRequiredQueries(requiredQueries);
+	}
+
+	@Override
 	public void resolve(QueryResolveContext context) {
 		child.resolve(context);
 	}
@@ -55,6 +62,11 @@ public class CQDateRestriction extends CQElement {
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		return child.getResultInfos();
+	}
+
+	@Override
+	public String defaultLabel(Locale locale) {
+		return child.defaultLabel(locale);
 	}
 
 	@Override

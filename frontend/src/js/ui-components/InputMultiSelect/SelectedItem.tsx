@@ -14,7 +14,9 @@ const Container = styled("div")<{ active?: boolean }>`
   padding: 0px 5px;
   font-size: ${({ theme }) => theme.font.sm};
   color: ${({ theme }) => theme.col.black};
-  box-shadow: 0.5px 0.5px 1px 0 rgb(0 0 0 / 20%), inset 0 0 0 1px #ccc;
+  box-shadow:
+    0.5px 0.5px 1px 0 rgb(0 0 0 / 20%),
+    inset 0 0 0 1px #ccc;
 
   /* to style react-markdown */
   p {
@@ -36,7 +38,7 @@ const SelectedItem = forwardRef<
     getSelectedItemProps: (props: {
       selectedItem: SelectOptionT;
       index: number;
-    }) => any;
+    }) => object;
     removeSelectedItem: (item: SelectOptionT) => void;
   }
 >(

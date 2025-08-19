@@ -38,17 +38,17 @@ public class RoleHandlingOnGroupTest extends IntegrationTest.Simple implements P
 			role.addPermission(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")));
 
 			//// Add user to group
-			group1.addMember(user1);
+			group1.addMember(user1.getId());
 			assertThat(user1.isPermitted(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")))).isFalse();
 			
 			//// Add role to group
-			group1.addRole(role);
+			group1.addRole(role.getId());
 			assertThat(group1.getRoles()).containsExactlyInAnyOrder(role.getId());
 			assertThat(user1.isPermitted(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")))).isTrue();
 
 			
 			//// Remove role from group
-			group1.removeRole(role);
+			group1.removeRole(role.getId());
 			assertThat(group1.getRoles()).isEmpty();
 			assertThat(user1.isPermitted(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")))).isFalse();
 

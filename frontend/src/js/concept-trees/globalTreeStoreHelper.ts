@@ -1,6 +1,6 @@
-import type { ConceptT, ConceptIdT, GetConceptResponseT } from "../api/types";
+import type { ConceptIdT, ConceptT, GetConceptResponseT } from "../api/types";
 import { exists } from "../common/helpers/exists";
-import { nodeIsElement, NodeResetConfig } from "../model/node";
+import { NodeResetConfig, nodeIsElement } from "../model/node";
 import { resetSelects } from "../model/select";
 import { resetTables } from "../model/table";
 import type {
@@ -180,13 +180,9 @@ export const globalSearch = async (trees: TreesT, query: string) => {
   //
   // TODO: Refactor the state and keep both root trees as well as concept trees in a single format
   //       Then simply use that here
-  const formattedTrees = Object.keys(trees).reduce<
-    Record<string, Record<string, ConceptT>>
-  >((all, key) => {
-    all[key] = { [key]: trees[key] };
-
-    return all;
-  }, {});
+  const formattedTrees = Object.fromEntries(
+    Object.entries(trees).map(([key, value]) => [key, { [key]: value }]),
+  );
   const combinedTrees = Object.assign({}, formattedTrees, window.conceptTrees);
 
   const result = Object.keys(combinedTrees)

@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../app/reducers";
 

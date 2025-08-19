@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import { FC, useState, useEffect, memo, ReactNode } from "react";
+import { FC, ReactNode, memo, useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { useGetFormConfig } from "../api/api";
 import type { SelectOptionT } from "../api/types";
@@ -11,7 +11,6 @@ import { DNDType } from "../common/constants/dndTypes";
 import { Language, useActiveLang } from "../localization/useActiveLang";
 import type { FormConfigT } from "../previous-queries/list/reducer";
 import { setMessage } from "../snack-message/actions";
-import { SnackMessageType } from "../snack-message/reducer";
 import Dropzone from "../ui-components/Dropzone";
 
 import { setExternalForm } from "./actions";
@@ -151,7 +150,7 @@ const FormConfigLoader: FC<Props> = ({
           message: t("formConfig.loadSuccess", {
             label: formConfigToLoadNext.label,
           }),
-          type: SnackMessageType.SUCCESS,
+          type: "success",
         }),
       );
     },
@@ -179,7 +178,7 @@ const FormConfigLoader: FC<Props> = ({
       dispatch(
         setMessage({
           message: t("formConfig.loadError"),
-          type: SnackMessageType.ERROR,
+          type: "error",
         }),
       );
     }

@@ -1,7 +1,10 @@
 {
   "label": "Date restriction with multiple validity dates and dateColumn",
-  "type": "SQL_TEST",
-  "expectedCsv": "expected.csv",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "expectedCsv": "tests/sql/date_restriction/date_restriction_date_column/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -22,15 +25,6 @@
             "tables": [
               {
                 "id": "geschlecht_select.geschlecht_connector",
-                "filters": [
-                  {
-                    "filter": "geschlecht_select.geschlecht_connector.geschlecht",
-                    "type": "BIG_MULTI_SELECT",
-                    "value": [
-                      "f"
-                    ]
-                  }
-                ],
                 "dateColumn" : {
                   "value" : "geschlecht_select.geschlecht_connector.datum_alt"
                 }
@@ -59,13 +53,7 @@
               "label": "datum_alt",
               "column": "table1.datum_alt"
             }
-          ],
-          "filters": {
-            "label": "geschlecht",
-            "description": "Geschlecht zur gegebenen Datumseinschränkung",
-            "column": "table1.geschlecht",
-            "type": "SELECT"
-          }
+          ]
         }
       ]
     }
@@ -91,10 +79,6 @@
           {
             "name": "datum_alt",
             "type": "DATE"
-          },
-          {
-            "name": "geschlecht",
-            "type": "STRING"
           }
         ]
       }

@@ -2,13 +2,12 @@ package com.bakdata.conquery.models.datasets.concepts.filters;
 
 import java.util.EnumSet;
 import java.util.List;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
@@ -22,21 +21,21 @@ public abstract class SingleColumnFilter<FE_TYPE> extends Filter<FE_TYPE> {
 	@NotNull
 	@Getter
 	@Setter
-	@NsIdRef
-	private Column column;
+	private ColumnId column;
 
 	@Override
-	public List<Column> getRequiredColumns() {
+	public List<ColumnId> getRequiredColumns() {
 		return List.of(getColumn());
 	}
 
 	@JsonIgnore
 	@ValidationMethod(message = "Columns do not match required Type.")
 	public boolean isValidColumnType() {
-		final boolean acceptable = getAcceptedColumnTypes().contains(getColumn().getType());
+		final Column resolved = getColumn().resolve();
+		final boolean acceptable = getAcceptedColumnTypes().contains(resolved.getType());
 
 		if (!acceptable) {
-			log.error("Column[{}] is of Type[{}]. Not one of [{}]", column.getId(), column.getType(), getAcceptedColumnTypes());
+			log.error("Column[{}] is of Type[{}]. Not one of [{}]", resolved.getId(), resolved.getType(), getAcceptedColumnTypes());
 		}
 
 		return acceptable;

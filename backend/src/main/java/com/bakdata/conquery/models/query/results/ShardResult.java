@@ -10,8 +10,13 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.bakdata.conquery.models.messages.namespaces.specific.CollectQueryResult;
+import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
+import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
+import com.bakdata.conquery.models.query.DistributedExecutionManager;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Worker;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,13 +27,13 @@ import lombok.extern.slf4j.Slf4j;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-@CPSType(id = "SHARD_RESULT", base = ShardResult.class)
+@CPSType(id = "SHARD_RESULT", base = NamespacedMessage.class)
 @Getter
 @Setter
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
-@NoArgsConstructor
-public class ShardResult {
+@NoArgsConstructor(onConstructor_ = {@JsonCreator})
+public class ShardResult  extends NamespaceMessage {
 
 
 	@ToString.Include
@@ -53,7 +58,7 @@ public class ShardResult {
 		this.workerId = workerId;
 	}
 
-	public synchronized void finish(@NonNull List<EntityResult> results, Optional<Throwable> exc, Worker worker) {
+	public synchronized void finish(@NonNull List<EntityResult> results, Optional<Throwable> maybeError, Worker worker) {
 		if (worker.getQueryExecutor().isCancelled(getQueryId())) {
 			// Query is done so we no longer need the cancellation entry.
 			worker.getQueryExecutor().unsetQueryCancelled(getQueryId());
@@ -62,10 +67,10 @@ public class ShardResult {
 
 		finishTime = LocalDateTime.now();
 
-		if (exc.isPresent()) {
-			log.info("FAILED Query[{}] within {}", queryId, Duration.between(startTime, finishTime));
+		if (maybeError.isPresent()) {
+			log.warn("FAILED Query[{}] within {}", queryId, Duration.between(startTime, finishTime), maybeError.get());
 
-			setError(exc.map(ConqueryError::asConqueryError));
+			setError(maybeError.map(ConqueryError::asConqueryError));
 		}
 		else {
 			log.info("FINISHED Query[{}] with {} results within {}", queryId, results.size(), Duration.between(startTime, finishTime));
@@ -75,7 +80,15 @@ public class ShardResult {
 
 		log.trace("Sending collected Results\n{}", results);
 
-		worker.send(new CollectQueryResult(this));
+		worker.send(this);
 	}
 
+	protected void addResult(DistributedExecutionManager executionManager) {
+		executionManager.handleQueryResult(this, ((ManagedQuery) executionManager.getExecution(queryId)));
+	}
+
+	@Override
+	public void react(DistributedNamespace context) throws Exception {
+		addResult(context.getExecutionManager());
+	}
 }

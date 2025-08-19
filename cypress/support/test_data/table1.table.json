@@ -1,0 +1,18 @@
+{
+    "name": "table1",
+    "columns": [
+        {
+            "name": "id",
+            "type": "STRING"
+        },
+        {
+            "name": "sid",
+            "type": "STRING",
+            "secondaryId": "sid"
+        },
+        {
+            "name": "STRING",
+            "type": "STRING"
+        }
+    ]
+}

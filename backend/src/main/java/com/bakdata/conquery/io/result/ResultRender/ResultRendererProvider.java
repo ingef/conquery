@@ -3,8 +3,7 @@ package com.bakdata.conquery.io.result.ResultRender;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.Collection;
-
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.commands.ManagerNode;

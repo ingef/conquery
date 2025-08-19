@@ -3,36 +3,36 @@ package com.bakdata.conquery.io.storage;
 import java.io.Closeable;
 import java.io.IOException;
 
-import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-public abstract class ConqueryStorage implements Closeable {
-
-	public abstract CentralRegistry getCentralRegistry();
+public interface ConqueryStorage extends Closeable {
 
 	/**
-	 * @implSpec The order defines the order of loading. Dependencies should be modeled here.
-	 * @implNote If you implement this method, please do it always from scratch and not using calls to super, it can be quite annoying.
+	 * Initializes the internal stores.
+	 * Injects this storage into the provided object mapper.
+	 *
+	 * @param objectMapper (optional) needed when the {@link com.bakdata.conquery.models.config.StoreFactory} deserializes objects
 	 */
-	public abstract ImmutableList<KeyIncludingStore<?,?>> getStores();
+	void openStores(ObjectMapper objectMapper);
 
-	public abstract void openStores(ObjectMapper objectMapper);
-	
-	public final void loadData(){
-		for (KeyIncludingStore<?, ?> store : getStores()) {
+	default void loadData() {
+		for (ManagedStore store : getStores()) {
 			store.loadData();
 		}
 	}
 
 	/**
+	 * @implSpec The order defines the order of loading. Dependencies should be modeled here.
+	 * @implNote If you implement this method, please do it always from scratch and not using calls to super, it can be quite annoying.
+	 */
+	ImmutableList<ManagedStore> getStores();
+
+	/**
 	 * Delete the storage's contents.
 	 */
-	public void clear(){
-		for (KeyIncludingStore<?, ?> store : getStores()) {
+	default void clear() {
+		for (ManagedStore store : getStores()) {
 			store.clear();
 		}
 	}
@@ -40,8 +40,8 @@ public abstract class ConqueryStorage implements Closeable {
 	/**
 	 * Remove the storage.
 	 */
-	public final void removeStorage(){
-		for (KeyIncludingStore<?, ?> store : getStores()) {
+	default void removeStorage() {
+		for (ManagedStore store : getStores()) {
 			store.removeStore();
 		}
 	}
@@ -49,9 +49,24 @@ public abstract class ConqueryStorage implements Closeable {
 	/**
 	 * Close the storage.
 	 */
-	public final void close() throws IOException {
-		for (KeyIncludingStore<?, ?> store : getStores()) {
+	default void close() throws IOException {
+		for (ManagedStore store : getStores()) {
 			store.close();
+		}
+	}
+
+	/**
+	 * Invalidates caches.
+	 */
+	default void invalidateCache() {
+		for (ManagedStore store : getStores()) {
+			store.invalidateCache();
+		}
+	}
+
+	default void loadKeys() {
+		for (ManagedStore store : getStores()) {
+			store.loadKeys();
 		}
 	}
 }

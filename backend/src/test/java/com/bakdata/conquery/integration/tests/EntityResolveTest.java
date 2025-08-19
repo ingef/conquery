@@ -7,26 +7,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import java.util.Set;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.DatasetQueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.description.LazyTextDescription;
 
@@ -40,9 +39,9 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final String testJson = In.resource("/tests/query/ENTITY_EXPORT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
+		final String testJson = LoadingUtil.readResource("/tests/query/ENTITY_EXPORT_TESTS/SIMPLE_TREECONCEPT_Query.json");
 
-		final Dataset dataset = conquery.getDataset();
+		final DatasetId dataset = conquery.getDataset();
 
 		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 
@@ -75,9 +74,9 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 												.buildFromMap(Map.of(ResourceConstants.DATASET, conquery.getDataset().getName()));
 
 		// Api uses NsIdRef, so we have to use the real objects here.
-		final Filter<?> filter = conquery.getDatasetRegistry().resolve(
-				FilterId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.values-filter")
-		);
+		FilterId filterId = FilterId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.values-filter");
+		filterId.setDomain(conquery.getDatasetRegistry());
+		Filter<?> filter = filterId.resolve();
 
 
 		final List<Map<String, String>> result;
@@ -87,8 +86,8 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 													  .post(Entity.json(
 															  new FilterValue[]{
 																	  // Bit lazy, but this explicitly or's two filters
-																	  new FilterValue.CQMultiSelectFilter((Filter<String[]>) filter, new String[]{"A1"}),
-																	  new FilterValue.CQMultiSelectFilter((Filter<String[]>) filter, new String[]{"B2"})
+																	  new FilterValue.CQMultiSelectFilter(filter.getId(), Set.of("A1")),
+																	  new FilterValue.CQMultiSelectFilter(filter.getId(), Set.of("B2"))
 															  }
 													  ))) {
 

@@ -9,6 +9,9 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.conversion.model.select.EventDateUnionSelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 
 /**
  * Collects the event dates that are corresponding to an enclosing {@link Connector} or {@link Concept} provided in a query.
@@ -19,10 +22,30 @@ public class EventDateUnionSelect extends UniversalSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new EventDateUnionAggregator(getHolder().findConcept()
-													   .getConnectors()
-													   .stream()
-													   .map(Connector::getTable)
-													   .collect(Collectors.toSet()));
+		EventDateUnionAggregator dateUnionAggregator = new EventDateUnionAggregator();
+
+		dateUnionAggregator.setRequiredTables(getHolder().findConcept()
+														 .getConnectors()
+														 .stream()
+														 .map(Connector::getResolvedTable)
+														 .collect(Collectors.toSet()));
+
+
+		return dateUnionAggregator;
+	}
+
+	@Override
+	public boolean isEventDateSelect() {
+		return true;
+	}
+
+	@Override
+	public SelectConverter<EventDateUnionSelect> createConverter() {
+		return new EventDateUnionSelectConverter();
+	}
+
+	@Override
+	public ResultType getResultType() {
+		return new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE);
 	}
 }

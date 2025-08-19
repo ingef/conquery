@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
+import com.google.common.base.Stopwatch;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,47 +35,38 @@ import lombok.extern.slf4j.Slf4j;
 public class ExecuteQuery extends WorkerMessage {
 
 	private final ManagedExecutionId id;
-
 	private final Query query;
 
 	@Override
 	public void react(Worker worker) throws Exception {
-		final ManagedExecutionId executionId = id;
 
-		log.info("Started {} {}", query.getClass().getSimpleName(), executionId);
+		log.info("Started {} {}", query.getClass().getSimpleName(), id);
 
-		// Execution might have been cancelled before so we uncancel it here.
+		// Execution might have been cancelled before, so we unset cancellation here.
 		final QueryExecutor queryExecutor = worker.getQueryExecutor();
 
-		queryExecutor.unsetQueryCancelled(executionId);
+		queryExecutor.unsetQueryCancelled(id);
 
-		final ShardResult result = createShardResult(worker);
-		QueryPlanContext queryPlanContext = new QueryPlanContext(worker);
+		final ShardResult result = new ShardResult(id, worker.getInfo().getId());
 
 		// Before we start the query, we create it once to test if it will succeed before creating it multiple times for evaluation per core.
 		try {
-			query.createQueryPlan(queryPlanContext);
+			Stopwatch stopwatch = Stopwatch.createStarted();
+			query.createQueryPlan(new QueryPlanContext(worker.getStorage(), queryExecutor.getSecondaryIdSubPlanLimit()));
+			log.trace("Created query plan in {}", stopwatch);
 		}
 		catch (Exception e) {
 			ConqueryError err = asConqueryError(e);
-			log.warn("Failed to create query plans for {}.", executionId, err);
-			queryExecutor.sendFailureToManagerNode(result, err);
+			log.warn("Failed to create query plans for {}.", id, err);
+			queryExecutor.sendFailureToManagerNode(result, err, worker);
 			return;
 		}
 
-		final QueryExecutionContext executionContext = new QueryExecutionContext(executionId, queryExecutor, worker.getStorage(), worker.getBucketManager());
-
+		final QueryExecutionContext executionContext = new QueryExecutionContext(id, queryExecutor, worker.getStorage(), worker.getBucketManager());
 
 		final Set<Entity> entities = query.collectRequiredEntities(executionContext).resolve(worker.getBucketManager());
 
-
 		queryExecutor.execute(query, executionContext, result, entities);
-	}
-
-	private ShardResult createShardResult(Worker worker) {
-		final ShardResult result = new ShardResult(id, worker.getInfo().getId());
-
-		return result;
 	}
 
 }

@@ -1,15 +1,13 @@
 package com.bakdata.conquery.io.jackson;
 
-import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.SequenceInputStream;
 
-import com.bakdata.conquery.io.mina.ChunkedMessage;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.translate.JavaUnicodeEscaper;
 import org.apache.mina.core.buffer.IoBuffer;
@@ -17,18 +15,11 @@ import org.apache.mina.core.buffer.IoBuffer;
 @Slf4j @UtilityClass
 public class JacksonUtil {
 
-	public static String toJsonDebug(byte[] bytes) {
-		return toJsonDebug(IoBuffer.wrap(bytes));
-	}
-
-	public static String toJsonDebug(IoBuffer buffer) {
-		return toJsonDebug(stream(buffer));
-	}
-
 	/**
 	 *	Partially read and parse InputStream as Json, directly storing it into String, just for debugging purposes.
 	 */
 	public static String toJsonDebug(InputStream is) {
+		is.mark(1024);
 		StringBuilder sb = new StringBuilder();
 		try (JsonParser parser = Jackson.BINARY_MAPPER.getFactory().createParser(is)) {
 
@@ -70,7 +61,7 @@ public class JacksonUtil {
 						sb.append('"').append(value).append("\",");
 						break;
 					default:
-						sb.append(t.toString());
+						sb.append(t);
 						log.warn("I don't know how to handle {}", t);
 						break;
 				}
@@ -79,31 +70,43 @@ public class JacksonUtil {
 		}
 		catch (Exception e) {
 			log.warn("Failed to create the debug json", e);
-			sb.append("DEBUG_JSON_ERROR");
+			if (!sb.isEmpty()) {
+				sb.append("DEBUG_JSON_ERROR");
+
+			}
+			else {
+				try {
+					is.reset();
+					sb.append(logHex(is));
+				}
+				catch (Exception hexException) {
+					log.error("Unable to generate hex dump of input stream", e);
+					sb.append("HEX_DUMP_ERROR");
+				}
+			}
 			return sb.toString();
 		}
 	}
 
-	public static InputStream stream(IoBuffer buffer) {
-		return new ByteArrayInputStream(
-				buffer.array(),
-				buffer.position() + buffer.arrayOffset(),
-				buffer.remaining()
-		);
-	}
+	public static String logHex(InputStream inputStream) throws IOException {
+		inputStream.mark(1024);  // Mark to allow resetting later
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-	public static InputStream stream(Iterable<IoBuffer> list) {
-		return new SequenceInputStream(
-				IteratorUtils.asEnumeration(
-						IteratorUtils.transformedIterator(
-								list.iterator(),
-								JacksonUtil::stream
-						)
-				)
-		);
-	}
+		byte[] temp = new byte[16]; // Read chunks of 16 bytes
+		int bytesRead;
+		while ((bytesRead = inputStream.read(temp)) != -1) {
+			buffer.write(temp, 0, bytesRead);
+			if (buffer.size() >= 128) break; // Limit logging to 128 bytes
+		}
 
-	public static String toJsonDebug(ChunkedMessage msg) {
-		return toJsonDebug(msg.createInputStream());
+		inputStream.reset();  // Reset stream for further processing
+
+		byte[] data = buffer.toByteArray();
+		StringBuilder hexDump = new StringBuilder();
+		for (byte b : data) {
+			hexDump.append(String.format("%02X ", b));
+		}
+
+		return "Hex Dump of InputStream (first 128 bytes): " + hexDump;
 	}
 }

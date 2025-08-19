@@ -1,21 +1,24 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class SecondaryIdDescriptionId extends Id<SecondaryIdDescription> implements NamespacedId {
+public class SecondaryIdDescriptionId extends NamespacedId<SecondaryIdDescription> {
 
+	@NonNull
 	private final DatasetId dataset;
 	private final String name;
 
@@ -25,7 +28,18 @@ public class SecondaryIdDescriptionId extends Id<SecondaryIdDescription> impleme
 		components.add(name);
 	}
 
-	public static enum Parser implements IdUtil.Parser<SecondaryIdDescriptionId> {
+	@Override
+	public void collectIds(Collection<Id<?, ?>> collect) {
+		collect.add(this);
+		dataset.collectIds(collect);
+	}
+
+	@Override
+	public SecondaryIdDescription get() {
+		return getDomain().getStorage(getDataset()).getSecondaryId(this);
+	}
+
+	public enum Parser implements IdUtil.Parser<SecondaryIdDescriptionId> {
 		INSTANCE;
 
 		@Override

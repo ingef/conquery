@@ -5,9 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import javax.inject.Inject;
-import javax.validation.Validator;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
@@ -19,12 +18,12 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -56,7 +55,7 @@ public class FormConfigProcessor {
 	@Inject
 	private MetaStorage storage;
 	@Inject
-	private DatasetRegistry datasetRegistry;
+	private DatasetRegistry<?> datasetRegistry;
 
 	/**
 	 * Return an overview of all form config available to the subject. The selection can be reduced by setting a specific formType.
@@ -66,11 +65,11 @@ public class FormConfigProcessor {
 	 * @param dataset
 	 * @param requestedFormType Optional form type to filter the overview to that specific type.
 	 **/
-	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull Subject subject, Dataset dataset, @NonNull Set<String> requestedFormType) {
+	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull Subject subject, DatasetId dataset, @NonNull Set<String> requestedFormType) {
 
 		if (requestedFormType.isEmpty()) {
 			// If no specific form type is provided, show all types the subject is permitted to create.
-			// However if a subject queries for specific form types, we will show all matching regardless whether
+			// However, if a subject queries for specific form types, we will show all matching regardless whether
 			// the form config can be used by the subject again.
 			final Set<String> allowedFormTypes = new HashSet<>();
 
@@ -86,7 +85,7 @@ public class FormConfigProcessor {
 
 		final Set<String> formTypesFinal = requestedFormType;
 
-		final Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
+		final Stream<FormConfig> stream = storage.getAllFormConfigs()
 												 .filter(c -> dataset.equals(c.getDataset()))
 												 .filter(c -> formTypesFinal.contains(c.getFormType()))
 												 .filter(c -> subject.isPermitted(c, Ability.READ));
@@ -99,7 +98,8 @@ public class FormConfigProcessor {
 	 * Returns the full configuration of a configuration (meta data + configured values).
 	 * It also tried to convert all {@link NamespacedId}s into the given dataset, so that the frontend can resolve them.
 	 */
-	public FormConfigFullRepresentation getConfig(Subject subject, FormConfig form) {
+	public FormConfigFullRepresentation getConfig(Subject subject, FormConfigId formId) {
+		final FormConfig form = formId.resolve();
 
 		subject.authorize(form, Ability.READ);
 		return form.fullRepresentation(storage, subject);
@@ -110,14 +110,13 @@ public class FormConfigProcessor {
 	 * subject has access to (has the READ ability on the Dataset), if the config is
 	 * translatable to those.
 	 */
-	public FormConfig addConfig(Subject subject, Dataset targetDataset, FormConfigAPI config) {
+	public FormConfig addConfig(Subject subject, DatasetId targetDataset, FormConfigAPI config) {
 
-		//TODO clear this up
-		final Namespace namespace = datasetRegistry.get(targetDataset.getId());
+		final Namespace namespace = datasetRegistry.get(targetDataset);
 
 		subject.authorize(namespace.getDataset(), Ability.READ);
 
-		final FormConfig internalConfig = config.intern(storage.getUser(subject.getId()), targetDataset);
+		final FormConfig internalConfig = config.intern(subject.getId(), targetDataset);
 		// Add the config immediately to the submitted dataset
 		addConfigToDataset(internalConfig);
 
@@ -127,18 +126,18 @@ public class FormConfigProcessor {
 	/**
 	 * Adds a formular configuration under a specific dataset to the storage and grants the user the rights to manage/patch it.
 	 */
-	private FormConfigId addConfigToDataset(FormConfig internalConfig) {
-
+	private void addConfigToDataset(FormConfig internalConfig) {
 		ValidatorHelper.failOnError(log, validator.validate(internalConfig));
-		storage.addFormConfig(internalConfig);
 
-		return internalConfig.getId();
+		internalConfig.setMetaStorage(storage);
+		storage.addFormConfig(internalConfig);
 	}
 
 	/**
 	 * Applies a patch to a configuration that allows to change its label or tags or even share it.
 	 */
-	public FormConfigFullRepresentation patchConfig(Subject subject, FormConfig config, FormConfigPatch patch) {
+	public FormConfigFullRepresentation patchConfig(Subject subject, FormConfigId configId, FormConfigPatch patch) {
+		FormConfig config = configId.resolve();
 
 		patch.applyTo(config, storage, subject);
 
@@ -150,11 +149,11 @@ public class FormConfigProcessor {
 	/**
 	 * Deletes a configuration from the storage and all permissions, that have this configuration as target.
 	 */
-	public void deleteConfig(Subject subject, FormConfig config) {
-		final User user = storage.getUser(subject.getId());
+	public void deleteConfig(Subject subject, FormConfigId configId) {
+		final User user = subject.getUser();
 
-		user.authorize(config, Ability.DELETE);
-		storage.removeFormConfig(config.getId());
+		user.authorize(configId, Ability.DELETE);
+		storage.removeFormConfig(configId);
 		// Delete corresponding permissions (Maybe better to put it into a slow job)
 		for (ConqueryPermission permission : user.getPermissions()) {
 
@@ -163,14 +162,14 @@ public class FormConfigProcessor {
 			if (!wpermission.getDomains().contains(FormConfigPermission.DOMAIN.toLowerCase())) {
 				continue;
 			}
-			if (!wpermission.getInstances().contains(config.getId().toString().toLowerCase())) {
+			if (!wpermission.getInstances().contains(configId.toString().toLowerCase())) {
 				continue;
 			}
 
 			if (!wpermission.getInstances().isEmpty()) {
 				// Create new permission if it was a composite permission
 				final Set<String> instancesCleared = new HashSet<>(wpermission.getInstances());
-				instancesCleared.remove(config.getId().toString());
+				instancesCleared.remove(configId.toString());
 				final WildcardPermission clearedPermission =
 						new WildcardPermission(List.of(wpermission.getDomains(), wpermission.getAbilities(), instancesCleared), Instant.now());
 				user.addPermission(clearedPermission);

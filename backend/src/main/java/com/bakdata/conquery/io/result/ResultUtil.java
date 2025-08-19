@@ -5,16 +5,15 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDown
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.google.common.base.Strings;
@@ -23,14 +22,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ResultUtil {
 
-	public static enum ContentDispositionOption {
+	private static final Charset WINDOWS_DEFAULT_CHARSET = Charset.forName("windows-1252");
+
+	public enum ContentDispositionOption {
 		// Try to display payload in the browser
 		INLINE,
 		// Force download of the payload by the browser
 		ATTACHMENT;
 
 		String getHeaderValue() {
-			return this.name().toLowerCase(Locale.ROOT);
+			return name().toLowerCase(Locale.ROOT);
 		}
 	}
 
@@ -55,11 +56,11 @@ public class ResultUtil {
 				return Charset.forName(queryCharset);
 			}
 			catch (Exception e) {
-				log.warn("Unable to map '{}' to a charset. Defaulting to UTF-8", queryCharset);
+				log.warn("Unable to map '{}' to a charset.", queryCharset);
 			}
 		}
 		if (userAgent != null && userAgent.toLowerCase().contains("windows")) {
-			return StandardCharsets.ISO_8859_1;
+			return WINDOWS_DEFAULT_CHARSET;
 		}
 		return StandardCharsets.UTF_8;
 	}
@@ -78,9 +79,9 @@ public class ResultUtil {
 
 
 	public static void authorizeExecutable(Subject subject, ManagedExecution exec) {
-		final Dataset dataset = exec.getDataset();
-		subject.authorize(dataset, Ability.READ);
-		subject.authorize(dataset, Ability.DOWNLOAD);
+		final DatasetId datasetId = exec.getDataset();
+		subject.authorize(datasetId, Ability.READ);
+		subject.authorize(datasetId, Ability.DOWNLOAD);
 
 
 		subject.authorize(exec, Ability.READ);

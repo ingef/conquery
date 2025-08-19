@@ -1,38 +1,43 @@
-import { useCallback } from "react";
+import { useCallback, useContext, useEffect, useRef } from "react";
 
 import { EditorV2Query } from "../editor-v2/types";
 import { EntityId } from "../entity-history/reducer";
 import { apiUrl } from "../environment";
-import type { FormConfigT } from "../previous-queries/list/reducer";
+import type {
+  FormConfigT,
+  PreviousQueryT,
+} from "../previous-queries/list/reducer";
 import type { QueryToUploadT } from "../previous-queries/upload/CSVColumnPicker";
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
+import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { transformQueryToApi } from "./apiHelper";
 import type {
-  QueryIdT,
   ConceptIdT,
-  GetFrontendConfigResponseT,
-  GetConceptsResponseT,
+  DatasetT,
   GetConceptResponseT,
-  PostQueriesResponseT,
-  GetQueryResponseT,
+  GetConceptsResponseT,
+  GetDatasetsResponseT,
+  GetEntityHistoryDefaultParamsResponse,
+  GetEntityHistoryResponse,
+  GetFormConfigResponseT,
+  GetFormConfigsResponseT,
+  GetFormQueriesResponseT,
+  GetFrontendConfigResponseT,
+  GetMeResponseT,
   GetQueriesResponseT,
+  GetQueryResponseT,
+  HistorySources,
   PostConceptResolveResponseT,
   PostFilterResolveResponseT,
   PostFilterSuggestionsResponseT,
-  GetFormQueriesResponseT,
-  GetMeResponseT,
   PostLoginResponseT,
-  GetFormConfigsResponseT,
-  GetFormConfigResponseT,
-  GetDatasetsResponseT,
-  UploadQueryResponseT,
-  GetEntityHistoryResponse,
-  GetEntityHistoryDefaultParamsResponse,
-  DatasetT,
-  HistorySources,
+  PostQueriesResponseT,
   PostResolveEntitiesResponse,
+  PreviewStatisticsResponse,
+  QueryIdT,
+  UploadQueryResponseT,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
 
@@ -113,7 +118,7 @@ export const usePostQueries = () => {
 
 export interface FormQueryPostPayload {
   type: string;
-  values: any;
+  values: unknown;
   [fieldName: string]: unknown;
 }
 // Same signature as postQueries, plus a form query transformator
@@ -211,7 +216,7 @@ export const usePatchQuery = () => {
   const api = useApi<null>();
 
   return useCallback(
-    (queryId: QueryIdT, attributes: Object) =>
+    (queryId: QueryIdT, attributes: Partial<PreviousQueryT>) =>
       api({
         url: getProtectedUrl(`/queries/${queryId}`),
         method: "PATCH",
@@ -398,6 +403,45 @@ export const usePostResolveEntities = () => {
         url: getProtectedUrl(`/datasets/${datasetId}/queries/resolve-entities`),
         method: "POST",
         data: filterValues,
+      }),
+    [api],
+  );
+};
+
+export const useGetResult = () => {
+  const { authToken } = useContext(AuthTokenContext);
+  const authTokenRef = useRef<string>(authToken);
+  useEffect(
+    function updateRef() {
+      authTokenRef.current = authToken;
+    },
+    [authToken],
+  );
+  return useCallback(
+    (queryId: string, limit: number) => {
+      const url =
+        `/result/arrow/${queryId}.arrs?` +
+        new URLSearchParams({ limit: limit.toString() });
+      const res = fetch(getProtectedUrl(url), {
+        headers: {
+          Authorization: `Bearer ${authTokenRef.current}`,
+        },
+      });
+      return res;
+    },
+    [authTokenRef],
+  );
+};
+
+export const usePreviewStatistics = () => {
+  const api = useApi<PreviewStatisticsResponse>();
+
+  return useCallback(
+    (queryId: string) =>
+      api({
+        url: getProtectedUrl(`/queries/${queryId}/statistics`),
+        method: "GET",
+        data: queryId,
       }),
     [api],
   );

@@ -1,12 +1,9 @@
 package com.bakdata.conquery.models.query;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.OptionalLong;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
@@ -20,28 +17,23 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.ShardResult;
-import com.bakdata.conquery.models.worker.DistributedNamespace;
-import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
@@ -52,7 +44,8 @@ import lombok.extern.slf4j.Slf4j;
 @ToString(callSuper = true)
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_QUERY")
-public class ManagedQuery extends ManagedExecution implements SingleTableResult, InternalExecution<ShardResult> {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class ManagedQuery extends ManagedExecution implements SingleTableResult, InternalExecution {
 
 	// Needs to be resolved externally before being executed
 	private Query query;
@@ -61,59 +54,43 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	 */
 	private Long lastResultCount;
 
-	@JsonIgnore
-	private transient Set<WorkerId> involvedWorkers;
-	@JsonIgnore
-	private transient List<ColumnDescriptor> columnDescriptions;
 
 
-	protected ManagedQuery(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
-
-	public ManagedQuery(Query query, User owner, Dataset submittedDataset, MetaStorage storage) {
-		super(owner, submittedDataset, storage);
+	public ManagedQuery(Query query, UserId owner, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		super(owner, submittedDataset, storage, datasetRegistry, config);
 		this.query = query;
 	}
 
 	@Override
 	protected void doInitExecutable() {
-		query.resolve(new QueryResolveContext(getNamespace(), getConfig(), getStorage(), null));
+		query.resolve(new QueryResolveContext(getNamespace(), getConfig(), getMetaStorage(), null));
 	}
 
 	@Override
-	public void addResult(ShardResult result) {
-		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
+	public synchronized void finish(ExecutionState executionState) {
+		//TODO this is not optimal with SQLExecutionService as this might fully evaluate the query.
+		lastResultCount = query.countResults(streamResults(OptionalLong.empty()));
 
-		log.trace("Received Result\n{}", result.getResults());
-
-		if (result.getError().isPresent()) {
-			fail(result.getError().get());
-			return;
-		}
-
-		involvedWorkers.remove(result.getWorkerId());
-
-		getNamespace().getExecutionManager().addQueryResult(this, result.getResults());
-
-		if (involvedWorkers.isEmpty() && getState() == ExecutionState.RUNNING) {
-			finish(ExecutionState.DONE);
-		}
-	}
-
-	@Override
-	protected void finish(ExecutionState executionState) {
-		lastResultCount = query.countResults(streamResults());
+		log.debug("Finished {} with {} results", getId(), lastResultCount);
 
 		super.finish(executionState);
 	}
 
-	public Stream<EntityResult> streamResults() {
-		return getNamespace().getExecutionManager().streamQueryResults(this);
+	public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
+		final Stream<EntityResult> results = getNamespace().getExecutionManager().streamQueryResults(this);
+
+		if(maybeLimit.isEmpty()){
+			return results;
+		}
+
+		final long limit = maybeLimit.getAsLong();
+		final AtomicLong consumed = new AtomicLong();
+
+		return results.takeWhile(line -> consumed.addAndGet(line.length()) < limit);
 	}
 
 	@Override
-	public long resultRowCount() {
+	public synchronized long resultRowCount() {
 		if (lastResultCount == null) {
 			throw new IllegalStateException("Result row count is unknown, because the query has not yet finished.");
 		}
@@ -121,75 +98,28 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	public void start() {
-		super.start();
-		involvedWorkers = Collections.synchronizedSet(getNamespace().getWorkerHandler().getWorkers().stream()
-																	.map(WorkerInformation::getId)
-																	.collect(Collectors.toSet()));
-	}
-
-	@Override
 	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
+
 		super.setStatusBase(subject, status);
 		status.setNumberOfResults(lastResultCount);
 
+		Query query = getQuery();
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
 
-		if (query instanceof SecondaryIdQuery) {
-			status.setSecondaryId(((SecondaryIdQuery) query).getSecondaryId().getId());
+		if (query instanceof SecondaryIdQuery secondaryIdQuery) {
+			status.setSecondaryId((secondaryIdQuery).getSecondaryId());
 		}
 	}
 
+	@Override
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
-		if (columnDescriptions == null) {
-			columnDescriptions = generateColumnDescriptions();
-		}
-		status.setColumnDescriptions(columnDescriptions);
-	}
-
-	/**
-	 * Generates a description of each column that will appear in the resulting csv.
-	 */
-	public List<ColumnDescriptor> generateColumnDescriptions() {
-		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
-		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
-
-		final Locale locale = I18n.LOCALE.get();
-
-		final PrintSettings settings = new PrintSettings(true, locale, getNamespace(), getConfig(), null);
-
-		final UniqueNamer uniqNamer = new UniqueNamer(settings);
-
-		// First add the id columns to the descriptor list. These are always the first columns
-		for (ResultInfo header : getConfig().getIdColumns().getIdResultInfos()) {
-			columnDescriptions.add(ColumnDescriptor.builder()
-												   .label(uniqNamer.getUniqueName(header))
-												   .type(header.getType().typeInfo())
-												   .semantics(header.getSemantics())
-												   .build());
-		}
-
-		final UniqueNamer collector = new UniqueNamer(settings);
-		getResultInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings, collector)));
-		return columnDescriptions;
+		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
 	}
 
 	@JsonIgnore
 	public List<ResultInfo> getResultInfos() {
+		Preconditions.checkState(isInitialized());
 		return query.getResultInfos();
-	}
-
-	@Override
-	public void reset() {
-		super.reset();
-		getNamespace().getExecutionManager().clearQueryResults(this);
-	}
-
-	@Override
-	public void cancel() {
-		log.debug("Sending cancel message to all workers.");
-
-		getNamespace().getWorkerHandler().sendToAll(new CancelQuery(getId()));
 	}
 
 	@Override
@@ -212,18 +142,14 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	public WorkerMessage createExecutionMessage() {
-		return new ExecuteQuery(getId(), getQuery());
-	}
-
-	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
 		query.visit(visitor);
 	}
 
-	public DistributedNamespace getNamespace() {
-		return (DistributedNamespace) super.getNamespace();
+	@Override
+	public WorkerMessage createExecutionMessage() {
+		Preconditions.checkState(isInitialized(), "Was not initialized");
+		return new ExecuteQuery(getId(), getQuery());
 	}
-
 }

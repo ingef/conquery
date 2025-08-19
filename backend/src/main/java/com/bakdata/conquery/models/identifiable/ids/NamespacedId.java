@@ -1,19 +1,44 @@
 package com.bakdata.conquery.models.identifiable.ids;
 
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.commons.lang3.StringUtils;
 
 /**
- * Marker interface for {@link Id}s that are loaded via Namespaced CentralRegistry (see {@link com.bakdata.conquery.models.worker.IdResolveContext#findRegistry(DatasetId)}, as opposed to MetaRegistry (see {@link IdResolveContext#getMetaRegistry()}).
+ * Marker interface for {@link Id}s that are bound to a {@link com.bakdata.conquery.models.worker.Namespace}/{@link com.bakdata.conquery.models.datasets.Dataset}.
  */
-public interface NamespacedId {
+public abstract non-sealed class NamespacedId<TYPE> extends Id<TYPE, NamespacedStorageProvider> {
+
+	public static WorkerStorage assertWorkerStorage(NamespacedStorage storage) {
+		if (storage instanceof WorkerStorage workerStorage) {
+			return workerStorage;
+		}
+
+		throw new IllegalArgumentException("Cannot be retrieved from %s".formatted(storage));
+	}
+
+	public static NamespaceStorage assertNamespaceStorage(NamespacedStorage storage) {
+		if (storage instanceof NamespaceStorage namespaceStorage) {
+			return namespaceStorage;
+		}
+
+		throw new IllegalArgumentException("Cannot be retrieved from %s".formatted(storage));
+	}
+
+	@Override
+	public NamespacedStorageProvider getDomain() {
+		return getDataset().getDomain();
+	}
 
 	@JsonIgnore
-	DatasetId getDataset();
+	public abstract DatasetId getDataset();
 
-	default String toStringWithoutDataset() {
-		return StringUtils.removeStart(toString(), getDataset().toString() + IdUtil.JOIN_CHAR);
+	@Override
+	public void setDomain(NamespacedStorageProvider provider) {
+		getDataset().setDomain(provider);
 	}
+
 }

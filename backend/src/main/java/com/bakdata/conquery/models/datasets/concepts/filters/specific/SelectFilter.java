@@ -5,22 +5,22 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import javax.annotation.CheckForNull;
+import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
+import com.bakdata.conquery.apiv1.LabelMap;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.IndexConfig;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
-import com.bakdata.conquery.models.query.FilterSearch;
-import com.bakdata.conquery.util.search.TrieSearch;
+import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.BiMap;
@@ -37,7 +37,11 @@ import org.jetbrains.annotations.NotNull;
 @NoArgsConstructor
 @Slf4j
 @JsonIgnoreProperties({"searchType"})
-public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> implements Searchable<FilterId> {
+public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> {
+
+	@CheckForNull
+	@Valid
+	private Range.IntegerRange substringRange = null;
 
 	/**
 	 * user given mapping from the values in the columns to shown labels
@@ -45,9 +49,8 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
 
 
-	@NsIdRef
 	@View.ApiManagerPersistence
-	private FilterTemplate template;
+	private SearchIndexId template;
 	private int searchMinSuffixLength = 3;
 	private boolean generateSearchSuffixes = true;
 
@@ -58,7 +61,10 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 
 	@Override
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
-		f.setTemplate(getTemplate());
+		final SearchIndexId searchIndexId = getTemplate();
+		if (searchIndexId != null) {
+			f.setTemplate((FilterTemplate) searchIndexId.resolve());
+		}
 		f.setType(getFilterType());
 
 		// If either not searches are available or all are disabled, we allow users to supply their own values
@@ -70,19 +76,31 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	@JsonIgnore
 	public abstract String getFilterType();
 
-	@Override
-	public List<Searchable<?>> getSearchReferences() {
-		final List<Searchable<?>> out = new ArrayList<>();
+
+	/**
+	 * The actual Searchables to use, if there is potential for deduplication/pooling.
+	 *
+	 * @implSpec The order of objects returned is used to also sort search results from different sources.
+	 */
+	@JsonIgnore
+	public List<Searchable> getSearchReferences() {
+		final List<Searchable> out = new ArrayList<>();
 
 		if (getTemplate() != null) {
-			out.add(getTemplate());
+			final FilterTemplate index = (FilterTemplate) getTemplate().resolve();
+			if (!index.isSearchDisabled()) {
+				out.add(index);
+			}
 		}
 
 		if (!labels.isEmpty()) {
-			out.add(this);
+			out.add(new LabelMap(getId(), labels, searchMinSuffixLength, generateSearchSuffixes));
 		}
 
-		out.addAll(getColumn().getSearchReferences());
+		final Column column = getColumn().resolve();
+		if (!column.isSearchDisabled()) {
+			out.add(column);
+		}
 
 		return out;
 	}
@@ -105,39 +123,16 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		return (getTemplate() == null) != labels.isEmpty();
 	}
 
-	@Override
 	@JsonIgnore
-	public boolean isGenerateSuffixes() {
-		return generateSearchSuffixes;
-	}
-
-	@Override
-	@JsonIgnore
-	public int getMinSuffixLength() {
-		return searchMinSuffixLength;
-	}
-
-	/**
-	 * Does not make sense to distinguish at Filter level since it's only referenced when labels are set.
-	 */
-	@Override
-	@JsonIgnore
-	public boolean isSearchDisabled() {
-		return false;
-	}
-
-	@Override
-	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
-
-		final TrieSearch<FrontendValue> search = new TrieSearch<>(config.getSearchSuffixLength(), config.getSearchSplitChars());
-
-		if(log.isTraceEnabled()) {
-			log.trace("Labels for {}: `{}`", getId(), collectLabels().stream().map(FrontendValue::toString).collect(Collectors.toList()));
+	@ValidationMethod(message = "Substrings must start at 0.")
+	public boolean isMinPositive() {
+		if (getSubstringRange() == null) {
+			return true;
+		}
+		if (getSubstringRange().getMin() == null) {
+			return true;
 		}
 
-		collectLabels().forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
-
-
-		return search;
+		return getSubstringRange().getMin() >= 0;
 	}
 }

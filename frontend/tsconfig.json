@@ -2,7 +2,7 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "@emotion/react",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "sourceMap": true,
     "inlineSourceMap": false,
     "inlineSources": false,
@@ -26,6 +26,12 @@
     "noFallthroughCasesInSwitch": true,
     "strictBindCallApply": true
   },
-  "include": ["src", "node_modules/**/*/*.d.ts"],
+  "include": [
+    "src",
+    "node_modules/**/*/*.d.ts",
+    ".storybook/main.ts",
+    ".storybook/manager.js",
+    ".storybook/preview.tsx"
+  ],
   "exclude": ["node_modules", "public", ".cache", ".idea", "src/ignored/*"]
 }

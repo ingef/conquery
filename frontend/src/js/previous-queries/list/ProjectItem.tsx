@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
 import {
   faCalendar,
+  faFolder as faFolderRegular,
   faUser as faUserRegular,
 } from "@fortawesome/free-regular-svg-icons";
-import { faFolder as faFolderRegular } from "@fortawesome/free-regular-svg-icons";
 import {
   faFolder,
   faMicroscope,
@@ -26,9 +26,10 @@ import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
 import WithTooltip from "../../tooltip/WithTooltip";
 
+import Highlighter from "react-highlight-words";
 import { DeleteProjectItemButton } from "./DeleteProjectItemButton";
 import ProjectItemLabel from "./ProjectItemLabel";
-import { useUpdateQuery, useUpdateFormConfig } from "./actions";
+import { useUpdateFormConfig, useUpdateQuery } from "./actions";
 import { isFormConfig } from "./helpers";
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 
@@ -133,12 +134,6 @@ const SxDownloadButton = styled(DownloadButton)`
   }
 `;
 
-const Row = styled("div")`
-  display: flex;
-  align-items: flex-start;
-  gap: 5px;
-`;
-
 const SxFaIcon = styled(FaIcon)`
   opacity: 0.7;
 `;
@@ -159,6 +154,9 @@ const ProjectItem = forwardRef<
   ref,
 ) {
   const { t } = useTranslation();
+  const highlightedWords = useSelector<StateT, string[]>(
+    (state) => state.projectItemsSearch.words,
+  );
 
   const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
     (state) => state.conceptTrees.secondaryIds,
@@ -233,8 +231,8 @@ const ProjectItem = forwardRef<
                 disabled={!mayEdit}
               />
             </WithTooltip>
-            {!isFormConfig(item) && item.resultUrls.length > 0 ? (
-              <Row>
+            <div className="flex items-center gap-2">
+              {!isFormConfig(item) && item.resultUrls.length > 0 ? (
                 <WithTooltip text={t("previousQuery.downloadResults")}>
                   <SxDownloadButton
                     tight
@@ -246,15 +244,15 @@ const ProjectItem = forwardRef<
                     {topLeftLabel}
                   </SxDownloadButton>
                 </WithTooltip>
-                {!item.containsDates && (
-                  <WithTooltip text={t("previousQuery.hasNoDates")}>
-                    <SxFaIcon red icon={faCalendar} />
-                  </WithTooltip>
-                )}
-              </Row>
-            ) : (
-              <NonBreakingText>{topLeftLabel}</NonBreakingText>
-            )}
+              ) : (
+                <NonBreakingText>{topLeftLabel}</NonBreakingText>
+              )}
+              {!isFormConfig(item) && !item.containsDates && (
+                <WithTooltip text={t("previousQuery.hasNoDates")}>
+                  <SxFaIcon red icon={faCalendar} />
+                </WithTooltip>
+              )}
+            </div>
           </TopLeft>
           <TopRight>
             {executedAt}
@@ -278,6 +276,8 @@ const ProjectItem = forwardRef<
                 <IconButton
                   icon={isShared ? faUser : faUserRegular}
                   bare
+                  title="share"
+                  data-test-id="share"
                   onClick={onIndicateShare}
                 />
               </WithTooltip>
@@ -291,10 +291,21 @@ const ProjectItem = forwardRef<
             label={label}
             selectTextOnMount={true}
             onSubmit={onRenameLabel}
+            highlightedWords={highlightedWords}
             isEditing={isEditingLabel}
             setIsEditing={setIsEditingLabel}
           />
-          <OwnerName>{item.ownerName}</OwnerName>
+          <OwnerName>
+            {highlightedWords.length > 0 ? (
+              <Highlighter
+                searchWords={highlightedWords}
+                autoEscape
+                textToHighlight={item.ownerName}
+              />
+            ) : (
+              item.ownerName
+            )}
+          </OwnerName>
         </LabelRow>
       </Content>
     </Root>

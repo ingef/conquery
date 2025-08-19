@@ -32,7 +32,7 @@ function transformElementGroupsToApi(elementGroups: FormConceptGroupT[]) {
 function transformFieldToApiEntries(
   fieldConfig: GeneralField,
   formValues: DynamicFormValues,
-): [string, any][] {
+): [string, unknown][] {
   if (!isFormField(fieldConfig)) {
     return [];
   }
@@ -107,6 +107,15 @@ function transformFieldToApiEntries(
             // Only include field values from the selected tab
             ...transformFieldsToApi(selectedTab.fields, formValues),
           },
+        ],
+      ];
+    case "DISCLOSURE_LIST":
+      return [
+        [
+          rawFieldname,
+          (formValue as DynamicFormValues[]).map((v) =>
+            transformFieldsToApi(fieldConfig.fields, v),
+          ),
         ],
       ];
   }

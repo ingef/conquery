@@ -7,14 +7,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import java.util.stream.Stream;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.integration.IntegrationTest;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.Id;
@@ -24,7 +26,6 @@ import com.bakdata.conquery.resources.api.ConceptResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -33,9 +34,9 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		//read test sepcification
-		String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
+		String testJson = LoadingUtil.readResource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json");
 
-		DatasetId dataset = conquery.getDataset().getId();
+		DatasetId dataset = conquery.getDataset();
 
 		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
@@ -43,8 +44,8 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 		test.importRequiredData(conquery);
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "updateMatchingStats")
-													.buildFromMap(Map.of(DATASET, conquery.getDataset().getId()));
+															, AdminDatasetResource.class, "postprocessNamespace")
+													.buildFromMap(Map.of(DATASET, conquery.getDataset()));
 
 		conquery.getClient().target(matchingStatsUri)
 				.request(MediaType.APPLICATION_JSON_TYPE)
@@ -52,7 +53,9 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 
 		conquery.waitUntilWorkDone();
 
-		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
+		Stream<Concept<?>> allConcepts = conquery.getNamespace().getStorage().getAllConcepts();
+		TreeConcept concept = (TreeConcept) allConcepts.iterator().next();
+		allConcepts.close();
 
 		final URI resolveUri =
 				HierarchyHelper.hierarchicalPath(
@@ -61,7 +64,7 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 							   )
 							   .buildFromMap(
 									   Map.of(
-											   DATASET, conquery.getDataset().getId(),
+											   DATASET, conquery.getDataset(),
 											   CONCEPT, concept.getId()
 									   )
 							   );
@@ -76,8 +79,8 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 		ResolvedConceptsResult resolved = response.readEntity(ResolvedConceptsResult.class);
 		//check the resolved values
 		assertThat(resolved).isNotNull();
-		assertThat(resolved.resolvedConcepts().stream().map(Id::toString)).containsExactlyInAnyOrder("ConceptResolutionTest.test_tree.test_child1");
-		assertThat(resolved.unknownCodes()).containsExactlyInAnyOrder("unknown");
+		assertThat(resolved.getResolvedConcepts().stream().map(Id::toString)).containsExactlyInAnyOrder("ConceptResolutionTest.test_tree.test_child1");
+		assertThat(resolved.getUnknownCodes()).containsExactlyInAnyOrder("unknown");
 
 	}
 }

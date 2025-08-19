@@ -1,12 +1,11 @@
 package com.bakdata.conquery.resources.api;
 
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import java.util.stream.Stream;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
@@ -25,7 +24,7 @@ public class DatasetsResource extends HAuthorized {
 	private final ConceptsProcessor processor;
 
 	@GET
-	public List<IdLabel<DatasetId>> getDatasets() {
+	public Stream<IdLabel<DatasetId>> getDatasets() {
 		return processor.getDatasets(subject);
 	}
 }

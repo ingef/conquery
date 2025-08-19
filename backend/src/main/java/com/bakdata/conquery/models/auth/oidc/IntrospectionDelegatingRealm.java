@@ -83,6 +83,20 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 		this.keycloakApi = keycloakApi;
 	}
 
+	private static String extractDisplayName(JWTClaimsSet claims) {
+		try {
+			final String name = claims.getStringClaim("name");
+
+			if (StringUtils.isBlank(name)) {
+				throw new UnsupportedTokenException("Claim 'name' was empty");
+			}
+			return name;
+		}
+		catch (java.text.ParseException e) {
+			throw new IncorrectCredentialsException("Unable to extract username from token", e);
+		}
+	}
+
 	@Override
 	protected void onInit() {
 		super.onInit();
@@ -122,9 +136,9 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 
 		final User user = storage.getUser(userId);
 
-		return new ConqueryAuthenticationInfo(user, token, this, true);
+		final String logoutEndpoint = authProviderConf.getAuthClient(true).getServerConfiguration().getLogoutEndpoint();
+		return new ConqueryAuthenticationInfo(user, token, this, true, URI.create(logoutEndpoint));
 	}
-
 
 	/**
 	 * Is called on every request to ensure that the token is still valid.
@@ -162,6 +176,12 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 
 	}
 
+	private static UserId getUserId(JWTClaimsSet claims) {
+		final String subject = claims.getSubject();
+		UserId userId = new UserId(subject);
+		log.trace("Extracted UserId {}", userId);
+		return userId;
+	}
 
 	private void validateAudiences(JWTClaimsSet claims) {
 		// Check if the token is intended for our client/resource
@@ -180,28 +200,6 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 													+ "')");
 		}
 	}
-
-	private static UserId getUserId(JWTClaimsSet claims) {
-		final String subject = claims.getSubject();
-		UserId userId = new UserId(subject);
-		log.trace("Extracted UserId {}", userId);
-		return userId;
-	}
-
-	private static String extractDisplayName(JWTClaimsSet claims) {
-		try {
-			final String name = claims.getStringClaim("name");
-
-			if (StringUtils.isBlank(name)) {
-				throw new UnsupportedTokenException("Claim 'name' was empty");
-			}
-			return name;
-		}
-		catch (java.text.ParseException e) {
-			throw new IncorrectCredentialsException("Unable to extract username from token", e);
-		}
-	}
-
 
 	/**
 	 * Validates token and synchronizes user and its group memberships with keycloak.
@@ -225,10 +223,36 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 			final String groupIdAttribute = authProviderConf.getGroupIdAttribute();
 			if (Strings.isNotBlank(groupIdAttribute)) {
 				final Set<Group> memberships = getUserGroups(claimsSet, groupIdAttribute);
-				syncGroupMappings(user, memberships);
+				syncGroupMappings(user.getId(), memberships);
 			}
 
 			return claimsSet;
+		}
+
+		private synchronized User getOrCreateUser(JWTClaimsSet claims) {
+			UserId userId = getUserId(claims);
+			final String displayName = extractDisplayName(claims);
+
+			User user = storage.getUser(userId);
+
+			if (user != null) {
+				log.trace("Found existing user: {}", user);
+				// Update display name if necessary
+				if (!user.getLabel().equals(displayName)) {
+					log.info("Updating display name of user [{}]: '{}' -> '{}'", user.getName(), user.getLabel(), displayName);
+					user.setLabel(displayName);
+					user.updateStorage();
+				}
+
+				return user;
+			}
+
+			// Construct a new User if none could be found in the storage
+			user = new User(userId.getName(), displayName, storage);
+			storage.addUser(user);
+			log.info("Created new user: {}", user);
+
+			return user;
 		}
 
 		@Nullable
@@ -246,6 +270,28 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 								 .collect(Collectors.toSet());
 		}
 
+		private void syncGroupMappings(UserId userId, Set<Group> mappedGroupsToDo) {
+			// TODO mark mappings as managed by keycloak
+			storage.getAllGroups().forEach((group) -> {
+				if (!group.containsUser(userId)) {
+					return;
+				}
+
+				if (mappedGroupsToDo.contains(group)) {
+					// Mapping is still valid, remove from todo-list
+					mappedGroupsToDo.remove(group);
+				}
+				else {
+					// Mapping is not valid any more remove user from group
+					group.removeMember(userId);
+											   }
+										   }
+			);
+
+			for (Group group : mappedGroupsToDo) {
+				group.addMember(userId);
+			}
+		}
 
 		private Optional<Group> tryGetGroup(KeycloakGroup keycloakGroup) {
 
@@ -288,69 +334,22 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 		}
 
 		private synchronized Group createGroup(String name, String label) {
-			// TODO mark group as managed by keycloak
-			final Group group = new Group(name, label, storage);
+			GroupId groupId = new GroupId(name);
 
-			// Recheck group existence in synchronized part
-			final Group existing = storage.getGroup(group.getId());
+			final Group existing = storage.getGroup(groupId);
 
 			if (existing != null) {
 				// Found existing group
-				log.debug("Skip group creation, because group '{}' existed", group.getId());
+				log.debug("Skip group creation, because group '{}' existed", groupId);
 				return existing;
 			}
+
+			// TODO mark group as managed by keycloak
+			final Group group = new Group(name, label, storage);
 
 			log.info("Creating new Group: {}", group);
 			group.updateStorage();
 			return group;
-		}
-
-
-		private void syncGroupMappings(User user, Set<Group> mappedGroupsToDo) {
-			// TODO mark mappings as managed by keycloak
-			for (Group group : storage.getAllGroups()) {
-				if (group.containsMember(user)) {
-					if (mappedGroupsToDo.contains(group)) {
-						// Mapping is still valid, remove from todo-list
-						mappedGroupsToDo.remove(group);
-					}
-					else {
-						// Mapping is not valid any more remove user from group
-						group.removeMember(user);
-					}
-				}
-			}
-
-			for (Group group : mappedGroupsToDo) {
-				group.addMember(user);
-			}
-		}
-
-
-		private synchronized User getOrCreateUser(JWTClaimsSet claims) {
-			UserId userId = getUserId(claims);
-			final String displayName = extractDisplayName(claims);
-
-			User user = storage.getUser(userId);
-
-			if (user != null) {
-				log.trace("Found existing user: {}", user);
-				// Update display name if necessary
-				if (!user.getLabel().equals(displayName)) {
-					log.info("Updating display name of user [{}]: '{}' -> '{}'", user.getName(), user.getLabel(), displayName);
-					user.setLabel(displayName);
-					user.updateStorage();
-				}
-
-				return user;
-			}
-
-			// Construct a new User if none could be found in the storage
-			user = new User(userId.getName(), displayName, storage);
-			storage.addUser(user);
-			log.info("Created new user: {}", user);
-
-			return user;
 		}
 
 	}

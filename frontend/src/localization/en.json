@@ -133,10 +133,10 @@
     "unshare": "Revoke sharing"
   },
   "common": {
+    "version": "Version",
     "manual": "Manual",
     "contact": "Contact",
     "confirm": "Confirm",
-    "optional": "Optional",
     "back": "Back",
     "any": "Any",
     "save": "Save",
@@ -164,12 +164,15 @@
     "min": "Min",
     "max": "Max",
     "std": "SD",
+    "sum": "Sum",
     "logout": "Logout",
     "dateInvalid": "Invalid date",
     "missingLabel": "Unknown",
     "import": "Import",
     "openFileDialog": "Select file",
-    "shortcut": "Key"
+    "shortcut": "Key",
+    "true": "True",
+    "false": "False"
   },
   "tooltip": {
     "headline": "Info",
@@ -271,7 +274,7 @@
       "mustBePositiveNumber": "Must be a positive number",
       "isRequired": "Required",
       "invalidDateRange": "End date is smaller than start date",
-      "validSelectRequired": "Valid select required"
+      "validSelectRequired": "Valid selects required for these concepts"
     },
     "default": {
       "conceptDropzoneLabel": "Add a concept or a concept list",
@@ -354,9 +357,9 @@
     "unresolvedId_other": "Couldn't resolve ID for the following {{count}} lines"
   },
   "uploadConceptListModal": {
-    "headline": "Upload concepts",
+    "headline": "Upload concepts or filters from a list",
     "label": "Name of the concept",
-    "selectConceptRootNode": "Resolve as a concept list or as a filter list",
+    "selectConceptRootNode": "What's in the list you dropped?",
     "insertNode": "Insert now",
     "result": "Result",
     "resolvedCodes_one": "1 value resolved.",
@@ -364,7 +367,12 @@
     "unknownCodes_one": "1 value not resolved",
     "unknownCodes_other": "{{count}} values not resolved",
     "error": "An error occurred when resolving the values.",
-    "nothingResolved": "No concept resolved."
+    "nothingResolved": "No concept resolved.",
+    "filterValuesFrom": "Filter values from",
+    "conceptValuesFrom": "Concepts from",
+    "includeUnresolved": "Include unresolved values",
+    "includeUnresolvedTooltipDisabled": "Couldn't resolve any value.",
+    "insertRegardless": "Insert regardless"
   },
   "uploadFilterListModal": {
     "headline": "Upload filter values"
@@ -388,6 +396,7 @@
   },
   "preview": {
     "preview": "Preview",
+    "page": "Page",
     "headline": "Results preview",
     "previewHeadline": "Result CSV",
     "previewSubline": "Preview of the first {{count}} lines",
@@ -396,7 +405,14 @@
     "total": "Total rows",
     "min": "Min date",
     "max": "Max date",
-    "span": "Date span"
+    "span": "Date span",
+    "loadingError": "An error occurred while loading the preview.",
+    "dateError": "Date unknown",
+    "name": "Name",
+    "value": "Value",
+    "densityPlot": "Density Plot",
+    "chartYLabel": "Count",
+    "idLabel": "{{primaryIdLabel}} and {{secondaryIdLabel}}"
   },
   "login": {
     "headline": "Queries and Analyses",
@@ -456,6 +472,9 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "search": "Search",
+    "matches_one": "Match",
+    "matches_other": "Matches",
     "noData": "No data available",
     "blurred": "Data visibility",
     "emptyTimeline": {
@@ -463,7 +482,8 @@
       "description": "Exploring individual events chronologically.",
       "descriptionWithoutIds": "To get started, import IDs into the empty list on the left side.",
       "descriptionWithoutId": "Select an ID from the list on the left side",
-      "descriptionWithId": "Couldn't find any data for this ID."
+      "descriptionWithId": "Couldn't find any data for this ID.",
+      "descriptionWithSearchTerm": "Couldn't find any data for the search term '<strong>{{ searchTerm }}</strong>'."
     },
     "backButtonWarning": "Note: changes will be discarded. Please download the list before going back.",
     "history": "History",

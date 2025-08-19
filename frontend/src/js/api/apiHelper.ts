@@ -11,12 +11,12 @@ import { nodeIsConceptQueryNode } from "../model/node";
 import { isLabelPristine } from "../standard-query-editor/helper";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type {
-  TableWithFilterValueT,
-  SelectedSelectorT,
-  SelectedDateColumnT,
-  StandardQueryNodeT,
   DragItemConceptTreeNode,
   FilterWithValueType,
+  SelectedDateColumnT,
+  SelectedSelectorT,
+  StandardQueryNodeT,
+  TableWithFilterValueT,
 } from "../standard-query-editor/types";
 import type {
   ValidatedTimebasedConditionT,
@@ -27,7 +27,7 @@ import { ConceptIdT, DateRangeT } from "./types";
 
 export const transformFilterValueToApi = (
   filter: FilterWithValueType,
-): {} | null /* aka: "not undefined", to ensure a type error when a new filter.type is added */ => {
+): NonNullable<unknown> | null /* aka: "not undefined", to ensure a type error when a new filter.type is added */ => {
   switch (filter.type) {
     case "BIG_MULTI_SELECT":
     case "MULTI_SELECT":

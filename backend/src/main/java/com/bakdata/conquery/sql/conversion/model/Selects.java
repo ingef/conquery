@@ -1,62 +1,97 @@
 package com.bakdata.conquery.sql.conversion.model;
 
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import lombok.Builder;
+import lombok.Singular;
+import lombok.Value;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
-public interface Selects {
+@Value
+@Builder(toBuilder = true)
+public class Selects {
 
-	Field<Object> getPrimaryColumn();
+	SqlIdColumns ids;
+	@Builder.Default
+	Optional<ColumnDateRange> validityDate = Optional.empty();
+	@Builder.Default
+	Optional<ColumnDateRange> stratificationDate = Optional.empty();
+	@Singular
+	List<SqlSelect> sqlSelects;
 
-	Optional<ColumnDateRange> getValidityDate();
+	public Selects withValidityDate(ColumnDateRange validityDate) {
+		return this.toBuilder()
+				   .validityDate(Optional.of(validityDate))
+				   .build();
+	}
 
-	Selects withValidityDate(ColumnDateRange validityDate);
+	public Selects blockValidityDate() {
+		return this.toBuilder()
+				   .validityDate(Optional.empty())
+				   .build();
+	}
 
-	/**
-	 * Returns the selected columns as fully qualified reference.
-	 *
-	 * @param qualifier the table name that creates these selects
-	 * @return selects as fully qualified reference
-	 * @see Selects#mapFieldToQualifier(String, Field)
-	 */
-	Selects qualifiedWith(String qualifier);
+	public Selects qualify(String qualifier) {
+		SqlIdColumns ids = this.ids.qualify(qualifier);
+		List<SqlSelect> sqlSelects = this.sqlSelects.stream().map(sqlSelect -> sqlSelect.qualify(qualifier)).collect(Collectors.toList());
 
-	/**
-	 * @return A list of all select fields including the primary column and validity date.
-	 */
-	List<Field<?>> all();
+		SelectsBuilder builder = Selects.builder()
+										.ids(ids)
+										.sqlSelects(sqlSelects);
 
-	/**
-	 * List of columns that the user explicitly referenced, either via a filter or a select.
-	 *
-	 * @return A list of all select fields WITHOUT implicitly selected columns like the primary column and validity date.
-	 */
-	List<Field<Object>> explicitSelects();
+		if (this.validityDate.isPresent()) {
+			builder = builder.validityDate(this.validityDate.map(_validityDate -> _validityDate.qualify(qualifier)));
+		}
 
-	default Stream<Field<Object>> mapFieldStreamToQualifier(String qualifier, Stream<Field<Object>> objectField) {
-		return objectField.map(column -> this.mapFieldToQualifier(qualifier, column));
+		if (this.stratificationDate.isPresent()) {
+			builder = builder.stratificationDate(this.stratificationDate.map(_validityDate -> _validityDate.qualify(qualifier)));
+		}
+
+		return builder.build();
+	}
+
+	public List<Field<?>> all() {
+		return Stream.of(
+							 this.ids.toFields().stream(),
+							 this.stratificationDate.stream().flatMap(range -> range.toFields().stream()),
+							 this.validityDate.stream().flatMap(range -> range.toFields().stream()),
+							 this.sqlSelects.stream().flatMap(sqlSelect -> sqlSelect.toFields().stream())
+					 )
+					 .flatMap(Function.identity())
+					 .map(select -> (Field<?>) select)
+					 .distinct()
+					 .collect(Collectors.toList());
 	}
 
 	/**
-	 * Converts a select to its fully qualified reference.
-	 *
-	 * <p>
-	 * <h3>Example:</h3>
-	 * <pre>{@code
-	 * with a as (select c1 - c2 as c
-	 * from t1)
-	 * select t1.c
-	 * from a
-	 * }</pre>
-	 * <p>
-	 * This function maps the select {@code c1 - c2 as c} to {@code t1.c}.
-	 *
+	 * All {@link Select}s that have not been explicitly selected (IDs, validity/stratification dates).
 	 */
-	default Field<Object> mapFieldToQualifier(String qualifier, Field<Object> field) {
-		return DSL.field(DSL.name(qualifier, field.getName()));
+	public List<Field<?>> nonExplicitSelects() {
+		return Stream.of(
+							this.ids.toFields().stream(),
+							this.stratificationDate.stream().flatMap(range -> range.toFields().stream()),
+							this.validityDate.stream().flatMap(range -> range.toFields().stream())
+					 )
+					 .flatMap(Function.identity())
+					 .map(select -> (Field<?>) select)
+					 .distinct()
+					 .collect(Collectors.toList());
+	}
+
+	/**
+	 * All explicitly selected and converted {@link Select}s.
+	 */
+	public List<Field<?>> explicitSelects() {
+		return this.sqlSelects.stream()
+							  .flatMap(sqlSelect -> sqlSelect.toFields().stream())
+							  .distinct()
+							  .collect(Collectors.toList());
 	}
 
 }

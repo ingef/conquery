@@ -1,26 +1,32 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
+import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.ExistsSelect;
+import java.util.List;
 
+import com.bakdata.conquery.sql.conversion.model.Qualifiable;
 import org.jooq.Field;
 
-public interface SqlSelect {
+public interface SqlSelect extends Qualifiable<SqlSelect> {
+
+	List<Field<?>> toFields();
 
 	/**
-	 * @return The whole (aliased) SQL expression of this {@link SqlSelect}.
-	 * 	For example, {@code DSL.firstValue(DSL.field(DSL.name("foo", "bar"))).as("foobar")}.
+	 * All column names this {@link SqlSelect} requires.
 	 */
-	Field<?> select();
+	List<String> requiredColumns();
 
 	/**
-	 * @return Aliased column name that can be used to reference the created select.
-	 *  For example, {@code DSL.field("foobar")}.
+	 * @return Determines if this SqlSelect is only part of the final concept conversion CTE and has no predeceasing selects.
 	 */
-	Field<?> aliased();
+	default boolean isUniversal() {
+		return false;
+	}
 
 	/**
-	 * @return Plain column name of this {@link SqlSelect}.
-	 * For example, {@code "bar"}.
+	 * Special selects like {@link ExistsSelect} require an extra aggregation when joining them with other connectors.
 	 */
-	String columnName();
+	default SqlSelect connectorAggregate() {
+		return this;
+	}
 
 }

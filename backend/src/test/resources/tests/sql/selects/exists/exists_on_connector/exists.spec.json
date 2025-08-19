@@ -1,0 +1,139 @@
+{
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
+  "label": "EXISTS select on connector",
+  "expectedCsv": "tests/sql/selects/exists/exists_on_connector/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector_1",
+          "selects": "concept.connector_1.exists"
+        },
+        {
+          "id": "concept.connector_2"
+        },
+        {
+          "id": "concept.connector_3"
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "children": [
+      ],
+      "selects": [
+        {
+          "type": "EXISTS",
+          "name": "exists"
+        }
+      ],
+      "connectors": [
+        {
+          "label": "connector_1",
+          "column": "exists_table_1.value",
+          "selects": {
+            "type": "EXISTS",
+            "name": "exists"
+          }
+        },
+        {
+          "label": "connector_2",
+          "column": "exists_table_2.value",
+          "selects": {
+            "type": "EXISTS",
+            "name": "exists"
+          }
+        },
+        {
+          "label": "connector_3",
+          "column": "exists_table_3.value",
+          "selects": {
+            "type": "EXISTS",
+            "name": "exists"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/selects/exists/exists_on_connector/content_1.csv",
+        "name": "exists_table_1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
+          },
+          {
+            "name": "value",
+            "type": "STRING"
+          }
+        ]
+      },
+      {
+        "csv": "tests/sql/selects/exists/exists_on_connector/content_3.csv",
+        "name": "exists_table_3",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
+          },
+          {
+            "name": "value",
+            "type": "STRING"
+          }
+        ]
+      },
+      {
+        "csv": "tests/sql/selects/exists/exists_on_connector/content_2.csv",
+        "name": "exists_table_2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
+          },
+          {
+            "name": "value",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+{
+    "inputs": [
+        {
+            "output": [
+                {
+                    "inputColumn": "id",
+                    "name": "id",
+                    "inputType": "STRING",
+                    "operation": "COPY"
+                },
+                {
+                    "inputColumn": "sid",
+                    "name": "sid",
+                    "inputType": "STRING",
+                    "operation": "COPY"
+                },
+                {
+                    "inputColumn": "STRING",
+                    "name": "STRING",
+                    "inputType": "STRING",
+                    "operation": "COPY"
+                }
+            ],
+			"primary": {
+				"inputColumn": "id",
+				"inputType": "STRING",
+				"name": "id",
+				"operation": "COPY",
+				"required": true
+			},
+			"sourceFile": "table1.csv"
+        }
+    ],
+	"name": "table1",
+	"table": "table1"
+}

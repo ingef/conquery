@@ -1,23 +1,23 @@
 package com.bakdata.conquery.models.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -29,12 +29,16 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -45,20 +49,21 @@ import org.junit.jupiter.params.provider.MethodSource;
 @Slf4j
 public class DefaultColumnNameTest {
 	private static final Namespace NAMESPACE = mock(LocalNamespace.class);
-	private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, NAMESPACE, new ConqueryConfig(), null);
+	private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, NAMESPACE, new ConqueryConfig(), null, null);
 	private static final Validator VALIDATOR = Validators.newValidator();
+
 
 	private static final BiFunction<TestConcept, CQConcept, Select> CONCEPT_SELECT_SELECTOR =
 			(concept, cq) -> {
-				final UniversalSelect select = concept.getSelects().get(0);
-				cq.setSelects(List.of(select));
+				final UniversalSelect select = concept.getSelects().getFirst();
+				cq.setSelects(List.of(select.getId()));
 				return select;
 			};
 
 	private static final BiFunction<TestConcept, CQConcept, Select> CONNECTOR_SELECT_SELECTOR =
 			(concept, cq) -> {
-				final Select select = concept.getConnectors().get(0).getSelects().get(0);
-				cq.getTables().get(0).setSelects(List.of(select));
+				final Select select = concept.getConnectors().getFirst().getSelects().getFirst();
+				cq.getTables().getFirst().setSelects(List.of((ConnectorSelectId) select.getId()));
 				return select;
 			};
 
@@ -156,21 +161,12 @@ public class DefaultColumnNameTest {
 	@ParameterizedTest
 	@MethodSource("provideCombinations")
 	void checkCombinations(TestConcept concept, boolean hasCQConceptLabel, String expectedColumnName) {
-
-		doAnswer(invocation -> {
-			final ConceptId id = invocation.getArgument(0);
-			if (!concept.getId().equals(id)) {
-				throw new IllegalStateException("Expected the id " + concept.getId() + " but got " + id);
-			}
-			return concept;
-		}).when(NAMESPACE).resolve(any());
-
 		final CQConcept cqConcept = concept.createCQConcept(hasCQConceptLabel);
 
 		final UniqueNamer uniqNamer = new UniqueNamer(SETTINGS);
-		SelectResultInfo info = new SelectResultInfo(concept.extractSelect(cqConcept), cqConcept);
+		SelectResultInfo info = new SelectResultInfo(concept.extractSelect(cqConcept), cqConcept, Collections.emptySet());
 
-		assertThat(uniqNamer.getUniqueName(info)).isEqualTo(expectedColumnName);
+		assertThat(uniqNamer.getUniqueName(info, SETTINGS)).isEqualTo(expectedColumnName);
 	}
 
 
@@ -189,14 +185,13 @@ public class DefaultColumnNameTest {
 			if (elements.isEmpty()) {
 				elements = List.of(concept);
 			}
-			cqConcept.setElements(
-					elements
-			);
+			final List<ConceptElementId<?>> list = elements.stream().<ConceptElementId<?>>map(ConceptElement::getId).toList();
+			cqConcept.setElements(list);
 
 			List<CQTable> tables = concept.getConnectors().stream()
 										  .map(con -> {
 											  CQTable table = new CQTable();
-											  table.setConnector(con);
+											  table.setConnector(con.getId());
 											  table.setConcept(cqConcept);
 											  return table;
 										  })
@@ -212,29 +207,33 @@ public class DefaultColumnNameTest {
 
 	private static class TestConcept extends TreeConcept {
 
-		private static final Dataset DATASET = new Dataset() {
-			{
-				setName("test");
-			}
-		};
+		/**
+		 * We use a different dataset for each concept/test. Otherwise, the concepts override each other in the
+		 * NamespacedStorageProvider map during test parameter creation.
+		 */
+		private static final AtomicInteger DATASET_COUNTER = new AtomicInteger(0);
+
 		private final BiFunction<TestConcept, CQConcept, Select> selectExtractor;
 
-		private TestConcept(BiFunction<TestConcept, CQConcept, Select> selectExtractor) {
+		private TestConcept(BiFunction<TestConcept, CQConcept, Select> selectExtractor) throws Exception {
+			final NamespaceStorage storage = new NonPersistentStoreFactory().createNamespaceStorage();
+
 			this.selectExtractor = selectExtractor;
 			setName("TestConceptName");
 			setLabel("TestConceptLabel");
-			setDataset(DATASET);
+			Dataset dataset = new Dataset("test_" + DATASET_COUNTER.getAndIncrement());
+
+			dataset.setStorageProvider(new TestNamespacedStorageProvider(storage));
+			storage.updateDataset(dataset);
+
+			setNamespacedStorageProvider(storage);
+
+			init();
+
+			storage.updateConcept(this);
+
 			setSelects(List.of(new TestUniversalSelect(this)));
 		}
-
-		public Select extractSelect(CQConcept cq) {
-			return selectExtractor.apply(this, cq);
-		}
-
-		public CQConcept createCQConcept(boolean hasCQConceptLabel) {
-			return TestCQConcept.create(hasCQConceptLabel, this);
-		}
-
 
 		@SneakyThrows
 		public static TestConcept create(int countConnectors, BiFunction<TestConcept, CQConcept, Select> selectExtractor, int countIds, String overwriteLabel) {
@@ -242,6 +241,8 @@ public class DefaultColumnNameTest {
 			if (overwriteLabel != null) {
 				concept.setLabel(overwriteLabel);
 			}
+
+
 			List<ConceptTreeConnector> connectors = new ArrayList<>();
 			concept.setConnectors(connectors);
 			for (; countConnectors > 0; countConnectors--) {
@@ -262,6 +263,7 @@ public class DefaultColumnNameTest {
 					child.setLabel(overwriteLabel);
 				}
 				child.setCondition(new EqualCondition(Set.of(childName)));
+
 				children.add(child);
 			}
 
@@ -269,6 +271,14 @@ public class DefaultColumnNameTest {
 			concept.initElements();
 
 			return concept;
+		}
+
+		public Select extractSelect(CQConcept cq) {
+			return selectExtractor.apply(this, cq);
+		}
+
+		public CQConcept createCQConcept(boolean hasCQConceptLabel) {
+			return TestCQConcept.create(hasCQConceptLabel, this);
 		}
 
 		private static class TestConnector extends ConceptTreeConnector {
@@ -295,6 +305,11 @@ public class DefaultColumnNameTest {
 			@Override
 			public Aggregator<?> createAggregator() {
 				return null;
+			}
+
+			@Override
+			public ResultType getResultType() {
+				return ResultType.Primitive.STRING;
 			}
 		}
 

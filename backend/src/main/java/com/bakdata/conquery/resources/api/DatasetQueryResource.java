@@ -5,24 +5,22 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.QueryProcessor;
@@ -35,8 +33,8 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import io.dropwizard.auth.Auth;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -53,12 +51,12 @@ public class DatasetQueryResource {
 	protected HttpServletRequest servletRequest;
 
 	@PathParam(DATASET)
-	private Dataset dataset;
+	private DatasetId dataset;
 
 
 	@POST
 	@Path("/entity")
-	public FullExecutionStatus getEntityData(@Auth Subject subject, EntityPreviewRequest query, @Context HttpServletRequest request) {
+	public FullExecutionStatus getEntityData(@Auth Subject subject, @Valid EntityPreviewRequest query, @Context HttpServletRequest request) {
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(dataset, Ability.PRESERVE_ID);
 
@@ -89,11 +87,11 @@ public class DatasetQueryResource {
 
 
 	@GET
-	public List<ExecutionStatus> getAllQueries(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+	public List<? extends ExecutionStatus> getAllQueries(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders) {
 
 		subject.authorize(dataset, Ability.READ);
 
-		return processor.getAllQueries(dataset, servletRequest, subject, allProviders.orElse(false)).collect(Collectors.toList());
+		return processor.getAllQueries(dataset, servletRequest, subject, allProviders.orElse(false));
 	}
 
 	@POST
@@ -103,7 +101,12 @@ public class DatasetQueryResource {
 
 		final ManagedExecution execution = processor.postQuery(dataset, query, subject, false);
 
-		return Response.ok(processor.getQueryFullStatus(execution, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false)))
+		return Response.ok(processor.getQueryFullStatus(execution.getId(),
+														subject,
+														RequestAwareUriBuilder.fromRequest(servletRequest),
+														allProviders.orElse(false),
+														false
+					   ))
 					   .status(Response.Status.CREATED)
 					   .build();
 	}

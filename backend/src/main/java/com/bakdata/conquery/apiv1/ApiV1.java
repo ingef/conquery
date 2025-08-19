@@ -2,12 +2,13 @@ package com.bakdata.conquery.apiv1;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
-import com.bakdata.conquery.io.jersey.IdParamConverter;
+import com.bakdata.conquery.io.jersey.IdPathParamConverterProvider;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
+import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
+import com.bakdata.conquery.models.auth.web.AuthFilter;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormProcessor;
 import com.bakdata.conquery.resources.ResourcesProvider;
@@ -25,14 +26,15 @@ import com.bakdata.conquery.resources.api.MeResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.server.ResourceConfig;
 
 @CPSType(base = ResourcesProvider.class, id = "ApiV1")
-public class ApiV1 implements ResourcesProvider {
+public class ApiV1 extends ResourceConfig implements ResourcesProvider {
 
 	@Override
 	public void registerResources(ManagerNode manager) {
 
-		JerseyEnvironment jersey = manager.getEnvironment().jersey();
+		final JerseyEnvironment jersey = manager.getEnvironment().jersey();
 		// TODO this does not work, if we really want to do api versioning
 		jersey.setUrlPattern("/api");
 
@@ -50,7 +52,6 @@ public class ApiV1 implements ResourcesProvider {
 
 		jersey.register(CORSPreflightRequestFilter.class);
 		jersey.register(CORSResponseFilter.class);
-		jersey.register(IdRefPathParamConverterProvider.class);
 
 		jersey.register(ActiveUsersFilter.class);
 
@@ -60,8 +61,10 @@ public class ApiV1 implements ResourcesProvider {
 		 * We use the same instance of the filter for the api servlet and the admin servlet to have a single
 		 * point for authentication.
 		 */
-		jersey.register(manager.getAuthController().getAuthenticationFilter());
-		jersey.register(IdParamConverter.Provider.INSTANCE);
+		jersey.register(AuthFilter.class);
+		AuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, jersey.getResourceConfig());
+
+		jersey.register(IdPathParamConverterProvider.class);
 
 		jersey.register(QueryResource.class);
 		jersey.register(DatasetQueryResource.class);

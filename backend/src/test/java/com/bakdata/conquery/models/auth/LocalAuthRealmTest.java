@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.List;
 
 import com.auth0.jwt.JWT;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
@@ -14,15 +13,16 @@ import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.XodusConfig;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
+import com.password4j.BcryptFunction;
 import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.util.Duration;
 import org.apache.commons.io.FileUtils;
-import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.BearerToken;
+import org.apache.shiro.authc.CredentialsException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
-import org.apache.shiro.util.LifecycleUtils;
+import org.apache.shiro.lang.util.LifecycleUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -53,7 +53,18 @@ public class LocalAuthRealmTest {
 
 		conqueryTokenRealm = new ConqueryTokenRealm(storage);
 
-		realm = new LocalAuthenticationRealm(Validators.newValidator(), Jackson.BINARY_MAPPER, conqueryTokenRealm, "localtestRealm", tmpDir, new XodusConfig(), Duration.hours(1));
+		realm =
+				new LocalAuthenticationRealm(
+						Validators.newValidator(),
+						Jackson.BINARY_MAPPER, conqueryTokenRealm,
+						"localTestRealm",
+						tmpDir,
+						new XodusConfig(),
+						Duration.hours(4),
+						BcryptFunction.getInstance(4),
+						CaffeineSpec.parse(""),
+						null // no metrics
+				); // 4 is minimum
 		LifecycleUtils.init(realm);
 	}
 
@@ -61,15 +72,15 @@ public class LocalAuthRealmTest {
 	public void setupEach() {
 		// Create User in Realm
 		user1 = new User("TestUser", "Test User", storage);
-		PasswordCredential user1Password = new PasswordCredential("testPassword".toCharArray());
+		PasswordCredential user1Password = new PasswordCredential("testPassword");
 		storage.addUser(user1);
-		realm.addUser(user1, List.of(user1Password));
+		realm.addUser(user1.getId(), user1Password);
 	}
 
 	@AfterEach
 	public void cleanUpEach() {
-		// Well there is an extra test case for this, but lets do it like this for now.
-		realm.removeUser(user1);
+		// Well there is an extra test case for this, but let's do it like this for now.
+		realm.removeUser(user1.getId());
 	}
 
 	@AfterAll
@@ -81,32 +92,32 @@ public class LocalAuthRealmTest {
 
 	@Test
 	public void testEmptyUsername() {
-		assertThatThrownBy(() -> realm.createAccessToken("", "testPassword".toCharArray()))
+		assertThatThrownBy(() -> realm.createAccessToken("", "testPassword"))
 			.isInstanceOf(IncorrectCredentialsException.class).hasMessageContaining("Username was empty");
 	}
 
 	@Test
 	public void testEmptyPassword() {
-		assertThatThrownBy(() -> realm.createAccessToken("TestUser", "".toCharArray()))
+		assertThatThrownBy(() -> realm.createAccessToken("TestUser", ""))
 			.isInstanceOf(IncorrectCredentialsException.class).hasMessageContaining("Password was empty");
 	}
 
 	@Test
 	public void testWrongPassword() {
-		assertThatThrownBy(() -> realm.createAccessToken("TestUser", "wrongPassword".toCharArray()))
-			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
+		assertThatThrownBy(() -> realm.createAccessToken("TestUser", "wrongPassword"))
+				.isInstanceOf(IncorrectCredentialsException.class).hasMessageContaining("Password was was invalid for user");
 	}
 
 	@Test
 	public void testWrongUsername() {
-		assertThatThrownBy(() -> realm.createAccessToken("NoTestUser", "testPassword".toCharArray()))
-			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
+		assertThatThrownBy(() -> realm.createAccessToken("NoTestUser", "testPassword"))
+				.isInstanceOf(CredentialsException.class).hasMessageContaining("No password hash was found for user");
 	}
 
 	@Test
 	public void testValidUsernamePassword() {
 		// Right username and password should yield a JWT
-		String jwt = realm.createAccessToken("TestUser", "testPassword".toCharArray());
+		String jwt = realm.createAccessToken("TestUser", "testPassword");
 		assertThatCode(() -> JWT.decode(jwt)).doesNotThrowAnyException();
 
 		assertThat(conqueryTokenRealm.doGetAuthenticationInfo(new BearerToken(jwt)).getPrincipals().getPrimaryPrincipal())
@@ -116,22 +127,22 @@ public class LocalAuthRealmTest {
 	@Test
 	public void testUserUpdate() {
 
-		realm.updateUser(user1, List.of(new PasswordCredential("newTestPassword".toCharArray())));
+		realm.updateUser(user1.getId(), new PasswordCredential("newTestPassword"));
 		// Wrong (old) password
-		assertThatThrownBy(() -> realm.createAccessToken("TestUser", "testPassword".toCharArray()))
-			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
+		assertThatThrownBy(() -> realm.createAccessToken("TestUser", "testPassword"))
+				.isInstanceOf(IncorrectCredentialsException.class).hasMessageContaining("Password was was invalid for user");
 
 		// Right (new) password
-		String jwt = realm.createAccessToken("TestUser", "newTestPassword".toCharArray());
+		String jwt = realm.createAccessToken("TestUser", "newTestPassword");
 		assertThatCode(() -> JWT.decode(jwt)).doesNotThrowAnyException();
 	}
 
 	@Test
 	public void testRemoveUser() {
-		realm.removeUser(user1);
+		realm.removeUser(user1.getId());
 		// Wrong password
-		assertThatThrownBy(() -> realm.createAccessToken("TestUser", "testPassword".toCharArray()))
-			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
+		assertThatThrownBy(() -> realm.createAccessToken("TestUser", "testPassword"))
+				.isInstanceOf(CredentialsException.class).hasMessageContaining("No password hash was found for user");
 
 	}
 }

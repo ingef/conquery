@@ -8,12 +8,11 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -21,11 +20,13 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.util.CalculatedValue;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.TestNamespacedStorageProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,6 +40,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class GroovyIndexedTest {
 
 	public static final int SEED = 500;
+	private static final String CONCEPT_SOURCE = "groovy.concept.json";
+	private static TreeConcept indexedConcept;
+	private static TreeConcept oldConcept;
 
 	public static Stream<Arguments> getTestKeys() {
 		final Random random = new Random(SEED);
@@ -47,33 +51,34 @@ public class GroovyIndexedTest {
 		);
 
 		return Stream.of(
-				"A13B", "I43A", "H41B", "B05Z", "L02C", "L12Z", "H08A", "I56B", "I03A", "E79C", "B80Z", "I47A", "N13A", "G08B", "F43B", "P04A", "T36Z", "T36Z", "N11A", "D13A", "R01D", "F06A", "F24A", "O03Z", "P01Z", "R63D", "A13A", "O05A", "G29B", "I18A", "J08A", "E74Z", "D06C", "H36Z", "H05Z", "P65B", "I09A", "A66Z", "F12E", "Q60E", "I46B", "I97Z", "I78Z", "T01B", "J24C", "A62Z", "Q01Z", "N25Z", "A01B", "G02A"
-				, "ZULU" // This may not fail, but return null on both sides
-		)
-				.map(v -> Arguments.of(v, rowMap.get()));
+							 "A13B", "I43A", "H41B", "B05Z", "L02C", "L12Z", "H08A", "I56B", "I03A", "E79C", "B80Z", "I47A", "N13A", "G08B", "F43B", "P04A", "T36Z", "T36Z", "N11A", "D13A", "R01D", "F06A", "F24A", "O03Z", "P01Z", "R63D", "A13A", "O05A", "G29B", "I18A", "J08A", "E74Z", "D06C", "H36Z", "H05Z", "P65B", "I09A", "A66Z", "F12E", "Q60E", "I46B", "I97Z", "I78Z", "T01B", "J24C", "A62Z", "Q01Z", "N25Z", "A01B", "G02A"
+							 , "ZULU" // This may not fail, but return null on both sides
+					 )
+					 .map(v -> Arguments.of(v, rowMap.get()));
 	}
-
-	private static TreeConcept indexedConcept;
-	private static TreeConcept oldConcept;
-	private static final String CONCEPT_SOURCE = "groovy.concept.json";
 
 	@BeforeAll
 	public static void init() throws IOException, JSONException, ConfigurationException {
-		ObjectNode node = Jackson.MAPPER.readerFor(ObjectNode.class).readValue(In.resource(GroovyIndexedTest.class, CONCEPT_SOURCE).asStream());
+		final ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
+		ObjectNode node = mapper.readerFor(ObjectNode.class).readValue(GroovyIndexedTest.class.getResourceAsStream(CONCEPT_SOURCE));
 
 		// load concept tree from json
-		CentralRegistry registry = new CentralRegistry();
+		final NamespaceStorage storage = new NonPersistentStoreFactory().createNamespaceStorage();
+		final NamespacedStorageProvider storageProvider = new TestNamespacedStorageProvider(storage);
 
+		storage.openStores(mapper);
 		Table table = new Table();
 
 		table.setName("the_table");
-		Dataset dataset = new Dataset();
+		Dataset dataset = new Dataset("the_dataset");
+		dataset.setStorageProvider(storageProvider);
 
-		dataset.setName("the_dataset");
+		dataset.injectInto(mapper);
 
-		registry.register(dataset);
+		storage.updateDataset(dataset);
 
-		table.setDataset(dataset);
+		table.setNamespacedStorageProvider(storage);
+		table.init();
 
 		Column column = new Column();
 		column.setName("the_column");
@@ -82,30 +87,21 @@ public class GroovyIndexedTest {
 		table.setColumns(new Column[]{column});
 		column.setTable(table);
 
-		registry.register(table);
-		registry.register(column);
-
+		storage.addTable(table);
 
 		// Prepare Serdes injections
 		final Validator validator = Validators.newValidator();
-		final ObjectReader conceptReader = new Injectable(){
-			@Override
-			public MutableInjectableValues inject(MutableInjectableValues values) {
-				return values.add(Validator.class, validator);
-			}
-		}.injectInto(registry.injectIntoNew(dataset.injectIntoNew(Jackson.MAPPER))).readerFor(Concept.class);
+		final ObjectReader conceptReader = ((Injectable) values -> values.add(Validator.class, validator)).injectInto(mapper).readerFor(Concept.class);
 
 		// load tree twice to to avoid references
 		indexedConcept = conceptReader.readValue(node);
 
-		indexedConcept.setDataset(dataset);
+		indexedConcept.setNamespacedStorageProvider(storage);
 		indexedConcept.initElements();
-
-		TreeChildPrefixIndex.putIndexInto(indexedConcept);
 
 		oldConcept = conceptReader.readValue(node);
 
-		oldConcept.setDataset(dataset);
+		oldConcept.setNamespacedStorageProvider(storage);
 		oldConcept.initElements();
 	}
 

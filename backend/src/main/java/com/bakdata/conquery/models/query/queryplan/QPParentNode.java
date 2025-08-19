@@ -117,10 +117,13 @@ public abstract class QPParentNode extends QPNode {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public boolean acceptEvent(Bucket bucket, int event) {
+		boolean consumed = false;
 		for (QPNode currentTableChild : currentTableChildren) {
-			currentTableChild.acceptEvent(bucket, event);
+			consumed |= currentTableChild.acceptEvent(bucket, event);
 		}
+
+		return consumed;
 	}
 
 	@Override

@@ -2,13 +2,12 @@ package com.bakdata.conquery.models.query.filter.event;
 
 import java.util.Set;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -42,10 +41,8 @@ public class PrefixTextFilterNode extends EventFilterNode<String> {
 			return false;
 		}
 
-		final int id = store.getString(event);
-		String value = store.getElement(id);
+		final String value = store.getString(event);
 
-		//if performance is a problem we could find the filterValue once in the dictionary and then only check the values
 		return value.startsWith(filterValue);
 	}
 

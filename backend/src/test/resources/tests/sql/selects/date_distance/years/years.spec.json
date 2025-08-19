@@ -1,7 +1,10 @@
 {
-  "type": "SQL_TEST",
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": true
+  },
   "label": "DATE_DISTANCE select with timeUnit YEARS",
-  "expectedCsv": "expected.csv",
+  "expectedCsv": "tests/sql/selects/date_distance/years/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

@@ -1,6 +1,6 @@
 import { faChevronDown, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useCombobox } from "downshift";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
@@ -51,7 +51,6 @@ const InputSelect = ({
   clearable,
   className,
   value,
-  optional,
   smallMenu,
   onChange,
   sortOptions,
@@ -67,7 +66,6 @@ const InputSelect = ({
   className?: string;
   dataTestId?: string;
   value: SelectOptionT | null;
-  optional?: boolean;
   onChange: (value: SelectOptionT | null) => void;
   sortOptions?: (a: SelectOptionT, b: SelectOptionT, query: string) => number;
 }) => {
@@ -287,6 +285,7 @@ const InputSelect = ({
         <DropdownToggleButton
           disabled={disabled}
           icon={faChevronDown}
+          data-test-id="selection-dropdown"
           {...getToggleButtonProps()}
         />
       </Control>
@@ -302,7 +301,7 @@ const InputSelect = ({
             }}
             ref={(instance) => menuPropsRef(instance)}
           >
-            <List small={smallMenu}>
+            <List small={smallMenu} data-test-id="select-options">
               {filteredOptions.length === 0 && <SelectEmptyPlaceholder />}
               {filteredOptions.map((option, index) => {
                 const { ref: itemPropsRef, ...itemProps } = getItemProps({
@@ -347,7 +346,6 @@ const InputSelect = ({
       }
       indexPrefix={indexPrefix}
       className={className}
-      optional={optional}
     >
       {Select}
     </Labeled>

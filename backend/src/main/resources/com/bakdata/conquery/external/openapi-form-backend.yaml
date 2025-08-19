@@ -1,10 +1,10 @@
 openapi: 3.0.0
 info:
   title: Form Backend
-  version: 1.0.0
+  version: 1.0.2
   description: |
     API for generic external form backends in [Conquery](https://github.com/ingef/conquery).
-    
+
     An external form backend implements this API as a server.
     A Conquery instance is then configured to act as a client. The configuration might look like this:
     ```json
@@ -25,12 +25,12 @@ info:
       ]
     }
     ```
-    
+
     It is possible to override every path in this spec. The overrides must be configured in the above configuration accordingly (see [backend class](https://github.com/ingef/conquery/blob/develop/backend/src/main/java/com/bakdata/conquery/models/config/FormBackendConfig.java)).
-    
+
     Caution: The examples in this spec are used by a mock server in the ExternalFormBackendTest. Changes here might fail that test.
 servers:
-  - url: "{protocol}://{serverAndPort}:{port}/{basePath}"
+  - url: '{protocol}://{serverAndPort}:{port}/{basePath}'
     variables:
       protocol:
         default: https
@@ -42,7 +42,7 @@ servers:
         default: localhost
         description: Server address and optional port if it differs from the protocol's default
       basePath:
-        default: ""
+        default: ''
 tags:
   - name: Form Configuration
   - name: Task
@@ -65,14 +65,13 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/formConfig"
+                  $ref: '#/components/schemas/formConfig'
         default:
           description: Unexpected error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-
   /task:
     post:
       summary: Create a new form task
@@ -82,33 +81,31 @@ paths:
         - { }
       tags:
         - Task
-
       requestBody:
         description: Represents the form that should be executed
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/form"
+              $ref: '#/components/schemas/form'
       responses:
         '201':
           description: Form task was successfully created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/taskState"
+                $ref: '#/components/schemas/taskState'
         default:
           description: Unexpected error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-
   /task/{id}:
     parameters:
       - in: path
         name: id
         schema:
-          $ref: "#/components/schemas/taskId"
+          $ref: '#/components/schemas/taskId'
         required: true
         description: The task id
     get:
@@ -120,12 +117,12 @@ paths:
       tags:
         - Task
       responses:
-        "200":
+        '200':
           description: State of existing task
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/taskState"
+                $ref: '#/components/schemas/taskState'
         default:
           description: Unexpected error
           content:
@@ -137,7 +134,7 @@ paths:
       - in: path
         name: id
         schema:
-          $ref: "#/components/schemas/taskId"
+          $ref: '#/components/schemas/taskId'
         required: true
         description: The task id
     post:
@@ -149,33 +146,50 @@ paths:
       tags:
         - Task
       responses:
-        "200":
+        '200':
           description: State of the now cancelled task
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/taskState"
+                $ref: '#/components/schemas/taskState'
         default:
           description: Unexpected error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
-
   /health:
     get:
-      summary: Request health State
+      summary: Request health state
       operationId: healthCheck
-      # Cannot do gobal auth and local overrides yet with mocker-server: https://github.com/mock-server/mockserver/issues/1315
       tags:
         - Operation
       responses:
-        "200":
+        '200':
           description: State of service health
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/health"
+                $ref: '#/components/schemas/health'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /version:
+    get:
+      summary: Request version information
+      operationId: version
+      tags:
+        - Operation
+      responses:
+        '200':
+          description: Version of the form backend
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/version'
         default:
           description: Unexpected error
           content:
@@ -191,8 +205,8 @@ components:
         title:
           type: object
           example:
-            "en": "External Form"
-            "de": "External Form"
+            en: External Form
+            de: External Form
         type:
           type: string
           example: SOME_EXTERNAL_FORM
@@ -200,33 +214,31 @@ components:
           type: array
           items:
             type: object
-
       required:
         - type
         - title
       additionalProperties: true
       example:
-        "title":
-          "en": "External Form"
-          "de": "External Form"
-        "type": "SOME_EXTERNAL_FORM"
-        "fields":
-          - "label":
-              "en": "Cohort"
-              "de": "Kohorte"
-            "style":
-              "size": "h1"
-            "type": "HEADLINE"
+        title:
+          en: External Form
+          de: External Form
+        type: SOME_EXTERNAL_FORM
+        fields:
+          - label:
+              en: Cohort
+              de: Kohorte
+            style:
+              size: h1
+            type: HEADLINE
     taskId:
       type: string
       format: uuid
-
     form:
       type: object
       properties:
         type:
           type: string
-          example: "SOME_EXTERNAL_FORM"
+          example: SOME_EXTERNAL_FORM
       additionalProperties: true
       required:
         - type
@@ -234,9 +246,9 @@ components:
       type: object
       properties:
         id:
-          $ref: "#/components/schemas/taskId"
+          $ref: '#/components/schemas/taskId'
         status:
-          $ref: "#/components/schemas/taskStatus"
+          $ref: '#/components/schemas/taskStatus'
         progress:
           type: number
           nullable: true
@@ -245,19 +257,18 @@ components:
         results:
           type: array
           items:
-            $ref: "#/components/schemas/resultAsset"
+            $ref: '#/components/schemas/resultAsset'
         error:
-          $ref: "#/components/schemas/error"
+          $ref: '#/components/schemas/error'
       example:
-        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-        "status": "SUCCESS"
-        "progress": 1.0
-        "results":
-          - label: "Result"
-            url: "/result.txt"
-          - label: "Another Result"
-            url: "/another_result.txt"
-
+        id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        status: SUCCESS
+        progress: 1
+        results:
+          - label: Result
+            url: /result.txt
+          - label: Another Result
+            url: /another_result.txt
     taskStatus:
       type: string
       enum:
@@ -274,8 +285,8 @@ components:
           type: string
           format: url
       example:
-        label: "Result"
-        url: "/result.txt"
+        label: Result
+        url: /result.txt
     error:
       type: object
       properties:
@@ -289,11 +300,11 @@ components:
         context:
           type: object
       example:
-        id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-        code: "SOME_ERROR"
-        message: "This is a default template message, for a fallback. Use a template variable from the context like this: ${temp_var}"
+        id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        code: SOME_ERROR
+        message: 'This is a default template message, for a fallback. Use a template variable from the context like this: ${temp_var}'
         context:
-          temp_var: "resolved variable"
+          temp_var: resolved variable
     health:
       type: object
       properties:
@@ -304,6 +315,16 @@ components:
           example: I'm good
       required:
         - healthy
+    version:
+      type: object
+      properties:
+        version:
+          type: string
+          example: "3.2.1-ge966c285"
+        buildTime:
+          type: string
+          format: date-time
+          example: "2007-08-31T16:47:00+00:00"
   securitySchemes:
     ApiKeyAuth:
       type: apiKey

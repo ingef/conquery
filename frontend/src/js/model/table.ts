@@ -4,10 +4,10 @@ import { exists } from "../common/helpers/exists";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
 
 import {
-  resetFilters,
-  filterValueDiffersFromDefault,
   filterIsEmpty,
+  filterValueDiffersFromDefault,
   filtersHaveValues,
+  resetFilters,
 } from "./filter";
 import type { NodeResetConfig } from "./node";
 import { objectHasNonDefaultSelects, resetSelects } from "./select";
@@ -58,7 +58,7 @@ export function tableIsIncludedInIds(
   tableIds: string[],
 ) {
   return tableIds.some(
-    (id) => table.id.toLowerCase().indexOf(id.toLowerCase()) !== -1,
+    (id) => table.connectorId.toLowerCase().indexOf(id.toLowerCase()) !== -1,
   );
 }
 

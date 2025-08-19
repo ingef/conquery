@@ -45,9 +45,9 @@ export const ConfirmableTooltip = ({
           onClick={() => {
             onConfirm();
 
-            // TODO: Find a better way to get the tippy instance / to hide it
             // https://github.com/atomiks/tippyjs-react/issues/324
-            const tippyInstance = (tippyRef.current as any)?._tippy as Instance;
+            // @ts-ignore TODO: Find a better way to get the tippy instance / to hide it
+            const tippyInstance = tippyRef.current?._tippy as Instance;
             if (tippyInstance) {
               tippyInstance.hide();
             }
@@ -55,6 +55,7 @@ export const ConfirmableTooltip = ({
           small
           bgHover
           red={red}
+          data-test-id="confirm"
         >
           {confirmationText || t("common.confirm")}
         </SxIconButton>

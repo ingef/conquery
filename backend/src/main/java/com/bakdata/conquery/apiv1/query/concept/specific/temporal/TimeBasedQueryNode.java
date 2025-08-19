@@ -47,8 +47,9 @@ public class TimeBasedQueryNode extends QPNode {
 
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public boolean acceptEvent(Bucket bucket, int event) {
 		// Does nothing
+		return false;
 	}
 
 	@Override

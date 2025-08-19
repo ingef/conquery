@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
+import { getFileRows } from "../../common/helpers/fileHelper";
 import { useDebounce } from "../../common/helpers/useDebounce";
 import FaIcon from "../../icon/FaIcon";
 import InfoTooltip from "../../tooltip/InfoTooltip";
@@ -94,14 +95,18 @@ const InputMultiSelect = ({
   onLoadMore,
   onLoadAndInsertAll,
 }: Props) => {
+  const { t } = useTranslation();
+
   useResolvableSelect({
     defaultValue,
     onResolve,
   });
 
   const menuContainerRef = useRef<HTMLDivElement | null>(null);
+
   const [inputValue, setInputValue] = useState("");
-  const { t } = useTranslation();
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const {
     getSelectedItemProps,
@@ -121,16 +126,6 @@ const InputMultiSelect = ({
       }
     },
   });
-
-  useDebounce(
-    () => {
-      if (onLoadMore && !loading) {
-        onLoadMore(inputValue, { shouldReset: true });
-      }
-    },
-    200,
-    [inputValue],
-  );
 
   const filteredOptions = useFilteredOptions({
     options,
@@ -168,6 +163,7 @@ const InputMultiSelect = ({
             return state;
           }
 
+          /* eslint-disable no-case-declarations */
           // Make sure we're staying around the index of the item that was just selected
           const stayAlmostAtTheSamePositionIndex =
             state.highlightedIndex === filteredOptions.length - 1
@@ -186,9 +182,11 @@ const InputMultiSelect = ({
           const isNotSelectedYet =
             !!selectedItem &&
             !selectedItems.find((item) => selectedItem.value === item.value);
+          /* eslint-enable no-case-declarations */
 
           if (isNotSelectedYet && hasItemHighlighted) {
             addSelectedItem(selectedItem);
+            inputRef.current?.select();
           }
 
           return {
@@ -235,6 +233,16 @@ const InputMultiSelect = ({
     },
   });
 
+  useDebounce(
+    () => {
+      if (onLoadMore && isOpen && !loading) {
+        onLoadMore(inputValue, { shouldReset: true });
+      }
+    },
+    350,
+    [inputValue, isOpen],
+  );
+
   useLoadMoreInitially({ onLoadMore, isOpen, optionsLength: options.length });
 
   const { ref: menuPropsRef, ...menuProps } = getMenuProps();
@@ -242,8 +250,6 @@ const InputMultiSelect = ({
     getDropdownProps({ autoFocus }),
   );
   const labelProps = getLabelProps({});
-
-  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const clickOutsideRef = useCloseOnClickOutside({ isOpen, toggleMenu });
 
@@ -363,7 +369,11 @@ const InputMultiSelect = ({
                     ...selectedItems,
                     ...optionsWithoutCreatable,
                   ]);
-                  setInputValue("");
+                  setTimeout(() => {
+                    // To let the above state change propagage
+                    // before triggering another "load more" request
+                    setInputValue("");
+                  }, 100);
                 }
               }}
             />
@@ -410,7 +420,12 @@ const InputMultiSelect = ({
       {!hasTooManyValues && !onResolve && Select}
       {!hasTooManyValues && !!onResolve && (
         <DropzoneWithFileInput
-          onDrop={() => {}}
+          onDrop={async (item) => {
+            if (item.files) {
+              const rows = await getFileRows(item.files[0]);
+              onResolve(rows);
+            }
+          }}
           disableClick
           tight
           importButtonOutside

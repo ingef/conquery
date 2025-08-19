@@ -4,17 +4,15 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.MetaIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
-import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.ImmutableSet;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -36,7 +34,7 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements Comparable<PermissionOwner<?>> {
+public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends MetaIdentifiable<T> implements Comparable<PermissionOwner<?>> {
 
 	private static final Comparator<PermissionOwner<?>>
 			COMPARATOR =
@@ -59,20 +57,20 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	protected String label;
 
 	@ToString.Exclude
-	@Getter(AccessLevel.PRIVATE) // So only Jackson can use this to deserialize
 	@NotNull
 	private Set<ConqueryPermission> permissions = new HashSet<>();
 
-	@JacksonInject(useInput = OptBoolean.FALSE)
-	@NotNull
-	@EqualsAndHashCode.Exclude
-	protected MetaStorage storage;
 
+	@JsonCreator
+	public PermissionOwner(String name, String label) {
+		this.name = name;
+		this.label = label;
+	}
 
 	public PermissionOwner(String name, String label, MetaStorage storage) {
 		this.name = name;
 		this.label = label;
-		this.storage = storage;
+		setMetaStorage(storage);
 	}
 
 
@@ -98,23 +96,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 				.add(permission)
 				.build();
 		updateStorage();
-	}
-
-	/**
-	 * Removes permissions from the owner object and from the persistent storage.
-	 *
-	 * @param permissions The permission to remove.
-	 * @return Returns the added Permission
-	 */
-	public boolean removePermissions(Set<ConqueryPermission> permissions) {
-		boolean ret = false;
-		synchronized (this) {
-			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions);
-			ret = newSet.removeAll(permissions);
-			this.permissions = newSet;
-			updateStorage();
-		}
-		return ret;
 	}
 
 	public boolean removePermission(Permission permission) {

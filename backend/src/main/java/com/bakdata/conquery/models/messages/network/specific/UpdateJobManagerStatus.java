@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.messages.network.specific;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
@@ -30,7 +30,9 @@ public class UpdateJobManagerStatus extends MessageToManagerNode {
 			return;
 		}
 		// The shards don't know their own name so we attach it here
-		node.addJobManagerStatus(status.withOrigin(context.getRemoteAddress().toString()));
+		node.addJobManagerStatus(status.toBuilder()
+									   .origin(context.getRemoteAddress().toString())
+									   .build());
 	}
 
 }

@@ -7,11 +7,15 @@ import java.util.Map;
 
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ColumnConfig;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -22,17 +26,19 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Mapping from uploaded {@link ExternalId} for resolving in {@link com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal}, and also for printing with {@link EntityPrintId}.
- *
  */
 @Getter
 @EqualsAndHashCode
 @Slf4j
-@NoArgsConstructor
+@AllArgsConstructor
+// For Jackson
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EntityIdMap {
 
 	@Setter
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
+	@JacksonInject(useInput = OptBoolean.FALSE)
 	private NamespaceStorage storage;
 
 	/**
@@ -50,9 +56,9 @@ public class EntityIdMap {
 	/**
 	 * Read incoming CSV-file extracting Id-Mappings for {@link ExternalId} and {@link EntityPrintId}.
 	 */
-	public static EntityIdMap generateIdMapping(CsvParser parser, List<ColumnConfig> mappers) {
+	public static EntityIdMap generateIdMapping(CsvParser parser, List<ColumnConfig> mappers, NamespaceStorage namespaceStorage) {
 
-		EntityIdMap mapping = new EntityIdMap();
+		EntityIdMap mapping = new EntityIdMap(namespaceStorage);
 
 		Record record;
 
@@ -67,15 +73,11 @@ public class EntityIdMap {
 				final String otherId = record.getString(columnConfig.getField());
 
 				// Collect printable parts into id
-				if(columnConfig.isPrint()) {
+				if (columnConfig.isPrint()) {
 					idParts.add(otherId);
 				}
 
 				if (otherId == null) {
-					continue;
-				}
-
-				if (!columnConfig.isResolvable()) {
 					continue;
 				}
 
@@ -141,20 +143,22 @@ public class EntityIdMap {
 
 	/**
 	 * Resolve external ID to Entity Id.
-	 *
+	 * <p>
 	 * Return -1 when not resolved.
 	 */
-	public int resolve(ExternalId key) {
-		String value = external2Internal.get(key);
+	public String resolve(ExternalId key) {
+		final String value = external2Internal.get(key);
 
 		if (value != null) {
-			return getStorage().getPrimaryDictionary().getId(value);
+			return value;
 		}
 
 		// Maybe we can find them directly in the dictionary?
-		final int id = getStorage().getPrimaryDictionary().getId(key.getId());
+		if (storage.containsEntity(key.getId())) {
+			return key.getId();
+		}
 
-		return id;
+		return null;
 	}
 
 	public void addOutputMapping(String csvEntityId, EntityPrintId externalEntityId) {
@@ -173,13 +177,6 @@ public class EntityIdMap {
 		if (prior != null && prior.equals(csvEntityId)) {
 			log.warn("Duplicate mapping  for {} to {} and {}", externalEntityId, csvEntityId, prior);
 		}
-	}
-
-	@Data
-	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-	public static class ExternalId {
-		private final String type;
-		private final String id;
 	}
 
 }

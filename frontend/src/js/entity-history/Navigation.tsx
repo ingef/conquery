@@ -6,7 +6,7 @@ import {
   faDownload,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import { Dispatch, memo, SetStateAction, useCallback, useMemo } from "react";
+import { Dispatch, SetStateAction, memo, useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -133,7 +133,7 @@ export const Navigation = memo(
 
     const onReset = useCallback(() => {
       onResetHistory();
-      dispatch(resetHistory());
+      dispatch(resetHistory({ includingDefaultParams: false }));
     }, [dispatch, onResetHistory]);
 
     useHotkeys("shift+up", goToPrev, [goToPrev]);

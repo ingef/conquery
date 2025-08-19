@@ -4,27 +4,33 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import jakarta.validation.Validator;
 
-import javax.validation.Validator;
-
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -32,6 +38,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.cache.CacheStats;
 import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvWriter;
 import groovy.lang.GroovyShell;
@@ -50,6 +57,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 @RequiredArgsConstructor
 public class AdminProcessor {
 
+	private final ManagerNode managerNode;
 	private final ConqueryConfig config;
 	private final MetaStorage storage;
 	private final DatasetRegistry<? extends Namespace> datasetRegistry;
@@ -58,18 +66,6 @@ public class AdminProcessor {
 	private final Validator validator;
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
 	private final Supplier<Collection<ShardNodeInformation>> nodeProvider;
-
-	public void addRoles(List<Role> roles) {
-
-		for (Role role : roles) {
-			try {
-				addRole(role);
-			}
-			catch (Exception e) {
-				log.error(String.format("Failed to add Role: %s", role), e);
-			}
-		}
-	}
 
 	public synchronized void addRole(Role role) throws JSONException {
 		ValidatorHelper.failOnError(log, validator.validate(role));
@@ -83,22 +79,18 @@ public class AdminProcessor {
 	 *
 	 * @param role the role to delete
 	 */
-	public void deleteRole(Role role) {
+	public void deleteRole(RoleId role) {
 		log.info("Deleting {}", role);
 
-		for (User user : storage.getAllUsers()) {
-			user.removeRole(role);
+		try (Stream<User> allUsers = storage.getAllUsers(); Stream<Group> allGroups = storage.getAllGroups()) {
+			allUsers.forEach(user -> user.removeRole(role));
+			allGroups.forEach(group -> group.removeRole(role));
 		}
-
-		for (Group group : storage.getAllGroups()) {
-			group.removeRole(role);
-		}
-
-		storage.removeRole(role.getId());
+		storage.removeRole(role);
 	}
 
 	public SortedSet<Role> getAllRoles() {
-		return new TreeSet<>(storage.getAllRoles());
+		return storage.getAllRoles().collect(Collectors.toCollection(TreeSet::new));
 	}
 
 
@@ -109,8 +101,8 @@ public class AdminProcessor {
 	 * @param permission The permission to create.
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
-	public void createPermission(PermissionOwner<?> owner, ConqueryPermission permission) throws JSONException {
-		owner.addPermission(permission);
+	public void createPermission(PermissionOwnerId<?> owner, ConqueryPermission permission) throws JSONException {
+		owner.resolve().addPermission(permission);
 	}
 
 	/**
@@ -119,21 +111,21 @@ public class AdminProcessor {
 	 * @param owner      the owner of the permission
 	 * @param permission The permission to delete.
 	 */
-	public void deletePermission(PermissionOwner<?> owner, ConqueryPermission permission) {
-		owner.removePermission(permission);
+	public void deletePermission(PermissionOwnerId<?> owner, ConqueryPermission permission) {
+		owner.resolve().removePermission(permission);
 	}
 
 
 	public TreeSet<User> getAllUsers() {
-		return new TreeSet<>(storage.getAllUsers());
+		return storage.getAllUsers().collect(Collectors.toCollection(TreeSet::new));
 	}
 
-	public synchronized void deleteUser(User user) {
-		for (Group group : storage.getAllGroups()) {
-			group.removeMember(user);
+	public synchronized void deleteUser(UserId user) {
+		try (Stream<Group> allGroups = storage.getAllGroups()) {
+			allGroups.forEach(group -> group.removeMember(user));
 		}
-		storage.removeUser(user.getId());
-		log.trace("Removed user {} from the storage.", user.getId());
+		storage.removeUser(user);
+		log.trace("Removed user {} from the storage.", user);
 	}
 
 	public void addUsers(List<User> users) {
@@ -143,7 +135,7 @@ public class AdminProcessor {
 				addUser(user);
 			}
 			catch (Exception e) {
-				log.error(String.format("Failed to add User: %s", user), e);
+				log.error("Failed to add User: {}", user, e);
 			}
 		}
 	}
@@ -154,17 +146,16 @@ public class AdminProcessor {
 	}
 
 	public TreeSet<Group> getAllGroups() {
-		return new TreeSet<>(storage.getAllGroups());
+		return storage.getAllGroups().collect(Collectors.toCollection(TreeSet::new));
 	}
 
 	public void addGroups(List<Group> groups) {
-
 		for (Group group : groups) {
 			try {
 				addGroup(group);
 			}
 			catch (Exception e) {
-				log.error(String.format("Failed to add Group: %s", group), e);
+				log.error("Failed to add Group: {}", group, e);
 			}
 		}
 	}
@@ -176,29 +167,43 @@ public class AdminProcessor {
 
 	}
 
-	public void addUserToGroup(Group group, User user) {
+	public void addUserToGroup(GroupId groupId, UserId user) {
+		final Group group = groupId.resolve();
+
 		group.addMember(user);
 		log.trace("Added user {} to group {}", user, group);
 	}
 
-	public void deleteUserFromGroup(Group group, User user) {
+	public void deleteUserFromGroup(GroupId groupId, UserId user) {
+		final Group group = groupId.resolve();
+
 		group.removeMember(user);
 		log.trace("Removed user {} from group {}", user, group);
 	}
 
-	public void deleteGroup(Group group) {
-		storage.removeGroup(group.getId());
+	public void deleteGroup(GroupId group) {
+		storage.removeGroup(group);
 		log.trace("Removed group {}", group);
 	}
 
-	public void deleteRoleFrom(RoleOwner owner, Role role) {
-		owner.removeRole(role);
+	public void deleteRoleFromGroup(GroupId owner, RoleId role) {
+		owner.resolve().removeRole(role);
 		log.trace("Removed role {} from {}", role, owner);
 	}
 
-	public void addRoleTo(RoleOwner owner, Role role) {
-		owner.addRole(role);
+	public void addRoleToGroup(GroupId owner, RoleId role) {
+		owner.resolve().addRole(role);
 		log.trace("Added role {} to {}", role, owner);
+	}
+
+	public void addRoleToUser(UserId owner, RoleId role) {
+		owner.resolve().addRole(role);
+		log.trace("Added role {} to {}", role, owner);
+	}
+
+	public void deleteRoleFromUser(UserId owner, RoleId role) {
+		owner.resolve().removeRole(role);
+		log.trace("Removed role {} from {}", role, owner);
 	}
 
 	/**
@@ -211,7 +216,7 @@ public class AdminProcessor {
 	/**
 	 * Renders the permission overview for certain {@link User} in form of a CSV.
 	 */
-	public String getPermissionOverviewAsCSV(Collection<User> users) {
+	public String getPermissionOverviewAsCSV(Stream<User> users) {
 		final StringWriter sWriter = new StringWriter();
 		final CsvWriter writer = config.getCsv().createWriter(sWriter);
 		final List<String> scope = config
@@ -220,9 +225,9 @@ public class AdminProcessor {
 		// Header
 		writeAuthOverviewHeader(writer, scope);
 		// Body
-		for (User user : users) {
-			writeAuthOverviewUser(writer, scope, user, storage, config);
-		}
+		users.forEach(user ->
+							  writeAuthOverviewUser(writer, scope, user, storage, config)
+		);
 		return sWriter.toString();
 	}
 
@@ -256,8 +261,9 @@ public class AdminProcessor {
 	/**
 	 * Renders the permission overview for all users in a certain {@link Group} in form of a CSV.
 	 */
-	public String getPermissionOverviewAsCSV(Group group) {
-		return getPermissionOverviewAsCSV(group.getMembers().stream().map(storage::getUser).collect(Collectors.toList()));
+	public String getPermissionOverviewAsCSV(GroupId groupId) {
+		final Group group = storage.getGroup(groupId);
+		return getPermissionOverviewAsCSV(group.getMembers().stream().map(Id::get));
 	}
 
 	public boolean isBusy() {
@@ -270,13 +276,18 @@ public class AdminProcessor {
 	public Collection<JobManagerStatus> getJobs() {
 		final List<JobManagerStatus> out = new ArrayList<>();
 
-		out.add(new JobManagerStatus("Manager", null, getJobManager().getJobStatus()));
 
-		for (Namespace namespace : getDatasetRegistry().getDatasets()) {
-			out.add(new JobManagerStatus(
-					"Manager", namespace.getDataset().getId(),
-					namespace.getJobManager().getJobStatus()
-			));
+		out.add(JobManagerStatus.builder()
+								.origin("Manager")
+								.jobs(getJobManager().getJobStatus())
+								.build());
+
+		for (Namespace namespace : getDatasetRegistry().getNamespaces()) {
+			out.add(JobManagerStatus.builder()
+									.origin("Manager")
+									.dataset(namespace.getDataset().getId())
+									.jobs(namespace.getJobManager().getJobStatus())
+									.build());
 		}
 
 		for (ShardNodeInformation si : nodeProvider.get()) {
@@ -291,9 +302,10 @@ public class AdminProcessor {
 		final CompilerConfiguration config = new CompilerConfiguration();
 		final GroovyShell groovy = new GroovyShell(config);
 
+		groovy.setProperty("managerNode", getManagerNode());
 		groovy.setProperty("datasetRegistry", getDatasetRegistry());
 		groovy.setProperty("jobManager", getJobManager());
-		groovy.setProperty("config", getConfig());
+		groovy.setProperty("conqueryConfig", getConfig());
 		groovy.setProperty("storage", getStorage());
 
 		try {
@@ -302,5 +314,18 @@ public class AdminProcessor {
 		catch (Exception e) {
 			return ExceptionUtils.getStackTrace(e);
 		}
+	}
+
+	public Set<IndexKey> getLoadedIndexes() {
+		return datasetRegistry.getLoadedIndexes();
+	}
+
+	public CacheStats getIndexServiceStatistics() {
+		return datasetRegistry.getIndexServiceStatistics();
+	}
+
+	public void resetIndexService() {
+		log.info("Resetting index service");
+		datasetRegistry.resetIndexService();
 	}
 }

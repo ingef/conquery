@@ -6,14 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.forms.ExternalForm;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -24,9 +23,11 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.dropwizard.health.check.http.HttpHealthCheck;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Getter
 public class ExternalFormBackendApi {
 
 	public final static String TASK_ID = "task-id";
@@ -43,17 +44,20 @@ public class ExternalFormBackendApi {
 	private final WebTarget getStatusTarget;
 	private final WebTarget cancelTaskTarget;
 	private final WebTarget getHealthTarget;
+	private final WebTarget getVersionTarget;
 	private final Function<User, String> tokenCreator;
 	private final WebTarget baseTarget;
 	private final URL conqueryApiUrl;
 
-	public ExternalFormBackendApi(Client client, URI baseURI, String formConfigPath, String postFormPath, String statusTemplatePath, String cancelTaskPath, String healthCheckPath, Function<User, String> tokenCreator, URL conqueryApiUrl, AuthenticationClientFilterProvider authFilterProvider) {
+	public ExternalFormBackendApi(Client client, URI baseURI, String formConfigPath, String postFormPath, String statusTemplatePath, String cancelTaskPath, String healthCheckPath, String versionPath, Function<User, String> tokenCreator, URL conqueryApiUrl, AuthenticationClientFilterProvider authFilterProvider) {
 
 		this.client = client;
 		this.tokenCreator = tokenCreator;
 		this.conqueryApiUrl = conqueryApiUrl;
 
-		client.register(authFilterProvider.getFilter());
+		if (authFilterProvider != null) {
+			client.register(authFilterProvider.getFilter());
+		}
 
 		baseTarget = this.client.target(baseURI);
 
@@ -65,6 +69,7 @@ public class ExternalFormBackendApi {
 		cancelTaskTarget = baseTarget.path(cancelTaskPath);
 
 		getHealthTarget = baseTarget.path(healthCheckPath);
+		getVersionTarget = baseTarget.path(versionPath);
 	}
 
 	public List<ObjectNode> getFormConfigs() {
@@ -125,6 +130,10 @@ public class ExternalFormBackendApi {
 
 	public HealthCheck createHealthCheck() {
 		return new HttpHealthCheck(getHealthTarget.getUri().toString(), client);
+	}
+
+	public FormBackendVersion getVersion() {
+		return getVersionTarget.request(MediaType.APPLICATION_JSON_TYPE).get(FormBackendVersion.class);
 	}
 
 	public ExternalTaskState cancelTask(UUID taskId) {

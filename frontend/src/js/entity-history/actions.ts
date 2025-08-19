@@ -27,12 +27,10 @@ import {
 import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
-import { useLoadPreviewData } from "../preview/actions";
 import { setMessage } from "../snack-message/actions";
-import { SnackMessageType } from "../snack-message/reducer";
 
 import { EntityEvent, EntityId } from "./reducer";
-import { isDateColumn, isSourceColumn } from "./timeline/util";
+import { isDateColumn, isSourceColumn } from "./timeline/util/util";
 
 export type EntityHistoryActions = ActionType<
   | typeof openHistory
@@ -52,11 +50,23 @@ export const loadDefaultHistoryParamsSuccess = createAction(
 
 export const useLoadDefaultHistoryParams = () => {
   const dispatch = useDispatch();
+
+  // TODO: Get this to work such that we only try to load
+  // if the user has the permission to do so.
+  // So far, if we enable this, we won't load the entityHistoryDefaultParams
+  // on the first app load, because we'd have to time the result of /me (permissions)
+  // to be available before loading this.
+  // const canViewHistory = useSelector<StateT, boolean>(canViewEntityPreview);
+  // const canViewHistoryRef = useRef(canViewHistory);
+  // canViewHistoryRef.current = canViewHistory;
+
   const getEntityHistoryDefaultParams = useGetEntityHistoryDefaultParams();
 
   return useCallback(
     async (datasetId: DatasetT["id"]) => {
       try {
+        // if (!canViewHistoryRef.current) return;
+
         const result = await getEntityHistoryDefaultParams(datasetId);
 
         dispatch(loadDefaultHistoryParamsSuccess(result));
@@ -72,7 +82,9 @@ export const useLoadDefaultHistoryParams = () => {
 export const resetCurrentEntity = createAction(
   "history/RESET_CURRENT_ENTITY",
 )();
-export const resetHistory = createAction("history/RESET")();
+export const resetHistory = createAction("history/RESET")<{
+  includingDefaultParams?: boolean;
+}>();
 
 export const loadHistoryData = createAsyncAction(
   "history/LOAD_START",
@@ -113,21 +125,32 @@ function getPreferredIdColumns(columns: ColumnDescription[]) {
   }));
 }
 
+async function onLoadHistoryData(url: string, columns: ColumnDescription[]) {
+  try {
+    const result = await loadCSV(url);
+    return {
+      csv: result.data,
+      columns,
+      resultUrl: url,
+    };
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+}
+
 // TODO: This starts a session with the current query results,
 // but there will be other ways of starting a history session
 // - from a dropped file with a list of entities
 // - from a previous query
 export function useNewHistorySession() {
   const dispatch = useDispatch();
-  const loadPreviewData = useLoadPreviewData();
   const { updateHistorySession } = useUpdateHistorySession();
 
   return async (url: string, columns: ColumnDescription[], label: string) => {
     dispatch(loadHistoryData.request());
 
-    const result = await loadPreviewData(url, columns, {
-      noLoading: true,
-    });
+    const result = await onLoadHistoryData(url, columns);
 
     if (!result) {
       dispatch(
@@ -143,7 +166,7 @@ export function useNewHistorySession() {
     }
 
     const entityIds = result.csv
-      .slice(1) // remove header
+      .slice(1)
       .map((row) => {
         for (const col of preferredIdColumns) {
           // some values might be empty, search for defined values
@@ -153,8 +176,8 @@ export function useNewHistorySession() {
               kind: col.idKind,
             };
           }
+          return null;
         }
-        return null;
       })
       .filter(exists);
 
@@ -258,7 +281,7 @@ export function useUpdateHistorySession() {
           ...new Set(
             currentEntityDataProcessed.map((row) => row[sourceColumn.label]),
           ),
-        ];
+        ] as string[];
 
         const csvHeader = csv.data[0];
         const columns: Record<string, ColumnDescription> = Object.fromEntries(
@@ -292,7 +315,7 @@ export function useUpdateHistorySession() {
         dispatch(
           setMessage({
             message: t("history.error"),
-            type: SnackMessageType.ERROR,
+            type: "error",
           }),
         );
       }
@@ -319,8 +342,12 @@ export function useUpdateHistorySession() {
   };
 }
 
+interface DateRow {
+  from: Date;
+  to: Date;
+}
 const transformEntityData = (
-  data: { [key: string]: any }[],
+  data: { [key: string]: unknown }[],
   {
     dateColumn,
   }: {
@@ -331,7 +358,9 @@ const transformEntityData = (
 
   return data
     .map((row) => {
-      const { first, last } = getFirstAndLastDateOfRange(row[dateKey]);
+      const { first, last } = getFirstAndLastDateOfRange(
+        row[dateKey] as string,
+      );
 
       return first && last
         ? {
@@ -344,14 +373,18 @@ const transformEntityData = (
         : row;
     })
     .sort((a, b) => {
-      return a[dateKey].from - b[dateKey].from > 0 ? -1 : 1;
+      return (a[dateKey] as DateRow).from.getTime() -
+        (b[dateKey] as DateRow).from.getTime() >
+        0
+        ? -1
+        : 1;
     })
     .map((row) => {
       return {
         ...row,
         [dateKey]: {
-          from: formatStdDate(row[dateKey]?.from),
-          to: formatStdDate(row[dateKey]?.to),
+          from: formatStdDate((row[dateKey] as DateRow)?.from),
+          to: formatStdDate((row[dateKey] as DateRow)?.to),
         },
       };
     });

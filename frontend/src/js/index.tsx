@@ -1,8 +1,9 @@
-import { ThemeProvider, Theme } from "@emotion/react";
+import { Theme, ThemeProvider } from "@emotion/react";
 import { createRoot } from "react-dom/client";
 import { Store } from "redux";
 
 import "../fonts.css";
+import "../index.css";
 
 import AppRoot from "./AppRoot";
 import GlobalStyles from "./GlobalStyles";
@@ -15,10 +16,8 @@ import { makeStore } from "./store";
 
 let store: Store<StateT>;
 
-const initialState = {};
-
 const renderRoot = (theme: Theme) => {
-  store = store || makeStore(initialState);
+  store = store || makeStore();
 
   const root = createRoot(document.getElementById("root")!);
 

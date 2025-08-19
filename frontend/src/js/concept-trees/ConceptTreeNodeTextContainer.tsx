@@ -1,4 +1,4 @@
-import { useRef, FC } from "react";
+import { useRef } from "react";
 import { useDrag } from "react-dnd";
 
 import type { ConceptIdT, ConceptT } from "../api/types";
@@ -14,19 +14,6 @@ import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
 import type { SearchT } from "./reducer";
-
-interface PropsT {
-  conceptId: ConceptIdT;
-  node: ConceptT;
-  root: ConceptT;
-  open: boolean;
-  depth: number;
-  active?: boolean;
-  onTextClick?: () => void;
-  createQueryElement?: () => ConceptQueryNodeType;
-  search: SearchT;
-  isStructFolder?: boolean;
-}
 
 function getResultCount(
   search: SearchT,
@@ -44,7 +31,7 @@ function getResultCount(
     : null;
 }
 
-const ConceptTreeNodeTextContainer: FC<PropsT> = ({
+const ConceptTreeNodeTextContainer = ({
   conceptId,
   node,
   root,
@@ -55,11 +42,24 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
   onTextClick,
   isStructFolder,
   createQueryElement,
+}: {
+  conceptId: ConceptIdT;
+  node: ConceptT;
+  root: ConceptT;
+  open: boolean;
+  depth: number;
+  active?: boolean;
+  onTextClick?: () => void;
+  createQueryElement?: () => ConceptQueryNodeType;
+  search: SearchT;
+  isStructFolder?: boolean;
 }) => {
   const ref = useRef<HTMLDivElement | null>(null);
 
   const red = exists(node.matchingEntries) && node.matchingEntries === 0;
-  const resultCount = getResultCount(search, node, conceptId);
+  const resultCount = isStructFolder
+    ? null
+    : getResultCount(search, node, conceptId);
   const hasChildren = !!node.children && node.children.length > 0;
 
   const item: DragItemConceptTreeNode = {
@@ -80,7 +80,7 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
           matchingEntries: 0,
         }),
   };
-  const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({
+  const [, drag] = useDrag<DragItemConceptTreeNode, void>({
     type: item.type,
     item: () => ({
       ...item,

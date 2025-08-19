@@ -1,21 +1,21 @@
 package com.bakdata.conquery.models.error;
 
-import java.sql.SQLException;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import c10n.C10N;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Data;
 import lombok.Getter;
@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "code")
 @CPSBase
 @ToString(onlyExplicitlyIncluded = true)
+@JsonIgnoreProperties({"suppressed", "localizedMessage"})
 public abstract class ConqueryError extends RuntimeException implements ConqueryErrorInfo {
 
 	private static final String NO_MESSAGE = "Unable to provide error message. No message template was provided by error.";
@@ -43,6 +44,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@NotNull
 	@ToString.Include
 	private UUID id = UUID.randomUUID();
+
 	/**
 	 * Since Jackson does not seem to be able to deserialize throwable with super.cause set. We have our own member
 	 */
@@ -78,7 +80,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@JsonIgnore
 	@ToString.Include
 	public final String getMessage() {
-		return getMessageTemplate(C10N.get(ErrorMessages.class));
+		return getMessageTemplate(C10N.get(ErrorMessages.class, I18n.LOCALE.get()));
 	}
 
 	@JsonIgnore
@@ -120,7 +122,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		private final String unknownId;
 		private final String clazz;
 
-		public ExecutionCreationResolveError(Id<?> unresolvableElementId) {
+		public ExecutionCreationResolveError(Id<?, ?> unresolvableElementId) {
 			unknownId = unresolvableElementId.toString();
 			clazz = unresolvableElementId.getClass().getSimpleName();
 		}
@@ -247,7 +249,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_NO_SECONDARY_ID")
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class NoSecondaryIdSelectedError extends ConqueryError {
-				@Override
+		@Override
 		public String getMessageTemplate(ErrorMessages errorMessages) {
 			return errorMessages.noSecondaryIdSelected();
 		}
@@ -256,7 +258,8 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@CPSType(base = ConqueryError.class, id = "CQ_SQL_ERROR")
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class SqlError extends ConqueryError {
-		private final SQLException error;
+		@ToString.Include
+		private final Throwable error;
 
 		@Override
 		public String getMessageTemplate(ErrorMessages errorMessages) {

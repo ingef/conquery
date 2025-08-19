@@ -6,8 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -47,7 +46,7 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 			// override permission object, because it might have changed by the subject
 			// owning the permission
 			mandator.addPermission(permission);
-			user.addRole(mandator);
+			user.addRole(mandator.getId());
 
 
 			URI classBase = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), RoleUIResource.class, "getRole")

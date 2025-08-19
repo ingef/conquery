@@ -4,32 +4,29 @@ import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.EntityTag;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendList;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -39,15 +36,12 @@ public class ConceptResource extends HAuthorized {
 
 	private final ConceptsProcessor processor;
 
-	@PathParam(CONCEPT)
-	protected Concept<?> concept;
-
 	@GET
-	public Response getNode() {
+	public Response getNode(@PathParam(CONCEPT) ConceptId concept) {
 		subject.authorize(concept.getDataset(), Ability.READ);
 		subject.authorize(concept, Ability.READ);
 
-		final FrontendList result = processor.getNode(concept);
+		final FrontendList result = processor.getNode(concept.resolve());
 
 		// check if browser still has this version cached
 		if (request.getHeaderString(HttpHeaders.IF_NONE_MATCH) != null && result.getCacheId()
@@ -60,14 +54,16 @@ public class ConceptResource extends HAuthorized {
 
 	@POST
 	@Path("resolve")
-	public ConceptsProcessor.ResolvedConceptsResult resolve(@NotNull ConceptResource.ConceptCodeList conceptCodes) {
+	public ConceptsProcessor.ResolvedConceptsResult resolve(@PathParam(CONCEPT) ConceptId conceptId, ConceptResource.ConceptCodeList conceptCodes) {
+		final Concept<?> concept = conceptId.resolve();
+
 		subject.authorize(concept.getDataset(), Ability.READ);
 		subject.authorize(concept, Ability.READ);
 
 		final List<String> codes = conceptCodes.getConcepts().stream().map(String::trim).collect(Collectors.toList());
 
 		if (concept instanceof TreeConcept treeConcept && treeConcept.countElements() > 1) {
-			return processor.resolveConceptElements((TreeConcept) concept, codes);
+			return processor.resolveConceptElements(treeConcept, codes);
 		}
 		throw new WebApplicationException("can only resolved elements on tree concepts", Response.Status.BAD_REQUEST);
 	}
@@ -75,7 +71,6 @@ public class ConceptResource extends HAuthorized {
 
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-	@ToString
 	public static class ConceptCodeList {
 		private final List<String> concepts;
 	}

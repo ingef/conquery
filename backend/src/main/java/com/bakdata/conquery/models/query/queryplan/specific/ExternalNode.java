@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import javax.validation.constraints.NotEmpty;
-
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
@@ -16,6 +14,7 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
 import com.bakdata.conquery.models.types.ResultType;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -31,14 +30,14 @@ public class ExternalNode<T> extends QPNode {
 
 	@NotEmpty
 	@NonNull
-	private final Map<Integer, CDateSet> includedEntities;
+	private final Map<String, CDateSet> includedEntities;
 
-	private final Map<Integer, Map<String, T>> extraData;
+	private final Map<String, Map<String, T>> extraData;
 	private final String[] extraColumns;
 	private final Map<String, ConstantValueAggregator<T>> extraAggregators;
 	private CDateSet contained;
 
-	public Set<Integer> getEntities() {
+	public Set<String> getEntities() {
 		return includedEntities.keySet();
 	}
 
@@ -77,8 +76,9 @@ public class ExternalNode<T> extends QPNode {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public boolean acceptEvent(Bucket bucket, int event) {
 		// Nothing to do
+		return true;
 	}
 
 	@Override
@@ -97,7 +97,7 @@ public class ExternalNode<T> extends QPNode {
 
 	@Override
 	public Collection<Aggregator<CDateSet>> getDateAggregators() {
-		return Set.of(new ConstantValueAggregator<>(dateUnion, new ResultType.ListT(ResultType.DateRangeT.INSTANCE)));
+		return Set.of(new ConstantValueAggregator<>(dateUnion, new ResultType.ListT(ResultType.Primitive.DATE_RANGE)));
 	}
 
 	@Override

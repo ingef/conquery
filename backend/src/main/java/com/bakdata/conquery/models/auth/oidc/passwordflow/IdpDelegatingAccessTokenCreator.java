@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
 import java.net.URI;
 
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.models.auth.basic.AccessTokenCreator;
 import com.bakdata.conquery.models.config.auth.IntrospectionDelegatingRealmFactory;
@@ -32,9 +32,9 @@ public class IdpDelegatingAccessTokenCreator implements AccessTokenCreator {
 
 	@Override
 	@SneakyThrows
-	public String createAccessToken(String username, char[] password) {
-		
-		Secret passwordSecret = new Secret(new String(password));
+	public String createAccessToken(String username, String password) {
+
+		Secret passwordSecret = new Secret(password);
 
 		AuthorizationGrant  grant = new ResourceOwnerPasswordCredentialsGrant(username, passwordSecret);
 		

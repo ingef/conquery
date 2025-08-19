@@ -1,12 +1,15 @@
 import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
   BarElement,
-  Tooltip,
+  CategoryScale,
+  Chart as ChartJS,
   ChartOptions,
+  LineElement,
+  LinearScale,
+  PointElement,
+  Title,
+  Tooltip,
 } from "chart.js";
 import { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
@@ -14,11 +17,21 @@ import { Bar } from "react-chartjs-2";
 import { TimeStratifiedInfo } from "../api/types";
 import { exists } from "../common/helpers/exists";
 
-import { formatCurrency } from "./timeline/util";
+import { formatCurrency } from "./timeline/util/util";
 
 const TRUNCATE_X_AXIS_LABELS_LEN = 18;
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+);
 
 const ChartContainer = styled("div")`
   height: 190px;
@@ -27,20 +40,21 @@ const ChartContainer = styled("div")`
   justify-content: flex-end;
 `;
 
-function hexToRgbA(hex: string) {
-  let c: any;
+export function hexToRgbA(hex: string) {
+  let c: string | string[];
   if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
     c = hex.substring(1).split("");
     if (c.length === 3) {
       c = [c[0], c[0], c[1], c[1], c[2], c[2]];
     }
     c = "0x" + c.join("");
+    // @ts-ignore TODO: clarify why this works / use a different / typed algorithm
     return [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(",");
   }
   throw new Error("Bad Hex");
 }
 
-function interpolateDecreasingOpacity(index: number) {
+export function interpolateDecreasingOpacity(index: number) {
   return Math.min(1, 1 / (index + 0.3));
 }
 
@@ -121,11 +135,13 @@ export const TimeStratifiedChart = ({
       scales: {
         x: {
           ticks: {
-            callback: (idx: any) => {
-              return labels[idx].length > TRUNCATE_X_AXIS_LABELS_LEN
-                ? labels[idx].substring(0, TRUNCATE_X_AXIS_LABELS_LEN - 3) +
-                    "..."
-                : labels[idx];
+            callback: (idx: string | number) => {
+              return labels[idx as number].length > TRUNCATE_X_AXIS_LABELS_LEN
+                ? labels[idx as number].substring(
+                    0,
+                    TRUNCATE_X_AXIS_LABELS_LEN - 3,
+                  ) + "..."
+                : labels[idx as number];
             },
           },
         },

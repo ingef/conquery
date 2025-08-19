@@ -4,11 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -57,7 +55,7 @@ public class ConceptQuery extends Query {
 
 	@Override
 	public ConceptQueryPlan createQueryPlan(QueryPlanContext context) {
-		ConceptQueryPlan qp = new ConceptQueryPlan(!DateAggregationMode.NONE.equals(resolvedDateAggregationMode));
+		ConceptQueryPlan qp = new ConceptQueryPlan(resolvedDateAggregationMode != DateAggregationMode.NONE);
 		qp.setChild(root.createQueryPlan(context, qp));
 		qp.getDateAggregator().registerAll(qp.getChild().getDateAggregators());
 		return qp;
@@ -71,6 +69,7 @@ public class ConceptQuery extends Query {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		resolvedDateAggregationMode = dateAggregationMode;
+
 		if (context.getDateAggregationMode() != null) {
 			log.trace("Overriding date aggregation mode ({}) with mode from context ({})", dateAggregationMode, context.getDateAggregationMode());
 			resolvedDateAggregationMode = context.getDateAggregationMode();
@@ -81,10 +80,13 @@ public class ConceptQuery extends Query {
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		Preconditions.checkNotNull(resolvedDateAggregationMode);
-		List<ResultInfo> resultInfos = new ArrayList<>();
-		if (!DateAggregationMode.NONE.equals(resolvedDateAggregationMode)) {
-			resultInfos.add(ConqueryConstants.DATES_INFO);
+
+		final List<ResultInfo> resultInfos = new ArrayList<>();
+
+		if (resolvedDateAggregationMode != DateAggregationMode.NONE) {
+			resultInfos.add(ResultHeaders.datesInfo());
 		}
+
 		resultInfos.addAll(root.getResultInfos());
 
 		return resultInfos;

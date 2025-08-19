@@ -43,11 +43,11 @@ public class AutoConceptUtil {
 		final TreeConcept concept = new TreeConcept();
 		concept.setName(table.getName() + CONCEPT_NAME_SUFFIX);
 
-		// Prepare connnector
+		// Prepare connector
 		final ConceptTreeConnector connector = new ConceptTreeConnector();
 		connector.setConcept(concept);
 		connector.setName(CONNECTOR_NAME);
-		connector.setTable(table);
+		connector.setTable(table.getId());
 
 		// Prepare selects
 		List<Select> selects = new ArrayList<>();
@@ -85,17 +85,17 @@ public class AutoConceptUtil {
 		final String prefix = column.getName() + "_";
 
 		// Create basic single column selects
-		final LastValueSelect last = new LastValueSelect(column, null);
+		final LastValueSelect last = new LastValueSelect(column.getId(), null, null);
 		last.setName(prefix + LastValueSelect.class.getAnnotation(CPSType.class).id());
-		last.setColumn(column);
+		last.setColumn(column.getId());
 
-		final FirstValueSelect first = new FirstValueSelect(column, null);
+		final FirstValueSelect first = new FirstValueSelect(column.getId(), null, null);
 		first.setName(prefix + FirstValueSelect.class.getAnnotation(CPSType.class).id());
-		first.setColumn(column);
+		first.setColumn(column.getId());
 
-		final DistinctSelect distinct = new DistinctSelect(column, null);
+		final DistinctSelect distinct = new DistinctSelect(column.getId(), null, null);
 		distinct.setName(prefix + DistinctSelect.class.getAnnotation(CPSType.class).id());
-		distinct.setColumn(column);
+		distinct.setColumn(column.getId());
 
 		return List.of(
 				last,

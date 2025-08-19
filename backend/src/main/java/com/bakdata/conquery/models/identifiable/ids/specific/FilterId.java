@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -15,7 +15,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class FilterId extends Id<Filter<?>> implements NamespacedId {
+public class FilterId extends NamespacedId<Filter<?>> {
 
 	private final ConnectorId connector;
 	private final String filter;
@@ -26,12 +26,26 @@ public class FilterId extends Id<Filter<?>> implements NamespacedId {
 	}
 
 	@Override
+	public Filter<?> get() {
+		return getDomain().getStorage(getDataset())
+						  .getConcept(connector.getConcept()).getConnectorByName(connector.getConnector())
+						  .getFilterByName(getFilter());
+	}
+
+	@Override
 	public void collectComponents(List<Object> components) {
 		connector.collectComponents(components);
 		components.add(filter);
 	}
 
-	public static enum Parser implements IdUtil.Parser<FilterId> {
+	@Override
+	public void collectIds(Collection<Id<?, ?>> collect) {
+		collect.add(this);
+		connector.collectIds(collect);
+	}
+
+
+	public enum Parser implements IdUtil.Parser<FilterId> {
 		INSTANCE;
 
 		@Override

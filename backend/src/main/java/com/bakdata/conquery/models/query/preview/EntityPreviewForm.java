@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
@@ -22,24 +23,25 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ClassToInstanceMap;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -68,19 +70,22 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	public static final String VALUES_QUERY_NAME = "VALUES";
 
 
+	@Valid
 	private final AbsoluteFormQuery infoCardQuery;
+	@Valid
 	private final TableExportQuery valuesQuery;
 
 
 	private final Map<String, AbsoluteFormQuery> timeOverViews;
 
-	@Nullable
-	@Override
-	public JsonNode getValues() {
-		return null; // will not be implemented.
-	}
-
-	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry datasetRegistry) {
+	public static EntityPreviewForm create(
+			String entity,
+			String idKind,
+			Range<LocalDate> dateRange,
+			List<ConnectorId> sources,
+			List<SelectId> infos,
+			List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects,
+			DatasetRegistry<?> datasetRegistry) {
 
 		// We use this query to filter for the single selected query.
 		final Query entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
@@ -95,7 +100,31 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@NotNull
-	private static Map<String, AbsoluteFormQuery> createTimeStratifiedQueries(Range<LocalDate> dateRange, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry datasetRegistry, Query entitySelectQuery) {
+	private static TableExportQuery createExportQuery(Range<LocalDate> dateRange, List<ConnectorId> sources, Query entitySelectQuery) {
+		// Query exporting selected Sources of the Entity.
+		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
+
+		exportQuery.setDateRange(dateRange);
+		exportQuery.setConcepts(sources.stream().map(CQConcept::forConnector).collect(Collectors.toList()));
+		exportQuery.setRawConceptValues(false);
+		return exportQuery;
+	}
+
+	@NotNull
+	private static AbsoluteFormQuery createInfoCardQuery(Range<LocalDate> dateRange, List<SelectId> infos, Query entitySelectQuery) {
+		// Query exporting a few additional infos on the entity.
+		return new AbsoluteFormQuery(entitySelectQuery, dateRange,
+							 ArrayConceptQuery.createFromFeatures(
+									  infos.stream()
+										   .map(CQConcept::forSelect)
+										   .collect(Collectors.toList())
+							  ),
+							 List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
+		);
+	}
+
+	@NotNull
+	private static Map<String, AbsoluteFormQuery> createTimeStratifiedQueries(Range<LocalDate> dateRange, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry<?> datasetRegistry, Query entitySelectQuery) {
 		final Map<String, AbsoluteFormQuery> timeQueries = new HashMap<>();
 
 		// per group create an AbsoluteFormQuery on years and quarters.
@@ -105,7 +134,6 @@ public class EntityPreviewForm extends Form implements InternalForm {
 																  ArrayConceptQuery.createFromFeatures(
 																		  selects.selects().stream()
 																				 .map(PreviewConfig.InfoCardSelect::select)
-																				 .map(datasetRegistry::resolve)
 																				 .map(CQConcept::forSelect)
 																				 .collect(Collectors.toList())),
 																  List.of(
@@ -120,30 +148,23 @@ public class EntityPreviewForm extends Form implements InternalForm {
 		return timeQueries;
 	}
 
-	@NotNull
-	private static AbsoluteFormQuery createInfoCardQuery(Range<LocalDate> dateRange, List<Select> infos, Query entitySelectQuery) {
-		// Query exporting a few additional infos on the entity.
-		return new AbsoluteFormQuery(entitySelectQuery, dateRange,
-							 ArrayConceptQuery.createFromFeatures(
-									  infos.stream()
-										   .map(CQConcept::forSelect)
-										   .collect(Collectors.toList())
-							  ),
-							 List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
-		);
+	@Nullable
+	@Override
+	@JsonIgnore
+	public JsonNode getValues() {
+		return null; // will not be implemented.
 	}
 
-	@NotNull
-	private static TableExportQuery createExportQuery(Range<LocalDate> dateRange, List<Connector> sources, Query entitySelectQuery) {
-		// Query exporting selected Sources of the Entity.
-		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
-
-		exportQuery.setDateRange(dateRange);
-		exportQuery.setTables(sources.stream().map(CQConcept::forConnector).collect(Collectors.toList()));
-		exportQuery.setRawConceptValues(false);
-		return exportQuery;
+	@Override
+	public void authorize(Subject subject, DatasetId submittedDataset, @NonNull List<QueryVisitor> visitors, MetaStorage storage) {
+		QueryDescription.authorizeQuery(this, subject, submittedDataset, visitors, storage);
 	}
 
+	@Override
+	public String getLocalizedTypeLabel() {
+		// If we successfully keep away system queries from the users, this should not be called except for buildStatusFull, where it is ignored.
+		return getClass().getAnnotation(CPSType.class).id();
+	}
 
 	@Override
 	public Map<String, Query> createSubQueries() {
@@ -158,19 +179,8 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@Override
-	public void authorize(Subject subject, Dataset submittedDataset, @NonNull ClassToInstanceMap<QueryVisitor> visitors, MetaStorage storage) {
-		QueryDescription.authorizeQuery(this, subject, submittedDataset, visitors, storage);
-	}
-
-	@Override
-	public String getLocalizedTypeLabel() {
-		// If we successfully keep away system queries from the users, this should not be called except for buildStatusFull, where it is ignored.
-		return getClass().getAnnotation(CPSType.class).id();
-	}
-
-	@Override
-	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		return new EntityPreviewExecution(this, user, submittedDataset, storage);
+	public ManagedExecution toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		return new EntityPreviewExecution(this, user, submittedDataset, storage, datasetRegistry, config);
 	}
 
 	@Override

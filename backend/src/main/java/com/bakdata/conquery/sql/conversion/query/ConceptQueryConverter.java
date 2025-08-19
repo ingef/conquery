@@ -1,28 +1,35 @@
 package com.bakdata.conquery.sql.conversion.query;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
+import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.ConqueryJoinType;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlQuery;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Select;
+import org.jooq.TableLike;
 
+@RequiredArgsConstructor
 public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 
-	public static final String FINAL_VALIDITY_DATE_COLUMN_NAME = "dates";
 	private final QueryStepTransformer queryStepTransformer;
-
-	public ConceptQueryConverter(QueryStepTransformer queryStepTransformer) {
-		this.queryStepTransformer = queryStepTransformer;
-	}
 
 	@Override
 	public Class<ConceptQuery> getConversionClass() {
@@ -30,42 +37,68 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 	}
 
 	@Override
-	public ConversionContext convert(ConceptQuery node, ConversionContext context) {
+	public ConversionContext convert(ConceptQuery conceptQuery, ConversionContext context) {
 
-		ConversionContext contextAfterConversion = context.getNodeConversions()
-														  .convert(node.getRoot(), context);
+		ConversionContext contextAfterConversion = context.getNodeConversions().convert(conceptQuery.getRoot(), context);
 
+		QueryStep preFinalStep = contextAfterConversion.getLastConvertedStep();
+		Selects preFinalSelects = getPreFinalSelects(preFinalStep, contextAfterConversion);
+		List<QueryStep> predecessors = Stream.concat(Stream.of(preFinalStep), Stream.ofNullable(contextAfterConversion.getExternalExtras())).toList();
 
-		QueryStep previousStep = contextAfterConversion.getQuerySteps().iterator().next();
-		Selects finalSelects = this.toFinalSelects(previousStep, context);
 		QueryStep finalStep = QueryStep.builder()
 									   .cteName(null)  // the final QueryStep won't be converted to a CTE
-									   .selects(finalSelects)
-									   .fromTable(QueryStep.toTableLike(previousStep.getCteName()))
-									   .conditions(Collections.emptyList())
-									   .predecessors(List.of(previousStep))
+									   .selects(getFinalSelects(conceptQuery, preFinalSelects, context.getSqlDialect().getFunctionProvider()))
+									   .fromTable(getFinalTable(preFinalStep, contextAfterConversion))
+									   .groupBy(getFinalGroupBySelects(preFinalSelects))
+									   .predecessors(predecessors)
 									   .build();
 
 		Select<Record> finalQuery = this.queryStepTransformer.toSelectQuery(finalStep);
-		return context.withFinalQuery(finalQuery);
+		return contextAfterConversion.withFinalQuery(new SqlQuery(finalQuery, conceptQuery.getResultInfos()));
 	}
 
-	/**
-	 * @return The final selects containing the final validity date, if present, as a string aggregation field.
-	 */
-	private Selects toFinalSelects(QueryStep preFinalStep, ConversionContext context) {
-
-		Selects finalSelects = preFinalStep.getQualifiedSelects();
-
-		if (finalSelects.getValidityDate().isEmpty()) {
-			return finalSelects;
+	private static Selects getPreFinalSelects(QueryStep preFinalStep, ConversionContext context) {
+		Selects preFinalStepSelects = preFinalStep.getQualifiedSelects();
+		QueryStep externalExtras = context.getExternalExtras();
+		if (externalExtras == null) {
+			return preFinalStepSelects;
 		}
+		// adding extra selects
+		List<SqlSelect> concatenated = Stream.concat(
+				preFinalStepSelects.getSqlSelects().stream(),
+				externalExtras.getQualifiedSelects().getSqlSelects().stream()
+		).toList();
+		return preFinalStepSelects.toBuilder().sqlSelects(concatenated).build();
+	}
 
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunction();
-		Field<Object> finalValidityDateSelect = functionProvider.validityDateStringAggregation(finalSelects.getValidityDate().get())
-																.as(FINAL_VALIDITY_DATE_COLUMN_NAME);
+	private static TableLike<Record> getFinalTable(QueryStep preFinalStep, ConversionContext context) {
+		QueryStep externalExtras = context.getExternalExtras();
+		if (externalExtras == null) {
+			return QueryStep.toTableLike(preFinalStep.getCteName());
+		}
+		return QueryStepJoiner.constructJoinedTable(
+				List.of(preFinalStep, externalExtras),
+				ConqueryJoinType.INNER_JOIN,
+				context
+		);
+	}
 
-		return finalSelects.withValidityDate(ColumnDateRange.of(finalValidityDateSelect));
+	private Selects getFinalSelects(ConceptQuery conceptQuery, Selects preFinalSelects, SqlFunctionProvider functionProvider) {
+		if (conceptQuery.getDateAggregationMode() == DateAggregationMode.NONE) {
+			return preFinalSelects.blockValidityDate();
+		}
+		else if (preFinalSelects.getValidityDate().isEmpty()) {
+			return preFinalSelects.withValidityDate(ColumnDateRange.empty());
+		}
+		Field<String> validityDateStringAggregation = functionProvider.daterangeStringAggregation(preFinalSelects.getValidityDate().get());
+		return preFinalSelects.withValidityDate(ColumnDateRange.of(validityDateStringAggregation).as(SharedAliases.DATES_COLUMN.getAlias()));
+	}
+
+	private List<Field<?>> getFinalGroupBySelects(Selects preFinalSelects) {
+		List<Field<?>> groupBySelects = new ArrayList<>();
+		groupBySelects.addAll(preFinalSelects.getIds().toFields());
+		groupBySelects.addAll(preFinalSelects.explicitSelects());
+		return groupBySelects;
 	}
 
 }

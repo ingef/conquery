@@ -3,19 +3,18 @@ package com.bakdata.conquery.resources.admin.rest;
 import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -32,19 +31,14 @@ public class AdminConceptsResource {
 	private final AdminDatasetProcessor processor;
 
 	@PathParam(DATASET)
-	private Dataset dataset;
-	private Namespace namespace;
+	private DatasetId dataset;
 	@PathParam(CONCEPT)
-	private Concept concept;
+	private ConceptId concept;
 
-	@PostConstruct
-	public void init() {
-		namespace = processor.getDatasetRegistry().get(dataset.getId());
-	}
 
 	@GET
-	public Concept getConcept() {
-		return concept;
+	public Concept<?> getConcept() {
+		return concept.resolve();
 	}
 
 	@DELETE

@@ -1,104 +1,108 @@
 package com.bakdata.conquery.models.jobs;
 
-import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.IndexConfig;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.search.TrieSearch;
-import com.google.common.base.Functions;
 import com.google.common.collect.Sets;
-import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
+import org.jetbrains.annotations.NotNull;
 
+/**
+ * Job that initializes the filter search for the frontend.
+ * It collects all sources of values for all filters, e.g.:
+ * <ul>
+ *     <li>explicit mappings in a {@link SelectFilter}</li>
+ *     <li>external reference mappings</li>
+ *     <li>columns of imported data which are referenced by a filter</li>
+ * </ul>
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class UpdateFilterSearchJob extends Job {
-	@NonNull
-	private final NamespaceStorage storage;
 
-	@NonNull
-	private final Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache;
+	private final Namespace namespace;
 
 	@NonNull
 	private final IndexConfig indexConfig;
 
-	@NonNull
-	private final Object2LongMap<Searchable<?>> totals;
+	private final Consumer<Set<Column>> registerColumnValuesInSearch;
 
 	@Override
 	public void execute() throws Exception {
 
+		final NamespaceStorage storage = namespace.getStorage();
+
+		log.info("Clearing Search");
+		namespace.getFilterSearch().clearSearch();
+
 
 		log.info("BEGIN loading SourceSearch");
 
-		// collect all SelectFilters to the create searches for them
+		// collect all SelectFilters to create searches for them
 		final List<SelectFilter<?>> allSelectFilters =
-				storage.getAllConcepts().stream()
-					   .flatMap(c -> c.getConnectors().stream())
-					   .flatMap(co -> co.collectAllFilters().stream())
-					   .filter(SelectFilter.class::isInstance)
-					   .map(f -> ((SelectFilter<?>) f))
-					   .collect(Collectors.toList());
+				getAllSelectFilters(storage);
 
 
-		final Set<Searchable<?>> collectedSearchables =
+		// Unfortunately the is no ClassToInstanceMultimap yet
+		final Map<Class<?>, Set<Searchable>> collectedSearchables =
 				allSelectFilters.stream()
 								.map(SelectFilter::getSearchReferences)
 								.flatMap(Collection::stream)
-								// Disabling search is only a last resort for when columns are too big to store in memory or process for indexing.
-								// TODO FK: We want no Searchable to be disabled, better scaling searches or mechanisms to fill search.
-								.filter(Predicate.not(Searchable::isSearchDisabled))
-								.collect(Collectors.toSet());
+								// Group Searchables into "Columns" and other "Searchables"
+								.collect(Collectors.groupingBy(s -> s instanceof Column ? Column.class : Searchable.class, Collectors.toSet()));
 
 
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
-		final ExecutorService service = Executors.newCachedThreadPool();
+		final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
 
-		final Map<Searchable<?>, TrieSearch<FrontendValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
+		final Map<Searchable, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
 
-		log.debug("Found {} searchable Objects.", collectedSearchables.size());
+		log.debug("Found {} searchable Objects.", collectedSearchables.values().stream().mapToLong(Set::size).sum());
 
-		for (Searchable<?> searchable : collectedSearchables) {
+		for (Searchable searchable : collectedSearchables.getOrDefault(Searchable.class, Collections.emptySet())) {
+			if (searchable instanceof Column) {
+				throw new IllegalStateException("Columns should have been grouped out previously");
+			}
 
 			service.submit(() -> {
 
 				final StopWatch watch = StopWatch.createStarted();
 
-				log.info("BEGIN collecting entries for `{}`", searchable.getId());
+				log.info("BEGIN collecting entries for `{}`", searchable);
 
 				try {
-					final TrieSearch<FrontendValue> search = searchable.createTrieSearch(indexConfig, storage);
+					final TrieSearch<FrontendValue> search = searchable.createTrieSearch(indexConfig);
 
-					if(search.isWriteable() && search.findExact(List.of(""), 1).isEmpty()){
-						search.addItem(new FrontendValue("", indexConfig.getEmptyLabel()), List.of(indexConfig.getEmptyLabel()));
-						search.shrinkToFit();
-					}
-
-					synchronizedResult.put(searchable, search);
+					searchCache.put(searchable, search);
 
 					log.debug(
 							"DONE collecting {} entries for `{}`, within {}",
 							search.calculateSize(),
-							searchable.getId(),
-							Duration.ofMillis(watch.getTime())
+							searchable,
+							watch
 					);
 				}
 				catch (Exception e) {
@@ -107,6 +111,11 @@ public class UpdateFilterSearchJob extends Job {
 
 			});
 		}
+
+		// The following cast is safe
+		final Set<Column> searchableColumns = (Set) collectedSearchables.getOrDefault(Column.class, Collections.emptySet());
+		log.debug("Start collecting column values: {}", Arrays.toString(searchableColumns.toArray()));
+		registerColumnValuesInSearch.accept(searchableColumns);
 
 		service.shutdown();
 
@@ -117,35 +126,28 @@ public class UpdateFilterSearchJob extends Job {
 				service.shutdownNow();
 				return;
 			}
-			log.debug("Still waiting for {} to finish.", Sets.difference(collectedSearchables, synchronizedResult.keySet()));
+			log.debug("Still waiting for {} to finish.", Sets.difference(collectedSearchables.get(Searchable.class), searchCache.keySet()));
 		}
 
-		log.debug("BEGIN counting Search totals.");
+		// Shrink searches before registering in the filter search
+		searchCache.values().forEach(TrieSearch::shrinkToFit);
 
+		namespace.getFilterSearch().addSearches(searchCache);
 
-		// Precompute totals as that can be slow when doing it on-demand.
-		totals.putAll(
-				Stream.concat(
-							  // SelectFilters without their own labels are not "real" Searchables and therefore not in collectedSearchables
-							  // We however want the real totals of ALL Searchables (and especially SelectFilters), which is why we include them here explicitly
-							  allSelectFilters.parallelStream(),
-							  collectedSearchables.parallelStream()
-					  )
-					  .distinct()
-					  .collect(Collectors.toMap(
-							  Functions.identity(),
-							  filter -> filter.getSearchReferences().stream()
-											  .map(searchCache::get)
-											  .filter(Objects::nonNull) // Failed or disabled searches are null
-											  .flatMap(TrieSearch::stream)
-											  .mapToInt(FrontendValue::hashCode)
-											  .distinct()
-											  .count()
-					  ))
-		);
+		log.info("UpdateFilterSearchJob search finished");
 
+	}
 
-		log.debug("DONE loading SourceSearch");
+	@NotNull
+	public static List<SelectFilter<?>> getAllSelectFilters(NamespaceStorage storage) {
+		try(Stream<Concept<?>> allConcepts = storage.getAllConcepts();) {
+			return allConcepts
+					.flatMap(c -> c.getConnectors().stream())
+					.flatMap(co -> co.collectAllFilters().stream())
+					.filter(SelectFilter.class::isInstance)
+					.map(f -> ((SelectFilter<?>) f))
+					.collect(Collectors.toList());
+		}
 	}
 
 	@Override

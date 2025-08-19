@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.EmptyBucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -63,8 +64,8 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		child.init(entity, ctx);
 	}
 
-	public void nextEvent(Bucket bucket, int event) {
-		getChild().acceptEvent(bucket, event);
+	public boolean nextEvent(Bucket bucket, int event) {
+		return getChild().acceptEvent(bucket, event);
 	}
 
 	protected SinglelineEntityResult createResult() {
@@ -100,11 +101,12 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 			nextTable(ctx, currentTable);
 
-			final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
+			final Set<BucketId> tableBuckets = ctx.getEntityBucketsForTable(entity, currentTable.getId());
 
 			log.trace("Table[{}] has {} buckets for Entity[{}]", currentTable, tableBuckets, entity);
 
-			for (Bucket bucket : tableBuckets) {
+			for (BucketId bucketId : tableBuckets) {
+				Bucket bucket = bucketId.resolve();
 
 				if (!isOfInterest(bucket)) {
 					continue;

@@ -1,80 +1,57 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
 import java.io.Closeable;
-import java.io.IOException;
-import java.util.Collection;
+import java.util.Objects;
+import java.util.stream.Stream;
 
+import com.bakdata.conquery.io.storage.ManagedStore;
 import com.bakdata.conquery.io.storage.Store;
+import lombok.Data;
+import lombok.experimental.Delegate;
+import lombok.extern.slf4j.Slf4j;
 
-public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
+@Data
+@Slf4j
+public abstract class KeyIncludingStore<KEY, VALUE> implements Closeable, ManagedStore {
 
+	@Delegate
 	protected final Store<KEY, VALUE> store;
-	
-	public KeyIncludingStore(Store<KEY, VALUE> store) {
-		this.store = store;
-	}
-	
-	protected abstract KEY extractKey(VALUE value);
-	
+
 	public void add(VALUE value) {
 		store.add(extractKey(value), value);
-		added(value);
 	}
-	
+
+	protected abstract KEY extractKey(VALUE value);
+
+	public boolean hasKey(KEY key) {
+		return store.hasKey(key);
+	}
+
+	public void update(VALUE value) {
+		store.update(extractKey(value), value);
+	}
+
 	public VALUE get(KEY key) {
 		return store.get(key);
 	}
 
-
-
-	public void update(VALUE value) {
-		updated(value);
-		store.update(extractKey(value), value);
+	public Stream<VALUE> getAll() {
+		return store.getAllKeys()
+					.map(this::getIgnoringExceptions)
+					.filter(Objects::nonNull);
 	}
-	
-	public void remove(KEY key) {
-		VALUE old = get(key);
-		store.remove(key);
-		if(old != null)
-			removed(old);
-	}
-	
-	public void loadData() {
-		store.fillCache();
-		for(VALUE value : getAll()) {
-			added(value);
+
+	/**
+	 * Gets the value for a key if it is present and can be loaded.
+	 * If the value could not be loaded, returns <code>null</code>.
+	 */
+	private VALUE getIgnoringExceptions(KEY key) {
+		try {
+			return get(key);
 		}
-	}
-	
-	public Collection<VALUE> getAll() {
-		return store.getAll();
-	}
-	
-	public Collection<KEY> getAllKeys() {
-		return store.getAllKeys();
-	}
-	
-	@Override
-	public String toString() {
-		return store.toString();
-	}
-	
-	protected abstract void removed(VALUE value);
-
-	protected abstract void added(VALUE value);
-
-	protected abstract void updated(VALUE value);
-
-	public void clear() {
-		store.clear();
-	}
-
-	public void removeStore() {
-		store.deleteStore();
-	}
-
-	@Override
-	public void close() throws IOException {
-		store.close();
+		catch (Exception e) {
+			log.trace("Unable to load value for key {}", key, e);
+			return null;
+		}
 	}
 }

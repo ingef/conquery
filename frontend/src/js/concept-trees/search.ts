@@ -58,17 +58,17 @@ export const findConcepts = (
   // Count node as 1 already, if it matches
   let sum = isNodeIncluded ? 1 : 0;
 
-  for (let child of node.children) {
+  for (const childId of node.children) {
     const result = findConcepts(
       trees,
       treeId,
-      child,
-      trees[treeId][child],
+      childId,
+      trees[treeId][childId],
       query,
       intermediateResult,
     );
 
-    sum += result[child] || 0;
+    sum += result[childId] || 0;
   }
 
   if (sum !== 0) {

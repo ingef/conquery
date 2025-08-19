@@ -1,45 +1,33 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
-import java.util.Collections;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.google.common.collect.ImmutableSet;
-import lombok.AccessLevel;
+import com.google.common.collect.Sets;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 @Getter
 @EqualsAndHashCode(callSuper = true)
-@RequiredArgsConstructor
 public class SelectResultInfo extends ResultInfo {
 	@NonNull
 	private final Select select;
 	@NonNull
 	private final CQConcept cqConcept;
 
-	@Getter(AccessLevel.PACKAGE)
-	@NonNull
-	private final Set<SemanticType> additionalSemantics;
-
-	public SelectResultInfo(Select select, CQConcept cqConcept) {
-		this(select, cqConcept, Collections.emptySet());
+	public SelectResultInfo(@NonNull Select select, @NonNull CQConcept cqConcept, Set<SemanticType> semantics) {
+		super(Sets.union(semantics, Set.of(new SemanticType.SelectResultT(select.getId()))));
+		this.select = select;
+		this.cqConcept = cqConcept;
 	}
 
-	@Override
-	public Set<SemanticType> getSemantics() {
-		return ImmutableSet.<SemanticType>builder()
-						   .addAll(additionalSemantics)
-						   .add(new SemanticType.SelectResultT(select))
-						   .build();
-	}
 
 	@Override
 	public String getDescription() {
@@ -47,19 +35,13 @@ public class SelectResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public ResultType getType() {
-		return select.getResultType();
+	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
+		return select.createPrinter(printerFactory, printSettings);
 	}
 
 	@Override
-	public ColumnDescriptor asColumnDescriptor(PrintSettings settings, UniqueNamer uniqueNamer) {
-		return ColumnDescriptor.builder()
-							   .label(uniqueNamer.getUniqueName(this))
-							   .defaultLabel(defaultColumnName(settings))
-							   .type(getType().typeInfo())
-							   .semantics(getSemantics())
-							   .description(getSelect().getDescription())
-							   .build();
+	public ResultType getType() {
+		return select.getResultType();
 	}
 
 	@Override
@@ -75,9 +57,7 @@ public class SelectResultInfo extends ResultInfo {
 			return null;
 		}
 
-		return label
-			   + " "
-			   + select.getColumnName();
+		return label + " " + select.getColumnName();
 	}
 
 	@Override
@@ -93,7 +73,7 @@ public class SelectResultInfo extends ResultInfo {
 		}
 
 		if (cqLabel != null) {
-			// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
+			// If these labels differ, the user might have changed the label of the concept in the frontend, or a TreeChild was posted
 			sb.append(cqLabel);
 			sb.append(" ");
 		}
@@ -107,4 +87,5 @@ public class SelectResultInfo extends ResultInfo {
 	public String toString() {
 		return "SelectResultInfo[" + select.getName() + ", " + select.getResultType() + "]";
 	}
+
 }

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.messages.network;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.mina.MessageSender;
@@ -10,18 +8,19 @@ import com.bakdata.conquery.mode.cluster.ClusterState;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
-import com.bakdata.conquery.models.worker.Workers;
+import com.bakdata.conquery.models.worker.ShardWorkers;
+import io.dropwizard.core.setup.Environment;
 import lombok.Getter;
+import lombok.NonNull;
 
 @Getter
 public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> extends MessageSender.Simple<MESSAGE> {
-	private final int backpressure;
 
-	public NetworkMessageContext(NetworkSession session, int backpressure) {
+
+	public NetworkMessageContext(@NonNull NetworkSession session) {
 		super(session);
-		this.backpressure = backpressure;
 	}
-	
+
 	public boolean isConnected() {
 		return session != null;
 	}
@@ -32,18 +31,16 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 	@Getter
 	public static class ShardNodeNetworkContext extends NetworkMessageContext<MessageToManagerNode> {
 
-		private final ShardNode shardNode;
-		private final Workers workers;
+		private final ShardWorkers workers;
 		private final ConqueryConfig config;
-		private final Validator validator;
+		private final Environment environment;
 		private final NetworkSession rawSession;
 
-		public ShardNodeNetworkContext(ShardNode shardNode, NetworkSession session, Workers workers, ConqueryConfig config, Validator validator) {
-			super(session, config.getCluster().getBackpressure());
-			this.shardNode = shardNode;
+		public ShardNodeNetworkContext(NetworkSession session, ShardWorkers workers, ConqueryConfig config, Environment environment) {
+			super(session);
 			this.workers = workers;
 			this.config = config;
-			this.validator = validator;
+			this.environment = environment;
 			this.rawSession = session;
 		}
 	}
@@ -58,8 +55,8 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 		private final DatasetRegistry<DistributedNamespace> datasetRegistry;
 
 
-		public ManagerNodeNetworkContext(NetworkSession session, DatasetRegistry<DistributedNamespace> datasetRegistry, ClusterState clusterState, int backpressure) {
-			super(session, backpressure);
+		public ManagerNodeNetworkContext(NetworkSession session, DatasetRegistry<DistributedNamespace> datasetRegistry, ClusterState clusterState) {
+			super(session);
 			this.datasetRegistry = datasetRegistry;
 			this.clusterState = clusterState;
 		}

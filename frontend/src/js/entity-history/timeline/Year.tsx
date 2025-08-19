@@ -9,10 +9,12 @@ import {
 } from "../../api/types";
 import { ContentFilterValue } from "../ContentControl";
 import { DetailLevel } from "../DetailControl";
-import { ColumnBuckets, EventsByQuarterWithGroups } from "../Timeline";
+import { ColumnBuckets } from "./util/useColumnInformation";
 
-import Quarter from "./Quarter";
+import { useTimelineSearch } from "../timeline-search/timelineSearchState";
+import { Quarter } from "./Quarter";
 import YearHead from "./YearHead";
+import { EventsByQuarterWithGroups } from "./util/findEventGroups";
 
 const YearGroup = styled("div")`
   display: flex;
@@ -51,7 +53,9 @@ const Year = ({
   sourceColumn: ColumnDescription;
   timeStratifiedInfos: TimeStratifiedInfo[];
 }) => {
-  const isYearOpen = getIsOpen(year);
+  const { searchTerm } = useTimelineSearch();
+
+  const isYearOpen = !!searchTerm || getIsOpen(year);
   const totalEvents = quarterwiseData.reduce(
     (all, data) =>
       all + data.groupedEvents.reduce((s, evts) => s + evts.length, 0),
@@ -73,7 +77,7 @@ const Year = ({
             (s, evts) => s + evts.length,
             0,
           );
-          const isQuarterOpen = getIsOpen(year, quarter);
+          const isQuarterOpen = !!searchTerm || getIsOpen(year, quarter);
 
           return (
             <Quarter

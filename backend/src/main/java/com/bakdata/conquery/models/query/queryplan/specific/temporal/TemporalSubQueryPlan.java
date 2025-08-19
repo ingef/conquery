@@ -69,8 +69,6 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 		final boolean[] results = new boolean[periods.length];
 		final CDateRange[] convertedPeriods = indexMode.convert(periods, CDateRange::getMinValue, indexSelector);
 
-		assert periods.length == convertedPeriods.length;
-
 		log.trace("Querying {} for {} => {}", entity, periods, convertedPeriods);
 
 		// First execute sub-query with index's sub-period
@@ -154,6 +152,6 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 	@NotNull
 	@Override
 	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
-		return Optional.of(new ConstantValueAggregator<>(dateResult, new ResultType.ListT(ResultType.DateT.INSTANCE)));
+		return Optional.of(new ConstantValueAggregator<>(dateResult, new ResultType.ListT(ResultType.Primitive.DATE)));
 	}
 }

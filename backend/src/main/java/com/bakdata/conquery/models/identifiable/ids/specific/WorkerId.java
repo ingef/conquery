@@ -1,10 +1,12 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -13,10 +15,15 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class WorkerId extends Id<WorkerInformation> {
+public class WorkerId extends NamespacedId<WorkerInformation> {
 
 	private final DatasetId dataset;
 	private final String worker;
+
+	@Override
+	public WorkerInformation get() {
+		return assertWorkerStorage(getDomain().getStorage(getDataset())).getWorker();
+	}
 
 	@Override
 	public void collectComponents(List<Object> components) {
@@ -24,7 +31,14 @@ public class WorkerId extends Id<WorkerInformation> {
 		components.add(worker);
 	}
 
-	public static enum Parser implements IdUtil.Parser<WorkerId> {
+	@Override
+	public void collectIds(Collection<Id<?, ?>> collect) {
+		collect.add(this);
+		dataset.collectIds(collect);
+	}
+
+
+	public enum Parser implements IdUtil.Parser<WorkerId> {
 		INSTANCE;
 
 		@Override

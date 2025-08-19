@@ -4,22 +4,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.config.Dialect;
+import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestSupport;
@@ -35,63 +32,52 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@Slf4j @CPSBase
-public abstract class ConqueryTestSpec<S extends TestSupport> {
+@Setter
+@Getter
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
+@Slf4j
+@CPSBase
+public abstract class ConqueryTestSpec {
 
-	@Getter
-	@Setter
+	@Nullable
+	SqlSpec sqlSpec;
 	private String label;
-
-	@Setter
-	@Getter
+	@Nullable
+	private String description;
 	@Nullable
 	private ConqueryConfig config;
+	// default IdColumnConfig for SQL mode
+	private IdColumnConfig idColumns = null;
 
-	public ConqueryConfig overrideConfig(ConqueryConfig config) {
+	public static <T> T parseSubTree(TestSupport support, JsonNode node, Class<T> expectedClass, boolean injectResolvers)
+			throws IOException {
+		return parseSubTree(support, node, expectedClass, null, injectResolvers);
+	}
 
-		if (getConfig() != null) {
-			final ConqueryConfig conqueryConfig = getConfig().withStorage(new NonPersistentStoreFactory());
-			conqueryConfig.setLoggingFactory(config.getLoggingFactory());
-			return conqueryConfig;
+	public static <T> T parseSubTree(
+			TestSupport support,
+			JsonNode node,
+			Class<T> expectedClass,
+			Consumer<T> modifierBeforeValidation,
+			boolean injectResolvers
+	) throws IOException {
+		return parseSubTree(support, node, Jackson.MAPPER.getTypeFactory()
+														 .constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation, injectResolvers);
+	}
+
+	public static <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation,
+									 boolean injectResolvers) throws IOException {
+		final ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
+		final ObjectMapper mapper = om.addHandler(new DatasetPlaceHolderFiller(support));
+
+		support.getConfig().injectInto(mapper);
+		support.getNamespace().getDataset().injectInto(mapper);
+
+		if (injectResolvers) {
+			support.getMetaStorage().injectInto(mapper);
+			support.getNamespace().getStorage().injectInto(mapper);
+			support.getDatasetRegistry().injectInto(mapper);
 		}
-
-		return config.withStorage(new NonPersistentStoreFactory());
-	}
-
-	public abstract void executeTest(S support) throws Exception;
-
-	public abstract void importRequiredData(S support) throws Exception;
-
-
-	@Override
-	public String toString() {
-		return label;
-	}
-
-	public static <T> T parseSubTree(TestSupport support, JsonNode node, Class<T> expectedClass) throws IOException, JSONException {
-		return parseSubTree(support, node, expectedClass, null);
-	}
-
-	public static <T> T parseSubTree(TestSupport support, JsonNode node, Class<T> expectedClass, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
-		return parseSubTree(support, node, Jackson.MAPPER.getTypeFactory().constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation);
-	}
-
-	public static <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType) throws IOException, JSONException {
-		return parseSubTree(support, node, expectedType, null);
-	}
-
-	public static  <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
-		final ObjectMapper om = Jackson.MAPPER.copy();
-		ObjectMapper mapper = support.getDataset().injectIntoNew(
-				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry(), support.getMetaStorage().getCentralRegistry())
-						.injectIntoNew(
-								om.addHandler(new DatasetPlaceHolderFiller(support))
-						)
-		);
-		final MutableInjectableValues injectableValues = (MutableInjectableValues) mapper.getInjectableValues();
-		injectableValues.add(ConqueryConfig.class, support.getConfig());
-		injectableValues.add(MetaStorage.class, support.getMetaStorage());
 
 		T result = mapper.readerFor(expectedType).readValue(node);
 
@@ -99,18 +85,25 @@ public abstract class ConqueryTestSpec<S extends TestSupport> {
 			modifierBeforeValidation.accept(result);
 		}
 
-		ValidatorHelper.failOnError(log, support.getValidator().validate(result));
+		if (injectResolvers) {
+			// With placeholders the validation likely fails, so we skip it there
+			ValidatorHelper.failOnError(log, support.getValidator().validate(result));
+		}
 		return result;
 	}
 
-	public static <T> List<T> parseSubTreeList(TestSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
-		final ObjectMapper om = Jackson.MAPPER.copy();
-		ObjectMapper mapper = support.getDataset().injectInto(
-				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectIntoNew(
-						om.addHandler(new DatasetPlaceHolderFiller(support))
-				)
-		);
-		support.getNamespace().getInjectables().forEach(i -> i.injectInto(mapper));
+	public static <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, boolean injectResolvers)
+			throws IOException {
+		return parseSubTree(support, node, expectedType, null, injectResolvers);
+	}
+
+	public static <T> List<T> parseSubTreeList(TestSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation)
+			throws IOException {
+		final ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
+		final ObjectMapper mapper = om.addHandler(new DatasetPlaceHolderFiller(support));
+
+		// Inject dataset, so that namespaced ids that are not prefixed with in the test-spec are get prefixed
+		support.getNamespace().injectInto(mapper);
 
 		mapper.setConfig(mapper.getDeserializationConfig().withView(View.Api.class));
 
@@ -126,8 +119,8 @@ public abstract class ConqueryTestSpec<S extends TestSupport> {
 					try {
 						value = mapper.readerFor(expectedType).readValue(IntegrationTest.class.getResource(potentialPath));
 					}
-					catch(Exception e2) {
-						throw new RuntimeException("Could not parse value "+potentialPath, e2);
+					catch (Exception e2) {
+						throw new RuntimeException("Could not parse value " + potentialPath, e2);
 					}
 				}
 				else {
@@ -139,11 +132,35 @@ public abstract class ConqueryTestSpec<S extends TestSupport> {
 				modifierBeforeValidation.accept(value);
 			}
 			result.add(value);
-			ValidatorHelper.failOnError(log, support.getValidator().validate(value));
 		}
 		return result;
 	}
 
+	public ConqueryConfig overrideConfig(ConqueryConfig config) {
+
+		if (getConfig() != null) {
+			final ConqueryConfig conqueryConfig = getConfig().withStorage(new NonPersistentStoreFactory());
+			conqueryConfig.setLoggingFactory(config.getLoggingFactory());
+			return conqueryConfig;
+		}
+
+		final IdColumnConfig idColumnConfig = idColumns != null ? idColumns : config.getIdColumns();
+		return config.withIdColumns(idColumnConfig)
+					 .withStorage(new NonPersistentStoreFactory());
+	}
+
+	public abstract void executeTest(StandaloneSupport support) throws Exception;
+
+	public abstract void importRequiredData(StandaloneSupport support) throws Exception;
+
+	@Override
+	public String toString() {
+		return label;
+	}
+
+	public boolean isEnabled(Dialect sqlDialect) {
+		return sqlSpec == null || sqlSpec.isEnabled() && sqlSpec.isAllowedTest(sqlDialect);
+	}
 
 	/**
 	 * Replaces occurrences of the string "${dataset}" with the id of the current dataset of the {@link StandaloneSupport}.
@@ -154,9 +171,9 @@ public abstract class ConqueryTestSpec<S extends TestSupport> {
 		private final TestSupport support;
 
 		@Override
-		public Object handleWeirdStringValue(DeserializationContext ctxt, Class<?> targetType, String valueToConvert, String failureMsg) throws IOException {
-			IdUtil.Parser parser = IdUtil.<Id<Identifiable<?>>>createParser((Class) targetType);
-			return parser.parsePrefixed(support.getDataset().getId().toString(), valueToConvert);
+		public Object handleWeirdStringValue(DeserializationContext ctxt, Class<?> targetType, String valueToConvert, String failureMsg) {
+			IdUtil.Parser<?> parser = IdUtil.<Id<Identifiable<?, ?>, ?>>createParser((Class) targetType);
+			return parser.parsePrefixed(support.getDataset().getName(), valueToConvert);
 		}
 	}
 }

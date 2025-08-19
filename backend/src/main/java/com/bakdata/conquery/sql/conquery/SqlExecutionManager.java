@@ -1,79 +1,103 @@
 package com.bakdata.conquery.sql.conquery;
 
 
-import java.util.stream.Stream;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-import com.bakdata.conquery.apiv1.query.Query;
-import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.sql.SqlContext;
-import com.bakdata.conquery.sql.SqlQuery;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
-import com.bakdata.conquery.sql.execution.SqlExecutionResult;
+import com.bakdata.conquery.sql.conversion.model.SqlQuery;
+import com.bakdata.conquery.sql.execution.SqlExecutionExecutionInfo;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SqlExecutionManager implements ExecutionManager {
-	private final MetaStorage metaStorage;
+public class SqlExecutionManager extends ExecutionManager {
+
 	private final SqlExecutionService executionService;
 	private final SqlConverter converter;
+	private final ConcurrentMap<ManagedExecutionId, CompletableFuture<Void>> runningExecutions;
 
-	public SqlExecutionManager(final SqlContext context, MetaStorage metaStorage) {
-		this.metaStorage = metaStorage;
-		this.executionService = new SqlExecutionService(context.getSqlDialect().getDSLContext());
-		this.converter = new SqlConverter(context.getSqlDialect(), context.getConfig());
+	public SqlExecutionManager(SqlConverter sqlConverter, SqlExecutionService sqlExecutionService, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		super(storage, datasetRegistry, config);
+		this.converter = sqlConverter;
+		this.executionService = sqlExecutionService;
+		this.runningExecutions = new ConcurrentHashMap<>();
 	}
 
 	@Override
-	public SqlManagedQuery runQuery(Namespace namespace, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config, boolean system) {
-		SqlManagedQuery execution = createExecution(query, user, submittedDataset, system);
-		execution.initExecutable(namespace, config);
-		execution.start();
-		// todo(tm): Non-blocking execution
-		SqlExecutionResult result = this.executionService.execute(execution);
-		execution.finish(result);
-		return execution;
-	}
+	protected <E extends ManagedExecution & InternalExecution> void doExecute(E execution) {
 
-	@Override
-	public void execute(Namespace namespace, ManagedExecution execution, ConqueryConfig config) {
-		if (!(execution instanceof SqlManagedQuery)) {
-			throw new UnsupportedOperationException("The SQL execution manager can only execute SQL queries, but got a %s".formatted(execution.getClass()));
+		addState(execution.getId(), new SqlExecutionExecutionInfo());
+
+		if (execution instanceof ManagedQuery managedQuery) {
+			CompletableFuture<Void> sqlQueryExecution = executeAsync(managedQuery);
+			runningExecutions.put(managedQuery.getId(), sqlQueryExecution);
+			return;
 		}
 
-		this.executionService.execute(((SqlManagedQuery) execution));
+		if (execution instanceof ManagedInternalForm<?> managedForm) {
+			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(executionId -> {
+												   addState(executionId, new SqlExecutionExecutionInfo());
+												   return executeAsync((ManagedQuery) executionId.resolve());
+
+											   })
+											   .toArray(CompletableFuture[]::new))
+							 .thenRun(() -> managedForm.finish(ExecutionState.DONE));
+			return;
+		}
+
+		throw new IllegalStateException("Unexpected type of execution: %s".formatted(execution.getClass()));
+	}
+
+	private CompletableFuture<Void> executeAsync(ManagedQuery managedQuery) {
+		SqlQuery sqlQuery = converter.convert(managedQuery.getQuery(), managedQuery.getNamespace());
+
+		return CompletableFuture.supplyAsync(() -> executionService.execute(sqlQuery))
+								.thenAccept(result -> {
+									ManagedExecutionId id = managedQuery.getId();
+
+									// We need to transfer the columns and data from the query result together with the execution lock to a new result
+									SqlExecutionExecutionInfo startResult = getExecutionInfo(id);
+									SqlExecutionExecutionInfo
+											finishResult =
+											new SqlExecutionExecutionInfo(ExecutionState.DONE, result.getColumnNames(), result.getTable(), startResult.getExecutingLock());
+									addState(id, finishResult);
+
+									managedQuery.finish(ExecutionState.DONE);
+									runningExecutions.remove(id);
+								})
+								.exceptionally(e -> {
+									managedQuery.fail(ConqueryError.asConqueryError(e));
+									runningExecutions.remove(managedQuery.getId());
+									return null;
+								});
 	}
 
 	@Override
-	public SqlManagedQuery createExecution(QueryDescription query, User user, Dataset submittedDataset, boolean system) {
-		Query castQuery = (Query) query;
-		SqlQuery converted = this.converter.convert(castQuery);
-		SqlManagedQuery sqlManagedQuery = new SqlManagedQuery(castQuery, user, submittedDataset, metaStorage, converted);
-		metaStorage.addExecution(sqlManagedQuery);
-		return sqlManagedQuery;
-	}
+	public void doCancelQuery(ManagedExecutionId managedExecutionId) {
 
-	@Override
-	public void cancelQuery(Dataset dataset, ManagedExecution query) {
-		// unsupported for now
-	}
+		CompletableFuture<Void> sqlQueryExecution = runningExecutions.remove(managedExecutionId);
 
-	@Override
-	public void clearQueryResults(ManagedExecution execution) {
-		// unsupported for now
-	}
+		// already finished/canceled
+		if (sqlQueryExecution == null) {
+			return;
+		}
 
-	@Override
-	public Stream<EntityResult> streamQueryResults(ManagedExecution execution) {
-		throw new UnsupportedOperationException("Streaming for now not supported");
+		if (!sqlQueryExecution.isCancelled()) {
+			sqlQueryExecution.cancel(true);
+		}
 	}
 
 }

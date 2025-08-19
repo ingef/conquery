@@ -12,11 +12,11 @@ import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
 
+import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import ActivateTooltip from "./ActivateTooltip";
+import type { AdditionalInfosType } from "./reducer";
 import TooltipEntries from "./TooltipEntries";
 import { TooltipHeader } from "./TooltipHeader";
-import { toggleAdditionalInfos as toggleInfos } from "./actions";
-import type { AdditionalInfosType } from "./reducer";
 
 const Root = styled("div")`
   width: 100%;
@@ -114,6 +114,13 @@ const InfoHeadline = styled("h4")`
   line-height: 1.3;
 `;
 
+const SxTooltipEntries = styled(TooltipEntries)`
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px 12px;
+  align-items: center;
+`;
+
 const HighlightedText = ({
   text,
   words = [],
@@ -139,9 +146,10 @@ const ConceptLabel = ({
   conceptIcon?: IconDefinition;
   tackIcon?: ReactNode;
 }) => {
-  const words = useSelector<StateT, string[]>(
-    (state) => state.conceptTrees.search.words || [],
+  const wordsRaw = useSelector<StateT, string[] | null>(
+    (state) => state.conceptTrees.search.words,
   );
+  const words = useMemo(() => wordsRaw || [], [wordsRaw]);
   const { t } = useTranslation();
 
   return (
@@ -165,9 +173,11 @@ const mark = (text: string, regex: RegExp | null): string => {
 };
 
 const Tooltip = () => {
-  const words = useSelector<StateT, string[]>(
-    (state) => state.conceptTrees.search.words || [],
+  const wordsRaw = useSelector<StateT, string[] | null>(
+    (state) => state.conceptTrees.search.words,
   );
+  const words = useMemo(() => wordsRaw || [], [wordsRaw]);
+
   const {
     label,
     description,
@@ -208,7 +218,7 @@ const Tooltip = () => {
     <Root>
       <TooltipHeader />
       <Content>
-        <TooltipEntries
+        <SxTooltipEntries
           matchingEntries={matchingEntries}
           matchingEntities={matchingEntities}
           dateRange={dateRange}

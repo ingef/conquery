@@ -1,76 +1,101 @@
-import styled from "@emotion/styled";
 import { faCopy } from "@fortawesome/free-regular-svg-icons";
-import { memo, useState } from "react";
+import {
+  Fragment,
+  ReactNode,
+  createContext,
+  memo,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useSelector } from "react-redux";
 
 import IconButton from "../button/IconButton";
 import Modal from "../modal/Modal";
 
+import { GetFrontendConfigResponseT } from "../api/types";
 import { StateT } from "./reducers";
 
-const Grid = styled("div")`
-  display: grid;
-  grid-template-columns: auto 1fr;
-  margin-bottom: 20px;
-  gap: 5px 20px;
-`;
+const initialState = {
+  isOpen: false,
+  setOpen: () => {},
+};
 
-const Version = styled("code")`
-  font-size: 16px;
-  font-weight: bold;
-`;
+const Context = createContext<ReturnType<typeof useContextValue>>(initialState);
+
+const useContextValue = () => {
+  const [isOpen, setOpen] = useState(false);
+
+  return { isOpen, setOpen };
+};
+
+export const AboutProvider = ({ children }: { children: ReactNode }) => (
+  <Context.Provider value={useContextValue()}>{children}</Context.Provider>
+);
+
+export const useAbout = () => {
+  return useContext(Context);
+};
 
 const useVersion = () => {
-  const backendVersion = useSelector<StateT, string>(
-    (state) => state.startup.config.version,
-  );
-
-  // TODO: GET THIS TO WORK WHEN BUILDING INSIDE A DOCKER CONTAINER
-  // const frontendGitCommit = preval`
-  //   const { execSync } = require('child_process');
-  //   module.exports = execSync('git rev-parse --short HEAD').toString();
-  // `;
-  // const frontendGitTag = preval`
-  //   const { execSync } = require('child_process');
-  //   module.exports = execSync('git describe --all --exact-match \`git rev-parse HEAD\`').toString();
-  // `;
+  const backendVersions = useSelector<
+    StateT,
+    GetFrontendConfigResponseT["versions"]
+  >((state) => state.startup.config.versions);
 
   // THIS IS GETTING STATICALLY REPLACED USING "VITE DEFINE"
-  const frontendVersion = `__BUILD_TIMESTAMP__`.replace(/"/g, "");
+  const frontendTimestamp = `__BUILD_TIMESTAMP__`.replace(/"/g, "");
+  const frontendGitDescribe = `__BUILD_GIT_DESCRIBE__`.replace(/"/g, "");
 
   return {
-    backendVersion,
-    frontendVersion,
+    backendVersions,
+    frontendTimestamp,
+    frontendGitDescribe,
   };
 };
 
 export const About = memo(() => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { backendVersion, frontendVersion } = useVersion();
+  const { isOpen, setOpen } = useAbout();
+  const toggleOpen = useCallback(() => setOpen((open) => !open), [setOpen]);
+  const { backendVersions, frontendTimestamp, frontendGitDescribe } =
+    useVersion();
 
   const copyVersionToClipboard = () => {
     navigator.clipboard.writeText(
-      `BE: ${backendVersion} FE: ${frontendVersion}`,
+      `${backendVersions
+        .map(({ name, version }) => `${name}: ${version}`)
+        .join(" ")} Frontend: ${frontendGitDescribe}`,
     );
-    setIsOpen(false);
+    setOpen(false);
   };
 
-  useHotkeys("shift+?", () => setIsOpen((open) => !open));
+  useHotkeys("shift+?", toggleOpen, [toggleOpen]);
 
   if (!isOpen) return null;
 
   return (
-    <Modal headline="Version" onClose={() => setIsOpen(false)}>
-      <Grid>
-        <div>Backend</div>
-        <Version>{backendVersion}</Version>
-        <div>Frontend</div>
-        <Version>{frontendVersion}</Version>
-      </Grid>
-      <IconButton frame icon={faCopy} onClick={copyVersionToClipboard}>
-        Copy version info
-      </IconButton>
+    <Modal headline="Version" onClose={() => setOpen(false)}>
+      <div className="space-y-5">
+        <div className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-1">
+          {backendVersions.map((version) => (
+            <Fragment key={version.name}>
+              <div>{version.name}</div>
+              <code className="font-bold">
+                {version.version || "-"}
+                {version.buildTime && ` – ${version.buildTime}`}
+              </code>
+            </Fragment>
+          ))}
+          <div>Frontend</div>
+          <code className="font-bold">
+            {frontendGitDescribe} – {frontendTimestamp}
+          </code>
+        </div>
+        <IconButton frame icon={faCopy} onClick={copyVersionToClipboard}>
+          Copy version info
+        </IconButton>
+      </div>
     </Modal>
   );
 });

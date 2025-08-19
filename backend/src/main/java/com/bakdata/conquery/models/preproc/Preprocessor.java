@@ -54,7 +54,7 @@ public class Preprocessor {
 	 * <p>
 	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link ColumnStore}.
 	 */
-	public static void preprocess(PreprocessingJob preprocessingJob, ProgressBar totalProgress, ConqueryConfig config) throws IOException {
+	public static void preprocess(PreprocessingJob preprocessingJob, ProgressBar totalProgress, ConqueryConfig config, int buckets) throws IOException {
 
 		final File preprocessedFile = preprocessingJob.getPreprocessedFile();
 		TableImportDescriptor descriptor = preprocessingJob.getDescriptor();
@@ -146,11 +146,11 @@ public class Preprocessor {
 					}
 
 					try {
-						int primaryId =
-								(int) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
+						String primaryId =
+								(String) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
 
 
-						final int primary = result.addPrimary(primaryId);
+						final String primary = result.addPrimary(primaryId);
 						final Object[] outRow = applyOutputs(outputs, columns, row, lineId);
 
 						result.addRow(primary, columns, outRow);
@@ -209,7 +209,7 @@ public class Preprocessor {
 			exceptions.forEach((clazz, count) -> log.warn("Got {} `{}`", count, clazz.getSimpleName()));
 		}
 
-		result.write(tmp);
+		result.write(tmp, buckets);
 
 		if (errors > 0) {
 			log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%.2f", 100d * (double) errors / (double) lineId), errors, lineId);

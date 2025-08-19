@@ -1,29 +1,34 @@
-import { FC } from "react";
-
+import { useMemo } from "react";
 import type { ConceptIdT } from "../api/types";
 
 import ConceptTree from "./ConceptTree";
-import ConceptTreeFolder from "./ConceptTreeFolder";
+import ConceptTreeFolder, { getNonFolderChildren } from "./ConceptTreeFolder";
 import { getConceptById } from "./globalTreeStoreHelper";
-import type { TreesT, SearchT } from "./reducer";
+import type { SearchT, TreesT } from "./reducer";
 import { isNodeInSearchResult } from "./selectors";
 
-interface PropsT {
-  trees: TreesT;
-  conceptId: ConceptIdT;
-  search: SearchT;
-  onLoadTree: (id: string) => void;
-}
-
-const ConceptTreeListItem: FC<PropsT> = ({
+const ConceptTreeListItem = ({
   trees,
   conceptId,
   search,
   onLoadTree,
+}: {
+  trees: TreesT;
+  conceptId: ConceptIdT;
+  search: SearchT;
+  onLoadTree: (id: string) => void;
 }) => {
   const tree = trees[conceptId];
 
-  if (!isNodeInSearchResult(conceptId, search, tree.children)) return null;
+  const nonFolderChildren = useMemo(
+    () =>
+      tree.detailsAvailable
+        ? tree.children
+        : getNonFolderChildren(trees, tree, conceptId),
+    [trees, tree, conceptId],
+  );
+
+  if (!isNodeInSearchResult(conceptId, search, nonFolderChildren)) return null;
 
   const rootConcept = getConceptById(conceptId);
 

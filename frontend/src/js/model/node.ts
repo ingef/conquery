@@ -1,6 +1,6 @@
 import {
-  faFolder as faFolderRegular,
   faFolderOpen as faFolderOpenRegular,
+  faFolder as faFolderRegular,
 } from "@fortawesome/free-regular-svg-icons";
 import {
   faFolder,
@@ -19,15 +19,16 @@ import type {
 } from "../standard-query-editor/types";
 import { PossibleDroppableObject } from "../ui-components/Dropzone";
 
-import { objectHasNonDefaultSelects } from "./select";
+import { SelectConfig, objectHasNonDefaultSelects } from "./select";
 import {
-  tablesHaveNonDefaultSettings,
   tablesHaveEmptySettings,
   tablesHaveFilterValues,
+  tablesHaveNonDefaultSettings,
 } from "./table";
 
 export interface NodeResetConfig {
   useDefaults?: boolean;
+  selectConfig?: SelectConfig;
 }
 
 export const nodeIsConceptQueryNode = (

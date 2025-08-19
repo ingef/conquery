@@ -16,7 +16,6 @@ import {
 import { useLoadQueries } from "../previous-queries/list/actions";
 import { queryResultReset } from "../query-runner/actions";
 import { setMessage } from "../snack-message/actions";
-import { SnackMessageType } from "../snack-message/reducer";
 import { clearQuery, loadSavedQuery } from "../standard-query-editor/actions";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 
@@ -65,7 +64,7 @@ export const useLoadDatasets = () => {
       dispatch(
         setMessage({
           message: t("datasetSelector.error"),
-          type: SnackMessageType.ERROR,
+          type: "error",
         }),
       );
       dispatch(loadDatasets.failure(e as Error));
@@ -113,7 +112,7 @@ export const useSelectDataset = () => {
 
       dispatch(selectDatasetInput({ id: datasetId }));
 
-      dispatch(resetHistory());
+      dispatch(resetHistory({ includingDefaultParams: true }));
       dispatch(queryResultReset({ queryType: "standard" }));
       dispatch(queryResultReset({ queryType: "timebased" }));
       dispatch(queryResultReset({ queryType: "editorV2" }));

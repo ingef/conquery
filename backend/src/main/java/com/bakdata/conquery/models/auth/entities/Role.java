@@ -8,8 +8,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
-
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Role extends PermissionOwner<RoleId> {
 
@@ -24,14 +22,15 @@ public class Role extends PermissionOwner<RoleId> {
 	}
 
 	@Override
-	public RoleId createId() {
-		return new RoleId(name);
+	protected void updateStorage() {
+		getMetaStorage().updateRole(this);
+
 	}
 
 	@Override
-	protected void updateStorage() {
-		storage.updateRole(this);
-
+	public RoleId createId() {
+		RoleId roleId = new RoleId(name);
+		return roleId;
 	}
 
 }

@@ -6,7 +6,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
-import type { ConceptT, ConceptIdT } from "../api/types";
+import type { ConceptIdT, ConceptT } from "../api/types";
 import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
 

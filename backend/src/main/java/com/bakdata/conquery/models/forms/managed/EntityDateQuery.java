@@ -5,16 +5,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.ResultHeaders;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -51,8 +50,6 @@ public class EntityDateQuery extends Query {
 	@NotEmpty
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
 
-	@NotNull
-	@Valid
 	private final CDateRange dateRange;
 
 	@NotNull
@@ -93,9 +90,9 @@ public class EntityDateQuery extends Query {
     @Override
     public List<ResultInfo> getResultInfos() {
 		List<ResultInfo>  resultInfos = new ArrayList<>();
-		resultInfos.add(ConqueryConstants.RESOLUTION_INFO);
-		resultInfos.add(ConqueryConstants.CONTEXT_INDEX_INFO);
-		resultInfos.add(ConqueryConstants.DATE_RANGE_INFO);
+		resultInfos.add(ResultHeaders.formResolutionInfo());
+		resultInfos.add(ResultHeaders.formContextInfo());
+		resultInfos.add(ResultHeaders.formDateRangeInfo());
 
 		resultInfos.addAll(features.getResultInfos());
 

@@ -2,50 +2,47 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.ConceptSelects;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import org.jooq.Field;
 
-class AggregationSelectCte extends ConceptCte {
+class AggregationSelectCte extends ConnectorCte {
 
 	@Override
-	public QueryStep.QueryStepBuilder convertStep(CteContext cteContext) {
+	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		// all selects that are required in the aggregation filter step
-		String previousCteName = cteContext.getPrevious().getCteName();
-		List<SqlSelect> aggregationFilterSelects = cteContext.allConceptSelects()
-															 .flatMap(sqlSelects -> sqlSelects.getForAggregationSelectStep().stream())
-															 .distinct()
-															 .collect(Collectors.toList());
+		List<SqlSelect> requiredInAggregationFilterStep = tableContext.allSqlSelects().stream()
+																	  .flatMap(sqlSelects -> sqlSelects.getAggregationSelects().stream())
+																	  .toList();
 
-		SqlFunctionProvider functionProvider = cteContext.getContext().getSqlDialect().getFunction();
-		Optional<ColumnDateRange> aggregatedValidityDate = cteContext.getValidityDateRange()
-																	 .map(validityDate -> validityDate.qualify(previousCteName))
-																	 .map(functionProvider::aggregated)
-																	 .map(validityDate -> validityDate.asValidityDateRange(cteContext.getConceptLabel()));
+		Selects predecessorSelects = tableContext.getPrevious().getQualifiedSelects();
+		SqlIdColumns ids = predecessorSelects.getIds();
+		Optional<ColumnDateRange> stratificationDate = predecessorSelects.getStratificationDate();
+		Selects aggregationSelectSelects = Selects.builder()
+												  .ids(ids)
+												  .stratificationDate(stratificationDate)
+												  .sqlSelects(requiredInAggregationFilterStep)
+												  .build();
 
-		ConceptSelects aggregationSelectSelects = new ConceptSelects(
-				cteContext.getPrimaryColumn(),
-				aggregatedValidityDate,
-				aggregationFilterSelects
-		);
+		List<Field<?>> groupByFields = Stream.concat(
+													 ids.toFields().stream(),
+													 stratificationDate.stream().flatMap(range -> range.toFields().stream())
+											 )
+											 .toList();
 
 		return QueryStep.builder()
-						// pid normally
-						// first value for all existing selects
-						// date aggregation for date range
-						// new select for all aggregation selects and filter
 						.selects(aggregationSelectSelects)
-						.isGroupBy(true);
+						.groupBy(groupByFields);
 	}
 
 	@Override
-	public CteStep cteStep() {
-		return CteStep.AGGREGATION_SELECT;
+	public ConceptCteStep cteStep() {
+		return ConceptCteStep.AGGREGATION_SELECT;
 	}
 
 }

@@ -4,16 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.FilterSearch;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dropwizard.core.setup.Environment;
 
 /**
  * Handler of namespaces in a ConQuery instance.
@@ -22,33 +24,40 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public interface NamespaceHandler<N extends Namespace> {
 
-	N createNamespace(NamespaceStorage storage, MetaStorage metaStorage);
-
-	void removeNamespace(DatasetId id, N namespace);
-
 	/**
 	 * Creates the {@link NamespaceSetupData} that is shared by all {@link Namespace} types.
 	 */
-	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalObjectMapperCreator mapperCreator) {
+	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalMapperFactory internalMapperFactory, DatasetRegistry<?> datasetRegistry, Environment environment) {
 		List<Injectable> injectables = new ArrayList<>();
-		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings());
-		injectables.add(indexService);
-		ObjectMapper persistenceMapper = mapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
-		ObjectMapper communicationMapper = mapperCreator.createInternalObjectMapper(View.InternalCommunication.class);
-		ObjectMapper preprocessMapper = mapperCreator.createInternalObjectMapper(null);
+		injectables.add(datasetRegistry);
+		injectables.add(storage);
 
-		injectables.forEach(i -> i.injectInto(persistenceMapper));
-		injectables.forEach(i -> i.injectInto(communicationMapper));
-		injectables.forEach(i -> i.injectInto(preprocessMapper));
+		ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(storage, datasetRegistry);
+		ObjectMapper preprocessMapper = internalMapperFactory.createPreprocessMapper(storage, datasetRegistry);
 
-		// Open and load the stores
-		storage.openStores(persistenceMapper);
-		storage.loadData();
+		injectables.forEach(i -> {
+			i.injectInto(persistenceMapper);
+			i.injectInto(preprocessMapper);
+		});
+
+
+		// Each store needs its own mapper because each injects its own registry
+		storage.openStores(Jackson.copyMapperAndInjectables(persistenceMapper));
+
+		storage.loadKeys();
+
+		if (config.getStorage().isLoadStoresOnStart()) {
+			storage.loadData();
+		}
 
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
+		FilterSearch filterSearch = new FilterSearch(config.getIndex());
 
-		FilterSearch filterSearch = new FilterSearch(storage, jobManager, config.getCsv(), config.getIndex());
-		return new NamespaceSetupData(injectables, indexService, communicationMapper, preprocessMapper, jobManager, filterSearch);
+		return new NamespaceSetupData(preprocessMapper, jobManager, filterSearch);
 	}
+
+	N createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<N> datasetRegistry, Environment environment);
+
+	void removeNamespace(DatasetId id, N namespace);
 
 }

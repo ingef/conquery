@@ -16,10 +16,10 @@ import com.bakdata.conquery.io.jackson.serializer.IdKeyDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.LocaleDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.LocaleSerializer;
 import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.fasterxml.jackson.core.json.PackageVersion;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.ValueInstantiator;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.joda.PackageVersion;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.HashBiMap;
@@ -52,14 +52,14 @@ public class ConquerySerializersModule extends SimpleModule {
 		addDeserializer(ClassToInstanceMap.class, new ClassToInstanceMapDeserializer());
 
 		//register IdKeySerializer for all id types
-		List<Class<?>> idTypes = CPSTypeIdResolver
-				.SCAN_RESULT
-				.getSubclasses(Id.class.getName())
-				.loadClasses();
+		List<Class<?>> idTypes =
+				CPSTypeIdResolver.SCAN_RESULT.getSubclasses(Id.class.getName())
+											 .loadClasses();
 
 		for (Class<?> type : idTypes) {
 			addKeyDeserializer(type, new IdKeyDeserializer<>());
 		}
+
 		addSerializer(new ConqueryDoubleSerializer());
 		addDeserializer(CharArrayBuffer.class, new CharArrayBufferDeserializer());
 		addSerializer(CharArrayBuffer.class, new CharArrayBufferSerializer());

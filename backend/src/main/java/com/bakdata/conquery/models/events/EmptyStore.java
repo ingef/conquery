@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
@@ -48,6 +47,10 @@ public enum EmptyStore implements
 	@Override
 	public void setDate(int event, int value) {
 
+	}
+
+	public void setParent(Bucket bucket) {
+		// not used
 	}
 
 	@Override
@@ -111,12 +114,12 @@ public enum EmptyStore implements
 	}
 
 	@Override
-	public long getMoney(int event) {
-		return 0;
+	public BigDecimal getMoney(int event) {
+		return BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setMoney(int event, long money) {
+	public void setMoney(int event, BigDecimal money) {
 
 	}
 
@@ -131,18 +134,13 @@ public enum EmptyStore implements
 	}
 
 	@Override
-	public int getString(int event) {
-		return 0;
-	}
-
-	@Override
-	public void setString(int event, int value) {
-
-	}
-
-	@Override
-	public String getElement(int id) {
+	public String getString(int event) {
 		return null;
+	}
+
+	@Override
+	public void setString(int event, String value) {
+
 	}
 
 	@Override
@@ -151,33 +149,8 @@ public enum EmptyStore implements
 	}
 
 	@Override
-	public Stream<String> iterateValues() {
+	public Stream<String> streamValues() {
 		return Stream.empty();
-	}
-
-	@Override
-	public int getId(String value) {
-		return 0;
-	}
-
-	@Override
-	public Dictionary getUnderlyingDictionary() {
-		return null;
-	}
-
-	@Override
-	public void setUnderlyingDictionary(Dictionary dictionary) {
-		// No underlying Dictionary
-	}
-
-	@Override
-	public boolean isDictionaryHolding() {
-		return false;
-	}
-
-	@Override
-	public void setIndexStore(IntegerStore newType) {
-
 	}
 
 }

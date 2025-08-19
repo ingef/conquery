@@ -35,7 +35,6 @@ interface OtherProps {
   fullWidth?: boolean;
   indexPrefix?: number;
   tooltip?: string;
-  optional?: boolean;
   onChange: (value: string | null) => void;
 }
 
@@ -47,52 +46,37 @@ type InputTextareaProps = DetailedHTMLProps<
 export const InputTextarea = forwardRef<
   HTMLTextAreaElement,
   InputTextareaProps & OtherProps
->(
-  (
-    {
-      label,
-      className,
-      fullWidth,
-      indexPrefix,
-      tooltip,
-      optional,
-      onChange,
-      ...props
-    },
-    ref,
-  ) => {
-    const { t } = useTranslation();
+>(({ label, className, indexPrefix, tooltip, onChange, ...props }, ref) => {
+  const { t } = useTranslation();
 
-    return (
-      <Labeled
-        label={label}
-        indexPrefix={indexPrefix}
-        className={className}
-        fullWidth
-        tooltip={tooltip}
-        optional={optional}
-      >
-        <Root>
-          <Textarea
-            ref={ref}
-            {...props}
-            onChange={({ target: { value } }) =>
-              value.length === 0 ? onChange(null) : onChange(value)
-            }
-            value={props.value || ""}
+  return (
+    <Labeled
+      label={label}
+      indexPrefix={indexPrefix}
+      className={className}
+      fullWidth
+      tooltip={tooltip}
+    >
+      <Root>
+        <Textarea
+          ref={ref}
+          {...props}
+          onChange={({ target: { value } }) =>
+            value.length === 0 ? onChange(null) : onChange(value)
+          }
+          value={props.value || ""}
+        />
+        {props.value && (
+          <ClearZoneIconButton
+            tiny
+            icon={faTimes}
+            tabIndex={-1}
+            title={t("common.clearValue")}
+            aria-label={t("common.clearValue")}
+            onClick={() => onChange(null)}
           />
-          {props.value && (
-            <ClearZoneIconButton
-              tiny
-              icon={faTimes}
-              tabIndex={-1}
-              title={t("common.clearValue")}
-              aria-label={t("common.clearValue")}
-              onClick={() => onChange(null)}
-            />
-          )}
-        </Root>
-      </Labeled>
-    );
-  },
-);
+        )}
+      </Root>
+    </Labeled>
+  );
+});

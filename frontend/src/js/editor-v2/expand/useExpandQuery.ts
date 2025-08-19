@@ -6,12 +6,12 @@ import { useSelector } from "react-redux";
 import { useGetQuery } from "../../api/api";
 import {
   AndNodeT,
+  DateRangeT,
   DateRestrictionNodeT,
-  OrNodeT,
   NegationNodeT,
+  OrNodeT,
   QueryConceptNodeT,
   SavedQueryNodeT,
-  DateRangeT,
 } from "../../api/types";
 import { StateT } from "../../app/reducers";
 import { DNDType } from "../../common/constants/dndTypes";

@@ -5,6 +5,7 @@ import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.CachingFilter;
 import com.bakdata.conquery.io.jetty.ConqueryErrorExceptionMapper;
 import com.bakdata.conquery.io.jetty.ConqueryJsonExceptionMapper;
+import com.bakdata.conquery.io.jetty.IllegalArgumentExceptionMapper;
 import com.bakdata.conquery.io.jetty.JsonValidationExceptionMapper;
 import com.bakdata.conquery.io.jetty.NoSuchElementExceptionMapper;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -12,10 +13,10 @@ import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.auth.web.AuthorizationExceptionMapper;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import io.dropwizard.auth.AuthValueFactoryProvider;
+import io.dropwizard.core.server.DefaultServerFactory;
 import io.dropwizard.jersey.errors.EarlyEofExceptionMapper;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
-import io.dropwizard.server.DefaultServerFactory;
-import io.dropwizard.views.ViewRenderExceptionMapper;
+import io.dropwizard.views.common.ViewRenderExceptionMapper;
 import lombok.experimental.UtilityClass;
 import org.glassfish.jersey.server.ResourceConfig;
 
@@ -34,6 +35,7 @@ public class RESTServer {
 		jersey.register(JsonValidationExceptionMapper.class);
 		jersey.register(ViewRenderExceptionMapper.class);
 		jersey.register(NoSuchElementExceptionMapper.class);
+		jersey.register(IllegalArgumentExceptionMapper.class);
 		// default Dropwizard's exception mappers
 		jersey.register(new ConqueryErrorExceptionMapper());
 		jersey.register(ConqueryJsonExceptionMapper.class);

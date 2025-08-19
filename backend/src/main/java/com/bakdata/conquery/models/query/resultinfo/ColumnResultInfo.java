@@ -1,16 +1,19 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
-import java.util.Set;
+import java.util.Collections;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.query.ColumnDescriptor;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
+import com.bakdata.conquery.models.query.resultinfo.printers.common.ConceptIdPrinter;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.models.types.SemanticType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+@SuppressWarnings("rawtypes")
 @Getter
 @ToString
 @EqualsAndHashCode(callSuper = true)
@@ -19,33 +22,33 @@ public class ColumnResultInfo extends ResultInfo {
 	private final Column column;
 	private final ResultType type;
 	private final String description;
-	private final Set<SemanticType> semantics;
+	private final TreeConcept concept;
 
-	public ColumnResultInfo(Column column, ResultType type, Set<SemanticType> semantics) {
+
+	public ColumnResultInfo(Column column, ResultType type, String description, TreeConcept concept) {
+		super(Collections.emptySet());
 		this.column = column;
 		this.type = type;
-		this.description = column.getDescription();
-		this.semantics = semantics;
+		this.description = description;
+		this.concept = concept;
 	}
 
 	@Override
 	public String userColumnName(PrintSettings printSettings) {
-		return null;
-	}
-
-	@Override
-	public String defaultColumnName(PrintSettings printSettings) {
 		return column.getTable().getLabel() + " " + column.getLabel();
 	}
 
 	@Override
-	public ColumnDescriptor asColumnDescriptor(PrintSettings settings, UniqueNamer collector) {
-		return ColumnDescriptor.builder()
-							   .label(defaultColumnName(settings))
-							   .defaultLabel(getColumn().getLabel())
-							   .type(getType().typeInfo())
-							   .semantics(getSemantics())
-							   .description(getDescription())
-							   .build();
+	public String defaultColumnName(PrintSettings printSettings) {
+		return userColumnName(printSettings);
 	}
+
+	@Override
+	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
+		if(concept != null){
+			return new ConceptIdPrinter(concept, printSettings);
+		}
+		return printerFactory.printerFor(type, printSettings);
+	}
+
 }

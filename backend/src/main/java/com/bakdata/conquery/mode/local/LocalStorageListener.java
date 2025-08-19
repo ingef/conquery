@@ -1,29 +1,32 @@
 package com.bakdata.conquery.mode.local;
 
 import com.bakdata.conquery.mode.StorageListener;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import lombok.Data;
 
+@Data
 public class LocalStorageListener implements StorageListener {
-
-	// When running without shards, no further actions are required
 
 	@Override
 	public void onAddSecondaryId(SecondaryIdDescription secondaryId) {
 	}
 
 	@Override
-	public void onDeleteSecondaryId(SecondaryIdDescription description) {
+	public void onDeleteSecondaryId(SecondaryIdDescriptionId description) {
 	}
 
 	@Override
 	public void onAddTable(Table table) {
+
 	}
 
 	@Override
-	public void onRemoveTable(Table table) {
+	public void onRemoveTable(TableId table) {
 	}
 
 	@Override
@@ -31,10 +34,6 @@ public class LocalStorageListener implements StorageListener {
 	}
 
 	@Override
-	public void onDeleteConcept(Concept<?> concept) {
-	}
-
-	@Override
-	public void onUpdateMatchingStats(Dataset dataset) {
+	public void onDeleteConcept(ConceptId concept) {
 	}
 }

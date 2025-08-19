@@ -50,7 +50,7 @@ interface Props {
   onDropNode: (node: StandardQueryNodeT) => void;
   onDropFile: (file: File) => void;
   onLoadPreviousQuery: (id: QueryIdT) => void;
-  onImportLines?: (lines: string[]) => void;
+  onImportLines?: (lines: string[], filename?: string) => void;
 }
 
 const QueryEditorDropzone = forwardRef<HTMLDivElement, Props>(

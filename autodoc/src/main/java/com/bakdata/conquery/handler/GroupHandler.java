@@ -15,8 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.introspection.Introspection;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -98,7 +97,7 @@ public class GroupHandler {
 		}
 		if (!endpoints.isEmpty()) {
 			out.heading("REST endpoints");
-			for (Pair<String, MethodInfo> endpoint : endpoints.stream().sorted(Comparator.comparing(Pair::getLeft)).collect(Collectors.toList())) {
+			for (Pair<String, MethodInfo> endpoint : endpoints.stream().sorted(Comparator.comparing(Pair::getLeft)).toList()) {
 				handleEndpoint(endpoint.getLeft(), endpoint.getRight());
 			}
 		}
@@ -108,13 +107,13 @@ public class GroupHandler {
 		}
 
 		out.subHeading("Other Types");
-		for (Class<?> t : group.getOtherClasses().stream().sorted(Comparator.comparing(Class::getSimpleName)).collect(Collectors.toList())) {
+		for (Class<?> t : group.getOtherClasses().stream().sorted(Comparator.comparing(Class::getSimpleName)).toList()) {
 			handleClass(typeTitle(t), scan.getClassInfo(t.getName()));
 		}
 
 		if (!group.getMarkerInterfaces().isEmpty()) {
 			out.subHeading("Marker Interfaces");
-			for (Class<?> t : group.getMarkerInterfaces().stream().sorted(Comparator.comparing(Class::getSimpleName)).collect(Collectors.toList())) {
+			for (Class<?> t : group.getMarkerInterfaces().stream().sorted(Comparator.comparing(Class::getSimpleName)).toList()) {
 				handleMarkerInterface(markerTitle(t), scan.getClassInfo(t.getName()));
 			}
 		}
@@ -135,7 +134,7 @@ public class GroupHandler {
 		}
 	}
 
-	private void collectEndpoints(Class<?> resource) throws IOException {
+	private void collectEndpoints(Class<?> resource) {
 		final ClassInfo info = scan.getClassInfo(resource.getName());
 
 		for (MethodInfo method : info.getMethodInfo()) {
@@ -172,7 +171,7 @@ public class GroupHandler {
 					  + code(typeProperty)
 					  + " to one of the following values:");
 
-		for (Pair<CPSType, ClassInfo> pair : content.get(base).stream().sorted(Comparator.comparing(p -> p.getLeft().id())).collect(Collectors.toList())) {
+		for (Pair<CPSType, ClassInfo> pair : content.get(base).stream().sorted(Comparator.comparing(p -> p.getLeft().id())).toList()) {
 
 			handleClass(pair.getLeft(), pair.getRight());
 		}
@@ -198,7 +197,7 @@ public class GroupHandler {
 				out.line("Supported Fields:");
 
 				out.tableHeader("", "Field", "Type", "Default", "Example", "Description");
-				for (FieldInfo field : c.getFieldInfo().stream().sorted().collect(Collectors.toList())) {
+				for (FieldInfo field : c.getFieldInfo().stream().sorted().toList()) {
 					handleField(c, field);
 				}
 			}
@@ -226,12 +225,7 @@ public class GroupHandler {
 			);
 		}
 
-		return new Closeable() {
-			@Override
-			public void close() throws IOException {
-				out.line("</p></details>");
-			}
-		};
+		return () -> out.line("</p></details>");
 	}
 
 	private void handleMarkerInterface(String name, ClassInfo c) throws IOException {
@@ -273,16 +267,7 @@ public class GroupHandler {
 		final TypeSignature typeSignature = field.getTypeSignatureOrTypeDescriptor();
 		final Ctx ctx = new Ctx().withField(field);
 
-		final String type;
-		if (ID_REF.stream().anyMatch(field::hasAnnotation)) {
-			type = ID_OF + printType(ctx.withIdOf(true), typeSignature);
-		}
-		else if (ID_REF_COL.stream().anyMatch(field::hasAnnotation)) {
-			type = LIST_OF + ID_OF + StringUtils.removeStart(printType(ctx.withIdOf(true), typeSignature), LIST_OF);
-		}
-		else {
-			type = printType(ctx, typeSignature);
-		}
+		final String type = printType(ctx, typeSignature);
 
 		out.table(
 				editLink(introspec),
@@ -487,6 +472,7 @@ public class GroupHandler {
 			}
 		}
 
-		return false;
+		// is record
+		return field.getClassInfo().isRecord();
 	}
 }

@@ -1,14 +1,16 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
+import static com.bakdata.conquery.models.query.StringUtils.getSubstringFromRange;
+
 import java.util.HashSet;
 import java.util.Set;
 
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.collect.ImmutableSet;
 import lombok.ToString;
 
@@ -20,10 +22,12 @@ import lombok.ToString;
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE>> {
 
+	private final Range.IntegerRange substring;
 	private final Set<VALUE> entries = new HashSet<>();
 
-	public AllValuesAggregator(Column column) {
+	public AllValuesAggregator(Column column, Range.IntegerRange substring) {
 		super(column);
+		this.substring = substring;
 	}
 
 	@Override
@@ -32,10 +36,18 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
-		if (bucket.has(event, getColumn())) {
-			entries.add((VALUE) bucket.createScriptValue(event, getColumn()));
+	public void consumeEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
+			return;
 		}
+
+		if (substring != null) {
+			String string = bucket.getString(event, getColumn());
+			entries.add((VALUE) getSubstringFromRange(string, substring));
+			return;
+		}
+
+		entries.add((VALUE) bucket.createScriptValue(event, getColumn()));
 	}
 
 	@Override
@@ -43,8 +55,4 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 		return entries.isEmpty() ? null : ImmutableSet.copyOf(entries);
 	}
 
-	@Override
-	public ResultType getResultType() {
-		return new ResultType.ListT(ResultType.resolveResultType(column.getType()));
-	}
 }

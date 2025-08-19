@@ -22,7 +22,7 @@ public abstract class ColumnAggregator<T> extends Aggregator<T> {
 	public abstract List<Column> getRequiredColumns();
 
 	@Override
-	public abstract void acceptEvent(Bucket bucket, int event);
+	public abstract void consumeEvent(Bucket bucket, int event);
 
 	/**
 	 * Skip all buckets where none of the required columns have values.
@@ -33,7 +33,7 @@ public abstract class ColumnAggregator<T> extends Aggregator<T> {
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		for (Column column : getRequiredColumns()) {
-			if (!bucket.getStores()[column.getPosition()].isEmpty()) {
+			if (!bucket.getStore(column).isEmpty()) {
 				return true;
 			}
 		}

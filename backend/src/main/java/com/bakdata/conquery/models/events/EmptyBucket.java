@@ -1,14 +1,15 @@
 package com.bakdata.conquery.models.events;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.Map;
+import java.util.function.IntFunction;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import lombok.Getter;
 
 /**
@@ -20,35 +21,27 @@ public class EmptyBucket extends Bucket {
 	private static final EmptyBucket Instance = new EmptyBucket();
 
 	public EmptyBucket() {
-		super(0, 0, 0, Collections.emptySet(), new int[0], new int[0], null);
+		super(0, Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), 0, null);
 		this.setStores(new ColumnStore[0]);
 	}
 
-
 	@Override
-	public boolean eventIsContainedIn(int event, ValidityDate column, CDateSet dateRanges) {
+	public boolean containsEntity(String entity) {
 		return false;
 	}
 
 	@Override
-	public boolean containsEntity(int entity) {
-		return false;
-	}
-
-
-	@Override
-	public int getEntityStart(int entityId) {
+	public int getEntityStart(String entityId) {
 		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
 	@Override
-	public int getEntityEnd(int entityId) {
+	public int getEntityEnd(String entityId) {
 		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
-
 	@Override
-	public int getString(int event, Column column) {
+	public String getString(int event, Column column) {
 		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
 	}
 
@@ -73,7 +66,7 @@ public class EmptyBucket extends Bucket {
 	}
 
 	@Override
-	public long getMoney(int event, Column column) {
+	public BigDecimal getMoney(int event, Column column) {
 		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
 	}
 
@@ -83,8 +76,8 @@ public class EmptyBucket extends Bucket {
 	}
 
 	@Override
-	public CDateRange getDateRange(int event, Column column) {
-		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
+	public boolean eventIsContainedIn(int event, ValidityDate column, CDateSet dateRanges) {
+		return false;
 	}
 
 	@Override
@@ -93,7 +86,12 @@ public class EmptyBucket extends Bucket {
 	}
 
 	@Override
-	public Map<String, Object> calculateMap(int event) {
+	public CDateRange getDateRange(int event, Column column) {
+		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
+	}
+
+	@Override
+	public IntFunction<Map<String, Object>> mapCalculator() {
 		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
 	}
 

@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.events.stores.root;
 
 
+import java.math.BigDecimal;
+
 import com.bakdata.conquery.models.events.MajorTypeId;
 
 /**
@@ -9,8 +11,8 @@ import com.bakdata.conquery.models.events.MajorTypeId;
  */
 public interface MoneyStore extends ColumnStore {
 
-	long getMoney(int event);
-	void setMoney(int event, long money);
+	BigDecimal getMoney(int event);
+	void setMoney(int event, BigDecimal money);
 
 	@Override
 	default Object createScriptValue(int event) {

@@ -9,10 +9,10 @@ import { StateT } from "../app/reducers";
 import PreviewButton from "../button/PreviewButton";
 import { QueryResultHistoryButton } from "../button/QueryResultHistoryButton";
 import { isEmpty } from "../common/helpers/commonHelper";
-import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
-import { canUploadResult } from "../user/selectors";
+import { canViewEntityPreview, canViewQueryPreview } from "../user/selectors";
 
+import { exists } from "../common/helpers/exists";
 import DownloadResultsDropdownButton from "./DownloadResultsDropdownButton";
 
 const Root = styled("div")`
@@ -53,8 +53,9 @@ const QueryResults: FC<PropsT> = ({
   queryType,
 }) => {
   const { t } = useTranslation();
-  const csvUrl = resultUrls.find((ru) => ru.url.endsWith("csv"));
-  const canUpload = useSelector<StateT, boolean>(canUploadResult);
+  const csvUrl = resultUrls.find(({ url }) => url.endsWith("csv"));
+  const canViewHistory = useSelector<StateT, boolean>(canViewEntityPreview);
+  const canViewPreview = useSelector<StateT, boolean>(canViewQueryPreview);
 
   return (
     <Root>
@@ -71,17 +72,13 @@ const QueryResults: FC<PropsT> = ({
             : t("queryRunner.resultCount")}
         </LgText>
       )}
-      {!!csvUrl && exists(resultColumns) && (
-        <>
-          <PreviewButton columns={resultColumns} url={csvUrl.url} />
-          {canUpload && (
-            <QueryResultHistoryButton
-              columns={resultColumns}
-              url={csvUrl.url}
-              label={resultLabel}
-            />
-          )}
-        </>
+      {canViewPreview && <PreviewButton />}
+      {!!csvUrl && canViewHistory && exists(resultColumns) && (
+        <QueryResultHistoryButton
+          columns={resultColumns}
+          url={csvUrl.url}
+          label={resultLabel}
+        />
       )}
       {resultUrls.length > 0 && (
         <DownloadResultsDropdownButton resultUrls={resultUrls} />

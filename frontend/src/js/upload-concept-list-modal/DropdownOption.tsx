@@ -2,6 +2,7 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
+import { useTranslation } from "react-i18next";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
 import { exists } from "../common/helpers/exists";
@@ -9,7 +10,7 @@ import { Icon } from "../icon/FaIcon";
 
 const Container = styled("div")`
   display: grid;
-  grid-template-columns: auto 2fr 30px 3fr;
+  grid-template-columns: 110px 30px auto auto auto auto 1fr;
   align-items: flex-start;
   gap: 0 8px;
   padding: 3px 0;
@@ -42,28 +43,42 @@ const Right = styled("div")`
 export const DropdownOption = memo(
   ({
     conceptLabel,
+    connectorLabel,
     filterLabel,
     filterIdx,
   }: {
     conceptLabel: string;
+    connectorLabel?: string;
     filterLabel?: string;
     filterIdx?: number;
   }) => {
+    const { t } = useTranslation();
     const hasDifferentFilterLabel = exists(filterLabel) && exists(filterIdx);
 
     return (
       <Container>
-        <Icon
-          icon={faFolder}
-          active={!hasDifferentFilterLabel}
-          gray={hasDifferentFilterLabel}
-        />
+        <Text>
+          {hasDifferentFilterLabel
+            ? t("uploadConceptListModal.filterValuesFrom")
+            : t("uploadConceptListModal.conceptValuesFrom")}
+        </Text>
+        <Right>
+          {hasDifferentFilterLabel ? (
+            <SxIndexPrefix># {filterIdx}</SxIndexPrefix>
+          ) : (
+            <Icon
+              icon={faFolder}
+              active={!hasDifferentFilterLabel}
+              gray={hasDifferentFilterLabel}
+            />
+          )}
+        </Right>
         <Text bold={!hasDifferentFilterLabel}>{conceptLabel}</Text>
         {hasDifferentFilterLabel && (
           <>
-            <Right>
-              <SxIndexPrefix># {filterIdx}</SxIndexPrefix>
-            </Right>
+            <Text>&gt;</Text>
+            <Text>{connectorLabel}</Text>
+            <Text>&gt;</Text>
             <Text bold>{filterLabel}</Text>
           </>
         )}

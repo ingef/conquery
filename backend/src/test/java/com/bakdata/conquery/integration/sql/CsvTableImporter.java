@@ -1,9 +1,6 @@
 package com.bakdata.conquery.integration.sql;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -16,13 +13,13 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
+import com.bakdata.conquery.integration.sql.dialect.TestSqlDialect;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.sql.execution.SqlEntityResult;
 import com.google.common.base.Strings;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.SneakyThrows;
@@ -33,7 +30,6 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.RowN;
 import org.jooq.Table;
-import org.jooq.conf.ParamType;
 import org.jooq.impl.BuiltInDataType;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
@@ -46,11 +42,29 @@ public class CsvTableImporter {
 	private final DSLContext dslContext;
 	private final DateRangeParser dateRangeParser;
 	private final CsvParser csvReader;
+	private final TestSqlDialect testSqlDialect;
+	private final DatabaseConfig databaseConfig;
 
-	public CsvTableImporter(DSLContext dslContext) {
+	public CsvTableImporter(DSLContext dslContext, TestSqlDialect testSqlDialect, DatabaseConfig databaseConfig) {
 		this.dslContext = dslContext;
 		this.dateRangeParser = new DateRangeParser(new ConqueryConfig());
 		this.csvReader = new CSVConfig().withSkipHeader(true).createParser();
+		this.testSqlDialect = testSqlDialect;
+		this.databaseConfig = databaseConfig;
+	}
+
+	public void createTable(RequiredTable requiredTable) {
+		Table<Record> table = DSL.table(DSL.name(requiredTable.getName()));
+		List<RequiredColumn> allRequiredColumns = getAllRequiredColumns(requiredTable);
+		List<Field<?>> columns = createFieldsForColumns(allRequiredColumns);
+
+		// we directly use JDBC because JOOQ can't cope with some custom types like daterange
+		dslContext.connection((Connection connection) -> {
+			try (Statement statement = connection.createStatement()) {
+				dropTable(table, statement);
+				createTable(table, columns, statement);
+			}
+		});
 	}
 
 	/**
@@ -60,65 +74,16 @@ public class CsvTableImporter {
 	public void importTableIntoDatabase(RequiredTable requiredTable) {
 
 		Table<Record> table = DSL.table(DSL.name(requiredTable.getName()));
-		List<RequiredColumn> allRequiredColumns = this.getAllRequiredColumns(requiredTable);
-		List<Field<?>> columns = this.createFieldsForColumns(allRequiredColumns);
-		List<RowN> content = this.getTablesContentFromCSV(requiredTable.getCsv(), allRequiredColumns);
+		List<RequiredColumn> allRequiredColumns = getAllRequiredColumns(requiredTable);
+		List<Field<?>> columns = createFieldsForColumns(allRequiredColumns);
+		List<RowN> content = getTablesContentFromCSV(requiredTable.getCsv(), allRequiredColumns);
 
 		// we directly use JDBC because JOOQ can't cope with some custom types like daterange
 		dslContext.connection((Connection connection) -> {
 			try (Statement statement = connection.createStatement()) {
-				dropTable(table, statement);
-				createTable(table, columns, statement);
 				insertValuesIntoTable(table, columns, content, statement);
 			}
 		});
-	}
-
-	public List<EntityResult> readExpectedEntities(Path csv) throws IOException {
-		List<String[]> rawEntities = this.csvReader.parseAll(Files.newInputStream(csv));
-		List<EntityResult> results = new ArrayList<>(rawEntities.size());
-		for (int i = 0; i < rawEntities.size(); i++) {
-			String[] row = rawEntities.get(i);
-			results.add(new SqlEntityResult(i + 1, row[0], Arrays.copyOfRange(row, 1, row.length)));
-		}
-		return results;
-	}
-
-	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
-		for (RowN rowN : content) {
-			// e.g. HANA does not support bulk insert, so we insert row by row
-			String insertRowStatement = dslContext.insertInto(table, columns)
-												  .values(rowN)
-												  .getSQL(ParamType.INLINED);
-			log.debug("Inserting into table: {}", insertRowStatement);
-			statement.execute(insertRowStatement);
-		}
-	}
-
-	private void createTable(Table<Record> table, List<Field<?>> columns, Statement statement) throws SQLException {
-		String createTableStatement = dslContext.createTable(table)
-												.columns(columns)
-												.getSQL(ParamType.INLINED);
-		log.debug("Creating table: {}", createTableStatement);
-		statement.execute(createTableStatement);
-	}
-
-	private void dropTable(Table<Record> table, Statement statement) {
-		try {
-			// DROP TABLE IF EXISTS is not supported in HANA, we just ignore possible errors if the table does not exist
-			String dropTableStatement = dslContext.dropTable(table)
-												  .getSQL(ParamType.INLINED);
-			statement.execute(dropTableStatement);
-		}
-		catch (SQLException e) {
-			log.debug("Dropping table {} failed.", table.getName(), e);
-		}
-	}
-
-	private List<Field<?>> createFieldsForColumns(List<RequiredColumn> requiredColumns) {
-		return requiredColumns.stream()
-							  .map(this::createField)
-							  .collect(Collectors.toList());
 	}
 
 	private List<RequiredColumn> getAllRequiredColumns(RequiredTable table) {
@@ -128,18 +93,10 @@ public class CsvTableImporter {
 		return requiredColumns;
 	}
 
-	private Field<?> createField(RequiredColumn requiredColumn) {
-		DataType<?> dataType = switch (requiredColumn.getType()) {
-			case STRING -> SQLDataType.VARCHAR(DEFAULT_VARCHAR_LENGTH);
-			case INTEGER -> SQLDataType.INTEGER;
-			case BOOLEAN -> SQLDataType.BOOLEAN;
-			// TODO: temporary workaround until we cast ResultSet elements back
-			case REAL -> SQLDataType.DECIMAL(10, 2);
-			case DECIMAL, MONEY -> SQLDataType.DECIMAL;
-			case DATE -> SQLDataType.DATE;
-			case DATE_RANGE -> new BuiltInDataType<>(DateRange.class, "daterange");
-		};
-		return DSL.field(DSL.name(requiredColumn.getName()), dataType);
+	private List<Field<?>> createFieldsForColumns(List<RequiredColumn> requiredColumns) {
+		return requiredColumns.stream()
+							  .map(this::createField)
+							  .collect(Collectors.toList());
 	}
 
 	@SneakyThrows
@@ -149,6 +106,51 @@ public class CsvTableImporter {
 		return castedContent.stream()
 							.map(DSL::row)
 							.toList();
+	}
+
+	private void dropTable(Table<Record> table, Statement statement) {
+		try {
+			String dropTableStatement = testSqlDialect.getTestFunctionProvider().createDropTableStatement(table, dslContext);
+			statement.execute(dropTableStatement);
+		}
+		catch (SQLException e) {
+			log.debug("Dropping table {} failed.", table.getName(), e);
+		}
+	}
+
+	private void createTable(Table<Record> table, List<Field<?>> columns, Statement statement) throws SQLException {
+		String createTableStatement = testSqlDialect.getTestFunctionProvider().createTableStatement(table, columns, dslContext);
+
+		log.debug("Creating table: {}", createTableStatement);
+		statement.execute(createTableStatement);
+	}
+
+	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
+		// encountered empty new line
+		if (content.isEmpty()) {
+			return;
+		}
+		log.debug("Inserting into table: {}", content);
+		testSqlDialect.getTestFunctionProvider().insertValuesIntoTable(table, columns, content, statement, dslContext);
+	}
+
+	private Field<?> createField(RequiredColumn requiredColumn) {
+		DataType<?> dataType = switch (requiredColumn.getType()) {
+			case STRING -> SQLDataType.VARCHAR(DEFAULT_VARCHAR_LENGTH);
+			case INTEGER -> SQLDataType.INTEGER;
+			case BOOLEAN -> SQLDataType.BOOLEAN;
+			// TODO (ja) how do we handle REAL and DECIMAL properly?
+			case REAL, DECIMAL, MONEY -> SQLDataType.DECIMAL(10, 2);
+			case DATE -> SQLDataType.DATE;
+			case DATE_RANGE -> new BuiltInDataType<>(DateRange.class, "daterange");
+		};
+
+		// Set all columns except 'pid' to nullable, important for ClickHouse compatibility
+		if (!requiredColumn.getName().equals(databaseConfig.getPrimaryColumn())) {
+			dataType = dataType.nullable(true);
+		}
+
+		return DSL.field(DSL.name(requiredColumn.getName()), dataType);
 	}
 
 	/**

@@ -10,10 +10,10 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableSet;
 import lombok.ToString;
@@ -33,7 +33,7 @@ public class ConceptValuesAggregator extends Aggregator<Set<Object>> {
 		this.concept = concept;
 		tableConnectors = concept.getConnectors().stream()
 								 .filter(conn -> conn.getColumn() != null)
-								 .collect(Collectors.toMap(Connector::getTable, Functions.identity()));
+								 .collect(Collectors.toMap(Connector::getResolvedTable, Functions.identity()));
 	}
 
 	@Override
@@ -50,7 +50,8 @@ public class ConceptValuesAggregator extends Aggregator<Set<Object>> {
 			return;
 		}
 
-		column = connector.getColumn();
+		final ColumnId columnId = connector.getColumn();
+		column = columnId != null ? columnId.resolve() : null;
 	}
 
 	@Override
@@ -59,7 +60,7 @@ public class ConceptValuesAggregator extends Aggregator<Set<Object>> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, column)) {
 			return;
 		}
@@ -73,8 +74,4 @@ public class ConceptValuesAggregator extends Aggregator<Set<Object>> {
 	}
 
 
-	@Override
-	public ResultType getResultType() {
-		return new ResultType.ListT(ResultType.StringT.INSTANCE);
-	}
 }

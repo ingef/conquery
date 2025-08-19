@@ -1,7 +1,11 @@
 import type { DatasetT, SelectOptionT } from "../api/types";
 import type { Language } from "../localization/useActiveLang";
 
-import type { FormField, GeneralField, Group } from "./config-types";
+import type {
+  FormField,
+  FormFieldWithValue,
+  GeneralField,
+} from "./config-types";
 
 const nonFormFieldTypes = new Set(["HEADLINE", "DESCRIPTION"]);
 
@@ -42,17 +46,14 @@ export const getH1Index = (fields: GeneralField[], field: GeneralField) => {
   return h1Fields.indexOf(field);
 };
 
-export const isOptionalField = (field: GeneralField) => {
-  return (
-    isFormField(field) &&
-    (!("validations" in field) ||
-      ("validations" in field &&
-        (!field.validations || !field.validations.includes("NOT_EMPTY"))))
-  );
-};
-
 export const isFormField = (field: GeneralField): field is FormField => {
   return !nonFormFieldTypes.has(field.type);
+};
+
+export const isFormFieldWithValue = (
+  field: GeneralField,
+): field is FormFieldWithValue => {
+  return isFormField(field) && field.type !== "GROUP";
 };
 
 export function collectAllFormFields(fields: GeneralField[]): FormField[] {
@@ -71,7 +72,7 @@ export function collectAllFormFields(fields: GeneralField[]): FormField[] {
 }
 
 export function getInitialValue(
-  field: Exclude<FormField, Group>,
+  field: FormFieldWithValue,
   context: {
     availableDatasets: SelectOptionT[];
     activeLang: Language;
@@ -115,6 +116,14 @@ export function getInitialValue(
         min: null,
         max: null,
       };
+    case "DISCLOSURE_LIST":
+      return [
+        Object.fromEntries(
+          field.fields
+            .filter(isFormFieldWithValue)
+            .map((f) => [f.name, getInitialValue(f, context)]),
+        ),
+      ];
     default:
       return field.defaultValue || undefined;
   }

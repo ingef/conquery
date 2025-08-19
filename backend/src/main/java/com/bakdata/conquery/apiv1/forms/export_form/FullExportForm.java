@@ -6,10 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-
 import javax.annotation.Nullable;
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 
 import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
@@ -24,15 +23,18 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -67,12 +69,13 @@ public class FullExportForm extends Form implements InternalForm {
 	private Range<LocalDate> dateRange = Range.all();
 
 	@NotEmpty
-	private List<CQConcept> tables = ImmutableList.of();
+	@JsonAlias("tables")
+	private List<CQConcept> concepts = ImmutableList.of();
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
-		tables.forEach(feature -> feature.visit(visitor));
+		concepts.forEach(feature -> feature.visit(visitor));
 	}
 
 
@@ -93,7 +96,7 @@ public class FullExportForm extends Form implements InternalForm {
 		final TableExportQuery exportQuery = new TableExportQuery(query);
 		exportQuery.setDateRange(getDateRange());
 
-		exportQuery.setTables(tables);
+		exportQuery.setConcepts(concepts);
 
 
 		return Map.of(
@@ -126,7 +129,8 @@ public class FullExportForm extends Form implements InternalForm {
 
 
 	@Override
-	public ManagedInternalForm<FullExportForm> toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
-		return new ManagedInternalForm<FullExportForm>(this, user, submittedDataset, storage);
+	public ManagedInternalForm<FullExportForm> toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry,
+																  ConqueryConfig config) {
+		return new ManagedInternalForm<>(this, user, submittedDataset, storage, datasetRegistry, config);
 	}
 }

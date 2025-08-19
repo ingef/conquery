@@ -139,7 +139,7 @@ const ConceptTreeNodeText = forwardRef<
                 <FaIcon
                   disabled={disabled}
                   active
-                  icon={!!isOpen ? faCaretDown : faCaretRight}
+                  icon={isOpen ? faCaretDown : faCaretRight}
                 />
               </CaretIconContainer>
               <FolderIconContainer>
@@ -154,7 +154,7 @@ const ConceptTreeNodeText = forwardRef<
           )}
           {resultCount && <ResultsNumber>{resultCount}</ResultsNumber>}
           <span>
-            {!!searchWords ? (
+            {searchWords ? (
               <Highlighter
                 searchWords={searchWords}
                 autoEscape={true}
@@ -166,7 +166,7 @@ const ConceptTreeNodeText = forwardRef<
           </span>
           {!!description && (
             <Description>
-              {!!searchWords ? (
+              {searchWords ? (
                 <Highlighter
                   searchWords={searchWords}
                   autoEscape={true}

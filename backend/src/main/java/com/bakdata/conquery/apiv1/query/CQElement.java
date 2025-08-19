@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
-
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
@@ -37,9 +36,12 @@ public abstract class CQElement implements Visitable {
 	 */
 	@Setter
 	@Getter
-	private String label = null;
+	private String label;
 
-	public String getUserOrDefaultLabel(Locale locale) {
+	/**
+	 * Get the user label for this element if provided or fall back to {@link CQElement#defaultLabel(Locale)}.
+	 */
+	public String userLabel(Locale locale) {
 		// Prefer the user label
 		if (label != null) {
 			return label;
@@ -47,37 +49,36 @@ public abstract class CQElement implements Visitable {
 		return defaultLabel(locale);
 	}
 
+	/**
+	 * Get the default label for this element usually ignoring {@link CQElement#label}.
+	 */
 	@NotNull
 	public String defaultLabel(Locale locale) {
 		// Fallback to CPSType#id() implementation is provided or class name
-		CPSType type = this.getClass().getAnnotation(CPSType.class);
+		final CPSType type = getClass().getAnnotation(CPSType.class);
 		if (type != null) {
 			return type.id();
 		}
-		return this.getClass().getSimpleName();
+		return getClass().getSimpleName();
 	}
 
 	/**
 	 * Allows a query element to initialize data structures from resources, that are only available on the {@link ManagerNode}.
 	 * The contract is:
 	 * - no data structures are allowed to be altered, that were deserialized from a request and are serialized into a permanent storage
-	 * - all initialized data structures must be annotated with {@link InternalOnly} so they only exist at runtime between and in the communication between {@link ManagerNode} and {@link ShardNode}s
-	 *
-	 * @param context
-	 * @return
+	 * - all initialized data structures must be annotated with {@link com.bakdata.conquery.io.jackson.View.InternalCommunication} so they only exist at runtime between and in the communication between {@link ManagerNode} and {@link ShardNode}s
 	 */
 	public abstract void resolve(QueryResolveContext context);
 
 	public abstract QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan);
 
-	public Set<ManagedExecutionId> collectRequiredQueries() {
-		Set<ManagedExecutionId> set = new HashSet<>();
-		this.collectRequiredQueries(set);
+	public final Set<ManagedExecutionId> collectRequiredQueries() {
+		final Set<ManagedExecutionId> set = new HashSet<>();
+		collectRequiredQueries(set);
 		return set;
 	}
 
-	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
-	}
+	public abstract void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) ;
 
 	@JsonIgnore
 	public abstract List<ResultInfo> getResultInfos();
@@ -87,6 +88,6 @@ public abstract class CQElement implements Visitable {
 	}
 
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
-		return new RequiredEntities(context.getBucketManager().getEntities().keySet());
+		return new RequiredEntities(context.getBucketManager().getEntities());
 	}
 }

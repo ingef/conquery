@@ -5,6 +5,9 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDurationSumAggregator;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.conversion.model.select.EventDurationSumSelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -25,5 +28,20 @@ public class EventDurationSumSelect extends UniversalSelect {
 		EventDurationSumSelect select = new EventDurationSumSelect();
 		select.setName(name);
 		return select;
+	}
+
+	@Override
+	public boolean isEventDateSelect() {
+		return true;
+	}
+
+	@Override
+	public SelectConverter<EventDurationSumSelect> createConverter() {
+		return new EventDurationSumSelectConverter();
+	}
+
+	@Override
+	public ResultType getResultType() {
+		return ResultType.Primitive.INTEGER;
 	}
 }

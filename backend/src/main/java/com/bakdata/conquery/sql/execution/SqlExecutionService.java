@@ -1,66 +1,87 @@
 package com.bakdata.conquery.sql.execution;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
-import com.google.common.base.Stopwatch;
-import lombok.RequiredArgsConstructor;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.conversion.model.SqlQuery;
+import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.Select;
+import org.jooq.exception.DataAccessException;
 
-@RequiredArgsConstructor
+
 @Slf4j
+@Data
 public class SqlExecutionService {
 
+	private static final int PID_COLUMN_INDEX = 1;
+	private static final int VALUES_OFFSET_INDEX = 2;
+
+	@Getter
 	private final DSLContext dslContext;
 
-	public SqlExecutionResult execute(SqlManagedQuery sqlQuery) {
-		log.info("Starting SQL execution[{}]", sqlQuery.getQueryId());
-		Stopwatch stopwatch = Stopwatch.createStarted();
-		SqlExecutionResult result = dslContext.connectionResult(connection -> this.createStatementAndExecute(sqlQuery, connection));
-		log.info("Finished SQL execution[{}] with {} results within {}", sqlQuery.getQueryId(), result.getRowCount(), stopwatch.elapsed());
+	private final ResultSetProcessor resultSetProcessor;
+
+	public SqlExecutionExecutionInfo execute(SqlQuery sqlQuery) {
+
+		final SqlExecutionExecutionInfo result = dslContext.connectionResult(connection -> createStatementAndExecute(sqlQuery, connection));
+
 		return result;
 	}
 
-	private SqlExecutionResult createStatementAndExecute(SqlManagedQuery sqlQuery, Connection connection) {
+	private SqlExecutionExecutionInfo createStatementAndExecute(SqlQuery sqlQuery, Connection connection) {
 
-		String sqlString = sqlQuery.getSqlQuery().getSqlString();
-		log.debug("Executing query: \n{}", sqlString);
+		final String sqlString = sqlQuery.getSql();
+		final List<ResultType> resultTypes = sqlQuery.getResultInfos().stream().map(ResultInfo::getType).collect(Collectors.toList());
+
+		log.info("Executing query: \n{}", sqlString);
+
 		try (Statement statement = connection.createStatement();
 			 ResultSet resultSet = statement.executeQuery(sqlString)) {
-			int columnCount = resultSet.getMetaData().getColumnCount();
-			List<String> columnNames = this.getColumnNames(resultSet, columnCount);
-			List<EntityResult> resultTable = this.createResultTable(resultSet, columnCount);
+			final int columnCount = resultSet.getMetaData().getColumnCount();
+			final List<String> columnNames = getColumnNames(resultSet, columnCount);
+			final List<EntityResult> resultTable = createResultTable(resultSet, resultTypes, columnCount);
 
-			return new SqlExecutionResult(columnNames, resultTable);
+			return new SqlExecutionExecutionInfo(ExecutionState.RUNNING, columnNames, resultTable, new CountDownLatch(1));
 		}
-		catch (SQLException e) {
+		// not all DB vendors throw SQLExceptions
+		catch (SQLException | RuntimeException e) {
 			throw new ConqueryError.SqlError(e);
 		}
 	}
 
-	private List<EntityResult> createResultTable(ResultSet resultSet, int columnCount) throws SQLException {
-		List<EntityResult> resultTable = new ArrayList<>(resultSet.getFetchSize());
-		while (resultSet.next()) {
-			Object[] resultRow = this.getResultRow(resultSet, columnCount);
-			resultTable.add(new SqlEntityResult(resultSet.getRow(), resultSet.getObject(1).toString(), resultRow));
-		}
-		return resultTable;
-	}
-
 	private List<String> getColumnNames(ResultSet resultSet, int columnCount) {
 		// JDBC ResultSet indices start with 1
-		return IntStream.rangeClosed(2, columnCount)
-						.mapToObj(columnIndex -> this.getColumnName(resultSet, columnIndex))
+		return IntStream.rangeClosed(1, columnCount)
+						.mapToObj(columnIndex -> getColumnName(resultSet, columnIndex))
 						.toList();
+	}
+
+	private List<EntityResult> createResultTable(ResultSet resultSet, List<ResultType> resultTypes, int columnCount) throws SQLException {
+		final List<EntityResult> resultTable = new ArrayList<>(resultSet.getFetchSize());
+		while (resultSet.next()) {
+			final SqlEntityResult resultRow = getResultRow(resultSet, resultTypes, columnCount);
+			resultTable.add(resultRow);
+		}
+		return resultTable;
 	}
 
 	private String getColumnName(ResultSet resultSet, int columnIndex) {
@@ -72,19 +93,45 @@ public class SqlExecutionService {
 		}
 	}
 
-	private Object[] getResultRow(ResultSet resultSet, int columnCount) {
-		// JDBC ResultSet indices start with 1 and we skip the first column because it contains the id
-		return IntStream.rangeClosed(2, columnCount)
-						.mapToObj(columnIndex -> this.getValueOfColumn(resultSet, columnIndex))
-						.toArray();
+	private SqlEntityResult getResultRow(ResultSet resultSet, List<ResultType> resultTypes, int columnCount) throws SQLException {
+
+		final String id = resultSet.getString(PID_COLUMN_INDEX);
+		final Object[] resultRow = new Object[columnCount - 1];
+
+		for (int resultSetIndex = VALUES_OFFSET_INDEX; resultSetIndex <= columnCount; resultSetIndex++) {
+			final int resultTypeIndex = resultSetIndex - VALUES_OFFSET_INDEX;
+			resultRow[resultTypeIndex] = resultTypes.get(resultTypeIndex).getFromResultSet(resultSet, resultSetIndex, resultSetProcessor);
+		}
+
+		return new SqlEntityResult(id, resultRow);
 	}
 
-	private String getValueOfColumn(ResultSet resultSet, int columnIndex) {
+	public Result<?> fetch(Select<?> query) {
+		log.debug("Executing query: \n{}", query);
 		try {
-			return resultSet.getString(columnIndex);
+			return dslContext.fetch(query);
 		}
-		catch (SQLException e) {
-			throw new ConqueryError.SqlError(e);
+		catch (DataAccessException exception) {
+			throw new ConqueryError.SqlError(exception);
+		}
+	}
+
+	/**
+	 * Executes the query and returns the results as a Stream.
+	 * <p>
+	 * Note: The returned Stream is resourceful. It must be closed by the caller, because it contains a reference to an open {@link ResultSet}
+	 * and {@link PreparedStatement}.
+	 *
+	 * @param query The query to be executed.
+	 * @return A Stream of query results.
+	 */
+	public <R extends Record> Stream<R> fetchStream(Select<R> query) {
+		log.debug("Executing query: \n{}", query);
+		try {
+			return dslContext.fetchStream(query);
+		}
+		catch (DataAccessException exception) {
+			throw new ConqueryError.SqlError(exception);
 		}
 	}
 

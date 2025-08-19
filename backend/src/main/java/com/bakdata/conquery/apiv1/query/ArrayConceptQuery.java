@@ -5,12 +5,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -20,6 +18,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.AccessLevel;
@@ -60,9 +59,6 @@ public class ArrayConceptQuery extends Query {
 	}
 
 	public ArrayConceptQuery(@NonNull List<ConceptQuery> queries, @NonNull DateAggregationMode dateAggregationMode) {
-		if (queries == null) {
-			throw new IllegalArgumentException("No sub query list provided.");
-		}
 		this.childQueries = queries;
 		this.dateAggregationMode = dateAggregationMode;
 	}
@@ -84,7 +80,7 @@ public class ArrayConceptQuery extends Query {
 	@Override
 	public ArrayConceptQueryPlan createQueryPlan(QueryPlanContext context) {
 		// Make sure the constructor and the adding is called with the same context.
-		ArrayConceptQueryPlan aq = new ArrayConceptQueryPlan(!DateAggregationMode.NONE.equals(resolvedDateAggregationMode));
+		ArrayConceptQueryPlan aq = new ArrayConceptQueryPlan(resolvedDateAggregationMode != DateAggregationMode.NONE);
 		aq.addChildQueries(childQueries, context);
 		return aq;
 	}
@@ -97,11 +93,11 @@ public class ArrayConceptQuery extends Query {
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
-		ResultInfo dateInfo = ConqueryConstants.DATES_INFO;
+		ResultInfo dateInfo = ResultHeaders.datesInfo();
 
-		if(!DateAggregationMode.NONE.equals(getResolvedDateAggregationMode())){
+		if(getResolvedDateAggregationMode() != DateAggregationMode.NONE){
 			// Add one DateInfo for the whole Query
-			resultInfos.add(0, dateInfo);
+			resultInfos.addFirst(dateInfo);
 		}
 		int lastIndex = resultInfos.size();
 
@@ -109,7 +105,8 @@ public class ArrayConceptQuery extends Query {
 
 		if(!resultInfos.isEmpty()) {
 			// Remove DateInfo from each childQuery			
-			resultInfos.subList(lastIndex, resultInfos.size()).removeAll(List.of(dateInfo));
+			resultInfos.subList(lastIndex, resultInfos.size())
+					   .removeIf(resultInfo -> resultInfo.getSemantics().contains(new SemanticType.EventDateT()));
 		}
 
 		return resultInfos;

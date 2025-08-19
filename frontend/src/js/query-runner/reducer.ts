@@ -151,22 +151,18 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
       case getType(queryResultSuccess):
         if (!queryTypeMatches(action)) return state;
 
-        const queryResult = getQueryResult(
-          action.payload.data,
-          action.payload.datasetId,
-        );
-
         return {
           ...state,
-          queryResult,
+          queryResult: getQueryResult(
+            action.payload.data,
+            action.payload.datasetId,
+          ),
           runningQuery: null,
           progress: undefined,
           queryRunning: false,
         };
       case getType(queryResultErrorAction):
         if (!queryTypeMatches(action)) return state;
-
-        const { payload } = action;
 
         return {
           ...state,
@@ -175,7 +171,7 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
           queryRunning: false,
           queryResult: {
             loading: false,
-            error: payload.error,
+            error: action.payload.error,
           },
         };
       default:

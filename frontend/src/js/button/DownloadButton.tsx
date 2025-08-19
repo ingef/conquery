@@ -4,12 +4,13 @@ import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faDownload,
   faFileArchive,
+  faFileCode,
   faFileCsv,
   faFileDownload,
   faFileExcel,
   faFilePdf,
 } from "@fortawesome/free-solid-svg-icons";
-import { ReactNode, useContext, forwardRef, useMemo } from "react";
+import { ReactNode, forwardRef, useContext, useMemo } from "react";
 
 import { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
@@ -39,6 +40,7 @@ function useFileIcon(url: string): FileIcon {
       XLSX: { icon: faFileExcel, color: theme.col.fileTypes.xlsx },
       PDF: { icon: faFilePdf, color: theme.col.fileTypes.pdf },
       CSV: { icon: faFileCsv, color: theme.col.fileTypes.csv },
+      JSON: { icon: faFileCode, color: theme.col.fileTypes.json },
     }),
     [theme],
   );
@@ -80,7 +82,7 @@ const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
 
     const href = `${resultUrl.url}?access_token=${encodeURIComponent(
       authToken,
-    )}&charset=ISO_8859_1`;
+    )}`;
 
     const { icon, color } = useFileIcon(resultUrl.url);
 

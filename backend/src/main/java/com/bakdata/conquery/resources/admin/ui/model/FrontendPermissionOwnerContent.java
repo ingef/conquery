@@ -6,6 +6,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.apache.commons.lang3.tuple.Pair;
@@ -16,7 +17,9 @@ import org.apache.commons.lang3.tuple.Pair;
 @Getter
 @SuperBuilder
 public class FrontendPermissionOwnerContent<OWNER extends PermissionOwner<?>> {
-	private OWNER owner;
+	private String label;
+	private Id<?, ?> id;
+	private boolean resolvable;
 
 	/**
 	 * Holds the owned permission objects and its JSON representation.
@@ -25,9 +28,9 @@ public class FrontendPermissionOwnerContent<OWNER extends PermissionOwner<?>> {
 
 
 	/**
-	 *  Holds possible permission types, their abilities and targets that can be used for the creation of a permission.
+	 * Holds possible permission types, their abilities and targets that can be used for the creation of a permission.
 	 */
-	private Map<String, Pair<Set<Ability>,List<Object>>> permissionTemplateMap;
-	
-	
+	private Map<String, Pair<Set<Ability>, List<Object>>> permissionTemplateMap;
+
+
 }

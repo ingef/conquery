@@ -1,42 +1,49 @@
 package com.bakdata.conquery.io.storage;
 
-import java.io.IOException;
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 
-public interface Store<KEY, VALUE> {
+public interface Store<KEY, VALUE> extends ManagedStore {
 
-	public void add(KEY key, VALUE value);
+	/**
+	 * Adds a value to the store, if the key was not present.
+	 * @return True if the value was added
+	 */
+	boolean add(KEY key, VALUE value);
 
-	public VALUE get(KEY key);
+	VALUE get(KEY key);
 
-	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer);
+	/**
+	 * Iterate over all key-value pairs in the store.
+	 * @param consumer Key-value consumer.
+	 * @implSpec    The consumer must be thread-safe
+	 */
+	IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer);
 
 	// TODO: 08.01.2020 fk: Is this still necessary? The implementation in XodusStore uses different methods that in our context don't act differently.
-	public void update(KEY key, VALUE value);
-	
-	public void remove(KEY key);
+	boolean update(KEY key, VALUE value);
 
-	public void fillCache();
-	
-	public int count();
+	boolean remove(KEY key);
 
-	public Collection<VALUE> getAll();
+	boolean hasKey(KEY key);
 
-	public Collection<KEY> getAllKeys();
+	int count();
 
-    /**
-	 * Consumer of key-value pairs stored in this Store. Used in conjunction with for-each.
-	 */
-	@FunctionalInterface
-	public interface StoreEntryConsumer<KEY, VALUE> {
-		public void accept(KEY key, VALUE value, long size);
-	}
+	Stream<VALUE> getAll();
+
+	Stream<KEY> getAllKeys();
 
 	void clear();
 
-	void deleteStore();
+	String getName();
 
-	void close() throws IOException;
+	/**
+	 * Consumer of key-value pairs stored in this Store. Used in conjunction with for-each.
+	 */
+	@FunctionalInterface
+	interface StoreEntryConsumer<KEY, VALUE> {
+		void accept(KEY key, VALUE value, long size);
+	}
+
 }

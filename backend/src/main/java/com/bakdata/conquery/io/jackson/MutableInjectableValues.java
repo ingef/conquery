@@ -11,10 +11,11 @@ import com.fasterxml.jackson.databind.util.ClassUtil;
 public class MutableInjectableValues extends InjectableValues {
 
 	private final ConcurrentHashMap<String, Object> values = new ConcurrentHashMap<>();
-	
-	public <T> MutableInjectableValues add(Class<T> type, T value) {
-		if(!type.isInstance(value)) {
-			throw new IllegalArgumentException(value+" is not of type "+type);
+
+
+	public <T> MutableInjectableValues add(Class<? extends T> type, T value) {
+		if (!type.isInstance(value)) {
+			throw new IllegalArgumentException("%s is not of type %s".formatted(value, type));
 		}
 		values.put(type.getName(), value);
 		return this;
@@ -22,19 +23,20 @@ public class MutableInjectableValues extends InjectableValues {
 
 	@Override
 	public Object findInjectableValue(Object valueId, DeserializationContext ctxt, BeanProperty forProperty, Object beanInstance) throws JsonMappingException {
-		if(valueId instanceof Class) {
-			return findInjectableValue(((Class) valueId).getName(), ctxt, forProperty, beanInstance);
+		if (valueId instanceof Class<?> clazz) {
+			return findInjectableValue(clazz.getName(), ctxt, forProperty, beanInstance);
 		}
-		if (!(valueId instanceof String)) {
-			ctxt.reportBadDefinition(ClassUtil.classOf(valueId),
-					String.format(
-							"Unrecognized inject value id type (%s), expecting String or Class",
-							ClassUtil.classNameOf(valueId)
-					)
-			);
+		else if (valueId instanceof String key) {
+			return values.get(key);
 		}
-		String key = (String) valueId;
-		return values.get(key);
+		ctxt.reportBadDefinition(ClassUtil.classOf(valueId),
+								 String.format(
+										 "Unrecognized inject value id type (%s), expecting String or Class",
+										 ClassUtil.classNameOf(valueId)
+								 )
+		);
+
+		return null; // Not reached
 	}
 
 	public MutableInjectableValues copy() {

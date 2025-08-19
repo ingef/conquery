@@ -6,7 +6,7 @@
 		<div class="form-group">
 			<label for="group_id">Group:</label>
 			<select class="form-control" id="group_id" name="group_id">
-				<#list c.availableGroups as group>
+				<#list c.availableGroups?sort_by("label") as group>
 					<option value="${group.id}">${group.label} - ${group.id}</option>
 				</#list>
 			</select>
@@ -30,7 +30,7 @@
 					<td><a href="/admin-ui/groups/${group.id}">${group.label}</a></td>
 					<td><a href="/admin-ui/groups/${group.id}">${group.id}</a></td>
 					<td><a href="#"
-							onclick="removeGroup('${adminPathBase}/${group.id}/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${c.owner.id}')">Remove
+							onclick="removeGroup('${adminPathBase}/${group.id}/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${c.id}')">Remove
 							from Entity <i class="fas fa-trash-alt text-danger"></i></a></td>
 				</tr>
 			</#list>
@@ -40,22 +40,19 @@
 	<script type="application/javascript">
 		function addGroup() {
 			event.preventDefault();
-			fetch(
-				'${adminPathBase}/' + document.getElementById('group_id').value + '/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${c.owner.id}',
+			rest(
+				'${adminPathBase}/' + document.getElementById('group_id').value + '/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${c.id}',
 				{
 					method: 'post',
-					credentials: 'same-origin',
-					headers: { 'Content-Type': 'application/json' }
 				}).then(function () { location.reload() });
 		}
 
 		function removeGroup(path) {
 			event.preventDefault();
-			fetch(
+			rest(
 				path,
 				{
 					method: 'delete',
-					credentials: 'same-origin'
 				})
 				.then(function () { location.reload(); });
 		}
