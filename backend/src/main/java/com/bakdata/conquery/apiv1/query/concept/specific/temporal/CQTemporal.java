@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -88,29 +87,23 @@ public class CQTemporal extends CQElement {
 	@Override
 	public final QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 
-		final ConceptQueryPlan indexSubPlan = createIndexPlan(context, plan);
+		final ConceptQueryPlan indexSubPlan = createIndexPlan(getIndexQuery(), context, plan);
 		// These aggregators will be fed with the actual aggregation results of the sub results
 		final List<ConstantValueAggregator<List>> shimAggregators = createShimAggregators();
 
 		shimAggregators.forEach(plan::registerAggregator);
 
 		final TemporalSubQueryPlan subQuery =
-				new TemporalSubQueryPlan(getIndexSelector(), getMode(), getCompareSelector(), compare, context, indexSubPlan,
+				new TemporalSubQueryPlan(getIndexSelector(), getMode(), getCompareSelector(), getCompareQuery(), context, indexSubPlan,
 										 shimAggregators.stream().map(ConstantValueAggregator::getValue).collect(Collectors.toList())
 				);
 
 		return new TimeBasedQueryNode(context.getStorage().getDataset().getAllIdsTable(), subQuery);
 	}
 
-	@Override
-	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
-		index.collectRequiredQueries(requiredQueries);
-		compare.collectRequiredQueries(requiredQueries);
-	}
-
-	private ConceptQueryPlan createIndexPlan(QueryPlanContext context, ConceptQueryPlan plan) {
+	private ConceptQueryPlan createIndexPlan(CQElement indexQuery, QueryPlanContext context, ConceptQueryPlan plan) {
 		final ConceptQueryPlan indexSubPlan = new ConceptQueryPlan(true);
-		final QPNode indexNode = index.createQueryPlan(context, plan);
+		final QPNode indexNode = indexQuery.createQueryPlan(context, plan);
 
 		indexSubPlan.getDateAggregator().registerAll(indexNode.getDateAggregators());
 		indexSubPlan.setChild(indexNode);
@@ -123,6 +116,36 @@ public class CQTemporal extends CQElement {
 					  .stream()
 					  .map(info -> new ConstantValueAggregator<List>(new ArrayList<>(), new ResultType.ListT(info.getType())))
 					  .toList();
+	}
+
+	/**
+	 * Makes it such that Before is just a special case of After, reducing code and testing requirements.
+	 */
+	private CQElement getCompareQuery() {
+		return switch(mode) {
+			case Mode.Before ignored -> index;
+
+			case Mode.After ignored -> compare;
+			case Mode.While ignored -> compare;
+		};
+	}
+
+	/**
+	 * Makes it such that Before is just a special case of After, reducing code and testing requirements.
+	 */
+	private CQElement getIndexQuery() {
+		return switch(mode) {
+			case Mode.Before ignored -> compare;
+
+			case Mode.After ignored -> index;
+			case Mode.While ignored -> index;
+		};
+	}
+
+	@Override
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+		index.collectRequiredQueries(requiredQueries);
+		compare.collectRequiredQueries(requiredQueries);
 	}
 
 	@Override
@@ -223,65 +246,26 @@ public class CQTemporal extends CQElement {
 
 	@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 	@CPSBase
-	public interface Mode {
+	public sealed interface Mode permits Mode.After, Mode.While {
+
 		CDateRange[] convert(CDateRange[] in, ToIntFunction<CDateRange> daySelector, Selector selector);
 
 		@CPSType(id = "BEFORE", base = Mode.class)
-		@Data
-		@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
-		class Before implements Mode {
+		final
+		class Before extends After {
 
-			@NotNull
-			private final Range.IntegerRange days;
-
-			public CDateRange[] convert(CDateRange[] parts, ToIntFunction<CDateRange> daySelector, Selector selector) {
-
-				final Optional<CDateRange> maybeFirst = switch (selector) {
-					case ANY ->
-						// Before ANY is equal to before the latest
-							Arrays.stream(parts).filter(CDateRange::hasLowerBound).max(Comparator.comparingInt(daySelector));
-					case ALL, EARLIEST, LATEST ->
-						// The other cases are either strictly (ALL) or incidentally (EARLIEST, LATEST) the first value
-							Arrays.stream(parts).filter(CDateRange::hasLowerBound).min(Comparator.comparingInt(daySelector));
-				};
-
-				if (maybeFirst.isEmpty()) {
-					return new CDateRange[0];
-				}
-
-				final CDateRange first = maybeFirst.get();
-				final int min = daySelector.applyAsInt(first);
-
-				if (days == null) {
-					// return the first value
-					return new CDateRange[]{first};
-				}
-
-				if (days.isAll()) {
-					return new CDateRange[0]; // all
-
-				}
-
-				if (!days.isOpen()) {
-					return new CDateRange[]{CDateRange.of(min - days.getMax(), min - days.getMin())};
-				}
-
-				if (days.isAtLeast()) {
-					return new CDateRange[]{CDateRange.atMost(min - days.getMin())};
-				}
-
-				if (days.isAtMost()) {
-					return new CDateRange[]{CDateRange.atLeast(min - days.getMax())};
-				}
-
-				throw new IllegalStateException("Unreachable");
+			@JsonCreator
+			public Before(Range.IntegerRange days) {
+				super(days);
 			}
+
+
 		}
 
 		@CPSType(id = "AFTER", base = Mode.class)
 		@Data
 		@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
-		class After implements Mode {
+		sealed class After implements Mode permits Mode.Before {
 
 			@NotNull
 			private final Range.IntegerRange days;
@@ -333,7 +317,7 @@ public class CQTemporal extends CQElement {
 
 		@CPSType(id = "WHILE", base = Mode.class)
 		@Data
-		class While implements Mode {
+		final class While implements Mode {
 
 			public CDateRange[] convert(CDateRange[] in, ToIntFunction<CDateRange> ignored, Selector selector) {
 				return in;
