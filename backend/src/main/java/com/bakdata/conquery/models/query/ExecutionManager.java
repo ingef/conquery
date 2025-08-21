@@ -43,44 +43,49 @@ public abstract class ExecutionManager {
 	private final DatasetRegistry<?> datasetRegistry;
 	private final ConqueryConfig config;
 
-	@Getter(AccessLevel.NONE)
-	private final Cache<ManagedExecutionId, ExecutionInfo> executionInfosL2;
+	/**
+	 * Implements a rudimentary L1/L2 caching scheme:
+	 * * L2 is expected to be softValues, to be vacuumed up by the GC.
+	 * * L1 should be optimally be hard cache, with timeout characteristics.
+	 * <br />
+	 * This ensures, new {@link ExecutionInfo} stay in memory for a certain duration, after which they are left to the GC.
+	 * <br />
+	 * One risk to note is, that too many large {@link ExecutionInfo} may overwhelm the manager, but that's a pretty unlikely scenario and more likely caused my faulty or malicious clients. If we want to avoid this, L1 spec should probably limit the number of executions.
+	 */
 	@Getter(AccessLevel.NONE)
 	private final Cache<ManagedExecutionId, ExecutionInfo> executionInfosL1;
+	@Getter(AccessLevel.NONE)
+	private final Cache<ManagedExecutionId, ExecutionInfo> executionInfosL2;
 
 	public ExecutionManager(MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
 		this.storage = storage;
 		this.datasetRegistry = datasetRegistry;
 		this.config = config;
 
-		executionInfosL2 = Caffeine.from(config.getQueries().getL2CacheSpec())
-								   .removalListener(this::evictionSoft)
-								   .build();
-		executionInfosL1 = Caffeine.from(config.getQueries().getL1CacheSpec())
-								   .removalListener(this::evictionHard)
-								   .build();
+		executionInfosL2 = Caffeine.from(config.getQueries().getL2CacheSpec()).removalListener(this::evictionL2).build();
+		executionInfosL1 = Caffeine.from(config.getQueries().getL1CacheSpec()).removalListener(this::evictionL1).build();
 	}
 
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
 	 */
-	private void evictionSoft(ManagedExecutionId executionId, ExecutionInfo resultInfo, RemovalCause cause) {
+	private void evictionL2(ManagedExecutionId executionId, ExecutionInfo resultInfo, RemovalCause cause) {
 
 		// If removal was done manually we assume it was also handled properly
 		if (!cause.wasEvicted()) {
 			return;
 		}
 
-		log.trace("Evicted Query[{}] results from soft cache (Reason: {})", executionId, cause);
+		log.trace("Evicted Query[{}] results from L2 cache (Reason: {})", executionId, cause);
 	}
 
-	private void evictionHard(ManagedExecutionId executionId, ExecutionInfo resultInfo, RemovalCause cause) {
+	private void evictionL1(ManagedExecutionId executionId, ExecutionInfo resultInfo, RemovalCause cause) {
 		// If removal was done manually we assume it was also handled properly
 		if (!cause.wasEvicted()) {
 			return;
 		}
 
-		log.trace("Evicted Query[{}] results from hard cache (Reason: {})", executionId, cause);
+		log.trace("Evicted Query[{}] results from L1 cache (Reason: {})", executionId, cause);
 	}
 
 	public ManagedExecution getExecution(ManagedExecutionId execution) {
@@ -106,7 +111,7 @@ public abstract class ExecutionManager {
 	}
 
 	public <R extends ExecutionInfo> Optional<R> tryGetExecutionInfo(ManagedExecutionId id) {
-		// Access hard before soft, to keep things "touched"
+		// Access L1 before L2, to keep things "touched"
 		ExecutionInfo maybeInfo = executionInfosL1.getIfPresent(id);
 
 		if (maybeInfo != null) {

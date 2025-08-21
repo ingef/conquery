@@ -25,10 +25,17 @@ public class QueryConfig {
 	 */
 	private int secondaryIdSubPlanRetention = 15;
 
-	@ValidCaffeineSpec(softValue=true)
-	private String L2CacheSpec = "softValues";
+
+	/**
+	 * See {@link com.bakdata.conquery.models.query.ExecutionManager#executionInfosL1} for an explanation
+	 */
 	@ValidCaffeineSpec
 	private String L1CacheSpec = "expireAfterAccess=10m";
 
+	/**
+	 * See {@link com.bakdata.conquery.models.query.ExecutionManager#executionInfosL1} for an explanation
+	 */
+	@ValidCaffeineSpec(softValue=true)
+	private String L2CacheSpec = "softValues";
 
 }
