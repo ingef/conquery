@@ -1,5 +1,7 @@
 pid,datum,value,description
-0,2011-01-01,index,only compare
+0,2011-01-01,index,only index
+
+01,2011-01-01,compare,only compare
 
 1,2011-01-01,index,compare 5 days after index
 1,2011-01-06,compare
@@ -10,7 +12,6 @@ pid,datum,value,description
 3,2011-01-01,index,compare 8 and 9 days after index
 3,2011-01-09,compare
 3,2011-01-10,compare
-
 
 3,2011-01-01,compare,compare 9 before after index
 3,2011-01-10,index
@@ -28,6 +29,13 @@ pid,datum,value,description
 7,2011-01-01,compare,compare 9 days before index
 7,2011-01-10,index
 
+8,2011-01-01,index,compare same day as index
+8,2011-01-01,compare
+
+9,2011-01-01,index,compare 5 days after index
+9,2011-01-06,compare
+9,2011-01-11,index,compare 5 days before index
+
 10,2011-01-01,index,compare 6 days after index
 10,2011-01-02,index,compare 5 days after index
 10,2011-01-07,compare
@@ -36,9 +44,32 @@ pid,datum,value,description
 11,2011-01-03,index,compare 4 days after index
 11,2011-01-07,compare
 
-
 12,2011-01-01,index,compare 5 days after index
 12,2011-01-06,compare
 12,2011-01-11,index,compare 5 days after index
 12,2011-01-16,compare
+
+
+20,2011-01-01/2011-01-10,index,compare on first day of index
+20,2011-01-01,compare
+
+21,2011-01-01/2011-01-10,index,compare on last day of index
+21,2011-01-10,compare
+
+22,2011-01-01/2011-01-10,index,compare intersects with index
+22,2011-01-09/2011-01-15,compare
+
+23,2011-01-01/2011-01-10,index,compare just adjacent to index
+23,2011-01-11/2011-01-15,compare
+
+24,2011-01-01/2011-01-10,index,some compare in index
+24,2011-01-05,compare
+24,2011-01-11,compare
+
+25,2011-01-01/2011-01-10,index,some compare in some index
+25,2011-01-05,compare
+25,2011-01-06,compare
+25,2011-01-20/2011-01-30,index,
+25,2011-01-21,compare
+
 
