@@ -73,7 +73,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/TEMPORAL_COVERAGE/content.csv",
+        "csv": "tests/query/TEMPORAL_COVERAGE/WHILE/ANY_EARLIEST/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",
