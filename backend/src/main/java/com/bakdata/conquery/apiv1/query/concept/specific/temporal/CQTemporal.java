@@ -2,14 +2,13 @@ package com.bakdata.conquery.apiv1.query.concept.specific.temporal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
+import javax.annotation.CheckForNull;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -79,9 +78,7 @@ public class CQTemporal extends CQElement {
 	@Valid
 	private final Mode mode;
 	private final Selector indexSelector;
-
 	private final Selector compareSelector;
-
 	private final CQElement compare;
 
 	@Override
@@ -101,13 +98,26 @@ public class CQTemporal extends CQElement {
 		return new TimeBasedQueryNode(context.getStorage().getDataset().getAllIdsTable(), subQuery);
 	}
 
-	private ConceptQueryPlan createIndexPlan(CQElement indexQuery, QueryPlanContext context, ConceptQueryPlan plan) {
-		final ConceptQueryPlan indexSubPlan = new ConceptQueryPlan(true);
-		final QPNode indexNode = indexQuery.createQueryPlan(context, plan);
 
-		indexSubPlan.getDateAggregator().registerAll(indexNode.getDateAggregators());
-		indexSubPlan.setChild(indexNode);
-		return indexSubPlan;
+	private ConceptQueryPlan createIndexPlan(CQElement query, QueryPlanContext context, ConceptQueryPlan plan) {
+		final ConceptQueryPlan subPlan = new ConceptQueryPlan(true);
+		final QPNode indexNode = query.createQueryPlan(context, plan);
+
+		subPlan.getDateAggregator().registerAll(indexNode.getDateAggregators());
+		subPlan.setChild(indexNode);
+		return subPlan;
+	}
+
+	/**
+	 * Makes it such that Before is just a special case of After, reducing code and testing requirements.
+	 */
+	private CQElement getIndexQuery() {
+		return switch (mode) {
+			case Mode.Before ignored -> compare;
+
+			case Mode.After ignored -> index;
+			case Mode.While ignored -> index;
+		};
 	}
 
 	private List<ConstantValueAggregator<List>> createShimAggregators() {
@@ -122,23 +132,11 @@ public class CQTemporal extends CQElement {
 	 * Makes it such that Before is just a special case of After, reducing code and testing requirements.
 	 */
 	private CQElement getCompareQuery() {
-		return switch(mode) {
+		return switch (mode) {
 			case Mode.Before ignored -> index;
 
 			case Mode.After ignored -> compare;
 			case Mode.While ignored -> compare;
-		};
-	}
-
-	/**
-	 * Makes it such that Before is just a special case of After, reducing code and testing requirements.
-	 */
-	private CQElement getIndexQuery() {
-		return switch(mode) {
-			case Mode.Before ignored -> compare;
-
-			case Mode.After ignored -> index;
-			case Mode.While ignored -> index;
 		};
 	}
 
@@ -248,7 +246,7 @@ public class CQTemporal extends CQElement {
 	@CPSBase
 	public sealed interface Mode permits Mode.After, Mode.While {
 
-		CDateRange[] convert(CDateRange[] in, ToIntFunction<CDateRange> daySelector, Selector selector);
+		CDateRange[] convert(CDateRange[] in, Selector selector);
 
 		@CPSType(id = "BEFORE", base = Mode.class)
 		final
@@ -270,47 +268,45 @@ public class CQTemporal extends CQElement {
 			@NotNull
 			private final Range.IntegerRange days;
 
-			public CDateRange[] convert(CDateRange[] parts, ToIntFunction<CDateRange> daySelector, Selector selector) {
-				final Optional<CDateRange> maybeLast = switch (selector) {
-					case ANY ->
-						// After ANY is equal to after the first
-							Arrays.stream(parts).filter(CDateRange::hasLowerBound).min(Comparator.comparingInt(daySelector));
-					case ALL, EARLIEST, LATEST ->
-						// The other cases are either strictly (ALL) or incidentally (EARLIEST, LATEST) the last value
-							Arrays.stream(parts).filter(CDateRange::hasLowerBound).max(Comparator.comparingInt(daySelector));
+			public CDateRange[] convert(CDateRange[] parts, Selector selector) {
+
+				//TODO if any doesn't have lower bound and is earliest return empty
+				//TODO if any doesn't have upper bound and is latest return empty
+
+				final OptionalInt maybeIndexDay = switch (selector) {
+					case EARLIEST, ANY -> Arrays.stream(parts)
+												.filter(CDateRange::hasLowerBound)
+												.mapToInt(CDateRange::getMinValue)
+												.min();
+
+					case LATEST, ALL -> Arrays.stream(parts)
+											  .filter(CDateRange::hasUpperBound)
+											  .mapToInt(CDateRange::getMaxValue)
+											  .max();
 				};
 
-				if (maybeLast.isEmpty()) {
+				if (maybeIndexDay.isEmpty()) {
 					return new CDateRange[0];
 				}
 
-				CDateRange last = maybeLast.get();
+				int indexDay = maybeIndexDay.getAsInt();
 
-				if (days == null) {
-					// return the last value
-					return new CDateRange[]{last};
+				if (days == null || days.isAll()) {
+					return new CDateRange[]{CDateRange.atLeast(indexDay)};
 				}
 
-				if (days.isAll()) {
-					return new CDateRange[0]; // all
+				if (days.isOpen()) {
+					if (days.isAtLeast()) {
+						return new CDateRange[]{CDateRange.atLeast(indexDay + days.getMin())};
+					}
 
+					if (days.isAtMost()) {
+						return new CDateRange[]{CDateRange.of(indexDay, indexDay + days.getMax())};
+					}
 				}
 
-				final int max = daySelector.applyAsInt(last);
+				return new CDateRange[]{CDateRange.of(indexDay + days.getMin(), indexDay + days.getMax())};
 
-				if (!days.isOpen()) {
-					return new CDateRange[]{CDateRange.of(max + days.getMin(), max + days.getMax())};
-				}
-
-				if (days.isAtMost()) {
-					return new CDateRange[]{CDateRange.atLeast(max + days.getMin())};
-				}
-
-				if (days.isAtLeast()) {
-					return new CDateRange[]{CDateRange.atMost(max + days.getMax())};
-				}
-
-				throw new IllegalStateException("Unreachable");
 			}
 
 		}
@@ -319,7 +315,7 @@ public class CQTemporal extends CQElement {
 		@Data
 		final class While implements Mode {
 
-			public CDateRange[] convert(CDateRange[] in, ToIntFunction<CDateRange> ignored, Selector selector) {
+			public CDateRange[] convert(CDateRange[] in, Selector selector) {
 				return in;
 			}
 		}

@@ -41,6 +41,7 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
@@ -178,20 +179,18 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 
-		final List<Aggregator<?>> conceptAggregators = createAggregators(plan, selects);
+		final List<Aggregator<?>> conceptAggregators = createAggregators(plan, selects, context);
 
 		final List<QPNode> tableNodes = new ArrayList<>();
 		for (CQTable table : tables) {
 
-			final List<FilterNode<?>> filters = table.getFilters().stream()
-													 .map(FilterValue::createNode)
-													 .collect(Collectors.toList());
+			final List<FilterNode<?>> filters = createFilters(table, context);
 
 			//add filter to children
 
 			final List<Aggregator<?>> aggregators = new ArrayList<>(conceptAggregators);
 
-			final List<Aggregator<?>> connectorAggregators = createAggregators(plan, table.getSelects());
+			final List<Aggregator<?>> connectorAggregators = createAggregators(plan, table.getSelects(), context);
 
 			// Exists aggregators hold a reference to their parent FiltersNode, so they need to be treated separately.
 			// They also don't need aggregation as they simply imitate their reference.
@@ -254,12 +253,23 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	 * Generates Aggregators from Selects. These are collected and also appended to the list of aggregators in the
 	 * query plan that contribute to columns the result.
 	 */
-	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId> selects) {
+	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId> selects, QueryPlanContext context) {
+		if (context.isDisableAggregators()) {
+			return Collections.emptyList();
+		}
+
 		return selects.stream()
 					  .map(SelectId::resolve)
 					  .map(Select::createAggregator)
 					  .peek(plan::registerAggregator)
 					  .collect(Collectors.toList());
+	}
+
+	private static List<FilterNode<?>> createFilters(CQTable table, QueryPlanContext context) {
+		return table.getFilters().stream()
+					.map(FilterValue::createNode)
+					.filter(filterNode -> !(context.isDisableAggregationFilters() && filterNode instanceof AggregationResultFilterNode))
+					.collect(Collectors.toList());
 	}
 
 	private ValidityDate selectValidityDate(CQTable table) {
