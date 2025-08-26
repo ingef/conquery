@@ -181,6 +181,7 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 	}
 
 	public void registerValuesRaw(Collection<String> values) {
+		// Convert values and prepare chunks
 		values.stream()
 			   .filter(Objects::nonNull)
 			   .filter(Predicate.not(String::isBlank))
@@ -210,6 +211,7 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 			log.trace("BEGIN registering {} values to {} for {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable);
 			solrClient.addBeans(solrFrontendValues); // do not commit yet
 			log.trace("DONE registering {} values to {} for {} in {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable, stopwatch);
+
 		}
 		catch (SolrServerException | IOException e) {
 			clientError = e;

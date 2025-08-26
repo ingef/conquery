@@ -378,7 +378,9 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		Stopwatch stopwatch = Stopwatch.createStarted();
 		log.info("BEGIN explicit commit to core/collection {}", solrIndexClient.getDefaultCollection());
 		solrIndexClient.commit();
-		log.info("DONE explicit commit to core/collection {} in {}", solrIndexClient.getDefaultCollection(), stopwatch);
+		// Depending on the collection size optimize takes a long time, longer than our client timeout, so we don't wait here.
+		solrIndexClient.optimize(false, false);
+		log.info("DONE explicit commit to core/collection (optimize might still be pending) {} in {}", solrIndexClient.getDefaultCollection(), stopwatch);
 
 	}
 

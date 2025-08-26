@@ -401,8 +401,8 @@ public class SolrFilterValueTest {
 
 		SolrClient client = solrConfig.createSearchClient(DATASET_ID.toString());
 
-		// The twin value in the mapping should have been skipped (at multiple points IndexService, SolrSearch, ...) and not be indexed
-		SolrQuery query = new SolrQuery("twin");
+		// The duplicate value in the mapping should have been skipped (at multiple points IndexService, SolrSearch, ...) and not be indexed
+		SolrQuery query = new SolrQuery("duplicate");
 
 		QueryResponse response = client.query(query);
 
