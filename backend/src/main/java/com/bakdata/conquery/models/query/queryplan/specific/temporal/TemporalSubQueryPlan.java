@@ -67,16 +67,17 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 		// I use arrays here as they are much easier to keep aligned and their size is known ahead of time
 		final CDateRange[] periods = indexSelector.sample(indexSubPlan.getDateAggregator().createAggregationResult());
 
-		final CDateRange[] convertedPeriods = indexMode.convert(periods, CDateRange::getMinValue, indexSelector);
-		final boolean[] results = new boolean[convertedPeriods.length];
+		final CDateRange[] indexPeriods = indexMode.convert(periods, CDateRange::getMinValue, indexSelector);
+		final boolean[] results = new boolean[indexPeriods.length];
 
-		log.trace("Querying {} for {} => {}", entity, periods, convertedPeriods);
+		log.trace("Querying {} for {} => {}", entity, periods, indexPeriods);
 
 		// First execute sub-query with index's sub-period
 		// to extract compares sub-periods which are then used to evaluate compare for aggregation/inclusion.
-		for (int current = 0; current < convertedPeriods.length; current++) {
-			final CDateRange indexPeriod = convertedPeriods[current];
+		for (int current = 0; current < indexPeriods.length; current++) {
+			final CDateRange indexPeriod = indexPeriods[current];
 
+			//TODO FK: this should not execute with AggregationFilters i think
 			final Optional<CDateSet> resultDate = evaluateCompareQuery(ctx, entity, indexPeriod)
 					.map(cqp -> cqp.getDateAggregator().createAggregationResult());
 
