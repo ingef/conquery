@@ -1,5 +1,7 @@
 package com.bakdata.conquery.util.search.internal;
 
+import static com.bakdata.conquery.util.io.LogUtil.passExceptionOnTrace;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -102,7 +104,7 @@ public class InternalFilterSearch implements SearchProcessor {
 	/**
 	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
 	 */
-	public final List<Search<FrontendValue>> getSearchesFor(SelectFilter<?> searchable) {
+	public final List<TrieSearch<FrontendValue>> getSearchesFor(SelectFilter<?> searchable) {
 		final List<? extends Searchable> references = searchable.getSearchReferences();
 
 		if (log.isTraceEnabled()) {
@@ -112,7 +114,6 @@ public class InternalFilterSearch implements SearchProcessor {
 		return references.stream()
 						 .map(searchCache::get)
 						 .filter(Objects::nonNull)
-						 .<Search<FrontendValue>>map(Search.class::cast)
 						 .toList();
 	}
 
@@ -127,9 +128,9 @@ public class InternalFilterSearch implements SearchProcessor {
 		See: https://stackoverflow.com/questions/61114380/java-streams-buffering-huge-streams
 		 */
 
-		final List<Search<FrontendValue>> searchList = getSearchesFor(searchable);
+		final List<TrieSearch<FrontendValue>> searchList = getSearchesFor(searchable);
 
-		final Iterator<FrontendValue> searches = Iterators.concat(Iterators.transform(searchList.iterator(), Search::iterator));
+		final Iterator<FrontendValue> searches = Iterators.concat(Iterators.transform(searchList.iterator(), TrieSearch::iterator));
 		final Iterator<FrontendValue> iterators =
 				Iterators.concat(
 						 // We are always leading with the empty value.
@@ -147,7 +148,7 @@ public class InternalFilterSearch implements SearchProcessor {
 		return totals.computeIfAbsent(filter, (f) -> {
 			HashSet<FrontendValue> count = new HashSet<>();
 
-			for (Search<FrontendValue> search : getSearchesFor(filter)) {
+			for (TrieSearch<FrontendValue> search : getSearchesFor(filter)) {
 				search.iterator().forEachRemaining(count::add);
 			}
 
@@ -199,13 +200,13 @@ public class InternalFilterSearch implements SearchProcessor {
 	 * Is used by the search cache to load missing items
 	 */
 	public List<FrontendValue> topItems(SelectFilter<?> searchable, String text) {
-		List<Search<FrontendValue>> searches = getSearchesFor(searchable);
+		List<TrieSearch<FrontendValue>> searches = getSearchesFor(searchable);
 
 		final Object2LongMap<FrontendValue> overlayedWeights = new Object2LongOpenHashMap<>();
 
-		for (Search<FrontendValue> search : searches) {
+		for (TrieSearch<FrontendValue> search : searches) {
 
-			final Object2LongMap<FrontendValue> itemWeights = ((TrieSearch<FrontendValue>)search).collectWeights(List.of(text));
+			final Object2LongMap<FrontendValue> itemWeights = search.collectWeights(List.of(text));
 
 			itemWeights.forEach(overlayedWeights::putIfAbsent);
 		}
@@ -338,7 +339,7 @@ public class InternalFilterSearch implements SearchProcessor {
 			return new ConceptsProcessor.AutoCompleteResult(fullResult.subList(startIncl, Math.min(fullResult.size(), endExcl)), fullResult.size());
 		}
 		catch (ExecutionException e) {
-			log.warn("Failed to search for \"{}\".", maybeText, (Exception) (log.isTraceEnabled() ? e : null));
+			log.warn("Failed to search for \"{}\".", maybeText, passExceptionOnTrace(log,e));
 			return new ConceptsProcessor.AutoCompleteResult(Collections.emptyList(), 0);
 		}
 	}

@@ -3,7 +3,6 @@ package com.bakdata.conquery.util.search.solr;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
@@ -14,7 +13,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Predicate;
 
+import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.models.datasets.concepts.Searchable;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
+import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.messages.namespaces.specific.RegisterColumnValues;
 import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
@@ -29,7 +32,10 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 
 
 /**
- * Helper class to index {@link com.bakdata.conquery.apiv1.query.concept.filter.FilterValue}s
+ * Helper class to index {@link com.bakdata.conquery.apiv1.query.concept.filter.FilterValue}s in Solr.
+ *
+ * @implNote we implement {@link Search} because we use the {@link com.bakdata.conquery.models.index.IndexService} to parse and index external mappings from
+ * {@link FilterTemplate}s.
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -113,16 +119,15 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 		}
 	}
 
+	/**
+	 * @implNote This is not used, because this indexer only imports data and is not used by a {@link InternToExternMapper} to retrieve
+	 * the data. Data retrieval is done by {@link FilterValueSearch} which combines multiple {@link Searchable}s of a
+	 * {@link Filter}.
+	 */
 	@Override
 	public List<FrontendValue> findExact(String searchTerm, int maxValue) {
 		throw new UnsupportedOperationException("Must not be used. Use " + FilterValueSearch.class);
 	}
-
-	@Override
-	public Iterator<FrontendValue> iterator() {
-		throw new UnsupportedOperationException("Must not be used. Use " + FilterValueSearch.class);
-	}
-
 	@Override
 	public void addItem(FrontendValue feValue, List<String> _keywords) {
 

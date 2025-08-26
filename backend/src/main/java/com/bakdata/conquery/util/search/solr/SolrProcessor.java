@@ -329,6 +329,11 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		log.trace("DONE commit for {} in {}", id, timer);
 	}
 
+	/**
+	 * @implNote We use the {@link com.bakdata.conquery.models.index.IndexService} here because it can efficiently and asynchronously parse the CSVs referenced by the template.
+	 * The resulting {@link com.bakdata.conquery.models.index.Index} is not used by a {@link com.bakdata.conquery.models.index.InternToExternMapper}. That's why
+	 * {@link FilterValueIndexer} does not implement {@link Search#findExact(String, int)}
+	 */
 	private void indexFilterTemplate(Searchable searchable, FilterTemplate temp) {
 		final URI resolvedURI = temp.getResolvedUri();
 		log.trace("Resolved filter template reference url for search '{}': {}", temp.getId(), resolvedURI);

@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.config.search.solr.FilterValueConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
@@ -38,7 +39,8 @@ import org.apache.solr.common.SolrDocument;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Helper class to abstract/capsule the searchables of the filter away
+ * Helper class to abstract/capsule the {@link Searchable}s of the filter away.
+ * The data was/is imported to Solr by a {@link FilterValueIndexer} for each {@link Searchable}, because a single {@link Searchable} might be used by multiple {@link Filter}s.
  */
 @AllArgsConstructor
 @Slf4j
