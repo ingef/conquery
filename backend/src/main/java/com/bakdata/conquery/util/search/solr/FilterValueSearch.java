@@ -77,32 +77,32 @@ public class FilterValueSearch {
                 .collect(Collectors.joining(" ", "%s:(".formatted(SolrFrontendValue.Fields.searchable_s), ")"));
     }
 
-    /**
-     * <a href="https://lucene.apache.org/core/10_1_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Wildcard_Searches">Query syntax reference</a>
-     */
-    public AutoCompleteResult topItems(String text, Integer start, @Nullable Integer limit) {
+	/**
+	 * <a href="https://lucene.apache.org/core/10_1_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Wildcard_Searches">Query syntax reference</a>
+	 */
+	public AutoCompleteResult topItems(String text, Integer start, @Nullable Integer limit) {
 
-        if (StringUtils.isBlank(text)) {
-            // Fallback to wild card if search term is blank search for everything
-            text = "_text_:*";
+		if (StringUtils.isBlank(text)) {
+			// Fallback to wild card if search term is blank search for everything
+			text = "_text_:*";
 
-            return sendQuery(text, start, limit, true, true);
-        } else {
-            text = Arrays.stream(text.split("\\s"))
-                    // Skip blanks
-                    .filter(Predicate.not(String::isBlank))
-                    // Escape
-                    .map(ClientUtils::escapeQueryChars)
-                    //
-                    .map((term) -> {
-                        Map<String, String> valuesMap = Map.of("term", term);
-                        StringSubstitutor sub = new StringSubstitutor(valuesMap);
-                        return sub.replace(filterValueConfig.getQueryTemplate());
-                    })
-                    .collect(Collectors.joining(" AND "));
-            return sendQuery(text, start, limit, false, false);
-        }
-    }
+			return sendQuery(text, start, limit, true, true);
+		}
+		text = Arrays.stream(text.split("\\s"))
+					 // Skip blanks
+					 .filter(Predicate.not(String::isBlank))
+					 // Escape
+					 .map(ClientUtils::escapeQueryChars)
+					 // Resolve Query template
+					 .map((term) -> {
+						 Map<String, String> valuesMap = Map.of("term", term);
+						 StringSubstitutor sub = new StringSubstitutor(valuesMap);
+						 return sub.replace(filterValueConfig.getQueryTemplate());
+					 })
+					 .collect(Collectors.joining(" AND "));
+		return sendQuery(text, start, limit, false, false);
+
+	}
 
     private @NotNull AutoCompleteResult sendQuery(String queryString, Integer start, @CheckForNull Integer limit, boolean withEmptySource, boolean sort) {
         SolrQuery query = buildSolrQuery(queryString, start, limit, sort, withEmptySource, true);
