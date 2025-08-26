@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -95,18 +96,19 @@ public class CollectColumnValuesMessage extends WorkerMessage implements ActionR
 							.map(column -> jobsExecutorService.submit(() -> {
 										final List<BucketId> buckets = table2Buckets.get(column.getTable().getId());
 
-										final Set<String> values = buckets.stream()
+										// Keep track of the values we have already seen
+										HashSet<String> seenValues = new HashSet<>();
+
+										final Stream<String> values = buckets.stream()
 												.map(BucketId::resolve)
 												.flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
-												.collect(Collectors.toSet());
-
-										log.trace("Finished collecting {} values for column {}", values.size(), column);
+												.filter(seenValues::add);
 
 										// Chunk values, to produce smaller messages
-										final Iterable<List<String>> partition = Iterables.partition(values, columValueChunkSize);
+										final Iterable<List<String>> partition = Iterables.partition(values::iterator, columValueChunkSize);
 
-										log.trace("BEGIN Sending column values for {}. {} total values in {} sized batches",
-												column.getId(), values.size(), columValueChunkSize
+										log.trace("BEGIN Sending column values for {} in {} sized batches",
+												column.getId(), columValueChunkSize
 										);
 
 										int i = 0;
@@ -121,7 +123,7 @@ public class CollectColumnValuesMessage extends WorkerMessage implements ActionR
 										}
 
 										getProgressReporter().report(1);
-										log.trace("FINISH collections values for column {} as number {}", column, done.incrementAndGet());
+										log.trace("FINISH collections values for column {} as number {}", column.getId(), done.incrementAndGet());
 									})
 							)
 							.toList();
