@@ -64,13 +64,13 @@ import org.apache.shiro.authz.Permission;
 
 @Getter
 @Setter
-@ToString
 @Slf4j
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonIgnoreProperties("state")
+@ToString(onlyExplicitlyIncluded = true)
 public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 
 	/**
@@ -78,16 +78,23 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	 */
 	public static final String AUTO_LABEL_SUFFIX = "\t@§$";
 
+	@ToString.Include
 	private DatasetId dataset;
+	@ToString.Include
 	private UUID queryId;
+	@ToString.Include
 	private String label;
 
+	@ToString.Include
 	private LocalDateTime creationTime = LocalDateTime.now();
 
+	@ToString.Include
 	private UserId owner;
 
 	@NotNull
+	@ToString.Include
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
+	@ToString.Include
 	private boolean shared = false;
 
 	// Most queries contain dates, and this retroactively creates a saner default than false for old queries.
@@ -95,18 +102,23 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	private boolean containsDates;
 
 	@JsonAlias("machineGenerated")
+	@ToString.Include
 	private boolean system;
 
 	// TODO may transfer these to the ExecutionManager
 	@EqualsAndHashCode.Exclude
+	@ToString.Include
 	private LocalDateTime startTime;
 	@EqualsAndHashCode.Exclude
+	@ToString.Include
 	private LocalDateTime finishTime;
 	@EqualsAndHashCode.Exclude
+	@ToString.Include
 	private Float progress;
 
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
+	@ToString.Include
 	private transient ConqueryErrorInfo error;
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
@@ -117,14 +129,12 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	@Getter
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
-	@ToString.Exclude
 	private transient ConqueryConfig config;
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Setter
 	@Getter(AccessLevel.PROTECTED)
 	@JsonIgnore
 	@NotNull
-	@ToString.Exclude
 	private transient MetaStorage metaStorage;
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
@@ -132,7 +142,6 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	@Getter(AccessLevel.PROTECTED)
 	@JsonIgnore
 	@NotNull
-	@ToString.Exclude
 	private transient DatasetRegistry<?> datasetRegistry;
 
 
