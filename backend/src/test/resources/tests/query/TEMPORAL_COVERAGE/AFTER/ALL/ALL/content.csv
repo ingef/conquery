@@ -1,0 +1,41 @@
+pid,datum,value,description
+
+00,2011-01-01,index,only index
+01,2011-01-01,compare,only compare
+
+1,2011-01-01,index,compare same day
+1,2011-01-01,compare,
+
+2,2011-01-01,index,compare 5 days after
+2,2011-01-06,compare,
+
+3,2011-01-01,index,compare 8 days after
+3,2011-01-09,compare,
+
+4,2011-01-01,index,compare 5 days after. And compare 9 days after
+4,2011-01-06,compare,
+4,2011-01-10,compare,
+
+5,2011-01-01,index,compare 5 days after.
+5,2011-01-06,compare,
+5,2011-01-10,index,compare 5 days after.
+5,2011-01-16,compare,
+
+6,2011-01-01,index,compare 5 days after.
+6,2011-01-06,compare,
+6,2011-01-10,index,compare 1 day after.
+6,2011-01-11,compare,
+
+7,2011-01-01,index,compare 5 days after.
+7,2011-01-04,index,compare 5 day after.
+7,2011-01-06/2011-01-09,compare,
+
+8,2011-01-01/2011-01-05,index,compare 5 days after.
+8,2011-01-10/2011-01-12,compare,
+
+9,2011-01-01,index,compare AND index 5 days after.
+9,2011-01-06,smorgasborg,
+9,2011-01-06,compare,
+
+10,2011-01-01/2011-01-05,index,compare intersects in computed range
+10,2010-12-25/2011-01-25,compare,

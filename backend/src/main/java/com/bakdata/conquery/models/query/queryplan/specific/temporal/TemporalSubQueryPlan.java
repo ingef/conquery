@@ -70,23 +70,6 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 		log.trace("Querying {} for {} => {}", entity, periods, indexPeriods);
 
-		/*
-			AFTER(5-10days) EARLIEST
-			INDEX 		========    =====   ========
-			I.PERIODS	     [-----]
-			COMPARE		==   ===  ===  ====     ====
-			C.PERIODS	     ===  ==
-
-			C.EARLIEST	     ===
-			C.LATEST	          ==
-			C.ANY		     ===  ==
-			C.ALL		     ===  ==
-
-			indexSelector 	(ANY/ALL/EARLIEST/LATEST)
-			mode 			(BEFORE/AFTER/WHILE)
-			compareSelector (ANY/ALL/EARLIEST/LATEST)
-		 */
-
 		// First execute sub-query with index's sub-period
 		// to extract compares sub-periods which are then used to evaluate compare for aggregation/inclusion.
 		for (int current = 0; current < indexPeriods.length; current++) {

@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.PrefixTextAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalSubQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
@@ -270,19 +271,31 @@ public class CQTemporal extends CQElement {
 
 			public CDateRange[] convert(CDateRange[] parts, Selector selector) {
 
-				//TODO if any doesn't have lower bound and is earliest return empty
-				//TODO if any doesn't have upper bound and is latest return empty
+				if (parts.length == 0){
+					return  new CDateRange[0];
+				}
+
 
 				final OptionalInt maybeIndexDay = switch (selector) {
-					case EARLIEST, ANY -> Arrays.stream(parts)
-												.filter(CDateRange::hasLowerBound)
-												.mapToInt(CDateRange::getMinValue)
-												.min();
+					case EARLIEST, ANY -> {
+						if (!parts[0].hasLowerBound()) {
+							yield OptionalInt.empty();
+						}
 
-					case LATEST, ALL -> Arrays.stream(parts)
-											  .filter(CDateRange::hasUpperBound)
-											  .mapToInt(CDateRange::getMaxValue)
-											  .max();
+						yield Arrays.stream(parts)
+									.mapToInt(CDateRange::getMinValue)
+									.min();
+					}
+
+					case LATEST, ALL -> {
+						if (!parts[parts.length - 1].hasUpperBound()){
+							yield OptionalInt.empty();
+						}
+
+						yield Arrays.stream(parts)
+									.mapToInt(CDateRange::getMaxValue)
+									.max();
+					}
 				};
 
 				if (maybeIndexDay.isEmpty()) {
