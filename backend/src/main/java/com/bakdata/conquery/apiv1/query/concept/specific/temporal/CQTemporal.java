@@ -38,6 +38,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.Iterators;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 /**
  * Temporal queries allow users to query for temporal relationships:
@@ -82,7 +83,9 @@ public class CQTemporal extends CQElement {
 	private final Selector indexSelector;
 	private final Selector compareSelector;
 	private final CQElement compare;
-	private final boolean showCompareDate;
+
+	@Setter
+	private boolean showCompareDate;
 
 	@Override
 	public final QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
