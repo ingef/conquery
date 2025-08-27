@@ -83,14 +83,13 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	 * This is mainly used to decouple mina threads from the solr client in order to prevent blocking and to convert between {@link com.bakdata.conquery.models.messages.namespaces.specific.RegisterColumnValues}'s
 	 * and solr chunk sizes.
 	 */
-	private ExecutorService chunkDecoupleExecutor;
-
-	@Override
-	public void start() throws Exception {
-		chunkDecoupleExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
+	private final ExecutorService chunkDecoupleExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
 																		  .setNameFormat("solr-submitter-%d")
 																		  .setDaemon(true)
 																		  .build());
+
+	@Override
+	public void start() throws Exception {
 		refreshClients();
 	}
 
@@ -198,7 +197,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		String nameForSearchable = buildNameForSearchable(searchable);
 		int sourcePriority = getFilterValueSourcePriority(searchable);
 
-        return indexers.computeIfAbsent(nameForSearchable, searchRef -> new FilterValueIndexer(solrIndexClient, nameForSearchable, sourcePriority, filterValueConfig.getUpdateChunkSize(),chunkDecoupleExecutor));
+        return indexers.computeIfAbsent(nameForSearchable, searchRef -> new FilterValueIndexer(solrIndexClient, nameForSearchable, sourcePriority, filterValueConfig.getUpdateChunkSize(), chunkDecoupleExecutor));
 	}
 
 	@Override
