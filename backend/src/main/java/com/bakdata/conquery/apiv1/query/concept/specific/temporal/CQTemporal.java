@@ -12,7 +12,9 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import c10n.C10N;
 import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.internationalization.ResultHeadersC10n;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -181,8 +183,7 @@ public class CQTemporal extends CQElement {
 			resultInfos.add(new FixedLabelResultInfo(new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE), Collections.emptySet()) {
 				@Override
 				public String userColumnName(PrintSettings printSettings) {
-					//TODO localized label
-					return index.userLabel(printSettings.getLocale()) + " - Compare Dates";
+					return C10N.get(ResultHeadersC10n.class, printSettings.getLocale()).temporalCompareLabel(index.userLabel(printSettings.getLocale()));
 				}
 			});
 		}
