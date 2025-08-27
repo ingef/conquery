@@ -38,19 +38,22 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 	private final ConceptQueryPlan indexSubPlan;
 
-
 	private final List<List> aggregationResults;
+	private final ConstantValueAggregator<CDateSet> compareDateAggregator;
 
+	private CDateSet indexDateResult;
 
-	private CDateSet dateResult;
-
+	private CDateSet compareDateResult;
 
 	@Override
 	public void init(QueryExecutionContext ctx, Entity entity) {
 		indexSubPlan.init(ctx, entity);
 
 		aggregationResults.forEach(List::clear);
-		dateResult = CDateSet.createEmpty();
+		indexDateResult = CDateSet.createEmpty();
+		compareDateResult = CDateSet.createEmpty();
+
+		compareDateAggregator.setValue(compareDateResult);
 	}
 
 	@Override
@@ -103,7 +106,7 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 			}
 
 			results[current] = true;
-			dateResult.add(indexPeriod);
+			indexDateResult.add(indexPeriod);
 
 			for (ConceptQueryPlan subPlan : compareSubPlans) {
 				if (subPlan == null) {
@@ -119,6 +122,8 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 		if (!satisfies) {
 			return Optional.empty();
 		}
+
+
 
 		return Optional.of(new SinglelineEntityResult(entity.getId(), null));
 	}
@@ -139,6 +144,8 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 	}
 
 	private void addAggregationResults(ConceptQueryPlan subPlan) {
+		compareDateResult.addAll(subPlan.getDateAggregator().createAggregationResult());
+
 		final List<Aggregator<?>> result = subPlan.getAggregators();
 
 		for (int aggIdx = 0; aggIdx + 1 < result.size(); aggIdx++) {
@@ -154,6 +161,6 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 	@NotNull
 	@Override
 	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
-		return Optional.of(new ConstantValueAggregator<>(dateResult, new ResultType.ListT(ResultType.Primitive.DATE)));
+		return Optional.of(new ConstantValueAggregator<>(indexDateResult, new ResultType.ListT(ResultType.Primitive.DATE)));
 	}
 }

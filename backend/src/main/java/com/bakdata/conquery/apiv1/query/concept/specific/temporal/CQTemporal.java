@@ -2,12 +2,12 @@ package com.bakdata.conquery.apiv1.query.concept.specific.temporal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -28,8 +29,8 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.PrefixTextAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalSubQueryPlan;
+import com.bakdata.conquery.models.query.resultinfo.FixedLabelResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -81,11 +82,18 @@ public class CQTemporal extends CQElement {
 	private final Selector indexSelector;
 	private final Selector compareSelector;
 	private final CQElement compare;
+	private final boolean showCompareDate;
 
 	@Override
 	public final QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 
 		final ConceptQueryPlan indexSubPlan = createIndexPlan(getIndexQuery(), context, plan);
+
+		ConstantValueAggregator<CDateSet> compareDateAggregator = new ConstantValueAggregator<>(null, new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE));
+		if (showCompareDate){
+			plan.registerAggregator(compareDateAggregator);
+		}
+
 		// These aggregators will be fed with the actual aggregation results of the sub results
 		final List<ConstantValueAggregator<List>> shimAggregators = createShimAggregators();
 
@@ -93,7 +101,8 @@ public class CQTemporal extends CQElement {
 
 		final TemporalSubQueryPlan subQuery =
 				new TemporalSubQueryPlan(getIndexSelector(), getMode(), getCompareSelector(), getCompareQuery(), context, indexSubPlan,
-										 shimAggregators.stream().map(ConstantValueAggregator::getValue).collect(Collectors.toList())
+										 shimAggregators.stream().map(ConstantValueAggregator::getValue).collect(Collectors.toList()),
+										 compareDateAggregator
 				);
 
 		return new TimeBasedQueryNode(context.getStorage().getDataset().getAllIdsTable(), subQuery);
@@ -164,6 +173,17 @@ public class CQTemporal extends CQElement {
 	public List<ResultInfo> getResultInfos() {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
 		resultInfos.addAll(index.getResultInfos());
+
+		if (showCompareDate) {
+			resultInfos.add(new FixedLabelResultInfo(new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE), Collections.emptySet()) {
+				@Override
+				public String userColumnName(PrintSettings printSettings) {
+					//TODO localized label
+					return index.userLabel(printSettings.getLocale()) + " - Compare Dates";
+				}
+			});
+		}
+
 		resultInfos.addAll(compare.getResultInfos());
 		return resultInfos;
 	}
