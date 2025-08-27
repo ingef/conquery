@@ -12,7 +12,7 @@
         "type": "AFTER",
         "days": {
           "min": 5,
-          "max" : 8
+          "max": 8
         }
       },
       "index": {
@@ -46,6 +46,13 @@
                 "filter": "concept.connector.filter",
                 "type": "SELECT",
                 "value": "compare"
+              },
+              {
+                "filter": "concept.connector.sum",
+                "type": "INTEGER_RANGE",
+                "value": {
+                  "min": 1
+                }
               }
             ]
           }
@@ -65,11 +72,18 @@
             "name": "datum",
             "column": "table.datum"
           },
-          "filters": {
-            "name": "filter",
-            "column": "table.value",
-            "type": "SINGLE_SELECT"
-          }
+          "filters": [
+            {
+              "name": "filter",
+              "column": "table.value",
+              "type": "SINGLE_SELECT"
+            },
+            {
+              "name": "sum",
+              "column": "table.sum",
+              "type": "SUM"
+            }
+          ]
         }
       ]
     }
@@ -91,6 +105,10 @@
           {
             "name": "value",
             "type": "STRING"
+          },
+          {
+            "name": "sum",
+            "type": "INTEGER"
           }
         ]
       }
