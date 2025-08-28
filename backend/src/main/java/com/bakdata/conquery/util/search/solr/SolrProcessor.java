@@ -254,19 +254,16 @@ public class SolrProcessor implements SearchProcessor, Managed {
 					log.info("BEGIN collecting entries for `{}`", searchable);
 
 					try {
-						if (searchable instanceof FilterTemplate temp) {
-							indexFilterTemplate(searchable, temp);
-						}
-						else if (searchable instanceof LabelMap labelMap) {
-							indexLabelMap(searchable, labelMap);
-						}
-						else {
-							log.error("Unsupported searchable of type {}, skipping: {}", searchable.getClass(), searchable);
-							return;
-						}
 
-						final Search<FrontendValue> search = getIndexerFor(searchable);
-
+						FilterValueIndexer search = getIndexerFor(searchable);
+						switch (searchable) {
+							case FilterTemplate temp -> indexFilterTemplate(search, temp);
+							case LabelMap labelMap -> indexLabelMap(search, labelMap);
+							default -> {
+								log.error("Unsupported searchable of type {}, skipping: {}", searchable.getClass(), searchable);
+								return;
+							}
+						}
 
 						searchCache.put(searchable, search);
 
@@ -309,8 +306,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		search.finalizeSearch();
 	}
 
-	private void indexLabelMap(Searchable searchable, LabelMap labelMap) {
-		Search<FrontendValue> search = getIndexerFor(searchable);
+	private void indexLabelMap(FilterValueIndexer search, LabelMap labelMap) {
 
 		BiMap<String, String> delegate = labelMap.getDelegate();
 		FilterId id = labelMap.getId();
@@ -343,7 +339,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	 * The resulting {@link com.bakdata.conquery.models.index.Index} is not used by a {@link com.bakdata.conquery.models.index.InternToExternMapper}. That's why
 	 * {@link FilterValueIndexer} does not implement {@link Search#findExact(String, int)}
 	 */
-	private void indexFilterTemplate(Searchable searchable, FilterTemplate temp) {
+	private void indexFilterTemplate(FilterValueIndexer search, FilterTemplate temp) {
 		final URI resolvedURI = temp.getResolvedUri();
 		log.trace("Resolved filter template reference url for search '{}': {}", temp.getId(), resolvedURI);
 
@@ -353,7 +349,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 					temp.getColumnValue(),
 					temp.getValue(),
 					temp.getOptionValue(),
-					() -> getIndexerFor(searchable)
+					() -> search
 			));
 		}
 		catch (IndexCreationException e) {

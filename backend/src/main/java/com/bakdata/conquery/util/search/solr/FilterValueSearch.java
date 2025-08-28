@@ -46,13 +46,14 @@ import org.jetbrains.annotations.NotNull;
 @Slf4j
 public class FilterValueSearch {
 
-    private final SelectFilter<?> filter;
+	public static final int EXACT_VALUE_CHUNK_SIZE = 200;
+	private final SelectFilter<?> filter;
     private final SolrProcessor processor;
     private final SolrClient solrClient;
     private final FilterValueConfig filterValueConfig;
 
     public List<FilterValueIndexer> getSearchesFor(SelectFilter<?> searchable, boolean withEmptySource) {
-        List<Searchable> searchReferences = searchable.getSearchReferences();
+        List<Searchable> searchReferences = new ArrayList<>(searchable.getSearchReferences());
 
         if (withEmptySource) {
             // Patchup searchables
@@ -168,7 +169,7 @@ public class FilterValueSearch {
     }
 
     /**
-     * Find (almost) exact matches for the provided terms.
+     * Find (almost) exact matches for the provided terms. Lowercased search terms are compared to labels and values of solr docs
      */
     public ConceptsProcessor.ExactFilterValueResult exact(Collection<String> terms) {
         if (terms == null || terms.isEmpty()) {
@@ -188,10 +189,9 @@ public class FilterValueSearch {
 		/*
 		We chunk the values for resolving here so that the request does not bust any URI or query limitations (e.g. "too many boolean operators")
 		 */
-        int chunkSize = 200;
-        int chunkIndex = 1;
-        int chunkCount = (escapedTerms.size() + (chunkSize - 1)) / chunkSize;
-        final Iterable<List<String>> partition = Iterables.partition(escapedTerms, chunkSize);
+		int chunkIndex = 1;
+        int chunkCount = (escapedTerms.size() + (EXACT_VALUE_CHUNK_SIZE - 1)) / EXACT_VALUE_CHUNK_SIZE;
+        final Iterable<List<String>> partition = Iterables.partition(escapedTerms, EXACT_VALUE_CHUNK_SIZE);
         for (List<String> chunk : partition) {
 
             String finalTerms = chunk.stream().collect(Collectors.joining(" ", "(", ")"));
@@ -205,12 +205,13 @@ public class FilterValueSearch {
                             SolrFrontendValue.Fields.label_t
                     )
                     .map(field -> "%s:%s".formatted(field, finalTerms))
+					// We are not interested in the result score, so we make it static: ^=1
                     .collect(Collectors.joining(" OR ", "(", ")^=1"));
 
 
             // The batchsize is twice the size of the chunk size because a term is often (at most) found in two documents (from the column and from a mapping)
             // Technically a filter could use more than 2 sources, but this is not practical
-            final int batchSize = chunkSize * 2;
+            final int batchSize = EXACT_VALUE_CHUNK_SIZE * 2;
 
             final AtomicLong numFound = new AtomicLong();
             try {
