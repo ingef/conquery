@@ -7,7 +7,7 @@
     "root": {
       "type": "TEMPORAL",
       "indexSelector": "ANY",
-      "compareSelector": "LATEST",
+      "compareSelector": "ANY",
       "mode": {
         "type": "AFTER",
         "days": {

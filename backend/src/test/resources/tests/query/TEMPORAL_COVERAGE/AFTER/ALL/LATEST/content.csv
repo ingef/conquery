@@ -15,15 +15,15 @@ pid,datum,value,sum,description
 
 4,2011-01-01,index,,6-8th earliest is in. And 16-18th earliest is as well
 4,2011-01-06,compare,1,
-4,2011-01-08,nope,,
+4,2011-01-08,compare,,
 
 4,2011-01-11,index,,
 4,2011-01-16,compare,1,
-4,2011-01-18,compare,,
+4,2011-01-18,compare,1,
 
 5,2011-01-01,index,,6-8th earliest is in. But 16-18th earliest isn't in
 5,2011-01-06,compare,1,
-5,2011-01-08,compare,,
+5,2011-01-08,compare,1,
 
 5,2011-01-11,index,,
 5,2011-01-16,compare,,

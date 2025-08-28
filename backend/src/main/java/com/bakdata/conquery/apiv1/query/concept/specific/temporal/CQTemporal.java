@@ -1,7 +1,6 @@
 package com.bakdata.conquery.apiv1.query.concept.specific.temporal;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -94,21 +93,21 @@ public class CQTemporal extends CQElement {
 
 		final ConceptQueryPlan indexSubPlan = createIndexPlan(getIndexQuery(), context, plan);
 
-		ConstantValueAggregator<CDateSet> compareDateAggregator = new ConstantValueAggregator<>(null, new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE));
-		if (showCompareDate){
-			plan.registerAggregator(compareDateAggregator);
-		}
-
 		// These aggregators will be fed with the actual aggregation results of the sub results
 		final List<ConstantValueAggregator<List>> shimAggregators = createShimAggregators();
 
-		shimAggregators.forEach(plan::registerAggregator);
 
 		final TemporalSubQueryPlan subQuery =
 				new TemporalSubQueryPlan(getIndexSelector(), getMode(), getCompareSelector(), getCompareQuery(), context, indexSubPlan,
-										 shimAggregators.stream().map(ConstantValueAggregator::getValue).collect(Collectors.toList()),
-										 compareDateAggregator
+										 shimAggregators.stream().map(ConstantValueAggregator::getValue).collect(Collectors.toList())
 				);
+
+		if (showCompareDate) {
+			plan.registerAggregator(subQuery.getIndexDateAggregator());
+		}
+
+		shimAggregators.forEach(plan::registerAggregator);
+
 
 		return new TimeBasedQueryNode(context.getStorage().getDataset().getAllIdsTable(), subQuery);
 	}
@@ -136,10 +135,9 @@ public class CQTemporal extends CQElement {
 	}
 
 	private List<ConstantValueAggregator<List>> createShimAggregators() {
-		//TODO Don't create list, if it's not ALL?
 		return compare.getResultInfos()
 					  .stream()
-					  .map(info -> new ConstantValueAggregator<List>(new ArrayList<>(), new ResultType.ListT(info.getType())))
+					  .map(info -> new ConstantValueAggregator<List>(new ArrayList<>()))
 					  .toList();
 	}
 
@@ -271,6 +269,7 @@ public class CQTemporal extends CQElement {
 	@CPSBase
 	public sealed interface Mode permits Mode.After, Mode.While {
 
+
 		CDateRange[] convert(CDateRange[] in, Selector selector);
 
 		@CPSType(id = "BEFORE", base = Mode.class)
@@ -293,56 +292,83 @@ public class CQTemporal extends CQElement {
 			@NotNull
 			private final Range.IntegerRange days;
 
+
 			public CDateRange[] convert(CDateRange[] parts, Selector selector) {
 
-				if (parts.length == 0){
-					return  new CDateRange[0];
-				}
-
-
-				final OptionalInt maybeIndexDay = switch (selector) {
-					case EARLIEST, ANY -> {
-						if (!parts[0].hasLowerBound()) {
-							yield OptionalInt.empty();
-						}
-
-						yield Arrays.stream(parts)
-									.mapToInt(CDateRange::getMinValue)
-									.min();
-					}
-
-					case LATEST, ALL -> {
-						if (!parts[parts.length - 1].hasUpperBound()){
-							yield OptionalInt.empty();
-						}
-
-						yield Arrays.stream(parts)
-									.mapToInt(CDateRange::getMaxValue)
-									.max();
-					}
-				};
-
-				if (maybeIndexDay.isEmpty()) {
+				if (parts.length == 0) {
 					return new CDateRange[0];
 				}
 
-				int indexDay = maybeIndexDay.getAsInt();
+				if (selector == Selector.EARLIEST) {
+					CDateRange period = parts[0];
+					if (!period.hasLowerBound()){
+						return new CDateRange[0];
+					}
 
+					return new CDateRange[]{applyDays(period.getMinValue())};
+				}
+
+				if (selector == Selector.LATEST) {
+					CDateRange period = parts[parts.length - 1];
+					if (!period.hasUpperBound()){
+						return new CDateRange[0];
+					}
+
+					return new CDateRange[]{applyDays(period.getMaxValue())};
+				}
+
+				CDateRange[] converted = new CDateRange[parts.length];
+
+				for (int index = 0; index < parts.length; index++) {
+
+					final OptionalInt maybeIndexDay = selectIndexDay(selector, parts[index]);
+
+					if (maybeIndexDay.isEmpty()) {
+						continue;
+					}
+
+					converted[index] = applyDays(maybeIndexDay.getAsInt());
+				}
+
+				return converted;
+			}
+
+			private OptionalInt selectIndexDay(Selector selector, CDateRange period) {
+				return switch (selector) {
+					case ANY -> {
+						if (!period.hasLowerBound()) {
+							yield OptionalInt.empty();
+						}
+
+						yield OptionalInt.of(period.getMinValue());
+					}
+					case ALL -> {
+						if (!period.hasUpperBound()) {
+							yield OptionalInt.empty();
+						}
+
+						yield OptionalInt.of(period.getMaxValue());
+					}
+					default -> throw new IllegalStateException("%s should already be handled.".formatted(selector));
+				};
+			}
+
+			private CDateRange applyDays(int indexDay) {
 				if (days == null || days.isAll()) {
-					return new CDateRange[]{CDateRange.atLeast(indexDay)};
+					return CDateRange.atLeast(indexDay);
 				}
 
 				if (days.isOpen()) {
 					if (days.isAtLeast()) {
-						return new CDateRange[]{CDateRange.atLeast(indexDay + days.getMin())};
-					}
+						return CDateRange.atLeast(indexDay + days.getMin());
 
+
+					}
 					if (days.isAtMost()) {
-						return new CDateRange[]{CDateRange.of(indexDay, indexDay + days.getMax())};
+						return CDateRange.of(indexDay, indexDay + days.getMax());
 					}
 				}
-
-				return new CDateRange[]{CDateRange.of(indexDay + days.getMin(), indexDay + days.getMax())};
+				return CDateRange.of(indexDay + days.getMin(), indexDay + days.getMax());
 
 			}
 

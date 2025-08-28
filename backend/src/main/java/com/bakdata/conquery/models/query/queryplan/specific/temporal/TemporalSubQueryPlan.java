@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
-import com.bakdata.conquery.models.types.ResultType;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +38,8 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 	private final ConceptQueryPlan indexSubPlan;
 
 	private final List<List> aggregationResults;
-	private final ConstantValueAggregator<CDateSet> compareDateAggregator;
+	private final ConstantValueAggregator<CDateSet> compareDateAggregator = new ConstantValueAggregator<>(null);
+	private final ConstantValueAggregator<CDateSet> indexDateAggregator = new ConstantValueAggregator<>(null);
 
 	private CDateSet indexDateResult;
 
@@ -50,10 +50,12 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 		indexSubPlan.init(ctx, entity);
 
 		aggregationResults.forEach(List::clear);
+
 		indexDateResult = CDateSet.createEmpty();
 		compareDateResult = CDateSet.createEmpty();
 
 		compareDateAggregator.setValue(compareDateResult);
+		indexDateAggregator.setValue(indexDateResult);
 	}
 
 	@Override
@@ -65,10 +67,10 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 			return Optional.empty();
 		}
 
-		// I use arrays here as they are much easier to keep aligned and their size is known ahead of time
+		// I use arrays here as they are much easier to keep aligned
 		final CDateRange[] periods = indexSelector.sample(indexSubPlan.getDateAggregator().createAggregationResult());
-
 		final CDateRange[] indexPeriods = indexMode.convert(periods, indexSelector);
+
 		final boolean[] results = new boolean[indexPeriods.length];
 
 		log.trace("Querying {} for {} => {}", entity, periods, indexPeriods);
@@ -77,6 +79,10 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 		// to extract compares sub-periods which are then used to evaluate compare for aggregation/inclusion.
 		for (int current = 0; current < indexPeriods.length; current++) {
 			final CDateRange indexPeriod = indexPeriods[current];
+
+			if (indexPeriod == null) {
+				continue;
+			}
 
 			// Execute only event-filter based
 			final Optional<CDateSet> maybeComparePeriods = evaluateCompareQuery(ctx, entity, indexPeriod, true)
@@ -106,7 +112,7 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 			}
 
 			results[current] = true;
-			indexDateResult.add(indexPeriod);
+			indexDateResult.add(periods[current]);
 
 			for (ConceptQueryPlan subPlan : compareSubPlans) {
 				if (subPlan == null) {
@@ -122,7 +128,6 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 		if (!satisfies) {
 			return Optional.empty();
 		}
-
 
 
 		return Optional.of(new SinglelineEntityResult(entity.getId(), null));
@@ -161,6 +166,6 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 	@NotNull
 	@Override
 	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
-		return Optional.of(new ConstantValueAggregator<>(indexDateResult, new ResultType.ListT(ResultType.Primitive.DATE)));
+		return Optional.of(indexDateAggregator);
 	}
 }

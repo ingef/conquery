@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1.query.concept.specific.temporal;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -59,6 +60,6 @@ public class TimeBasedQueryNode extends QPNode {
 
 	@Override
 	public Collection<Aggregator<CDateSet>> getDateAggregators() {
-		return List.of(subQuery.getIndexSubPlan().getDateAggregator());
+		return subQuery.getValidityDateAggregator().map(List::of).orElse(Collections.emptyList());
 	}
 }
