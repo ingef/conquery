@@ -1,5 +1,5 @@
 # Version Extractor
-FROM bitnami/git:2.38.1 AS version-extractor
+FROM alpine/git:v2.49.1 AS version-extractor
 
 WORKDIR /app
 COPY .git .
