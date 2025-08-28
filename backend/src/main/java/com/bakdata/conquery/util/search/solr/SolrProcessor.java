@@ -91,6 +91,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	@Override
 	public void start() throws Exception {
 		refreshClients();
+		log.info("Started solr search processor for {}", solrSearchClient.getDefaultCollection());
 	}
 
 	/**
@@ -120,6 +121,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 
 	@Override
 	public void stop() throws Exception {
+		log.info("Stopping solr search processor for {}", solrSearchClient.getDefaultCollection());
 		List<Runnable> runnables = chunkDecoupleExecutor.shutdownNow();
 		log.debug("Cancelling {} runnables for solr", runnables.size());
 		solrSearchClient.close();

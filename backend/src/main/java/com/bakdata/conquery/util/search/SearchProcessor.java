@@ -21,7 +21,19 @@ import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import io.dropwizard.lifecycle.Managed;
 
-public interface SearchProcessor extends Managed {
+public interface SearchProcessor {
+
+	/**
+	 * Similar  to {@link Managed} but we don't want this to be part of a lifecycle because datasets, etc. might get created after
+	 * the lifecycle called {@link Managed#start()}
+	 */
+	default void start() throws Exception {}
+
+	/**
+	 * See {@link SearchProcessor#start()}
+	 */
+	default void stop() throws Exception {}
+
 
 	/**
 	 * From a given {@link FrontendValue} extract all relevant keywords.

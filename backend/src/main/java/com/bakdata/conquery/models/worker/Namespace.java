@@ -60,6 +60,13 @@ public abstract class Namespace implements Injectable {
 
 	public void close() {
 		try {
+			filterSearch.stop();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+		try {
 			jobManager.close();
 		} catch (Exception e) {
 			log.error("Unable to close namespace jobmanager of {}", this, e);

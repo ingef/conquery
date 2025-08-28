@@ -51,8 +51,14 @@ public class SolrConfig implements SearchConfig {
 	@Override
 	public SolrProcessor createSearchProcessor(Environment environment, DatasetId datasetId) {
 		SolrProcessor solrProcessor = new SolrProcessor(() -> createSearchClient(datasetId.getName()),() -> createIndexClient(datasetId.getName()), commitWithin, filterValue);
-		environment.lifecycle().manage(solrProcessor);
-		return solrProcessor;
+
+		try {
+			solrProcessor.start();
+			return solrProcessor;
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public SolrClient createSearchClient(@Nullable String collection) {
