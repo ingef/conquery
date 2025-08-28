@@ -97,10 +97,14 @@ public class CQTemporal extends CQElement {
 		final List<ConstantValueAggregator<List>> shimAggregators = createShimAggregators();
 
 
-		final TemporalSubQueryPlan subQuery =
-				new TemporalSubQueryPlan(getIndexSelector(), getMode(), getCompareSelector(), getCompareQuery(), context, indexSubPlan,
-										 shimAggregators.stream().map(ConstantValueAggregator::getValue).collect(Collectors.toList())
-				);
+		final TemporalSubQueryPlan subQuery = new TemporalSubQueryPlan(getIndexSelector(),
+																	   getMode(),
+																	   getCompareSelector(),
+																	   getCompareQuery(),
+																	   context,
+																	   indexSubPlan,
+																	   shimAggregators.stream().map(ConstantValueAggregator::getValue).collect(Collectors.toList())
+		);
 
 		if (showCompareDate) {
 			plan.registerAggregator(subQuery.getIndexDateAggregator());
@@ -135,10 +139,7 @@ public class CQTemporal extends CQElement {
 	}
 
 	private List<ConstantValueAggregator<List>> createShimAggregators() {
-		return compare.getResultInfos()
-					  .stream()
-					  .map(info -> new ConstantValueAggregator<List>(new ArrayList<>()))
-					  .toList();
+		return compare.getResultInfos().stream().map(info -> new ConstantValueAggregator<List>(new ArrayList<>())).toList();
 	}
 
 	/**
@@ -212,8 +213,7 @@ public class CQTemporal extends CQElement {
 				}
 				return false;
 			}
-		},
-		ALL {
+		}, ALL {
 			@Override
 			public CDateRange[] sample(CDateSet result) {
 				return result.asRanges().toArray(CDateRange[]::new);
@@ -228,8 +228,7 @@ public class CQTemporal extends CQElement {
 				}
 				return true;
 			}
-		},
-		EARLIEST {
+		}, EARLIEST {
 			@Override
 			public CDateRange[] sample(CDateSet result) {
 				return new CDateRange[]{result.asRanges().iterator().next()};
@@ -239,8 +238,7 @@ public class CQTemporal extends CQElement {
 			public boolean satisfies(boolean[] results) {
 				return results[0];
 			}
-		},
-		LATEST {
+		}, LATEST {
 			@Override
 			public CDateRange[] sample(CDateSet result) {
 				if (result.isEmpty()) {
@@ -265,29 +263,34 @@ public class CQTemporal extends CQElement {
 	}
 
 
+	/**
+	 * Defines constraints on the relation between index and compare
+	 */
 	@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 	@CPSBase
-	public sealed interface Mode permits Mode.After, Mode.While {
+	sealed public interface Mode permits Mode.After, Mode.While {
 
-
+		/**
+		 * With selector,
+		 */
 		CDateRange[] convert(CDateRange[] in, Selector selector);
 
-		@CPSType(id = "BEFORE", base = Mode.class)
-		final
-		class Before extends After {
-
-			@JsonCreator
-			public Before(Range.IntegerRange days) {
-				super(days);
-			}
-
-
-		}
-
+		/**
+		 * Constraints compare to be after index-period.
+		 * <br />
+		 * days defines the span of days in which compare may happen:
+		 * - days.min is the minimum days, compare needs to be after index
+		 * - days.max is the maximum days, compare may be after index
+		 * <br />
+		 * e.g.
+		 * - if index is 2010-01-01, days is {5/10}, then compare must be within {2010-01-06/2010-01-11}
+		 * - if index is 2010-01-01, days is {5/+inf}, then compare must be within {2010-01-06/+inf}
+		 * - if index is 2010-01-01, days is {+inf/10}, then compare must be within {2010-01-01/2010-01-11}
+		 */
 		@CPSType(id = "AFTER", base = Mode.class)
 		@Data
 		@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
-		sealed class After implements Mode permits Mode.Before {
+		sealed class After implements Mode permits Before {
 
 			@NotNull
 			private final Range.IntegerRange days;
@@ -301,7 +304,7 @@ public class CQTemporal extends CQElement {
 
 				if (selector == Selector.EARLIEST) {
 					CDateRange period = parts[0];
-					if (!period.hasLowerBound()){
+					if (!period.hasLowerBound()) {
 						return new CDateRange[0];
 					}
 
@@ -310,7 +313,7 @@ public class CQTemporal extends CQElement {
 
 				if (selector == Selector.LATEST) {
 					CDateRange period = parts[parts.length - 1];
-					if (!period.hasUpperBound()){
+					if (!period.hasUpperBound()) {
 						return new CDateRange[0];
 					}
 
@@ -333,6 +336,25 @@ public class CQTemporal extends CQElement {
 				return converted;
 			}
 
+			private CDateRange applyDays(int indexDay) {
+				if (days == null || days.isAll()) {
+					return CDateRange.atLeast(indexDay);
+				}
+
+				if (days.isOpen()) {
+					if (days.isAtLeast()) {
+						return CDateRange.atLeast(indexDay + days.getMin());
+
+
+					}
+					if (days.isAtMost()) {
+						return CDateRange.of(indexDay, indexDay + days.getMax());
+					}
+				}
+				return CDateRange.of(indexDay + days.getMin(), indexDay + days.getMax());
+
+			}
+
 			private OptionalInt selectIndexDay(Selector selector, CDateRange period) {
 				return switch (selector) {
 					case ANY -> {
@@ -353,33 +375,37 @@ public class CQTemporal extends CQElement {
 				};
 			}
 
-			private CDateRange applyDays(int indexDay) {
-				if (days == null || days.isAll()) {
-					return CDateRange.atLeast(indexDay);
-				}
-
-				if (days.isOpen()) {
-					if (days.isAtLeast()) {
-						return CDateRange.atLeast(indexDay + days.getMin());
-
-
-					}
-					if (days.isAtMost()) {
-						return CDateRange.of(indexDay, indexDay + days.getMax());
-					}
-				}
-				return CDateRange.of(indexDay + days.getMin(), indexDay + days.getMax());
-
-			}
-
 		}
 
+		/**
+		 * Special case of AFTER, with compare and index flipped.
+		 */
+		@CPSType(id = "BEFORE", base = Mode.class)
+		final class Before extends After {
+
+			@JsonCreator
+			public Before(Range.IntegerRange days) {
+				super(days);
+			}
+		}
+
+
+		/**
+		 * Compare must happen within WHILE, this means, they must intersect.
+		 */
 		@CPSType(id = "WHILE", base = Mode.class)
 		@Data
 		final class While implements Mode {
 
 			public CDateRange[] convert(CDateRange[] in, Selector selector) {
-				return in;
+				if (in.length == 0) {
+					return in;
+				}
+				return switch (selector) {
+					case ANY, ALL -> in;
+					case EARLIEST -> new CDateRange[]{in[0]};
+					case LATEST -> new CDateRange[]{in[in.length - 1]};
+				};
 			}
 		}
 

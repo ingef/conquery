@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -266,10 +267,18 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	}
 
 	private static List<FilterNode<?>> createFilters(CQTable table, QueryPlanContext context) {
-		return table.getFilters().stream()
-					.map(FilterValue::createNode)
-					.filter(filterNode -> !(context.isDisableAggregationFilters() && filterNode instanceof AggregationResultFilterNode))
+		Stream<? extends FilterNode<?>> filterNodes = table.getFilters().stream()
+														   .map(FilterValue::createNode);
+
+		if (context.isDisableAggregationFilters()) {
+			return filterNodes
+					.filter(filterNode -> !(filterNode instanceof AggregationResultFilterNode))
 					.collect(Collectors.toList());
+		}
+
+
+		return filterNodes
+				.collect(Collectors.toList());
 	}
 
 	private ValidityDate selectValidityDate(CQTable table) {

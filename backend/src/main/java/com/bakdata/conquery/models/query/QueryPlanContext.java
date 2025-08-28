@@ -12,8 +12,10 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
-@Data @With
-@AllArgsConstructor @RequiredArgsConstructor
+@Data
+@With
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class QueryPlanContext {
 
 	private final WorkerStorage storage;
@@ -22,7 +24,7 @@ public class QueryPlanContext {
 	private CDateRange dateRestriction = CDateRange.all();
 
 	private boolean disableAggregators = false;
-	private boolean disableAggregationFilters = true;
+	private boolean disableAggregationFilters = false;
 
 
 	/**
