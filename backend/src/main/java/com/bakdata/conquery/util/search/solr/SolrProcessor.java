@@ -199,7 +199,15 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		String nameForSearchable = buildNameForSearchable(searchable);
 		int sourcePriority = getFilterValueSourcePriority(searchable);
 
-        return indexers.computeIfAbsent(nameForSearchable, searchRef -> new FilterValueIndexer(solrIndexClient, nameForSearchable, sourcePriority, filterValueConfig.getUpdateChunkSize(), chunkDecoupleExecutor));
+		return indexers.computeIfAbsent(nameForSearchable,
+										searchRef -> new FilterValueIndexer(sourcePriority,
+																			new ChunkSubmitter(nameForSearchable,
+																							   solrIndexClient,
+																							   filterValueConfig.getUpdateChunkSize(),
+																							   chunkDecoupleExecutor
+																			)
+										)
+		);
 	}
 
 	@Override
