@@ -7,12 +7,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -80,12 +80,12 @@ class QueryCleanupTaskTest {
 	}
 
 	@Test
-	void singleNamedButUUID() throws Exception {
+	void singleNamedButAutoLabeled() throws Exception {
 		assertThat(STORAGE.getAllExecutions()).isEmpty();
 
 		final ManagedQuery managedQuery = createManagedQuery();
 
-		managedQuery.setLabel(UUID.randomUUID().toString());
+		managedQuery.setLabel("test" + ManagedExecution.AUTO_LABEL_SUFFIX);
 
 		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 

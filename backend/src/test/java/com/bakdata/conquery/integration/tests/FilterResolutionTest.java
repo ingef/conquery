@@ -32,7 +32,6 @@ import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -51,9 +50,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		//read test sepcification
 		final String
 				testJson =
-				In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json")
-				  .withUTF8()
-				  .readAll();
+				LoadingUtil.readResource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json");
 
 		final DatasetId dataset = conquery.getDataset();
 

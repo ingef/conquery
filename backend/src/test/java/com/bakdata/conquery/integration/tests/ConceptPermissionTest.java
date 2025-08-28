@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -31,7 +30,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 	public void execute(StandaloneSupport conquery) throws Exception {
 		final MetaStorage storage = conquery.getMetaStorage();
 		final DatasetId dataset = conquery.getDataset();
-		final String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
+		final String testJson = LoadingUtil.readResource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json");
 		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 		final User user  = new User("testUser", "testUserLabel", storage);
 

@@ -3,6 +3,8 @@ package com.bakdata.conquery.metrics;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
@@ -23,6 +25,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
+import com.codahale.metrics.SlidingTimeWindowReservoir;
 import lombok.Data;
 import lombok.experimental.UtilityClass;
 
@@ -50,7 +53,15 @@ public class ExecutionMetrics {
 	}
 
 	public static Histogram getQueriesTimeHistogram(String group) {
-		return SharedMetricRegistries.getDefault().histogram(nameWithGroupTag(MetricRegistry.name(QUERIES, TIME), group));
+		MetricRegistry metricRegistry = SharedMetricRegistries.getDefault();
+		String name = nameWithGroupTag(MetricRegistry.name(QUERIES, TIME), group);
+
+		SortedMap<String, Histogram> histograms = metricRegistry.getHistograms();
+		if (histograms.containsKey(name)) {
+			return histograms.get(name);
+		}
+
+		return metricRegistry.register(name, new Histogram(new SlidingTimeWindowReservoir(1, TimeUnit.HOURS)));
 	}
 
 	public static Counter getQueryStateCounter(ExecutionState state, String group) {
