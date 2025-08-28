@@ -52,6 +52,7 @@
                         <configuration>
                             <excludes>
                                 <exclude>tests/**/*</exclude>
+                                <exclude>com/bakdata/conquery/frontend/form/**/*</exclude>
                                 <exclude>com/bakdata/conquery/integration/ConqueryIntegrationTests</exclude>
                             </excludes>
                         </configuration>
@@ -117,6 +118,10 @@
             <version>2.25.1</version>
         </dependency>
         <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-json-logging</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-blackbird</artifactId>
         </dependency>
@@ -146,16 +151,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-parameter-names</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.github.power-libraries</groupId>
-            <artifactId>iopower</artifactId>
-            <version>1.1.3</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.20.0</version>
         </dependency>
         <dependency>
             <groupId>com.univocity</groupId>
@@ -270,23 +265,8 @@
             <version>1.3.232</version>
         </dependency>
         <dependency>
-            <groupId>com.tomgibara.bits</groupId>
-            <artifactId>bits</artifactId>
-            <version>2.1.0</version>
-        </dependency>
-        <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-smile</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.zigurs.karlis.utils</groupId>
-            <artifactId>magicsort</artifactId>
-            <version>0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jakewharton.byteunits</groupId>
-            <artifactId>byteunits</artifactId>
-            <version>0.9.1</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -335,6 +315,12 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>${apache-poi.version}</version>
+        </dependency>
+        <dependency>
+            <!-- Used by org.apache.poi.xssf.usermodel.XSSFWorkbook.newPackage -->
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.20.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>

@@ -20,10 +20,10 @@ import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.github.benmanes.caffeine.cache.stats.StatsCounter;
 import com.google.common.base.Stopwatch;
-import com.jakewharton.byteunits.BinaryByteUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -179,7 +179,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				}
 			}
 		});
-		log.debug("\tloaded store {}: {} entries, {} within {}", this, count, BinaryByteUnit.format(totalSize.sum()), timer.stop());
+		log.debug("\tloaded store {}: {} entries, {} within {}", this, count, FileUtils.byteCountToDisplaySize(totalSize.sum()), timer.stop());
 	}
 
 	@Override
