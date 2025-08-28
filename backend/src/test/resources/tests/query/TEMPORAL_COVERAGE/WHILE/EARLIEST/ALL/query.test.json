@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "Temporal Test",
-  "expectedCsv": "tests/query/TEMPORAL_COVERAGE/AFTER/EARLIEST/ALL/expected.csv",
+  "expectedCsv": "tests/query/TEMPORAL_COVERAGE/WHILE/EARLIEST/ALL/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -9,11 +9,7 @@
       "indexSelector": "EARLIEST",
       "compareSelector": "ALL",
       "mode": {
-        "type": "AFTER",
-        "days": {
-          "min": 5,
-          "max": 8
-        }
+        "type": "WHILE"
       },
       "index": {
         "ids": [
@@ -91,7 +87,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/TEMPORAL_COVERAGE/AFTER/EARLIEST/ALL/content.csv",
+        "csv": "tests/query/TEMPORAL_COVERAGE/WHILE/EARLIEST/ALL/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",
