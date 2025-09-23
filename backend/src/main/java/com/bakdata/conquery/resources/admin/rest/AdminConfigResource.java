@@ -12,7 +12,8 @@ import com.bakdata.conquery.models.config.PluginConfig;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(onConstructor_ = @Inject)
-public class ConfigApiResource implements ConfigApi {
+public class AdminConfigResource implements ConfigApi {
+
 
 	private final ManagerNode managerNode;
 	private final ConqueryConfig config;

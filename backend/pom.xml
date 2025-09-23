@@ -89,7 +89,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${project.basedir}/src/main/resources/openapi/admin-openapi.json</inputSpec>
+                            <inputSpec>${project.basedir}/src/main/resources/openapi/admin-openapi.yaml</inputSpec>
                             <!-- Don't use jaxrs-jersey here because it does not allow dependency injection -->
                             <generatorName>jaxrs-spec</generatorName>
                             <modelsToGenerate>ApiResponse</modelsToGenerate>
@@ -103,6 +103,7 @@
                                 <sourceFolder>src/main/java</sourceFolder>
                                 <generateSupportingFiles>false</generateSupportingFiles>
                                 <useJakartaEe>true</useJakartaEe>
+                                <hideGenerationTimestamp>true</hideGenerationTimestamp>
                             </configOptions>
                         </configuration>
                     </execution>
