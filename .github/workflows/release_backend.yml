@@ -19,7 +19,7 @@ jobs:
           # This should be deep enough to fetch at least one light weight tag
           fetch-depth: 500 
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
