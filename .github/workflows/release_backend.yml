@@ -34,7 +34,7 @@ jobs:
       - name: Build
         run: ./scripts/build_backend_version.sh
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             executable/target/executable*.jar
