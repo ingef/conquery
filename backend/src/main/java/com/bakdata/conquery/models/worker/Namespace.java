@@ -63,7 +63,7 @@ public abstract class Namespace implements Injectable {
 			filterSearch.stop();
 		}
 		catch (Exception e) {
-			throw new RuntimeException(e);
+			log.error("Unable to close filter serach of {}",this, e);
 		}
 
 		try {
