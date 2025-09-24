@@ -5,6 +5,7 @@ import static org.jooq.impl.DSL.name;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.DistinctSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
@@ -93,18 +94,27 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 		Field<String> aggregatedColumn = functionProvider.stringAggregation(castedColumn, DSL.toChar(ResultSetProcessor.UNIT_SEPARATOR), List.of(castedColumn))
 														 .as(alias);
 
-		SqlIdColumns ids = distinctSelectCte.getQualifiedSelects().getIds();
+		Selects predecessorSelects = distinctSelectCte.getQualifiedSelects();
+		SqlIdColumns ids = predecessorSelects.getIds();
 
 		Selects selects = Selects.builder()
 								 .ids(ids)
+								 .stratificationDate(predecessorSelects.getStratificationDate())
 								 .sqlSelect(new FieldWrapper<>(aggregatedColumn))
 								 .build();
+
+		List<Field<?>> groupByFields =
+				Stream.concat(
+							  ids.toFields().stream(),
+							  predecessorSelects.getStratificationDate().stream().flatMap(range -> range.toFields().stream())
+					  )
+					  .toList();
 
 		return QueryStep.builder()
 						.cteName(selectContext.getNameGenerator().cteStepName(DistinctSelectCteStep.STRING_AGG, alias))
 						.selects(selects)
 						.fromTable(QueryStep.toTableLike(distinctSelectCte.getCteName()))
-						.groupBy(ids.toFields())
+						.groupBy(groupByFields)
 						.predecessor(distinctSelectCte)
 						.build();
 	}
@@ -115,12 +125,14 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 			SelectContext<ConnectorSqlTables> selectContext
 	) {
 		// values to aggregate must be event-filtered first
-		String eventFilterTable = selectContext.getTables().cteName(ConceptCteStep.EVENT_FILTER);
+		ConceptCteStep eventFilterStep = ConceptCteStep.EVENT_FILTER;
+		String eventFilterTable = selectContext.getTables().cteName(eventFilterStep);
 		ExtractingSqlSelect<Object> qualified = preprocessingSelect.qualify(eventFilterTable);
-		SqlIdColumns ids = selectContext.getIds().qualify(eventFilterTable);
+		SqlIdColumns ids = selectContext.getIds(eventFilterStep);
 
 		Selects selects = Selects.builder()
 								 .ids(ids)
+								 .stratificationDate(selectContext.getStratificationDate(eventFilterStep))
 								 .sqlSelect(qualified)
 								 .build();
 

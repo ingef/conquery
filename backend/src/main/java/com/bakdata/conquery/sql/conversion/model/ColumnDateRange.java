@@ -112,12 +112,12 @@ public class ColumnDateRange implements SqlSelect {
 			throw new UnsupportedOperationException("Can only join ColumnDateRanges of same type");
 		}
 		if (isSingleColumnRange()) {
-			return ColumnDateRange.of(DSL.coalesce(this.range, right.getRange())).as(this.alias);
+			return ColumnDateRange.of(DSL.coalesce(this.range, right.getRange()));
 		}
 		return ColumnDateRange.of(
 				DSL.coalesce(this.start, right.getStart()),
 				DSL.coalesce(this.end, right.getEnd())
-		).as(this.alias);
+		);
 	}
 
 	public Condition join(ColumnDateRange right) {
