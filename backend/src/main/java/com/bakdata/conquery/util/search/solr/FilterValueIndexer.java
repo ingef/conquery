@@ -1,5 +1,6 @@
 package com.bakdata.conquery.util.search.solr;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -16,6 +17,9 @@ import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.QueryResponse;
 
 
 /**
@@ -57,7 +61,21 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 
 	@Override
 	public long calculateSize() {
-		return chunkSubmitter.countIndexedElements();
+
+
+		// We query all documents that reference the searchables of the filter
+		SolrQuery query = new SolrQuery("%s:%s".formatted(SolrFrontendValue.Fields.searchable_s, getSearchable()));
+
+		// Set rows to 0 because we don't want actual results, we are only interested in the total number
+		query.setRows(0);
+
+		try {
+			QueryResponse response = chunkSubmitter.getSolrClient().query(query);
+			return response.getResults().getNumFound();
+		}
+		catch (SolrServerException | IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**

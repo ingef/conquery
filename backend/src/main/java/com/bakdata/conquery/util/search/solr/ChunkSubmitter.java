@@ -15,9 +15,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.QueryResponse;
 
 /**
  * Gathers solr documents into chunks and submits them asynchronously to the solr client.
@@ -29,6 +27,7 @@ public class ChunkSubmitter {
 	@Getter
 	private final String searchable;
 
+	@Getter
 	private final SolrClient solrClient;
 
 	private final int updateChunkSize;
@@ -71,24 +70,6 @@ public class ChunkSubmitter {
 				// Start submitting so we can start free pending documents
 				submitChunk();
 			}
-		}
-	}
-
-	public long countIndexedElements() {
-
-
-		// We query all documents that reference the searchables of the filter
-		SolrQuery query = new SolrQuery("%s:%s".formatted(SolrFrontendValue.Fields.searchable_s, searchable));
-
-		// Set rows to 0 because we don't want actual results, we are only interested in the total number
-		query.setRows(0);
-
-		try {
-			QueryResponse response = solrClient.query(query);
-			return response.getResults().getNumFound();
-		}
-		catch (SolrServerException | IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 
