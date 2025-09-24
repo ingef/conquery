@@ -23,10 +23,13 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 			joined = withConvertedChild.getLastConvertedStep();
 		}
 		else {
-			joined = QueryStepJoiner.joinChildren(
+            final ConqueryJoinType joinType = context.isNegation() ?
+                    ConqueryJoinType.OUTER_JOIN :
+                    ConqueryJoinType.INNER_JOIN;
+            joined = QueryStepJoiner.joinChildren(
 					andNode.getChildren(),
 					context,
-					ConqueryJoinType.INNER_JOIN,
+                    joinType,
 					andNode.getDateAction()
 			);
 		}

@@ -23,10 +23,13 @@ public class CQOrConverter implements NodeConverter<CQOr> {
 			joined = withConvertedChild.getLastConvertedStep();
 		}
 		else {
+            final ConqueryJoinType joinType = context.isNegation() ?
+                    ConqueryJoinType.INNER_JOIN :
+                    ConqueryJoinType.OUTER_JOIN;
 			joined = QueryStepJoiner.joinChildren(
 					orNode.getChildren(),
 					context,
-					ConqueryJoinType.OUTER_JOIN,
+					joinType,
 					orNode.getDateAction()
 			);
 		}
