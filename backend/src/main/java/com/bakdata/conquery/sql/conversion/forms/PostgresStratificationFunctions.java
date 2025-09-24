@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
+import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.sql.conversion.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;

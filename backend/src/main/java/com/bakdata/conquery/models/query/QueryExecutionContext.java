@@ -2,12 +2,11 @@ package com.bakdata.conquery.models.query;
 
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.temporal.CQTemporal;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQTemporal;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -24,10 +23,12 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.With;
 
 @Data
 @AllArgsConstructor
+@RequiredArgsConstructor
 @With
 public class QueryExecutionContext {
 
@@ -48,20 +49,12 @@ public class QueryExecutionContext {
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
 
 
-	private Map<CQTemporal, CDateSet> temporalQueryResult = new HashMap<>();
-
 	/**
 	 * Only set when in {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, to the selected {@link SecondaryIdDescriptionId}.
 	 */
 	private SecondaryIdDescription activeSecondaryId = null;
 
-	public QueryExecutionContext(ManagedExecutionId executionId, QueryExecutor executor, ModificationShieldedWorkerStorage storage, BucketManager bucketManager) {
-		this.executionId = executionId;
-		this.executor = executor;
-		this.storage = storage;
-		this.bucketManager = bucketManager;
 
-	}
 
 	public Set<BucketId> getEntityBucketsForTable(Entity entity, TableId table) {
 		return bucketManager.getEntityBucketsForTable(entity, table);

@@ -1,35 +1,43 @@
 package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
-import com.bakdata.conquery.apiv1.query.concept.specific.temporal.CQTemporal;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
-import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
-@Data
+@EqualsAndHashCode(callSuper = false)
 @Slf4j
-public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
+@Data
+public class TemporalQueryNode extends QPNode {
 
-	private final CQTemporal.Selector indexSelector;
-	private final CQTemporal.Mode indexMode;
+	/**
+	 * We need the AllIds-Table here, to ensure we get evaluated.
+	 */
+	private final Table table;
 
-	private final CQTemporal.Selector compareSelector;
+	private final TemporalSelector indexSelector;
+	private final TemporalRelationMode indexMode;
+
+	private final TemporalSelector compareSelector;
 
 	private final CQElement compareQuery;
 
@@ -45,9 +53,13 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 	private CDateSet compareDateResult;
 
+	private boolean result;
+
 	@Override
-	public void init(QueryExecutionContext ctx, Entity entity) {
-		indexSubPlan.init(ctx, entity);
+	public void init(Entity entity, QueryExecutionContext context) {
+		super.init(entity, context);
+
+		indexSubPlan.init(context, entity);
 
 		aggregationResults.forEach(List::clear);
 
@@ -56,24 +68,22 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 		compareDateAggregator.setValue(compareDateResult);
 		indexDateAggregator.setValue(indexDateResult);
+
+		result = evaluateSubQueries(context, entity);
 	}
 
-	@Override
-	public Optional<EntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+	public boolean evaluateSubQueries(QueryExecutionContext ctx, Entity entity) {
 
 		final Optional<SinglelineEntityResult> subResult = indexSubPlan.execute(ctx, entity);
 
 		if (subResult.isEmpty()) {
-			return Optional.empty();
+			return false;
 		}
 
-		// I use arrays here as they are much easier to keep aligned
 		final CDateRange[] periods = indexSelector.sample(indexSubPlan.getDateAggregator().createAggregationResult());
 		final CDateRange[] indexPeriods = indexMode.convert(periods, indexSelector);
 
 		final boolean[] results = new boolean[indexPeriods.length];
-
-		log.trace("Querying {} for {} => {}", entity, periods, indexPeriods);
 
 		// First execute sub-query with index's sub-period
 		// to extract compares sub-periods which are then used to evaluate compare for aggregation/inclusion.
@@ -93,7 +103,6 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 			}
 
 			final CDateRange[] comparePeriods = compareSelector.sample(maybeComparePeriods.get());
-
 			final boolean[] compareResults = new boolean[comparePeriods.length];
 			final ConceptQueryPlan[] compareSubPlans = new ConceptQueryPlan[comparePeriods.length];
 
@@ -123,14 +132,7 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 			}
 		}
 
-		final boolean satisfies = indexSelector.satisfies(results);
-
-		if (!satisfies) {
-			return Optional.empty();
-		}
-
-
-		return Optional.of(new SinglelineEntityResult(entity.getId(), null));
+		return indexSelector.satisfies(results);
 	}
 
 	private Optional<ConceptQueryPlan> evaluateCompareQuery(QueryExecutionContext ctx, Entity entity, CDateRange partition, boolean isOuter) {
@@ -159,13 +161,29 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 	}
 
 	@Override
+	public void collectRequiredTables(Set<Table> requiredTables) {
+		requiredTables.add(table);
+	}
+
+	@Override
 	public boolean isOfInterest(Entity entity) {
 		return indexSubPlan.isOfInterest(entity);
 	}
 
-	@NotNull
+
 	@Override
-	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
-		return Optional.of(indexDateAggregator);
+	public boolean acceptEvent(Bucket bucket, int event) {
+		// Does nothing
+		return false;
+	}
+
+	@Override
+	public boolean isContained() {
+		return result;
+	}
+
+	@Override
+	public Collection<Aggregator<CDateSet>> getDateAggregators() {
+		return List.of(indexDateAggregator);
 	}
 }

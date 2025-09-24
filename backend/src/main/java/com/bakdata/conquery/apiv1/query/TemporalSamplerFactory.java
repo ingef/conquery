@@ -1,4 +1,4 @@
-package com.bakdata.conquery.apiv1.query.concept.specific.temporal;
+package com.bakdata.conquery.apiv1.query;
 
 import java.util.OptionalInt;
 import java.util.Random;
