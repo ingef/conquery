@@ -14,7 +14,7 @@ import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
@@ -47,7 +47,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 		final ImportId importId1 = ImportId.Parser.INSTANCE.parse(dataset.getName(), "table1", "table1");
 
-		QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
+		QueryTest test = ConqueryTestSpec.readJson(dataset, testJson);
 
 		final List<RequiredTable> tables = test.getContent().getTables();
 		assertThat(tables.size()).isEqualTo(2);

@@ -55,7 +55,7 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		importTables(support, content.getTables(), content.isAutoConcept());
 
 
-		test.setConnector(ConqueryTestSpec.parseSubTree(
+		test.setConnector(LoadingUtil.parseSubTree(
 								  support,
 								  test.getRawConnector(),
 								  ConceptTreeConnector.class,
