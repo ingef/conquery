@@ -188,16 +188,24 @@ context("Admin UI Single Dataset", () => {
   describe("Perform Update Matching Stats", () => {
 
     it("Start Update Matching Stats", () => {
-      visitAdminUI("datasets");
-      cy.get('[data-cy="datasets"]').contains(testDSID).click();
-      cy.get('[data-cy="update-matching-stats"]').click();
-    })
+          visitAdminUI("datasets");
+          cy.get('[data-cy="datasets"]').contains(testDSID).click();
+          cy.get('[data-cy="update-matching-stats"]').click();
+        })
+
+    it("Initialize Search indices", () => {
+          visitAdminUI("datasets");
+          cy.get('[data-cy="datasets"]').contains(testDSID).click();
+          cy.get('[data-cy="initialize-indices"]').click();
+        })
 
     it("Wait for Update Matching Stats to finish", () => {
       visitAdminUI("jobs");
       cy.get('#origin_Manager > .card-header > .row > .accordion-infotext > div > .jobsAmount').eq(0);
     })
   });
+
+
   describe("Visit Index Service Page", () => {
 
     it("Check Statistics", () => {

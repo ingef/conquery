@@ -82,6 +82,14 @@
         Update Matching Stats
       </button>
       <button
+              type="button"
+              class="btn btn-secondary"
+              onclick="rest('/admin/datasets/${c.ds.id}/initialize-indices',{method: 'post'})"
+              data-cy="initialize-indices"
+            >
+              Update Indices
+            </button>
+      <button
         type="button"
         class="btn btn-danger"
         onclick="rest('/admin/datasets/${c.ds.id}/clear-internToExtern-cache',{method: 'post'})"

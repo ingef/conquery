@@ -407,7 +407,18 @@ public class LoadingUtil {
 
 	public static void updateMatchingStats(@NonNull StandaloneSupport support) {
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "postprocessNamespace")
+															, AdminDatasetResource.class, "updateMatchingStats")
+													.buildFromMap(Map.of(DATASET, support.getDataset()));
+
+		final Response post = support.getClient().target(matchingStatsUri)
+									 .request(MediaType.APPLICATION_JSON_TYPE)
+									 .post(null);
+		post.close();
+	}
+
+	public static void initializeIndices(@NonNull StandaloneSupport support) {
+				final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder()
+															, AdminDatasetResource.class, "initializeIndices")
 													.buildFromMap(Map.of(DATASET, support.getDataset()));
 
 		final Response post = support.getClient().target(matchingStatsUri)
