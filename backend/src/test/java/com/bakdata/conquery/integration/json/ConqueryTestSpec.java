@@ -21,7 +21,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.mina.core.IoUtil;
 
 @Setter
 @Getter
@@ -106,6 +105,9 @@ public abstract class ConqueryTestSpec {
 
 	@Override
 	public String toString() {
+		if (label == null) {
+			return source;
+		}
 		return String.format("%s#%s", source, label);
 	}
 
