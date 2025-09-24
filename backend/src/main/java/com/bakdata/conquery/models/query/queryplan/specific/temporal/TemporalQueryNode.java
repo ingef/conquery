@@ -5,15 +5,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import com.bakdata.conquery.apiv1.query.CQElement;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -34,16 +30,15 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	private final Table table;
 
+	private final ConceptQueryPlan indexQueryPlan;
 	private final TemporalSelector indexSelector;
 	private final TemporalRelationMode indexMode;
 
+	private final ConceptQueryPlan outerCompareQueryPlan;
+	private final ConceptQueryPlan innerCompareQueryPlan;
+
 	private final TemporalSelector compareSelector;
 
-	private final CQElement compareQuery;
-
-	private final QueryPlanContext queryPlanContext;
-
-	private final ConceptQueryPlan indexSubPlan;
 
 	private final List<List> aggregationResults;
 	private final ConstantValueAggregator<CDateSet> compareDateAggregator = new ConstantValueAggregator<>(null);
@@ -59,7 +54,7 @@ public class TemporalQueryNode extends QPNode {
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
 
-		indexSubPlan.init(context, entity);
+		indexQueryPlan.init(context, entity);
 
 		aggregationResults.forEach(List::clear);
 
@@ -74,13 +69,13 @@ public class TemporalQueryNode extends QPNode {
 
 	public boolean evaluateSubQueries(QueryExecutionContext ctx, Entity entity) {
 
-		final Optional<SinglelineEntityResult> subResult = indexSubPlan.execute(ctx, entity);
+		final Optional<SinglelineEntityResult> subResult = indexQueryPlan.execute(ctx, entity);
 
 		if (subResult.isEmpty()) {
 			return false;
 		}
 
-		final CDateRange[] periods = indexSelector.sample(indexSubPlan.getDateAggregator().createAggregationResult());
+		final CDateRange[] periods = indexSelector.sample(indexQueryPlan.getDateAggregator().createAggregationResult());
 		final CDateRange[] indexPeriods = indexMode.convert(periods, indexSelector);
 
 		final boolean[] results = new boolean[indexPeriods.length];
@@ -95,7 +90,7 @@ public class TemporalQueryNode extends QPNode {
 			}
 
 			// Execute only event-filter based
-			final Optional<CDateSet> maybeComparePeriods = evaluateCompareQuery(ctx, entity, indexPeriod, true)
+			final Optional<CDateSet> maybeComparePeriods = evaluateCompareQuery(ctx, entity, indexPeriod, innerCompareQueryPlan)
 					.map(cqp -> cqp.getDateAggregator().createAggregationResult());
 
 			if (maybeComparePeriods.isEmpty()) {
@@ -109,7 +104,7 @@ public class TemporalQueryNode extends QPNode {
 			for (int inner = 0; inner < comparePeriods.length; inner++) {
 				final CDateRange comparePeriod = comparePeriods[inner];
 				// Execute compare-query to get actual result
-				final Optional<ConceptQueryPlan> compareResult = evaluateCompareQuery(ctx, entity, comparePeriod, false);
+				final Optional<ConceptQueryPlan> compareResult = evaluateCompareQuery(ctx, entity, comparePeriod, outerCompareQueryPlan);
 
 				compareSubPlans[inner] = compareResult.orElse(null);
 				compareResults[inner] = compareResult.isPresent();
@@ -135,13 +130,8 @@ public class TemporalQueryNode extends QPNode {
 		return indexSelector.satisfies(results);
 	}
 
-	private Optional<ConceptQueryPlan> evaluateCompareQuery(QueryExecutionContext ctx, Entity entity, CDateRange partition, boolean isOuter) {
-
-		final ConceptQuery query = new ConceptQuery(new CQDateRestriction(partition.toSimpleRange(), compareQuery));
-
-		// Execute after-query to get result date only
-		final ConceptQueryPlan cqp = query.createQueryPlan(queryPlanContext.withDisableAggregators(isOuter)
-																		   .withDisableAggregationFilters(isOuter));
+	private Optional<ConceptQueryPlan> evaluateCompareQuery(QueryExecutionContext ctx, Entity entity, CDateRange partition, ConceptQueryPlan cqp) {
+		ctx = ctx.withDateRestriction(CDateSet.create(partition));
 
 		cqp.init(ctx, entity);
 
@@ -167,7 +157,7 @@ public class TemporalQueryNode extends QPNode {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return indexSubPlan.isOfInterest(entity);
+		return indexQueryPlan.isOfInterest(entity);
 	}
 
 

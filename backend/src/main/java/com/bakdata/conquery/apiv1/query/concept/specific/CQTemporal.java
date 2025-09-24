@@ -10,6 +10,7 @@ import javax.validation.Valid;
 
 import c10n.C10N;
 import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.internationalization.ResultHeadersC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -89,13 +90,15 @@ public class CQTemporal extends CQElement {
 		// These aggregators will be fed with the actual aggregation results of the sub results
 		final List<ConstantValueAggregator<List>> shimAggregators = createShimAggregators();
 
-		TemporalQueryNode queryNode = new TemporalQueryNode(context.getStorage().getDataset().getAllIdsTable(), getIndexSelector(),
-															getMode(),
-															getCompareSelector(),
-															getCompareQuery(),
-															context,
-															indexSubPlan,
-															shimAggregators.stream().map(ConstantValueAggregator::getValue).collect(Collectors.toList())
+		TemporalQueryNode queryNode = new TemporalQueryNode(
+				context.getStorage().getDataset().getAllIdsTable(),
+				indexSubPlan,
+				getIndexSelector(),
+				getMode(),
+				new ConceptQuery(compare).createQueryPlan(context.withDisableAggregators(true).withDisableAggregationFilters(true)),
+				new ConceptQuery(compare).createQueryPlan(context.withDisableAggregators(false).withDisableAggregationFilters(false)),
+				getCompareSelector(),
+				shimAggregators.stream().map(ConstantValueAggregator::getValue).collect(Collectors.toList())
 		);
 
 		if (showCompareDate) {
