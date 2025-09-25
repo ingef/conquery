@@ -49,6 +49,7 @@ public class TemporalQueryNode extends QPNode {
 	private CDateSet compareDateResult;
 
 	private boolean result;
+	private boolean hit = false;
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
@@ -64,10 +65,42 @@ public class TemporalQueryNode extends QPNode {
 		compareDateAggregator.setValue(compareDateResult);
 		indexDateAggregator.setValue(indexDateResult);
 
-		result = evaluateSubQueries(context, entity);
 	}
 
-	public boolean evaluateSubQueries(QueryExecutionContext ctx, Entity entity) {
+	@Override
+	public void collectRequiredTables(Set<Table> requiredTables) {
+		requiredTables.add(table);
+	}
+
+	@Override
+	public boolean isOfInterest(Entity entity) {
+		return indexQueryPlan.isOfInterest(entity);
+	}
+
+	@Override
+	public boolean acceptEvent(Bucket bucket, int event) {
+		if (hit) {
+			return false;
+		}
+
+		hit = true;
+
+		result = evaluateTemporalQuery(context, entity);
+
+		// Does nothing
+		return false;
+	}
+
+	/**
+	 * Evaluate indexQueryPlan for indexPeriods.
+	 * Use result-dates with selector and mode to evaluate outerCompareQueryPlan, which produces subPeriods, to evaluate innerCompareQueryPlan.
+	 * <br />
+	 * outer- and innerCompareQueryPlan are identical, except that outer has all aggregations disabled, we are only interested in the periods, where inner _might_ be true.
+	 * Outer is evaluated with aggregations, to produce correct results.
+	 * <br />
+	 * mode and selector filter periods to the relevant timestamps and eventually determine if an entity is included or not.
+	 */
+	public boolean evaluateTemporalQuery(QueryExecutionContext ctx, Entity entity) {
 
 		final Optional<SinglelineEntityResult> indexResult = indexQueryPlan.execute(ctx, entity);
 
@@ -90,24 +123,28 @@ public class TemporalQueryNode extends QPNode {
 			}
 
 			// Execute only event-filter based
-			final Optional<CDateSet> maybeComparePeriods = evaluateCompareQuery(ctx, entity, indexPeriod, outerCompareQueryPlan)
-					.map(cqp -> cqp.getDateAggregator().createAggregationResult());
+			boolean outerIsContained = evaluateCompareQuery(ctx, entity, indexPeriod, outerCompareQueryPlan);
 
-			if (maybeComparePeriods.isEmpty()) {
+			if (!outerIsContained) {
 				continue;
 			}
 
-			final CDateRange[] comparePeriods = compareSelector.sample(maybeComparePeriods.get());
+			final CDateRange[] comparePeriods = compareSelector.sample(outerCompareQueryPlan.getDateAggregator().createAggregationResult());
 			final boolean[] compareResults = new boolean[comparePeriods.length];
-			final ConceptQueryPlan[] compareSubPlans = new ConceptQueryPlan[comparePeriods.length];
+			final CDateSet[] compareDates = new CDateSet[comparePeriods.length];
+			final Object[][] compareAggregationResults = new Object[comparePeriods.length][];
 
 			for (int inner = 0; inner < comparePeriods.length; inner++) {
 				final CDateRange comparePeriod = comparePeriods[inner];
 				// Execute compare-query to get actual result
-				final Optional<ConceptQueryPlan> compareResult = evaluateCompareQuery(ctx, entity, comparePeriod, innerCompareQueryPlan);
+				boolean innerIsContained = evaluateCompareQuery(ctx, entity, comparePeriod, innerCompareQueryPlan);
 
-				compareSubPlans[inner] = compareResult.orElse(null);
-				compareResults[inner] = compareResult.isPresent();
+				compareResults[inner] = innerIsContained;
+
+				if (innerIsContained) {
+					compareDates[inner] = innerCompareQueryPlan.getDateAggregator().createAggregationResult();
+					compareAggregationResults[inner] = innerCompareQueryPlan.getAggregators().stream().skip(1).map(Aggregator::createAggregationResult).toArray();
+				}
 			}
 
 			// If compare's selector is satisfied, we append current to the results and retrieve the aggregation results
@@ -116,55 +153,36 @@ public class TemporalQueryNode extends QPNode {
 			}
 
 			results[current] = true;
-			indexDateResult.add(periods[current]);
 
-			for (ConceptQueryPlan subPlan : compareSubPlans) {
-				if (subPlan == null) {
-					continue;
-				}
-
-				addAggregationResults(subPlan);
-			}
+			addAggregationResults(compareResults, compareDates, compareAggregationResults, periods[current]);
 		}
 
 		return indexSelector.satisfies(results);
 	}
 
-	private Optional<ConceptQueryPlan> evaluateCompareQuery(QueryExecutionContext ctx, Entity entity, CDateRange partition, ConceptQueryPlan cqp) {
+	private boolean evaluateCompareQuery(QueryExecutionContext ctx, Entity entity, CDateRange partition, ConceptQueryPlan cqp) {
 		ctx = ctx.withDateRestriction(CDateSet.create(partition));
 
 		cqp.init(ctx, entity);
 
 		final Optional<SinglelineEntityResult> entityResult = cqp.execute(ctx, entity);
 
-		return entityResult.map(ignored -> cqp);
+		return entityResult.isPresent();
 	}
 
-	private void addAggregationResults(ConceptQueryPlan subPlan) {
-		compareDateResult.addAll(subPlan.getDateAggregator().createAggregationResult());
+	private void addAggregationResults(boolean[] compareResults, CDateSet[] compareDates, Object[][] compareAggregationResults, CDateRange periods) {
+		indexDateResult.add(periods);
 
-		final List<Aggregator<?>> result = subPlan.getAggregators();
+		for (int index = 0; index < compareResults.length; index++) {
+			if (!compareResults[index]) {
+				continue;
+			}
 
-		for (int aggIdx = 0; aggIdx + 1 < result.size(); aggIdx++) {
-			aggregationResults.get(aggIdx).add(result.get(aggIdx + 1 /* skips dateAggregator */).createAggregationResult());
+			compareDateResult.addAll(compareDates[index]);
+			for (int aggIndex = 0; aggIndex < aggregationResults.size(); aggIndex++) {
+				aggregationResults.get(aggIndex).add(compareAggregationResults[index][aggIndex]);
+			}
 		}
-	}
-
-	@Override
-	public void collectRequiredTables(Set<Table> requiredTables) {
-		requiredTables.add(table);
-	}
-
-	@Override
-	public boolean isOfInterest(Entity entity) {
-		return indexQueryPlan.isOfInterest(entity);
-	}
-
-
-	@Override
-	public boolean acceptEvent(Bucket bucket, int event) {
-		// Does nothing
-		return false;
 	}
 
 	@Override
