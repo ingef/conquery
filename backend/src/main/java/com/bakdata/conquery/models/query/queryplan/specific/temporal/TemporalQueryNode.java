@@ -69,9 +69,9 @@ public class TemporalQueryNode extends QPNode {
 
 	public boolean evaluateSubQueries(QueryExecutionContext ctx, Entity entity) {
 
-		final Optional<SinglelineEntityResult> subResult = indexQueryPlan.execute(ctx, entity);
+		final Optional<SinglelineEntityResult> indexResult = indexQueryPlan.execute(ctx, entity);
 
-		if (subResult.isEmpty()) {
+		if (indexResult.isEmpty()) {
 			return false;
 		}
 
@@ -90,7 +90,7 @@ public class TemporalQueryNode extends QPNode {
 			}
 
 			// Execute only event-filter based
-			final Optional<CDateSet> maybeComparePeriods = evaluateCompareQuery(ctx, entity, indexPeriod, innerCompareQueryPlan)
+			final Optional<CDateSet> maybeComparePeriods = evaluateCompareQuery(ctx, entity, indexPeriod, outerCompareQueryPlan)
 					.map(cqp -> cqp.getDateAggregator().createAggregationResult());
 
 			if (maybeComparePeriods.isEmpty()) {
@@ -104,7 +104,7 @@ public class TemporalQueryNode extends QPNode {
 			for (int inner = 0; inner < comparePeriods.length; inner++) {
 				final CDateRange comparePeriod = comparePeriods[inner];
 				// Execute compare-query to get actual result
-				final Optional<ConceptQueryPlan> compareResult = evaluateCompareQuery(ctx, entity, comparePeriod, outerCompareQueryPlan);
+				final Optional<ConceptQueryPlan> compareResult = evaluateCompareQuery(ctx, entity, comparePeriod, innerCompareQueryPlan);
 
 				compareSubPlans[inner] = compareResult.orElse(null);
 				compareResults[inner] = compareResult.isPresent();
