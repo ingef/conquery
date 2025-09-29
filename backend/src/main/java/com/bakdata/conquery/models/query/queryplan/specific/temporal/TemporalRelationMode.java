@@ -20,7 +20,9 @@ import lombok.RequiredArgsConstructor;
 sealed public interface TemporalRelationMode permits TemporalRelationMode.After, TemporalRelationMode.While {
 
 	/**
-	 * With selector,
+	 * Take result-dates and convert it to date-restrictions to assert the temporal relation.
+	 * @param in the result date
+	 * @param selector TemporalSelector helps us optimize selection criteria.
 	 */
 	CDateRange[] convert(CDateRange[] in, TemporalSelector selector);
 
@@ -53,6 +55,7 @@ sealed public interface TemporalRelationMode permits TemporalRelationMode.After,
 
 			if (selector == TemporalSelector.EARLIEST) {
 				CDateRange period = parts[0];
+
 				if (!period.hasLowerBound()) {
 					return new CDateRange[0];
 				}
@@ -62,6 +65,7 @@ sealed public interface TemporalRelationMode permits TemporalRelationMode.After,
 
 			if (selector == TemporalSelector.LATEST) {
 				CDateRange period = parts[parts.length - 1];
+
 				if (!period.hasUpperBound()) {
 					return new CDateRange[0];
 				}
@@ -128,6 +132,7 @@ sealed public interface TemporalRelationMode permits TemporalRelationMode.After,
 
 	/**
 	 * Special case of AFTER, with compare and index flipped.
+	 * @see Before
 	 */
 	@CPSType(id = "BEFORE", base = TemporalRelationMode.class)
 	final class Before extends After {
@@ -140,7 +145,7 @@ sealed public interface TemporalRelationMode permits TemporalRelationMode.After,
 
 
 	/**
-	 * Compare must happen within WHILE, this means, they must intersect.
+	 * Compare must happen within WHILE, this means, they must at least intersect.
 	 */
 	@CPSType(id = "WHILE", base = TemporalRelationMode.class)
 	@Data

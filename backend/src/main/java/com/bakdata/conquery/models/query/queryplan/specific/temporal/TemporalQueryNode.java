@@ -51,6 +51,7 @@ public class TemporalQueryNode extends QPNode {
 	private boolean result;
 	private boolean hit = false;
 
+
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
@@ -64,7 +65,6 @@ public class TemporalQueryNode extends QPNode {
 
 		compareDateAggregator.setValue(compareDateResult);
 		indexDateAggregator.setValue(indexDateResult);
-
 	}
 
 	@Override
@@ -122,24 +122,24 @@ public class TemporalQueryNode extends QPNode {
 				continue;
 			}
 
-			// Execute only event-filter based
-			boolean outerIsContained = evaluateCompareQuery(ctx, entity, indexPeriod, outerCompareQueryPlan);
-
-			if (!outerIsContained) {
+			// Execute only event-filter based, to get potential periods for inner, with aggregation.
+			if (!evaluateWithRestriction(entity, indexPeriod, outerCompareQueryPlan, ctx)) {
 				continue;
 			}
 
-			final CDateRange[] comparePeriods = compareSelector.sample(outerCompareQueryPlan.getDateAggregator().createAggregationResult());
-			final boolean[] compareResults = new boolean[comparePeriods.length];
+			final CDateSet outerDates = outerCompareQueryPlan.getDateAggregator().createAggregationResult();
+
+			final CDateRange[] comparePeriods = compareSelector.sample(outerDates);
+			final boolean[] compareContained = new boolean[comparePeriods.length];
 			final CDateSet[] compareDates = new CDateSet[comparePeriods.length];
 			final Object[][] compareAggregationResults = new Object[comparePeriods.length][];
 
 			for (int inner = 0; inner < comparePeriods.length; inner++) {
 				final CDateRange comparePeriod = comparePeriods[inner];
 				// Execute compare-query to get actual result
-				boolean innerIsContained = evaluateCompareQuery(ctx, entity, comparePeriod, innerCompareQueryPlan);
+				boolean innerIsContained = evaluateWithRestriction(entity, comparePeriod, innerCompareQueryPlan, ctx);
 
-				compareResults[inner] = innerIsContained;
+				compareContained[inner] = innerIsContained;
 
 				if (innerIsContained) {
 					compareDates[inner] = innerCompareQueryPlan.getDateAggregator().createAggregationResult();
@@ -147,20 +147,26 @@ public class TemporalQueryNode extends QPNode {
 				}
 			}
 
-			// If compare's selector is satisfied, we append current to the results and retrieve the aggregation results
-			if (!compareSelector.satisfies(compareResults)) {
+			// If compare's selector is satisfied, we append current to the results and collect the aggregation results
+			if (!compareSelector.satisfies(compareContained)) {
 				continue;
 			}
 
 			results[current] = true;
+			indexDateResult.add(periods[current]);
 
-			addAggregationResults(compareResults, compareDates, compareAggregationResults, periods[current]);
+			addAggregationResults(compareContained, compareDates, compareAggregationResults);
 		}
 
 		return indexSelector.satisfies(results);
 	}
 
-	private boolean evaluateCompareQuery(QueryExecutionContext ctx, Entity entity, CDateRange partition, ConceptQueryPlan cqp) {
+	/**
+	 * Apply date-restriction to QueryContext, and execute Query.
+	 *
+	 * @return if the entity is contained or not.
+	 */
+	private boolean evaluateWithRestriction(Entity entity, CDateRange partition, ConceptQueryPlan cqp, QueryExecutionContext ctx) {
 		ctx = ctx.withDateRestriction(CDateSet.create(partition));
 
 		cqp.init(ctx, entity);
@@ -170,17 +176,24 @@ public class TemporalQueryNode extends QPNode {
 		return entityResult.isPresent();
 	}
 
-	private void addAggregationResults(boolean[] compareResults, CDateSet[] compareDates, Object[][] compareAggregationResults, CDateRange periods) {
-		indexDateResult.add(periods);
+	/**
+	 * Collect aggregation results of satisfied innerQueries.
+	 */
+	@SuppressWarnings("unchecked")
+	private void addAggregationResults(boolean[] compareContained, CDateSet[] compareDates, Object[][] compareAggregationResults) {
+		assert compareContained.length == compareDates.length;
+		assert compareContained.length == compareAggregationResults.length;
 
-		for (int index = 0; index < compareResults.length; index++) {
-			if (!compareResults[index]) {
+		for (int index = 0; index < compareContained.length; index++) {
+			if (!compareContained[index]) {
 				continue;
 			}
 
 			compareDateResult.addAll(compareDates[index]);
 			for (int aggIndex = 0; aggIndex < aggregationResults.size(); aggIndex++) {
-				aggregationResults.get(aggIndex).add(compareAggregationResults[index][aggIndex]);
+
+				aggregationResults.get(aggIndex)
+								  .add(compareAggregationResults[index][aggIndex]);
 			}
 		}
 	}
