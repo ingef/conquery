@@ -12,6 +12,7 @@ import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -22,7 +23,6 @@ import com.bakdata.conquery.models.index.MapInternToExternMapper;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import com.bakdata.conquery.util.extensions.MockServerExtension;
-import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +55,7 @@ public class IndexServiceTest {
 	private static void initRefServer(ClientAndServer mockServer) {
 		log.info("Test loading of mapping");
 
-		try (InputStream inputStream = In.resource(MAPPING_PATH).asStream()) {
+		try (InputStream inputStream = LoadingUtil.openResource(MAPPING_PATH)) {
 			mockServer.when(request().withPath("/mapping.csv"))
 					  .respond(HttpResponse.response().withContentType(new MediaType("text", "csv")).withBody(inputStream.readAllBytes()));
 		}
@@ -80,7 +80,7 @@ public class IndexServiceTest {
 	void testLoading() throws NoSuchFieldException, IllegalAccessException, URISyntaxException, IOException {
 		log.info("Test loading of mapping");
 
-		try (InputStream inputStream = In.resource(MAPPING_PATH).asStream()) {
+		try (InputStream inputStream = LoadingUtil.openResource(MAPPING_PATH)) {
 			REF_SERVER.when(request().withPath("/mapping.csv"))
 					  .respond(HttpResponse.response().withContentType(new MediaType("text", "csv")).withBody(inputStream.readAllBytes()));
 		}
