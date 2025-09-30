@@ -281,9 +281,9 @@ const transformTreeToApi = (tree: Tree): unknown => {
         node = {
           type: "TEMPORAL",
           mode: mode,
-          index: transformTreeToApi(tree.children.items[1]),
+          index: transformTreeToApi(tree.children.items[0]),
           indexSelector: tsMap[timeNode.timestamps[0]],
-          compare: transformTreeToApi(tree.children.items[0]),
+          compare: transformTreeToApi(tree.children.items[1]),
           compareSelector: tsMap[timeNode.timestamps[1]],
         };
         break;
