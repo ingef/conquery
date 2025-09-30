@@ -6,12 +6,14 @@ import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ShardNodeNetworkContext;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.Getter;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id="REMOVE_WORKER", base=NetworkMessage.class)
-@RequiredArgsConstructor(onConstructor_=@JsonCreator) @Getter @Slf4j
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+@Data
+@Slf4j
 public class RemoveWorker extends MessageToShardNode.Slow {
 
 	private final DatasetId dataset;

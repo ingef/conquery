@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -35,28 +35,28 @@ public class ResultParquetProcessor {
 	private final DatasetRegistry<?> datasetRegistry;
 	private final ConqueryConfig config;
 
-	public Response createResultFile(Subject subject, ManagedExecution exec, boolean pretty, OptionalLong limit) {
+	public Response createResultFile(Subject subject, ManagedExecutionId execId, boolean pretty, OptionalLong limit) {
 
 		ConqueryMDC.setLocation(subject.getName());
 
-		final DatasetId datasetId = exec.getDataset();
+		final ManagedExecution execution = execId.resolve();
 
-		log.info("Downloading results for {}", exec.getId());
+		log.info("Downloading results for {}", execId);
 
-		ResultUtil.authorizeExecutable(subject, exec);
+		ResultUtil.authorizeExecutable(subject, execution);
 
-		ResultUtil.checkSingleTableResult(exec);
+		ResultUtil.checkSingleTableResult(execution);
 
-		final Namespace namespace = datasetRegistry.get(datasetId);
+		final Namespace namespace = datasetRegistry.get(execution.getDataset());
 
-		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
+		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, execution, namespace, config.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();
 		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId, null);
 
 		final StreamingOutput out = output -> {
 
-			final SingleTableResult singleTableResult = (SingleTableResult) exec;
+			final SingleTableResult singleTableResult = (SingleTableResult) execution;
 			ParquetRenderer.writeToStream(
 					output,
 					config.getIdColumns().getIdResultInfos(),
@@ -68,6 +68,10 @@ public class ResultParquetProcessor {
 		};
 
 
-		return makeResponseWithFileName(Response.ok(out), String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_PARQUET), PARQUET_MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(Response.ok(out),
+										String.join(".", execution.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_PARQUET),
+										PARQUET_MEDIA_TYPE,
+										ResultUtil.ContentDispositionOption.ATTACHMENT
+		);
 	}
 }

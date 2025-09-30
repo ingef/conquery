@@ -6,7 +6,7 @@ on:
       - develop
 
 jobs:
-  trigger-external-action:
+  webhook:
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:

@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import jakarta.inject.Inject;
 import jakarta.validation.Validator;
 
@@ -37,6 +38,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.CalculatedValue;
@@ -49,6 +51,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -106,9 +109,9 @@ public class ConceptsProcessor {
 
 	});
 
-	public FrontendRoot getRoot(NamespaceStorage storage, Subject subject) {
+	public FrontendRoot getRoot(NamespaceStorage storage, Subject subject, boolean showHidden) {
 
-		final FrontendRoot root = getFrontEndConceptBuilder().createRoot(storage, subject);
+		final FrontendRoot root = getFrontEndConceptBuilder().createRoot(storage, subject, showHidden);
 
 		// Report Violation
 		ValidatorHelper.createViolationsString(validator.validate(root), log.isTraceEnabled()).ifPresent(log::warn);
@@ -125,17 +128,16 @@ public class ConceptsProcessor {
 		}
 	}
 
-	public List<IdLabel<DatasetId>> getDatasets(Subject subject) {
+	public Stream<IdLabel<DatasetId>> getDatasets(Subject subject) {
 		return namespaces.getAllDatasets()
-						 .stream()
 						 .filter(d -> subject.isPermitted(d, Ability.READ))
+						 .map(DatasetId::resolve)
 						 .sorted(Comparator.comparing(Dataset::getWeight).thenComparing(Dataset::getLabel))
-						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))
-						 .collect(Collectors.toList());
+						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()));
 	}
 
-	public FrontendPreviewConfig getEntityPreviewFrontendConfig(Dataset dataset) {
-		final Namespace namespace = namespaces.get(dataset.getId());
+	public FrontendPreviewConfig getEntityPreviewFrontendConfig(DatasetId dataset) {
+		final Namespace namespace = namespaces.get(dataset);
 		final PreviewConfig previewConfig = namespace.getPreviewConfig();
 
 		// Connectors only act as bridge to table for the fronted, but also provide ConceptColumnT semantic
@@ -150,7 +152,7 @@ public class ConceptsProcessor {
 							 .stream()
 							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), id.resolve().getResolvedTable().getLabel()))
 							 .collect(Collectors.toSet()),
-				previewConfig.resolveSearchFilters(),
+				previewConfig.getSearchFilters(),
 				previewConfig.resolveSearchConcept()
 		);
 	}
@@ -159,16 +161,17 @@ public class ConceptsProcessor {
 	 * Search for all search terms at once, with stricter scoring.
 	 * The user will upload a file and expect only well-corresponding resolutions.
 	 */
-	public ResolvedFilterValues resolveFilterValues(SelectFilter<?> searchable, List<String> searchTerms) {
+	public ResolvedFilterValues resolveFilterValues(FilterId filterId, List<String> searchTerms) {
+		SelectFilter<?> filter = (SelectFilter<?>) filterId.resolve();
 
 		// search in the full text engine
 		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
 
-		final Namespace namespace = namespaces.get(searchable.getDataset());
+		final Namespace namespace = namespaces.get(filter.getDataset());
 
 		final List<FrontendValue> out = new ArrayList<>();
 
-		for (TrieSearch<FrontendValue> search : namespace.getFilterSearch().getSearchesFor(searchable)) {
+		for (TrieSearch<FrontendValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
 			for (final Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext(); ) {
 
 				final String searchTerm = iterator.next();
@@ -183,13 +186,13 @@ public class ConceptsProcessor {
 			}
 		}
 
-		final ConnectorId connectorId = searchable.getConnector().getId();
+		final ConnectorId connectorId = filter.getConnector().getId();
 
-		return new ResolvedFilterValues(new ResolvedFilterResult(connectorId, searchable.getId().toString(), out), openSearchTerms);
+		return new ResolvedFilterValues(new ResolvedFilterResult(connectorId, filter.getId().toString(), out), openSearchTerms);
 	}
 
 	public AutoCompleteResult autocompleteTextFilter(
-			SelectFilter<?> searchable,
+			FilterId filterId,
 			Optional<String> maybeText,
 			OptionalInt pageNumberOpt,
 			OptionalInt itemsPerPageOpt
@@ -200,7 +203,9 @@ public class ConceptsProcessor {
 		Preconditions.checkArgument(pageNumber >= 0, "Page number must be 0 or a positive integer.");
 		Preconditions.checkArgument(itemsPerPage > 1, "Must at least have one item per page.");
 
-		log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, searchable.getId(), pageNumber, itemsPerPage);
+		final SelectFilter<?> filter = (SelectFilter<?>) filterId.resolve();
+
+		log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, filterId, pageNumber, itemsPerPage);
 
 		final int startIncl = itemsPerPage * pageNumber;
 		final int endExcl = startIncl + itemsPerPage;
@@ -209,13 +214,13 @@ public class ConceptsProcessor {
 
 			// If we have none or a blank query string we list all values.
 			if (maybeText.isEmpty() || maybeText.get().isBlank()) {
-				final CursorAndLength cursorAndLength = listResults.get(searchable);
+				final CursorAndLength cursorAndLength = listResults.get(filter);
 				final Cursor<FrontendValue> cursor = cursorAndLength.values();
 
 				return new AutoCompleteResult(cursor.get(startIncl, endExcl), cursorAndLength.size());
 			}
 
-			final List<FrontendValue> fullResult = searchResults.get(Pair.of(searchable, maybeText.get()));
+			final List<FrontendValue> fullResult = searchResults.get(Pair.of(filter, maybeText.get()));
 
 			if (startIncl >= fullResult.size()) {
 				return new AutoCompleteResult(Collections.emptyList(), fullResult.size());
@@ -224,7 +229,7 @@ public class ConceptsProcessor {
 			return new AutoCompleteResult(fullResult.subList(startIncl, Math.min(fullResult.size(), endExcl)), fullResult.size());
 		}
 		catch (ExecutionException e) {
-			log.warn("Failed to search for \"{}\".", maybeText, (Exception) (log.isTraceEnabled() ? e : null));
+			log.warn("Failed to search for `{}`.", maybeText, log.isTraceEnabled() ? e : null);
 			return new AutoCompleteResult(Collections.emptyList(), 0);
 		}
 	}
@@ -307,7 +312,7 @@ public class ConceptsProcessor {
 				log.error("Error while trying to resolve `{}`", conceptCode, e);
 			}
 		}
-		return new ResolvedConceptsResult(resolvedCodes,  unknownCodes);
+		return new ResolvedConceptsResult(resolvedCodes, unknownCodes);
 	}
 
 	/**
@@ -327,6 +332,11 @@ public class ConceptsProcessor {
 
 	}
 
-	public record ResolvedConceptsResult(Set<ConceptElementId<?>> resolvedConcepts, Collection<String> unknownCodes) {
+	@Data
+	public static final class ResolvedConceptsResult {
+		private final Set<ConceptElementId<?>> resolvedConcepts;
+		private final Collection<String> unknownCodes;
+
+
 	}
 }

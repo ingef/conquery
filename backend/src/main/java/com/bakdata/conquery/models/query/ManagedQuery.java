@@ -17,16 +17,20 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -52,8 +56,8 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 
 
-	public ManagedQuery(Query query, UserId owner, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
-		super(owner, submittedDataset, storage, datasetRegistry);
+	public ManagedQuery(Query query, UserId owner, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		super(owner, submittedDataset, storage, datasetRegistry, config);
 		this.query = query;
 	}
 
@@ -62,11 +66,12 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		query.resolve(new QueryResolveContext(getNamespace(), getConfig(), getMetaStorage(), null));
 	}
 
-
 	@Override
 	public synchronized void finish(ExecutionState executionState) {
 		//TODO this is not optimal with SQLExecutionService as this might fully evaluate the query.
 		lastResultCount = query.countResults(streamResults(OptionalLong.empty()));
+
+		log.debug("Finished {} with {} results", getId(), lastResultCount);
 
 		super.finish(executionState);
 	}
@@ -96,7 +101,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
 
 		super.setStatusBase(subject, status);
-		status.setNumberOfResults(getLastResultCount());
+		status.setNumberOfResults(lastResultCount);
 
 		Query query = getQuery();
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
@@ -113,12 +118,8 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 	@JsonIgnore
 	public List<ResultInfo> getResultInfos() {
+		Preconditions.checkState(isInitialized());
 		return query.getResultInfos();
-	}
-
-	@Override
-	public void cancel() {
-
 	}
 
 	@Override
@@ -146,4 +147,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		query.visit(visitor);
 	}
 
+	@Override
+	public WorkerMessage createExecutionMessage() {
+		Preconditions.checkState(isInitialized(), "Was not initialized");
+		return new ExecuteQuery(getId(), getQuery());
+	}
 }

@@ -12,13 +12,12 @@ import java.util.stream.Stream;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.ExcelSheetNameC10n;
-import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -54,6 +53,7 @@ public class ExcelRenderer {
 	private final ExcelConfig config;
 	private final PrintSettings settings;
 	private final ImmutableMap<String, CellStyle> styles;
+
 	public ExcelRenderer(ExcelConfig config, PrintSettings settings) {
 		workbook = new SXSSFWorkbook();
 		this.config = config;
@@ -61,11 +61,12 @@ public class ExcelRenderer {
 		this.settings = settings;
 	}
 
-	public <E extends ManagedExecution & SingleTableResult> void renderToStream(List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit, PrintSettings printSettings)
+	public <E extends ManagedExecution & SingleTableResult> void renderToStream(
+			List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit, PrintSettings printSettings, MetaStorage storage)
 			throws IOException {
 		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 
-		setMetaData(exec);
+		setMetaData(exec, storage);
 
 		final SXSSFSheet sheet = workbook.createSheet(C10N.get(ExcelSheetNameC10n.class, I18n.LOCALE.get()).result());
 		try {
@@ -91,12 +92,21 @@ public class ExcelRenderer {
 	/**
 	 * Include meta data in the xlsx such as the title, owner/author, tag and the name of this instance.
 	 */
-	private <E extends ManagedExecution & SingleTableResult> void setMetaData(E exec) {
+	private <E extends ManagedExecution & SingleTableResult> void setMetaData(E exec, MetaStorage metaStorage) {
 		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
 		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
 
-		final UserId owner = exec.getOwner();
-		coreProperties.setCreator(owner != null ? owner.resolve().getLabel() : config.getApplicationName());
+		String creator = config.getApplicationName();
+
+		if (exec.getOwner() != null) {
+			final User user = exec.getOwner().resolve();
+
+			if (user != null) {
+				creator = user.getLabel();
+			}
+		}
+
+		coreProperties.setCreator(creator);
 		coreProperties.setKeywords(String.join(" ", exec.getTags()));
 		final POIXMLProperties.ExtendedProperties extendedProperties = workbook.getXSSFWorkbook().getProperties().getExtendedProperties();
 		extendedProperties.setApplication(config.getApplicationName());
@@ -180,7 +190,8 @@ public class ExcelRenderer {
 		// Row 0 is the Header the data starts at 1
 		final AtomicInteger currentRow = new AtomicInteger(1);
 
-		final TypeWriter[] writers = infos.stream().map(info -> writer(info.getType(), info.createPrinter(printerFactory, settings), settings)).toArray(TypeWriter[]::new);
+		final TypeWriter[] writers =
+				infos.stream().map(info -> writer(info.getType(), info.createPrinter(printerFactory, settings), settings)).toArray(TypeWriter[]::new);
 		final PrintIdMapper idMapper = settings.getIdMapper();
 
 		final int writtenLines = resultLines.mapToInt(l -> writeRowsForEntity(infos, l, currentRow, sheet, writers, idMapper)).sum();
@@ -215,10 +226,32 @@ public class ExcelRenderer {
 		sheet.createFreezePane(size, 1);
 	}
 
+	private static TypeWriter writer(ResultType type, Printer printer, PrintSettings settings) {
+		if (type instanceof ResultType.ListT<?>) {
+			//Excel cannot handle LIST types so we just toString them.
+			return (value, cell, styles) -> writeStringCell(cell, value, printer);
+		}
+
+		return switch (((ResultType.Primitive) type)) {
+			case BOOLEAN -> (value, cell, styles) -> writeBooleanCell(value, cell, printer);
+			case INTEGER -> (value, cell, styles) -> writeIntegerCell(value, cell, printer, styles);
+			case MONEY -> (value, cell, styles) -> writeMoneyCell(value, cell, printer, settings, styles);
+			case NUMERIC -> (value, cell, styles) -> writeNumericCell(value, cell, printer, styles);
+			case DATE -> (value, cell, styles) -> writeDateCell(value, cell, printer, styles);
+			default -> (value, cell, styles) -> writeStringCell(cell, value, printer);
+		};
+	}
+
 	/**
 	 * Writes the result lines for each entity.
 	 */
-	private int writeRowsForEntity(List<ResultInfo> infos, EntityResult internalRow, final AtomicInteger currentRow, SXSSFSheet sheet, TypeWriter[] writers, PrintIdMapper idMapper) {
+	private int writeRowsForEntity(
+			List<ResultInfo> infos,
+			EntityResult internalRow,
+			final AtomicInteger currentRow,
+			SXSSFSheet sheet,
+			TypeWriter[] writers,
+			PrintIdMapper idMapper) {
 
 		final String[] ids = idMapper.map(internalRow).getExternalId();
 
@@ -284,22 +317,6 @@ public class ExcelRenderer {
 			// Disable auto sizing so we don't have a performance penalty
 			sheet.untrackColumnForAutoSizing(columnIndex);
 		}
-	}
-
-	private static TypeWriter writer(ResultType type, Printer printer, PrintSettings settings) {
-		if (type instanceof ResultType.ListT<?>) {
-			//Excel cannot handle LIST types so we just toString them.
-			return (value, cell, styles) -> writeStringCell(cell, value, printer);
-		}
-
-		return switch (((ResultType.Primitive) type)) {
-			case BOOLEAN -> (value, cell, styles) -> writeBooleanCell(value, cell, printer);
-			case INTEGER -> (value, cell, styles) -> writeIntegerCell(value, cell, printer, styles);
-			case MONEY -> (value, cell, styles) -> writeMoneyCell(value, cell, printer, settings, styles);
-			case NUMERIC -> (value, cell, styles) -> writeNumericCell(value, cell, printer, styles);
-			case DATE -> (value, cell, styles) -> writeDateCell(value, cell, printer, styles);
-			default -> (value, cell, styles) -> writeStringCell(cell, value, printer);
-		};
 	}
 
 	// Type specific cell writers

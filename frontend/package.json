@@ -37,7 +37,7 @@
     "@vitejs/plugin-react": "^4.3.2",
     "apache-arrow": "^17.0.0",
     "autoprefixer": "^10.4.19",
-    "axios": "^1.7.7",
+    "axios": "^1.12.1",
     "chance": "^1.1.11",
     "chart.js": "^4.4.4",
     "compression": "^1.7.4",

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.cps;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.base.Strings;
@@ -126,10 +128,10 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 	}
 
 	@Override
-	public JavaType typeFromId(DatabindContext context, String id) {
+	public JavaType typeFromId(DatabindContext context, String id) throws IOException {
 		Class<?> result = cpsMap.getClassFromId(truncateSubTypeInformation(id));
 		if (result == null) {
-			throw new IllegalStateException("There is no type " + id + " for " + baseType.getTypeName() + ". Try: " + getDescForKnownTypeIds());
+			throw new InvalidTypeIdException(null, "There is no type " + id + " for " + baseType.getTypeName() + ". Try: " + getDescForKnownTypeIds(), baseType, id);
 		}
 		String subTypeInfo = extractSubTypeInformation(id);
 		if (!Strings.isNullOrEmpty(subTypeInfo)) {

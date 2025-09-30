@@ -1,8 +1,10 @@
 package com.bakdata.conquery.io.storage;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
@@ -12,13 +14,11 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
-import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class NamespacedStorageImpl extends ConqueryStorage implements Injectable, NamespacedStorage {
+public abstract class NamespacedStorageImpl implements NamespacedStorage {
 
 	@Getter
 	@ToString.Include
@@ -47,6 +47,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	protected IdentifiableStore<Table> tables;
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
+	protected Store<String, Integer> entity2Bucket;
+
 
 	public NamespacedStorageImpl(StoreFactory storageFactory, String pathName) {
 		this.pathName = pathName;
@@ -55,10 +57,10 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 
 	@Override
 	public ImmutableList<ManagedStore> getStores() {
-		return ImmutableList.of(dataset, secondaryIds, tables, imports, concepts);
+		return ImmutableList.of(dataset, secondaryIds, tables, imports, concepts, entity2Bucket);
 	}
 
-	public void openStores(ObjectMapper objectMapper, MetricRegistry metricRegistry) {
+	public void openStores(ObjectMapper objectMapper) {
 		if (objectMapper != null) {
 			injectInto(objectMapper);
 		}
@@ -68,39 +70,29 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 		tables = storageFactory.createTableStore(pathName, objectMapper);
 		imports = storageFactory.createImportStore(pathName, objectMapper);
 		concepts = storageFactory.createConceptStore(pathName, objectMapper);
-
-		decorateDatasetStore(dataset);
-		decorateSecondaryIdDescriptionStore(secondaryIds);
-		decorateTableStore(tables);
-		decorateImportStore(imports);
-		decorateConceptStore(concepts);
+		entity2Bucket = storageFactory.createEntity2BucketStore(pathName, objectMapper);
 	}
 
-	private void decorateDatasetStore(SingletonStore<Dataset> store) {
+
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return values.add(NamespacedStorage.class, this)
+					 .add(NamespacedStorageProvider.class,this);
 	}
 
-	private void decorateSecondaryIdDescriptionStore(IdentifiableStore<SecondaryIdDescription> store) {
-		// Nothing to decorate
+	@Override
+	public NamespacedStorage getStorage(@Nullable DatasetId datasetId) {
+		DatasetId thisDatasetId = getDataset().getId();
+		if (datasetId != null && !datasetId.equals(thisDatasetId)) {
+			throw new IllegalArgumentException("Dataset id mismatch: expected " + thisDatasetId + " but got " + datasetId);
+		}
+		return this;
 	}
 
-	private void decorateTableStore(IdentifiableStore<Table> store) {
-
-	}
-
-	private void decorateImportStore(IdentifiableStore<Import> store) {
-		// Intentionally left blank
-	}
-
-	private void decorateConceptStore(IdentifiableStore<Concept<?>> store) {
-		store.onAdd(concept -> {
-
-			if (concept.getDataset() != null && !concept.getDataset().equals(dataset.get().getId())) {
-				throw new IllegalStateException("Concept is not for this dataset.");
-			}
-
-			concept.setDataset(dataset.get().getId());
-
-		});
+	@Override
+	public Collection<DatasetId> getAllDatasetIds() {
+		return List.of(getDataset().getId());
 	}
 
 	// Imports
@@ -120,8 +112,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	}
 
 	@Override
-	public Stream<Import> getAllImports() {
-		return imports.getAll();
+	public Stream<ImportId> getAllImports() {
+		return imports.getAllKeys().map(ImportId.class::cast);
 	}
 
 	@Override
@@ -140,36 +132,22 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	public void updateDataset(Dataset dataset) {
 		this.dataset.update(dataset);
 	}
-	public <ID extends Id<?> & NamespacedId, VALUE> VALUE get(ID id) {
-		return (VALUE) id.get(this);
-	}
-@Override
-	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return values.add(NamespacedStorageProvider.class, this).
-					 add(NamespacedStorage.class, this);
-	}@Override
+
+	@Override
 	public Dataset getDataset() {
-		return dataset.get();
+		return this.dataset.get();
 	}
 
-
-
-	// Tables
-
-		@Override
-	public Table getTable(TableId tableId) {
-		return getTableFromStorage(tableId);
-	}
-
-	private Table getTableFromStorage(TableId tableId) {
-		return tables.get(tableId);
-	}
 
 	@Override
 	public Stream<Table> getTables() {
 		return tables.getAllKeys().map(TableId.class::cast).map(this::getTable);
 	}
 
+	@Override
+	public Table getTable(TableId tableId) {
+		return tables.get(tableId);
+	}
 
 	@Override
 	public void addTable(Table table) {
@@ -184,17 +162,17 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	// SecondaryId
 
 	@Override
+	public Stream<SecondaryIdDescription> getSecondaryIds() {
+		return secondaryIds.getAllKeys().map(SecondaryIdDescriptionId.class::cast).map(this::getSecondaryId);
+	}
+
+	@Override
 	public SecondaryIdDescription getSecondaryId(SecondaryIdDescriptionId descriptionId) {
 		return getSecondaryIdFromStorage(descriptionId);
 	}
 
 	private SecondaryIdDescription getSecondaryIdFromStorage(SecondaryIdDescriptionId descriptionId) {
 		return secondaryIds.get(descriptionId);
-	}
-
-	@Override
-	public Stream<SecondaryIdDescription> getSecondaryIds() {
-		return secondaryIds.getAllKeys().map(SecondaryIdDescriptionId.class::cast).map(this::getSecondaryId);
 	}
 
 	@Override
@@ -210,17 +188,17 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	// Concepts
 
 	@Override
+	public Stream<Concept<?>> getAllConcepts() {
+		return concepts.getAllKeys().map(ConceptId.class::cast).map(this::getConcept);
+	}
+
+	@Override
 	public Concept<?> getConcept(ConceptId id) {
 		return getConceptFromStorage(id);
 	}
 
 	private Concept<?> getConceptFromStorage(ConceptId id) {
 		return concepts.get(id);
-	}
-
-	@Override
-	public Stream<Concept<?>> getAllConcepts() {
-		return concepts.getAllKeys().map(ConceptId.class::cast).map(this::getConcept);
 	}
 
 	@Override
@@ -232,6 +210,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 	@SneakyThrows
 	public void updateConcept(Concept<?> concept) {
 		log.debug("Updating Concept[{}]", concept.getId());
+
 		concepts.update(concept);
 	}
 
@@ -241,9 +220,18 @@ public abstract class NamespacedStorageImpl extends ConqueryStorage implements I
 		concepts.remove(id);
 	}
 
-	// Utility
+	@Override
+	public int getEntityBucket(String entity) {
+		return entity2Bucket.get(entity);
+	}
 
+	@Override
+	public void addEntityToBucket(String entity, int bucket) {
+		entity2Bucket.add(entity, bucket);
+	}
 
-
-
+	@Override
+	public boolean hasEntity(String entity) {
+		return entity2Bucket.hasKey(entity);
+	}
 }

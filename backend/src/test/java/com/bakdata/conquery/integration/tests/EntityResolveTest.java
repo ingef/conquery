@@ -17,16 +17,15 @@ import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.DatasetQueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.description.LazyTextDescription;
 
@@ -40,9 +39,9 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final String testJson = In.resource("/tests/query/ENTITY_EXPORT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
+		final String testJson = LoadingUtil.readResource("/tests/query/ENTITY_EXPORT_TESTS/SIMPLE_TREECONCEPT_Query.json");
 
-		final Dataset dataset = conquery.getDataset();
+		final DatasetId dataset = conquery.getDataset();
 
 		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 
@@ -76,7 +75,8 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 
 		// Api uses NsIdRef, so we have to use the real objects here.
 		FilterId filterId = FilterId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.values-filter");
-		Filter<?> filter = filterId.get(conquery.getNamespaceStorage());
+		filterId.setDomain(conquery.getDatasetRegistry());
+		Filter<?> filter = filterId.resolve();
 
 
 		final List<Map<String, String>> result;

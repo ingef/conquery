@@ -79,7 +79,8 @@
             {
                 "label": "BIG_MULTI_SELECT",
                 "column": "table.STRING",
-                "type": "BIG_MULTI_SELECT"
+                "type": "BIG_MULTI_SELECT",
+                "allowDropFile": true
             },
             {
                 "label": "DURATION_SUM",
@@ -121,7 +122,7 @@
           {
             "label": "FIRST MAPPED",
             "type": "FIRST",
-            "column": "table.INTEGER",
+            "column": "table.STRING",
             "mapping": "example_mapping"
           },
           {

@@ -1,24 +1,21 @@
 package com.bakdata.conquery.mode.cluster;
 
+import jakarta.validation.Validator;
+
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.identifiable.ids.IIdInterner;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
+import com.bakdata.conquery.models.identifiable.ids.IdInterner;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
-import jakarta.validation.Validator;
 
 public record InternalMapperFactory(ConqueryConfig config, Validator validator) {
-
-	public ObjectMapper createShardCommunicationMapper() {
-		return createInternalObjectMapper(View.InternalCommunication.class);
-	}
 
 	/**
 	 * @return a preconfigured binary object mapper
@@ -31,7 +28,7 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 
 		injectableValues.add(Validator.class, validator);
 		config.injectInto(objectMapper);
-		new IIdInterner().injectInto(objectMapper);
+		new IdInterner().injectInto(objectMapper);
 
 		if (viewClass != null) {
 			setViewClass(objectMapper, viewClass);
@@ -56,26 +53,19 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 		objectMapper.setConfig(deserializationConfig);
 	}
 
-	public ObjectMapper createWorkerCommunicationMapper(WorkerStorage storage) {
-		final ObjectMapper objectMapper = createInternalObjectMapper(View.InternalCommunication.class);
-
-		storage.injectInto(objectMapper);
-
-		return objectMapper;
-	}
-
-	public ObjectMapper createWorkerPersistenceMapper(WorkerStorage storage) {
+	public ObjectMapper createWorkerPersistenceMapper(NamespacedStorageProvider workerStorageProvider) {
 		final ObjectMapper objectMapper = createInternalObjectMapper(View.Persistence.Shard.class);
 
-		storage.injectInto(objectMapper);
+		workerStorageProvider.injectInto(objectMapper);
 
 		return objectMapper;
 	}
 
-	public ObjectMapper createNamespacePersistenceMapper(NamespaceStorage namespaceStorage) {
+	public ObjectMapper createNamespacePersistenceMapper(NamespaceStorage namespaceStorage, DatasetRegistry<?> datasetRegistry) {
 		final ObjectMapper objectMapper = createInternalObjectMapper(View.Persistence.Manager.class);
 
 		namespaceStorage.injectInto(objectMapper);
+		datasetRegistry.injectInto(objectMapper);
 
 		return objectMapper;
 	}
@@ -86,10 +76,11 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 		datasetRegistry.injectInto(objectMapper);
 		metaStorage.injectInto(objectMapper);
 
+
 		return objectMapper;
 	}
 
-	public ObjectMapper createManagerCommunicationMapper(DatasetRegistry<?> datasetRegistry) {
+	public ObjectMapper createInternalCommunicationMapper(NamespacedStorageProvider datasetRegistry) {
 		ObjectMapper objectMapper = createInternalObjectMapper(View.InternalCommunication.class);
 
 		datasetRegistry.injectInto(objectMapper);
@@ -97,18 +88,12 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 		return objectMapper;
 	}
 
-	public ObjectMapper createNamespaceCommunicationMapper(NamespaceStorage namespaceStorage) {
-		ObjectMapper objectMapper = createInternalObjectMapper(View.InternalCommunication.class);
-
-		namespaceStorage.injectInto(objectMapper);
-
-		return objectMapper;
-	}
-
-	public ObjectMapper createPreprocessMapper(NamespaceStorage namespaceStorage) {
+	public ObjectMapper createPreprocessMapper(NamespaceStorage namespaceStorage, DatasetRegistry<?> datasetRegistry) {
 		ObjectMapper objectMapper = createInternalObjectMapper(null);
 
 		namespaceStorage.injectInto(objectMapper);
+		datasetRegistry.injectInto(objectMapper);
+
 
 		return objectMapper;
 	}
@@ -131,7 +116,7 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 		objectMapper.setInjectableValues(injectableValues);
 		injectableValues.add(Validator.class, validator);
 
-		new IIdInterner().injectInto(objectMapper);
+		new IdInterner().injectInto(objectMapper);
 		datasetRegistry.injectInto(objectMapper);
 		metaStorage.injectInto(objectMapper);
 		config.injectInto(objectMapper);

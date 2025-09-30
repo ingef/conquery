@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
+import java.util.function.BiFunction;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.Labeled;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @NoArgsConstructor
 @Slf4j
-public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedIdentifiable<ValidityDateId>, DaterangeSelectOrFilter {
+public class ValidityDate extends LabeledNamespaceIdentifiable<ValidityDateId> implements DaterangeSelectOrFilter {
 
 	@Nullable
 	private ColumnId column;
@@ -38,6 +38,9 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 	@EqualsAndHashCode.Exclude
 	private Connector connector;
 
+	@JsonIgnore
+	private BiFunction<Integer, Bucket, CDateRange> extractor;
+
 	public static ValidityDate create(Column column) {
 		final ValidityDate validityDate = new ValidityDate();
 		validityDate.setColumn(column.getId());
@@ -46,44 +49,22 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 
 	public static ValidityDate create(Column startColumn, Column endColumn) {
 		final ValidityDate validityDate = new ValidityDate();
-		validityDate.setColumn(startColumn.getId());
-		validityDate.setColumn(endColumn.getId());
+		validityDate.setStartColumn(startColumn.getId());
+		validityDate.setEndColumn(endColumn.getId());
 		return validityDate;
 	}
 
 	@CheckForNull
 	public CDateRange getValidityDate(int event, Bucket bucket) {
-		// I spent a lot of time trying to create two classes implementing single/multi-column valditiy dates separately.
-		// JsonCreator was not happy, and I could not figure out why. This is probably the most performant implementation that's not two classes.
-
-		if (getColumn() != null) {
-			final Column resolvedColumn = getColumn().resolve();
-			if (bucket.has(event, resolvedColumn)) {
-				return bucket.getAsDateRange(event, resolvedColumn);
-			}
-
-			return null;
+		if (extractor == null){
+			//TODO this is just a workaround: We should actually be using Initializing, which sadly gives us issues with LoadingUtil
+			init();
 		}
 
-		final Column startColumn = getStartColumn() != null ? getStartColumn().resolve() : null;
-		final Column endColumn = getEndColumn() != null ? getEndColumn().resolve() : null;
-
-		final boolean hasStart = bucket.has(event, startColumn);
-		final boolean hasEnd = bucket.has(event, endColumn);
-
-		if (!hasStart && !hasEnd) {
-			return null;
-		}
-
-		final int start = hasStart ? bucket.getDate(event, startColumn) : Integer.MIN_VALUE;
-		final int end = hasEnd ? bucket.getDate(event, endColumn) : Integer.MAX_VALUE;
-
-		return CDateRange.of(start, end);
+		return extractor.apply(event, bucket);
 	}
 
-	// TODO use Id as parameter
-	public boolean containsColumn(Column column) {
-		final ColumnId id = column.getId();
+	public boolean containsColumn(ColumnId id) {
 		return id.equals(getColumn()) || id.equals(getStartColumn()) || id.equals(getEndColumn());
 	}
 
@@ -92,10 +73,10 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 	public boolean isForConnectorsTable() {
 
 		final boolean anyColumnNotForConnector =
-				(startColumn != null && !startColumn.getTable().equals(connector.getResolvedTable().getId()))
-				|| (endColumn != null && !endColumn.getTable().equals(connector.getResolvedTable().getId()));
+				(startColumn != null && !startColumn.getTable().equals(connector.resolveTableId()))
+				|| (endColumn != null && !endColumn.getTable().equals(connector.resolveTableId()));
 
-		final boolean columnNotForConnector = column != null && !column.getTable().equals(connector.getResolvedTableId());
+		final boolean columnNotForConnector = column != null && !column.getTable().equals(connector.resolveTableId());
 
 		return !anyColumnNotForConnector && !columnNotForConnector;
 	}
@@ -109,5 +90,38 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 	@Override
 	public ValidityDateId createId() {
 		return new ValidityDateId(connector.getId(), getName());
+	}
+
+	public void init() {
+		// Initialize extractor early to avoid resolve and dispatch in very hot code. Hopefully boxing can be elided.
+		if (column != null) {
+			final Column resolvedColumn = column.resolve();
+
+			extractor = (event, bucket) -> {
+				if (bucket.has(event, resolvedColumn)) {
+					return bucket.getAsDateRange(event, resolvedColumn);
+				}
+
+				return null;
+			};
+			return;
+		}
+
+		final Column resolvedStartColumn = startColumn.resolve();
+		final Column resolvedEndColumn = endColumn.resolve();
+
+		extractor = (event, bucket) -> {
+			final boolean hasStart = bucket.has(event, resolvedStartColumn);
+			final boolean hasEnd = bucket.has(event, resolvedEndColumn);
+
+			if (!hasStart && !hasEnd) {
+				return null;
+			}
+
+			final int start = hasStart ? bucket.getDate(event, resolvedStartColumn) : Integer.MIN_VALUE;
+			final int end = hasEnd ? bucket.getDate(event, resolvedEndColumn) : Integer.MAX_VALUE;
+
+			return CDateRange.of(start, end);
+		};
 	}
 }

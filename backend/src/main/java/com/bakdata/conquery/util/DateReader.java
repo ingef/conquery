@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -53,7 +54,7 @@ public class DateReader {
 	 * All available formats for parsing.
 	 */
 	@JsonIgnore
-	private List<DateTimeFormatter> dateFormats;
+	private final List<DateTimeFormatter> dateFormats;
 	/**
 	 * Parsed values cache.
 	 */
@@ -63,9 +64,9 @@ public class DateReader {
 																		   .concurrencyLevel(10)
 																		   .build(CacheLoader.from(this::tryParseDate));
 	@JsonIgnore
-	private List<String> rangeStartEndSeperators;
+	private final List<String> rangeStartEndSeperators;
 	@JsonIgnore
-	private List<LocaleConfig.ListFormat> dateSetLayouts;
+	private final List<LocaleConfig.ListFormat> dateSetLayouts;
 
 	@JsonCreator
 	public DateReader(Set<String> dateParsingFormats, List<String> rangeStartEndSeperators, List<LocaleConfig.ListFormat> dateSetLayouts) {
@@ -107,6 +108,11 @@ public class DateReader {
 	private CDateRange parseToCDateRange(String value, String sep) {
 
 		// Shorthand formats for open ranges without resorting to two-column formats
+
+		if (value.equals(sep)) {
+			return CDateRange.all();
+		}
+
 		if (value.startsWith(sep)) {
 			return CDateRange.atMost(parseToLocalDate(value.substring(sep.length())));
 		}
@@ -136,6 +142,7 @@ public class DateReader {
 	/**
 	 * Try parsing the String value to a LocalDate.
 	 */
+	@Nullable
 	public LocalDate parseToLocalDate(String value) throws ParsingException {
 		if (Strings.isNullOrEmpty(value)) {
 			return null;
@@ -153,6 +160,7 @@ public class DateReader {
 	/**
 	 * Try and parse value to CDateSet using all available layouts, but starting at the last known successful one.
 	 */
+	@Nullable
 	public CDateSet parseToCDateSet(String value) {
 		if (Strings.isNullOrEmpty(value)) {
 			return null;

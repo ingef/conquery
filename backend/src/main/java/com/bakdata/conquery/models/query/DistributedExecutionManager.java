@@ -3,10 +3,10 @@ package com.bakdata.conquery.models.query;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -14,6 +14,7 @@ import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.mode.cluster.ClusterState;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -21,10 +22,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
-import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
-import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -36,7 +34,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 
 @Slf4j
@@ -44,8 +41,8 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 	private final ClusterState clusterState;
 
-	public DistributedExecutionManager(MetaStorage storage, DatasetRegistry<?> datasetRegistry, ClusterState state) {
-		super(storage, datasetRegistry);
+	public DistributedExecutionManager(MetaStorage storage, DatasetRegistry<?> datasetRegistry, ClusterState state, ConqueryConfig config) {
+		super(storage, datasetRegistry, config);
 		clusterState = state;
 	}
 
@@ -54,41 +51,26 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 		log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), execution.getDataset());
 
-		addState(execution.getId(), new DistributedState());
+		addState(execution.getId(), new DistributedExecutionInfo());
 
 		if (execution instanceof ManagedInternalForm<?> form) {
-			form.getSubQueries().values().forEach((query) -> addState(query.getId(), new DistributedState()));
+			form.getSubQueries().values().forEach((query) -> addState(query, new DistributedExecutionInfo()));
 		}
 
-		final WorkerHandler workerHandler = getWorkerHandler(execution.getId().getDataset());
+		final WorkerHandler workerHandler = getWorkerHandler(execution.getDataset());
 
-		workerHandler.sendToAll(createExecutionMessage(execution));
+		workerHandler.sendToAll(execution.createExecutionMessage());
 	}
 
 	private WorkerHandler getWorkerHandler(DatasetId datasetId) {
 		return clusterState.getWorkerHandlers().get(datasetId);
 	}
 
-	private WorkerMessage createExecutionMessage(ManagedExecution execution) {
-		if (execution instanceof ManagedQuery mq) {
-			return new ExecuteQuery(mq.getId(), mq.getQuery());
-		}
-		else if (execution instanceof ManagedInternalForm<?> form) {
-			return new ExecuteForm(form.getId(), form.getFlatSubQueries()
-													 .entrySet()
-													 .stream()
-													 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
-		}
-		throw new NotImplementedException("Unable to build execution message for " + execution.getClass());
-
-	}
-
 	@Override
-	public void doCancelQuery(ManagedExecution execution) {
+	public void doCancelQuery(ManagedExecutionId executionId) {
 		log.debug("Sending cancel message to all workers.");
 
-		execution.cancel();
-		getWorkerHandler(execution.createId().getDataset()).sendToAll(new CancelQuery(execution.getId()));
+		getWorkerHandler(executionId.getDataset()).sendToAll(new CancelQuery(executionId));
 	}
 
 	/**
@@ -103,11 +85,25 @@ public class DistributedExecutionManager extends ExecutionManager {
 		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
 		log.trace("Received Result\n{}", result.getResults());
 
-		ManagedExecutionId id = execution.getId();
-		State state = getResult(id);
-		ExecutionState execState = state.getState();
+		if (execution == null) {
+			log.debug("Ignoring result {} because the corresponding execution was 'null' (probably deleted)", result);
+			return;
+		}
+
+		Optional<ExecutionInfo> optInfo = tryGetExecutionInfo(execution.getId());
+
+		if (optInfo.isEmpty()){
+			log.debug("Ignoring result {} because the corresponding state was not found (execution probably canceled)", result);
+			return;
+		}
+
+		if (!(optInfo.get() instanceof DistributedExecutionInfo distributedInfo)) {
+			throw new IllegalStateException("Expected execution '%s' to be of type %s, but was %s".formatted(execution.getId(), DistributedExecutionInfo.class, optInfo.getClass()));
+		}
+
+		ExecutionState execState = distributedInfo.executionState;
 		if (execState != ExecutionState.RUNNING) {
-			log.warn("Received result form '{}' for Query[{}] that is not RUNNING but {}", result.getWorkerId(), id, execState);
+			log.warn("Received result form '{}' for Query[{}] that is not RUNNING but {}", result.getWorkerId(), execution.getId(), execState);
 			return;
 		}
 
@@ -117,13 +113,10 @@ public class DistributedExecutionManager extends ExecutionManager {
 		else {
 
 			// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
-			if (!(state instanceof DistributedState distributedState)) {
-				throw new IllegalStateException("Expected execution '%s' to be of type %s, but was %s".formatted(execution.getId(), DistributedState.class, state.getClass()));
-			}
-			distributedState.results.put(result.getWorkerId(), result.getResults());
+			distributedInfo.results.put(result.getWorkerId(), result.getResults());
 
 			// If all known workers have returned a result, the query is DONE.
-			if (distributedState.allResultsArrived(getWorkerHandler(execution.getDataset()).getAllWorkerIds())) {
+			if (distributedInfo.allResultsArrived(getWorkerHandler(execution.getDataset()).getAllWorkerIds())) {
 
 				execution.finish(ExecutionState.DONE);
 
@@ -131,7 +124,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 		}
 
 		// State changed to DONE or FAILED
-		ExecutionState execStateAfterResultCollect = getResult(id).getState();
+		ExecutionState execStateAfterResultCollect = getExecutionInfo(execution.getId()).getExecutionState();
 		if (execStateAfterResultCollect != ExecutionState.RUNNING) {
 			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner().resolve(), getStorage()).map(Group::getName).orElse("none");
 
@@ -148,21 +141,21 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 	@Data
 	@AllArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class DistributedState implements InternalState {
+	public static class DistributedExecutionInfo implements InternalExecutionInfo {
 		@Setter
 		@NonNull
-		private ExecutionState state;
+		private ExecutionState executionState;
 		private Map<WorkerId, List<EntityResult>> results;
 		private CountDownLatch executingLock;
 
-		public DistributedState() {
+		public DistributedExecutionInfo() {
 			this(ExecutionState.RUNNING, new ConcurrentHashMap<>(), new CountDownLatch(1));
 		}
 
 		@NotNull
 		@Override
-		public ExecutionState getState() {
-			return state;
+		public ExecutionState getExecutionState() {
+			return executionState;
 		}
 
 		@Override

@@ -96,7 +96,7 @@ public class DateContext {
 		int alignedPerResolution = resolution.getAmountForAlignment(alignment).orElseThrow(() -> new ConqueryError.ExecutionCreationPlanDateContextError(alignment, resolution));
 
 		if (alignedPerResolution == 1) {
-			// When the alignment fits the resolution we can use the the alignment subdivision directly
+			// When the alignment fits the resolution we can use the alignment subdivision directly
 			return (dateRange) -> alignment.getSubdivider().apply(dateRange);
 		}
 
