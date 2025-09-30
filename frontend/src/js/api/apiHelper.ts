@@ -40,8 +40,8 @@ export const transformFilterValueToApi = (
       return !exists(filter.mode) || filter.mode === "range"
         ? filter.value
         : filter.value
-        ? { min: filter.value.exact, max: filter.value.exact }
-        : null;
+          ? { min: filter.value.exact, max: filter.value.exact }
+          : null;
     case "SELECT":
       return filter.value;
   }
