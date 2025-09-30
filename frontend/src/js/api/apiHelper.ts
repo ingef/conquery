@@ -281,15 +281,10 @@ const transformTreeToApi = (tree: Tree): unknown => {
         node = {
           type: "TEMPORAL",
           mode: mode,
-          // TODO: improve this to be more flexible with the "preceding" and "index" keys
-          compare: {
-            sampler: tsMap[timeNode.timestamps[0]],
-            child: transformTreeToApi(tree.children.items[0]),
-          },
-          index: {
-            sampler: tsMap[timeNode.timestamps[1]],
-            child: transformTreeToApi(tree.children.items[1]),
-          },
+          index: transformTreeToApi(tree.children.items[1]),
+          indexSelector: tsMap[timeNode.timestamps[0]],
+          compare: transformTreeToApi(tree.children.items[0]),
+          compareSelector: tsMap[timeNode.timestamps[1]],
         };
         break;
     }
