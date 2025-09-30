@@ -42,10 +42,10 @@ const Node = styled("div")<{
       negated
         ? theme.col.red
         : active
-        ? theme.col.blueGrayDark
-        : selected
-        ? theme.col.gray
-        : theme.col.grayMediumLight};
+          ? theme.col.blueGrayDark
+          : selected
+            ? theme.col.gray
+            : theme.col.grayMediumLight};
   box-shadow: ${({ selected, theme }) =>
     selected ? `inset 0px 0px 0px 4px ${theme.col.blueGrayVeryLight}` : "none"};
 
