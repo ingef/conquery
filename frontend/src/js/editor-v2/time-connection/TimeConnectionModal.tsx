@@ -62,18 +62,18 @@ export const TimeConnectionModal = memo(
     const { t } = useTranslation();
     const TIMESTAMP_OPTIONS = useMemo(
       () => [
-        { value: "some", label: t("editorV2.some") },
-        { value: "latest", label: t("editorV2.latest") },
-        { value: "earliest", label: t("editorV2.earliest") },
-        { value: "every", label: t("editorV2.every") },
+        { value: "ANY", label: t("editorV2.ANY") },
+        { value: "LATEST", label: t("editorV2.LATEST") },
+        { value: "EARLIEST", label: t("editorV2.EARLIEST") },
+        { value: "ALL", label: t("editorV2.ALL") },
       ],
       [t],
     );
     const OPERATOR_OPTIONS = useMemo(
       () => [
-        { value: "before", label: t("editorV2.before") },
-        { value: "after", label: t("editorV2.after") },
-        { value: "while", label: t("editorV2.while") },
+        { value: "BEFORE", label: t("editorV2.BEFORE") },
+        { value: "AFTER", label: t("editorV2.AFTER") },
+        { value: "WHILE", label: t("editorV2.WHILE") },
       ],
       [t],
     );
@@ -135,12 +135,12 @@ export const TimeConnectionModal = memo(
           <Row>
             <SxBaseInput
               inputType="number"
-              placeholder={operator === "while" ? "0" : "1"}
+              placeholder={operator === "WHILE" ? "0" : "1"}
               inputProps={{
                 min: 0,
               }}
               value={exists(interval) ? interval.min : null}
-              disabled={!interval || operator === "while"}
+              disabled={!interval || operator === "WHILE"}
               onChange={(val) => {
                 setTheInterval({
                   min: val as number,
@@ -151,12 +151,12 @@ export const TimeConnectionModal = memo(
             <span>–</span>
             <SxBaseInput
               inputType="number"
-              placeholder={operator === "while" ? "0" : "∞"}
+              placeholder={operator === "WHILE" ? "0" : "∞"}
               inputProps={{
                 min: 0,
               }}
               value={exists(interval) ? interval.max : null}
-              disabled={!interval || operator === "while"}
+              disabled={!interval || operator === "WHILE"}
               onChange={(val) => {
                 setTheInterval({
                   max: val as number | null,
@@ -167,9 +167,9 @@ export const TimeConnectionModal = memo(
             <SxInputSelect
               options={INTERVAL_OPTIONS}
               value={!interval ? INTERVAL_OPTIONS[0] : INTERVAL_OPTIONS[1]}
-              disabled={operator === "while"}
+              disabled={operator === "WHILE"}
               onChange={(opt) => {
-                if (opt?.value === "some") {
+                if (opt?.value === "ANY") {
                   setTheInterval(undefined);
                 } else {
                   setTheInterval({ min: 1, max: null });
@@ -182,7 +182,7 @@ export const TimeConnectionModal = memo(
               onChange={(opt) => {
                 if (opt) {
                   setOperator(opt.value as TimeOperator);
-                  if (opt.value === "while") {
+                  if (opt.value === "WHILE") {
                     // Timeout to avoid race condition on effect update above
                     setTimeout(() => setTheInterval(undefined), 10);
                   }

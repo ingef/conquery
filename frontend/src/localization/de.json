@@ -556,18 +556,18 @@
     "datesExcluded": "Keine Datumswerte",
     "outputSection": "Ausgabewerte",
     "filtersSection": "Filter",
-    "every": "Jeder",
-    "some": "Irgend ein",
-    "earliest": "Der früheste",
-    "latest": "Der späteste",
+    "ALL": "Jeder",
+    "ANY": "Irgend ein",
+    "EARLIEST": "Der früheste",
+    "LATEST": "Der späteste",
     "dateRangeFrom": "Zeitraum aus",
     "dayInterval": "Tage",
     "intervalSome": "irgendwann",
     "intervalMinDays": "mindestens {{days}} Tage",
     "intervalMaxDays": "höchstens {{days}} Tage",
     "intervalMinMaxDays": "zwischen {{minDays}} und {{maxDays}} Tagen",
-    "before": "zeitlich vor",
-    "after": "zeitlich nach",
-    "while": "zeitlich während"
+    "BEFORE": "zeitlich vor",
+    "AFTER": "zeitlich nach",
+    "WHILE": "zeitlich während"
   }
 }

@@ -6,12 +6,7 @@
 // Some keys are added (e.g. the query type attribute)
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
-import {
-  EditorV2Query,
-  TimeTimestamp,
-  Tree,
-  TreeChildrenTime,
-} from "../editor-v2/types";
+import { EditorV2Query, Tree, TreeChildrenTime } from "../editor-v2/types";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { isLabelPristine } from "../standard-query-editor/helper";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
@@ -244,21 +239,14 @@ const transformTreeToApi = (tree: Tree): unknown => {
         node = createOr(tree.children.items.map(transformTreeToApi));
         break;
       case "time":
-        const tsMap: Record<TimeTimestamp, string> = {
-          some: "ANY",
-          earliest: "EARLIEST",
-          latest: "LATEST",
-          every: "ALL",
-        };
-
         const timeNode = tree.children as TreeChildrenTime;
         let mode;
 
         switch (timeNode.operator) {
-          case "after":
-          case "before":
+          case "AFTER":
+          case "BEFORE":
             mode = {
-              type: timeNode.operator.toUpperCase(),
+              type: timeNode.operator,
               days: {
                 min: timeNode.interval
                   ? timeNode.interval.min === null
@@ -273,7 +261,7 @@ const transformTreeToApi = (tree: Tree): unknown => {
               },
             };
             break;
-          case "while":
+          case "WHILE":
             mode = { type: "WHILE" };
             break;
         }
@@ -282,9 +270,9 @@ const transformTreeToApi = (tree: Tree): unknown => {
           type: "TEMPORAL",
           mode: mode,
           index: transformTreeToApi(tree.children.items[0]),
-          indexSelector: tsMap[timeNode.timestamps[0]],
+          indexSelector: timeNode.timestamps[0],
           compare: transformTreeToApi(tree.children.items[1]),
-          compareSelector: tsMap[timeNode.timestamps[1]],
+          compareSelector: timeNode.timestamps[1],
         };
         break;
     }
