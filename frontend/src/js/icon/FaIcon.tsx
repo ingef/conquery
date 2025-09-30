@@ -52,18 +52,18 @@ export const Icon = styled(FontAwesomeIcon, {
     disabled
       ? theme.col.grayMediumLight
       : red
-        ? theme.col.red
-        : gray
-          ? theme.col.gray
-          : active
-            ? theme.col.blueGrayDark
-            : white
-              ? "#fff"
-              : light
-                ? theme.col.blueGrayLight
-                : main
-                  ? theme.col.blueGray
-                  : theme.col.black};
+      ? theme.col.red
+      : gray
+      ? theme.col.gray
+      : active
+      ? theme.col.blueGrayDark
+      : white
+      ? "#fff"
+      : light
+      ? theme.col.blueGrayLight
+      : main
+      ? theme.col.blueGray
+      : theme.col.black};
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "inherit")};
   width: initial !important;
 

@@ -30,8 +30,8 @@ const resetFilter =
           value: config.useDefaults
             ? filter.defaultValue || null
             : filter.options.length > 0
-              ? filter.options[0].value
-              : null,
+            ? filter.options[0].value
+            : null,
         };
       default:
         return {

@@ -24,8 +24,8 @@ export const Headline = styled("h3")<{ size?: "h1" | "h2" | "h3" }>`
     size === "h3"
       ? theme.font.sm
       : size === "h2"
-        ? theme.font.md
-        : theme.font.lg};
+      ? theme.font.md
+      : theme.font.lg};
   line-height: 1;
   color: ${({ theme }) => theme.col.black};
   font-weight: ${({ size }) => (size === "h3" ? "700" : "400")};
