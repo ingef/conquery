@@ -255,7 +255,7 @@ const transformTreeToApi = (tree: Tree): unknown => {
           },
           // TODO: improve this to be more flexible with the "preceding" and "index" keys
           // based on the operator, which would be "before" | "after" | "while"
-          preceding: {
+          compare: {
             sampler: "EARLIEST", // SHOULD BE: tree.children.timestamps[0],
             child: transformTreeToApi(tree.children.items[0]),
           },
