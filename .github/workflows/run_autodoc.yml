@@ -29,7 +29,7 @@ jobs:
           ref: ${{ github.head_ref }}
           submodules: true
       - name: Set up JDK
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v5
         with:
           java-version: 21
       - name: Build Backend
