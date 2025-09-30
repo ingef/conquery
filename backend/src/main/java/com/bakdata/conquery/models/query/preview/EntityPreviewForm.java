@@ -24,9 +24,8 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.util.Alignment;
@@ -41,6 +40,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -78,7 +78,14 @@ public class EntityPreviewForm extends Form implements InternalForm {
 
 	private final Map<String, AbsoluteFormQuery> timeOverViews;
 
-	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<ConnectorId> sources, List<Select> infos, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry<?> datasetRegistry) {
+	public static EntityPreviewForm create(
+			String entity,
+			String idKind,
+			Range<LocalDate> dateRange,
+			List<ConnectorId> sources,
+			List<SelectId> infos,
+			List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects,
+			DatasetRegistry<?> datasetRegistry) {
 
 		// We use this query to filter for the single selected query.
 		final Query entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
@@ -98,13 +105,13 @@ public class EntityPreviewForm extends Form implements InternalForm {
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
 
 		exportQuery.setDateRange(dateRange);
-		exportQuery.setTables(sources.stream().map(ConnectorId::resolve).map(CQConcept::forConnector).collect(Collectors.toList()));
+		exportQuery.setConcepts(sources.stream().map(CQConcept::forConnector).collect(Collectors.toList()));
 		exportQuery.setRawConceptValues(false);
 		return exportQuery;
 	}
 
 	@NotNull
-	private static AbsoluteFormQuery createInfoCardQuery(Range<LocalDate> dateRange, List<Select> infos, Query entitySelectQuery) {
+	private static AbsoluteFormQuery createInfoCardQuery(Range<LocalDate> dateRange, List<SelectId> infos, Query entitySelectQuery) {
 		// Query exporting a few additional infos on the entity.
 		return new AbsoluteFormQuery(entitySelectQuery, dateRange,
 							 ArrayConceptQuery.createFromFeatures(
@@ -127,7 +134,6 @@ public class EntityPreviewForm extends Form implements InternalForm {
 																  ArrayConceptQuery.createFromFeatures(
 																		  selects.selects().stream()
 																				 .map(PreviewConfig.InfoCardSelect::select)
-																				 .map(SelectId::resolve)
 																				 .map(CQConcept::forSelect)
 																				 .collect(Collectors.toList())),
 																  List.of(
@@ -144,12 +150,13 @@ public class EntityPreviewForm extends Form implements InternalForm {
 
 	@Nullable
 	@Override
+	@JsonIgnore
 	public JsonNode getValues() {
 		return null; // will not be implemented.
 	}
 
 	@Override
-	public void authorize(Subject subject, Dataset submittedDataset, @NonNull List<QueryVisitor> visitors, MetaStorage storage) {
+	public void authorize(Subject subject, DatasetId submittedDataset, @NonNull List<QueryVisitor> visitors, MetaStorage storage) {
 		QueryDescription.authorizeQuery(this, subject, submittedDataset, visitors, storage);
 	}
 
@@ -172,8 +179,8 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@Override
-	public ManagedExecution toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry) {
-		return new EntityPreviewExecution(this, user, submittedDataset, storage, datasetRegistry);
+	public ManagedExecution toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		return new EntityPreviewExecution(this, user, submittedDataset, storage, datasetRegistry, config);
 	}
 
 	@Override

@@ -17,7 +17,7 @@ public class AuthenticationExceptionMapper implements ExceptionMapper<Authentica
 		log.warn("Shiro failed to authenticate the request. See the following trace:", exception);
 		return Response.status(Response.Status.UNAUTHORIZED)
 			.type(MediaType.APPLICATION_JSON_TYPE)
-			.entity("An authentication error occured. The error has been logged")
+					   .entity("An authentication error occurred. The error has been logged")
 			.build();
 	}
 

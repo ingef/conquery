@@ -40,14 +40,14 @@ public class SqlExecutionService {
 
 	private final ResultSetProcessor resultSetProcessor;
 
-	public SqlExecutionState execute(SqlQuery sqlQuery) {
+	public SqlExecutionExecutionInfo execute(SqlQuery sqlQuery) {
 
-		final SqlExecutionState result = dslContext.connectionResult(connection -> createStatementAndExecute(sqlQuery, connection));
+		final SqlExecutionExecutionInfo result = dslContext.connectionResult(connection -> createStatementAndExecute(sqlQuery, connection));
 
 		return result;
 	}
 
-	private SqlExecutionState createStatementAndExecute(SqlQuery sqlQuery, Connection connection) {
+	private SqlExecutionExecutionInfo createStatementAndExecute(SqlQuery sqlQuery, Connection connection) {
 
 		final String sqlString = sqlQuery.getSql();
 		final List<ResultType> resultTypes = sqlQuery.getResultInfos().stream().map(ResultInfo::getType).collect(Collectors.toList());
@@ -60,7 +60,7 @@ public class SqlExecutionService {
 			final List<String> columnNames = getColumnNames(resultSet, columnCount);
 			final List<EntityResult> resultTable = createResultTable(resultSet, resultTypes, columnCount);
 
-			return new SqlExecutionState(ExecutionState.RUNNING, columnNames, resultTable, new CountDownLatch(1));
+			return new SqlExecutionExecutionInfo(ExecutionState.RUNNING, columnNames, resultTable, new CountDownLatch(1));
 		}
 		// not all DB vendors throw SQLExceptions
 		catch (SQLException | RuntimeException e) {

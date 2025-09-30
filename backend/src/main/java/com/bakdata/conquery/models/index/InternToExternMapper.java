@@ -3,39 +3,62 @@ package com.bakdata.conquery.models.index;
 import java.util.Collection;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.identifiable.Named;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.OneToManyMappingPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.OneToOneMappingPrinter;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 
 @CPSBase
 @JsonTypeInfo(property = "type", use = JsonTypeInfo.Id.CUSTOM)
-public interface InternToExternMapper extends NamespacedIdentifiable<InternToExternMapperId>, Named<InternToExternMapperId> {
+public abstract class InternToExternMapper extends NamespacedIdentifiable<InternToExternMapperId> {
 
-	boolean initialized();
+	@Getter
+	@Setter
+	private String name;
 
-	void init();
+	@Getter(AccessLevel.PRIVATE)
+	@Setter
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	private NamespacedStorage storage;
 
-	String external(String key);
-
-	Collection<String> externalMultiple(String key);
+	@JsonIgnore
+	@Override
+	public DatasetId getDataset() {
+		return storage.getDataset().getId();
+	}
 
 	@Override
-	InternToExternMapperId getId();
+	public InternToExternMapperId createId() {
+		return new InternToExternMapperId(getDataset(), getName());
+	}
 
-	default Printer<String> createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
+	public abstract boolean initialized();
+
+	public abstract void init();
+
+	public abstract String external(String key);
+
+	public abstract Collection<String> externalMultiple(String key);
+
+	public Printer<String> createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		if (isAllowMultiple()) {
-			return new OneToManyMappingPrinter(this)
-					.andThen(printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
+			return new OneToManyMappingPrinter(this).andThen(printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
 		}
 
 		return new OneToOneMappingPrinter(this, printerFactory.getStringPrinter(printSettings));
 	}
 
-	boolean isAllowMultiple();
+	public abstract boolean isAllowMultiple();
 }

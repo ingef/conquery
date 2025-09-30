@@ -10,9 +10,9 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
-import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -40,12 +40,8 @@ public class CalculateCBlocksJob extends Job {
 	private final BucketManager bucketManager;
 	private final ExecutorService executorService;
 
-	public void addCBlock(Bucket bucket, ConceptTreeConnector connector) {
-		tasks.add(createInformationProcessor(connector, bucket));
-	}
-
-	private CalculationInformationProcessor createInformationProcessor(ConceptTreeConnector connector, Bucket bucket) {
-		return new CalculationInformationProcessor(connector, bucket, bucketManager, storage);
+	public void addCBlock(BucketId bucketId, ConceptTreeConnector connector) {
+		tasks.add(new CalculationInformationProcessor(connector, bucketId, bucketManager, storage));
 	}
 
 	@Override
@@ -105,7 +101,7 @@ public class CalculateCBlocksJob extends Job {
 	@ToString(onlyExplicitlyIncluded = true)
 	private static class CalculationInformationProcessor implements Runnable {
 		private final ConceptTreeConnector connector;
-		private final Bucket bucket;
+		private final BucketId bucketId;
 
 		private final BucketManager bucketManager;
 		private final WorkerStorage storage;
@@ -120,7 +116,7 @@ public class CalculateCBlocksJob extends Job {
 
 				log.trace("BEGIN calculating CBlock for {}", getCBlockId());
 
-				final CBlock cBlock = CBlock.createCBlock(getConnector(), getBucket(), bucketManager);
+				final CBlock cBlock = CBlock.createCBlock(getConnector(), getBucketId(), bucketManager);
 
 				log.trace("DONE calculating CBlock for {}", getCBlockId());
 
@@ -134,7 +130,7 @@ public class CalculateCBlocksJob extends Job {
 
 		@ToString.Include
 		public CBlockId getCBlockId() {
-			return new CBlockId(getBucket().getId(), getConnector().getId());
+			return new CBlockId(getBucketId(), getConnector().getId());
 		}
 
 	}

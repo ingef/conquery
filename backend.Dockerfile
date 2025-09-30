@@ -1,5 +1,5 @@
 # Version Extractor
-FROM bitnami/git:2.38.1 AS version-extractor
+FROM alpine/git:v2.49.1 AS version-extractor
 
 WORKDIR /app
 COPY .git .
@@ -30,7 +30,7 @@ RUN ./scripts/build_backend_version.sh `cat git_describe.txt`
 
 
 # Runner
-FROM eclipse-temurin:17-jre-alpine AS runner
+FROM eclipse-temurin:21-jre-alpine AS runner
 
 ## Apache POI needs some extra libs to auto-size columns
 RUN apk add --no-cache fontconfig ttf-dejavu
@@ -52,6 +52,10 @@ VOLUME /app/logs
 ENTRYPOINT [ "java", "-jar", "conquery.jar" ]
 
 CMD [ "standalone" ]
+
+# -Yoff to always bypass proxy.
+# --spider and -q to ensure as little action as possible, we are only interested in the status code for the exit code.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s  CMD wget -q --spider -Yoff http://localhost:${ADMIN_PORT}/healthcheck
 
 EXPOSE $CLUSTER_PORT $ADMIN_PORT $API_PORT
 

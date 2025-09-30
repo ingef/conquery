@@ -31,7 +31,7 @@ public class ClusterManagerProvider implements ManagerProvider {
 		final DatasetRegistry<DistributedNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, internalMapperFactory);
 
 		final ClusterConnectionManager connectionManager =
-				new ClusterConnectionManager(datasetRegistry, jobManager, environment.getValidator(), config, internalMapperFactory, clusterState);
+				new ClusterConnectionManager(datasetRegistry, jobManager, config, internalMapperFactory, clusterState);
 
 		final ImportHandler importHandler = new ClusterImportHandler(datasetRegistry);
 		final StorageListener extension = new ClusterStorageListener(jobManager, datasetRegistry);
@@ -43,7 +43,7 @@ public class ClusterManagerProvider implements ManagerProvider {
 				new DelegateManager<>(config, environment, datasetRegistry, storage, importHandler, extension, nodeProvider, adminTasks, internalMapperFactory, jobManager);
 
 		environment.healthChecks()
-				   .register("cluster", new ClusterHealthCheck(clusterState, nodeProvider, config.getCluster().getHeartbeatTimeout().toJavaDuration()));
+				   .register("cluster", new ClusterHealthCheck(clusterState, config.getCluster().getHeartbeatTimeout().toJavaDuration()));
 
 		return new ClusterManager(delegate, connectionManager);
 	}

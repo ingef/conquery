@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.storage;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jackson.Injectable;
@@ -10,15 +11,11 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.IdResolvingException;
-import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.MetaId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class MetaStorage extends ConqueryStorage implements Injectable {
+public class MetaStorage implements ConqueryStorage, Injectable {
 
 	private final StoreFactory storageFactory;
 	private IdentifiableStore<ManagedExecution> executions;
@@ -43,7 +40,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	private IdentifiableStore<Role> authRole;
 	private IdentifiableStore<Group> authGroup;
 
-	public static MetaStorage get(DeserializationContext ctxt) throws JsonMappingException {
+	public static MetaStorage getInjected(DeserializationContext ctxt) throws JsonMappingException {
 		return (MetaStorage) ctxt
 				.findInjectableValue(MetaStorage.class.getName(), null, null);
 	}
@@ -65,7 +62,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		);
 	}
 
-	public void openStores(ObjectMapper mapper, MetricRegistry metricRegistry) {
+	public void openStores(ObjectMapper mapper) {
 		if (mapper != null) {
 			this.injectInto(mapper);
 		}
@@ -89,7 +86,9 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	}
 
 	public Stream<ManagedExecution> getAllExecutions() {
-		return executions.getAllKeys().map(executions::get);
+		return executions.getAllKeys()
+						 .map(executions::get)
+						 .filter(Objects::nonNull);
 	}
 
 	public synchronized void updateExecution(ManagedExecution query) {
@@ -204,34 +203,9 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		formConfigs.add(formConfig);
 	}
 
-	// Utility
-
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
 		return values.add(MetaStorage.class, this);
 	}
 
-	/**
-	 * Almost identical to {@link MetaStorage#get(Id)}, but throws an IdResolvingException if no object could be resolved.
-	 * @return the object or throws an {@link IdResolvingException} if the Object could not be resolved.
-	 */
-	public <ID extends Id<?> & MetaId, VALUE> VALUE resolve(ID id) {
-		try {
-			VALUE o = get(id);
-			if (o == null) {
-				throw new IdResolvingException(id);
-			}
-			return o;
-		}
-		catch (IdResolvingException e) {
-			throw e;
-		}
-		catch (Exception e) {
-			throw new IdResolvingException(id, e);
-		}
-	}
-
-	public <ID extends Id<?> & MetaId, VALUE> VALUE get(ID id) {
-		return (VALUE) id.get(this);
-	}
 }

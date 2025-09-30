@@ -61,7 +61,7 @@ public interface ErrorMessages {
 	@De("Etwas ist beim Anfragen des Servers fehlgeschlagen: ${0}.")
 	String sqlError(Throwable error);
 
-	@En("The id '${0}' could not be resolved'.")
-	@De("Die id '${0}' konnte nicht aufgelöst werden.")
-	String idUnresolvable(Id<?> id);
+	@En("The id {0} could not be resolved'.")
+	@De("Die id {0} konnte nicht aufgelöst werden.")
+	String idUnresolvable(Id<?, ?> id);
 }

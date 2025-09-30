@@ -18,7 +18,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
-import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -36,21 +36,6 @@ class PermissionCleanupTaskTest {
         STORAGE.clear();
     }
 
-    private ManagedQuery createManagedQuery() {
-        final CQAnd root = new CQAnd();
-        root.setChildren(new ArrayList<>());
-
-        ConceptQuery query = new ConceptQuery(root);
-
-		final ManagedQuery managedQuery = new ManagedQuery(query, new UserId("test_user"), new Dataset("test").getId(), STORAGE, null);
-
-        managedQuery.setCreationTime(LocalDateTime.now().minusDays(1));
-
-        STORAGE.addExecution(managedQuery);
-
-        return managedQuery;
-    }
-
     @Test
     void doNotDeletePermissionValidReference() {
         assertThat(STORAGE.getAllExecutions()).isEmpty();
@@ -65,6 +50,21 @@ class PermissionCleanupTaskTest {
 
         assertThat(user.getPermissions()).containsOnly(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQuery.getId()));
 
+    }
+
+    private ManagedQuery createManagedQuery() {
+        final CQAnd root = new CQAnd();
+        root.setChildren(new ArrayList<>());
+
+        ConceptQuery query = new ConceptQuery(root);
+
+		final ManagedQuery managedQuery = new ManagedQuery(query, new UserId("test_user"), new DatasetId("test"), STORAGE, null, null);
+
+        managedQuery.setCreationTime(LocalDateTime.now().minusDays(1));
+
+        STORAGE.addExecution(managedQuery);
+
+        return managedQuery;
     }
 
     @Test

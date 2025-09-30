@@ -1,7 +1,8 @@
 package com.bakdata.conquery.models.query;
 
+import static com.bakdata.conquery.models.execution.ExecutionState.RUNNING;
+
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -24,11 +25,13 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalNotification;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.google.common.util.concurrent.Uninterruptibles;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,66 +41,101 @@ public abstract class ExecutionManager {
 
 	private final MetaStorage storage;
 	private final DatasetRegistry<?> datasetRegistry;
+	private final ConqueryConfig config;
+
+	/**
+	 * Implements a rudimentary L1/L2 caching scheme:
+	 * * L2 is expected to be softValues, to be vacuumed up by the GC.
+	 * * L1 should be optimally be hard cache, with timeout characteristics.
+	 * <br />
+	 * This ensures, new {@link ExecutionInfo} stay in memory for a certain duration, after which they are left to the GC.
+	 * <br />
+	 * One risk to note is, that too many large {@link ExecutionInfo} may overwhelm the manager, but that's a pretty unlikely scenario and more likely caused my faulty or malicious clients. If we want to avoid this, L1 spec should probably limit the number of executions.
+	 */
+	@Getter(AccessLevel.NONE)
+	private final Cache<ManagedExecutionId, ExecutionInfo> executionInfosL1;
+	@Getter(AccessLevel.NONE)
+	private final Cache<ManagedExecutionId, ExecutionInfo> executionInfosL2;
+
+	public ExecutionManager(MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+		this.storage = storage;
+		this.datasetRegistry = datasetRegistry;
+		this.config = config;
+
+		executionInfosL2 = Caffeine.from(config.getQueries().getL2CacheSpec()).removalListener(this::evictionL2).build();
+		executionInfosL1 = Caffeine.from(config.getQueries().getL1CacheSpec()).removalListener(this::evictionL1).build();
+	}
 
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
 	 */
-	private void executionRemoved(RemovalNotification<ManagedExecutionId, State> removalNotification) {
+	private void evictionL2(ManagedExecutionId executionId, ExecutionInfo resultInfo, RemovalCause cause) {
+
 		// If removal was done manually we assume it was also handled properly
-		if (!removalNotification.wasEvicted()) {
+		if (!cause.wasEvicted()) {
 			return;
 		}
 
-		final ManagedExecutionId executionId = removalNotification.getKey();
+		log.trace("Evicted Query[{}] results from L2 cache (Reason: {})", executionId, cause);
+	}
 
-		log.warn("Evicted Results for Query[{}] (Reason: {})", executionId, removalNotification.getCause());
-
-		final ManagedExecution execution = getExecution(executionId);
-
-		// The query might already be deleted
-		if (execution != null) {
-			execution.reset();
+	private void evictionL1(ManagedExecutionId executionId, ExecutionInfo resultInfo, RemovalCause cause) {
+		// If removal was done manually we assume it was also handled properly
+		if (!cause.wasEvicted()) {
+			return;
 		}
+
+		log.trace("Evicted Query[{}] results from L1 cache (Reason: {})", executionId, cause);
 	}
 
 	public ManagedExecution getExecution(ManagedExecutionId execution) {
 		return storage.getExecution(execution);
 	}
 
-	/**
-	 * Returns the state or throws an NoSuchElementException if no state was found.
-	 */
-	public <R extends State> R getResult(ManagedExecutionId id) {
-		State state = executionStates.getIfPresent(id);
-		if (state == null) {
-			throw new NoSuchElementException("No execution found for %s".formatted(id));
+	public void reset(ManagedExecutionId id) {
+		// This avoids endless loops with already reset queries
+		if (!isResultPresent(id)) {
+			return;
 		}
-		return (R) state;
-	}	/**
-	 * Cache for execution states.
-	 */
-	private final Cache<ManagedExecutionId, State> executionStates =
-			CacheBuilder.newBuilder()
-						.softValues()
-						.removalListener(this::executionRemoved)
-						.build();
 
-	public <R extends State> Optional<R> tryGetResult(ManagedExecutionId id) {
-		return Optional.ofNullable((R) executionStates.getIfPresent(id));
+		clearQueryResults(id);
 	}
 
 	public boolean isResultPresent(ManagedExecutionId id) {
-		return executionStates.getIfPresent(id) != null;
+		return tryGetExecutionInfo(id).isPresent();
 	}
 
-	public void addState(ManagedExecutionId id, State result) {
-		executionStates.put(id, result);
+	public void clearQueryResults(ManagedExecutionId execution) {
+		executionInfosL2.invalidate(execution);
+		executionInfosL1.invalidate(execution);
 	}
 
-	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, UserId user, ConqueryConfig config, boolean system) {
+	public <R extends ExecutionInfo> Optional<R> tryGetExecutionInfo(ManagedExecutionId id) {
+		// Access L1 before L2, to keep things "touched"
+		ExecutionInfo maybeInfo = executionInfosL1.getIfPresent(id);
+
+		if (maybeInfo != null) {
+			return Optional.of((R) maybeInfo);
+		}
+
+		maybeInfo = executionInfosL2.getIfPresent(id);
+
+		if (maybeInfo != null) {
+			return Optional.of((R) maybeInfo);
+		}
+
+		return Optional.empty();
+	}
+
+	public void addState(ManagedExecutionId id, ExecutionInfo result) {
+		executionInfosL1.put(id, result);
+		executionInfosL2.put(id, result);
+	}
+
+	public final ManagedExecution runQuery(Namespace namespace, QueryDescription query, UserId user, boolean system) {
 		final ManagedExecution execution = createExecution(query, user, namespace, system);
 
-		execute(execution, config);
+		execute(execution);
 
 		return execution;
 	}
@@ -107,12 +145,12 @@ public abstract class ExecutionManager {
 		return createExecution(query, UUID.randomUUID(), user, namespace, system);
 	}
 
-	public final void execute(ManagedExecution execution, ConqueryConfig config) {
+	public final void execute(ManagedExecution execution) {
 
-		clearQueryResults(execution);
+		clearQueryResults(execution.getId());
 
 		try {
-			execution.initExecutable(config);
+			execution.initExecutable();
 		}
 		catch (Exception e) {
 			// ConqueryErrors are usually user input errors so no need to log them at level=ERROR
@@ -127,8 +165,7 @@ public abstract class ExecutionManager {
 			throw e;
 		}
 
-		ManagedExecutionId executionId = execution.getId();
-		log.info("Starting execution[{}]", executionId);
+		log.info("Starting execution[{}]", execution.getId());
 		try {
 
 			execution.start();
@@ -142,17 +179,16 @@ public abstract class ExecutionManager {
 
 		}
 		catch (Exception e) {
-			log.warn("Failed to execute '{}'", executionId);
+			log.warn("Failed to execute '{}'", execution.getId());
 			execution.fail(ConqueryError.asConqueryError(e));
 		}
 	}
 
 	public final ManagedExecution createExecution(QueryDescription query, UUID queryId, UserId user, Namespace namespace, boolean system) {
 		// Transform the submitted query into an initialized execution
-		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset().getId(), storage, datasetRegistry);
+		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset().getId(), storage, datasetRegistry, getConfig());
 		managed.setSystem(system);
 		managed.setQueryId(queryId);
-		managed.setMetaStorage(storage);
 
 		// Store the execution
 		storage.addExecution(managed);
@@ -160,89 +196,98 @@ public abstract class ExecutionManager {
 		return managed;
 	}
 
-	public void clearQueryResults(ManagedExecution execution) {
-		executionStates.invalidate(execution.getId());
-	}
-
 	protected abstract <E extends ManagedExecution & InternalExecution> void doExecute(E execution);
 
-	public final void cancelQuery(final ManagedExecution execution) {
-		executionStates.invalidate(execution.getId());
+	public final void cancelExecution(final ManagedExecution execution) {
 
 		if (execution instanceof ExternalExecution externalExecution) {
 			externalExecution.cancel();
 			return;
 		}
-		doCancelQuery(execution);
+
+		clearQueryResults(execution.getId());
+
+		doCancelQuery(execution.getId());
 	}
 
-	public abstract void doCancelQuery(final ManagedExecution execution);
+	public abstract void doCancelQuery(ManagedExecutionId managedExecutionId);
 
 	public void updateState(ManagedExecutionId id, ExecutionState execState) {
-		State state = executionStates.getIfPresent(id);
-		if (state != null) {
-			state.setState(execState);
-			return;
-		}
+		Optional<ExecutionInfo> executionInfo = tryGetExecutionInfo(id);
 
-		log.warn("Could not update execution state of {} to {}, because it had no state.", id, execState);
+		executionInfo.ifPresentOrElse(info -> info.setExecutionState(execState),
+									  () -> log.warn("Could not update execution executionInfo of {} to {}, because it had no executionInfo.", id, execState)
+		);
 	}
 
 	public <E extends ManagedExecution & InternalExecution> Stream<EntityResult> streamQueryResults(E execution) {
-		final InternalState resultParts = (InternalState) executionStates.getIfPresent(execution.getId());
+		Optional<InternalExecutionInfo> maybeInfo = tryGetExecutionInfo(execution.getId());
 
-		return resultParts == null
-			   ? Stream.empty()
-			   : resultParts.streamQueryResults();
-
+		return maybeInfo.map(InternalExecutionInfo::streamQueryResults).orElseGet(Stream::empty);
 	}
 
 	public void clearBarrier(ManagedExecutionId id) {
-		State result = Objects.requireNonNull(executionStates.getIfPresent(id), "Cannot clear lock on absent execution result");
+		ExecutionInfo executionInfo = getExecutionInfo(id);
 
-		result.getExecutingLock().countDown();
+		executionInfo.getExecutingLock().countDown();
+	}
+
+	/**
+	 * Returns the state or throws an NoSuchElementException if no state was found.
+	 */
+	public <R extends ExecutionInfo> R getExecutionInfo(ManagedExecutionId id) {
+		Optional<R> maybeInfo = tryGetExecutionInfo(id);
+
+		if (maybeInfo.isPresent()) {
+			return maybeInfo.get();
+		}
+
+		throw new NoSuchElementException("Could not find Execution %s".formatted(id));
 	}
 
 	/**
 	 * Blocks until an execution finished of the specified timeout is reached. Return immediately if the execution is not running
 	 */
-	public ExecutionState awaitDone(ManagedExecution execution, int time, TimeUnit unit) {
-		ManagedExecutionId id = execution.getId();
-		State state = executionStates.getIfPresent(id);
-		if (state == null) {
+	public ExecutionState awaitDone(ManagedExecutionId id, int time, TimeUnit unit) {
+
+		Optional<ExecutionInfo> maybeExecutionInfo = tryGetExecutionInfo(id);
+
+		if (maybeExecutionInfo.isEmpty()) {
 			return ExecutionState.NEW;
 		}
-		ExecutionState execState = state.getState();
-		if (execState != ExecutionState.RUNNING) {
+
+		ExecutionInfo executionInfo = maybeExecutionInfo.get();
+		ExecutionState execState = executionInfo.getExecutionState();
+
+		if (execState != RUNNING) {
 			return execState;
 		}
 
-		State result = executionStates.getIfPresent(id);
+		Uninterruptibles.awaitUninterruptibly(executionInfo.getExecutingLock(), time, unit);
 
-		if (result == null) {
-			throw new IllegalStateException("Execution is running, but no result is registered");
-		}
-		Uninterruptibles.awaitUninterruptibly(result.getExecutingLock(), time, unit);
+		Optional<ExecutionInfo> maybeExecutionInfoAfterWait = tryGetExecutionInfo(id);
+		return maybeExecutionInfoAfterWait.map(ExecutionInfo::getExecutionState).orElse(ExecutionState.NEW);
+	}
 
-		State stateAfterWait = executionStates.getIfPresent(id);
-		if (stateAfterWait == null) {
-			return ExecutionState.NEW;
+	public boolean hasRunningQueries() {
+		if (executionInfosL2.asMap().values().stream().map(ExecutionInfo::getExecutionState).anyMatch(RUNNING::equals)) {
+			return true;
 		}
-		return stateAfterWait.getState();
+
+		return executionInfosL1.asMap().values().stream().map(ExecutionInfo::getExecutionState).anyMatch(RUNNING::equals);
 	}
 
 	/**
 	 * Holds all informations about an execution, which cannot/should not be serialized/cached in a store.
 	 */
-	public interface State {
+	public interface ExecutionInfo {
 
 		/**
 		 * The current {@link ExecutionState} of the execution.
 		 */
-		@NotNull
-		ExecutionState getState();
+		@NotNull ExecutionState getExecutionState();
 
-		void setState(ExecutionState state);
+		void setExecutionState(ExecutionState state);
 
 		/**
 		 * Synchronization barrier for web requests.
@@ -252,7 +297,7 @@ public abstract class ExecutionManager {
 		CountDownLatch getExecutingLock();
 	}
 
-	public interface InternalState extends State{
+	public interface InternalExecutionInfo extends ExecutionInfo {
 		Stream<EntityResult> streamQueryResults();
 	}
 

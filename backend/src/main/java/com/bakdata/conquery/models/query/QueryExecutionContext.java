@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.query;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDate;
@@ -52,7 +52,7 @@ public class QueryExecutionContext {
 
 	private final int today = CDate.ofLocalDate(LocalDate.now());
 
-	public List<BucketId> getEntityBucketsForTable(Entity entity, TableId table) {
+	public Set<BucketId> getEntityBucketsForTable(Entity entity, TableId table) {
 		return bucketManager.getEntityBucketsForTable(entity, table);
 	}
 

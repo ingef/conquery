@@ -53,6 +53,20 @@ public class CsvTableImporter {
 		this.databaseConfig = databaseConfig;
 	}
 
+	public void createTable(RequiredTable requiredTable) {
+		Table<Record> table = DSL.table(DSL.name(requiredTable.getName()));
+		List<RequiredColumn> allRequiredColumns = getAllRequiredColumns(requiredTable);
+		List<Field<?>> columns = createFieldsForColumns(allRequiredColumns);
+
+		// we directly use JDBC because JOOQ can't cope with some custom types like daterange
+		dslContext.connection((Connection connection) -> {
+			try (Statement statement = connection.createStatement()) {
+				dropTable(table, statement);
+				createTable(table, columns, statement);
+			}
+		});
+	}
+
 	/**
 	 * Imports the table into the database that is connected to the {@link org.jooq.DSLContext DSLContext}
 	 * of this {@link com.bakdata.conquery.integration.sql.CsvTableImporter CSVTableImporter}.
@@ -60,30 +74,38 @@ public class CsvTableImporter {
 	public void importTableIntoDatabase(RequiredTable requiredTable) {
 
 		Table<Record> table = DSL.table(DSL.name(requiredTable.getName()));
-		List<RequiredColumn> allRequiredColumns = this.getAllRequiredColumns(requiredTable);
-		List<Field<?>> columns = this.createFieldsForColumns(allRequiredColumns);
-		List<RowN> content = this.getTablesContentFromCSV(requiredTable.getCsv(), allRequiredColumns);
+		List<RequiredColumn> allRequiredColumns = getAllRequiredColumns(requiredTable);
+		List<Field<?>> columns = createFieldsForColumns(allRequiredColumns);
+		List<RowN> content = getTablesContentFromCSV(requiredTable.getCsv(), allRequiredColumns);
 
 		// we directly use JDBC because JOOQ can't cope with some custom types like daterange
 		dslContext.connection((Connection connection) -> {
 			try (Statement statement = connection.createStatement()) {
-				dropTable(table, statement);
-				createTable(table, columns, statement);
 				insertValuesIntoTable(table, columns, content, statement);
 			}
 		});
 	}
 
-	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
-		log.debug("Inserting into table: {}", content);
-		testSqlDialect.getTestFunctionProvider().insertValuesIntoTable(table, columns, content, statement, dslContext);
+	private List<RequiredColumn> getAllRequiredColumns(RequiredTable table) {
+		ArrayList<RequiredColumn> requiredColumns = new ArrayList<>();
+		requiredColumns.add(table.getPrimaryColumn());
+		requiredColumns.addAll(Arrays.stream(table.getColumns()).toList());
+		return requiredColumns;
 	}
 
-	private void createTable(Table<Record> table, List<Field<?>> columns, Statement statement) throws SQLException {
-		String createTableStatement = testSqlDialect.getTestFunctionProvider().createTableStatement(table, columns, dslContext);
+	private List<Field<?>> createFieldsForColumns(List<RequiredColumn> requiredColumns) {
+		return requiredColumns.stream()
+							  .map(this::createField)
+							  .collect(Collectors.toList());
+	}
 
-		log.debug("Creating table: {}", createTableStatement);
-		statement.execute(createTableStatement);
+	@SneakyThrows
+	private List<RowN> getTablesContentFromCSV(ResourceFile csvFile, List<RequiredColumn> requiredColumns) {
+		List<String[]> rawContent = this.csvReader.parseAll(csvFile.stream());
+		List<List<Object>> castedContent = this.castContent(rawContent, requiredColumns);
+		return castedContent.stream()
+							.map(DSL::row)
+							.toList();
 	}
 
 	private void dropTable(Table<Record> table, Statement statement) {
@@ -96,17 +118,20 @@ public class CsvTableImporter {
 		}
 	}
 
-	private List<Field<?>> createFieldsForColumns(List<RequiredColumn> requiredColumns) {
-		return requiredColumns.stream()
-							  .map(this::createField)
-							  .collect(Collectors.toList());
+	private void createTable(Table<Record> table, List<Field<?>> columns, Statement statement) throws SQLException {
+		String createTableStatement = testSqlDialect.getTestFunctionProvider().createTableStatement(table, columns, dslContext);
+
+		log.debug("Creating table: {}", createTableStatement);
+		statement.execute(createTableStatement);
 	}
 
-	private List<RequiredColumn> getAllRequiredColumns(RequiredTable table) {
-		ArrayList<RequiredColumn> requiredColumns = new ArrayList<>();
-		requiredColumns.add(table.getPrimaryColumn());
-		requiredColumns.addAll(Arrays.stream(table.getColumns()).toList());
-		return requiredColumns;
+	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
+		// encountered empty new line
+		if (content.isEmpty()) {
+			return;
+		}
+		log.debug("Inserting into table: {}", content);
+		testSqlDialect.getTestFunctionProvider().insertValuesIntoTable(table, columns, content, statement, dslContext);
 	}
 
 	private Field<?> createField(RequiredColumn requiredColumn) {
@@ -126,15 +151,6 @@ public class CsvTableImporter {
 		}
 
 		return DSL.field(DSL.name(requiredColumn.getName()), dataType);
-	}
-
-	@SneakyThrows
-	private List<RowN> getTablesContentFromCSV(ResourceFile csvFile, List<RequiredColumn> requiredColumns) {
-		List<String[]> rawContent = this.csvReader.parseAll(csvFile.stream());
-		List<List<Object>> castedContent = this.castContent(rawContent, requiredColumns);
-		return castedContent.stream()
-							.map(DSL::row)
-							.toList();
 	}
 
 	/**

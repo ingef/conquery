@@ -53,6 +53,23 @@
 					"children": []
 				}
 			]
+		},
+		{
+			"label": "test_tree_table",
+			"type": "TREE",
+			"connectors": [
+				{
+					"label": "tree_label",
+					"name": "test_column",
+					"table": "table1",
+					"validityDates": {
+						"label": "datum",
+						"column": "table1.datum"
+					}
+				}
+			],
+			"children": [
+			]
 		}
 	],
 	"content": {

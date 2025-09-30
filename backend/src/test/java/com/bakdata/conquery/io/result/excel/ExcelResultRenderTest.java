@@ -26,20 +26,20 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ExcelConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ExcelResultPrinters;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.StringResultPrinters;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
-import com.codahale.metrics.MetricRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -52,7 +52,7 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 public class ExcelResultRenderTest {
 
-	public static final ConqueryConfig CONFIG = new ConqueryConfig(){{
+	public static final ConqueryConfig CONFIG = new ConqueryConfig() {{
 		// Suppress java.lang.NoClassDefFoundError: com/bakdata/conquery/io/jackson/serializer/CurrencyUnitDeserializer
 		setStorage(new NonPersistentStoreFactory());
 	}};
@@ -76,7 +76,7 @@ public class ExcelResultRenderTest {
 		final List<EntityResult> results = getTestEntityResults();
 
 		MetaStorage metaStorage = new MetaStorage(new NonPersistentStoreFactory());
-		metaStorage.openStores(null, new MetricRegistry());
+		metaStorage.openStores(null);
 
 		ManagedQuery mquery = getManagedQuery(metaStorage, results);
 
@@ -101,7 +101,11 @@ public class ExcelResultRenderTest {
 														   (selectInfo) -> selectInfo.getSelect().getLabel()
 		);
 
-		final List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(), tsvPrintSettings, new StringResultPrinters());
+		final List<String> expected = generateExpectedTSV(results,
+														  mquery.getResultInfos(),
+														  tsvPrintSettings,
+														  new StringResultPrinters(ExcelResultPrinters.NEGATIVE_INF, ExcelResultPrinters.POSITIVE_INF)
+		);
 
 		log.info("Wrote and than read this excel data: {}", computed);
 
@@ -114,7 +118,7 @@ public class ExcelResultRenderTest {
 		User user = new User("test", "test", metaStorage);
 		user.updateStorage();
 
-		return new ManagedQuery(mock(Query.class), user.getId(), new Dataset(ExcelResultRenderTest.class.getSimpleName()).getId(), metaStorage, null) {
+		return new ManagedQuery(mock(Query.class), user.getId(), new DatasetId(ExcelResultRenderTest.class.getSimpleName()), metaStorage, null, CONFIG) {
 			@Override
 			public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
 				return results.stream();
@@ -160,27 +164,25 @@ public class ExcelResultRenderTest {
 			List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings printSettings, PrinterFactory printerFactory) {
 		final List<String> expected = new ArrayList<>();
 		expected.add(String.join("\t", printIdFields) + "\t" + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")));
-		results.stream()
-			   .map(EntityResult.class::cast)
-			   .forEach(res -> {
 
-				   for (Object[] line : res.listResultLines()) {
-					   final StringJoiner valueJoiner = new StringJoiner("\t");
+		for (EntityResult res : results) {
+			for (Object[] line : res.listResultLines()) {
+				final StringJoiner valueJoiner = new StringJoiner("\t");
 
-					   valueJoiner.add(String.valueOf(res.getEntityId()));
-					   valueJoiner.add(String.valueOf(res.getEntityId()));
+				valueJoiner.add(String.valueOf(res.getEntityId()));
+				valueJoiner.add(String.valueOf(res.getEntityId()));
 
-					   for (int lIdx = 0; lIdx < line.length; lIdx++) {
-						   final Object val = line[lIdx];
+				for (int lIdx = 0; lIdx < line.length; lIdx++) {
+					final Object val = line[lIdx];
 
-						   final ResultInfo info = resultInfos.get(lIdx);
-						   final String printed = printValue(val, info, printSettings, printerFactory);
+					final ResultInfo info = resultInfos.get(lIdx);
+					final String printed = printValue(val, info, printSettings, printerFactory);
 
-						   valueJoiner.add(printed);
-					   }
-					   expected.add(valueJoiner.toString());
-				   }
-			   });
+					valueJoiner.add(printed);
+				}
+				expected.add(valueJoiner.toString());
+			}
+		}
 
 		return expected;
 	}

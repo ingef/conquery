@@ -7,7 +7,6 @@ import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 @RequiredArgsConstructor
 @Getter
@@ -15,8 +14,7 @@ public abstract class Job {
 
 	protected final UUID jobId = UUID.randomUUID();
 
-	@Setter
-	private ProgressReporter progressReporter = ProgressReporter.createWaiting();
+	private final ProgressReporter progressReporter = ProgressReporter.createWaiting();
 
 	@Getter(AccessLevel.PROTECTED)
 	private final AtomicBoolean cancelledState = new AtomicBoolean(false);

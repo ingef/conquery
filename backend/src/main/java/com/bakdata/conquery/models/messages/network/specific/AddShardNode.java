@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -16,11 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "ADD_SHARD_NODE", base = NetworkMessage.class)
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @Slf4j
+@ToString
 public class AddShardNode extends MessageToManagerNode {
 
 	@Override
 	public void react(NetworkMessageContext.ManagerNodeNetworkContext context) throws Exception {
-		final ShardNodeInformation nodeInformation = new ShardNodeInformation(context.getSession(), context.getBackpressure());
+		final ShardNodeInformation nodeInformation = new ShardNodeInformation(context.getSession());
 		context.getClusterState().getShardNodes().put(context.getRemoteAddress(), nodeInformation);
 
 		log.info("ShardNode `{}` registered.", context.getRemoteAddress());

@@ -10,12 +10,11 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -45,13 +44,11 @@ public interface QueryDescription extends Visitable {
 	 * @param user
 	 * @param submittedDataset
 	 * @param storage
+	 * @param config
 	 * @return
 	 */
-	ManagedExecution toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry);
+	ManagedExecution toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config);
 
-
-	Set<ManagedExecutionId> collectRequiredQueries();
-	
 	/**
 	 * Initializes a submitted description using the provided context.
 	 * All parameters that are set in this phase must be annotated with {@link com.bakdata.conquery.io.jackson.View.InternalCommunication}.
@@ -61,29 +58,28 @@ public interface QueryDescription extends Visitable {
 	
 	/**
 	 * Allows the implementation to add visitors that traverse the QueryTree.
-	 * All visitors are concatenated so only a single traverse needs to be done.  
+	 * All visitors are concatenated so only a single traverse needs to be done.
 	 * @param visitors The structure to which new visitors need to be added.
 	 */
 	default void addVisitors(@NonNull List<QueryVisitor> visitors) {
 		// Register visitors for permission checks
 		visitors.add(new QueryUtils.ExternalIdChecker());
 	}
-
+	
 	/**
 	 * Check implementation specific permissions. Is called after all visitors have been registered and executed.
 	 */
-	default void authorize(Subject subject, Dataset submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
+	default void authorize(Subject subject, DatasetId submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
 		authorizeQuery(this, subject, submittedDataset, visitors, storage);
 	}
 
-	static void authorizeQuery(QueryDescription queryDescription, Subject subject, Dataset submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
+	static void authorizeQuery(QueryDescription queryDescription, Subject subject, DatasetId submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
 		NamespacedIdentifiableCollector nsIdCollector = QueryUtils.getVisitor(visitors, NamespacedIdentifiableCollector.class);
 		ExternalIdChecker externalIdChecker = QueryUtils.getVisitor(visitors, ExternalIdChecker.class);
 
 		// Generate DatasetPermissions
-		final Set<Dataset> datasets = nsIdCollector.getIdentifiables().stream()
+		final Set<DatasetId> datasets = nsIdCollector.getIdentifiables().stream()
 												   .map(NamespacedIdentifiable::getDataset)
-												   .map(Id::resolve)
 												   .collect(Collectors.toSet());
 
 		subject.authorize(datasets, Ability.READ);
@@ -110,6 +106,8 @@ public interface QueryDescription extends Visitable {
 			subject.authorize(submittedDataset, Ability.PRESERVE_ID);
 		}
 	}
+
+	Set<ManagedExecutionId> collectRequiredQueries();
 
 	default RequiredEntities collectRequiredEntities(QueryExecutionContext context){
 		return new RequiredEntities(context.getBucketManager().getEntities());

@@ -18,7 +18,7 @@ import org.apache.commons.lang3.tuple.Pair;
 @SuperBuilder
 public class FrontendPermissionOwnerContent<OWNER extends PermissionOwner<?>> {
 	private String label;
-	private Id<?> id;
+	private Id<?, ?> id;
 	private boolean resolvable;
 
 	/**
@@ -28,9 +28,9 @@ public class FrontendPermissionOwnerContent<OWNER extends PermissionOwner<?>> {
 
 
 	/**
-	 *  Holds possible permission types, their abilities and targets that can be used for the creation of a permission.
+	 * Holds possible permission types, their abilities and targets that can be used for the creation of a permission.
 	 */
-	private Map<String, Pair<Set<Ability>,List<Object>>> permissionTemplateMap;
-	
-	
+	private Map<String, Pair<Set<Ability>, List<Object>>> permissionTemplateMap;
+
+
 }

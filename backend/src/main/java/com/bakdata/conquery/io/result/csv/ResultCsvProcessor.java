@@ -19,11 +19,10 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -37,21 +36,23 @@ import org.eclipse.jetty.io.EofException;
 public class ResultCsvProcessor {
 
 	private final ConqueryConfig config;
-	private final DatasetRegistry datasetRegistry;
 
-	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty, Charset charset, OptionalLong limit) {
+	public <E extends ManagedExecution & SingleTableResult> Response createResult(E exec, Subject subject, boolean pretty, Charset charset, OptionalLong limit) {
 
-		final DatasetId datasetId = exec.getDataset();
+		ManagedExecutionId execId = exec.getId();
+		final Namespace namespace = exec.getNamespace();
 
-		final Namespace namespace = datasetRegistry.get(datasetId);
 
 		ConqueryMDC.setLocation(subject.getName());
-		log.info("Downloading results for {}", exec.getId());
+		log.info("Downloading results for {}", execId);
 
 		ResultUtil.authorizeExecutable(subject, exec);
 
 		// Check if subject is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(subject, exec);
+
+		// Initialize execution so columns can be correctly accounted
+		exec.initExecutable();
 
 		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 
@@ -62,7 +63,7 @@ public class ResultCsvProcessor {
 		final StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
 				final CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
-				renderer.toCSV(config.getIdColumns().getIdResultInfos(), exec.getResultInfos(), exec.streamResults(limit), settings);
+				renderer.toCSV(config.getIdColumns().getIdResultInfos(), exec.getResultInfos(), exec.streamResults(limit), settings, charset);
 			}
 			catch (EofException e) {
 				log.trace("User canceled download");
@@ -75,7 +76,11 @@ public class ResultCsvProcessor {
 			}
 		};
 
-		return makeResponseWithFileName(Response.ok(out), String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_CSV), new MediaType("text", "csv", charset.toString()), ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(Response.ok(out),
+										String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_CSV),
+										new MediaType("text", "csv", charset.toString()),
+										ResultUtil.ContentDispositionOption.ATTACHMENT
+		);
 
 	}
 }
