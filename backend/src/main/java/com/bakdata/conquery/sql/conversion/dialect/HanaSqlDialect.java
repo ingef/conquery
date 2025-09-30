@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.dialect;
 
 import java.util.List;
 
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.aggregation.AnsiSqlDateAggregator;
@@ -9,6 +10,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.AnsiSqlInte
 import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 
 public class HanaSqlDialect implements SqlDialect {
 
@@ -32,6 +34,20 @@ public class HanaSqlDialect implements SqlDialect {
 	@Override
 	public List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext dslContext) {
 		return getDefaultNodeConverters(dslContext);
+	}
+
+	@Override
+	public boolean isTypeCompatible(Field<?> field, MajorTypeId type) {
+		return switch (type) {
+			case STRING -> field.getDataType().isString();
+			case INTEGER -> field.getDataType().isInteger();
+			case BOOLEAN -> field.getDataType().isBoolean();
+			case REAL -> field.getDataType().isNumeric();
+			case DECIMAL -> field.getDataType().isDecimal();
+			case MONEY -> field.getDataType().isDecimal();
+			case DATE -> field.getDataType().isDate();
+			case DATE_RANGE -> false; // HANA does not support single-column DateRange
+		};
 	}
 
 	@Override

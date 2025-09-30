@@ -13,12 +13,13 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext.Manage
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @CPSType(id = "FORWARD_TO_NAMESPACE", base = NetworkMessage.class)
-@RequiredArgsConstructor
-@Getter
+@Data
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class ForwardToNamespace extends MessageToManagerNode implements SlowMessage {
 
 	private final DatasetId datasetId;
@@ -39,17 +40,12 @@ public class ForwardToNamespace extends MessageToManagerNode implements SlowMess
 	}
 
 	@Override
-	public String toString() {
-		return message.toString() + " for dataset " + datasetId;
-	}
-
-	@Override
 	public ProgressReporter getProgressReporter() {
-		return ((SlowMessage) message).getProgressReporter();
+		return message.getProgressReporter();
 	}
 
 	@Override
 	public void setProgressReporter(ProgressReporter progressReporter) {
-		((SlowMessage) message).setProgressReporter(progressReporter);
+		message.setProgressReporter(progressReporter);
 	}
 }

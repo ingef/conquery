@@ -314,13 +314,13 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
 
-		String tableName = validityDate.getConnector().getResolvedTableId().getTable();
+		String tableName = validityDate.getConnector().resolveTableId().getTable();
 
 		Column startColumn;
 		Column endColumn;
 
 		// if no end column is present, the only existing column is both start and end of the date range
-		if (validityDate.getEndColumn() == null) {
+		if (validityDate.getColumn() != null) {
 			Column column = validityDate.getColumn().resolve();
 			startColumn = column;
 			endColumn = column;

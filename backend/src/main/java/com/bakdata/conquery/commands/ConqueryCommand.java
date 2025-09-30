@@ -10,7 +10,7 @@ import org.eclipse.jetty.util.component.ContainerLifeCycle;
 
 @Slf4j
 public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> {
-	
+
 	/**
 	 * Creates a new environment command.
 	 *
@@ -29,18 +29,17 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 														bootstrap.getClassLoader(),
 														bootstrap.getHealthCheckRegistry(),
 														configuration);
-		configuration.getMetricsFactory().configure(environment.lifecycle(),
-													bootstrap.getMetricRegistry());
+		configuration.getMetricsFactory().configure(environment.lifecycle(), bootstrap.getMetricRegistry());
 		configuration.getServerFactory().configure(environment);
 
 		bootstrap.run(configuration, environment);
-		
+
 		ContainerLifeCycle lifeCycle = new ContainerLifeCycle();
 		try {
 			run(environment, namespace, configuration);
 			environment.lifecycle().attach(lifeCycle);
 			lifeCycle.start();
-			
+
 			Runtime.getRuntime().addShutdownHook(new Thread() {
 				@Override
 				public void run() {

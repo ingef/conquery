@@ -34,11 +34,12 @@ import org.apache.logging.log4j.util.Strings;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.pam.FirstSuccessfulStrategy;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
+import org.apache.shiro.lang.util.LifecycleUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
-import org.apache.shiro.util.LifecycleUtils;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * The central class for the initialization of authorization and authentication.
@@ -78,7 +79,7 @@ public final class AuthorizationController implements Managed {
 	@Getter
 	private DropwizardResourceConfig unprotectedAuthAdmin;
 
-	public AuthorizationController(MetaStorage storage, ConqueryConfig config, Environment environment, AdminServlet adminServlet) {
+	public AuthorizationController(@NotNull MetaStorage storage, @NotNull ConqueryConfig config, @NotNull Environment environment, AdminServlet adminServlet) {
 		this.storage = storage;
 		this.config = config;
 		this.environment = environment;

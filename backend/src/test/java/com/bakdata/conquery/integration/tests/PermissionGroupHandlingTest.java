@@ -24,8 +24,9 @@ public class PermissionGroupHandlingTest extends IntegrationTest.Simple implemen
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		MetaStorage storage = conquery.getMetaStorage();
-		Dataset dataset1 = new Dataset();
-		dataset1.setLabel("dataset1");
+		Dataset dataset1 = new Dataset("dataset1");
+		dataset1.setStorageProvider(conquery.getDatasetRegistry());
+
 		ManagedExecutionId query1 = new ManagedExecutionId(dataset1.getId(), UUID.randomUUID());
 
 
@@ -39,9 +40,9 @@ public class PermissionGroupHandlingTest extends IntegrationTest.Simple implemen
 			storage.addUser(user1);
 			storage.addGroup(group1);
 
-			user1.addRole(role1);
+			user1.addRole(role1.getId());
 
-			group1.addMember(user1);
+			group1.addMember(user1.getId());
 
 			user1.addPermission(ExecutionPermission.onInstance(Ability.READ, query1));
 			role1.addPermission(ExecutionPermission.onInstance(Ability.DELETE, query1));

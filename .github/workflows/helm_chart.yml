@@ -1,0 +1,48 @@
+name: Helm
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - develop
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.12.0
+
+      - name: Lint Helm Chart
+        run: helm lint charts/conquery
+
+      - name: Validate Helm Templates
+        run: helm template conquery charts/conquery --debug
+
+  push-to-ghcr:
+    name: Push Helm Chart to GHCR (OCI)
+    runs-on: ubuntu-latest
+    needs: [lint]
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Login to GitHub Container Registry (GHCR)
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io --username $GITHUB_ACTOR --password-stdin
+
+      - name: Package Helm Chart
+        run: helm package charts/conquery
+
+      - name: Push Helm Chart to GHCR
+        run: |
+          helm push conquery-*.tgz oci://ghcr.io/${{ github.repository_owner }}/helm-charts

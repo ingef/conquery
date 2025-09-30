@@ -3,12 +3,6 @@ package com.bakdata.conquery.models.auth.web;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-
-import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
-import com.bakdata.conquery.models.auth.ConqueryAuthenticator;
-import com.bakdata.conquery.models.auth.entities.Subject;
-import com.google.common.base.Function;
-import io.dropwizard.auth.DefaultUnauthorizedHandler;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotAuthorizedException;
@@ -16,6 +10,12 @@ import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.SecurityContext;
+
+import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
+import com.bakdata.conquery.models.auth.ConqueryAuthenticator;
+import com.bakdata.conquery.models.auth.entities.Subject;
+import com.google.common.base.Function;
+import io.dropwizard.auth.DefaultUnauthorizedHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -52,7 +52,7 @@ public class AuthFilter extends io.dropwizard.auth.AuthFilter<AuthenticationToke
 		// The token extraction process
 		final Set<AuthenticationToken> tokens = new HashSet<>();
 		for (final TokenExtractor tokenExtractor : tokenExtractors) {
-			AuthenticationToken token = null;
+			AuthenticationToken token;
 			if ((token = tokenExtractor.apply(requestContext)) != null) {
 				log.trace("Extracted a token form the request: {}", token);
 				tokens.add(token);
@@ -60,7 +60,7 @@ public class AuthFilter extends io.dropwizard.auth.AuthFilter<AuthenticationToke
 		}
 
 		if (tokens.isEmpty()) {
-			log.warn("No tokens could be parsed from the request");
+			log.trace("No tokens could be parsed from the request");
 		}
 
 		int failedTokens = 0;
@@ -87,8 +87,8 @@ public class AuthFilter extends io.dropwizard.auth.AuthFilter<AuthenticationToke
 
 			}
 		}
-		log.warn("Non of the configured realms was able to successfully authenticate the extracted token(s).");
-		log.trace("The {} tokens failed.", failedTokens);
+		log.trace("Non of the configured realms was able to successfully authenticate the extracted token(s).");
+		log.trace("Validating of {} tokens failed.", failedTokens);
 		throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 	}
 
@@ -104,7 +104,7 @@ public class AuthFilter extends io.dropwizard.auth.AuthFilter<AuthenticationToke
 	 * extraction process the Token is resubmitted to the realm from the AuthFilter
 	 * to the {@link ConqueryAuthenticator} which dispatches it to shiro.
 	 *
-	 * @return The extracted {@link AuthenticationToken} or <code>null</code> if no
+	 * @implNote  Returns the extracted {@link AuthenticationToken} or <code>null</code> if no
 	 * token could be parsed.
 	 */
 	@Contract

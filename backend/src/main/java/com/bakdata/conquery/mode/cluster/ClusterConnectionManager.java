@@ -1,17 +1,12 @@
 package com.bakdata.conquery.mode.cluster;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import jakarta.validation.Validator;
+import java.util.NoSuchElementException;
 
-import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
-import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
-import com.bakdata.conquery.io.mina.ChunkReader;
-import com.bakdata.conquery.io.mina.ChunkWriter;
-import com.bakdata.conquery.io.mina.MdcFilter;
 import com.bakdata.conquery.io.mina.MinaAttributes;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
@@ -29,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
-import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
 /**
  * Manager of the connection from the manager to the ConQuery shards.
@@ -40,7 +34,6 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 
 	private final DatasetRegistry<DistributedNamespace> datasetRegistry;
 	private final JobManager jobManager;
-	private final Validator validator;
 	private final ConqueryConfig config;
 	private final InternalMapperFactory internalMapperFactory;
 	@Getter
@@ -75,8 +68,8 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 		final NetworkSession nwSession;
 
 		if (shardNodeInformation == null) {
-			// In case the shard is not yet registered, we wont have a shardNodeInformation to pull the session from
-			nwSession = new NetworkSession(session);
+			// In case the shard is not yet registered, we won't have a shardNodeInformation to pull the session from
+			nwSession = new NetworkSession(session, config.getCluster().getNetworkSessionMaxQueueLength());
 		}
 		else {
 			nwSession = shardNodeInformation.getSession();
@@ -84,16 +77,15 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 
 		log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
 
-		final Job job = new ReactingJob<>(toManagerNode,
-										  new NetworkMessageContext.ManagerNodeNetworkContext(nwSession,
-																							  datasetRegistry,
-																							  clusterState,
-																							  config.getCluster().getBackpressure()
-										  )
-		);
+		final Job job = new ReactingJob<>(toManagerNode, new NetworkMessageContext.ManagerNodeNetworkContext(nwSession, datasetRegistry, clusterState));
 
 		if (toManagerNode instanceof ForwardToNamespace nsMesg) {
-			datasetRegistry.get(nsMesg.getDatasetId()).getJobManager().addSlowJob(job);
+			DatasetId datasetId = nsMesg.getDatasetId();
+			DistributedNamespace namespace = datasetRegistry.get(datasetId);
+			if (namespace == null) {
+				throw new NoSuchElementException("Unable to find namespace with id %s for message: %s".formatted(datasetId, message) );
+			}
+			namespace.getJobManager().addSlowJob(job);
 		}
 		else if (toManagerNode instanceof SlowMessage slowMessage) {
 			slowMessage.setProgressReporter(job.getProgressReporter());
@@ -105,16 +97,10 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 	}
 
 	public void start() throws IOException {
-		acceptor = new NioSocketAcceptor();
-		acceptor.getFilterChain().addFirst("mdc", new MdcFilter("Manager[%s]"));
+		final ObjectMapper om = internalMapperFactory.createInternalCommunicationMapper(datasetRegistry);
 
-		final ObjectMapper om = internalMapperFactory.createManagerCommunicationMapper(datasetRegistry);
+		acceptor = config.getCluster().getClusterAcceptor(om, this, "Manager");
 
-		final BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
-		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
-		acceptor.setHandler(this);
-		acceptor.getSessionConfig().setAll(config.getCluster().getMina());
-		acceptor.bind(new InetSocketAddress(config.getCluster().getPort()));
 		log.info("Started ManagerNode @ {}", acceptor.getLocalAddress());
 	}
 

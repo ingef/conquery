@@ -8,8 +8,6 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.codahale.metrics.MetricRegistry;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public interface WorkerStorage extends NamespacedStorage, Closeable {
 	void addCBlock(CBlock cBlock);
@@ -28,8 +26,6 @@ public interface WorkerStorage extends NamespacedStorage, Closeable {
 
 	void removeBucket(BucketId id);
 
-	Stream<Bucket> getAllBuckets();
-
 	Stream<BucketId> getAllBucketIds();
 
 	WorkerInformation getWorker();
@@ -38,8 +34,7 @@ public interface WorkerStorage extends NamespacedStorage, Closeable {
 
 	void updateWorker(WorkerInformation worker);
 
+	Stream<String> getAllEntities();
 
-	void openStores(ObjectMapper objectMapper, MetricRegistry metricRegistry);
-	void loadData();
-	void removeStorage();
+	boolean hasCBlock(CBlockId id);
 }

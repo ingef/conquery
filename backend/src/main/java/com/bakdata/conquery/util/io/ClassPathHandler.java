@@ -8,8 +8,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
-import com.github.powerlibraries.io.In;
-
 public class ClassPathHandler extends URLStreamHandler {
 	@Override
 	protected URLConnection openConnection(URL u) throws IOException {
@@ -25,7 +23,7 @@ public class ClassPathHandler extends URLStreamHandler {
 				if (resource == null) {
 					throw new FileNotFoundException(getURL().toString());
 				}
-				return In.resource(resource).asStream();
+				return resource.openStream();
 			}
 		};
 	}

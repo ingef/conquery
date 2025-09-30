@@ -7,8 +7,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.identifiable.Labeled;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
@@ -36,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSBase
 @Slf4j
 @EqualsAndHashCode(callSuper = true)
-public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements NamespacedIdentifiable<FilterId> {
+public abstract class Filter<FILTER_VALUE> extends LabeledNamespaceIdentifiable<FilterId> {
 
 	private String unit;
 	@JsonAlias("description")
@@ -79,7 +78,7 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 		boolean valid = true;
 
 		for (ColumnId column : getRequiredColumns()) {
-			TableId tableId = connector.getResolvedTable().getId();
+			TableId tableId = connector.resolveTableId();
 			if (column == null || column.getTable().equals(tableId)) {
 				continue;
 			}

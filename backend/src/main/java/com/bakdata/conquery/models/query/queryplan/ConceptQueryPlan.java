@@ -101,7 +101,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 			nextTable(ctx, currentTable);
 
-			final List<BucketId> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable.getId());
+			final Set<BucketId> tableBuckets = ctx.getEntityBucketsForTable(entity, currentTable.getId());
 
 			log.trace("Table[{}] has {} buckets for Entity[{}]", currentTable, tableBuckets, entity);
 

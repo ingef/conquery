@@ -30,7 +30,6 @@ public class Role extends PermissionOwner<RoleId> {
 	@Override
 	public RoleId createId() {
 		RoleId roleId = new RoleId(name);
-		roleId.setMetaStorage(getMetaStorage());
 		return roleId;
 	}
 

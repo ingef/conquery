@@ -8,11 +8,7 @@ import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
-import com.bakdata.conquery.io.storage.WorkerStorageImpl;
-import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
-import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
@@ -29,7 +25,7 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dropwizard.core.setup.Environment;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -37,85 +33,55 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Getter
 public class Worker implements MessageSender.Transforming<NamespaceMessage, NetworkMessage<?>>, Closeable {
 	// Making this private to have more control over adding and deleting and keeping a consistent state
-	private final WorkerStorage storage;
-
-	@Getter
-	private final JobManager jobManager;
-	@Getter
-	private final QueryExecutor queryExecutor;
+	@Getter(AccessLevel.NONE)
+	private WorkerStorage storage;
 	/**
 	 * Pool that can be used in Jobs to execute a job in parallel.
 	 */
-	@Getter
-	private final ExecutorService jobsExecutorService;
-	@Getter
-	private final BucketManager bucketManager;
-	@Getter
-	private final ObjectMapper communicationMapper;
+	private ExecutorService jobsExecutorService;
+
+	private JobManager jobManager;
+
+	private QueryExecutor queryExecutor;
+	private BucketManager bucketManager;
 	@Setter
 	private NetworkSession session;
 
-
-	public Worker(
-			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-			@NonNull WorkerStorage storage,
+	/**
+	 * @implSpec storage must not be open yet.
+	 */
+	public static Worker create(
+			@NonNull WorkerStorage storage, ShardWorkers shardWorkers, @NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 			@NonNull ExecutorService jobsExecutorService,
 			boolean failOnError,
-			int entityBucketSize,
-			ObjectMapper persistenceMapper,
-			ObjectMapper communicationMapper,
-			int secondaryIdSubPlanLimit,
-			Environment environment) {
-		this.storage = storage;
-		this.jobsExecutorService = jobsExecutorService;
-		this.communicationMapper = communicationMapper;
+			int secondaryIdSubPlanLimit, ObjectMapper persistenceMapper, boolean loadStorage) {
 
 
-		storage.openStores(persistenceMapper, environment.metrics());
-		storage.loadData();
+		final Worker worker = new Worker();
 
-		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
-		queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);
-		bucketManager = BucketManager.create(this, storage, entityBucketSize);
-	}
+		worker.storage = storage;
+		worker.jobsExecutorService = jobsExecutorService;
+		worker.queryExecutor = new QueryExecutor(worker, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);
 
-	@SneakyThrows(IOException.class)
-	public static Worker newWorker(
-			@NonNull Dataset dataset,
-			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-			@NonNull ExecutorService jobsExecutorService,
-			@NonNull StoreFactory config,
-			@NonNull String directory,
-			boolean failOnError,
-			int entityBucketSize,
-			InternalMapperFactory internalMapperFactory,
-			int secondaryIdSubPlanLimit,
-			Environment environment) {
+		// The order of the remaining code cannot be changed, there are dependencies throughout.
+		storage.openStores(persistenceMapper);
+		storage.loadKeys();
 
-		WorkerStorageImpl workerStorage = new WorkerStorageImpl(config, environment.getValidator(), directory);
-		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(workerStorage);
-		workerStorage.openStores(persistenceMapper, environment.metrics());
+		shardWorkers.addWorker(worker);
 
-		dataset.setNamespacedStorageProvider(workerStorage);
+		if (loadStorage) {
+			storage.loadData();
+		}
 
-		// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
-		WorkerInformation info = new WorkerInformation();
-		info.setDataset(dataset.getId());
-		info.setName(directory);
-		info.setEntityBucketSize(entityBucketSize);
-		workerStorage.loadData();
-		workerStorage.updateDataset(dataset);
-		workerStorage.setWorker(info);
-		workerStorage.close();
+		worker.jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 
+		// BucketManager.create loads NamespacedStorage keys
+		worker.bucketManager = BucketManager.create(worker, storage);
 
-
-
-		final ObjectMapper communicationMapper = internalMapperFactory.createWorkerCommunicationMapper(workerStorage);
-
-		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanLimit, environment);
+		return worker;
 	}
 
 	public ModificationShieldedWorkerStorage getStorage() {
@@ -188,10 +154,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 	public void updateConcept(Concept<?> concept) {
 		bucketManager.updateConcept(concept);
-	}
-
-	public void updateDataset(Dataset dataset) {
-		storage.updateDataset(dataset);
 	}
 
 	public void updateWorkerInfo(WorkerInformation info) {

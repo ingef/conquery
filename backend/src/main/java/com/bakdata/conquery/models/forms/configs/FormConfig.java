@@ -6,7 +6,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -25,7 +24,7 @@ import com.bakdata.conquery.models.execution.Labelable;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.execution.Shareable;
 import com.bakdata.conquery.models.execution.Taggable;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.MetaIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
@@ -54,7 +53,7 @@ import org.jetbrains.annotations.Nullable;
 @ToString
 @EqualsAndHashCode(callSuper = false)
 @FieldNameConstants
-public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable, Owned {
+public class FormConfig extends MetaIdentifiable<FormConfigId> implements Shareable, Labelable, Taggable, Owned {
 
 	protected DatasetId dataset;
 	@NotEmpty
@@ -84,16 +83,14 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 
 	@Override
 	public FormConfigId createId() {
-		FormConfigId formConfigId = new FormConfigId(dataset, formType, formId);
-		formConfigId.setMetaStorage(getMetaStorage());
-		return formConfigId;
+		return new FormConfigId(dataset, formType, formId);
 	}
 
 	/**
 	 * Provides an overview (meta data) of this form configuration without the
 	 * actual form field values.
 	 */
-	public FormConfigOverviewRepresentation overview(MetaStorage storage, Subject subject) {
+	public FormConfigOverviewRepresentation overview(Subject subject) {
 		String ownerName = getOwnerName();
 
 		return FormConfigOverviewRepresentation.builder()
@@ -110,8 +107,19 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	}
 
 	@JsonIgnore
-	private @Nullable String getOwnerName() {
-		return Optional.ofNullable(owner).map(UserId::resolve).map(User.class::cast).map(User::getLabel).orElse(null);
+	@Nullable
+	private String getOwnerName() {
+		if (owner == null){
+			return null;
+		}
+
+		User resolved = owner.get();
+
+		if (resolved == null){
+			return null;
+		}
+
+		return resolved.getLabel();
 	}
 
 	/**
@@ -134,7 +142,8 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 		}
 
 		return FormConfigFullRepresentation.builder()
-										   .id(getId()).formType(formType)
+										   .id(getId())
+										   .formType(formType)
 										   .label(label)
 										   .tags(tags)
 										   .ownerName(ownerName)

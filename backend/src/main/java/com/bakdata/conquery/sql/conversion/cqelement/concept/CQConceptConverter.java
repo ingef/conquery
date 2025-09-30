@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -12,10 +13,10 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
@@ -89,7 +90,8 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		// combine all universal selects and connector selects from preceding step
 		List<SqlSelect> allConceptSelects = Stream.concat(
 														  converted.stream().flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream()),
-														  predecessor.getQualifiedSelects().getSqlSelects().stream()
+														  // aggregate special selects (e.g. Exists)
+														  predecessor.getQualifiedSelects().getSqlSelects().stream().map(SqlSelect::connectorAggregate)
 												  )
 												  .toList();
 
@@ -102,10 +104,20 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.INNER_JOIN, context);
 
+		// group by everything which is not part of an aggregation in this step
+		List<Field<?>> groupByFields =
+				Stream.concat(
+						finalSelects.nonExplicitSelects().stream(),
+						finalSelects.getSqlSelects().stream()
+								.filter(Predicate.not(SqlSelect::isUniversal))
+								.flatMap(sqlSelect -> sqlSelect.toFields().stream())
+				).toList();
+
 		return QueryStep.builder()
 						.cteName(universalTables.cteName(ConceptCteStep.UNIVERSAL_SELECTS))
 						.selects(finalSelects)
 						.fromTable(joinedTable)
+					    .groupBy(groupByFields)
 						.predecessors(queriesToJoin)
 						.build();
 	}
@@ -117,7 +129,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		if (cqConcept.isExcludeFromSecondaryId()
 			|| conversionContext.getSecondaryIdDescription() == null
-			|| !cqTable.hasSelectedSecondaryId(conversionContext.getSecondaryIdDescription())
+			|| !cqTable.hasSelectedSecondaryId(conversionContext.getSecondaryIdDescription().getId())
 		) {
 			return new SqlIdColumns(primaryColumn).withAlias();
 		}
@@ -171,7 +183,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		convertConnectorCondition(cqTable, functionProvider).ifPresent(conditions::add);
 
 		for (ConceptElement<?> conceptElement : conceptElements) {
-			collectConditions(cqTable, (ConceptTreeNode<?>) conceptElement, functionProvider)
+			collectConditions(cqTable, conceptElement, functionProvider)
 					.reduce(WhereCondition::and)
 					.ifPresent(conditions::add);
 		}
@@ -182,7 +194,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	/**
 	 * Collects all conditions of a given {@link ConceptTreeNode} by resolving the condition of the given node and all of its parent nodes.
 	 */
-	private static Stream<WhereCondition> collectConditions(CQTable cqTable, ConceptTreeNode<?> conceptElement, SqlFunctionProvider functionProvider) {
+	private static Stream<WhereCondition> collectConditions(CQTable cqTable, ConceptElement<?> conceptElement, SqlFunctionProvider functionProvider) {
 		if (!(conceptElement instanceof ConceptTreeChild child)) {
 			return Stream.empty();
 		}
@@ -194,8 +206,10 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	}
 
 	private static Optional<WhereCondition> convertConnectorCondition(CQTable cqTable, SqlFunctionProvider functionProvider) {
-		return Optional.ofNullable(cqTable.getConnector().resolve().getCondition())
-					   .map(condition -> condition.convertToSqlCondition(CTConditionContext.create(cqTable.getConnector().resolve(), functionProvider)));
+		final Connector connector = cqTable.getConnector().resolve();
+
+		return Optional.ofNullable(connector.getCondition())
+					   .map(condition -> condition.convertToSqlCondition(CTConditionContext.create(connector, functionProvider)));
 	}
 
 	private static Optional<SqlFilters> getDateRestriction(ConversionContext context, Optional<ColumnDateRange> validityDate) {

@@ -14,11 +14,9 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.RequiredArgsConstructor;
@@ -39,15 +37,14 @@ public class GroupResource {
 
 	@Path("{" + GROUP_ID + "}")
 	@GET
-	public Response getGroup(@PathParam(GROUP_ID) Group group) {
-		return Response.ok(group).build();
+	public Group getGroup(@PathParam(GROUP_ID) GroupId group) {
+		return group.resolve();
 	}
 
 	@Path("{" + GROUP_ID + "}")
 	@DELETE
-	public Response deleteGroup(@PathParam(GROUP_ID) Group group) {
+	public void deleteGroup(@PathParam(GROUP_ID) GroupId group) {
 		processor.deleteGroup(group);
-		return Response.ok().build();
 	}
 
 	@POST
@@ -57,29 +54,25 @@ public class GroupResource {
 
 	@Path("{" + GROUP_ID + "}/" + USERS_PATH_ELEMENT + "/{" + USER_ID + "}")
 	@POST
-	public Response addUserToGroup(@PathParam(GROUP_ID) Group group, @PathParam(USER_ID) User user) {
+	public void addUserToGroup(@PathParam(GROUP_ID) GroupId group, @PathParam(USER_ID) UserId user) {
 		processor.addUserToGroup(group, user);
-		return Response.ok().build();
 	}
 
 	@Path("{" + GROUP_ID + "}/" + USERS_PATH_ELEMENT + "/{" + USER_ID + "}")
 	@DELETE
-	public Response deleteUserFromGroup(@PathParam(GROUP_ID) Group group, @PathParam(USER_ID) UserId user) {
+	public void deleteUserFromGroup(@PathParam(GROUP_ID) GroupId group, @PathParam(USER_ID) UserId user) {
 		processor.deleteUserFromGroup(group, user);
-		return Response.ok().build();
 	}
 
 	@Path("{" + GROUP_ID + "}/" + ROLES_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@DELETE
-	public Response deleteRoleFromUser(@PathParam(GROUP_ID) Group group, @PathParam(ROLE_ID) RoleId role) {
-		processor.deleteRoleFrom(group, role);
-		return Response.ok().build();
+	public void deleteRoleFromGroup(@PathParam(GROUP_ID) GroupId group, @PathParam(ROLE_ID) RoleId role) {
+		processor.deleteRoleFromGroup(group, role);
 	}
 
 	@Path("{" + GROUP_ID + "}/" + ROLES_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@POST
-	public Response addRoleToUser(@PathParam(GROUP_ID) Group group, @PathParam(ROLE_ID) Role role) {
-		processor.addRoleTo(group, role);
-		return Response.ok().build();
+	public void addRoleToUser(@PathParam(GROUP_ID) GroupId group, @PathParam(ROLE_ID) RoleId role) {
+		processor.addRoleToGroup(group, role);
 	}
 }
