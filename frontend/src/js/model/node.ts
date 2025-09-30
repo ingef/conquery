@@ -177,8 +177,8 @@ export const useActiveState = (node?: StandardQueryNodeT) => {
   const tooltipText = hasNonDefaultSettings
     ? t("queryEditor.hasNonDefaultSettings")
     : hasFilterValues
-      ? t("queryEditor.hasDefaultSettings")
-      : undefined;
+    ? t("queryEditor.hasDefaultSettings")
+    : undefined;
 
   return {
     active: hasNonDefaultSettings || hasFilterValues,
