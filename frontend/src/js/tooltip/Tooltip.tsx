@@ -17,6 +17,7 @@ import ActivateTooltip from "./ActivateTooltip";
 import type { AdditionalInfosType } from "./reducer";
 import TooltipEntries from "./TooltipEntries";
 import { TooltipHeader } from "./TooltipHeader";
+import { PluggableList } from "react-markdown/lib/react-markdown";
 
 const Root = styled("div")`
   width: 100%;
@@ -256,7 +257,8 @@ const Tooltip = () => {
                 <InfoHeadline>
                   <HighlightedText words={words} text={info.key} />
                 </InfoHeadline>
-                <Markdown remarkPlugins={[remarkGfm, remarkFlexibleMarkers]}>
+                {/* Explicit cast to PluggableList here, see: https://github.com/orgs/rehypejs/discussions/63 */}
+                <Markdown remarkPlugins={[remarkGfm, remarkFlexibleMarkers] as PluggableList}>
                   {mark(info.value, highlightRegex)}
                 </Markdown>
               </PieceOfInfo>
