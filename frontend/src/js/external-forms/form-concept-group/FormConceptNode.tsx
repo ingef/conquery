@@ -130,8 +130,8 @@ const FormConceptNode: FC<PropsT> = ({
   const tooltipText = hasNonDefaultSettings
     ? t("queryEditor.hasNonDefaultSettings")
     : hasFilterValues
-    ? t("queryEditor.hasDefaultSettings")
-    : undefined;
+      ? t("queryEditor.hasDefaultSettings")
+      : undefined;
 
   return (
     <HoverNavigatable
