@@ -6,7 +6,12 @@
 // Some keys are added (e.g. the query type attribute)
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
-import { EditorV2Query, Tree } from "../editor-v2/types";
+import {
+  EditorV2Query,
+  TimeTimestamp,
+  Tree,
+  TreeChildrenTime,
+} from "../editor-v2/types";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { isLabelPristine } from "../standard-query-editor/helper";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
@@ -239,28 +244,50 @@ const transformTreeToApi = (tree: Tree): unknown => {
         node = createOr(tree.children.items.map(transformTreeToApi));
         break;
       case "time":
+        const tsMap: Record<TimeTimestamp, string> = {
+          some: "ANY",
+          earliest: "EARLIEST",
+          latest: "LATEST",
+          every: "ALL",
+        };
+
+        const timeNode = tree.children as TreeChildrenTime;
+        let mode;
+
+        switch (timeNode.operator) {
+          case "after":
+          case "before":
+            mode = {
+              type: timeNode.operator.toUpperCase(),
+              days: {
+                min: timeNode.interval
+                  ? timeNode.interval.min === null
+                    ? 1
+                    : timeNode.interval.max
+                  : undefined,
+                max: timeNode.interval
+                  ? timeNode.interval.max === null
+                    ? undefined
+                    : timeNode.interval.max
+                  : undefined,
+              },
+            };
+            break;
+          case "while":
+            mode = { type: "WHILE" };
+            break;
+        }
+
         node = {
-          type: "BEFORE", // SHOULD BE: tree.children.operator,
-          days: {
-            min: tree.children.interval
-              ? tree.children.interval.min === null
-                ? 1
-                : tree.children.interval.max
-              : undefined,
-            max: tree.children.interval
-              ? tree.children.interval.max === null
-                ? undefined
-                : tree.children.interval.max
-              : undefined,
-          },
+          type: "TEMPORAL",
+          mode: mode,
           // TODO: improve this to be more flexible with the "preceding" and "index" keys
-          // based on the operator, which would be "before" | "after" | "while"
           compare: {
-            sampler: "EARLIEST", // SHOULD BE: tree.children.timestamps[0],
+            sampler: tsMap[timeNode.timestamps[0]],
             child: transformTreeToApi(tree.children.items[0]),
           },
           index: {
-            sampler: "EARLIEST", // SHOULD BE: tree.children.timestamps[1]
+            sampler: tsMap[timeNode.timestamps[1]],
             child: transformTreeToApi(tree.children.items[1]),
           },
         };
