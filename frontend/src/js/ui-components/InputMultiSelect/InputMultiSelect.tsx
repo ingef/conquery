@@ -314,10 +314,10 @@ const InputMultiSelect = ({
               selectedItems.length > 0
                 ? null
                 : placeholder
-                ? placeholder
-                : onResolve
-                ? t("inputMultiSelect.dndPlaceholder")
-                : t("inputSelect.placeholder")
+                  ? placeholder
+                  : onResolve
+                    ? t("inputMultiSelect.dndPlaceholder")
+                    : t("inputSelect.placeholder")
             }
             onClick={(e) => {
               inputProps.onClick?.(e);
