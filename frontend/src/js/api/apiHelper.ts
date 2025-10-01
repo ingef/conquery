@@ -251,7 +251,7 @@ const transformTreeToApi = (tree: Tree): unknown => {
                 min: timeNode.interval
                   ? timeNode.interval.min === null
                     ? 1
-                    : timeNode.interval.max
+                    : timeNode.interval.min
                   : undefined,
                 max: timeNode.interval
                   ? timeNode.interval.max === null
