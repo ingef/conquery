@@ -80,7 +80,7 @@ export const TimeConnectionModal = memo(
 
     const INTERVAL_OPTIONS = useMemo(
       () => [
-        { value: "some", label: t("editorV2.intervalSome") },
+        { value: "ANY", label: t("editorV2.intervalSome") },
         { value: "dayInterval", label: t("editorV2.dayInterval") },
       ],
       [t],
