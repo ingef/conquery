@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-sealed public interface TemporalRelationMode permits TemporalRelationMode.After, TemporalRelationMode.While {
+sealed public interface TemporalRelationMode permits TemporalRelationMode.After, TemporalRelationMode.Before, TemporalRelationMode.While {
 
 	/**
 	 * Take result-dates and convert it to date-restrictions to assert the temporal relation.
@@ -41,7 +41,7 @@ sealed public interface TemporalRelationMode permits TemporalRelationMode.After,
 	@CPSType(id = "AFTER", base = TemporalRelationMode.class)
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
-	sealed class After implements TemporalRelationMode permits Before {
+	final class After implements TemporalRelationMode {
 
 		@NotNull
 		private final Range.IntegerRange days;
@@ -60,7 +60,7 @@ sealed public interface TemporalRelationMode permits TemporalRelationMode.After,
 					return new CDateRange[0];
 				}
 
-				return new CDateRange[]{applyDays(period.getMinValue())};
+				return new CDateRange[]{daysAfter(period.getMinValue(), days)};
 			}
 
 			if (selector == TemporalSelector.LATEST) {
@@ -70,62 +70,51 @@ sealed public interface TemporalRelationMode permits TemporalRelationMode.After,
 					return new CDateRange[0];
 				}
 
-				return new CDateRange[]{applyDays(period.getMaxValue())};
+				return new CDateRange[]{daysAfter(period.getMaxValue(), days)};
 			}
 
 			CDateRange[] converted = new CDateRange[parts.length];
 
 			for (int index = 0; index < parts.length; index++) {
 
-				final OptionalInt maybeIndexDay = selectIndexDay(selector, parts[index]);
+				final OptionalInt maybeIndexDay = selectIndexDay(parts[index]);
 
 				if (maybeIndexDay.isEmpty()) {
 					continue;
 				}
 
-				converted[index] = applyDays(maybeIndexDay.getAsInt());
+				converted[index] = daysAfter(maybeIndexDay.getAsInt(), days);
 			}
 
 			return converted;
 		}
 
-		private CDateRange applyDays(int indexDay) {
+		private CDateRange daysAfter(int indexDay, Range.IntegerRange days) {
 			if (days == null || days.isAll()) {
 				return CDateRange.atLeast(indexDay);
 			}
 
-			if (days.isOpen()) {
-				if (days.isAtLeast()) {
-					return CDateRange.atLeast(indexDay + days.getMin());
-
-
-				}
-				if (days.isAtMost()) {
-					return CDateRange.of(indexDay, indexDay + days.getMax());
-				}
+			if (!days.isOpen()) {
+				return CDateRange.of(indexDay + days.getMin(), indexDay + days.getMax());
 			}
-			return CDateRange.of(indexDay + days.getMin(), indexDay + days.getMax());
 
+			if (days.isAtLeast()) {
+				return CDateRange.atLeast(indexDay + days.getMin());
+			}
+
+			if (days.isAtMost()) {
+				return CDateRange.of(indexDay, indexDay + days.getMax());
+			}
+
+			throw new IllegalStateException("Unreachable");
 		}
 
-		private OptionalInt selectIndexDay(TemporalSelector selector, CDateRange period) {
-			return switch (selector) {
-				case ANY -> {
-					if (!period.hasLowerBound()) {
-						yield OptionalInt.empty();
-					}
+		private OptionalInt selectIndexDay(CDateRange period) {
+			if (!period.hasUpperBound()) {
+				return OptionalInt.empty();
+			}
 
-					yield OptionalInt.of(period.getMinValue());
-				}
-				case ALL -> {
-					if (!period.hasUpperBound()) {
-						yield OptionalInt.empty();
-					}
-
-					yield OptionalInt.of(period.getMaxValue());
-				}
-				default -> throw new IllegalStateException("%s should already be handled.".formatted(selector));
-			};
+			return OptionalInt.of(period.getMaxValue());
 		}
 
 	}
@@ -135,11 +124,80 @@ sealed public interface TemporalRelationMode permits TemporalRelationMode.After,
 	 * @see Before
 	 */
 	@CPSType(id = "BEFORE", base = TemporalRelationMode.class)
-	final class Before extends After {
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+	final class Before implements TemporalRelationMode {
 
-		@JsonCreator
-		public Before(Range.IntegerRange days) {
-			super(days);
+		@NotNull
+		private final Range.IntegerRange days;
+
+		public CDateRange[] convert(CDateRange[] parts, TemporalSelector selector) {
+
+			if (parts.length == 0) {
+				return new CDateRange[0];
+			}
+
+			if (selector == TemporalSelector.EARLIEST) {
+				CDateRange period = parts[0];
+
+				if (!period.hasLowerBound()) {
+					return new CDateRange[0];
+				}
+
+				return new CDateRange[]{daysBefore(period.getMinValue(), days)};
+			}
+
+			if (selector == TemporalSelector.LATEST) {
+				CDateRange period = parts[parts.length - 1];
+
+				if (!period.hasUpperBound()) {
+					return new CDateRange[0];
+				}
+
+				return new CDateRange[]{daysBefore(period.getMaxValue(), days)};
+			}
+
+			CDateRange[] converted = new CDateRange[parts.length];
+
+			for (int index = 0; index < parts.length; index++) {
+
+				final OptionalInt maybeIndexDay = selectIndexDay(parts[index]);
+
+				if (maybeIndexDay.isEmpty()) {
+					continue;
+				}
+
+				converted[index] = daysBefore(maybeIndexDay.getAsInt(), days);
+			}
+
+			return converted;
+		}
+
+		private CDateRange daysBefore(int indexDay, Range.IntegerRange days) {
+			if (days == null || days.isAll()) {
+				return CDateRange.atMost(indexDay);
+			}
+
+			if (!days.isOpen()) {
+				return CDateRange.of(indexDay - days.getMax(), indexDay - days.getMin());
+			}
+
+			if (days.hasLowerBound()) {
+				return CDateRange.atMost(indexDay - days.getMin());
+			}
+			if (days.hasUpperBound()) {
+				return CDateRange.of(indexDay - days.getMax(), indexDay);
+			}
+
+			throw new IllegalStateException("Unreachable");
+		}
+
+		private OptionalInt selectIndexDay(CDateRange period) {
+			if (!period.hasLowerBound()) {
+				return OptionalInt.empty();
+			}
+
+			return OptionalInt.of(period.getMinValue());
 		}
 	}
 

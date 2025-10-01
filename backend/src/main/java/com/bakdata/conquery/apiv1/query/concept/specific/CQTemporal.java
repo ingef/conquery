@@ -120,18 +120,19 @@ public class CQTemporal extends CQElement {
 	@Override
 	public final QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 
-		final ConceptQueryPlan indexSubPlan = createIndexPlan(getIndexQuery(), context, plan);
-		ConceptQuery compareQuery = new ConceptQuery(getCompareQuery());
+		final ConceptQueryPlan indexSubPlan = createIndexPlan(index, context, plan);
+		ConceptQuery compareQuery = new ConceptQuery(compare);
 
 		// These aggregators will be fed with the actual aggregation results of the sub results
-		final List<ConstantValueAggregator<List>> shimAggregators = createShimAggregators();
+		final List<ConstantValueAggregator<List>> shimAggregators = createShimAggregators(nShimAggregators);
 
 		TemporalQueryNode queryNode = new TemporalQueryNode(context.getStorage().getDataset().getAllIdsTable(),
 															indexSubPlan,
 															getIndexSelector(),
 															getMode(),
 															compareQuery.createQueryPlan(context.withDisableAggregationFilters(true).withDisableAggregationFilters(true)),
-															compareQuery.createQueryPlan(context.withDisableAggregationFilters(false).withDisableAggregationFilters(false)),
+															compareQuery.createQueryPlan(context.withDisableAggregationFilters(false)
+																								.withDisableAggregationFilters(false)),
 															getCompareSelector(),
 															shimAggregators.stream().map(ConstantValueAggregator::getValue).collect(Collectors.toList())
 		);
@@ -154,30 +155,10 @@ public class CQTemporal extends CQElement {
 		return subPlan;
 	}
 
-	/**
-	 * Makes it such that Before is just a special case of After, reducing code and testing requirements.
-	 */
-	private CQElement getIndexQuery() {
-		if (mode instanceof TemporalRelationMode.Before) {
-			return compare;
-		}
-
-		return index;
-	}
-
-	/**
-	 * Makes it such that Before is just a special case of After, reducing code and testing requirements.
-	 */
-	private CQElement getCompareQuery() {
-		if (mode instanceof TemporalRelationMode.Before) {
-			return index;
-		}
-
-		return compare;
-	}
-
-	private List<ConstantValueAggregator<List>> createShimAggregators() {
-		return IntStream.range(0, nShimAggregators).mapToObj(ignored -> new ConstantValueAggregator<List>(new ArrayList<>())).toList();
+	private static List<ConstantValueAggregator<List>> createShimAggregators(int nShimAggregators) {
+		return IntStream.range(0, nShimAggregators)
+						.mapToObj(ignored -> new ConstantValueAggregator<List>(new ArrayList<>()))
+						.toList();
 	}
 
 	@Override
@@ -198,25 +179,26 @@ public class CQTemporal extends CQElement {
 		index.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
 		compare.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
 
-		// Avoids getResultInfos on in createQueryPlan
-		nShimAggregators = getCompareQuery().getResultInfos().size();
+		// Avoids getResultInfos in createQueryPlan
+		nShimAggregators = compare.getResultInfos().size();
 	}
 
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
-		resultInfos.addAll(getIndexQuery().getResultInfos());
+		resultInfos.addAll(index.getResultInfos());
 
 		if (showCompareDate) {
 			resultInfos.add(new FixedLabelResultInfo(new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE), Collections.emptySet()) {
 				@Override
 				public String userColumnName(PrintSettings printSettings) {
-					return C10N.get(ResultHeadersC10n.class, printSettings.getLocale()).temporalCompareLabel(getIndexQuery().userLabel(printSettings.getLocale()));
+					return C10N.get(ResultHeadersC10n.class, printSettings.getLocale()).temporalCompareLabel(compare.userLabel(printSettings.getLocale()));
 				}
 			});
 		}
 
-		for (ResultInfo resultInfo : getCompareQuery().getResultInfos()) {
+		for (ResultInfo resultInfo : compare.getResultInfos()) {
+			// Wrap resultInfo in ListT
 			ResultInfo listWrapper = new ResultInfo(resultInfo.getSemantics()) {
 
 				@Override
@@ -253,6 +235,6 @@ public class CQTemporal extends CQElement {
 
 	@Override
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
-		return getIndex().collectRequiredEntities(context);
+		return index.collectRequiredEntities(context);
 	}
 }
