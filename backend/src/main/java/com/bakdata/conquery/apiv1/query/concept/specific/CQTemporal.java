@@ -31,6 +31,8 @@ import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalRel
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalSelector;
 import com.bakdata.conquery.models.query.resultinfo.FixedLabelResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
+import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Data;
 import lombok.Setter;
@@ -214,7 +216,38 @@ public class CQTemporal extends CQElement {
 			});
 		}
 
-		resultInfos.addAll(getCompareQuery().getResultInfos());
+		for (ResultInfo resultInfo : getCompareQuery().getResultInfos()) {
+			ResultInfo listWrapper = new ResultInfo(resultInfo.getSemantics()) {
+
+				@Override
+				public String userColumnName(PrintSettings printSettings) {
+					return resultInfo.userColumnName(printSettings);
+				}
+
+				@Override
+				public String defaultColumnName(PrintSettings printSettings) {
+					return resultInfo.defaultColumnName(printSettings);
+				}
+
+				@Override
+				public ResultType getType() {
+					return new ResultType.ListT<>(resultInfo.getType());
+				}
+
+				@Override
+				public String getDescription() {
+					return resultInfo.getDescription();
+				}
+
+				@Override
+				public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
+					return printerFactory.getListPrinter(resultInfo.createPrinter(printerFactory, printSettings), printSettings);
+				}
+			};
+
+			resultInfos.add(listWrapper);
+		}
+
 		return resultInfos;
 	}
 
