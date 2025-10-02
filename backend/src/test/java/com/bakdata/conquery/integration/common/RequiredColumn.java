@@ -12,13 +12,20 @@ import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import lombok.Getter;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.assertj.core.util.Strings;
 
-@Getter
-@Setter
+@Data
+@NoArgsConstructor(onConstructor_ = {@JsonCreator})
 public class RequiredColumn {
+
+	public RequiredColumn(String name, MajorTypeId type) {
+		this.name = name;
+		this.type = type;
+	}
+
 	@NotEmpty
 	private String name;
 	@NotNull

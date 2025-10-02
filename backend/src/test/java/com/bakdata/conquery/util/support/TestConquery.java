@@ -29,7 +29,6 @@ import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ExecutionManager;
@@ -60,6 +59,7 @@ public class TestConquery {
 	private static final ConcurrentHashMap<String, Integer> NAME_COUNTS = new ConcurrentHashMap<>();
 	private final File tmpDir;
 	private final ConqueryConfig config;
+	@Getter
 	private final TestDataImporter testDataImporter;
 	private final Set<StandaloneSupport> openSupports = new HashSet<>();
 	@Getter
@@ -205,9 +205,7 @@ public class TestConquery {
 
 		busy |= standaloneCommand.getManager().getDatasetRegistry().getNamespaces().stream()
 								 .map(Namespace::getExecutionManager)
-								 .flatMap(e -> e.getExecutionInfos().asMap().values().stream())
-								 .map(ExecutionManager.ExecutionInfo::getExecutionState)
-								 .anyMatch(ExecutionState.RUNNING::equals);
+								 .anyMatch(ExecutionManager::hasRunningQueries);
 
 		for (Namespace namespace : standaloneCommand.getManagerNode().getDatasetRegistry().getNamespaces()) {
 			busy |= namespace.getJobManager().isSlowWorkerBusy();

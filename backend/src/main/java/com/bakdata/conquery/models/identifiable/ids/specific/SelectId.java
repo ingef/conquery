@@ -26,7 +26,7 @@ public sealed abstract class SelectId extends NamespacedId<Select>
 		components.add(select);
 	}
 
-	public static enum Parser implements IdUtil.Parser<SelectId> {
+	public enum Parser implements IdUtil.Parser<SelectId> {
 		INSTANCE;
 
 		@Override

@@ -15,7 +15,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class ImportId extends NamespacedId<Import>  {
+public class ImportId extends NamespacedId<Import> {
 
 	private final TableId table;
 	private final String tag;
@@ -37,7 +37,7 @@ public class ImportId extends NamespacedId<Import>  {
 	}
 
 	@Override
-	public void collectIds(Collection<Id<?,?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		table.collectIds(collect);
 	}

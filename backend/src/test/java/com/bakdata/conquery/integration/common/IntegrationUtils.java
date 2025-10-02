@@ -44,7 +44,7 @@ public class IntegrationUtils {
 
 
 	public static Query parseQuery(StandaloneSupport support, JsonNode rawQuery) throws JSONException, IOException {
-		return ConqueryTestSpec.parseSubTree(support, rawQuery, Query.class, true);
+		return ConqueryTestSpec.parseSubTree(support, rawQuery, Query.class, false);
 	}
 
 	/**

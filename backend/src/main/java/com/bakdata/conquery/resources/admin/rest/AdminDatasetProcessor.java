@@ -4,20 +4,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import jakarta.inject.Inject;
+import jakarta.validation.ConstraintViolation;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.mode.StorageListener;
+import com.bakdata.conquery.mode.ValidationMode;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -43,6 +49,8 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
+import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.univocity.parsers.csv.CsvParser;
 import io.dropwizard.core.setup.Environment;
@@ -59,7 +67,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminDatasetProcessor {
 
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
-	private static final String ABBREVIATION_MARKER = "\u2026";
+	private static final String ABBREVIATION_MARKER = "…";
 
 	private final ConqueryConfig config;
 	private final DatasetRegistry<? extends Namespace> datasetRegistry;
@@ -165,22 +173,32 @@ public class AdminDatasetProcessor {
 	 */
 	@SneakyThrows
 	public synchronized void addTable(@NonNull Table table, Namespace namespace) {
-		final Dataset dataset = namespace.getDataset();
 
-		final DatasetId datasetId = dataset.getId();
-		if (table.getDataset() == null) {
-			table.setDataset(datasetId);
-		}
-		else if (!table.getDataset().equals(datasetId)) {
-			throw new IllegalArgumentException();
-		}
+		ValidatorHelper.failOnError(log, environment.getValidator().validate(table));
 
 
 		if (namespace.getStorage().getTable(table.getId()) != null) {
 			throw new WebApplicationException("Table already exists", Response.Status.CONFLICT);
 		}
 
-		ValidatorHelper.failOnError(log, environment.getValidator().validate(table));
+		Class<? extends ValidationMode> mode =
+				switch (namespace) {
+					case LocalNamespace ignored -> ValidationMode.Local.class;
+					case DistributedNamespace ignored -> ValidationMode.Clustered.class;
+					default -> throw new IllegalStateException("Unexpected Namespace class %s".formatted(namespace.getClass()));
+				};
+
+
+		Set<ConstraintViolation<Table>> violations = new HashSet<>();
+		// Default.class isn't properly packaged, so do it manually
+		violations.addAll(environment.getValidator().validate(table));
+		violations.addAll(environment.getValidator().validate(table, mode));
+
+		Optional<String> maybeViolations = ValidatorHelper.createViolationsString(violations, false);
+
+		if (maybeViolations.isPresent()) {
+			throw new BadRequestException(maybeViolations.get());
+		}
 
 		namespace.getStorage().addTable(table);
 		storageListener.onAddTable(table);
@@ -191,25 +209,25 @@ public class AdminDatasetProcessor {
 	 * update a concept of the given dataset.
 	 * Therefore, the concept will be deleted first then added
 	 */
-	public synchronized void updateConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
-		concept.setDataset(dataset.getId());
-		if (!datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
+	public synchronized void updateConcept(@NonNull Namespace namespace, @NonNull Concept<?> concept) {
+
+		if (!namespace.getStorage().hasConcept(concept.getId())) {
 			throw new NotFoundException("Can't find the concept in the dataset " + concept.getId());
 		}
 
 		//adds new content of the content
-		addConcept(dataset, concept, true);
+		addConcept(namespace, concept, true);
 	}
 
 	/**
 	 * Add the concept to the dataset if it does not exist yet
 	 */
-	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept, boolean force) {
-		concept.setDataset(dataset.getId());
+	public synchronized void addConcept(@NonNull Namespace namespace, @NonNull Concept<?> concept, boolean force) {
+		NamespaceStorage namespaceStorage = namespace.getStorage();
 
 		ValidatorHelper.failOnError(log, environment.getValidator().validate(concept));
 
-		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
+		if (namespaceStorage.hasConcept(concept.getId())) {
 			if (!force) {
 				throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
 			}
@@ -218,7 +236,7 @@ public class AdminDatasetProcessor {
 		}
 
 		// Register the Concept in the ManagerNode and Workers
-		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
+		namespaceStorage.updateConcept(concept);
 		storageListener.onAddConcept(concept);
 	}
 
@@ -338,7 +356,8 @@ public class AdminDatasetProcessor {
 	}
 
 	public void addInternToExternMapping(Namespace namespace, InternToExternMapper internToExternMapper) {
-		internToExternMapper.setDataset(namespace.getDataset().getId());
+		// TODO Use DatasetParamInjector on admin-api to avoid manual setup of dataset/storage
+		internToExternMapper.setStorage(namespace.getStorage());
 
 		ValidatorHelper.failOnError(log, environment.getValidator().validate(internToExternMapper));
 

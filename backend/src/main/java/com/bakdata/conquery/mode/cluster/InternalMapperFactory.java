@@ -11,20 +11,11 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.IdInterner;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.ShardWorkers;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
 
 public record InternalMapperFactory(ConqueryConfig config, Validator validator) {
-
-	public ObjectMapper createShardCommunicationMapper(ShardWorkers workers) {
-		ObjectMapper objectMapper = createInternalObjectMapper(View.InternalCommunication.class);
-
-		workers.injectInto(objectMapper);
-		return objectMapper;
-
-	}
 
 	/**
 	 * @return a preconfigured binary object mapper
@@ -62,10 +53,10 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 		objectMapper.setConfig(deserializationConfig);
 	}
 
-	public ObjectMapper createWorkerPersistenceMapper(NamespacedStorageProvider shardWorkers) {
+	public ObjectMapper createWorkerPersistenceMapper(NamespacedStorageProvider workerStorageProvider) {
 		final ObjectMapper objectMapper = createInternalObjectMapper(View.Persistence.Shard.class);
 
-		shardWorkers.injectInto(objectMapper);
+		workerStorageProvider.injectInto(objectMapper);
 
 		return objectMapper;
 	}
@@ -89,18 +80,9 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 		return objectMapper;
 	}
 
-	public ObjectMapper createManagerCommunicationMapper(DatasetRegistry<?> datasetRegistry) {
+	public ObjectMapper createInternalCommunicationMapper(NamespacedStorageProvider datasetRegistry) {
 		ObjectMapper objectMapper = createInternalObjectMapper(View.InternalCommunication.class);
 
-		datasetRegistry.injectInto(objectMapper);
-
-		return objectMapper;
-	}
-
-	public ObjectMapper createNamespaceCommunicationMapper(NamespaceStorage namespaceStorage, DatasetRegistry<?> datasetRegistry) {
-		ObjectMapper objectMapper = createInternalObjectMapper(View.InternalCommunication.class);
-
-		namespaceStorage.injectInto(objectMapper);
 		datasetRegistry.injectInto(objectMapper);
 
 		return objectMapper;

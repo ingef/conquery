@@ -33,7 +33,6 @@ import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -47,7 +46,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
+		final String testJson = LoadingUtil.readResource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json");
 
 		final DatasetId dataset = conquery.getDataset();
 		final Namespace namespace = conquery.getNamespace();
@@ -77,7 +76,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		final Query query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 		final long nImports;
-		try(Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
+		try (Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
 			 nImports = allImports.count();
 		}
 
@@ -155,12 +154,12 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Checking state after deletion");
 			// We have deleted an import now there should be two less!
-			try(Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
+			try (Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
 				assertThat(allImports.count()).isEqualTo(nImports - 1);
 			}
 
 			// The deleted import should not be found.
-			try(Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
+			try (Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
 				assertThat(allImports)
 						.filteredOn(imp -> imp.getTable().equals(tableId))
 						.isEmpty();
@@ -175,7 +174,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
 					// No bucket should be found referencing the import.
-					try(Stream<Bucket> allBuckets = IntegrationUtils.getAllBuckets(workerStorage)) {
+					try (Stream<Bucket> allBuckets = IntegrationUtils.getAllBuckets(workerStorage)) {
 
 						assertThat(allBuckets)
 								.describedAs("Buckets for Worker %s", value.getInfo().getId())
@@ -238,7 +237,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		// Test state after reimport.
 		{
 			log.info("Checking state after re-import");
-			try(Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
+			try (Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
 				assertThat(allImports.count()).isEqualTo(nImports);
 			}
 
@@ -250,7 +249,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-					try(Stream<Bucket> allBuckets = IntegrationUtils.getAllBuckets(workerStorage)) {
+					try (Stream<Bucket> allBuckets = IntegrationUtils.getAllBuckets(workerStorage)) {
 						assertThat(allBuckets.filter(bucket -> bucket.getImp().getTable().equals(tableId)))
 								.describedAs("Buckets for Worker %s", value.getInfo().getId())
 								.isNotEmpty();
@@ -277,7 +276,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			{
 				Namespace namespace2 = conquery2.getNamespace();
-				try(Stream<ImportId> allImports = namespace2.getStorage().getAllImports()) {
+				try (Stream<ImportId> allImports = namespace2.getStorage().getAllImports()) {
 					assertThat(allImports.count()).isEqualTo(2);
 				}
 
@@ -289,7 +288,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 						final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-						try(Stream<Bucket> allBuckets = IntegrationUtils.getAllBuckets(workerStorage)) {
+						try (Stream<Bucket> allBuckets = IntegrationUtils.getAllBuckets(workerStorage)) {
 							assertThat(allBuckets.filter(bucket -> bucket.getImp().getTable().equals(tableId)))
 									.describedAs("Buckets for Worker %s", value.getInfo().getId())
 									.isNotEmpty();

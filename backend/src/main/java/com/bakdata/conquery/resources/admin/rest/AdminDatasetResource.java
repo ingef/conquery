@@ -157,13 +157,13 @@ public class AdminDatasetResource {
 	@POST
 	@Path("concepts")
 	public void addConcept(@QueryParam("force") @DefaultValue("false") boolean force, Concept<?> concept) {
-		processor.addConcept(namespace.getDataset(), concept, force);
+		processor.addConcept(namespace, concept, force);
 	}
 
 	@PUT
 	@Path("concepts")
 	public void updateConcept(Concept<?> concept) {
-		processor.updateConcept(namespace.getDataset(), concept);
+		processor.updateConcept(namespace, concept);
 	}
 
 	@DELETE
@@ -185,7 +185,9 @@ public class AdminDatasetResource {
 
 	@DELETE
 	@Path("internToExtern/{" + INTERN_TO_EXTERN_ID + "}")
-	public List<ConceptId> deleteInternToExternMapping(@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapperId internToExternMapper, @QueryParam("force") @DefaultValue("false") boolean force) {
+	public List<ConceptId> deleteInternToExternMapping(
+			@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapperId internToExternMapper,
+			@QueryParam("force") @DefaultValue("false") boolean force) {
 		return processor.deleteInternToExternMapping(internToExternMapper, force);
 	}
 

@@ -142,7 +142,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(Dataset.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
+				.objectMappers(getManagerInternalMapper(), getInternalCommunicationMapper())
 				.customizingAssertion(assertion -> assertion.ignoringFields("storageProvider"))
 				.test(dataset);
 	}
@@ -220,6 +220,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		Dataset dataset = new Dataset("datasetName");
 		dataset.setStorageProvider(getShardNamespacedStorageProvider());
+		getWorkerStorage().updateDataset(dataset);
 
 		Table table = new Table();
 
@@ -241,8 +242,9 @@ public class SerializationTests extends AbstractSerializationTest {
 		compoundCol.setTable(table);
 
 		table.setColumns(new Column[]{startCol, endCol, compoundCol});
-		table.setDataset(dataset.getId());
+		table.setNamespacedStorageProvider(getWorkerStorage());
 		table.setName("tableName");
+		table.init();
 
 		Import imp = new Import("importTest", table.getId());
 
@@ -267,7 +269,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(Bucket.class)
-				.objectMappers(getShardInternalMapper())
+				.objectMappers(getInternalCommunicationMapper())
 				.injectables(values -> values.add(Validator.class, validator)
 											 .add(NamespacedStorageProvider.class, getShardNamespacedStorageProvider()))
 				.test(bucket);
@@ -280,13 +282,11 @@ public class SerializationTests extends AbstractSerializationTest {
 			// Manager
 			Dataset dataset = createDataset(getNamespaceStorage(), getDatasetRegistry());
 
-			Table table = getTable(dataset);
-
-			table.init();
+			Table table = getTable(getNamespaceStorage());
 
 			SerializationTestUtil
 					.forType(Table.class)
-					.objectMappers(getNamespaceInternalMapper(), getApiMapper())
+					.objectMappers(getNamespacePersistenceMapper(), getApiMapper(), getInternalCommunicationMapper())
 					.test(table);
 		}
 
@@ -294,18 +294,18 @@ public class SerializationTests extends AbstractSerializationTest {
 			// Shard
 			Dataset dataset = createDataset(getWorkerStorage(), getShardNamespacedStorageProvider());
 
-			Table table = getTable(dataset);
+			Table table = getTable(getWorkerStorage());
 
 			getWorkerStorage().addTable(table);
 
 			SerializationTestUtil
 					.forType(Table.class)
-					.objectMappers(getShardInternalMapper())
+					.objectMappers(getWorkerPersistenceMapper())
 					.test(table);
 		}
 	}
 
-	private static @NotNull Table getTable(Dataset dataset) {
+	private static @NotNull Table getTable(NamespacedStorage storage) {
 		Table table = new Table();
 
 		Column column = new Column();
@@ -316,9 +316,10 @@ public class SerializationTests extends AbstractSerializationTest {
 
 
 		table.setColumns(new Column[]{column});
-		table.setDataset(dataset.getId());
+		table.setNamespacedStorageProvider(storage);
 		table.setLabel("tableLabel");
 		table.setName("tableName");
+		table.init();
 		return table;
 	}
 
@@ -331,7 +332,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(FilterValue.class)
-				.objectMappers(getNamespaceInternalMapper(), getApiMapper())
+				.objectMappers(getNamespacePersistenceMapper(), getApiMapper())
 				.test(filterValue);
 	}
 
@@ -344,7 +345,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 			SerializationTestUtil
 					.forType(Concept.class)
-					.objectMappers(getNamespaceInternalMapper(), getApiMapper())
+					.objectMappers(getNamespacePersistenceMapper(), getApiMapper())
 					.injectables(dataset, getDatasetRegistry())
 					.test(concept);
 		}
@@ -356,7 +357,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 			SerializationTestUtil
 					.forType(Concept.class)
-					.objectMappers(getShardInternalMapper())
+					.objectMappers(getInternalCommunicationMapper())
 					.test(concept);
 
 		}
@@ -367,7 +368,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		EntityIdMap persistentMap = IdMapSerialisationTest.createTestPersistentMap(getNamespaceStorage());
 
 		SerializationTestUtil.forType(EntityIdMap.class)
-							 .objectMappers(getNamespaceInternalMapper(), getApiMapper())
+							 .objectMappers(getNamespacePersistenceMapper(), getApiMapper())
 							 .test(persistentMap);
 
 	}
@@ -477,7 +478,7 @@ public class SerializationTests extends AbstractSerializationTest {
 	}
 
 	@Test
-	public void cqConcept() throws JSONException, IOException {
+	public void cqConcept() throws Exception {
 		{
 			// Manager
 			final CQConcept cqConcept = createCqConcept(getNamespaceStorage(), getDatasetRegistry());
@@ -494,18 +495,19 @@ public class SerializationTests extends AbstractSerializationTest {
 
 			SerializationTestUtil
 					.forType(CQConcept.class)
-					.objectMappers(getShardInternalMapper())
+					.objectMappers(getInternalCommunicationMapper())
 					.test(cqConcept);
 		}
 	}
 
 	@NotNull
-	private static CQConcept createCqConcept(NamespacedStorage namespaceStorage, NamespacedStorageProvider storageProvider) {
+	private static CQConcept createCqConcept(NamespacedStorage namespaceStorage, NamespacedStorageProvider storageProvider) throws Exception {
 		Dataset dataset = createDataset(namespaceStorage, storageProvider);
 
 		final TreeConcept concept = new TreeConcept();
 		concept.setName("concept");
-		concept.setDataset(dataset.getId());
+		concept.setNamespacedStorageProvider(namespaceStorage);
+		concept.init();
 
 		final ConceptTreeConnector connector = new ConceptTreeConnector();
 		connector.setConcept(concept);
@@ -536,7 +538,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
+				.objectMappers(getManagerInternalMapper(), getInternalCommunicationMapper(), getApiMapper())
 				.test(error);
 	}
 
@@ -546,7 +548,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
+				.objectMappers(getManagerInternalMapper(), getInternalCommunicationMapper(), getApiMapper())
 				.test(error);
 	}
 
@@ -557,7 +559,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
+				.objectMappers(getManagerInternalMapper(), getInternalCommunicationMapper(), getApiMapper())
 				.test(error);
 	}
 
@@ -581,14 +583,18 @@ public class SerializationTests extends AbstractSerializationTest {
 	}
 
 	@Test
-	public void testFormQuery() throws IOException, JSONException {
+	public void testFormQuery() throws Exception {
 		CQConcept concept = new CQConcept();
 		final TreeConcept testConcept = new TreeConcept();
 		Dataset dataset = new Dataset("testDataset");
 		dataset.setStorageProvider(getDatasetRegistry());
 
-		testConcept.setDataset(dataset.getId());
+		NamespacedStorage namespacedStorage = getDatasetRegistry().getStorage(dataset.getId());
+		namespacedStorage.updateDataset(dataset);
+
+		testConcept.setNamespacedStorageProvider(namespacedStorage);
 		testConcept.setName("concept");
+		testConcept.init();
 
 		final ConceptTreeConnector connector = new ConceptTreeConnector();
 		connector.setConcept(testConcept);
@@ -599,7 +605,9 @@ public class SerializationTests extends AbstractSerializationTest {
 		concept.setElements(Collections.singletonList(testConcept.getId()));
 		CQTable[] tables = {new CQTable()};
 		Table table = new Table();
-		table.setDataset(dataset.getId());
+		table.setName("table");
+		table.setNamespacedStorageProvider(namespacedStorage);
+		table.init();
 		connector.setTable(table.getId());
 		tables[0].setConnector(connector.getId());
 		tables[0].setConcept(concept);
@@ -629,20 +637,24 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil
 				.forType(AbsoluteFormQuery.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
+				.objectMappers(getManagerInternalMapper(), getInternalCommunicationMapper(), getApiMapper(), getWorkerPersistenceMapper())
 				.test(query);
 	}
 
 	@Test
-	public void cBlock() throws IOException, JSONException {
+	public void cBlock() throws Exception {
+
+		NamespacedStorage workerStorage = getWorkerStorage();
 
 		final Dataset dataset = new Dataset();
 		dataset.setStorageProvider(getShardNamespacedStorageProvider());
 		dataset.setName("dataset");
+		workerStorage.updateDataset(dataset);
 
 		final TreeConcept concept = new TreeConcept();
-		concept.setDataset(dataset.getId());
+		concept.setNamespacedStorageProvider(workerStorage);
 		concept.setName("concept");
+		concept.init();
 
 		final ConceptTreeConnector connector = new ConceptTreeConnector();
 		connector.setName("connector");
@@ -650,13 +662,10 @@ public class SerializationTests extends AbstractSerializationTest {
 		connector.setConcept(concept);
 		concept.setConnectors(List.of(connector));
 
-		final Table table = new Table();
-		table.setName("table");
-		table.setDataset(dataset.getId());
+		final Table table = getTable(workerStorage);
 
 		final Import imp = new Import("import", table.getId());
 
-		getWorkerStorage().updateDataset(dataset);
 		getWorkerStorage().addTable(table);
 		getWorkerStorage().updateConcept(concept);
 		getWorkerStorage().addImport(imp);
@@ -668,7 +677,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final CBlock cBlock = new CBlock(bucket.getId(), connector.getId(), Collections.emptyMap(), Collections.emptyMap(), new int[0][]);
 
 		SerializationTestUtil.forType(CBlock.class)
-							 .objectMappers(getShardInternalMapper())
+							 .objectMappers(getWorkerPersistenceMapper())
 							 .test(cBlock);
 	}
 
@@ -719,7 +728,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		SerializationTestUtil
 				.forType(new TypeReference<Range<Integer>>() {
 				})
-				.objectMappers(getApiMapper(), getManagerInternalMapper(), getShardInternalMapper())
+				.objectMappers(getApiMapper(), getManagerInternalMapper(), getInternalCommunicationMapper())
 				.test(range);
 	}
 
@@ -838,7 +847,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		SerializationTestUtil.forType(new TypeReference<Object2IntMap<String>>() {
 							 })
-							 .objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
+							 .objectMappers(getApiMapper(), getInternalCommunicationMapper(), getManagerInternalMapper())
 							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
 							 .test(empty);
 
@@ -854,7 +863,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		map.put("two", 2);
 		SerializationTestUtil.forType(new TypeReference<Object2IntMap<String>>() {
 							 })
-							 .objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
+							 .objectMappers(getApiMapper(), getInternalCommunicationMapper(), getManagerInternalMapper())
 							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
 							 .test(map);
 
@@ -878,7 +887,7 @@ public class SerializationTests extends AbstractSerializationTest {
 				}}
 		};
 		SerializationTestUtil.forArrayType(new TypeReference<Object2IntMap<String>>() {
-							 }).objectMappers(getApiMapper(), getShardInternalMapper(), getManagerInternalMapper())
+							 }).objectMappers(getApiMapper(), getInternalCommunicationMapper(), getManagerInternalMapper())
 							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
 							 .test(map);
 

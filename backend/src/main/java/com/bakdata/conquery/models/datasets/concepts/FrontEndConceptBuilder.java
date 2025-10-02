@@ -179,7 +179,7 @@ public class FrontEndConceptBuilder {
 							.additionalInfos(structureNode.getAdditionalInfos())
 							.parent(structureNode.getParent() == null ? null : structureNode.getParent().getId())
 							.children(Stream.concat(structureNode.getChildren().stream().map(Identifiable::getId), contained.stream())
-															   .toArray(NamespacedId[]::new))
+											.toArray(NamespacedId[]::new))
 							.build();
 
 		roots.put(structureNode.getId(), currentNode);

@@ -28,7 +28,7 @@ public final class ConceptId extends ConceptElementId<Concept<?>> implements Aut
 	@Override
 	public Concept<?> get() {
 		return getDomain().getStorage(getDataset())
-					  .getConcept(this);
+						  .getConcept(this);
 	}
 
 	@Override

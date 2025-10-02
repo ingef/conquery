@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.worker;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -22,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @NoArgsConstructor
 @Slf4j
+@JsonIgnoreProperties("entityBucketSize")
 public class WorkerInformation extends NamespacedIdentifiable<WorkerId> implements MessageSender.Transforming<WorkerMessage, MessageToShardNode> {
 	@NotNull
 	private DatasetId dataset;

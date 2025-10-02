@@ -16,7 +16,7 @@ import lombok.NonNull;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class TableId extends NamespacedId<Table>  {
+public class TableId extends NamespacedId<Table> {
 
 	@NonNull
 	private final DatasetId dataset;
@@ -29,7 +29,7 @@ public class TableId extends NamespacedId<Table>  {
 	}
 
 	@Override
-	public void collectIds(Collection<Id<?,?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		dataset.collectIds(collect);
 	}

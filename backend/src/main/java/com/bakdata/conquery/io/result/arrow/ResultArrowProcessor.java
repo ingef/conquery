@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.result.arrow;
 
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
-import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
 
@@ -109,7 +108,7 @@ public class ResultArrowProcessor {
 		StreamingOutput out = output -> {
 			CountingOutputStream countingOutputStream = new CountingOutputStream(output);
 			try {
-				renderToStream(
+				ArrowRenderer.renderToStream(
 						writerProducer.apply(countingOutputStream),
 						settings,
 						arrowConfig,
@@ -123,8 +122,8 @@ public class ResultArrowProcessor {
 				throw new IllegalStateException("Failed streaming the result for execution %s requested by %s after %s".formatted(exec.getId(),
 																																  subject.getId(),
 																																  DataSize.bytes(countingOutputStream.getCount())
-					),
-					e
+				),
+												e
 				);
 			}
 			finally {

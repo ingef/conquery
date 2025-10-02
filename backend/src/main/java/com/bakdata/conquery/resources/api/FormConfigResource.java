@@ -36,7 +36,7 @@ public class FormConfigResource {
 	
 	@PATCH
 	@Path("{" + FORM_CONFIG + "}")
-	public FormConfigFullRepresentation patchConfig(@Auth Subject subject, @PathParam(FORM_CONFIG) FormConfigId form, FormConfigPatch patch ) {
+	public FormConfigFullRepresentation patchConfig(@Auth Subject subject, @PathParam(FORM_CONFIG) FormConfigId form, FormConfigPatch patch) {
 		return processor.patchConfig(subject, form, patch);
 	}
 	

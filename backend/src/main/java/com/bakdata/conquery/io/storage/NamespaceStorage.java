@@ -28,7 +28,6 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 	protected SingletonStore<PreviewConfig> preview;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
 
-	protected Store<String, Integer> entity2Bucket;
 
 	public NamespaceStorage(StoreFactory storageFactory, String pathName) {
 		super(storageFactory, pathName);
@@ -44,7 +43,6 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 		structure = getStorageFactory().createStructureStore(super.getPathName(), objectMapper);
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
 		preview = getStorageFactory().createPreviewStore(super.getPathName(), objectMapper);
-		entity2Bucket = getStorageFactory().createEntity2BucketStore(super.getPathName(), objectMapper);
 	}
 
 	@Override
@@ -97,7 +95,7 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 
 
 	public boolean containsEntity(String entity) {
-		return entity2Bucket.get(entity) != null;
+		return entity2Bucket.hasKey(entity);
 	}
 
 	public void registerEntity(String entity, int bucket) {

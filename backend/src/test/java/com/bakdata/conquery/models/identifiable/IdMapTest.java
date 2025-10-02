@@ -43,7 +43,7 @@ public class IdMapTest {
 		
 		/*assertThat(json.isArray()).isTrue();
 		assertThat(json.get(0)).isEqualTo(Jackson.MAPPER.valueToTree(d1));*/
-		
+
 		ContainingDataset constructed = mapper.treeToValue(json, ContainingDataset.class);
 		assertThat(constructed.idMap.entrySet()).isEqualTo(containedDataset.idMap.entrySet());
 	}

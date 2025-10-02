@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.Data;
 
 public class IdInterner implements Injectable {
-	
+
 	private final Map<Parser<?>, ParserIdInterner<?>> perParserInterner = new ConcurrentHashMap<>();
 
 	public static IdInterner get(DeserializationContext context) throws JsonMappingException {
@@ -20,7 +20,7 @@ public class IdInterner implements Injectable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <ID extends Id<?,?>> ParserIdInterner<ID> forParser(Parser<ID> parser) {
+	public <ID extends Id<?, ?>> ParserIdInterner<ID> forParser(Parser<ID> parser) {
 		return (ParserIdInterner<ID>) perParserInterner.computeIfAbsent(parser, k -> new ParserIdInterner<>(parser));
 	}
 
@@ -30,7 +30,7 @@ public class IdInterner implements Injectable {
 	}
 
 	@Data
-	public static class ParserIdInterner<ID extends Id<?,?>> {
+	public static class ParserIdInterner<ID extends Id<?, ?>> {
 		private final Parser<ID> parser;
 		private final Map<List<String>, ID> interned = new ConcurrentHashMap<>();
 

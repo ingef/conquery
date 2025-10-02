@@ -27,7 +27,6 @@ import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
@@ -61,7 +60,7 @@ public class GroovyIndexedTest {
 	@BeforeAll
 	public static void init() throws IOException, JSONException, ConfigurationException {
 		final ObjectMapper mapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
-		ObjectNode node = mapper.readerFor(ObjectNode.class).readValue(In.resource(GroovyIndexedTest.class, CONCEPT_SOURCE).asStream());
+		ObjectNode node = mapper.readerFor(ObjectNode.class).readValue(GroovyIndexedTest.class.getResourceAsStream(CONCEPT_SOURCE));
 
 		// load concept tree from json
 		final NamespaceStorage storage = new NonPersistentStoreFactory().createNamespaceStorage();
@@ -78,7 +77,8 @@ public class GroovyIndexedTest {
 
 		storage.updateDataset(dataset);
 
-		table.setDataset(dataset.getId());
+		table.setNamespacedStorageProvider(storage);
+		table.init();
 
 		Column column = new Column();
 		column.setName("the_column");
@@ -96,12 +96,12 @@ public class GroovyIndexedTest {
 		// load tree twice to to avoid references
 		indexedConcept = conceptReader.readValue(node);
 
-		indexedConcept.setDataset(dataset.getId());
+		indexedConcept.setNamespacedStorageProvider(storage);
 		indexedConcept.initElements();
 
 		oldConcept = conceptReader.readValue(node);
 
-		oldConcept.setDataset(dataset.getId());
+		oldConcept.setNamespacedStorageProvider(storage);
 		oldConcept.initElements();
 	}
 

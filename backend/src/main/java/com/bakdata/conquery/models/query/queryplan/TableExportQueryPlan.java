@@ -174,7 +174,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 			final ColumnId columnId = column.getId();
 
 			// ValidityDates are handled separately.
-			if (validityDate != null && validityDate.containsColumn(columnId)){
+			if (validityDate != null && validityDate.containsColumn(columnId)) {
 				continue;
 			}
 

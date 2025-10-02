@@ -15,6 +15,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +27,12 @@ import org.eclipse.jetty.io.EofException;
 public class ResultJsonDescriptionProcessor {
 
 
-	public Response createResult(Subject subject, ManagedExecution exec) {
+	public Response createResult(Subject subject, ManagedExecutionId execId) {
 
+		ManagedExecution exec = execId.resolve();
 
 		ConqueryMDC.setLocation(subject.getName());
-		log.debug("Downloading JSON Description for {}", exec.getId());
+		log.debug("Downloading JSON Description for {}", execId);
 
 		ResultUtil.authorizeExecutable(subject, exec);
 
@@ -48,15 +50,14 @@ public class ResultJsonDescriptionProcessor {
 				throw new InternalServerErrorException("Failed to load result", e);
 			}
 			finally {
-				log.trace("FINISHED downloading {}", exec.getId());
+				log.trace("FINISHED downloading {}", execId);
 			}
 		};
 
-		return makeResponseWithFileName(
-				Response.ok(out),
-				String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_JSON),
-				MediaType.APPLICATION_JSON_TYPE,
-				ResultUtil.ContentDispositionOption.ATTACHMENT
+		return makeResponseWithFileName(Response.ok(out),
+										String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_JSON),
+										MediaType.APPLICATION_JSON_TYPE,
+										ResultUtil.ContentDispositionOption.ATTACHMENT
 		);
 
 	}

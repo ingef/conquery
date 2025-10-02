@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.index;
 import java.util.Collection;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
@@ -12,8 +13,10 @@ import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.OneToManyMappingPrinter;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.OneToOneMappingPrinter;
 import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,13 +24,20 @@ import lombok.Setter;
 @JsonTypeInfo(property = "type", use = JsonTypeInfo.Id.CUSTOM)
 public abstract class InternToExternMapper extends NamespacedIdentifiable<InternToExternMapperId> {
 
-	@Getter @Setter
-	private String name;
-
 	@Getter
 	@Setter
-	@JacksonInject(useInput = OptBoolean.TRUE)
-	private DatasetId dataset;
+	private String name;
+
+	@Getter(AccessLevel.PRIVATE)
+	@Setter
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	private NamespacedStorage storage;
+
+	@JsonIgnore
+	@Override
+	public DatasetId getDataset() {
+		return storage.getDataset().getId();
+	}
 
 	@Override
 	public InternToExternMapperId createId() {

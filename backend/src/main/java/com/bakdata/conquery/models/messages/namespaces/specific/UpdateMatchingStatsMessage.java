@@ -130,7 +130,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 		private static void calculateConceptMatches(Concept<?> concept, Map<ConceptElementId<?>, MatchingStats.Entry> results, Worker worker) {
 			log.debug("BEGIN calculating for `{}`", concept.getId());
 
-			try(Stream<CBlock> allCBlocks = worker.getStorage().getAllCBlocks();) {
+			try(Stream<CBlock> allCBlocks = worker.getStorage().getAllCBlocks()) {
 
 				for (CBlock cBlock : allCBlocks.toList()) {
 

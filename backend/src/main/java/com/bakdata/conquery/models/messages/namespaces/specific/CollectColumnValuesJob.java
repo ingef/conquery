@@ -84,7 +84,7 @@ public class CollectColumnValuesJob extends WorkerMessage implements ActionReact
 				columns.stream()
 					   .filter(column -> table2Buckets.containsKey(column.getTable()))
 					   .map(column -> jobsExecutorService.submit(() -> {
-								final List<BucketId> buckets = table2Buckets.get(column.getTable());
+						   final List<BucketId> buckets = table2Buckets.get(column.getTable());
 
 								final Set<String> values = buckets.stream()
 																  .map(BucketId::resolve)

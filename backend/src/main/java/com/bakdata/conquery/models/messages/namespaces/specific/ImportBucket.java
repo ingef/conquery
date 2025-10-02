@@ -31,11 +31,14 @@ public class ImportBucket extends WorkerMessage {
 		}
 
 		context.getJobManager()
-			   .addSlowJob(new SimpleJob("Adding Bucket %s".formatted(bucket.getId()), () -> {
-				   log.debug("BEGIN adding Bucket {}", bucket.getId());
-				   context.addBucket(bucket);
-				   log.trace("DONE adding Bucket {}", bucket.getId());
-			   }));
+			   .addSlowJob(new SimpleJob(
+					   "Adding Bucket %s".formatted(bucket.getId()),
+					   () -> {
+						   log.debug("BEGIN adding Bucket {}", bucket.getId());
+						   context.addBucket(bucket);
+						   log.trace("DONE adding Bucket {}", bucket.getId());
+					   }
+			   ));
 	}
 
 	@Override
