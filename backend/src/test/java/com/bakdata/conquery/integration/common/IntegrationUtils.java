@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
@@ -18,7 +19,9 @@ import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -35,8 +38,13 @@ import lombok.extern.slf4j.Slf4j;
 public class IntegrationUtils {
 
 
+	public static Stream<Bucket> getAllBuckets(WorkerStorage workerStorage) {
+		return workerStorage.getAllBucketIds().map(workerStorage::getBucket);
+	}
+
+
 	public static Query parseQuery(StandaloneSupport support, JsonNode rawQuery) throws JSONException, IOException {
-		return ConqueryTestSpec.parseSubTree(support, rawQuery, Query.class, true);
+		return ConqueryTestSpec.parseSubTree(support, rawQuery, Query.class, false);
 	}
 
 	/**
@@ -102,7 +110,7 @@ public class IntegrationUtils {
 										  .get();
 
 
-		assertThat(response.getStatusInfo().getStatusCode()).as("Result of %s", allQueriesURI)
+		assertThat(response.getStatusInfo().getStatusCode()).as(() -> response.readEntity(String.class))
 															.isEqualTo(expectedResponseCode);
 
 		return response.readEntity(new GenericType<>() {
@@ -112,14 +120,14 @@ public class IntegrationUtils {
 	public static URI getPostQueryURI(StandaloneSupport conquery) {
 		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetQueryResource.class, "postQuery")
 							  .buildFromMap(Map.of(
-									  "dataset", conquery.getDataset().getId()
+									  "dataset", conquery.getDataset()
 							  ));
 	}
 
 	private static URI getAllQueriesURI(StandaloneSupport conquery) {
 		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetQueryResource.class, "getAllQueries")
 							  .buildFromMap(Map.of(
-									  "dataset", conquery.getDataset().getId()
+									  "dataset", conquery.getDataset()
 							  ));
 	}
 
@@ -150,14 +158,14 @@ public class IntegrationUtils {
 	private static URI getQueryStatusURI(StandaloneSupport conquery, String id) {
 		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "getStatus")
 							  .buildFromMap(Map.of(
-									  "query", id, "dataset", conquery.getDataset().getId()
+									  "query", id, "dataset", conquery.getDataset()
 							  ));
 	}
 
 	private static URI getQueryCancelURI(StandaloneSupport conquery, String id) {
 		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "cancel")
 							  .buildFromMap(Map.of(
-									  "query", id, "dataset", conquery.getDataset().getId()
+									  "query", id, "dataset", conquery.getDataset()
 							  ));
 	}
 

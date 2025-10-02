@@ -10,6 +10,7 @@ import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
@@ -23,7 +24,6 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.query.DistributedExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.support.StandaloneSupport;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -35,7 +35,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		final User user = new User("testU", "testU", storage);
 
-		final InputStream testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().asStream();
+		final InputStream testJson = LoadingUtil.openResource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json");
 		final QueryTest test = (QueryTest) new JsonIntegrationTest(testJson).getTestSpec();
 
 		storage.updateUser(user);
@@ -45,15 +45,15 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		test.importRequiredData(conquery);
 
 		// Parse the query in the context of the conquery instance, not the test, to have the IdResolver properly set
-		Query query = ConqueryTestSpec.parseSubTree(conquery, test.getRawQuery(), Query.class, false);
+		Query query = ConqueryTestSpec.parseSubTree(conquery, test.getRawQuery(), Query.class, true);
 
 		// Create execution for download
-		ManagedQuery exec = new ManagedQuery(query, user.getId(), conquery.getDataset().getId(), storage, conquery.getDatasetRegistry(), conquery.getConfig());
+		ManagedQuery exec = new ManagedQuery(query, user.getId(), conquery.getDataset(), storage, conquery.getDatasetRegistry(), conquery.getConfig());
 		exec.setLastResultCount(100L);
 
 		storage.addExecution(exec);
 
-		user.addPermission(DatasetPermission.onInstance(Set.of(Ability.READ), conquery.getDataset().getId()));
+		user.addPermission(DatasetPermission.onInstance(Set.of(Ability.READ), conquery.getDataset()));
 
 		{
 			// Try to generate a download link: should not be possible, because the execution isn't run yet
@@ -74,7 +74,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		{
 			// Add permission to download: now it should be possible
-			user.addPermission(DatasetPermission.onInstance(Set.of(Ability.DOWNLOAD), conquery.getDataset().getId()));
+			user.addPermission(DatasetPermission.onInstance(Set.of(Ability.DOWNLOAD), conquery.getDataset()));
 
 			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
 			// This Url is missing the `/api` path part, because we use the standard UriBuilder here

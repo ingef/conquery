@@ -8,11 +8,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -26,6 +29,8 @@ import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
@@ -34,26 +39,46 @@ import org.jetbrains.annotations.Nullable;
 @UtilityClass
 public class ResultTestUtil {
 
-	public static final DatasetId DATASET = new DatasetId("test_dataset");
+	public static final Dataset DATASET = new Dataset("test_dataset");
 	private static final TreeConcept CONCEPT;
+	private static final NamespacedStorage STORAGE;
+	private static final MetaStorage META_STORAGE;
+	public static final NamespacedStorageProvider STORAGE_PROVIDER;
+
 
 	static {
+		NonPersistentStoreFactory storeFactory = new NonPersistentStoreFactory();
+		STORAGE = storeFactory.createNamespaceStorage();
+		META_STORAGE = storeFactory.createMetaStorage();
+		STORAGE_PROVIDER = new TestNamespacedStorageProvider(STORAGE);
+
+		DATASET.setStorageProvider(STORAGE_PROVIDER);
+		STORAGE.updateDataset(DATASET);
+
 		CONCEPT = new TreeConcept();
+
 		CONCEPT.setName("concept");
-		CONCEPT.setDataset(DATASET);
+		CONCEPT.setNamespacedStorageProvider(STORAGE);
+		try {
+			CONCEPT.init();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public static List<ResultInfo> getIdFields() {
-		return Stream.of("id1", "id2").map(name -> {
-			ExternalResultInfo info = new ExternalResultInfo(name, ResultType.Primitive.STRING);
-			info.addSemantics(new SemanticType.IdT("ID"));
-			return info;
-		}).collect(Collectors.toList());
+		return Stream.of("id1", "id2")
+					 .map(name -> {
+						 ExternalResultInfo info = new ExternalResultInfo(name, ResultType.Primitive.STRING);
+						 info.addSemantics(new SemanticType.IdT("ID"));
+						 return info;
+					 }).collect(Collectors.toList());
 	}
 
 	@NotNull
 	public static ManagedQuery getTestQuery() {
-		return new ManagedQuery(null, new UserId("test_user"), DATASET, null, null, null) {
+		return new ManagedQuery(null, new UserId("test_user"), DATASET.getId(), META_STORAGE, null, null) {
 			@Override
 			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()
@@ -97,10 +122,12 @@ public class ResultTestUtil {
 							   List.of(true, false),
 							   List.of(List.of(345, 534), List.of(1, 2)),
 							   List.of("fizz", "buzz")
-					   }),
+					   }
+					   ),
 					   new SinglelineEntityResult("2", new Object[]{
 							   Boolean.FALSE, null, null, null, null, null, null, List.of(), List.of(List.of(1234, Integer.MAX_VALUE)), List.of()
-					   }),
+					   }
+					   ),
 					   new SinglelineEntityResult("2", new Object[]{Boolean.TRUE, null, null, null, null, null, null, List.of(false, false), null, null}),
 					   new MultilineEntityResult("3",
 												 List.of(new Object[]{Boolean.FALSE, null, null, null, null, null, null, List.of(false), null, null},
@@ -138,6 +165,7 @@ public class ResultTestUtil {
 		public List<ColumnId> getRequiredColumns() {
 			return Collections.emptyList();
 		}
+
 
 		@Override
 		public Aggregator<String> createAggregator() {

@@ -122,7 +122,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		private final String unknownId;
 		private final String clazz;
 
-		public ExecutionCreationResolveError(Id<?> unresolvableElementId) {
+		public ExecutionCreationResolveError(Id<?, ?> unresolvableElementId) {
 			unknownId = unresolvableElementId.toString();
 			clazz = unresolvableElementId.getClass().getSimpleName();
 		}

@@ -17,11 +17,10 @@ import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
@@ -30,7 +29,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
@@ -40,17 +38,16 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
-		MetaStorage storage = conquery.getMetaStorage();
 
-		String testJson = In.resource("/tests/query/UPDATE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
 
-		final Dataset dataset = conquery.getDataset();
+		String testJson = LoadingUtil.readResource("/tests/query/UPDATE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.json");
+
+		final DatasetId dataset = conquery.getDataset();
 		final Namespace namespace = conquery.getNamespace();
 
 		final ImportId importId1 = ImportId.Parser.INSTANCE.parse(dataset.getName(), "table1", "table1");
-		final ImportId importId2 = ImportId.Parser.INSTANCE.parse(dataset.getName(), "table2", "table2");
 
-		QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
+		QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 
 		final List<RequiredTable> tables = test.getContent().getTables();
 		assertThat(tables.size()).isEqualTo(2);
@@ -87,7 +84,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getAllImports()).hasSize(1);
 			// Must contain the import.
 			assertThat(namespace.getStorage().getAllImports())
-					.filteredOn(imp -> imp.getId().equals(importId1))
+					.filteredOn(imp -> imp.equals(importId1))
 					.isNotEmpty();
 
 			assertThat(namespace.getStorage().getImport(importId1))
@@ -95,7 +92,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
-					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
+					if (!worker.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -103,11 +100,11 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-							.filteredOn(block -> block.getBucket().getDataset().equals(dataset.getId()))
+							.filteredOn(block -> block.getBucket().getDataset().equals(dataset))
 							.isNotEmpty();
 
-					assertThat(workerStorage.getAllBuckets())
-							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset.getId()))
+					assertThat(IntegrationUtils.getAllBuckets(workerStorage))
+							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
 							.isNotEmpty();
 
@@ -140,8 +137,8 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			final String path = importTable.getCsv().getPath();
 
 			//copy new content of the importTable into the csv-File used by the preprocessor to avoid creating multiple files withe same names
-			FileUtils.copyInputStreamToFile(In.resource(path.substring(0, path.lastIndexOf('/')) + "/" + csvName.replace(".csv", ".update.csv"))
-											  .asStream(), new File(conquery.getTmpDir(), csvName)
+			FileUtils.copyInputStreamToFile(LoadingUtil.openResource(path.substring(0, path.lastIndexOf('/')) + "/" + csvName.replace(".csv", ".update.csv"))
+					, new File(conquery.getTmpDir(), csvName)
 			);
 
 			File descriptionFile = new File(conquery.getTmpDir(), importTable.getName() + ConqueryConstants.EXTENSION_DESCRIPTION);
@@ -180,7 +177,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			assertThat(namespace.getStorage().getAllImports()).hasSize(1);
 			// Must contain the import.
 			assertThat(namespace.getStorage().getAllImports())
-					.filteredOn(imp -> imp.getId().equals(importId1))
+					.filteredOn(imp -> imp.equals(importId1))
 					.isNotEmpty();
 
 			assertThat(namespace.getStorage().getImport(importId1))
@@ -188,7 +185,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
-					if (!worker.getInfo().getDataset().equals(dataset.getId())) {
+					if (!worker.getInfo().getDataset().equals(dataset)) {
 						continue;
 					}
 
@@ -196,11 +193,11 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-							.filteredOn(block -> block.getBucket().getDataset().equals(dataset.getId()))
+							.filteredOn(block -> block.getBucket().getDataset().equals(dataset))
 							.isNotEmpty();
 
-					assertThat(workerStorage.getAllBuckets())
-							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset.getId()))
+					assertThat(IntegrationUtils.getAllBuckets(workerStorage))
+							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
 							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
 							.isNotEmpty();
 

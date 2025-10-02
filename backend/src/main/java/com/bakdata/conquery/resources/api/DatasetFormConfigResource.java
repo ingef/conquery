@@ -4,17 +4,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import java.util.Set;
 import java.util.stream.Stream;
-
-import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
-import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
-import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
-import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor.PostResponse;
-import com.bakdata.conquery.resources.hierarchies.HAuthorized;
-import io.dropwizard.auth.Auth;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -26,6 +15,17 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+
+import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
+import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor.PostResponse;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.resources.hierarchies.HAuthorized;
+import io.dropwizard.auth.Auth;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -38,7 +38,7 @@ public class DatasetFormConfigResource extends HAuthorized {
 
 	private final FormConfigProcessor processor;
 	@PathParam(DATASET)
-	private Dataset dataset;
+	private DatasetId dataset;
 
 	@POST
 	public Response postConfig(@Auth Subject subject, @Valid FormConfigAPI config) {

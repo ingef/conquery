@@ -13,12 +13,14 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil.Parser;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.dropwizard.jersey.validation.Validators;
@@ -28,6 +30,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class IdTests {
+
+	public static final NamespacedStorageProvider STORAGE = new TestNamespacedStorageProvider();
 
 	public static Stream<Arguments> reflectionTest() {
 		return CPSTypeIdResolver
@@ -134,7 +138,9 @@ public class IdTests {
 			"4"
 		);
 
-		ObjectMapper mapper = Jackson.MAPPER;
+		ObjectMapper mapper = Jackson.MAPPER.copy();
+		STORAGE.injectInto(mapper);
+
 		ConceptTreeChildId copy = mapper.readValue(mapper.writeValueAsBytes(id), ConceptTreeChildId.class);
 
 		assertThat(copy).isEqualTo(id);
@@ -148,6 +154,9 @@ public class IdTests {
 		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(new ConqueryConfig(), Validators.newValidator());
 		ObjectMapper objectMapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 		internalMapperFactory.customizeApiObjectMapper(objectMapper, mock(DatasetRegistry.class), new NonPersistentStoreFactory().createMetaStorage());
+
+		STORAGE.injectInto(objectMapper); // DatasetRegistry-mock doesn't properly inject itself
+
 
 		ObjectReader objectReader = objectMapper.readerFor(ConceptTreeChildId.class);
 
@@ -175,7 +184,9 @@ public class IdTests {
 			"4"
 		);
 
-		ObjectMapper mapper = Jackson.BINARY_MAPPER;
+		ObjectMapper mapper = Jackson.BINARY_MAPPER.copy();
+		STORAGE.injectInto(mapper);
+
 		ConceptTreeChildId copy = mapper.readValue(mapper.writeValueAsBytes(id), ConceptTreeChildId.class);
 
 		assertThat(copy).isEqualTo(id);
@@ -185,9 +196,9 @@ public class IdTests {
 
 	@ParameterizedTest
 	@MethodSource
-	public void reflectionTest(Class<?> modelClass, Class<? extends Id<?>> expectedIdClass) {
+	public void reflectionTest(Class<?> modelClass, Class<? extends Id<?, ?>> expectedIdClass) {
 
-		Class<? extends Id<?>> idClass = IdUtil.findIdClass(modelClass);
+		Class<? extends Id<?, ?>> idClass = IdUtil.findIdClass(modelClass);
 		assertThat(idClass).isSameAs(expectedIdClass);
 		assertThat(IdUtil.createParser(idClass)).isInstanceOf(Parser.class);
 	}

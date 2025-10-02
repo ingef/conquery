@@ -31,7 +31,6 @@
 			"sourceFile": "table1.csv"
         }
     ],
-	"label": "Table 1",
 	"name": "table1",
 	"table": "table1"
 }

@@ -34,12 +34,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvWriter;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 
 @Slf4j
 @Getter
@@ -93,7 +93,7 @@ public class FormTest extends ConqueryTestSpec {
 	}
 
 	private Form parseForm(StandaloneSupport support) throws IOException {
-		return parseSubTree(support, rawForm, Form.class, true);
+		return parseSubTree(support, rawForm, Form.class, false);
 	}
 
 	private void checkResults(StandaloneSupport standaloneSupport, ManagedInternalForm<?> managedForm, User user) throws IOException {
@@ -133,12 +133,11 @@ public class FormTest extends ConqueryTestSpec {
 
 			writer.close();
 
-			assertThat(In.stream(new ByteArrayInputStream(output.toByteArray())).withUTF8().readLines())
+
+			assertThat(IOUtils.readLines(new ByteArrayInputStream(output.toByteArray()), StandardCharsets.UTF_8))
 					.as("Checking result " + managedForm.getLabelWithoutAutoLabelSuffix())
 					.containsExactlyInAnyOrderElementsOf(
-							In.stream(expectedCsv.values().iterator().next().stream())
-							  .withUTF8()
-							  .readLines()
+							IOUtils.readLines(expectedCsv.values().iterator().next().stream(), StandardCharsets.UTF_8)
 					);
 		}
 

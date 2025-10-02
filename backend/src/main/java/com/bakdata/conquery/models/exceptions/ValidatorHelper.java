@@ -6,9 +6,9 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ValidationException;
+
 import lombok.experimental.UtilityClass;
 import org.slf4j.Logger;
 
@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 public final class ValidatorHelper {
 
 
-	public static <V extends ConstraintViolation<?>> void failOnError(Logger log, Set<V> violations) {
+	public static void failOnError(Logger log, Set<? extends ConstraintViolation<?>> violations) {
 		final Optional<String> violationString = createViolationsString(violations, log.isTraceEnabled());
 
 		if (violationString.isPresent()) {
@@ -24,29 +24,31 @@ public final class ValidatorHelper {
 		}
 	}
 
-	public static <V extends ConstraintViolation<?>> Optional<String> createViolationsString(Set<V> violations, boolean detailed) {
+	public static Optional<String> createViolationsString(Set<? extends ConstraintViolation<?>> violations, boolean detailed) {
 
-		Map<Optional<Object>, List<V>> mapByRoot = violations.stream().collect(Collectors.groupingBy(v -> Optional.of(v.getRootBean())));
+		Map<Optional<Object>, List<ConstraintViolation<?>>> mapByRoot =
+				violations.stream()
+						  .collect(Collectors.groupingBy(v -> Optional.of(v.getRootBean())));
 
 		// Wrap grouper in Optional to also catch null values.
 		// Combine all leaf fail reports into a single exception.
 		if (mapByRoot.isEmpty()) {
 			return Optional.empty();
 		}
+
 		StringBuilder sb = new StringBuilder();
-		for (Entry<Optional<Object>, List<V>> entry : mapByRoot.entrySet()) {
+		for (Entry<Optional<Object>, List<ConstraintViolation<?>>> entry : mapByRoot.entrySet()) {
 			Object root = entry.getKey().orElse(null);
 			if (root != null) {
 				sb.append("\nValidation failed on: ").append(root.getClass());
 				if (detailed) {
-					sb.append("(").append(root.toString()).append(")");
+					sb.append(" (").append(root).append(")");
 				}
 			}
 
 			// Group violations by their nodes, convert the violations to messages, then append them to sb
 			entry.getValue().stream()
-				 .collect(Collectors.groupingBy(v -> v.getLeafBean()))
-
+				 .collect(Collectors.groupingBy(ConstraintViolation::getLeafBean))
 				 .entrySet().stream()
 				 .map(objectToViolation -> createViolationString(objectToViolation.getKey(), objectToViolation.getValue(), detailed))
 				 .forEach(sb::append);
@@ -72,7 +74,7 @@ public final class ValidatorHelper {
 		}
 		for (V violation : violations) {
 			// List all the violations for the specific leaf. 
-			sb.append("\n\t\t- ").append(violation.getPropertyPath()).append(": ").append(violation.getMessage()).append("");
+			sb.append("\n\t\t- ").append(violation.getPropertyPath()).append(": ").append(violation.getMessage());
 		}
 		return sb.toString();
 	}

@@ -19,8 +19,8 @@ public class JobManager implements Closeable {
 
 	public JobManager(String name, boolean failOnError) {
 
-		slowExecutor = new JobExecutor("Job Manager slow " + name, failOnError);
-		fastExecutor = new JobExecutor("Job Manager fast " + name, failOnError);
+		slowExecutor = new JobExecutor("JobManager slow " + name, failOnError);
+		fastExecutor = new JobExecutor("JobManager fast " + name, failOnError);
 
 		slowExecutor.setUncaughtExceptionHandler(notifyExecutorDied);
 		fastExecutor.setUncaughtExceptionHandler(notifyExecutorDied);

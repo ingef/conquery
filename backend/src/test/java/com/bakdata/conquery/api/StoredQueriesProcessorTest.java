@@ -87,7 +87,6 @@ public class StoredQueriesProcessorTest {
 	private static final DatasetRegistry<DistributedNamespace>
 			DATASET_REGISTRY =
 			new DatasetRegistry<>(
-					0,
 					CONFIG,
 					INTERNAL_MAPPER_FACTORY,
 					new ClusterNamespaceHandler(new ClusterState(), CONFIG, INTERNAL_MAPPER_FACTORY),

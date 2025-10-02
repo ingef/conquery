@@ -62,7 +62,13 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@ToString.Exclude
 	private PreviewConfig previewConfig;
 
-	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+	public EntityPreviewExecution(
+			EntityPreviewForm entityPreviewQuery,
+			UserId user,
+			DatasetId submittedDataset,
+			MetaStorage storage,
+			DatasetRegistry<?> datasetRegistry,
+			ConqueryConfig config) {
 		super(entityPreviewQuery, user, submittedDataset, storage, datasetRegistry, config);
 	}
 
@@ -85,7 +91,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			if (descriptor.getSemantics()
 						  .stream()
 						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc
-													&& previewConfig.isGroupingColumn(desc.getSecondaryId().resolve())
+													&& previewConfig.isGroupingColumn(desc.getSecondaryId())
 						  )) {
 				descriptor.getSemantics().add(new SemanticType.GroupT());
 			}
@@ -93,7 +99,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			// Add hidden semantics to fields flagged for hiding.
 			if (descriptor.getSemantics()
 						  .stream()
-						  .anyMatch(semanticType -> semanticType instanceof SemanticType.ColumnT desc && previewConfig.isHidden(desc.getColumn().resolve()))) {
+						  .anyMatch(semanticType -> semanticType instanceof SemanticType.ColumnT desc && previewConfig.isHidden(desc.getColumn()))) {
 				descriptor.getSemantics().add(new SemanticType.HiddenT());
 			}
 		}
@@ -209,12 +215,13 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc);
 
 
-			final EntityPreviewStatus.TimeStratifiedInfos infos = new EntityPreviewStatus.TimeStratifiedInfos(description.label(),
-																											  description.description(),
-																											  columnDescriptors,
-																											  lineTransformer.apply(completeResult),
-																											  yearEntries
-			);
+			final EntityPreviewStatus.TimeStratifiedInfos infos =
+					new EntityPreviewStatus.TimeStratifiedInfos(description.label(),
+																description.description(),
+																columnDescriptors,
+																lineTransformer.apply(completeResult),
+																yearEntries
+					);
 
 			timeStratifiedInfos.add(infos);
 		}

@@ -21,27 +21,33 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 public class CBlockDeserializer extends JsonDeserializer<CBlock> implements ContextualDeserializer {
 
 	private JsonDeserializer<CBlock> beanDeserializer;
-	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
 	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
 		JavaType type = Optional
 				.ofNullable(ctxt.getContextualType())
 				.orElseGet(Optional.ofNullable(property).map(BeanProperty::getType)::get);
 
-		while(type.isContainerType()) {
+		while (type.isContainerType()) {
 			type = type.getContentType();
 		}
 		BeanDescription descr = ctxt.getConfig().introspect(type);
 		JsonDeserializer<?> deser = ctxt.getFactory().createBeanDeserializer(ctxt, type, descr);
-		if(deser instanceof ResolvableDeserializer) {
+		if (deser instanceof ResolvableDeserializer) {
 			((ResolvableDeserializer) deser).resolve(ctxt);
 		}
-		return new CBlockDeserializer((JsonDeserializer)deser);
+		return new CBlockDeserializer((JsonDeserializer) deser);
+	}
+
+	@Override
+	public CBlock deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
+		return this.deserialize(p, ctxt);
 	}
 
 	@Override
@@ -49,7 +55,7 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 		CBlock block = beanDeserializer.deserialize(p, ctxt);
 
 
-		if(block.getMostSpecificChildren() != null) {
+		if (block.getMostSpecificChildren() != null) {
 			TreeConcept concept = (TreeConcept) block.getConnector().getConcept().resolve();
 
 			// deduplicate concrete paths after loading from disk.
@@ -66,11 +72,6 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 			}
 		}
 		return block;
-	}
-
-	@Override
-	public CBlock deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
-		return this.deserialize(p, ctxt);
 	}
 
 

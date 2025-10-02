@@ -63,7 +63,7 @@ public class WorkerTestDataImporter implements TestDataImporter {
 									  conn.setTable(new TableId(support.getDataset().getDataset(), FilterTest.TABLE_NAME));
 									  conn.setConcept(test.getConcept());
 								  },
-								  true
+								  false
 						  )
 		);
 		test.getConcept().setConnectors(Collections.singletonList((ConceptTreeConnector) test.getConnector()));

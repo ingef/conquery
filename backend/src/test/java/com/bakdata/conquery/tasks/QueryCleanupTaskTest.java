@@ -7,13 +7,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
@@ -55,7 +55,7 @@ class QueryCleanupTaskTest {
 
 		ConceptQuery query = new ConceptQuery(root);
 
-		final ManagedQuery managedQuery = new ManagedQuery(query, new UserId("test"), new Dataset("test").getId(), STORAGE, null, null);
+		final ManagedQuery managedQuery = new ManagedQuery(query, new UserId("test"), new DatasetId("test"), STORAGE, null, null);
 
 		managedQuery.setCreationTime(LocalDateTime.now().minus(queryExpiration).minusDays(1));
 
@@ -80,12 +80,12 @@ class QueryCleanupTaskTest {
 	}
 
 	@Test
-	void singleNamedButUUID() throws Exception {
+	void singleNamedButAutoLabeled() throws Exception {
 		assertThat(STORAGE.getAllExecutions()).isEmpty();
 
 		final ManagedQuery managedQuery = createManagedQuery();
 
-		managedQuery.setLabel(UUID.randomUUID().toString());
+		managedQuery.setLabel("test" + ManagedExecution.AUTO_LABEL_SUFFIX);
 
 		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 

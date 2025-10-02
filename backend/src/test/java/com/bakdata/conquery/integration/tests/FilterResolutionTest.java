@@ -17,6 +17,7 @@ import jakarta.ws.rs.core.Response;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.integration.IntegrationTest;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -32,7 +33,6 @@ import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
-import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -51,11 +51,9 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		//read test sepcification
 		final String
 				testJson =
-				In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json")
-				  .withUTF8()
-				  .readAll();
+				LoadingUtil.readResource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json");
 
-		final DatasetId dataset = conquery.getDataset().getId();
+		final DatasetId dataset = conquery.getDataset();
 
 		final ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
 
@@ -79,14 +77,18 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		// Copy search csv from resources to tmp folder.
 		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
 		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines)
-								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE
+		);
 
 
 		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings(), "emptyDefaultLabel");
 
 		final FilterTemplate
 				filterTemplate =
-				new FilterTemplate(conquery.getDataset().getId(), "test", tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService);
+				new FilterTemplate(tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService);
+		filterTemplate.setDataset(conquery.getDataset());
+		filterTemplate.setName("test");
+
 		filter.setTemplate(filterTemplate.getId());
 
 		// We need to persist the modification before we submit the update matching stats request
@@ -94,8 +96,9 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		namespaceStorage.updateConcept(concept);
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "postprocessNamespace")
-													.buildFromMap(Map.of(DATASET, conquery.getDataset().getId()));
+															, AdminDatasetResource.class, "postprocessNamespace"
+													)
+													.buildFromMap(Map.of(DATASET, conquery.getDataset()));
 
 		final Response post = conquery.getClient().target(matchingStatsUri)
 									  .request(MediaType.APPLICATION_JSON_TYPE)
@@ -111,7 +114,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 							   )
 							   .buildFromMap(
 									   Map.of(
-											   DATASET, conquery.getDataset().getId(),
+											   DATASET, conquery.getDataset(),
 											   CONCEPT, concept.getId(),
 											   TABLE, filter.getConnector().getResolvedTable().getId(),
 											   FILTER, filter.getId()
