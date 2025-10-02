@@ -1,0 +1,9 @@
+internal,unused,external,external2
+data a,unused,Data,A
+b,unused,Data B,
+data c,unused,Data C,
+data c,unused,Data C duplicate,
+data d,unused,,unused
+,,internal,null
+external-null,,,
+,internal-external-null,,
