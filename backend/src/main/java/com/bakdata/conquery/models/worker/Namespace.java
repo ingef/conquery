@@ -18,9 +18,8 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.FilterSearch;
+import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +42,7 @@ public abstract class Namespace implements Injectable {
 	// TODO: 01.07.2020 FK: This is not used a lot, as NamespacedMessages are highly convoluted and hard to decouple as is.
 	private final JobManager jobManager;
 
-	private final FilterSearch filterSearch;
+	private final SearchProcessor filterSearch;
 
 	private final EntityResolver entityResolver;
 
@@ -60,6 +59,13 @@ public abstract class Namespace implements Injectable {
 	}
 
 	public void close() {
+		try {
+			filterSearch.stop();
+		}
+		catch (Exception e) {
+			log.error("Unable to close filter serach of {}",this, e);
+		}
+
 		try {
 			jobManager.close();
 		} catch (Exception e) {
@@ -115,7 +121,7 @@ public abstract class Namespace implements Injectable {
 	 * Issues a job that initializes the search that is used by the frontend for recommendations in the filter interface of a concept.
 	 */
 	final void updateFilterSearch() {
-		getJobManager().addSlowJob(new UpdateFilterSearchJob(this, getFilterSearch().getIndexConfig(), this::registerColumnValuesInSearch));
+		getJobManager().addSlowJob(filterSearch.createUpdateFilterSearchJob(storage, this::registerColumnValuesInSearch));
 	}
 
 	/**
@@ -125,8 +131,8 @@ public abstract class Namespace implements Injectable {
 
 	/**
 	 * This collects the string values of the given {@link Column}s (each is a {@link com.bakdata.conquery.models.datasets.concepts.Searchable})
-	 * and registers them in the namespace's {@link FilterSearch#registerValues(Searchable, Collection)}.
-	 * After value registration for a column is complete, {@link FilterSearch#shrinkSearch(Searchable)} should be called.
+	 * and registers them in the namespace's {@link SearchProcessor#registerValues(Searchable, Collection)}.
+	 * After value registration for a column is complete, {@link SearchProcessor#finalizeSearch(Searchable)} should be called.
 	 */
 	abstract void registerColumnValuesInSearch(Set<Column> columns);
 
@@ -139,7 +145,7 @@ public abstract class Namespace implements Injectable {
 	public void postprocessData() {
 
 		getJobManager().addSlowJob(new SimpleJob(
-				"Initiate Update Matching Stats and FilterSearch",
+				"Initiate Update Matching Stats and InternalFilterSearch",
 				() -> {
 					updateInternToExternMappings();
 					updateMatchingStats();

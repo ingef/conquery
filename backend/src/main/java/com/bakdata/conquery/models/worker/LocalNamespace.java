@@ -11,9 +11,9 @@ import com.bakdata.conquery.mode.local.SqlStorageHandler;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.sql.DSLContextWrapper;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
+import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,7 @@ public class LocalNamespace extends Namespace {
 			DSLContextWrapper dslContextWrapper,
 			SqlStorageHandler storageHandler,
 			JobManager jobManager,
-			FilterSearch filterSearch,
+			SearchProcessor filterSearch,
 			SqlEntityResolver sqlEntityResolver
 	) {
 		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, sqlEntityResolver);

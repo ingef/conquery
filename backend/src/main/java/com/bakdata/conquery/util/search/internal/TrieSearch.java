@@ -1,4 +1,4 @@
-package com.bakdata.conquery.util.search;
+package com.bakdata.conquery.util.search.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,12 +17,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import jakarta.validation.constraints.Min;
 
+import com.bakdata.conquery.util.search.Search;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import jakarta.validation.constraints.Min;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.trie.PatriciaTrie;
@@ -44,7 +45,7 @@ import org.jetbrains.annotations.NotNull;
  */
 @Slf4j
 @ToString(of = {"ngramLength", "splitPattern"})
-public class TrieSearch<T extends Comparable<T>> {
+public class TrieSearch<T extends Comparable<T>> extends Search<T> {
 	/**
 	 * Weight of a search hit for query and keyword of different lengths.
 	 * Should be greater than one because the weights of hits in the whole worlds trie are squared.
@@ -217,8 +218,8 @@ public class TrieSearch<T extends Comparable<T>> {
 		return weight;
 	}
 
-	public List<T> findExact(Collection<String> keywords, int limit) {
-		return keywords.stream()
+	public List<T> findExact(String searchTerm, int limit) {
+		return Stream.of(searchTerm)
 					   .flatMap(this::split)
 					   .map(whole::get)
 					   .filter(Objects::nonNull)
@@ -265,7 +266,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	 *
 	 * @implSpec the TrieSearch is still mutable after this. Shrinking might result in different search results.
 	 */
-	public void shrinkToFit() {
+	public void finalizeSearch() {
 		if (shrunk) {
 			return;
 		}

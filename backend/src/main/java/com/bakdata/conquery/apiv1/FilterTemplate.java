@@ -4,17 +4,12 @@ import java.net.URI;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.config.IndexConfig;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
-import com.bakdata.conquery.models.index.FrontendValueIndex;
-import com.bakdata.conquery.models.index.FrontendValueIndexKey;
-import com.bakdata.conquery.models.index.IndexCreationException;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.util.io.FileUtil;
-import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -48,11 +43,13 @@ public class FilterTemplate extends SearchIndex implements Searchable {
 	 */
 	@NotEmpty
 	private final String columnValue;
+
 	/**
 	 * Value displayed in Select list. Usually concise display.
 	 */
 	@NotEmpty
 	private final String value;
+
 	/**
 	 * More detailed value. Displayed when value is selected.
 	 */
@@ -65,7 +62,13 @@ public class FilterTemplate extends SearchIndex implements Searchable {
 	// We inject the service as a non-final property so, jackson will never try to create a serializer for it (in contrast to constructor injection)
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
+	@ToString.Exclude
 	private IndexService indexService;
+
+	@JsonIgnore
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@ToString.Exclude
+	private ConqueryConfig config;
 
 	/**
 	 * Does not make sense to distinguish at Filter level since it's only referenced when a template is also set.
@@ -76,22 +79,14 @@ public class FilterTemplate extends SearchIndex implements Searchable {
 		return false;
 	}
 
-	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config) throws IndexCreationException {
-
-		final URI resolvedURI = FileUtil.getResolvedUri(config.getBaseUrl(), getFilePath());
-		log.trace("Resolved filter template reference url for search '{}': {}", getId(), resolvedURI);
-
-		final FrontendValueIndex search = indexService.getIndex(new FrontendValueIndexKey(
-				resolvedURI,
-				columnValue,
-				value,
-				optionValue,
-				isGenerateSuffixes() ? getMinSuffixLength() : Integer.MAX_VALUE,
-				config.getSearchSplitChars()
-		));
-
-		return search.getDelegate();
+	@JsonIgnore
+	public URI getResolvedUri() {
+		return FileUtil.getResolvedUri(config.getIndex().getBaseUrl(), filePath);
 	}
 
-
+	@JsonIgnore
+	@Override
+	public String getSearchHandle() {
+		return "filter_template_%s".formatted(getId());
+	}
 }
