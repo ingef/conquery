@@ -3,10 +3,8 @@ package com.bakdata.conquery.util.search.solr;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
@@ -122,11 +120,14 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 	 * @param values String values that are converted to SolrDocs
 	 */
 	public void registerValuesRaw(Collection<String> values) {
+
 		// Convert values and prepare chunks
-		values.stream()
-			   .filter(Objects::nonNull)
-			   .filter(Predicate.not(String::isBlank))
-			   .map(value -> new SolrFrontendValue(getSearchable(), sourcePriority, value, null, null))
-			   .forEach(this::insertIntoChunk);
+		for (String value : values) {
+			if (value == null || value.isBlank()) {
+				continue;
+			}
+			SolrFrontendValue solrFrontendValue = new SolrFrontendValue(getSearchable(), sourcePriority, value, null, null);
+			insertIntoChunk(solrFrontendValue);
+		}
 	}
 }
