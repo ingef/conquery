@@ -65,6 +65,7 @@ public class TemporalQueryNode extends QPNode {
 		compareDateAggregator.setValue(compareDateResult);
 		indexDateAggregator.setValue(indexDateResult);
 
+		result = false;
 		hit = false;
 	}
 
