@@ -40,7 +40,7 @@ public class TemporalQueryNode extends QPNode {
 	private final TemporalSelector compareSelector;
 
 
-	private final List<List> aggregationResults;
+	private final List<ConstantValueAggregator<List>> aggregationResults;
 	private final ConstantValueAggregator<CDateSet> compareDateAggregator = new ConstantValueAggregator<>(null);
 	private final ConstantValueAggregator<CDateSet> indexDateAggregator = new ConstantValueAggregator<>(null);
 
@@ -60,7 +60,7 @@ public class TemporalQueryNode extends QPNode {
 		outerCompareQueryPlan.init(context, entity);
 		innerCompareQueryPlan.init(context, entity);
 
-		aggregationResults.replaceAll(ignored -> new ArrayList());
+		aggregationResults.forEach(agg -> agg.setValue(new ArrayList()));
 
 		indexDateResult = CDateSet.createEmpty();
 		compareDateResult = CDateSet.createEmpty();
@@ -212,6 +212,7 @@ public class TemporalQueryNode extends QPNode {
 			for (int aggIndex = 0; aggIndex < aggregationResults.size(); aggIndex++) {
 
 				aggregationResults.get(aggIndex)
+								  .getValue()
 								  .add(compareAggregationResults[index][aggIndex]);
 			}
 		}

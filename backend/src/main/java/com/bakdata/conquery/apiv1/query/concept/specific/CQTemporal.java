@@ -130,7 +130,7 @@ public class CQTemporal extends CQElement {
 															createCompareQueryPlan(context, true),
 															createCompareQueryPlan(context, false),
 															getCompareSelector(),
-															shimAggregators.stream().map(ConstantValueAggregator::getValue).collect(Collectors.toList())
+															shimAggregators
 		);
 
 		if (showCompareDate) {
