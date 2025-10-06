@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
@@ -112,20 +113,12 @@ public class TemporalQueryNode extends QPNode {
 		final CDateRange[] periods = indexSelector.sample(indexQueryPlan.getDateAggregator().createAggregationResult());
 		final CDateRange[] indexPeriods = indexMode.convert(periods, indexSelector);
 
-		if (indexPeriods.length == 0) {
-			return false;
-		}
-
 		final boolean[] results = new boolean[indexPeriods.length];
 
 		// First execute sub-query with index's sub-period
 		// to extract compares sub-periods which are then used to evaluate compare for aggregation/inclusion.
 		for (int current = 0; current < indexPeriods.length; current++) {
 			final CDateRange indexPeriod = indexPeriods[current];
-
-			if (indexPeriod == null) {
-				continue;
-			}
 
 			// Execute only event-filter based, to get potential periods for inner, with aggregation.
 			if (!evaluateWithRestriction(entity, indexPeriod, outerCompareQueryPlan, ctx)) {
@@ -135,10 +128,6 @@ public class TemporalQueryNode extends QPNode {
 			final CDateSet outerDates = outerCompareQueryPlan.getDateAggregator().createAggregationResult();
 			final CDateRange[] comparePeriods = compareSelector.sample(outerDates);
 
-			if (comparePeriods.length == 0) {
-				continue;
-			}
-
 			final boolean[] compareContained = new boolean[comparePeriods.length];
 			final CDateSet[] compareDates = new CDateSet[comparePeriods.length];
 			final Object[][] compareAggregationResults = new Object[comparePeriods.length][];
@@ -147,27 +136,23 @@ public class TemporalQueryNode extends QPNode {
 
 				final CDateRange comparePeriod = comparePeriods[inner];
 
-				if (comparePeriod == null) {
-					continue;
-				}
-
 				// Execute compare-query to get actual result
-				boolean innerIsContained = evaluateWithRestriction(entity, comparePeriod, innerCompareQueryPlan, ctx);
+				compareContained[inner] = evaluateWithRestriction(entity, comparePeriod, innerCompareQueryPlan, ctx);
 
-				compareContained[inner] = innerIsContained;
-
-				if (innerIsContained) {
+				if (compareContained[inner]) {
 					compareDates[inner] = innerCompareQueryPlan.getDateAggregator().createAggregationResult();
 					compareAggregationResults[inner] = innerCompareQueryPlan.getAggregators().stream().skip(1).map(Aggregator::createAggregationResult).toArray();
 				}
 			}
 
+			boolean satisfies = compareSelector.satisfies(compareContained);
+
+			log.debug("{}:{} => indexPeriod={}, comparePeriods={}, compareContained={} => {}", getEntity(), compareSelector, indexPeriod, comparePeriods, compareContained, satisfies);
+
 			// If compare's selector is satisfied, we append current to the results and collect the aggregation results
-			if (!compareSelector.satisfies(compareContained)) {
+			if (!satisfies) {
 				continue;
 			}
-
-			log.debug("{}:{} => indexP={}, compareP={}, compareC={}", getEntity(), compareSelector, indexPeriod, comparePeriods, compareContained);
 
 			results[current] = true;
 			indexDateResult.add(periods[current]);
@@ -175,7 +160,12 @@ public class TemporalQueryNode extends QPNode {
 			addAggregationResults(compareContained, compareDates, compareAggregationResults);
 		}
 
-		return indexSelector.satisfies(results);
+		boolean satisfies = indexSelector.satisfies(results);
+
+		log.debug("{}:{} => indexPeriods={}, results={} => {}", getEntity(), indexSelector, indexPeriods, results, satisfies);
+
+
+		return satisfies;
 	}
 
 	/**
@@ -184,7 +174,8 @@ public class TemporalQueryNode extends QPNode {
 	 * @return if the entity is contained or not.
 	 */
 	private static boolean evaluateWithRestriction(Entity entity, CDateRange partition, ConceptQueryPlan cqp, QueryExecutionContext ctx) {
-		ctx = ctx.withDateRestriction(CDateSet.create(partition));
+		ctx = ctx.withDateRestriction(CDateSet.create(partition))
+				 .withQueryDateAggregator(Optional.empty());
 
 		cqp.init(ctx, entity);
 		cqp.execute(ctx, entity);

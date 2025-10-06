@@ -5,6 +5,7 @@ import java.util.Iterator;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.google.common.collect.Iterators;
+import org.apache.commons.lang3.BooleanUtils;
 
 public enum TemporalSelector {
 	ANY {
@@ -15,13 +16,7 @@ public enum TemporalSelector {
 
 		@Override
 		public boolean satisfies(boolean[] results) {
-
-			for (boolean value : results) {
-				if (value) {
-					return true;
-				}
-			}
-			return false;
+			return results.length > 0 && BooleanUtils.or(results);
 		}
 	}, ALL {
 		@Override
@@ -31,16 +26,7 @@ public enum TemporalSelector {
 
 		@Override
 		public boolean satisfies(boolean[] results) {
-			if (results.length == 0) {
-				return false;
-			}
-
-			for (boolean value : results) {
-				if (!value) {
-					return false;
-				}
-			}
-			return true;
+			return results.length > 0 && BooleanUtils.and(results);
 		}
 	}, EARLIEST {
 		@Override
@@ -50,11 +36,8 @@ public enum TemporalSelector {
 
 		@Override
 		public boolean satisfies(boolean[] results) {
-			if (results.length == 0) {
-				return false;
-			}
+			return results.length == 1 && results[0];
 
-			return results[0];
 		}
 	}, LATEST {
 		@Override
@@ -64,7 +47,6 @@ public enum TemporalSelector {
 				return new CDateRange[0];
 			}
 
-
 			final Iterator<CDateRange> iterator = result.asRanges().iterator();
 
 			return new CDateRange[]{Iterators.getLast(iterator)};
@@ -72,11 +54,8 @@ public enum TemporalSelector {
 
 		@Override
 		public boolean satisfies(boolean[] results) {
-			if (results.length == 0) {
-				return false;
-			}
+			return results.length == 1 && results[0];
 
-			return results[0];
 		}
 	};
 
