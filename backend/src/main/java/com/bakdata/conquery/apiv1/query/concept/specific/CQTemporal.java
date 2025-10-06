@@ -120,19 +120,15 @@ public class CQTemporal extends CQElement {
 	@Override
 	public final QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 
-		final ConceptQueryPlan indexSubPlan = createIndexPlan(index, context, plan);
-		ConceptQuery compareQuery = new ConceptQuery(compare);
-
 		// These aggregators will be fed with the actual aggregation results of the sub results
 		final List<ConstantValueAggregator<List>> shimAggregators = createShimAggregators(nShimAggregators);
 
 		TemporalQueryNode queryNode = new TemporalQueryNode(context.getStorage().getDataset().getAllIdsTable(),
-															indexSubPlan,
+															createIndexPlan(context),
 															getIndexSelector(),
 															getMode(),
-															compareQuery.createQueryPlan(context.withDisableAggregationFilters(true).withDisableAggregationFilters(true)),
-															compareQuery.createQueryPlan(context.withDisableAggregationFilters(false)
-																								.withDisableAggregationFilters(false)),
+															createCompareQueryPlan(context, true),
+															createCompareQueryPlan(context, false),
 															getCompareSelector(),
 															shimAggregators.stream().map(ConstantValueAggregator::getValue).collect(Collectors.toList())
 		);
@@ -145,20 +141,18 @@ public class CQTemporal extends CQElement {
 		return queryNode;
 	}
 
-
-	private ConceptQueryPlan createIndexPlan(CQElement query, QueryPlanContext context, ConceptQueryPlan plan) {
-		final ConceptQueryPlan subPlan = new ConceptQueryPlan(true);
-		final QPNode indexNode = query.createQueryPlan(context, plan);
-
-		subPlan.getDateAggregator().registerAll(indexNode.getDateAggregators());
-		subPlan.setChild(indexNode);
-		return subPlan;
+	private ConceptQueryPlan createIndexPlan(QueryPlanContext context) {
+		return new ConceptQuery(index).createQueryPlan(context);
 	}
 
 	private static List<ConstantValueAggregator<List>> createShimAggregators(int nShimAggregators) {
 		return IntStream.range(0, nShimAggregators)
 						.mapToObj(ignored -> new ConstantValueAggregator<List>(new ArrayList<>()))
 						.toList();
+	}
+
+	private ConceptQueryPlan createCompareQueryPlan(QueryPlanContext context, boolean withAggregation) {
+		return new ConceptQuery(compare).createQueryPlan(context.withDisableAggregationFilters(withAggregation).withDisableAggregationFilters(withAggregation));
 	}
 
 	@Override
