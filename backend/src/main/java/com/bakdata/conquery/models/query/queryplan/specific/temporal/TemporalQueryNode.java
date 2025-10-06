@@ -113,6 +113,10 @@ public class TemporalQueryNode extends QPNode {
 		final CDateRange[] periods = indexSelector.sample(indexQueryPlan.getDateAggregator().createAggregationResult());
 		final CDateRange[] indexPeriods = indexMode.convert(periods, indexSelector);
 
+		if (indexPeriods.length == 0){
+			return false;
+		}
+
 		final boolean[] results = new boolean[indexPeriods.length];
 
 		// First execute sub-query with index's sub-period
@@ -130,8 +134,12 @@ public class TemporalQueryNode extends QPNode {
 			}
 
 			final CDateSet outerDates = outerCompareQueryPlan.getDateAggregator().createAggregationResult();
-
 			final CDateRange[] comparePeriods = compareSelector.sample(outerDates);
+
+			if (comparePeriods.length == 0) {
+				continue;
+			}
+
 			final boolean[] compareContained = new boolean[comparePeriods.length];
 			final CDateSet[] compareDates = new CDateSet[comparePeriods.length];
 			final Object[][] compareAggregationResults = new Object[comparePeriods.length][];
