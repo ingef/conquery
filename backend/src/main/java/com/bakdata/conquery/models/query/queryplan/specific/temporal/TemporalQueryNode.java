@@ -101,11 +101,11 @@ public class TemporalQueryNode extends QPNode {
 	 * mode and selector filter periods to the relevant timestamps and eventually determine if an entity is included or not.
 	 */
 	public boolean evaluateTemporalQuery(QueryExecutionContext ctx, Entity entity) {
-		indexQueryPlan.init(context, entity);
+		indexQueryPlan.init(ctx, entity);
 
 		indexQueryPlan.execute(ctx, entity);
 
-		if (indexQueryPlan.isContained()) {
+		if (!indexQueryPlan.isContained()) {
 			return false;
 		}
 
@@ -183,7 +183,7 @@ public class TemporalQueryNode extends QPNode {
 	 *
 	 * @return if the entity is contained or not.
 	 */
-	private boolean evaluateWithRestriction(Entity entity, CDateRange partition, ConceptQueryPlan cqp, QueryExecutionContext ctx) {
+	private static boolean evaluateWithRestriction(Entity entity, CDateRange partition, ConceptQueryPlan cqp, QueryExecutionContext ctx) {
 		ctx = ctx.withDateRestriction(CDateSet.create(partition));
 
 		cqp.init(ctx, entity);
