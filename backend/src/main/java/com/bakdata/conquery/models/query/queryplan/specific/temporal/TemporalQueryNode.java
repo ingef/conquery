@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
@@ -15,7 +14,6 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
-import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
@@ -56,7 +54,6 @@ public class TemporalQueryNode extends QPNode {
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
 
-		indexQueryPlan.init(context, entity);
 
 		aggregationResults.forEach(List::clear);
 
@@ -103,17 +100,18 @@ public class TemporalQueryNode extends QPNode {
 	 * mode and selector filter periods to the relevant timestamps and eventually determine if an entity is included or not.
 	 */
 	public boolean evaluateTemporalQuery(QueryExecutionContext ctx, Entity entity) {
+		indexQueryPlan.init(context, entity);
 
-		final Optional<SinglelineEntityResult> indexResult = indexQueryPlan.execute(ctx, entity);
+		indexQueryPlan.execute(ctx, entity);
 
-		if (indexResult.isEmpty()) {
+		if (indexQueryPlan.isContained()) {
 			return false;
 		}
 
 		final CDateRange[] periods = indexSelector.sample(indexQueryPlan.getDateAggregator().createAggregationResult());
 		final CDateRange[] indexPeriods = indexMode.convert(periods, indexSelector);
 
-		if (indexPeriods.length == 0){
+		if (indexPeriods.length == 0) {
 			return false;
 		}
 
@@ -145,7 +143,13 @@ public class TemporalQueryNode extends QPNode {
 			final Object[][] compareAggregationResults = new Object[comparePeriods.length][];
 
 			for (int inner = 0; inner < comparePeriods.length; inner++) {
+
 				final CDateRange comparePeriod = comparePeriods[inner];
+
+				if (comparePeriod == null) {
+					continue;
+				}
+
 				// Execute compare-query to get actual result
 				boolean innerIsContained = evaluateWithRestriction(entity, comparePeriod, innerCompareQueryPlan, ctx);
 
@@ -161,6 +165,8 @@ public class TemporalQueryNode extends QPNode {
 			if (!compareSelector.satisfies(compareContained)) {
 				continue;
 			}
+
+			log.debug("{}:{} => indexP={}, compareP={}, compareC={}", getEntity(), compareSelector, indexPeriod, comparePeriods, compareContained);
 
 			results[current] = true;
 			indexDateResult.add(periods[current]);
@@ -180,10 +186,9 @@ public class TemporalQueryNode extends QPNode {
 		ctx = ctx.withDateRestriction(CDateSet.create(partition));
 
 		cqp.init(ctx, entity);
+		cqp.execute(ctx, entity);
 
-		final Optional<SinglelineEntityResult> entityResult = cqp.execute(ctx, entity);
-
-		return entityResult.isPresent();
+		return cqp.isContained();
 	}
 
 	/**
