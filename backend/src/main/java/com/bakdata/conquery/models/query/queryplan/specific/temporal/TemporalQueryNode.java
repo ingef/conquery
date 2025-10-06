@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -47,7 +48,7 @@ public class TemporalQueryNode extends QPNode {
 
 	private CDateSet compareDateResult;
 
-	private boolean result;
+	private boolean result = false;
 	private boolean hit = false;
 
 
@@ -56,8 +57,10 @@ public class TemporalQueryNode extends QPNode {
 		super.init(entity, context);
 
 		indexQueryPlan.init(context, entity);
+		outerCompareQueryPlan.init(context, entity);
+		innerCompareQueryPlan.init(context, entity);
 
-		aggregationResults.forEach(List::clear);
+		aggregationResults.replaceAll(ignored -> new ArrayList());
 
 		indexDateResult = CDateSet.createEmpty();
 		compareDateResult = CDateSet.createEmpty();
@@ -103,9 +106,10 @@ public class TemporalQueryNode extends QPNode {
 	 * mode and selector filter periods to the relevant timestamps and eventually determine if an entity is included or not.
 	 */
 	public boolean evaluateTemporalQuery(QueryExecutionContext ctx, Entity entity) {
-		indexQueryPlan.init(ctx, entity);
 
-		indexQueryPlan.execute(ctx, entity);
+		QueryExecutionContext indexCtx = ctx.withQueryDateAggregator(Optional.empty());
+		indexQueryPlan.init(indexCtx, entity);
+		indexQueryPlan.execute(indexCtx, entity);
 
 		if (!indexQueryPlan.isContained()) {
 			return false;
@@ -148,7 +152,14 @@ public class TemporalQueryNode extends QPNode {
 
 			boolean satisfies = compareSelector.satisfies(compareContained);
 
-			log.debug("{}:{} => indexPeriod={}, comparePeriods={}, compareContained={} => {}", getEntity(), compareSelector, indexPeriod, comparePeriods, compareContained, satisfies);
+			log.debug("{}:{} => indexPeriod={}, comparePeriods={}, compareContained={} => {}",
+					  getEntity(),
+					  compareSelector,
+					  indexPeriod,
+					  comparePeriods,
+					  compareContained,
+					  satisfies
+			);
 
 			// If compare's selector is satisfied, we append current to the results and collect the aggregation results
 			if (!satisfies) {
