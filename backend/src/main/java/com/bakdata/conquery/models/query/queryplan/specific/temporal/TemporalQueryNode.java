@@ -54,6 +54,7 @@ public class TemporalQueryNode extends QPNode {
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
 
+		indexQueryPlan.init(context, entity);
 
 		aggregationResults.forEach(List::clear);
 
