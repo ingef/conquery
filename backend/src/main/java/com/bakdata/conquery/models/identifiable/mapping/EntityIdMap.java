@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -39,6 +40,7 @@ public class EntityIdMap {
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	@JacksonInject(useInput = OptBoolean.FALSE)
+	@ToString.Exclude
 	private NamespaceStorage storage;
 
 	/**

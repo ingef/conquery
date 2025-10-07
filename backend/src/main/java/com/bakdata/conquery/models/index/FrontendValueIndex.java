@@ -1,18 +1,17 @@
 package com.bakdata.conquery.models.index;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.models.query.FilterSearch;
-import com.bakdata.conquery.util.search.TrieSearch;
+import com.bakdata.conquery.util.search.Search;
+import com.bakdata.conquery.util.search.SearchProcessor;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @ToString
@@ -32,14 +31,14 @@ public class FrontendValueIndex implements Index<FrontendValue> {
 	private final String defaultEmptyLabel;
 
 	@Getter
-	private final TrieSearch<FrontendValue> delegate;
+	private final Search<FrontendValue> delegate;
 
-	public FrontendValueIndex(int suffixCutoff, String split, String valueTemplate, String optionValueTemplate, String defaultEmptyLabel) {
+	public FrontendValueIndex(Search<FrontendValue> delegate, String valueTemplate, String optionValueTemplate, String defaultEmptyLabel) {
 		this.valueTemplate = valueTemplate;
 		this.optionValueTemplate = optionValueTemplate;
 		this.defaultEmptyLabel = defaultEmptyLabel;
 
-		delegate = new TrieSearch<>(suffixCutoff, split);
+		this.delegate = delegate;
 	}
 
 	@Override
@@ -50,7 +49,7 @@ public class FrontendValueIndex implements Index<FrontendValue> {
 				templateToConcrete.get(optionValueTemplate)
 		);
 
-		delegate.addItem(feValue, FilterSearch.extractKeywords(feValue));
+		delegate.addItem(feValue, SearchProcessor.extractKeywords(feValue));
 	}
 
 	@Override
@@ -65,7 +64,7 @@ public class FrontendValueIndex implements Index<FrontendValue> {
 
 	@Override
 	public Collection<FrontendValue> externalMultiple(String key) {
-		final List<FrontendValue> matches = delegate.findExact(Set.of(key), Integer.MAX_VALUE);
+		final List<FrontendValue> matches = delegate.findExact(key, Integer.MAX_VALUE);
 		if (matches.isEmpty()) {
 			return null;
 		}
@@ -74,13 +73,13 @@ public class FrontendValueIndex implements Index<FrontendValue> {
 
 	@Override
 	public FrontendValue external(String key) {
-		final List<FrontendValue> matches = delegate.findExact(Set.of(key), 1);
+		final List<FrontendValue> matches = delegate.findExact(key, 1);
 
 		if (matches.isEmpty()) {
 			return null;
 		}
 
-		return matches.iterator().next();
+		return matches.getFirst();
 	}
 
 	@Override
@@ -88,17 +87,12 @@ public class FrontendValueIndex implements Index<FrontendValue> {
 
 		final StopWatch timer = StopWatch.createStarted();
 
-		// If no empty label was provided by the mapping, we insert the configured default-label
-		if (delegate.findExact(List.of(""), 1).isEmpty()) {
-			delegate.addItem(new FrontendValue("", defaultEmptyLabel), List.of(defaultEmptyLabel));
-		}
-
 		log.trace("DONE-FINALIZER ADDING_ITEMS in {}", timer);
 
 		timer.reset();
 		log.trace("START-FV-FIN SHRINKING");
 
-		delegate.shrinkToFit();
+		delegate.finalizeSearch();
 
 		log.trace("DONE-FV-FIN SHRINKING in {}", timer);
 

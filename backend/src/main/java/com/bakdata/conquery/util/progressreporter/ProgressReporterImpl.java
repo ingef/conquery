@@ -1,12 +1,12 @@
 package com.bakdata.conquery.util.progressreporter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
 public class ProgressReporterImpl implements ProgressReporter {
@@ -98,7 +98,7 @@ public class ProgressReporterImpl implements ProgressReporter {
 	@Override
 	public void report(int steps) {
 		if (!isStarted()) {
-			log.warn("Progress reporter was not started");
+			log.warn("Progress reporter was not started", new Exception());
 			return;
 		}
 		if (innerProgress.get() + steps > max.get()) {

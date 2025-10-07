@@ -201,7 +201,7 @@ export function TreeNode({
         treeParent?.children?.connection || tree.children?.connection;
 
       node.children = {
-        connection: connection === "and" ? "or" : "and" || "and",
+        connection: connection === "and" ? "or" : "and",
         direction: direction === "h" ? "horizontal" : "vertical",
         items: pos === "b" ? newChildren : newChildren.reverse(),
       };
