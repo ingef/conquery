@@ -123,8 +123,9 @@ public class CQTemporal extends CQElement {
 		// These aggregators will be fed with the actual aggregation results of the sub results
 		final List<ConstantValueAggregator<List>> shimAggregators = createShimAggregators(nShimAggregators);
 
+		ConceptQueryPlan indexPlan = createIndexPlan(context);
 		TemporalQueryNode queryNode = new TemporalQueryNode(context.getStorage().getDataset().getAllIdsTable(),
-															createIndexPlan(context),
+															indexPlan,
 															getIndexSelector(),
 															getMode(),
 															createCompareQueryPlan(context, true),
@@ -132,6 +133,8 @@ public class CQTemporal extends CQElement {
 															getCompareSelector(),
 															shimAggregators
 		);
+
+		indexPlan.getAggregators().stream().skip(1).forEach(plan::registerAggregator);
 
 		if (showCompareDate) {
 			plan.registerAggregator(queryNode.getCompareDateAggregator());
