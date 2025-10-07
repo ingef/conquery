@@ -566,8 +566,8 @@
     "intervalMinDays": "at least {{days}} days",
     "intervalMaxDays": "at most {{days}} days",
     "intervalMinMaxDays": "between {{minDays}} and {{maxDays}} days",
-    "BEFORE": "before",
-    "AFTER": "after",
-    "WHILE": "while"
+    "BEFORE": "has before",
+    "AFTER": "has after",
+    "WHILE": "has while"
   }
 }

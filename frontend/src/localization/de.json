@@ -566,8 +566,8 @@
     "intervalMinDays": "mindestens {{days}} Tage",
     "intervalMaxDays": "höchstens {{days}} Tage",
     "intervalMinMaxDays": "zwischen {{minDays}} und {{maxDays}} Tagen",
-    "BEFORE": "zeitlich vor",
-    "AFTER": "zeitlich nach",
-    "WHILE": "zeitlich während"
+    "BEFORE": "hat zeitlich vor",
+    "AFTER": "hat zeitlich nach",
+    "WHILE": "hat zeitlich während"
   }
 }
