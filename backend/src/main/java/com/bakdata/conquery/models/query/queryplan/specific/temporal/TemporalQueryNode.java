@@ -152,7 +152,7 @@ public class TemporalQueryNode extends QPNode {
 
 			boolean satisfies = compareSelector.satisfies(compareContained);
 
-			log.debug("{}:{} => indexPeriod={}, comparePeriods={}, compareContained={} => {}",
+			log.trace("{}:{} => indexPeriod={}, comparePeriods={}, compareContained={} => {}",
 					  getEntity(),
 					  compareSelector,
 					  indexPeriod,
@@ -174,7 +174,7 @@ public class TemporalQueryNode extends QPNode {
 
 		boolean satisfies = indexSelector.satisfies(results);
 
-		log.debug("{}:{} => indexPeriods={}, results={} => {}", getEntity(), indexSelector, indexPeriods, results, satisfies);
+		log.trace("{}:{} => indexPeriods={}, results={} => {}", getEntity(), indexSelector, indexPeriods, results, satisfies);
 
 
 		return satisfies;
