@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.validation.Valid;
 
@@ -144,14 +143,14 @@ public class CQTemporal extends CQElement {
 		return queryNode;
 	}
 
-	private ConceptQueryPlan createIndexPlan(QueryPlanContext context) {
-		return new ConceptQuery(index).createQueryPlan(context);
-	}
-
 	private static List<ConstantValueAggregator<List>> createShimAggregators(int nShimAggregators) {
 		return IntStream.range(0, nShimAggregators)
 						.mapToObj(ignored -> new ConstantValueAggregator<List>(new ArrayList<>()))
 						.toList();
+	}
+
+	private ConceptQueryPlan createIndexPlan(QueryPlanContext context) {
+		return new ConceptQuery(index).createQueryPlan(context);
 	}
 
 	private ConceptQueryPlan createCompareQueryPlan(QueryPlanContext context, boolean withAggregation) {
@@ -232,6 +231,7 @@ public class CQTemporal extends CQElement {
 
 	@Override
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
-		return index.collectRequiredEntities(context);
+		return index.collectRequiredEntities(context)
+					.intersect(compare.collectRequiredEntities(context));
 	}
 }
