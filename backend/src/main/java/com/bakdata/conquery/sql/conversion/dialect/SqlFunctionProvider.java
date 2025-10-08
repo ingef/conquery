@@ -145,6 +145,7 @@ public interface SqlFunctionProvider {
 
 	Condition likeRegex(Field<String> field, String pattern);
 
+	Field<?> emptyDateRange();
 	/**
 	 * @return The numerical year and quarter of the given date column as "yyyy-Qx" string expression with x being the quarter.
 	 */

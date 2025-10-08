@@ -287,7 +287,7 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		);
 	}
 
-	private static Field<Object> emptyDateRange() {
+	public Field<Object> emptyDateRange() {
 		return DSL.field("{0}::daterange", DSL.val("empty"));
 	}
 

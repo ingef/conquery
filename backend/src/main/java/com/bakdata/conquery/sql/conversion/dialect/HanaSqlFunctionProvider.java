@@ -359,6 +359,11 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Field<?> emptyDateRange() {
+				throw new IllegalStateException("emptyDateRange() not supported in Hana.");
+	}
+
+	@Override
 	public Field<String> yearQuarter(Field<Date> dateField) {
 		return DSL.function("QUARTER", String.class, dateField);
 	}
