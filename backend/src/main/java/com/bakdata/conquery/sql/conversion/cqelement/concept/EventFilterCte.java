@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -16,17 +17,27 @@ import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.google.common.base.Preconditions;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
+import org.jooq.Field;
 
 class EventFilterCte extends ConnectorCte {
 
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
+
+		List<Condition> conditions = new ArrayList<>();
+
+		conditions.addAll(tableContext.getIds().toFields().stream().map(Field::isNotNull).toList());
+
 		Selects eventFilterSelects = collectSelects(tableContext);
 		List<Condition> eventFilterConditions = collectEventFilterConditions(tableContext);
+
+		conditions.addAll(eventFilterConditions);
+
 		return QueryStep.builder()
 						.selects(eventFilterSelects)
-						.conditions(eventFilterConditions);
+						.conditions(conditions);
 	}
 
 	@Override
