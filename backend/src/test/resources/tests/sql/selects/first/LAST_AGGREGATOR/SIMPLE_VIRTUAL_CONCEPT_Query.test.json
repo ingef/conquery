@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "LAST_AGGREGATOR Test",
-  "expectedCsv": "tests/aggregator/LAST_AGGREGATOR/expected.csv",
+  "expectedCsv": "tests/sql/selects/first/LAST_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
