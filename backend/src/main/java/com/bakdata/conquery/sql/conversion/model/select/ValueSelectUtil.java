@@ -35,50 +35,73 @@ class ValueSelectUtil {
 			SelectContext<ConnectorSqlTables> selectContext) {
 
 
+
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(selectContext.getTables().getRootTable(), column.getName(), Object.class);
-
-		String predecessor = selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
-
-		List<Field<?>> validityDateFields =
-				selectContext.getValidityDate().map(dateRange -> dateRange.qualify(predecessor))
-							 .map(ColumnDateRange::toFields).orElse(Collections.emptyList());
-
-
-		Field<?> qualifiedRootSelect = rootSelect.qualify(predecessor).select();
-
-		List<Field<?>> ids = selectContext.getIds().qualify(predecessor).toFields();
-
-		Table<Record> predecessorTable = table(name(predecessor));
 
 		// create a CTE, that per row makes a window calculation to select for the rank of the validity date.
 		// Further down below, we select the values with rank=1, which is FIRST/LAST depending on sort order supplied by the creator.
 
-		QueryStep rowNumberStep = QueryStep.builder()
-										   .selects(Selects.builder()
-														   .ids(selectContext.getIds().qualify(null))
-														   .sqlSelects(List.of(
-																   new FieldWrapper<>(qualifiedRootSelect.as(alias), qualifiedRootSelect.getName()),
-																   new FieldWrapper<>(rowNumber().over(partitionBy(ids)
-																											   .orderBy(getOrdering(ordering,
-																																	validityDateFields,
-																																	ids,
-																																	selectContext.getFunctionProvider()
-																														)
-																											   )
+		QueryStep rowNumberStep =
+				buildRowNumberStep(rootSelect, ordering, alias, selectContext);
 
-																   ).as("row-number"),
-																					  new String[0]
-																		   // If I don't supply it, "row-number" is requested for event-filter CTE
-																   )
-														   ))
-														   .build())
-										   .cteName(ValueSelectCteStep.ROW_NUMBER_STEP.cteName(alias))
-										   .conditions(List.of(qualifiedRootSelect.isNotNull()))
-										   .fromTable(predecessorTable)
-										   .build();
+		QueryStep rowFilterStep = buildRowFilterStep(rowNumberStep, alias, selectContext);
 
+		SqlSelect finalSelect = rowFilterStep.getQualifiedSelects().getSqlSelects().getFirst();
+
+		FieldWrapper<SqlSelect> aggregationSelect =
+				new FieldWrapper<>(field(coalesce(finalSelect.qualify(ValueSelectCteStep.ROW_SELECT_STEP.cteName(alias)))).as(alias), column.getName());
+
+		//TODO to get stratification working, i need to do the row-numbering as an aggregation select.
+
+		return ConnectorSqlSelects.builder()
+								  .additionalPredecessor(Optional.of(rowFilterStep))
+								  .preprocessingSelect(rootSelect)
+								  .finalSelect(aggregationSelect).build();
+	}
+
+	private static QueryStep buildRowNumberStep(
+			ExtractingSqlSelect<?> rootSelect, Function<Field<?>, ? extends SortField<?>> ordering, String alias,
+			SelectContext<ConnectorSqlTables> selectContext) {
+
+		String predecessor = selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
+
+
+		Field<?> qualifiedRootSelect = rootSelect.qualify(predecessor).select();
+		List<Field<?>> ids = selectContext.getIds().qualify(predecessor).toFields();
+		Table<Record> predecessorTable = table(name(predecessor));
+
+		List<Field<?>> validityDateFields =
+				selectContext.getValidityDate().map(dateRange -> dateRange.qualify(predecessor))
+							 .map(ColumnDateRange::toFields)
+							 .orElse(Collections.emptyList());
+
+		return QueryStep.builder()
+						.selects(Selects.builder()
+										.ids(selectContext.getIds().qualify(null))
+										.sqlSelects(List.of(
+												new FieldWrapper<>(qualifiedRootSelect.as(alias), qualifiedRootSelect.getName()),
+												new FieldWrapper<>(rowNumber().over(partitionBy(ids)
+																							.orderBy(getOrdering(ordering,
+																												 validityDateFields,
+																												 ids,
+																												 selectContext.getFunctionProvider()
+																									 )
+																							)
+
+												).as("row-number"),
+																   new String[0] // If I don't supply it, "row-number" is requested for event-filter CTE
+
+												)
+										))
+										.build())
+						.cteName(ValueSelectCteStep.ROW_NUMBER_STEP.cteName(alias))
+						.conditions(List.of(qualifiedRootSelect.isNotNull()))
+						.fromTable(predecessorTable)
+						.build();
+	}
+
+	private static QueryStep buildRowFilterStep(QueryStep rowNumberStep, String alias, SelectContext<ConnectorSqlTables> selectContext) {
 		Field<Object> rowNumber = field(name("row-number"));
-
 
 		SelectConditionStep<Record> coalesced =
 				select(selectContext.getIds().qualify(null).toFields())
@@ -87,24 +110,15 @@ class ValueSelectUtil {
 									  .as("select-result"))
 						.where(or(rowNumber.equal(val(1)), rowNumber.isNull()));
 
-		QueryStep rowFilterStep = QueryStep.builder()
-										   .predecessor(rowNumberStep)
-										   .selects(Selects.builder()
-														   .ids(selectContext.getIds().qualify(null))
-														   .sqlSelects(List.of(new FieldWrapper<>(coalesced.field(alias))))
-														   .build())
-										   .cteName(ValueSelectCteStep.ROW_SELECT_STEP.cteName(alias))
-										   .fromTable(coalesced)
-										   .build();
-
-
-		SqlSelect finalSelect = rowFilterStep.getQualifiedSelects().getSqlSelects().getFirst();
-
-
-		FieldWrapper<SqlSelect> aggregationSelect =
-				new FieldWrapper<>(field(coalesce(finalSelect.qualify(ValueSelectCteStep.ROW_SELECT_STEP.cteName(alias)))).as(alias), column.getName());
-
-		return ConnectorSqlSelects.builder().additionalPredecessor(Optional.of(rowFilterStep)).preprocessingSelect(rootSelect).finalSelect(aggregationSelect).build();
+		return QueryStep.builder()
+						.predecessor(rowNumberStep)
+						.selects(Selects.builder()
+										.ids(selectContext.getIds().qualify(null))
+										.sqlSelects(List.of(new FieldWrapper<>(coalesced.field(alias))))
+										.build())
+						.cteName(ValueSelectCteStep.ROW_SELECT_STEP.cteName(alias))
+						.fromTable(coalesced)
+						.build();
 	}
 
 	@NotNull
