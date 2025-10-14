@@ -101,7 +101,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 				// The empty string results from `No V*a*lue` and `..Def*au*lt..`
 
 				assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
-						.containsExactly("a", "aab", "aaa", "male", "" /* `No V*a*lue` :^) */, "female", "baaa");
+						.containsExactly("a", "aab", "aaa", "male", "female", "baaa");
 
 			}
 		}
@@ -121,7 +121,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 				//check the resolved values
 				assertThat(resolvedFromValues.values().stream().map(FrontendValue::getValue))
-						.containsExactly("f", "female", "fm", "");
+						.containsExactly("f", "female", "fm");
 			}
 		}
 
@@ -139,7 +139,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 				final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 				// This is probably the insertion order
 				assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
-						.containsExactlyInAnyOrder("", "aaa", "a", "aab", "b", "baaa", "female", "male", "f", "fm", "m", "mf");
+						.containsExactlyInAnyOrder("","aaa", "a", "aab", "b", "baaa", "female", "male", "f", "fm", "m", "mf");
 			}
 		}
 	}
@@ -164,7 +164,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		Stream<Concept<?>> allConcepts = namespaceStorage.getAllConcepts();
 		final Concept<?> concept = allConcepts.filter(c -> c.getName().equals("geschlecht_select")).findFirst().orElseThrow();
 		allConcepts.close();
-		final Connector connector = concept.getConnectors().iterator().next();
+		final Connector connector = concept.getConnectors().getFirst();
 		final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
 
 		// Copy search csv from resources to tmp folder.
@@ -181,7 +181,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 		final FilterTemplate
 				filterTemplate =
-				new FilterTemplate(tmpCsv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService);
+				new FilterTemplate(tmpCsv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService, conquery.getConfig());
 
 		filterTemplate.setDataset(conquery.getDataset());
 		filterTemplate.setName("test");

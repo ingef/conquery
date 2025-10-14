@@ -52,8 +52,7 @@ public class IndexServiceTest {
 	private final IndexService indexService = new IndexService(new CsvParserSettings(), "emptyDefaultLabel");
 
 	@SneakyThrows(IOException.class)
-	private static void initRefServer(ClientAndServer mockServer) {
-		log.info("Test loading of mapping");
+	public static void initRefServer(ClientAndServer mockServer) {
 
 		try (InputStream inputStream = LoadingUtil.openResource(MAPPING_PATH)) {
 			mockServer.when(request().withPath("/mapping.csv"))

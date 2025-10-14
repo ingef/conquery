@@ -24,7 +24,7 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.head_ref }}
           submodules: true
@@ -32,6 +32,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: 21
+          distribution: temurin
       - name: Build Backend
         run: mvn install -T 1C -DskipTests -pl '!executable'
       - name: Run AutoDoc

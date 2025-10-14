@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import com.bakdata.conquery.util.search.internal.TrieSearch;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +18,7 @@ class QuickSearchTest {
 			search.addItem(item, List.of(item));
 		}
 
-		search.shrinkToFit();
+		search.finalizeSearch();
 
 		String query = "anaconda";
 		final List<String> results = search.findItems(List.of(query), Integer.MAX_VALUE);
@@ -44,7 +45,7 @@ class QuickSearchTest {
 			search.addItem(item, List.of(item));
 		}
 
-		search.shrinkToFit();
+		search.finalizeSearch();
 
 		String query = "pants";
 		final List<String> results = search.findItems(List.of(query), Integer.MAX_VALUE);
@@ -92,7 +93,7 @@ class QuickSearchTest {
 		for (String item : items) {
 			search.addItem(item, List.of(item));
 		}
-		search.shrinkToFit();
+		search.finalizeSearch();
 		return search;
 	}
 

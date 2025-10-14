@@ -172,8 +172,8 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
       !nodeIsConceptQueryNode(node)
         ? node.label || node.id
         : autoLabelEnabled && autoLabel && node.ids.length > 1
-        ? autoLabel
-        : node.label,
+          ? autoLabel
+          : node.label,
     [autoLabel, autoLabelEnabled, node],
   );
 

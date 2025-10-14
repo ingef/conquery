@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -71,7 +72,7 @@ public class Table extends LabeledNamespaceIdentifiable<TableId> implements Init
 	private Column primaryColumn;
 
 	@JsonView(View.InternalCommunication.class)
-	@Setter(AccessLevel.PRIVATE)
+	@Setter(value = AccessLevel.PUBLIC, onMethod_ = @VisibleForTesting)
 	private DatasetId dataset;
 
 

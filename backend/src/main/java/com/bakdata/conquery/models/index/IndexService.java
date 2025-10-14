@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.util.io.LogUtil;
+import com.bakdata.conquery.util.search.solr.FilterValueSearch;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Functions;
 import com.google.common.cache.CacheBuilder;
@@ -38,6 +40,11 @@ public class IndexService implements Injectable {
 	private final CsvParserSettings csvParserSettings;
 	private final String emptyDefaultLabel;
 
+	/** TODO
+	 * We use the {@link IndexService} not only for the {@link InternToExternMapper} anymore, but also to index the {@link FilterValueSearch}.
+	 * The Index interface offers methods, that are only relevant for the {@link InternToExternMapper} like {@link Index#external(String)}.
+	 * We should clean this up and split the async CSV parsing from the index functionality.
+	 */
 	private final LoadingCache<IndexKey, Index<?>> mappings = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<>() {
 		@NotNull
 		@Override
@@ -81,7 +88,7 @@ public class IndexService implements Injectable {
 					catch (IllegalArgumentException e) {
 						log.warn("Skipping mapping '{}'->'{}' in row {}, because there was already a mapping",
 								 internalValue, externalValue, csvParser.getContext().currentLine(),
-								 (Exception) (log.isTraceEnabled() ? e : null) // Cast to Exception to satisfy format-string check
+								 LogUtil.passExceptionOnTrace(log,e)
 						);
 					}
 				}
@@ -148,7 +155,7 @@ public class IndexService implements Injectable {
 
 	/**
 	 * Returns an index mapping from the information in the given key.
-	 * If the index is not yet present, it is loaded.
+	 * If the index is not yet present, it is loaded.<
 	 * <p/>
 	 * @param key the key describing the requested index
 	 * @return the index mapping
