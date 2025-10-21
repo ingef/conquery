@@ -32,6 +32,7 @@ import com.bakdata.conquery.models.query.resultinfo.FixedLabelResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.ListResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Data;
 import lombok.Setter;
 
@@ -109,7 +110,7 @@ public class CQTemporal extends CQElement {
 	private boolean showCompareDate;
 
 
-	@View.Internal
+	@JsonView(View.InternalCommunication.class)
 	private int nShimAggregators = -1;
 
 
