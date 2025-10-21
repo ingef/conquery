@@ -6,21 +6,24 @@
 // Some keys are added (e.g. the query type attribute)
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
-import { EditorV2Query,Tree,TreeChildrenTime } from "../editor-v2/types";
+import { EditorV2Query, Tree, TreeChildrenTime } from "../editor-v2/types";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { isLabelPristine } from "../standard-query-editor/helper";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type {
-DragItemConceptTreeNode,
-FilterWithValueType,
-SelectedDateColumnT,
-SelectedSelectorT,
-StandardQueryNodeT,
-TableWithFilterValueT,
+  DragItemConceptTreeNode,
+  FilterWithValueType,
+  SelectedDateColumnT,
+  SelectedSelectorT,
+  StandardQueryNodeT,
+  TableWithFilterValueT,
 } from "../standard-query-editor/types";
-import type { ValidatedTimebasedConditionT,ValidatedTimebasedQueryStateT,} from "../timebased-query-editor/reducer";
+import type {
+  ValidatedTimebasedConditionT,
+  ValidatedTimebasedQueryStateT,
+} from "../timebased-query-editor/reducer";
 
-import { ConceptIdT,DateRangeT } from "./types";
+import { ConceptIdT, DateRangeT } from "./types";
 
 export const transformFilterValueToApi = (
   filter: FilterWithValueType,
@@ -37,8 +40,8 @@ export const transformFilterValueToApi = (
       return !exists(filter.mode) || filter.mode === "range"
         ? filter.value
         : filter.value
-        ? { min: filter.value.exact, max: filter.value.exact }
-        : null;
+          ? { min: filter.value.exact, max: filter.value.exact }
+          : null;
     case "SELECT":
       return filter.value;
   }
@@ -260,7 +263,6 @@ const transformTreeToApi = (tree: Tree): unknown => {
         break;
       case "time":
         const timeNode = tree.children as TreeChildrenTime;
-
 
         node = {
           type: "TEMPORAL",
