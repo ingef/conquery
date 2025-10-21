@@ -2,7 +2,7 @@ package com.bakdata.conquery.sql.conversion.forms;
 
 import java.sql.Date;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
+import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
 import com.bakdata.conquery.sql.conversion.SharedAliases;

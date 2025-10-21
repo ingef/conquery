@@ -45,5 +45,9 @@ public interface ResultHeadersC10n {
 	@De("{0} andere")
 	String others(long count);
 
+	@En("{0} - Compare Dates")
+	@De("{0} - Vergleichszeitraum")
+	String temporalCompareLabel(String indexName);
+
 
 }

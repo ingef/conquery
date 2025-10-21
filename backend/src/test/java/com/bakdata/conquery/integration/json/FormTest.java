@@ -15,6 +15,7 @@ import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -93,7 +94,7 @@ public class FormTest extends ConqueryTestSpec {
 	}
 
 	private Form parseForm(StandaloneSupport support) throws IOException {
-		return parseSubTree(support, rawForm, Form.class, false);
+		return LoadingUtil.parseSubTree(support, rawForm, Form.class, false);
 	}
 
 	private void checkResults(StandaloneSupport standaloneSupport, ManagedInternalForm<?> managedForm, User user) throws IOException {
