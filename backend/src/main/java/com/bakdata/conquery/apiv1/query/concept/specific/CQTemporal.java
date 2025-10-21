@@ -30,8 +30,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalRel
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalSelector;
 import com.bakdata.conquery.models.query.resultinfo.FixedLabelResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
-import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
+import com.bakdata.conquery.models.query.resultinfo.printers.common.ListResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Data;
 import lombok.Setter;
@@ -66,8 +65,6 @@ import lombok.Setter;
  * => All sub-periods of Concept A are included, if the earliest sub-period of Concept B is 10 days before it.
  * <p>
  * <hr />
- *
- * @implNote Index/Compare may be swapped by mode, if the specific element is necessary, always use getIndexQuery/getCompareQuery.
  */
 @Data
 @CPSType(id = "TEMPORAL", base = CQElement.class)
@@ -195,35 +192,7 @@ public class CQTemporal extends CQElement {
 
 		for (ResultInfo resultInfo : compare.getResultInfos()) {
 			// Wrap resultInfo in ListT
-			ResultInfo listWrapper = new ResultInfo(resultInfo.getSemantics()) {
-
-				@Override
-				public String userColumnName(PrintSettings printSettings) {
-					return resultInfo.userColumnName(printSettings);
-				}
-
-				@Override
-				public String defaultColumnName(PrintSettings printSettings) {
-					return resultInfo.defaultColumnName(printSettings);
-				}
-
-				@Override
-				public ResultType getType() {
-					return new ResultType.ListT<>(resultInfo.getType());
-				}
-
-				@Override
-				public String getDescription() {
-					return resultInfo.getDescription();
-				}
-
-				@Override
-				public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
-					return printerFactory.getListPrinter(resultInfo.createPrinter(printerFactory, printSettings), printSettings);
-				}
-			};
-
-			resultInfos.add(listWrapper);
+			resultInfos.add(new ListResultInfo(resultInfo));
 		}
 
 		return resultInfos;
@@ -234,4 +203,5 @@ public class CQTemporal extends CQElement {
 		return index.collectRequiredEntities(context)
 					.intersect(compare.collectRequiredEntities(context));
 	}
+
 }
