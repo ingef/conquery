@@ -16,6 +16,7 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +34,6 @@ class ValueSelectUtil {
 			String alias,
 			Function<Field<?>, ? extends SortField<?>> ordering,
 			SelectContext<ConnectorSqlTables> selectContext) {
-
 
 
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(selectContext.getTables().getRootTable(), column.getName(), Object.class);
@@ -56,7 +56,8 @@ class ValueSelectUtil {
 		return ConnectorSqlSelects.builder()
 								  .additionalPredecessor(Optional.of(rowFilterStep))
 								  .preprocessingSelect(rootSelect)
-								  .finalSelect(aggregationSelect).build();
+								  .finalSelect(aggregationSelect)
+								  .build();
 	}
 
 	private static QueryStep buildRowNumberStep(
@@ -93,6 +94,7 @@ class ValueSelectUtil {
 
 												)
 										))
+										 .stratificationDate(selectContext.getValidityDate())
 										.build())
 						.cteName(ValueSelectCteStep.ROW_NUMBER_STEP.cteName(alias))
 						.conditions(List.of(qualifiedRootSelect.isNotNull()))
