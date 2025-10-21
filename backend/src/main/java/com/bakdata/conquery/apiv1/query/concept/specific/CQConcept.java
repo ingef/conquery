@@ -185,7 +185,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		final List<QPNode> tableNodes = new ArrayList<>();
 		for (CQTable table : tables) {
 
-			final List<FilterNode<?>> filters = createFilters(table, context);
+			final List<FilterNode<?>> filters = createFilters(table, context.isDisableAggregationFilters());
 
 			//add filter to children
 
@@ -266,11 +266,11 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 					  .collect(Collectors.toList());
 	}
 
-	private static List<FilterNode<?>> createFilters(CQTable table, QueryPlanContext context) {
+	private static List<FilterNode<?>> createFilters(CQTable table, boolean disableAggregationFilters) {
 		Stream<? extends FilterNode<?>> filterNodes = table.getFilters().stream()
 														   .map(FilterValue::createNode);
 
-		if (context.isDisableAggregationFilters()) {
+		if (disableAggregationFilters) {
 			return filterNodes
 					.filter(filterNode -> !(filterNode instanceof AggregationResultFilterNode))
 					.collect(Collectors.toList());

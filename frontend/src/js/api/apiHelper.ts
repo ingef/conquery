@@ -6,24 +6,21 @@
 // Some keys are added (e.g. the query type attribute)
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
-import { EditorV2Query, Tree, TreeChildrenTime } from "../editor-v2/types";
+import { EditorV2Query,Tree,TreeChildrenTime } from "../editor-v2/types";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { isLabelPristine } from "../standard-query-editor/helper";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type {
-  DragItemConceptTreeNode,
-  FilterWithValueType,
-  SelectedDateColumnT,
-  SelectedSelectorT,
-  StandardQueryNodeT,
-  TableWithFilterValueT,
+DragItemConceptTreeNode,
+FilterWithValueType,
+SelectedDateColumnT,
+SelectedSelectorT,
+StandardQueryNodeT,
+TableWithFilterValueT,
 } from "../standard-query-editor/types";
-import type {
-  ValidatedTimebasedConditionT,
-  ValidatedTimebasedQueryStateT,
-} from "../timebased-query-editor/reducer";
+import type { ValidatedTimebasedConditionT,ValidatedTimebasedQueryStateT,} from "../timebased-query-editor/reducer";
 
-import { ConceptIdT, DateRangeT } from "./types";
+import { ConceptIdT,DateRangeT } from "./types";
 
 export const transformFilterValueToApi = (
   filter: FilterWithValueType,
@@ -40,8 +37,8 @@ export const transformFilterValueToApi = (
       return !exists(filter.mode) || filter.mode === "range"
         ? filter.value
         : filter.value
-          ? { min: filter.value.exact, max: filter.value.exact }
-          : null;
+        ? { min: filter.value.exact, max: filter.value.exact }
+        : null;
     case "SELECT":
       return filter.value;
   }
@@ -210,6 +207,29 @@ const transformTimebasedQueryToApi = (query: ValidatedTimebasedQueryStateT) =>
     ),
   );
 
+const createTimeMode = (timeNode: TreeChildrenTime) => {
+  switch (timeNode.operator) {
+    case "AFTER":
+    case "BEFORE":
+      if (!timeNode.interval) {
+        return {
+          type: timeNode.operator,
+          days: { min: undefined, max: undefined },
+        };
+      }
+
+      return {
+        type: timeNode.operator,
+        days: {
+          min: timeNode.interval.min === null ? 1 : timeNode.interval.min,
+          max:
+            timeNode.interval.max === null ? undefined : timeNode.interval.max,
+        },
+      };
+    case "WHILE":
+      return { type: "WHILE" };
+  }
+};
 const transformTreeToApi = (tree: Tree): unknown => {
   let dateRestriction;
   if (tree.dates?.restriction) {
@@ -240,35 +260,11 @@ const transformTreeToApi = (tree: Tree): unknown => {
         break;
       case "time":
         const timeNode = tree.children as TreeChildrenTime;
-        let mode;
 
-        switch (timeNode.operator) {
-          case "AFTER":
-          case "BEFORE":
-            mode = {
-              type: timeNode.operator,
-              days: {
-                min: timeNode.interval
-                  ? timeNode.interval.min === null
-                    ? 1
-                    : timeNode.interval.min
-                  : undefined,
-                max: timeNode.interval
-                  ? timeNode.interval.max === null
-                    ? undefined
-                    : timeNode.interval.max
-                  : undefined,
-              },
-            };
-            break;
-          case "WHILE":
-            mode = { type: "WHILE" };
-            break;
-        }
 
         node = {
           type: "TEMPORAL",
-          mode: mode,
+          mode: createTimeMode(timeNode),
           index: transformTreeToApi(tree.children.items[0]),
           indexSelector: timeNode.timestamps[0],
           compare: transformTreeToApi(tree.children.items[1]),

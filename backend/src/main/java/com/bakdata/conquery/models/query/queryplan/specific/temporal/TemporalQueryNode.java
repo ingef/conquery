@@ -20,6 +20,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * We evaluate indexQueryPlan to test for inclusion, then use the date-result to evaluate compareQuery. All contiguous dates are combined to a single period.
+ */
 @EqualsAndHashCode(callSuper = false)
 @Slf4j
 @Data
@@ -30,17 +33,31 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	private final Table table;
 
+	/**
+	 * Query to select entities and periods to evaluate compareQuery against.
+	 */
 	private final ConceptQueryPlan indexQueryPlan;
 	private final TemporalSelector indexSelector;
 	private final TemporalRelationMode indexMode;
 
+	/**
+	 * Compare Query to aggregate potentially satisfying periods. Sub results will be fed into innerCompareQueryPlan.
+	 *
+	 * @implSpec This may not have aggregationFilters enabled as those will interfere with correctness.
+	 */
 	private final ConceptQueryPlan outerCompareQueryPlan;
+
+	/**
+	 * Compare Query to compute results with aggregation-Filters and Aggregators enabled.
+	 * < br/>
+	 * Will be evaluated with sub-periods of outerCompareQueryPlan as date-restriction.
+	 */
 	private final ConceptQueryPlan innerCompareQueryPlan;
 
 	private final TemporalSelector compareSelector;
 
 
-	private final List<ConstantValueAggregator<List>> aggregationResults;
+	private final List<ConstantValueAggregator<List<Object>>> aggregationResults;
 	private final ConstantValueAggregator<CDateSet> compareDateAggregator = new ConstantValueAggregator<>(null);
 	private final ConstantValueAggregator<CDateSet> indexDateAggregator = new ConstantValueAggregator<>(null);
 
@@ -60,7 +77,7 @@ public class TemporalQueryNode extends QPNode {
 		outerCompareQueryPlan.init(context, entity);
 		innerCompareQueryPlan.init(context, entity);
 
-		aggregationResults.forEach(agg -> agg.setValue(new ArrayList()));
+		aggregationResults.forEach(agg -> agg.setValue(new ArrayList<>()));
 
 		indexDateResult = CDateSet.createEmpty();
 		compareDateResult = CDateSet.createEmpty();
@@ -79,11 +96,12 @@ public class TemporalQueryNode extends QPNode {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return indexQueryPlan.isOfInterest(entity);
+		return indexQueryPlan.isOfInterest(entity) && innerCompareQueryPlan.isOfInterest(entity);
 	}
 
 	@Override
 	public boolean acceptEvent(Bucket bucket, int event) {
+		// Since this is evaluated by the AllIds table, this should be executed only once.
 		if (hit) {
 			return false;
 		}
@@ -101,7 +119,7 @@ public class TemporalQueryNode extends QPNode {
 	 * Use result-dates with selector and mode to evaluate outerCompareQueryPlan, which produces subPeriods, to evaluate innerCompareQueryPlan.
 	 * <br />
 	 * outer- and innerCompareQueryPlan are identical, except that outer has all aggregations disabled, we are only interested in the periods, where inner _might_ be true.
-	 * Outer is evaluated with aggregations, to produce correct results.
+	 * Inner is evaluated with aggregations.
 	 * <br />
 	 * mode and selector filter periods to the relevant timestamps and eventually determine if an entity is included or not.
 	 */
@@ -146,7 +164,9 @@ public class TemporalQueryNode extends QPNode {
 
 				if (compareContained[inner]) {
 					compareDates[inner] = innerCompareQueryPlan.getDateAggregator().createAggregationResult();
-					compareAggregationResults[inner] = innerCompareQueryPlan.getAggregators().stream().skip(1).map(Aggregator::createAggregationResult).toArray();
+					compareAggregationResults[inner] = innerCompareQueryPlan.getAggregators().stream()
+																			.skip(1) // Skip the result-date
+																			.map(Aggregator::createAggregationResult).toArray();
 				}
 			}
 
