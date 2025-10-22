@@ -19,7 +19,6 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -55,7 +54,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 
 		final DatasetId dataset = conquery.getDataset();
 
-		final ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
+		final ConqueryTestSpec test = ConqueryTestSpec.readJson(dataset, testJson);
 
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 

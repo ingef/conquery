@@ -20,7 +20,7 @@ import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -57,7 +57,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		final DatasetId dataset = conquery.getDataset();
 
-		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
+		final QueryTest test = ConqueryTestSpec.readJson(dataset, testJson);
 
 		final Range<LocalDate> dateRange = Range.of(LocalDate.of(2010, 1, 11), LocalDate.of(2022, 12, 31));
 

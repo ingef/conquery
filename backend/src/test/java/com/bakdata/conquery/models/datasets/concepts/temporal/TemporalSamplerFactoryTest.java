@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.temporal;
 
-import static com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory.*;
+import static com.bakdata.conquery.apiv1.query.TemporalSamplerFactory.*;
 import static com.bakdata.conquery.models.common.CDate.ofLocalDate;
 import static com.bakdata.conquery.models.common.daterange.CDateRange.*;
 import static org.assertj.core.api.Assertions.assertThat;

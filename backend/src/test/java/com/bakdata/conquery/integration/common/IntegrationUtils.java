@@ -18,7 +18,6 @@ import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.query.Query;
-import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.events.Bucket;
@@ -44,7 +43,7 @@ public class IntegrationUtils {
 
 
 	public static Query parseQuery(StandaloneSupport support, JsonNode rawQuery) throws JSONException, IOException {
-		return ConqueryTestSpec.parseSubTree(support, rawQuery, Query.class, false);
+		return LoadingUtil.parseSubTree(support, rawQuery, Query.class, false);
 	}
 
 	/**

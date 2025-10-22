@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.TestTags;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.integration.json.WorkerTestDataImporter;
@@ -204,18 +205,18 @@ public class IntegrationTests {
 	}
 
 	private Optional<DynamicTest> readTest(Resource resource, String name, TestDataImporter testImporter, Dialect sqlDialect) {
-		try (InputStream in = resource.open()) {
-			JsonIntegrationTest test = new JsonIntegrationTest(in);
-			if (test.getTestSpec().isEnabled(sqlDialect)) {
-				return Optional.of(wrapTest(resource, name, test, testImporter));
+		try {
+			ConqueryTestSpec conqueryTestSpec = ConqueryTestSpec.fromResource(resource);
+			JsonIntegrationTest test = new JsonIntegrationTest(conqueryTestSpec);
+
+			if (!test.getTestSpec().isEnabled(sqlDialect)) {
+				return Optional.empty();
 			}
-			return Optional.empty();
+
+			return Optional.of(wrapTest(resource, name, test, testImporter));
 		}
 		catch (Exception e) {
 			return Optional.of(wrapError(resource, name, e));
-		}
-		finally {
-			resource.close();
 		}
 	}
 

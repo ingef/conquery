@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 import java.time.LocalDate;
 import java.util.OptionalInt;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
+import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.QuarterUtils;

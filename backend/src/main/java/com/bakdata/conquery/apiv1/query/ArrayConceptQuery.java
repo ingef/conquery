@@ -81,7 +81,7 @@ public class ArrayConceptQuery extends Query {
 	public ArrayConceptQueryPlan createQueryPlan(QueryPlanContext context) {
 		// Make sure the constructor and the adding is called with the same context.
 		ArrayConceptQueryPlan aq = new ArrayConceptQueryPlan(resolvedDateAggregationMode != DateAggregationMode.NONE);
-		aq.addChildPlans(childQueries, context);
+		aq.addChildQueries(childQueries, context);
 		return aq;
 	}
 

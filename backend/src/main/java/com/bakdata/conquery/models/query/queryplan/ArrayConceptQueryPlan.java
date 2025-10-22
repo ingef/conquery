@@ -56,7 +56,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 	 * @param context      Primarily used to decide if a SpecialDateUnion needs to be
 	 *                     generated.
 	 */
-	public void addChildPlans(List<ConceptQuery> childQueries, QueryPlanContext context) {
+	public void addChildQueries(List<ConceptQuery> childQueries, QueryPlanContext context) {
 
 		childPlans = new ArrayList<>();
 		for (ConceptQuery child : childQueries) {
