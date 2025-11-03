@@ -15,6 +15,7 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.integration.json.AbstractQueryEngineTest;
@@ -88,7 +89,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		((ObjectNode) rawContent.get("tables")).put("name", TABLE_NAME);
 
-		content = parseSubTree(support, rawContent, RequiredData.class, false);
+		content = LoadingUtil.parseSubTree(support, rawContent, RequiredData.class, false);
 
 		concept = new TreeConcept();
 		concept.setLabel(CONCEPT_LABEL);
@@ -116,7 +117,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		}
 
 
-		FilterValue<?> result = parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class), true);
+		FilterValue<?> result = LoadingUtil.parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class), true);
 
 		CQTable cqTable = new CQTable();
 

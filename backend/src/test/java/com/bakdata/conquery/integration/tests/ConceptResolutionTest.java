@@ -15,7 +15,6 @@ import jakarta.ws.rs.core.Response;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -38,7 +37,7 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 
 		DatasetId dataset = conquery.getDataset();
 
-		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
+		ConqueryTestSpec test = ConqueryTestSpec.readJson(dataset, testJson);
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
 		test.importRequiredData(conquery);
