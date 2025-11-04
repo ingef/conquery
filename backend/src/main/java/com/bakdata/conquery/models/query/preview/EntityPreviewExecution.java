@@ -155,13 +155,14 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
 		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults(OptionalLong.empty()).collect(MoreCollectors.onlyElement());
-		final Object[] values = result.getValues().get(0);
+		final Object[] values = result.getValues().getFirst();
 
 		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
 
 		// We are only interested in the Select results.
-		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.collectResultInfos().size(); index++) {
-			final ResultInfo resultInfo = infoCardExecution.collectResultInfos().get(index);
+		List<ResultInfo> resultInfos = infoCardExecution.collectResultInfos();
+		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < resultInfos.size(); index++) {
+			final ResultInfo resultInfo = resultInfos.get(index);
 
 			final Object value = values[index];
 			final Object printed;
@@ -347,7 +348,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			}
 
 			// Since we know the dates are always aligned we need to only respect their starts.
-			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
+			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).getFirst());
 
 			final int year = date.getYear();
 
@@ -369,7 +370,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			}
 
 			// Since we know the dates are always aligned we need to only respect their starts.
-			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
+			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).getFirst());
 
 			final int year = date.getYear();
 			final int quarter = QuarterUtils.getQuarter(date);
