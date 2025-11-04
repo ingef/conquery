@@ -132,8 +132,8 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	 * Creates a default label based on the submitted {@link QueryDescription}.
 	 * The Label is customized by mentioning that a description contained a
 	 * {@link CQExternal}, {@link CQReusedQuery} or {@link CQConcept}, in this order.
-	 * In case of one ore more {@link CQConcept} the distinct labels of the concepts are chosen
-	 * and concatinated until a length of MAX_CONCEPT_LABEL_CONCAT_LENGTH is reached.
+	 * In case of one or more {@link CQConcept} the distinct labels of the concepts are chosen
+	 * and concatenated until a length of MAX_CONCEPT_LABEL_CONCAT_LENGTH is reached.
 	 * All further labels are dropped.
 	 */
 	@Override

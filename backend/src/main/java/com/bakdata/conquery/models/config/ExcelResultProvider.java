@@ -74,6 +74,11 @@ public class ExcelResultProvider implements ResultRendererProvider {
 		// Save id column count to later check if xlsx dimensions are feasible
 		idColumnsCount = exec.getConfig().getIdColumns().getIdResultInfos().size();
 
+		// Ensure that the execution is initialized before calling ManagedExecution#getResultInfos
+		// The execution result may exist in the ExecutionManager but the execution itself comes from the
+		// storage cache and might was GCed/uninitialized in the meantime.
+		//
+		exec.initExecutable();
 		final int columnCount = singleExecution.getResultInfos().size() + idColumnsCount;
 		final int maxColumnCount = SpreadsheetVersion.EXCEL2007.getMaxColumns();
 		if (columnCount > maxColumnCount) {
