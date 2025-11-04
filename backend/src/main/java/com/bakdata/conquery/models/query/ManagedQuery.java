@@ -117,9 +117,16 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@JsonIgnore
-	public List<ResultInfo> getResultInfos() {
+	public List<ResultInfo> collectResultInfos() {
 		Preconditions.checkState(isInitialized());
 		return query.getResultInfos();
+	}
+
+	@Override
+	@JsonIgnore
+	public List<ResultInfo> getResultInfos() {
+		ExecutionManager.InternalExecutionInfo executionInfo = getNamespace().getExecutionManager().getExecutionInfo(getId());
+		return executionInfo.getResultInfos();
 	}
 
 	@Override

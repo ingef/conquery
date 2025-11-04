@@ -117,7 +117,7 @@ public class ParquetResultGenerationTest {
 
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		ParquetRenderer.writeToStream(output, getIdFields(), managedQuery.getResultInfos(), printSettings, managedQuery.streamResults(OptionalLong.empty()));
+		ParquetRenderer.writeToStream(output, getIdFields(), managedQuery.collectResultInfos(), printSettings, managedQuery.streamResults(OptionalLong.empty()));
 
 		final byte[] buf = output.toByteArray();
 
@@ -139,7 +139,7 @@ public class ParquetResultGenerationTest {
 
 		log.info("\n{}", actual);
 
-		assertThat(actual).isEqualTo(ArrowResultGenerationTest.generateExpectedTSV(results, managedQuery.getResultInfos()));
+		assertThat(actual).isEqualTo(ArrowResultGenerationTest.generateExpectedTSV(results, managedQuery.collectResultInfos()));
 
 	}
 
