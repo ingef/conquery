@@ -1,12 +1,15 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import static org.jooq.impl.DSL.*;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
+import static org.jooq.impl.DSL.coalesce;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
+import static org.jooq.impl.DSL.nullif;
+import static org.jooq.impl.DSL.or;
+import static org.jooq.impl.DSL.partitionBy;
+import static org.jooq.impl.DSL.rowNumber;
+import static org.jooq.impl.DSL.select;
+import static org.jooq.impl.DSL.table;
+import static org.jooq.impl.DSL.val;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
@@ -16,7 +19,11 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -94,7 +101,6 @@ class ValueSelectUtil {
 
 												)
 										))
-										 .stratificationDate(selectContext.getValidityDate())
 										.build())
 						.cteName(ValueSelectCteStep.ROW_NUMBER_STEP.cteName(alias))
 						.conditions(List.of(qualifiedRootSelect.isNotNull()))
