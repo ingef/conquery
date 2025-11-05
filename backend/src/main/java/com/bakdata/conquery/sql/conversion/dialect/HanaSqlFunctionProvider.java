@@ -1,10 +1,15 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
+import static org.jooq.impl.DSL.nullif;
+
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -14,10 +19,13 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
+import org.jooq.OrderField;
 import org.jooq.Record;
+import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
@@ -183,12 +191,22 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return ColumnDateRange.of(toDateField(startDateExpression), toDateField(endDateExpression));
 	}
 
+	@NotNull
 	@Override
-	public Condition isNotEmptyDateRange(List<Field<?>> validityDate) {
-		return DSL.or(validityDate.getFirst().notEqual((Field) DSL.value(getMinDateExpression())),
-					  validityDate.getLast().notEqual((Field) DSL.value(getMaxDateExpression()))
-		);
+	public Optional<Collection<? extends OrderField<?>>> getOrdering(
+			Function<Field<?>, ? extends SortField<?>> ordering,
+			List<Field<?>> validityDateFields) {
 
+
+		if (validityDateFields.isEmpty()) {
+			// Necessary fallback sort order, that is practically a no-op
+			return Optional.empty();
+		}
+
+		return Optional.of(List.of(
+				ordering.apply(nullif(validityDateFields.getFirst(), toDateField(getMinDateExpression()))).nullsLast(),
+				ordering.apply(nullif(validityDateFields.getLast(), toDateField(getMaxDateExpression()))).nullsLast()
+		));
 	}
 
 	@Override
@@ -358,10 +376,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return DSL.condition("{0} {1} {2}", field, DSL.keyword("LIKE_REGEXPR"), pattern);
 	}
 
-	@Override
-	public Field<?> emptyDateRange() {
-				throw new IllegalStateException("emptyDateRange() not supported in Hana.");
-	}
 
 	@Override
 	public Field<String> yearQuarter(Field<Date> dateField) {

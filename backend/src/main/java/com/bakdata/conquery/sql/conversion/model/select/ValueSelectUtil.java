@@ -1,34 +1,22 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import static org.jooq.impl.DSL.coalesce;
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.name;
-import static org.jooq.impl.DSL.nullif;
-import static org.jooq.impl.DSL.or;
-import static org.jooq.impl.DSL.partitionBy;
-import static org.jooq.impl.DSL.rowNumber;
-import static org.jooq.impl.DSL.select;
-import static org.jooq.impl.DSL.table;
-import static org.jooq.impl.DSL.val;
+import static org.jooq.impl.DSL.*;
 
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.CteStep;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.Selects;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
+import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.CteStep;
+import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.Selects;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.jooq.Field;
-import org.jooq.OrderField;
 import org.jooq.Record;
 import org.jooq.SelectConditionStep;
 import org.jooq.SortField;
@@ -89,11 +77,10 @@ class ValueSelectUtil {
 										.sqlSelects(List.of(
 												new FieldWrapper<>(qualifiedRootSelect.as(alias), qualifiedRootSelect.getName()),
 												new FieldWrapper<>(rowNumber().over(partitionBy(ids)
-																							.orderBy(getOrdering(ordering,
-																												 validityDateFields,
-																												 ids,
-																												 selectContext.getFunctionProvider()
-																									 )
+																							.orderBy(selectContext.getFunctionProvider().getOrdering(ordering,
+																																					 validityDateFields
+
+																									 ).orElse(ids)
 																							)
 
 												).as("row-number"),
@@ -127,24 +114,6 @@ class ValueSelectUtil {
 						.cteName(ValueSelectCteStep.ROW_SELECT_STEP.cteName(alias))
 						.fromTable(coalesced)
 						.build();
-	}
-
-	@NotNull
-	private static Collection<? extends OrderField<?>> getOrdering(
-			Function<Field<?>, ? extends SortField<?>> ordering,
-			List<Field<?>> validityDateFields,
-			List<Field<?>> ids, SqlFunctionProvider functionProvider) {
-		//TODO Hana empty dateranges are hard to handle with this. Consider pushing this into SqlFunctionProvider?
-		if (validityDateFields.isEmpty()) {
-			// Necessary fallback sort order, that is practically a no-op
-			return ids;
-		}
-
-		return validityDateFields.stream()
-								 .map(field -> nullif(field, functionProvider.emptyDateRange()))
-								 .map(ordering)
-								 .map(SortField::nullsLast)
-								 .toList();
 	}
 
 

@@ -1,8 +1,13 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
+import static org.jooq.impl.DSL.nullif;
+
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -14,10 +19,13 @@ import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
+import org.jooq.OrderField;
 import org.jooq.Record;
+import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.TableOnConditionStep;
 import org.jooq.impl.DSL;
@@ -31,6 +39,11 @@ public interface SqlFunctionProvider {
 	String INFINITY_SIGN = "∞";
 	String MINUS_INFINITY_SIGN = "-∞";
 	String SQL_UNIT_SEPARATOR = " || '%s' || ".formatted(ResultSetProcessor.UNIT_SEPARATOR);
+
+	@NotNull
+	Optional<Collection<? extends OrderField<?>>> getOrdering(
+			Function<Field<?>, ? extends SortField<?>> ordering,
+			List<Field<?>> validityDateFields);
 
 	String getMinDateExpression();
 
@@ -99,7 +112,6 @@ public interface SqlFunctionProvider {
 
 	ColumnDateRange intersection(ColumnDateRange left, ColumnDateRange right);
 
-	Condition isNotEmptyDateRange(List<Field<?>> field);
 
 	/**
 	 * @param predecessor The predeceasing step containing the aggregated {@link ColumnDateRange}.
@@ -145,7 +157,6 @@ public interface SqlFunctionProvider {
 
 	Condition likeRegex(Field<String> field, String pattern);
 
-	Field<?> emptyDateRange();
 	/**
 	 * @return The numerical year and quarter of the given date column as "yyyy-Qx" string expression with x being the quarter.
 	 */
