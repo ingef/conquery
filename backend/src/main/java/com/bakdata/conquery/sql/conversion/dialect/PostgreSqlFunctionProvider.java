@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -358,24 +357,6 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays) {
 		return dateColumn.plus(amountOfDays);
-	}
-
-	@Override
-	public <T> Field<T> first(Field<T> column, List<Field<?>> orderByColumn) {
-		return DSL.field("({0})[1]", column.getType(), DSL.arrayAgg(column));
-	}
-
-	@Override
-	public <T> Field<T> last(Field<T> column, List<Field<?>> orderByColumns) {
-		ArrayAggOrderByStep<Object[]> arrayAgg = DSL.arrayAgg(DSL.field(
-																	  "{0} {1} {2} {3}",
-																	  column,
-																	  DSL.keyword("ORDER BY"),
-																	  DSL.sql(orderByColumns.stream().map(Field::toString).collect(Collectors.joining(","))),
-																	  DSL.keyword("DESC")
-															  )
-		);
-		return DSL.field("({0})[1]", column.getType(), arrayAgg);
 	}
 
 	@Override

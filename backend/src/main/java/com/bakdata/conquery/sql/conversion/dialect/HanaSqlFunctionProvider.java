@@ -102,6 +102,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		);
 	}
 
+
 	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate) {
 		return toColumnDateRange(validityDate);
@@ -329,35 +330,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 		// otherwise HANA would return floating point numbers for date distances
 		return dateDistance.cast(Integer.class);
-	}
-
-	@Override
-	public <T> Field<T> first(Field<T> column, List<Field<?>> orderByColumns) {
-		if (orderByColumns.isEmpty()) {
-			orderByColumns = List.of(column);
-		}
-		return DSL.field(
-				"{0}({1} {2})",
-				column.getType(),
-				DSL.keyword("FIRST_VALUE"),
-				column,
-				DSL.orderBy(orderByColumns)
-		);
-	}
-
-	@Override
-	public <T> Field<T> last(Field<T> column, List<Field<?>> orderByColumns) {
-		if (orderByColumns.isEmpty()) {
-			orderByColumns = List.of(column);
-		}
-		return DSL.field(
-				"{0}({1} {2} {3})",
-				column.getType(),
-				DSL.keyword("LAST_VALUE"),
-				column,
-				DSL.orderBy(orderByColumns),
-				DSL.keyword("DESC")
-		);
 	}
 
 	@Override

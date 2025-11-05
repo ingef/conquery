@@ -1,7 +1,10 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
@@ -21,6 +24,7 @@ class PreprocessingCte extends ConnectorCte {
 		return ConceptCteStep.PREPROCESSING;
 	}
 
+	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
 		List<SqlSelect> forPreprocessing = tableContext.allSqlSelects().stream()
@@ -34,10 +38,14 @@ class PreprocessingCte extends ConnectorCte {
 											  .build();
 
 		// all where clauses that don't require any preprocessing (connector/child conditions)
-		List<Condition> conditions = tableContext.getSqlFilters().stream()
-												 .flatMap(sqlFilter -> sqlFilter.getWhereClauses().getPreprocessingConditions().stream())
-												 .map(WhereCondition::condition)
-												 .toList();
+		List<Condition> conditions = new ArrayList<>();
+
+		conditions.addAll(tableContext.getSqlFilters().stream()
+									  .flatMap(sqlFilter -> sqlFilter.getWhereClauses().getPreprocessingConditions().stream())
+									  .map(WhereCondition::condition)
+									  .toList());
+
+		conditions.add(validityDateFilter(tableContext));
 
 		QueryStep.QueryStepBuilder builder = QueryStep.builder()
 													  .selects(preprocessingSelects)
@@ -49,6 +57,27 @@ class PreprocessingCte extends ConnectorCte {
 		}
 
 		return joinWithStratificationTable(forPreprocessing, conditions, tableContext);
+	}
+
+	private static Condition validityDateFilter(CQTableContext tableContext) {
+		if (tableContext.getRawValidityDate().isEmpty()) {
+			return DSL.noCondition();
+		}
+		ValidityDate validityDate = tableContext.getRawValidityDate().get();
+
+		if (validityDate.isSingleColumnDaterange()) {
+			Column column = validityDate.getColumn().resolve();
+			return DSL.field(DSL.name(column.getName())).isNotNull();
+		}
+
+		Column startColumn = validityDate.getStartColumn().resolve();
+		Column endColumn = validityDate.getEndColumn().resolve();
+
+		return DSL.or(DSL.field(DSL.name(startColumn.getName())).isNotNull(),
+					  DSL.field(DSL.name(endColumn.getName())).isNotNull()
+		);
+
+
 	}
 
 	private static QueryStep.QueryStepBuilder joinWithStratificationTable(

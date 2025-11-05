@@ -28,6 +28,7 @@ class EventFilterCte extends ConnectorCte {
 
 		List<Condition> conditions = new ArrayList<>();
 
+		//TODO refactor CQTableContext for PreprocessingCte: Move this filter to PPCte. This would mean passing down the raw ids.
 		conditions.addAll(tableContext.getIds().toFields().stream().map(Field::isNotNull).toList());
 
 		Selects eventFilterSelects = collectSelects(tableContext);
@@ -109,10 +110,10 @@ class EventFilterCte extends ConnectorCte {
 															.map(WhereCondition::condition)
 															.toList();
 
-		if (!tableContext.getConversionContext().isWithStratification()) {
-			return eventFilterConditions;
+		if (tableContext.getConversionContext().isWithStratification()) {
+			return addStratificationCondition(eventFilterConditions, tableContext);
 		}
-		return addStratificationCondition(eventFilterConditions, tableContext);
+		return eventFilterConditions;
 	}
 
 	private static List<Condition> addStratificationCondition(List<Condition> eventFilterConditions, CQTableContext tableContext) {
