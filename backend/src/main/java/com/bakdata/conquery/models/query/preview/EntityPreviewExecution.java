@@ -155,13 +155,14 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
 		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults(OptionalLong.empty()).collect(MoreCollectors.onlyElement());
-		final Object[] values = result.getValues().get(0);
+		final Object[] values = result.getValues().getFirst();
 
 		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
 
 		// We are only interested in the Select results.
-		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {
-			final ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
+		List<ResultInfo> resultInfos = infoCardExecution.collectResultInfos();
+		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < resultInfos.size(); index++) {
+			final ResultInfo resultInfo = resultInfos.get(index);
 
 			final Object value = values[index];
 			final Object printed;
@@ -206,7 +207,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 					description.selects().stream().collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
 
 			// Group lines by year and quarter.
-			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.getResultInfos(), select2desc, printSettings, printers);
+			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.collectResultInfos(), select2desc, printSettings, printers);
 			final List<EntityPreviewStatus.YearEntry> yearEntries = createYearEntries(entityResult, lineTransformer);
 
 			final Object[] completeResult = getCompleteLine(entityResult);
@@ -315,7 +316,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
-		for (ResultInfo info : query.getResultInfos()) {
+		for (ResultInfo info : query.collectResultInfos()) {
 			if (info instanceof SelectResultInfo selectResultInfo) {
 				final PreviewConfig.InfoCardSelect desc = select2desc.get(selectResultInfo.getSelect().getId());
 
@@ -347,7 +348,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			}
 
 			// Since we know the dates are always aligned we need to only respect their starts.
-			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
+			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).getFirst());
 
 			final int year = date.getYear();
 
@@ -369,7 +370,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			}
 
 			// Since we know the dates are always aligned we need to only respect their starts.
-			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
+			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).getFirst());
 
 			final int year = date.getYear();
 			final int quarter = QuarterUtils.getQuarter(date);
@@ -386,8 +387,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public List<ResultInfo> getResultInfos() {
-		return getValuesQuery().getResultInfos();
+	public List<ResultInfo> collectResultInfos() {
+		return getValuesQuery().collectResultInfos();
 	}
 
 	@Override

@@ -80,7 +80,7 @@ public class ResultTestUtil {
 	public static ManagedQuery getTestQuery() {
 		return new ManagedQuery(null, new UserId("test_user"), DATASET.getId(), META_STORAGE, null, null) {
 			@Override
-			public List<ResultInfo> getResultInfos() {
+			public List<ResultInfo> collectResultInfos() {
 				return getResultTypes().stream()
 									   .map(TypedSelectDummy::new)
 									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet()))

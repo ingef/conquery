@@ -103,7 +103,7 @@ public class ResultArrowProcessor {
 
 		// Collect ResultInfos for id columns and result columns
 		final List<ResultInfo> resultInfosId = config.getIdColumns().getIdResultInfos();
-		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
+		final List<ResultInfo> resultInfosExec = exec.collectResultInfos();
 
 		StreamingOutput out = output -> {
 			CountingOutputStream countingOutputStream = new CountingOutputStream(output);
