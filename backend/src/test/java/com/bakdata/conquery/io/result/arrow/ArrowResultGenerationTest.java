@@ -247,7 +247,7 @@ public class ArrowResultGenerationTest {
 					   printSettings,
 					   new ArrowConfig(BATCH_SIZE),
 					   getIdFields(),
-					   mquery.getResultInfos(),
+					   mquery.collectResultInfos(),
 					   mquery.streamResults(OptionalLong.empty()),
 					   new ArrowResultPrinters()
 		);
@@ -257,7 +257,7 @@ public class ArrowResultGenerationTest {
 		String computed = readTSV(inputStream);
 
 		assertThat(computed).isNotBlank();
-		assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.getResultInfos()));
+		assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.collectResultInfos()));
 
 	}
 

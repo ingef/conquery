@@ -152,7 +152,7 @@ public class StoredQueriesProcessorTest {
 				mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_5, FAILED, DATASET_0, 100L),        // not included: wrong state
 				mockManagedQuery(new AbsoluteFormQuery(null, null, null, null), USERS[0], QUERY_ID_6, NEW, DATASET_0, 100L),                                                    // not included: wrong query structure
 				mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_7, DONE, new CQAnd() {{
-					setChildren(List.of(new CQConcept()));
+					setChildren(List.of(new CQConcept(){{setLabel("User Concept Label");}}));
 				}}, DATASET_0),    // included, but secondaryId-Query
 				mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_8, DONE, new CQConcept(), DATASET_0),    // not-included, wrong structure
 				mockManagedQuery(new ConceptQuery(new CQExternal(new ArrayList<>(), new String[0][0], false)), USERS[1], QUERY_ID_9, DONE, DATASET_0, 100L),        // included
@@ -163,7 +163,7 @@ public class StoredQueriesProcessorTest {
 
 	private static void setState(ExecutionState execState, ManagedExecutionId id) {
 		if (execState != NEW) {
-			DistributedExecutionManager.DistributedExecutionInfo state = new DistributedExecutionManager.DistributedExecutionInfo();
+			DistributedExecutionManager.DistributedExecutionInfo state = new DistributedExecutionManager.DistributedExecutionInfo(Collections.emptyList());
 			state.setExecutionState(execState);
 			state.getExecutingLock().countDown();
 
@@ -182,8 +182,9 @@ public class StoredQueriesProcessorTest {
 		return mockManagedQuery(
 				new ConceptQuery(
 						new CQAnd() {{
-							// short hand class initializer block to support visiting of CQAnd Children
-							setChildren(List.of(new CQConcept()));
+							// Shorthand class initializer block to support visiting of CQAnd Children
+							// We set a user label here, so that no ConceptId needs to be resolved
+							setChildren(List.of(new CQConcept() {{ setLabel("User Concept Label");}}));
 						}}
 				),
 				user,
@@ -212,7 +213,7 @@ public class StoredQueriesProcessorTest {
 			}
 
 			@Override
-			public List<ResultInfo> getResultInfos() {
+			public List<ResultInfo> collectResultInfos() {
 				// With method is mocked because the ExcelResultProvider needs some info to check dimensions,
 				// but actually resolving the query here requires much more setup
 				return Collections.emptyList();
@@ -263,7 +264,7 @@ public class StoredQueriesProcessorTest {
 			}
 
 			@Override
-			public List<ResultInfo> getResultInfos() {
+			public List<ResultInfo> collectResultInfos() {
 				return Collections.emptyList();
 			}
 		};

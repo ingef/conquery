@@ -128,7 +128,7 @@ public class FormTest extends ConqueryTestSpec {
 
 			renderer.toCSV(
 					config.getIdColumns().getIdResultInfos(),
-					managedForm.getResultInfos(),
+					managedForm.collectResultInfos(),
 					managedForm.streamResults(OptionalLong.empty()), printSettings, StandardCharsets.UTF_8
 			);
 

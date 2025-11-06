@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query;
 
 import static com.bakdata.conquery.models.execution.ExecutionState.RUNNING;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,6 +23,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ExternalExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -299,6 +301,7 @@ public abstract class ExecutionManager {
 
 	public interface InternalExecutionInfo extends ExecutionInfo {
 		Stream<EntityResult> streamQueryResults();
+		List<ResultInfo> getResultInfos();
 	}
 
 

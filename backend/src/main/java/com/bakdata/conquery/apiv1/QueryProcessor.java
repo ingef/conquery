@@ -622,7 +622,7 @@ public class QueryProcessor {
 
 		managedQuery.initExecutable();
 
-		final List<ResultInfo> resultInfos = managedQuery.getResultInfos();
+		final List<ResultInfo> resultInfos = managedQuery.collectResultInfos();
 
 		final Optional<ResultInfo>
 				dateInfo =

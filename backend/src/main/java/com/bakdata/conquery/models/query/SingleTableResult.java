@@ -36,13 +36,25 @@ public interface SingleTableResult {
 		}
 
 		final UniqueNamer collector = new UniqueNamer(settings);
-		getResultInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(collector, settings)));
+		collectResultInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(collector, settings)));
 		return columnDescriptions;
 	}
 
 	@JsonIgnore
 	Namespace getNamespace();
 
+	/**
+	 * Collect result infos from the submitted query that this execution wraps
+	 * @return The result infos for this execution
+	 * @implNote The execution may need to be initialised beforehand
+	 */
+	@JsonIgnore
+	List<ResultInfo> collectResultInfos();
+
+	/**
+	 * Collect result infos from the submitted query that this execution wraps
+	 * @return The result infos for this execution
+	 */
 	@JsonIgnore
 	List<ResultInfo> getResultInfos();
 

@@ -3,6 +3,7 @@ package com.bakdata.conquery.integration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -22,9 +23,7 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.query.DistributedExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.support.StandaloneSupport;
-import io.github.classgraph.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 
 @Slf4j
 public class DownloadLinkGeneration extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
@@ -62,7 +61,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		{
 			// Tinker the state of the execution and try again: still not possible because of missing permissions
-			DistributedExecutionManager.DistributedExecutionInfo distributedState = new DistributedExecutionManager.DistributedExecutionInfo();
+			DistributedExecutionManager.DistributedExecutionInfo distributedState = new DistributedExecutionManager.DistributedExecutionInfo(Collections.emptyList());
 			distributedState.setExecutionState(ExecutionState.DONE);
 			distributedState.getExecutingLock().countDown();
 			conquery.getNamespace().getExecutionManager().addState(exec.getId(), distributedState);

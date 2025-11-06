@@ -52,7 +52,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		execution.initExecutable();
 		SingleTableResult executionResult = (SingleTableResult) execution;
 
-		List<ResultInfo> resultInfos = executionResult.getResultInfos();
+		List<ResultInfo> resultInfos = executionResult.collectResultInfos();
 
 		assertThat(executionResult.streamResults(OptionalLong.empty()).flatMap(EntityResult::streamValues))
 				.as("Should have same size as result infos")

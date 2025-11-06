@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,6 +24,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -51,10 +53,12 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 		log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), execution.getDataset());
 
-		addState(execution.getId(), new DistributedExecutionInfo());
+		List<ResultInfo> resultInfo = execution instanceof SingleTableResult singleTableResult ? singleTableResult.collectResultInfos() : Collections.emptyList();
+
+		addState(execution.getId(), new DistributedExecutionInfo(resultInfo));
 
 		if (execution instanceof ManagedInternalForm<?> form) {
-			form.getSubQueries().values().forEach((query) -> addState(query, new DistributedExecutionInfo()));
+			form.getSubQueries().values().forEach((query) -> addState(query, new DistributedExecutionInfo(form.collectResultInfos())));
 		}
 
 		final WorkerHandler workerHandler = getWorkerHandler(execution.getDataset());
@@ -146,10 +150,11 @@ public class DistributedExecutionManager extends ExecutionManager {
 		@NonNull
 		private ExecutionState executionState;
 		private Map<WorkerId, List<EntityResult>> results;
+		private List<ResultInfo> resultInfos;
 		private CountDownLatch executingLock;
 
-		public DistributedExecutionInfo() {
-			this(ExecutionState.RUNNING, new ConcurrentHashMap<>(), new CountDownLatch(1));
+		public DistributedExecutionInfo(List<ResultInfo> resultInfos) {
+			this(ExecutionState.RUNNING, new ConcurrentHashMap<>(), resultInfos, new CountDownLatch(1));
 		}
 
 		@NotNull
