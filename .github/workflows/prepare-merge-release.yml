@@ -5,6 +5,10 @@ on:
     branches:
       - release
 
+
+env:
+  MAIN_BRANCH_NAME: master
+
 jobs:
   merge-release:
     runs-on: ubuntu-latest
@@ -12,11 +16,20 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: pull-request
-        uses: repo-sync/pull-request@v2
-        with:
-          destination_branch: "master"
-          pr_title: "Merge Release"
-          pr_reviewer: "thoniTUB,awildturtok"
-          pr_assignee: "thoniTUB,awildturtok"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check for existing pull-request
+        id: check_pr_count
+        run: >
+          echo "pr_count=$(gh pr list --head release --limit 1 --base $MAIN_BRANCH_NAME --state open --json state --jq 'length')" >> "$GITHUB_OUTPUT"
+
+      - name: Create pull-request
+        if: ${{ steps.check_pr_count.outputs.pr_count == 0 }}
+        run: >
+          gh pr create
+          -l automated
+          -a awildturtok,thoniTUB
+          -r awildturtok,thoniTUB
+          -B $MAIN_BRANCH_NAME
+          --title "chore: merge release into $MAIN_BRANCH_NAME"
+          --body "Merge release branch into $MAIN_BRANCH_NAME branch"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
