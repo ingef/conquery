@@ -58,14 +58,14 @@ jobs:
           start: bash ./scripts/run_e2e_all.sh
           wait-on: "http://localhost:8000"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: failure()
         with:
           name: cypress-screenshots
           path: cypress/screenshots
           if-no-files-found: ignore
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: failure()
         with:
           name: cypress-videos
