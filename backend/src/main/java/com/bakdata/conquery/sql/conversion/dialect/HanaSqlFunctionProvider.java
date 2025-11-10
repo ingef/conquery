@@ -156,11 +156,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange maxRange() {
-		throw new UnsupportedOperationException("Not implemented yet");
-	}
-
-	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction) {
 
 		ColumnDateRange validityDateRange = toColumnDateRange(validityDate);
@@ -194,7 +189,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@NotNull
 	@Override
-	public Optional<Collection<? extends OrderField<?>>> getOrdering(
+	public Optional<Collection<? extends OrderField<?>>> orderByValidityDates(
 			Function<Field<?>, ? extends SortField<?>> ordering,
 			List<Field<?>> validityDateFields) {
 

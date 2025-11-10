@@ -77,8 +77,8 @@ class ValueSelectUtil {
 										.sqlSelects(List.of(
 												new FieldWrapper<>(qualifiedRootSelect.as(alias), qualifiedRootSelect.getName()),
 												new FieldWrapper<>(rowNumber().over(partitionBy(ids)
-																							.orderBy(selectContext.getFunctionProvider().getOrdering(ordering,
-																																					 validityDateFields
+																							.orderBy(selectContext.getFunctionProvider().orderByValidityDates(ordering,
+																																							  validityDateFields
 
 																									 ).orElse(ids)
 																							)

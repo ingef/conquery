@@ -63,7 +63,7 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@NotNull
 	@Override
-	public Optional<Collection<? extends OrderField<?>>> getOrdering(
+	public Optional<Collection<? extends OrderField<?>>> orderByValidityDates(
 			Function<Field<?>, ? extends SortField<?>> ordering,
 			List<Field<?>> validityDateFields) {
 
@@ -150,8 +150,7 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		return validityDate == null ? maxRange() : toColumnDateRange(validityDate);
 	}
 
-	@Override
-	public ColumnDateRange maxRange() {
+	private ColumnDateRange maxRange() {
 		return ColumnDateRange.of(daterange(toDateField(MINUS_INFINITY_DATE_VALUE), toDateField(INFINITY_DATE_VALUE), CLOSED_RANGE));
 	}
 

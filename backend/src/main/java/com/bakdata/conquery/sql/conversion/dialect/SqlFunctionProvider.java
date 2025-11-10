@@ -41,7 +41,7 @@ public interface SqlFunctionProvider {
 	String SQL_UNIT_SEPARATOR = " || '%s' || ".formatted(ResultSetProcessor.UNIT_SEPARATOR);
 
 	@NotNull
-	Optional<Collection<? extends OrderField<?>>> getOrdering(
+	Optional<Collection<? extends OrderField<?>>> orderByValidityDates(
 			Function<Field<?>, ? extends SortField<?>> ordering,
 			List<Field<?>> validityDateFields);
 
@@ -87,10 +87,6 @@ public interface SqlFunctionProvider {
 	 */
 	ColumnDateRange forValidityDate(ValidityDate validityDate);
 
-	/**
-	 * Creates a {@link ColumnDateRange} of maximum range.
-	 */
-	ColumnDateRange maxRange();
 
 	/**
 	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date. The validity dates bounds will be restricted by the given date
