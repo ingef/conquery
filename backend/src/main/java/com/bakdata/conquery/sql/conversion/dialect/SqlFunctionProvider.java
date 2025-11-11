@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
-import static org.jooq.impl.DSL.nullif;
 
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
@@ -13,13 +12,13 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
-import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -40,8 +39,7 @@ public interface SqlFunctionProvider {
 	String MINUS_INFINITY_SIGN = "-∞";
 	String SQL_UNIT_SEPARATOR = " || '%s' || ".formatted(ResultSetProcessor.UNIT_SEPARATOR);
 
-	@NotNull
-	Optional<Collection<? extends OrderField<?>>> orderByValidityDates(
+	Collection<? extends OrderField<?>> orderByValidityDates(
 			Function<Field<?>, ? extends SortField<?>> ordering,
 			List<Field<?>> validityDateFields);
 
@@ -228,6 +226,26 @@ public interface SqlFunctionProvider {
 				DSL.keyword("STRING_AGG"),
 				DSL.when(field.like(DSL.inline(prefix + "%")), field),
 				DSL.val(", ")
+		);
+	}
+
+	default
+	Condition validityDateFilter(Optional<ValidityDate> rawValidityDate) {
+		if (rawValidityDate.isEmpty()) {
+			return DSL.noCondition();
+		}
+		ValidityDate validityDate = rawValidityDate.get();
+
+		if (validityDate.isSingleColumnDaterange()) {
+			Column column = validityDate.getColumn().resolve();
+			return DSL.field(DSL.name(column.getName())).isNotNull();
+		}
+
+		Column startColumn = validityDate.getStartColumn().resolve();
+		Column endColumn = validityDate.getEndColumn().resolve();
+
+		return DSL.or(DSL.field(DSL.name(startColumn.getName())).isNotNull(),
+					  DSL.field(DSL.name(endColumn.getName())).isNotNull()
 		);
 	}
 

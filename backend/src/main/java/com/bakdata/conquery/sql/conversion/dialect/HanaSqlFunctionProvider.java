@@ -8,7 +8,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 
 import com.bakdata.conquery.models.common.CDateSet;
@@ -189,20 +188,14 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@NotNull
 	@Override
-	public Optional<Collection<? extends OrderField<?>>> orderByValidityDates(
+	public Collection<? extends OrderField<?>> orderByValidityDates(
 			Function<Field<?>, ? extends SortField<?>> ordering,
 			List<Field<?>> validityDateFields) {
 
-
-		if (validityDateFields.isEmpty()) {
-			// Necessary fallback sort order, that is practically a no-op
-			return Optional.empty();
-		}
-
-		return Optional.of(List.of(
+		return List.of(
 				ordering.apply(nullif(validityDateFields.getFirst(), toDateField(getMinDateExpression()))).nullsLast(),
 				ordering.apply(nullif(validityDateFields.getLast(), toDateField(getMaxDateExpression()))).nullsLast()
-		));
+		);
 	}
 
 	@Override

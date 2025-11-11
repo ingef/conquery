@@ -63,21 +63,15 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@NotNull
 	@Override
-	public Optional<Collection<? extends OrderField<?>>> orderByValidityDates(
+	public Collection<? extends OrderField<?>> orderByValidityDates(
 			Function<Field<?>, ? extends SortField<?>> ordering,
 			List<Field<?>> validityDateFields) {
 
-
-		if (validityDateFields.isEmpty()) {
-			// Necessary fallback sort order, that is practically a no-op
-			return Optional.empty();
-		}
-
-		return Optional.of(validityDateFields.stream()
+		return validityDateFields.stream()
 								 .map(field -> nullif(field, emptyDateRange()))
 								 .map(ordering)
 								 .map(SortField::nullsLast)
-								 .toList());
+								 .toList();
 	}
 
 	@Override

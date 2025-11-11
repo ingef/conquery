@@ -2,7 +2,6 @@ package com.bakdata.conquery.sql.conversion.model.select;
 
 import static org.jooq.impl.DSL.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -10,17 +9,19 @@ import java.util.function.Function;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.SelectConditionStep;
 import org.jooq.SortField;
-import org.jooq.Table;
 
 class ValueSelectUtil {
 
@@ -30,7 +31,6 @@ class ValueSelectUtil {
 			Function<Field<?>, ? extends SortField<?>> ordering,
 			SelectContext<ConnectorSqlTables> selectContext) {
 
-
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(selectContext.getTables().getRootTable(), column.getName(), Object.class);
 
 		// create a CTE, that per row makes a window calculation to select for the rank of the validity date.
@@ -39,14 +39,12 @@ class ValueSelectUtil {
 		QueryStep rowNumberStep =
 				buildRowNumberStep(rootSelect, ordering, alias, selectContext);
 
-		QueryStep rowFilterStep = buildRowFilterStep(rowNumberStep, alias, selectContext);
+		QueryStep rowFilterStep = buildRowFilterStep(rowNumberStep, alias, selectContext.getIds());
 
 		SqlSelect finalSelect = rowFilterStep.getQualifiedSelects().getSqlSelects().getFirst();
 
 		FieldWrapper<SqlSelect> aggregationSelect =
 				new FieldWrapper<>(field(coalesce(finalSelect.qualify(ValueSelectCteStep.ROW_SELECT_STEP.cteName(alias)))).as(alias), column.getName());
-
-		//TODO to get stratification working, i need to do the row-numbering as an aggregation select.
 
 		return ConnectorSqlSelects.builder()
 								  .additionalPredecessor(Optional.of(rowFilterStep))
@@ -60,60 +58,69 @@ class ValueSelectUtil {
 			SelectContext<ConnectorSqlTables> selectContext) {
 
 		String predecessor = selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
-
-
 		Field<?> qualifiedRootSelect = rootSelect.qualify(predecessor).select();
-		List<Field<?>> ids = selectContext.getIds().qualify(predecessor).toFields();
-		Table<Record> predecessorTable = table(name(predecessor));
-
-		List<Field<?>> validityDateFields =
-				selectContext.getValidityDate().map(dateRange -> dateRange.qualify(predecessor))
-							 .map(ColumnDateRange::toFields)
-							 .orElse(Collections.emptyList());
 
 		return QueryStep.builder()
 						.selects(Selects.builder()
 										.ids(selectContext.getIds().qualify(null))
 										.sqlSelects(List.of(
 												new FieldWrapper<>(qualifiedRootSelect.as(alias), qualifiedRootSelect.getName()),
-												new FieldWrapper<>(rowNumber().over(partitionBy(ids)
-																							.orderBy(selectContext.getFunctionProvider().orderByValidityDates(ordering,
-																																							  validityDateFields
-
-																									 ).orElse(ids)
-																							)
-
-												).as("row-number"),
-																   new String[0] // If I don't supply it, "row-number" is requested for event-filter CTE
-
+												rowNumberField(predecessor, selectContext.getValidityDate(), ordering,
+															   selectContext.getIds(),
+															   selectContext.getFunctionProvider()
 												)
 										))
 										.build())
 						.cteName(ValueSelectCteStep.ROW_NUMBER_STEP.cteName(alias))
 						.conditions(List.of(qualifiedRootSelect.isNotNull()))
-						.fromTable(predecessorTable)
+						.fromTable(table(name(predecessor)))
 						.build();
 	}
 
-	private static QueryStep buildRowFilterStep(QueryStep rowNumberStep, String alias, SelectContext<ConnectorSqlTables> selectContext) {
+	private static QueryStep buildRowFilterStep(QueryStep rowNumberStep, String alias, SqlIdColumns idColumns) {
 		Field<Object> rowNumber = field(name("row-number"));
 
-		SelectConditionStep<Record> coalesced =
-				select(selectContext.getIds().qualify(null).toFields())
+		SqlIdColumns unqualifiedIds = idColumns.qualify(null);
+		SelectConditionStep<Record> selectFirst =
+				select(unqualifiedIds.toFields())
 						.select(field(name(alias)), field(name("select-result", "row-number")))
 						.from(table(name(ValueSelectCteStep.ROW_NUMBER_STEP.cteName(alias)))
 									  .as("select-result"))
 						.where(or(rowNumber.equal(val(1)), rowNumber.isNull()));
 
+
 		return QueryStep.builder()
 						.predecessor(rowNumberStep)
 						.selects(Selects.builder()
-										.ids(selectContext.getIds().qualify(null))
-										.sqlSelects(List.of(new FieldWrapper<>(coalesced.field(alias))))
+										.ids(unqualifiedIds)
+										.sqlSelect(new FieldWrapper<>(selectFirst.field(alias)))
 										.build())
 						.cteName(ValueSelectCteStep.ROW_SELECT_STEP.cteName(alias))
-						.fromTable(coalesced)
+						.fromTable(selectFirst)
 						.build();
+	}
+
+	@NotNull
+	private static FieldWrapper<Integer> rowNumberField(
+			String predecessor, Optional<ColumnDateRange> validityDate, Function<Field<?>, ? extends SortField<?>> ordering,
+			SqlIdColumns idColumns, SqlFunctionProvider functionProvider) {
+
+		List<Field<?>> qualifiedIds = idColumns.qualify(predecessor).toFields();
+
+		if (validityDate.isEmpty()) {
+			return new FieldWrapper<>(
+					rowNumber().over(partitionBy(qualifiedIds).orderBy(qualifiedIds)).as("row-number"),
+					new String[0]
+			);
+		}
+
+		return new FieldWrapper<>(
+				rowNumber().over(
+						partitionBy(qualifiedIds)
+								.orderBy(functionProvider.orderByValidityDates(ordering, validityDate.get().qualify(predecessor).toFields()))
+				).as("row-number"),
+				new String[0]
+		);
 	}
 
 
