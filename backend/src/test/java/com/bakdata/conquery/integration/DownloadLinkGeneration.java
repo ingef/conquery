@@ -4,7 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
@@ -21,9 +24,14 @@ import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.query.DistributedExecutionManager;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.sql.execution.SqlExecutionExecutionInfo;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 public class DownloadLinkGeneration extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
@@ -47,7 +55,6 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		// Create execution for download
 		ManagedQuery exec = new ManagedQuery(query, user.getId(), conquery.getDataset(), storage, conquery.getDatasetRegistry(), conquery.getConfig());
-		exec.setLastResultCount(100L);
 
 		storage.addExecution(exec);
 

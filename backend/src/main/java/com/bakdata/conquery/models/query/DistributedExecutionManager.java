@@ -96,13 +96,16 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 		Optional<ExecutionInfo> optInfo = tryGetExecutionInfo(execution.getId());
 
-		if (optInfo.isEmpty()){
+		if (optInfo.isEmpty()) {
 			log.debug("Ignoring result {} because the corresponding state was not found (execution probably canceled)", result);
 			return;
 		}
 
 		if (!(optInfo.get() instanceof DistributedExecutionInfo distributedInfo)) {
-			throw new IllegalStateException("Expected execution '%s' to be of type %s, but was %s".formatted(execution.getId(), DistributedExecutionInfo.class, optInfo.getClass()));
+			throw new IllegalStateException("Expected execution '%s' to be of type %s, but was %s".formatted(execution.getId(),
+																											 DistributedExecutionInfo.class,
+																											 optInfo.getClass()
+			));
 		}
 
 		ExecutionState execState = distributedInfo.executionState;
@@ -115,9 +118,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 			execution.fail(result.getError().get());
 		}
 		else {
-
-			// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
-			distributedInfo.results.put(result.getWorkerId(), result.getResults());
+			distributedInfo.addShardResult(result);
 
 			// If all known workers have returned a result, the query is DONE.
 			if (distributedInfo.allResultsArrived(getWorkerHandler(execution.getDataset()).getAllWorkerIds())) {
@@ -150,11 +151,18 @@ public class DistributedExecutionManager extends ExecutionManager {
 		@NonNull
 		private ExecutionState executionState;
 		private Map<WorkerId, List<EntityResult>> results;
+		private long resultCount;
 		private List<ResultInfo> resultInfos;
 		private CountDownLatch executingLock;
 
 		public DistributedExecutionInfo(List<ResultInfo> resultInfos) {
-			this(ExecutionState.RUNNING, new ConcurrentHashMap<>(), resultInfos, new CountDownLatch(1));
+			this(ExecutionState.RUNNING, new ConcurrentHashMap<>(), 0, resultInfos, new CountDownLatch(1));
+		}
+
+		private <R extends ShardResult> void addShardResult(R result) {
+			// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
+			results.put(result.getWorkerId(), result.getResults());
+			resultCount = results.values().stream().flatMap(Collection::stream).mapToLong(EntityResult::length).sum();
 		}
 
 		@NotNull

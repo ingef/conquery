@@ -52,7 +52,6 @@ public class IntegrationUtils {
 	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, Object query, long expectedSize, ExecutionState expectedState, @Nullable User user, int expectedResponseCode) {
 		final URI postQueryURI = getPostQueryURI(conquery);
 
-
 		// Submit Query
 		Invocation.Builder request = conquery.getClient()
 											 .target(postQueryURI)
