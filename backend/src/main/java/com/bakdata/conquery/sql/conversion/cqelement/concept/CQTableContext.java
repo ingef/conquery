@@ -25,7 +25,6 @@ class CQTableContext implements Context {
 
 
 	SqlIdColumns ids;
-	Optional<ValidityDate> rawValidityDate;
 	Optional<ColumnDateRange> validityDate;
 	List<ConnectorSqlSelects> sqlSelects;
 	List<SqlFilters> sqlFilters;

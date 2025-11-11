@@ -29,8 +29,6 @@ class PreprocessingCte extends ConnectorCte {
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		SqlFunctionProvider functionProvider = tableContext.getSqlDialect().getFunctionProvider();
-
 		List<SqlSelect> forPreprocessing = tableContext.allSqlSelects().stream()
 													   .flatMap(sqlSelects -> sqlSelects.getPreprocessingSelects().stream())
 													   .toList();
@@ -50,7 +48,6 @@ class PreprocessingCte extends ConnectorCte {
 			}
 		}
 
-		conditions.add(functionProvider.validityDateFilter(tableContext.getRawValidityDate()));
 
 		QueryStep.QueryStepBuilder builder = QueryStep.builder()
 													  .selects(preprocessingSelects)

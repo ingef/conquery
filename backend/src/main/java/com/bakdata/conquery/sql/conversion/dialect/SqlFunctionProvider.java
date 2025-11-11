@@ -230,11 +230,7 @@ public interface SqlFunctionProvider {
 	}
 
 	default
-	Condition validityDateFilter(Optional<ValidityDate> rawValidityDate) {
-		if (rawValidityDate.isEmpty()) {
-			return DSL.noCondition();
-		}
-		ValidityDate validityDate = rawValidityDate.get();
+	Condition validityDateFilter(ValidityDate validityDate) {
 
 		if (validityDate.isSingleColumnDaterange()) {
 			Column column = validityDate.getColumn().resolve();

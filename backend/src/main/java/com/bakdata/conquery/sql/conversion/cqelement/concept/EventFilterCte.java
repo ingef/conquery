@@ -26,19 +26,9 @@ class EventFilterCte extends ConnectorCte {
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		List<Condition> conditions = new ArrayList<>();
-
-		//TODO refactor CQTableContext for PreprocessingCte: Move this filter to PPCte. This would mean passing down the raw ids.
-		conditions.addAll(tableContext.getIds().toFields().stream().map(Field::isNotNull).toList());
-
-		Selects eventFilterSelects = collectSelects(tableContext);
-		List<Condition> eventFilterConditions = collectEventFilterConditions(tableContext);
-
-		conditions.addAll(eventFilterConditions);
-
 		return QueryStep.builder()
-						.selects(eventFilterSelects)
-						.conditions(conditions);
+						.selects(collectSelects(tableContext))
+						.conditions(collectEventFilterConditions(tableContext));
 	}
 
 	@Override
