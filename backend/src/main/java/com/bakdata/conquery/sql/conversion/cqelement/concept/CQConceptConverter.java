@@ -33,7 +33,6 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
-import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionUtil;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
@@ -230,7 +229,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		return Optional.of(new SqlFilters(
 				ConnectorSqlSelects.builder().preprocessingSelects(dateRestrictionSelects).build(),
-				WhereClauses.builder().eventFilter(ConditionUtil.wrap(dateRestrictionCondition, ConditionType.EVENT)).build()
+				WhereClauses.builder().eventFilter(ConditionUtil.wrap(dateRestrictionCondition)).build()
 		));
 	}
 

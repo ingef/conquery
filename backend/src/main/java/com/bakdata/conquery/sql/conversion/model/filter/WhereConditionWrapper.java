@@ -7,16 +7,10 @@ import org.jooq.Condition;
 public class WhereConditionWrapper implements WhereCondition {
 
 	Condition condition;
-	ConditionType type;
 
 	@Override
 	public Condition condition() {
 		return condition;
-	}
-
-	@Override
-	public ConditionType type() {
-		return type;
 	}
 
 }

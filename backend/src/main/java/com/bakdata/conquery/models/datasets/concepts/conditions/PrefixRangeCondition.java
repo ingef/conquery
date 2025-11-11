@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotEmpty;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereConditionWrapper;
 import com.bakdata.conquery.util.CalculatedValue;
@@ -58,7 +57,7 @@ public class PrefixRangeCondition implements CTCondition {
 		Field<String> field = DSL.field(DSL.name(context.getConnectorTable().getName(), context.getConnectorColumn().getName()), String.class);
 		String pattern = buildSqlRegexPattern(context.getFunctionProvider());
 		Condition regexCondition = context.getFunctionProvider().likeRegex(field, pattern);
-		return new WhereConditionWrapper(regexCondition, ConditionType.PREPROCESSING);
+		return new WhereConditionWrapper(regexCondition);
 	}
 
 	private String buildSqlRegexPattern(SqlFunctionProvider functionProvider) {

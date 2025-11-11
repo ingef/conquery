@@ -4,7 +4,6 @@ import java.util.Map;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
-import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereConditionWrapper;
 import com.bakdata.conquery.util.CalculatedValue;
@@ -32,6 +31,6 @@ public class IsPresentCondition implements CTCondition {
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
 		Condition condition = DSL.field(DSL.name(context.getConnectorTable().getName(), column)).isNotNull();
-		return new WhereConditionWrapper(condition, ConditionType.PREPROCESSING);
+		return new WhereConditionWrapper(condition);
 	}
 }
