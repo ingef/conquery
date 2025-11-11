@@ -22,7 +22,7 @@ public interface WhereCondition {
 
 	private WhereCondition combineConditions(WhereCondition whereCondition, BiFunction<Condition, Condition, Condition> operation) {
 		Condition combinedCondition = operation.apply(this.condition(), whereCondition.condition());
-		return new WhereConditionWrapper(combinedCondition);
+		return new ConditionWrappingWhereCondition(combinedCondition);
 	}
 
 }

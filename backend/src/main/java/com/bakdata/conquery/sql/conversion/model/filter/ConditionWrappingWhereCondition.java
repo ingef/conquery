@@ -4,7 +4,7 @@ import lombok.Value;
 import org.jooq.Condition;
 
 @Value
-public class WhereConditionWrapper implements WhereCondition {
+public class ConditionWrappingWhereCondition implements WhereCondition {
 
 	Condition condition;
 
