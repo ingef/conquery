@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -16,17 +17,18 @@ import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.google.common.base.Preconditions;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
+import org.jooq.Field;
 
 class EventFilterCte extends ConnectorCte {
 
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
-		Selects eventFilterSelects = collectSelects(tableContext);
-		List<Condition> eventFilterConditions = collectEventFilterConditions(tableContext);
+
 		return QueryStep.builder()
-						.selects(eventFilterSelects)
-						.conditions(eventFilterConditions);
+						.selects(collectSelects(tableContext))
+						.conditions(collectEventFilterConditions(tableContext));
 	}
 
 	@Override
@@ -98,10 +100,10 @@ class EventFilterCte extends ConnectorCte {
 															.map(WhereCondition::condition)
 															.toList();
 
-		if (!tableContext.getConversionContext().isWithStratification()) {
-			return eventFilterConditions;
+		if (tableContext.getConversionContext().isWithStratification()) {
+			return addStratificationCondition(eventFilterConditions, tableContext);
 		}
-		return addStratificationCondition(eventFilterConditions, tableContext);
+		return eventFilterConditions;
 	}
 
 	private static List<Condition> addStratificationCondition(List<Condition> eventFilterConditions, CQTableContext tableContext) {

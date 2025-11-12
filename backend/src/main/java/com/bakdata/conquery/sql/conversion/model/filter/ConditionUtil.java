@@ -25,8 +25,8 @@ public class ConditionUtil {
 	 *
 	 * @return A {@link WhereCondition} instance encapsulating the provided condition and type.
 	 */
-	public WhereCondition wrap(final Condition condition, final ConditionType type) {
-		return new WhereConditionWrapper(condition, type);
+	public WhereCondition wrap(final Condition condition) {
+		return new ConditionWrappingWhereCondition(condition);
 	}
 
 }

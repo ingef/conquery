@@ -21,9 +21,4 @@ public class FlagCondition implements WhereCondition {
 						 .orElseThrow(() -> new IllegalArgumentException("Can't construct a FlagCondition with an empty flag field list."));
 	}
 
-	@Override
-	public ConditionType type() {
-		return ConditionType.EVENT;
-	}
-
 }

@@ -337,6 +337,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 		return label != null && label.endsWith(AUTO_LABEL_SUFFIX);
 	}
 
+	@JsonIgnore
 	public ExecutionState getState() {
 		if (!getExecutionManager().isResultPresent(getId())) {
 			return ExecutionState.NEW;

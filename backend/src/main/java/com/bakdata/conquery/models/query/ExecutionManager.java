@@ -302,6 +302,7 @@ public abstract class ExecutionManager {
 	public interface InternalExecutionInfo extends ExecutionInfo {
 		Stream<EntityResult> streamQueryResults();
 		List<ResultInfo> getResultInfos();
+		long getResultCount();
 	}
 
 

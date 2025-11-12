@@ -345,8 +345,6 @@ public class QueryProcessor {
 						.getExecutionManager()
 						.createExecution(query, subject.getId(), namespace, false));
 
-		execution.setLastResultCount((long) statistic.getResolved().size());
-
 		if (upload.getLabel() != null) {
 			execution.setLabel(upload.getLabel());
 		}

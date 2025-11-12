@@ -27,14 +27,21 @@ jobs:
         run: git checkout -b $REINTEGRATE_BRANCH_NAME
       - name: Push intermediate Branch
         run: git push -f
+
+      - name: Check for existing pull-request
+        id: check_pr_count
+        run: >
+          echo "pr_count=$(gh pr list --head $REINTEGRATE_BRANCH_NAME --limit 1 --base develop --state open --json state --jq 'length')" >> "$GITHUB_OUTPUT"
+
       - name: Create pull-request
+        if: ${{ steps.check_pr_count.outputs.pr_count == 0 }}
         run: >
           gh pr create
           -l automated
           -a awildturtok,thoniTUB
           -r awildturtok,thoniTUB
           -B develop
-          --title "Reintegrate Main"
+          --title "chore: reintegrate main branch"
           --body "Merge main branch back into develop branch"
           --head $REINTEGRATE_BRANCH_NAME
         env:

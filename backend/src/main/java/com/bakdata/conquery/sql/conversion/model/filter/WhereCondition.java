@@ -8,8 +8,6 @@ public interface WhereCondition {
 
 	Condition condition();
 
-	ConditionType type();
-
 	default WhereCondition negate() {
 		return new InvertedCondition(this);
 	}
@@ -24,7 +22,7 @@ public interface WhereCondition {
 
 	private WhereCondition combineConditions(WhereCondition whereCondition, BiFunction<Condition, Condition, Condition> operation) {
 		Condition combinedCondition = operation.apply(this.condition(), whereCondition.condition());
-		return new WhereConditionWrapper(combinedCondition, ConditionType.PREPROCESSING);
+		return new ConditionWrappingWhereCondition(combinedCondition);
 	}
 
 }

@@ -1,11 +1,16 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import org.jooq.Condition;
@@ -21,6 +26,7 @@ class PreprocessingCte extends ConnectorCte {
 		return ConceptCteStep.PREPROCESSING;
 	}
 
+	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
 		List<SqlSelect> forPreprocessing = tableContext.allSqlSelects().stream()
@@ -34,10 +40,14 @@ class PreprocessingCte extends ConnectorCte {
 											  .build();
 
 		// all where clauses that don't require any preprocessing (connector/child conditions)
-		List<Condition> conditions = tableContext.getSqlFilters().stream()
-												 .flatMap(sqlFilter -> sqlFilter.getWhereClauses().getPreprocessingConditions().stream())
-												 .map(WhereCondition::condition)
-												 .toList();
+		List<Condition> conditions = new ArrayList<>();
+
+		for (SqlFilters sqlFilter : tableContext.getSqlFilters()) {
+			for (WhereCondition whereCondition : sqlFilter.getWhereClauses().getPreprocessingConditions()) {
+				conditions.add(whereCondition.condition());
+			}
+		}
+
 
 		QueryStep.QueryStepBuilder builder = QueryStep.builder()
 													  .selects(preprocessingSelects)
@@ -50,6 +60,7 @@ class PreprocessingCte extends ConnectorCte {
 
 		return joinWithStratificationTable(forPreprocessing, conditions, tableContext);
 	}
+
 
 	private static QueryStep.QueryStepBuilder joinWithStratificationTable(
 			List<SqlSelect> preprocessingSelects,
