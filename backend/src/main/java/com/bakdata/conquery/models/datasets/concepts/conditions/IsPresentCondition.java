@@ -30,7 +30,7 @@ public class IsPresentCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Condition condition = DSL.field(DSL.name(context.getConnectorTable().getName(), column)).isNotNull();
+		Condition condition = DSL.field(DSL.name(column)).isNotNull();
 		return new ConditionWrappingWhereCondition(condition);
 	}
 }

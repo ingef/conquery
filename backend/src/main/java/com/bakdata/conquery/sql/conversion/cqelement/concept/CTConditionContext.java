@@ -9,14 +9,12 @@ import lombok.Value;
 @Value
 public class CTConditionContext {
 
-	Table connectorTable;
-	Column connectorColumn;
+	String connectorColumn;
 	SqlFunctionProvider functionProvider;
 
 	public static CTConditionContext create(Connector connector, SqlFunctionProvider functionProvider) {
 		return new CTConditionContext(
-				connector.getResolvedTable(),
-				connector.getColumn() != null ? connector.getColumn().resolve() : null,
+				connector.getColumn() != null ? connector.getColumn().resolve().getName() : null,
 				functionProvider
 		);
 	}

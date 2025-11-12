@@ -23,7 +23,7 @@ public class SqlMatchingStats {
 	public void createFunctionForConcept(TreeConcept concept, SqlFunctionProvider provider) {
 
 		for (ConceptTreeConnector connector : concept.getConnectors()) {
-			CTConditionContext context = CTConditionContext.create(connector, provider);
+			CTConditionContext context = new CTConditionContext("value", provider);
 			String name = "resolve_id_%s_%s_%s".formatted(concept.getDataset().getName(), concept.getName(), connector.getName());
 
 			Field<String> forConcept = createForConceptTreeNode(concept, context);

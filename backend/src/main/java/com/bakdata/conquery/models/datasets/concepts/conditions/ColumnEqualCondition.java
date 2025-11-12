@@ -46,7 +46,7 @@ public class ColumnEqualCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Field<String> field = DSL.field(DSL.name(context.getConnectorTable().getName(), column), String.class);
+		Field<String> field = DSL.field(DSL.name(column), String.class);
 		return new MultiSelectCondition(field, values.toArray(String[]::new), context.getFunctionProvider());
 	}
 }
