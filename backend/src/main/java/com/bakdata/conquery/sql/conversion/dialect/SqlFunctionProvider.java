@@ -1,13 +1,18 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
+
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
@@ -17,7 +22,9 @@ import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
+import org.jooq.OrderField;
 import org.jooq.Record;
+import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.TableOnConditionStep;
 import org.jooq.impl.DSL;
@@ -31,6 +38,10 @@ public interface SqlFunctionProvider {
 	String INFINITY_SIGN = "∞";
 	String MINUS_INFINITY_SIGN = "-∞";
 	String SQL_UNIT_SEPARATOR = " || '%s' || ".formatted(ResultSetProcessor.UNIT_SEPARATOR);
+
+	Collection<? extends OrderField<?>> orderByValidityDates(
+			Function<Field<?>, ? extends SortField<?>> ordering,
+			List<Field<?>> validityDateFields);
 
 	String getMinDateExpression();
 
@@ -74,6 +85,7 @@ public interface SqlFunctionProvider {
 	 */
 	ColumnDateRange forValidityDate(ValidityDate validityDate);
 
+
 	/**
 	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date. The validity dates bounds will be restricted by the given date
 	 * restriction.
@@ -93,6 +105,7 @@ public interface SqlFunctionProvider {
 	ColumnDateRange toDualColumn(ColumnDateRange columnDateRange);
 
 	ColumnDateRange intersection(ColumnDateRange left, ColumnDateRange right);
+
 
 	/**
 	 * @param predecessor The predeceasing step containing the aggregated {@link ColumnDateRange}.
@@ -129,10 +142,6 @@ public interface SqlFunctionProvider {
 	Field<Integer> dateDistance(ChronoUnit datePart, Field<Date> startDate, Field<Date> endDate);
 
 	Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays);
-
-	<T> Field<T> first(Field<T> field, List<Field<?>> orderByColumn);
-
-	<T> Field<T> last(Field<T> column, List<Field<?>> orderByColumns);
 
 	<T> Field<T> random(Field<T> column);
 
@@ -217,6 +226,22 @@ public interface SqlFunctionProvider {
 				DSL.keyword("STRING_AGG"),
 				DSL.when(field.like(DSL.inline(prefix + "%")), field),
 				DSL.val(", ")
+		);
+	}
+
+	default
+	Condition validityDateFilter(ValidityDate validityDate) {
+
+		if (validityDate.isSingleColumnDaterange()) {
+			Column column = validityDate.getColumn().resolve();
+			return DSL.field(DSL.name(column.getName())).isNotNull();
+		}
+
+		Column startColumn = validityDate.getStartColumn().resolve();
+		Column endColumn = validityDate.getEndColumn().resolve();
+
+		return DSL.or(DSL.field(DSL.name(startColumn.getName())).isNotNull(),
+					  DSL.field(DSL.name(endColumn.getName())).isNotNull()
 		);
 	}
 
