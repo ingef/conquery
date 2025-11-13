@@ -71,8 +71,8 @@ public class StoredQueriesProcessorTest {
 	public static final IndexService INDEX_SERVICE = new IndexService(CONFIG.getCsv().createCsvParserSettings(), "empty");
 	private static final Environment ENVIRONMENT = new Environment("StoredQueriesProcessorTest");
 	@RegisterExtension
-	private static final MetaStorageExtension STORAGE_EXTENTION = new MetaStorageExtension(ENVIRONMENT.metrics());
-	public static final MetaStorage STORAGE = STORAGE_EXTENTION.getMetaStorage();
+	private static final MetaStorageExtension STORAGE_EXTENSION = new MetaStorageExtension(ENVIRONMENT.metrics());
+	public static final MetaStorage STORAGE = STORAGE_EXTENSION.getMetaStorage();
 	@RegisterExtension
 	private static final UserExtension USER_0_EXTENSIONS = new UserExtension(STORAGE, "0");
 	@RegisterExtension
@@ -179,6 +179,8 @@ public class StoredQueriesProcessorTest {
 				)        // included, but no result url for xlsx (result has too many rows)
 
 		);
+
+		QUERIES.forEach(STORAGE::addExecution);
 	}
 
 	private static void setState(ExecutionState execState, ManagedExecutionId id) {
@@ -270,7 +272,7 @@ public class StoredQueriesProcessorTest {
 	@Test
 	public void getQueriesFiltered() {
 
-		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0.getId(), URI_BUILDER, USERS[0], QUERIES.stream(), true)
+		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0.getId(), URI_BUILDER, USERS[0], QUERIES.stream().map(ManagedExecution::getId), true)
 											   .collect(Collectors.toList());
 
 		assertThat(infos)
