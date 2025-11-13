@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.Map;
+import java.util.Set;
 import jakarta.validation.Valid;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -35,5 +36,10 @@ public class NotCondition implements CTCondition {
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
 		WhereCondition whereCondition = condition.convertToSqlCondition(context);
 		return whereCondition.negate();
+	}
+
+	@Override
+	public Set<String> auxiliaryColumns() {
+		return condition.auxiliaryColumns();
 	}
 }

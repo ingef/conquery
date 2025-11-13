@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.Map;
+import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
@@ -32,5 +33,10 @@ public class IsPresentCondition implements CTCondition {
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
 		Condition condition = DSL.field(DSL.name(column)).isNotNull();
 		return new ConditionWrappingWhereCondition(condition);
+	}
+
+	@Override
+	public Set<String> auxiliaryColumns() {
+		return Set.of(column);
 	}
 }

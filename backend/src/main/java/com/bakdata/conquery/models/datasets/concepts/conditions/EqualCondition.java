@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,5 +43,10 @@ public class EqualCondition implements CTCondition {
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
 		Field<String> field = DSL.field(DSL.name(context.getConnectorColumn()), String.class);
 		return new MultiSelectCondition(field, values.toArray(String[]::new), context.getFunctionProvider());
+	}
+
+	@Override
+	public Set<String> auxiliaryColumns() {
+		return Collections.emptySet();
 	}
 }

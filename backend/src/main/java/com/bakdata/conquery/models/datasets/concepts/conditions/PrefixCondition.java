@@ -1,7 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -45,5 +47,10 @@ public class PrefixCondition implements CTCondition {
 		String pattern = Arrays.stream(prefixes).collect(Collectors.joining("|", "", context.getFunctionProvider().getAnyCharRegex()));
 		Condition condition = context.getFunctionProvider().likeRegex(field, pattern);
 		return new ConditionWrappingWhereCondition(condition);
+	}
+
+	@Override
+	public Set<String> auxiliaryColumns() {
+		return Collections.emptySet();
 	}
 }

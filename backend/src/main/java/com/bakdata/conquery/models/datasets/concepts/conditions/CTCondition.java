@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.Map;
+import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -23,5 +24,7 @@ public interface CTCondition {
 	boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException;
 
 	WhereCondition convertToSqlCondition(CTConditionContext context);
+
+	Set<String> auxiliaryColumns();
 
 }

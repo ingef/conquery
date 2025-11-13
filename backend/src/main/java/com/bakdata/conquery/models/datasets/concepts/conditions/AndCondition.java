@@ -1,7 +1,10 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 
@@ -51,5 +54,13 @@ public class AndCondition implements CTCondition {
 						 .orElseThrow(
 								 () -> new IllegalStateException("At least one condition is required to convert %s to a SQL condition.".formatted(getClass()))
 						 );
+	}
+
+	@Override
+	public Set<String> auxiliaryColumns() {
+		return conditions.stream()
+						 .map(CTCondition::auxiliaryColumns)
+						 .flatMap(Collection::stream)
+						 .collect(Collectors.toSet());
 	}
 }

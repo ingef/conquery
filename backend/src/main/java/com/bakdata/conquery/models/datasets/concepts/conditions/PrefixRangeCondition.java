@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -75,5 +77,10 @@ public class PrefixRangeCondition implements CTCondition {
 			}
 		}
 		return builder.append(functionProvider.getAnyCharRegex()).toString();
+	}
+
+	@Override
+	public Set<String> auxiliaryColumns() {
+		return Collections.emptySet();
 	}
 }

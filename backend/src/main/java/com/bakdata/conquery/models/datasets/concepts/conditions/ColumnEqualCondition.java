@@ -49,4 +49,9 @@ public class ColumnEqualCondition implements CTCondition {
 		Field<String> field = DSL.field(DSL.name(column), String.class);
 		return new MultiSelectCondition(field, values.toArray(String[]::new), context.getFunctionProvider());
 	}
+
+	@Override
+	public Set<String> auxiliaryColumns() {
+		return Set.of(column);
+	}
 }
