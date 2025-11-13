@@ -17,6 +17,14 @@ public class WhereClauses {
 	@Singular
 	List<WhereCondition> groupFilters;
 
+	public WhereClauses negated() {
+		return new WhereClauses(
+				preprocessingConditions.stream().map(WhereCondition::negate).toList(),
+				eventFilters.stream().map(WhereCondition::negate).toList(),
+				groupFilters.stream().map(WhereCondition::negate).toList()
+		);
+	}
+
 	public static WhereClauses empty() {
 		return WhereClauses.builder().build();
 	}

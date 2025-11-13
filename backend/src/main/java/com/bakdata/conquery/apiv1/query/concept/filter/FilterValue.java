@@ -68,6 +68,9 @@ public abstract class FilterValue<VALUE> {
 		FilterContext<VALUE> filterContext = FilterContext.forConceptConversion(ids, readValue(), context, tables);
 		final Filter<VALUE> resolve = (Filter<VALUE>) filter.resolve();
 		SqlFilters sqlFilters = resolve.createConverter().convertToSqlFilter(resolve, filterContext);
+		if (context.isNegation()) {
+			return new SqlFilters(sqlFilters.getSelects(), sqlFilters.getWhereClauses().negated());
+		}
 		return sqlFilters;
 	}
 
