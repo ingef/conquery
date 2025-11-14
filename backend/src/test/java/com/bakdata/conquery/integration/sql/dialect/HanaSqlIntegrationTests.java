@@ -188,7 +188,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		private final static String PORT = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_PORT"), "39041");
 		private final static String HOST = System.getenv("CONQUERY_SQL_DB");
 		private final static String CONNECTION_URL = "jdbc:sap://%s:%s/databaseName=HXE&encrypt=true&validateCertificate=false".formatted(HOST, PORT);
-		private final static String USERNAME = System.getenv("CONQUERY_SQL_USER");
+		private final static String USERNAME = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_USER"), "SYSTEM");
 		private final static String PASSWORD = System.getenv("CONQUERY_SQL_PASSWORD");
 		private final DSLContextWrapper dslContextWrapper;
 		private final DatabaseConfig databaseConfig;

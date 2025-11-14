@@ -9,9 +9,4 @@ public class NumberCondition extends RangeCondition {
 		super(column, range);
 	}
 
-	@Override
-	public ConditionType type() {
-		return ConditionType.EVENT;
-	}
-
 }

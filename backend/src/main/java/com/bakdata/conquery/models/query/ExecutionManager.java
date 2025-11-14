@@ -96,15 +96,23 @@ public abstract class ExecutionManager {
 
 	public void reset(ManagedExecutionId id) {
 		// This avoids endless loops with already reset queries
-		if (!isResultPresent(id)) {
+		if (!isInfoPresent(id)) {
 			return;
 		}
 
 		clearQueryResults(id);
 	}
 
-	public boolean isResultPresent(ManagedExecutionId id) {
+	public boolean isInfoPresent(ManagedExecutionId id) {
 		return tryGetExecutionInfo(id).isPresent();
+	}
+
+	public ExecutionState getState(ManagedExecutionId id) {
+		if (!isInfoPresent(id)) {
+			return ExecutionState.NEW;
+		}
+
+		return getExecutionInfo(id).getExecutionState();
 	}
 
 	public void clearQueryResults(ManagedExecutionId execution) {
@@ -302,6 +310,7 @@ public abstract class ExecutionManager {
 	public interface InternalExecutionInfo extends ExecutionInfo {
 		Stream<EntityResult> streamQueryResults();
 		List<ResultInfo> getResultInfos();
+		long getResultCount();
 	}
 
 
