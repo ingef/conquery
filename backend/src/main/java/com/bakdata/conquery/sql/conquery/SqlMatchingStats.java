@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conquery;
 
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.val;
+import static org.jooq.impl.DSL.*;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -9,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
@@ -20,7 +20,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.Case;
 import org.jooq.CaseConditionStep;
+import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.Name;
 import org.jooq.impl.DSL;
 
 @Slf4j
@@ -31,17 +33,33 @@ public class SqlMatchingStats {
 		return field(val(current.getId().toString()));
 	}
 
-	public void createFunctionForConcept(TreeConcept concept, SqlFunctionProvider provider) {
-
-		for (ConceptTreeConnector connector : concept.getConnectors()) {
-			CTConditionContext context = new CTConditionContext("value", provider);
-			String name = "resolve_id_%s_%s_%s".formatted(concept.getDataset().getName(), concept.getName(), connector.getName());
-
-			Set<String> auxiliaryColumns = getAuxiliaryColumns(concept);
-			Field<String> forConcept = forNode(idField(concept), concept.getChildren(), context);
-
-			log.info("{}:{}\n{}", name, auxiliaryColumns, forConcept);
+	public void createFunctionForConcept(Concept<?> maybeTree, SqlFunctionProvider provider, DSLContext dslContext) {
+		if (!(maybeTree instanceof TreeConcept concept)) {
+			return;
 		}
+
+		CTConditionContext context = new CTConditionContext("value", provider);
+		Name name = name("resolve_id_%s".formatted(concept.getName()));
+
+		Set<String> auxiliaryColumns = getAuxiliaryColumns(concept);
+		auxiliaryColumns.add("value");
+
+		Field<String> forConcept = forNode(idField(concept), concept.getChildren(), context);
+
+		String params = auxiliaryColumns.stream().map("%s text"::formatted).collect(Collectors.joining(", "));
+
+
+		String statement = """
+					DROP FUNCTION IF EXISTS %s;
+					CREATE FUNCTION %s(%s) RETURNS TEXT
+					LANGUAGE SQL
+					RETURN
+						%s;
+					""".formatted(name, name, params, forConcept);
+
+		dslContext.execute(statement);
+
+		log.info("{}", statement);
 	}
 
 	@NotNull

@@ -35,7 +35,7 @@ public class LocalStorageListener implements StorageListener {
 
 	@Override
 	public void onAddConcept(Concept<?> concept) {
-		new SqlMatchingStats().createFunctionForConcept((TreeConcept) concept, new PostgreSqlDialect().getFunctionProvider());
+//		new SqlMatchingStats().createFunctionForConcept((TreeConcept) concept, new PostgreSqlDialect().getFunctionProvide*/r());
 	}
 
 	@Override

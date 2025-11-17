@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.sql.DSLContextWrapper;
+import com.bakdata.conquery.sql.conquery.SqlMatchingStats;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,6 +26,7 @@ public class LocalNamespace extends Namespace {
 	private final SqlDialect dialect;
 	private final DSLContextWrapper dslContextWrapper;
 	private final SqlStorageHandler storageHandler;
+	private final SqlMatchingStats sqlMatchingStatsHandler;
 
 	public LocalNamespace(
 			SqlDialect dialect,
@@ -35,17 +37,19 @@ public class LocalNamespace extends Namespace {
 			SqlStorageHandler storageHandler,
 			JobManager jobManager,
 			SearchProcessor filterSearch,
-			SqlEntityResolver sqlEntityResolver
+			SqlEntityResolver sqlEntityResolver, SqlMatchingStats sqlMatchingStatsHandler
 	) {
 		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, sqlEntityResolver);
 		this.dslContextWrapper = dslContextWrapper;
 		this.storageHandler = storageHandler;
 		this.dialect = dialect;
+		this.sqlMatchingStatsHandler = sqlMatchingStatsHandler;
 	}
 
 	@Override
 	void updateMatchingStats() {
-		// TODO Build basic statistic on data
+		getStorage().getAllConcepts()
+					.forEach(concept -> sqlMatchingStatsHandler.createFunctionForConcept(concept, getDialect().getFunctionProvider(), getDslContextWrapper().getDslContext()));
 	}
 
 	@Override

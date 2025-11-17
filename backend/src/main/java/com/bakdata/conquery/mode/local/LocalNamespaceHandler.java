@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.sql.DSLContextWrapper;
 import com.bakdata.conquery.sql.DslContextFactory;
 import com.bakdata.conquery.sql.conquery.SqlExecutionManager;
+import com.bakdata.conquery.sql.conquery.SqlMatchingStats;
 import com.bakdata.conquery.sql.conversion.NodeConversions;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
@@ -72,7 +73,8 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 				sqlStorageHandler,
 				namespaceData.jobManager(),
 				namespaceData.filterSearch(),
-				sqlEntityResolver
+				sqlEntityResolver,
+				new SqlMatchingStats()
 		);
 	}
 

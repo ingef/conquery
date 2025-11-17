@@ -3,6 +3,7 @@ package com.bakdata.conquery.integration.json;
 import java.util.Collection;
 import java.util.List;
 
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.filter.FilterTest;
@@ -32,6 +33,8 @@ public class SqlTestDataImporter implements TestDataImporter {
 
 		importSearchIndexes(support, test.getSearchIndexes());
 		importIdMapping(support, content);
+		waitUntilDone(support, () -> LoadingUtil.updateMatchingStats(support));
+
 	}
 
 	@Override
@@ -44,6 +47,8 @@ public class SqlTestDataImporter implements TestDataImporter {
 		importTableContents(support, content.getTables());
 		importIdMapping(support, content);
 		importPreviousQueries(support, content);
+		waitUntilDone(support, () -> LoadingUtil.updateMatchingStats(support));
+		
 	}
 
 	@Override
