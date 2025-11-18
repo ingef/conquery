@@ -21,13 +21,13 @@ public class MatchingStatsTests {
 
         assertThat(stats.countEntities()).isEqualTo(0);
 
-        stats.putEntry(workerId1, new MatchingStats.Entry(5, 5, 10, 20));
+        stats.putEntry(workerId1.toString(), new MatchingStats.Entry(5, 5, 10, 20));
         assertThat(stats.countEntities()).isEqualTo(5);
 
-        stats.putEntry(workerId1, new MatchingStats.Entry(5, 8, 10, 20));
+        stats.putEntry(workerId1.toString(), new MatchingStats.Entry(5, 8, 10, 20));
         assertThat(stats.countEntities()).isEqualTo(8);
 
-        stats.putEntry(workerId2, new MatchingStats.Entry(5, 2, 10, 20));
+        stats.putEntry(workerId2.toString(), new MatchingStats.Entry(5, 2, 10, 20));
         assertThat(stats.countEntities()).isEqualTo(10);
 
 
@@ -58,7 +58,7 @@ public class MatchingStatsTests {
 
 
 
-        stats.putEntry(workerId1, entry1);
+        stats.putEntry(workerId1.toString(), entry1);
         assertThat(stats.countEvents()).isEqualTo(8);
         assertThat(stats.countEntities()).isEqualTo(4);
 
@@ -80,7 +80,7 @@ public class MatchingStatsTests {
         entry2.addEvent(table, null, 9, "9");
         entry2.addEvent(table, null, 10, "10");
 
-        stats.putEntry(workerId2, entry2);
+        stats.putEntry(workerId2.toString(), entry2);
         assertThat(stats.countEvents()).isEqualTo(18);
         assertThat(stats.countEntities()).isEqualTo(14);
 

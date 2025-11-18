@@ -21,7 +21,7 @@ import lombok.Setter;
 @Setter
 public class MatchingStats {
 
-    private Map<WorkerId, Entry> entries = new HashMap<>();
+    private Map<String, Entry> entries = new HashMap<>();
     @JsonIgnore
     private transient CDateRange span;
 
@@ -66,7 +66,7 @@ public class MatchingStats {
 
     }
 
-    public void putEntry(WorkerId source, Entry entry) {
+    public void putEntry(String source, Entry entry) {
         synchronized (this) {
             entries.put(source, entry);
             span = null;
