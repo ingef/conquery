@@ -116,7 +116,12 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
-	@Override
+    @Override
+    public ColumnDateRange maxRangeIf(Condition condition) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction) {
 
 		ColumnDateRange validityDateRange = toColumnDateRange(validityDate);
