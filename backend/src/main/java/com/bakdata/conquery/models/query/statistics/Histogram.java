@@ -2,14 +2,15 @@ package com.bakdata.conquery.models.query.statistics;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
+import com.google.common.collect.Range;
+import com.google.common.collect.TreeRangeMap;
 import it.unimi.dsi.fastutil.doubles.Double2ObjectFunction;
+import lombok.AccessLevel;
 import lombok.Data;
-import lombok.ToString;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Basic implementation of a histogram.
@@ -23,89 +24,39 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Histogram {
 
-
-	private final Node[] nodes;
-	private final Node zeroNode;
-	private final Node underflowNode;
-	private final Node overflowNode;
-	private final double lower;
-	private final double upper;
-	private final double width;
+	private final TreeRangeMap<Double, Node> nodes;
+	private final double absMin, absMax;
 
 	private int total;
 
-	private static Histogram rounded(double lower, double upper, double absMin, double absMax, int expectedBins) {
-		// adjust lower/upper to start on rounded edges.
-		final double adjLower = Math.max(Math.floor(absMin), Math.floor(lower));
-		final double adjUpper = Math.min(Math.ceil(absMax), Math.ceil(upper));
+	public Histogram(TreeRangeMap<Double, Node> nodes, double absMin, double absMax) {
+		Range<Double> span = nodes.span();
+		nodes.put(Range.atMost(span.lowerEndpoint()), new Node(absMin, span.lowerEndpoint(), Node.Type.UNDERFLOW));
+		nodes.put(Range.greaterThan(span.upperEndpoint()), new Node(span.upperEndpoint(), absMax, Node.Type.OVERFLOW));
 
-		final double width = (double) Math.max(1, Math.round((adjUpper - adjLower) / expectedBins));
-
-		final double newLower;
-
-		if (adjLower == 0d) {
-			newLower = 0;
-		}
-		else if (adjLower < 0) {
-			// We adjust slightly downward so that we have even sized bins, that meet exactly at zero (which is tracked separately)
-			newLower = -width * Math.ceil(Math.abs(adjLower) / width);
-		}
-		else {
-			newLower = adjLower;
+		if (span.contains(0d)) {
+			nodes.putCoalescing(Range.singleton(0d), new Node(0, 0, Node.Type.ZERO));
 		}
 
-		final double newUpper = newLower + width * expectedBins;
-
-		final Node[] nodes = IntStream.range(0, expectedBins)
-									  // Note, using multiplication is important to avoid floating-point imprecision when wanting to arrive exactly around 0 etc.
-									  .mapToObj(index -> new Node(newLower + width * index, newLower + width * (index + 1)))
-									  .toArray(Node[]::new);
-
-
-		return new Histogram(nodes,
-							 new Node(0, 0),
-							 new Node(Math.min(absMin, newLower), newLower),
-							 new Node(newUpper, Math.max(absMax, newUpper), true),
-							 newLower, newUpper,
-							 width);
+		this.nodes = nodes;
+		this.absMin = absMin;
+		this.absMax = absMax;
 	}
 
-	private static Histogram unrounded(double lower, double upper, double absMin, double absMax, int expectedBins) {
 
-		final double width = (upper - lower) / expectedBins;
-
-		final double adjLower;
-
-		// We have to adjust left if we have a zero-crossing, to ensure partitioning out the zero-bin
-		if (lower < 0 && absMax > 0) {
-			adjLower = -Math.ceil(Math.abs(lower) / width) * width;
-		}
-		else {
-			adjLower = lower;
-		}
-
-		final double newUpper = adjLower + width * expectedBins;
-
-		final Node[] nodes = IntStream.range(0, expectedBins)
-									  .mapToObj(index -> new Node(adjLower + width * index, adjLower + width * (index + 1)))
-									  .toArray(Node[]::new);
-
-		return new Histogram(nodes, new Node(0, 0), new Node(absMin, lower), new Node(newUpper, absMax, true), adjLower, newUpper, width);
-	}
-
-	public static Histogram zeroCentered(double lower, double upper, double absMin, double absMax, int expectedBins,  boolean roundWidth) {
+	/**
+	 * Create a histogram that is segmented to always have 0 singled out.
+	 */
+	public static Histogram zeroAligned(double lower, double upper, double absMin, double absMax, int expectedBins, boolean roundWidth) {
 		if (lower == upper) {
+			TreeRangeMap<Double, Node> nodes = TreeRangeMap.create();
+			nodes.put(Range.singleton(lower), new Node(lower, upper, Node.Type.NORMAL));
+
 			// Short circuit for degenerate cases
-			return new Histogram(new Node[0],
-								 new Node(0, 0),
-								 new Node(absMin, lower),
-								 new Node(upper, absMax, true),
-								 lower, upper,
-								 0
-			);
+			return new Histogram(nodes, absMin, absMax);
 		}
 
-		if(roundWidth){
+		if (roundWidth) {
 			return rounded(lower, upper, absMin, absMax, expectedBins);
 		}
 		else {
@@ -113,37 +64,65 @@ public class Histogram {
 		}
 	}
 
+	private static Histogram rounded(double lower, double upper, double absMin, double absMax, int expectedBins) {
+		// adjust lower/upper to start on rounded edges.
+		double adjLower = Math.max(Math.floor(absMin), Math.floor(lower));
+		final double adjUpper = Math.min(Math.ceil(absMax), Math.ceil(upper));
+
+		final double binWidth = Math.max(1d, Math.round((adjUpper - adjLower) / (double) expectedBins));
+
+		return createHistogram(lower, absMin, absMax, expectedBins, adjLower, binWidth);
+	}
+
+	private static Histogram unrounded(double lower, double upper, double absMin, double absMax, int expectedBins) {
+		double binWidth = (upper - lower) / expectedBins;
+
+		return createHistogram(lower, absMin, absMax, expectedBins, lower, binWidth);
+	}
+
+	@NotNull
+	private static Histogram createHistogram(double lower, double absMin, double absMax, int expectedBins, double adjLower, double binWidth) {
+		adjLower = ensureZeroCrossing(lower, absMax, adjLower, binWidth);
+
+		final TreeRangeMap<Double, Node> nodes = TreeRangeMap.create();
+
+		// Note, using multiplication is important to avoid floating-point imprecision when wanting to arrive exactly around 0 etc.
+		for (int index = 0; index < expectedBins; index++) {
+			Node node = new Node(adjLower + binWidth * index, adjLower + binWidth * (index + 1));
+			nodes.put(Range.closedOpen(node.getMin(), node.getMax()), node);
+		}
+
+		return new Histogram(nodes, absMin, absMax);
+	}
+
+
+
+	private static double ensureZeroCrossing(double lower, double absMax, double adjLower, double binWidth) {
+		// We have to adjust left if we have a zero-crossing, to ensure partitioning out the zero-bin
+		if (lower < 0 && absMax > 0) {
+			adjLower = -Math.ceil(Math.abs(lower) / binWidth) * binWidth;
+		}
+		return adjLower;
+	}
+
 	public void add(double value) {
 		total++;
+		Node node = nodes.get(value);
 
-		if (value == 0d) {
-			zeroNode.add();
+		if (node == null) {
+			log.warn("Missing node for value `{}` in with ranges {}", value, nodes);
 			return;
 		}
 
-		if (value < lower) {
-			underflowNode.add();
-			return;
-		}
-
-		if (value >= upper) {
-			overflowNode.add();
-			return;
-		}
-
-		final int index = (int) Math.floor((value - lower) / width);
-		nodes[index].add();
+		node.add();
 	}
 
 	public List<Node> nodes() {
-		return Stream.of(
-							 Stream.of(underflowNode, overflowNode, zeroNode).filter(node -> node.getCount() > 0),
-							 Stream.of(nodes)
-					 )
-					 .flatMap(Function.identity())
-					 // We compare by Max as well to fix zeroNode and underflowNode sorting when absMin >= 0
-					 .sorted(Comparator.comparingDouble(Node::getMin).thenComparingDouble(Node::getMax))
-					 .toList();
+		return nodes.asMapOfRanges().values().stream()
+					.filter(node -> node.getType() == Node.Type.NORMAL || node.getCount() > 0)
+					// We compare by Max as well to fix zeroNode and underflowNode sorting when absMin >= 0
+					.sorted(Comparator.comparingDouble(Node::getMin).thenComparingDouble(Node::getMax))
+					.toList();
 	}
 
 	@Data
@@ -151,23 +130,51 @@ public class Histogram {
 		/**
 		 * This is an em-dash.
 		 */
-		private static final String  FROM_TO = " – ";
-
+		private static final String FROM_TO = " – ";
+		private final double min, max;
 		private int hits;
 
-		private final double min, max;
+		private Type type;
 
-		@ToString.Exclude
-		private final boolean overflow;
-
-		public Node(double min, double max, boolean overflow) {
-			this.min = min;
-			this.max = max;
-			this.overflow = overflow;
+		public Node(double min, double max) {
+			this(min, max, Type.NORMAL);
 		}
 
-		public Node(double min, double max){
-			this(min, max, false);
+		public Node(double min, double max, Type type) {
+			this.min = min;
+			this.max = max;
+			this.type = type;
+		}
+
+		static String createLabel(Node node, Double2ObjectFunction<String> printer, boolean isInteger) {
+			final String lower = printer.apply(node.getMin());
+
+			if (node.getMin() == node.getMax()) {
+				return lower;
+			}
+
+			if (isInteger) {
+
+				if (node.getMax() - node.getMin() <= 1) {
+					return lower;
+				}
+
+				// Integers allow us to forfeit the brace notation by closing the range (unless we are the overflow bin which tracks real values)
+				final String upper = printer.apply(node.getMax() - (node.isOverflow() ? 0 : 1));
+
+				return lower + FROM_TO + upper;
+			}
+
+			final String upper = printer.apply(node.getMax());
+
+			final String startBrackets = node.getMin() == 0 ? "(" : "[";
+			final String endBrackets = ")";
+
+			return startBrackets + lower + FROM_TO + upper + endBrackets;
+		}
+
+		private boolean isOverflow() {
+			return Type.OVERFLOW.equals(type);
 		}
 
 		public int getCount() {
@@ -179,31 +186,8 @@ public class Histogram {
 		}
 
 
-		String createLabel(Double2ObjectFunction<String> printer, boolean isInteger) {
-			final String lower = printer.apply(getMin());
-
-			if(getMin() == getMax()){
-				return lower;
-			}
-
-			if(isInteger){
-
-				if (getMax() - getMin() <= 1){
-					return lower;
-				}
-
-				// Integers allow us to forfeit the brace notation by closing the range (unless we are the overflow bin which tracks real values)
-				final String upper = printer.apply(getMax() - (isOverflow() ? 0 : 1));
-
-				return lower + FROM_TO + upper;
-			}
-
-			final String upper = printer.apply(getMax());
-
-			final String startBrackets = getMin() == 0 ? "(" : "[";
-			final String endBrackets = ")";
-
-			return startBrackets + lower + FROM_TO + upper + endBrackets;
+		public enum Type {
+			UNDERFLOW, ZERO, OVERFLOW, NORMAL
 		}
 
 	}

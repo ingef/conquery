@@ -14,12 +14,27 @@ class HistogramTest {
 
 	public static final int SEED = 0xD00F;
 
+	@Test
+	void recon() {
 
+		final Histogram histogram = Histogram.zeroAligned(0.0021445979668993976d, 0.9999775467040908d, 0.0021445979668993976, 0.9999775467040908d, 10, false);
+
+		histogram.add(0.9999775467040908d);
+
+		log.info("{}", histogram);
+
+		List<Histogram.Node> nodes = histogram.nodes();
+
+		assertThat(nodes.get(9).getHits()).isEqualTo(1);
+
+		assertThat(nodes.stream().filter(node -> node.getType().equals(Histogram.Node.Type.OVERFLOW)).findFirst()).isEmpty();
+
+	}
 
 	@Test
 	void plain() {
 
-		final Histogram histogram = Histogram.zeroCentered(0, 10, -2, 15, 10,  false);
+		final Histogram histogram = Histogram.zeroAligned(0, 10, -2, 15, 10, false);
 
 		final Random random = new Random(SEED);
 
@@ -84,7 +99,7 @@ class HistogramTest {
 	@Test
 	void weird() {
 
-		final Histogram histogram = Histogram.zeroCentered(-35, 27, -40, 28, 12, false);
+		final Histogram histogram = Histogram.zeroAligned(-35, 27, -40, 28, 12, false);
 
 		final Random random = new Random(SEED);
 
@@ -95,7 +110,6 @@ class HistogramTest {
 		for (int it = 0; it < 100; it++) {
 			histogram.add(random.nextDouble(-40, 38));
 		}
-
 
 
 		final List<Histogram.Node> nodes = histogram.nodes();
@@ -137,7 +151,7 @@ class HistogramTest {
 
 	@Test
 	public void zeroWidth() {
-		Histogram histogram = Histogram.zeroCentered(0.0, 0.0, -1.0, 1.0, 10, true);
+		Histogram histogram = Histogram.zeroAligned(0.0, 0.0, -1.0, 1.0, 10, true);
 		// Should be only zero-bin, under and overflow bins
 		histogram.add(0);
 		histogram.add(-0.5);

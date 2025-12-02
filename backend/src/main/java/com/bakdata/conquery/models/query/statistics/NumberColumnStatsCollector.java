@@ -24,17 +24,22 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	private final ResultType type;
 	private final DescriptiveStatistics statistics = new DescriptiveStatistics();
 	private final NumberFormat decimalFormat;
-	private int nulls;
-
-
 	private final Comparator<TYPE> comparator;
-
 	private final NumberFormat formatter;
 	private final int expectedBins;
 	private final double upperPercentile;
 	private final double lowerPercentile;
+	private int nulls;
 
-	public NumberColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings, int expectedBins, double lowerPercentile, double upperPercentile) {
+	public NumberColumnStatsCollector(
+			String name,
+			String label,
+			String description,
+			ResultType type,
+			PrintSettings printSettings,
+			int expectedBins,
+			double lowerPercentile,
+			double upperPercentile) {
 		super(name, label, description, printSettings);
 
 		this.type = type;
@@ -52,14 +57,6 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		decimalFormat = printSettings.getDecimalFormat();
 	}
 
-	private static NumberFormat selectFormatter(ResultType type, PrintSettings printSettings) {
-		return switch (((ResultType.Primitive) type)) {
-			case INTEGER -> printSettings.getIntegerFormat();
-			case MONEY -> printSettings.getCurrencyFormat();
-			default -> printSettings.getDecimalFormat();
-		};
-	}
-
 	private Comparator<TYPE> selectComparator(ResultType resultType) {
 		return switch (((ResultType.Primitive) type)) {
 			case INTEGER -> Comparator.comparingInt(Number::intValue);
@@ -68,11 +65,20 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		};
 	}
 
+	private static NumberFormat selectFormatter(ResultType type, PrintSettings printSettings) {
+		return switch (((ResultType.Primitive) type)) {
+			case INTEGER -> printSettings.getIntegerFormat();
+			case MONEY -> printSettings.getCurrencyFormat();
+			default -> printSettings.getDecimalFormat();
+		};
+	}
+
 	/**
 	 * If distance between bounds is less than expectedBins, we expand our bounds along percentiles.
 	 */
 	private static Range<Double> expandBounds(double lower, double upper, int expectedBins, DescriptiveStatistics statistics, double by) {
 		assert by > 0;
+
 
 		// limitation of DescriptiveStatistics#getPercentile: crashes if lower==0, so we short circuit.
 		final boolean underflow = lower <= 1.d;
@@ -120,19 +126,40 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	@NotNull
 	private List<HistogramColumnDescription.Entry> createBins() {
 
-		final Range<Double> bounds = expandBounds(lowerPercentile, upperPercentile, expectedBins, statistics, 5);
+		final Range<Double> bounds;
 
-		log.trace("Creating Histogram for {} with params inner=({},  {}), bounds=({},{}) bins={}", getLabel(), bounds.lowerEndpoint(), bounds.upperEndpoint(), getStatistics().getMin(), getStatistics().getMax(), expectedBins);
+		// Short circuit for ranges close to exactly [0..1]
+		if (statistics.getMin() > 0 && statistics.getMin() <= 0.1 && statistics.getMax() < 1 && statistics.getMax() > 0.9) {
+			bounds = Range.closed(0d, 1d);
+		}
+		else {
+			bounds = expandBounds(lowerPercentile, upperPercentile, expectedBins, statistics, 5);
+		}
+
+		log.trace("Creating Histogram for {} with params inner=({},  {}), bounds=({},{}) bins={}",
+				  getLabel(),
+				  bounds.lowerEndpoint(),
+				  bounds.upperEndpoint(),
+				  getStatistics().getMin(),
+				  getStatistics().getMax(),
+				  expectedBins
+		);
 
 		final Histogram histogram =
-				Histogram.zeroCentered(bounds.lowerEndpoint(), bounds.upperEndpoint(), getStatistics().getMin(), getStatistics().getMax(), expectedBins, bounds.upperEndpoint() - bounds.lowerEndpoint() > 1);
+				Histogram.zeroAligned(bounds.lowerEndpoint(),
+									  bounds.upperEndpoint(),
+									  getStatistics().getMin(),
+									  getStatistics().getMax(),
+									  expectedBins,
+									  bounds.upperEndpoint() - bounds.lowerEndpoint() > 1
+				);
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 
 		return histogram.nodes()
 						.stream()
 						.map(bin -> {
-							final String binLabel = bin.createLabel(this::printValue, ResultType.Primitive.INTEGER.equals(getType()));
+							final String binLabel = Histogram.Node.createLabel(bin, this::printValue, ResultType.Primitive.INTEGER.equals(getType()));
 
 							return new HistogramColumnDescription.Entry(binLabel, bin.getCount());
 						})
@@ -151,7 +178,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		out.put(labels.max(), printValue(getStatistics().getMax()));
 
 		// mean is always a decimal number, therefore integer needs special handling
-		if(ResultType.Primitive.INTEGER.equals(getType())){
+		if (ResultType.Primitive.INTEGER.equals(getType())) {
 			out.put(labels.mean(), decimalFormat.format(getStatistics().getMean()));
 		}
 		else {
