@@ -30,6 +30,7 @@ import org.jooq.Field;
 import org.jooq.Param;
 import org.jooq.impl.DSL;
 
+//TODO(FK): this needs a rework. Current implementation makes a sum of the quarters and doesn't take overlapping events into account.
 public class CountQuartersSqlAggregator implements SelectConverter<CountQuartersSelect>, FilterConverter<CountQuartersFilter, Range.LongRange>, SqlAggregator {
 
 	@Override

@@ -22,7 +22,7 @@ public class MultiSelectCondition implements WhereCondition {
 		// we need to check if the entry is NULL or does not fulfil the condition
 		Condition valueIsNull = column.isNull();
 		Condition notOrNull = DSL.not(condition()).or(valueIsNull);
-		return ConditionUtil.wrap(notOrNull, this.type());
+		return ConditionUtil.wrap(notOrNull);
 	}
 
 	@Override
@@ -40,9 +40,5 @@ public class MultiSelectCondition implements WhereCondition {
 		return inCondition;
 	}
 
-	@Override
-	public ConditionType type() {
-		return ConditionType.EVENT;
-	}
 
 }

@@ -19,7 +19,6 @@ public class SqlExecutionExecutionInfo implements ExecutionManager.InternalExecu
 	List<String> columnNames;
 	List<EntityResult> table;
 	private List<ResultInfo> resultInfos;
-	int rowCount;
 	CountDownLatch executingLock;
 
 	public SqlExecutionExecutionInfo() {
@@ -27,7 +26,6 @@ public class SqlExecutionExecutionInfo implements ExecutionManager.InternalExecu
 		this.columnNames = null;
 		this.table = null;
 		this.executingLock = new CountDownLatch(1);
-		rowCount = 0;
 	}
 
 	public SqlExecutionExecutionInfo(ExecutionState executionState, List<String> columnNames, List<EntityResult> table, List<ResultInfo> resultInfos, CountDownLatch executingLock) {
@@ -36,7 +34,6 @@ public class SqlExecutionExecutionInfo implements ExecutionManager.InternalExecu
 		this.resultInfos = resultInfos;
 		this.table = table;
 		this.executingLock = executingLock;
-		rowCount = table.size();
 	}
 
 	@Override
@@ -46,5 +43,13 @@ public class SqlExecutionExecutionInfo implements ExecutionManager.InternalExecu
 			return Stream.empty();
 		}
 		return table.stream();
+	}
+
+	@Override
+	public long getResultCount() {
+		if (table == null) {
+			return 0;
+		}
+		return table.size();
 	}
 }
