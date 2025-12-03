@@ -128,7 +128,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 		final Range<Double> bounds;
 
-		// Short circuit for ranges close to exactly [0..1]
+		// Shortcut for ranges close to exactly [0..1]
 		if (statistics.getMin() > 0 && statistics.getMin() <= 0.1 && statistics.getMax() < 1 && statistics.getMax() > 0.9) {
 			bounds = Range.closed(0d, 1d);
 		}
@@ -145,23 +145,25 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 				  expectedBins
 		);
 
+		boolean integral = ResultType.Primitive.INTEGER.equals(getType());
 		final Histogram histogram =
 				Histogram.zeroAligned(bounds.lowerEndpoint(),
 									  bounds.upperEndpoint(),
 									  getStatistics().getMin(),
 									  getStatistics().getMax(),
 									  expectedBins,
-									  bounds.upperEndpoint() - bounds.lowerEndpoint() > 1
+									  integral || bounds.upperEndpoint() - bounds.lowerEndpoint() > 1,
+									  integral
 				);
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 
-		return histogram.nodes()
+		return histogram.getNodes().asMapOfRanges().entrySet()
 						.stream()
 						.map(bin -> {
-							final String binLabel = Histogram.Node.createLabel(bin, this::printValue, ResultType.Primitive.INTEGER.equals(getType()));
+							final String binLabel = histogram.createLabel(bin.getKey(), this::printValue);
 
-							return new HistogramColumnDescription.Entry(binLabel, bin.getCount());
+							return new HistogramColumnDescription.Entry(binLabel, bin.getValue().getCount());
 						})
 						.toList();
 	}
