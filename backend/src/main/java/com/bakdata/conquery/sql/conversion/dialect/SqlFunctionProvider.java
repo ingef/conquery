@@ -1,11 +1,12 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
 
+import static org.jooq.impl.DSL.function;
+
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
+import org.jooq.Name;
 import org.jooq.OrderField;
 import org.jooq.Record;
 import org.jooq.SortField;
@@ -229,8 +231,7 @@ public interface SqlFunctionProvider {
 		);
 	}
 
-	default
-	Condition validityDateFilter(ValidityDate validityDate) {
+	default Condition validityDateFilter(ValidityDate validityDate) {
 
 		if (validityDate.isSingleColumnDaterange()) {
 			Column column = validityDate.getColumn().resolve();
@@ -244,5 +245,17 @@ public interface SqlFunctionProvider {
 					  DSL.field(DSL.name(endColumn.getName())).isNotNull()
 		);
 	}
+
+	default Field<Date> lower(Field<Object> daterange) {
+		return function("lower", Date.class, daterange);
+	}
+
+	default Field<Date> upper(Field<Object> daterange) {
+		return function("upper", Date.class, daterange);
+	}
+
+	String createFunctionStatement(Name name, List<String> params, Field<String> forConcept);
+
+	Field<?> functionParam(String name);
 
 }

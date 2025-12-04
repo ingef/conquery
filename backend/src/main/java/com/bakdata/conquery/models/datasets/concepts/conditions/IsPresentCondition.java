@@ -12,7 +12,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.jooq.Condition;
-import org.jooq.impl.DSL;
 
 /**
  * This condition requires that the selected Column has a value.
@@ -31,7 +30,7 @@ public class IsPresentCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Condition condition = DSL.field(DSL.name(column)).isNotNull();
+		Condition condition = context.access(column).isNotNull();
 		return new ConditionWrappingWhereCondition(condition);
 	}
 

@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.datasets.concepts.conditions;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-
 import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -17,16 +16,17 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 /**
  * This condition requires each value to be exactly as given in the list.
  */
-@CPSType(id="EQUAL", base=CTCondition.class)
+@CPSType(id = "EQUAL", base = CTCondition.class)
 @AllArgsConstructor
 public class EqualCondition implements CTCondition {
 
-	@Setter @Getter @NotEmpty
+	@Setter
+	@Getter
+	@NotEmpty
 	private Set<String> values;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
@@ -41,7 +41,7 @@ public class EqualCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Field<String> field = DSL.field(DSL.name(context.getConnectorColumn()), String.class);
+		Field<String> field = (Field<String>) context.access(context.getConnectorColumn());
 		return new MultiSelectCondition(field, values.toArray(String[]::new), context.getFunctionProvider());
 	}
 

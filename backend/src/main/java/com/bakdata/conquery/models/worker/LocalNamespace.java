@@ -9,6 +9,7 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.local.SqlEntityResolver;
 import com.bakdata.conquery.mode.local.SqlStorageHandler;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.sql.DSLContextWrapper;
@@ -49,7 +50,15 @@ public class LocalNamespace extends Namespace {
 	@Override
 	void updateMatchingStats() {
 		getStorage().getAllConcepts()
-					.forEach(concept -> sqlMatchingStatsHandler.createFunctionForConcept(concept, getDialect().getFunctionProvider(), getDslContextWrapper().getDslContext()));
+				.filter(TreeConcept.class::isInstance)
+					.forEach(concept -> sqlMatchingStatsHandler.createFunctionForConcept(((TreeConcept) concept), getDialect().getFunctionProvider(), getDslContextWrapper().getDslContext()));
+
+		getStorage().getAllConcepts()
+					.filter(TreeConcept.class::isInstance)
+					.forEach(concept -> sqlMatchingStatsHandler.collectMatchingStatsForConcept(((TreeConcept) concept), getDialect().getFunctionProvider(), getDslContextWrapper().getDslContext()));
+
+
+
 	}
 
 	@Override

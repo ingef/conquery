@@ -43,9 +43,9 @@ public class PrefixCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Field<String> field = DSL.field(DSL.name(context.getConnectorColumn()), String.class);
+		Field<?> field = context.access(context.getConnectorColumn());
 		String pattern = Arrays.stream(prefixes).collect(Collectors.joining("|", "", context.getFunctionProvider().getAnyCharRegex()));
-		Condition condition = context.getFunctionProvider().likeRegex(field, pattern);
+		Condition condition = context.getFunctionProvider().likeRegex((Field<String>)field, pattern);
 		return new ConditionWrappingWhereCondition(condition);
 	}
 

@@ -1,9 +1,6 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
 import static org.jooq.impl.DSL.*;
-import static org.jooq.impl.DSL.coalesce;
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.when;
 
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
@@ -11,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -27,6 +25,7 @@ import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.DatePart;
 import org.jooq.Field;
+import org.jooq.Name;
 import org.jooq.OrderField;
 import org.jooq.Record;
 import org.jooq.SortField;
@@ -74,6 +73,10 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 								 .map(ordering)
 								 .map(SortField::nullsLast)
 								 .toList();
+	}
+
+	public Field<Object> emptyDateRange() {
+		return field("{0}::daterange", val("empty"));
 	}
 
 	@Override
@@ -176,7 +179,7 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 				Field<Date> withOpenLowerEnd = coalesce(lower(daterange), toDateField(MINUS_INFINITY_DATE_VALUE));
 				Field<Date> withOpenUpperEnd = coalesce(upper(daterange), toDateField(INFINITY_DATE_VALUE));
 				yield when(daterange.isNull(), emptyDateRange())
-						 .otherwise(daterange(withOpenLowerEnd, withOpenUpperEnd, OPEN_RANGE));
+						.otherwise(daterange(withOpenLowerEnd, withOpenUpperEnd, OPEN_RANGE));
 			}
 			// if the validity date column is not of daterange type, we construct it manually
 			case DATE -> {
@@ -184,7 +187,7 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 				Field<Date> withOpenLowerEnd = coalesce(singleDate, toDateField(MINUS_INFINITY_DATE_VALUE));
 				Field<Date> withOpenUpperEnd = coalesce(singleDate, toDateField(INFINITY_DATE_VALUE));
 				yield when(singleDate.isNull(), emptyDateRange())
-						 .otherwise(daterange(withOpenLowerEnd, withOpenUpperEnd, CLOSED_RANGE));
+						.otherwise(daterange(withOpenLowerEnd, withOpenUpperEnd, CLOSED_RANGE));
 			}
 			default -> throw new IllegalArgumentException(
 					"Given column type '%s' can't be converted to a proper date restriction.".formatted(column.getType())
@@ -203,7 +206,7 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 		return ColumnDateRange.of(
 				when(startField.isNull().and(endField.isNull()), emptyDateRange())
-				   .otherwise(this.daterange(withOpenLowerEnd, withOpenUpperEnd, CLOSED_RANGE))
+						.otherwise(this.daterange(withOpenLowerEnd, withOpenUpperEnd, CLOSED_RANGE))
 		);
 	}
 
@@ -215,8 +218,19 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		return function("upper", Date.class, daterange);
 	}
 
-	public Field<Object> emptyDateRange() {
-		return field("{0}::daterange", val("empty"));
+	@Override
+	public Field<?> functionParam(String name) {
+		return field(name(name));
+	}
+
+	public String createFunctionStatement(Name name, List<String> params, Field<String> forConcept) {
+		return """
+					     CREATE OR REPLACE FUNCTION %s(%s) RETURNS TEXT
+					     LANGUAGE SQL
+					     RETURN
+					     	%s;
+				""".formatted(name, params.stream().map("%s text"::formatted).collect(Collectors.joining(", ")), forConcept)
+				;
 	}
 
 	@Override

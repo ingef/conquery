@@ -6,14 +6,18 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
@@ -21,10 +25,10 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
-import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jooq.Case;
@@ -35,12 +39,11 @@ import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Record4;
 import org.jooq.Result;
-import org.jooq.ResultOrRows;
-import org.jooq.Results;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectJoinStep;
 import org.jooq.Table;
+import static org.jooq.impl.DSL.*;
 
 @Slf4j
 public class SqlMatchingStats {
@@ -51,30 +54,29 @@ public class SqlMatchingStats {
 	}
 
 	@NotNull
-	private static Name resolveConceptFunction(TreeConcept concept) {
+	private static Name conceptResolveFunctionName(TreeConcept concept) {
 		return name("resolve_id_%s".formatted(concept.getName()));
 	}
 
 	@NotNull
-	private static List<Field<?>> collectValidityDateFields(Connector connector, PostgreSqlFunctionProvider provider) {
+	private static List<Field<?>> collectValidityDateFields(Connector connector, SqlFunctionProvider provider) {
 		List<Field<?>> validityDates = new ArrayList<>();
 
 		for (ValidityDate validityDate : connector.getValidityDates()) {
-			if (validityDate.isSingleColumnDaterange()) {
-				Column column = validityDate.getColumn().get();
-				if (column.getType() == MajorTypeId.DATE) {
-					validityDates.add(field(name(column.getName()), LocalDate.class));
-				}
-				else if (column.getType() == MajorTypeId.DATE_RANGE) {
-					Field<Object> rangeField = field(name(column.getName()));
-
-					validityDates.add(provider.lower(rangeField));
-					validityDates.add(provider.upper(rangeField));
-				}
-			}
-			else {
+			if (!validityDate.isSingleColumnDaterange()) {
 				validityDates.add(field(name(validityDate.getStartColumn().getColumn())));
 				validityDates.add(field(name(validityDate.getEndColumn().getColumn())));
+				continue;
+			}
+			Column column = validityDate.getColumn().get();
+			if (column.getType() == MajorTypeId.DATE) {
+				validityDates.add(field(name(column.getName()), LocalDate.class));
+			}
+			else if (column.getType() == MajorTypeId.DATE_RANGE) {
+				Field<Object> rangeField = field(name(column.getName()));
+
+				validityDates.add(provider.lower(rangeField));
+				validityDates.add(provider.upper(rangeField));
 			}
 		}
 		return validityDates;
@@ -93,14 +95,77 @@ public class SqlMatchingStats {
 
 		columns.stream().sorted().map(nm -> field(name(nm))).forEachOrdered(params::add);
 
-		return function(resolveConceptFunction(concept), String.class, params);
+		return function(conceptResolveFunctionName(concept), String.class, params);
 	}
 
-	public void collectMatchingStatsForConcept(TreeConcept concept, SqlFunctionProvider _provider, DSLContext dslContext) {
+	@Nullable
+	private static Table unionSelects(List<Select<?>> connectorTables) {
+		Select unioned = null;
 
-		PostgreSqlFunctionProvider provider = (PostgreSqlFunctionProvider) _provider;
+		for (Select connectorTable : connectorTables) {
+			if (unioned == null) {
+				unioned = connectorTable;
+				continue;
+			}
 
-		List<Select<?>> connectorTables =  new ArrayList<>();
+			unioned = unioned.unionAll(connectorTable);
+		}
+		return table(unioned);
+	}
+
+	private static void assignStats(Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats) {
+		log.info("{}", matchingStats);
+
+		for (Map.Entry<ConceptElementId<?>, MatchingStats.Entry> entry : matchingStats.entrySet()) {
+			ConceptElementId<?> conceptElementId = entry.getKey();
+
+			MatchingStats stats = new MatchingStats();
+			stats.putEntry("sql", entry.getValue());
+			conceptElementId.resolve().setMatchingStats(stats);
+		}
+	}
+
+	@NotNull
+	private static Map<ConceptElementId<?>, MatchingStats.Entry> resolveStats(TreeConcept concept, @MonotonicNonNull Result<Record4<String, String, Date, Date>> batch) {
+		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = new HashMap<>();
+
+
+		for (Record4<String, String, Date, Date> record : batch) {
+
+			ConceptElementId<?> resolvedId = ConceptElementId.Parser.INSTANCE.parse(record.component1());
+			resolvedId.setDomain(concept.getDomain());
+			String entity = record.component2();
+			Date min = record.component3();
+			Date max = record.component4();
+
+			CDateRange span = CDateRange.of(min != null ? min.toLocalDate() : null, max != null ? max.toLocalDate() : null);
+
+			ConceptElement<?> element = resolvedId.get();
+
+			while (element != null) {
+				matchingStats.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Entry())
+							 .addEvents(entity, 1, span);
+				element = element.getParent();
+			}
+		}
+		return matchingStats;
+	}
+
+
+	public void collectMatchingStatsForConcept(TreeConcept concept, SqlFunctionProvider provider, DSLContext dslContext) {
+
+		SelectJoinStep<Record4<String, String, Date, Date>> matchingStatsStatement = createMatchingStatsStatement(concept, provider);
+
+		Result<Record4<String, String, Date, Date>> result = dslContext.fetch(matchingStatsStatement);
+		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = resolveStats(concept, result);
+
+		assignStats(matchingStats);
+	}
+
+	@NotNull
+	private SelectJoinStep<Record4<String, String, Date, Date>> createMatchingStatsStatement(TreeConcept concept, SqlFunctionProvider provider) {
+
+		List<Select<?>> connectorTables = new ArrayList<>();
 
 		Field<Date> positiveInfinitty = provider.toDateField(provider.getMaxDateExpression());
 		Field<Date> negativeInifnity = provider.toDateField(provider.getMinDateExpression());
@@ -111,7 +176,7 @@ public class SqlMatchingStats {
 				connectorColumn = connector.getColumn().get().getName();
 			}
 
-			CTConditionContext context = new CTConditionContext(connectorColumn, provider);
+			CTConditionContext context = new CTConditionContext(false, connectorColumn, provider);
 
 			com.bakdata.conquery.models.datasets.Table resolvedTable = connector.getResolvedTable();
 			Table<Record> tableName = table(name(resolvedTable.getName()));
@@ -128,6 +193,7 @@ public class SqlMatchingStats {
 
 			SelectConditionStep<?> connectorTable = select(
 					field(pid).as("pid"),
+					// The infinities are intentionally swapped
 					least(positiveInfinitty, validityDatesArray).as("lowerBound"),
 					greatest(negativeInifnity, validityDatesArray).as("upperBound"),
 					resolveFunction.as("resolvedId")
@@ -135,10 +201,9 @@ public class SqlMatchingStats {
 			 .where(connector.getCondition() != null ? connector.getCondition().convertToSqlCondition(context).condition() : noCondition());
 
 			connectorTables.add(connectorTable);
-
 		}
 
-		Table<?> unioned = getUnioned(connectorTables);
+		Table<?> unioned = unionSelects(connectorTables);
 
 		SelectJoinStep<Record4<String, String, Date, Date>> records =
 				select(
@@ -149,78 +214,32 @@ public class SqlMatchingStats {
 						nullif(field(name("upperBound"), Date.class), negativeInifnity).as("ub")
 				)
 						.from(unioned);
-
-		// Results results = dslContext.fetchMany(records);
-
-
-
-		//		for (Result<Record> result : results) {
-//
-//			ConceptElementId<?> resolvedId = ConceptElementId.Parser.INSTANCE.parse(result.ge());
-//			resolvedId.setDomain(concept.getDomain());
-//
-//
-//			String entityId = record.component2();
-//			Date min = record.component3();
-//			Date max = record.component3();
-//
-//		}
-
-
-		//TODO might be that grouping in SQL is too complicated because we are interested in the whole tree and this currently only maps to anything that ends up being a leaf
-
 		log.info("{}", records);
 
+		return records;
 	}
 
-	@Nullable
-	private static Table getUnioned(List<Select<?>> connectorTables) {
-		Select unioned = null;
+	public void createFunctionForConcept(TreeConcept concept, SqlFunctionProvider provider, DSLContext dslContext) {
 
-		for (Select connectorTable : connectorTables) {
-			if (unioned == null) {
-				unioned = connectorTable;
-				continue;
-			}
-
-			unioned = unioned.unionAll(connectorTable);
-		}
-		return table(unioned);
-	}
-
-	public void createFunctionForConcept(Concept<?> maybeTree, SqlFunctionProvider provider, DSLContext dslContext) {
-		if (!(maybeTree instanceof TreeConcept concept)) {
-			return;
-		}
-
-		CTConditionContext context = new CTConditionContext("value", provider);
-		Name name = resolveConceptFunction(concept);
+		CTConditionContext context = new CTConditionContext(true, "col_val", provider);
+		Name name = conceptResolveFunctionName(concept);
 
 		Set<String> auxiliaryColumns = getAuxiliaryColumns(concept);
-		auxiliaryColumns.remove("value");
+		auxiliaryColumns.remove("col_val");
 
+		//TODO this could be simplified and shortened by using localIds instead of string-ids. But sql-results are less readable.
 		Field<String> forConcept = forNode(idField(concept), concept.getChildren(), context);
 
 		List<String> params = new ArrayList<>();
-		params.add("value");
+		params.add("col_val");
 
 		auxiliaryColumns.stream()
 						.sorted()
 						.forEachOrdered(params::add);
 
-		String statement = """
-				DROP FUNCTION IF EXISTS %s;
-				CREATE FUNCTION %s(%s) RETURNS TEXT
-				LANGUAGE SQL
-				RETURN
-					%s;
-				""".formatted(name, name, params.stream().map("%s text"::formatted).collect(Collectors.joining(", ")), forConcept);
-
+		String statement = provider.createFunctionStatement(name, params, forConcept);
 		dslContext.execute(statement);
-
 		log.info("{}", statement);
-
-		collectMatchingStatsForConcept(concept, provider, dslContext);
 	}
 
 	@NotNull

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
+import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.nullif;
 
 import java.sql.Date;
@@ -9,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -22,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
+import org.jooq.Name;
 import org.jooq.OrderField;
 import org.jooq.Record;
 import org.jooq.SortField;
@@ -42,10 +45,36 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return ANY_CHAR_REGEX;
 	}
 
+
+	@Override
+	public Field<Date> lower(Field<Object> daterange) {
+		throw new IllegalStateException("HANA does not support DATE_RANGE");
+	}
+
+	@Override
+	public Field<Date> upper(Field<Object> daterange) {
+		throw new IllegalStateException("HANA does not support DATE_RANGE");
+	}
+
 	@Override
 	public Table<? extends Record> getNoOpTable() {
 		// see https://help.sap.com/docs/SAP_DATA_HUB/e8d3e271a4554a35a5a6136d3d6af3f8/4d4b939b37b84bea8b2aa2ada640c392.html
 		return DSL.table(DSL.name(NOP_TABLE));
+	}
+
+	@Override
+	public Field<?> functionParam(String name) {
+		return field(":" + name);
+	}
+
+	public String createFunctionStatement(Name name, List<String> params, Field<String> forConcept) {
+		return """
+							     CREATE OR REPLACE FUNCTION %s(%s) RETURNS output NVARCHAR(500) AS
+							     BEGIN
+							     	output = %s;
+							     END;
+						""".formatted(name, params.stream().map("%s NVARCHAR(128)"::formatted).collect(Collectors.joining(", ")), forConcept)
+				;
 	}
 
 	@Override
