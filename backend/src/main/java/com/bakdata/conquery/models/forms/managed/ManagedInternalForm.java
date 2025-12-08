@@ -167,7 +167,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	}
 
 	@Override
-	public long resultRowCount() {
+	public OptionalLong resultRowCount() {
 		if (subQueries.size() != 1) {
 			// Get the query, only if there is only one query set in the whole execution
 			throw new UnsupportedOperationException("Cannot return the result query of a multi query form");

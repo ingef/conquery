@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -82,18 +83,25 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	public synchronized long resultRowCount() {
+	public synchronized OptionalLong resultRowCount() {
 		ExecutionManager executionManager = getExecutionManager();
-		return executionManager.tryGetExecutionInfo(getId())
-							   .map(info -> ((ExecutionManager.InternalExecutionInfo) info).getResultCount())
-							   .orElse(0L);
+		Optional<ExecutionManager.ExecutionInfo> executionInfo = executionManager.tryGetExecutionInfo(getId());
+
+		return executionInfo.map(ExecutionManager.InternalExecutionInfo.class::cast)
+					 .map(ExecutionManager.InternalExecutionInfo::getResultCount)
+					 .map(OptionalLong::of)
+					 .orElse(OptionalLong.empty());
 	}
 
 	@Override
 	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
 
 		super.setStatusBase(subject, status);
-		status.setNumberOfResults(resultRowCount());
+		OptionalLong resultRowCount = resultRowCount();
+		if (status.getStatus().equals(ExecutionState.DONE) && resultRowCount.isPresent()) {
+			// We only want to present the result number if the execution finished
+			status.setNumberOfResults(resultRowCount.getAsLong());
+		}
 
 		Query query = getQuery();
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
