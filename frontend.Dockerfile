@@ -7,7 +7,7 @@ COPY .git .
 RUN git describe --tags |  sed 's/^v//' > git_describe.txt
 
 # Builder
-FROM node:18-alpine AS builder
+FROM node:25-alpine AS builder
 
 WORKDIR /app
 COPY ./frontend/package.json ./frontend/package-lock.json ./
