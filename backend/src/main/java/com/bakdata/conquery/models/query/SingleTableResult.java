@@ -64,7 +64,7 @@ public interface SingleTableResult {
 	Stream<EntityResult> streamResults(OptionalLong limit);
 
 	@JsonIgnore
-	long resultRowCount();
+	OptionalLong resultRowCount();
 
 
 }
