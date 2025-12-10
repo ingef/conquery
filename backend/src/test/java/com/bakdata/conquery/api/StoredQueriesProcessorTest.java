@@ -9,6 +9,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.validation.Validator;
@@ -249,8 +250,8 @@ public class StoredQueriesProcessorTest {
 			}
 
 			@Override
-			public synchronized long resultRowCount() {
-				return resultCount;
+			public synchronized OptionalLong resultRowCount() {
+				return OptionalLong.of(resultCount);
 			}
 		};
 		setState(execState, managedQuery.getId());
@@ -277,7 +278,7 @@ public class StoredQueriesProcessorTest {
 
 		assertThat(infos)
 				.containsExactly(
-						makeState(QUERY_ID_0, USERS[0], USERS[0], NEW, "CONCEPT_QUERY", null, 100L),
+						makeState(QUERY_ID_0, USERS[0], USERS[0], NEW, "CONCEPT_QUERY", null, null),
 						makeState(QUERY_ID_4, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null, 100L),
 						makeState(QUERY_ID_7, USERS[1], USERS[0], DONE, "SECONDARY_ID_QUERY", new SecondaryIdDescriptionId(DATASET_0.getId(), "sid"), 100L),
 						makeState(QUERY_ID_9, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null, 100L),
@@ -309,8 +310,8 @@ public class StoredQueriesProcessorTest {
 			}
 
 			@Override
-			public synchronized long resultRowCount() {
-				return resultCount;
+			public synchronized OptionalLong resultRowCount() {
+				return resultCount == null ? OptionalLong.empty(): OptionalLong.of(resultCount);
 			}
 		};
 
