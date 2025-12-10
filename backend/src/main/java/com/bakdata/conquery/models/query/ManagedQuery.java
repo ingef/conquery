@@ -85,9 +85,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@Override
 	public synchronized OptionalLong resultRowCount() {
 		ExecutionManager executionManager = getExecutionManager();
-		Optional<ExecutionManager.ExecutionInfo> executionInfo = executionManager.tryGetExecutionInfo(getId());
+		Optional<ExecutionManager.InternalExecutionInfo> executionInfo = executionManager.tryGetExecutionInfo(getId());
 
-		return executionInfo.map(ExecutionManager.InternalExecutionInfo.class::cast)
+		return executionInfo
 					 .map(ExecutionManager.InternalExecutionInfo::getResultCount)
 					 .map(OptionalLong::of)
 					 .orElse(OptionalLong.empty());
