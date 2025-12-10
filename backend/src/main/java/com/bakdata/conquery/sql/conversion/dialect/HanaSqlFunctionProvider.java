@@ -1,10 +1,14 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
+import static org.jooq.impl.DSL.nullif;
+
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -14,10 +18,13 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
+import org.jooq.OrderField;
 import org.jooq.Record;
+import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
@@ -29,29 +36,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	private static final String MIN_DATE_VALUE = "0001-01-01";
 	private static final String ANY_CHAR_REGEX = ".*";
 	private static final String NOP_TABLE = "DUMMY";
-
-	@Override
-	public String getMinDateExpression() {
-		return MIN_DATE_VALUE;
-	}
-
-	@Override
-	public String getMaxDateExpression() {
-		return MAX_DATE_VALUE;
-	}
-
-	@Override
-	public <T> Field<T> cast(Field<?> field, DataType<T> type) {
-		// HANA would require an explicit length param when using CAST with varchar type, TO_VARCHAR does not require this
-		if (type == SQLDataType.VARCHAR) {
-			return DSL.function("TO_VARCHAR", type.getType(), field);
-		}
-		return DSL.function(
-				"CAST",
-				type.getType(),
-				DSL.field("%s AS %s".formatted(field, type.getName()))
-		);
-	}
 
 	@Override
 	public String getAnyCharRegex() {
@@ -78,6 +62,14 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias) {
+		return dateset.asRanges().stream()
+					  .map(this::forCDateRange)
+					  .map(dateRange -> dateRange.as(alias.getAlias()))
+					  .toList();
+	}
+
+	@Override
 	public ColumnDateRange forCDateRange(CDateRange daterange) {
 
 		String startDateExpression = MIN_DATE_VALUE;
@@ -89,7 +81,8 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		if (daterange.hasUpperBound()) {
 			// end date is expected to be handled as exclusive, but if it's already the maximum date, we can't add +1 day
 			if (Objects.equals(daterange.getMax(), LocalDate.ofEpochDay(CDateRange.POSITIVE_INFINITY))) {
-				throw new UnsupportedOperationException("Given daterange has an upper bound of CDateRange.POSITIVE_INFINITY, which is not supported by ConQuery's HANA dialect.");
+				throw new UnsupportedOperationException(
+						"Given daterange has an upper bound of CDateRange.POSITIVE_INFINITY, which is not supported by ConQuery's HANA dialect.");
 			}
 			LocalDate exclusiveMaxDate = daterange.getMax().plusDays(1);
 			endDateExpression = exclusiveMaxDate.toString();
@@ -99,16 +92,66 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias) {
-		return dateset.asRanges().stream()
-					  .map(this::forCDateRange)
-					  .map(dateRange -> dateRange.as(alias.getAlias()))
-					  .toList();
+	public Field<Date> toDateField(String dateExpression) {
+		return DSL.function(
+				"TO_DATE",
+				Date.class,
+				DSL.val(dateExpression),
+				DSL.val(DEFAULT_DATE_FORMAT)
+		);
 	}
+
 
 	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate) {
 		return toColumnDateRange(validityDate);
+	}
+
+	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
+
+		String tableName = validityDate.getConnector().resolveTableId().getTable();
+
+		Column startColumn;
+		Column endColumn;
+
+		// if no end column is present, the only existing column is both start and end of the date range
+		if (validityDate.getColumn() != null) {
+			Column column = validityDate.getColumn().resolve();
+			startColumn = column;
+			endColumn = column;
+		}
+		else {
+			startColumn = validityDate.getStartColumn().resolve();
+			endColumn = validityDate.getEndColumn().resolve();
+		}
+
+		return ofStartAndEnd(tableName, startColumn, endColumn);
+	}
+
+	private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
+
+		Field<Date> rangeStart = DSL.coalesce(
+				DSL.field(DSL.name(tableName, startColumn.getName()), Date.class),
+				toDateField(MIN_DATE_VALUE)
+		);
+		// when aggregating date ranges, we want to treat the last day of the range as excluded,
+		// so when using the date value of the end column, we add +1 day as end of the date range
+		Field<Date> rangeEnd = DSL.coalesce(
+				addDays(DSL.field(DSL.name(tableName, endColumn.getName()), Date.class), DSL.val(1)),
+				toDateField(MAX_DATE_VALUE)
+		);
+
+		return ColumnDateRange.of(rangeStart, rangeEnd);
+	}
+
+	@Override
+	public Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays) {
+		return DSL.function(
+				"ADD_DAYS",
+				Date.class,
+				dateColumn,
+				amountOfDays
+		);
 	}
 
 	@Override
@@ -126,6 +169,43 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 									.otherwise(validityDateRange.getEnd());
 
 		return ColumnDateRange.of(lowerBound, upperBound);
+	}
+
+	private ColumnDateRange toColumnDateRange(CDateRange dateRestriction) {
+
+		String startDateExpression = MIN_DATE_VALUE;
+		String endDateExpression = MAX_DATE_VALUE;
+
+		if (dateRestriction.hasLowerBound()) {
+			startDateExpression = dateRestriction.getMin().toString();
+		}
+		if (dateRestriction.hasUpperBound()) {
+			endDateExpression = dateRestriction.getMax().toString();
+		}
+
+		return ColumnDateRange.of(toDateField(startDateExpression), toDateField(endDateExpression));
+	}
+
+	@NotNull
+	@Override
+	public Collection<? extends OrderField<?>> orderByValidityDates(
+			Function<Field<?>, ? extends SortField<?>> ordering,
+			List<Field<?>> validityDateFields) {
+
+		return List.of(
+				ordering.apply(nullif(validityDateFields.getFirst(), toDateField(getMinDateExpression()))).nullsLast(),
+				ordering.apply(nullif(validityDateFields.getLast(), toDateField(getMaxDateExpression()))).nullsLast()
+		);
+	}
+
+	@Override
+	public String getMinDateExpression() {
+		return MIN_DATE_VALUE;
+	}
+
+	@Override
+	public String getMaxDateExpression() {
+		return MAX_DATE_VALUE;
 	}
 
 	@Override
@@ -205,6 +285,19 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public <T> Field<T> cast(Field<?> field, DataType<T> type) {
+		// HANA would require an explicit length param when using CAST with varchar type, TO_VARCHAR does not require this
+		if (type == SQLDataType.VARCHAR) {
+			return DSL.function("TO_VARCHAR", type.getType(), field);
+		}
+		return DSL.function(
+				"CAST",
+				type.getType(),
+				DSL.field("%s AS %s".formatted(field, type.getName()))
+		);
+	}
+
+	@Override
 	public Field<Integer> dateDistance(ChronoUnit datePart, Field<Date> startDate, Field<Date> endDate) {
 
 		String betweenFunction = switch (datePart) {
@@ -228,45 +321,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<Date> toDateField(String dateExpression) {
-		return DSL.function(
-				"TO_DATE",
-				Date.class,
-				DSL.val(dateExpression),
-				DSL.val(DEFAULT_DATE_FORMAT)
-		);
-	}
-
-	@Override
-	public <T> Field<T> first(Field<T> column, List<Field<?>> orderByColumns) {
-		if (orderByColumns.isEmpty()) {
-			orderByColumns = List.of(column);
-		}
-		return DSL.field(
-				"{0}({1} {2})",
-				column.getType(),
-				DSL.keyword("FIRST_VALUE"),
-				column,
-				DSL.orderBy(orderByColumns)
-		);
-	}
-
-	@Override
-	public <T> Field<T> last(Field<T> column, List<Field<?>> orderByColumns) {
-		if (orderByColumns.isEmpty()) {
-			orderByColumns = List.of(column);
-		}
-		return DSL.field(
-				"{0}({1} {2} {3})",
-				column.getType(),
-				DSL.keyword("LAST_VALUE"),
-				column,
-				DSL.orderBy(orderByColumns),
-				DSL.keyword("DESC")
-		);
-	}
-
-	@Override
 	public <T> Field<T> random(Field<T> column) {
 		return DSL.field(
 				"{0}({1} {2})",
@@ -282,71 +336,10 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return DSL.condition("{0} {1} {2}", field, DSL.keyword("LIKE_REGEXPR"), pattern);
 	}
 
+
 	@Override
 	public Field<String> yearQuarter(Field<Date> dateField) {
 		return DSL.function("QUARTER", String.class, dateField);
-	}
-
-	@Override
-	public Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays) {
-		return DSL.function(
-				"ADD_DAYS",
-				Date.class,
-				dateColumn,
-				amountOfDays
-		);
-	}
-
-	private ColumnDateRange toColumnDateRange(CDateRange dateRestriction) {
-
-		String startDateExpression = MIN_DATE_VALUE;
-		String endDateExpression = MAX_DATE_VALUE;
-
-		if (dateRestriction.hasLowerBound()) {
-			startDateExpression = dateRestriction.getMin().toString();
-		}
-		if (dateRestriction.hasUpperBound()) {
-			endDateExpression = dateRestriction.getMax().toString();
-		}
-
-		return ColumnDateRange.of(toDateField(startDateExpression), toDateField(endDateExpression));
-	}
-
-	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
-
-		String tableName = validityDate.getConnector().resolveTableId().getTable();
-
-		Column startColumn;
-		Column endColumn;
-
-		// if no end column is present, the only existing column is both start and end of the date range
-		if (validityDate.getColumn() != null) {
-			Column column = validityDate.getColumn().resolve();
-			startColumn = column;
-			endColumn = column;
-		}
-		else {
-			startColumn = validityDate.getStartColumn().resolve();
-			endColumn = validityDate.getEndColumn().resolve();
-		}
-
-		return ofStartAndEnd(tableName, startColumn, endColumn);
-	}
-
-	private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
-
-		Field<Date> rangeStart = DSL.coalesce(
-				DSL.field(DSL.name(tableName, startColumn.getName()), Date.class),
-				toDateField(MIN_DATE_VALUE)
-		);
-		// when aggregating date ranges, we want to treat the last day of the range as excluded,
-		// so when using the date value of the end column, we add +1 day as end of the date range
-		Field<Date> rangeEnd = DSL.coalesce(
-				addDays(DSL.field(DSL.name(tableName, endColumn.getName()), Date.class), DSL.val(1)),
-				toDateField(MAX_DATE_VALUE)
-		);
-
-		return ColumnDateRange.of(rangeStart, rangeEnd);
 	}
 
 }

@@ -62,6 +62,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
@@ -107,7 +108,7 @@ public class QueryProcessor {
 
 
 	public List<? extends ExecutionStatus> getAllQueries(DatasetId dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
-		try (Stream<ManagedExecution> allQueries = storage.getAllExecutions()) {
+		try (Stream<ManagedExecutionId> allQueries = storage.getAllExecutionIds()) {
 			return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders).toList();
 		}
 	}
@@ -116,21 +117,26 @@ public class QueryProcessor {
 			DatasetId datasetId,
 			UriBuilder uriBuilder,
 			Subject subject,
-			Stream<ManagedExecution> allQueries,
+			Stream<ManagedExecutionId> allQueries,
 			boolean allProviders) {
 
 		return allQueries
-				// The following only checks the dataset, under which the query was submitted, but a query can target more than
-				// one dataset.
-				.filter(q -> q.getDataset().equals(datasetId))
-				// to exclude subtypes from somewhere else
-				.filter(QueryProcessor::canFrontendRender)
-				.filter(Predicate.not(ManagedExecution::isSystem))
-				.filter(q -> {
-					final ExecutionState state = q.getState();
+				// Checks that are possible on the execution id alone (no cache load necessary)
+				.filter(id -> id.getDataset().equals(datasetId))
+				.filter(id -> {
+					ExecutionManager executionManager = datasetRegistry.get(id.getDataset()).getExecutionManager();
+					final ExecutionState state = executionManager.getState(id);
 					return state == ExecutionState.NEW || state == ExecutionState.DONE;
 				})
-				.filter(q -> subject.isPermitted(q, Ability.READ))
+				// Resolve
+				.map(Id::get)
+				.filter(Objects::nonNull) // Cautionary
+				// Checks that are only possible on the execution object (cache might need to fetch some data)
+				.filter(QueryProcessor::canFrontendRender)
+				// Ownership check only works on the object not on the id :/
+				.filter(exec -> subject.isPermitted(exec, Ability.READ))
+				.filter(Predicate.not(ManagedExecution::isSystem))
+
 				.map(mq -> {
 					try {
 						final OverviewExecutionStatus status = mq.buildStatusOverview(subject);
@@ -344,8 +350,6 @@ public class QueryProcessor {
 				((ManagedQuery) namespace
 						.getExecutionManager()
 						.createExecution(query, subject.getId(), namespace, false));
-
-		execution.setLastResultCount((long) statistic.getResolved().size());
 
 		if (upload.getLabel() != null) {
 			execution.setLabel(upload.getLabel());

@@ -67,25 +67,6 @@ public class CsvTableImporter {
 		});
 	}
 
-	/**
-	 * Imports the table into the database that is connected to the {@link org.jooq.DSLContext DSLContext}
-	 * of this {@link com.bakdata.conquery.integration.sql.CsvTableImporter CSVTableImporter}.
-	 */
-	public void importTableIntoDatabase(RequiredTable requiredTable) {
-
-		Table<Record> table = DSL.table(DSL.name(requiredTable.getName()));
-		List<RequiredColumn> allRequiredColumns = getAllRequiredColumns(requiredTable);
-		List<Field<?>> columns = createFieldsForColumns(allRequiredColumns);
-		List<RowN> content = getTablesContentFromCSV(requiredTable.getCsv(), allRequiredColumns);
-
-		// we directly use JDBC because JOOQ can't cope with some custom types like daterange
-		dslContext.connection((Connection connection) -> {
-			try (Statement statement = connection.createStatement()) {
-				insertValuesIntoTable(table, columns, content, statement);
-			}
-		});
-	}
-
 	private List<RequiredColumn> getAllRequiredColumns(RequiredTable table) {
 		ArrayList<RequiredColumn> requiredColumns = new ArrayList<>();
 		requiredColumns.add(table.getPrimaryColumn());
@@ -97,15 +78,6 @@ public class CsvTableImporter {
 		return requiredColumns.stream()
 							  .map(this::createField)
 							  .collect(Collectors.toList());
-	}
-
-	@SneakyThrows
-	private List<RowN> getTablesContentFromCSV(ResourceFile csvFile, List<RequiredColumn> requiredColumns) {
-		List<String[]> rawContent = this.csvReader.parseAll(csvFile.stream());
-		List<List<Object>> castedContent = this.castContent(rawContent, requiredColumns);
-		return castedContent.stream()
-							.map(DSL::row)
-							.toList();
 	}
 
 	private void dropTable(Table<Record> table, Statement statement) {
@@ -125,15 +97,6 @@ public class CsvTableImporter {
 		statement.execute(createTableStatement);
 	}
 
-	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
-		// encountered empty new line
-		if (content.isEmpty()) {
-			return;
-		}
-		log.debug("Inserting into table: {}", content);
-		testSqlDialect.getTestFunctionProvider().insertValuesIntoTable(table, columns, content, statement, dslContext);
-	}
-
 	private Field<?> createField(RequiredColumn requiredColumn) {
 		DataType<?> dataType = switch (requiredColumn.getType()) {
 			case STRING -> SQLDataType.VARCHAR(DEFAULT_VARCHAR_LENGTH);
@@ -151,6 +114,43 @@ public class CsvTableImporter {
 		}
 
 		return DSL.field(DSL.name(requiredColumn.getName()), dataType);
+	}
+
+	/**
+	 * Imports the table into the database that is connected to the {@link org.jooq.DSLContext DSLContext}
+	 * of this {@link com.bakdata.conquery.integration.sql.CsvTableImporter CSVTableImporter}.
+	 */
+	public void importTableIntoDatabase(RequiredTable requiredTable) {
+
+		Table<Record> table = DSL.table(DSL.name(requiredTable.getName()));
+		List<RequiredColumn> allRequiredColumns = getAllRequiredColumns(requiredTable);
+		List<Field<?>> columns = createFieldsForColumns(allRequiredColumns);
+		List<RowN> content = getTablesContentFromCSV(requiredTable.getCsv(), allRequiredColumns);
+
+		// we directly use JDBC because JOOQ can't cope with some custom types like daterange
+		dslContext.connection((Connection connection) -> {
+			try (Statement statement = connection.createStatement()) {
+				insertValuesIntoTable(table, columns, content, statement);
+			}
+		});
+	}
+
+	@SneakyThrows
+	private List<RowN> getTablesContentFromCSV(ResourceFile csvFile, List<RequiredColumn> requiredColumns) {
+		List<String[]> rawContent = this.csvReader.parseAll(csvFile.stream());
+		List<List<Object>> castedContent = this.castContent(rawContent, requiredColumns);
+		return castedContent.stream()
+							.map(DSL::row)
+							.toList();
+	}
+
+	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
+		// encountered empty new line
+		if (content.isEmpty()) {
+			return;
+		}
+		log.debug("Inserting into table: {}", content);
+		testSqlDialect.getTestFunctionProvider().insertValuesIntoTable(table, columns, content, statement, dslContext);
 	}
 
 	/**
@@ -185,7 +185,12 @@ public class CsvTableImporter {
 			case DATE -> Date.valueOf(entry);
 			case DATE_RANGE -> {
 				CDateRange dateRange = this.dateRangeParser.parse(entry);
-				yield DateRange.dateRange(Date.valueOf(dateRange.getMin()), Date.valueOf(dateRange.getMax()));
+				yield DateRange.dateRange(
+						Date.valueOf(dateRange.getMin()),
+						true,
+						Date.valueOf(dateRange.getMax()),
+						true
+				);
 			}
 		};
 	}

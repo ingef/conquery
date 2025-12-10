@@ -17,9 +17,4 @@ public class DateRestrictionCondition implements WhereCondition {
 		return this.functionProvider.dateRestriction(dateRestriction, validityDate);
 	}
 
-	@Override
-	public ConditionType type() {
-		return ConditionType.EVENT;
-	}
-
 }

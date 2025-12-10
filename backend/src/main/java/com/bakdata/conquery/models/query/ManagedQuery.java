@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -30,6 +31,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -45,16 +47,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_QUERY")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@JsonIgnoreProperties(value = {"lastResultCount"})
 public class ManagedQuery extends ManagedExecution implements SingleTableResult, InternalExecution {
 
 	// Needs to be resolved externally before being executed
 	private Query query;
-	/**
-	 * The number of contained entities the last time this query was executed.
-	 */
-	private Long lastResultCount;
-
-
 
 	public ManagedQuery(Query query, UserId owner, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
 		super(owner, submittedDataset, storage, datasetRegistry, config);
@@ -68,11 +65,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 	@Override
 	public synchronized void finish(ExecutionState executionState) {
-		//TODO this is not optimal with SQLExecutionService as this might fully evaluate the query.
-		lastResultCount = query.countResults(streamResults(OptionalLong.empty()));
-
-		log.debug("Finished {} with {} results", getId(), lastResultCount);
-
+		log.debug("Finished {}", getId());
 		super.finish(executionState);
 	}
 
@@ -90,18 +83,25 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	public synchronized long resultRowCount() {
-		if (lastResultCount == null) {
-			throw new IllegalStateException("Result row count is unknown, because the query has not yet finished.");
-		}
-		return lastResultCount;
+	public synchronized OptionalLong resultRowCount() {
+		ExecutionManager executionManager = getExecutionManager();
+		Optional<ExecutionManager.InternalExecutionInfo> executionInfo = executionManager.tryGetExecutionInfo(getId());
+
+		return executionInfo
+					 .map(ExecutionManager.InternalExecutionInfo::getResultCount)
+					 .map(OptionalLong::of)
+					 .orElse(OptionalLong.empty());
 	}
 
 	@Override
 	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
 
 		super.setStatusBase(subject, status);
-		status.setNumberOfResults(lastResultCount);
+		OptionalLong resultRowCount = resultRowCount();
+		if (status.getStatus().equals(ExecutionState.DONE) && resultRowCount.isPresent()) {
+			// We only want to present the result number if the execution finished
+			status.setNumberOfResults(resultRowCount.getAsLong());
+		}
 
 		Query query = getQuery();
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());

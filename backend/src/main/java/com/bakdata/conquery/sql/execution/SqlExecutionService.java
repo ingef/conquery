@@ -23,7 +23,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.Record;
-import org.jooq.Result;
 import org.jooq.Select;
 import org.jooq.exception.DataAccessException;
 
@@ -105,16 +104,6 @@ public class SqlExecutionService {
 		}
 
 		return new SqlEntityResult(id, resultRow);
-	}
-
-	public Result<?> fetch(Select<?> query) {
-		log.debug("Executing query: \n{}", query);
-		try {
-			return dslContext.fetch(query);
-		}
-		catch (DataAccessException exception) {
-			throw new ConqueryError.SqlError(exception);
-		}
 	}
 
 	/**
