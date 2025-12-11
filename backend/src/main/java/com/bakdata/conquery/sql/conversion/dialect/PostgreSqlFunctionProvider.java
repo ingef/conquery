@@ -29,8 +29,7 @@ import org.jooq.impl.SQLDataType;
  *
  * @see <a href="https://www.postgresql.org/docs/15/functions.html">PostgreSQL Documentation</a>
  */
-public class
-PostgreSqlFunctionProvider implements SqlFunctionProvider {
+public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	private static final String OPEN_RANGE = "[)";
 	private static final String CLOSED_RANGE = "[]";
@@ -113,7 +112,15 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		return ColumnDateRange.of(daterange(toDateField(MINUS_INFINITY_DATE_VALUE), toDateField(INFINITY_DATE_VALUE), CLOSED_RANGE));
 	}
 
-	@Override
+    @Override
+    public ColumnDateRange maxRangeIf(Condition condition) {
+        return ColumnDateRange.of(
+                DSL.when(condition.isTrue(),
+                datemultirange(daterange(toDateField(MINUS_INFINITY_DATE_VALUE), toDateField(INFINITY_DATE_VALUE), CLOSED_RANGE)))
+        );
+    }
+
+    @Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction) {
 		// if there is no validity date, each entity has the max range {-inf/inf} as validity date
 		ColumnDateRange validityDateRange = validityDate == null ? maxRange() : toColumnDateRange(validityDate);
