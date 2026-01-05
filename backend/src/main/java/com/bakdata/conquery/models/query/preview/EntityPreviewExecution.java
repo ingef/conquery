@@ -397,7 +397,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public long resultRowCount() {
+	public OptionalLong resultRowCount() {
 		return getValuesQuery().resultRowCount();
 	}
 }

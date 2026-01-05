@@ -66,7 +66,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 		}
 
 		// Count result lines and entities (may differ in case of form or SecondaryIdQuery)
-		final ListenableFuture<Integer> futureLines = executorService.submit(() -> (int) managedQuery.resultRowCount());
+		final ListenableFuture<Integer> futureLines = executorService.submit(() -> (int) managedQuery.resultRowCount().orElse(0));
 
 		final ListenableFuture<Integer> futureEntities = executorService.submit(() -> (int) managedQuery.streamResults(OptionalLong.empty()).count());
 
