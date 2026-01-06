@@ -1,7 +1,6 @@
 package com.bakdata.conquery.integration.json;
 
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.config.Dialect;
@@ -11,6 +10,7 @@ import lombok.Value;
 public class SqlSpec {
 
 	boolean isEnabled;
+
 
 	@Nullable
 	List<Dialect> supportedDialects;

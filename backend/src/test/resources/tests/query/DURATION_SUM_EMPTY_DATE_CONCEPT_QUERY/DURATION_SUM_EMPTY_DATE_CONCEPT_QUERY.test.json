@@ -1,6 +1,12 @@
 {  
    "type":"QUERY_TEST",
    "label":"DURATION_SUM_EMPTY_DATE_CONCEPT_QUERY Test",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
    "expectedCsv":"tests/query/DURATION_SUM_EMPTY_DATE_CONCEPT_QUERY/expected-zeitspanne.csv",
    "query":{  
       "type":"CONCEPT_QUERY",

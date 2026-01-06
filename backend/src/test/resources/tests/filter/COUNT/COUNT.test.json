@@ -1,6 +1,12 @@
 {
   "type": "FILTER_TEST",
   "label": "COUNT Test",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL", "HANA"
+    ]
+  },
   "expectedCsv": "tests/filter/COUNT/expected_COUNT_Filter.csv",
   "connector": {
     "validityDates": {
@@ -35,7 +41,7 @@
         },
         {
           "name": "datum",
-          "type": "DATE_RANGE"
+          "type": "DATE"
         }
       ]
     }

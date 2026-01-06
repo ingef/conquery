@@ -1,6 +1,12 @@
 {
   "type": "QUERY_TEST",
   "label": "NUMBER_NEGATION_QUERY Test",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "expectedCsv": "tests/query/NUMBER_NEGATION/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

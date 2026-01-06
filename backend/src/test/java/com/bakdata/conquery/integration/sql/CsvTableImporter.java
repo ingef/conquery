@@ -82,7 +82,8 @@ public class CsvTableImporter {
 								   .collect(Collectors.toSet());
 
 		Table<Record> table = DSL.table(DSL.name("entities"));
-		List<Field<?>> columns = List.of(DSL.field("pid", String.class));
+		List<Field<?>> columns = List.of(DSL.field("pid", SQLDataType.VARCHAR(20)));
+
 
 		List<RowN> content = allIds.stream()
 								   .map(Collections::singletonList)

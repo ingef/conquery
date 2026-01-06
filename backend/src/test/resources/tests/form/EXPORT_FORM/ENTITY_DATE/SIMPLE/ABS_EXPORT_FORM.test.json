@@ -1,6 +1,12 @@
 {
 	"type": "FORM_TEST",
 	"label": "ADD DEFAULT SELECT Test",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
 	"expectedCsv": {
 		"results": "tests/form/EXPORT_FORM/ENTITY_DATE/SIMPLE/expected.csv"
 	},

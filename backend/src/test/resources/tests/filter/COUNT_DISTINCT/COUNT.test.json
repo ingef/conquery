@@ -1,6 +1,12 @@
 {
   "type": "FILTER_TEST",
   "label": "COUNT distinct Test",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL", "HANA"
+    ]
+  },
   "expectedCsv": "tests/filter/COUNT_DISTINCT/expected_COUNT_Filter.csv",
   "content": {
     "tables": {
@@ -16,7 +22,7 @@
         },
         {
           "name": "datum",
-          "type": "DATE_RANGE"
+          "type": "DATE"
         }
       ]
     }

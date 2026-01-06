@@ -1,6 +1,12 @@
 {
   "type": "QUERY_TEST",
   "label": "COUNT_QUARTERS_AGGREGATOR Test",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "expectedCsv": "tests/aggregator/COUNT_QUARTERS_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
