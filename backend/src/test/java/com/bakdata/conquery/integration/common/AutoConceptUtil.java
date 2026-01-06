@@ -85,15 +85,15 @@ public class AutoConceptUtil {
 		final String prefix = column.getName() + "_";
 
 		// Create basic single column selects
-		final LastValueSelect last = new LastValueSelect(column.getId(), null);
+		final LastValueSelect last = new LastValueSelect(column.getId(), null, null);
 		last.setName(prefix + LastValueSelect.class.getAnnotation(CPSType.class).id());
 		last.setColumn(column.getId());
 
-		final FirstValueSelect first = new FirstValueSelect(column.getId(), null);
+		final FirstValueSelect first = new FirstValueSelect(column.getId(), null, null);
 		first.setName(prefix + FirstValueSelect.class.getAnnotation(CPSType.class).id());
 		first.setColumn(column.getId());
 
-		final DistinctSelect distinct = new DistinctSelect(column.getId(), null);
+		final DistinctSelect distinct = new DistinctSelect(column.getId(), null, null);
 		distinct.setName(prefix + DistinctSelect.class.getAnnotation(CPSType.class).id());
 		distinct.setColumn(column.getId());
 

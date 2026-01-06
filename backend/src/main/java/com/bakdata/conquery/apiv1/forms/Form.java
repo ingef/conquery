@@ -8,11 +8,11 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormType;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -41,7 +41,7 @@ public abstract class Form implements QueryDescription {
 
 
 	@Override
-	public void authorize(Subject subject, Dataset submittedDataset, @NonNull List<QueryVisitor> visitors, MetaStorage storage) {
+	public void authorize(Subject subject, DatasetId submittedDataset, @NonNull List<QueryVisitor> visitors, MetaStorage storage) {
 		QueryDescription.super.authorize(subject, submittedDataset, visitors, storage);
 		// Check if subject is allowed to create this form
 		final FormType formType = FormScanner.resolveFormType(getFormType());

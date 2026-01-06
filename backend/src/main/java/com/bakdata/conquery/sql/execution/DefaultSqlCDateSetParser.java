@@ -14,8 +14,8 @@ public class DefaultSqlCDateSetParser implements SqlCDateSetParser {
 
 	public static final String EMPTY_RANGE_BRACES = "{}";
 	public static final String DATE_SEPARATOR = ",";
-	public static final char INCLUDED_START_CHAR = '[';
-	public static final char EXCLUDED_END_CHAR = ')';
+	public static final String INCLUDED_START_CHAR = "[";
+	public static final String EXCLUDED_END_CHAR = ")";
 
 	@Override
 	public List<List<Integer>> toEpochDayRangeList(String multiDateRange) {
@@ -61,7 +61,8 @@ public class DefaultSqlCDateSetParser implements SqlCDateSetParser {
 		}
 		else {
 			LocalDate dateValue = Date.valueOf(endDateExpression.substring(0, endDateExpression.length() - 1)).toLocalDate();
-			dateValue = endDateExpression.charAt(endDateExpression.length() - 1) == EXCLUDED_END_CHAR
+
+			dateValue = endDateExpression.endsWith(EXCLUDED_END_CHAR)
 						? dateValue.minusDays(1)
 						: dateValue;
 			endDate = Math.toIntExact(dateValue.toEpochDay());

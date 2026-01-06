@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept.specific;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
+import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;

@@ -31,8 +31,8 @@ export interface TreeChildrenOr extends TreeChildrenBase {
   connection: "or";
 }
 
-export type TimeTimestamp = "every" | "some" | "earliest" | "latest";
-export type TimeOperator = "before" | "after" | "while";
+export type TimeTimestamp = "ALL" | "ANY" | "EARLIEST" | "LATEST";
+export type TimeOperator = "BEFORE" | "AFTER" | "WHILE";
 export interface TreeChildrenTime extends TreeChildrenBase {
   connection: "time";
   operator: TimeOperator;

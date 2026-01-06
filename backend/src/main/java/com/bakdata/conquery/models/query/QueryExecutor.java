@@ -41,6 +41,7 @@ public class QueryExecutor implements Closeable {
 
 	private final Set<ManagedExecutionId> cancelledQueries = new HashSet<>();
 
+
 	public void unsetQueryCancelled(ManagedExecutionId query) {
 		cancelledQueries.remove(query);
 	}
@@ -58,7 +59,8 @@ public class QueryExecutor implements Closeable {
 		log.info("Received query: {}", query);
 
 		Stopwatch stopwatch = Stopwatch.createStarted();
-		final ThreadLocal<QueryPlan<?>> plan = ThreadLocal.withInitial(() -> query.createQueryPlan(new QueryPlanContext(worker, secondaryIdSubPlanLimit)));
+		final ThreadLocal<QueryPlan<?>> plan =
+				ThreadLocal.withInitial(() -> query.createQueryPlan(new QueryPlanContext(executionContext.getStorage(), secondaryIdSubPlanLimit)));
 		log.trace("Created query plan in {}", stopwatch);
 
 		if (entities.isEmpty()) {
@@ -73,17 +75,11 @@ public class QueryExecutor implements Closeable {
 			}
 
 			final List<CompletableFuture<Optional<EntityResult>>> futures =
-					entities.stream()
-							.map(entity -> new QueryJob(executionContext, plan, entity))
-							.map(job -> CompletableFuture.supplyAsync(job, executor))
-							.collect(Collectors.toList());
+					entities.stream().map(entity -> new QueryJob(executionContext, plan, entity)).map(job -> CompletableFuture.supplyAsync(job, executor)).toList();
 
 			final CompletableFuture<Void> allDone = CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
 
-			allDone.thenApply((ignored) -> futures.stream()
-												  .map(CompletableFuture::join)
-												  .flatMap(Optional::stream)
-												  .collect(Collectors.toList()))
+			allDone.thenApply((ignored) -> futures.stream().map(CompletableFuture::join).flatMap(Optional::stream).collect(Collectors.toList()))
 				   .whenComplete((results, exc) -> result.finish(Objects.requireNonNullElse(results, Collections.emptyList()), Optional.ofNullable(exc), worker));
 
 
@@ -92,12 +88,12 @@ public class QueryExecutor implements Closeable {
 		catch (Exception e) {
 			ConqueryError err = asConqueryError(e);
 			log.warn("Error while executing {}", executionContext.getExecutionId(), err);
-			sendFailureToManagerNode(result, asConqueryError(err));
+			sendFailureToManagerNode(result, asConqueryError(err), worker);
 			return false;
 		}
 	}
 
-	public void sendFailureToManagerNode(ShardResult result, ConqueryError error) {
+	public void sendFailureToManagerNode(ShardResult result, ConqueryError error, Worker worker) {
 		result.finish(Collections.emptyList(), Optional.of(error), worker);
 	}
 

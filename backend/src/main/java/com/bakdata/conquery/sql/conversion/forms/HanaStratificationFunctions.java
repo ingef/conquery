@@ -5,7 +5,7 @@ import static com.bakdata.conquery.sql.conversion.dialect.Interval.MONTHS_PER_QU
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
+import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.sql.conversion.dialect.HanaSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;

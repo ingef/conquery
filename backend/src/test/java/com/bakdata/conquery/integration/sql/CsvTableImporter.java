@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
@@ -58,6 +59,22 @@ public class CsvTableImporter {
 		this.databaseConfig = databaseConfig;
 	}
 
+	@SneakyThrows
+	public Set<String> collectAllIds(ResourceFile csvFile, RequiredColumn idColumn) {
+		Set<String> allIds = new HashSet<>();
+
+		List<com.univocity.parsers.common.record.Record> records = csvReader.parseAllRecords(csvFile.stream());
+
+		for (com.univocity.parsers.common.record.Record record : records) {
+
+			String raw = record.getString(idColumn.getName());
+
+			allIds.add(raw);
+		}
+
+		return allIds;
+	}
+
 	public void importAllIds(Collection<RequiredTable> tables) {
 
 		Set<String> allIds = tables.stream()
@@ -82,20 +99,31 @@ public class CsvTableImporter {
 		});
 	}
 
-	@SneakyThrows
-	public Set<String> collectAllIds(ResourceFile csvFile, RequiredColumn idColumn) {
-		Set<String> allIds = new HashSet<>();
+	public void createTable(RequiredTable requiredTable) {
+		Table<Record> table = DSL.table(DSL.name(requiredTable.getName()));
+		List<RequiredColumn> allRequiredColumns = getAllRequiredColumns(requiredTable);
+		List<Field<?>> columns = createFieldsForColumns(allRequiredColumns);
 
-		List<com.univocity.parsers.common.record.Record> records = csvReader.parseAllRecords(csvFile.stream());
+		// we directly use JDBC because JOOQ can't cope with some custom types like daterange
+		dslContext.connection((Connection connection) -> {
+			try (Statement statement = connection.createStatement()) {
+				dropTable(table, statement);
+				createTable(table, columns, statement);
+			}
+		});
+	}
 
-		for (com.univocity.parsers.common.record.Record record : records) {
+	private List<RequiredColumn> getAllRequiredColumns(RequiredTable table) {
+		ArrayList<RequiredColumn> requiredColumns = new ArrayList<>();
+		requiredColumns.add(table.getPrimaryColumn());
+		requiredColumns.addAll(Arrays.stream(table.getColumns()).toList());
+		return requiredColumns;
+	}
 
-			String raw = record.getString(idColumn.getName());
-
-			allIds.add(raw);
-		}
-
-		return allIds;
+	private List<Field<?>> createFieldsForColumns(List<RequiredColumn> requiredColumns) {
+		return requiredColumns.stream()
+							  .map(this::createField)
+							  .collect(Collectors.toList());
 	}
 
 	private void dropTable(Table<Record> table, Statement statement) {
@@ -115,72 +143,8 @@ public class CsvTableImporter {
 		statement.execute(createTableStatement);
 	}
 
-	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
-		// encountered empty new line
-		if (content.isEmpty()) {
-			return;
-		}
-		log.debug("Inserting into table: {}", content);
-		testSqlDialect.getTestFunctionProvider().insertValuesIntoTable(table, columns, content, statement, dslContext);
-	}
 
-	/**
-	 * Imports the table into the database that is connected to the {@link org.jooq.DSLContext DSLContext}
-	 * of this {@link com.bakdata.conquery.integration.sql.CsvTableImporter CSVTableImporter}.
-	 */
-	public void importTableIntoDatabase(RequiredTable requiredTable) {
 
-		Table<Record> table = DSL.table(DSL.name(requiredTable.getName()));
-		List<RequiredColumn> allRequiredColumns = this.getAllRequiredColumns(requiredTable);
-		List<Field<?>> columns = this.createFieldsForColumns(allRequiredColumns);
-		List<RowN> content = this.getTablesContentFromCSV(requiredTable.getCsv(), allRequiredColumns);
-
-		// we directly use JDBC because JOOQ can't cope with some custom types like daterange
-		dslContext.connection((Connection connection) -> {
-			try (Statement statement = connection.createStatement()) {
-				dropTable(table, statement);
-				createTable(table, columns, statement);
-				insertValuesIntoTable(table, columns, content, statement);
-			}
-		});
-	}
-
-	private List<RequiredColumn> getAllRequiredColumns(RequiredTable table) {
-		ArrayList<RequiredColumn> requiredColumns = new ArrayList<>();
-		requiredColumns.add(table.getPrimaryColumn());
-		requiredColumns.addAll(Arrays.stream(table.getColumns()).toList());
-		return requiredColumns;
-	}
-
-	private List<Field<?>> createFieldsForColumns(List<RequiredColumn> requiredColumns) {
-		return requiredColumns.stream()
-							  .map(this::createField)
-							  .collect(Collectors.toList());
-	}
-
-	@SneakyThrows
-	private List<RowN> getTablesContentFromCSV(ResourceFile csvFile, List<RequiredColumn> requiredColumns) {
-
-		List<List<Object>> castedContent = new ArrayList<>();
-
-		List<com.univocity.parsers.common.record.Record> records = csvReader.parseAllRecords(csvFile.stream());
-
-		for (com.univocity.parsers.common.record.Record record : records) {
-			List<Object> castEntriesOfRow = new ArrayList<>(requiredColumns.size());
-
-			for (RequiredColumn column : requiredColumns) {
-				String raw = record.getString(column.getName());
-				Object parsed = castEntryAccordingToColumnType(raw, column.getType());
-				castEntriesOfRow.add(parsed);
-			}
-
-			castedContent.add(castEntriesOfRow);
-		}
-
-		return castedContent.stream()
-							.map(DSL::row)
-							.toList();
-	}
 
 	private Field<?> createField(RequiredColumn requiredColumn) {
 		DataType<?> dataType = switch (requiredColumn.getType()) {
@@ -201,6 +165,58 @@ public class CsvTableImporter {
 		return DSL.field(DSL.name(requiredColumn.getName()), dataType);
 	}
 
+	/**
+	 * Imports the table into the database that is connected to the {@link org.jooq.DSLContext DSLContext}
+	 * of this {@link com.bakdata.conquery.integration.sql.CsvTableImporter CSVTableImporter}.
+	 */
+	public void importTableIntoDatabase(RequiredTable requiredTable) {
+
+		Table<Record> table = DSL.table(DSL.name(requiredTable.getName()));
+		List<RequiredColumn> allRequiredColumns = getAllRequiredColumns(requiredTable);
+		List<Field<?>> columns = createFieldsForColumns(allRequiredColumns);
+		List<RowN> content = getTablesContentFromCSV(requiredTable.getCsv(), allRequiredColumns);
+
+		// we directly use JDBC because JOOQ can't cope with some custom types like daterange
+		dslContext.connection((Connection connection) -> {
+			try (Statement statement = connection.createStatement()) {
+				insertValuesIntoTable(table, columns, content, statement);
+			}
+		});
+	}
+
+	@SneakyThrows
+	private List<RowN> getTablesContentFromCSV(ResourceFile csvFile, List<RequiredColumn> requiredColumns) {
+		List<String[]> rawContent = this.csvReader.parseAll(csvFile.stream());
+		List<List<Object>> castedContent = this.castContent(rawContent, requiredColumns);
+		return castedContent.stream()
+							.map(DSL::row)
+							.toList();
+	}
+
+	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
+		// encountered empty new line
+		if (content.isEmpty()) {
+			return;
+		}
+		log.debug("Inserting into table: {}", content);
+		testSqlDialect.getTestFunctionProvider().insertValuesIntoTable(table, columns, content, statement, dslContext);
+	}
+
+	/**
+	 * Casts all values of each row to the corresponding type of the column the value refers to.
+	 */
+	private List<List<Object>> castContent(List<String[]> rawContent, List<RequiredColumn> requiredColumns) {
+		List<List<Object>> castedContent = new ArrayList<>(rawContent.size());
+		for (String[] row : rawContent) {
+			List<Object> castEntriesOfRow = new ArrayList<>(row.length);
+			for (int i = 0; i < row.length; i++) {
+				MajorTypeId type = requiredColumns.get(i).getType();
+				castEntriesOfRow.add(this.castEntryAccordingToColumnType(row[i], type));
+			}
+			castedContent.add(castEntriesOfRow);
+		}
+		return castedContent;
+	}
 
 	private Object castEntryAccordingToColumnType(String entry, MajorTypeId type) {
 

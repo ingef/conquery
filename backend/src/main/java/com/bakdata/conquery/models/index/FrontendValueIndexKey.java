@@ -2,8 +2,11 @@ package com.bakdata.conquery.models.index;
 
 import java.net.URI;
 import java.util.List;
+import java.util.function.Supplier;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.util.search.Search;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -13,9 +16,7 @@ import lombok.ToString;
 public class FrontendValueIndexKey implements IndexKey {
 
 
-	private final int suffixCutoff;
-
-	private final String splitPattern;
+	private final Supplier<Search<FrontendValue>> indexSupplier;
 
 
 	/**
@@ -34,9 +35,8 @@ public class FrontendValueIndexKey implements IndexKey {
 	private final String internalColumn;
 
 
-	public FrontendValueIndexKey(URI csv, String internalColumn, String valueTemplate, String optionValueTemplate, int suffixCutoff, String splitPattern) {
-		this.suffixCutoff = suffixCutoff;
-		this.splitPattern = splitPattern;
+	public FrontendValueIndexKey(URI csv, String internalColumn, String valueTemplate, String optionValueTemplate, Supplier<Search<FrontendValue>> indexSupplier) {
+		this.indexSupplier = indexSupplier;
 
 		this.valueTemplate = valueTemplate;
 		this.optionValueTemplate = optionValueTemplate;
@@ -51,6 +51,6 @@ public class FrontendValueIndexKey implements IndexKey {
 
 	@Override
 	public FrontendValueIndex createIndex(String defaultEmptyLabel) {
-		return new FrontendValueIndex(suffixCutoff, splitPattern, valueTemplate, optionValueTemplate, defaultEmptyLabel);
+		return new FrontendValueIndex(indexSupplier.get(), valueTemplate, optionValueTemplate, defaultEmptyLabel);
 	}
 }

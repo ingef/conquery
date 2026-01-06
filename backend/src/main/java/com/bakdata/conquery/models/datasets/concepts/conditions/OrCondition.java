@@ -2,12 +2,11 @@ package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.List;
 import java.util.Map;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
@@ -38,7 +37,7 @@ public class OrCondition implements CTCondition {
 	}
 
 	@Override
-	public void init(ConceptTreeNode node) throws ConceptConfigurationException {
+	public void init(ConceptElement<?> node) throws ConceptConfigurationException {
 		for (CTCondition cond : conditions) {
 			cond.init(node);
 		}

@@ -3,11 +3,10 @@ package com.bakdata.conquery.models.worker;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -39,8 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 public class DatasetRegistry<N extends Namespace> implements Closeable, NamespacedStorageProvider, Injectable {
 
 	private final ConcurrentMap<DatasetId, N> datasets = new ConcurrentHashMap<>();
-	@Getter
-	private final int entityBucketSize;
 
 	@Getter
 	private final ConqueryConfig config;
@@ -55,13 +52,17 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 	public N createNamespace(Dataset dataset, MetaStorage metaStorage, Environment environment) throws IOException {
 		// Prepare empty storage
 		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName());
-		final ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(datasetStorage);
+		final ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(datasetStorage, this);
+
+		dataset.setStorageProvider(this);
 
 		// Each store injects its own IdResolveCtx so each needs its own mapper
 		datasetStorage.openStores(Jackson.copyMapperAndInjectables((persistenceMapper)));
+
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap(datasetStorage));
 		datasetStorage.setPreviewConfig(new PreviewConfig());
+
 		datasetStorage.close();
 
 		return createNamespace(datasetStorage, metaStorage, environment);
@@ -90,8 +91,10 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 		}
 	}
 
-	public List<Dataset> getAllDatasets() {
-		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toList());
+	public Stream<DatasetId> getAllDatasets() {
+		return datasets.values().stream()
+					   .map(Namespace::getStorage)
+					   .map(namespaceStorage -> namespaceStorage.getDataset().getId());
 	}
 
 	public Collection<N> getNamespaces() {
@@ -123,7 +126,7 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 		indexService.inject(values);
 		// Make this class also available under DatasetRegistry
 		return values.add(NamespacedStorageProvider.class, this)
-					 .add(this.getClass(), this);
+					 .add(DatasetRegistry.class, this);
 	}
 
 	public void resetIndexService() {
@@ -132,7 +135,8 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 
 	@Override
 	public NamespacedStorage getStorage(DatasetId datasetId) {
-		return datasets.get(datasetId).getStorage();
+		N namespace = datasets.get(datasetId);
+		return namespace.getStorage();
 	}
 
 	@Override

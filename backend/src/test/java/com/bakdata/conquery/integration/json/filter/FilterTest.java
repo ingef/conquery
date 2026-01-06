@@ -15,6 +15,7 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.integration.json.AbstractQueryEngineTest;
@@ -26,8 +27,6 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
@@ -81,6 +80,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 	@JsonIgnore
 	private Connector connector;
+
 	@JsonIgnore
 	private TreeConcept concept;
 
@@ -89,12 +89,13 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		((ObjectNode) rawContent.get("tables")).put("name", TABLE_NAME);
 
-		content = parseSubTree(support, rawContent, RequiredData.class, true);
+		content = LoadingUtil.parseSubTree(support, rawContent, RequiredData.class, false);
 
 		concept = new TreeConcept();
 		concept.setLabel(CONCEPT_LABEL);
 
-		concept.setDataset(new DatasetId(support.getDataset().getId().getName()));
+		concept.setNamespacedStorageProvider(support.getNamespaceStorage());
+		concept.init();
 
 		rawConnector.put("name", "connector");
 		rawConnector.put(TABLE_NAME, TABLE_NAME);
@@ -107,7 +108,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 	}
 
 
-	private Query parseQuery(StandaloneSupport support) throws JSONException, IOException {
+	private Query parseQuery(StandaloneSupport support) throws IOException {
 		final String filterId = support.getDataset().getName() + ".concept.connector.filter";
 		rawFilterValue.put("filter", filterId);
 
@@ -116,7 +117,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		}
 
 
-		FilterValue<?> result = parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class), false);
+		FilterValue<?> result = LoadingUtil.parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class), true);
 
 		CQTable cqTable = new CQTable();
 
@@ -140,7 +141,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
 		try {
-			final Connector internalConnector = standaloneSupport.getNamespace().getStorage().getAllConcepts().findFirst().get().getConnectors().get(0);
+			final Connector internalConnector = standaloneSupport.getNamespace().getStorage().getAllConcepts().findFirst().get().getConnectors().getFirst();
 			final FrontendFilterConfiguration.Top actual = internalConnector.getFilters().iterator().next().createFrontendConfig(standaloneSupport.getConfig());
 
 			if (expectedFrontendConfig != null) {

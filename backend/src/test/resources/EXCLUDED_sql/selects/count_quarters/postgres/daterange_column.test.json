@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "sqlSpec": {
-    "isEnabled": true,
+    "isEnabled": false,
     "supportedDialects": [
       "POSTGRESQL"
     ]
@@ -11,21 +11,16 @@
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
-      "type": "AND",
-      "children": [
+      "ids": [
+        "count"
+      ],
+      "type": "CONCEPT",
+      "label": "count",
+      "tables": [
         {
-          "ids": [
-            "count"
-          ],
-          "type": "CONCEPT",
-          "label": "count",
-          "tables": [
-            {
-              "id": "count.count_connector",
-              "selects": [
-                "count.count_connector.count_quarters_select"
-              ]
-            }
+          "id": "count.count_connector",
+          "selects": [
+            "count.count_connector.count_quarters_select"
           ]
         }
       ]

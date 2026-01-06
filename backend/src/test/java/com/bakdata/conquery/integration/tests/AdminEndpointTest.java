@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.tests.EndpointTestHelper.EndPoint;
 import com.bakdata.conquery.util.support.TestConquery;
-import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 
 /**
@@ -18,7 +18,7 @@ public class AdminEndpointTest implements ProgrammaticIntegrationTest {
 
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
-		List<EndPoint> expectedEndpoints = READER.readValue(In.resource("/tests/endpoints/adminEndpointInfo.json").asStream());
+		List<EndPoint> expectedEndpoints = READER.readValue(LoadingUtil.openResource("/tests/endpoints/adminEndpointInfo.json"));
 
 		DropwizardResourceConfig jerseyConfig = testConquery.getStandaloneCommand().getManagerNode().getAdmin().getJerseyConfig();
 

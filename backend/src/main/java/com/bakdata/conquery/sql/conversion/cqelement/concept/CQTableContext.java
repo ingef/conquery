@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
@@ -20,6 +22,7 @@ import lombok.With;
 @Value
 @Builder
 class CQTableContext implements Context {
+
 
 	SqlIdColumns ids;
 	Optional<ColumnDateRange> validityDate;

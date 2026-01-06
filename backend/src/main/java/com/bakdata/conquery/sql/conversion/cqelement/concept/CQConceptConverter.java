@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
@@ -24,7 +23,6 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
-import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionUtil;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
@@ -130,7 +128,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		if (cqConcept.isExcludeFromSecondaryId()
 			|| conversionContext.getSecondaryIdDescription() == null
-			|| !cqTable.hasSelectedSecondaryId(conversionContext.getSecondaryIdDescription())
+			|| !cqTable.hasSelectedSecondaryId(conversionContext.getSecondaryIdDescription().getId())
 		) {
 			return new SqlIdColumns(primaryColumn).withAlias();
 		}
@@ -153,6 +151,11 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
 		ValidityDate validityDate = cqTable.findValidityDate();
 		ColumnDateRange sqlValidityDate;
+
+		if (validityDate == null){
+			return Optional.empty();
+		}
+
 		if (context.getDateRestrictionRange() != null) {
 			sqlValidityDate = functionProvider.forValidityDate(validityDate, context.getDateRestrictionRange());
 		}
@@ -182,7 +185,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		convertConnectorCondition(cqTable, functionProvider).ifPresent(conditions::add);
 
 		for (ConceptElement<?> conceptElement : conceptElements) {
-			collectConditions(cqTable, (ConceptTreeNode<?>) conceptElement, functionProvider)
+			collectConditions(cqTable, conceptElement, functionProvider)
 					.reduce(WhereCondition::and)
 					.ifPresent(conditions::add);
 		}
@@ -191,9 +194,9 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	}
 
 	/**
-	 * Collects all conditions of a given {@link ConceptTreeNode} by resolving the condition of the given node and all of its parent nodes.
+	 * Collects all conditions of a given {@link ConceptElement} by resolving the condition of the given node and all of its parent nodes.
 	 */
-	private static Stream<WhereCondition> collectConditions(CQTable cqTable, ConceptTreeNode<?> conceptElement, SqlFunctionProvider functionProvider) {
+	private static Stream<WhereCondition> collectConditions(CQTable cqTable, ConceptElement<?> conceptElement, SqlFunctionProvider functionProvider) {
 		if (!(conceptElement instanceof ConceptTreeChild child)) {
 			return Stream.empty();
 		}
@@ -228,7 +231,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		return Optional.of(new SqlFilters(
 				ConnectorSqlSelects.builder().preprocessingSelects(dateRestrictionSelects).build(),
-				WhereClauses.builder().eventFilter(ConditionUtil.wrap(dateRestrictionCondition, ConditionType.EVENT)).build()
+				WhereClauses.builder().eventFilter(ConditionUtil.wrap(dateRestrictionCondition)).build()
 		));
 	}
 

@@ -31,7 +31,7 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.MetaIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -64,30 +64,37 @@ import org.apache.shiro.authz.Permission;
 
 @Getter
 @Setter
-@ToString
 @Slf4j
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonIgnoreProperties("state")
-public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
+@ToString(onlyExplicitlyIncluded = true)
+public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 
 	/**
 	 * Some unusual suffix. It's not too bad if someone actually uses this.
 	 */
 	public static final String AUTO_LABEL_SUFFIX = "\t@§$";
 
+	@ToString.Include
 	private DatasetId dataset;
+	@ToString.Include
 	private UUID queryId;
+	@ToString.Include
 	private String label;
 
+	@ToString.Include
 	private LocalDateTime creationTime = LocalDateTime.now();
 
+	@ToString.Include
 	private UserId owner;
 
 	@NotNull
+	@ToString.Include
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
+	@ToString.Include
 	private boolean shared = false;
 
 	// Most queries contain dates, and this retroactively creates a saner default than false for old queries.
@@ -95,18 +102,23 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	private boolean containsDates;
 
 	@JsonAlias("machineGenerated")
+	@ToString.Include
 	private boolean system;
 
 	// TODO may transfer these to the ExecutionManager
 	@EqualsAndHashCode.Exclude
+	@ToString.Include
 	private LocalDateTime startTime;
 	@EqualsAndHashCode.Exclude
+	@ToString.Include
 	private LocalDateTime finishTime;
 	@EqualsAndHashCode.Exclude
+	@ToString.Include
 	private Float progress;
 
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
+	@ToString.Include
 	private transient ConqueryErrorInfo error;
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
@@ -118,10 +130,6 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	private transient ConqueryConfig config;
-
-	/**
-	 * TODO remove this when identifiables hold reference to meta storage (CentralRegistry removed)
-	 */
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Setter
 	@Getter(AccessLevel.PROTECTED)
@@ -141,8 +149,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		this.owner = owner;
 		this.dataset = dataset;
 		this.config = config;
-		this.metaStorage = metaStorage;
 		this.datasetRegistry = datasetRegistry;
+		setMetaStorage(metaStorage);
 	}
 
 	private static boolean canSubjectExpand(Subject subject, QueryDescription query) {
@@ -197,18 +205,12 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	private static boolean containsDates(QueryDescription query) {
 		return Visitable.stream(query)
-						.anyMatch(visitable -> {
-
-							if (visitable instanceof CQConcept cqConcept) {
-								return !cqConcept.isExcludeFromTimeAggregation();
-							}
-
-							if (visitable instanceof CQExternal external) {
-								return external.containsDates();
-							}
-
-							return false;
-						});
+						.anyMatch(visitable ->
+										  switch (visitable) {
+											  case CQConcept cqConcept -> !cqConcept.isExcludeFromTimeAggregation();
+											  case CQExternal external -> external.containsDates();
+											  default -> false;
+										  });
 	}
 
 	/**
@@ -225,9 +227,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		if (queryId == null) {
 			queryId = UUID.randomUUID();
 		}
-		ManagedExecutionId managedExecutionId = new ManagedExecutionId(dataset, queryId);
-		managedExecutionId.setMetaStorage(getMetaStorage());
-		return managedExecutionId;
+		return new ManagedExecutionId(dataset, queryId);
 	}
 
 	/**
@@ -257,7 +257,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		getExecutionManager().updateState(getId(), executionState);
 
 		// Persist state of this execution
-		metaStorage.updateExecution(this);
+		getMetaStorage().updateExecution(this);
 
 		// Signal to waiting threads that the execution finished
 		getExecutionManager().clearBarrier(getId());
@@ -279,7 +279,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		synchronized (this) {
 			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 
-			if (getExecutionManager().isResultPresent(getId())) {
+			if (getExecutionManager().isInfoPresent(getId())) {
 				Preconditions.checkArgument(getExecutionManager().getExecutionInfo(getId()).getExecutionState() != ExecutionState.RUNNING);
 			}
 
@@ -314,9 +314,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setContainsDates(containsDates);
 
 		if (owner != null) {
-			User user = metaStorage.get(owner);
+			User user = owner.get();
 
-			if(user != null) {
+			if (user != null) {
 				status.setOwner(user.getId());
 				status.setOwnerName(user.getLabel());
 			}
@@ -337,12 +337,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		return label != null && label.endsWith(AUTO_LABEL_SUFFIX);
 	}
 
+	@JsonIgnore
 	public ExecutionState getState() {
-		if (!getExecutionManager().isResultPresent(getId())) {
-			return ExecutionState.NEW;
-		}
-
-		return getExecutionManager().getExecutionInfo(getId()).getExecutionState();
+		return getExecutionManager().getState(getId());
 	}
 
 	/**
@@ -387,7 +384,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		 */
 		List<GroupId> permittedGroups = new ArrayList<>();
 
-		try(Stream<Group> allGroups = getMetaStorage().getAllGroups()) {
+		try (Stream<Group> allGroups = getMetaStorage().getAllGroups()) {
 			for (Group group : allGroups.toList()) {
 				for (Permission perm : group.getPermissions()) {
 					if (perm.implies(createPermission(Ability.READ.asSet()))) {

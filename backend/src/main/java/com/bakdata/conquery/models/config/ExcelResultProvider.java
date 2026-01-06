@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.OptionalLong;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.MediaType;
@@ -62,9 +63,15 @@ public class ExcelResultProvider implements ResultRendererProvider {
 		}
 
 		// Check if resulting dimensions are possible for the xlsx format
-		final long rowCount = singleExecution.resultRowCount();
+		final OptionalLong rowCount = singleExecution.resultRowCount();
+
+		if (rowCount.isEmpty()) {
+			log.warn("Cannot check maximum row requirement, because the result has no rows");
+			return Collections.emptyList();
+		}
+
 		final int maxRowCount = SpreadsheetVersion.EXCEL2007.getMaxRows();
-		if (rowCount + 1 /* header row*/ > maxRowCount) {
+		if (rowCount.getAsLong() + 1 /* header row*/ > maxRowCount) {
 
 			log.trace("Row count is too high for XLSX format (is: {}, max: {}). Not producing a result URL", rowCount, maxRowCount);
 

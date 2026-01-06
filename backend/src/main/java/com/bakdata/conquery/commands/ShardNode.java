@@ -55,7 +55,6 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 		workers = new ShardWorkers(
 				config.getQueries().getExecutionPool(),
 				internalMapperFactory,
-				config.getCluster().getEntityBucketSize(),
 				config.getQueries().getSecondaryIdSubPlanRetention()
 		);
 
@@ -77,7 +76,7 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
 				try {
-					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError(), config.getStorage().isLoadStoresOnStart()));
+					workersDone.add(workers.openWorker(workerStorage, config.isFailOnError(), config.getStorage().isLoadStoresOnStart()));
 				}
 				catch (Exception e) {
 					log.error("Failed reading Storage", e);

@@ -1,9 +1,11 @@
 package com.bakdata.conquery.integration.json;
 
-import static com.bakdata.conquery.integration.common.LoadingUtil.importInternToExternMappers;
+import static com.bakdata.conquery.integration.common.LoadingUtil.*;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
@@ -55,7 +57,7 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		importTables(support, content.getTables(), content.isAutoConcept());
 
 
-		test.setConnector(ConqueryTestSpec.parseSubTree(
+		test.setConnector(LoadingUtil.parseSubTree(
 								  support,
 								  test.getRawConnector(),
 								  ConceptTreeConnector.class,
@@ -63,7 +65,7 @@ public class WorkerTestDataImporter implements TestDataImporter {
 									  conn.setTable(new TableId(support.getDataset().getDataset(), FilterTest.TABLE_NAME));
 									  conn.setConcept(test.getConcept());
 								  },
-								  true
+								  false
 						  )
 		);
 		test.getConcept().setConnectors(Collections.singletonList((ConceptTreeConnector) test.getConnector()));
@@ -76,7 +78,8 @@ public class WorkerTestDataImporter implements TestDataImporter {
 
 	@Override
 	public void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
-		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, tables));
+		List<File> cqpps = generateCqpp(support, tables);
+		importCqppFiles(support, cqpps);
 	}
 
 }

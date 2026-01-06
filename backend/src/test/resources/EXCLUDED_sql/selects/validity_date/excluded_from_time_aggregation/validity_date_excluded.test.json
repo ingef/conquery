@@ -46,7 +46,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/selects/validity_date/default/content.csv",
+        "csv": "tests/sql/selects/validity_date/excluded_from_time_aggregation/content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",

@@ -1,12 +1,13 @@
 package com.bakdata.conquery.models.config;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 import com.google.common.primitives.Ints;
 import io.dropwizard.util.DataSize;
 import io.dropwizard.util.DataSizeUnit;
 import io.dropwizard.util.Duration;
 import io.dropwizard.validation.MaxDataSize;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import jetbrains.exodus.env.EnvironmentConfig;
 import lombok.Getter;
 import lombok.Setter;

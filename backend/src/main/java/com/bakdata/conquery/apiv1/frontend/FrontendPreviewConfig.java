@@ -1,7 +1,6 @@
 package com.bakdata.conquery.apiv1.frontend;
 
 import java.util.Collection;
-import java.util.List;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
@@ -20,7 +19,7 @@ public class FrontendPreviewConfig {
 	@JsonProperty("default")
 	private final Collection<Labelled> defaultConnectors;
 
-	private final List<FilterId> searchFilters;
+	private final Collection<FilterId> searchFilters;
 
 	/**
 	 * Search concept needs to be parent of searchFilters, so frontend can resolve the filters.

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.result.arrow;
 
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
-import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
 
@@ -23,6 +22,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -56,11 +56,11 @@ public class ResultArrowProcessor {
 	private final ArrowConfig arrowConfig;
 
 
-	public Response createResultFile(Subject subject, ManagedExecution exec, boolean pretty, OptionalLong limit) {
+	public Response createResultFile(Subject subject, ManagedExecutionId exec, boolean pretty, OptionalLong limit) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
 				subject,
-				(ManagedExecution & SingleTableResult) exec,
+				(ManagedExecution & SingleTableResult) exec.resolve(),
 				datasetRegistry,
 				pretty,
 				FILE_EXTENTION_ARROW_FILE,
@@ -103,12 +103,12 @@ public class ResultArrowProcessor {
 
 		// Collect ResultInfos for id columns and result columns
 		final List<ResultInfo> resultInfosId = config.getIdColumns().getIdResultInfos();
-		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
+		final List<ResultInfo> resultInfosExec = exec.collectResultInfos();
 
 		StreamingOutput out = output -> {
 			CountingOutputStream countingOutputStream = new CountingOutputStream(output);
 			try {
-				renderToStream(
+				ArrowRenderer.renderToStream(
 						writerProducer.apply(countingOutputStream),
 						settings,
 						arrowConfig,
@@ -122,8 +122,8 @@ public class ResultArrowProcessor {
 				throw new IllegalStateException("Failed streaming the result for execution %s requested by %s after %s".formatted(exec.getId(),
 																																  subject.getId(),
 																																  DataSize.bytes(countingOutputStream.getCount())
-					),
-					e
+				),
+												e
 				);
 			}
 			finally {
@@ -134,11 +134,11 @@ public class ResultArrowProcessor {
 		return makeResponseWithFileName(Response.ok(out), String.join(".", exec.getLabelWithoutAutoLabelSuffix(), fileExtension), mediaType, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 
-	public Response createResultStream(Subject subject, ManagedExecution exec, boolean pretty, OptionalLong limit) {
+	public Response createResultStream(Subject subject, ManagedExecutionId exec, boolean pretty, OptionalLong limit) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
 				subject,
-				((ManagedExecution & SingleTableResult) exec),
+				((ManagedExecution & SingleTableResult) exec.resolve()),
 				datasetRegistry,
 				pretty,
 				FILE_EXTENTION_ARROW_STREAM,

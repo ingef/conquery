@@ -35,7 +35,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 	public void execute(StandaloneSupport conquery) throws Exception {
 
 		final SecondaryIdDescription description = new SecondaryIdDescription();
-		description.setDataset(conquery.getDataset().getId());
+		description.setDataset(conquery.getDataset());
 		description.setName("name");
 		description.setDescription("description");
 		description.setLabel("label");
@@ -47,7 +47,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 					.returns(Response.Status.Family.SUCCESSFUL, response -> response.getStatusInfo().getFamily());
 		}
 		final SecondaryIdDescription descriptionHidden = new SecondaryIdDescription();
-		descriptionHidden.setDataset(conquery.getDataset().getId());
+		descriptionHidden.setDataset(conquery.getDataset());
 		descriptionHidden.setName("hidden");
 		descriptionHidden.setDescription("hidden");
 		descriptionHidden.setLabel("label");
@@ -66,6 +66,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			final Set<FrontendSecondaryId> secondaryIds = fetchSecondaryIdDescriptions(conquery, false);
 
 			log.info("{}", secondaryIds);
+			description.setDataset(conquery.getDataset());
 			assertThat(secondaryIds)
 					.extracting(FrontendSecondaryId::getId)
 					.containsExactly(description.getId().toString());
@@ -91,12 +92,14 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 
 			columnNode.put("name", "column");
 			columnNode.put("type", MajorTypeId.INTEGER.name());
-			columnNode.put("secondaryId", description.getId().toStringWithoutDataset());
+			columnNode.put("secondaryId", description.getId().toString());
 
 			tableNode.set("columns", columnNode);
 
 			final Response response = uploadTable(conquery, tableNode);
-			assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+			assertThat(response.getStatusInfo().getFamily())
+					.describedAs(() -> response.readEntity(String.class))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
 		}
 		{
 			final URI uri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), DatasetsUIResource.class, "getDataset")
@@ -112,7 +115,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			assertThat(deleteDescription(conquery, description.getId()))
 					.returns(Response.Status.Family.CLIENT_ERROR, response -> response.getStatusInfo().getFamily());
 
-			deleteTable(conquery, new TableId(conquery.getDataset().getId(), "table"));
+			deleteTable(conquery, new TableId(conquery.getDataset(), "table"));
 
 			// We've deleted the table, now it should be successful
 			assertThat(deleteDescription(conquery, description.getId()))
@@ -159,7 +162,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 
 		// The injection is necessary to deserialize the dataset.
 		ObjectMapper mapper = conquery.getDatasetRegistry().injectIntoNew(Jackson.MAPPER);
-		mapper = conquery.getDataset().injectIntoNew(mapper);
+		mapper = conquery.getNamespace().getDataset().injectIntoNew(mapper);
 
 		return objectNode.get("secondaryIds")
 						 .traverse(mapper.getFactory().getCodec())

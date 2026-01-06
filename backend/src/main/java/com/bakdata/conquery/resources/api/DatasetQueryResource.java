@@ -33,8 +33,8 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import io.dropwizard.auth.Auth;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +51,7 @@ public class DatasetQueryResource {
 	protected HttpServletRequest servletRequest;
 
 	@PathParam(DATASET)
-	private Dataset dataset;
+	private DatasetId dataset;
 
 
 	@POST
@@ -101,7 +101,12 @@ public class DatasetQueryResource {
 
 		final ManagedExecution execution = processor.postQuery(dataset, query, subject, false);
 
-		return Response.ok(processor.getQueryFullStatus(execution, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false)))
+		return Response.ok(processor.getQueryFullStatus(execution.getId(),
+														subject,
+														RequestAwareUriBuilder.fromRequest(servletRequest),
+														allProviders.orElse(false),
+														false
+					   ))
 					   .status(Response.Status.CREATED)
 					   .build();
 	}

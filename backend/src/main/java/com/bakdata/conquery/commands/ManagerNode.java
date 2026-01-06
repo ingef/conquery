@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -144,7 +143,6 @@ public class ManagerNode implements Managed {
 
 		getInternalMapperFactory().customizeApiObjectMapper(environment.getObjectMapper(), getDatasetRegistry(), getMetaStorage());
 
-		jerseyConfig.register(PathParamInjector.class);
 	}
 
 	@SneakyThrows(InterruptedException.class)

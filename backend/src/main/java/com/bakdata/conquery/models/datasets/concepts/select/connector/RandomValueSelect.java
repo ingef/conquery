@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
@@ -16,14 +17,14 @@ public class RandomValueSelect extends MappableSingleColumnSelect {
 	@JsonCreator
 	public RandomValueSelect(
 			ColumnId column,
-			InternToExternMapperId mapping
+			InternToExternMapperId mapping, Range.IntegerRange substring
 	) {
-		super(column, mapping);
+		super(column, mapping, substring);
 	}
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new RandomValueAggregator<>(getColumn().resolve());
+		return new RandomValueAggregator<>(getColumn().resolve(), getSubstringRange());
 	}
 
 	@Override

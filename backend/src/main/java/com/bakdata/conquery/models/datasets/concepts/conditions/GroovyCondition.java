@@ -3,12 +3,11 @@ package com.bakdata.conquery.models.datasets.concepts.conditions;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.stream.Stream;
-
 import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
@@ -41,10 +40,10 @@ public class GroovyCondition implements CTCondition {
 	@JsonIgnore
 	private transient ConditionScript compiled;
 	@JsonIgnore
-	private ConceptTreeNode node;
+	private ConceptElement<?> node;
 
 	@Override
-	public void init(ConceptTreeNode node) throws ConceptConfigurationException {
+	public void init(ConceptElement<?> node) throws ConceptConfigurationException {
 		this.node = node;
 		compile();
 	}
@@ -89,7 +88,7 @@ public class GroovyCondition implements CTCondition {
 		@Getter
 		protected String value;
 		@Setter
-		protected ConceptTreeNode node;
+		protected ConceptElement<?> node;
 
 		public boolean matches(Map<String, Object> row, String value) throws ConceptConfigurationException {
 			this.row = row;

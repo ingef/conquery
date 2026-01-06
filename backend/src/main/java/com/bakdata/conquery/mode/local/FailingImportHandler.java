@@ -3,7 +3,7 @@ package com.bakdata.conquery.mode.local;
 import java.io.InputStream;
 
 import com.bakdata.conquery.mode.ImportHandler;
-import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.Namespace;
 
 public class FailingImportHandler implements ImportHandler {
@@ -19,7 +19,7 @@ public class FailingImportHandler implements ImportHandler {
 	}
 
 	@Override
-	public void deleteImport(Import imp) {
+	public void deleteImport(ImportId imp) {
 		fail();
 	}
 

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.extern.jackson.Jacksonized;
 
 /**
@@ -34,6 +35,7 @@ public class DatabaseConfig {
 	/**
 	 * Password used to connect to the database.
 	 */
+	@ToString.Exclude
 	private String databasePassword;
 
 	/**

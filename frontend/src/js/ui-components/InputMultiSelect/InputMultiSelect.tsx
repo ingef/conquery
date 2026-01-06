@@ -127,16 +127,6 @@ const InputMultiSelect = ({
     },
   });
 
-  useDebounce(
-    () => {
-      if (onLoadMore && !loading) {
-        onLoadMore(inputValue, { shouldReset: true });
-      }
-    },
-    350,
-    [inputValue],
-  );
-
   const filteredOptions = useFilteredOptions({
     options,
     selectedItems,
@@ -243,6 +233,16 @@ const InputMultiSelect = ({
     },
   });
 
+  useDebounce(
+    () => {
+      if (onLoadMore && isOpen && !loading) {
+        onLoadMore(inputValue, { shouldReset: true });
+      }
+    },
+    350,
+    [inputValue, isOpen],
+  );
+
   useLoadMoreInitially({ onLoadMore, isOpen, optionsLength: options.length });
 
   const { ref: menuPropsRef, ...menuProps } = getMenuProps();
@@ -314,10 +314,10 @@ const InputMultiSelect = ({
               selectedItems.length > 0
                 ? null
                 : placeholder
-                ? placeholder
-                : onResolve
-                ? t("inputMultiSelect.dndPlaceholder")
-                : t("inputSelect.placeholder")
+                  ? placeholder
+                  : onResolve
+                    ? t("inputMultiSelect.dndPlaceholder")
+                    : t("inputSelect.placeholder")
             }
             onClick={(e) => {
               inputProps.onClick?.(e);

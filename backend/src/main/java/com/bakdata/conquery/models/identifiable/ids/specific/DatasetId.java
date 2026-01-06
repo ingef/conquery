@@ -4,28 +4,34 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Getter
-@EqualsAndHashCode(callSuper = false, doNotUseGetters = true)
-public class DatasetId extends Id<Dataset> implements NamespacedId, Authorized {
+@EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+public class DatasetId extends NamespacedId<Dataset> implements Authorized {
 
+	@EqualsAndHashCode.Include
 	private final String name;
+
+	@JsonIgnore
+	@Getter
+	private NamespacedStorageProvider domain;
 
 	@JsonIgnore
 	@Override
@@ -33,9 +39,16 @@ public class DatasetId extends Id<Dataset> implements NamespacedId, Authorized {
 		return this;
 	}
 
+	@JacksonInject(useInput = OptBoolean.FALSE)
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
-		return storage.getDataset();
+	public void setDomain(NamespacedStorageProvider provider) {
+		domain = provider;
+	}
+
+
+	@Override
+	public Dataset get() {
+		return getDomain().getStorage(this).getDataset();
 	}
 
 	@Override
@@ -44,7 +57,7 @@ public class DatasetId extends Id<Dataset> implements NamespacedId, Authorized {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 	}
 
@@ -53,7 +66,7 @@ public class DatasetId extends Id<Dataset> implements NamespacedId, Authorized {
 		return DatasetPermission.onInstance(abilities, this);
 	}
 
-	public static enum Parser implements IdUtil.Parser<DatasetId> {
+	public enum Parser implements IdUtil.Parser<DatasetId> {
 		INSTANCE;
 
 		@Override

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,6 +24,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -51,13 +53,15 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 		log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), execution.getDataset());
 
-		addState(execution.getId(), new DistributedExecutionInfo());
+		List<ResultInfo> resultInfo = execution instanceof SingleTableResult singleTableResult ? singleTableResult.collectResultInfos() : Collections.emptyList();
+
+		addState(execution.getId(), new DistributedExecutionInfo(resultInfo));
 
 		if (execution instanceof ManagedInternalForm<?> form) {
-			form.getSubQueries().values().forEach((query) -> addState(query, new DistributedExecutionInfo()));
+			form.getSubQueries().values().forEach((query) -> addState(query, new DistributedExecutionInfo(form.collectResultInfos())));
 		}
 
-		final WorkerHandler workerHandler = getWorkerHandler(execution.getId().getDataset());
+		final WorkerHandler workerHandler = getWorkerHandler(execution.getDataset());
 
 		workerHandler.sendToAll(execution.createExecutionMessage());
 	}
@@ -67,10 +71,10 @@ public class DistributedExecutionManager extends ExecutionManager {
 	}
 
 	@Override
-	public void doCancelQuery(ManagedExecution execution) {
+	public void doCancelQuery(ManagedExecutionId executionId) {
 		log.debug("Sending cancel message to all workers.");
 
-		getWorkerHandler(execution.createId().getDataset()).sendToAll(new CancelQuery(execution.getId()));
+		getWorkerHandler(executionId.getDataset()).sendToAll(new CancelQuery(executionId));
 	}
 
 	/**
@@ -90,21 +94,23 @@ public class DistributedExecutionManager extends ExecutionManager {
 			return;
 		}
 
-		ManagedExecutionId id = execution.getId();
-		Optional<ExecutionInfo> optInfo = tryGetExecutionInfo(id);
+		Optional<ExecutionInfo> optInfo = tryGetExecutionInfo(execution.getId());
 
-		if (optInfo.isEmpty()){
+		if (optInfo.isEmpty()) {
 			log.debug("Ignoring result {} because the corresponding state was not found (execution probably canceled)", result);
 			return;
 		}
 
 		if (!(optInfo.get() instanceof DistributedExecutionInfo distributedInfo)) {
-			throw new IllegalStateException("Expected execution '%s' to be of type %s, but was %s".formatted(execution.getId(), DistributedExecutionInfo.class, optInfo.getClass()));
+			throw new IllegalStateException("Expected execution '%s' to be of type %s, but was %s".formatted(execution.getId(),
+																											 DistributedExecutionInfo.class,
+																											 optInfo.getClass()
+			));
 		}
 
 		ExecutionState execState = distributedInfo.executionState;
 		if (execState != ExecutionState.RUNNING) {
-			log.warn("Received result form '{}' for Query[{}] that is not RUNNING but {}", result.getWorkerId(), id, execState);
+			log.warn("Received result form '{}' for Query[{}] that is not RUNNING but {}", result.getWorkerId(), execution.getId(), execState);
 			return;
 		}
 
@@ -112,9 +118,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 			execution.fail(result.getError().get());
 		}
 		else {
-
-			// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
-			distributedInfo.results.put(result.getWorkerId(), result.getResults());
+			distributedInfo.addShardResult(result);
 
 			// If all known workers have returned a result, the query is DONE.
 			if (distributedInfo.allResultsArrived(getWorkerHandler(execution.getDataset()).getAllWorkerIds())) {
@@ -125,7 +129,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 		}
 
 		// State changed to DONE or FAILED
-		ExecutionState execStateAfterResultCollect = getExecutionInfo(id).getExecutionState();
+		ExecutionState execStateAfterResultCollect = getExecutionInfo(execution.getId()).getExecutionState();
 		if (execStateAfterResultCollect != ExecutionState.RUNNING) {
 			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner().resolve(), getStorage()).map(Group::getName).orElse("none");
 
@@ -147,10 +151,18 @@ public class DistributedExecutionManager extends ExecutionManager {
 		@NonNull
 		private ExecutionState executionState;
 		private Map<WorkerId, List<EntityResult>> results;
+		private long resultCount;
+		private List<ResultInfo> resultInfos;
 		private CountDownLatch executingLock;
 
-		public DistributedExecutionInfo() {
-			this(ExecutionState.RUNNING, new ConcurrentHashMap<>(), new CountDownLatch(1));
+		public DistributedExecutionInfo(List<ResultInfo> resultInfos) {
+			this(ExecutionState.RUNNING, new ConcurrentHashMap<>(), 0, resultInfos, new CountDownLatch(1));
+		}
+
+		private <R extends ShardResult> void addShardResult(R result) {
+			// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
+			results.put(result.getWorkerId(), result.getResults());
+			resultCount = results.values().stream().flatMap(Collection::stream).mapToLong(EntityResult::length).sum();
 		}
 
 		@NotNull

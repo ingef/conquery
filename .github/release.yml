@@ -1,0 +1,17 @@
+changelog:
+  exclude:
+    labels:
+      - automated
+  categories:
+    - title: Documentation 📗
+      labels:
+        - documentation
+    - title: Bug-Fixes 🐞
+      labels:
+        - bug
+    - title: Dependencies 🧰
+      labels:
+        - dependencies
+    - title: Features 🎉
+      labels:
+        - "*"

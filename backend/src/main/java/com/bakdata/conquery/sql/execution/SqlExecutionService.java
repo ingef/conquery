@@ -23,7 +23,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.Record;
-import org.jooq.Result;
 import org.jooq.Select;
 import org.jooq.exception.DataAccessException;
 
@@ -50,7 +49,8 @@ public class SqlExecutionService {
 	private SqlExecutionExecutionInfo createStatementAndExecute(SqlQuery sqlQuery, Connection connection) {
 
 		final String sqlString = sqlQuery.getSql();
-		final List<ResultType> resultTypes = sqlQuery.getResultInfos().stream().map(ResultInfo::getType).collect(Collectors.toList());
+		List<ResultInfo> resultInfos = sqlQuery.getResultInfos();
+		final List<ResultType> resultTypes = resultInfos.stream().map(ResultInfo::getType).collect(Collectors.toList());
 
 		log.info("Executing query: \n{}", sqlString);
 
@@ -60,7 +60,7 @@ public class SqlExecutionService {
 			final List<String> columnNames = getColumnNames(resultSet, columnCount);
 			final List<EntityResult> resultTable = createResultTable(resultSet, resultTypes, columnCount);
 
-			return new SqlExecutionExecutionInfo(ExecutionState.RUNNING, columnNames, resultTable, new CountDownLatch(1));
+			return new SqlExecutionExecutionInfo(ExecutionState.RUNNING, columnNames, resultTable, resultInfos, new CountDownLatch(1));
 		}
 		// not all DB vendors throw SQLExceptions
 		catch (SQLException | RuntimeException e) {
@@ -104,16 +104,6 @@ public class SqlExecutionService {
 		}
 
 		return new SqlEntityResult(id, resultRow);
-	}
-
-	public Result<?> fetch(Select<?> query) {
-		log.debug("Executing query: \n{}", query);
-		try {
-			return dslContext.fetch(query);
-		}
-		catch (DataAccessException exception) {
-			throw new ConqueryError.SqlError(exception);
-		}
 	}
 
 	/**

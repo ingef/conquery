@@ -1,132 +1,131 @@
 /// <reference types="cypress" />
-import { adminBaseUrl, checkFreemarkerError, visitAdminUI } from "../../integration-helpers/visitAdminUI";
+import {adminBaseUrl, checkFreemarkerError, visitAdminUI} from "../../integration-helpers/visitAdminUI";
 
 context("Simple UI Render Smoke Tests", () => {
 
-  describe("Query Overview renders", () => {
+    describe("Query Overview renders", () => {
 
-    it("Visit Query Overview", () => {
+        it("Visit Query Overview", () => {
 
-      visitAdminUI("queries");
+            visitAdminUI("queries");
 
-      // Disable updates so the test ends eventually
-      cy.get('#updateCheckBox').click()
-      checkFreemarkerError()
-    });
-  });
-
-  describe("Query Jobs renders", () => {
-
-    it("Visit Jobs Overview", () => {
-
-      visitAdminUI("jobs");
-
-      checkFreemarkerError()
-    });
-  });
-
-  describe("Groups renders", () => {
-
-    it("Post faulty group (member id not resolvable)", () => {
-
-      cy.request({
-        method: 'POST',
-        url: adminBaseUrl + "/admin/groups/",
-        body: [{
-          name: "faulty_group",
-          label: "Faulty Group",
-          members: [
-            "user.unresolvable"
-          ],
-          roles: [
-            "role.unresolvable"
-          ]
-        }]
-      });
+            // Disable updates so the test ends eventually
+            cy.get('#updateCheckBox').click()
+            checkFreemarkerError()
+        });
     });
 
+    describe("Query Jobs renders", () => {
 
-    it("Visit Groups", () => {
+        it("Visit Jobs Overview", () => {
 
-      visitAdminUI("groups");
+            visitAdminUI("jobs");
 
-      checkFreemarkerError();
+            checkFreemarkerError()
+        });
     });
 
-    it("Visit Faulty Group", () => {
-      visitAdminUI("groups/group.faulty_group");
+    describe("Groups renders", () => {
 
-      checkFreemarkerError();
+        it("Post faulty group (member id not resolvable)", () => {
 
-      cy.get('#member > .table-responsive').contains('Unresolvable Member')
+            cy.request({
+                method: 'POST',
+                url: adminBaseUrl + "/admin/groups/",
+                body: [{
+                    name: "faulty_group",
+                    label: "Faulty Group",
+                    members: [
+                        "user.unresolvable"
+                    ],
+                    roles: [
+                        "role.unresolvable"
+                    ]
+                }]
+            });
+        });
 
-      cy.get('#roles > .table-responsive').contains('Unresolvable Role')
-    })
+
+        it("Visit Groups", () => {
+
+            visitAdminUI("groups");
+
+            checkFreemarkerError();
+        });
+
+        it("Visit Faulty Group", () => {
+            visitAdminUI("groups/group.faulty_group");
+
+            checkFreemarkerError();
+
+            cy.get('#member > .table-responsive').contains('Unresolvable Member')
+
+            cy.get('#roles > .table-responsive').contains('Unresolvable Role')
+        })
 
 
+        it("Delete faulty member and role", () => {
+            visitAdminUI("groups/group.faulty_group");
 
-    it("Delete faulty member and role", () => {
-      visitAdminUI("groups/group.faulty_group");
+            cy.get('#members-tab').click()
+            cy.get('#member > .table-responsive > .table > tbody > tr > :nth-child(2) > a').click()
 
-      cy.get('#members-tab').click()
-      cy.get('#member > .table-responsive > .table > tbody > tr > :nth-child(2) > a').click()
+            cy.get('#roles-tab').click()
+            cy.get('#roles > .table-responsive > .table > tbody > tr > :nth-child(2) > a').click()
 
-      cy.get('#roles-tab').click()
-      cy.get('#roles > .table-responsive > .table > tbody > tr > :nth-child(2) > a').click()
+            checkFreemarkerError();
 
-      checkFreemarkerError();
+            cy.get('#member > .table-responsive').should('not.contain.text', 'Unresolvable Member')
 
-      cy.get('#member > .table-responsive').should('not.contain.text', 'Unresolvable Member')
-
-      cy.get('#roles > .table-responsive').should('not.contain.text', 'Unresolvable Role')
-    })
+            cy.get('#roles > .table-responsive').should('not.contain.text', 'Unresolvable Role')
+        })
     });
 
     describe("Dataset pages render", () => {
 
-      it("Datasets", () => {
+        it("Datasets", () => {
 
-        visitAdminUI("datasets");
+            visitAdminUI("datasets");
 
-        cy.root().should('not.contain.text', 'FreeMarker template error')
+            cy.root().should('not.contain.text', 'FreeMarker template error')
 
-        cy.get('[data-cy=datasets-dataset1]')
-          .find('a')
-          .contains('dataset1')
-          .click()
-
-
-        cy.get('[data-test-id="accordion-Mappings"]').click()
-        cy.get('[data-test-id="accordion-SearchIndices"]').click()
-        cy.get('[data-test-id="accordion-Tables"]').click()
-        cy.get('[data-test-id="accordion-Concepts"]').click()
-        cy.get('[data-test-id="accordion-SecondaryIds"]').click()
-
-        cy.root().should('not.contain.text', 'FreeMarker template error')
-
-        // Table page
-        cy.get('[data-test-id="accordion-Tables"]')
-          .find('a')
-          .contains('table')
-          .click()
-
-        cy.get('[data-test-id="accordion-Tags"]').click()
-        cy.get('[data-test-id="accordion-Concepts"]').click()
-        cy.get('[data-test-id="accordion-Columns"]').click()
-
-        cy.root().should('not.contain.text', 'FreeMarker template error')
-
-        // Import page
-        cy.get('[data-test-id="accordion-Tags"]')
-          .find('a')
-          .contains('table')
-          .click()
-
-        cy.get('[data-test-id="accordion-Columns"]').click()
-
-        cy.root().should('not.contain.text', 'FreeMarker template error')
+            cy.get('[data-cy=datasets-dataset1]')
+                .find('a')
+                .contains('dataset1')
+                .click()
 
 
-      });
+            cy.get('[data-test-id="accordion-Mappings"]').click()
+            cy.get('[data-test-id="accordion-SearchIndices"]').click()
+            cy.get('[data-test-id="accordion-Tables"]').click()
+            cy.get('[data-test-id="accordion-Concepts"]').click()
+            cy.get('[data-test-id="accordion-SecondaryIds"]').click()
+
+            cy.root().should('not.contain.text', 'FreeMarker template error')
+
+            // Table page
+            cy.get('[data-test-id="accordion-Tables"]')
+                .find('a')
+                .contains('table')
+                .click()
+
+            cy.get('[data-test-id="accordion-Tags"]').click()
+            cy.get('[data-test-id="accordion-Concepts"]').click()
+            cy.get('[data-test-id="accordion-Columns"]').click()
+
+            cy.root().should('not.contain.text', 'FreeMarker template error')
+
+            // Import page
+            cy.get('[data-test-id="accordion-Tags"]')
+                .find('a')
+                .contains('table')
+                .click()
+
+            cy.get('[data-test-id="accordion-Columns"]').click()
+
+            cy.root().should('not.contain.text', 'FreeMarker template error')
+
+
+        });
     });
 })

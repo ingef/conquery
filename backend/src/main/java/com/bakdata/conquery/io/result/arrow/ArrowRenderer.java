@@ -47,7 +47,8 @@ public class ArrowRenderer {
 			ArrowConfig arrowConfig,
 			List<ResultInfo> idHeaders,
 			List<ResultInfo> resultInfo,
-			Stream<EntityResult> results, PrinterFactory printerFactory) throws IOException {
+			Stream<EntityResult> results,
+			PrinterFactory printerFactory) throws IOException {
 
 		final List<Field> fields = ArrowUtil.generateFields(idHeaders, resultInfo, new UniqueNamer(printSettings), printSettings);
 		final VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
@@ -56,14 +57,13 @@ public class ArrowRenderer {
 		final RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), idHeaders);
 		final RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size(), resultInfo);
 
-		final List<Printer> printers =
-				Stream.concat(idHeaders.stream(), resultInfo.stream())
-					  .map(info -> info.createPrinter(printerFactory, printSettings))
-					  .toList();
+		final List<Printer> idPrinters = idHeaders.stream().map(info -> info.createPrinter(printerFactory, printSettings)).toList();
+		final List<Printer> resultPrinters = resultInfo.stream().map(info -> info.createPrinter(printerFactory, printSettings)).toList();
+
 
 		// Write the data
 		try (ArrowWriter writer = writerProducer.apply(root)) {
-			write(writer, root, idWriters, valueWriter, printSettings.getIdMapper(), printers, results, arrowConfig.getBatchSize());
+			write(writer, root, idWriters, valueWriter, printSettings.getIdMapper(), idPrinters, resultPrinters, results, arrowConfig.getBatchSize());
 		}
 
 	}
@@ -75,7 +75,8 @@ public class ArrowRenderer {
 			RowConsumer[] idWriters,
 			RowConsumer[] valueWriters,
 			PrintIdMapper idMapper,
-			List<Printer> printers,
+			List<Printer> idPrinters,
+			List<Printer> resultPrinters,
 			Stream<EntityResult> results,
 			int batchSize) throws IOException {
 		Preconditions.checkArgument(batchSize > 0, "Batch size needs be larger than 0.");
@@ -88,9 +89,12 @@ public class ArrowRenderer {
 		int batchLineCount = 0;
 		int lineCount = 0;
 		int currentRow = 0;
+
 		EntityResult currentEntityResult = null;
 		Object[] currentEntityResultLine = null;
-		Object currentValue = null;
+		Object value = null;
+		Object printed = null;
+		Printer printer = null;
 
 		final Iterator<EntityResult> resultIterator = results.iterator();
 
@@ -99,13 +103,14 @@ public class ArrowRenderer {
 				final EntityResult cer = resultIterator.next();
 				currentEntityResult = cer;
 
-				final Object[] printedExternalId = getPrintedExternalId(idWriters, idMapper, printers, cer);
+				final Object[] printedExternalId = getPrintedExternalId(idWriters, idMapper, idPrinters, cer);
 
 				for (Object[] line : cer.listResultLines()) {
 					currentEntityResultLine = line;
-					Preconditions.checkState(
-							line.length == valueWriters.length,
-							"The number of value writers and values in a result line differs. Writers: %d Line: %d".formatted(valueWriters.length, line.length)
+					Preconditions.checkState(line.length == valueWriters.length,
+											 "The number of value writers and values in a result line differs. Writers: %d Line: %d".formatted(valueWriters.length,
+																																			   line.length
+											 )
 					);
 
 					for (int index = 0; index < idWriters.length; index++) {
@@ -116,22 +121,19 @@ public class ArrowRenderer {
 						idWriters[index].accept(batchLineCount, printedExternalId[index]);
 					}
 
-					for (int rowIndex = 0; rowIndex < valueWriters.length; rowIndex++) {
-						currentRow = rowIndex;
-						final int colId = rowIndex + idWriters.length;
-						// In this case, the printer normalizes and adjusts values.
-
-						final Object value = line[rowIndex];
-						currentValue = value;
-
-						Object printed = null;
+					for (int index = 0; index < valueWriters.length; index++) {
+						value = line[index];
 
 						if (value != null) {
-							Printer printer = printers.get(colId);
+							printer = resultPrinters.get(index);
+							// In this case, the printer normalizes and adjusts values.
 							printed = printer.apply(value);
 						}
+						else {
+							printed = null;
+						}
 
-						valueWriters[rowIndex].accept(batchLineCount, printed);
+						valueWriters[index].accept(batchLineCount, printed);
 					}
 
 					batchLineCount++;
@@ -154,9 +156,23 @@ public class ArrowRenderer {
 			}
 		}
 		catch (Exception e) {
-			throw new IllegalStateException("Failed to write results. Failed at line-number=%s, row-number=%d, batch-number=%d, batch-line-number=%d, entity=%s, line-content=%s, value=%s".formatted(
-					lineCount, currentRow, batchCount, batchLineCount, currentEntityResult.getEntityId(), Arrays.toString(currentEntityResultLine), currentValue
-			), e);
+			throw new IllegalStateException(
+					String.format("Failed to write results. Failed with "
+								  + "line-number=%s, row-number=%d, batch-number=%d, batch-line-number=%d, "
+								  + "entity=%s, line-content=%s, "
+								  + "value=%s, printed=%s, printer=%s",
+								  lineCount,
+								  currentRow,
+								  batchCount,
+								  batchLineCount,
+								  currentEntityResult.getEntityId(),
+								  Arrays.toString(currentEntityResultLine),
+								  value,
+								  printed,
+								  printer
+					),
+					e
+			);
 		}
 		finally {
 			log.trace("Wrote {} batches of size {} (last batch might be smaller)", batchCount, batchSize);
@@ -313,8 +329,8 @@ public class ArrowRenderer {
 			final int pos = vecI - vectorOffset;
 			final FieldVector vector = root.getVector(vecI);
 			final ResultInfo resultInfo = resultInfos.get(pos);
-			builder[pos] = generateVectorFiller(vector, resultInfo.getType());
 
+			builder[pos] = generateVectorFiller(vector, resultInfo.getType());
 		}
 		return builder;
 
@@ -335,7 +351,6 @@ public class ArrowRenderer {
 			case NUMERIC -> float8VectorFiller((Float8Vector) vector);
 			case STRING -> varCharVectorFiller(((VarCharVector) vector));
 			case DATE_RANGE -> dateRangeVectorFiller((StructVector) vector);
-
 		};
 
 

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public interface RoleOwner {
 
-	void addRole(Role role);
+	void addRole(RoleId role);
 
 	void removeRole(RoleId role);
 

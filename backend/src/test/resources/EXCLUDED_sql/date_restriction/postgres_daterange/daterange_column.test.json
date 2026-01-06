@@ -6,7 +6,7 @@
       "POSTGRESQL"
     ]
   },
-  "label": "Date restriction with a daterange column validity date (PostgreSQL only)    ",
+  "label": "Date restriction with a daterange column validity date (PostgreSQL only)",
   "expectedCsv": "tests/sql/date_restriction/postgres_daterange/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

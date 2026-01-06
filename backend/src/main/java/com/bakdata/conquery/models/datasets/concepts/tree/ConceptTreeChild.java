@@ -17,7 +17,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> implements ConceptTreeNode<ConceptTreeChildId> {
+public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> {
 
 	@JsonIgnore
 	private transient int[] prefix;
@@ -34,7 +34,7 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@Getter
 	@Setter
 	@EqualsAndHashCode.Exclude
-	private ConceptTreeNode<?> parent;
+	private ConceptElement<?> parent;
 	@JsonIgnore
 	@Getter
 	@Setter
@@ -65,7 +65,7 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@Override
 	@JsonIgnore
 	public TreeConcept getConcept() {
-		ConceptTreeNode<?> n = this;
+		ConceptElement<?> n = this;
 		while (n != null) {
 			if (n instanceof TreeConcept) {
 				return (TreeConcept) n;
@@ -75,7 +75,6 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 		throw new IllegalStateException("The node " + this + " seems to have no root");
 	}
 
-	@Override
 	@JsonIgnore
 	public int[] getPrefix() {
 		if (prefix == null) {

@@ -57,4 +57,12 @@ public interface IRange<VALUE extends Comparable, CLASS extends IRange<VALUE, CL
 	default boolean isExactly() {
 		return getMin() != null && getMax() == getMin();
 	}
+
+	default boolean hasLowerBound() {
+		return getMin() != null;
+	}
+
+	default boolean hasUpperBound() {
+		return getMax() != null;
+	}
 }

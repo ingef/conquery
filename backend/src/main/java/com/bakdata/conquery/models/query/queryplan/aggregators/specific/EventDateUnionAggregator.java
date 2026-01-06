@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import java.util.Collections;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
@@ -9,8 +10,10 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import lombok.RequiredArgsConstructor;
+import lombok.Data;
+import lombok.NonNull;
 import lombok.ToString;
 
 /**
@@ -19,18 +22,30 @@ import lombok.ToString;
  * provided date restriction.
  *
  */
-@RequiredArgsConstructor
+@Data
 @ToString(of = {"requiredTables"})
 public class EventDateUnionAggregator extends Aggregator<CDateSet> {
 
-	private final Set<Table> requiredTables;
+	@NonNull
+	private Set<Table> requiredTables = Collections.emptySet();
+	/**
+	 * If present, dates are only produced if it's also contained.
+	 */
+	private QPNode owner;
+	private final CDateSet set = CDateSet.createEmpty();
+
 	private ValidityDate validityDateColumn;
-	private CDateSet set = CDateSet.createEmpty();
 	private CDateSet dateRestriction;
 
 	@Override
 	public void collectRequiredTables(Set<Table> requiredTables) {
-		requiredTables.addAll(this.requiredTables);
+		requiredTables.addAll(getRequiredTables());
+	}
+
+	public void setOwner(QPNode owner) {
+		this.owner = owner;
+		// We have to preemptively collect required tables and store them, as otherwise this causes a recursive loop
+		setRequiredTables(owner.collectRequiredTables());
 	}
 
 	@Override
@@ -48,6 +63,10 @@ public class EventDateUnionAggregator extends Aggregator<CDateSet> {
 
 	@Override
 	public CDateSet createAggregationResult() {
+		if (owner != null && !owner.isContained()) {
+			return CDateSet.createEmpty();
+		}
+
 		return CDateSet.create(set.asRanges());
 	}
 

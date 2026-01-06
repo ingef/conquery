@@ -99,7 +99,7 @@ public class ExcelRenderer {
 		String creator = config.getApplicationName();
 
 		if (exec.getOwner() != null) {
-			final User user = metaStorage.get(exec.getOwner());
+			final User user = exec.getOwner().resolve();
 
 			if (user != null) {
 				creator = user.getLabel();

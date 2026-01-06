@@ -45,4 +45,9 @@ public class SelectContext<T extends SqlTables> implements Context {
 		return getSqlDialect().getFunctionProvider();
 	}
 
+    public SqlIdColumns getIds() {
+        return this.conversionContext.isWithStratification()
+                ? this.conversionContext.getStratificationTable().getSelects().getIds()
+                : this.ids;
+    }
 }

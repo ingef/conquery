@@ -1,177 +1,180 @@
 /// <reference types="cypress" />
-import { visitWithToken } from "../../integration-helpers/visitWithToken";
+import {visitWithToken} from "../../integration-helpers/visitWithToken";
 
 const USER_TOKEN_WITH_PERMISSIONS = "user.user2";
 
 describe("Run query", () => {
-  beforeEach(() => {
-    // run these tests as if in a desktop
-    // browser with a 720p monitor
-    cy.viewport(1280, 720)
-    
-    visitWithToken(USER_TOKEN_WITH_PERMISSIONS);
-  });
+    beforeEach(() => {
+        // run these tests as if in a desktop
+        // browser with a 720p monitor
+        cy.viewport(1280, 720)
 
-  it("Can execute query, see it in the queries tab and delete it", () => {
-    cy.get('[data-test-id="right-pane-container"] >div:visible').as("queryEditor");
+        visitWithToken(USER_TOKEN_WITH_PERMISSIONS);
+    });
 
-    // Drag concept to editor
-    cy.contains("Concept1").trigger("dragstart").trigger("dragleave");
-    cy.get("@queryEditor")
-      .trigger("dragenter")
-      .trigger("dragover")
-      .trigger("drop")
-      .trigger("dragend");
+    it("Can execute query, see it in the queries tab and delete it", () => {
+        cy.get('[data-test-id="right-pane-container"] >div:visible').as("queryEditor");
 
-    // Set money filter to a negative value
-    cy.get("@queryEditor").contains("Concept1").click()
-    cy.get("@queryEditor")
-      .find('[data-test-id="table-filter-dataset1.concept1.column.sum_money"]').as("money-filter")
+        // Drag concept to editor
+        cy.contains("Concept1").trigger("dragstart").trigger("dragleave");
+        cy.get("@queryEditor")
+            .trigger("dragenter")
+            .trigger("dragover")
+            .trigger("drop")
+            .trigger("dragend");
 
-    cy.get("@money-filter").find('input').first().as("money-min-input")
-    cy.get("@money-filter").scrollIntoView()
-    // Unit should be automatically added
-    cy.get("@money-min-input").type("-4").should('have.value', '-4 €')
+        // Set money filter to a negative value
+        cy.get("@queryEditor").contains("Concept1").click()
+        cy.get("@queryEditor")
+            .find('[data-test-id="table-filter-dataset1.concept1.column.sum_money"]').as("money-filter")
 
-    // Save the settings
-    cy.get("@queryEditor").contains("Speichern").click()
+        cy.get("@money-filter").find('input').first().as("money-min-input")
+        cy.get("@money-filter").scrollIntoView()
+        // Unit should be automatically added
+        cy.get("@money-min-input").type("-4").should('have.value', '-4 €')
 
-    // Start query
-    cy.get("@queryEditor").find('[data-test-id="query-runner-button"]').click();
+        // Save the settings
+        cy.get("@queryEditor").contains("Speichern").click()
 
-    cy.get("@queryEditor").contains("Ergebnisse");
+        // Start query
+        cy.get("@queryEditor").find('[data-test-id="query-runner-button"]').click();
 
-    // Lookup executed query in the previous queries tab
-    cy.get('[data-test-id="left-pane"]').contains("Anfragen").click();
+        cy.get("@queryEditor").contains("Ergebnisse");
 
-    cy.get('[data-test-id="left-pane-container"]').as("leftPaneContainer");
+        // Lookup executed query in the previous queries tab
+        cy.get('[data-test-id="left-pane"]').contains("Anfragen").click();
 
-    cy.get("@leftPaneContainer").contains("Ergebnisse");
-    cy.get("@leftPaneContainer").contains("Concept1");
+        cy.get('[data-test-id="left-pane-container"]').as("leftPaneContainer");
 
-    // Delete the Query
-    cy.get('[data-test-id="left-pane"]').contains("Anfragen").click();
+        cy.get("@leftPaneContainer").contains("Ergebnisse");
+        cy.get("@leftPaneContainer").contains("Concept1");
 
-    cy.get('[data-test-id="left-pane-container"]').as("leftPaneContainer");
+        // Delete the Query
+        cy.get('[data-test-id="left-pane"]').contains("Anfragen").click();
 
-    cy.get('[data-test-id="project-items-list"]').as("executionList");
-    
-    cy.get('@executionList').find('[data-test-id="project-item-delete-button"]').click();
-    cy.get('@executionList').contains('Anfrage jetzt löschen').click();
+        cy.get('[data-test-id="left-pane-container"]').as("leftPaneContainer");
 
-    cy.get('@leftPaneContainer').contains('Keine Anfragen / Formulare gefunden')
-  });
+        cy.get('[data-test-id="project-items-list"]').as("executionList");
 
-  it("Check user error message", () => {
-    cy.get('[data-test-id="right-pane-container"] >div:visible').as("queryEditor");
+        cy.get('@executionList').find('[data-test-id="project-item-delete-button"]').click();
+        cy.get('@executionList').contains('Anfrage jetzt löschen').click();
 
-    // Drag concept to editor
-    cy.contains("MultiConnector").trigger("dragstart").trigger("dragleave");
-    cy.get("@queryEditor")
-      .trigger("dragenter")
-      .trigger("dragover")
-      .trigger("drop")
-      .trigger("dragend");
+        cy.get('@leftPaneContainer').contains('Keine Anfragen / Formulare gefunden')
+    });
 
-    // Switch to secondary id mode
-    cy.get("@queryEditor").contains("Secondary Id").click()
+    it("Check user error message", () => {
+        cy.get('[data-test-id="right-pane-container"] >div:visible').as("queryEditor");
 
-    // Exclude only concept from secondary id to create an invalid query
-    cy.get("@queryEditor").find('[data-test-id="secondary-id-toggle"]').click()
+        // Drag concept to editor
+        cy.contains("MultiConnector").trigger("dragstart").trigger("dragleave");
+        cy.get("@queryEditor")
+            .trigger("dragenter")
+            .trigger("dragover")
+            .trigger("drop")
+            .trigger("dragend");
 
-    // Start query
-    cy.get("@queryEditor").find('[data-test-id="query-runner-button"]').click();
+        // Switch to secondary id mode
+        cy.get("@queryEditor").contains("Secondary Id").click()
 
-    // Check for specific user error message
-    cy.get('[data-test-id="query-runner"]').contains("Die ausgewählte Analyseebenen konnte in keinem der ausgewählten Konzepten gefunden werden.")
-  })
+        // Exclude only concept from secondary id to create an invalid query
+        cy.get("@queryEditor").find('[data-test-id="secondary-id-toggle"]').click()
+
+        // Start query
+        cy.get("@queryEditor").find('[data-test-id="query-runner-button"]').click();
+
+        // Check for specific user error message
+        cy.get('[data-test-id="query-runner"]').contains("Die ausgewählte Analyseebenen konnte in keinem der ausgewählten Konzepten gefunden werden.")
+    })
 });
 
 describe("Reference list", () => {
-  beforeEach(() => {
-    // run these tests as if in a desktop
-    // browser with a 720p monitor
-    cy.viewport(1280, 720)
-    
-    visitWithToken(USER_TOKEN_WITH_PERMISSIONS);
-  });
+    beforeEach(() => {
+        // run these tests as if in a desktop
+        // browser with a 720p monitor
+        cy.viewport(1280, 720)
 
-  it("Use reference list to resolve concept", () =>{
-    cy.get('[data-test-id="right-pane-container"] >div:visible').as("queryEditor");
+        visitWithToken(USER_TOKEN_WITH_PERMISSIONS);
+    });
 
-    // We need force here because the input is invisible
-    cy.get("@queryEditor").get('input[type=file]').selectFile('cypress/support/test_data/concept_reference_list.txt', {"force": true})
-    cy.get('@queryEditor')
-      .find('[data-test-id="uploadConceptListModal"]')
-      .as("uploadConceptListModal")
-      .find('[data-test-id="selection-dropdown"]').click()
+    it("Use reference list to resolve concept", () => {
+        cy.get('[data-test-id="right-pane-container"] >div:visible').as("queryEditor");
 
-    // Choose a concept
-    cy.get('@uploadConceptListModal')
-    .find('[data-test-id="select-options"]').contains("MultiConnector").first().click()
+        // We need force here because the input is invisible
+        cy.get("@queryEditor").find('input[type=file]').selectFile('cypress/support/test_data/concept_reference_list.txt', {"force": true})
+        cy.get('@queryEditor')
+            .find('[data-test-id="uploadConceptListModal"]')
+            .as("uploadConceptListModal")
+            .find('[data-test-id="selection-dropdown"]').click()
 
-    // We expect that one value 'b' cannot be resolved
-    cy.get('@uploadConceptListModal').contains("1 Wert nicht aufgelöst")
-    cy.get('@uploadConceptListModal').find('[data-test-id="unresolvable-list"]').contains('b')
-    // 'a1' can be resolved
-    cy.get('@uploadConceptListModal').contains("1 Wert aufgelöst.")
+        // Choose a concept
+        cy.get('@uploadConceptListModal')
+            .find('[data-test-id="select-options"]').contains("MultiConnector").first().click()
 
-    // Change list name
-    cy.get('@uploadConceptListModal').find('[data-test-id="insert-form"]').as("insert-form")
-    cy.get('@insert-form').find('input[type=text]').should('have.value', 'concept_reference_list')
-    cy.get('@insert-form').find('button[type=button]').click()
-    cy.get('@insert-form').find('input[type=text]').type("My List")
+        // We expect that one value 'b' cannot be resolved
+        cy.get('@uploadConceptListModal').contains("1 Wert nicht aufgelöst")
+        cy.get('@uploadConceptListModal').find('[data-test-id="unresolvable-list"]').contains('b')
+        // 'a1' can be resolved
+        cy.get('@uploadConceptListModal').contains("1 Wert aufgelöst.")
 
-    // Insert elements
-    cy.get('@uploadConceptListModal').find('[data-test-id="insert"]').click()
+        // Change list name
+        cy.get('@uploadConceptListModal').find('[data-test-id="insert-form"]').as("insert-form")
+        cy.get('@insert-form').find('input[type=text]').should('have.value', 'concept_reference_list')
+        cy.get('@insert-form').find('button[type=button]').click()
+        cy.get('@insert-form').find('input[type=text]').type("My List")
 
-    // Check that node was inserted in query editor
-    cy.get('@queryEditor').find('[data-test-id="query-group"]').contains("MultiConnector")
-    cy.get('@queryEditor').find('[data-test-id="query-group"]').contains("My List")
+        // Insert elements
+        cy.get('@uploadConceptListModal').find('[data-test-id="insert"]').click()
 
-    // Clear editor
-    cy.get('@queryEditor').find('svg[data-icon="trash"]').click()
-    cy.get('@queryEditor').find('button[data-test-id="confirm"]').click()
-    cy.get('@queryEditor').find('[data-test-id="text-initial"]')
-  })
+        // Check that node was inserted in query editor
+        cy.get('@queryEditor').find('[data-test-id="query-group"]').contains("MultiConnector")
+        cy.get('@queryEditor').find('[data-test-id="query-group"]').contains("My List")
 
-  it("Use reference list to resolve filter values", () =>{
-    cy.get('[data-test-id="right-pane-container"] >div:visible').as("queryEditor");
+        // Clear editor
+        cy.get('@queryEditor').find('svg[data-icon="trash"]').click()
+        cy.get('@queryEditor').find('button[data-test-id="confirm"]').click()
+        cy.get('@queryEditor').find('[data-test-id="text-initial"]')
+    })
 
-    // We need force here because the input is invisible
-    cy.get("@queryEditor").get('input[type=file]').selectFile('cypress/support/test_data/filter_value_reference_list.txt', {"force": true})
-    cy.get('@queryEditor')
-      .find('[data-test-id="uploadConceptListModal"]')
-      .as("uploadConceptListModal")
-      .find('[data-test-id="selection-dropdown"]').click()
+    it("Use reference list to resolve filter values", () => {
+        cy.get('[data-test-id="right-pane-container"] >div:visible').as("queryEditor");
 
-    // Choose a concept
-    cy.get('@uploadConceptListModal')
-    .find('[data-test-id="select-options"]').contains("connector1").first().click()
+        // We need force here because the input is invisible
+        cy.get("@queryEditor")
+            .find('input[type=file]')
+            .selectFile('cypress/support/test_data/filter_value_reference_list.txt', {"force": true})
 
-    // We expect that one value 'b' cannot be resolved
-    cy.get('@uploadConceptListModal').contains("1 Wert nicht aufgelöst")
-    cy.get('@uploadConceptListModal').find('[data-test-id="unresolvable-list"]').contains('b')
-    // 'a1' can be resolved
-    cy.get('@uploadConceptListModal').contains("2 Werte aufgelöst.")
+        cy.get('@queryEditor')
+            .find('[data-test-id="uploadConceptListModal"]')
+            .as("uploadConceptListModal")
+            .find('[data-test-id="selection-dropdown"]').click()
 
-    // Change list name
-    cy.get('@uploadConceptListModal').find('[data-test-id="insert-form"]').as("insert-form")
-    cy.get('@insert-form').find('input[type=text]').should('have.value', 'filter_value_reference_list')
-    cy.get('@insert-form').find('button[type=button]').click()
-    cy.get('@insert-form').find('input[type=text]').type("My List")
+        // Choose a concept
+        cy.get('@uploadConceptListModal')
+            .find('[data-test-id="select-options"]').contains("connector1").first().click()
 
-    // Insert elements
-    cy.get('@uploadConceptListModal').find('[data-test-id="insert"]').click()
+        // We expect that one value 'b' cannot be resolved
+        cy.get('@uploadConceptListModal').contains("1 Wert nicht aufgelöst")
+        cy.get('@uploadConceptListModal').find('[data-test-id="unresolvable-list"]').contains('b')
+        // 'a1' can be resolved
+        cy.get('@uploadConceptListModal').contains("2 Werte aufgelöst.")
 
-    // Check that node was inserted in query editor
-    cy.get('@queryEditor').find('[data-test-id="query-group"]').contains("MultiConnector").click()
+        // Change list name
+        cy.get('@uploadConceptListModal').find('[data-test-id="insert-form"]').as("insert-form")
+        cy.get('@insert-form').find('input[type=text]').should('have.value', 'filter_value_reference_list')
+        cy.get('@insert-form').find('button[type=button]').click()
+        cy.get('@insert-form').find('input[type=text]').type("My List")
 
-    // Check that filter values are set corretly
-    cy.get("@queryEditor")
-      .find('[data-test-id="table-filter-dataset1.multiconnector.connector1.big_multi_select"]').as("multi_select")
-      cy.get("@multi_select").scrollIntoView()
-      cy.get("@multi_select").find('p').eq(0).contains('a')
-      cy.get("@multi_select").find('p').eq(1).contains('abc')
-  })
+        // Insert elements
+        cy.get('@uploadConceptListModal').find('[data-test-id="insert"]').click()
+
+        // Check that node was inserted in query editor
+        cy.get('@queryEditor').find('[data-test-id="query-group"]').contains("MultiConnector").click()
+
+        // Check that filter values are set corretly
+        cy.get("@queryEditor")
+            .find('[data-test-id="table-filter-dataset1.multiconnector.connector1.big_multi_select"]').as("multi_select")
+        cy.get("@multi_select").scrollIntoView()
+        cy.get("@multi_select").find('p').eq(0).contains('a')
+        cy.get("@multi_select").find('p').eq(1).contains('abc')
+    })
 })

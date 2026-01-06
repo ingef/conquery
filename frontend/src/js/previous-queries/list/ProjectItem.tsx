@@ -123,8 +123,8 @@ const Content = styled("div")<{ own?: boolean; system?: boolean }>`
     own
       ? `5px solid ${theme.col.blueGrayDark}`
       : system
-      ? `5px solid ${theme.col.grayLight}`
-      : `1px solid ${theme.col.grayLight}`};
+        ? `5px solid ${theme.col.grayLight}`
+        : `1px solid ${theme.col.grayLight}`};
 `;
 
 const SxDownloadButton = styled(DownloadButton)`
@@ -171,8 +171,8 @@ const ProjectItem = forwardRef<
   const topLeftLabel = isFormConfig(item)
     ? formLabel!
     : exists(item.numberOfResults)
-    ? `${item.numberOfResults} ${t("previousQueries.results")}`
-    : t("previousQuery.notExecuted");
+      ? `${item.numberOfResults} ${t("previousQueries.results")}`
+      : t("previousQuery.notExecuted");
 
   const dateFormat = `${t("inputDateRange.dateFormat")} HH:mm`;
   const executedAtDate = parseISO(item.createdAt);
