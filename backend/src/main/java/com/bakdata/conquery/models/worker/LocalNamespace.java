@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.local.SqlEntityResolver;
 import com.bakdata.conquery.mode.local.SqlStorageHandler;
+import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -28,6 +29,7 @@ public class LocalNamespace extends Namespace {
 	private final DSLContextWrapper dslContextWrapper;
 	private final SqlStorageHandler storageHandler;
 	private final SqlMatchingStats sqlMatchingStatsHandler;
+	private final DatabaseConfig databaseConfig;
 
 	public LocalNamespace(
 			SqlDialect dialect,
@@ -38,25 +40,32 @@ public class LocalNamespace extends Namespace {
 			SqlStorageHandler storageHandler,
 			JobManager jobManager,
 			SearchProcessor filterSearch,
-			SqlEntityResolver sqlEntityResolver, SqlMatchingStats sqlMatchingStatsHandler
+			SqlEntityResolver sqlEntityResolver, SqlMatchingStats sqlMatchingStatsHandler, DatabaseConfig databaseConfig
 	) {
 		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, sqlEntityResolver);
 		this.dslContextWrapper = dslContextWrapper;
 		this.storageHandler = storageHandler;
 		this.dialect = dialect;
 		this.sqlMatchingStatsHandler = sqlMatchingStatsHandler;
+		this.databaseConfig = databaseConfig;
 	}
 
 	@Override
 	void updateMatchingStats() {
 		getStorage().getAllConcepts()
-				.filter(TreeConcept.class::isInstance)
-					.forEach(concept -> sqlMatchingStatsHandler.createFunctionForConcept(((TreeConcept) concept), getDialect().getFunctionProvider(), getDslContextWrapper().getDslContext()));
+					.filter(TreeConcept.class::isInstance)
+					.forEach(concept -> sqlMatchingStatsHandler.createFunctionForConcept(((TreeConcept) concept),
+																						 getDialect().getFunctionProvider(),
+																						 getDslContextWrapper().getDslContext()
+					));
 
 		getStorage().getAllConcepts()
 					.filter(TreeConcept.class::isInstance)
-					.forEach(concept -> sqlMatchingStatsHandler.collectMatchingStatsForConcept(((TreeConcept) concept), getDialect().getFunctionProvider(), getDslContextWrapper().getDslContext()));
-
+					.forEach(concept -> sqlMatchingStatsHandler.collectMatchingStatsForConcept(((TreeConcept) concept),
+																							   getDialect().getFunctionProvider(),
+																							   getDslContextWrapper().getDslContext(),
+																							   databaseConfig
+					));
 
 
 	}

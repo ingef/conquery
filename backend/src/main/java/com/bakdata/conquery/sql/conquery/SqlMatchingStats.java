@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -27,6 +28,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
+import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jetbrains.annotations.NotNull;
@@ -43,7 +45,6 @@ import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectJoinStep;
 import org.jooq.Table;
-import static org.jooq.impl.DSL.*;
 
 @Slf4j
 public class SqlMatchingStats {
@@ -152,9 +153,9 @@ public class SqlMatchingStats {
 	}
 
 
-	public void collectMatchingStatsForConcept(TreeConcept concept, SqlFunctionProvider provider, DSLContext dslContext) {
+	public void collectMatchingStatsForConcept(TreeConcept concept, SqlFunctionProvider provider, DSLContext dslContext, DatabaseConfig dbConfig) {
 
-		SelectJoinStep<Record4<String, String, Date, Date>> matchingStatsStatement = createMatchingStatsStatement(concept, provider);
+		SelectJoinStep<Record4<String, String, Date, Date>> matchingStatsStatement = createMatchingStatsStatement(concept, provider, dbConfig);
 
 		Result<Record4<String, String, Date, Date>> result = dslContext.fetch(matchingStatsStatement);
 		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = resolveStats(concept, result);
@@ -163,7 +164,7 @@ public class SqlMatchingStats {
 	}
 
 	@NotNull
-	private SelectJoinStep<Record4<String, String, Date, Date>> createMatchingStatsStatement(TreeConcept concept, SqlFunctionProvider provider) {
+	private SelectJoinStep<Record4<String, String, Date, Date>> createMatchingStatsStatement(TreeConcept concept, SqlFunctionProvider provider, DatabaseConfig dbConfig) {
 
 		List<Select<?>> connectorTables = new ArrayList<>();
 
@@ -180,7 +181,8 @@ public class SqlMatchingStats {
 
 			com.bakdata.conquery.models.datasets.Table resolvedTable = connector.getResolvedTable();
 			Table<Record> tableName = table(name(resolvedTable.getName()));
-			Name pid = name(resolvedTable.getPrimaryColumn().getName());
+
+			Field<?> pid = TablePrimaryColumnUtil.findPrimaryColumn(resolvedTable, dbConfig);
 
 			Set<String> columns = getAuxiliaryColumns(concept);
 			if (connectorColumn != null) {
@@ -192,7 +194,7 @@ public class SqlMatchingStats {
 			Field[] validityDatesArray = collectValidityDateFields(connector, provider).toArray(Field[]::new);
 
 			SelectConditionStep<?> connectorTable = select(
-					field(pid).as("pid"),
+					pid.as("pid"),
 					// The infinities are intentionally swapped
 					least(positiveInfinitty, validityDatesArray).as("lowerBound"),
 					greatest(negativeInifnity, validityDatesArray).as("upperBound"),
