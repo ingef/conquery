@@ -279,7 +279,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 		synchronized (this) {
 			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 
-			if (getExecutionManager().isResultPresent(getId())) {
+			if (getExecutionManager().isInfoPresent(getId())) {
 				Preconditions.checkArgument(getExecutionManager().getExecutionInfo(getId()).getExecutionState() != ExecutionState.RUNNING);
 			}
 
@@ -339,11 +339,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 
 	@JsonIgnore
 	public ExecutionState getState() {
-		if (!getExecutionManager().isResultPresent(getId())) {
-			return ExecutionState.NEW;
-		}
-
-		return getExecutionManager().getExecutionInfo(getId()).getExecutionState();
+		return getExecutionManager().getState(getId());
 	}
 
 	/**

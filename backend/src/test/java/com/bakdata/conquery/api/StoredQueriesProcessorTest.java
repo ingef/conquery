@@ -9,6 +9,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import jakarta.validation.Validator;
@@ -71,8 +72,8 @@ public class StoredQueriesProcessorTest {
 	public static final IndexService INDEX_SERVICE = new IndexService(CONFIG.getCsv().createCsvParserSettings(), "empty");
 	private static final Environment ENVIRONMENT = new Environment("StoredQueriesProcessorTest");
 	@RegisterExtension
-	private static final MetaStorageExtension STORAGE_EXTENTION = new MetaStorageExtension(ENVIRONMENT.metrics());
-	public static final MetaStorage STORAGE = STORAGE_EXTENTION.getMetaStorage();
+	private static final MetaStorageExtension STORAGE_EXTENSION = new MetaStorageExtension(ENVIRONMENT.metrics());
+	public static final MetaStorage STORAGE = STORAGE_EXTENSION.getMetaStorage();
 	@RegisterExtension
 	private static final UserExtension USER_0_EXTENSIONS = new UserExtension(STORAGE, "0");
 	@RegisterExtension
@@ -179,6 +180,8 @@ public class StoredQueriesProcessorTest {
 				)        // included, but no result url for xlsx (result has too many rows)
 
 		);
+
+		QUERIES.forEach(STORAGE::addExecution);
 	}
 
 	private static void setState(ExecutionState execState, ManagedExecutionId id) {
@@ -247,8 +250,8 @@ public class StoredQueriesProcessorTest {
 			}
 
 			@Override
-			public synchronized long resultRowCount() {
-				return resultCount;
+			public synchronized OptionalLong resultRowCount() {
+				return OptionalLong.of(resultCount);
 			}
 		};
 		setState(execState, managedQuery.getId());
@@ -270,12 +273,12 @@ public class StoredQueriesProcessorTest {
 	@Test
 	public void getQueriesFiltered() {
 
-		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0.getId(), URI_BUILDER, USERS[0], QUERIES.stream(), true)
+		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0.getId(), URI_BUILDER, USERS[0], QUERIES.stream().map(ManagedExecution::getId), true)
 											   .collect(Collectors.toList());
 
 		assertThat(infos)
 				.containsExactly(
-						makeState(QUERY_ID_0, USERS[0], USERS[0], NEW, "CONCEPT_QUERY", null, 100L),
+						makeState(QUERY_ID_0, USERS[0], USERS[0], NEW, "CONCEPT_QUERY", null, null),
 						makeState(QUERY_ID_4, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null, 100L),
 						makeState(QUERY_ID_7, USERS[1], USERS[0], DONE, "SECONDARY_ID_QUERY", new SecondaryIdDescriptionId(DATASET_0.getId(), "sid"), 100L),
 						makeState(QUERY_ID_9, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null, 100L),
@@ -307,8 +310,8 @@ public class StoredQueriesProcessorTest {
 			}
 
 			@Override
-			public synchronized long resultRowCount() {
-				return resultCount;
+			public synchronized OptionalLong resultRowCount() {
+				return resultCount == null ? OptionalLong.empty(): OptionalLong.of(resultCount);
 			}
 		};
 

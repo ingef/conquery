@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.jobs.Job;
@@ -76,13 +77,9 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 					subJobs =
 					concepts.stream()
 							.collect(Collectors.toMap(Functions.identity(),
-													  concept -> CompletableFuture.runAsync(() -> {
-														  final Concept<?> resolved = concept.resolve();
-														  final Map<ConceptElementId<?>, MatchingStats.Entry>
-																  matchingStats =
-																  new HashMap<>(resolved.countElements());
+													  conceptId -> CompletableFuture.runAsync(() -> {
 
-														  calculateConceptMatches(resolved, matchingStats, worker);
+														  Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = calculateConceptMatches(conceptId, worker);
 
 														  final WriteFuture writeFuture = worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), matchingStats));
 
@@ -130,18 +127,24 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 			return String.format("Calculate Matching Stats for %s", worker.getInfo().getDataset());
 		}
 
-		private static void calculateConceptMatches(Concept<?> concept, Map<ConceptElementId<?>, MatchingStats.Entry> results, Worker worker) {
-			log.debug("BEGIN calculating for `{}`", concept.getId());
+		private static Map<ConceptElementId<?>, MatchingStats.Entry> calculateConceptMatches(ConceptId conceptId, Worker worker) {
 
-			try(Stream<CBlock> allCBlocks = worker.getStorage().getAllCBlocks()) {
+			Concept<?> concept = conceptId.resolve();
 
-				for (CBlock cBlock : allCBlocks.toList()) {
+			final Map<ConceptElementId<?>, MatchingStats.Entry>	matchingStats =	new HashMap<>(concept.countElements());
 
-					if (!cBlock.getConnector().getConcept().equals(concept.getId())) {
+			log.debug("BEGIN calculating for `{}`", conceptId);
+
+			try (Stream<CBlockId> allCBlocks = worker.getStorage().getAllCBlockIds()) {
+
+				for (CBlockId cBlockId : allCBlocks.toList()) {
+
+					if (!cBlockId.getConnector().getConcept().equals(conceptId)) {
 						continue;
 					}
 
 					try {
+						CBlock cBlock = cBlockId.resolve();
 						final Bucket bucket = cBlock.getBucket().resolve();
 						final Table table = bucket.getTable().resolve();
 						final List<Column> dateColumns = Arrays.stream(table.getColumns()).filter(c -> c.getType().isDateCompatible()).toList();
@@ -156,7 +159,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 
 								if (!(concept instanceof TreeConcept) || localIds == null) {
-									results.computeIfAbsent(concept.getId(), (ignored) -> new MatchingStats.Entry())
+									matchingStats.computeIfAbsent(conceptId, (ignored) -> new MatchingStats.Entry())
 										   .addEventFromBucket(entity, bucket, event, dateColumns);
 									continue;
 								}
@@ -168,8 +171,8 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 								ConceptElement<?> element = ((TreeConcept) concept).getElementByLocalIdPath(localIds);
 
 								while (element != null) {
-									results.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Entry())
-										   .addEventFromBucket(entity, bucket, event, dateColumns);
+									matchingStats.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Entry())
+												 .addEventFromBucket(entity, bucket, event, dateColumns);
 									element = element.getParent();
 								}
 							}
@@ -177,15 +180,15 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 					}
 					catch (Exception e) {
-						log.error("Failed to collect the matching stats for {}", cBlock, e);
+						log.error("Failed to collect the matching stats for {}", cBlockId, e);
 					}
 				}
 			}
 
-			log.trace("DONE calculating for `{}`", concept.getId());
+			log.trace("DONE calculating for `{}`", conceptId);
+
+			return matchingStats;
 		}
 
 	}
-
-
 }
