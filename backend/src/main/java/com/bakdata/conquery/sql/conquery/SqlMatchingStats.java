@@ -185,9 +185,6 @@ public class SqlMatchingStats {
 			Field<?> pid = TablePrimaryColumnUtil.findPrimaryColumn(resolvedTable, dbConfig);
 
 			Set<String> columns = getAuxiliaryColumns(concept);
-			if (connectorColumn != null) {
-				columns.remove(connectorColumn);
-			}
 
 			Field<String> resolveFunction = getResolveIdFunctionInvocation(concept, connectorColumn, columns);
 
