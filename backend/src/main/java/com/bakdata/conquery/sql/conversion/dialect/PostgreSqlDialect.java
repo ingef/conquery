@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
+import static org.jooq.impl.SQLDataType.NVARCHAR;
+
 import java.util.List;
 
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -9,9 +11,12 @@ import com.bakdata.conquery.sql.conversion.cqelement.aggregation.PostgreSqlDateA
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.PostgreSqlIntervalPacker;
 import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
+import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.postgresql.util.PGmoney;
 
+@Slf4j
 public class PostgreSqlDialect implements SqlDialect {
 
 	private final SqlFunctionProvider postgresqlFunctionProvider;
@@ -43,15 +48,16 @@ public class PostgreSqlDialect implements SqlDialect {
 
 	@Override
 	public boolean isTypeCompatible(Field<?> field, MajorTypeId type) {
+		log.debug("Field {} type: getTypeName={}, getQualifiedName={}", field.getName(), field.getDataType().getTypeName(), field.getDataType().getQualifiedName());
 		return switch (type) {
 			case STRING -> field.getDataType().isString();
 			case INTEGER -> field.getDataType().isInteger();
 			case BOOLEAN -> field.getDataType().isBoolean();
 			case REAL -> field.getDataType().isNumeric();
 			case DECIMAL -> field.getDataType().isDecimal();
-			case MONEY -> field.getDataType().isDecimal();
+			case MONEY -> true; // TODO Need to find proper name
 			case DATE -> field.getDataType().isDate();
-			case DATE_RANGE -> field.getDataType().getTypeName().equals("daterange");
+			case DATE_RANGE -> true; // TODO Not properly fetched from postgres field.getDataType().getTypeName().equals("daterange");
 		};
 	}
 
