@@ -132,6 +132,9 @@ public class SqlMatchingStats {
 		Stopwatch stopwatch = Stopwatch.createStarted();
 
 		log.info("BEGIN fetching matching stats for {}", concept.getId());
+		log.debug("{}", selectJoinStep);
+		log.debug("{}", selectJoinStep.configuration().dsl().explain(selectJoinStep));
+
 
 		try (Cursor<Record4<String, String, Date, Date>> cursor = selectJoinStep
 				.fetchSize(100).fetchLazy()) {
@@ -167,6 +170,7 @@ public class SqlMatchingStats {
 		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats =
 				// The transaction should implicitly disable autocommit, which we want for using the cursor
 				dslContext.transactionResult(cfg -> {
+
 					SelectJoinStep<Record4<String, String, Date, Date>> matchingStatsStatement = createMatchingStatsStatement(concept, provider, dbConfig, cfg.dsl());
 
 					return resolveStats(concept, matchingStatsStatement);
