@@ -227,6 +227,7 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		return """
 					     CREATE OR REPLACE FUNCTION %s(%s) RETURNS TEXT
 					     LANGUAGE SQL
+					     PARALLEL SAFE
 					     RETURN
 					     	%s;
 				""".formatted(name, params.stream().map("%s text"::formatted).collect(Collectors.joining(", ")), forConcept)
