@@ -29,6 +29,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
+import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jetbrains.annotations.NotNull;
@@ -126,12 +127,14 @@ public class SqlMatchingStats {
 	@NotNull
 	private static Map<ConceptElementId<?>, MatchingStats.Entry> resolveStats(
 			TreeConcept concept,
-			@MonotonicNonNull SelectJoinStep<Record4<String, String, Date, Date>> selectJoinStep) {
+			SelectJoinStep<Record4<String, String, Date, Date>> selectJoinStep) {
 		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = new HashMap<>();
 
-		try (Cursor<Record4<String, String, Date, Date>> cursor = selectJoinStep
-				.fetchSize(1000) //TODO from config
-				.fetchLazy()) {
+		Stopwatch stopwatch = Stopwatch.createStarted();
+
+		log.info("BEGIN fetching matching stats for {}", concept.getId());
+
+		try (Cursor<Record4<String, String, Date, Date>> cursor = selectJoinStep.fetchSize(1000).fetchLazy()) {
 
 			for (Record4<String, String, Date, Date> record : cursor) {
 
@@ -152,6 +155,9 @@ public class SqlMatchingStats {
 				}
 			}
 		}
+
+		log.debug("DONE fetching matching stats for {} within {}", concept.getId(), stopwatch);
+
 
 		return matchingStats;
 	}
