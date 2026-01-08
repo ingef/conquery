@@ -115,8 +115,6 @@ public class SqlMatchingStats {
 	}
 
 	private static void assignStats(Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats) {
-		log.info("{}", matchingStats);
-
 		for (Map.Entry<ConceptElementId<?>, MatchingStats.Entry> entry : matchingStats.entrySet()) {
 			ConceptElementId<?> conceptElementId = entry.getKey();
 
@@ -213,7 +211,6 @@ public class SqlMatchingStats {
 						nullif(field(name("upperBound"), Date.class), negativeInifnity).as("ub")
 				)
 						.from(unioned);
-		log.info("{}", records);
 
 		return records;
 	}
