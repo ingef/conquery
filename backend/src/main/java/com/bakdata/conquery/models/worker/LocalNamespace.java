@@ -52,6 +52,8 @@ public class LocalNamespace extends Namespace {
 
 	@Override
 	void updateMatchingStats() {
+		//TODO wrap in job
+
 		getStorage().getAllConcepts()
 					.filter(TreeConcept.class::isInstance)
 					.forEach(concept -> sqlMatchingStatsHandler.createFunctionForConcept(((TreeConcept) concept),
@@ -59,6 +61,7 @@ public class LocalNamespace extends Namespace {
 																						 getDslContextWrapper().getDslContext()
 					));
 
+		// TODO multi threading?
 		getStorage().getAllConcepts()
 					.filter(TreeConcept.class::isInstance)
 					.forEach(concept -> sqlMatchingStatsHandler.collectMatchingStatsForConcept(((TreeConcept) concept),

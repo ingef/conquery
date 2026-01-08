@@ -31,7 +31,6 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Stopwatch;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jooq.Case;
@@ -134,7 +133,8 @@ public class SqlMatchingStats {
 
 		log.info("BEGIN fetching matching stats for {}", concept.getId());
 
-		try (Cursor<Record4<String, String, Date, Date>> cursor = selectJoinStep.fetchSize(1000).fetchLazy()) {
+		try (Cursor<Record4<String, String, Date, Date>> cursor = selectJoinStep
+				.fetchSize(100).fetchLazy()) {
 
 			for (Record4<String, String, Date, Date> record : cursor) {
 
@@ -164,10 +164,13 @@ public class SqlMatchingStats {
 
 
 	public void collectMatchingStatsForConcept(TreeConcept concept, SqlFunctionProvider provider, DSLContext dslContext, DatabaseConfig dbConfig) {
+		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats =
+				// The transaction should implicitly disable autocommit, which we want for using the cursor
+				dslContext.transactionResult(cfg -> {
+					SelectJoinStep<Record4<String, String, Date, Date>> matchingStatsStatement = createMatchingStatsStatement(concept, provider, dbConfig, cfg.dsl());
 
-		SelectJoinStep<Record4<String, String, Date, Date>> matchingStatsStatement = createMatchingStatsStatement(concept, provider, dbConfig, dslContext);
-
-		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = resolveStats(concept, matchingStatsStatement);
+					return resolveStats(concept, matchingStatsStatement);
+				});
 
 		assignStats(matchingStats);
 	}
