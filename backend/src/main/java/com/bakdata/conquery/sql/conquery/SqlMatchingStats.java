@@ -35,12 +35,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jooq.Case;
 import org.jooq.CaseConditionStep;
+import org.jooq.Cursor;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Name;
-import org.jooq.Record;
 import org.jooq.Record4;
-import org.jooq.Result;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectJoinStep;
@@ -125,44 +124,52 @@ public class SqlMatchingStats {
 	}
 
 	@NotNull
-	private static Map<ConceptElementId<?>, MatchingStats.Entry> resolveStats(TreeConcept concept, @MonotonicNonNull Result<Record4<String, String, Date, Date>> batch) {
+	private static Map<ConceptElementId<?>, MatchingStats.Entry> resolveStats(
+			TreeConcept concept,
+			@MonotonicNonNull SelectJoinStep<Record4<String, String, Date, Date>> selectJoinStep) {
 		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = new HashMap<>();
 
+		try (Cursor<Record4<String, String, Date, Date>> cursor = selectJoinStep
+				.fetchSize(1000) //TODO from config
+				.fetchLazy()) {
 
-		for (Record4<String, String, Date, Date> record : batch) {
+			for (Record4<String, String, Date, Date> record : cursor) {
 
-			ConceptElementId<?> resolvedId = ConceptElementId.Parser.INSTANCE.parse(record.component1());
-			resolvedId.setDomain(concept.getDomain());
-			String entity = record.component2();
-			Date min = record.component3();
-			Date max = record.component4();
+				ConceptElementId<?> resolvedId = ConceptElementId.Parser.INSTANCE.parse(record.component1());
+				resolvedId.setDomain(concept.getDomain());
+				String entity = record.component2();
+				Date min = record.component3();
+				Date max = record.component4();
 
-			CDateRange span = CDateRange.of(min != null ? min.toLocalDate() : null, max != null ? max.toLocalDate() : null);
+				CDateRange span = CDateRange.of(min != null ? min.toLocalDate() : null, max != null ? max.toLocalDate() : null);
 
-			ConceptElement<?> element = resolvedId.get();
+				ConceptElement<?> element = resolvedId.get();
 
-			while (element != null) {
-				matchingStats.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Entry())
-							 .addEvents(entity, 1, span);
-				element = element.getParent();
+				while (element != null) {
+					matchingStats.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Entry())
+								 .addEvents(entity, 1, span);
+					element = element.getParent();
+				}
 			}
 		}
+
 		return matchingStats;
 	}
 
 
 	public void collectMatchingStatsForConcept(TreeConcept concept, SqlFunctionProvider provider, DSLContext dslContext, DatabaseConfig dbConfig) {
 
-		SelectJoinStep<Record4<String, String, Date, Date>> matchingStatsStatement = createMatchingStatsStatement(concept, provider, dbConfig);
+		SelectJoinStep<Record4<String, String, Date, Date>> matchingStatsStatement = createMatchingStatsStatement(concept, provider, dbConfig, dslContext);
 
-		Result<Record4<String, String, Date, Date>> result = dslContext.fetch(matchingStatsStatement);
-		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = resolveStats(concept, result);
+		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = resolveStats(concept, matchingStatsStatement);
 
 		assignStats(matchingStats);
 	}
 
 	@NotNull
-	private SelectJoinStep<Record4<String, String, Date, Date>> createMatchingStatsStatement(TreeConcept concept, SqlFunctionProvider provider, DatabaseConfig dbConfig) {
+	private SelectJoinStep<Record4<String, String, Date, Date>> createMatchingStatsStatement(
+			TreeConcept concept, SqlFunctionProvider provider, DatabaseConfig dbConfig,
+			DSLContext dslContext) {
 
 		List<Select<?>> connectorTables = new ArrayList<>();
 
@@ -178,7 +185,6 @@ public class SqlMatchingStats {
 			CTConditionContext context = new CTConditionContext(false, connectorColumn, provider);
 
 			com.bakdata.conquery.models.datasets.Table resolvedTable = connector.getResolvedTable();
-			Table<Record> tableName = table(name(resolvedTable.getName()));
 
 			Field<?> pid = TablePrimaryColumnUtil.findPrimaryColumn(resolvedTable, dbConfig);
 
@@ -188,14 +194,15 @@ public class SqlMatchingStats {
 
 			Field[] validityDatesArray = collectValidityDateFields(connector, provider).toArray(Field[]::new);
 
-			SelectConditionStep<?> connectorTable = select(
-					pid.as("pid"),
-					// The infinities are intentionally swapped
-					least(positiveInfinitty, validityDatesArray).as("lowerBound"),
-					greatest(negativeInifnity, validityDatesArray).as("upperBound"),
-					resolveFunction.as("resolvedId")
-			).from(tableName)
-			 .where(connector.getCondition() != null ? connector.getCondition().convertToSqlCondition(context).condition() : noCondition());
+			SelectConditionStep<?> connectorTable =
+					dslContext.select(
+									  pid.as("pid"),
+									  // The infinities are intentionally swapped
+									  least(positiveInfinitty, validityDatesArray).as("lowerBound"),
+									  greatest(negativeInifnity, validityDatesArray).as("upperBound"),
+									  resolveFunction.as("resolvedId")
+							  ).from(table(name(resolvedTable.getName())))
+							  .where(connector.getCondition() != null ? connector.getCondition().convertToSqlCondition(context).condition() : noCondition());
 
 			connectorTables.add(connectorTable);
 		}
@@ -203,14 +210,14 @@ public class SqlMatchingStats {
 		Table<?> unioned = unionSelects(connectorTables);
 
 		SelectJoinStep<Record4<String, String, Date, Date>> records =
-				select(
-						field(name("resolvedId"), String.class),
-						field(name("pid"), String.class).as("entity"),
-						// The infinities are intentionally swapped
-						nullif(field(name("lowerBound"), Date.class), positiveInfinitty).as("lb"),
-						nullif(field(name("upperBound"), Date.class), negativeInifnity).as("ub")
-				)
-						.from(unioned);
+				dslContext.select(
+								  field(name("resolvedId"), String.class),
+								  field(name("pid"), String.class).as("entity"),
+								  // The infinities are intentionally swapped
+								  nullif(field(name("lowerBound"), Date.class), positiveInfinitty).as("lb"),
+								  nullif(field(name("upperBound"), Date.class), negativeInifnity).as("ub")
+						  )
+						  .from(unioned);
 
 		return records;
 	}
@@ -235,7 +242,6 @@ public class SqlMatchingStats {
 
 		String statement = provider.createFunctionStatement(name, params, forConcept);
 		dslContext.execute(statement);
-		log.info("{}", statement);
 	}
 
 	@NotNull
