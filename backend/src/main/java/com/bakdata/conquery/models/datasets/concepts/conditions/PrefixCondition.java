@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionWrappingWhereCondition;
@@ -17,13 +18,13 @@ import lombok.Setter;
 import lombok.ToString;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 /**
  * This condition requires each value to start with one of the given values.
  */
 @CPSType(id = "PREFIX_LIST", base = CTCondition.class)
 @ToString
+@Deprecated
 public class PrefixCondition implements CTCondition {
 
 	@Setter
@@ -52,5 +53,10 @@ public class PrefixCondition implements CTCondition {
 	@Override
 	public Set<String> auxiliaryColumns() {
 		return Collections.emptySet();
+	}
+
+	@Override
+	public Expression expressions(CTConditionContext context, ConceptElementId<?> id) {
+		throw new IllegalStateException("Not implemented");
 	}
 }

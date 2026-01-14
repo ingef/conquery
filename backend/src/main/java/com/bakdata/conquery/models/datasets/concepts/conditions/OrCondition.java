@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotEmpty;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
@@ -20,6 +21,7 @@ import lombok.Setter;
 /**
  * This condition connects multiple conditions with an or.
  */
+@Deprecated
 @CPSType(id = "OR", base = CTCondition.class)
 public class OrCondition implements CTCondition {
 
@@ -62,5 +64,10 @@ public class OrCondition implements CTCondition {
 						 .map(CTCondition::auxiliaryColumns)
 						 .flatMap(Collection::stream)
 						 .collect(Collectors.toSet());
+	}
+
+	@Override
+	public Expression expressions(CTConditionContext context, ConceptElementId<?> id) {
+		throw new IllegalStateException("Not implemented");
 	}
 }

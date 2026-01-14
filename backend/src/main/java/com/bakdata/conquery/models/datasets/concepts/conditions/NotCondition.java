@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
@@ -17,6 +18,7 @@ import lombok.Setter;
  * This condition matches if its child does not.
  */
 @CPSType(id="NOT", base=CTCondition.class)
+@Deprecated
 public class NotCondition implements CTCondition {
 
 	@Setter @Getter @Valid
@@ -41,5 +43,10 @@ public class NotCondition implements CTCondition {
 	@Override
 	public Set<String> auxiliaryColumns() {
 		return condition.auxiliaryColumns();
+	}
+
+	@Override
+	public Expression expressions(CTConditionContext context, ConceptElementId<?> id) {
+		throw new IllegalStateException("Not implemented");
 	}
 }

@@ -6,6 +6,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +21,7 @@ import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
+import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -27,23 +29,26 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jooq.Case;
-import org.jooq.CaseConditionStep;
 import org.jooq.Cursor;
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.InsertValuesStepN;
 import org.jooq.Name;
+import org.jooq.Param;
+import org.jooq.Record;
 import org.jooq.Record4;
+import org.jooq.RowN;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectJoinStep;
 import org.jooq.Table;
+import org.jooq.impl.DSL;
 
 @Slf4j
 public class SqlMatchingStats {
@@ -207,6 +212,7 @@ public class SqlMatchingStats {
 
 			Field[] validityDatesArray = collectValidityDateFields(connector, provider).toArray(Field[]::new);
 
+
 			SelectConditionStep<?> connectorTable =
 					dslContext.select(
 									  pid.as("pid"),
@@ -237,24 +243,9 @@ public class SqlMatchingStats {
 
 	public void createFunctionForConcept(TreeConcept concept, SqlFunctionProvider provider, DSLContext dslContext) {
 
-		CTConditionContext context = new CTConditionContext(true, "col_val", provider);
-		Name name = conceptResolveFunctionName(concept);
+		CTConditionContext context = new CTConditionContext(false, "col_val", provider);
 
-		Set<String> auxiliaryColumns = getAuxiliaryColumns(concept);
-		auxiliaryColumns.remove("col_val");
-
-		//TODO this could be simplified and shortened by using localIds instead of string-ids. But sql-results are less readable.
-		Field<String> forConcept = forNode(idField(concept), concept.getChildren(), context);
-
-		List<String> params = new ArrayList<>();
-		params.add("col_val");
-
-		auxiliaryColumns.stream()
-						.sorted()
-						.forEachOrdered(params::add);
-
-		String statement = provider.createFunctionStatement(name, params, forConcept);
-		dslContext.execute(statement);
+		buildAssignmentTable(concept, context);
 	}
 
 	@NotNull
@@ -265,11 +256,74 @@ public class SqlMatchingStats {
 					  .collect(Collectors.toSet());
 	}
 
-	public Field<String> createForConceptTreeNode(ConceptTreeChild current, CTConditionContext context) {
-		Field<String> currentId = idField(current);
 
-		return forNode(currentId, current.getChildren(), context);
+	public void buildAssignmentTable(TreeConcept concept, CTConditionContext context) {
+
+		List<CTCondition.Expression> expressions = collectAllExpressions(concept, context);
+
+		List<Field<?>> allFields = expressions.stream()
+										 .map(expression -> expression.conditions().keySet())
+										 .flatMap(Collection::stream)
+										 .distinct()
+										 .toList();
+
+		List<RowN> rows = new ArrayList<>(expressions.size());
+
+		for (CTCondition.Expression expression : expressions) {
+			List<Set<Param<?>>> rowValues = new ArrayList<>();
+			for (Field<?> field : allFields) {
+				rowValues.add(expression.conditions().getOrDefault(field, Collections.singleton(inline(null, String.class))));
+			}
+
+			Set<List<Param<?>>> flattened = Sets.cartesianProduct(rowValues);
+
+			for (List<Param<?>> params : flattened) {
+				rows.add(DSL.row(params));
+			}
+		}
+
+		// the allfields are expressions to extract values from tables, we use them to generate the field names
+		List<Field<Object>> fieldNames = new ArrayList<>(allFields.stream().map(field -> field(name(field.getName()))).toList());
+
+		fieldNames.addFirst(field(name("concept")));
+
+		InsertValuesStepN<Record> insertConceptTable = insertInto(table(name("%s_ids".formatted(concept.getName()))))
+				.columns(fieldNames)
+				.valuesOfRows(rows);
+
+		log.info("{}", insertConceptTable);
 	}
+
+	private List<CTCondition.Expression> collectAllExpressions(TreeConcept concept, CTConditionContext context) {
+		List<CTCondition.Expression> out = new ArrayList<>();
+
+		CTCondition.Expression rootExpression = new CTCondition.Expression(concept.getId(), Collections.emptyMap());
+
+		out.add(rootExpression);
+
+		for (ConceptTreeChild child : concept.getChildren()) {
+			out.addAll(createForConceptTreeNode(child, rootExpression, context));
+		}
+
+		return out;
+	}
+
+	private List<CTCondition.Expression> createForConceptTreeNode(ConceptTreeChild current, CTCondition.Expression parentExpression, CTConditionContext context) {
+
+		List<CTCondition.Expression> out = new ArrayList<>();
+
+		CTCondition.Expression forCurrent = current.getCondition().expressions(context, current.getId());
+		forCurrent.join(parentExpression);
+
+		out.add(forCurrent);
+
+		for (ConceptTreeChild child : current.getChildren()) {
+			out.addAll(createForConceptTreeNode(child, forCurrent, context));
+		}
+
+		return out;
+	}
+
 
 	private Set<String> collectAuxiliaryColumns(ConceptTreeChild current) {
 		Set<String> auxiliaryColumns = new HashSet<>();
@@ -284,23 +338,5 @@ public class SqlMatchingStats {
 		return auxiliaryColumns;
 	}
 
-	private Field<String> forNode(Field<String> currentId, List<ConceptTreeChild> children, CTConditionContext context) {
-		if (children.isEmpty()) {
-			return currentId;
-		}
 
-		Case decode = decode();
-		CaseConditionStep<String> step = null;
-
-		for (ConceptTreeChild child : children) {
-			WhereCondition converted = child.getCondition().convertToSqlCondition(context);
-
-			Field<String> result = createForConceptTreeNode(child, context);
-
-			step = step == null ? decode.when(converted.condition(), result)
-								: step.when(converted.condition(), result);
-		}
-
-		return step.otherwise(currentId);
-	}
 }

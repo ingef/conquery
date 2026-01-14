@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotEmpty;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
@@ -62,5 +63,24 @@ public class AndCondition implements CTCondition {
 						 .map(CTCondition::auxiliaryColumns)
 						 .flatMap(Collection::stream)
 						 .collect(Collectors.toSet());
+	}
+
+	@Override
+	public Expression expressions(CTConditionContext context, ConceptElementId<?> id) {
+		List<Expression> expressions = conditions.stream().map(cond -> cond.expressions(context, id))
+												 .toList();
+
+		Expression out = null;
+
+		for (Expression expression : expressions) {
+			if (out == null) {
+				out = expression;
+				continue;
+			}
+
+			out = out.join(expression);
+		}
+
+		return out;
 	}
 }

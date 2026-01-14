@@ -6,6 +6,7 @@ import java.util.Set;
 import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
@@ -17,12 +18,12 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 /**
  * This condition requires each value to start with a prefix between the two given values
  */
 @CPSType(id = "PREFIX_RANGE", base = CTCondition.class)
+@Deprecated
 public class PrefixRangeCondition implements CTCondition {
 
 	private static final String ANY_CHAR_REGEX = ".*";
@@ -82,5 +83,10 @@ public class PrefixRangeCondition implements CTCondition {
 	@Override
 	public Set<String> auxiliaryColumns() {
 		return Collections.emptySet();
+	}
+
+	@Override
+	public Expression expressions(CTConditionContext context, ConceptElementId<?> id) {
+		throw new IllegalStateException("Not implemented");
 	}
 }

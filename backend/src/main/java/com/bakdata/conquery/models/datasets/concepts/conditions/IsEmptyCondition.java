@@ -8,8 +8,8 @@ import java.util.Set;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionWrappingWhereCondition;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import lombok.Getter;
 import lombok.NonNull;
@@ -19,10 +19,11 @@ import org.jooq.Condition;
 /**
  * This condition requires that the selected Column has a value.
  */
-@CPSType(id="PRESENT", base=CTCondition.class)
-public class IsPresentCondition implements CTCondition {
+@CPSType(id = "NOT_PRESENT", base = CTCondition.class)
+public class IsEmptyCondition implements CTCondition {
 
-	@Getter @Setter
+	@Getter
+	@Setter
 	@NonNull
 	private String column;
 
@@ -33,7 +34,7 @@ public class IsPresentCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Condition condition = context.access(column).isNotNull();
+		Condition condition = context.access(column).isNull();
 		return new ConditionWrappingWhereCondition(condition);
 	}
 
@@ -44,6 +45,6 @@ public class IsPresentCondition implements CTCondition {
 
 	@Override
 	public Expression expressions(CTConditionContext context, ConceptElementId<?> id) {
-		return new Expression(id, Map.of(context.access(column).isNull(), Set.of(val(false))));
+		return new Expression(id, Map.of(context.access(column).isNull(), Set.of(val(true))));
 	}
 }

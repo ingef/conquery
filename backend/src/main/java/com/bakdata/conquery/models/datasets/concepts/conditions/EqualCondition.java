@@ -1,11 +1,15 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
+import static org.jooq.impl.DSL.val;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.MultiSelectCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
@@ -16,6 +20,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 /**
  * This condition requires each value to be exactly as given in the list.
@@ -48,5 +53,10 @@ public class EqualCondition implements CTCondition {
 	@Override
 	public Set<String> auxiliaryColumns() {
 		return Collections.emptySet();
+	}
+
+	@Override
+	public Expression expressions(CTConditionContext context, ConceptElementId<?> id) {
+		return new Expression(id, Map.of(context.access(context.getConnectorColumn()), values.stream().map(DSL::val).collect(Collectors.toSet())));
 	}
 }
