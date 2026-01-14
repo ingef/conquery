@@ -282,6 +282,8 @@ public class SqlMatchingStats {
 			}
 		}
 
+		log.debug("Creating table for {} with fields {}", concept.getId(), allFields);
+
 		// the allfields are expressions to extract values from tables, we use them to generate the field names
 		List<Field<Object>> fieldNames = new ArrayList<>(allFields.stream().map(field -> field(name(field.getName()))).toList());
 

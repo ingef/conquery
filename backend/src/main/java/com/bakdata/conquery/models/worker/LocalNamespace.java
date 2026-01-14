@@ -53,7 +53,7 @@ public class LocalNamespace extends Namespace {
 	@Override
 	void updateMatchingStats() {
 		//TODO wrap in job
-
+		log.info("BEGIN collecting SQL matching stats for {}", getDataset());
 		getStorage().getAllConcepts()
 					.filter(TreeConcept.class::isInstance)
 					.forEach(concept -> sqlMatchingStatsHandler.createFunctionForConcept(((TreeConcept) concept),
@@ -62,14 +62,15 @@ public class LocalNamespace extends Namespace {
 					));
 
 		// TODO multi threading?
-		getStorage().getAllConcepts()
-					.filter(TreeConcept.class::isInstance)
-					.forEach(concept -> sqlMatchingStatsHandler.collectMatchingStatsForConcept(((TreeConcept) concept),
-																							   getDialect().getFunctionProvider(),
-																							   getDslContextWrapper().getDslContext(),
-																							   databaseConfig
-					));
+		//		getStorage().getAllConcepts()
+		//					.filter(TreeConcept.class::isInstance)
+		//					.forEach(concept -> sqlMatchingStatsHandler.collectMatchingStatsForConcept(((TreeConcept) concept),
+		//																							   getDialect().getFunctionProvider(),
+		//																							   getDslContextWrapper().getDslContext(),
+		//																							   databaseConfig
+		//					));
 
+		log.debug("DONE collecting SQL matching stats for {}", getDataset());
 
 	}
 
