@@ -56,10 +56,17 @@ public class LocalNamespace extends Namespace {
 		log.info("BEGIN collecting SQL matching stats for {}", getDataset());
 		getStorage().getAllConcepts()
 					.filter(TreeConcept.class::isInstance)
-					.forEach(concept -> sqlMatchingStatsHandler.createFunctionForConcept(((TreeConcept) concept),
-																						 getDialect().getFunctionProvider(),
-																						 getDslContextWrapper().getDslContext()
-					));
+					.forEach(concept -> {
+						try {
+							sqlMatchingStatsHandler.createFunctionForConcept(((TreeConcept) concept),
+																			 getDialect().getFunctionProvider(),
+																			 getDslContextWrapper().getDslContext()
+							);
+						}
+						catch (Exception e) {
+							log.error("Error generating function for {}", concept.getId(), e);
+						}
+					});
 
 		// TODO multi threading?
 		//		getStorage().getAllConcepts()
