@@ -271,6 +271,7 @@ public class SqlMatchingStats {
 
 		for (CTCondition.Expression expression : expressions) {
 			List<Set<Param<?>>> rowValues = new ArrayList<>();
+			rowValues.add(Set.of(val(expression.id().toString())));
 			for (Field<?> field : allFields) {
 				rowValues.add(expression.conditions().getOrDefault(field, Collections.singleton(inline(null, String.class))));
 			}
@@ -278,6 +279,7 @@ public class SqlMatchingStats {
 			Set<List<Param<?>>> flattened = Sets.cartesianProduct(rowValues);
 
 			for (List<Param<?>> params : flattened) {
+
 				rows.add(DSL.row(params));
 			}
 		}
