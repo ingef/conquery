@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionWrappingWhereCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
@@ -44,7 +44,7 @@ public class IsEmptyCondition implements CTCondition {
 	}
 
 	@Override
-	public Expression expressions(CTConditionContext context, ConceptElementId<?> id) {
+	public Expression expressions(CTConditionContext context, ConceptElement<?> id) {
 		return new Expression(id, Map.of(context.access(column).isNull(), Set.of(val(true))));
 	}
 }

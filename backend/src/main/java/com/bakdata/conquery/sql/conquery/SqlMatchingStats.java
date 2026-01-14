@@ -48,7 +48,6 @@ import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectJoinStep;
 import org.jooq.Table;
-import org.jooq.impl.DSL;
 
 @Slf4j
 public class SqlMatchingStats {
@@ -261,28 +260,44 @@ public class SqlMatchingStats {
 
 		List<CTCondition.Expression> expressions = collectAllExpressions(concept, context);
 
+		Set<Param<?>> nullParams = Collections.singleton(inline(null, String.class));
+
 		List<Field<?>> allFields = expressions.stream()
-										 .map(expression -> expression.conditions().keySet())
-										 .flatMap(Collection::stream)
-										 .distinct()
-										 .toList();
+											  .map(expression -> expression.conditions().keySet())
+											  .flatMap(Collection::stream)
+											  .distinct()
+											  .toList();
 
 		List<RowN> rows = new ArrayList<>(expressions.size());
 
+		Map<List<Param<?>>, ConceptElement<?>> byDepth = new HashMap<>();
+
 		for (CTCondition.Expression expression : expressions) {
+			ConceptElement<?> elt = expression.id();
+
 			List<Set<Param<?>>> rowValues = new ArrayList<>();
-			rowValues.add(Set.of(val(expression.id().toString())));
 			for (Field<?> field : allFields) {
-				rowValues.add(expression.conditions().getOrDefault(field, Collections.singleton(inline(null, String.class))));
+				rowValues.add(expression.conditions().getOrDefault(field, nullParams));
 			}
 
 			Set<List<Param<?>>> flattened = Sets.cartesianProduct(rowValues);
 
+			// just a group-by+max on the flattened params to always map to the most specific element
 			for (List<Param<?>> params : flattened) {
-
-				rows.add(DSL.row(params));
+				byDepth.compute(params,
+								(ignored, prior) -> prior == null || prior.getDepth() < elt.getDepth() ? elt : prior
+				);
 			}
 		}
+
+		for (Map.Entry<List<Param<?>>, ConceptElement<?>> entry : byDepth.entrySet()) {
+			ArrayList<Param<?>> params = new ArrayList<>(entry.getKey());
+
+			params.addFirst(val(entry.getValue().getId().toString()));
+
+			rows.add(row(params));
+		}
+
 
 		log.debug("Creating table for {} with fields {}", concept.getId(), allFields);
 
@@ -301,7 +316,7 @@ public class SqlMatchingStats {
 	private List<CTCondition.Expression> collectAllExpressions(TreeConcept concept, CTConditionContext context) {
 		List<CTCondition.Expression> out = new ArrayList<>();
 
-		CTCondition.Expression rootExpression = new CTCondition.Expression(concept.getId(), Collections.emptyMap());
+		CTCondition.Expression rootExpression = new CTCondition.Expression(concept, Collections.emptyMap());
 
 		out.add(rootExpression);
 
@@ -316,7 +331,7 @@ public class SqlMatchingStats {
 
 		List<CTCondition.Expression> out = new ArrayList<>();
 
-		CTCondition.Expression forCurrent = current.getCondition().expressions(context, current.getId());
+		CTCondition.Expression forCurrent = current.getCondition().expressions(context, current);
 		forCurrent.join(parentExpression);
 
 		out.add(forCurrent);

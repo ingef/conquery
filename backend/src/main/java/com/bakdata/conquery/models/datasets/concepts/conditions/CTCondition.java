@@ -7,7 +7,6 @@ import java.util.Set;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
@@ -31,10 +30,10 @@ public interface CTCondition {
 
 	Set<String> auxiliaryColumns();
 
-	Expression expressions(CTConditionContext context, ConceptElementId<?> id);
+	Expression expressions(CTConditionContext context, ConceptElement<?> id);
 
 
-	record Expression(ConceptElementId<?> id, Map<Field<?>, Set<Param<?>>> conditions) {
+	record Expression(ConceptElement<?> id, Map<Field<?>, Set<Param<?>>> conditions) {
 		public Expression join(Expression other) {
 			// We are overwriting their conditions!
 			Map<Field<?>, Set<Param<?>>> combined = new HashMap<>(other.conditions());

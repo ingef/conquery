@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionWrappingWhereCondition;
@@ -56,7 +56,7 @@ public class PrefixCondition implements CTCondition {
 	}
 
 	@Override
-	public Expression expressions(CTConditionContext context, ConceptElementId<?> id) {
+	public Expression expressions(CTConditionContext context, ConceptElement<?> id) {
 		throw new IllegalStateException("Not implemented");
 	}
 }
