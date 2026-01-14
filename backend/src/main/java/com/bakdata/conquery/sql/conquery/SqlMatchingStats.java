@@ -331,8 +331,9 @@ public class SqlMatchingStats {
 
 		List<CTCondition.Expression> out = new ArrayList<>();
 
-		CTCondition.Expression forCurrent = current.getCondition().expressions(context, current);
-		forCurrent.join(parentExpression);
+		CTCondition.Expression forCurrent = current.getCondition()
+												   .expressions(context, current)
+												   .join(parentExpression);
 
 		out.add(forCurrent);
 

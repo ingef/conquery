@@ -36,7 +36,8 @@ public interface CTCondition {
 	record Expression(ConceptElement<?> id, Map<Field<?>, Set<Param<?>>> conditions) {
 		public Expression join(Expression other) {
 			// We are overwriting their conditions!
-			Map<Field<?>, Set<Param<?>>> combined = new HashMap<>(other.conditions());
+			Map<Field<?>, Set<Param<?>>> combined = new HashMap<>(conditions().size() + other.conditions().size());
+			combined.putAll(other.conditions());
 			combined.putAll(conditions());
 			return new Expression(id(), combined);
 		}
