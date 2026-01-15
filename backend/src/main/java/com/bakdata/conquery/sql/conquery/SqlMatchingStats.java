@@ -319,6 +319,7 @@ public class SqlMatchingStats {
 		if (!allFields.isEmpty()) {
 			dslContext.createIndex("%s_index".formatted(tableName.unquotedName().toString()))
 					  .on(table(tableName), allFields.stream().map(Field::sortDefault).toList())
+					  .excludeNullKeys()
 					  .execute();
 		}
 
