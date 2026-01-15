@@ -315,15 +315,15 @@ public class SqlMatchingStats {
 		log.debug("Creating table {}", createTable);
 
 		createTable.execute();
-
-		if (!allFields.isEmpty()) {
-			String indexName = "%s_index".formatted(tableName.unquotedName().toString());
-			dslContext.dropIndexIfExists(indexName).execute();
-			dslContext.createIndex(indexName)
-					  .on(table(tableName), allFields.stream().map(Field::sortDefault).toList())
-					  .excludeNullKeys()
-					  .execute();
-		}
+//TODO null values still crash this :'(
+//		if (!allFields.isEmpty()) {
+//			String indexName = "%s_index".formatted(tableName.unquotedName().toString());
+//			dslContext.dropIndexIfExists(indexName).execute();
+//			dslContext.createIndex(indexName)
+//					  .on(table(tableName), allFields.stream().map(Field::sortDefault).toList())
+//					  .excludeNullKeys()
+//					  .execute();
+//		}
 
 
 		InsertValuesStepN<Record> insertConceptTable = dslContext.insertInto(table(tableName))
