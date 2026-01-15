@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conquery;
 
 import static org.jooq.impl.DSL.*;
+import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -35,6 +36,7 @@ import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jooq.CreateTableElementListStep;
 import org.jooq.Cursor;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -244,7 +246,7 @@ public class SqlMatchingStats {
 
 		CTConditionContext context = new CTConditionContext(false, "col_val", provider);
 
-		buildAssignmentTable(concept, context);
+		buildAssignmentTable(concept, context, dslContext);
 	}
 
 	@NotNull
@@ -256,7 +258,7 @@ public class SqlMatchingStats {
 	}
 
 
-	public void buildAssignmentTable(TreeConcept concept, CTConditionContext context) {
+	public void buildAssignmentTable(TreeConcept concept, CTConditionContext context, DSLContext dslContext) {
 
 		List<CTCondition.Expression> expressions = collectAllExpressions(concept, context);
 
@@ -298,19 +300,31 @@ public class SqlMatchingStats {
 			rows.add(row(params));
 		}
 
+		int idLength = expressions.stream().mapToInt(e -> e.id().getId().toString().length()).max()
+								  .orElse(0);
 
-		log.debug("Creating table for {} with fields {}", concept.getId(), allFields);
-
+		Name tableName = name("%s_ids".formatted(concept.getName()));
 		// the allfields are expressions to extract values from tables, we use them to generate the field names
-		List<Field<Object>> fieldNames = new ArrayList<>(allFields.stream().map(field -> field(name(field.getName()))).toList());
+		List<Field<?>> fieldNames = new ArrayList<>(allFields);
+		fieldNames.addFirst(field(name("concept"), VARCHAR(idLength)));
 
-		fieldNames.addFirst(field(name("concept")));
+		CreateTableElementListStep createTable =
+				dslContext.createTableIfNotExists(tableName)
+						  .columns(fieldNames)
+						  .primaryKey(allFields);
 
-		InsertValuesStepN<Record> insertConceptTable = insertInto(table(name("%s_ids".formatted(concept.getName()))))
-				.columns(fieldNames)
-				.valuesOfRows(rows);
+		log.debug("Creating table {}", createTable);
+
+		createTable.execute();
+
+
+		InsertValuesStepN<Record> insertConceptTable = dslContext.insertInto(table(tableName))
+																 .columns(fieldNames)
+																 .valuesOfRows(rows);
 
 		log.info("{}", insertConceptTable);
+
+		insertConceptTable.execute();
 	}
 
 	private List<CTCondition.Expression> collectAllExpressions(TreeConcept concept, CTConditionContext context) {
