@@ -310,12 +310,18 @@ public class SqlMatchingStats {
 
 		CreateTableElementListStep createTable =
 				dslContext.createTableIfNotExists(tableName)
-						  .columns(fieldNames)
-						  .primaryKey(allFields);
+						  .columns(fieldNames);
 
 		log.debug("Creating table {}", createTable);
 
 		createTable.execute();
+
+		if (!allFields.isEmpty()) {
+			dslContext.createIndex("%s_index".formatted(tableName.unquotedName().toString()))
+					  .on(tableName)
+					  .include(allFields)
+					  .execute();
+		}
 
 
 		InsertValuesStepN<Record> insertConceptTable = dslContext.insertInto(table(tableName))
