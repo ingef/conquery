@@ -318,8 +318,7 @@ public class SqlMatchingStats {
 
 		if (!allFields.isEmpty()) {
 			dslContext.createIndex("%s_index".formatted(tableName.unquotedName().toString()))
-					  .on(tableName)
-					  .include(allFields)
+					  .on(table(tableName), allFields.stream().map(Field::sortDefault).toList())
 					  .execute();
 		}
 
