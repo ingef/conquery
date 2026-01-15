@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
+import static org.jooq.impl.DSL.field;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -18,6 +20,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 /**
  * This condition requires each value to start with one of the given values.
@@ -44,7 +47,7 @@ public class PrefixCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Field<?> field = context.access(context.getConnectorColumn());
+		Field<?> field = DSL.field(DSL.name(context.getConnectorColumn()));
 		String pattern = Arrays.stream(prefixes).collect(Collectors.joining("|", "", context.getFunctionProvider().getAnyCharRegex()));
 		Condition condition = context.getFunctionProvider().likeRegex((Field<String>)field, pattern);
 		return new ConditionWrappingWhereCondition(condition);

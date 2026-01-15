@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import static org.jooq.impl.DSL.*;
+import static org.jooq.impl.SQLDataType.BOOLEAN;
 
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.jooq.Condition;
+import org.jooq.impl.DSL;
 
 /**
  * This condition requires that the selected Column has a value.
@@ -34,7 +36,7 @@ public class IsEmptyCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Condition condition = context.access(column).isNull();
+		Condition condition = DSL.field(DSL.name(column)).isNull();
 		return new ConditionWrappingWhereCondition(condition);
 	}
 
@@ -45,6 +47,6 @@ public class IsEmptyCondition implements CTCondition {
 
 	@Override
 	public Expression expressions(CTConditionContext context, ConceptElement<?> id) {
-		return new Expression(id, Map.of(context.access(column).isNull(), Set.of(val(true))));
+		return new Expression(id, Map.of(DSL.field(DSL.name(column), BOOLEAN).isNull(), Set.of(val(true))));
 	}
 }

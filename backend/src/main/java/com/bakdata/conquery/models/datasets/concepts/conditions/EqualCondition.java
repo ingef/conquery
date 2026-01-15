@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
-import static org.jooq.impl.DSL.val;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import java.util.Collections;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class EqualCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Field<String> field = (Field<String>) context.access(context.getConnectorColumn());
+		Field<String> field = (Field<String>) (Field<?>) field(DSL.name(context.getConnectorColumn()));
 		return new MultiSelectCondition(field, values.toArray(String[]::new), context.getFunctionProvider());
 	}
 
@@ -57,6 +58,6 @@ public class EqualCondition implements CTCondition {
 
 	@Override
 	public Expression expressions(CTConditionContext context, ConceptElement<?> id) {
-		return new Expression(id, Map.of(context.access(context.getConnectorColumn()), values.stream().map(DSL::val).collect(Collectors.toSet())));
+		return new Expression(id, Map.of(field(DSL.name(context.getConnectorColumn()), VARCHAR), values.stream().map(DSL::val).collect(Collectors.toSet())));
 	}
 }

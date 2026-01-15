@@ -11,6 +11,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.Param;
 

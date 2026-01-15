@@ -1,10 +1,12 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
-import static org.jooq.impl.DSL.val;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -14,7 +16,6 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.CollectionsUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -50,7 +51,7 @@ public class ColumnEqualCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Field<String> field = (Field<String>) context.access(column);
+		Field<String> field = (Field<String>) (Field<?>) field(DSL.name(column));
 		return new MultiSelectCondition(field, values.toArray(String[]::new), context.getFunctionProvider());
 	}
 
@@ -61,7 +62,7 @@ public class ColumnEqualCondition implements CTCondition {
 
 	@Override
 	public Expression expressions(CTConditionContext context, ConceptElement<?> id) {
-		return new Expression(id, Map.of(context.access(getColumn()), values.stream().map(DSL::val).collect(Collectors.toSet())));
+		return new Expression(id, Map.of(field(DSL.name(getColumn()), VARCHAR), values.stream().map(DSL::val).collect(Collectors.toSet())));
 
 	}
 }
