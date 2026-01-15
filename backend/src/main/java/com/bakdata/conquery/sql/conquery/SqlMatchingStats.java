@@ -308,8 +308,12 @@ public class SqlMatchingStats {
 		List<Field<?>> fieldNames = new ArrayList<>(allFields);
 		fieldNames.addFirst(field(name("concept"), VARCHAR(idLength)));
 
+		dslContext.dropTable(tableName)
+				.cascade()
+				.execute();
+
 		CreateTableElementListStep createTable =
-				dslContext.createTableIfNotExists(tableName)
+				dslContext.createTable(tableName)
 						  .columns(fieldNames);
 
 		log.debug("Creating table {}", createTable);
