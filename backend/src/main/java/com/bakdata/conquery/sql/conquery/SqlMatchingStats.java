@@ -262,14 +262,6 @@ public class SqlMatchingStats {
 
 	}
 
-	@NotNull
-	private Set<String> getAuxiliaryColumns(TreeConcept concept) {
-		return concept.getChildren().stream()
-					  .map(this::collectAuxiliaryColumns)
-					  .flatMap(Collection::stream)
-					  .collect(Collectors.toSet());
-	}
-
 	private Condition getJoinConditions(TreeConcept concept, @CheckForNull Field<String> connectorColumn, CTConditionContext context) {
 		List<CTCondition.Expression> expressions = collectAllExpressions(concept, context);
 
@@ -281,10 +273,6 @@ public class SqlMatchingStats {
 		Name idsTable = getConceptIdsTable(concept);
 
 		Condition out = noCondition();
-
-		if (connectorColumn != null) {
-			out = out.and(connectorColumn.eq(field(name(idsTable, name("col_val")), String.class)));
-		}
 
 		for (Field eField : allFields) {
 			// The id-tables names are derived from eField so this should work.
