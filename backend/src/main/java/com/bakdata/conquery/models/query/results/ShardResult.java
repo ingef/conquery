@@ -25,6 +25,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.mina.core.future.WriteFuture;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
@@ -80,7 +81,7 @@ public class ShardResult  extends NamespaceMessage {
 
 		this.results = results;
 
-		log.trace("Sending collected Results\n{}", results);
+		log.trace("Sending collected Results for execution {}\n{}", executionId, StringUtils.truncate(results.toString(),500));
 
 		WriteFuture sendResult = worker.send(this);
 
