@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.DatabaseConfig;
@@ -36,6 +37,7 @@ import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jooq.Condition;
 import org.jooq.CreateTableElementListStep;
 import org.jooq.Cursor;
 import org.jooq.DSLContext;
@@ -171,6 +173,15 @@ public class SqlMatchingStats {
 		return matchingStats;
 	}
 
+	@NotNull
+	private static Name conceptIdField() {
+		return name("concept");
+	}
+
+	@NotNull
+	private static Name getConceptIdsTable(TreeConcept concept) {
+		return name("%s_ids".formatted(concept.getName()));
+	}
 
 	public void collectMatchingStatsForConcept(TreeConcept concept, SqlFunctionProvider provider, DSLContext dslContext, DatabaseConfig dbConfig) {
 		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats =
@@ -196,20 +207,18 @@ public class SqlMatchingStats {
 		Field<Date> negativeInifnity = provider.toDateField(provider.getMinDateExpression());
 
 		for (Connector connector : concept.getConnectors()) {
-			String connectorColumn = null;
+			com.bakdata.conquery.models.datasets.Table resolvedTable = connector.getResolvedTable();
+			Name tableName = name(resolvedTable.getName());
+
+			Field<String> connectorColumn = null;
 			if (connector.getColumn() != null) {
-				connectorColumn = connector.getColumn().get().getName();
+				connectorColumn = field(name(tableName, name(connector.getColumn().getColumn())), String.class);
 			}
 
 			CTConditionContext context = new CTConditionContext(false, connectorColumn, provider);
 
-			com.bakdata.conquery.models.datasets.Table resolvedTable = connector.getResolvedTable();
 
 			Field<?> pid = TablePrimaryColumnUtil.findPrimaryColumn(resolvedTable, dbConfig);
-
-			Set<String> columns = getAuxiliaryColumns(concept);
-
-			Field<String> resolveFunction = getResolveIdFunctionInvocation(concept, connectorColumn, columns);
 
 			Field[] validityDatesArray = collectValidityDateFields(connector, provider).toArray(Field[]::new);
 
@@ -220,8 +229,11 @@ public class SqlMatchingStats {
 									  // The infinities are intentionally swapped
 									  least(positiveInfinitty, validityDatesArray).as("lowerBound"),
 									  greatest(negativeInifnity, validityDatesArray).as("upperBound"),
-									  resolveFunction.as("resolvedId")
-							  ).from(table(name(resolvedTable.getName())))
+									  field(conceptIdField()).as("resolvedId")
+							  )
+							  .from(table(tableName))
+							  .leftJoin(getConceptIdsTable(concept))
+							  .on(getJoinConditions(concept, connectorColumn, context))
 							  .where(connector.getCondition() != null ? connector.getCondition().convertToSqlCondition(context).condition() : noCondition());
 
 			connectorTables.add(connectorTable);
@@ -244,9 +256,10 @@ public class SqlMatchingStats {
 
 	public void createFunctionForConcept(TreeConcept concept, SqlFunctionProvider provider, DSLContext dslContext) {
 
-		CTConditionContext context = new CTConditionContext(false, "col_val", provider);
+		CTConditionContext context = new CTConditionContext(false, field(name("col_val"), String.class), provider);
 
 		buildAssignmentTable(concept, context, dslContext);
+
 	}
 
 	@NotNull
@@ -257,9 +270,33 @@ public class SqlMatchingStats {
 					  .collect(Collectors.toSet());
 	}
 
+	private Condition getJoinConditions(TreeConcept concept, @CheckForNull Field<String> connectorColumn, CTConditionContext context) {
+		List<CTCondition.Expression> expressions = collectAllExpressions(concept, context);
 
-	public void buildAssignmentTable(TreeConcept concept, CTConditionContext context, DSLContext dslContext) {
+		Collection<Field<?>> allFields = expressions.stream()
+													.map(expression -> expression.conditions().keySet())
+													.flatMap(Collection::stream)
+													.collect(Collectors.toSet());
 
+		Name idsTable = getConceptIdsTable(concept);
+
+		Condition out = noCondition();
+
+		if (connectorColumn != null) {
+			out = out.and(connectorColumn.eq(field(name(idsTable, name("col_val")), String.class)));
+		}
+
+		for (Field eField : allFields) {
+			// The id-tables names are derived from eField so this should work.
+			out = out.and(eField.eq(field(name(idsTable, eField.getUnqualifiedName()))));
+		}
+
+		return out;
+	}
+
+	public void buildAssignmentTable(TreeConcept concept, CTConditionContext context, DSLContext dsl) {
+
+		//TODO at some point this needs to be created, when the concept is inserted.
 		List<CTCondition.Expression> expressions = collectAllExpressions(concept, context);
 
 		Set<Param<?>> nullParams = Collections.singleton(inline(null, String.class));
@@ -303,36 +340,36 @@ public class SqlMatchingStats {
 		int idLength = expressions.stream().mapToInt(e -> e.id().getId().toString().length()).max()
 								  .orElse(0);
 
-		Name tableName = name("%s_ids".formatted(concept.getName()));
+		Name tableName = getConceptIdsTable(concept);
 		// the allfields are expressions to extract values from tables, we use them to generate the field names
 		List<Field<?>> fieldNames = new ArrayList<>(allFields);
-		fieldNames.addFirst(field(name("concept"), VARCHAR(idLength)));
+		fieldNames.addFirst(field(conceptIdField(), VARCHAR(idLength)));
 
-		dslContext.dropTable(tableName)
-				.cascade()
-				.execute();
+		dsl.dropTable(tableName)
+		   .cascade()
+		   .execute();
 
 		CreateTableElementListStep createTable =
-				dslContext.createTable(tableName)
-						  .columns(fieldNames);
+				dsl.createTable(tableName)
+				   .columns(fieldNames);
 
 		log.debug("Creating table {}", createTable);
 
 		createTable.execute();
-//TODO null values still crash this :'(
-//		if (!allFields.isEmpty()) {
-//			String indexName = "%s_index".formatted(tableName.unquotedName().toString());
-//			dslContext.dropIndexIfExists(indexName).execute();
-//			dslContext.createIndex(indexName)
-//					  .on(table(tableName), allFields.stream().map(Field::sortDefault).toList())
-//					  .excludeNullKeys()
-//					  .execute();
-//		}
+		//TODO null values still crash this :'(
+		//		if (!allFields.isEmpty()) {
+		//			String indexName = "%s_index".formatted(tableName.unquotedName().toString());
+		//			dslContext.dropIndexIfExists(indexName).execute();
+		//			dslContext.createIndex(indexName)
+		//					  .on(table(tableName), allFields.stream().map(Field::sortDefault).toList())
+		//					  .excludeNullKeys()
+		//					  .execute();
+		//		}
 
 
-		InsertValuesStepN<Record> insertConceptTable = dslContext.insertInto(table(tableName))
-																 .columns(fieldNames)
-																 .valuesOfRows(rows);
+		InsertValuesStepN<Record> insertConceptTable = dsl.insertInto(table(tableName))
+														  .columns(fieldNames)
+														  .valuesOfRows(rows);
 
 		log.info("{}", insertConceptTable);
 

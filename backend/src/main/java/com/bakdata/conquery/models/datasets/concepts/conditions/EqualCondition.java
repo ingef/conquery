@@ -47,8 +47,7 @@ public class EqualCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Field<String> field = (Field<String>) (Field<?>) field(DSL.name(context.getConnectorColumn()));
-		return new MultiSelectCondition(field, values.toArray(String[]::new), context.getFunctionProvider());
+		return new MultiSelectCondition(context.getConnectorColumn(), values.toArray(String[]::new), context.getFunctionProvider());
 	}
 
 	@Override
@@ -58,6 +57,6 @@ public class EqualCondition implements CTCondition {
 
 	@Override
 	public Expression expressions(CTConditionContext context, ConceptElement<?> id) {
-		return new Expression(id, Map.of(field(DSL.name(context.getConnectorColumn()), VARCHAR), values.stream().map(DSL::val).collect(Collectors.toSet())));
+		return new Expression(id, Map.of(context.getConnectorColumn(), values.stream().map(DSL::val).collect(Collectors.toSet())));
 	}
 }

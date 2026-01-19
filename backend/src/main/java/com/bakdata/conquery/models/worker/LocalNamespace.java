@@ -69,13 +69,13 @@ public class LocalNamespace extends Namespace {
 					});
 
 		// TODO multi threading?
-		//		getStorage().getAllConcepts()
-		//					.filter(TreeConcept.class::isInstance)
-		//					.forEach(concept -> sqlMatchingStatsHandler.collectMatchingStatsForConcept(((TreeConcept) concept),
-		//																							   getDialect().getFunctionProvider(),
-		//																							   getDslContextWrapper().getDslContext(),
-		//																							   databaseConfig
-		//					));
+		getStorage().getAllConcepts()
+					.filter(TreeConcept.class::isInstance)
+					.forEach(concept -> sqlMatchingStatsHandler.collectMatchingStatsForConcept(((TreeConcept) concept),
+																							   getDialect().getFunctionProvider(),
+																							   getDslContextWrapper().getDslContext(),
+																							   databaseConfig
+					));
 
 		log.debug("DONE collecting SQL matching stats for {}", getDataset());
 

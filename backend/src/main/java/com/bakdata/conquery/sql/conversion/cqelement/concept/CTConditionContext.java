@@ -6,18 +6,19 @@ import static org.jooq.impl.DSL.name;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import lombok.Value;
+import org.jooq.Field;
 
 @Value
 public class CTConditionContext {
 
 	boolean inFunction;
-	String connectorColumn;
+	Field<String> connectorColumn;
 	SqlFunctionProvider functionProvider;
 
 	public static CTConditionContext create(Connector connector, SqlFunctionProvider functionProvider) {
 		return new CTConditionContext(
 				false,
-				connector.getColumn() != null ? connector.getColumn().resolve().getName() : null,
+				connector.getColumn() != null ? field(name(connector.getColumn().resolve().getName()), String.class) : null,
 				functionProvider
 		);
 	}
