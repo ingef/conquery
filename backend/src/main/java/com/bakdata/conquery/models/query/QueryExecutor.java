@@ -71,7 +71,7 @@ public class QueryExecutor implements Closeable {
 		try {
 			// We log the QueryPlan once for debugging purposes.
 			if (log.isDebugEnabled()) {
-				log.debug("QueryPlan for Query[{}] = `{}`", result.getQueryId(), plan.get());
+				log.debug("QueryPlan for Query[{}] = `{}`", result.getExecutionId(), plan.get());
 			}
 
 			final List<CompletableFuture<Optional<EntityResult>>> futures =
@@ -79,8 +79,11 @@ public class QueryExecutor implements Closeable {
 
 			final CompletableFuture<Void> allDone = CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
 
-			allDone.thenApply((ignored) -> futures.stream().map(CompletableFuture::join).flatMap(Optional::stream).collect(Collectors.toList()))
-				   .whenComplete((results, exc) -> result.finish(Objects.requireNonNullElse(results, Collections.emptyList()), Optional.ofNullable(exc), worker));
+			allDone.thenApply((ignored) -> futures.stream()
+												  .map(CompletableFuture::join)
+												  .flatMap(Optional::stream)
+												  .collect(Collectors.toList()))
+				   .whenComplete((results, exception) -> result.finish(Objects.requireNonNullElse(results, Collections.emptyList()), exception, worker));
 
 
 			return true;
@@ -94,7 +97,7 @@ public class QueryExecutor implements Closeable {
 	}
 
 	public void sendFailureToManagerNode(ShardResult result, ConqueryError error, Worker worker) {
-		result.finish(Collections.emptyList(), Optional.of(error), worker);
+		result.finish(Collections.emptyList(), error, worker);
 	}
 
 	@Override

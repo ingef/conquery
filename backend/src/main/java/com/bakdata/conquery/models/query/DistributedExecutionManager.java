@@ -86,7 +86,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 	public <R extends ShardResult, E extends ManagedExecution & InternalExecution> void handleQueryResult(R result, E execution) {
 
 
-		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
+		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getExecutionId());
 		log.trace("Received Result\n{}", result.getResults());
 
 		if (execution == null) {
@@ -114,8 +114,8 @@ public class DistributedExecutionManager extends ExecutionManager {
 			return;
 		}
 
-		if (result.getError().isPresent()) {
-			execution.fail(result.getError().get());
+		if (result.getError() != null) {
+			execution.fail(result.getError());
 		}
 		else {
 			distributedInfo.addShardResult(result);
@@ -139,7 +139,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 			/* This log is here to prevent an NPE which could occur when no strong reference to result.getResults()
 			 existed anymore after the query finished and immediately was reset */
-			log.trace("Collected metrics for execution {}. Last result received: {}:", result.getQueryId(), result.getResults());
+			log.trace("Collected metrics for execution {}. Last result received: {}:", result.getExecutionId(), result.getResults());
 		}
 
 	}

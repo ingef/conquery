@@ -3,11 +3,12 @@ package com.bakdata.conquery.models.query.results;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
@@ -24,6 +25,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.core.future.WriteFuture;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -37,7 +39,7 @@ public class ShardResult  extends NamespaceMessage {
 
 
 	@ToString.Include
-	private ManagedExecutionId queryId;
+	private ManagedExecutionId executionId;
 
 	@ToString.Include
 	private WorkerId workerId;
@@ -50,41 +52,69 @@ public class ShardResult  extends NamespaceMessage {
 	@ToString.Include
 	private LocalDateTime finishTime;
 
-	private Optional<ConqueryError> error = Optional.empty();
+	private ConqueryError error;
 
 
-	public ShardResult(ManagedExecutionId queryId, WorkerId workerId) {
-		this.queryId = queryId;
+	public ShardResult(ManagedExecutionId executionId, WorkerId workerId) {
+		this.executionId = executionId;
 		this.workerId = workerId;
 	}
 
-	public synchronized void finish(@NonNull List<EntityResult> results, Optional<Throwable> maybeError, Worker worker) {
-		if (worker.getQueryExecutor().isCancelled(getQueryId())) {
+	public synchronized void finish(@NonNull List<EntityResult> results, @Nullable Throwable maybeError, Worker worker) {
+		if (worker.getQueryExecutor().isCancelled(getExecutionId())) {
 			// Query is done so we no longer need the cancellation entry.
-			worker.getQueryExecutor().unsetQueryCancelled(getQueryId());
+			worker.getQueryExecutor().unsetQueryCancelled(getExecutionId());
 			return;
 		}
 
 		finishTime = LocalDateTime.now();
 
-		if (maybeError.isPresent()) {
-			log.warn("FAILED Query[{}] within {}", queryId, Duration.between(startTime, finishTime), maybeError.get());
+		if (maybeError != null) {
+			log.warn("FAILED Query[{}] within {}", executionId, Duration.between(startTime, finishTime), maybeError);
 
-			setError(maybeError.map(ConqueryError::asConqueryError));
+			setError(ConqueryError.asConqueryError(maybeError));
 		}
 		else {
-			log.info("FINISHED Query[{}] with {} results within {}", queryId, results.size(), Duration.between(startTime, finishTime));
+			log.info("FINISHED Query[{}] with {} results within {}", executionId, results.size(), Duration.between(startTime, finishTime));
 		}
 
 		this.results = results;
 
 		log.trace("Sending collected Results\n{}", results);
 
-		worker.send(this);
+		WriteFuture sendResult = worker.send(this);
+
+		// Add listener for write completion
+		sendResult.addListener(resultWriteFurture -> {
+			WriteFuture wf = (WriteFuture) resultWriteFurture;
+			if (wf.isWritten()) {
+				log.trace("Successfully submitted shard result for execution {}", executionId);
+				return;
+			}
+
+			// Write may fail because message was too large
+			Throwable exception = wf.getException();
+			log.error(
+					"Failed to submit (otherwise fine) shard result for execution {}. Notifying manager", executionId, exception
+			);
+			ShardResult failMessage = new ShardResult(executionId, workerId);
+			failMessage.setError(ConqueryError.asConqueryError(exception));
+
+			WriteFuture sendFailure = worker.send(failMessage);
+			sendFailure.addListener(failWriteFuture -> {
+				if (((WriteFuture)failWriteFuture).isWritten()) {
+					log.info("Successfully informed manager about failed shard result for execution {}", executionId);
+					return;
+				}
+				log.error("Could not notify manager about shard result submission failure for execution {}. "
+						  + "Manager probably has this execution in a dangling {} state",
+						  executionId, ExecutionState.RUNNING);
+			});
+		});
 	}
 
 	protected void addResult(DistributedExecutionManager executionManager) {
-		executionManager.handleQueryResult(this, ((ManagedQuery) executionManager.getExecution(queryId)));
+		executionManager.handleQueryResult(this, ((ManagedQuery) executionManager.getExecution(executionId)));
 	}
 
 	@Override
