@@ -21,7 +21,7 @@ public class CTConditionContext {
 
 	public static CTConditionContext forConnector(Connector connector, SqlFunctionProvider functionProvider) {
 		return new CTConditionContext(
-				connector.getColumn() != null ? field(name(connector.getColumn().resolve().getName()), String.class).as(COLUMN_VALUE_FIELD) : null,
+				connector.getColumn() != null ? field(name(connector.getResolvedTable().getName(), connector.getColumn().resolve().getName()), String.class).as(COLUMN_VALUE_FIELD.getName()) : null,
 				functionProvider
 		);
 	}
