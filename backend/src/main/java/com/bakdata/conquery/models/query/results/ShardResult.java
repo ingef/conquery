@@ -83,34 +83,48 @@ public class ShardResult  extends NamespaceMessage {
 
 		log.trace("Sending collected Results for execution {}\n{}", executionId, StringUtils.truncate(results.toString(),500));
 
-		WriteFuture sendResult = worker.send(this);
+		// Wrap in try-catch to catch errors in the mina filter chain
+		try {
+			WriteFuture sendResult = worker.send(this);
 
-		// Add listener for write completion
-		sendResult.addListener(resultWriteFurture -> {
-			WriteFuture wf = (WriteFuture) resultWriteFurture;
-			if (wf.isWritten()) {
-				log.trace("Successfully submitted shard result for execution {}", executionId);
-				return;
-			}
+			// Add listener to handle errors that may arise after the filter chain
+			sendResult.addListener(resultWriteFurture -> {
 
-			// Write may fail because message was too large
-			Throwable exception = wf.getException();
-			log.error(
-					"Failed to submit (otherwise fine) shard result for execution {}. Notifying manager", executionId, exception
-			);
-			ShardResult failMessage = new ShardResult(executionId, workerId);
-			failMessage.setError(ConqueryError.asConqueryError(exception));
-
-			WriteFuture sendFailure = worker.send(failMessage);
-			sendFailure.addListener(failWriteFuture -> {
-				if (((WriteFuture)failWriteFuture).isWritten()) {
-					log.info("Successfully informed manager about failed shard result for execution {}", executionId);
+				WriteFuture wf = (WriteFuture) resultWriteFurture;
+				if (wf.isWritten()) {
+					log.trace("Successfully submitted shard result for execution {}", executionId);
 					return;
 				}
-				log.error("Could not notify manager about shard result submission failure for execution {}. "
-						  + "Manager probably has this execution in a dangling {} state",
-						  executionId, ExecutionState.RUNNING);
+
+				Throwable exception = wf.getException();
+
+				handleTransmissionFailure(worker, exception);
 			});
+		} catch (Throwable throwable) {
+			// Throwable because we might get an OOM if a message was too large
+			handleTransmissionFailure(worker,throwable);
+		}
+
+
+	}
+
+	private void handleTransmissionFailure(Worker worker, Throwable throwable) {
+		log.error(
+				"Failed to submit (otherwise fine) shard result for execution {}. Notifying manager", executionId, throwable
+		);
+
+		ShardResult failMessage = new ShardResult(executionId, workerId);
+		failMessage.setError(ConqueryError.asConqueryError(throwable));
+
+		WriteFuture sendFailure = worker.send(failMessage);
+		sendFailure.addListener(failWriteFuture -> {
+			if (((WriteFuture)failWriteFuture).isWritten()) {
+				log.info("Successfully informed manager about failed shard result for execution {}", executionId);
+				return;
+			}
+			log.error("Could not notify manager about shard result submission failure for execution {}. "
+					  + "Manager probably has this execution in a dangling {} state",
+					  executionId, ExecutionState.RUNNING);
 		});
 	}
 
