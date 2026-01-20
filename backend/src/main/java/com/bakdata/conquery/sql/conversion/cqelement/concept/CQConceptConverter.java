@@ -222,7 +222,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		ConceptTreeChild child = (ConceptTreeChild) conceptElement;
 
-		WhereCondition childCondition = child.getCondition().convertToSqlCondition(CTConditionContext.create(
+		WhereCondition childCondition = child.getCondition().convertToSqlCondition(CTConditionContext.forConnector(
 				cqTable.getConnector().resolve(), functionProvider
 		));
 		WhereCondition parentCondition = convertConceptElementCondition(child.getParent(), cqTable, functionProvider);
@@ -239,7 +239,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		if (connector.getCondition() == null) {
 			return prerequisites;
 		}
-		WhereCondition converted = connector.getCondition().convertToSqlCondition(CTConditionContext.create(connector, functionProvider));
+		WhereCondition converted = connector.getCondition().convertToSqlCondition(CTConditionContext.forConnector(connector, functionProvider));
 
 		return converted.and(prerequisites);
 	}

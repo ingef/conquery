@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +49,8 @@ public class EqualCondition implements CTCondition {
 
 	@Override
 	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
-		return new Expression(id, Map.of(context.getConnectorColumn(), values.stream().map(DSL::val).collect(Collectors.toSet())));
+		return new Expression(id,
+							  Map.of(context.getConnectorColumn(), values.stream().map(DSL::val).collect(Collectors.toSet()))
+		);
 	}
 }

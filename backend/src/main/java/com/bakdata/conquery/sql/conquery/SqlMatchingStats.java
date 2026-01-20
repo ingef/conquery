@@ -234,7 +234,7 @@ public class SqlMatchingStats {
 			Field<String> pid = TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), dbConfig);
 			Field<Date>[] validityDates = collectValidityDateFields(connector, provider).toArray(Field[]::new);
 
-			CTConditionContext context = CTConditionContext.create(connector, provider);
+			CTConditionContext context = CTConditionContext.forConnector(connector, provider);
 
 			SelectConditionStep<? extends Record> connectorTable =
 					dslContext.select(
@@ -267,7 +267,7 @@ public class SqlMatchingStats {
 
 	public void createConceptIdJoinTable(TreeConcept concept, SqlFunctionProvider provider, DSLContext dslContext) {
 
-		CTConditionContext context = new CTConditionContext(field(name("col_val"), String.class), provider);
+		CTConditionContext context = CTConditionContext.forJoinTables(provider);
 
 		buildAssignmentTable(concept, context, dslContext);
 	}
@@ -285,6 +285,8 @@ public class SqlMatchingStats {
 		Condition out = noCondition();
 
 		for (Field eField : allFields) {
+			//TODO col_val needs extra handling
+
 			// The id-tables names are derived from eField so this should work.
 			out = out.and(eField.eq(field(name(idsTable, eField.getUnqualifiedName()))));
 		}
