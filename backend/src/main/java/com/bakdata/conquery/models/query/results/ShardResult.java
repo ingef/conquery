@@ -75,14 +75,7 @@ public class ShardResult  extends NamespaceMessage {
 		// Truncate here because too large logs will crash/lock the process
 		log.trace("Collected Results for execution {}\n{}", executionId, StringUtils.truncate(results.toString(), 1000) + " (...)");
 	}
-
-	public void fail (Throwable error, Worker worker) {
-		finishTime = LocalDateTime.now();
-		log.warn("FAILED Query[{}] within {}", executionId, Duration.between(startTime, finishTime), error);
-		setError(ConqueryError.asConqueryError(error));
-
-	}
-
+	
 	protected void addResult(DistributedExecutionManager executionManager) {
 		executionManager.handleQueryResult(this, ((ManagedQuery) executionManager.getExecution(executionId)));
 	}
