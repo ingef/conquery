@@ -53,7 +53,7 @@ public interface ErrorMessages {
 	@De("Die Anfrage lief zu lange und wurde abgebrochen.")
 	String executionTimeout();
 
-	@En("Query result size was too large.")
+	@En("Query result was too large.")
 	@De("Das Anfrageergebnis ist zu groß.")
 	String resultSizeTooLarge();
 
