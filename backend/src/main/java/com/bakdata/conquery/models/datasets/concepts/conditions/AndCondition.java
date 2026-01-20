@@ -1,10 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 
@@ -57,26 +55,13 @@ public class AndCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> auxiliaryColumns() {
-		return conditions.stream()
-						 .map(CTCondition::auxiliaryColumns)
-						 .flatMap(Collection::stream)
-						 .collect(Collectors.toSet());
-	}
-
-	@Override
-	public Expression expressions(CTConditionContext context, ConceptElement<?> id) {
-		List<Expression> expressions = conditions.stream().map(cond -> cond.expressions(context, id))
+	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
+		List<Expression> expressions = conditions.stream().map(cond -> cond.buildExpression(context, id))
 												 .toList();
 
-		Expression out = null;
+		Expression out = new Expression(id, Collections.emptyMap());
 
 		for (Expression expression : expressions) {
-			if (out == null) {
-				out = expression;
-				continue;
-			}
-
 			out = out.join(expression);
 		}
 

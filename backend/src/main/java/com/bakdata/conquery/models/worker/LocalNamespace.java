@@ -28,7 +28,6 @@ public class LocalNamespace extends Namespace {
 	private final SqlDialect dialect;
 	private final DSLContextWrapper dslContextWrapper;
 	private final SqlStorageHandler storageHandler;
-	private final SqlMatchingStats sqlMatchingStatsHandler;
 	private final DatabaseConfig databaseConfig;
 
 	public LocalNamespace(
@@ -40,38 +39,26 @@ public class LocalNamespace extends Namespace {
 			SqlStorageHandler storageHandler,
 			JobManager jobManager,
 			SearchProcessor filterSearch,
-			SqlEntityResolver sqlEntityResolver, SqlMatchingStats sqlMatchingStatsHandler, DatabaseConfig databaseConfig
+			SqlEntityResolver sqlEntityResolver, DatabaseConfig databaseConfig
 	) {
 		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, sqlEntityResolver);
 		this.dslContextWrapper = dslContextWrapper;
 		this.storageHandler = storageHandler;
 		this.dialect = dialect;
-		this.sqlMatchingStatsHandler = sqlMatchingStatsHandler;
 		this.databaseConfig = databaseConfig;
 	}
+
+
 
 	@Override
 	void updateMatchingStats() {
 		//TODO wrap in job
 		log.info("BEGIN collecting SQL matching stats for {}", getDataset());
-		getStorage().getAllConcepts()
-					.filter(TreeConcept.class::isInstance)
-					.forEach(concept -> {
-						try {
-							sqlMatchingStatsHandler.createFunctionForConcept(((TreeConcept) concept),
-																			 getDialect().getFunctionProvider(),
-																			 getDslContextWrapper().getDslContext()
-							);
-						}
-						catch (Exception e) {
-							log.error("Error generating function for {}", concept.getId(), e);
-						}
-					});
 
 		// TODO multi threading?
 		getStorage().getAllConcepts()
 					.filter(TreeConcept.class::isInstance)
-					.forEach(concept -> sqlMatchingStatsHandler.collectMatchingStatsForConcept(((TreeConcept) concept),
+					.forEach(concept -> SqlMatchingStats.collectMatchingStatsForConcept(((TreeConcept) concept),
 																							   getDialect().getFunctionProvider(),
 																							   getDslContextWrapper().getDslContext(),
 																							   databaseConfig

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.mode.local;
 
 import com.bakdata.conquery.mode.StorageListener;
-import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -9,12 +8,22 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
+import com.bakdata.conquery.models.worker.LocalNamespace;
+import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Data;
 import com.bakdata.conquery.sql.conquery.SqlMatchingStats;
-import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
 
-@Data
-public class LocalStorageListener implements StorageListener {
+public class LocalStorageListener extends StorageListener<LocalNamespace> {
+
+
+	public LocalStorageListener(
+			JobManager jobManager,
+			DatasetRegistry<LocalNamespace> datasetRegistry) {
+		super(jobManager, datasetRegistry);
+	}
 
 	@Override
 	public void onAddSecondaryId(SecondaryIdDescription secondaryId) {
@@ -35,10 +44,15 @@ public class LocalStorageListener implements StorageListener {
 
 	@Override
 	public void onAddConcept(Concept<?> concept) {
-//		new SqlMatchingStats().createFunctionForConcept((TreeConcept) concept, new PostgreSqlDialect().getFunctionProvide*/r());
+		LocalNamespace namespace = getDatasetRegistry().get(concept.getDataset());
+		SqlMatchingStats.createConceptIdJoinTable(((TreeConcept) concept),
+												  namespace.getDialect().getFunctionProvider(),
+												  namespace.getDslContextWrapper().getDslContext()
+		);
 	}
 
 	@Override
 	public void onDeleteConcept(ConceptId concept) {
+		//TODO drop join table.
 	}
 }

@@ -46,7 +46,7 @@ class AbsoluteStratification {
 	private QueryStep createIntSeriesStep() {
 
 		// not actually required, but Selects expect at least 1 SqlIdColumn
-		Field<Object> rowNumber = DSL.rowNumber().over().coerce(Object.class);
+		Field<String> rowNumber = DSL.rowNumber().over().coerce(String.class);
 		SqlIdColumns ids = new SqlIdColumns(rowNumber);
 
 		FieldWrapper<Integer> seriesIndex = new FieldWrapper<>(stratificationFunctions.intSeriesField());

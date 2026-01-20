@@ -11,7 +11,6 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.Param;
 
@@ -27,15 +26,18 @@ public interface CTCondition {
 
 	boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException;
 
+	//TODO implement using join-table
 	WhereCondition convertToSqlCondition(CTConditionContext context);
 
-	Set<String> auxiliaryColumns();
-
-	Expression expressions(CTConditionContext context, ConceptElement<?> id);
+	Expression buildExpression(CTConditionContext context, ConceptElement<?> id);
 
 
 	record Expression(ConceptElement<?> id, Map<Field<?>, Set<Param<?>>> conditions) {
 		public Expression join(Expression other) {
+			if (other ==  null){
+				return this;
+			}
+
 			// We are overwriting their conditions!
 			Map<Field<?>, Set<Param<?>>> combined = new HashMap<>(conditions().size() + other.conditions().size());
 			combined.putAll(other.conditions());

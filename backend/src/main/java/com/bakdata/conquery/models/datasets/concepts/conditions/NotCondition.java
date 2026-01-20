@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.Map;
-import java.util.Set;
 import jakarta.validation.Valid;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -40,12 +39,7 @@ public class NotCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> auxiliaryColumns() {
-		return condition.auxiliaryColumns();
-	}
-
-	@Override
-	public Expression expressions(CTConditionContext context, ConceptElement<?> id) {
+	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
 		throw new IllegalStateException("Not implemented");
 	}
 }

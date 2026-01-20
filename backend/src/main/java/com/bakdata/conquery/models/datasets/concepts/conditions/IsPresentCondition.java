@@ -39,12 +39,7 @@ public class IsPresentCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> auxiliaryColumns() {
-		return Set.of(column);
-	}
-
-	@Override
-	public Expression expressions(CTConditionContext context, ConceptElement<?> id) {
-		return new Expression(id, Map.of(DSL.field(DSL.name(column)).isNull(), Set.of(val(false))));
+	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
+		return new Expression(id, Map.of(DSL.field(DSL.name(column)).isNull().as("%s_is_empty".formatted(column)), Set.of(val(false))));
 	}
 }

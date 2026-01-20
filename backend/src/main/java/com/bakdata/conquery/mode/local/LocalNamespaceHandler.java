@@ -74,7 +74,6 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 				namespaceData.jobManager(),
 				namespaceData.filterSearch(),
 				sqlEntityResolver,
-				new SqlMatchingStats(),
 				databaseConfig
 		);
 	}

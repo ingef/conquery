@@ -3,9 +3,7 @@ package com.bakdata.conquery.models.datasets.concepts.conditions;
 import static org.jooq.impl.DSL.field;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -19,8 +17,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.jooq.Condition;
-import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 /**
  * This condition requires each value to start with one of the given values.
@@ -53,12 +49,8 @@ public class PrefixCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> auxiliaryColumns() {
-		return Collections.emptySet();
-	}
-
-	@Override
-	public Expression expressions(CTConditionContext context, ConceptElement<?> id) {
+	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
+		//TODO technically implementable
 		throw new IllegalStateException("Not implemented");
 	}
 }

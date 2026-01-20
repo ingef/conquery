@@ -41,12 +41,7 @@ public class IsEmptyCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> auxiliaryColumns() {
-		return Set.of(column);
-	}
-
-	@Override
-	public Expression expressions(CTConditionContext context, ConceptElement<?> id) {
-		return new Expression(id, Map.of(DSL.field(DSL.name(column), BOOLEAN).isNull(), Set.of(val(true))));
+	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
+		return new Expression(id, Map.of(DSL.field(DSL.name(column), BOOLEAN).isNull().as("%s_is_empty".formatted(column)), Set.of(val(true))));
 	}
 }

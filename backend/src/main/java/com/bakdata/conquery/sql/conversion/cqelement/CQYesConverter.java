@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.cqelement;
 
+import static org.jooq.impl.DSL.field;
+
 import com.bakdata.conquery.apiv1.query.CQYes;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
@@ -23,7 +25,7 @@ public class CQYesConverter implements NodeConverter<CQYes> {
 	public ConversionContext convert(CQYes cqYes, ConversionContext context) {
 
 		ColumnConfig primaryColumnConfig = context.getIdColumns().findPrimaryIdColumn();
-		Field<Object> primaryColumn = DSL.field(DSL.name(primaryColumnConfig.getField()));
+		Field<String> primaryColumn = field(DSL.name(primaryColumnConfig.getField()), String.class);
 		SqlIdColumns ids = new SqlIdColumns(primaryColumn);
 
 		Selects selects = Selects.builder().ids(ids).build();

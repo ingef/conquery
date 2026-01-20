@@ -1,10 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 
@@ -58,15 +55,7 @@ public class OrCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> auxiliaryColumns() {
-		return conditions.stream()
-						 .map(CTCondition::auxiliaryColumns)
-						 .flatMap(Collection::stream)
-						 .collect(Collectors.toSet());
-	}
-
-	@Override
-	public Expression expressions(CTConditionContext context, ConceptElement<?> id) {
+	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
 		throw new IllegalStateException("Not implemented");
 	}
 }

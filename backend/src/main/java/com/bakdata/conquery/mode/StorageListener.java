@@ -6,22 +6,32 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
+import com.bakdata.conquery.models.worker.Namespace;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Listener for updates of stored entities in ConQuery.
  */
-public interface StorageListener {
+@Data
+public abstract class StorageListener<T extends Namespace>{
 
-	void onAddSecondaryId(SecondaryIdDescription secondaryId);
+	private final JobManager jobManager;
+	private final DatasetRegistry<T> datasetRegistry;
 
-	void onDeleteSecondaryId(SecondaryIdDescriptionId description);
+	public abstract void onAddSecondaryId(SecondaryIdDescription secondaryId);
 
-	void onAddTable(Table table);
+	public abstract void onDeleteSecondaryId(SecondaryIdDescriptionId description);
 
-	void onRemoveTable(TableId table);
+	public abstract void onAddTable(Table table);
 
-	void onAddConcept(Concept<?> concept);
+	public abstract void onRemoveTable(TableId table);
 
-	void onDeleteConcept(ConceptId concept);
+	public abstract void onAddConcept(Concept<?> concept);
+
+	public abstract void onDeleteConcept(ConceptId concept);
 
 }

@@ -128,7 +128,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	public static SqlIdColumns convertIds(CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
 
 		Table table = cqTable.getConnector().resolve().getResolvedTable();
-		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(table, conversionContext.getConfig());
+		Field<String> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(table, conversionContext.getConfig());
 
 		if (cqConcept.isExcludeFromSecondaryId()
 			|| conversionContext.getSecondaryIdDescription() == null
@@ -147,7 +147,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				)
 		);
 
-		Field<Object> secondaryId = DSL.field(DSL.name(table.getName(), secondaryIdColumn.getName()));
+		Field<String> secondaryId = DSL.field(DSL.name(table.getName(), secondaryIdColumn.getName()), String.class);
 		return new SqlIdColumns(primaryColumn, secondaryId).withAlias();
 	}
 

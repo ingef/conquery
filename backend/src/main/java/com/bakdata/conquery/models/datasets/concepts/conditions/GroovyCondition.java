@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 import jakarta.validation.constraints.NotEmpty;
 
@@ -122,12 +120,7 @@ public class GroovyCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> auxiliaryColumns() {
-		return Collections.emptySet();
-	}
-
-	@Override
-	public Expression expressions(CTConditionContext context, ConceptElement<?> id) {
+	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
 		throw new IllegalStateException("Not implemented");
 	}
 }

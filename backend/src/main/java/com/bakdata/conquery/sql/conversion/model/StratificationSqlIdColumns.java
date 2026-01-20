@@ -35,7 +35,7 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 	@Override
 	public SqlIdColumns qualify(String qualifier) {
 
-		Field<Object> primaryColumn = QualifyingUtil.qualify(getPrimaryColumn(), qualifier);
+		Field<String> primaryColumn = QualifyingUtil.qualify(getPrimaryColumn(), qualifier);
 		Field<String> resolution = QualifyingUtil.qualify(this.resolution, qualifier);
 		Field<Integer> index = QualifyingUtil.qualify(this.index, qualifier);
 		Field<Date> eventDate = null;
@@ -124,9 +124,9 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 				"Can only coalesce SqlIdColumns if all are with stratification"
 		);
 
-		List<Field<?>> primaryColumns = new ArrayList<>();
-		List<Field<?>> resolutions = new ArrayList<>();
-		List<Field<?>> indices = new ArrayList<>();
+		List<Field<String>> primaryColumns = new ArrayList<>();
+		List<Field<String>> resolutions = new ArrayList<>();
+		List<Field<Integer>> indices = new ArrayList<>();
 		List<Field<?>> eventDates = new ArrayList<>();
 
 		// add this ids
@@ -147,12 +147,12 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 			}
 		}
 
-		Field<Object> coalescedPrimaryColumn = coalesceFields(primaryColumns).as(SharedAliases.PRIMARY_COLUMN.getAlias());
-		Field<String> coalescedResolutions = coalesceFields(resolutions).coerce(String.class).as(SharedAliases.RESOLUTION.getAlias());
-		Field<Integer> coalescedIndices = coalesceFields(indices).coerce(Integer.class).as(SharedAliases.INDEX.getAlias());
+		Field<String> coalescedPrimaryColumn = coalesceFields(primaryColumns, String.class).as(SharedAliases.PRIMARY_COLUMN.getAlias());
+		Field<String> coalescedResolutions = coalesceFields(resolutions, String.class).as(SharedAliases.RESOLUTION.getAlias());
+		Field<Integer> coalescedIndices = coalesceFields(indices, Integer.class).as(SharedAliases.INDEX.getAlias());
 		Field<Date> eventDate = null;
 		if (!eventDates.isEmpty()) {
-			eventDate = coalesceFields(eventDates).coerce(Date.class).as(SharedAliases.INDEX_SELECTOR.getAlias());
+			eventDate = coalesceFields(eventDates, Date.class).as(SharedAliases.INDEX_SELECTOR.getAlias());
 		}
 
 		return StratificationSqlIdColumns.builder()

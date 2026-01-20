@@ -56,13 +56,8 @@ public class ColumnEqualCondition implements CTCondition {
 	}
 
 	@Override
-	public Set<String> auxiliaryColumns() {
-		return Set.of(column);
-	}
-
-	@Override
-	public Expression expressions(CTConditionContext context, ConceptElement<?> id) {
-		return new Expression(id, Map.of(field(DSL.name(getColumn()), VARCHAR), values.stream().map(DSL::val).collect(Collectors.toSet())));
+	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
+		return new Expression(id, Map.of(field(DSL.name(getColumn()), VARCHAR).as("%s_equal".formatted(column)), values.stream().map(DSL::val).collect(Collectors.toSet())));
 
 	}
 }

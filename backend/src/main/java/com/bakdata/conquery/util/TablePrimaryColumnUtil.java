@@ -1,5 +1,8 @@
 package com.bakdata.conquery.util;
 
+import static com.codahale.metrics.MetricRegistry.name;
+import static org.jooq.impl.DSL.field;
+
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.datasets.Table;
 import org.jooq.Field;
@@ -7,11 +10,16 @@ import org.jooq.impl.DSL;
 
 public class TablePrimaryColumnUtil {
 
-	public static Field<Object> findPrimaryColumn(Table table, DatabaseConfig databaseConfig) {
-		String primaryColumnName = table.getPrimaryColumn() == null
-								   ? databaseConfig.getPrimaryColumn()
-								   : table.getPrimaryColumn().getName();
-		return DSL.field(DSL.name(table.getName(), primaryColumnName));
+	public static Field<String> findPrimaryColumn(Table table, DatabaseConfig databaseConfig) {
+		String primaryColumnName;
+		if (table.getPrimaryColumn() == null) {
+			primaryColumnName = databaseConfig.getPrimaryColumn();
+		}
+		else {
+			primaryColumnName = table.getPrimaryColumn().getName();
+		}
+
+		return field(name(table.getName(), primaryColumnName), String.class);
 	}
 
 }
