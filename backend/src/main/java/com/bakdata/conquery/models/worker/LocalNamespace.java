@@ -49,7 +49,6 @@ public class LocalNamespace extends Namespace {
 	}
 
 
-
 	@Override
 	void updateMatchingStats() {
 		//TODO wrap in job
@@ -58,11 +57,18 @@ public class LocalNamespace extends Namespace {
 		// TODO multi threading?
 		getStorage().getAllConcepts()
 					.filter(TreeConcept.class::isInstance)
-					.forEach(concept -> SqlMatchingStats.collectMatchingStatsForConcept(((TreeConcept) concept),
-																							   getDialect().getFunctionProvider(),
-																							   getDslContextWrapper().getDslContext(),
-																							   databaseConfig
-					));
+					.forEach(concept -> {
+						try {
+							SqlMatchingStats.collectMatchingStatsForConcept(((TreeConcept) concept),
+																			getDialect().getFunctionProvider(),
+																			getDslContextWrapper().getDslContext(),
+																			databaseConfig
+							);
+						}
+						catch (Exception e) {
+							log.error("FAILED to collect matching stats for {}", concept.getId(), e);
+						}
+					});
 
 		log.debug("DONE collecting SQL matching stats for {}", getDataset());
 
