@@ -55,9 +55,9 @@ import org.jooq.Table;
 public class SqlMatchingStats {
 
 	private static final Field<String> PID_FIELD = field(name("pid"), String.class);
-	private static final Field<Date> LB_FIELD = field(name("lowerBound"), Date.class);
-	private static final Field<Date> UB_FIELD = field(name("upperBound"), Date.class);
-	private static final Field<String> CONCEPT_ID_FIELD = field(name("resolvedId"), String.class);
+	private static final Field<Date> LB_FIELD = field(name("lower_bound"), Date.class);
+	private static final Field<Date> UB_FIELD = field(name("upper_bound"), Date.class);
+	private static final Field<String> CONCEPT_ID_FIELD = field(name("resolved_id"), String.class);
 	private final Set<Param<?>> NULL_PARAMS = Collections.singleton(inline(null, String.class));
 
 	@NotNull
