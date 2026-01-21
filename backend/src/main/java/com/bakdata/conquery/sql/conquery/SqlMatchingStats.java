@@ -285,7 +285,11 @@ public class SqlMatchingStats {
 		Condition out = noCondition();
 
 		for (Field eField : allFields) {
-			//TODO col_val needs extra handling
+			// col_val needs extra handling because it's bound to the connector and not the concept.
+			if (eField.equals(context.getConnectorColumn())){
+				out = out.and(eField.eq(CTConditionContext.COLUMN_VALUE_FIELD));
+				continue;
+			}
 
 			// The id-tables names are derived from eField so this should work.
 			out = out.and(eField.eq(field(name(idsTable, eField.getUnqualifiedName()))));

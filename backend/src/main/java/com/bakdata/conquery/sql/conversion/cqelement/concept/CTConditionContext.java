@@ -11,7 +11,7 @@ import org.jooq.Field;
 @Value
 public class CTConditionContext {
 
-	private static final Field<String> COLUMN_VALUE_FIELD = field(name("col_val"), String.class);
+	public static final Field<String> COLUMN_VALUE_FIELD = field(name("col_val"), String.class);
 	Field<String> connectorColumn;
 	SqlFunctionProvider functionProvider;
 
