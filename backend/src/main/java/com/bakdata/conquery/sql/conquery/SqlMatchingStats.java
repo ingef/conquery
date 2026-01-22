@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import jakarta.validation.constraints.NotBlank;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -88,8 +87,47 @@ public class SqlMatchingStats {
 		return fields;
 	}
 
+	private static <T extends Record> Table<T> unionSelects(List<Select<? extends T>> connectorTables) {
+		Select<T> unioned = null;
+
+		for (Select<? extends T> connectorTable : connectorTables) {
+			if (unioned == null) {
+				unioned = (Select<T>) connectorTable;
+				continue;
+			}
+
+			unioned = unioned.unionAll(connectorTable);
+		}
+
+
+		return table(unioned);
+	}
+
+	/**
+	 * Assembles the join table and inserts it into the database.
+	 * @param concept
+	 */
+	public void createConceptIdJoinTable(TreeConcept concept) {
+		CTConditionContext context = CTConditionContext.forJoinTables(functionProvider);
+
+		List<CTCondition.Expression> expressions = collectAllExpressions(concept, null, context);
+
+		List<Field<?>> allFields = collectAllFields(expressions);
+
+		List<RowN> rows = expressionsToRows(expressions, allFields);
+
+		Name tableName = idsTableName(concept.getName());
+
+		// allFields are the statements to extract values from the underlying tables, we use them to generate the field names
+		List<Field<?>> fieldNames = new ArrayList<>(allFields);
+		fieldNames.addFirst(field(CONCEPT_ID_FIELD.getName(), VARCHAR(findMaxIdLength(expressions))));
+
+		createConceptIdsTable(tableName, fieldNames);
+		insertConceptIdMappings(tableName, fieldNames, rows, dslContext);
+	}
+
 	@NotNull
-	private Field[] collectValidityDateFields(Connector connector) {
+	private Field<Date>[] collectValidityDateFields(Connector connector) {
 		List<Field<Date>> validityDates = new ArrayList<>();
 
 		for (ValidityDate validityDate : connector.getValidityDates()) {
@@ -111,23 +149,7 @@ public class SqlMatchingStats {
 				validityDates.add(functionProvider.upper(rangeField));
 			}
 		}
-		return validityDates.toArray(Field[]::new);
-	}
-
-	private <T extends Record> Table<T> unionSelects(List<Select<? extends T>> connectorTables) {
-		Select<T> unioned = null;
-
-		for (Select<? extends T> connectorTable : connectorTables) {
-			if (unioned == null) {
-				unioned = (Select<T>) connectorTable;
-				continue;
-			}
-
-			unioned = unioned.unionAll(connectorTable);
-		}
-
-
-		return table(unioned);
+		return (Field<Date>[]) validityDates.toArray(Field[]::new);
 	}
 
 	private void assignStats(Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats) {
@@ -141,7 +163,7 @@ public class SqlMatchingStats {
 	}
 
 	@NotNull
-	private Map<ConceptElementId<?>, MatchingStats.Entry> resolveStats(
+	private Map<ConceptElementId<?>, MatchingStats.Entry> readStats(
 			TreeConcept concept,
 			SelectJoinStep<? extends Record> selectJoinStep) {
 		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = new HashMap<>();
@@ -151,8 +173,7 @@ public class SqlMatchingStats {
 		log.info("BEGIN fetching matching stats for {}", concept.getId());
 		log.debug("{}", selectJoinStep);
 
-		try (Cursor<? extends Record> cursor = selectJoinStep
-				.fetchSize(fetchBatchSize).fetchLazy()) {
+		try (Cursor<? extends Record> cursor = selectJoinStep.fetchSize(fetchBatchSize).fetchLazy()) {
 
 			for (Record record : cursor) {
 
@@ -241,7 +262,7 @@ public class SqlMatchingStats {
 
 					SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
 
-					return resolveStats(concept, matchingStatsStatement);
+					return readStats(concept, matchingStatsStatement);
 				});
 
 		assignStats(matchingStats);
@@ -252,27 +273,26 @@ public class SqlMatchingStats {
 
 		List<Select<? extends Record>> connectorTables = new ArrayList<>();
 
-		Field<Date> positiveInfinitty = functionProvider.toDateField(functionProvider.getMaxDateExpression());
-		Field<Date> negativeInifnity = functionProvider.toDateField(functionProvider.getMinDateExpression());
+		Field<Date> positiveInfinity = functionProvider.toDateField(functionProvider.getMaxDateExpression());
+		Field<Date> negativeInfinity = functionProvider.toDateField(functionProvider.getMinDateExpression());
 
 		for (Connector connector : concept.getConnectors()) {
 
-			Field<String> pid = TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), dbConfig);
-			Field<Date>[] validityDates = collectValidityDateFields(connector);
-
 			CTConditionContext context = CTConditionContext.forConnector(connector, functionProvider);
+
+			Field<Date>[] validityDates = collectValidityDateFields(connector);
 
 			SelectConditionStep<? extends Record> connectorTable =
 					dslContext.select(
-									  pid.as(PID_FIELD),
+									  TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), dbConfig).as(PID_FIELD),
 									  // The infinities are intentionally swapped
-									  least(positiveInfinitty, validityDates).as(LB_FIELD),
-									  greatest(negativeInifnity, validityDates).as(UB_FIELD),
+									  least(positiveInfinity, validityDates).as(LB_FIELD),
+									  greatest(negativeInfinity, validityDates).as(UB_FIELD),
 									  CONCEPT_ID_FIELD
 							  )
 							  .from(table(name(connector.getResolvedTable().getName())))
 							  .leftJoin(idsTableName(concept.getName()))
-							  .on(getJoinConditions(concept, context))
+							  .on(getJoinConditions(concept, context)) // joint onto the concept-ids table to assign the most specific id.
 							  .where(connector.getCondition() != null ? connector.getCondition().convertToSqlCondition(context).condition() : noCondition());
 
 			connectorTables.add(connectorTable);
@@ -283,8 +303,8 @@ public class SqlMatchingStats {
 								  CONCEPT_ID_FIELD,
 								  PID_FIELD,
 								  // The infinities are intentionally swapped
-								  nullif(LB_FIELD, positiveInfinitty).as(LB_FIELD),
-								  nullif(UB_FIELD, negativeInifnity).as(UB_FIELD)
+								  nullif(LB_FIELD, positiveInfinity).as(LB_FIELD),
+								  nullif(UB_FIELD, negativeInfinity).as(UB_FIELD)
 						  )
 						  .from(unionSelects(connectorTables));
 
@@ -299,24 +319,6 @@ public class SqlMatchingStats {
 				  .execute();
 	}
 
-	public void createConceptIdJoinTable(TreeConcept concept) {
-		CTConditionContext context = CTConditionContext.forJoinTables(functionProvider);
-
-		List<CTCondition.Expression> expressions = collectAllExpressions(concept, null, context);
-
-		List<Field<?>> allFields = collectAllFields(expressions);
-
-		List<RowN> rows = expressionsToRows(expressions, allFields);
-
-		Name tableName = idsTableName(concept.getName());
-
-		// allFields are the statements to extract values from the underlying tables, we use them to generate the field names
-		List<Field<?>> fieldNames = new ArrayList<>(allFields);
-		fieldNames.addFirst(field(CONCEPT_ID_FIELD.getName(), VARCHAR(findMaxIdLength(expressions))));
-
-		createConceptIdsTable(tableName, fieldNames);
-		insertConceptIdMappings(tableName, fieldNames, rows, dslContext);
-	}
 
 	/**
 	 * Using the expressions of a concept, build a Condition that descibes the left-join onto the ids table, from any connector-table.
@@ -360,7 +362,15 @@ public class SqlMatchingStats {
 			// Group by params, find deepest params. This ensures we map to the most-specific element.
 			for (List<Param<?>> params : flattened) {
 				byDepth.compute(params,
-								(__, prior) -> prior == null || prior.getDepth() < elt.getDepth() ? elt : prior
+								(__, prior) -> {
+									if (prior == null || prior.getDepth() < elt.getDepth()) {
+										return elt;
+									}
+									if (prior.getDepth() == elt.getDepth()) {
+										log.warn("Nodes {} and {} are mapped by the same params {}", prior.getId(), elt.getId(), params);
+									}
+									return prior;
+								}
 				);
 			}
 		}
@@ -378,6 +388,10 @@ public class SqlMatchingStats {
 		return rows;
 	}
 
+	/**
+	 * Collect all mappings from values to conceptElement for the entire concept. This means the column-value and the auxiliary columns.
+	 * We use them to construct a table building an injective mapping from values to concept element that can be used for performant joins instead of resolving the concept every time.
+	 */
 	private List<CTCondition.Expression> collectAllExpressions(ConceptElement<?> current, CTCondition.Expression parentExpression, CTConditionContext context) {
 		final List<CTCondition.Expression> out = new ArrayList<>();
 		final CTCondition.Expression forCurrent;
@@ -389,7 +403,7 @@ public class SqlMatchingStats {
 			// concept elements implicitly inherit the conditions of its parents
 			forCurrent = child.getCondition()
 							  .buildExpression(context, current)
-							  .join(parentExpression);
+							  .and(parentExpression);
 		}
 		else {
 			throw new IllegalStateException();
@@ -408,7 +422,8 @@ public class SqlMatchingStats {
 	 * recursively build just a single expression
 	 * @param current
 	 * @param context
-	 * @return
+	 *
+	 * TODO use this to implement joining in queries
 	 */
 	private CTCondition.Expression collectExpressionsForSingleNode(ConceptElement<?> current, CTConditionContext context) {
 
@@ -419,7 +434,7 @@ public class SqlMatchingStats {
 		CTCondition.Expression parentExpression = collectExpressionsForSingleNode(current.getParent(), context);
 		CTCondition.Expression currentExpression = ((ConceptTreeChild) current).getCondition().buildExpression(context, current);
 
-		return currentExpression.join(parentExpression);
+		return currentExpression.and(parentExpression);
 	}
 
 

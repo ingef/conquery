@@ -42,7 +42,7 @@ public interface CTCondition {
 	 */
 	//TODO better name
 	record Expression(ConceptElement<?> conceptElement, Map<Field<?>, Set<Param<?>>> conditions) {
-		public Expression join(Expression other) {
+		public Expression and(Expression other) {
 			if (other == null) {
 				return this;
 			}

@@ -62,7 +62,7 @@ public class AndCondition implements CTCondition {
 		Expression out = new Expression(id, Collections.emptyMap());
 
 		for (Expression expression : expressions) {
-			out = out.join(expression);
+			out = out.and(expression);
 		}
 
 		return out;
