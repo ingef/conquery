@@ -29,6 +29,7 @@ public class LocalNamespace extends Namespace {
 	private final DSLContextWrapper dslContextWrapper;
 	private final SqlStorageHandler storageHandler;
 	private final DatabaseConfig databaseConfig;
+	private final SqlMatchingStats matchingStats;
 
 	public LocalNamespace(
 			SqlDialect dialect,
@@ -46,6 +47,7 @@ public class LocalNamespace extends Namespace {
 		this.storageHandler = storageHandler;
 		this.dialect = dialect;
 		this.databaseConfig = databaseConfig;
+		matchingStats = new SqlMatchingStats(dslContextWrapper.getDslContext(), dialect.getFunctionProvider(), databaseConfig);
 	}
 
 
@@ -59,11 +61,7 @@ public class LocalNamespace extends Namespace {
 					.filter(TreeConcept.class::isInstance)
 					.forEach(concept -> {
 						try {
-							SqlMatchingStats.collectMatchingStatsForConcept(((TreeConcept) concept),
-																			getDialect().getFunctionProvider(),
-																			getDslContextWrapper().getDslContext(),
-																			databaseConfig
-							);
+							matchingStats.collectMatchingStatsForConcept((TreeConcept) concept);
 						}
 						catch (Exception e) {
 							log.error("FAILED to collect matching stats for {}", concept.getId(), e);

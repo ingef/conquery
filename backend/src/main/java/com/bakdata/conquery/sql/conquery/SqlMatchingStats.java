@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import jakarta.validation.constraints.NotBlank;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.DatabaseConfig;
@@ -25,15 +26,15 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
-import lombok.experimental.UtilityClass;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jooq.Condition;
 import org.jooq.CreateTableElementListStep;
 import org.jooq.Cursor;
@@ -51,17 +52,44 @@ import org.jooq.SelectJoinStep;
 import org.jooq.Table;
 
 @Slf4j
-@UtilityClass
+@Data
 public class SqlMatchingStats {
 
-	private static final Field<String> PID_FIELD = field(name("pid"), String.class);
-	private static final Field<Date> LB_FIELD = field(name("lower_bound"), Date.class);
-	private static final Field<Date> UB_FIELD = field(name("upper_bound"), Date.class);
-	private static final Field<String> CONCEPT_ID_FIELD = field(name("resolved_id"), String.class);
+	private final Field<String> PID_FIELD = field(name("pid"), String.class);
+	private final Field<Date> LB_FIELD = field(name("lower_bound"), Date.class);
+	private final Field<Date> UB_FIELD = field(name("upper_bound"), Date.class);
+	private final Field<String> CONCEPT_ID_FIELD = field(name("resolved_id"), String.class);
 	private final Set<Param<?>> NULL_PARAMS = Collections.singleton(inline(null, String.class));
 
+	private final DSLContext dslContext;
+	private final SqlFunctionProvider functionProvider;
+	private final DatabaseConfig dbConfig;
+	private final int fetchBatchSize = 100; //TODO from dbConfig?
+
+	private static void assignStatsToPath(ConceptElementId<?> resolvedId, Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats, String entity, CDateRange span) {
+		ConceptElement<?> element = resolvedId.get();
+
+		while (element != null) {
+			matchingStats.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Entry())
+						 .addEvents(entity, 1, span);
+			element = element.getParent();
+		}
+	}
+
+	/**
+	 * collect unique fields used/defined in the expressions.
+	 */
+	private static List<Field<?>> collectAllFields(List<CTCondition.Expression> expressions) {
+		List<Field<?>> fields = expressions.stream()
+										   .map(expression -> expression.conditions().keySet())
+										   .flatMap(Collection::stream)
+										   .distinct()
+										   .toList();
+		return fields;
+	}
+
 	@NotNull
-	private static List<Field<Date>> collectValidityDateFields(Connector connector, SqlFunctionProvider provider) {
+	private Field[] collectValidityDateFields(Connector connector) {
 		List<Field<Date>> validityDates = new ArrayList<>();
 
 		for (ValidityDate validityDate : connector.getValidityDates()) {
@@ -79,15 +107,14 @@ public class SqlMatchingStats {
 			else if (column.getType() == MajorTypeId.DATE_RANGE) {
 				Field<Object> rangeField = field(name(column.getName()));
 
-				validityDates.add(provider.lower(rangeField));
-				validityDates.add(provider.upper(rangeField));
+				validityDates.add(functionProvider.lower(rangeField));
+				validityDates.add(functionProvider.upper(rangeField));
 			}
 		}
-		return validityDates;
+		return validityDates.toArray(Field[]::new);
 	}
 
-	@Nullable
-	private static <T extends Record> Table<T> unionSelects(List<Select<? extends T>> connectorTables) {
+	private <T extends Record> Table<T> unionSelects(List<Select<? extends T>> connectorTables) {
 		Select<T> unioned = null;
 
 		for (Select<? extends T> connectorTable : connectorTables) {
@@ -103,7 +130,7 @@ public class SqlMatchingStats {
 		return table(unioned);
 	}
 
-	private static void assignStats(Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats) {
+	private void assignStats(Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats) {
 		for (Map.Entry<ConceptElementId<?>, MatchingStats.Entry> entry : matchingStats.entrySet()) {
 			ConceptElementId<?> conceptElementId = entry.getKey();
 
@@ -114,7 +141,7 @@ public class SqlMatchingStats {
 	}
 
 	@NotNull
-	private static Map<ConceptElementId<?>, MatchingStats.Entry> resolveStats(
+	private Map<ConceptElementId<?>, MatchingStats.Entry> resolveStats(
 			TreeConcept concept,
 			SelectJoinStep<? extends Record> selectJoinStep) {
 		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = new HashMap<>();
@@ -125,7 +152,7 @@ public class SqlMatchingStats {
 		log.debug("{}", selectJoinStep);
 
 		try (Cursor<? extends Record> cursor = selectJoinStep
-				.fetchSize(100).fetchLazy()) {
+				.fetchSize(fetchBatchSize).fetchLazy()) {
 
 			for (Record record : cursor) {
 
@@ -145,13 +172,7 @@ public class SqlMatchingStats {
 
 				CDateRange span = CDateRange.of(min != null ? min.toLocalDate() : null, max != null ? max.toLocalDate() : null);
 
-				ConceptElement<?> element = resolvedId.get();
-
-				while (element != null) {
-					matchingStats.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Entry())
-								 .addEvents(entity, 1, span);
-					element = element.getParent();
-				}
+				assignStatsToPath(resolvedId, matchingStats, entity, span);
 			}
 		}
 
@@ -162,11 +183,11 @@ public class SqlMatchingStats {
 	}
 
 	@NotNull
-	private static Name getConceptIdsTable(TreeConcept concept) {
-		return name("%s_ids".formatted(concept.getName()));
+	private Name idsTableName(@NotBlank String name) {
+		return name("%s_ids".formatted(name));
 	}
 
-	private static void insertConceptIdMappings(Name tableName, List<Field<?>> fieldNames, List<RowN> rows, DSLContext dsl) {
+	private void insertConceptIdMappings(Name tableName, List<Field<?>> fieldNames, List<RowN> rows, DSLContext dsl) {
 		log.info("BEGIN inserting {} rows into {}", rows.size(), tableName);
 
 		InsertValuesStepN<Record> insertConceptTable = dsl.insertInto(table(tableName))
@@ -182,17 +203,17 @@ public class SqlMatchingStats {
 	 * Drop the table, then recreate it.
 	 * TODO add an index.
 	 */
-	private static void createConceptIdsTable(Name tableName, List<Field<?>> fieldNames, DSLContext dsl) {
+	private void createConceptIdsTable(Name tableName, List<Field<?>> fieldNames) {
 
 		log.debug("Creating table {} with fields {}", tableName, fieldNames);
 
-		dsl.dropTable(tableName)
-		   .cascade()
-		   .execute();
+		dslContext.dropTable(tableName)
+				  .cascade()
+				  .execute();
 
 		CreateTableElementListStep createTable =
-				dsl.createTable(tableName)
-				   .columns(fieldNames);
+				dslContext.createTable(tableName)
+						  .columns(fieldNames);
 
 
 		createTable.execute();
@@ -208,17 +229,17 @@ public class SqlMatchingStats {
 		//		}
 	}
 
-	private static int getMaxIdLength(List<CTCondition.Expression> expressions) {
-		return expressions.stream().mapToInt(e -> e.id().getId().toString().length()).max()
+	private int findMaxIdLength(List<CTCondition.Expression> expressions) {
+		return expressions.stream().mapToInt(e -> e.conceptElement().getId().toString().length()).max()
 						  .orElse(0);
 	}
 
-	public static void collectMatchingStatsForConcept(TreeConcept concept, SqlFunctionProvider provider, DSLContext dslContext, DatabaseConfig dbConfig) {
+	public void collectMatchingStatsForConcept(TreeConcept concept) {
 		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats =
-				// The transaction should implicitly disable autocommit, which we want for using the cursor
+				// The transaction implicitly disables autocommit, which we need for using the cursor
 				dslContext.transactionResult(cfg -> {
 
-					SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept, provider, dbConfig, cfg.dsl());
+					SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
 
 					return resolveStats(concept, matchingStatsStatement);
 				});
@@ -227,21 +248,19 @@ public class SqlMatchingStats {
 	}
 
 	@NotNull
-	private static SelectJoinStep<? extends Record> createMatchingStatsStatement(
-			TreeConcept concept, SqlFunctionProvider provider, DatabaseConfig dbConfig,
-			DSLContext dslContext) {
+	private SelectJoinStep<? extends Record> createMatchingStatsStatement(TreeConcept concept) {
 
 		List<Select<? extends Record>> connectorTables = new ArrayList<>();
 
-		Field<Date> positiveInfinitty = provider.toDateField(provider.getMaxDateExpression());
-		Field<Date> negativeInifnity = provider.toDateField(provider.getMinDateExpression());
+		Field<Date> positiveInfinitty = functionProvider.toDateField(functionProvider.getMaxDateExpression());
+		Field<Date> negativeInifnity = functionProvider.toDateField(functionProvider.getMinDateExpression());
 
 		for (Connector connector : concept.getConnectors()) {
 
 			Field<String> pid = TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), dbConfig);
-			Field<Date>[] validityDates = collectValidityDateFields(connector, provider).toArray(Field[]::new);
+			Field<Date>[] validityDates = collectValidityDateFields(connector);
 
-			CTConditionContext context = CTConditionContext.forConnector(connector, provider);
+			CTConditionContext context = CTConditionContext.forConnector(connector, functionProvider);
 
 			SelectConditionStep<? extends Record> connectorTable =
 					dslContext.select(
@@ -252,7 +271,7 @@ public class SqlMatchingStats {
 									  CONCEPT_ID_FIELD
 							  )
 							  .from(table(name(connector.getResolvedTable().getName())))
-							  .leftJoin(getConceptIdsTable(concept))
+							  .leftJoin(idsTableName(concept.getName()))
 							  .on(getJoinConditions(concept, context))
 							  .where(connector.getCondition() != null ? connector.getCondition().convertToSqlCondition(context).condition() : noCondition());
 
@@ -272,22 +291,42 @@ public class SqlMatchingStats {
 		return records;
 	}
 
-	public void createConceptIdJoinTable(TreeConcept concept, SqlFunctionProvider provider, DSLContext dslContext) {
-
-		CTConditionContext context = CTConditionContext.forJoinTables(provider);
-
-		buildAssignmentTable(concept, context, dslContext);
+	public void deleteConceptIdJoinTable(ConceptId concept) {
+		Name tableName = idsTableName(concept.getName());
+		log.debug("Dropping table {}", tableName);
+		dslContext.dropTable(tableName)
+				  .cascade()
+				  .execute();
 	}
 
-	private static Condition getJoinConditions(TreeConcept concept, CTConditionContext context) {
+	public void createConceptIdJoinTable(TreeConcept concept) {
+		CTConditionContext context = CTConditionContext.forJoinTables(functionProvider);
+
 		List<CTCondition.Expression> expressions = collectAllExpressions(concept, null, context);
 
-		Collection<Field<?>> allFields = expressions.stream()
-													.map(expression -> expression.conditions().keySet())
-													.flatMap(Collection::stream)
-													.collect(Collectors.toSet());
+		List<Field<?>> allFields = collectAllFields(expressions);
 
-		Name idsTable = getConceptIdsTable(concept);
+		List<RowN> rows = expressionsToRows(expressions, allFields);
+
+		Name tableName = idsTableName(concept.getName());
+
+		// allFields are the statements to extract values from the underlying tables, we use them to generate the field names
+		List<Field<?>> fieldNames = new ArrayList<>(allFields);
+		fieldNames.addFirst(field(CONCEPT_ID_FIELD.getName(), VARCHAR(findMaxIdLength(expressions))));
+
+		createConceptIdsTable(tableName, fieldNames);
+		insertConceptIdMappings(tableName, fieldNames, rows, dslContext);
+	}
+
+	/**
+	 * Using the expressions of a concept, build a Condition that descibes the left-join onto the ids table, from any connector-table.
+	 */
+	private Condition getJoinConditions(TreeConcept concept, CTConditionContext context) {
+		List<CTCondition.Expression> expressions = collectAllExpressions(concept, null, context);
+
+		Collection<Field<?>> allFields = collectAllFields(expressions);
+
+		Name idsTable = idsTableName(concept.getName());
 
 		Condition out = noCondition();
 
@@ -298,43 +337,18 @@ public class SqlMatchingStats {
 				continue;
 			}
 
-			// The id-tables names are derived from eField so this should work.
+			// The conceptElement-tables names are derived from eField so this should work.
 			out = out.and(eField.eq(field(name(idsTable, eField.getUnqualifiedName()))));
 		}
 
 		return out;
 	}
 
-	public void buildAssignmentTable(TreeConcept concept, CTConditionContext context, DSLContext dsl) {
-
-		//TODO at some point this needs to be created, when the concept is inserted.
-		List<CTCondition.Expression> expressions = collectAllExpressions(concept, null, context);
-
-		List<Field<?>> allFields = expressions.stream()
-											  .map(expression -> expression.conditions().keySet())
-											  .flatMap(Collection::stream)
-											  .distinct()
-											  .toList();
-
-
-		List<RowN> rows = toRows(expressions, allFields);
-
-		Name tableName = getConceptIdsTable(concept);
-
-		// the allfields are expressions to extract values from tables, we use them to generate the field names
-		List<Field<?>> fieldNames = new ArrayList<>(allFields);
-		fieldNames.addFirst(field(CONCEPT_ID_FIELD.getName(), VARCHAR(getMaxIdLength(expressions))));
-
-		createConceptIdsTable(tableName, fieldNames, dsl);
-		insertConceptIdMappings(tableName, fieldNames, rows, dsl);
-	}
-
-	@NotNull
-	private List<RowN> toRows(List<CTCondition.Expression> expressions, List<Field<?>> allFields) {
+	private List<RowN> expressionsToRows(List<CTCondition.Expression> expressions, List<Field<?>> allFields) {
 		Map<List<Param<?>>, ConceptElement<?>> byDepth = new HashMap<>();
 
 		for (CTCondition.Expression expression : expressions) {
-			ConceptElement<?> elt = expression.id();
+			ConceptElement<?> elt = expression.conceptElement();
 
 			List<Set<Param<?>>> rowValues = new ArrayList<>();
 			for (Field<?> field : allFields) {
@@ -372,6 +386,7 @@ public class SqlMatchingStats {
 			forCurrent = new CTCondition.Expression(concept, Collections.emptyMap());
 		}
 		else if (current instanceof ConceptTreeChild child) {
+			// concept elements implicitly inherit the conditions of its parents
 			forCurrent = child.getCondition()
 							  .buildExpression(context, current)
 							  .join(parentExpression);

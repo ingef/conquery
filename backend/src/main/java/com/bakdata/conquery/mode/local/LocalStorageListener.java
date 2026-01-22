@@ -10,11 +10,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.LocalNamespace;
-import com.bakdata.conquery.models.worker.Namespace;
-import lombok.Data;
-import com.bakdata.conquery.sql.conquery.SqlMatchingStats;
 
 public class LocalStorageListener extends StorageListener<LocalNamespace> {
 
@@ -45,14 +41,12 @@ public class LocalStorageListener extends StorageListener<LocalNamespace> {
 	@Override
 	public void onAddConcept(Concept<?> concept) {
 		LocalNamespace namespace = getDatasetRegistry().get(concept.getDataset());
-		SqlMatchingStats.createConceptIdJoinTable(((TreeConcept) concept),
-												  namespace.getDialect().getFunctionProvider(),
-												  namespace.getDslContextWrapper().getDslContext()
-		);
+		namespace.getMatchingStats().createConceptIdJoinTable((TreeConcept) concept);
 	}
 
 	@Override
 	public void onDeleteConcept(ConceptId concept) {
-		//TODO drop join table.
+		LocalNamespace namespace = getDatasetRegistry().get(concept.getDataset());
+		namespace.getMatchingStats().deleteConceptIdJoinTable(concept);
 	}
 }

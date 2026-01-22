@@ -113,7 +113,7 @@ public interface SqlFunctionProvider {
 	 * @param predecessor The predeceasing step containing the aggregated {@link ColumnDateRange}.
 	 * @param nested      The {@link ColumnDateRange} you want to unnest.
 	 * @param cteName     The CTE name of the returned {@link QueryStep}.
-	 * @return A QueryStep containing an unnested validity date with 1 row per single daterange for each id. For dialects that don't support single column
+	 * @return A QueryStep containing an unnested validity date with 1 row per single daterange for each conceptElement. For dialects that don't support single column
 	 * multiranges, the given predecessor will be returned as is.
 	 */
 	QueryStep unnestDaterange(ColumnDateRange nested, QueryStep predecessor, String cteName);
