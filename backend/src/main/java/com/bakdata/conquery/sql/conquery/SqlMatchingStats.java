@@ -129,8 +129,15 @@ public class SqlMatchingStats {
 
 			for (Record record : cursor) {
 
-				ConceptElementId<?> resolvedId = ConceptElementId.Parser.INSTANCE.parse(record.get(CONCEPT_ID_FIELD));
-				resolvedId.setDomain(concept.getDomain());
+				String rawId = record.get(CONCEPT_ID_FIELD);
+				ConceptElementId<?> resolvedId;
+				if (rawId == null) {
+					resolvedId = concept.getId();
+				}
+				else {
+					resolvedId = ConceptElementId.Parser.INSTANCE.parse(rawId);
+					resolvedId.setDomain(concept.getDomain());
+				}
 
 				String entity = record.get(PID_FIELD);
 				Date min = record.get(LB_FIELD);
@@ -257,8 +264,8 @@ public class SqlMatchingStats {
 								  CONCEPT_ID_FIELD,
 								  PID_FIELD,
 								  // The infinities are intentionally swapped
-								  nullif(LB_FIELD, positiveInfinitty),
-								  nullif(UB_FIELD, negativeInifnity)
+								  nullif(LB_FIELD, positiveInfinitty).as(LB_FIELD),
+								  nullif(UB_FIELD, negativeInifnity).as(UB_FIELD)
 						  )
 						  .from(unionSelects(connectorTables));
 
@@ -286,7 +293,7 @@ public class SqlMatchingStats {
 
 		for (Field eField : allFields) {
 			// col_val needs extra handling because it's bound to the connector and not the concept.
-			if (eField.equals(context.getConnectorColumn())){
+			if (eField.equals(context.getConnectorColumn())) {
 				out = out.and(eField.eq(CTConditionContext.COLUMN_VALUE_FIELD));
 				continue;
 			}
