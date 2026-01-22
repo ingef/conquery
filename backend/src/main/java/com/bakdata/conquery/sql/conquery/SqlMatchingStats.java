@@ -366,7 +366,7 @@ public class SqlMatchingStats {
 									if (prior == null || prior.getDepth() < elt.getDepth()) {
 										return elt;
 									}
-									if (prior.getDepth() == elt.getDepth()) {
+									if (prior.getDepth() == elt.getDepth() && !prior.equals(elt)) {
 										log.warn("Nodes {} and {} are mapped by the same params {}", prior.getId(), elt.getId(), params);
 									}
 									return prior;

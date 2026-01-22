@@ -67,7 +67,7 @@ public interface CTCondition {
 					fieldParams = otherParams;
 				}
 				else {
-					fieldParams = Sets.union(otherParams, myParams);
+					fieldParams = Sets.intersection(otherParams, myParams);
 				}
 
 				combined.put(field, fieldParams);
