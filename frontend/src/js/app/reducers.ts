@@ -39,9 +39,6 @@ import selectedSecondaryIdsReducer, {
   SelectedSecondaryIdStateT,
 } from "../standard-query-editor/selectedSecondaryIdReducer";
 import startup, { StartupStateT } from "../startup/reducer";
-import timebasedQueryReducer, {
-  TimebasedQueryStateT,
-} from "../timebased-query-editor/reducer";
 import tooltip, { TooltipStateT } from "../tooltip/reducer";
 import uploadConceptListModal, {
   UploadConceptListModalStateT,
@@ -69,10 +66,6 @@ export type StateT = {
     query: StandardQueryStateT;
     selectedSecondaryId: SelectedSecondaryIdStateT;
     queryRunner: QueryRunnerStateT;
-  };
-  timebasedQueryEditor: {
-    timebasedQuery: TimebasedQueryStateT;
-    timebasedQueryRunner: QueryRunnerStateT;
   };
   externalForms: {
     activeForm: string | null;
@@ -107,10 +100,6 @@ const buildAppReducer = () => {
       query: queryReducer,
       selectedSecondaryId: selectedSecondaryIdsReducer,
       queryRunner: createQueryRunnerReducer("standard"),
-    }),
-    timebasedQueryEditor: combineReducers({
-      timebasedQuery: timebasedQueryReducer,
-      timebasedQueryRunner: createQueryRunnerReducer("timebased"),
     }),
     externalForms: combineReducers({
       activeForm: activeFormReducer,

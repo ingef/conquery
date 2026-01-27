@@ -9,7 +9,6 @@ import type {
 } from "../previous-queries/list/reducer";
 import type { QueryToUploadT } from "../previous-queries/upload/CSVColumnPicker";
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
-import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { transformQueryToApi } from "./apiHelper";
@@ -101,10 +100,7 @@ export const usePostQueries = () => {
   return useCallback(
     (
       datasetId: DatasetT["id"],
-      query:
-        | StandardQueryStateT
-        | ValidatedTimebasedQueryStateT
-        | EditorV2Query,
+      query: StandardQueryStateT | EditorV2Query,
       options: { queryType: string; selectedSecondaryId?: string | null },
     ) =>
       api({

@@ -26,6 +26,7 @@ import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
 import WithTooltip from "../tooltip/WithTooltip";
 import Dropzone from "../ui-components/Dropzone";
 
+import SecondaryIdSelector from "../standard-query-editor/SecondaryIdSelector";
 import { Connector, Grid } from "./EditorLayout";
 import { EditorV2QueryRunner } from "./EditorV2QueryRunner";
 import { KeyboardShortcutTooltip } from "./KeyboardShortcutTooltip";
@@ -502,6 +503,7 @@ export function EditorV2({
           )}
         </Grid>
       </Main>
+      <SecondaryIdSelector />
       <EditorV2QueryRunner query={{ tree }} />
     </Root>
   );
