@@ -9,6 +9,7 @@ describe("Visit Form Editor", () => {
   });
 
   it("Can open the form editor tab", () => {
+    cy.viewport(1440, 900) // Forms are pushed too far to the side otherwise
     cy.get('[data-test-id="right-pane"]').contains("Formular-Editor").click();
 
     cy.get('[data-test-id="right-pane-container"]').as("formEditor");
