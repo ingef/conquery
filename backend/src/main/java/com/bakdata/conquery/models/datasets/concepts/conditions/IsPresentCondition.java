@@ -34,12 +34,12 @@ public class IsPresentCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Condition condition = DSL.field(DSL.name(column)).isNotNull();
+		Condition condition = field(name(column)).isNotNull();
 		return new ConditionWrappingWhereCondition(condition);
 	}
 
 	@Override
 	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
-		return new Expression(id, Map.of(DSL.field(DSL.name(column)).isNull().as("%s_is_empty".formatted(column)), Set.of(val(false))));
+		return new Expression(id, Map.of(field(name(column)).isNull().as("%s_is_empty".formatted(column)), Set.of(val(false))));
 	}
 }

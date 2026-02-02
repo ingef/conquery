@@ -57,9 +57,9 @@ public class PrefixRangeCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Field<?> field = context.getConnectorColumn();
+		Field<String> field = context.getConnectorColumn();
 		String pattern = buildSqlRegexPattern(context.getFunctionProvider());
-		Condition regexCondition = context.getFunctionProvider().likeRegex((Field<String>) field, pattern);
+		Condition regexCondition = context.getFunctionProvider().likeRegex(field, pattern);
 		return new ConditionWrappingWhereCondition(regexCondition);
 	}
 

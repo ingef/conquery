@@ -36,12 +36,12 @@ public class IsEmptyCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Condition condition = DSL.field(DSL.name(column)).isNull();
+		Condition condition = field(name(column)).isNull();
 		return new ConditionWrappingWhereCondition(condition);
 	}
 
 	@Override
 	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
-		return new Expression(id, Map.of(DSL.field(DSL.name(column), BOOLEAN).isNull().as("%s_is_empty".formatted(column)), Set.of(val(true))));
+		return new Expression(id, Map.of(field(name(column), BOOLEAN).isNull().as("%s_is_empty".formatted(column)), Set.of(val(true))));
 	}
 }

@@ -23,7 +23,6 @@ import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
-import org.jooq.Name;
 import org.jooq.OrderField;
 import org.jooq.Record;
 import org.jooq.SortField;
@@ -253,8 +252,6 @@ public interface SqlFunctionProvider {
 	default Field<Date> upper(Field<Object> daterange) {
 		return function("upper", Date.class, daterange);
 	}
-
-	String createFunctionStatement(Name name, List<String> params, Field<String> forConcept);
 
 	Field<?> functionParam(String name);
 

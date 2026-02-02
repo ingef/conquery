@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Bucket;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -54,7 +52,6 @@ public class MatchingStats {
 	}
 
 	public synchronized void putEntry(String source, Entry entry) {
-
 		entries.put(source, entry);
 		span = null;
 		numberOfEntities = -1L;
@@ -66,8 +63,6 @@ public class MatchingStats {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class Entry {
-
-
 		@JsonIgnore
 		private final Set<String> foundEntities = new HashSet<>();
 		private long numberOfEvents;
@@ -85,46 +80,6 @@ public class MatchingStats {
 					minDate == Integer.MAX_VALUE ? Integer.MIN_VALUE : minDate,
 					maxDate == Integer.MIN_VALUE ? Integer.MAX_VALUE : maxDate
 			);
-		}
-
-		public void addEventFromBucket(String entityForEvent, Bucket bucket, int event, Iterable<Column> dateColumns) {
-
-			int maxDate = Integer.MIN_VALUE;
-			int minDate = Integer.MAX_VALUE;
-
-			for (Column c : dateColumns) {
-
-				if (!bucket.has(event, c)) {
-					continue;
-				}
-
-				final CDateRange time = bucket.getAsDateRange(event, c);
-
-				if (time.hasUpperBound()) {
-					maxDate = Math.max(time.getMaxValue(), maxDate);
-				}
-
-				if (time.hasLowerBound()) {
-					minDate = Math.min(time.getMinValue(), minDate);
-				}
-			}
-
-			final CDateRange span;
-
-			if (minDate == Integer.MAX_VALUE && maxDate == Integer.MIN_VALUE) {
-				span = null;
-			}
-			else if (minDate == Integer.MAX_VALUE) {
-				span = CDateRange.atMost(maxDate);
-			}
-			else if (maxDate == Integer.MIN_VALUE) {
-				span = CDateRange.atLeast(minDate);
-			}
-			else {
-				span = CDateRange.of(minDate, maxDate);
-			}
-
-			addEvents(entityForEvent, 1, span);
 		}
 
 		public void addEvents(String entityForEvent, int events, CDateRange time) {

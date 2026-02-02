@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
+import static org.jooq.impl.DSL.*;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
@@ -51,13 +52,13 @@ public class ColumnEqualCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Field<String> field = (Field<String>) (Field<?>) field(DSL.name(column));
+		Field<String> field = field(name(column), String.class);
 		return new MultiSelectCondition(field, values.toArray(String[]::new), context.getFunctionProvider());
 	}
 
 	@Override
 	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
-		return new Expression(id, Map.of(field(DSL.name(getColumn()), VARCHAR).as("%s_equal".formatted(column)), values.stream().map(DSL::val).collect(Collectors.toSet())));
+		return new Expression(id, Map.of(field(name(getColumn()), VARCHAR).as("%s_equal".formatted(column)), values.stream().map(DSL::val).collect(Collectors.toSet())));
 
 	}
 }

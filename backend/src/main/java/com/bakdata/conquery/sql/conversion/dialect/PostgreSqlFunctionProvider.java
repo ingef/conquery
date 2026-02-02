@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -25,7 +24,6 @@ import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.DatePart;
 import org.jooq.Field;
-import org.jooq.Name;
 import org.jooq.OrderField;
 import org.jooq.Record;
 import org.jooq.SortField;
@@ -221,17 +219,6 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Field<?> functionParam(String name) {
 		return field(name(name));
-	}
-
-	public String createFunctionStatement(Name name, List<String> params, Field<String> forConcept) {
-		return """
-					     CREATE OR REPLACE FUNCTION %s(%s) RETURNS TEXT
-					     LANGUAGE SQL
-					     PARALLEL SAFE
-					     RETURN
-					     	%s;
-				""".formatted(name, params.stream().map("%s text"::formatted).collect(Collectors.joining(", ")), forConcept)
-				;
 	}
 
 	@Override

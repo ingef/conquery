@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -24,7 +23,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
-import org.jooq.Name;
 import org.jooq.OrderField;
 import org.jooq.Record;
 import org.jooq.SortField;
@@ -65,16 +63,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Field<?> functionParam(String name) {
 		return field(":" + name);
-	}
-
-	public String createFunctionStatement(Name name, List<String> params, Field<String> forConcept) {
-		return """
-							     CREATE OR REPLACE FUNCTION %s(%s) RETURNS output NVARCHAR(500) AS
-							     BEGIN
-							     	output = %s;
-							     END;
-						""".formatted(name, params.stream().map("%s NVARCHAR(128)"::formatted).collect(Collectors.joining(", ")), forConcept)
-				;
 	}
 
 	@Override
