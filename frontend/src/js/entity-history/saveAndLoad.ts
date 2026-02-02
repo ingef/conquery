@@ -54,7 +54,7 @@ export const useLoadHistory = ({
 
   return useCallback(
     ({ label, data }: { label: string; data: string[][] }) => {
-      const loadedEntityIds: EntityId[] = [];
+      const distinctEntityIds: Set<EntityId> = new Set();
       const loadedEntityStatus: EntityIdsStatus = {};
       const loadedEntityStatusOptionsRaw: string[] = [];
 
@@ -67,7 +67,8 @@ export const useLoadHistory = ({
 
         const [kind, id] = row;
 
-        loadedEntityIds.push({ kind, id });
+        // Deduplication is necessary for SecondaryId Queries
+        distinctEntityIds.add({ kind, id });
 
         if (row.length > 2) {
           loadedEntityStatus[id] = row
@@ -85,7 +86,7 @@ export const useLoadHistory = ({
         ...new Set(loadedEntityStatusOptionsRaw),
       ].map((item) => ({ label: item, value: item }));
 
-      if (loadedEntityIds.length === 0) {
+      if (distinctEntityIds.size === 0) {
         dispatch(
           setMessage({
             message: t("history.load.error"),
@@ -94,6 +95,8 @@ export const useLoadHistory = ({
         );
         return;
       }
+
+      const loadedEntityIds = [...distinctEntityIds];
 
       onLoadFromFile({
         label,
