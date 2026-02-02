@@ -5,12 +5,16 @@ import type {
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 
+import { TIME_OPERATORS } from "../editor-v2/types";
+
 import { nodeIsConceptQueryNode } from "./node";
 
 function isTimebasedQuery(node: PreviousQueryQueryNodeType) {
   if (!node.query) return false;
 
-  return false; //TODO implement for new time based query ops
+  const queryString = JSON.stringify(node.query);
+
+  return TIME_OPERATORS.some((op) => queryString.indexOf(op) !== -1);
 }
 
 // A little weird that it's nested so deeply, but well, you can't expand an external query

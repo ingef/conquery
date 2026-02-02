@@ -33,6 +33,15 @@ export interface TreeChildrenOr extends TreeChildrenBase {
 
 export type TimeTimestamp = "ALL" | "ANY" | "EARLIEST" | "LATEST";
 export type TimeOperator = "BEFORE" | "AFTER" | "WHILE";
+
+export const TIME_TIMESTAMPS: TimeTimestamp[] = [
+  "ALL",
+  "ANY",
+  "EARLIEST",
+  "LATEST",
+];
+export const TIME_OPERATORS: TimeOperator[] = ["BEFORE", "AFTER", "WHILE"];
+
 export interface TreeChildrenTime extends TreeChildrenBase {
   connection: "time";
   operator: TimeOperator;
