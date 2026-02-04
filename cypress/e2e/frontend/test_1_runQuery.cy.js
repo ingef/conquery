@@ -5,10 +5,6 @@ const USER_TOKEN_WITH_PERMISSIONS = "user.user2";
 
 describe("Run query", () => {
     beforeEach(() => {
-        // run these tests as if in a desktop
-        // browser with a 720p monitor
-        cy.viewport(1280, 720)
-
         visitWithToken(USER_TOKEN_WITH_PERMISSIONS);
     });
 
@@ -89,10 +85,6 @@ describe("Run query", () => {
 
 describe("Reference list", () => {
     beforeEach(() => {
-        // run these tests as if in a desktop
-        // browser with a 720p monitor
-        cy.viewport(1280, 720)
-
         visitWithToken(USER_TOKEN_WITH_PERMISSIONS);
     });
 
