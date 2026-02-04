@@ -80,8 +80,6 @@ export const useGetTranslatedTimestamp = () => {
         return t("editorV2.EARLIEST");
       } else if (timestamp === "LATEST") {
         return t("editorV2.LATEST");
-      } else if (timestamp === "WHILE") {
-        return "";
       }
     },
     [t],
