@@ -53,6 +53,10 @@ public interface ErrorMessages {
 	@De("Die Anfrage lief zu lange und wurde abgebrochen.")
 	String executionTimeout();
 
+	@En("Query result was too large.")
+	@De("Das Anfrageergebnis ist zu groß.")
+	String resultSizeTooLarge();
+
 	@En("No secondaryId could be selected.")
 	@De("Die ausgewählte Analyseebenen konnte in keinem der ausgewählten Konzepten gefunden werden.")
 	String noSecondaryIdSelected();

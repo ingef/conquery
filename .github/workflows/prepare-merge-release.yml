@@ -20,6 +20,8 @@ jobs:
         id: check_pr_count
         run: >
           echo "pr_count=$(gh pr list --head release --limit 1 --base $MAIN_BRANCH_NAME --state open --json state --jq 'length')" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create pull-request
         if: ${{ steps.check_pr_count.outputs.pr_count == 0 }}

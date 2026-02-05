@@ -18,10 +18,6 @@ import type {
   StandardQueryNodeT,
   TableWithFilterValueT,
 } from "../standard-query-editor/types";
-import type {
-  ValidatedTimebasedConditionT,
-  ValidatedTimebasedQueryStateT,
-} from "../timebased-query-editor/reducer";
 
 import { ConceptIdT, DateRangeT } from "./types";
 
@@ -169,47 +165,6 @@ const createQueryConcepts = (query: StandardQueryStateT) => {
   });
 };
 
-// TODO: Use, once feature is complete
-const getDays = (condition: ValidatedTimebasedConditionT) => {
-  switch (condition.operator) {
-    case "DAYS_BEFORE":
-      return {
-        days: {
-          min: condition.minDays,
-          max: condition.maxDays,
-        },
-      };
-    case "DAYS_OR_NO_EVENT_BEFORE":
-      return {
-        days: condition.minDaysOrNoEvent,
-      };
-    default:
-      return {};
-  }
-};
-
-const transformTimebasedQueryToApi = (query: ValidatedTimebasedQueryStateT) =>
-  createConceptQuery(
-    createAnd(
-      query.conditions.map((condition: ValidatedTimebasedConditionT) => {
-        const days = getDays(condition);
-
-        return {
-          type: condition.operator,
-          ...days,
-          preceding: {
-            sampler: condition.result0.timestamp,
-            child: createSavedQuery(condition.result0.id),
-          },
-          index: {
-            sampler: condition.result1.timestamp,
-            child: createSavedQuery(condition.result1.id),
-          },
-        };
-      }),
-    ),
-  );
-
 const createTimeMode = (timeNode: TreeChildrenTime) => {
   switch (timeNode.operator) {
     case "AFTER":
@@ -309,14 +264,10 @@ const transformEditorV2QueryToApi = (query: EditorV2Query) => {
 // But small additions are made (properties allowlisted), empty things filtered out
 // to make it compatible with the backend API
 export const transformQueryToApi = (
-  query: StandardQueryStateT | ValidatedTimebasedQueryStateT | EditorV2Query,
+  query: StandardQueryStateT | EditorV2Query,
   options: { queryType: string; selectedSecondaryId?: string | null },
 ) => {
   switch (options.queryType) {
-    case "timebased":
-      return transformTimebasedQueryToApi(
-        query as ValidatedTimebasedQueryStateT,
-      );
     case "standard":
       return transformStandardQueryToApi(
         query as StandardQueryStateT,
