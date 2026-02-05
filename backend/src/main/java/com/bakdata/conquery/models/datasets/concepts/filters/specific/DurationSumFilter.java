@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
-import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
@@ -23,12 +22,10 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Data
@@ -38,11 +35,12 @@ public class DurationSumFilter extends Filter<Range.LongRange> {
 
 	@Valid
 	@NotNull
-	private ColumnId column;
+	@JsonAlias("column")
+	private final ColumnId dateRangeColumn;
 
 	@Valid
 	@Nullable
-	private List<ColumnId> distinctBy;
+	private final List<ColumnId> distinctBy;
 
 	@JsonIgnore
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
@@ -51,7 +49,7 @@ public class DurationSumFilter extends Filter<Range.LongRange> {
 
 	@Override
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
-		MajorTypeId type = getColumn().resolve().getType();
+		MajorTypeId type = getDateRangeColumn().resolve().getType();
 		if (type != MajorTypeId.DATE_RANGE) {
 			throw new ConceptConfigurationException(getConnector(), "DURATION_SUM filter is incompatible with columns of type "
 																	+ type
@@ -62,11 +60,16 @@ public class DurationSumFilter extends Filter<Range.LongRange> {
 		f.setMin(0);
 	}
 
+	@JsonIgnore
+	private boolean hasDistinct() {
+		return distinctBy != null && !distinctBy.isEmpty();
+	}
+
 	@Override
 	public FilterNode createFilterNode(Range.LongRange value) {
-		ColumnAggregator<?> aggregator = new DurationSumAggregator(getColumn().resolve());
+		ColumnAggregator<?> aggregator = new DurationSumAggregator(getDateRangeColumn().resolve());
 
-		if (distinctBy != null) {
+		if (hasDistinct()) {
 			aggregator = new DistinctValuesWrapperAggregator<>(aggregator, distinctBy.stream().map(ColumnId::resolve).toList());
 		}
 
@@ -77,11 +80,11 @@ public class DurationSumFilter extends Filter<Range.LongRange> {
 	public List<ColumnId> getRequiredColumns() {
 		List<ColumnId> required = new ArrayList<>();
 
-		if (distinctBy != null) {
+		if (hasDistinct()) {
 			required.addAll(distinctBy);
 		}
 
-		required.add(column);
+		required.add(dateRangeColumn);
 		return required;
 
 	}
@@ -89,7 +92,7 @@ public class DurationSumFilter extends Filter<Range.LongRange> {
 	@JsonIgnore
 	@ValidationMethod(message = "Columns do not match required Type.")
 	public boolean isValidColumnType() {
-		final Column resolved = getColumn().resolve();
+		final Column resolved = getDateRangeColumn().resolve();
 		final boolean acceptable = getAcceptedColumnTypes().contains(resolved.getType());
 
 		if (!acceptable) {

@@ -14,28 +14,22 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.Duration
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.DurationSumSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 
-@Setter
-@Getter
-@NoArgsConstructor(onConstructor_ = @JsonCreator)
+@Data
 @CPSType(id = "DURATION_SUM", base = Select.class)
 @JsonIgnoreProperties("categorical")
 public class DurationSumSelect extends Select implements DaterangeSelectOrFilter {
 
 	@Nullable
-	private ColumnId column;
+	private final ColumnId column;
 
 	@Nullable
-	private ColumnId startColumn;
-	@Nullable
-	private ColumnId endColumn;
+	private final ColumnId startColumn, endColumn;
 
-	private List<ColumnId> distinctBy;
+	private final List<ColumnId> distinctBy;
 
 	@Override
 	public List<ColumnId> getRequiredColumns() {
@@ -49,17 +43,22 @@ public class DurationSumSelect extends Select implements DaterangeSelectOrFilter
 			out.add(endColumn);
 		}
 
-		if (distinctBy != null) {
+		if (hasDistinct()) {
 			out.addAll(distinctBy);
 		}
 		return out;
+	}
+
+	@JsonIgnore
+	private boolean hasDistinct() {
+		return distinctBy != null && !distinctBy.isEmpty();
 	}
 
 	@Override
 	public Aggregator<?> createAggregator() {
 		DurationSumAggregator aggregator = new DurationSumAggregator(getColumn().resolve());
 
-		if (distinctBy == null) {
+		if (!hasDistinct()) {
 			return aggregator;
 		}
 
@@ -73,7 +72,7 @@ public class DurationSumSelect extends Select implements DaterangeSelectOrFilter
 
 	@Override
 	public SelectConverter<DurationSumSelect> createConverter() {
-		//TODO apply distinctBy (though needs to be done once other branches
+		//TODO apply distinctBy (though needs to be done once other branches are merged)
 		return new DurationSumSelectConverter();
 	}
 }
