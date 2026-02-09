@@ -15,7 +15,10 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.ResultHeaders;
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
@@ -29,13 +32,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@CPSType(id="RELATIVE_FORM_QUERY", base=QueryDescription.class)
+@CPSType(id = "RELATIVE_FORM_QUERY", base = QueryDescription.class)
 @Getter
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class RelativeFormQuery extends Query {
-	@NotNull @Valid
+	@NotNull
+	@Valid
 	private final Query query;
-	@NotNull @Valid
+	@NotNull
+	@Valid
 	private final ArrayConceptQuery features;
 	@NotNull
 	private final TemporalSamplerFactory indexSelector;
@@ -54,6 +59,20 @@ public class RelativeFormQuery extends Query {
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
 		features.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
+
+		boolean noDates = Visitable.stream(query)
+								   .noneMatch(v ->
+													  switch (v) {
+														  case CQConcept cqConcept -> cqConcept.isAggregateEventDates();
+														  case CQExternal external -> external.containsDates();
+														  default -> false;
+													  }
+								   );
+
+		if (noDates) {
+			throw new ConqueryError.RelativeFormMissingDatesError();
+		}
+
 	}
 
 	@Override
@@ -71,7 +90,7 @@ public class RelativeFormQuery extends Query {
 		query.collectRequiredQueries(requiredQueries);
 		features.collectRequiredQueries(requiredQueries);
 	}
-	
+
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		List<ResultInfo> resultInfos = new ArrayList<>();
