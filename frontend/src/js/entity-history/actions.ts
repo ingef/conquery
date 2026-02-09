@@ -165,21 +165,21 @@ export function useNewHistorySession() {
       return;
     }
 
-    const entityIds = result.csv
-      .slice(1)
-      .map((row) => {
-        for (const col of preferredIdColumns) {
-          // some values might be empty, search for defined values
-          if (row[col.columnIdx]) {
-            return {
-              id: row[col.columnIdx],
-              kind: col.idKind,
-            };
-          }
-          return null;
+    const distinctEntityIds = new Set<EntityId>()
+
+    for (const row of result.csv.slice(1)) {
+      for (const col of preferredIdColumns) {
+        // some values might be empty, search for defined values
+        if (row[col.columnIdx] && exists(row[col.columnIdx])) {
+          distinctEntityIds.add({
+            id: row[col.columnIdx],
+            kind: col.idKind,
+          });
         }
-      })
-      .filter(exists);
+      }
+    }
+    
+    const entityIds = [...distinctEntityIds];
 
     if (entityIds.length === 0) {
       dispatch(loadHistoryData.failure(new Error("No entity IDs found")));

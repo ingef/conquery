@@ -68,6 +68,10 @@ export const useLoadHistory = ({
         const [kind, id] = row;
 
         // Deduplication is necessary for SecondaryId Queries
+        if (distinctEntityIds.has({ kind, id })) {
+          continue;
+        }
+
         distinctEntityIds.add({ kind, id });
 
         if (row.length > 2) {
