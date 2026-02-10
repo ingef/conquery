@@ -165,21 +165,31 @@ export function useNewHistorySession() {
       return;
     }
 
-    const distinctEntityIds = new Set<EntityId>()
+    const distinctEntityIdsBarrier = new Set<string>();
+    const entityIds: EntityId[] = [];
 
     for (const row of result.csv.slice(1)) {
-      for (const col of preferredIdColumns) {
-        // some values might be empty, search for defined values
-        if (row[col.columnIdx] && exists(row[col.columnIdx])) {
-          distinctEntityIds.add({
-            id: row[col.columnIdx],
-            kind: col.idKind,
-          });
-        }
+      // some id-cols might be empty, search for defined values
+      const col = preferredIdColumns.find((col) => exists(row[col.columnIdx]));
+
+      if (!col) {
+        continue;
       }
+
+      const kind = col.idKind;
+      const id = row[col.columnIdx];
+
+      // Add any id just once, with how we select cols, this is likely to also ensure distinctness of entities, but not guaranteed
+      if (distinctEntityIdsBarrier.has(kind + id)) {
+        continue;
+      }
+
+      distinctEntityIdsBarrier.add(kind + id);
+      entityIds.push({
+        id: id,
+        kind: kind,
+      });
     }
-    
-    const entityIds = [...distinctEntityIds];
 
     if (entityIds.length === 0) {
       dispatch(loadHistoryData.failure(new Error("No entity IDs found")));
@@ -346,6 +356,7 @@ interface DateRow {
   from: Date;
   to: Date;
 }
+
 const transformEntityData = (
   data: { [key: string]: unknown }[],
   {
