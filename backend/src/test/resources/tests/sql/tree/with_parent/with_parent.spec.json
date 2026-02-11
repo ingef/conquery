@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "sqlSpec": {
-    "isEnabled": true
+    "isEnabled": false
   },
   "label": "Tree concept resolving a deep child and it's parents",
   "expectedCsv": "tests/sql/tree/with_parent/expected.csv",

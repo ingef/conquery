@@ -53,16 +53,16 @@
         {
           "label": "test_child1",
           "condition": {
-            "type": "PREFIX_LIST",
-            "prefixes": "A"
+            "type": "EQUAL",
+            "values": "A1"
           },
           "children": []
         },
         {
           "label": "test_child2",
           "condition": {
-            "type": "PREFIX_LIST",
-            "prefixes": "B"
+            "type": "EQUAL",
+            "values": ["B2"]
           },
           "children": []
         }

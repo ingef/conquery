@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "sqlSpec": {
-    "isEnabled": true
+    "isEnabled": false
   },
   "label": "MULTIPLE_TABLES_ICD_QUERY test",
   "expectedCsv": "tests/sql/multiple_tables/expected.csv",

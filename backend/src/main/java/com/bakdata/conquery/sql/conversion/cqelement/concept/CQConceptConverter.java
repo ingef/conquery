@@ -329,7 +329,8 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		List<ConceptElement<?>> resolvedConceptElements = cqConcept.getElements().stream().<ConceptElement<?>>map(ConceptElementId::resolve).toList();
 		allSqlFiltersForTable.add(collectConceptConditions(resolvedConceptElements, cqTable, functionProvider, ids));
 
-		getDateRestriction(conversionContext, tablesValidityDate).ifPresent(allSqlFiltersForTable::add);
+		Optional<SqlFilters> dateRestriction = getDateRestriction(conversionContext, tablesValidityDate);
+		dateRestriction.ifPresent(allSqlFiltersForTable::add);
 
 		// convert selects
 		SelectContext<ConnectorSqlTables> selectContext = SelectContext.create(ids, tablesValidityDate, connectorTables, conversionContext);

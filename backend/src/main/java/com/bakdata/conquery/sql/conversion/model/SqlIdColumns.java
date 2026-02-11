@@ -103,7 +103,11 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 	}
 
 	public List<Field<?>> toFields() {
-		return Stream.concat(Stream.of(this.primaryColumn), Optional.ofNullable(this.secondaryId).stream()).collect(Collectors.toList());
+		if (getSecondaryId().isEmpty()){
+			return List.of(getPrimaryColumn());
+		}
+
+		return List.of(getPrimaryColumn(), getSecondaryId().get());
 	}
 
 	public List<Condition> join(SqlIdColumns rightIds) {

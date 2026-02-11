@@ -171,7 +171,7 @@ public class SqlMatchingStats {
 		Stopwatch stopwatch = Stopwatch.createStarted();
 
 		log.info("BEGIN fetching matching stats for {}", concept.getId());
-		log.debug("{}", selectJoinStep);
+		log.trace("{}", selectJoinStep);
 
 		try (Cursor<? extends Record> cursor = selectJoinStep.fetchSize(fetchBatchSize).fetchLazy()) {
 
@@ -228,7 +228,7 @@ public class SqlMatchingStats {
 
 		log.debug("Creating table {} with fields {}", tableName, fieldNames);
 
-		dslContext.dropTable(tableName)
+		dslContext.dropTableIfExists(tableName)
 				  .cascade()
 				  .execute();
 
@@ -314,7 +314,7 @@ public class SqlMatchingStats {
 	public void deleteConceptIdJoinTable(ConceptId concept) {
 		Name tableName = idsTableName(concept.getName());
 		log.debug("Dropping table {}", tableName);
-		dslContext.dropTable(tableName)
+		dslContext.dropTableIfExists(tableName)
 				  .cascade()
 				  .execute();
 	}

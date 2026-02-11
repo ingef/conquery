@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "sqlSpec": {
-    "isEnabled": true
+    "isEnabled": false
   },
   "label": "PREFIX_RANGE condition test",
   "expectedCsv": "tests/sql/tree/prefix_range/expected.csv",

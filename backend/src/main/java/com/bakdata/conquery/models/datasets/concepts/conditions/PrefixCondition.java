@@ -50,7 +50,7 @@ public class PrefixCondition implements CTCondition {
 
 	@Override
 	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
-		//TODO technically implementable
+		// Implementation is technically possible but extremely slow and PREFIX has caused issues historically
 		throw new IllegalStateException("Not implemented");
 	}
 }
