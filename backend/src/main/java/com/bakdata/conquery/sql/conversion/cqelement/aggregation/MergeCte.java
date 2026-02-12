@@ -32,7 +32,7 @@ class MergeCte extends DateAggregationCte {
 	private static QueryStep createUnionStep(QueryStep noOverlapStep) {
 		return QueryStep.builder()
 						.selects(noOverlapStep.getQualifiedSelects())
-						.fromTable(QueryStep.toTableLike(noOverlapStep.getCteName()))
+						.fromTable(QueryStep.toTable(noOverlapStep.getCteName()))
 						.build();
 	}
 

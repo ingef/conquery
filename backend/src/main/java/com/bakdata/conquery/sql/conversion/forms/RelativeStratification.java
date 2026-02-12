@@ -86,7 +86,7 @@ class RelativeStratification {
 		return QueryStep.builder()
 						.cteName(FormCteStep.INDEX_SELECTOR.getSuffix())
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(prerequisite.getCteName()))
+						.fromTable(QueryStep.toTable(prerequisite.getCteName()))
 						.groupBy(predecessorSelects.getIds().toFields())
 						.build();
 	}
@@ -110,7 +110,7 @@ class RelativeStratification {
 		return QueryStep.builder()
 						.cteName(FormCteStep.INDEX_START.getSuffix())
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(indexSelectorStep.getCteName()))
+						.fromTable(QueryStep.toTable(indexSelectorStep.getCteName()))
 						.build();
 	}
 
@@ -136,7 +136,7 @@ class RelativeStratification {
 		return QueryStep.builder()
 						.cteName(FormCteStep.TOTAL_BOUNDS.getSuffix())
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(indexStartStep.getCteName()))
+						.fromTable(QueryStep.toTable(indexStartStep.getCteName()))
 						.build();
 	}
 
@@ -233,7 +233,7 @@ class RelativeStratification {
 
 		QueryStep.QueryStepBuilder queryStep = QueryStep.builder()
 														.selects(selects)
-														.fromTable(QueryStep.toTableLike(predecessor.getCteName()));
+														.fromTable(QueryStep.toTable(predecessor.getCteName()));
 
 		seriesTable.ifPresent(queryStep::fromTable);
 		return queryStep.build();

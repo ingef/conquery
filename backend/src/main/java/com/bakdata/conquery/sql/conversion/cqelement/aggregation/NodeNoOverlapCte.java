@@ -70,7 +70,7 @@ class NodeNoOverlapCte extends DateAggregationCte {
 		return QueryStep.builder()
 						.cteName("%s_%s".formatted(dateAggregationTables.cteName(DateAggregationCteStep.NODE_NO_OVERLAP), counter))
 						.selects(nodeNoOverlapSelects)
-						.fromTable(QueryStep.toTableLike(intermediateTableCteName))
+						.fromTable(QueryStep.toTable(intermediateTableCteName))
 						.conditions(List.of(startNotNull))
 						.predecessors(List.of(predecessor));
 	}

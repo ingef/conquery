@@ -44,7 +44,7 @@ public class IntervalPackingSelectsCte {
 		return QueryStep.builder()
 						.cteName(tables.cteName(ConceptCteStep.INTERVAL_PACKING_SELECTS))
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(directPredecessor.getCteName()))
+						.fromTable(QueryStep.toTable(directPredecessor.getCteName()))
 						.groupBy(predecessorSelects.getIds().toFields())
 						.predecessors(predecessors)
 						.build();
@@ -110,7 +110,7 @@ public class IntervalPackingSelectsCte {
 		return QueryStep.builder()
 						.cteName(tables.cteName(ConceptCteStep.INTERVAL_PACKING_SELECTS))
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(directPredecessor.getCteName()))
+						.fromTable(QueryStep.toTable(directPredecessor.getCteName()))
 						.groupBy(predecessorSelects.getIds().toFields())
 						.predecessors(predecessors)
 						.build();

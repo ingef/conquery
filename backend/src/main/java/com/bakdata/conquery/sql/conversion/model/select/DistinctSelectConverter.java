@@ -103,7 +103,7 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 		return QueryStep.builder()
 						.cteName(selectContext.getNameGenerator().cteStepName(DistinctSelectCteStep.STRING_AGG, alias))
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(distinctSelectCte.getCteName()))
+						.fromTable(QueryStep.toTable(distinctSelectCte.getCteName()))
 						.groupBy(ids.toFields())
 						.predecessor(distinctSelectCte)
 						.build();
@@ -128,7 +128,7 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 						.cteName(selectContext.getNameGenerator().cteStepName(DistinctSelectCteStep.DISTINCT_SELECT, alias))
 						.selectDistinct(true)
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(eventFilterTable))
+						.fromTable(QueryStep.toTable(eventFilterTable))
 						.build();
 	}
 }

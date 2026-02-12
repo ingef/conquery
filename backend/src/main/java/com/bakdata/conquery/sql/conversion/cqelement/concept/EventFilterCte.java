@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -17,9 +16,7 @@ import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.google.common.base.Preconditions;
-import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
-import org.jooq.Field;
 
 class EventFilterCte extends ConnectorCte {
 
@@ -36,7 +33,7 @@ class EventFilterCte extends ConnectorCte {
 		return ConceptCteStep.EVENT_FILTER;
 	}
 
-	private Selects collectSelects(CQTableContext tableContext) {
+	public static Selects collectSelects(CQTableContext tableContext) {
 
 		String predecessorTableName = tableContext.getPrevious().getCteName();
 		Selects predecessorSelects = tableContext.getPrevious().getQualifiedSelects();
@@ -93,7 +90,7 @@ class EventFilterCte extends ConnectorCte {
 		return sqlSelect.requiredColumns().stream().map(column -> new ExtractingSqlSelect<>(predecessorTableName, column, Object.class));
 	}
 
-	private static List<Condition> collectEventFilterConditions(CQTableContext tableContext) {
+	public static List<Condition> collectEventFilterConditions(CQTableContext tableContext) {
 
 		List<Condition> eventFilterConditions = tableContext.getSqlFilters().stream()
 															.flatMap(conceptFilter -> conceptFilter.getWhereClauses().getEventFilters().stream())

@@ -291,7 +291,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		return QueryStep.builder()
 						.cteName(nameGenerator.cteStepName(SumDistinctCteStep.ROW_NUMBER_ASSIGNED, alias))
 						.selects(rowNumberAssignedSelects)
-						.fromTable(QueryStep.toTableLike(predecessor))
+						.fromTable(QueryStep.toTable(predecessor))
 						.build();
 	}
 
@@ -317,7 +317,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		return QueryStep.builder()
 						.cteName(nameGenerator.cteStepName(SumDistinctCteStep.ROW_NUMBER_FILTERED, alias))
 						.selects(rowNumberFilteredSelects)
-						.fromTable(QueryStep.toTableLike(rowNumberCte.getCteName()))
+						.fromTable(QueryStep.toTable(rowNumberCte.getCteName()))
 						.conditions(List.of(firstOccurrence))
 						.predecessors(List.of(rowNumberCte))
 						.groupBy(ids.toFields())

@@ -11,7 +11,7 @@ abstract class ConnectorCte {
 
 	protected Optional<QueryStep> convert(CQTableContext tableContext, Optional<QueryStep> previous) {
 
-		if (!isRequired(tableContext.getConnectorTables())) {
+		if (!tableContext.getConnectorTables().isRequiredStep(cteStep())) {
 			return Optional.empty();
 		}
 
@@ -24,7 +24,7 @@ abstract class ConnectorCte {
 		}
 		// if interval packing takes place, fromTable and predecessors of the final concept step are already set
 		else if (queryStepBuilder.build().getFromTables().isEmpty() && queryStepBuilder.build().getPredecessors().isEmpty()) {
-			queryStepBuilder.fromTable(QueryStep.toTableLike(previous.get().getCteName()))
+			queryStepBuilder.fromTable(QueryStep.toTable(previous.get().getCteName()))
 							.predecessors(List.of(previous.get()));
 		}
 		return Optional.of(queryStepBuilder.build());
@@ -37,7 +37,7 @@ abstract class ConnectorCte {
 
 	protected abstract QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext);
 
-	private boolean isRequired(SqlTables connectorTables) {
+	public boolean isRequired(SqlTables connectorTables) {
 		return connectorTables.isRequiredStep(cteStep());
 	}
 

@@ -59,7 +59,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		return QueryStep.builder()
 						.cteName(context.getTables().cteName(IntervalPackingCteStep.PREVIOUS_END))
 						.selects(previousEndSelects)
-						.fromTable(QueryStep.toTableLike(sourceTableName))
+						.fromTable(QueryStep.toTable(sourceTableName))
 						.predecessors(Optional.ofNullable(context.getPredecessor()).stream().toList())
 						.build();
 	}
@@ -89,7 +89,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		return QueryStep.builder()
 						.cteName(context.getTables().cteName(IntervalPackingCteStep.RANGE_INDEX))
 						.selects(rangeIndexSelects)
-						.fromTable(QueryStep.toTableLike(previousEndCteName))
+						.fromTable(QueryStep.toTable(previousEndCteName))
 						.predecessors(List.of(previousEndStep))
 						.build();
 	}
@@ -118,7 +118,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		return QueryStep.builder()
 						.cteName(context.getTables().cteName(IntervalPackingCteStep.INTERVAL_COMPLETE))
 						.selects(intervalCompleteSelects)
-						.fromTable(QueryStep.toTableLike(rangeIndexCteName))
+						.fromTable(QueryStep.toTable(rangeIndexCteName))
 						.predecessors(List.of(rangeIndexStep))
 						.groupBy(groupBySelects)
 						.build();

@@ -86,7 +86,7 @@ class InvertCte extends DateAggregationCte {
 										   )
 										   .toArray(Condition[]::new);
 
-		TableLike<Record> rowNumberTable = QueryStep.toTableLike(rowNumberStep.getCteName());
+		TableLike<Record> rowNumberTable = QueryStep.toTable(rowNumberStep.getCteName());
 		return rowNumberTable.asTable(ROWS_LEFT_TABLE_NAME)
 							 .fullJoin(rowNumberTable.asTable(ROWS_RIGHT_TABLE_NAME))
 							 .on(joinConditions);

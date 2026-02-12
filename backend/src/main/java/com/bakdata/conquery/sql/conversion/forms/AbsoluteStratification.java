@@ -99,7 +99,7 @@ class AbsoluteStratification {
 		return QueryStep.builder()
 						.cteName(FormCteStep.INDEX_START.getSuffix())
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(baseStep.getCteName()))
+						.fromTable(QueryStep.toTable(baseStep.getCteName()))
 						.build();
 	}
 
@@ -129,7 +129,7 @@ class AbsoluteStratification {
 		return QueryStep.builder()
 						.cteName(FormCteStep.COMPLETE.getSuffix())
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(baseStep.getCteName()))
+						.fromTable(QueryStep.toTable(baseStep.getCteName()))
 						.build();
 	}
 
@@ -157,8 +157,8 @@ class AbsoluteStratification {
 		return QueryStep.builder()
 						.cteName(FormCteStep.stratificationCte(resolutionAndAlignment.getResolution()).getSuffix())
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(countsCte.getCteName()))
-						.fromTable(QueryStep.toTableLike(FormCteStep.INT_SERIES.getSuffix()))
+						.fromTable(QueryStep.toTable(countsCte.getCteName()))
+						.fromTable(QueryStep.toTable(FormCteStep.INT_SERIES.getSuffix()))
 						.conditions(List.of(stopOnMaxResolutionWindowCount))
 						.predecessor(countsCte)
 						.build();
@@ -181,7 +181,7 @@ class AbsoluteStratification {
 		return QueryStep.builder()
 						.cteName(FormCteStep.countsCte(resolutionAndAlignment.getResolution()).getSuffix())
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(indexStartStep.getCteName()))
+						.fromTable(QueryStep.toTable(indexStartStep.getCteName()))
 						.build();
 	}
 

@@ -68,7 +68,7 @@ public class FormConversionHelper {
 		return QueryStep.builder()
 						.cteName(FormCteStep.EXTRACT_IDS.getSuffix())
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(convertedPrerequisite.getCteName()))
+						.fromTable(QueryStep.toTable(convertedPrerequisite.getCteName()))
 						.conditions(List.of(dateNotNullCondition))
 						.groupBy(groupByFields)
 						.predecessors(List.of(convertedPrerequisite))

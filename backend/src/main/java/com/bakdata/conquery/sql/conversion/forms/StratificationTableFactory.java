@@ -47,7 +47,7 @@ public class StratificationTableFactory {
 		List<QueryStep> withQualifiedSelects = unionSteps.stream()
 														 .map(queryStep -> QueryStep.builder()
 																					.selects(queryStep.getQualifiedSelects())
-																					.fromTable(QueryStep.toTableLike(queryStep.getCteName()))
+																					.fromTable(QueryStep.toTable(queryStep.getCteName()))
 																					.build())
 														 .toList();
 

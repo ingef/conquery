@@ -291,7 +291,7 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		return QueryStep.builder()
 						.cteName(cteName)
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(predecessor.getCteName()))
+						.fromTable(QueryStep.toTable(predecessor.getCteName()))
 						.build();
 	}
 

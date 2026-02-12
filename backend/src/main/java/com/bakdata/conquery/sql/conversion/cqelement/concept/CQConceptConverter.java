@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -53,16 +54,7 @@ import org.jooq.impl.DSL;
 
 public class CQConceptConverter implements NodeConverter<CQConcept> {
 
-	private final List<ConnectorCte> connectorCTEs;
-
 	public CQConceptConverter() {
-		this.connectorCTEs = List.of(
-				new PreprocessingCte(),
-				new EventFilterCte(),
-				new AggregationSelectCte(),
-				new JoinBranchesCte(),
-				new AggregationFilterCte()
-		);
 	}
 
 	private static QueryStep finishConceptConversion(QueryStep predecessor, CQConcept cqConcept, TablePath tablePath, ConversionContext context) {
@@ -294,16 +286,111 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 	private Optional<QueryStep> convertCqTable(TablePath tablePath, CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
 		CQTableContext tableContext = createTableContext(tablePath, cqConcept, cqTable, context);
-		Optional<QueryStep> lastQueryStep = Optional.empty();
-		for (ConnectorCte queryStep : connectorCTEs) {
-			Optional<QueryStep> convertedStep = queryStep.convert(tableContext, lastQueryStep);
-			if (convertedStep.isEmpty()) {
-				continue;
+
+		List<SqlSelect> forPreprocessing = tableContext.allSqlSelects().stream()
+													   .flatMap(sqlSelects -> sqlSelects.getPreprocessingSelects().stream())
+													   .toList();
+
+		//TODO move aggregation and filtering into preprocessing.
+		//TODO move date aggregation into preprocessing, probably needs to ignore hana for now
+		//TODO move aggregationFilters into preprocessing using HAVING
+
+		Selects preprocessingSelects = Selects.builder()
+											  .ids(tableContext.getIds())
+											  .validityDate(tableContext.getValidityDate())
+											  .sqlSelects(forPreprocessing)
+											  .build();
+
+		// all where clauses that don't require any preprocessing (connector/child conditions)
+		List<Condition> conditions = new ArrayList<>();
+
+		for (SqlFilters sqlFilter : tableContext.getSqlFilters()) {
+			for (WhereCondition whereCondition : sqlFilter.getWhereClauses().getPreprocessingConditions()) {
+				conditions.add(whereCondition.condition());
 			}
-			lastQueryStep = convertedStep;
-			tableContext = tableContext.withPrevious(lastQueryStep.get());
 		}
-		return lastQueryStep;
+
+
+		QueryStep.QueryStepBuilder builder = QueryStep.builder()
+													  .selects(preprocessingSelects)
+													  .conditions(conditions);
+
+
+		if (tableContext.getConversionContext().isWithStratification()) {
+			builder = PreprocessingCte.joinWithStratificationTable(forPreprocessing, conditions, tableContext);
+		}
+		else {
+			builder = builder.fromTable(QueryStep.toTable(tableContext.getConnectorTables().getRootTable()));
+		}
+
+		QueryStep preprocessingStep = builder.cteName(tableContext.getConnectorTables().cteName(ConceptCteStep.PREPROCESSING))
+											 .predecessors(Collections.emptyList())
+											 .build();
+		tableContext = tableContext.withPrevious(preprocessingStep);
+
+		// event Filter step
+		conditions.addAll(EventFilterCte.collectEventFilterConditions(tableContext));
+
+		QueryStep eventFilterStep = QueryStep.builder()
+											 .selects(EventFilterCte.collectSelects(tableContext))
+											 .conditions(conditions)
+											 .cteName(tableContext.getConnectorTables().cteName(ConceptCteStep.EVENT_FILTER))
+											 .fromTable(QueryStep.toTable(preprocessingStep.getCteName()))
+											 .predecessor(preprocessingStep)
+											 .build();
+		tableContext = tableContext.withPrevious(eventFilterStep);
+
+		// Aggregation Step
+		List<SqlSelect> requiredInAggregationFilterStep = tableContext.allSqlSelects().stream()
+																	  .flatMap(sqlSelects -> sqlSelects.getAggregationSelects().stream())
+																	  .toList();
+
+		Selects predecessorSelects = eventFilterStep.getQualifiedSelects();
+		Selects aggregationSelectSelects = Selects.builder()
+												  .ids(predecessorSelects.getIds())
+												  .stratificationDate(predecessorSelects.getStratificationDate())
+												  .sqlSelects(requiredInAggregationFilterStep)
+												  .build();
+
+
+		List<Field<?>> groupByFields = new ArrayList<>(predecessorSelects.getIds().toFields());
+
+		if (predecessorSelects.getStratificationDate().isPresent()) {
+			groupByFields.addAll(predecessorSelects.getStratificationDate().get().toFields());
+		}
+
+
+		QueryStep aggregationStep = QueryStep.builder()
+											 .selects(aggregationSelectSelects)
+											 .groupBy(groupByFields)
+											 .cteName(tableContext.getConnectorTables().cteName(ConceptCteStep.AGGREGATION_SELECT))
+											 .fromTable(QueryStep.toTable(eventFilterStep.getCteName()))
+											 .predecessor(eventFilterStep)
+											 .build();
+		tableContext = tableContext.withPrevious(aggregationStep);
+
+
+		QueryStep joinBranchesStep = new JoinBranchesCte().convertStep(tableContext)
+														  .cteName(tableContext.getConnectorTables()
+																			   .cteName(ConceptCteStep.JOIN_BRANCHES)).build();
+		tableContext = tableContext.withPrevious(joinBranchesStep);
+
+		// AggregationFilter Step
+
+		List<Condition> aggregationFilterConditions = tableContext.getSqlFilters().stream()
+																  .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getGroupFilters().stream())
+																  .map(WhereCondition::condition)
+																  .toList();
+
+
+		QueryStep aggregationFilterStep = QueryStep.builder()
+												   .selects(AggregationFilterCte.collectSelects(tableContext))
+												   .fromTable(QueryStep.toTable(joinBranchesStep.getCteName()))
+												   .conditions(aggregationFilterConditions)
+												   .predecessors(List.of(aggregationStep, joinBranchesStep))
+												   .cteName(tableContext.getConnectorTables().cteName(ConceptCteStep.AGGREGATION_FILTER)).build();
+
+		return Optional.of(aggregationFilterStep);
 	}
 
 	private CQTableContext createTableContext(TablePath tablePath, CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {

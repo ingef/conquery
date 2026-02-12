@@ -80,7 +80,7 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 		QueryStep stringAggStep = QueryStep.builder()
 										   .cteName(stringAggCteName)
 										   .selects(selects)
-										   .fromTable(QueryStep.toTableLike(unionStep.getCteName()))
+										   .fromTable(QueryStep.toTable(unionStep.getCteName()))
 										   .groupBy(unionStepSelects.getIds().toFields())
 										   .predecessor(unionStep)
 										   .build();

@@ -31,7 +31,7 @@ class AggregationFilterCte extends ConnectorCte {
 						.conditions(aggregationFilterConditions);
 	}
 
-	private Selects collectSelects(CQTableContext tableContext) {
+	public static Selects collectSelects(CQTableContext tableContext) {
 
 		QueryStep previous = tableContext.getPrevious();
 		Selects previousSelects = previous.getQualifiedSelects();

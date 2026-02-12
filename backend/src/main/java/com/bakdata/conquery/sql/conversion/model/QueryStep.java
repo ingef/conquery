@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model;
 
+import static org.jooq.impl.DSL.*;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -11,7 +13,6 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
-import org.jooq.impl.DSL;
 
 /**
  * Intermediate representation of an SQL query.
@@ -69,8 +70,8 @@ public class QueryStep {
 						 .build();
 	}
 
-	public static TableLike<Record> toTableLike(String fromTableName) {
-		return DSL.table(DSL.name(fromTableName));
+	public static TableLike<Record> toTable(String fromTableName) {
+		return table(name(fromTableName));
 	}
 
 	public QueryStep addSqlSelect(SqlSelect sqlSelect) {

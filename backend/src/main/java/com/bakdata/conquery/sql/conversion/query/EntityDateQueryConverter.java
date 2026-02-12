@@ -89,7 +89,7 @@ public class EntityDateQueryConverter implements NodeConverter<EntityDateQuery> 
 		return QueryStep.builder()
 						.cteName(FormCteStep.OVERWRITE_BOUNDS.getSuffix())
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(unnestedEntityDate.getCteName()))
+						.fromTable(QueryStep.toTable(unnestedEntityDate.getCteName()))
 						.predecessors(predecessors)
 						.build();
 	}

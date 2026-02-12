@@ -54,9 +54,10 @@ public class QueryStepTransformer {
 
 	private List<CommonTableExpression<Record>> toCteList(QueryStep queryStep) {
 		return Stream.concat(
-				this.predecessorCtes(queryStep),
-				Stream.of(toCte(queryStep))
-		).toList();
+							 this.predecessorCtes(queryStep),
+							 Stream.of(toCte(queryStep))
+					 ).distinct()
+					 .toList();
 	}
 
 	private Stream<CommonTableExpression<Record>> predecessorCtes(QueryStep queryStep) {

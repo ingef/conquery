@@ -58,7 +58,7 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 		return QueryStep.builder()
 						.cteName(conversionContext.getNameGenerator().cteStepName(PostgresDateAggregationCteStep.DATE_AGGREGATED, joinedStepCteName))
 						.selects(dateAggregationSelects)
-						.fromTable(QueryStep.toTableLike(joinedStepCteName))
+						.fromTable(QueryStep.toTable(joinedStepCteName))
 						.predecessors(List.of(joinedStep))
 						.build();
 	}
@@ -93,7 +93,7 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 		return QueryStep.builder()
 						.cteName(conversionContext.getNameGenerator().cteStepName(PostgresDateAggregationCteStep.DATES_INVERTED, baseStep.getCteName()))
 						.selects(baseStepSelects.withValidityDate(ColumnDateRange.of(invertedValidityDate)))
-						.fromTable(QueryStep.toTableLike(baseStep.getCteName()))
+						.fromTable(QueryStep.toTable(baseStep.getCteName()))
 						.predecessors(List.of(baseStep))
 						.build();
 	}

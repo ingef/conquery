@@ -28,7 +28,7 @@ public class SqlTables {
 	 * @return True if the given {@link CteStep} is part of these {@link SqlTables}.
 	 */
 	public boolean isRequiredStep(CteStep cteStep) {
-		return cteNameMap.containsKey(cteStep);
+		return true;
 	}
 
 	/**

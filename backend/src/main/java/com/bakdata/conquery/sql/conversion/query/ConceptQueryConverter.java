@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
@@ -20,7 +19,6 @@ import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Select;
@@ -74,7 +72,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 	private static TableLike<Record> getFinalTable(QueryStep preFinalStep, ConversionContext context) {
 		QueryStep externalExtras = context.getExternalExtras();
 		if (externalExtras == null) {
-			return QueryStep.toTableLike(preFinalStep.getCteName());
+			return QueryStep.toTable(preFinalStep.getCteName());
 		}
 		return QueryStepJoiner.constructJoinedTable(
 				List.of(preFinalStep, externalExtras),

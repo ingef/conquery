@@ -97,7 +97,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		return QueryStep.builder()
 						.cteName(FormCteStep.EXTRACT_IDS.getSuffix())
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(convertedPrerequisite.getCteName()))
+						.fromTable(QueryStep.toTable(convertedPrerequisite.getCteName()))
 						.groupBy(selects.getIds().toFields()) // group by primary column to ensure max. 1 entry per subject
 						.predecessors(List.of(convertedPrerequisite))
 						.build();
