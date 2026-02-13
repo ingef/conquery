@@ -364,19 +364,19 @@ export default function mockApi(app: Application) {
         const storedValues: string[] = countriesRequested
           ? require("./autocomplete/countries")
           : wordsRequested
-          ? require("./autocomplete/words")
-          : [
-              "1008508208",
-              "1015841172",
-              "1011218302",
-              "1007680436",
-              "1017776144",
-              "1003780588",
-              "1000326535",
-              "1014150881",
-              "1017126347",
-              "1008445564",
-            ];
+            ? require("./autocomplete/words")
+            : [
+                "1008508208",
+                "1015841172",
+                "1011218302",
+                "1007680436",
+                "1017776144",
+                "1003780588",
+                "1000326535",
+                "1014150881",
+                "1017126347",
+                "1008445564",
+              ];
 
         const suggestions = storedValues
           .map((v, id) => ({

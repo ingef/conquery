@@ -29,7 +29,6 @@ import {
   useLoadQueries,
 } from "../previous-queries/list/actions";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
-import type { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
 import { updateQueryId } from "../preview/actions";
 import { QUERY_AGAIN_TIMEOUT } from "./constants";
@@ -83,11 +82,7 @@ export const useStartQuery = (queryType: QueryTypeT) => {
 
   return (
     datasetId: DatasetT["id"],
-    query:
-      | StandardQueryStateT
-      | EditorV2Query
-      | ValidatedTimebasedQueryStateT
-      | FormQueryPostPayload,
+    query: StandardQueryStateT | EditorV2Query | FormQueryPostPayload,
     {
       selectedSecondaryId,
     }: {
@@ -102,10 +97,7 @@ export const useStartQuery = (queryType: QueryTypeT) => {
         : () =>
             postQueries(
               datasetId,
-              query as
-                | StandardQueryStateT
-                | EditorV2Query
-                | ValidatedTimebasedQueryStateT,
+              query as StandardQueryStateT | EditorV2Query,
               {
                 queryType,
                 selectedSecondaryId,
