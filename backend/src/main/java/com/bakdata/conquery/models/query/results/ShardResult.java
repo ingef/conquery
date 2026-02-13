@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.results;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -24,6 +23,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -37,7 +37,7 @@ public class ShardResult  extends NamespaceMessage {
 
 
 	@ToString.Include
-	private ManagedExecutionId queryId;
+	private ManagedExecutionId executionId;
 
 	@ToString.Include
 	private WorkerId workerId;
@@ -50,41 +50,34 @@ public class ShardResult  extends NamespaceMessage {
 	@ToString.Include
 	private LocalDateTime finishTime;
 
-	private Optional<ConqueryError> error = Optional.empty();
+	private ConqueryError error;
 
 
-	public ShardResult(ManagedExecutionId queryId, WorkerId workerId) {
-		this.queryId = queryId;
+	public ShardResult(ManagedExecutionId executionId, WorkerId workerId) {
+		this.executionId = executionId;
 		this.workerId = workerId;
 	}
 
-	public synchronized void finish(@NonNull List<EntityResult> results, Optional<Throwable> maybeError, Worker worker) {
-		if (worker.getQueryExecutor().isCancelled(getQueryId())) {
+	public synchronized void finish(@NonNull List<EntityResult> results, Worker worker) {
+		if (worker.getQueryExecutor().isCancelled(getExecutionId())) {
 			// Query is done so we no longer need the cancellation entry.
-			worker.getQueryExecutor().unsetQueryCancelled(getQueryId());
+			worker.getQueryExecutor().unsetQueryCancelled(getExecutionId());
 			return;
 		}
 
 		finishTime = LocalDateTime.now();
 
-		if (maybeError.isPresent()) {
-			log.warn("FAILED Query[{}] within {}", queryId, Duration.between(startTime, finishTime), maybeError.get());
 
-			setError(maybeError.map(ConqueryError::asConqueryError));
-		}
-		else {
-			log.info("FINISHED Query[{}] with {} results within {}", queryId, results.size(), Duration.between(startTime, finishTime));
-		}
+		log.info("FINISHED Query[{}] with {} results within {}", executionId, results.size(), Duration.between(startTime, finishTime));
 
 		this.results = results;
 
-		log.trace("Sending collected Results\n{}", results);
-
-		worker.send(this);
+		// Truncate here because too large logs will crash/lock the process
+		log.trace("Collected Results for execution {}\n{}", executionId, StringUtils.truncate(results.toString(), 1000) + " (...)");
 	}
-
+	
 	protected void addResult(DistributedExecutionManager executionManager) {
-		executionManager.handleQueryResult(this, ((ManagedQuery) executionManager.getExecution(queryId)));
+		executionManager.handleQueryResult(this, ((ManagedQuery) executionManager.getExecution(executionId)));
 	}
 
 	@Override
