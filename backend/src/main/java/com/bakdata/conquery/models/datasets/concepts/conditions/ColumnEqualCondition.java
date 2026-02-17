@@ -58,7 +58,7 @@ public class ColumnEqualCondition implements CTCondition {
 
 	@Override
 	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
-		return new Expression(id, Map.of(field(name(getColumn()), VARCHAR).as("%s_equal".formatted(column)), values.stream().map(DSL::val).collect(Collectors.toSet())));
+		return new Expression(id, Map.of(field(name(getColumn()), VARCHAR(32)).as("%s_equal".formatted(column)), values.stream().map(DSL::val).collect(Collectors.toSet())));
 
 	}
 }

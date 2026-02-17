@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.name;
+import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
@@ -11,7 +12,7 @@ import org.jooq.Field;
 @Value
 public class CTConditionContext {
 
-	public static final Field<String> COLUMN_VALUE_FIELD = field(name("col_val"), String.class);
+	public static final Field<String> COLUMN_VALUE_FIELD = field(name("col_val"), VARCHAR(32));
 	Field<String> connectorColumn;
 	SqlFunctionProvider functionProvider;
 
@@ -21,7 +22,7 @@ public class CTConditionContext {
 
 	public static CTConditionContext forConnector(Connector connector, SqlFunctionProvider functionProvider) {
 		return new CTConditionContext(
-				connector.getColumn() != null ? field(name(connector.resolveTableId().getTable(), connector.getColumn().getColumn()), String.class) : null,
+				connector.getColumn() != null ? field(name(connector.resolveTableId().getTable(), connector.getColumn().getColumn()), VARCHAR(32)) : null,
 				functionProvider
 		);
 	}

@@ -15,6 +15,7 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.CollectionsUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.base.Preconditions;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -49,8 +50,6 @@ public class EqualCondition implements CTCondition {
 
 	@Override
 	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
-		return new Expression(id,
-							  Map.of(context.getConnectorColumn(), values.stream().map(DSL::val).collect(Collectors.toSet()))
-		);
+		return new Expression(id, Map.of(context.getConnectorColumn(), values.stream().map(DSL::val).collect(Collectors.toSet())));
 	}
 }

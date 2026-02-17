@@ -49,6 +49,7 @@ import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectJoinStep;
 import org.jooq.Table;
+import org.jooq.exception.DataAccessException;
 
 @Slf4j
 @Data
@@ -79,7 +80,10 @@ public class SqlMatchingStats {
 	 * collect unique fields used/defined in the expressions.
 	 */
 	private static List<Field<?>> collectAllFields(List<CTCondition.Expression> expressions) {
+
+
 		List<Field<?>> fields = expressions.stream()
+										   //TODO determine length of chars, for now we are relying on a fixed length because it's quite cumbersome
 										   .map(expression -> expression.conditions().keySet())
 										   .flatMap(Collection::stream)
 										   .distinct()
@@ -119,11 +123,13 @@ public class SqlMatchingStats {
 		Name tableName = idsTableName(concept.getName());
 
 		// allFields are the statements to extract values from the underlying tables, we use them to generate the field names
-		List<Field<?>> fieldNames = new ArrayList<>(allFields);
-		fieldNames.addFirst(field(CONCEPT_ID_FIELD.getName(), VARCHAR(findMaxIdLength(expressions))));
+		List<Field<?>> fields = new ArrayList<>();
 
-		createConceptIdsTable(tableName, fieldNames);
-		insertConceptIdMappings(tableName, fieldNames, rows, dslContext);
+		fields.addAll(allFields);
+		fields.addFirst(field(CONCEPT_ID_FIELD.getName(), VARCHAR(findMaxIdLength(expressions))));
+
+		createConceptIdsTable(tableName, fields);
+		insertConceptIdMappings(tableName, fields, rows, dslContext);
 	}
 
 	@NotNull
@@ -211,11 +217,19 @@ public class SqlMatchingStats {
 	private void insertConceptIdMappings(Name tableName, List<Field<?>> fieldNames, List<RowN> rows, DSLContext dsl) {
 		log.info("BEGIN inserting {} rows into {}", rows.size(), tableName);
 
-		InsertValuesStepN<Record> insertConceptTable = dsl.insertInto(table(tableName))
-														  .columns(fieldNames)
-														  .valuesOfRows(rows);
+		// We're using batching here because some DBMS don't allow mass inserts.
+		// There's a chance, we rework this to use a prepared statement with lots of bindings under the hood. But that needs to rework the entire stream of rows.
+		List<InsertValuesStepN<?>> inserts = new ArrayList<>(rows.size());
 
-		insertConceptTable.execute();
+		for (RowN row : rows) {
+			inserts.add(dsl.insertInto(table(tableName))
+						   .columns(fieldNames)
+						   .values(row));
+		}
+
+		dsl.batch(inserts)
+				.execute();
+
 
 		log.trace("DONE inserting into {}", tableName);
 	}
@@ -224,17 +238,23 @@ public class SqlMatchingStats {
 	 * Drop the table, then recreate it.
 	 * TODO add an index.
 	 */
-	private void createConceptIdsTable(Name tableName, List<Field<?>> fieldNames) {
+	private void createConceptIdsTable(Name tableName, List<Field<?>> fields) {
 
-		log.debug("Creating table {} with fields {}", tableName, fieldNames);
+		log.debug("Creating table {} with fields {}", tableName, fields);
 
-		dslContext.dropTableIfExists(tableName)
-				  .cascade()
-				  .execute();
+		try {
+			dslContext.dropTable(tableName)
+					  .cascade()
+					  .execute();
+		}
+		catch (DataAccessException exception) {
+			// Likely it doesn't exist. Some DBMS just don't support drop-IfExists so this is the next best thing :^)
+			log.trace("Failed to drop table {}", tableName, exception);
+		}
 
 		CreateTableElementListStep createTable =
 				dslContext.createTable(tableName)
-						  .columns(fieldNames);
+						  .columns(fields);
 
 
 		createTable.execute();
