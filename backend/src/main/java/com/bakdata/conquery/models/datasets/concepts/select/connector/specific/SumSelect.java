@@ -31,6 +31,7 @@ import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.jooq.Field;
 
 @Getter
 @Setter

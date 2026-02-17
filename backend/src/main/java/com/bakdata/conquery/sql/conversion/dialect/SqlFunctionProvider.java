@@ -1,11 +1,13 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
 
+import static org.jooq.impl.DSL.*;
+import static org.jooq.impl.DSL.field;
+
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -27,7 +29,6 @@ import org.jooq.Record;
 import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.TableOnConditionStep;
-import org.jooq.impl.DSL;
 
 /**
  * Provider of SQL functions.
@@ -67,7 +68,7 @@ public interface SqlFunctionProvider {
 	 * A date restriction condition is true if holds: dateRestrictionStart < daterangeEnd and dateRestrictionEnd > daterangeStart. The ends of both ranges are
 	 * exclusive.
 	 */
-	Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange daterange);
+	Condition dateRestriction(ColumnDateRange daterange, ColumnDateRange dateRestriction);
 
 	/**
 	 * Creates a {@link ColumnDateRange} as a SQL representation of the {@link CDateRange}.
@@ -153,13 +154,13 @@ public interface SqlFunctionProvider {
 	Field<String> yearQuarter(Field<Date> dateField);
 
 	default Field<String> stringAggregation(Field<String> stringField, Field<String> delimiter, List<Field<?>> orderByFields) {
-		return DSL.field(
+		return field(
 				"{0}({1}, {2} {3})",
 				String.class,
-				DSL.keyword("string_agg"),
+				keyword("string_agg"),
 				stringField,
 				delimiter,
-				DSL.orderBy(orderByFields)
+				orderBy(orderByFields)
 		);
 	}
 
@@ -167,10 +168,10 @@ public interface SqlFunctionProvider {
 		String concatenated = fields.stream()
 									// if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
 									// thus concat an empty string
-									.map(field -> DSL.when(field.isNull(), DSL.val("")).otherwise(field))
+									.map(field -> when(field.isNull(), val("")).otherwise(field))
 									.map(Field::toString)
 									.collect(Collectors.joining(SQL_UNIT_SEPARATOR));
-		return DSL.field(concatenated, String.class);
+		return field(concatenated, String.class);
 	}
 
 	default <T> Field<T> least(List<Field<T>> fields) {
@@ -179,7 +180,7 @@ public interface SqlFunctionProvider {
 		}
 		Field<T>[] fieldArray = fields.toArray(Field[]::new);
 		// signature only accepts arrays/varargs
-		return DSL.function("least", fieldArray[0].getType(), fieldArray);
+		return function("least", fieldArray[0].getType(), fieldArray);
 	}
 
 	default <T> Field<T> greatest(List<Field<T>> fields) {
@@ -188,7 +189,7 @@ public interface SqlFunctionProvider {
 		}
 		Field<T>[] fieldArray = fields.toArray(Field[]::new);
 		// signature only accepts arrays/varargs
-		return DSL.function("greatest", fieldArray[0].getType(), fieldArray);
+		return function("greatest", fieldArray[0].getType(), fieldArray);
 	}
 
 	default Condition in(Field<String> column, String[] values) {
@@ -208,24 +209,24 @@ public interface SqlFunctionProvider {
 	}
 
 	default Field<Date> toDateField(String dateExpression) {
-		return DSL.toDate(dateExpression, DEFAULT_DATE_FORMAT);
+		return toDate(dateExpression, DEFAULT_DATE_FORMAT);
 	}
 
 	default Field<String> replace(Field<String> target, String old, String _new) {
-		return DSL.function("replace", String.class, target, DSL.val(old), DSL.val(_new));
+		return function("replace", String.class, target, val(old), val(_new));
 	}
 
 	default Field<String> encloseInCurlyBraces(Field<String> stringExpression) {
-		return DSL.field("'{' || {0} || '}'", String.class, stringExpression);
+		return field("'{' || {0} || '}'", String.class, stringExpression);
 	}
 
 	default Field<String> prefixStringAggregation(Field<String> field, String prefix) {
-		return DSL.field(
+		return field(
 				"'[' || {0}({1}, {2}) || ']'",
 				String.class,
-				DSL.keyword("STRING_AGG"),
-				DSL.when(field.like(DSL.inline(prefix + "%")), field),
-				DSL.val(", ")
+				keyword("STRING_AGG"),
+				when(field.like(inline(prefix + "%")), field),
+				val(", ")
 		);
 	}
 
@@ -234,14 +235,14 @@ public interface SqlFunctionProvider {
 
 		if (validityDate.isSingleColumnDaterange()) {
 			Column column = validityDate.getColumn().resolve();
-			return DSL.field(DSL.name(column.getName())).isNotNull();
+			return field(name(column.getName())).isNotNull();
 		}
 
 		Column startColumn = validityDate.getStartColumn().resolve();
 		Column endColumn = validityDate.getEndColumn().resolve();
 
-		return DSL.or(DSL.field(DSL.name(startColumn.getName())).isNotNull(),
-					  DSL.field(DSL.name(endColumn.getName())).isNotNull()
+		return or(field(name(startColumn.getName())).isNotNull(),
+					  field(name(endColumn.getName())).isNotNull()
 		);
 	}
 

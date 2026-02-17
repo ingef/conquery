@@ -11,14 +11,14 @@
       "type": "AND",
       "children": [
         {
-          "ids":[
+          "ids": [
             "geschlecht_select"
           ],
-          "type":"CONCEPT",
-          "label":"Geschlecht SELECT",
-          "tables":[
+          "type": "CONCEPT",
+          "label": "Geschlecht SELECT",
+          "tables": [
             {
-              "id":"geschlecht_select.geschlecht_connector",
+              "id": "geschlecht_select.geschlecht_connector",
               "selects": [
                 "geschlecht_select.geschlecht_connector.date_distance_centuries"
               ]
@@ -28,14 +28,14 @@
       ]
     }
   },
-  "concepts":[
+  "concepts": [
     {
-      "label":"geschlecht_select",
-      "type":"TREE",
-      "connectors":[
+      "label": "geschlecht_select",
+      "type": "TREE",
+      "connectors": [
         {
-          "label":"geschlecht_connector",
-          "table":"table1",
+          "label": "geschlecht_connector",
+          "table": "table1",
           "selects": [
             {
               "column": "table1.datum",
@@ -50,19 +50,19 @@
       ]
     }
   ],
-  "content":{
-    "tables":[
+  "content": {
+    "tables": [
       {
-        "csv":"tests/sql/selects/date_distance/centuries/content.csv",
-        "name":"table1",
-        "primaryColumn":{
-          "name":"pid",
-          "type":"STRING"
+        "csv": "tests/sql/selects/date_distance/centuries/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
         },
-        "columns":[
+        "columns": [
           {
-            "name":"datum",
-            "type":"DATE"
+            "name": "datum",
+            "type": "DATE"
           }
         ]
       }

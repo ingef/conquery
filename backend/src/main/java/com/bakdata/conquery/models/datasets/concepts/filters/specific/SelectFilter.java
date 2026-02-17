@@ -135,4 +135,5 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 
 		return getSubstringRange().getMin() >= 0;
 	}
+
 }

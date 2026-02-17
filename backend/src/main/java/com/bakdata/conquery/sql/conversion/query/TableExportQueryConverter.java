@@ -119,7 +119,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		final SqlIdColumns ids = new SqlIdColumns(primaryColumn);
 		final String conceptConnectorName =
 				context.getNameGenerator().conceptConnectorName(concept, cqTable.getConnector().resolve(), context.getSqlPrintSettings().getLocale());
-		final Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, conceptConnectorName, context);
+		final Optional<ColumnDateRange> validityDate = convertTablesValidityDate(cqTable, context);
 
 		final List<FieldWrapper<?>> exportColumns = initializeFields(cqTable, positions);
 
@@ -140,7 +140,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 						.build();
 	}
 
-	private static Optional<ColumnDateRange> convertTablesValidityDate(CQTable table, String alias, ConversionContext context) {
+	private static Optional<ColumnDateRange> convertTablesValidityDate(CQTable table, ConversionContext context) {
 		if (table.findValidityDate() == null) {
 			return Optional.of(ColumnDateRange.empty());
 		}
@@ -148,7 +148,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		final ColumnDateRange validityDate = functionProvider.forValidityDate(table.findValidityDate());
 		// when exporting tables, we want the validity date as a single-column daterange string expression straightaway
 		final Field<String> asStringExpression = functionProvider.encloseInCurlyBraces(functionProvider.daterangeStringExpression(validityDate));
-		return Optional.of(ColumnDateRange.of(asStringExpression).asValidityDateRange(alias));
+		return Optional.of(ColumnDateRange.of(asStringExpression).asValidityDateRange());
 	}
 
 	private static List<FieldWrapper<?>> initializeFields(CQTable cqTable, Map<ColumnId, Integer> positions) {
@@ -183,7 +183,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		final ColumnDateRange validityDate = functionProvider.forValidityDate(cqTable.findValidityDate());
 		final List<Condition> joinConditions = Stream.concat(
 				ids.join(convertedPrerequisite.getQualifiedSelects().getIds()).stream(),
-				Stream.of(functionProvider.dateRestriction(functionProvider.forCDateRange(dateRestriction), validityDate))
+				Stream.of(functionProvider.dateRestriction(validityDate, functionProvider.forCDateRange(dateRestriction)))
 		).toList();
 
 		return functionProvider.innerJoin(connectorTable, convertedPrerequisiteTable, joinConditions);

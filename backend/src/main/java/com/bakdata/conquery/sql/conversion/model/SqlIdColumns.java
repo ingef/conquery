@@ -119,6 +119,20 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 		return List.of(joinPrimariesCondition, joinSecondaries);
 	}
 
+	public Condition[] join2(SqlIdColumns rightIds) {
+
+		// always join on primary columns
+		Condition joinPrimariesCondition = primaryColumn.eq(rightIds.getPrimaryColumn());
+
+		if (secondaryId != null && rightIds.secondaryId != null) {// join on secondary IDs if both are present
+			return new Condition[]{joinPrimariesCondition, secondaryId.eq(rightIds.secondaryId)};
+		}
+		else {
+			return new Condition[]{joinPrimariesCondition};
+		}
+	}
+
+
 	public SqlIdColumns coalesce(List<SqlIdColumns> selectsIds) {
 
 		List<Field<?>> primaryColumns = new ArrayList<>();

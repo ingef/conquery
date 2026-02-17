@@ -67,11 +67,20 @@ public abstract class FilterValue<VALUE> {
 	public SqlFilters convertToSqlFilter(SqlIdColumns ids, ConversionContext context, ConnectorSqlTables tables) {
 		FilterContext<VALUE> filterContext = FilterContext.forConceptConversion(ids, readValue(), context, tables);
 		final Filter<VALUE> resolve = (Filter<VALUE>) filter.resolve();
-		SqlFilters sqlFilters = resolve.createConverter().convertToSqlFilter(resolve, filterContext);
-		if (context.isNegation()) {
-			return new SqlFilters(sqlFilters.getSelects(), sqlFilters.getWhereClauses().negated());
-		}
-		return sqlFilters;
+
+		return resolve.createConverter().convertToSqlFilter(resolve, filterContext);
+	}
+
+	public Condition convertEventFilter(SqlIdColumns ids, ConversionContext context, ConnectorSqlTables tables) {
+		final Filter<VALUE> resolve = (Filter<VALUE>) filter.resolve();
+
+		return resolve.convertEventFilter(tables.getRootTable(), readValue(), context);
+	}
+
+	public Condition convertHavingFilter(SqlIdColumns ids, ConversionContext context, ConnectorSqlTables tables) {
+		final Filter<VALUE> resolve = (Filter<VALUE>) filter.resolve();
+
+		return resolve.convertHaving(tables.getRootTable(), readValue());
 	}
 
 	public Condition convertForTableExport(SqlIdColumns ids, ConversionContext context) {

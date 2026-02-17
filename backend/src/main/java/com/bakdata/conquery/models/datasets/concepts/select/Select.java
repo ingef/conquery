@@ -20,6 +20,8 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -31,6 +33,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 @Setter
 @Getter
@@ -130,5 +134,9 @@ public abstract class Select extends LabeledNamespaceIdentifiable<SelectId> {
 			return new ConnectorSelectId(((Connector) holder).getId(), getName());
 		}
 		return new ConceptSelectId(holder.findConcept().getId(), getName());
+	}
+
+	public Field<?> convert(String table, SqlFunctionProvider provider, ConversionContext context){
+		return DSL.noField();
 	}
 }

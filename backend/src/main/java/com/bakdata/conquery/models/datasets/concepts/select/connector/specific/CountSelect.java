@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import static org.jooq.impl.DSL.field;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,11 +15,15 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
+import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 @CPSType(id = "COUNT", base = Select.class)
 @NoArgsConstructor
@@ -71,4 +77,9 @@ public class CountSelect extends Select {
 		return ResultType.Primitive.INTEGER;
 	}
 
+	@Override
+	public Field<?> convert(String table, SqlFunctionProvider provider, ConversionContext context) {
+		//TODO distinct
+		return DSL.count(field(DSL.name(table, getColumn().getColumn()), Object.class));
+	}
 }

@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import static org.jooq.impl.DSL.*;
+import static org.jooq.impl.DSL.field;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +22,7 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.event.FlagColumnsFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -27,6 +31,8 @@ import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import org.jooq.Condition;
+import org.jooq.impl.DSL;
 
 /**
  * Implements a MultiSelect type filter, where an event can meet multiple criteria (as opposed to {@link MultiSelectFilter} which is restricted to one value per event).
@@ -94,5 +100,16 @@ public class FlagFilter extends Filter<Set<String>> {
 	@Override
 	public FilterConverter<FlagFilter, Set<String>> createConverter() {
 		return new FlagSqlAggregator();
+	}
+
+	@Override
+	public Condition convertEventFilter(String table, Set<String> strings, ConversionContext conversionContext) {
+		Condition out = noCondition();
+
+		for (String selection : strings) {
+			out = out.or(field(name(table, flags.get(selection).getColumn())).isNotNull());
+		}
+
+		return out;
 	}
 }

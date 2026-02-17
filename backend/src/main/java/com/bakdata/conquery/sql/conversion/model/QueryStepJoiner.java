@@ -10,6 +10,7 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.aggregation.DateAggregationDates;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.SimplifiedQueryStep;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
@@ -37,6 +38,47 @@ public class QueryStepJoiner {
 
 		List<QueryStep> queriesToJoin = childrenContext.getQuerySteps();
 		return joinSteps(queriesToJoin, logicalOperation, dateAggregationAction, context);
+	}
+
+	public static SimplifiedQueryStep joinSteps2(
+			List<SimplifiedQueryStep> queriesToJoin,
+			ConqueryJoinType logicalOperation,
+			DateAggregationAction dateAggregationAction,
+			ConversionContext context
+	) {
+		return queriesToJoin.getFirst(); //TODO
+
+//		// no join required
+//		if (queriesToJoin.size() == 1) {
+//			return queriesToJoin.getFirst();
+//		}
+//
+//		String joinedNodeName = context.getNameGenerator().joinedNodeName(logicalOperation);
+//		SqlIdColumns ids = coalesceIds(queriesToJoin);
+//		List<SqlSelect> mergedSelects = mergeSelects(queriesToJoin);
+//		TableLike<Record> joinedTable = constructJoinedTable(queriesToJoin, logicalOperation, context);
+//
+//		QueryStep joinedStep;
+//		QueryStep.QueryStepBuilder joinedStepBuilder = QueryStep.builder()
+//																.cteName(joinedNodeName)
+//																.fromTable(joinedTable)
+//																.predecessors(queriesToJoin);
+//
+//		DateAggregationDates dateAggregationDates = DateAggregationDates.forSteps(queriesToJoin);
+//		if (dateAggregationAction == DateAggregationAction.BLOCK || dateAggregationDates.dateAggregationImpossible()) {
+//			// for forms, date aggregation is allways blocked, but dates need to be coalesced in case we do a fulll outer join
+//			Optional<ColumnDateRange> stratificationDate = coalesceStratificationDates(queriesToJoin);
+//			joinedStep = buildJoinedStep(ids, mergedSelects, Optional.empty(), stratificationDate, joinedStepBuilder);
+//		}
+//		// if there is only 1 child node containing a validity date, we just keep it as overall validity date for the joined node
+//		else if (dateAggregationDates.getValidityDates().size() == 1) {
+//			ColumnDateRange validityDate = dateAggregationDates.getValidityDates().get(0);
+//			joinedStep = buildJoinedStep(ids, mergedSelects, Optional.of(validityDate), Optional.empty(), joinedStepBuilder);
+//		}
+//		else {
+//			joinedStep = buildStepAndAggregateDates(ids, mergedSelects, joinedStepBuilder, dateAggregationDates, dateAggregationAction, context);
+//		}
+//		return joinedStep;
 	}
 
 	public static QueryStep joinSteps(

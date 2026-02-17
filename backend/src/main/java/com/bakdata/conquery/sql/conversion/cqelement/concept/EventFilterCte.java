@@ -62,7 +62,7 @@ class EventFilterCte extends ConnectorCte {
 	 * predecessors itself (like all {@link QueryStep}s), so we want to look for the deepest preceding QueryStep leafs and collect their
 	 * {@link ConnectorSqlSelects}, because they expect this CTE to contain all their {@link SqlSelect#requiredColumns()}.
 	 */
-	private static List<SqlSelect> collectSelects(ConnectorSqlSelects sqlSelects) {
+	public static List<SqlSelect> collectSelects(ConnectorSqlSelects sqlSelects) {
 		return Stream.concat(
 							 sqlSelects.getConnectorColumn().stream(),
 							 Stream.concat(
@@ -114,7 +114,7 @@ class EventFilterCte extends ConnectorCte {
 		SqlFunctionProvider functionProvider = tableContext.getConversionContext().getSqlDialect().getFunctionProvider();
 		ColumnDateRange stratificationDate = previousSelects.getStratificationDate().get();
 		ColumnDateRange validityDate = previousSelects.getValidityDate().get();
-		Condition stratificationCondition = functionProvider.dateRestriction(stratificationDate, validityDate);
+		Condition stratificationCondition = functionProvider.dateRestriction(validityDate, stratificationDate);
 
 		return Stream.concat(Stream.of(stratificationCondition), eventFilterConditions.stream()).toList();
 	}

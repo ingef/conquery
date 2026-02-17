@@ -9,10 +9,11 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import lombok.Getter;
 import lombok.Setter;
+import org.jooq.Condition;
+import org.jooq.impl.DSL;
 
 /**
  * This condition connects multiple conditions with an and.
@@ -44,12 +45,10 @@ public class AndCondition implements CTCondition {
 	}
 
 	@Override
-	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		return conditions.stream()
-						 .map(condition -> condition.convertToSqlCondition(context))
-						 .reduce(WhereCondition::and)
-						 .orElseThrow(
-								 () -> new IllegalStateException("At least one condition is required to convert %s to a SQL condition.".formatted(getClass()))
-						 );
+	public Condition convertToSqlCondition(CTConditionContext context) {
+		return DSL.and(conditions.stream()
+								 .map(condition -> condition.convertToSqlCondition(context)).toList());
+
+
 	}
 }

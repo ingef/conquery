@@ -102,10 +102,13 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 		if (column.getType() == MajorTypeId.DATE) {
 			startDate = DSL.field(DSL.name(tables.getRootTable(), column.getName()), Date.class);
 		}
-		else {
+		else if(column.getType() == MajorTypeId.DATE_RANGE){
 			StratificationFunctions stratificationFunctions = StratificationFunctions.create(conversionContext);
 			Field<Date> daterangeColumn = DSL.field(DSL.name(tables.getRootTable(), column.getName()), Date.class);
 			startDate = stratificationFunctions.lower(ColumnDateRange.of(daterangeColumn));
+		}
+		else {
+			startDate = DSL.noField(Date.class);
 		}
 
 		Field<Date> endDate = getEndDate(conversionContext);
@@ -122,7 +125,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 		if (conversionContext.isWithStratification()) {
 			ColumnDateRange stratificationDate = conversionContext.getStratificationTable().getQualifiedSelects().getStratificationDate().get();
 			ColumnDateRange dualColumn = functionProvider.toDualColumn(stratificationDate);
-			// end date is allways treated exclusive, so we get the actual end date when subtracting 1 day
+			// end date is always treated exclusive, so we get the actual end date when subtracting 1 day
 			return functionProvider.addDays(dualColumn.getEnd(), DSL.val(-1));
 		}
 

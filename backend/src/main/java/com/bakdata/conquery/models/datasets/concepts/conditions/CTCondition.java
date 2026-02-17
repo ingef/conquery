@@ -9,6 +9,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.jooq.Condition;
 
 /**
  * A general condition that serves as a guard for concept tree nodes.
@@ -22,6 +23,6 @@ public interface CTCondition {
 	
 	boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException;
 
-	WhereCondition convertToSqlCondition(CTConditionContext context);
+	Condition convertToSqlCondition(CTConditionContext context);
 
 }

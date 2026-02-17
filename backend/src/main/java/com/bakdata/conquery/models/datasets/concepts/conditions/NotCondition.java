@@ -11,6 +11,7 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import lombok.Getter;
 import lombok.Setter;
+import org.jooq.Condition;
 
 /**
  * This condition matches if its child does not.
@@ -32,8 +33,8 @@ public class NotCondition implements CTCondition {
 	}
 
 	@Override
-	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		WhereCondition whereCondition = condition.convertToSqlCondition(context);
-		return whereCondition.negate();
+	public Condition convertToSqlCondition(CTConditionContext context) {
+		Condition whereCondition = condition.convertToSqlCondition(context);
+		return whereCondition.not();
 	}
 }

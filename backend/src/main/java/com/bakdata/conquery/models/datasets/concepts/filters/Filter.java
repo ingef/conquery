@@ -1,9 +1,13 @@
 package com.bakdata.conquery.models.datasets.concepts.filters;
 
+import static org.jooq.impl.DSL.noCondition;
+
 import java.util.List;
+import java.util.Optional;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
@@ -13,6 +17,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -24,6 +29,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.Condition;
 
 /**
  * This class is the abstract superclass for all filters.
@@ -102,5 +108,15 @@ public abstract class Filter<FILTER_VALUE> extends LabeledNamespaceIdentifiable<
 	@Override
 	public FilterId createId() {
 		return new FilterId(connector.getId(), getName());
+	}
+
+
+
+	public Condition convertHaving(String table, FILTER_VALUE range) {
+		return noCondition();
+	}
+
+	public Condition convertEventFilter(String table, FILTER_VALUE filterValue, ConversionContext conversionContext) {
+		return noCondition();
 	}
 }

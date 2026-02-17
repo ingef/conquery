@@ -49,7 +49,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange daterange) {
+	public Condition dateRestriction(ColumnDateRange daterange, ColumnDateRange dateRestriction) {
 
 		if (dateRestriction.isSingleColumnRange() || daterange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("HANA does not support single column ranges.");

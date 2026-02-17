@@ -35,6 +35,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.Condition;
 
 /**
  * This filter represents a filter on the sum of one integer column.
@@ -129,5 +130,10 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 			case REAL -> new RealDiffSumAggregator(resolvedColumn, subtrahend);
 			default -> throw new IllegalStateException("No Sum Filter for type " + typeId.name());
 		};
+	}
+
+	@Override
+	public Condition convertHaving(String table, RANGE range) {
+		return super.convertHaving(table, range);
 	}
 }

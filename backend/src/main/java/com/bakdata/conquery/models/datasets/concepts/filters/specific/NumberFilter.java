@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
+
 import java.math.BigDecimal;
 import jakarta.validation.constraints.NotNull;
 
@@ -19,6 +22,8 @@ import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
+import com.bakdata.conquery.sql.conversion.model.filter.ConditionUtil;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.NumberFilterConverter;
 import com.fasterxml.jackson.annotation.JacksonInject;
@@ -28,6 +33,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.Condition;
 
 /**
  * This filter represents a filter on an integer columnof each event.
@@ -74,5 +80,11 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 	@Override
 	public FilterConverter<? extends NumberFilter<RANGE>, RANGE> createConverter() {
 		return new NumberFilterConverter<>();
+	}
+
+
+	@Override
+	public Condition convertEventFilter(String table, RANGE range, ConversionContext conversionContext) {
+		return ConditionUtil.rangeCondition(field(name(table, getColumn().getColumn())), range);
 	}
 }

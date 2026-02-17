@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import static org.jooq.impl.DSL.count;
+import static org.jooq.impl.DSL.field;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,6 +23,9 @@ import com.bakdata.conquery.sql.conversion.model.aggregator.CountSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jooq.Condition;
+import org.jooq.Name;
+import org.jooq.impl.DSL;
 
 @CPSType(id = "COUNT", base = Filter.class)
 @NoArgsConstructor
@@ -69,5 +75,11 @@ public class CountFilter extends Filter<Range.LongRange> {
 	@Override
 	public FilterConverter<CountFilter, Range.LongRange> createConverter() {
 		return new CountSqlAggregator();
+	}
+
+	@Override
+	public Condition convertHaving(String table, Range.LongRange range) {
+		return count(field(DSL.name(table, column.getColumn()), Object.class))
+				.between(range.getMin().intValue(), range.getMax().intValue());
 	}
 }

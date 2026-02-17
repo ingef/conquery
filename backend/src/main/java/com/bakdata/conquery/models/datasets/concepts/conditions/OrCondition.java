@@ -13,6 +13,8 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import lombok.Getter;
 import lombok.Setter;
+import org.jooq.Condition;
+import org.jooq.impl.DSL;
 
 /**
  * This condition connects multiple conditions with an or.
@@ -44,12 +46,9 @@ public class OrCondition implements CTCondition {
 	}
 
 	@Override
-	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		return conditions.stream()
-						 .map(condition -> condition.convertToSqlCondition(context))
-						 .reduce(WhereCondition::or)
-						 .orElseThrow(
-								 () -> new IllegalStateException("At least one condition is required to convert %s to a SQL condition.".formatted(getClass()))
-						 );
+	public Condition convertToSqlCondition(CTConditionContext context) {
+		return DSL.or(conditions.stream()
+								 .map(condition -> condition.convertToSqlCondition(context)).toList());
+
 	}
 }

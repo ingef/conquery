@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionWrappingWhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import jakarta.validation.constraints.NotEmpty;
@@ -40,10 +39,10 @@ public class PrefixCondition implements CTCondition {
 	}
 
 	@Override
-	public WhereCondition convertToSqlCondition(CTConditionContext context) {
+	public Condition convertToSqlCondition(CTConditionContext context) {
 		Field<String> field = DSL.field(DSL.name(context.getConnectorTable().getName(), context.getConnectorColumn().getName()), String.class);
 		String pattern = Arrays.stream(prefixes).collect(Collectors.joining("|", "", context.getFunctionProvider().getAnyCharRegex()));
 		Condition condition = context.getFunctionProvider().likeRegex(field, pattern);
-		return new ConditionWrappingWhereCondition(condition);
+		return condition;
 	}
 }

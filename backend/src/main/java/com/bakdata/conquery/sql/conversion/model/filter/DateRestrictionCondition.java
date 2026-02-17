@@ -14,7 +14,7 @@ public class DateRestrictionCondition implements WhereCondition {
 
 	@Override
 	public Condition condition() {
-		return this.functionProvider.dateRestriction(dateRestriction, validityDate);
+		return this.functionProvider.dateRestriction(validityDate, dateRestriction);
 	}
 
 }

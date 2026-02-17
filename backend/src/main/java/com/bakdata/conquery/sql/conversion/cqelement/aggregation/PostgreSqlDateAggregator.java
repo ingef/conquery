@@ -114,7 +114,7 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 														  .collect(Collectors.joining(aggregatingOperator));
 
 		return ColumnDateRange.of(DSL.field(aggregatedExpression))
-							  .asValidityDateRange(joinedStepCteName);
+							  .asValidityDateRange();
 	}
 
 	private static String createEmptyRangeForNullValues(Field<?> field) {

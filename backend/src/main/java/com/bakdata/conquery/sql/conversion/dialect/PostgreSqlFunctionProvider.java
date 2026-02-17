@@ -19,6 +19,7 @@ import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
@@ -80,12 +81,12 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange daterange) {
+	public Condition dateRestriction(ColumnDateRange daterange, ColumnDateRange dateRestriction) {
 		// the && operator checks if two ranges overlap (see https://www.postgresql.org/docs/15/functions-range.html)
 		return DSL.condition(
 				"{0} && {1}",
-				ensureIsSingleColumnRange(dateRestriction).getRange(),
-				ensureIsSingleColumnRange(daterange).getRange()
+				ensureIsSingleColumnRange(daterange).getRange(),
+				ensureIsSingleColumnRange(dateRestriction).getRange()
 		);
 	}
 
@@ -218,9 +219,9 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction) {
+	public ColumnDateRange forValidityDate(@NonNull ValidityDate validityDate,  @NonNull CDateRange dateRestriction) {
 		// if there is no validity date, each entity has the max range {-inf/inf} as validity date
-		ColumnDateRange validityDateRange = validityDate == null ? maxRange() : toColumnDateRange(validityDate);
+		ColumnDateRange validityDateRange = toColumnDateRange(validityDate);
 		ColumnDateRange restriction = toColumnDateRange(dateRestriction);
 		return intersection(validityDateRange, restriction);
 	}

@@ -14,7 +14,7 @@ import org.jooq.impl.DSL;
 @Getter
 public class ColumnDateRange implements SqlSelect {
 
-	private static final String VALIDITY_DATE_COLUMN_NAME_SUFFIX = "_validity_date";
+	private static final String VALIDITY_DATE_COLUMN = "_validity_date";
 	private static final String START_SUFFIX = "_start";
 	private static final String END_SUFFIX = "_end";
 
@@ -58,8 +58,8 @@ public class ColumnDateRange implements SqlSelect {
 		return ColumnDateRange.of(emptyRange);
 	}
 
-	public ColumnDateRange asValidityDateRange(String alias) {
-		return this.as(alias + VALIDITY_DATE_COLUMN_NAME_SUFFIX);
+	public ColumnDateRange asValidityDateRange() {
+		return this.as(VALIDITY_DATE_COLUMN);
 	}
 
 	/**

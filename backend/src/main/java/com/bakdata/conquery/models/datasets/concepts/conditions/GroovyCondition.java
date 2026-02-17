@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import groovy.lang.GroovyShell;
@@ -20,6 +19,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.jooq.Condition;
 
 /**
  * A condition that is a groovy script and thus able to represent everything.
@@ -76,7 +76,7 @@ public class GroovyCondition implements CTCondition {
 	}
 
 	@Override
-	public WhereCondition convertToSqlCondition(CTConditionContext context) {
+	public Condition convertToSqlCondition(CTConditionContext context) {
 		throw new UnsupportedOperationException("SQL conversion of CTCondition %s not supported yet.".formatted(getClass()));
 	}
 
