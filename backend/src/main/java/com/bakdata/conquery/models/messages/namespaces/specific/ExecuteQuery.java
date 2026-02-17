@@ -56,9 +56,8 @@ public class ExecuteQuery extends WorkerMessage {
 			log.trace("Created query plan in {}", stopwatch);
 		}
 		catch (Exception e) {
-			ConqueryError err = asConqueryError(e);
-			log.warn("Failed to create query plans for {}.", id, err);
-			queryExecutor.sendFailureToManagerNode(result, err, worker);
+			log.warn("Failed to create query plans for {}.", id, e);
+			queryExecutor.sendFailureToManagerNode(e, id);
 			return;
 		}
 
