@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conquery;
 
 import static org.jooq.impl.DSL.*;
-import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import java.sql.Date;
 import java.util.ArrayList;
@@ -11,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutorService;
 import jakarta.validation.constraints.NotBlank;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -34,6 +35,7 @@ import com.google.common.collect.Sets;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.jooq.CommonTableExpression;
 import org.jooq.Condition;
 import org.jooq.CreateTableElementListStep;
 import org.jooq.Cursor;
@@ -48,7 +50,6 @@ import org.jooq.RowN;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectJoinStep;
-import org.jooq.Table;
 import org.jooq.exception.DataAccessException;
 
 @Slf4j
@@ -58,7 +59,7 @@ public class SqlMatchingStats {
 	private final Field<String> PID_FIELD = field(name("pid"), String.class);
 	private final Field<Date> LB_FIELD = field(name("lower_bound"), Date.class);
 	private final Field<Date> UB_FIELD = field(name("upper_bound"), Date.class);
-	private final Field<String> CONCEPT_ID_FIELD = field(name("resolved_id"), String.class);
+	private final Field<Integer> CONCEPT_ID_FIELD = field(name("resolved_id"), Integer.class).comment("LocalId of the concept");
 	private final Set<Param<?>> NULL_PARAMS = Collections.singleton(inline(null, String.class));
 
 	private final DSLContext dslContext;
@@ -66,11 +67,11 @@ public class SqlMatchingStats {
 	private final DatabaseConfig dbConfig;
 	private final int fetchBatchSize = 100; //TODO from dbConfig?
 
-	private static void assignStatsToPath(ConceptElementId<?> resolvedId, Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats, String entity, CDateRange span) {
-		ConceptElement<?> element = resolvedId.get();
+	private static void assignStatsToPath(ConceptElement<?> element, Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats, String entity, CDateRange span) {
+		ConceptElementId<?> id = element.getId();
 
 		while (element != null) {
-			matchingStats.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Entry())
+			matchingStats.computeIfAbsent(id, (ignored) -> new MatchingStats.Entry())
 						 .addEvents(entity, 1, span);
 			element = element.getParent();
 		}
@@ -80,8 +81,6 @@ public class SqlMatchingStats {
 	 * collect unique fields used/defined in the expressions.
 	 */
 	private static List<Field<?>> collectAllFields(List<CTCondition.Expression> expressions) {
-
-
 		List<Field<?>> fields = expressions.stream()
 										   //TODO determine length of chars, for now we are relying on a fixed length because it's quite cumbersome
 										   .map(expression -> expression.conditions().keySet())
@@ -91,7 +90,7 @@ public class SqlMatchingStats {
 		return fields;
 	}
 
-	private static <T extends Record> Table<T> unionSelects(List<Select<? extends T>> connectorTables) {
+	private static <T extends Record> Select<T> unionSelects(List<Select<? extends T>> connectorTables) {
 		Select<T> unioned = null;
 
 		for (Select<? extends T> connectorTable : connectorTables) {
@@ -104,7 +103,7 @@ public class SqlMatchingStats {
 		}
 
 
-		return table(unioned);
+		return unioned;
 	}
 
 	/**
@@ -126,7 +125,7 @@ public class SqlMatchingStats {
 		List<Field<?>> fields = new ArrayList<>();
 
 		fields.addAll(allFields);
-		fields.addFirst(field(CONCEPT_ID_FIELD.getName(), VARCHAR(findMaxIdLength(expressions))));
+		fields.addFirst(CONCEPT_ID_FIELD);
 
 		createConceptIdsTable(tableName, fields);
 		insertConceptIdMappings(tableName, fields, rows, dslContext);
@@ -183,14 +182,15 @@ public class SqlMatchingStats {
 
 			for (Record record : cursor) {
 
-				String rawId = record.get(CONCEPT_ID_FIELD);
-				ConceptElementId<?> resolvedId;
+				Integer rawId = record.get(CONCEPT_ID_FIELD);
+
+
+				ConceptElement<?> resolvedId;
 				if (rawId == null) {
-					resolvedId = concept.getId();
+					resolvedId = concept;
 				}
 				else {
-					resolvedId = ConceptElementId.Parser.INSTANCE.parse(rawId);
-					resolvedId.setDomain(concept.getDomain());
+					resolvedId = concept.getElementByLocalId(rawId);
 				}
 
 				String entity = record.get(PID_FIELD);
@@ -228,7 +228,7 @@ public class SqlMatchingStats {
 		}
 
 		dsl.batch(inserts)
-				.execute();
+		   .execute();
 
 
 		log.trace("DONE inserting into {}", tableName);
@@ -275,17 +275,17 @@ public class SqlMatchingStats {
 						  .orElse(0);
 	}
 
-	public void collectMatchingStatsForConcept(TreeConcept concept) {
-		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats =
-				// The transaction implicitly disables autocommit, which we need for using the cursor
-				dslContext.transactionResult(cfg -> {
+	public CompletionStage<?> collectMatchingStatsForConcept(TreeConcept concept, ExecutorService executorService) {
 
-					SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
+		// The transaction implicitly disables autocommit, which we need for using the cursor
+		return dslContext
+				.transactionAsync(executorService, cfg -> {
+									  SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
+									  Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = readStats(concept, matchingStatsStatement);
+									  assignStats(matchingStats);
+								  }
+				);
 
-					return readStats(concept, matchingStatsStatement);
-				});
-
-		assignStats(matchingStats);
 	}
 
 	@NotNull
@@ -312,21 +312,25 @@ public class SqlMatchingStats {
 							  )
 							  .from(table(name(connector.getResolvedTable().getName())))
 							  .leftJoin(idsTableName(concept.getName()))
-							  .on(getJoinConditions(concept, context)) // joint onto the concept-ids table to assign the most specific id.
+							  .on(getJoinConditions(concept, context)) // join onto the concept-ids table to assign the most specific id.
 							  .where(connector.getCondition() != null ? connector.getCondition().convertToSqlCondition(context).condition() : noCondition());
 
 			connectorTables.add(connectorTable);
 		}
 
-		SelectJoinStep<Record4<String, String, Date, Date>> records =
-				dslContext.select(
-								  CONCEPT_ID_FIELD,
+		Name ct_name = name("connector_tables");
+		CommonTableExpression<?> unioned = ct_name.as(unionSelects(connectorTables));
+
+		SelectJoinStep<Record4<Integer, String, Date, Date>> records =
+				dslContext.with(unioned)
+						  .select(
+								  unioned.field(CONCEPT_ID_FIELD),
 								  PID_FIELD,
 								  // The infinities are intentionally swapped
-								  nullif(LB_FIELD, positiveInfinity).as(LB_FIELD),
-								  nullif(UB_FIELD, negativeInfinity).as(UB_FIELD)
+								  nullif(unioned.field(LB_FIELD), positiveInfinity).as(LB_FIELD),
+								  nullif(unioned.field(UB_FIELD), negativeInfinity).as(UB_FIELD)
 						  )
-						  .from(unionSelects(connectorTables));
+						  .from(ct_name);
 
 		return records;
 	}
@@ -347,6 +351,11 @@ public class SqlMatchingStats {
 		List<CTCondition.Expression> expressions = collectAllExpressions(concept, null, context);
 
 		Collection<Field<?>> allFields = collectAllFields(expressions);
+
+		if (allFields.isEmpty()) {
+			// TODO this is a HANA-ism: It expects proper expressions in joins
+			return field(inline(true)).eq(field(inline(true)));
+		}
 
 		Name idsTable = idsTableName(concept.getName());
 
@@ -400,7 +409,7 @@ public class SqlMatchingStats {
 		for (Map.Entry<List<Param<?>>, ConceptElement<?>> entry : byDepth.entrySet()) {
 			List<Param<?>> params = new ArrayList<>(entry.getKey().size() + 1);
 
-			params.addFirst(val(entry.getValue().getId().toString()));
+			params.addFirst(val(entry.getValue().getLocalId()));
 			params.addAll(entry.getKey());
 
 			rows.add(row(params));
@@ -413,21 +422,17 @@ public class SqlMatchingStats {
 	 * We use them to construct a table building an injective mapping from values to concept element that can be used for performant joins instead of resolving the concept every time.
 	 */
 	private List<CTCondition.Expression> collectAllExpressions(ConceptElement<?> current, CTCondition.Expression parentExpression, CTConditionContext context) {
-		final List<CTCondition.Expression> out = new ArrayList<>();
-		final CTCondition.Expression forCurrent;
 
-		if (current instanceof TreeConcept concept) {
-			forCurrent = new CTCondition.Expression(concept, Collections.emptyMap());
-		}
-		else if (current instanceof ConceptTreeChild child) {
+		final CTCondition.Expression forCurrent = switch (current) {
+			case TreeConcept concept -> new CTCondition.Expression(concept, Collections.emptyMap());
 			// concept elements implicitly inherit the conditions of its parents
-			forCurrent = child.getCondition()
-							  .buildExpression(context, current)
-							  .and(parentExpression);
-		}
-		else {
-			throw new IllegalStateException();
-		}
+			case ConceptTreeChild child -> child.getCondition()
+												.buildExpression(context, current)
+												.and(parentExpression);
+			case null, default -> throw new IllegalStateException();
+		};
+
+		final List<CTCondition.Expression> out = new ArrayList<>();
 
 		out.add(forCurrent);
 

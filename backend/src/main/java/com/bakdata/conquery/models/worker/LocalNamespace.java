@@ -8,9 +8,9 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.local.SqlEntityResolver;
 import com.bakdata.conquery.mode.local.SqlStorageHandler;
+import com.bakdata.conquery.mode.local.UpdateMatchingStatsSqlJob;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.sql.DSLContextWrapper;
@@ -53,23 +53,9 @@ public class LocalNamespace extends Namespace {
 
 	@Override
 	void updateMatchingStats() {
-		//TODO wrap in job
-		log.info("BEGIN collecting SQL matching stats for {}", getDataset());
-
-		// TODO multi threading?
-		getStorage().getAllConcepts()
-					.filter(TreeConcept.class::isInstance)
-					.forEach(concept -> {
-						try {
-							matchingStats.collectMatchingStatsForConcept((TreeConcept) concept);
-						}
-						catch (Exception e) {
-							log.error("FAILED to collect matching stats for {}", concept.getId(), e);
-						}
-					});
-
-		log.debug("DONE collecting SQL matching stats for {}", getDataset());
-
+		getJobManager().addSlowJob(
+				new UpdateMatchingStatsSqlJob(getStorage().getAllConcepts().toList(), getDataset(), getMatchingStats())
+		);
 	}
 
 	@Override

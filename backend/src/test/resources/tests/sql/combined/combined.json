@@ -136,28 +136,6 @@
         }
       ],
       "children": [
-        {
-          "label": "test_child1",
-          "description": " ",
-          "condition": {
-            "type": "EQUAL",
-            "values": [
-              "A1"
-            ]
-          },
-          "children": []
-        },
-        {
-          "label": "test_child2",
-          "description": " ",
-          "condition": {
-            "type": "EQUAL",
-            "values": [
-              "B2"
-            ]
-          },
-          "children": []
-        }
       ],
       "selects": [
         {
