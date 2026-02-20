@@ -48,7 +48,15 @@ public class SolrConfig implements SearchConfig {
 	@Min(1)
 	private int indexerClientQueueSize = 10;
 
-	@Override
+    /**
+     * Prefer http/1.1.
+     * This might help with network problems (e.g. reverse proxy).
+     * If unset, solr client tests a property see {@link HttpJdkSolrClient.Builder#useHttp1_1(boolean)}.
+     */
+    @Nullable
+    private Boolean useHttp1_1;
+
+    @Override
 	public SolrProcessor createSearchProcessor(Environment environment, DatasetId datasetId) {
 		SolrProcessor solrProcessor = new SolrProcessor(() -> createSearchClient(datasetId.getName()),() -> createIndexClient(datasetId.getName()), commitWithin, filterValue);
 
@@ -76,6 +84,11 @@ public class SolrConfig implements SearchConfig {
 			builder.withBasicAuthCredentials(username, password);
 		}
 
+        if (useHttp1_1 != null) {
+            builder.useHttp1_1(useHttp1_1);
+        }
+
+
         return builder.build();
 	}
 
@@ -89,6 +102,10 @@ public class SolrConfig implements SearchConfig {
 		if (username != null) {
 			http2Builder.withBasicAuthCredentials(username, password);
 		}
+
+        if (useHttp1_1 != null) {
+            http2Builder.useHttp1_1(useHttp1_1);
+        }
 
 		Http2SolrClient http2Client = http2Builder.build();
 
