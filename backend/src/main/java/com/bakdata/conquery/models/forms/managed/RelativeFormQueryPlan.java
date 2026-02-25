@@ -60,6 +60,8 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	@Override
 	public void init(QueryExecutionContext ctxt, Entity entity) {
 		query.init(ctxt, entity);
+
+
 		featurePlan.init(ctxt, entity);
 
 		indexSelector = indexSelectorFactory.sampler(ctxt.getToday());
@@ -70,9 +72,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
-
 		// Don't set the query date aggregator here because the subqueries should set their aggregator independently
-
 		Optional<? extends EntityResult> preResult = query.execute(ctx, entity);
 
 		if (preResult.isEmpty()) {
@@ -88,7 +88,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		// dateset is empty or sampling failed.
 		if (sampled.isEmpty()) {
-			log.warn("Sampled empty result for Entity[{}]: `{}({})`", contained.getEntityId(), indexSelector, dateSet);
+			log.trace("Sampled empty result for Entity[{}]: `{}({})`", contained.getEntityId(), indexSelector, dateSet);
 			List<Object[]> results = new ArrayList<>();
 			results.add(new Object[size]);
 			return Optional.of(

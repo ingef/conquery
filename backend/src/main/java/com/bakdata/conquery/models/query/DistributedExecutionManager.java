@@ -85,14 +85,18 @@ public class DistributedExecutionManager extends ExecutionManager {
 	@SneakyThrows
 	public <R extends ShardResult, E extends ManagedExecution & InternalExecution> void handleQueryResult(R result, E execution) {
 
-
-		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
-		log.trace("Received Result\n{}", result.getResults());
-
 		if (execution == null) {
 			log.debug("Ignoring result {} because the corresponding execution was 'null' (probably deleted)", result);
 			return;
 		}
+
+		if (result.getError() != null) {
+			execution.fail(result.getError());
+			return;
+		}
+
+		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getExecutionId());
+		log.trace("Received Result\n{}", result.getResults());
 
 		Optional<ExecutionInfo> optInfo = tryGetExecutionInfo(execution.getId());
 
@@ -114,18 +118,13 @@ public class DistributedExecutionManager extends ExecutionManager {
 			return;
 		}
 
-		if (result.getError().isPresent()) {
-			execution.fail(result.getError().get());
-		}
-		else {
-			distributedInfo.addShardResult(result);
+		distributedInfo.addShardResult(result);
 
-			// If all known workers have returned a result, the query is DONE.
-			if (distributedInfo.allResultsArrived(getWorkerHandler(execution.getDataset()).getAllWorkerIds())) {
+		// If all known workers have returned a result, the query is DONE.
+		if (distributedInfo.allResultsArrived(getWorkerHandler(execution.getDataset()).getAllWorkerIds())) {
 
-				execution.finish(ExecutionState.DONE);
+			execution.finish(ExecutionState.DONE);
 
-			}
 		}
 
 		// State changed to DONE or FAILED
@@ -139,7 +138,7 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 			/* This log is here to prevent an NPE which could occur when no strong reference to result.getResults()
 			 existed anymore after the query finished and immediately was reset */
-			log.trace("Collected metrics for execution {}. Last result received: {}:", result.getQueryId(), result.getResults());
+			log.trace("Collected metrics for execution {}. Last result received: {}:", result.getExecutionId(), result.getResults());
 		}
 
 	}
