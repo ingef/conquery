@@ -31,8 +31,21 @@ export interface TreeChildrenOr extends TreeChildrenBase {
   connection: "or";
 }
 
-export type TimeTimestamp = "ALL" | "ANY" | "EARLIEST" | "LATEST";
-export type TimeOperator = "BEFORE" | "AFTER" | "WHILE";
+export const TIME_OPERATORS: ("BEFORE" | "AFTER" | "WHILE")[] = [
+  "BEFORE",
+  "AFTER",
+  "WHILE",
+] as const;
+export const TIME_TIMESTAMPS: ("ALL" | "ANY" | "EARLIEST" | "LATEST")[] = [
+  "ALL",
+  "ANY",
+  "EARLIEST",
+  "LATEST",
+] as const;
+
+export type TimeTimestamp = (typeof TIME_TIMESTAMPS)[number];
+export type TimeOperator = (typeof TIME_OPERATORS)[number];
+
 export interface TreeChildrenTime extends TreeChildrenBase {
   connection: "time";
   operator: TimeOperator;

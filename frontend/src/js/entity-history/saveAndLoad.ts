@@ -6,6 +6,7 @@ import { downloadBlob } from "../common/helpers/downloadBlob";
 import { toCSV } from "../file/csv";
 import { setMessage } from "../snack-message/actions";
 
+import type { SelectOptionT } from "../api/types";
 import { EntityIdsStatus } from "./History";
 import { LoadingPayload } from "./LoadHistoryDropzone";
 import { EntityId } from "./reducer";
@@ -54,9 +55,9 @@ export const useLoadHistory = ({
 
   return useCallback(
     ({ label, data }: { label: string; data: string[][] }) => {
-      const distinctEntityIds: Set<EntityId> = new Set();
+      const distinctEntityIds: Set<string> = new Set();
+      const loadedEntityIds: EntityId[] = [];
       const loadedEntityStatus: EntityIdsStatus = {};
-      const loadedEntityStatusOptionsRaw: string[] = [];
 
       // Expect data to be a CSV in format:
       // kind;id;status1;status2;...
@@ -68,7 +69,12 @@ export const useLoadHistory = ({
         const [kind, id] = row;
 
         // Deduplication is necessary for SecondaryId Queries
-        distinctEntityIds.add({ kind, id });
+        if (distinctEntityIds.has(kind + id)) {
+          continue;
+        }
+
+        distinctEntityIds.add(kind + id);
+        loadedEntityIds.push({ kind: kind, id: id });
 
         if (row.length > 2) {
           loadedEntityStatus[id] = row
@@ -76,15 +82,14 @@ export const useLoadHistory = ({
             .filter((str) => str.length > 0)
             .map((s) => {
               const opt = s.trim();
-              loadedEntityStatusOptionsRaw.push(opt);
               return { label: opt, value: opt };
             });
         }
       }
 
-      const loadedEntityStatusOptions = [
-        ...new Set(loadedEntityStatusOptionsRaw),
-      ].map((item) => ({ label: item, value: item }));
+      const loadedEntityStatusOptions: SelectOptionT[] = [
+        ...new Set(Object.values(loadedEntityStatus).flatMap((val) => val)),
+      ];
 
       if (distinctEntityIds.size === 0) {
         dispatch(
@@ -95,8 +100,6 @@ export const useLoadHistory = ({
         );
         return;
       }
-
-      const loadedEntityIds = [...distinctEntityIds];
 
       onLoadFromFile({
         label,
