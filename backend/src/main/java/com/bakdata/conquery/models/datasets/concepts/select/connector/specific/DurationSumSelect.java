@@ -9,14 +9,17 @@ import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.TwoColumnDurationSumAggregator;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.aggregator.DurationSumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @CPSType(id = "DURATION_SUM", base = Select.class)
@@ -24,12 +27,12 @@ import lombok.Data;
 public class DurationSumSelect extends Select implements DaterangeSelectOrFilter {
 
 	@Nullable
-	private final ColumnId column;
+	private ColumnId column;
 
 	@Nullable
-	private final ColumnId startColumn, endColumn;
+	private ColumnId startColumn, endColumn;
 
-	private final List<ColumnId> distinctBy;
+	private List<ColumnId> distinctBy;
 
 	@Override
 	public List<ColumnId> getRequiredColumns() {
@@ -56,7 +59,8 @@ public class DurationSumSelect extends Select implements DaterangeSelectOrFilter
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		DurationSumAggregator aggregator = new DurationSumAggregator(getColumn().resolve());
+		ColumnAggregator<?> aggregator = getColumn() != null ? new DurationSumAggregator(getColumn().resolve())
+															 : new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
 
 		if (!hasDistinct()) {
 			return aggregator;
