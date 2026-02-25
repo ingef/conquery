@@ -1,6 +1,5 @@
 package com.bakdata.conquery.integration.sql;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
@@ -24,12 +22,12 @@ import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.preproc.parser.specific.BooleanParser;
 import com.bakdata.conquery.util.DateReader;
-import com.google.common.base.Strings;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.parquet.Strings;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -145,8 +143,6 @@ public class CsvTableImporter {
 	}
 
 
-
-
 	private Field<?> createField(RequiredColumn requiredColumn) {
 		DataType<?> dataType = switch (requiredColumn.getType()) {
 			case STRING -> SQLDataType.VARCHAR(DEFAULT_VARCHAR_LENGTH);
@@ -187,8 +183,9 @@ public class CsvTableImporter {
 
 	@SneakyThrows
 	private List<RowN> getTablesContentFromCSV(ResourceFile csvFile, List<RequiredColumn> requiredColumns) {
-		List<String[]> rawContent = this.csvReader.parseAll(csvFile.stream());
-		List<List<Object>> castedContent = this.castContent(rawContent, requiredColumns);
+		csvReader.beginParsing(csvFile.stream());
+		List<com.univocity.parsers.common.record.Record> records = csvReader.parseAllRecords();
+		List<List<Object>> castedContent = readRecords(records, requiredColumns);
 		return castedContent.stream()
 							.map(DSL::row)
 							.toList();
@@ -206,35 +203,39 @@ public class CsvTableImporter {
 	/**
 	 * Casts all values of each row to the corresponding type of the column the value refers to.
 	 */
-	private List<List<Object>> castContent(List<String[]> rawContent, List<RequiredColumn> requiredColumns) {
-		List<List<Object>> castedContent = new ArrayList<>(rawContent.size());
-		for (String[] row : rawContent) {
-			List<Object> castEntriesOfRow = new ArrayList<>(row.length);
-			for (int i = 0; i < row.length; i++) {
-				MajorTypeId type = requiredColumns.get(i).getType();
-				castEntriesOfRow.add(this.castEntryAccordingToColumnType(row[i], type));
+	private List<List<Object>> readRecords(@MonotonicNonNull List<com.univocity.parsers.common.record.Record> rawContent, List<RequiredColumn> requiredColumns) {
+		List<List<Object>> castedContent = new ArrayList<>();
+		rawContent.forEach(row -> {
+			List<Object> castEntriesOfRow = new ArrayList<>(requiredColumns.size());
+			for (RequiredColumn col : requiredColumns) {
+				try {
+					castEntriesOfRow.add(this.readAccordingToColumnType(row, col.getName(), col.getType()));
+				}
+				catch (Exception e) {
+					throw new IllegalArgumentException("Failed to read value %s for %s".formatted(row.getString(col.getName()), col), e);
+				}
 			}
 			castedContent.add(castEntriesOfRow);
-		}
+		});
 		return castedContent;
 	}
 
-	private Object castEntryAccordingToColumnType(String entry, MajorTypeId type) {
+	private Object readAccordingToColumnType(com.univocity.parsers.common.record.Record record, String column, MajorTypeId type) {
 
 		// if the entry from the CSV is empty, the value in the database should be null
-		if (Strings.isNullOrEmpty(entry)) {
+		if (Strings.isNullOrEmpty(record.getString(column))) {
 			return null;
 		}
 
 		return switch (type) {
-			case STRING -> entry;
-			case BOOLEAN -> BooleanParser.parseBoolean(entry);
-			case INTEGER -> Integer.valueOf(entry);
-			case REAL -> Float.valueOf(entry);
-			case DECIMAL, MONEY -> new BigDecimal(entry);
-			case DATE -> dateReader.parseToLocalDate(entry);
+			case STRING -> record.getString(column);
+			case BOOLEAN -> record.getBoolean(column);
+			case INTEGER -> record.getInt(column);
+			case REAL -> record.getDouble(column);
+			case DECIMAL, MONEY -> record.getBigDecimal(column);
+			case DATE -> dateReader.parseToLocalDate(record.getString(column));
 			case DATE_RANGE -> {
-				CDateRange dateRange = dateReader.parseToCDateRange(entry);
+				CDateRange dateRange = dateReader.parseToCDateRange(record.getString(column));
 				yield DateRange.dateRange(dateRange.getMin() != null ? Date.valueOf(dateRange.getMin()) : null, true,
 										  dateRange.getMax() != null ? Date.valueOf(dateRange.getMax()) : null, true
 				);
