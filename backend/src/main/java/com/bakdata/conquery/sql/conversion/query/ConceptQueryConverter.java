@@ -94,6 +94,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 	private List<Field<?>> getFinalGroupBySelects(Selects preFinalSelects) {
 		List<Field<?>> groupBySelects = new ArrayList<>();
 		groupBySelects.addAll(preFinalSelects.getIds().toFields());
+		// TODO instead us any_value selects
 		groupBySelects.addAll(preFinalSelects.explicitSelects());
 		return groupBySelects;
 	}

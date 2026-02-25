@@ -1,6 +1,12 @@
 {
   "type": "QUERY_TEST",
   "label": "AND DATE LOGIC Test",
+  "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "expectedCsv": "tests/query/LOGICAL/AND_DATE_LOGICAL/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

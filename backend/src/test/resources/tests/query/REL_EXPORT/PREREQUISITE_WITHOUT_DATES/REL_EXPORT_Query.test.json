@@ -1,154 +1,159 @@
 {
-    "type": "QUERY_TEST",
-    "label": "REL_EXPORT WITHOUT DATES Test",
-    "expectedCsv": "tests/query/REL_EXPORT/PREREQUISITE_WITHOUT_DATES/expected.csv",
-    "query": {
-        "type": "RELATIVE_FORM_QUERY",
-        
-        "resolutionsAndAlignmentMap": [
-            {
-                "resolution": "COMPLETE",
-                "alignment": "NO_ALIGN"
-            },
-            {
-                "resolution": "YEARS",
-                "alignment": "QUARTER"
-            }
-        ],
-        "query": {
-            "type": "CONCEPT_QUERY",
-            "root": {
-                "type": "CONCEPT",
-                "ids": [
-                    "concept_dateless.child1"
-                ],
-                "tables": [
-                    {
-                        "id": "concept_dateless.connector"
-                    }
-                ]
-            }
-        },
-        "features": {
-            "type": "ARRAY_CONCEPT_QUERY",
-            "childQueries": {
-                "type": "CONCEPT_QUERY",
-                "root": {
-                    "type": "CONCEPT",
-                    "ids": [
-                        "concept.child1"
-                    ],
-                    "selects": [
-                        "concept.exists"
-                    ],
-                    "tables": [
-                        {
-                            "id": "concept.connector"
-                        }
-                    ]
-                }
-            }
-        },
-        "indexSelector": "EARLIEST",
-        "indexPlacement": "BEFORE",
-        "timeCountBefore": 4,
-        "timeCountAfter": 4,
-        "timeUnit": "QUARTERS"
-    },
-    "concepts": [
-        {
-            "name": "concept",
-            "type": "TREE",
-            "connectors": {
-                "name": "connector",
-                "column": "table.column",
-                "validityDates": {
-                    "label": "datum",
-                    "column": "table.datum"
-                }
-            },
-            "selects": [
-                {
-                    "type": "EXISTS",
-                    "name": "exists"
-                }
-            ],
-            "children": [
-                {
-                    "label": "child1",
-                    "description": " ",
-                    "condition": {
-                        "type": "PREFIX_LIST",
-                        "prefixes": "A1"
-                    },
-                    "children": []
-                },
-                {
-                    "label": "child2",
-                    "description": " ",
-                    "condition": {
-                        "type": "PREFIX_LIST",
-                        "prefixes": "B2"
-                    },
-                    "children": []
-                }
-            ]
-        },
-        {
-            "label": "concept_dateless",
-            "type": "TREE",
-            "connectors": {
-                "name": "connector",
-                "column": "table.column"
-            },
-            "selects": [
-                {
-                    "type": "EXISTS",
-                    "name": "exists"
-                }
-            ],
-            "children": [
-                {
-                    "label": "child1",
-                    "description": " ",
-                    "condition": {
-                        "type": "PREFIX_LIST",
-                        "prefixes": "A1"
-                    },
-                    "children": []
-                },
-                {
-                    "label": "child2",
-                    "description": " ",
-                    "condition": {
-                        "type": "PREFIX_LIST",
-                        "prefixes": "B2"
-                    },
-                    "children": []
-                }
-            ]
-        }
+  "type": "QUERY_TEST",
+  "label": "REL_EXPORT WITHOUT DATES Test",
+  "expectedCsv": "tests/query/REL_EXPORT/PREREQUISITE_WITHOUT_DATES/expected.csv",
+  "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
+  "query": {
+    "type": "RELATIVE_FORM_QUERY",
+    "resolutionsAndAlignmentMap": [
+      {
+        "resolution": "COMPLETE",
+        "alignment": "NO_ALIGN"
+      },
+      {
+        "resolution": "YEARS",
+        "alignment": "QUARTER"
+      }
     ],
-    "content": {
+    "query": {
+      "type": "CONCEPT_QUERY",
+      "root": {
+        "type": "CONCEPT",
+        "ids": [
+          "concept_dateless.child1"
+        ],
         "tables": [
-            {
-                "csv": "tests/query/REL_EXPORT/PREREQUISITE_WITHOUT_DATES/content.csv",
-                "name": "table",
-                "primaryColumn": {
-                    "name": "pid",
-                    "type": "STRING"
-                },
-                "columns": [
-                    {
-                        "name": "datum",
-                        "type": "DATE"
-                    },
-                    {
-                        "name": "column",
-                        "type": "STRING"
-                    }
-                ]
-            }
+          {
+            "id": "concept_dateless.connector"
+          }
         ]
+      }
+    },
+    "features": {
+      "type": "ARRAY_CONCEPT_QUERY",
+      "childQueries": {
+        "type": "CONCEPT_QUERY",
+        "root": {
+          "type": "CONCEPT",
+          "ids": [
+            "concept.child1"
+          ],
+          "selects": [
+            "concept.exists"
+          ],
+          "tables": [
+            {
+              "id": "concept.connector"
+            }
+          ]
+        }
+      }
+    },
+    "indexSelector": "EARLIEST",
+    "indexPlacement": "BEFORE",
+    "timeCountBefore": 4,
+    "timeCountAfter": 4,
+    "timeUnit": "QUARTERS"
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": {
+        "name": "connector",
+        "column": "table.column",
+        "validityDates": {
+          "label": "datum",
+          "column": "table.datum"
+        }
+      },
+      "selects": [
+        {
+          "type": "EXISTS",
+          "name": "exists"
+        }
+      ],
+      "children": [
+        {
+          "label": "child1",
+          "description": " ",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "A1"
+          },
+          "children": []
+        },
+        {
+          "label": "child2",
+          "description": " ",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "B2"
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "label": "concept_dateless",
+      "type": "TREE",
+      "connectors": {
+        "name": "connector",
+        "column": "table.column"
+      },
+      "selects": [
+        {
+          "type": "EXISTS",
+          "name": "exists"
+        }
+      ],
+      "children": [
+        {
+          "label": "child1",
+          "description": " ",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "A1"
+          },
+          "children": []
+        },
+        {
+          "label": "child2",
+          "description": " ",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "B2"
+          },
+          "children": []
+        }
+      ]
     }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/REL_EXPORT/PREREQUISITE_WITHOUT_DATES/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
 }

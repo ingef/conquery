@@ -1,6 +1,12 @@
 {
   "type": "QUERY_TEST",
   "label": "SUM_EMPTY_DATE_CONCEPT_QUERY Test",
+  "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "expectedCsv": "tests/query/SUM_EMPTY_DATE_CONCEPT_QUERY/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
