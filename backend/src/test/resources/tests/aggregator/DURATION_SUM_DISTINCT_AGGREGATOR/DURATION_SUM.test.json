@@ -1,6 +1,12 @@
 {
   "type": "QUERY_TEST",
   "label": "DURATION_SUM_AGGREGATOR Test",
+  "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "expectedCsv": "tests/aggregator/DURATION_SUM_DISTINCT_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
