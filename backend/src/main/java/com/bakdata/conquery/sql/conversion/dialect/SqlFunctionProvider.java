@@ -183,10 +183,11 @@ public interface SqlFunctionProvider {
 	}
 
 	default Field<String> concat(List<Field<String>> fields) {
-		String concatenated = fields.stream()
+		String concatenated =
+				fields.stream()
 									// if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
 									// thus concat an empty string
-									.map(field -> DSL.when(field.isNull(), DSL.val("")).otherwise(field))
+									.map(field -> field)
 									.map(Field::toString)
 									.collect(Collectors.joining(SQL_UNIT_SEPARATOR));
 		return DSL.field(concatenated, String.class);

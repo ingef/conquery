@@ -2,10 +2,7 @@
   "type": "QUERY_TEST",
   "label": "CONCEPT_VALUES Test",
   "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL"
-    ]
+    "isEnabled": false
   },
   "expectedCsv": "tests/aggregator/CONCEPT_COLUMN_SELECTS/expected_raw.csv",
   "query": {

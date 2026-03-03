@@ -31,35 +31,45 @@
       "type": "TREE",
       "connectors": [
         {
-          "name" : "connector",
-          "table" : "table",
+          "name": "connector",
+          "table": "table",
           "selects": {
-            "name" : "select",
+            "name": "select",
             "type": "FLAGS",
             "flags": {
               "A": "table.a",
               "B": "table.b",
               "C": "table.c"
             }
-          }
+          },
+          "validityDates": [
+            {
+              "name": "date",
+              "column": "table.date"
+            }
+          ]
         }
       ]
     }
   ],
   "content": {
     "tables": {
-		"name": "table",
-		"csv": "tests/aggregator/FLAGS_AGGREGATOR/content.csv",
-		"primaryColumn": {
-			"name": "id",
-			"type": "STRING"
-		},
-		"columns": [
-			{
-				"name": "a",
-				"type": "BOOLEAN"
-			},
-			{
+      "name": "table",
+      "csv": "tests/aggregator/FLAGS_AGGREGATOR/content.csv",
+      "primaryColumn": {
+        "name": "id",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "date",
+          "type": "DATE"
+        },
+        {
+          "name": "a",
+          "type": "BOOLEAN"
+        },
+        {
           "name": "b",
           "type": "BOOLEAN"
         },

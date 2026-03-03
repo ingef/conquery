@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -16,6 +18,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.TwoColum
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.aggregator.DurationSumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
@@ -50,6 +53,11 @@ public class DurationSumSelect extends Select implements DaterangeSelectOrFilter
 			out.addAll(distinctBy);
 		}
 		return out;
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<Integer> createResultSetReader(ResultSetProcessor processor) {
+		return processor::getInteger;
 	}
 
 	@JsonIgnore

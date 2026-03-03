@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
@@ -29,9 +31,10 @@ class ValueSelectUtil {
 			Column column,
 			String alias,
 			Function<Field<?>, ? extends SortField<?>> ordering,
-			SelectContext<ConnectorSqlTables> selectContext) {
+			Range.IntegerRange substringRange, SelectContext<ConnectorSqlTables> selectContext) {
 
-		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(selectContext.getTables().getRootTable(), column.getName(), Object.class);
+
+		SingleColumnSqlSelect rootSelect = MappableSingleColumnSelect.getSubstringSelect(column, substringRange, selectContext, null);
 
 		// create a CTE, that per row makes a window calculation to select for the rank of the validity date.
 		// Further down below, we select the values with rank=1, which is FIRST/LAST depending on sort order supplied by the creator.
@@ -54,7 +57,7 @@ class ValueSelectUtil {
 	}
 
 	private static QueryStep buildRowNumberStep(
-			ExtractingSqlSelect<?> rootSelect, Function<Field<?>, ? extends SortField<?>> ordering, String alias,
+			SingleColumnSqlSelect rootSelect, Function<Field<?>, ? extends SortField<?>> ordering, String alias,
 			SelectContext<ConnectorSqlTables> selectContext) {
 
 		String predecessor = selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
@@ -72,7 +75,7 @@ class ValueSelectUtil {
 										))
 										.build())
 						.cteName(ValueSelectCteStep.ROW_NUMBER_STEP.cteName(alias))
-						.conditions(List.of(qualifiedRootSelect.isNotNull()))
+						.conditions(List.of(qualifiedRootSelect.isNotNull(), selectContext.getValidityDate().map(ColumnDateRange::isNotEmpty).orElse(noCondition())))
 						.fromTable(table(name(predecessor)))
 						.build();
 	}

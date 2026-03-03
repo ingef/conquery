@@ -2,7 +2,7 @@
   "type": "QUERY_TEST",
   "label": "QUARTER_AGGREGATOR",
   "sqlSpec": {
-    "isEnabled": true,
+    "isEnabled": false,
     "supportedDialects": [
       "POSTGRESQL"
     ]

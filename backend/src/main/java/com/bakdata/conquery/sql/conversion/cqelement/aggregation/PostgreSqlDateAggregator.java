@@ -1,5 +1,8 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.keyword;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -17,6 +20,7 @@ import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
+import org.jooq.Keyword;
 import org.jooq.impl.DSL;
 
 public class PostgreSqlDateAggregator implements SqlDateAggregator {
@@ -82,11 +86,11 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 
 		// see https://www.postgresql.org/docs/current/functions-range.html
 		// {[-infinity,infinity]} - {multirange} computes the inverse of a {multirange}
-		Field<Object> invertedValidityDate = DSL.field(
+		Field<Object> invertedValidityDate = field(
 				"{0}::{1} - {2}",
 				Object.class,
 				maxDateRange,
-				DSL.keyword("datemultirange"),
+				keyword("datemultirange"),
 				validityDate.get().getRange()
 		).as(PostgresDateAggregationCteStep.DATES_INVERTED.getSuffix());
 
@@ -113,12 +117,13 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 														  .map(PostgreSqlDateAggregator::createEmptyRangeForNullValues)
 														  .collect(Collectors.joining(aggregatingOperator));
 
-		return ColumnDateRange.of(DSL.field(aggregatedExpression))
+		return ColumnDateRange.of(field(aggregatedExpression))
 							  .asValidityDateRange(joinedStepCteName);
 	}
 
 	private static String createEmptyRangeForNullValues(Field<?> field) {
-		return DSL.coalesce(field, DSL.field("'{}'::{0}", DSL.keyword("datemultirange")))
+		Keyword datemultirange = keyword("datemultirange");
+		return DSL.coalesce(field("{0}::{1}", field, datemultirange), field("'{}'::{0}", datemultirange))
 				  .toString();
 	}
 

@@ -37,6 +37,7 @@ import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import io.dropwizard.jersey.validation.Validators;
@@ -305,6 +306,11 @@ public class DefaultColumnNameTest {
 			@Override
 			public Aggregator<?> createAggregator() {
 				return null;
+			}
+
+			@Override
+			public ResultSetProcessor.Reader<?> createResultSetReader(ResultSetProcessor processor) {
+				return processor::getString;
 			}
 
 			@Override

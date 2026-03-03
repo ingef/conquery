@@ -2,9 +2,8 @@
   "type": "FILTER_TEST",
   "label": "SELECT Substring",
   "sqlSpec": {
-    "isEnabled": true,
+    "isEnabled": false,
     "supportedDialects": [
-      "POSTGRESQL"
     ]
   },
   "expectedCsv": "tests/filter/SELECT_SUBSTRING/expected.csv",

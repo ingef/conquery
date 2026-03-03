@@ -17,6 +17,10 @@
       },
       "columns": [
         {
+          "name": "date",
+          "type": "DATE"
+        },
+        {
           "name": "a",
           "type": "BOOLEAN"
         },
@@ -39,7 +43,13 @@
         "B": "table.b",
         "C": "table.c"
       }
-    }
+    },
+    "validityDates": [
+      {
+        "name": "date",
+        "column": "table.date"
+      }
+    ]
   },
   "filterValue": {
     "type": "MULTI_SELECT",

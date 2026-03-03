@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
 import static org.jooq.impl.DSL.nullif;
-import static org.jooq.impl.DSL.unnest;
 
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
@@ -45,6 +44,10 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	private static final String INFINITY_DATE_VALUE = "infinity";
 	private static final String MINUS_INFINITY_DATE_VALUE = "-infinity";
 	private static final String ANY_CHAR_REGEX = "%";
+
+	private static Field<?> unnest(Field<?> multirange) {
+		return DSL.function("unnest", Object.class, multirange);
+	}
 
 	@Override
 	public String getMaxDateExpression() {
@@ -92,7 +95,6 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 				ensureIsSingleColumnRange(daterange).getRange()
 		);
 	}
-
 
 	public Field<?> daterange(Field<?> startColumn, Field<?> endColumn, String bounds) {
 		return DSL.function(
@@ -157,7 +159,6 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		return ofStartAndEnd(tableName, validityDate.getStartColumn().resolve(), validityDate.getEndColumn().resolve());
 	}
 
-
 	private ColumnDateRange ofSingleColumn(String tableName, Column column) {
 
 		Field<?> dateRange;
@@ -212,8 +213,8 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	public ColumnDateRange intersection(ColumnDateRange left, ColumnDateRange right) {
 		return ColumnDateRange.of(DSL.field(
 				"{0} * {1}",
-				ensureIsSingleColumnRange(left).getRange(),
-				ensureIsSingleColumnRange(right).getRange()
+				ensureIsSingleColumnRange(right).getRange(),
+				ensureIsSingleColumnRange(left).getRange()
 		));
 	}
 
@@ -264,7 +265,8 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	public QueryStep unnestDaterange(ColumnDateRange nested, QueryStep predecessor, String cteName) {
 
 		ColumnDateRange qualifiedRange = nested.qualify(predecessor.getCteName());
-		ColumnDateRange unnested = ColumnDateRange.of(qualifiedRange.getRange().as(qualifiedRange.getAlias()));
+
+		ColumnDateRange unnested = ColumnDateRange.of(unnest(qualifiedRange.getRange()).as(qualifiedRange.getAlias()), qualifiedRange.getAlias());
 
 		Selects selects = Selects.builder()
 								 .ids(predecessor.getQualifiedSelects().getIds())
@@ -371,7 +373,6 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	public Field<Date> lower(Field<?> daterange) {
 		return DSL.function("lower", Date.class, daterange);
 	}
-
 
 
 	private ColumnDateRange ensureIsSingleColumnRange(ColumnDateRange daterange) {

@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -19,6 +21,7 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.sql.conversion.model.select.ConceptColumnSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
@@ -78,5 +81,10 @@ public class ConceptColumnSelect extends UniversalSelect {
 	public SelectConverter<ConceptColumnSelect> createConverter() {
 		//TODO bind Select to converter here
 		return new ConceptColumnSelectConverter();
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<String> createResultSetReader(ResultSetProcessor processor) {
+		return processor::getString;
 	}
 }

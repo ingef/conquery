@@ -1,8 +1,8 @@
-id,a,b,c
-1,true,false,false
-2,false,true,false
-3,false,false,true
-4,true,true,false
-5,false,false,true
-6,,,
-7,,,true
+id,date,a,b,c
+1,2000-01-01,true,false,false
+2,2000-01-01,false,true,false
+3,2000-01-01,false,false,true
+4,2000-01-01,true,true,false
+5,2000-01-01,false,false,true
+6,2000-01-01,,,
+7,2000-01-01,,,true

@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.QuartersIn
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import org.jooq.Condition;
 
+//TOODO missing implementation
 public class QuartersInYearFilterConverter implements FilterConverter<QuartersInYearFilter, Range.LongRange> {
     @Override
     public SqlFilters convertToSqlFilter(QuartersInYearFilter filter, FilterContext<LongRange> filterContext) {

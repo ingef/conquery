@@ -203,7 +203,7 @@ public class CsvTableImporter {
 	/**
 	 * Casts all values of each row to the corresponding type of the column the value refers to.
 	 */
-	private List<List<Object>> readRecords(@MonotonicNonNull List<com.univocity.parsers.common.record.Record> rawContent, List<RequiredColumn> requiredColumns) {
+	private List<List<Object>> readRecords(List<com.univocity.parsers.common.record.Record> rawContent, List<RequiredColumn> requiredColumns) {
 		List<List<Object>> castedContent = new ArrayList<>();
 		rawContent.forEach(row -> {
 			List<Object> castEntriesOfRow = new ArrayList<>(requiredColumns.size());

@@ -11,7 +11,7 @@ public class LastValueSelectConverter implements SelectConverter<LastValueSelect
 		return ValueSelectUtil.createValueSelect(
 				select.getColumn().resolve(),
 				selectContext.getNameGenerator().selectName(select),
-				Field::desc, selectContext
+				Field::desc, select.getSubstringRange(), selectContext
 		);
 	}
 }

@@ -58,7 +58,7 @@ class JoinBranchesCte extends ConnectorCte {
 
 		// validity date aggregation
 		Optional<ColumnDateRange> validityDate;
-		if (!tableContext.getConnectorTables().isWithIntervalPacking()) {
+		if (tableContext.getValidityDate().isEmpty() || !tableContext.getConnectorTables().isWithIntervalPacking()) {
 			validityDate = Optional.empty();
 		}
 		else {

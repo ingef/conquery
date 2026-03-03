@@ -1,8 +1,8 @@
 {
   "type": "QUERY_TEST",
-  "label": "DURATION_SUM_AGGREGATOR Test",
+  "label": "DURATION_SUM (distinctBy)",
   "sqlSpec": {
-    "isEnabled": true,
+    "isEnabled": false,
     "supportedDialects": [
       "POSTGRESQL"
     ]

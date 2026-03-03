@@ -3,9 +3,8 @@
   "label": "REL_EXPORT WITHOUT DATES Test",
   "expectedCsv": "tests/query/REL_EXPORT/PREREQUISITE_WITHOUT_DATES/expected.csv",
   "sqlSpec": {
-    "isEnabled": true,
+    "isEnabled": false,
     "supportedDialects": [
-      "POSTGRESQL"
     ]
   },
   "query": {

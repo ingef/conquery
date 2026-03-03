@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,6 +9,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -19,6 +21,7 @@ import com.bakdata.conquery.models.query.resultinfo.printers.common.OneToManyMap
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.DistinctSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 @CPSType(id = "DISTINCT", base = Select.class)
@@ -31,7 +34,7 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new AllValuesAggregator<>(getColumn().resolve(), getSubstringRange());
+		return new AllValuesAggregator(getColumn().resolve(), getSubstringRange());
 	}
 
 	@Override
@@ -50,12 +53,22 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 	}
 
 	@Override
-	public ResultType getResultType() {
-		if (getMapping() == null) {
-			return new ResultType.ListT<>(ResultType.resolveResultType(getColumn().resolve().getType()));
+	public ResultSetProcessor.Reader<?> createResultSetReader(ResultSetProcessor processor) {
+		if (getMapping() != null){
+			return processor::getStringList;
 		}
 
+		return ResultSetProcessor.readerForType(getResultType(), processor);
+	}
+
+	@Override
+	public ResultType getResultType() {
 		return new ResultType.ListT<>(ResultType.Primitive.STRING);
+	}
+
+	@Override
+	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
+		return EnumSet.of(MajorTypeId.STRING);
 	}
 
 	/**

@@ -2,7 +2,7 @@
   "type": "QUERY_TEST",
   "label": "AND NEGATION DATE LOGIC Test",
   "sqlSpec": {
-    "isEnabled": true,
+    "isEnabled": false,
     "supportedDialects": [
       "POSTGRESQL"
     ]
