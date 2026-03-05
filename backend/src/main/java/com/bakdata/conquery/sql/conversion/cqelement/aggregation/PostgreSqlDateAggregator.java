@@ -17,6 +17,9 @@ import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
@@ -50,8 +53,10 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 			ConversionContext conversionContext
 	) {
 		String joinedStepCteName = joinedStep.getCteName();
+        DateAggregationDates qualified = dateAggregationDates.qualify(joinedStepCteName);
 
-		ColumnDateRange aggregatedValidityDate = getAggregatedValidityDate(dateAggregationDates, dateAggregationAction, joinedStepCteName);
+        ColumnDateRange aggregatedValidityDate = getAggregatedValidityDate(qualified, dateAggregationAction)
+                .asValidityDateRange(joinedStepCteName);
 
 		Selects dateAggregationSelects = Selects.builder()
 												.ids(joinedStep.getQualifiedSelects().getIds())
@@ -102,7 +107,7 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 						.build();
 	}
 
-	private ColumnDateRange getAggregatedValidityDate(DateAggregationDates dateAggregationDates, DateAggregationAction dateAggregationAction, String joinedStepCteName) {
+	public ColumnDateRange getAggregatedValidityDate(DateAggregationDates dateAggregationDates, DateAggregationAction dateAggregationAction) {
 
 		// see https://www.postgresql.org/docs/current/functions-range.html
 		String aggregatingOperator = switch (dateAggregationAction) {
@@ -111,14 +116,12 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 			case BLOCK, NEGATE -> throw new IllegalStateException("Unexpected aggregation mode: " + dateAggregationAction);
 		};
 
-		String aggregatedExpression = dateAggregationDates.qualify(joinedStepCteName)
-														  .getValidityDates().stream()
+		String aggregatedExpression = dateAggregationDates.getValidityDates().stream()
 														  .flatMap(validityDate -> validityDate.toFields().stream())
 														  .map(PostgreSqlDateAggregator::createEmptyRangeForNullValues)
 														  .collect(Collectors.joining(aggregatingOperator));
 
-		return ColumnDateRange.of(field(aggregatedExpression))
-							  .asValidityDateRange(joinedStepCteName);
+		return ColumnDateRange.of(field(aggregatedExpression));
 	}
 
 	private static String createEmptyRangeForNullValues(Field<?> field) {

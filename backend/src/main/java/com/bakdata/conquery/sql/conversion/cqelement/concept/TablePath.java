@@ -83,10 +83,6 @@ class TablePath {
 		tableInfo.setRootTable(cqTable.getConnector().resolve().resolveTableId().getTable());
 		tableInfo.addWithDefaultMapping(MANDATORY_STEPS);
 
-		if (context.isNegation()) {
-			tableInfo.addWithDefaultMapping(Set.of(ConceptCteStep.NEGATION));
-		}
-
 		boolean eventDateSelectsPresent = cqTable.getSelects().stream().map(SelectId::resolve).anyMatch(Select::isEventDateSelect);
 		// no validity date aggregation necessary
 		if (!cqConcept.isAggregateEventDates() && !eventDateSelectsPresent) {
