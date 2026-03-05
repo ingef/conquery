@@ -23,6 +23,7 @@ import lombok.Singular;
 import lombok.Value;
 import lombok.With;
 
+//TODO this class is less context and more state. It's also incredibly dangerous because it hides a lot of moving parts and creates indirections.
 @Value
 @With
 @Builder(toBuilder = true)

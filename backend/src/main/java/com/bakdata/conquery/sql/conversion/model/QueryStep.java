@@ -44,13 +44,7 @@ public class QueryStep {
 	/**
 	 * Determines if the select should be distinct.
 	 */
-    @Builder.Default
-	boolean selectDistinct = false;
-    /**
-     * TODO
-     */
-    @Builder.Default
-    boolean negate = false;
+	boolean selectDistinct;
 	/**
 	 * All {@link QueryStep}'s that shall be converted before this {@link QueryStep}.
 	 */

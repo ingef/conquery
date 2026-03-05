@@ -112,7 +112,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
-    private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
+	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
 
 		String tableName = validityDate.getConnector().resolveTableId().getTable();
 
@@ -159,11 +159,12 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		);
 	}
 
-	@Overridepublic ColumnDateRange maxRangeIf(Condition condition) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
+	@Override
+	public ColumnDateRange maxRangeIf(Condition condition) {
+		throw new UnsupportedOperationException("Not implemented yet");
+	}
 
-    @Override
+	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction) {
 
 		ColumnDateRange validityDateRange = toColumnDateRange(validityDate);

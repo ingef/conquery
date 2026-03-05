@@ -200,7 +200,8 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		);
 	}
 
-	@Overridepublic ColumnDateRange maxRangeIf(Condition condition) {
+	@Override
+	public ColumnDateRange maxRangeIf(Condition condition) {
         return ColumnDateRange.of(
                 DSL.when(condition.isTrue(),
                 datemultirange(daterange(toDateField(MINUS_INFINITY_DATE_VALUE), toDateField(INFINITY_DATE_VALUE), CLOSED_RANGE)))

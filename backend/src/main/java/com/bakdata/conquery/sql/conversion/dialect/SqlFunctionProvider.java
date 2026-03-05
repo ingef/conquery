@@ -95,11 +95,6 @@ public interface SqlFunctionProvider {
 	 */
 	ColumnDateRange maxRange();
 
-    /**
-     * Creates a {@link ColumnDateRange} of maximum range if the condition is true, else null.
-     */
-    ColumnDateRange maxRangeIf(Condition condition);
-
 	/**
 	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date. The validity dates bounds will be restricted by the given date
 	 * restriction.
@@ -186,7 +181,7 @@ public interface SqlFunctionProvider {
 				DSL.orderBy(orderByFields)
 		);
 	}
-
+	ColumnDateRange maxRangeIf(Condition condition);
 	default Field<String> concat(List<Field<String>> fields) {
 		String concatenated =
 				fields.stream()
