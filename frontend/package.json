@@ -129,7 +129,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "papaparse": "^5.4.1",
     "prettier": "^3.0.3",
-    "storybook": "8.6.12",
+    "storybook": "8.6.18",
     "tailwind-styled-components": "^2.2.0",
     "terser": "^5.24.0",
     "ts-jest": "^29.1.1",
