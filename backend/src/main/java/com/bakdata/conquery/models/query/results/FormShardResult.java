@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.query.results;
 
+import java.util.Optional;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
@@ -37,10 +39,10 @@ public class FormShardResult extends ShardResult {
 	@Override
 	protected void addResult(DistributedExecutionManager executionManager) {
 		final ManagedInternalForm<?> managedInternalForm = (ManagedInternalForm<?>) executionManager.getExecution(getFormId());
-		final ManagedQuery subQuery = managedInternalForm.getSubQuery(getQueryId());
+		final ManagedQuery subQuery = managedInternalForm.getSubQuery(getExecutionId());
 
 		if (subQuery == null) {
-			throw new IllegalStateException("Subquery %s did not belong to form %s. Known subqueries: %s".formatted(getQueryId(),
+			throw new IllegalStateException("Subquery %s did not belong to form %s. Known subqueries: %s".formatted(getExecutionId(),
 																													formId,
 																													managedInternalForm.getSubQueries()
 			));
@@ -51,7 +53,7 @@ public class FormShardResult extends ShardResult {
 
 		// Fail the whole execution if a subquery fails
 		if (ExecutionState.FAILED.equals(subQuery.getState())) {
-			managedInternalForm.fail(getError().orElseThrow(() -> new IllegalStateException(String.format("Query[%s] failed but no error was set.", subQuery.getId()))));
+			managedInternalForm.fail(Optional.ofNullable(getError()).orElseThrow(() -> new IllegalStateException(String.format("Query[%s] failed but no error was set.", subQuery.getId()))));
 		}
 
 		if (managedInternalForm.allSubQueriesDone()) {

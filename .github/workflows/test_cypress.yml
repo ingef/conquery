@@ -20,14 +20,14 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Cache local Maven repository
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -52,7 +52,7 @@ jobs:
       - name: Cypress run
         # This is a preconfigured action, maintained by cypress, to run e2e tests
         # https://github.com/cypress-io/github-action
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
           working-directory: .
           start: bash ./scripts/run_e2e_all.sh

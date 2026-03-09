@@ -1,7 +1,13 @@
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ConnectionKind, Tree, TreeChildrenTime } from "./types";
+import {
+  ConnectionKind,
+  TimeOperator,
+  TimeTimestamp,
+  Tree,
+  TreeChildrenTime,
+} from "./types";
 
 export const findNodeById = (tree: Tree, id: string): Tree | undefined => {
   if (tree.id === id) {
@@ -65,7 +71,7 @@ export const useGetTranslatedTimestamp = () => {
   const { t } = useTranslation();
 
   return useCallback(
-    (timestamp: "ALL" | "ANY" | "EARLIEST" | "LATEST") => {
+    (timestamp: TimeTimestamp) => {
       if (timestamp === "ALL") {
         return t("editorV2.ALL");
       } else if (timestamp === "ANY") {
@@ -74,17 +80,13 @@ export const useGetTranslatedTimestamp = () => {
         return t("editorV2.EARLIEST");
       } else if (timestamp === "LATEST") {
         return t("editorV2.LATEST");
-      } else {
-        return "";
       }
     },
     [t],
   );
 };
 
-export const useTranslatedOperator = (
-  operator: "BEFORE" | "AFTER" | "WHILE",
-) => {
+export const useTranslatedOperator = (operator: TimeOperator) => {
   const { t } = useTranslation();
 
   if (operator === "BEFORE") {
