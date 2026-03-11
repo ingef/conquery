@@ -81,7 +81,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 
 	@AfterAll
 	static void after() throws IOException {
-		databaseConfig.close();
+		databaseConfig.stop();
 	}
 
 	@Test

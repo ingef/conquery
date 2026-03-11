@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.config;
 
-import java.io.Closeable;
 import java.io.IOException;
+import java.sql.SQLException;
 
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -34,7 +34,7 @@ import org.jooq.impl.DSL;
 @NoArgsConstructor
 @AllArgsConstructor
 @Slf4j
-public class DatabaseConnection implements Closeable, Managed {
+public class DatabaseConnection implements Managed {
 
 	private static final String DEFAULT_PRIMARY_COLUMN = "pid";
 
@@ -96,12 +96,16 @@ public class DatabaseConnection implements Closeable, Managed {
 		dataSource = new HikariDataSource(hikariConfig);
 
 		try {
-			log.debug("TESTING connection {}", getJdbcConnectionUrl());
-			DSLContext dslContext = DSL.using(this.dataSource, getDialect().getJooqDialect());
-			dslContext.execute(getDialect().getTestConnection());
-			log.debug("SUCCESS connecting to {}", getJdbcConnectionUrl());
-		}catch (Exception exception) {
-			log.error("FAILED to connect to {}", getJdbcConnectionUrl(), exception);
+			log.debug("TEST connecting to {}", getJdbcConnectionUrl());
+			if (dataSource.getConnection().isValid(100)) {
+				log.info("SUCCESS connecting to {}", getJdbcConnectionUrl());
+			}
+			else {
+				log.error("FAILED connecting to {}. Connection did not become valid.", getJdbcConnectionUrl());
+			}
+		}
+		catch (SQLException exception) {
+			log.error("FAILED connecting to {}", getJdbcConnectionUrl(), exception);
 		}
 	}
 
@@ -124,7 +128,7 @@ public class DatabaseConnection implements Closeable, Managed {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void stop() throws IOException {
 		dataSource.close();
 	}
 }

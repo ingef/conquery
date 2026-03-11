@@ -4,20 +4,17 @@ import java.util.Map;
 import jakarta.validation.Valid;
 
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.codahale.metrics.health.HealthCheckRegistry;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.lifecycle.Managed;
-import io.dropwizard.util.Duration;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.DSLContext;
 
 /**
  * Configuration for SQL databases to send dataset queries to.
@@ -32,7 +29,7 @@ import org.jooq.DSLContext;
 @NoArgsConstructor
 @AllArgsConstructor
 @Slf4j
-public class SqlConnectorConfig {
+public class SqlConnectorConfig implements Managed {
 
 	private boolean enabled;
 
@@ -44,15 +41,19 @@ public class SqlConnectorConfig {
 	/**
 	 * Keys must match the name of existing {@link Dataset}s.
 	 */
-	private Map<String, @Valid DatabaseConnection> databaseConfigs;
+	private Map<DatasetId, @Valid DatabaseConnection> databaseConfigs;
 
 
 	public DatabaseConnection getDatabaseConfig(Dataset dataset) {
-		return databaseConfigs.get(dataset.getName());
+		return databaseConfigs.get(dataset.getId());
 	}
 
 
 	public void initialize(Environment environment) {
+		if(databaseConfigs == null || !enabled){
+			return;
+		}
+
 		for (DatabaseConnection connection : databaseConfigs.values()) {
 			connection.setHealthCheckRegistry(environment.healthChecks());
 			environment.lifecycle().manage(connection);
