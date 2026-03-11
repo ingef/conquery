@@ -4,7 +4,7 @@ import java.util.Locale;
 
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.DatabaseConnection;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
@@ -22,7 +22,7 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 
 	private final IdColumnConfig idColumns;
 	private final SqlDialect dialect;
-	private final DatabaseConfig config;
+	private final DatabaseConnection config;
 	private final NameGenerator nameGenerator;
 	private final SqlExecutionService executionService;
 
@@ -30,7 +30,7 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 			IdColumnConfig idColumns,
 			SqlDialect dialect,
 			DSLContext dslContext,
-			DatabaseConfig config,
+			DatabaseConnection config,
 			SqlExecutionService executionService
 	) {
 		super(dialect.getNodeConverters(dslContext));

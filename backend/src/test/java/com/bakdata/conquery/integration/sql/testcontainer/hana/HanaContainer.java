@@ -2,6 +2,7 @@ package com.bakdata.conquery.integration.sql.testcontainer.hana;
 
 import java.time.Duration;
 
+import com.bakdata.conquery.models.config.Dialect;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 import org.testcontainers.utility.DockerImageName;
@@ -55,7 +56,7 @@ public class HanaContainer<SELF extends HanaContainer<SELF>> extends JdbcDatabas
 
 	@Override
 	protected String getTestQueryString() {
-		return "SELECT 1";
+		return Dialect.HANA.getTestConnection();
 	}
 
 	@Override

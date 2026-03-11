@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.DatabaseConnection;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -30,7 +30,7 @@ public class ConversionContext implements Context {
 
 	IdColumnConfig idColumns;
 
-	DatabaseConfig config;
+	DatabaseConnection config;
 
 	PrintSettings sqlPrintSettings;
 

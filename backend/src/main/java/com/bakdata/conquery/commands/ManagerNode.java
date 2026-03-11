@@ -84,6 +84,8 @@ public class ManagerNode implements Managed {
 		// FormScanner needs to be instantiated before plugins are initialized
 		formScanner = new FormScanner(config);
 
+		// TODO this could be implemented as a plugin tbh
+		config.getSqlConnectorConfig().initialize(environment);
 
 		// Init all plugins
 		config.getPlugins().forEach(pluginConfig -> pluginConfig.initialize(this));

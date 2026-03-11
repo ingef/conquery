@@ -9,6 +9,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.aggregation.AnsiSqlDateAggr
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.AnsiSqlIntervalPacker;
 import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
+import lombok.Getter;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 
@@ -18,6 +19,7 @@ public class HanaSqlDialect implements SqlDialect {
 	private final IntervalPacker hanaIntervalPacker;
 	private final SqlDateAggregator hanaSqlDateAggregator;
 	private final DefaultSqlCDateSetParser defaultNotationParser;
+
 
 	public HanaSqlDialect() {
 		this.hanaSqlFunctionProvider = new HanaSqlFunctionProvider();

@@ -9,12 +9,10 @@ import com.bakdata.conquery.integration.ConqueryIntegrationTests;
 import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.integration.json.SqlTestDataImporter;
 import com.bakdata.conquery.integration.sql.CsvTableImporter;
-import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.DatabaseConnection;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.sql.DSLContextWrapper;
-import com.bakdata.conquery.sql.DslContextFactory;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
@@ -25,9 +23,11 @@ import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
+import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicNode;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -45,8 +45,8 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	private static final String USERNAME = "user";
 	private static final String PASSWORD = "pass";
 
-	private static DSLContextWrapper dslContextWrapper;
-	private static DatabaseConfig databaseConfig;
+	private static DSLContext dslContext;
+	private static DatabaseConnection databaseConfig;
 	private static TestSqlConnectorConfig sqlConfig;
 	private static TestSqlDialect testSqlDialect;
 	private static SqlTestDataImporter testDataImporter;
@@ -71,25 +71,28 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 									   : new RemotePostgresContextProvider();
 
 		databaseConfig = provider.getDatabaseConfig();
+		databaseConfig.initializeDataSource();
+
 		sqlConfig = new TestSqlConnectorConfig(databaseConfig);
-		dslContextWrapper = DslContextFactory.create(databaseConfig, sqlConfig, null);
+		dslContext = databaseConfig.connect(sqlConfig);
 		testSqlDialect = new TestPostgreSqlDialect();
-		testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContextWrapper.getDslContext(), testSqlDialect, databaseConfig));
+		testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContext, testSqlDialect, databaseConfig));
 	}
 
 	@AfterAll
 	static void after() throws IOException {
-		dslContextWrapper.close();
+		databaseConfig.close();
 	}
 
 	@Test
 	@Tag(TestTags.INTEGRATION_SQL_BACKEND)
+	@Order(0)
 	public void shouldThrowException() {
 		// This can be removed as soon as we switch to a full integration test including the REST API
 		I18n.init();
 		ResultSetProcessor resultSetProcessor = ResultSetProcessorFactory.create(config, testSqlDialect);
-		SqlExecutionService executionService = new SqlExecutionService(dslContextWrapper.getDslContext(), resultSetProcessor);
-		SqlQuery validQuery = new TestSqlQuery("SELECT 1");
+		SqlExecutionService executionService = new SqlExecutionService(dslContext, resultSetProcessor);
+		SqlQuery validQuery = new TestSqlQuery(Dialect.POSTGRESQL.getTestConnection());
 		Assertions.assertThatNoException().isThrownBy(() -> executionService.execute(validQuery));
 
 		// executing an empty query should throw an SQL error
@@ -101,6 +104,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 
 	@TestFactory
 	@Tag(TestTags.INTEGRATION_SQL_BACKEND)
+	@Order(1)
 	public Stream<DynamicNode> sqlBackendTests() {
 		return Stream.concat(
 				super.sqlProgrammaticTests(databaseConfig, sqlConfig, testDataImporter),
@@ -136,8 +140,8 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	@Getter
 	private static class PortgresTestcontainerContextProvider implements TestContextProvider {
 
-		private final DSLContextWrapper dslContextWrapper;
-		private final DatabaseConfig databaseConfig;
+		private final DSLContext dslContext;
+		private final DatabaseConnection databaseConfig;
 		private final TestSqlConnectorConfig sqlConnectorConfig;
 
 		@Container
@@ -149,15 +153,16 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 					.withUsername(USERNAME)
 					.withPassword(PASSWORD);
 			this.postgreSQLContainer.start();
-			this.databaseConfig = DatabaseConfig.builder()
-												.dialect(Dialect.POSTGRESQL)
-												.jdbcConnectionUrl(postgreSQLContainer.getJdbcUrl())
-												.databaseUsername(USERNAME)
-												.databasePassword(PASSWORD)
-												.build();
+			this.databaseConfig = DatabaseConnection.builder()
+													.dialect(Dialect.POSTGRESQL)
+													.jdbcConnectionUrl(postgreSQLContainer.getJdbcUrl())
+													.databaseUsername(USERNAME)
+													.databasePassword(PASSWORD)
+													.build();
+			this.databaseConfig.initializeDataSource();
 
 			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
-			this.dslContextWrapper = DslContextFactory.create(this.databaseConfig, sqlConnectorConfig, null);
+			this.dslContext = this.databaseConfig.connect(sqlConnectorConfig);
 		}
 
 	}
@@ -172,19 +177,21 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		private final static String CONNECTION_URL = "jdbc:postgresql://%s:%s/%s".formatted(HOST, PORT, DATABASE);
 		private final static String USERNAME = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_USER"), PostgreSqlIntegrationTests.USERNAME);
 		private final static String PASSWORD = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_PASSWORD"), PostgreSqlIntegrationTests.PASSWORD);
-		private final DSLContextWrapper dslContextWrapper;
-		private final DatabaseConfig databaseConfig;
+		private final DSLContext dslContext;
+		private final DatabaseConnection databaseConfig;
 		private final TestSqlConnectorConfig sqlConnectorConfig;
 
 		public RemotePostgresContextProvider() {
-			this.databaseConfig = DatabaseConfig.builder()
-												.dialect(Dialect.POSTGRESQL)
-												.jdbcConnectionUrl(CONNECTION_URL)
-												.databaseUsername(USERNAME)
-												.databasePassword(PASSWORD)
-												.build();
+			this.databaseConfig = DatabaseConnection.builder()
+													.dialect(Dialect.POSTGRESQL)
+													.jdbcConnectionUrl(CONNECTION_URL)
+													.databaseUsername(USERNAME)
+													.databasePassword(PASSWORD)
+													.build();
+			this.databaseConfig.initializeDataSource();
+
 			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
-			this.dslContextWrapper = DslContextFactory.create(databaseConfig, sqlConnectorConfig, null);
+			this.dslContext = databaseConfig.connect(sqlConnectorConfig);
 		}
 
 	}

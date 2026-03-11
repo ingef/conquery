@@ -17,7 +17,7 @@ import com.bakdata.conquery.integration.sql.dialect.TestSqlDialect;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.DatabaseConnection;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
 import com.google.common.base.Strings;
@@ -43,9 +43,9 @@ public class CsvTableImporter {
 	private final DateRangeParser dateRangeParser;
 	private final CsvParser csvReader;
 	private final TestSqlDialect testSqlDialect;
-	private final DatabaseConfig databaseConfig;
+	private final DatabaseConnection databaseConfig;
 
-	public CsvTableImporter(DSLContext dslContext, TestSqlDialect testSqlDialect, DatabaseConfig databaseConfig) {
+	public CsvTableImporter(DSLContext dslContext, TestSqlDialect testSqlDialect, DatabaseConnection databaseConfig) {
 		this.dslContext = dslContext;
 		this.dateRangeParser = new DateRangeParser(new ConqueryConfig());
 		this.csvReader = new CSVConfig().withSkipHeader(true).createParser();

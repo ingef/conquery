@@ -29,7 +29,7 @@ public class SqlTableValidator implements HibernateConstraintValidator<ValidSqlT
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final LocalNamespace localNamespace = (LocalNamespace) value.getNamespace();
-		final DSLContext dslContext = localNamespace.getDslContextWrapper().getDslContext();
+		final DSLContext dslContext = localNamespace.getDslContext();
 		final SqlDialect dialect = localNamespace.getDialect();
 
 		final Result<Record> result;

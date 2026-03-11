@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.worker;
 
-import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -11,19 +10,19 @@ import com.bakdata.conquery.mode.local.SqlStorageHandler;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.sql.DSLContextWrapper;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.DSLContext;
 
 @Getter
 @Slf4j
 public class LocalNamespace extends Namespace {
 
 	private final SqlDialect dialect;
-	private final DSLContextWrapper dslContextWrapper;
+	private final DSLContext dslContext;
 	private final SqlStorageHandler storageHandler;
 
 	public LocalNamespace(
@@ -31,14 +30,14 @@ public class LocalNamespace extends Namespace {
 			ObjectMapper preprocessMapper,
 			NamespaceStorage storage,
 			ExecutionManager executionManager,
-			DSLContextWrapper dslContextWrapper,
+			DSLContext dslContext,
 			SqlStorageHandler storageHandler,
 			JobManager jobManager,
 			SearchProcessor filterSearch,
 			SqlEntityResolver sqlEntityResolver
 	) {
 		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, sqlEntityResolver);
-		this.dslContextWrapper = dslContextWrapper;
+		this.dslContext = dslContext;
 		this.storageHandler = storageHandler;
 		this.dialect = dialect;
 	}
@@ -63,22 +62,13 @@ public class LocalNamespace extends Namespace {
 
 	@Override
 	public void close() {
-		closeDslContextWrapper();
+		//TODO do we even need to shutdown the connection?
 		super.close();
-	}
-
-	private void closeDslContextWrapper() {
-		try {
-			dslContextWrapper.close();
-		}
-		catch (IOException e) {
-			log.warn("Could not  close namespace's {} DSLContext/Datasource directly", getDataset().getId(), e);
-		}
 	}
 
 	@Override
 	public void remove() {
-		closeDslContextWrapper();
+
 		super.remove();
 	}
 

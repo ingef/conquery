@@ -4,14 +4,20 @@ import java.util.Map;
 import jakarta.validation.Valid;
 
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.dropwizard.core.setup.Environment;
+import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.util.Duration;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.extern.jackson.Jacksonized;
+import lombok.extern.slf4j.Slf4j;
+import org.jooq.DSLContext;
 
 /**
  * Configuration for SQL databases to send dataset queries to.
@@ -25,6 +31,7 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 @NoArgsConstructor
 @AllArgsConstructor
+@Slf4j
 public class SqlConnectorConfig {
 
 	private boolean enabled;
@@ -37,15 +44,19 @@ public class SqlConnectorConfig {
 	/**
 	 * Keys must match the name of existing {@link Dataset}s.
 	 */
-	private Map<String, @Valid DatabaseConfig> databaseConfigs;
+	private Map<String, @Valid DatabaseConnection> databaseConfigs;
 
-	/**
-	 * Timeout duration after which a database connection is considered unhealthy (defaults to connection timeout)
-	 */
-	private Duration connectivityCheckTimeout;
 
-	public DatabaseConfig getDatabaseConfig(Dataset dataset) {
+	public DatabaseConnection getDatabaseConfig(Dataset dataset) {
 		return databaseConfigs.get(dataset.getName());
+	}
+
+
+	public void initialize(Environment environment) {
+		for (DatabaseConnection connection : databaseConfigs.values()) {
+			connection.setHealthCheckRegistry(environment.healthChecks());
+			environment.lifecycle().manage(connection);
+		}
 	}
 
 	@JsonIgnore

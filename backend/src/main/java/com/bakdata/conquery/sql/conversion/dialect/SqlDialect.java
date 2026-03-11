@@ -31,9 +31,26 @@ import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 
+//TODO unify with com.bakdata.conquery.models.config.Dialect
 public interface SqlDialect {
 
 	SystemDateNowSupplier SYSTEM_DATE_NOW_SUPPLIER = new SystemDateNowSupplier();
+
+	private static <R, C extends Converter<?, R, ?>> List<C> customize(List<C> defaults, List<C> substitutes) {
+		Map<Class<?>, C> substituteMap = getSubstituteMap(substitutes);
+		return defaults.stream()
+					   .map(converter -> substituteMap.getOrDefault(converter.getConversionClass(), converter))
+					   .toList();
+	}
+
+	private static <R, C extends Converter<?, R, ?>> Map<Class<?>, C> getSubstituteMap(List<C> substitutes) {
+		return substitutes.stream()
+						  .collect(Collectors.toMap(
+								  Converter::getConversionClass,
+								  Function.identity()
+						  ));
+	}
+
 
 	boolean isTypeCompatible(Field<?> field, MajorTypeId type);
 
@@ -76,21 +93,6 @@ public interface SqlDialect {
 				new RelativFormQueryConverter(formConversionUtil),
 				new TableExportQueryConverter(queryStepTransformer)
 		);
-	}
-
-	private static <R, C extends Converter<?, R, ?>> List<C> customize(List<C> defaults, List<C> substitutes) {
-		Map<Class<?>, C> substituteMap = getSubstituteMap(substitutes);
-		return defaults.stream()
-					   .map(converter -> substituteMap.getOrDefault(converter.getConversionClass(), converter))
-					   .toList();
-	}
-
-	private static <R, C extends Converter<?, R, ?>> Map<Class<?>, C> getSubstituteMap(List<C> substitutes) {
-		return substitutes.stream()
-						  .collect(Collectors.toMap(
-								  Converter::getConversionClass,
-								  Function.identity()
-						  ));
 	}
 
 }
