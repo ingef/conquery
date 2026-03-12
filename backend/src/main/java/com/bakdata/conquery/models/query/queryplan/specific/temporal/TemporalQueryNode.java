@@ -38,7 +38,7 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	private final ConceptQueryPlan indexQueryPlan;
 	private final TemporalSelector indexSelector;
-	private final TemporalRelationMode indexMode;
+	private final TemporalRelationMode mode;
 
 	/**
 	 * Compare Query to aggregate potentially satisfying periods. Sub results will be fed into innerCompareQueryPlan.
@@ -68,6 +68,20 @@ public class TemporalQueryNode extends QPNode {
 	private boolean result = false;
 	private boolean hit = false;
 
+	/**
+	 * Apply date-restriction to QueryContext, and execute Query.
+	 *
+	 * @return if the entity is contained or not.
+	 */
+	private static boolean evaluateWithRestriction(Entity entity, CDateRange partition, ConceptQueryPlan cqp, QueryExecutionContext ctx) {
+		ctx = ctx.withDateRestriction(CDateSet.create(partition))
+				 .withQueryDateAggregator(Optional.empty());
+
+		cqp.init(ctx, entity);
+		cqp.execute(ctx, entity);
+
+		return cqp.isContained();
+	}
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
@@ -133,41 +147,42 @@ public class TemporalQueryNode extends QPNode {
 			return false;
 		}
 
-		final CDateRange[] periods = indexSelector.sample(indexQueryPlan.getDateAggregator().createAggregationResult());
-		final CDateRange[] indexPeriods = indexMode.convert(periods, indexSelector);
+		final CDateSet indexDates = indexQueryPlan.getDateAggregator().createAggregationResult();
+		final CDateRange[] indexSampled = indexSelector.sample(indexDates);
+		final CDateRange[] indexPeriods = mode.convert(indexSampled, indexSelector);
+
+		outerCompareQueryPlan.init(indexCtx, entity);
+		outerCompareQueryPlan.execute(indexCtx, entity);
+
+		if (!outerCompareQueryPlan.isContained()) {
+			return false;
+		}
+
+		CDateSet outerDates = outerCompareQueryPlan.getDateAggregator().createAggregationResult();
+		final CDateRange[] comparePeriods = compareSelector.sample(outerDates);
 
 		final boolean[] results = new boolean[indexPeriods.length];
 
-		// First execute sub-query with index's sub-period
-		// to extract compares sub-periods which are then used to evaluate compare for aggregation/inclusion.
+		// Only evaluate if there are intersections
+		//TODO aggregations are incredibly cursed now
+		//TODO i think i can evaluate with aggregators both times now?
 		for (int current = 0; current < indexPeriods.length; current++) {
 			final CDateRange indexPeriod = indexPeriods[current];
 
-			// Execute only event-filter based, to get potential periods for inner, with aggregation.
-			if (!evaluateWithRestriction(entity, indexPeriod, outerCompareQueryPlan, ctx)) {
-				continue;
-			}
-
-			final CDateSet outerDates = outerCompareQueryPlan.getDateAggregator().createAggregationResult();
-			final CDateRange[] comparePeriods = compareSelector.sample(outerDates);
-
 			final boolean[] compareContained = new boolean[comparePeriods.length];
-			final CDateSet[] compareDates = new CDateSet[comparePeriods.length];
-			final Object[][] compareAggregationResults = new Object[comparePeriods.length][];
 
 			for (int inner = 0; inner < comparePeriods.length; inner++) {
 
 				final CDateRange comparePeriod = comparePeriods[inner];
 
-				// Execute compare-query to get actual result
-				compareContained[inner] = evaluateWithRestriction(entity, comparePeriod, innerCompareQueryPlan, ctx);
-
-				if (compareContained[inner]) {
-					compareDates[inner] = innerCompareQueryPlan.getDateAggregator().createAggregationResult();
-					compareAggregationResults[inner] = innerCompareQueryPlan.getAggregators().stream()
-																			.skip(1) // Skip the result-date
-																			.map(Aggregator::createAggregationResult).toArray();
+				if (!comparePeriod.intersects(indexPeriod)) {
+					continue;
 				}
+
+				CDateRange evaluatePeriod = indexPeriod.intersection(comparePeriod);
+
+				// Execute compare-query to get actual result
+				compareContained[inner] = evaluateWithRestriction(entity, evaluatePeriod, innerCompareQueryPlan, ctx);
 			}
 
 			boolean satisfies = compareSelector.satisfies(compareContained);
@@ -187,9 +202,7 @@ public class TemporalQueryNode extends QPNode {
 			}
 
 			results[current] = true;
-			indexDateResult.add(periods[current]);
-
-			addAggregationResults(compareContained, compareDates, compareAggregationResults);
+			indexDateResult.add(indexSampled[current]);
 		}
 
 		boolean satisfies = indexSelector.satisfies(results);
@@ -198,21 +211,6 @@ public class TemporalQueryNode extends QPNode {
 
 
 		return satisfies;
-	}
-
-	/**
-	 * Apply date-restriction to QueryContext, and execute Query.
-	 *
-	 * @return if the entity is contained or not.
-	 */
-	private static boolean evaluateWithRestriction(Entity entity, CDateRange partition, ConceptQueryPlan cqp, QueryExecutionContext ctx) {
-		ctx = ctx.withDateRestriction(CDateSet.create(partition))
-				 .withQueryDateAggregator(Optional.empty());
-
-		cqp.init(ctx, entity);
-		cqp.execute(ctx, entity);
-
-		return cqp.isContained();
 	}
 
 	/**
