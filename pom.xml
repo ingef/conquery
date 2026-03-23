@@ -30,6 +30,7 @@
 
     <modules>
         <module>backend</module>
+        <module>backend-quarkus</module>
         <module>executable</module>
         <module>autodoc</module>
     </modules>
