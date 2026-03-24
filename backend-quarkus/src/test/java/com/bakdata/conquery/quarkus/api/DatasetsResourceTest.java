@@ -43,4 +43,24 @@ class DatasetsResourceTest {
 				.then()
 				.statusCode(404);
 	}
+
+	@Test
+	void conceptsEndpointRespondsWithFrontendCompatibleShape() {
+		given()
+				.when().get("/api/datasets/imdb/concepts")
+				.then()
+				.statusCode(200)
+				.body("secondaryIds.size()", equalTo(0))
+				.body("concepts.imdb.label", equalTo("IMDb"))
+				.body("concepts.imdb.detailsAvailable", equalTo(false))
+				.body("concepts.imdb.children.size()", equalTo(0));
+	}
+
+	@Test
+	void conceptsEndpointReturns404ForUnknownDataset() {
+		given()
+				.when().get("/api/datasets/unknown/concepts")
+				.then()
+				.statusCode(404);
+	}
 }

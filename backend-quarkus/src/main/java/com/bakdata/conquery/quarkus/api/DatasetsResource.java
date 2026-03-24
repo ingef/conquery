@@ -12,6 +12,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 
 @Path("/api/datasets")
 @Produces(MediaType.APPLICATION_JSON)
@@ -33,10 +34,7 @@ public class DatasetsResource {
 	@GET
 	@Path("/{datasetId}/entity-preview")
 	public EntityPreviewResponse getEntityPreview(@PathParam("datasetId") String datasetId) {
-		boolean datasetExists = datasetsConfig.datasets().stream().anyMatch(dataset -> dataset.id().equals(datasetId));
-		if (!datasetExists) {
-			throw new NotFoundException("Unknown dataset: " + datasetId);
-		}
+		requireDataset(datasetId);
 
 		List<EntityPreviewResponse.LabeledSource> allSources =
 				entityPreviewConfig.allSources().stream().map(source -> new EntityPreviewResponse.LabeledSource(source.name(), source.label())).toList();
@@ -53,6 +51,41 @@ public class DatasetsResource {
 		String searchConcept = entityPreviewConfig.searchConcept().orElse(null);
 
 		return new EntityPreviewResponse(allSources, defaultSources, searchFilters, searchConcept);
+	}
+
+	@GET
+	@Path("/{datasetId}/concepts")
+	@Operation(
+			summary = "Get root concepts for a dataset",
+			description = "Nodes with detailsAvailable=false represent folder/structure nodes and should not be draggable. "
+						  + "Their active flag should be false."
+	)
+	public ConceptsResponse getConcepts(@PathParam("datasetId") String datasetId) {
+		DatasetsRuntimeConfig.DatasetEntry dataset = requireDataset(datasetId);
+
+		ConceptsResponse.ConceptSummaryResponse rootConcept = new ConceptsResponse.ConceptSummaryResponse(
+				dataset.label(),
+				null,
+				true,
+				List.of(),
+				0L,
+				0L,
+				false,
+				false
+		);
+
+		return new ConceptsResponse(
+				List.of(),
+				java.util.Map.of(dataset.id(), rootConcept)
+		);
+	}
+
+	private DatasetsRuntimeConfig.DatasetEntry requireDataset(String datasetId) {
+		return datasetsConfig.datasets()
+							 .stream()
+							 .filter(dataset -> dataset.id().equals(datasetId))
+							 .findFirst()
+							 .orElseThrow(() -> new NotFoundException("Unknown dataset: " + datasetId));
 	}
 
 	public record DatasetResponse(
