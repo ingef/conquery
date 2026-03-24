@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.bakdata.conquery.sql.conversion.Context;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
@@ -45,7 +45,7 @@ public enum IntervalPackingCteStep implements CteStep {
 	 * Create predecessor mappings for these interval packing {@link CteStep}s based on a preceding root step that must contain a validity date which
 	 * shall be interval-packed.
 	 */
-	public static Map<CteStep, CteStep> getMappings(CteStep root, SqlDialect dialect) {
+	public static Map<CteStep, CteStep> getMappings(CteStep root, DialectBundle dialect) {
 		if (dialect.supportsSingleColumnRanges()) {
 			return Map.of(INTERVAL_COMPLETE, root);
 		}
@@ -57,7 +57,7 @@ public enum IntervalPackingCteStep implements CteStep {
 	/**
 	 * Create predecessor mappings for these interval packing {@link CteStep}s based on the default mapping.
 	 */
-	public static Map<CteStep, CteStep> getMappings(SqlDialect dialect) {
+	public static Map<CteStep, CteStep> getMappings(DialectBundle dialect) {
 		if (dialect.supportsSingleColumnRanges()) {
 			Map<CteStep, CteStep> mappings = new HashMap<>();
 			mappings.put(INTERVAL_COMPLETE, null); // final step directly mapped onto root table

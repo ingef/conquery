@@ -1,14 +1,11 @@
 package com.bakdata.conquery.integration.sql.dialect;
 
-import com.bakdata.conquery.models.config.DatabaseConnection;
-import org.jooq.DSLContext;
+import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 
 public interface TestContextProvider {
 
-	DatabaseConnection getDatabaseConfig();
+	DatabaseConnectionConfig getDatabaseConfig();
 
 	TestSqlConnectorConfig getSqlConnectorConfig();
-
-	DSLContext getDslContext();
 
 }

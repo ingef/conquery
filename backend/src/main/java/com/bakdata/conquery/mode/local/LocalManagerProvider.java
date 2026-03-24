@@ -14,30 +14,24 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialectFactory;
+import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
 import io.dropwizard.core.setup.Environment;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class LocalManagerProvider implements ManagerProvider {
 
 	private static final Supplier<Collection<ShardNodeInformation>> EMPTY_NODE_PROVIDER = Collections::emptyList;
 
-	private final SqlDialectFactory dialectFactory;
-
-	public LocalManagerProvider() {
-		this.dialectFactory = new SqlDialectFactory();
-	}
-
-	public LocalManagerProvider(SqlDialectFactory dialectFactory) {
-		this.dialectFactory = dialectFactory;
-	}
-
+	@Override
 	public DelegateManager<LocalNamespace> provideManager(ConqueryConfig config, Environment environment) {
+
+		final ConnectionManager connectionManager = config.getSqlConnectorConfig().toConnectionManager(environment);
 
 		final MetaStorage storage = new MetaStorage(config.getStorage());
 		final InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, environment.getValidator());
-		final NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, internalMapperFactory, dialectFactory);
+		final NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, internalMapperFactory, connectionManager, new SystemDateNowSupplier());
 		final DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, internalMapperFactory);
-
 
 		return new DelegateManager<>(
 				config,

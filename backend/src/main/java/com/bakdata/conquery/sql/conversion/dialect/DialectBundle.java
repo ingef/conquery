@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.Converter;
@@ -16,6 +17,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.CQNegationConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQYesConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
+import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
 import com.bakdata.conquery.sql.conversion.query.AbsoluteFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.CQReusedQueryConverter;
@@ -25,16 +27,16 @@ import com.bakdata.conquery.sql.conversion.query.FormConversionHelper;
 import com.bakdata.conquery.sql.conversion.query.RelativFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.SecondaryIdQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.TableExportQueryConverter;
-import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
-import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 
 //TODO unify with com.bakdata.conquery.models.config.Dialect
-public interface SqlDialect {
+public interface DialectBundle {
 
-	SystemDateNowSupplier SYSTEM_DATE_NOW_SUPPLIER = new SystemDateNowSupplier();
+	//TODO add getDateNow and access it directly
+
+	Dialect getDialect();
 
 	private static <R, C extends Converter<?, R, ?>> List<C> customize(List<C> defaults, List<C> substitutes) {
 		Map<Class<?>, C> substituteMap = getSubstituteMap(substitutes);
@@ -52,6 +54,8 @@ public interface SqlDialect {
 	}
 
 
+	StratificationFunctions getStratificationFunctions();
+
 	boolean isTypeCompatible(Field<?> field, MajorTypeId type);
 
 	SqlFunctionProvider getFunctionProvider();
@@ -63,10 +67,6 @@ public interface SqlDialect {
 	List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext context);
 
 	SqlCDateSetParser getCDateSetParser();
-
-	default DateNowSupplier getDateNowSupplier() {
-		return SYSTEM_DATE_NOW_SUPPLIER;
-	}
 
 	default boolean supportsSingleColumnRanges() {
 		return false;

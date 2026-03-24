@@ -10,7 +10,7 @@ import com.bakdata.conquery.mode.local.SqlStorageHandler;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -21,12 +21,12 @@ import org.jooq.DSLContext;
 @Slf4j
 public class LocalNamespace extends Namespace {
 
-	private final SqlDialect dialect;
+	private final DialectBundle dialect;
 	private final DSLContext dslContext;
 	private final SqlStorageHandler storageHandler;
 
 	public LocalNamespace(
-			SqlDialect dialect,
+			DialectBundle dialect,
 			ObjectMapper preprocessMapper,
 			NamespaceStorage storage,
 			ExecutionManager executionManager,

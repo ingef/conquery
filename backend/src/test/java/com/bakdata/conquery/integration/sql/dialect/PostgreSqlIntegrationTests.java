@@ -1,6 +1,5 @@
 package com.bakdata.conquery.integration.sql.dialect;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -9,13 +8,13 @@ import com.bakdata.conquery.integration.ConqueryIntegrationTests;
 import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.integration.json.SqlTestDataImporter;
 import com.bakdata.conquery.integration.sql.CsvTableImporter;
-import com.bakdata.conquery.models.config.DatabaseConnection;
+import com.bakdata.conquery.mode.local.ManagedConnection;
+import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
+import com.bakdata.conquery.sql.conversion.dialect.PostgreDialectBundle;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
-import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
@@ -46,11 +45,12 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	private static final String PASSWORD = "pass";
 
 	private static DSLContext dslContext;
-	private static DatabaseConnection databaseConfig;
+	private static DatabaseConnectionConfig databaseConfig;
 	private static TestSqlConnectorConfig sqlConfig;
-	private static TestSqlDialect testSqlDialect;
+	private static TestDialectBundle testSqlDialect;
 	private static SqlTestDataImporter testDataImporter;
 	private static boolean useLocalPostgresDb = true;
+	private static ManagedConnection managedConnection;
 
 	static {
 		final String USE_LOCAL_POSTGRES_DB = System.getenv("USE_LOCAL_POSTGRES_DB");
@@ -65,23 +65,26 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 
 
 	@BeforeAll
-	static void before() {
+	static void before() throws Exception{
 		TestContextProvider provider = useLocalPostgresDb
 									   ? new PortgresTestcontainerContextProvider()
 									   : new RemotePostgresContextProvider();
 
 		databaseConfig = provider.getDatabaseConfig();
-		databaseConfig.initializeDataSource();
+		sqlConfig = provider.getSqlConnectorConfig();
 
-		sqlConfig = new TestSqlConnectorConfig(databaseConfig);
-		dslContext = databaseConfig.connect(sqlConfig);
-		testSqlDialect = new TestPostgreSqlDialect();
+		managedConnection = new ManagedConnection(sqlConfig, databaseConfig, null);
+		managedConnection.start();
+
+		dslContext = managedConnection.connect();
+
+		testSqlDialect = new TestPostgreDialectBundle();
 		testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContext, testSqlDialect, databaseConfig));
 	}
 
 	@AfterAll
-	static void after() throws IOException {
-		databaseConfig.stop();
+	static void after() throws Exception {
+		managedConnection.stop();
 	}
 
 	@Test
@@ -112,14 +115,10 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		);
 	}
 
-	public static class TestPostgreSqlDialect extends PostgreSqlDialect implements TestSqlDialect {
+	public static class TestPostgreDialectBundle extends PostgreDialectBundle implements TestDialectBundle {
 
+		//TODO link up
 		public static final MockDateNowSupplier DATE_NOW_SUPPLIER = new MockDateNowSupplier();
-
-		@Override
-		public DateNowSupplier getDateNowSupplier() {
-			return DATE_NOW_SUPPLIER;
-		}
 
 		public TestFunctionProvider getTestFunctionProvider() {
 			return new PostgreSqlTestFunctionProvider();
@@ -140,8 +139,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	@Getter
 	private static class PortgresTestcontainerContextProvider implements TestContextProvider {
 
-		private final DSLContext dslContext;
-		private final DatabaseConnection databaseConfig;
+		private final DatabaseConnectionConfig databaseConfig;
 		private final TestSqlConnectorConfig sqlConnectorConfig;
 
 		@Container
@@ -153,16 +151,14 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 					.withUsername(USERNAME)
 					.withPassword(PASSWORD);
 			this.postgreSQLContainer.start();
-			this.databaseConfig = DatabaseConnection.builder()
-													.dialect(Dialect.POSTGRESQL)
-													.jdbcConnectionUrl(postgreSQLContainer.getJdbcUrl())
-													.databaseUsername(USERNAME)
-													.databasePassword(PASSWORD)
-													.build();
-			this.databaseConfig.initializeDataSource();
+			this.databaseConfig = DatabaseConnectionConfig.builder()
+														  .dialect(Dialect.POSTGRESQL)
+														  .jdbcConnectionUrl(postgreSQLContainer.getJdbcUrl())
+														  .databaseUsername(USERNAME)
+														  .databasePassword(PASSWORD)
+														  .build();
 
 			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
-			this.dslContext = this.databaseConfig.connect(sqlConnectorConfig);
 		}
 
 	}
@@ -177,21 +173,18 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		private final static String CONNECTION_URL = "jdbc:postgresql://%s:%s/%s".formatted(HOST, PORT, DATABASE);
 		private final static String USERNAME = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_USER"), PostgreSqlIntegrationTests.USERNAME);
 		private final static String PASSWORD = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_PASSWORD"), PostgreSqlIntegrationTests.PASSWORD);
-		private final DSLContext dslContext;
-		private final DatabaseConnection databaseConfig;
+		private final DatabaseConnectionConfig databaseConfig;
 		private final TestSqlConnectorConfig sqlConnectorConfig;
 
 		public RemotePostgresContextProvider() {
-			this.databaseConfig = DatabaseConnection.builder()
-													.dialect(Dialect.POSTGRESQL)
-													.jdbcConnectionUrl(CONNECTION_URL)
-													.databaseUsername(USERNAME)
-													.databasePassword(PASSWORD)
-													.build();
-			this.databaseConfig.initializeDataSource();
+			this.databaseConfig = DatabaseConnectionConfig.builder()
+														  .dialect(Dialect.POSTGRESQL)
+														  .jdbcConnectionUrl(CONNECTION_URL)
+														  .databaseUsername(USERNAME)
+														  .databasePassword(PASSWORD)
+														  .build();
 
 			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
-			this.dslContext = databaseConfig.connect(sqlConnectorConfig);
 		}
 
 	}

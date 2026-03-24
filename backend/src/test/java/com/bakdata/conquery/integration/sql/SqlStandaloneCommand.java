@@ -6,7 +6,6 @@ import java.util.List;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
-import com.bakdata.conquery.integration.sql.dialect.TestSqlDialectFactory;
 import com.bakdata.conquery.mode.DelegateManager;
 import com.bakdata.conquery.mode.local.LocalManagerProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -39,7 +38,7 @@ public class SqlStandaloneCommand extends ServerCommand<ConqueryConfig> implemen
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception {
 		ConqueryMDC.setLocation("ManagerNode");
 		log.debug("Starting ManagerNode");
-		this.manager = new LocalManagerProvider(new TestSqlDialectFactory()).provideManager(configuration, environment);
+		this.manager = new LocalManagerProvider().provideManager(configuration, environment);
 		managerNode.run(manager);
 		// starts the Jersey Server
 		log.debug("Starting REST Server");

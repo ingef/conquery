@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.conversion;
 
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 
 /**
@@ -11,7 +11,7 @@ public interface Context {
 
 	ConversionContext getConversionContext();
 
-	default SqlDialect getSqlDialect() {
+	default DialectBundle getSqlDialect() {
 		return getConversionContext().getSqlDialect();
 	}
 

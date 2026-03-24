@@ -2,26 +2,31 @@ package com.bakdata.conquery.sql.conversion.dialect;
 
 import java.util.List;
 
+import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.aggregation.AnsiSqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.AnsiSqlIntervalPacker;
+import com.bakdata.conquery.sql.conversion.forms.HanaStratificationFunctions;
+import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import lombok.Getter;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 
-public class HanaSqlDialect implements SqlDialect {
+public class HanaDialectBundle implements DialectBundle {
 
 	private final SqlFunctionProvider hanaSqlFunctionProvider;
 	private final IntervalPacker hanaIntervalPacker;
 	private final SqlDateAggregator hanaSqlDateAggregator;
 	private final DefaultSqlCDateSetParser defaultNotationParser;
+	@Getter
+	private final Dialect dialect = Dialect.HANA;
 
 
-	public HanaSqlDialect() {
+	public HanaDialectBundle() {
 		this.hanaSqlFunctionProvider = new HanaSqlFunctionProvider();
 		this.hanaIntervalPacker = new AnsiSqlIntervalPacker();
 		this.hanaSqlDateAggregator = new AnsiSqlDateAggregator(this.hanaIntervalPacker);
@@ -36,6 +41,11 @@ public class HanaSqlDialect implements SqlDialect {
 	@Override
 	public List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext dslContext) {
 		return getDefaultNodeConverters(dslContext);
+	}
+
+	@Override
+	public StratificationFunctions getStratificationFunctions() {
+		return new HanaStratificationFunctions((HanaSqlFunctionProvider) getFunctionProvider());
 	}
 
 	@Override

@@ -6,9 +6,6 @@ import com.bakdata.conquery.mode.NamespaceHandler;
 import com.bakdata.conquery.mode.NamespaceSetupData;
 import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.DatabaseConnection;
-import com.bakdata.conquery.models.config.IdColumnConfig;
-import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -16,8 +13,8 @@ import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.sql.conquery.SqlExecutionManager;
 import com.bakdata.conquery.sql.conversion.NodeConversions;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialectFactory;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
+import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
@@ -32,7 +29,8 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 
 	private final ConqueryConfig config;
 	private final InternalMapperFactory internalMapperFactory;
-	private final SqlDialectFactory dialectFactory;
+	private final ConnectionManager connectionManager;
+	private final DateNowSupplier dateNowSupplier;
 
 	@Override
 	public LocalNamespace createNamespace(
@@ -43,29 +41,21 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 
 		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, internalMapperFactory, datasetRegistry, environment);
 
-		IdColumnConfig idColumns = config.getIdColumns();
-		SqlConnectorConfig sqlConnectorConfig = config.getSqlConnectorConfig();
-		DatabaseConnection databaseConfig = sqlConnectorConfig.getDatabaseConfig(namespaceStorage.getDataset());
+		ManagedConnection connection = connectionManager.getConnection(namespaceStorage.getDataset());
+		DSLContext dslContext = connection.connect();
+		DialectBundle dialectBundle = connection.getConnection().getDialect().getDialectBundle();
 
-		DSLContext dslContext = databaseConfig.connect(sqlConnectorConfig);
-		SqlDialect sqlDialect = dialectFactory.createSqlDialect(databaseConfig.getDialect());
-
-		boolean valid = dslContext.connectionResult(connection -> connection.isValid(1));
-
-		if (!valid) {
-			throw new IllegalStateException("Unable to connect to %s".formatted(databaseConfig));
-		}
-
-		ResultSetProcessor resultSetProcessor = ResultSetProcessorFactory.create(config, sqlDialect);
+		ResultSetProcessor resultSetProcessor = ResultSetProcessorFactory.create(config, dialectBundle);
 		SqlExecutionService sqlExecutionService = new SqlExecutionService(dslContext, resultSetProcessor);
-		NodeConversions nodeConversions = new NodeConversions(idColumns, sqlDialect, dslContext, databaseConfig, sqlExecutionService);
+
+		NodeConversions nodeConversions = new NodeConversions(config.getIdColumns(), dialectBundle, dslContext, sqlExecutionService, dateNowSupplier);
 		SqlConverter sqlConverter = new SqlConverter(nodeConversions, config);
 		ExecutionManager executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage, datasetRegistry, config);
 		SqlStorageHandler sqlStorageHandler = new SqlStorageHandler(sqlExecutionService);
-		SqlEntityResolver sqlEntityResolver = new SqlEntityResolver(idColumns, dslContext, sqlDialect, sqlExecutionService);
+		SqlEntityResolver sqlEntityResolver = new SqlEntityResolver(config.getIdColumns(), dslContext, dialectBundle, sqlExecutionService);
 
 		return new LocalNamespace(
-				sqlDialect,
+				dialectBundle,
 				namespaceData.preprocessMapper(),
 				namespaceStorage,
 				executionManager,

@@ -103,7 +103,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 			startDate = DSL.field(DSL.name(tables.getRootTable(), column.getName()), Date.class);
 		}
 		else {
-			StratificationFunctions stratificationFunctions = StratificationFunctions.create(conversionContext);
+			StratificationFunctions stratificationFunctions = conversionContext.getSqlDialect().getStratificationFunctions();
 			Field<Date> daterangeColumn = DSL.field(DSL.name(tables.getRootTable(), column.getName()), Date.class);
 			startDate = stratificationFunctions.lower(ColumnDateRange.of(daterangeColumn));
 		}
@@ -135,7 +135,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 		}
 		else {
 			// otherwise the current date is the upper bound
-			endDate = conversionContext.getSqlDialect().getDateNowSupplier().getLocalDateNow();
+			endDate = conversionContext.getDateNowSupplier().getLocalDateNow();
 		}
 		return functionProvider.toDateField(Date.valueOf(endDate).toString());
 	}

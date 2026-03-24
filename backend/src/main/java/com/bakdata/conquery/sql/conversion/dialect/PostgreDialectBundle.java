@@ -2,24 +2,30 @@ package com.bakdata.conquery.sql.conversion.dialect;
 
 import java.util.List;
 
+import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.aggregation.PostgreSqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.PostgreSqlIntervalPacker;
+import com.bakdata.conquery.sql.conversion.forms.PostgresStratificationFunctions;
+import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
+import lombok.Getter;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 
-public class PostgreSqlDialect implements SqlDialect {
+public class PostgreDialectBundle implements DialectBundle {
 
 	private final SqlFunctionProvider postgresqlFunctionProvider;
 	private final IntervalPacker postgresqlIntervalPacker;
 	private final SqlDateAggregator postgresqlDateAggregator;
 	private final DefaultSqlCDateSetParser defaultNotationParser;
+	@Getter
+	private final Dialect dialect = Dialect.POSTGRESQL;
 
-	public PostgreSqlDialect() {
+	public PostgreDialectBundle() {
 		this.postgresqlFunctionProvider = new PostgreSqlFunctionProvider();
 		this.postgresqlIntervalPacker = new PostgreSqlIntervalPacker(this.postgresqlFunctionProvider);
 		this.postgresqlDateAggregator = new PostgreSqlDateAggregator(this.postgresqlFunctionProvider);
@@ -39,6 +45,11 @@ public class PostgreSqlDialect implements SqlDialect {
 	@Override
 	public List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext dslContext) {
 		return getDefaultNodeConverters(dslContext);
+	}
+
+	@Override
+	public StratificationFunctions getStratificationFunctions() {
+		return new PostgresStratificationFunctions(((PostgreSqlFunctionProvider) getFunctionProvider()));
 	}
 
 	@Override

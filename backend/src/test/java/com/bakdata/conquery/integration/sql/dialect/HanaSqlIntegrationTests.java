@@ -21,10 +21,11 @@ import com.bakdata.conquery.integration.json.SqlTestDataImporter;
 import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.integration.sql.CsvTableImporter;
 import com.bakdata.conquery.integration.sql.testcontainer.hana.HanaContainer;
-import com.bakdata.conquery.models.config.DatabaseConnection;
+import com.bakdata.conquery.mode.local.ManagedConnection;
+import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.config.Dialect;
-import com.bakdata.conquery.sql.conversion.dialect.HanaSqlDialect;
-import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
+import com.bakdata.conquery.models.config.SqlConnectorConfig;
+import com.bakdata.conquery.sql.conversion.dialect.HanaDialectBundle;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -51,6 +52,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 	private static final Path TMP_HANA_MOUNT_DIR = Paths.get("/tmp/data/hana");
 	private static boolean useLocalHanaDb = true;
 	private static DSLContext dslContext;
+	private static ManagedConnection managedConnection;
 
 	static {
 		final String USE_LOCAL_HANA_DB = System.getenv("USE_LOCAL_HANA_DB");
@@ -92,36 +94,43 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		}
 	}
 
-	@TestFactory
-	@Tag(TestTags.INTEGRATION_SQL_BACKEND)
-	public Stream<DynamicNode> sqlBackendTests() {
-
+	@BeforeAll
+	static void before() throws Exception {
 		TestContextProvider provider = useLocalHanaDb
 									   ? new HanaTestcontainerContextProvider()
 									   : new RemoteHanaContextProvider();
 
 		log.info("Running HANA tests with {}.", provider.getClass().getSimpleName());
 
-		dslContext = provider.getDslContext();
-		DatabaseConnection databaseConfig = provider.getDatabaseConfig();
-		TestSqlConnectorConfig config = provider.getSqlConnectorConfig();
-		TestHanaDialect testHanaDialect = new TestHanaDialect();
+		managedConnection = new ManagedConnection(provider.getSqlConnectorConfig(), provider.getDatabaseConfig(), null);
+		managedConnection.start();
+
+		dslContext = managedConnection.connect();
+	}
+
+	@AfterAll
+	static void after() throws Exception {
+		managedConnection.stop();
+	}
+
+	@TestFactory
+	@Tag(TestTags.INTEGRATION_SQL_BACKEND)
+	public Stream<DynamicNode> sqlBackendTests() {
+
+		DatabaseConnectionConfig databaseConfig = managedConnection.getConnection();
+		TestHanaDialectBundle testHanaDialect = new TestHanaDialectBundle();
 		TestDataImporter testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContext, testHanaDialect, databaseConfig));
 
+
 		return Stream.concat(
-				super.sqlProgrammaticTests(databaseConfig, config, testDataImporter),
-				super.sqlQueryTests(databaseConfig, config, testDataImporter).stream()
+				super.sqlProgrammaticTests(databaseConfig, managedConnection.getConfig(), testDataImporter),
+				super.sqlQueryTests(databaseConfig, managedConnection.getConfig(), testDataImporter).stream()
 		);
 	}
 
-	public static class TestHanaDialect extends HanaSqlDialect implements TestSqlDialect {
+	public static class TestHanaDialectBundle extends HanaDialectBundle implements TestDialectBundle {
 
 		public static final MockDateNowSupplier DATE_NOW_SUPPLIER = new MockDateNowSupplier();
-
-		@Override
-		public DateNowSupplier getDateNowSupplier() {
-			return DATE_NOW_SUPPLIER;
-		}
 
 		public TestFunctionProvider getTestFunctionProvider() {
 			return new HanaTestFunctionProvider();
@@ -154,8 +163,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 	@Getter
 	private static class HanaTestcontainerContextProvider implements TestContextProvider {
 
-		private final DSLContext dslContext;
-		private final DatabaseConnection databaseConfig;
+		private final DatabaseConnectionConfig databaseConfig;
 		private final TestSqlConnectorConfig sqlConnectorConfig;
 
 		@Container
@@ -165,17 +173,16 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 			this.hanaContainer = new HanaContainer<>(HANA_IMAGE)
 					.withFileSystemBind(TMP_HANA_MOUNT_DIR.toString(), "/home/secrets");
 			this.hanaContainer.start();
-			this.databaseConfig = DatabaseConnection.builder()
-													.dialect(Dialect.HANA)
-													.jdbcConnectionUrl(hanaContainer.getJdbcUrl())
-													.databaseUsername(hanaContainer.getUsername())
-													.databasePassword(hanaContainer.getPassword())
-													.build();
-			this.databaseConfig.initializeDataSource();
-			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
-			this.dslContext = this.databaseConfig.connect(sqlConnectorConfig);
-		}
 
+
+			this.databaseConfig = DatabaseConnectionConfig.builder()
+														  .dialect(Dialect.HANA)
+														  .jdbcConnectionUrl(hanaContainer.getJdbcUrl())
+														  .databaseUsername(hanaContainer.getUsername())
+														  .databasePassword(hanaContainer.getPassword())
+														  .build();
+			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
+		}
 	}
 
 	@Getter
@@ -186,19 +193,17 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		private final static String CONNECTION_URL = "jdbc:sap://%s:%s/databaseName=HXE&encrypt=true&validateCertificate=false".formatted(HOST, PORT);
 		private final static String USERNAME = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_USER"), "SYSTEM");
 		private final static String PASSWORD = System.getenv("CONQUERY_SQL_PASSWORD");
-		private final DSLContext dslContext;
-		private final DatabaseConnection databaseConfig;
+		private final DatabaseConnectionConfig databaseConfig;
 		private final TestSqlConnectorConfig sqlConnectorConfig;
 
 		public RemoteHanaContextProvider() {
-			this.databaseConfig = DatabaseConnection.builder()
-													.dialect(Dialect.HANA)
-													.jdbcConnectionUrl(CONNECTION_URL)
-													.databaseUsername(USERNAME)
-													.databasePassword(PASSWORD)
-													.build();
+			this.databaseConfig = DatabaseConnectionConfig.builder()
+														  .dialect(Dialect.HANA)
+														  .jdbcConnectionUrl(CONNECTION_URL)
+														  .databaseUsername(USERNAME)
+														  .databasePassword(PASSWORD)
+														  .build();
 			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
-			this.dslContext = databaseConfig.connect(sqlConnectorConfig);
 		}
 
 	}

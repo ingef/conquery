@@ -2,10 +2,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
