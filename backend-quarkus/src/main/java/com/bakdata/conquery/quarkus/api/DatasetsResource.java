@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -114,6 +115,17 @@ public class DatasetsResource {
 		return List.of();
 	}
 
+	@POST
+	@Path("/{datasetId}/queries")
+	@Operation(
+			summary = "Create a query for a dataset",
+			description = "Accepts a query payload and returns the created query id."
+	)
+	public StartQueryResponse postQueries(@PathParam("datasetId") String datasetId, JsonNode payload) {
+		requireDataset(datasetId);
+		return new StartQueryResponse(java.util.UUID.randomUUID().toString());
+	}
+
 	private DatasetsRuntimeConfig.DatasetEntry requireDataset(String datasetId) {
 		return datasetsConfig.datasets()
 							 .stream()
@@ -156,6 +168,11 @@ public class DatasetsResource {
 	public record ResultUrlResponse(
 			String label,
 			String url
+	) {
+	}
+
+	public record StartQueryResponse(
+			String id
 	) {
 	}
 

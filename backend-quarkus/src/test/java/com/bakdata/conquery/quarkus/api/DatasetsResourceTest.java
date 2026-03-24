@@ -3,6 +3,7 @@ package com.bakdata.conquery.quarkus.api;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -96,6 +97,27 @@ class DatasetsResourceTest {
 	void queriesEndpointReturns404ForUnknownDataset() {
 		given()
 				.when().get("/api/datasets/unknown/queries")
+				.then()
+				.statusCode(404);
+	}
+
+	@Test
+	void postQueriesEndpointReturnsCreatedQueryId() {
+		given()
+				.contentType("application/json")
+				.body("{\"type\":\"CONCEPT_QUERY\"}")
+				.when().post("/api/datasets/imdb/queries")
+				.then()
+				.statusCode(200)
+				.body("id", notNullValue());
+	}
+
+	@Test
+	void postQueriesEndpointReturns404ForUnknownDataset() {
+		given()
+				.contentType("application/json")
+				.body("{\"type\":\"CONCEPT_QUERY\"}")
+				.when().post("/api/datasets/unknown/queries")
 				.then()
 				.statusCode(404);
 	}
