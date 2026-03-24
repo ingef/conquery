@@ -22,4 +22,12 @@ class QueryResourceTest {
 				.body("queryType", equalTo("CONCEPT_QUERY"))
 				.body("createdAt", notNullValue());
 	}
+
+	@Test
+	void cancelQueryEndpointResponds() {
+		given()
+				.when().post("/api/queries/example-query/cancel")
+				.then()
+				.statusCode(204);
+	}
 }

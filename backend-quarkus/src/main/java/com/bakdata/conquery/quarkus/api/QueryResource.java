@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -44,6 +45,16 @@ public class QueryResource {
 				0L,
 				false
 		);
+	}
+
+	@POST
+	@Path("/{queryId}/cancel")
+	@Operation(
+			summary = "Cancel a query",
+			description = "Cancels a running query."
+	)
+	public void cancelQuery(@PathParam("queryId") String queryId) {
+		// Stub endpoint for migration progress. Query cancellation wiring follows later.
 	}
 
 	public record QueryResponse(
