@@ -1,10 +1,16 @@
 package com.bakdata.conquery.quarkus.api;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.quarkus.api.config.DatasetsRuntimeConfig;
 import com.bakdata.conquery.quarkus.api.config.EntityPreviewRuntimeConfig;
+import com.bakdata.conquery.quarkus.api.config.FormQueriesRuntimeConfig;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
@@ -22,6 +28,12 @@ public class DatasetsResource {
 
 	@Inject
 	EntityPreviewRuntimeConfig entityPreviewConfig;
+
+	@Inject
+	FormQueriesRuntimeConfig formQueriesConfig;
+
+	@Inject
+	ObjectMapper objectMapper;
 
 	@GET
 	public List<DatasetResponse> getDatasets() {
@@ -80,12 +92,36 @@ public class DatasetsResource {
 		);
 	}
 
+	@GET
+	@Path("/{datasetId}/form-queries")
+	@Operation(
+			summary = "Get form configurations for a dataset",
+			description = "Returns raw frontend form configuration objects."
+	)
+	public List<JsonNode> getFormQueries(@PathParam("datasetId") String datasetId) {
+		requireDataset(datasetId);
+		return formQueriesConfig.resources().stream().map(this::loadFormResource).toList();
+	}
+
 	private DatasetsRuntimeConfig.DatasetEntry requireDataset(String datasetId) {
 		return datasetsConfig.datasets()
 							 .stream()
 							 .filter(dataset -> dataset.id().equals(datasetId))
 							 .findFirst()
 							 .orElseThrow(() -> new NotFoundException("Unknown dataset: " + datasetId));
+	}
+
+	private JsonNode loadFormResource(String path) {
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		try (InputStream input = classLoader.getResourceAsStream(path)) {
+			if (input == null) {
+				throw new IllegalStateException("Configured form resource does not exist: " + path);
+			}
+			return objectMapper.readTree(input);
+		}
+		catch (IOException e) {
+			throw new UncheckedIOException("Failed to parse form resource: " + path, e);
+		}
 	}
 
 	public record DatasetResponse(

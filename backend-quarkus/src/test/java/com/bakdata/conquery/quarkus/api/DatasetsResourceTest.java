@@ -63,4 +63,23 @@ class DatasetsResourceTest {
 				.then()
 				.statusCode(404);
 	}
+
+	@Test
+	void formQueriesEndpointReturnsForms() {
+		given()
+				.when().get("/api/datasets/imdb/form-queries")
+				.then()
+				.statusCode(200)
+				.body("size()", greaterThanOrEqualTo(1))
+				.body("[0].type", equalTo("EXPORT_FORM"))
+				.body("[0].fields.size()", greaterThanOrEqualTo(1));
+	}
+
+	@Test
+	void formQueriesEndpointReturns404ForUnknownDataset() {
+		given()
+				.when().get("/api/datasets/unknown/form-queries")
+				.then()
+				.statusCode(404);
+	}
 }

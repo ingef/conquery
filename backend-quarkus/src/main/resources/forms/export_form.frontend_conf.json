@@ -1,0 +1,40 @@
+{
+  "type": "EXPORT_FORM",
+  "title": {
+    "de": "Export Formular",
+    "en": "Export Form"
+  },
+  "description": {
+    "de": "Beispiel-Formular fuer die Quarkus Migration.",
+    "en": "Example form for the Quarkus migration."
+  },
+  "fields": [
+    {
+      "type": "HEADLINE",
+      "label": {
+        "de": "Ergebnis",
+        "en": "Result"
+      }
+    },
+    {
+      "name": "resultGroup",
+      "type": "RESULT_GROUP",
+      "label": {
+        "de": "Ergebnisgruppe",
+        "en": "Result Group"
+      },
+      "dropzoneLabel": {
+        "de": "Ziehe eine vorherige Abfrage hierher",
+        "en": "Drop a previous query here"
+      }
+    },
+    {
+      "name": "dataset",
+      "type": "DATASET_SELECT",
+      "label": {
+        "de": "Datensatz",
+        "en": "Dataset"
+      }
+    }
+  ]
+}
