@@ -53,7 +53,7 @@ class DatasetsResourceTest {
 				.statusCode(200)
 				.body("secondaryIds.size()", equalTo(0))
 				.body("concepts.imdb.label", equalTo("IMDb"))
-				.body("concepts.imdb.detailsAvailable", equalTo(false))
+				.body("concepts.imdb.detailsAvailable", equalTo(true))
 				.body("concepts.imdb.children.size()", equalTo(0));
 	}
 

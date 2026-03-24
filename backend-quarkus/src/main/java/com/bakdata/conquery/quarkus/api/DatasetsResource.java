@@ -70,8 +70,7 @@ public class DatasetsResource {
 	@Path("/{datasetId}/concepts")
 	@Operation(
 			summary = "Get root concepts for a dataset",
-			description = "Nodes with detailsAvailable=false represent folder/structure nodes and should not be draggable. "
-						  + "Their active flag should be false."
+			description = "Returns top-level concept nodes. Nodes with detailsAvailable=false represent folder/structure nodes."
 	)
 	public ConceptsResponse getConcepts(@PathParam("datasetId") String datasetId) {
 		DatasetsRuntimeConfig.DatasetEntry dataset = requireDataset(datasetId);
@@ -83,7 +82,7 @@ public class DatasetsResource {
 				List.of(),
 				0L,
 				0L,
-				false,
+				true,
 				false
 		);
 
