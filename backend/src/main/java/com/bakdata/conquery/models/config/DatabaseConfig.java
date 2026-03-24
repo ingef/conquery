@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.config;
 
+import jakarta.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +18,7 @@ import lombok.extern.jackson.Jacksonized;
 @Data
 @Builder
 @Jacksonized
-@NoArgsConstructor
+@NoArgsConstructor(onConstructor_ = {@JsonCreator})
 @AllArgsConstructor
 public class DatabaseConfig {
 
@@ -24,6 +27,7 @@ public class DatabaseConfig {
 	/**
 	 * SQL vendor specific dialect used to transform queries to SQL
 	 */
+	@NotNull
 	private Dialect dialect;
 
 	/**
@@ -48,5 +52,7 @@ public class DatabaseConfig {
 	 */
 	@Builder.Default
 	private String primaryColumn = DEFAULT_PRIMARY_COLUMN;
+
+
 
 }
