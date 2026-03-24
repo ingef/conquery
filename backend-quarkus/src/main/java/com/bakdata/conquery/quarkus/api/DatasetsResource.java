@@ -103,6 +103,17 @@ public class DatasetsResource {
 		return formQueriesConfig.resources().stream().map(this::loadFormResource).toList();
 	}
 
+	@GET
+	@Path("/{datasetId}/queries")
+	@Operation(
+			summary = "List queries for a dataset",
+			description = "Returns the query history list for the given dataset."
+	)
+	public List<QuerySummaryResponse> getQueries(@PathParam("datasetId") String datasetId) {
+		requireDataset(datasetId);
+		return List.of();
+	}
+
 	private DatasetsRuntimeConfig.DatasetEntry requireDataset(String datasetId) {
 		return datasetsConfig.datasets()
 							 .stream()
@@ -122,6 +133,30 @@ public class DatasetsResource {
 		catch (IOException e) {
 			throw new UncheckedIOException("Failed to parse form resource: " + path, e);
 		}
+	}
+
+	public record QuerySummaryResponse(
+			String id,
+			String label,
+			Long numberOfResults,
+			String createdAt,
+			List<String> tags,
+			boolean own,
+			String ownerName,
+			boolean system,
+			List<ResultUrlResponse> resultUrls,
+			boolean shared,
+			boolean canExpand,
+			String queryType,
+			String secondaryId,
+			boolean containsDates
+	) {
+	}
+
+	public record ResultUrlResponse(
+			String label,
+			String url
+	) {
 	}
 
 	public record DatasetResponse(

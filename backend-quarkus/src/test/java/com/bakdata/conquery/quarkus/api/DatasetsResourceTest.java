@@ -82,4 +82,21 @@ class DatasetsResourceTest {
 				.then()
 				.statusCode(404);
 	}
+
+	@Test
+	void queriesEndpointReturnsEmptyList() {
+		given()
+				.when().get("/api/datasets/imdb/queries")
+				.then()
+				.statusCode(200)
+				.body("size()", equalTo(0));
+	}
+
+	@Test
+	void queriesEndpointReturns404ForUnknownDataset() {
+		given()
+				.when().get("/api/datasets/unknown/queries")
+				.then()
+				.statusCode(404);
+	}
 }
