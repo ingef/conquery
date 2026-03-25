@@ -39,7 +39,7 @@ public class SqlConnectorConfig {
 	private boolean withPrettyPrinting;
 
 	/**
-	 * Keys must match the name of existing {@link Dataset}s.
+	 * Keys must match {@link Dataset#getDataSource()}.
 	 */
 	private Map<String, @Valid DatabaseConnectionConfig> databaseConfigs;
 
