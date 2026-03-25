@@ -45,7 +45,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 
 		QueryStep finalStep = QueryStep.builder()
 									   .cteName(null)  // the final QueryStep won't be converted to a CTE
-									   .selects(getFinalSelects(conceptQuery, preFinalSelects, context.getSqlDialect().getFunctionProvider()))
+									   .selects(getFinalSelects(conceptQuery, preFinalSelects, context.getDialectBundle().getFunctionProvider()))
 									   .fromTable(getFinalTable(preFinalStep, contextAfterConversion))
 									   .groupBy(getFinalGroupBySelects(preFinalSelects))
 									   .predecessors(predecessors)

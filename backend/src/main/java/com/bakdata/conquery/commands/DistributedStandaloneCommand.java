@@ -8,11 +8,14 @@ import com.bakdata.conquery.mode.cluster.ClusterManager;
 import com.bakdata.conquery.mode.cluster.ClusterManagerProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
+import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
+import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
 import com.bakdata.conquery.util.commands.NoOpConquery;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.core.cli.ServerCommand;
 import io.dropwizard.core.setup.Environment;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
 
@@ -23,6 +26,9 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 	private final ManagerNode managerNode = new ManagerNode();
 	private final List<ShardNode> shardNodes = new Vector<>();
 	private ClusterManager manager;
+
+	@Setter
+	private DateNowSupplier dateNowSupplier = new SystemDateNowSupplier();
 
 	public DistributedStandaloneCommand() {
 		super(new NoOpConquery(), "standalone", "starts a manager node and shard node(s) at the same time in a single JVM.");

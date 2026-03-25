@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.IOException;
 
 import com.bakdata.conquery.Conquery;
+import com.bakdata.conquery.integration.sql.dialect.MockDateNowSupplier;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
+import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.configuration.ConfigurationException;
@@ -17,6 +20,11 @@ import io.dropwizard.logging.common.DropwizardLayout;
 import jakarta.validation.Validator;
 
 public class TestBootstrappingConquery extends Conquery {
+
+	protected DateNowSupplier getDateNowSupplier() {
+		//TODO this is just a reimplementation of the Clock API!?
+		return new MockDateNowSupplier();
+	}
 
 	public static Bootstrap<ConqueryConfig> createTestBootstrapConquery(File tmpDir) {
 		final Bootstrap<ConqueryConfig> bootstrap = new Bootstrap<>(new TestBootstrappingConquery());

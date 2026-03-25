@@ -3,6 +3,7 @@ package com.bakdata.conquery.commands;
 import java.util.List;
 
 import com.bakdata.conquery.mode.Manager;
+import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import io.dropwizard.core.setup.Environment;
 
 public interface StandaloneCommand {
@@ -14,5 +15,8 @@ public interface StandaloneCommand {
 	ManagerNode getManagerNode();
 
 	Environment getEnvironment();
+
+	void setDateNowSupplier(DateNowSupplier dateNowSupplier);
+	DateNowSupplier getDateNowSupplier();
 
 }

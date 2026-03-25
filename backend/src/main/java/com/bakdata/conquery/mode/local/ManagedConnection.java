@@ -21,6 +21,7 @@ import org.jooq.impl.DSL;
 @Data
 @Slf4j
 public class ManagedConnection implements Managed {
+	private final String name;
 	private final SqlConnectorConfig config;
 	private final DatabaseConnectionConfig connection;
 	@CheckForNull

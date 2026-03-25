@@ -19,6 +19,7 @@ import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import lombok.With;
@@ -31,6 +32,7 @@ public class ConversionContext implements Context {
 	IdColumnConfig idColumns;
 
 	DateNowSupplier dateNowSupplier;
+	@NonNull
 	StratificationFunctions stratificationFunctions;
 	String defaultPrimaryColumn;
 	PrintSettings sqlPrintSettings;
@@ -89,6 +91,7 @@ public class ConversionContext implements Context {
 	public ConversionContext getConversionContext() {
 		return this;
 	}
+
 
 	/**
 	 * Get the last query {@link QueryStep} that has been added to this context query steps.

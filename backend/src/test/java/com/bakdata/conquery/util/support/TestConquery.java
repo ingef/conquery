@@ -19,16 +19,15 @@ import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.integration.IntegrationTests;
-import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.integration.sql.SqlStandaloneCommand;
+import com.bakdata.conquery.integration.sql.dialect.MockDateNowSupplier;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.mode.cluster.ClusterManager;
 import com.bakdata.conquery.mode.cluster.ClusterState;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ExecutionManager;
@@ -72,6 +71,27 @@ public class TestConquery {
 	// Initial user which is set before each test from the config.
 	@Getter
 	private User testUser;
+
+	@SneakyThrows
+	public static void waitUntil(Supplier<Boolean> condition) {
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		int done = 0;
+
+		while (stopwatch.elapsed(TimeUnit.SECONDS) < 10) {
+			Thread.sleep(2);
+			if (!condition.get()) {
+				continue;
+			}
+
+			//sample multiple times from the job queues to make sure we are done with everything and don't miss late arrivals
+			done++;
+			if (done > 5) {
+				return;
+			}
+		}
+
+		throw new IllegalStateException("Jobs did not finish within expected time.");
+	}
 
 	public synchronized StandaloneSupport openDataset(DatasetId datasetId) {
 		try {
@@ -138,27 +158,6 @@ public class TestConquery {
 		return buildSupport(datasetId, name, StandaloneSupport.Mode.WORKER);
 	}
 
-	@SneakyThrows
-	public static void waitUntil(Supplier<Boolean> condition) {
-		Stopwatch stopwatch = Stopwatch.createStarted();
-		int done = 0;
-
-		while (stopwatch.elapsed(TimeUnit.SECONDS) < 10) {
-			Thread.sleep(2);
-			if (!condition.get()) {
-				continue;
-			}
-
-			//sample multiple times from the job queues to make sure we are done with everything and don't miss late arrivals
-			done++;
-			if (done > 5) {
-				return;
-			}
-		}
-
-		throw new IllegalStateException("Jobs did not finish within expected time.");
-	}
-
 	public synchronized StandaloneSupport getSupport(String name) {
 		try {
 			log.info("Setting up dataset");
@@ -166,14 +165,12 @@ public class TestConquery {
 			if (count > 0) {
 				name += "[" + count + "]";
 			}
-			Dataset dataset = new Dataset(name);
-			dataset.setStorageProvider(getDatasetRegistry());
 
-			LoadingUtil.importDataset(getClient(), defaultAdminURIBuilder(), dataset);
-			waitUntilWorkDone();
+
+			testDataImporter.importDataset(getClient(), defaultAdminURIBuilder(), name);
 
 			// Little detour here, but this way we get the correctly initialized dataset id
-			DatasetId datasetId = getDatasetRegistry().get(dataset.getId()).getDataset().getId();
+			DatasetId datasetId = getDatasetRegistry().get(new DatasetId(name)).getDataset().getId();
 
 			return createSupport(datasetId, name);
 		}
@@ -229,9 +226,7 @@ public class TestConquery {
 	}
 
 	public void beforeAll() throws Exception {
-
-		log.info("Working in temporary directory {}", tmpDir);
-
+		log.debug("Working in temporary directory {}", tmpDir);
 
 		// define server
 		dropwizard = new DropwizardTestSupport<>(TestBootstrappingConquery.class, config, app -> {
@@ -241,6 +236,7 @@ public class TestConquery {
 			else {
 				standaloneCommand = new DistributedStandaloneCommand();
 			}
+			standaloneCommand.setDateNowSupplier(new MockDateNowSupplier());
 			return (Command) standaloneCommand;
 		}
 		);

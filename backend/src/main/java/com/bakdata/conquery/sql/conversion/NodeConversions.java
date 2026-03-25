@@ -28,14 +28,14 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 
 	public NodeConversions(
 			IdColumnConfig idColumns,
-			DialectBundle dialect,
+			DialectBundle dialectBundle,
 			DSLContext dslContext,
 			SqlExecutionService executionService, DateNowSupplier dateNowSupplier
 	) {
-		super(dialect.getNodeConverters(dslContext));
+		super(dialectBundle.getNodeConverters(dslContext));
 		this.idColumns = idColumns;
-		this.dialect = dialect;
-		this.nameGenerator = new NameGenerator(dialect.getDialect().getNameMaxLength());
+		this.dialect = dialectBundle;
+		this.nameGenerator = new NameGenerator(dialectBundle.getDialect().getNameMaxLength());
 		this.executionService = executionService;
 		this.dateNowSupplier = dateNowSupplier;
 	}
@@ -47,6 +47,7 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 														.nameGenerator(nameGenerator)
 														.nodeConversions(this)
 														.dateNowSupplier(dateNowSupplier)
+														.stratificationFunctions(dialect.getStratificationFunctions())
 														.dialectBundle(dialect)
 														.executionService(executionService)
 														.build();

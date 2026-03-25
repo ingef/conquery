@@ -31,7 +31,7 @@ public enum IntervalPackingCteStep implements CteStep {
 	public static SqlTables createTables(QueryStep predecessor, Context context) {
 
 		String rootTable = predecessor.getCteName();
-		Set<CteStep> requiredSteps = context.getSqlDialect().supportsSingleColumnRanges()
+		Set<CteStep> requiredSteps = context.getDialectBundle().supportsSingleColumnRanges()
 									 ? Set.of(INTERVAL_COMPLETE)
 									 : Set.of(values());
 

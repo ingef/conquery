@@ -75,7 +75,7 @@ class PreprocessingCte extends ConnectorCte {
 		List<Condition> idConditions = stratificationIds.join(rootTableIds);
 
 		// join full stratification with connector table on all ID's from prerequisite query
-		SqlFunctionProvider functionProvider = tableContext.getConversionContext().getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = tableContext.getConversionContext().getDialectBundle().getFunctionProvider();
 		Table<Record> connectorTable = DSL.table(DSL.name(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING)));
 		TableLike<Record> joinedTable = functionProvider.innerJoin(connectorTable, stratificationTable, idConditions);
 

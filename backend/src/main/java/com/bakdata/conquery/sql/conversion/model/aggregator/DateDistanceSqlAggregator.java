@@ -103,20 +103,20 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 			startDate = DSL.field(DSL.name(tables.getRootTable(), column.getName()), Date.class);
 		}
 		else {
-			StratificationFunctions stratificationFunctions = conversionContext.getSqlDialect().getStratificationFunctions();
+			StratificationFunctions stratificationFunctions = conversionContext.getDialectBundle().getStratificationFunctions();
 			Field<Date> daterangeColumn = DSL.field(DSL.name(tables.getRootTable(), column.getName()), Date.class);
 			startDate = stratificationFunctions.lower(ColumnDateRange.of(daterangeColumn));
 		}
 
 		Field<Date> endDate = getEndDate(conversionContext);
 
-		SqlFunctionProvider functionProvider = conversionContext.getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = conversionContext.getDialectBundle().getFunctionProvider();
 		return new FieldWrapper<>(functionProvider.dateDistance(timeUnit, startDate, endDate).as(alias));
 	}
 
 	private Field<Date> getEndDate(ConversionContext conversionContext) {
 
-		SqlFunctionProvider functionProvider = conversionContext.getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = conversionContext.getDialectBundle().getFunctionProvider();
 
 		// if there is a stratification active, the upper bound of the stratification date is the end date
 		if (conversionContext.isWithStratification()) {

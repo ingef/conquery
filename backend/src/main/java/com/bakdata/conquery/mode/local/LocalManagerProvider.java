@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
-import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
+import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import io.dropwizard.core.setup.Environment;
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class LocalManagerProvider implements ManagerProvider {
 
 	private static final Supplier<Collection<ShardNodeInformation>> EMPTY_NODE_PROVIDER = Collections::emptyList;
+	private final DateNowSupplier dateNowSupplier;
 
 	@Override
 	public DelegateManager<LocalNamespace> provideManager(ConqueryConfig config, Environment environment) {
@@ -30,7 +31,7 @@ public class LocalManagerProvider implements ManagerProvider {
 
 		final MetaStorage storage = new MetaStorage(config.getStorage());
 		final InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, environment.getValidator());
-		final NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, internalMapperFactory, connectionManager, new SystemDateNowSupplier());
+		final NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, internalMapperFactory, connectionManager, dateNowSupplier);
 		final DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, internalMapperFactory);
 
 		return new DelegateManager<>(

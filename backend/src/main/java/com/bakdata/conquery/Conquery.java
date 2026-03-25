@@ -17,6 +17,8 @@ import com.bakdata.conquery.mode.ManagerProvider;
 import com.bakdata.conquery.mode.cluster.ClusterManagerProvider;
 import com.bakdata.conquery.mode.local.LocalManagerProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
+import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
 import com.bakdata.conquery.util.search.solr.SolrBundle;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +40,11 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 public class Conquery extends Application<ConqueryConfig> {
 
 	private final String name;
+
+	protected DateNowSupplier getDateNowSupplier() {
+		//TODO this is just a reimplementation of the Clock API!?
+		return new SystemDateNowSupplier();
+	}
 
 	public Conquery() {
 		this("Conquery");
@@ -103,7 +110,7 @@ public class Conquery extends Application<ConqueryConfig> {
 	@Override
 	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
 		ManagerProvider provider = configuration.getSqlConnectorConfig().isEnabled() ?
-								   new LocalManagerProvider() : new ClusterManagerProvider();
+								   new LocalManagerProvider(getDateNowSupplier()) : new ClusterManagerProvider();
 		Manager manager = provider.provideManager(configuration, environment);
 
 		ManagerNode managerNode = new ManagerNode();

@@ -11,9 +11,7 @@ public interface Context {
 
 	ConversionContext getConversionContext();
 
-	default DialectBundle getSqlDialect() {
-		return getConversionContext().getSqlDialect();
-	}
+	DialectBundle getDialectBundle();
 
 	default NameGenerator getNameGenerator() {
 		return getConversionContext().getNameGenerator();

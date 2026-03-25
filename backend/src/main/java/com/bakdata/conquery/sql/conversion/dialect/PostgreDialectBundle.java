@@ -22,8 +22,11 @@ public class PostgreDialectBundle implements DialectBundle {
 	private final IntervalPacker postgresqlIntervalPacker;
 	private final SqlDateAggregator postgresqlDateAggregator;
 	private final DefaultSqlCDateSetParser defaultNotationParser;
-	@Getter
-	private final Dialect dialect = Dialect.POSTGRESQL;
+
+	@Override
+	public Dialect getDialect() {
+		return Dialect.POSTGRESQL;
+	}
 
 	public PostgreDialectBundle() {
 		this.postgresqlFunctionProvider = new PostgreSqlFunctionProvider();

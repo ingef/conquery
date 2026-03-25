@@ -73,7 +73,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		databaseConfig = provider.getDatabaseConfig();
 		sqlConfig = provider.getSqlConnectorConfig();
 
-		managedConnection = new ManagedConnection(sqlConfig, databaseConfig, null);
+		managedConnection = new ManagedConnection("test", sqlConfig, databaseConfig, null);
 		managedConnection.start();
 
 		dslContext = managedConnection.connect();

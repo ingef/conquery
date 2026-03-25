@@ -4,11 +4,14 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.importInternTo
 
 import java.util.Collection;
 import java.util.Collections;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.filter.FilterTest;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -78,5 +81,13 @@ public class WorkerTestDataImporter implements TestDataImporter {
 	public void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
 		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, tables));
 	}
+
+	@Override
+	public void importDataset(Client client, UriBuilder adminUriBuilder, String name) {
+		Dataset dataset = new Dataset(name);
+		LoadingUtil.importDataset(client, adminUriBuilder, dataset);
+	}
+
+
 
 }

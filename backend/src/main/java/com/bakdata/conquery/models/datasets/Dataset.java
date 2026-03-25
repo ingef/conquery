@@ -47,6 +47,11 @@ public class Dataset extends LabeledNamespaceIdentifiable<DatasetId> implements 
 	@ToString.Exclude
 	private NamespacedStorageProvider storageProvider;
 
+	private String dataSource;
+
+	public String getDataSource() {
+		return dataSource == null ? getName() : dataSource;
+	}
 
 	public Dataset(String name) {
 		setName(name);

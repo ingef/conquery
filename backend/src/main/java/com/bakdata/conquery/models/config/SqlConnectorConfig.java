@@ -48,7 +48,7 @@ public class SqlConnectorConfig {
 		ConnectionManager connectionManager = new ConnectionManager();
 
 		for (Map.Entry<String, DatabaseConnectionConfig> configEntry : getDatabaseConfigs().entrySet()) {
-			ManagedConnection managedConnection = new ManagedConnection(this, configEntry.getValue(), environment.healthChecks());
+			ManagedConnection managedConnection = new ManagedConnection(configEntry.getKey(), this, configEntry.getValue(), environment.healthChecks());
 
 			environment.lifecycle().manage(managedConnection);
 			connectionManager.addConnection(configEntry.getKey(), managedConnection);

@@ -24,7 +24,6 @@ import com.bakdata.conquery.integration.sql.testcontainer.hana.HanaContainer;
 import com.bakdata.conquery.mode.local.ManagedConnection;
 import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.config.Dialect;
-import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.sql.conversion.dialect.HanaDialectBundle;
 import com.google.common.base.Strings;
 import lombok.Getter;
@@ -102,7 +101,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 		log.info("Running HANA tests with {}.", provider.getClass().getSimpleName());
 
-		managedConnection = new ManagedConnection(provider.getSqlConnectorConfig(), provider.getDatabaseConfig(), null);
+		managedConnection = new ManagedConnection("test", provider.getSqlConnectorConfig(), provider.getDatabaseConfig(), null);
 		managedConnection.start();
 
 		dslContext = managedConnection.connect();

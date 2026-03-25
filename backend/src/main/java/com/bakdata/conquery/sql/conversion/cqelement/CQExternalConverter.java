@@ -37,7 +37,7 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 
 	@Override
 	public ConversionContext convert(CQExternal external, ConversionContext context) {
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getDialectBundle().getFunctionProvider();
 		QueryStep externalIdsCte = createExternalIdsCte(external, functionProvider);
 		ConversionContext withExternalIdCte = context.withQueryStep(externalIdsCte);
 		if (!external.isWithExtras()) {

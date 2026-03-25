@@ -12,7 +12,6 @@ import com.bakdata.conquery.sql.conversion.forms.HanaStratificationFunctions;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
-import lombok.Getter;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 
@@ -22,15 +21,17 @@ public class HanaDialectBundle implements DialectBundle {
 	private final IntervalPacker hanaIntervalPacker;
 	private final SqlDateAggregator hanaSqlDateAggregator;
 	private final DefaultSqlCDateSetParser defaultNotationParser;
-	@Getter
-	private final Dialect dialect = Dialect.HANA;
-
 
 	public HanaDialectBundle() {
 		this.hanaSqlFunctionProvider = new HanaSqlFunctionProvider();
 		this.hanaIntervalPacker = new AnsiSqlIntervalPacker();
 		this.hanaSqlDateAggregator = new AnsiSqlDateAggregator(this.hanaIntervalPacker);
 		this.defaultNotationParser = new DefaultSqlCDateSetParser();
+	}
+
+	@Override
+	public Dialect getDialect() {
+		return Dialect.HANA;
 	}
 
 	@Override
