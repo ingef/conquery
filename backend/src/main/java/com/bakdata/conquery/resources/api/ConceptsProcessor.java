@@ -131,7 +131,7 @@ public class ConceptsProcessor {
 
 		SearchProcessor filterSearch = namespace.getFilterSearch();
 
-		final ExactFilterValueResult exactResult = filterSearch.findExact(filter, searchTerms);
+		final ExactFilterValueResult exactResult = filterSearch.findFirstExact(filter, searchTerms);
 
 		final ConnectorId connectorId = filter.getConnector().getId();
 

@@ -45,6 +45,7 @@ import io.dropwizard.util.Duration;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -358,7 +359,6 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	}
 
 	public Collection<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm) {
-
 		return findExact(filter, List.of(searchTerm)).resolved();
 	}
 
@@ -367,6 +367,11 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		FilterValueSearch filterValueSearch = new FilterValueSearch(filter, this, solrSearchClient, filterValueConfig);
 
 		return filterValueSearch.exact(searchTerms);
+	}
+
+	@Override
+	public ConceptsProcessor.ExactFilterValueResult findFirstExact(SelectFilter<?> filter, List<String> searchTerms) {
+		throw new NotImplementedException(); //TODO
 	}
 
 	@Override
