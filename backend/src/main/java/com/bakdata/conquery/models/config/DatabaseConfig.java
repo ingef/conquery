@@ -53,6 +53,4 @@ public class DatabaseConfig {
 	@Builder.Default
 	private String primaryColumn = DEFAULT_PRIMARY_COLUMN;
 
-
-
 }
