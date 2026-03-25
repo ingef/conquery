@@ -117,9 +117,6 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 
 	public static class TestPostgreDialectBundle extends PostgreDialectBundle implements TestDialectBundle {
 
-		//TODO link up
-		public static final MockDateNowSupplier DATE_NOW_SUPPLIER = new MockDateNowSupplier();
-
 		public TestFunctionProvider getTestFunctionProvider() {
 			return new PostgreSqlTestFunctionProvider();
 		}

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.commands;
 
+import java.time.Clock;
 import java.util.Collection;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -36,6 +37,8 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 	@Setter
 	private ShardWorkers workers;
 	private ClusterConnectionShard clusterConnection;
+	@Setter
+	private Clock clock = Clock.systemDefaultZone();
 
 	public ShardNode() {
 		this(DEFAULT_NAME);
@@ -55,7 +58,8 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 		workers = new ShardWorkers(
 				config.getQueries().getExecutionPool(),
 				internalMapperFactory,
-				config.getQueries().getSecondaryIdSubPlanRetention()
+				config.getQueries().getSecondaryIdSubPlanRetention(),
+				clock
 		);
 
 		lifecycle.manage(workers);

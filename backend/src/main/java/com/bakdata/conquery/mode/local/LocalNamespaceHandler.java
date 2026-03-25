@@ -1,5 +1,7 @@
 package com.bakdata.conquery.mode.local;
 
+import java.time.Clock;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.NamespaceHandler;
@@ -14,7 +16,6 @@ import com.bakdata.conquery.sql.conquery.SqlExecutionManager;
 import com.bakdata.conquery.sql.conversion.NodeConversions;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
-import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
@@ -30,7 +31,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 	private final ConqueryConfig config;
 	private final InternalMapperFactory internalMapperFactory;
 	private final ConnectionManager connectionManager;
-	private final DateNowSupplier dateNowSupplier;
+	private final Clock clock;
 
 	@Override
 	public LocalNamespace createNamespace(
@@ -48,7 +49,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 		ResultSetProcessor resultSetProcessor = ResultSetProcessorFactory.create(config, dialectBundle);
 		SqlExecutionService sqlExecutionService = new SqlExecutionService(dslContext, resultSetProcessor);
 
-		NodeConversions nodeConversions = new NodeConversions(config.getIdColumns(), dialectBundle, dslContext, sqlExecutionService, dateNowSupplier);
+		NodeConversions nodeConversions = new NodeConversions(config.getIdColumns(), dialectBundle, dslContext, sqlExecutionService, clock);
 		SqlConverter sqlConverter = new SqlConverter(nodeConversions, config);
 		ExecutionManager executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage, datasetRegistry, config);
 		SqlStorageHandler sqlStorageHandler = new SqlStorageHandler(sqlExecutionService);

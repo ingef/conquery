@@ -129,8 +129,6 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 	public static class TestHanaDialectBundle extends HanaDialectBundle implements TestDialectBundle {
 
-		public static final MockDateNowSupplier DATE_NOW_SUPPLIER = new MockDateNowSupplier();
-
 		public TestFunctionProvider getTestFunctionProvider() {
 			return new HanaTestFunctionProvider();
 		}

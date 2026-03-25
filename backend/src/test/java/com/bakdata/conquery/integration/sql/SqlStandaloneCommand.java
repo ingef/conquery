@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.sql;
 
+import java.time.Clock;
 import java.util.Collections;
 import java.util.List;
 
@@ -10,8 +11,6 @@ import com.bakdata.conquery.mode.DelegateManager;
 import com.bakdata.conquery.mode.local.LocalManagerProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.LocalNamespace;
-import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
-import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
 import com.bakdata.conquery.util.commands.NoOpConquery;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.core.cli.ServerCommand;
@@ -29,7 +28,7 @@ public class SqlStandaloneCommand extends ServerCommand<ConqueryConfig> implemen
 
 	private DelegateManager<LocalNamespace> manager;
 	@Setter
-	private DateNowSupplier dateNowSupplier = new SystemDateNowSupplier();
+	private Clock clock = Clock.systemDefaultZone();
 
 	public SqlStandaloneCommand() {
 		super(new NoOpConquery(), "standalone", "starts a sql server and a client at the same time.");
@@ -44,7 +43,7 @@ public class SqlStandaloneCommand extends ServerCommand<ConqueryConfig> implemen
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception {
 		ConqueryMDC.setLocation("ManagerNode");
 		log.debug("Starting ManagerNode");
-		this.manager = new LocalManagerProvider(getDateNowSupplier()).provideManager(configuration, environment);
+		this.manager = new LocalManagerProvider(getClock()).provideManager(configuration, environment);
 		managerNode.run(manager);
 		// starts the Jersey Server
 		log.debug("Starting REST Server");

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion;
 
+import java.time.Clock;
 import java.util.Locale;
 
 import com.bakdata.conquery.apiv1.query.QueryDescription;
@@ -11,7 +12,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
-import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import org.jooq.DSLContext;
 
@@ -24,20 +24,20 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 	private final DialectBundle dialect;
 	private final NameGenerator nameGenerator;
 	private final SqlExecutionService executionService;
-	private final DateNowSupplier dateNowSupplier;
+	private final Clock clock;
 
 	public NodeConversions(
 			IdColumnConfig idColumns,
 			DialectBundle dialectBundle,
 			DSLContext dslContext,
-			SqlExecutionService executionService, DateNowSupplier dateNowSupplier
+			SqlExecutionService executionService, Clock clock
 	) {
 		super(dialectBundle.getNodeConverters(dslContext));
 		this.idColumns = idColumns;
 		this.dialect = dialectBundle;
 		this.nameGenerator = new NameGenerator(dialectBundle.getDialect().getNameMaxLength());
 		this.executionService = executionService;
-		this.dateNowSupplier = dateNowSupplier;
+		this.clock = clock;
 	}
 
 	public ConversionContext convert(QueryDescription queryDescription, Namespace namespace, ConqueryConfig conqueryConfig) {
@@ -46,7 +46,7 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 														.sqlPrintSettings(new PrintSettings(false, Locale.ROOT, namespace, conqueryConfig, null, null))
 														.nameGenerator(nameGenerator)
 														.nodeConversions(this)
-														.dateNowSupplier(dateNowSupplier)
+														.clock(clock)
 														.stratificationFunctions(dialect.getStratificationFunctions())
 														.dialectBundle(dialect)
 														.executionService(executionService)

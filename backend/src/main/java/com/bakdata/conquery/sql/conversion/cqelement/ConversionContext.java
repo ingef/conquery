@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement;
 
+import java.time.Clock;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -16,7 +17,6 @@ import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
-import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,7 +31,7 @@ public class ConversionContext implements Context {
 
 	IdColumnConfig idColumns;
 
-	DateNowSupplier dateNowSupplier;
+	Clock clock;
 	@NonNull
 	StratificationFunctions stratificationFunctions;
 	String defaultPrimaryColumn;

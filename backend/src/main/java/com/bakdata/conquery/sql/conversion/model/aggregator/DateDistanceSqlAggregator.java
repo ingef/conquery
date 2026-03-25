@@ -135,7 +135,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 		}
 		else {
 			// otherwise the current date is the upper bound
-			endDate = conversionContext.getDateNowSupplier().getLocalDateNow();
+			endDate = LocalDate.now(conversionContext.getClock());
 		}
 		return functionProvider.toDateField(Date.valueOf(endDate).toString());
 	}

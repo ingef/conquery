@@ -61,7 +61,6 @@ public class Dataset extends LabeledNamespaceIdentifiable<DatasetId> implements 
 		return table.getName().equalsIgnoreCase(ConqueryConstants.ALL_IDS_TABLE);
 	}
 
-	@JsonIgnore
 	public String getDataSource() {
 		return dataSource == null ? getName() : dataSource;
 	}

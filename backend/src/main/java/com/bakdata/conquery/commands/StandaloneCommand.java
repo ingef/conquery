@@ -1,9 +1,9 @@
 package com.bakdata.conquery.commands;
 
+import java.time.Clock;
 import java.util.List;
 
 import com.bakdata.conquery.mode.Manager;
-import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import io.dropwizard.core.setup.Environment;
 
 public interface StandaloneCommand {
@@ -16,7 +16,7 @@ public interface StandaloneCommand {
 
 	Environment getEnvironment();
 
-	void setDateNowSupplier(DateNowSupplier dateNowSupplier);
-	DateNowSupplier getDateNowSupplier();
+	void setClock(Clock clock);
+	Clock getClock();
 
 }

@@ -21,7 +21,7 @@ import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.integration.json.TestDataImporter;
 import com.bakdata.conquery.integration.sql.SqlStandaloneCommand;
-import com.bakdata.conquery.integration.sql.dialect.MockDateNowSupplier;
+import com.bakdata.conquery.integration.sql.dialect.MockClock;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.mode.cluster.ClusterManager;
 import com.bakdata.conquery.mode.cluster.ClusterState;
@@ -236,7 +236,7 @@ public class TestConquery {
 			else {
 				standaloneCommand = new DistributedStandaloneCommand();
 			}
-			standaloneCommand.setDateNowSupplier(new MockDateNowSupplier());
+			standaloneCommand.setClock(MockClock.get());
 			return (Command) standaloneCommand;
 		}
 		);

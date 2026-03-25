@@ -1,6 +1,7 @@
 package com.bakdata.conquery.commands;
 
 import java.nio.file.Path;
+import java.time.Clock;
 import java.util.List;
 import java.util.Vector;
 
@@ -8,8 +9,6 @@ import com.bakdata.conquery.mode.cluster.ClusterManager;
 import com.bakdata.conquery.mode.cluster.ClusterManagerProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
-import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
-import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
 import com.bakdata.conquery.util.commands.NoOpConquery;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.core.cli.ServerCommand;
@@ -28,7 +27,7 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 	private ClusterManager manager;
 
 	@Setter
-	private DateNowSupplier dateNowSupplier = new SystemDateNowSupplier();
+	private Clock clock = Clock.systemDefaultZone();
 
 	public DistributedStandaloneCommand() {
 		super(new NoOpConquery(), "standalone", "starts a manager node and shard node(s) at the same time in a single JVM.");
@@ -52,6 +51,7 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 		for (int id = 0; id < configuration.getStandalone().getNumberOfShardNodes(); id++) {
 
 			ShardNode sc = new ShardNode(ShardNode.DEFAULT_NAME + id);
+			sc.setClock(clock);
 
 			shardNodes.add(sc);
 
