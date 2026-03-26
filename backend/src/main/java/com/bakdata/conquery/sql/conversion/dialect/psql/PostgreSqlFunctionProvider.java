@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.dialect;
+package com.bakdata.conquery.sql.conversion.dialect.psql;
 
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.nullif;
@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;

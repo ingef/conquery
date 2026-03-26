@@ -6,7 +6,7 @@ import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
-import com.bakdata.conquery.sql.conversion.dialect.HanaSqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.dialect.hana.HanaSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import lombok.Getter;

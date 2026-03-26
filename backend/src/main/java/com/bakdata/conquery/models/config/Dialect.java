@@ -1,8 +1,9 @@
 package com.bakdata.conquery.models.config;
 
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
-import com.bakdata.conquery.sql.conversion.dialect.HanaDialectBundle;
-import com.bakdata.conquery.sql.conversion.dialect.PostgreDialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.clickhouse.ClickhouseDialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.hana.HanaDialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.psql.PostgreDialectBundle;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.SQLDialect;
@@ -23,7 +24,9 @@ public enum Dialect {
 	/**
 	 * Dialect for SAP HANA database
 	 */
-	HANA(SQLDialect.DEFAULT, 127, "SELECT 1 FROM DUMMY", new HanaDialectBundle());
+	HANA(SQLDialect.DEFAULT, 127, "SELECT 1 FROM DUMMY", new HanaDialectBundle()),
+
+	CLICKHOUSE(SQLDialect.CLICKHOUSE, 63, "SELECT 1", new ClickhouseDialectBundle());
 
 	private final SQLDialect jooqDialect;
 

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.dialect;
+package com.bakdata.conquery.sql.conversion.dialect.clickhouse;
 
 import static org.jooq.impl.DSL.nullif;
 
@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +30,7 @@ import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
-public class HanaSqlFunctionProvider implements SqlFunctionProvider {
+public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 	private static final char DELIMITER = ',';
 	private static final String MAX_DATE_VALUE = "9999-12-31";
@@ -52,7 +53,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange daterange) {
 
 		if (dateRestriction.isSingleColumnRange() || daterange.isSingleColumnRange()) {
-			throw new UnsupportedOperationException("HANA does not support single column ranges.");
+			throw new UnsupportedOperationException("Clickhouse does not support single column ranges.");
 		}
 
 		Condition dateRestrictionStartsBeforeDate = dateRestriction.getStart().lessThan(daterange.getEnd());
@@ -94,7 +95,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Field<Date> toDateField(String dateExpression) {
 		return DSL.function(
-				"TO_DATE",
+				"toDate",
 				Date.class,
 				DSL.val(dateExpression),
 				DSL.val(DEFAULT_DATE_FORMAT)
@@ -147,7 +148,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays) {
 		return DSL.function(
-				"ADD_DAYS",
+				"addDays",
 				Date.class,
 				dateColumn,
 				amountOfDays

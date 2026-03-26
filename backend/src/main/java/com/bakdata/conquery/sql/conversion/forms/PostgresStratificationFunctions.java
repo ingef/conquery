@@ -10,7 +10,7 @@ import java.util.Map;
 
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.sql.conversion.dialect.Interval;
-import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.dialect.psql.PostgreSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

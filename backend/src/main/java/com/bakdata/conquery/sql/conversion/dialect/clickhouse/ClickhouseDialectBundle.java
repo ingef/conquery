@@ -1,0 +1,86 @@
+package com.bakdata.conquery.sql.conversion.dialect.clickhouse;
+
+import java.util.List;
+
+import com.bakdata.conquery.models.config.Dialect;
+import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.sql.conversion.NodeConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.aggregation.AnsiSqlDateAggregator;
+import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.AnsiSqlIntervalPacker;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
+import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.dialect.hana.HanaSqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.forms.HanaStratificationFunctions;
+import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
+import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
+import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
+import org.jooq.DSLContext;
+import org.jooq.Field;
+
+public class ClickhouseDialectBundle implements DialectBundle {
+
+	private final SqlFunctionProvider hanaSqlFunctionProvider;
+	private final IntervalPacker hanaIntervalPacker;
+	private final SqlDateAggregator hanaSqlDateAggregator;
+	private final DefaultSqlCDateSetParser defaultNotationParser;
+
+	public ClickhouseDialectBundle() {
+		this.hanaSqlFunctionProvider = new HanaSqlFunctionProvider();
+		this.hanaIntervalPacker = new AnsiSqlIntervalPacker();
+		this.hanaSqlDateAggregator = new AnsiSqlDateAggregator(this.hanaIntervalPacker);
+		this.defaultNotationParser = new DefaultSqlCDateSetParser();
+	}
+
+	@Override
+	public Dialect getDialect() {
+		return Dialect.HANA;
+	}
+
+	@Override
+	public SqlCDateSetParser getCDateSetParser() {
+		return this.defaultNotationParser;
+	}
+
+	@Override
+	public List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext dslContext) {
+		return getDefaultNodeConverters(dslContext);
+	}
+
+	@Override
+	public StratificationFunctions getStratificationFunctions() {
+		return new HanaStratificationFunctions((HanaSqlFunctionProvider) getFunctionProvider());
+	}
+
+	@Override
+	public boolean isTypeCompatible(Field<?> field, MajorTypeId type) {
+		return switch (type) {
+			case STRING -> field.getDataType().isString();
+			case INTEGER -> field.getDataType().isInteger();
+			case BOOLEAN -> field.getDataType().isBoolean();
+			case REAL -> field.getDataType().isNumeric();
+			case DECIMAL -> field.getDataType().isDecimal();
+			case MONEY -> field.getDataType().isDecimal();
+			case DATE -> field.getDataType().isDate();
+			case DATE_RANGE -> false; // HANA does not support single-column DateRange
+		};
+	}
+
+	@Override
+	public SqlFunctionProvider getFunctionProvider() {
+		return this.hanaSqlFunctionProvider;
+	}
+
+	@Override
+	public IntervalPacker getIntervalPacker() {
+		return this.hanaIntervalPacker;
+	}
+
+	@Override
+	public SqlDateAggregator getDateAggregator() {
+		return this.hanaSqlDateAggregator;
+	}
+
+}

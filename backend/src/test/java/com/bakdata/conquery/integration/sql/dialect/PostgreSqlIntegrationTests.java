@@ -13,7 +13,7 @@ import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.sql.conversion.dialect.PostgreDialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.psql.PostgreDialectBundle;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
