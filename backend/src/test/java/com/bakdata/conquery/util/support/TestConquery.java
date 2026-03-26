@@ -1,6 +1,7 @@
 package com.bakdata.conquery.util.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import jakarta.validation.Validator;
 import jakarta.ws.rs.client.Client;
@@ -74,23 +76,18 @@ public class TestConquery {
 
 	@SneakyThrows
 	public static void waitUntil(Supplier<Boolean> condition) {
-		Stopwatch stopwatch = Stopwatch.createStarted();
-		int done = 0;
+		final AtomicLong done = new AtomicLong();
 
-		while (stopwatch.elapsed(TimeUnit.SECONDS) < 10) {
-			Thread.sleep(2);
-			if (!condition.get()) {
-				continue;
-			}
-
-			//sample multiple times from the job queues to make sure we are done with everything and don't miss late arrivals
-			done++;
-			if (done > 5) {
-				return;
-			}
-		}
-
-		throw new IllegalStateException("Jobs did not finish within expected time.");
+		await().atMost(10, TimeUnit.SECONDS)
+			   .pollInterval(2, TimeUnit.MILLISECONDS)
+			   .until(() -> {
+				   if (!condition.get()) {
+					   return false;
+				   }
+				   else {
+					   return done.getAndIncrement() > 5;
+				   }
+			   });
 	}
 
 	public synchronized StandaloneSupport openDataset(DatasetId datasetId) {

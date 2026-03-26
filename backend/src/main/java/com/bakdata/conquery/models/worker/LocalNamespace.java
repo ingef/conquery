@@ -59,17 +59,4 @@ public class LocalNamespace extends Namespace {
 			}
 		}
 	}
-
-	@Override
-	public void close() {
-		//TODO do we even need to shutdown the connection?
-		super.close();
-	}
-
-	@Override
-	public void remove() {
-
-		super.remove();
-	}
-
 }

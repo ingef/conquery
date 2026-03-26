@@ -66,35 +66,17 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 	@SneakyThrows
 	@BeforeAll
-	public static void prepareTmpHanaDir() {
-
-		if (!useLocalHanaDb) {
-			return;
-		}
-
-		Path masterPasswordFile = TMP_HANA_MOUNT_DIR.resolve("password.json");
-		String content = "{\"master_password\":\"%s\"}".formatted(HanaContainer.DEFAULT_MASTER_PASSWORD);
-
-		Files.createDirectories(TMP_HANA_MOUNT_DIR);
-		Files.write(masterPasswordFile, content.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-		Files.setPosixFilePermissions(TMP_HANA_MOUNT_DIR, Set.of(PosixFilePermission.values()));
-	}
-
-	@SneakyThrows
-	@AfterAll
-	public static void tearDownClass() {
-		if (!Files.exists(TMP_HANA_MOUNT_DIR)) {
-			return;
-		}
-		try (Stream<Path> walk = Files.walk(TMP_HANA_MOUNT_DIR)) {
-			walk.sorted(Comparator.naturalOrder())
-				.map(Path::toFile)
-				.forEach(File::delete);
-		}
-	}
-
-	@BeforeAll
 	static void before() throws Exception {
+		if (useLocalHanaDb) {
+			Path masterPasswordFile = TMP_HANA_MOUNT_DIR.resolve("password.json");
+			String content = "{\"master_password\":\"%s\"}".formatted(HanaContainer.DEFAULT_MASTER_PASSWORD);
+
+			Files.createDirectories(TMP_HANA_MOUNT_DIR);
+			Files.write(masterPasswordFile, content.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+			Files.setPosixFilePermissions(TMP_HANA_MOUNT_DIR, Set.of(PosixFilePermission.values()));
+		}
+
+
 		TestContextProvider provider = useLocalHanaDb
 									   ? new HanaTestcontainerContextProvider()
 									   : new RemoteHanaContextProvider();
@@ -110,6 +92,14 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 	@AfterAll
 	static void after() throws Exception {
 		managedConnection.stop();
+
+		if (Files.exists(TMP_HANA_MOUNT_DIR)) {
+			try (Stream<Path> walk = Files.walk(TMP_HANA_MOUNT_DIR)) {
+				walk.sorted(Comparator.naturalOrder())
+					.map(Path::toFile)
+					.forEach(File::delete);
+			}
+		}
 	}
 
 	@TestFactory
