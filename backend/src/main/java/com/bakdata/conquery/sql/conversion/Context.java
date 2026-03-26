@@ -19,7 +19,7 @@ public interface Context {
 	}
 	
 	default SqlFunctionProvider getFunctionProvider(){
-		return getConversionContext().getFunctionProvider();
+		return getConversionContext().getDialectBundle().getFunctionProvider();
 	}
 
 }
