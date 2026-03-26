@@ -111,7 +111,7 @@ class EventFilterCte extends ConnectorCte {
 		);
 
 		// we filter every entry where stratification date range and validity date range do not overlap
-		SqlFunctionProvider functionProvider = tableContext.getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = tableContext.getFunctionProvider();
 		ColumnDateRange stratificationDate = previousSelects.getStratificationDate().get();
 		ColumnDateRange validityDate = previousSelects.getValidityDate().get();
 		Condition stratificationCondition = functionProvider.dateRestriction(stratificationDate, validityDate);

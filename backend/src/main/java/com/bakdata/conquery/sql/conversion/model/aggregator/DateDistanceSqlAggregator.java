@@ -40,9 +40,8 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 		Column column = select.getColumn().resolve();
 		String alias = selectContext.getNameGenerator().selectName(select);
 		ConnectorSqlTables tables = selectContext.getTables();
-		ConversionContext conversionContext = selectContext.getConversionContext();
 
-		FieldWrapper<Integer> dateDistanceSelect = createDateDistanceSelect(column, alias, select.getTimeUnit(), tables, conversionContext);
+		FieldWrapper<Integer> dateDistanceSelect = createDateDistanceSelect(column, alias, select.getTimeUnit(), tables, selectContext.getConversionContext());
 
 		Field<Integer> qualifiedDateDistance = dateDistanceSelect.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
 		FieldWrapper<Integer> minDateDistance = new FieldWrapper<>(DSL.min(qualifiedDateDistance).as(alias));
@@ -63,9 +62,8 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 		Column column = filter.getColumn().resolve();
 		String alias = filterContext.getNameGenerator().selectName(filter);
 		ConnectorSqlTables tables = filterContext.getTables();
-		ConversionContext conversionContext = filterContext.getConversionContext();
 
-		FieldWrapper<Integer> dateDistanceSelect = createDateDistanceSelect(column, alias, filter.getTimeUnit(), tables, conversionContext);
+		FieldWrapper<Integer> dateDistanceSelect = createDateDistanceSelect(column, alias, filter.getTimeUnit(), tables, filterContext.getConversionContext());
 		ConnectorSqlSelects selects = ConnectorSqlSelects.builder().preprocessingSelect(dateDistanceSelect).build();
 
 		String eventFilterCteName = tables.getPredecessor(ConceptCteStep.EVENT_FILTER);
@@ -110,13 +108,13 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 
 		Field<Date> endDate = getEndDate(conversionContext);
 
-		SqlFunctionProvider functionProvider = conversionContext.getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = conversionContext.getFunctionProvider();
 		return new FieldWrapper<>(functionProvider.dateDistance(timeUnit, startDate, endDate).as(alias));
 	}
 
 	private Field<Date> getEndDate(ConversionContext conversionContext) {
 
-		SqlFunctionProvider functionProvider = conversionContext.getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = conversionContext.getFunctionProvider();
 
 		// if there is a stratification active, the upper bound of the stratification date is the end date
 		if (conversionContext.isWithStratification()) {

@@ -155,7 +155,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		if (Objects.isNull(selected)) {
 			return Optional.empty();
 		}
-		SqlFunctionProvider functionProvider = context.getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 
 		if (context.getDateRestrictionRange() != null) {
 			return Optional.of(functionProvider.forValidityDate(selected, context.getDateRestrictionRange()).asValidityDateRange(connectorLabel));
@@ -248,7 +248,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			return Optional.empty();
 		}
 
-		SqlFunctionProvider functionProvider = context.getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		ColumnDateRange dateRestriction = functionProvider.forCDateRange(context.getDateRestrictionRange()).as(SharedAliases.DATE_RESTRICTION.getAlias());
 
 		List<SqlSelect> dateRestrictionSelects = dateRestriction.toFields().stream()
@@ -317,7 +317,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		Optional<ColumnDateRange> tablesValidityDate = convertValidityDate(cqTable.findValidityDate(), connectorTables.getLabel(), conversionContext);
 
 		// convert filters
-		SqlFunctionProvider functionProvider = conversionContext.getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = conversionContext.getFunctionProvider();
 		List<SqlFilters> allSqlFiltersForTable = new ArrayList<>();
 
 		for (FilterValue<?> filterValue : cqTable.getFilters()) {

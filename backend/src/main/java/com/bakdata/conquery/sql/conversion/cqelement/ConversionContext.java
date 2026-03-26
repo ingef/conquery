@@ -73,6 +73,8 @@ public class ConversionContext implements Context {
 		return this.stratificationTable != null;
 	}
 
+
+
 	/**
 	 * Adds a query step to the list of {@link QueryStep} of this context.
 	 */

@@ -146,7 +146,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		if (table.findValidityDate() == null) {
 			return Optional.of(ColumnDateRange.empty());
 		}
-		final SqlFunctionProvider functionProvider = context.getDialectBundle().getFunctionProvider();
+		final SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		final ColumnDateRange validityDate = functionProvider.forValidityDate(table.findValidityDate());
 		// when exporting tables, we want the validity date as a single-column daterange string expression straightaway
 		final Field<String> asStringExpression = functionProvider.encloseInCurlyBraces(functionProvider.daterangeStringExpression(validityDate));
@@ -178,7 +178,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			CDateRange dateRestriction,
 			ConversionContext context
 	) {
-		final SqlFunctionProvider functionProvider = context.getDialectBundle().getFunctionProvider();
+		final SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		final Table<Record> connectorTable = DSL.table(DSL.name(cqTable.getConnector().resolve().resolveTableId().getTable()));
 		final Table<Record> convertedPrerequisiteTable = DSL.table(DSL.name(convertedPrerequisite.getCteName()));
 

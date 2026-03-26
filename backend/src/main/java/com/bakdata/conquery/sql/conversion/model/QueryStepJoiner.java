@@ -81,7 +81,7 @@ public class QueryStepJoiner {
 	public static TableLike<Record> constructJoinedTable(List<QueryStep> queriesToJoin, ConqueryJoinType logicalOperation, ConversionContext context) {
 		Table<Record> joinedQuery = getIntitialJoinTable(queriesToJoin);
 
-		SqlFunctionProvider functionProvider = context.getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		JoinType joinType = switch (logicalOperation) {
 			case INNER_JOIN -> functionProvider::innerJoin;
 			case OUTER_JOIN -> functionProvider::fullOuterJoin;

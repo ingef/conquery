@@ -46,7 +46,7 @@ class DaterangeSelectUtil {
 	) {
 		String alias = context.getNameGenerator().selectName(select);
 		ConnectorSqlTables tables = context.getTables();
-		SqlFunctionProvider functionProvider = context.getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 
 		ColumnDateRange daterange = functionProvider.forArbitraryDateRange(select).as(alias);
 		List<SqlSelect> rootSelects = daterange.toFields().stream()

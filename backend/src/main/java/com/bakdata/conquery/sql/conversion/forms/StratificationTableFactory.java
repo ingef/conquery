@@ -27,7 +27,7 @@ public class StratificationTableFactory {
 	public StratificationTableFactory(QueryStep baseStep, ConversionContext context) {
 		this.baseStep = baseStep;
 		this.stratificationFunctions = context.getStratificationFunctions();
-		this.functionProvider = context.getDialectBundle().getFunctionProvider();
+		this.functionProvider = context.getFunctionProvider();
 	}
 
 	public QueryStep createRelativeStratificationTable(RelativeFormQuery form) {

@@ -55,7 +55,7 @@ public class IntervalPackingSelectsCte {
 				predecessor,
 				cqTableContext.getSqlSelects().stream().flatMap(selects -> selects.getEventDateSelects().stream()).toList(),
 				cqTableContext.getConnectorTables(),
-				cqTableContext.getConversionContext().getDialectBundle().getFunctionProvider()
+				cqTableContext.getFunctionProvider()
 		);
 	}
 
@@ -69,7 +69,7 @@ public class IntervalPackingSelectsCte {
 				predecessor,
 				sqlSelects.stream().flatMap(selects -> selects.getEventDateSelects().stream()).toList(),
 				tables,
-				conversionContext.getDialectBundle().getFunctionProvider()
+				conversionContext.getFunctionProvider()
 		);
 	}
 

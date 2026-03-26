@@ -38,7 +38,7 @@ class IntermediateTableCte extends DateAggregationCte {
 		List<Field<Date>> allStarts = dateAggregationDates.allStarts();
 		List<Field<Date>> allEnds = dateAggregationDates.allEnds();
 
-		SqlFunctionProvider functionProvider = context.getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		Condition startBeforeEnd = functionProvider.greatest(allStarts).lessThan(functionProvider.least(allEnds));
 
 		Condition startIsNull = allStarts.stream()
