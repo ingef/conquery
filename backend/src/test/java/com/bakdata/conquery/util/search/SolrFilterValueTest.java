@@ -126,7 +126,8 @@ public class SolrFilterValueTest {
 				LabelMap labelMap = new LabelMap(getId(), ImmutableBiMap.of(
 						"a", "Map A",
 						"map b", "Map B",
-						"map c", "Map C"
+						"map c", "Map C",
+						"e", "Map E" // exists in all sources
 				), 0, false);
 
 				final FilterTemplate index = new FilterTemplate(
@@ -163,6 +164,7 @@ public class SolrFilterValueTest {
 				"a", // should be shadowed by LabelMap
 				"b", // should be shadowed by external csv map
 				"column c",
+				"e", // exists in all sources
 				"column ab",
 				"column ba",
 				"" // Empty string handling
@@ -217,11 +219,11 @@ public class SolrFilterValueTest {
 					assertThat(uut.values()).isEqualTo(List.of(
 							new FrontendValue("", "No Value", null),
 							new FrontendValue("a", "Map A", null),
+							new FrontendValue("e", "Map E", null),
 							new FrontendValue("map b", "Map B", null),
-							new FrontendValue("map c", "Map C", null),
-							new FrontendValue("b", "Data b", "b")
+							new FrontendValue("map c", "Map C", null)
 					));
-					assertThat(uut.total()).isEqualTo(13);
+					assertThat(uut.total()).isEqualTo(14);
 				}
 		);
 	}
@@ -233,13 +235,13 @@ public class SolrFilterValueTest {
 
 		assertThat(actual).satisfies(uut -> {
 					assertThat(uut.values()).isEqualTo(List.of(
+							new FrontendValue("b", "Data b", "b"),
 							new FrontendValue("data a", "data a", "data a"),
 							new FrontendValue("data c", "Data C", "data c"),
 							new FrontendValue("data d", "data d", "data d"),
-							new FrontendValue("external-null", "external-null", "external-null"),
-							new FrontendValue("","internal", null)
+							new FrontendValue("external-null", "external-null", "external-null")
 					));
-					assertThat(uut.total()).isEqualTo(13);
+					assertThat(uut.total()).isEqualTo(14);
 				}
 		);
 	}
@@ -251,11 +253,12 @@ public class SolrFilterValueTest {
 
 		assertThat(actual).satisfies(uut -> {
 					assertThat(uut.values()).isEqualTo(List.of(
+							new FrontendValue("","internal", null),
 							new FrontendValue("column ab", "column ab", "null"),
 							new FrontendValue("column ba", "column ba", "null"),
 							new FrontendValue("column c", "column c", "null")
 					));
-					assertThat(uut.total()).isEqualTo(13);
+					assertThat(uut.total()).isEqualTo(14);
 				}
 		);
 	}
@@ -272,6 +275,7 @@ public class SolrFilterValueTest {
 								new FrontendValue("data a", "Data", "data a"),
 								new FrontendValue("map b", "Map B", "null"),
 								new FrontendValue("map c", "Map C", "null"),
+								new FrontendValue("e", "Map E", "null"),
 								new FrontendValue("b", "Data b", "b"),
 								new FrontendValue("data c", "Data C", "data c"),
 								new FrontendValue("data d", "data d", "data d"),
@@ -281,7 +285,7 @@ public class SolrFilterValueTest {
 								new FrontendValue("column ba", "column ba", "null"),
 								new FrontendValue("column c", "column c", "null")
 						),
-						12
+						13
 				)
 		);
 	}
@@ -299,13 +303,14 @@ public class SolrFilterValueTest {
 								new FrontendValue("a", "Map A", null),
 								new FrontendValue("map b", "Map B", null),
 								new FrontendValue("map c", "Map C", null),
+								new FrontendValue("e", "Map E", "null"),
 								new FrontendValue("data a", "Data", "data a"),
 								new FrontendValue("b", "Data B", "b"),
 								new FrontendValue("data c", "Data C", "data c"),
 								new FrontendValue("data d", "data d", "data d"),
 								new FrontendValue("column c", "column c", null)
 						),
-						10
+						11
 				)
 		);
 	}
