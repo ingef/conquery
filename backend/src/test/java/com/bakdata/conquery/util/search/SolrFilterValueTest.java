@@ -395,9 +395,9 @@ public class SolrFilterValueTest {
 	@Order(3)
 	public void findExactMultiple() {
 
-		ConceptsProcessor.ExactFilterValueResult actual = searchProcessor.findExact(FILTER, List.of("MAP A", "z"));
+		ConceptsProcessor.ExactFilterValueResult actual = searchProcessor.findExact(FILTER, List.of("MAP A", "z", "Data e"));
 
-		assertThat(actual).usingRecursiveComparison().isEqualTo(new ConceptsProcessor.ExactFilterValueResult(List.of(new FrontendValue("a", "Map A")),Set.of("z")));
+		assertThat(actual).usingRecursiveComparison().isEqualTo(new ConceptsProcessor.ExactFilterValueResult(List.of(new FrontendValue("a", "Map A"), new FrontendValue("e", "Data E", "e")),Set.of("z")));
 	}
 
 	@Test
