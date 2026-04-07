@@ -13,11 +13,11 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
-import com.bakdata.conquery.integration.sql.dialect.TestSqlDialect;
+import com.bakdata.conquery.integration.sql.dialect.TestDialectBundle;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
 import com.google.common.base.Strings;
@@ -42,10 +42,10 @@ public class CsvTableImporter {
 	private final DSLContext dslContext;
 	private final DateRangeParser dateRangeParser;
 	private final CsvParser csvReader;
-	private final TestSqlDialect testSqlDialect;
-	private final DatabaseConfig databaseConfig;
+	private final TestDialectBundle testSqlDialect;
+	private final DatabaseConnectionConfig databaseConfig;
 
-	public CsvTableImporter(DSLContext dslContext, TestSqlDialect testSqlDialect, DatabaseConfig databaseConfig) {
+	public CsvTableImporter(DSLContext dslContext, TestDialectBundle testSqlDialect, DatabaseConnectionConfig databaseConfig) {
 		this.dslContext = dslContext;
 		this.dateRangeParser = new DateRangeParser(new ConqueryConfig());
 		this.csvReader = new CSVConfig().withSkipHeader(true).createParser();

@@ -1,24 +1,26 @@
 package com.bakdata.conquery.sql.conversion.cqelement;
 
+import java.time.Clock;
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.config.DatabaseConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.NodeConversions;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import lombok.With;
@@ -30,27 +32,21 @@ public class ConversionContext implements Context {
 
 	IdColumnConfig idColumns;
 
-	DatabaseConfig config;
-
+	Clock clock;
+	@NonNull
+	StratificationFunctions stratificationFunctions;
+	String defaultPrimaryColumn;
 	PrintSettings sqlPrintSettings;
-
 	NodeConversions nodeConversions;
-
-	SqlDialect sqlDialect;
-
+	DialectBundle dialectBundle;
 	NameGenerator nameGenerator;
-
 	SqlExecutionService executionService;
-
 	@Singular
 	List<QueryStep> querySteps;
-
 	@Nullable
 	SqlQuery finalQuery;
-
 	@Nullable
 	QueryStep stratificationTable;
-
 	@Nullable
 	QueryStep externalExtras;
 
@@ -78,6 +74,8 @@ public class ConversionContext implements Context {
 		return this.stratificationTable != null;
 	}
 
+
+
 	/**
 	 * Adds a query step to the list of {@link QueryStep} of this context.
 	 */
@@ -96,6 +94,7 @@ public class ConversionContext implements Context {
 	public ConversionContext getConversionContext() {
 		return this;
 	}
+
 
 	/**
 	 * Get the last query {@link QueryStep} that has been added to this context query steps.
