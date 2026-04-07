@@ -1,5 +1,6 @@
 package com.bakdata.conquery;
 
+import java.time.Clock;
 import jakarta.validation.Validator;
 
 import ch.qos.logback.classic.Level;
@@ -38,6 +39,10 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 public class Conquery extends Application<ConqueryConfig> {
 
 	private final String name;
+
+	protected Clock getQueryClock() {
+		return Clock.systemDefaultZone();
+	}
 
 	public Conquery() {
 		this("Conquery");
@@ -103,7 +108,7 @@ public class Conquery extends Application<ConqueryConfig> {
 	@Override
 	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
 		ManagerProvider provider = configuration.getSqlConnectorConfig().isEnabled() ?
-								   new LocalManagerProvider() : new ClusterManagerProvider();
+								   new LocalManagerProvider(getQueryClock()) : new ClusterManagerProvider();
 		Manager manager = provider.provideManager(configuration, environment);
 
 		ManagerNode managerNode = new ManagerNode();

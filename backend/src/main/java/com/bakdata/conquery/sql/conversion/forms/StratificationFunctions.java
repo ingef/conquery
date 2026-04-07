@@ -27,10 +27,7 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
-import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.HanaSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.dialect.Interval;
-import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
@@ -41,14 +38,6 @@ import org.jooq.Table;
 import org.jooq.impl.DSL;
 
 public abstract class StratificationFunctions {
-
-	public static StratificationFunctions create(ConversionContext context) {
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
-		return switch (context.getConfig().getDialect()) {
-			case POSTGRESQL -> new PostgresStratificationFunctions((PostgreSqlFunctionProvider) functionProvider);
-			case HANA -> new HanaStratificationFunctions((HanaSqlFunctionProvider) functionProvider);
-		};
-	}
 
 	public ColumnDateRange ofStartAndEnd(Field<Date> start, Field<Date> end) {
 		return ColumnDateRange.of(start, end); // needs to be overwritten for dialects that support single-column ranges
