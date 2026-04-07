@@ -60,7 +60,7 @@ public class ManagedConnection implements Managed {
 
 		return DSL.using(
 				this.dataSource,
-				connection.getDialect().getJooqDialect(),
+				connection.getDialect().getDialectBundle().getJooqDialect(),
 				settings
 		);
 	}

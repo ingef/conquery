@@ -35,7 +35,7 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 		super(dialectBundle.getNodeConverters(dslContext));
 		this.idColumns = idColumns;
 		this.dialect = dialectBundle;
-		this.nameGenerator = new NameGenerator(dialectBundle.getDialect().getNameMaxLength());
+		this.nameGenerator = new NameGenerator(dialectBundle.getNameMaxLength());
 		this.executionService = executionService;
 		this.clock = clock;
 	}

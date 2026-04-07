@@ -15,6 +15,7 @@ import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import lombok.Getter;
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.SQLDialect;
 
 public class PostgreDialectBundle implements DialectBundle {
 
@@ -26,6 +27,21 @@ public class PostgreDialectBundle implements DialectBundle {
 	@Override
 	public Dialect getDialect() {
 		return Dialect.POSTGRESQL;
+	}
+
+	@Override
+	public int getNameMaxLength() {
+		return 63;
+	}
+
+	@Override
+	public String getConnectionTestString() {
+		return "SELECT 1";
+	}
+
+	@Override
+	public SQLDialect getJooqDialect() {
+		return SQLDialect.POSTGRES;
 	}
 
 	public PostgreDialectBundle() {

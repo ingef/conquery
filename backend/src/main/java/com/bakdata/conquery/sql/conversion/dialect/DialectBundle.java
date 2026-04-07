@@ -30,11 +30,10 @@ import com.bakdata.conquery.sql.conversion.query.TableExportQueryConverter;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.SQLDialect;
 
 //TODO unify with com.bakdata.conquery.models.config.Dialect
 public interface DialectBundle {
-
-	//TODO add getDateNow and access it directly
 
 	Dialect getDialect();
 
@@ -52,6 +51,12 @@ public interface DialectBundle {
 								  Function.identity()
 						  ));
 	}
+
+	int getNameMaxLength();
+
+	String getConnectionTestString();
+
+	SQLDialect getJooqDialect();
 
 
 	StratificationFunctions getStratificationFunctions();

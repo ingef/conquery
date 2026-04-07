@@ -56,7 +56,7 @@ public class HanaContainer<SELF extends HanaContainer<SELF>> extends JdbcDatabas
 
 	@Override
 	protected String getTestQueryString() {
-		return Dialect.HANA.getTestConnection();
+		return Dialect.HANA.getDialectBundle().getConnectionTestString();
 	}
 
 	@Override

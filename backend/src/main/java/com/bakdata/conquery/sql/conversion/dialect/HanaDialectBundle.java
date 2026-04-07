@@ -14,6 +14,7 @@ import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.SQLDialect;
 
 public class HanaDialectBundle implements DialectBundle {
 
@@ -32,6 +33,21 @@ public class HanaDialectBundle implements DialectBundle {
 	@Override
 	public Dialect getDialect() {
 		return Dialect.HANA;
+	}
+
+	@Override
+	public int getNameMaxLength() {
+		return 127;
+	}
+
+	@Override
+	public String getConnectionTestString() {
+		return "SELECT 1 FROM DUMMY";
+	}
+
+	@Override
+	public SQLDialect getJooqDialect() {
+		return SQLDialect.DEFAULT;
 	}
 
 	@Override

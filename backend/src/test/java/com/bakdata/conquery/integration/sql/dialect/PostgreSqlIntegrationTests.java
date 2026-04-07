@@ -95,7 +95,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		I18n.init();
 		ResultSetProcessor resultSetProcessor = ResultSetProcessorFactory.create(config, testSqlDialect);
 		SqlExecutionService executionService = new SqlExecutionService(dslContext, resultSetProcessor);
-		SqlQuery validQuery = new TestSqlQuery(Dialect.POSTGRESQL.getTestConnection());
+		SqlQuery validQuery = new TestSqlQuery(Dialect.POSTGRESQL.getDialectBundle().getConnectionTestString());
 		Assertions.assertThatNoException().isThrownBy(() -> executionService.execute(validQuery));
 
 		// executing an empty query should throw an SQL error
