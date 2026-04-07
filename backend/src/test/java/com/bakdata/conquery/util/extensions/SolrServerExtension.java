@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.testcontainers.containers.SolrContainer;
+import org.testcontainers.solr.SolrContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @Slf4j
@@ -32,11 +32,11 @@ public class SolrServerExtension implements BeforeAllCallback, AfterAllCallback 
 		}
 
 		log.info("Spin up local container");
-		SolrContainer container = new SolrContainer(DockerImageName.parse("solr:9"));
-		container.withCollection(collection);
-		container.start();
+		solrContainer = new SolrContainer(DockerImageName.parse("solr:9.10.1"));
+        solrContainer.withCollection(collection);
+        solrContainer.start();
 
-		solrBaseUrl = "http://" + container.getHost() + ":" + container.getSolrPort() + "/solr";
+		solrBaseUrl = "http://" + solrContainer.getHost() + ":" + solrContainer.getSolrPort() + "/solr";
 	}
 
 	@Override
