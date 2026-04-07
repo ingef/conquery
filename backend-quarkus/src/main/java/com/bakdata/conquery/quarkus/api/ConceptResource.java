@@ -3,10 +3,15 @@ package com.bakdata.conquery.quarkus.api;
 import java.util.List;
 import java.util.Map;
 
-import com.bakdata.conquery.quarkus.api.config.ConceptsRuntimeConfig;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -18,7 +23,7 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 public class ConceptResource {
 
 	@Inject
-	ConceptsRuntimeConfig conceptsConfig;
+	DatasetService datasetService;
 
 	@GET
 	@Path("/{conceptId}")
@@ -26,15 +31,11 @@ public class ConceptResource {
 			summary = "Get concept details",
 			description = "Returns a concept map keyed by concept id, compatible with frontend tree loading."
 	)
-	public Map<String, ConceptNodeResponse> getConcept(@PathParam("conceptId") String conceptId) {
-		ConceptsRuntimeConfig.ConceptEntry concept = conceptsConfig.concepts()
-																 .stream()
-																 .filter(entry -> entry.id().equals(conceptId))
-																 .findFirst()
-																 .orElse(null);
+	public Map<String, ConceptNodeResponse> getConcept(@PathParam("conceptId") @NotBlank String conceptId) {
+		var concept = datasetService.requireConcept(conceptId);
 
 		ConceptNodeResponse node = new ConceptNodeResponse(
-				concept != null ? concept.label() : conceptId,
+				concept.label(),
 				null,
 				true,
 				List.of(),
@@ -47,6 +48,20 @@ public class ConceptResource {
 		);
 
 		return Map.of(conceptId, node);
+	}
+
+	@POST
+	@Path("/{conceptId}/resolve")
+	@Operation(
+			summary = "Resolve concept codes",
+			description = "Resolves uploaded concept codes to concept ids for the same dataset as the requested root concept."
+	)
+	public ConceptResolveResponse resolveConceptCodes(
+			@PathParam("conceptId") @NotBlank String conceptId,
+			@Valid @NotNull ConceptCodeList payload
+	) {
+		DatasetService.ConceptCodeResolution resolution = datasetService.resolveConceptCodes(conceptId, payload.concepts);
+		return new ConceptResolveResponse(resolution.resolvedConcepts(), resolution.unknownCodes());
 	}
 
 	public record ConceptNodeResponse(
@@ -119,5 +134,20 @@ public class ConceptResource {
 			String value,
 			String label
 	) {
+	}
+
+	public record ConceptResolveResponse(
+			List<String> resolvedConcepts,
+			List<String> unknownCodes
+	) {
+	}
+
+	public static final class ConceptCodeList {
+		public final @NotNull @NotEmpty List<@NotBlank String> concepts;
+
+		@JsonCreator
+		public ConceptCodeList(@JsonProperty("concepts") List<String> concepts) {
+			this.concepts = concepts;
+		}
 	}
 }

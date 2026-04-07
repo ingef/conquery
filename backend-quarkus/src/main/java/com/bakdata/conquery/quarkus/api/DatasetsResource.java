@@ -3,13 +3,12 @@ package com.bakdata.conquery.quarkus.api;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.quarkus.api.config.DatasetsRuntimeConfig;
 import com.bakdata.conquery.quarkus.api.config.EntityPreviewRuntimeConfig;
 import com.bakdata.conquery.quarkus.api.config.FormQueriesRuntimeConfig;
-import com.bakdata.conquery.quarkus.api.config.ConceptsRuntimeConfig;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.security.identity.SecurityIdentity;
@@ -17,7 +16,6 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -28,7 +26,7 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 @Produces(MediaType.APPLICATION_JSON)
 public class DatasetsResource {
 	@Inject
-	DatasetsRuntimeConfig datasetsConfig;
+	DatasetService datasetService;
 
 	@Inject
 	EntityPreviewRuntimeConfig entityPreviewConfig;
@@ -40,9 +38,6 @@ public class DatasetsResource {
 	ObjectMapper objectMapper;
 
 	@Inject
-	ConceptsRuntimeConfig conceptsConfig;
-
-	@Inject
 	QueryStateService queryStateService;
 
 	@Inject
@@ -50,8 +45,7 @@ public class DatasetsResource {
 
 	@GET
 	public List<DatasetResponse> getDatasets() {
-		return datasetsConfig.datasets()
-							 .stream()
+		return datasetService.listDatasets().stream()
 							 .map(entry -> new DatasetResponse(entry.id(), entry.label()))
 							 .toList();
 	}
@@ -59,7 +53,7 @@ public class DatasetsResource {
 	@GET
 	@Path("/{datasetId}/entity-preview")
 	public EntityPreviewResponse getEntityPreview(@PathParam("datasetId") String datasetId) {
-		requireDataset(datasetId);
+		datasetService.requireDataset(datasetId);
 
 		List<EntityPreviewResponse.LabeledSource> allSources =
 				entityPreviewConfig.allSources().stream().map(source -> new EntityPreviewResponse.LabeledSource(source.name(), source.label())).toList();
@@ -85,43 +79,24 @@ public class DatasetsResource {
 			description = "Returns top-level concept nodes. Nodes with detailsAvailable=false represent folder/structure nodes."
 	)
 	public ConceptsResponse getConcepts(@PathParam("datasetId") String datasetId) {
-		requireDataset(datasetId);
+		datasetService.requireDataset(datasetId);
 
-		java.util.Map<String, ConceptsResponse.ConceptSummaryResponse> concepts = conceptsConfig.concepts()
-																						  .stream()
-																						  .filter(entry -> entry.dataset().equals(datasetId))
-																						  .collect(java.util.stream.Collectors.toMap(
-																								  ConceptsRuntimeConfig.ConceptEntry::id,
-																								  entry -> new ConceptsResponse.ConceptSummaryResponse(
-																										  entry.label(),
-																										  null,
-																										  true,
-																										  List.of(),
-																										  0L,
-																										  0L,
-																										  true,
-																										  false,
-																										  List.of(),
-																										  List.of()
-																								  ),
-																								  (left, right) -> left,
-																								  java.util.LinkedHashMap::new
-																						  ));
-
-		if (concepts.isEmpty()) {
-			concepts.put(datasetId, new ConceptsResponse.ConceptSummaryResponse(
-					datasetId,
-					null,
-					true,
-					List.of(),
-					0L,
-					0L,
-					true,
-					false,
-					List.of(),
-					List.of()
-			));
-		}
+		java.util.Map<String, ConceptsResponse.ConceptSummaryResponse> concepts = new LinkedHashMap<>();
+		datasetService.listConceptsForDataset(datasetId).forEach(entry -> concepts.put(
+				entry.id(),
+				new ConceptsResponse.ConceptSummaryResponse(
+						entry.label(),
+						null,
+						true,
+						List.of(),
+						0L,
+						0L,
+						true,
+						false,
+						List.of(),
+						List.of()
+				)
+		));
 
 		return new ConceptsResponse(
 				List.of(),
@@ -136,7 +111,7 @@ public class DatasetsResource {
 			description = "Returns raw frontend form configuration objects."
 	)
 	public List<JsonNode> getFormQueries(@PathParam("datasetId") String datasetId) {
-		requireDataset(datasetId);
+		datasetService.requireDataset(datasetId);
 		return formQueriesConfig.resources().stream().map(this::loadFormResource).toList();
 	}
 
@@ -147,7 +122,7 @@ public class DatasetsResource {
 			description = "Returns the query history list for the given dataset."
 	)
 	public List<QuerySummaryResponse> getQueries(@PathParam("datasetId") String datasetId) {
-		requireDataset(datasetId);
+		datasetService.requireDataset(datasetId);
 		return queryStateService.getDatasetQueries(datasetId);
 	}
 
@@ -158,7 +133,7 @@ public class DatasetsResource {
 			description = "Accepts a query payload and returns the created query id."
 	)
 	public StartQueryResponse postQueries(@PathParam("datasetId") String datasetId, QuerySubmissionPayload payload) {
-		requireDataset(datasetId);
+		datasetService.requireDataset(datasetId);
 		return queryStateService.createQuery(datasetId, payload, resolveUserName(identity));
 	}
 
@@ -174,14 +149,6 @@ public class DatasetsResource {
 		}
 
 		return "anonymous";
-	}
-
-	private DatasetsRuntimeConfig.DatasetEntry requireDataset(String datasetId) {
-		return datasetsConfig.datasets()
-							 .stream()
-							 .filter(dataset -> dataset.id().equals(datasetId))
-							 .findFirst()
-							 .orElseThrow(() -> new NotFoundException("Unknown dataset: " + datasetId));
 	}
 
 	private JsonNode loadFormResource(String path) {
