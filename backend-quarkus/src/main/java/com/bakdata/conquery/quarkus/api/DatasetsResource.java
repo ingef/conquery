@@ -11,6 +11,8 @@ import com.bakdata.conquery.quarkus.api.config.EntityPreviewRuntimeConfig;
 import com.bakdata.conquery.quarkus.api.config.FormQueriesRuntimeConfig;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -35,6 +37,12 @@ public class DatasetsResource {
 
 	@Inject
 	ObjectMapper objectMapper;
+
+	@Inject
+	QueryStateService queryStateService;
+
+	@Inject
+	Instance<SecurityIdentity> identity;
 
 	@GET
 	public List<DatasetResponse> getDatasets() {
@@ -111,7 +119,7 @@ public class DatasetsResource {
 	)
 	public List<QuerySummaryResponse> getQueries(@PathParam("datasetId") String datasetId) {
 		requireDataset(datasetId);
-		return List.of();
+		return queryStateService.getDatasetQueries(datasetId);
 	}
 
 	@POST
@@ -122,7 +130,21 @@ public class DatasetsResource {
 	)
 	public StartQueryResponse postQueries(@PathParam("datasetId") String datasetId, QuerySubmissionPayload payload) {
 		requireDataset(datasetId);
-		return new StartQueryResponse(java.util.UUID.randomUUID().toString());
+		return queryStateService.createQuery(datasetId, payload, resolveUserName(identity));
+	}
+
+	private static String resolveUserName(Instance<SecurityIdentity> identityInstance) {
+		if (identityInstance.isResolvable()) {
+			SecurityIdentity securityIdentity = identityInstance.get();
+			if (securityIdentity != null && !securityIdentity.isAnonymous() && securityIdentity.getPrincipal() != null) {
+				String principalName = securityIdentity.getPrincipal().getName();
+				if (principalName != null && !principalName.isBlank()) {
+					return principalName;
+				}
+			}
+		}
+
+		return "anonymous";
 	}
 
 	private DatasetsRuntimeConfig.DatasetEntry requireDataset(String datasetId) {

@@ -1,10 +1,10 @@
 package com.bakdata.conquery.quarkus.api;
 
-import java.time.Instant;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -18,6 +18,8 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @Path("/api/queries")
 @Produces(MediaType.APPLICATION_JSON)
 public class QueryResource {
+	@Inject
+	QueryStateService queryStateService;
 
 	@GET
 	@Path("/{queryId}")
@@ -26,21 +28,7 @@ public class QueryResource {
 			description = "Returns the current query execution status and metadata."
 	)
 	public QueryResponse getQuery(@PathParam("queryId") String queryId) {
-		return new NewQueryResponse(
-				queryId,
-				"Query " + queryId,
-				Instant.now().toString(),
-				true,
-				false,
-				false,
-				List.of(),
-				null,
-				null,
-				"anonymous",
-				List.of(),
-				false,
-				List.of()
-		);
+		return queryStateService.getQuery(queryId);
 	}
 
 	@POST
@@ -50,7 +38,7 @@ public class QueryResource {
 			description = "Cancels a running query."
 	)
 	public void cancelQuery(@PathParam("queryId") String queryId) {
-		// Stub endpoint for migration progress. Query cancellation wiring follows later.
+		queryStateService.cancelQuery(queryId);
 	}
 
 	@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "status", visible = true)
