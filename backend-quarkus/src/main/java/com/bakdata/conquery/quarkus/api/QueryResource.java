@@ -67,7 +67,10 @@ public class QueryResource {
 					@DiscriminatorMapping(value = "CANCELED", schema = CanceledQueryResponse.class)
 			}
 	)
-	public abstract static class QueryResponse {
+	public interface QueryResponse {
+	}
+
+	public abstract static class BaseQueryResponse implements QueryResponse {
 		public final String id;
 		public final String label;
 		public final String createdAt;
@@ -83,7 +86,7 @@ public class QueryResource {
 		public final List<String> availableSecondaryIds;
 		public final QueryStatus status;
 
-		protected QueryResponse(
+		protected BaseQueryResponse(
 				String id,
 				String label,
 				String createdAt,
@@ -116,7 +119,7 @@ public class QueryResource {
 		}
 	}
 
-	public static final class NewQueryResponse extends QueryResponse {
+	public static final class NewQueryResponse extends BaseQueryResponse {
 		public NewQueryResponse(
 				String id,
 				String label,
@@ -136,7 +139,7 @@ public class QueryResource {
 		}
 	}
 
-	public static final class RunningQueryResponse extends QueryResponse {
+	public static final class RunningQueryResponse extends BaseQueryResponse {
 		public final Double progress;
 
 		public RunningQueryResponse(
@@ -160,7 +163,7 @@ public class QueryResource {
 		}
 	}
 
-	public static final class DoneQueryResponse extends QueryResponse {
+	public static final class DoneQueryResponse extends BaseQueryResponse {
 		public final Long numberOfResults;
 		public final List<ResultUrlResponse> resultUrls;
 		public final QueryType queryType;
@@ -196,7 +199,7 @@ public class QueryResource {
 		}
 	}
 
-	public static final class FailedQueryResponse extends QueryResponse {
+	public static final class FailedQueryResponse extends BaseQueryResponse {
 		public final ErrorResponse error;
 
 		public FailedQueryResponse(
@@ -220,7 +223,7 @@ public class QueryResource {
 		}
 	}
 
-	public static final class CanceledQueryResponse extends QueryResponse {
+	public static final class CanceledQueryResponse extends BaseQueryResponse {
 		public final ErrorResponse error;
 
 		public CanceledQueryResponse(

@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.quarkus.api.config.EntityPreviewRuntimeConfig;
 import com.bakdata.conquery.quarkus.api.config.FormQueriesRuntimeConfig;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.inject.Instance;
@@ -110,7 +109,7 @@ public class DatasetsResource {
 			summary = "Get form configurations for a dataset",
 			description = "Returns raw frontend form configuration objects."
 	)
-	public List<JsonNode> getFormQueries(@PathParam("datasetId") String datasetId) {
+	public List<Object> getFormQueries(@PathParam("datasetId") String datasetId) {
 		datasetService.requireDataset(datasetId);
 		return formQueriesConfig.resources().stream().map(this::loadFormResource).toList();
 	}
@@ -151,13 +150,13 @@ public class DatasetsResource {
 		return "anonymous";
 	}
 
-	private JsonNode loadFormResource(String path) {
+	private Object loadFormResource(String path) {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		try (InputStream input = classLoader.getResourceAsStream(path)) {
 			if (input == null) {
 				throw new IllegalStateException("Configured form resource does not exist: " + path);
 			}
-			return objectMapper.readTree(input);
+			return objectMapper.readValue(input, Object.class);
 		}
 		catch (IOException e) {
 			throw new UncheckedIOException("Failed to parse form resource: " + path, e);
@@ -173,18 +172,12 @@ public class DatasetsResource {
 			boolean own,
 			String ownerName,
 			boolean system,
-			List<ResultUrlResponse> resultUrls,
+			List<QueryResource.ResultUrlResponse> resultUrls,
 			boolean shared,
 			boolean canExpand,
 			String queryType,
 			String secondaryId,
 			boolean containsDates
-	) {
-	}
-
-	public record ResultUrlResponse(
-			String label,
-			String url
 	) {
 	}
 
