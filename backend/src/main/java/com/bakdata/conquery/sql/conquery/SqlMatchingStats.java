@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutorService;
 import jakarta.validation.constraints.NotBlank;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -64,7 +64,7 @@ public class SqlMatchingStats {
 
 	private final DSLContext dslContext;
 	private final SqlFunctionProvider functionProvider;
-	private final DatabaseConfig dbConfig;
+	private final String defaultPrimaryColumn;
 	private final int fetchBatchSize = 100; //TODO from dbConfig?
 
 	private static void assignStatsToPath(ConceptElement<?> element, Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats, String entity, CDateRange span) {
@@ -304,7 +304,7 @@ public class SqlMatchingStats {
 
 			SelectConditionStep<? extends Record> connectorTable =
 					dslContext.select(
-									  TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), dbConfig).as(PID_FIELD),
+									  TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), defaultPrimaryColumn).as(PID_FIELD),
 									  // The infinities are intentionally swapped
 									  least(positiveInfinity, validityDates).as(LB_FIELD),
 									  greatest(negativeInfinity, validityDates).as(UB_FIELD),

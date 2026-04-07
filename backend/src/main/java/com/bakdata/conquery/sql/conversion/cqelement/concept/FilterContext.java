@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import lombok.AccessLevel;
@@ -38,8 +39,13 @@ public class FilterContext<V> implements Context {
 		return new FilterContext<>(ids, value, conversionContext, null);
 	}
 
+	@Override
+	public DialectBundle getDialectBundle() {
+		return getConversionContext().getDialectBundle();
+	}
+
 	public SqlFunctionProvider getFunctionProvider() {
-		return getSqlDialect().getFunctionProvider();
+		return getDialectBundle().getFunctionProvider();
 	}
 
 }

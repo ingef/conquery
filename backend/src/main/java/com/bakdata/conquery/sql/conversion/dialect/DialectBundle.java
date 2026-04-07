@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.Converter;
@@ -16,6 +17,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.CQNegationConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQYesConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
+import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
 import com.bakdata.conquery.sql.conversion.query.AbsoluteFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.CQReusedQueryConverter;
@@ -25,15 +27,39 @@ import com.bakdata.conquery.sql.conversion.query.FormConversionHelper;
 import com.bakdata.conquery.sql.conversion.query.RelativFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.SecondaryIdQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.TableExportQueryConverter;
-import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
-import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.SQLDialect;
 
-public interface SqlDialect {
+//TODO unify with com.bakdata.conquery.models.config.Dialect
+public interface DialectBundle {
 
-	SystemDateNowSupplier SYSTEM_DATE_NOW_SUPPLIER = new SystemDateNowSupplier();
+	Dialect getDialect();
+
+	private static <R, C extends Converter<?, R, ?>> List<C> customize(List<C> defaults, List<C> substitutes) {
+		Map<Class<?>, C> substituteMap = getSubstituteMap(substitutes);
+		return defaults.stream()
+					   .map(converter -> substituteMap.getOrDefault(converter.getConversionClass(), converter))
+					   .toList();
+	}
+
+	private static <R, C extends Converter<?, R, ?>> Map<Class<?>, C> getSubstituteMap(List<C> substitutes) {
+		return substitutes.stream()
+						  .collect(Collectors.toMap(
+								  Converter::getConversionClass,
+								  Function.identity()
+						  ));
+	}
+
+	int getNameMaxLength();
+
+	String getConnectionTestString();
+
+	SQLDialect getJooqDialect();
+
+
+	StratificationFunctions getStratificationFunctions();
 
 	boolean isTypeCompatible(Field<?> field, MajorTypeId type);
 
@@ -46,10 +72,6 @@ public interface SqlDialect {
 	List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext context);
 
 	SqlCDateSetParser getCDateSetParser();
-
-	default DateNowSupplier getDateNowSupplier() {
-		return SYSTEM_DATE_NOW_SUPPLIER;
-	}
 
 	default boolean supportsSingleColumnRanges() {
 		return false;
@@ -76,21 +98,6 @@ public interface SqlDialect {
 				new RelativFormQueryConverter(formConversionUtil),
 				new TableExportQueryConverter(queryStepTransformer)
 		);
-	}
-
-	private static <R, C extends Converter<?, R, ?>> List<C> customize(List<C> defaults, List<C> substitutes) {
-		Map<Class<?>, C> substituteMap = getSubstituteMap(substitutes);
-		return defaults.stream()
-					   .map(converter -> substituteMap.getOrDefault(converter.getConversionClass(), converter))
-					   .toList();
-	}
-
-	private static <R, C extends Converter<?, R, ?>> Map<Class<?>, C> getSubstituteMap(List<C> substitutes) {
-		return substitutes.stream()
-						  .collect(Collectors.toMap(
-								  Converter::getConversionClass,
-								  Function.identity()
-						  ));
 	}
 
 }

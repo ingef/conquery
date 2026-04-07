@@ -128,7 +128,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	public static SqlIdColumns convertIds(CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
 
 		Table table = cqTable.getConnector().resolve().getResolvedTable();
-		Field<String> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(table, conversionContext.getConfig());
+		Field<String> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(table, conversionContext.getDefaultPrimaryColumn());
 
 		if (cqConcept.isExcludeFromSecondaryId()
 			|| conversionContext.getSecondaryIdDescription() == null
@@ -155,7 +155,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		if (Objects.isNull(selected)) {
 			return Optional.empty();
 		}
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 
 		if (context.getDateRestrictionRange() != null) {
 			return Optional.of(functionProvider.forValidityDate(selected, context.getDateRestrictionRange()).asValidityDateRange(connectorLabel));
@@ -250,7 +250,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			return Optional.empty();
 		}
 
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		ColumnDateRange dateRestriction = functionProvider.forCDateRange(context.getDateRestrictionRange()).as(SharedAliases.DATE_RESTRICTION.getAlias());
 
 		List<SqlSelect> dateRestrictionSelects = dateRestriction.toFields().stream()
@@ -319,7 +319,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		Optional<ColumnDateRange> tablesValidityDate = convertValidityDate(cqTable.findValidityDate(), connectorTables.getLabel(), conversionContext);
 
 		// convert filters
-		SqlFunctionProvider functionProvider = conversionContext.getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = conversionContext.getFunctionProvider();
 		List<SqlFilters> allSqlFiltersForTable = new ArrayList<>();
 
 		for (FilterValue<?> filterValue : cqTable.getFilters()) {

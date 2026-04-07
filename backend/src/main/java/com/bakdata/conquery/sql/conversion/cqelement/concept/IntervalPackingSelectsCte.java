@@ -6,7 +6,7 @@ import java.util.Optional;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDateUnionSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDurationSumSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
@@ -23,15 +23,15 @@ public class IntervalPackingSelectsCte {
 			ColumnDateRange daterange,
 			SqlSelect select,
 			SqlTables tables,
-			SqlDialect sqlDialect
+			DialectBundle dialectBundle
 	) {
 		List<QueryStep> predecessors = List.of(withAggregatedDaterange);
 		QueryStep directPredecessor = withAggregatedDaterange;
 
 		// we need an additional predecessor to unnest the validity date if it is a single column range
-		if (sqlDialect.supportsSingleColumnRanges()) {
+		if (dialectBundle.supportsSingleColumnRanges()) {
 			String unnestCteName = tables.cteName(ConceptCteStep.UNNEST_DATE);
-			directPredecessor = sqlDialect.getFunctionProvider().unnestDaterange(daterange, withAggregatedDaterange, unnestCteName);
+			directPredecessor = dialectBundle.getFunctionProvider().unnestDaterange(daterange, withAggregatedDaterange, unnestCteName);
 			predecessors = List.of(withAggregatedDaterange, directPredecessor);
 		}
 
@@ -55,7 +55,7 @@ public class IntervalPackingSelectsCte {
 				predecessor,
 				cqTableContext.getSqlSelects().stream().flatMap(selects -> selects.getEventDateSelects().stream()).toList(),
 				cqTableContext.getConnectorTables(),
-				cqTableContext.getConversionContext().getSqlDialect().getFunctionProvider()
+				cqTableContext.getFunctionProvider()
 		);
 	}
 
@@ -69,7 +69,7 @@ public class IntervalPackingSelectsCte {
 				predecessor,
 				sqlSelects.stream().flatMap(selects -> selects.getEventDateSelects().stream()).toList(),
 				tables,
-				conversionContext.getSqlDialect().getFunctionProvider()
+				conversionContext.getFunctionProvider()
 		);
 	}
 
