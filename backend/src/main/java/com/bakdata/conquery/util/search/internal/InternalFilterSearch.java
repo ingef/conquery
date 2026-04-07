@@ -292,35 +292,12 @@ public class InternalFilterSearch implements SearchProcessor {
 		return out;
 	}
 
+
 	@Override
 	public ConceptsProcessor.ExactFilterValueResult findExact(SelectFilter<?> filter, List<String> searchTerms) {
 		final List<FrontendValue> out = new ArrayList<>();
 		// search in the full text engine
 		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
-
-
-		for (final Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext(); ) {
-
-			final String searchTerm = iterator.next();
-			final List<FrontendValue> results = findExact(filter, searchTerm);
-
-			if (results.isEmpty()) {
-				continue;
-			}
-
-			iterator.remove();
-			out.addAll(results);
-		}
-
-		return new ConceptsProcessor.ExactFilterValueResult(out, openSearchTerms);
-	}
-
-	@Override
-	public ConceptsProcessor.ExactFilterValueResult findFirstExact(SelectFilter<?> filter, List<String> searchTerms) {
-		final List<FrontendValue> out = new ArrayList<>();
-		// search in the full text engine
-		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
-
 
 		for (final Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext(); ) {
 

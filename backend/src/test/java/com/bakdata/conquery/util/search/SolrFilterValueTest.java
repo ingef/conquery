@@ -151,6 +151,10 @@ public class SolrFilterValueTest {
 		};
 	}
 
+	public static Collection<FrontendValue> findExact(SolrProcessor solrProcessor, SelectFilter<?> filter, String searchTerm) {
+		return solrProcessor.findExact(filter, List.of(searchTerm)).resolved();
+	}
+
 	@Test
 	@Order(0)
 	public void addData() throws InterruptedException, SolrServerException, IOException {
@@ -192,7 +196,7 @@ public class SolrFilterValueTest {
 	@Order(1)
 	public void findExactColumn() {
 
-		Collection<FrontendValue> actual = searchProcessor.findExact(FILTER, "column c");
+		Collection<FrontendValue> actual = findExact(searchProcessor, FILTER, "column c");
 
 		assertThat(actual).containsExactly(new FrontendValue("column c", "column c"));
 	}
@@ -200,12 +204,12 @@ public class SolrFilterValueTest {
 	@Test
 	@Order(1)
 	public void findExactMap() {
-		Collection<FrontendValue> actualLabel = searchProcessor.findExact(FILTER, "Map A");
+		Collection<FrontendValue> actualLabel = findExact(searchProcessor, FILTER, "Map A");
 
 		assertThat(actualLabel).containsExactly(new FrontendValue("a", "Map A"));
 
 
-		Collection<FrontendValue> actualValue = searchProcessor.findExact(FILTER, "map a");
+		Collection<FrontendValue> actualValue = findExact(searchProcessor, FILTER, "map a");
 
 		assertThat(actualValue).containsExactly(new FrontendValue("a", "Map A"));
 	}
@@ -368,7 +372,7 @@ public class SolrFilterValueTest {
 	@Order(3)
 	public void findExactNothing() {
 
-		Collection<FrontendValue> actual = searchProcessor.findExact(FILTER, "");
+		Collection<FrontendValue> actual = findExact(searchProcessor, FILTER, "");
 
 		assertThat(actual).isEmpty();
 	}
@@ -377,7 +381,7 @@ public class SolrFilterValueTest {
 	@Order(3)
 	public void findExactUnknown() {
 
-		Collection<FrontendValue> actual = searchProcessor.findExact(FILTER, "z");
+		Collection<FrontendValue> actual = findExact(searchProcessor, FILTER, "z");
 
 		assertThat(actual).isEmpty();
 	}
@@ -386,7 +390,7 @@ public class SolrFilterValueTest {
 	@Order(3)
 	public void findExactUppercase() {
 
-		Collection<FrontendValue> actual = searchProcessor.findExact(FILTER, "MAP A");
+		Collection<FrontendValue> actual = findExact(searchProcessor, FILTER, "MAP A");
 
 		assertThat(actual).containsExactly(new FrontendValue("a", "Map A"));
 	}

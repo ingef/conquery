@@ -45,7 +45,6 @@ import io.dropwizard.util.Duration;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -74,20 +73,32 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	private final FilterValueConfig filterValueConfig;
 
 	private final Map<String, FilterValueIndexer> indexers = new ConcurrentHashMap<>();
-
-	private SolrClient solrSearchClient;
-
-	private SolrClient solrIndexClient;
-
 	/**
 	 * Single threaded runtime for the chunk submitter.
 	 * This is mainly used to decouple mina threads from the solr client in order to prevent blocking and to convert between {@link com.bakdata.conquery.models.messages.namespaces.specific.RegisterColumnValues}'s
 	 * and solr chunk sizes.
 	 */
 	private final ExecutorService chunkDecoupleExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
-																		  .setNameFormat("solr-submitter-%d")
-																		  .setDaemon(true)
-																		  .build());
+																									.setNameFormat("solr-submitter-%d")
+																									.setDaemon(true)
+																									.build());
+	private SolrClient solrSearchClient;
+	private SolrClient solrIndexClient;
+
+	/**
+	 * Higher priority for lower number
+	 * @param searchable The searchable entity that is map to a priority
+	 * @return The priority
+	 */
+	static int getFilterValueSourcePriority(Searchable searchable) {
+		return switch (searchable) {
+			case SolrEmptySeachable ignore -> 0;
+			case LabelMap ignore -> 1;
+			case FilterTemplate ignore -> 2;
+			case Column ignore -> 3;
+			default -> Integer.MAX_VALUE;
+		};
+	}
 
 	@Override
 	public void start() throws Exception {
@@ -103,14 +114,16 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		if (solrSearchClient != null) {
 			try {
 				solrSearchClient.close();
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				log.warn("Failed to close solr search client", e);
 			}
 		}
 		if (solrIndexClient != null) {
 			try {
 				solrIndexClient.close();
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				log.warn("Failed to close solr index client", e);
 			}
 		}
@@ -135,7 +148,8 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		try (SolrClient solrClient = solrSearchClientFactory.get()) {
 			log.info("Clearing collection: {}", solrClient.getDefaultCollection());
 			solrClient.deleteByQuery("*:*");
-		} catch (SolrServerException | IOException e) {
+		}
+		catch (SolrServerException | IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -181,21 +195,6 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		return "shared_column_" + columnGroup;
 	}
 
-	/**
-	 * Higher priority for lower number
-	 * @param searchable The searchable entity that is map to a priority
-	 * @return The priority
-	 */
-	static int getFilterValueSourcePriority(Searchable searchable) {
-		return switch (searchable) {
-			case SolrEmptySeachable ignore -> 0;
-			case LabelMap ignore -> 1;
-			case FilterTemplate ignore -> 2;
-			case Column ignore -> 3;
-			default -> Integer.MAX_VALUE;
-		};
-	}
-
 	/*package*/ FilterValueIndexer getIndexerFor(Searchable searchable) {
 		String nameForSearchable = buildNameForSearchable(searchable);
 		int sourcePriority = getFilterValueSourcePriority(searchable);
@@ -232,7 +231,8 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	}
 
 	@Override
-	public void indexManagerResidingSearches(Set<Searchable> managerSearchables, AtomicBoolean cancelledState, ProgressReporter progressReporter) throws InterruptedException {
+	public void indexManagerResidingSearches(Set<Searchable> managerSearchables, AtomicBoolean cancelledState, ProgressReporter progressReporter)
+			throws InterruptedException {
 
 		// Index an empty result for all searches
 		indexEmptyLabel();
@@ -240,7 +240,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		progressReporter.setMax(managerSearchables.size());
 		progressReporter.start();
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
-		try(final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1)) {
+		try (final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1)) {
 
 			final Map<Searchable, Search<FrontendValue>> searchCache = new ConcurrentHashMap<>();
 			for (Searchable searchable : managerSearchables) {
@@ -358,9 +358,6 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		}
 	}
 
-	public Collection<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm) {
-		return findExact(filter, List.of(searchTerm)).resolved();
-	}
 
 	@Override
 	public ConceptsProcessor.ExactFilterValueResult findExact(SelectFilter<?> filter, List<String> searchTerms) {
@@ -370,13 +367,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	}
 
 	@Override
-	public ConceptsProcessor.ExactFilterValueResult findFirstExact(SelectFilter<?> filter, List<String> searchTerms) {
-		throw new NotImplementedException(); //TODO
-	}
-
-	@Override
 	public AutoCompleteResult query(SelectFilter<?> filter, String maybeText, int itemsPerPage, int pageNumber) {
-
 		int start = itemsPerPage * pageNumber;
 		return topItems(filter, maybeText, start, itemsPerPage);
 	}
@@ -411,7 +402,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 			try {
 
 				Stopwatch stopwatch = Stopwatch.createStarted();
-				try(ExecutorService executorService = Executors.newFixedThreadPool(4)) {
+				try (ExecutorService executorService = Executors.newFixedThreadPool(4)) {
 					for (ColumnId columnId : columns) {
 						executorService.submit(() -> {
 							solrProcessor.finalizeSearch(columnId.resolve());
@@ -422,7 +413,8 @@ public class SolrProcessor implements SearchProcessor, Managed {
 				solrProcessor.explicitCommit();
 				getProgressReporter().report(1);
 				log.info("Finished commit on collection {} in {}", solrProcessor.solrIndexClient.getDefaultCollection(), stopwatch);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				log.error("Unable to issue explicit commit on collection {}", solrProcessor.solrIndexClient.getDefaultCollection(), e);
 			}
 		}
