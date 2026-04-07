@@ -120,7 +120,7 @@ public class DatasetsResource {
 			summary = "Create a query for a dataset",
 			description = "Accepts a query payload and returns the created query id."
 	)
-	public StartQueryResponse postQueries(@PathParam("datasetId") String datasetId, JsonNode payload) {
+	public StartQueryResponse postQueries(@PathParam("datasetId") String datasetId, QuerySubmissionPayload payload) {
 		requireDataset(datasetId);
 		return new StartQueryResponse(java.util.UUID.randomUUID().toString());
 	}

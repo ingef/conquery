@@ -24,7 +24,7 @@ public class MeResource {
 		return new MeResponse(
 				userName,
 				true,
-				Map.of(),
+				Map.of("imdb", new PermissionFlags(true, true, true)),
 				List.of()
 		);
 	}
