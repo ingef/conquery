@@ -3,11 +3,10 @@ package com.bakdata.conquery.quarkus.api;
 import java.util.List;
 import java.util.Map;
 
-import com.bakdata.conquery.quarkus.api.config.DatasetsRuntimeConfig;
+import com.bakdata.conquery.quarkus.api.config.ConceptsRuntimeConfig;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -19,7 +18,7 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 public class ConceptResource {
 
 	@Inject
-	DatasetsRuntimeConfig datasetsConfig;
+	ConceptsRuntimeConfig conceptsConfig;
 
 	@GET
 	@Path("/{conceptId}")
@@ -28,14 +27,14 @@ public class ConceptResource {
 			description = "Returns a concept map keyed by concept id, compatible with frontend tree loading."
 	)
 	public Map<String, ConceptNodeResponse> getConcept(@PathParam("conceptId") String conceptId) {
-		DatasetsRuntimeConfig.DatasetEntry dataset = datasetsConfig.datasets()
-																.stream()
-																.filter(entry -> entry.id().equals(conceptId))
-																.findFirst()
-																.orElseThrow(() -> new NotFoundException("Unknown concept: " + conceptId));
+		ConceptsRuntimeConfig.ConceptEntry concept = conceptsConfig.concepts()
+																 .stream()
+																 .filter(entry -> entry.id().equals(conceptId))
+																 .findFirst()
+																 .orElse(null);
 
 		ConceptNodeResponse node = new ConceptNodeResponse(
-				dataset.label(),
+				concept != null ? concept.label() : conceptId,
 				null,
 				true,
 				List.of(),

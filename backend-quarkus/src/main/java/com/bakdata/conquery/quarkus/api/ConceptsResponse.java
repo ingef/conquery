@@ -28,7 +28,9 @@ public record ConceptsResponse(
 			@Schema(description = "Whether detailed concept contents are available via /api/concepts/{conceptId}. "
 								  + "If false, this node is a folder/structure node and should not be draggable.")
 			Boolean detailsAvailable,
-			Boolean codeListResolvable
+			Boolean codeListResolvable,
+			List<ConceptResource.TableResponse> tables,
+			List<ConceptResource.SelectResponse> selects
 	) {
 	}
 }

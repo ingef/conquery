@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.quarkus.api.config.DatasetsRuntimeConfig;
 import com.bakdata.conquery.quarkus.api.config.EntityPreviewRuntimeConfig;
 import com.bakdata.conquery.quarkus.api.config.FormQueriesRuntimeConfig;
+import com.bakdata.conquery.quarkus.api.config.ConceptsRuntimeConfig;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.security.identity.SecurityIdentity;
@@ -37,6 +38,9 @@ public class DatasetsResource {
 
 	@Inject
 	ObjectMapper objectMapper;
+
+	@Inject
+	ConceptsRuntimeConfig conceptsConfig;
 
 	@Inject
 	QueryStateService queryStateService;
@@ -81,22 +85,47 @@ public class DatasetsResource {
 			description = "Returns top-level concept nodes. Nodes with detailsAvailable=false represent folder/structure nodes."
 	)
 	public ConceptsResponse getConcepts(@PathParam("datasetId") String datasetId) {
-		DatasetsRuntimeConfig.DatasetEntry dataset = requireDataset(datasetId);
+		requireDataset(datasetId);
 
-		ConceptsResponse.ConceptSummaryResponse rootConcept = new ConceptsResponse.ConceptSummaryResponse(
-				dataset.label(),
-				null,
-				true,
-				List.of(),
-				0L,
-				0L,
-				true,
-				false
-		);
+		java.util.Map<String, ConceptsResponse.ConceptSummaryResponse> concepts = conceptsConfig.concepts()
+																						  .stream()
+																						  .filter(entry -> entry.dataset().equals(datasetId))
+																						  .collect(java.util.stream.Collectors.toMap(
+																								  ConceptsRuntimeConfig.ConceptEntry::id,
+																								  entry -> new ConceptsResponse.ConceptSummaryResponse(
+																										  entry.label(),
+																										  null,
+																										  true,
+																										  List.of(),
+																										  0L,
+																										  0L,
+																										  true,
+																										  false,
+																										  List.of(),
+																										  List.of()
+																								  ),
+																								  (left, right) -> left,
+																								  java.util.LinkedHashMap::new
+																						  ));
+
+		if (concepts.isEmpty()) {
+			concepts.put(datasetId, new ConceptsResponse.ConceptSummaryResponse(
+					datasetId,
+					null,
+					true,
+					List.of(),
+					0L,
+					0L,
+					true,
+					false,
+					List.of(),
+					List.of()
+			));
+		}
 
 		return new ConceptsResponse(
 				List.of(),
-				java.util.Map.of(dataset.id(), rootConcept)
+				concepts
 		);
 	}
 
