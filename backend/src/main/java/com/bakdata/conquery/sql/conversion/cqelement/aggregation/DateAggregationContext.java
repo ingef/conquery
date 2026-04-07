@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.model.Qualifiable;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
@@ -59,6 +60,11 @@ class DateAggregationContext implements Context, Qualifiable<DateAggregationCont
 				   .carryThroughSelects(QualifyingUtil.qualify(this.carryThroughSelects, qualifier))
 				   .dateAggregationDates(this.dateAggregationDates.qualify(qualifier))
 				   .build();
+	}
+
+	@Override
+	public DialectBundle getDialectBundle() {
+		return getConversionContext().getDialectBundle();
 	}
 
 }

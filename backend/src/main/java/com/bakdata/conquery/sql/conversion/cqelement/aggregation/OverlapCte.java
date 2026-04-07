@@ -24,7 +24,7 @@ class OverlapCte extends DateAggregationCte {
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context) {
 
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 
 		DateAggregationDates dateAggregationDates = context.getDateAggregationDates();
 		List<Field<Date>> allStarts = dateAggregationDates.allStarts();

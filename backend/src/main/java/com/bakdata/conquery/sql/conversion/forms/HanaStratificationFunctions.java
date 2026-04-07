@@ -19,7 +19,7 @@ import org.jooq.impl.SQLDataType;
 
 @Getter
 @RequiredArgsConstructor
-class HanaStratificationFunctions extends StratificationFunctions {
+public class HanaStratificationFunctions extends StratificationFunctions {
 
 	private static final int INCREMENT = 1;
 

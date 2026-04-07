@@ -1,12 +1,12 @@
 package com.bakdata.conquery.sql.execution;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 
 public class ResultSetProcessorFactory {
 
-	public static ResultSetProcessor create(ConqueryConfig config, SqlDialect sqlDialect) {
-		return new DefaultResultSetProcessor(config, sqlDialect.getCDateSetParser());
+	public static ResultSetProcessor create(ConqueryConfig config, DialectBundle dialectBundle) {
+		return new DefaultResultSetProcessor(config, dialectBundle.getCDateSetParser());
 	}
 
 }
