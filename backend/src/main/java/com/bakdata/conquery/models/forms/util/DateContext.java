@@ -64,7 +64,7 @@ public class DateContext {
 	 * The generation of the contexts happens for each resolution with their mapped alignment.
 	 * The returned list is primarily sorted in the order of the given resolutions and secondarily by the temporal
 	 * succession of the contexts, e.g.: with resolutions YEARS, QUARTERS given the list would first contain the
-	 * ascending year ranges and than the quarter ranges. The alignment references always the lower bound of the
+	 * ascending year ranges and then the quarter ranges. The alignment references always the lower bound of the
 	 * dateRangeMask.
 	 * @param dateRangeMask The mask in which the contexts are generated
 	 * @param resolutionAndAlignment The resolutions to produce and their alignment
@@ -125,7 +125,7 @@ public class DateContext {
 
 			if (alignedSubdivisionCount % alignedPerResolution != 1) {
 				// The loop did not fullfill the resolution-sized subdivision it begun
-				result.add(alignRef.makeMergedRange(alignedSubdivisions.get(alignedSubdivisions.size() - 1), interestingDate));
+				result.add(alignRef.makeMergedRange(alignedSubdivisions.getLast(), interestingDate));
 			}
 
 			return alignRef.getAlignedIterationDirection(result);
