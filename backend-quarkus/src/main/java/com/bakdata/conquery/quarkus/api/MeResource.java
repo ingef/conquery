@@ -19,7 +19,7 @@ public class MeResource {
 
 	@GET
 	public MeResponse me() {
-		String userName = resolveUserName(identity);
+		String userName = SecurityIdentityUtil.resolveUserName(identity);
 
 		return new MeResponse(
 				userName,
@@ -27,20 +27,6 @@ public class MeResource {
 				Map.of("imdb", new PermissionFlags(true, true, true)),
 				List.of()
 		);
-	}
-
-	private static String resolveUserName(Instance<SecurityIdentity> identityInstance) {
-		if (identityInstance.isResolvable()) {
-			SecurityIdentity identity = identityInstance.get();
-			if (identity != null && !identity.isAnonymous() && identity.getPrincipal() != null) {
-				String principalName = identity.getPrincipal().getName();
-				if (principalName != null && !principalName.isBlank()) {
-					return principalName;
-				}
-			}
-		}
-
-		return "anonymous";
 	}
 
 	public record MeResponse(

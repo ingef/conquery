@@ -147,7 +147,7 @@ public class DatasetsResource {
 	)
 	public StartQueryResponse postQueries(@PathParam("datasetId") String datasetId, QuerySubmissionPayload payload) {
 		datasetService.requireDataset(datasetId);
-		return queryStateService.createQuery(datasetId, payload, resolveUserName(identity));
+		return queryStateService.createQuery(datasetId, payload, SecurityIdentityUtil.resolveUserName(identity));
 	}
 
 	@POST
@@ -225,21 +225,8 @@ public class DatasetsResource {
 			case MoneyRangeFilterValueRequest moneyRange -> List.of(String.valueOf(moneyRange.value));
 			case RealFilterValueRequest real -> List.of(String.valueOf(real.value));
 			case RealRangeFilterValueRequest realRange -> List.of(String.valueOf(realRange.value));
+			default -> throw new IllegalArgumentException("Unsupported filter value type: " + request.getClass().getName());
 		};
-	}
-
-	private static String resolveUserName(Instance<SecurityIdentity> identityInstance) {
-		if (identityInstance.isResolvable()) {
-			SecurityIdentity securityIdentity = identityInstance.get();
-			if (securityIdentity != null && !securityIdentity.isAnonymous() && securityIdentity.getPrincipal() != null) {
-				String principalName = securityIdentity.getPrincipal().getName();
-				if (principalName != null && !principalName.isBlank()) {
-					return principalName;
-				}
-			}
-		}
-
-		return "anonymous";
 	}
 
 	private Object loadFormResource(String path) {
