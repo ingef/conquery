@@ -32,7 +32,10 @@ public class QueryStateService {
 				definition,
 				payload != null ? payload.secondaryId : null,
 				containsDates(payload != null ? payload.root : null),
-				QueryResource.QueryStatus.NEW
+				QueryResource.QueryStatus.NEW,
+				List.of(),
+				false,
+				List.of()
 		);
 
 		queriesById.put(queryId, stored);
@@ -60,18 +63,41 @@ public class QueryStateService {
 		}
 	}
 
+	public void patchQuery(String queryId, QueryPatch patch) {
+		StoredQuery query = requireQuery(queryId);
+		if (patch.label() != null && !patch.label().isBlank()) {
+			query.setLabel(patch.label());
+		}
+		if (patch.tags() != null) {
+			query.setTags(List.copyOf(patch.tags()));
+		}
+		if (patch.shared() != null) {
+			query.setShared(patch.shared());
+		}
+		if (patch.groups() != null) {
+			query.setGroups(List.copyOf(patch.groups()));
+		}
+	}
+
+	public void deleteQuery(String queryId) {
+		StoredQuery removed = queriesById.remove(queryId);
+		if (removed == null) {
+			throw new NotFoundException("Unknown query: " + queryId);
+		}
+	}
+
 	private DatasetsResource.QuerySummaryResponse toSummaryResponse(StoredQuery query) {
 		return new DatasetsResource.QuerySummaryResponse(
 				query.id(),
 				query.label(),
 				query.status() == QueryResource.QueryStatus.DONE ? 0L : null,
 				query.createdAt().toString(),
-				List.of(),
+				query.tags(),
 				true,
 				query.ownerName(),
 				false,
 				List.of(),
-				false,
+				query.shared(),
 				false,
 				query.definition().type.name(),
 				query.secondaryId(),
@@ -86,13 +112,13 @@ public class QueryStateService {
 					query.label(),
 					query.createdAt().toString(),
 					true,
+					query.shared(),
 					false,
-					false,
-					List.of(),
+					query.tags(),
 					query.definition(),
 					query.secondaryId(),
 					query.ownerName(),
-					List.of(),
+					query.groups(),
 					false,
 					List.of(),
 					null
@@ -102,13 +128,13 @@ public class QueryStateService {
 					query.label(),
 					query.createdAt().toString(),
 					true,
+					query.shared(),
 					false,
-					false,
-					List.of(),
+					query.tags(),
 					query.definition(),
 					query.secondaryId(),
 					query.ownerName(),
-					List.of(),
+					query.groups(),
 					false,
 					List.of(),
 					0L,
@@ -122,13 +148,13 @@ public class QueryStateService {
 					query.label(),
 					query.createdAt().toString(),
 					true,
+					query.shared(),
 					false,
-					false,
-					List.of(),
+					query.tags(),
 					query.definition(),
 					query.secondaryId(),
 					query.ownerName(),
-					List.of(),
+					query.groups(),
 					false,
 					List.of(),
 					new QueryResource.ErrorResponse("Query failed", "FAILED")
@@ -138,13 +164,13 @@ public class QueryStateService {
 					query.label(),
 					query.createdAt().toString(),
 					true,
+					query.shared(),
 					false,
-					false,
-					List.of(),
+					query.tags(),
 					query.definition(),
 					query.secondaryId(),
 					query.ownerName(),
-					List.of(),
+					query.groups(),
 					false,
 					List.of(),
 					new QueryResource.ErrorResponse("Query canceled", "CANCELED")
@@ -154,13 +180,13 @@ public class QueryStateService {
 					query.label(),
 					query.createdAt().toString(),
 					true,
+					query.shared(),
 					false,
-					false,
-					List.of(),
+					query.tags(),
 					query.definition(),
 					query.secondaryId(),
 					query.ownerName(),
-					List.of(),
+					query.groups(),
 					false,
 					List.of()
 			);
@@ -239,13 +265,16 @@ public class QueryStateService {
 	private static final class StoredQuery {
 		private final String id;
 		private final String datasetId;
-		private final String label;
+		private volatile String label;
 		private final Instant createdAt;
 		private final String ownerName;
 		private final QueryResource.QueryDefinition definition;
 		private final String secondaryId;
 		private final boolean containsDates;
 		private volatile QueryResource.QueryStatus status;
+		private volatile List<String> tags;
+		private volatile boolean shared;
+		private volatile List<String> groups;
 
 		private StoredQuery(
 				String id,
@@ -256,7 +285,10 @@ public class QueryStateService {
 				QueryResource.QueryDefinition definition,
 				String secondaryId,
 				boolean containsDates,
-				QueryResource.QueryStatus status
+				QueryResource.QueryStatus status,
+				List<String> tags,
+				boolean shared,
+				List<String> groups
 		) {
 			this.id = id;
 			this.datasetId = datasetId;
@@ -267,6 +299,9 @@ public class QueryStateService {
 			this.secondaryId = secondaryId;
 			this.containsDates = containsDates;
 			this.status = status;
+			this.tags = tags;
+			this.shared = shared;
+			this.groups = groups;
 		}
 
 		public String id() {
@@ -279,6 +314,10 @@ public class QueryStateService {
 
 		public String label() {
 			return label;
+		}
+
+		public void setLabel(String label) {
+			this.label = label;
 		}
 
 		public Instant createdAt() {
@@ -308,5 +347,37 @@ public class QueryStateService {
 		public void setStatus(QueryResource.QueryStatus status) {
 			this.status = status;
 		}
+
+		public List<String> tags() {
+			return tags;
+		}
+
+		public void setTags(List<String> tags) {
+			this.tags = tags;
+		}
+
+		public boolean shared() {
+			return shared;
+		}
+
+		public void setShared(boolean shared) {
+			this.shared = shared;
+		}
+
+		public List<String> groups() {
+			return groups;
+		}
+
+		public void setGroups(List<String> groups) {
+			this.groups = groups;
+		}
+	}
+
+	public record QueryPatch(
+			String label,
+			List<String> tags,
+			Boolean shared,
+			List<String> groups
+	) {
 	}
 }

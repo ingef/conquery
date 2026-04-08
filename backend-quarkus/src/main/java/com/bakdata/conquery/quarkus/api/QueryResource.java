@@ -5,7 +5,9 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -39,6 +41,29 @@ public class QueryResource {
 	)
 	public void cancelQuery(@PathParam("queryId") String queryId) {
 		queryStateService.cancelQuery(queryId);
+	}
+
+	@PATCH
+	@Path("/{queryId}")
+	@Operation(
+			summary = "Patch query metadata",
+			description = "Updates mutable query metadata like label, tags, sharing and groups."
+	)
+	public void patchQuery(@PathParam("queryId") String queryId, QueryPatchPayload payload) {
+		queryStateService.patchQuery(
+				queryId,
+				new QueryStateService.QueryPatch(payload.label, payload.tags, payload.shared, payload.groups)
+		);
+	}
+
+	@DELETE
+	@Path("/{queryId}")
+	@Operation(
+			summary = "Delete a query",
+			description = "Deletes a query from history."
+	)
+	public void deleteQuery(@PathParam("queryId") String queryId) {
+		queryStateService.deleteQuery(queryId);
 	}
 
 	@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "status", visible = true)
@@ -309,5 +334,12 @@ public class QueryResource {
 			String label,
 			String url
 	) {
+	}
+
+	public static final class QueryPatchPayload {
+		public String label;
+		public List<String> tags;
+		public Boolean shared;
+		public List<String> groups;
 	}
 }
