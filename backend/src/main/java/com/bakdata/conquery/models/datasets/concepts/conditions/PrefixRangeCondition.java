@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import java.util.Map;
 import jakarta.validation.constraints.NotEmpty;
@@ -57,7 +58,7 @@ public class PrefixRangeCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Field<String> field = context.getConnectorColumn();
+		Field<String> field = field(context.getConnectorColumn(), VARCHAR);
 		String pattern = buildSqlRegexPattern(context.getFunctionProvider());
 		Condition regexCondition = context.getFunctionProvider().likeRegex(field, pattern);
 		return new ConditionWrappingWhereCondition(regexCondition);

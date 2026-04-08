@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.nullif;
+import static org.jooq.impl.DSL.*;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -63,6 +62,12 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Field<?> functionParam(String name) {
 		return field(":" + name);
+	}
+
+	@Override
+	public Condition unconditionalJoin() {
+		// Hana requires a specific syntax structure, this is the minimal solution.
+		return inline(true).eq(inline(true));
 	}
 
 	@Override

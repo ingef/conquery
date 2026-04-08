@@ -222,6 +222,11 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Condition unconditionalJoin() {
+		return noCondition();
+	}
+
+	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction) {
 		// if there is no validity date, each entity has the max range {-inf/inf} as validity date
 		ColumnDateRange validityDateRange = validityDate == null ? maxRange() : toColumnDateRange(validityDate);

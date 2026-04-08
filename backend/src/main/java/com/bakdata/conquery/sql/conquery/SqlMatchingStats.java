@@ -15,7 +15,6 @@ import java.util.concurrent.ExecutorService;
 import jakarta.validation.constraints.NotBlank;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -59,13 +58,13 @@ public class SqlMatchingStats {
 	private final Field<String> PID_FIELD = field(name("pid"), String.class);
 	private final Field<Date> LB_FIELD = field(name("lower_bound"), Date.class);
 	private final Field<Date> UB_FIELD = field(name("upper_bound"), Date.class);
-	private final Field<Integer> CONCEPT_ID_FIELD = field(name("resolved_id"), Integer.class).comment("LocalId of the concept");
+	private final Field<Integer> CONCEPT_ID_FIELD = field(name("resolved_id"), Integer.class);
 	private final Set<Param<?>> NULL_PARAMS = Collections.singleton(inline(null, String.class));
 
 	private final DSLContext dslContext;
 	private final SqlFunctionProvider functionProvider;
 	private final String defaultPrimaryColumn;
-	private final int fetchBatchSize = 100; //TODO from dbConfig?
+	private final int fetchBatchSize = 100;
 
 	private static void assignStatsToPath(ConceptElement<?> element, Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats, String entity, CDateRange span) {
 		ConceptElementId<?> id = element.getId();
@@ -82,9 +81,7 @@ public class SqlMatchingStats {
 	 */
 	private static List<Field<?>> collectAllFields(List<CTCondition.Expression> expressions) {
 		List<Field<?>> fields = expressions.stream()
-										   //TODO determine length of chars, for now we are relying on a fixed length because it's quite cumbersome
-										   .map(expression -> expression.conditions().keySet())
-										   .flatMap(Collection::stream)
+										   .flatMap(e -> e.conditions().keySet().stream())
 										   .distinct()
 										   .toList();
 		return fields;
@@ -127,7 +124,10 @@ public class SqlMatchingStats {
 		fields.addAll(allFields);
 		fields.addFirst(CONCEPT_ID_FIELD);
 
+		// Make sure there's no table present.
+		deleteConceptIdJoinTable(concept.getId());
 		createConceptIdsTable(tableName, fields);
+
 		insertConceptIdMappings(tableName, fields, rows, dslContext);
 	}
 
@@ -183,8 +183,6 @@ public class SqlMatchingStats {
 			for (Record record : cursor) {
 
 				Integer rawId = record.get(CONCEPT_ID_FIELD);
-
-
 				ConceptElement<?> resolvedId;
 				if (rawId == null) {
 					resolvedId = concept;
@@ -236,38 +234,18 @@ public class SqlMatchingStats {
 
 	/**
 	 * Drop the table, then recreate it.
-	 * TODO add an index.
 	 */
 	private void createConceptIdsTable(Name tableName, List<Field<?>> fields) {
 
 		log.debug("Creating table {} with fields {}", tableName, fields);
 
-		try {
-			dslContext.dropTable(tableName)
-					  .cascade()
-					  .execute();
-		}
-		catch (DataAccessException exception) {
-			// Likely it doesn't exist. Some DBMS just don't support drop-IfExists so this is the next best thing :^)
-			log.trace("Failed to drop table {}", tableName, exception);
-		}
-
 		CreateTableElementListStep createTable =
 				dslContext.createTable(tableName)
 						  .columns(fields);
 
+		log.info("{}", createTable);
 
 		createTable.execute();
-
-		//TODO null values still crash this :'(
-		//		if (!allFields.isEmpty()) {
-		//			String indexName = "%s_index".formatted(tableName.unquotedName().toString());
-		//			dslContext.dropIndexIfExists(indexName).execute();
-		//			dslContext.createIndex(indexName)
-		//					  .on(table(tableName), allFields.stream().map(Field::sortDefault).toList())
-		//					  .excludeNullKeys()
-		//					  .execute();
-		//		}
 	}
 
 	private int findMaxIdLength(List<CTCondition.Expression> expressions) {
@@ -337,10 +315,16 @@ public class SqlMatchingStats {
 
 	public void deleteConceptIdJoinTable(ConceptId concept) {
 		Name tableName = idsTableName(concept.getName());
-		log.debug("Dropping table {}", tableName);
-		dslContext.dropTableIfExists(tableName)
-				  .cascade()
-				  .execute();
+		log.debug("Trying to delete id-table {}", tableName);
+		try {
+			dslContext.dropTable(tableName)
+					  .cascade()
+					  .execute();
+		}
+		catch (DataAccessException exception) {
+			// Likely it doesn't exist. Some DBMS just don't support drop-IfExists so this is the next best thing :^)
+			log.trace("Failed to drop table {}", tableName, exception);
+		}
 	}
 
 
@@ -353,23 +337,21 @@ public class SqlMatchingStats {
 		Collection<Field<?>> allFields = collectAllFields(expressions);
 
 		if (allFields.isEmpty()) {
-			// TODO this is a HANA-ism: It expects proper expressions in joins
-			return field(inline(true)).eq(field(inline(true)));
+			return context.getFunctionProvider().unconditionalJoin();
 		}
-
-		Name idsTable = idsTableName(concept.getName());
 
 		Condition out = noCondition();
 
 		for (Field eField : allFields) {
 			// col_val needs extra handling because it's bound to the connector and not the concept.
-			if (eField.equals(context.getConnectorColumn())) {
-				out = out.and(eField.eq(CTConditionContext.COLUMN_VALUE_FIELD));
+			// This feels like a bit of a hack, but comparing the actual names does not work for some reason.
+			if (eField.getName().equals(context.getConnectorColumn().last())) {
+				out = out.and(eField.eq(field(name(CTConditionContext.COLUMN_VALUE_FIELD))));
 				continue;
 			}
 
 			// The conceptElement-tables names are derived from eField so this should work.
-			out = out.and(eField.eq(field(name(idsTable, eField.getUnqualifiedName()))));
+			out = out.and(eField.eq(field(name(concept.getName(), eField.getName()))));
 		}
 
 		return out;

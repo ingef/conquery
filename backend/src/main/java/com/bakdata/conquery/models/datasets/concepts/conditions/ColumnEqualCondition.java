@@ -56,9 +56,13 @@ public class ColumnEqualCondition implements CTCondition {
 		return new MultiSelectCondition(field, values.toArray(String[]::new), context.getFunctionProvider());
 	}
 
+	private int fieldLength() {
+		return values.stream().mapToInt(String::length).max().orElse(0);
+	}
+
 	@Override
 	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
-		return new Expression(id, Map.of(field(name(getColumn()), VARCHAR(32)).as("%s_equal".formatted(column)), values.stream().map(DSL::val).collect(Collectors.toSet())));
+		return new Expression(id, Map.of(field(name(getColumn()), VARCHAR(fieldLength())).as("%s_equal".formatted(column)), values.stream().map(DSL::val).collect(Collectors.toSet())));
 
 	}
 }

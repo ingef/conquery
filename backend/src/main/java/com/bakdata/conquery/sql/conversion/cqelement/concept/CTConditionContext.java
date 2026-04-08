@@ -1,28 +1,26 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.name;
-import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import lombok.Value;
-import org.jooq.Field;
+import org.jooq.Name;
 
 @Value
 public class CTConditionContext {
 
-	public static final Field<String> COLUMN_VALUE_FIELD = field(name("col_val"), VARCHAR(32));
-	Field<String> connectorColumn;
+	public static final String COLUMN_VALUE_FIELD = "col_val";
+	Name connectorColumn;
 	SqlFunctionProvider functionProvider;
 
 	public static CTConditionContext forJoinTables(SqlFunctionProvider functionProvider) {
-		return new CTConditionContext(COLUMN_VALUE_FIELD, functionProvider);
+		return new CTConditionContext(name(COLUMN_VALUE_FIELD), functionProvider);
 	}
 
 	public static CTConditionContext forConnector(Connector connector, SqlFunctionProvider functionProvider) {
 		return new CTConditionContext(
-				connector.getColumn() != null ? field(name(connector.resolveTableId().getTable(), connector.getColumn().getColumn()), VARCHAR(32)) : null,
+				connector.getColumn() != null ? name(connector.resolveTableId().getTable(), connector.getColumn().getColumn()) : null,
 				functionProvider
 		);
 	}

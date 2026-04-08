@@ -255,4 +255,5 @@ public interface SqlFunctionProvider {
 
 	Field<?> functionParam(String name);
 
+	Condition unconditionalJoin();
 }

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -44,7 +45,7 @@ public class PrefixCondition implements CTCondition {
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
 		String pattern = Arrays.stream(prefixes).collect(Collectors.joining("|", "", context.getFunctionProvider().getAnyCharRegex()));
-		Condition condition = context.getFunctionProvider().likeRegex(context.getConnectorColumn(), pattern);
+		Condition condition = context.getFunctionProvider().likeRegex(field(context.getConnectorColumn(), VARCHAR), pattern);
 		return new ConditionWrappingWhereCondition(condition);
 	}
 

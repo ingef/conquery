@@ -54,7 +54,7 @@ public class ManagedConnection implements Managed {
 				.withRenderFormatted(config.isWithPrettyPrinting())
 				// enforces all identifiers to be quoted if not explicitly unquoted via DSL.unquotedName()
 				// to prevent any lowercase/uppercase SQL dialect specific identifier naming issues
-				.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
+				.withRenderQuotedNames(RenderQuotedNames.ALWAYS)
 				// always render "as" keyword for field aliases
 				.withRenderOptionalAsKeywordForFieldAliases(RenderOptionalKeyword.ON);
 
