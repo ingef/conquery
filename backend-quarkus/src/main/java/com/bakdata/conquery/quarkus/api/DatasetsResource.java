@@ -10,6 +10,8 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.quarkus.api.config.EntityPreviewRuntimeConfig;
 import com.bakdata.conquery.quarkus.api.config.FormQueriesRuntimeConfig;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.inject.Instance;
@@ -25,6 +27,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.DiscriminatorMapping;
 
 @Path("/api/datasets")
 @Produces(MediaType.APPLICATION_JSON)
@@ -193,14 +196,36 @@ public class DatasetsResource {
 	)
 	public List<Map<String, String>> resolveEntities(
 			@PathParam("datasetId") String datasetId,
-			@Valid @NotNull List<@Valid FilterValuesRequest> payload
+			@Valid @NotNull List<@Valid FilterValueRequest> payload
 	) {
 		datasetService.requireDataset(datasetId);
 		return entityQueryService.resolveEntities(
 				payload.stream()
-					   .map(request -> new EntityQueryService.FilterValuesRequest(request.filter, request.type, request.value))
+					   .map(this::toFilterValuesRequest)
 					   .toList()
 		);
+	}
+
+	private EntityQueryService.FilterValuesRequest toFilterValuesRequest(FilterValueRequest request) {
+		return new EntityQueryService.FilterValuesRequest(
+				request.filter,
+				request.type,
+				extractFilterValues(request)
+		);
+	}
+
+	private List<String> extractFilterValues(FilterValueRequest request) {
+		return switch (request) {
+			case MultiSelectFilterValueRequest multiSelect -> multiSelect.value;
+			case BigMultiSelectFilterValueRequest bigMultiSelect -> bigMultiSelect.value;
+			case SelectFilterValueRequest select -> List.of(select.value);
+			case StringFilterValueRequest string -> List.of(string.value);
+			case IntegerFilterValueRequest integer -> List.of(String.valueOf(integer.value));
+			case IntegerRangeFilterValueRequest integerRange -> List.of(String.valueOf(integerRange.value));
+			case MoneyRangeFilterValueRequest moneyRange -> List.of(String.valueOf(moneyRange.value));
+			case RealFilterValueRequest real -> List.of(String.valueOf(real.value));
+			case RealRangeFilterValueRequest realRange -> List.of(String.valueOf(realRange.value));
+		};
 	}
 
 	private static String resolveUserName(Instance<SecurityIdentity> identityInstance) {
@@ -286,16 +311,143 @@ public class DatasetsResource {
 		}
 	}
 
-	public static final class FilterValuesRequest {
+	@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true)
+	@JsonSubTypes({
+			@JsonSubTypes.Type(value = MultiSelectFilterValueRequest.class, name = "MULTI_SELECT"),
+			@JsonSubTypes.Type(value = BigMultiSelectFilterValueRequest.class, name = "BIG_MULTI_SELECT"),
+			@JsonSubTypes.Type(value = SelectFilterValueRequest.class, name = "SELECT"),
+			@JsonSubTypes.Type(value = StringFilterValueRequest.class, name = "STRING"),
+			@JsonSubTypes.Type(value = IntegerFilterValueRequest.class, name = "INTEGER"),
+			@JsonSubTypes.Type(value = IntegerRangeFilterValueRequest.class, name = "INTEGER_RANGE"),
+			@JsonSubTypes.Type(value = MoneyRangeFilterValueRequest.class, name = "MONEY_RANGE"),
+			@JsonSubTypes.Type(value = RealFilterValueRequest.class, name = "REAL"),
+			@JsonSubTypes.Type(value = RealRangeFilterValueRequest.class, name = "REAL_RANGE")
+	})
+	@org.eclipse.microprofile.openapi.annotations.media.Schema(
+			description = "Filter value payload discriminated by `type`.",
+			discriminatorProperty = "type",
+			oneOf = {
+					MultiSelectFilterValueRequest.class,
+					BigMultiSelectFilterValueRequest.class,
+					SelectFilterValueRequest.class,
+					StringFilterValueRequest.class,
+					IntegerFilterValueRequest.class,
+					IntegerRangeFilterValueRequest.class,
+					MoneyRangeFilterValueRequest.class,
+					RealFilterValueRequest.class,
+					RealRangeFilterValueRequest.class
+			},
+			discriminatorMapping = {
+					@DiscriminatorMapping(value = "MULTI_SELECT", schema = MultiSelectFilterValueRequest.class),
+					@DiscriminatorMapping(value = "BIG_MULTI_SELECT", schema = BigMultiSelectFilterValueRequest.class),
+					@DiscriminatorMapping(value = "SELECT", schema = SelectFilterValueRequest.class),
+					@DiscriminatorMapping(value = "STRING", schema = StringFilterValueRequest.class),
+					@DiscriminatorMapping(value = "INTEGER", schema = IntegerFilterValueRequest.class),
+					@DiscriminatorMapping(value = "INTEGER_RANGE", schema = IntegerRangeFilterValueRequest.class),
+					@DiscriminatorMapping(value = "MONEY_RANGE", schema = MoneyRangeFilterValueRequest.class),
+					@DiscriminatorMapping(value = "REAL", schema = RealFilterValueRequest.class),
+					@DiscriminatorMapping(value = "REAL_RANGE", schema = RealRangeFilterValueRequest.class)
+			}
+	)
+	public abstract static class FilterValueRequest {
 		public final @NotBlank String filter;
 		public final @NotBlank String type;
-		public final @NotNull @NotEmpty List<@NotBlank String> value;
 
-		public FilterValuesRequest(String filter, String type, List<String> value) {
+		protected FilterValueRequest(String filter, String type) {
 			this.filter = filter;
 			this.type = type;
+		}
+	}
+
+	public static final class MultiSelectFilterValueRequest extends FilterValueRequest {
+		public final @NotNull @NotEmpty List<@NotBlank String> value;
+
+		public MultiSelectFilterValueRequest(String filter, List<String> value) {
+			super(filter, "MULTI_SELECT");
 			this.value = value;
 		}
+	}
+
+	public static final class BigMultiSelectFilterValueRequest extends FilterValueRequest {
+		public final @NotNull @NotEmpty List<@NotBlank String> value;
+
+		public BigMultiSelectFilterValueRequest(String filter, List<String> value) {
+			super(filter, "BIG_MULTI_SELECT");
+			this.value = value;
+		}
+	}
+
+	public static final class SelectFilterValueRequest extends FilterValueRequest {
+		public final @NotBlank String value;
+
+		public SelectFilterValueRequest(String filter, String value) {
+			super(filter, "SELECT");
+			this.value = value;
+		}
+	}
+
+	public static final class StringFilterValueRequest extends FilterValueRequest {
+		public final @NotBlank String value;
+
+		public StringFilterValueRequest(String filter, String value) {
+			super(filter, "STRING");
+			this.value = value;
+		}
+	}
+
+	public static final class IntegerFilterValueRequest extends FilterValueRequest {
+		public final @NotNull Long value;
+
+		public IntegerFilterValueRequest(String filter, Long value) {
+			super(filter, "INTEGER");
+			this.value = value;
+		}
+	}
+
+	public static final class IntegerRangeFilterValueRequest extends FilterValueRequest {
+		public final @NotNull NumericRangeValue value;
+
+		public IntegerRangeFilterValueRequest(String filter, NumericRangeValue value) {
+			super(filter, "INTEGER_RANGE");
+			this.value = value;
+		}
+	}
+
+	public static final class MoneyRangeFilterValueRequest extends FilterValueRequest {
+		public final @NotNull NumericRangeValue value;
+
+		public MoneyRangeFilterValueRequest(String filter, NumericRangeValue value) {
+			super(filter, "MONEY_RANGE");
+			this.value = value;
+		}
+	}
+
+	public static final class RealFilterValueRequest extends FilterValueRequest {
+		public final @NotNull Double value;
+
+		public RealFilterValueRequest(String filter, Double value) {
+			super(filter, "REAL");
+			this.value = value;
+		}
+	}
+
+	public static final class RealRangeFilterValueRequest extends FilterValueRequest {
+		public final @NotNull DecimalRangeValue value;
+
+		public RealRangeFilterValueRequest(String filter, DecimalRangeValue value) {
+			super(filter, "REAL_RANGE");
+			this.value = value;
+		}
+	}
+
+	public static final class NumericRangeValue {
+		public Long min;
+		public Long max;
+	}
+
+	public static final class DecimalRangeValue {
+		public Double min;
+		public Double max;
 	}
 
 	public record DatasetResponse(
