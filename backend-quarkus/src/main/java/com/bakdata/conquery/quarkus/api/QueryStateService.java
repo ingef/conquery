@@ -30,8 +30,8 @@ public class QueryStateService {
 				createdAt,
 				ownerName,
 				definition,
-				payload != null ? payload.secondaryId : null,
-				containsDates(payload != null ? payload.root : null),
+				extractSecondaryId(payload),
+				containsDates(extractRoot(payload)),
 				QueryResource.QueryStatus.NEW,
 				List.of(),
 				false,
@@ -194,14 +194,20 @@ public class QueryStateService {
 	}
 
 	private QueryResource.QueryDefinition toQueryDefinition(QuerySubmissionPayload payload, QueryResource.QueryType queryType) {
-		QuerySubmissionPayload.QueryNode root = payload != null ? payload.root : null;
+		QuerySubmissionPayload.QueryNode root = extractRoot(payload);
 		return switch (queryType) {
-			case SECONDARY_ID_QUERY -> new QueryResource.SecondaryIdQueryDefinition(root, payload != null ? payload.secondaryId : null);
+			case SECONDARY_ID_QUERY -> new QueryResource.SecondaryIdQueryDefinition(root, extractSecondaryId(payload));
 			case CONCEPT_QUERY -> new QueryResource.ConceptQueryDefinition(root);
 		};
 	}
 
 	private QueryResource.QueryType resolveQueryType(QuerySubmissionPayload payload) {
+		if (payload instanceof QuerySubmissionPayload.SecondaryIdQuerySubmissionPayload) {
+			return QueryResource.QueryType.SECONDARY_ID_QUERY;
+		}
+		if (payload instanceof QuerySubmissionPayload.ConceptQuerySubmissionPayload) {
+			return QueryResource.QueryType.CONCEPT_QUERY;
+		}
 		if (payload != null && payload.type != null) {
 			try {
 				return QueryResource.QueryType.valueOf(payload.type.toUpperCase(Locale.ROOT));
@@ -210,10 +216,28 @@ public class QueryStateService {
 				// Fall through to heuristic handling.
 			}
 		}
-		if (payload != null && payload.secondaryId != null && !payload.secondaryId.isBlank()) {
+		String secondaryId = extractSecondaryId(payload);
+		if (secondaryId != null && !secondaryId.isBlank()) {
 			return QueryResource.QueryType.SECONDARY_ID_QUERY;
 		}
 		return QueryResource.QueryType.CONCEPT_QUERY;
+	}
+
+	private String extractSecondaryId(QuerySubmissionPayload payload) {
+		if (payload instanceof QuerySubmissionPayload.SecondaryIdQuerySubmissionPayload secondaryIdPayload) {
+			return secondaryIdPayload.secondaryId;
+		}
+		return null;
+	}
+
+	private QuerySubmissionPayload.QueryNode extractRoot(QuerySubmissionPayload payload) {
+		if (payload instanceof QuerySubmissionPayload.ConceptQuerySubmissionPayload conceptPayload) {
+			return conceptPayload.root;
+		}
+		if (payload instanceof QuerySubmissionPayload.SecondaryIdQuerySubmissionPayload secondaryIdPayload) {
+			return secondaryIdPayload.root;
+		}
+		return null;
 	}
 
 	private boolean containsDates(QuerySubmissionPayload.QueryNode node) {

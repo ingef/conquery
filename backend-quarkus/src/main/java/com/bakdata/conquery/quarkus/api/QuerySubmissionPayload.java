@@ -1,34 +1,67 @@
 package com.bakdata.conquery.quarkus.api;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.eclipse.microprofile.openapi.annotations.media.DiscriminatorMapping;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-public class QuerySubmissionPayload {
+@JsonTypeInfo(
+		use = JsonTypeInfo.Id.NAME,
+		include = JsonTypeInfo.As.EXISTING_PROPERTY,
+		property = "type",
+		visible = true,
+		defaultImpl = QuerySubmissionPayload.GenericQuerySubmissionPayload.class
+)
+@JsonSubTypes({
+		@JsonSubTypes.Type(value = QuerySubmissionPayload.ConceptQuerySubmissionPayload.class, name = "CONCEPT_QUERY"),
+		@JsonSubTypes.Type(value = QuerySubmissionPayload.SecondaryIdQuerySubmissionPayload.class, name = "SECONDARY_ID_QUERY"),
+		@JsonSubTypes.Type(value = QuerySubmissionPayload.GenericQuerySubmissionPayload.class, name = "FORM_QUERY")
+})
+@Schema(
+		description = "Query submission payload, discriminated by `type`.",
+		discriminatorProperty = "type",
+		oneOf = {
+				QuerySubmissionPayload.ConceptQuerySubmissionPayload.class,
+				QuerySubmissionPayload.SecondaryIdQuerySubmissionPayload.class,
+				QuerySubmissionPayload.GenericQuerySubmissionPayload.class
+		},
+		discriminatorMapping = {
+				@DiscriminatorMapping(value = "CONCEPT_QUERY", schema = QuerySubmissionPayload.ConceptQuerySubmissionPayload.class),
+				@DiscriminatorMapping(value = "SECONDARY_ID_QUERY", schema = QuerySubmissionPayload.SecondaryIdQuerySubmissionPayload.class),
+				@DiscriminatorMapping(value = "FORM_QUERY", schema = QuerySubmissionPayload.GenericQuerySubmissionPayload.class)
+		}
+)
+public abstract class QuerySubmissionPayload {
 	public String type;
-	public String secondaryId;
-	@Schema(description = "Query root node. Polymorphic and discriminated by field `type`.")
-	public QueryNode root;
-	public Map<String, Object> values;
 
-	private final Map<String, Object> additionalProperties = new HashMap<>();
+	public static final class ConceptQuerySubmissionPayload extends QuerySubmissionPayload {
+		@Schema(description = "Query root node. Polymorphic and discriminated by field `type`.")
+		public QueryNode root;
 
-	@JsonAnySetter
-	public void setAdditionalProperty(String name, Object value) {
-		additionalProperties.put(name, value);
+		public ConceptQuerySubmissionPayload() {
+			this.type = "CONCEPT_QUERY";
+		}
 	}
 
-	@JsonAnyGetter
-	public Map<String, Object> getAdditionalProperties() {
-		return additionalProperties;
+	public static final class SecondaryIdQuerySubmissionPayload extends QuerySubmissionPayload {
+		public String secondaryId;
+		@Schema(description = "Query root node. Polymorphic and discriminated by field `type`.")
+		public QueryNode root;
+
+		public SecondaryIdQuerySubmissionPayload() {
+			this.type = "SECONDARY_ID_QUERY";
+		}
+	}
+
+	public static final class GenericQuerySubmissionPayload extends QuerySubmissionPayload {
+		public Map<String, Object> values;
+
+		public GenericQuerySubmissionPayload() {
+		}
 	}
 
 	@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
