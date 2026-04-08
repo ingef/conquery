@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.quarkus.api.config.EntityPreviewRuntimeConfig;
@@ -45,6 +46,9 @@ public class DatasetsResource {
 
 	@Inject
 	QueryUploadService queryUploadService;
+
+	@Inject
+	EntityQueryService entityQueryService;
 
 	@Inject
 	Instance<SecurityIdentity> identity;
@@ -160,6 +164,45 @@ public class DatasetsResource {
 		return new UploadQueryResponse(result.resolved(), result.unresolvedId(), result.unreadableDate());
 	}
 
+	@POST
+	@Path("/{datasetId}/queries/entity")
+	@Operation(
+			summary = "Get entity history",
+			description = "Returns history data for a single entity."
+	)
+	public EntityQueryService.EntityHistoryResponse getEntityHistory(
+			@PathParam("datasetId") String datasetId,
+			@Valid @NotNull EntityHistoryRequest payload
+	) {
+		datasetService.requireDataset(datasetId);
+		return entityQueryService.getEntityHistory(
+				new EntityQueryService.EntityHistoryRequest(
+						payload.idKind,
+						payload.entityId,
+						payload.time,
+						payload.sources
+				)
+		);
+	}
+
+	@POST
+	@Path("/{datasetId}/queries/resolve-entities")
+	@Operation(
+			summary = "Resolve entities from filter values",
+			description = "Resolves entity ids from selected filter values."
+	)
+	public List<Map<String, String>> resolveEntities(
+			@PathParam("datasetId") String datasetId,
+			@Valid @NotNull List<@Valid FilterValuesRequest> payload
+	) {
+		datasetService.requireDataset(datasetId);
+		return entityQueryService.resolveEntities(
+				payload.stream()
+					   .map(request -> new EntityQueryService.FilterValuesRequest(request.filter, request.type, request.value))
+					   .toList()
+		);
+	}
+
 	private static String resolveUserName(Instance<SecurityIdentity> identityInstance) {
 		if (identityInstance.isResolvable()) {
 			SecurityIdentity securityIdentity = identityInstance.get();
@@ -226,6 +269,32 @@ public class DatasetsResource {
 			this.format = format;
 			this.values = values;
 			this.label = label;
+		}
+	}
+
+	public static final class EntityHistoryRequest {
+		public final @NotBlank String idKind;
+		public final @NotBlank String entityId;
+		public final @NotNull @Valid QuerySubmissionPayload.DateRangePayload time;
+		public final @NotNull @NotEmpty List<@NotBlank String> sources;
+
+		public EntityHistoryRequest(String idKind, String entityId, QuerySubmissionPayload.DateRangePayload time, List<String> sources) {
+			this.idKind = idKind;
+			this.entityId = entityId;
+			this.time = time;
+			this.sources = sources;
+		}
+	}
+
+	public static final class FilterValuesRequest {
+		public final @NotBlank String filter;
+		public final @NotBlank String type;
+		public final @NotNull @NotEmpty List<@NotBlank String> value;
+
+		public FilterValuesRequest(String filter, String type, List<String> value) {
+			this.filter = filter;
+			this.type = type;
+			this.value = value;
 		}
 	}
 
