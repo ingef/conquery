@@ -13,6 +13,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -38,6 +42,9 @@ public class DatasetsResource {
 
 	@Inject
 	QueryStateService queryStateService;
+
+	@Inject
+	QueryUploadService queryUploadService;
 
 	@Inject
 	Instance<SecurityIdentity> identity;
@@ -136,6 +143,23 @@ public class DatasetsResource {
 		return queryStateService.createQuery(datasetId, payload, resolveUserName(identity));
 	}
 
+	@POST
+	@Path("/{datasetId}/queries/upload")
+	@Operation(
+			summary = "Upload query entities",
+			description = "Uploads entity id rows for query upload workflow."
+	)
+	public UploadQueryResponse uploadQueries(
+			@PathParam("datasetId") String datasetId,
+			@Valid @NotNull QueryUploadPayload payload
+	) {
+		datasetService.requireDataset(datasetId);
+		QueryUploadService.UploadResult result = queryUploadService.processUpload(
+				new QueryUploadService.QueryUploadPayload(payload.format, payload.values, payload.label)
+		);
+		return new UploadQueryResponse(result.resolved(), result.unresolvedId(), result.unreadableDate());
+	}
+
 	private static String resolveUserName(Instance<SecurityIdentity> identityInstance) {
 		if (identityInstance.isResolvable()) {
 			SecurityIdentity securityIdentity = identityInstance.get();
@@ -184,6 +208,25 @@ public class DatasetsResource {
 	public record StartQueryResponse(
 			String id
 	) {
+	}
+
+	public record UploadQueryResponse(
+			int resolved,
+			List<List<String>> unresolvedId,
+			List<List<String>> unreadableDate
+	) {
+	}
+
+	public static final class QueryUploadPayload {
+		public final @NotNull @NotEmpty List<@NotBlank String> format;
+		public final @NotNull List<@NotNull List<@NotBlank String>> values;
+		public final @NotBlank String label;
+
+		public QueryUploadPayload(List<String> format, List<List<String>> values, String label) {
+			this.format = format;
+			this.values = values;
+			this.label = label;
+		}
 	}
 
 	public record DatasetResponse(
