@@ -1,7 +1,6 @@
 #!/bin/sh
 
 set -e
-set -o pipefail
 
 usage=$(cat <<-EOF
 Replace the /*@preserve __ENV_INJECT_MARK__*/ marker in an conquery index.html with environment variables.
