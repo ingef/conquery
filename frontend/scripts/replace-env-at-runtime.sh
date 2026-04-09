@@ -1,6 +1,7 @@
 #!/bin/sh
 
 set -e
+set -o pipefail
 
 usage=$(cat <<-EOF
 Replace the /*@preserve __ENV_INJECT_MARK__*/ marker in an conquery index.html with environment variables.
@@ -18,7 +19,9 @@ then
 fi
 
 # Build the env string: get all envvars prefixed with REACT_APP_ and convert them to key value pairs for JS
-ENVSTRING="$(env | grep -r '^REACT_APP_' | sed 's/=\(.*\)/: "\1"/' | tr '\n' ',')"
+ENVSTRING=$(env | grep '^REACT_APP_' | sed 's/=\(.*\)/: "\1"/' | tr '\n' ',')
+
+echo "$ENVSTRING"
 
 # Replace the marker
 sed -i -e "s%/\*@preserve __ENV_INJECT_MARK__\*/%$ENVSTRING%g" "$1"
