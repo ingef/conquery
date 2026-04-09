@@ -12,14 +12,7 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 
-public class LocalStorageListener extends StorageListener<LocalNamespace> {
-
-
-	public LocalStorageListener(
-			JobManager jobManager,
-			DatasetRegistry<LocalNamespace> datasetRegistry) {
-		super(jobManager, datasetRegistry);
-	}
+public record LocalStorageListener(JobManager jobManager, DatasetRegistry<LocalNamespace> datasetRegistry) implements StorageListener {
 
 	@Override
 	public void onAddSecondaryId(SecondaryIdDescription secondaryId) {
@@ -40,13 +33,13 @@ public class LocalStorageListener extends StorageListener<LocalNamespace> {
 
 	@Override
 	public void onAddConcept(Concept<?> concept) {
-		LocalNamespace namespace = getDatasetRegistry().get(concept.getDataset());
+		LocalNamespace namespace = datasetRegistry().get(concept.getDataset());
 		namespace.getMatchingStats().createConceptIdJoinTable((TreeConcept) concept);
 	}
 
 	@Override
 	public void onDeleteConcept(ConceptId concept) {
-		LocalNamespace namespace = getDatasetRegistry().get(concept.getDataset());
+		LocalNamespace namespace = datasetRegistry().get(concept.getDataset());
 		namespace.getMatchingStats().deleteConceptIdJoinTable(concept);
 	}
 }

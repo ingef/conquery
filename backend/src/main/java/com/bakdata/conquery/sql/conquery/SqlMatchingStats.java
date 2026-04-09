@@ -254,7 +254,6 @@ public class SqlMatchingStats {
 	}
 
 	public CompletionStage<?> collectMatchingStatsForConcept(TreeConcept concept, ExecutorService executorService) {
-
 		// The transaction implicitly disables autocommit, which we need for using the cursor
 		return dslContext
 				.transactionAsync(executorService, cfg -> {

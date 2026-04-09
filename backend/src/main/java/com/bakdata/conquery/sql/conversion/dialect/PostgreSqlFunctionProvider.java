@@ -217,11 +217,6 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<?> functionParam(String name) {
-		return field(name(name));
-	}
-
-	@Override
 	public Condition unconditionalJoin() {
 		return noCondition();
 	}

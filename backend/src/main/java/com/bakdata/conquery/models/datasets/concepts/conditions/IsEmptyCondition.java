@@ -22,6 +22,7 @@ import org.jooq.impl.DSL;
  * This condition requires that the selected Column has a value.
  */
 @CPSType(id = "NOT_PRESENT", base = CTCondition.class)
+@Deprecated
 public class IsEmptyCondition implements CTCondition {
 
 	@Getter

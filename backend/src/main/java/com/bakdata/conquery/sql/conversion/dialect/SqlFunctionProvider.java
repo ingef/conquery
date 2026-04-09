@@ -220,16 +220,6 @@ public interface SqlFunctionProvider {
 		return DSL.field("'{' || {0} || '}'", String.class, stringExpression);
 	}
 
-	default Field<String> prefixStringAggregation(Field<String> field, String prefix) {
-		return DSL.field(
-				"'[' || {0}({1}, {2}) || ']'",
-				String.class,
-				DSL.keyword("STRING_AGG"),
-				DSL.when(field.like(DSL.inline(prefix + "%")), field),
-				DSL.val(", ")
-		);
-	}
-
 	default Condition validityDateFilter(ValidityDate validityDate) {
 
 		if (validityDate.isSingleColumnDaterange()) {
@@ -252,8 +242,6 @@ public interface SqlFunctionProvider {
 	default Field<Date> upper(Field<Object> daterange) {
 		return function("upper", Date.class, daterange);
 	}
-
-	Field<?> functionParam(String name);
 
 	Condition unconditionalJoin();
 }

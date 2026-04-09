@@ -37,10 +37,9 @@ public class UpdateMatchingStatsSqlJob extends Job {
 
 		Stopwatch stopwatch = Stopwatch.createStarted();
 
-		ExecutorService executorService = Executors.newSingleThreadExecutor();
+		ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
 
 		List<CompletableFuture<?>> jobs = new ArrayList<>();
-
 
 		for (Concept<?> concept : concepts) {
 			if (!(concept instanceof TreeConcept)) {

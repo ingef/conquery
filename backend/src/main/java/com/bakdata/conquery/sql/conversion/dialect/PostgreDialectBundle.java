@@ -76,16 +76,16 @@ public class PostgreDialectBundle implements DialectBundle {
 
 	@Override
 	public boolean isTypeCompatible(Field<?> field, MajorTypeId type) {
-		log.debug("Field {} type: getTypeName={}, getQualifiedName={}", field.getName(), field.getDataType().getTypeName(), field.getDataType().getQualifiedName());
+		log.trace("Field {} type: getTypeName={}, getQualifiedName={}", field.getName(), field.getDataType().getTypeName(), field.getDataType().getQualifiedName());
 		return switch (type) {
 			case STRING -> field.getDataType().isString();
 			case INTEGER -> field.getDataType().isInteger();
 			case BOOLEAN -> field.getDataType().isBoolean();
 			case REAL -> field.getDataType().isNumeric();
 			case DECIMAL -> field.getDataType().isDecimal();
-			case MONEY -> true; // TODO Need to find proper name
+			case MONEY -> true; // Not possible to introspect for
 			case DATE -> field.getDataType().isDate();
-			case DATE_RANGE -> true; // TODO Not properly fetched from postgres field.getDataType().getTypeName().equals("daterange");
+			case DATE_RANGE -> true; // Not possible to introspect for
 		};
 	}
 

@@ -60,11 +60,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<?> functionParam(String name) {
-		return field(":" + name);
-	}
-
-	@Override
 	public Condition unconditionalJoin() {
 		// Hana requires a specific syntax structure, this is the minimal solution.
 		return inline(true).eq(inline(true));
@@ -315,7 +310,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return DSL.function(
 				unquotedName("CAST"),
 				type.getType(),
-				DSL.field("(%s) AS %s".formatted(field, type.getName()))
+				DSL.field("%s AS %s".formatted(field, type.getName()))
 		);
 	}
 

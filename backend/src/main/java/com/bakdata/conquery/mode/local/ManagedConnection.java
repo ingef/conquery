@@ -55,8 +55,7 @@ public class ManagedConnection implements Managed {
 				// to prevent any lowercase/uppercase SQL dialect specific identifier naming issues
 				.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
 				// always render "as" keyword for field aliases
-				.withRenderOptionalAsKeywordForFieldAliases(RenderOptionalKeyword.ON)
-				;
+				.withRenderOptionalAsKeywordForFieldAliases(RenderOptionalKeyword.ON);
 
 		return DSL.using(
 				this.dataSource,
