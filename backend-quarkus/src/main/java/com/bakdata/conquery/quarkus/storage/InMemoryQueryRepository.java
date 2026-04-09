@@ -15,7 +15,7 @@ public class InMemoryQueryRepository implements QueryRepository {
 
 	@Override
 	public void save(StoredQuery query) {
-		queriesById.put(query.id(), query);
+		queriesById.put(query.getId(), query);
 	}
 
 	@Override
@@ -25,7 +25,7 @@ public class InMemoryQueryRepository implements QueryRepository {
 
 	@Override
 	public List<StoredQuery> listByDataset(String datasetId) {
-		return queriesById.values().stream().filter(query -> query.datasetId().equals(datasetId)).toList();
+		return queriesById.values().stream().filter(query -> query.getDatasetId().equals(datasetId)).toList();
 	}
 
 	@Override

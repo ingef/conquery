@@ -47,8 +47,8 @@ public class FormConfigService {
 		return formConfigRepository.listByDataset(datasetId).stream()
 						  .filter(config -> requestedFormTypes == null
 								  || requestedFormTypes.isEmpty()
-								  || requestedFormTypes.contains(config.formType()))
-						  .sorted((left, right) -> right.createdAt().compareTo(left.createdAt()))
+								  || requestedFormTypes.contains(config.getFormType()))
+						  .sorted((left, right) -> right.getCreatedAt().compareTo(left.getCreatedAt()))
 						  .map(config -> toOverview(config, requester))
 						  .toList();
 	}
@@ -87,31 +87,31 @@ public class FormConfigService {
 
 	private DatasetFormConfigResource.FormConfigOverviewResponse toOverview(StoredFormConfig config, String requester) {
 		return new DatasetFormConfigResource.FormConfigOverviewResponse(
-				config.id(),
-				config.formType(),
-				config.label(),
-				config.tags(),
-				config.ownerName(),
-				config.createdAt().toString(),
-				config.ownerName().equals(requester),
-				!config.groups().isEmpty(),
-				config.system()
+				config.getId(),
+				config.getFormType(),
+				config.getLabel(),
+				config.getTags(),
+				config.getOwnerName(),
+				config.getCreatedAt().toString(),
+				config.getOwnerName().equals(requester),
+				!config.getGroups().isEmpty(),
+				config.isSystem()
 		);
 	}
 
 	private FormConfigResource.FormConfigFullResponse toFull(StoredFormConfig config, String requester) {
 		return new FormConfigResource.FormConfigFullResponse(
-				config.id(),
-				config.formType(),
-				config.label(),
-				config.tags(),
-				config.ownerName(),
-				config.createdAt().toString(),
-				config.ownerName().equals(requester),
-				!config.groups().isEmpty(),
-				config.system(),
-				config.groups(),
-				config.values()
+				config.getId(),
+				config.getFormType(),
+				config.getLabel(),
+				config.getTags(),
+				config.getOwnerName(),
+				config.getCreatedAt().toString(),
+				config.getOwnerName().equals(requester),
+				!config.getGroups().isEmpty(),
+				config.isSystem(),
+				config.getGroups(),
+				config.getValues()
 		);
 	}
 

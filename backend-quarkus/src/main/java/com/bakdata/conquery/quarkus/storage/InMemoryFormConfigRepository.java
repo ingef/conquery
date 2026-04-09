@@ -15,7 +15,7 @@ public class InMemoryFormConfigRepository implements FormConfigRepository {
 
 	@Override
 	public void save(StoredFormConfig config) {
-		configsById.put(config.id(), config);
+		configsById.put(config.getId(), config);
 	}
 
 	@Override
@@ -25,7 +25,7 @@ public class InMemoryFormConfigRepository implements FormConfigRepository {
 
 	@Override
 	public List<StoredFormConfig> listByDataset(String datasetId) {
-		return configsById.values().stream().filter(config -> config.datasetId().equals(datasetId)).toList();
+		return configsById.values().stream().filter(config -> config.getDatasetId().equals(datasetId)).toList();
 	}
 
 	@Override

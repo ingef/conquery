@@ -46,7 +46,7 @@ public class QueryStateService {
 
 	public List<DatasetsResource.QuerySummaryResponse> getDatasetQueries(String datasetId) {
 		return queryRepository.listByDataset(datasetId).stream()
-						 .sorted(Comparator.comparing(StoredQuery::createdAt).reversed())
+						 .sorted(Comparator.comparing(StoredQuery::getCreatedAt).reversed())
 						 .map(this::toSummaryResponse)
 						 .toList();
 	}
@@ -58,7 +58,7 @@ public class QueryStateService {
 
 	public void cancelQuery(String queryId) {
 		StoredQuery query = requireQuery(queryId);
-		if (query.status() == QueryResource.QueryStatus.NEW || query.status() == QueryResource.QueryStatus.RUNNING) {
+		if (query.getStatus() == QueryResource.QueryStatus.NEW || query.getStatus() == QueryResource.QueryStatus.RUNNING) {
 			query.setStatus(QueryResource.QueryStatus.CANCELED);
 		}
 	}
@@ -87,105 +87,105 @@ public class QueryStateService {
 
 	private DatasetsResource.QuerySummaryResponse toSummaryResponse(StoredQuery query) {
 		return new DatasetsResource.QuerySummaryResponse(
-				query.id(),
-				query.label(),
-				query.status() == QueryResource.QueryStatus.DONE ? 0L : null,
-				query.createdAt().toString(),
-				query.tags(),
+				query.getId(),
+				query.getLabel(),
+				query.getStatus() == QueryResource.QueryStatus.DONE ? 0L : null,
+				query.getCreatedAt().toString(),
+				query.getTags(),
 				true,
-				query.ownerName(),
+				query.getOwnerName(),
 				false,
 				List.of(),
-				query.shared(),
+				query.isShared(),
 				false,
-				query.definition().type.name(),
-				query.secondaryId(),
-				query.containsDates()
+				query.getDefinition().type.name(),
+				query.getSecondaryId(),
+				query.isContainsDates()
 		);
 	}
 
 	private QueryResource.QueryResponse toQueryResponse(StoredQuery query) {
-		return switch (query.status()) {
+		return switch (query.getStatus()) {
 			case RUNNING -> new QueryResource.RunningQueryResponse(
-					query.id(),
-					query.label(),
-					query.createdAt().toString(),
+					query.getId(),
+					query.getLabel(),
+					query.getCreatedAt().toString(),
 					true,
-					query.shared(),
+					query.isShared(),
 					false,
-					query.tags(),
-					query.definition(),
-					query.secondaryId(),
-					query.ownerName(),
-					query.groups(),
+					query.getTags(),
+					query.getDefinition(),
+					query.getSecondaryId(),
+					query.getOwnerName(),
+					query.getGroups(),
 					false,
 					List.of(),
 					null
 			);
 			case DONE -> new QueryResource.DoneQueryResponse(
-					query.id(),
-					query.label(),
-					query.createdAt().toString(),
+					query.getId(),
+					query.getLabel(),
+					query.getCreatedAt().toString(),
 					true,
-					query.shared(),
+					query.isShared(),
 					false,
-					query.tags(),
-					query.definition(),
-					query.secondaryId(),
-					query.ownerName(),
-					query.groups(),
+					query.getTags(),
+					query.getDefinition(),
+					query.getSecondaryId(),
+					query.getOwnerName(),
+					query.getGroups(),
 					false,
 					List.of(),
 					0L,
 					List.of(),
-					query.definition().type,
+					query.getDefinition().type,
 					0L,
-					query.containsDates()
+					query.isContainsDates()
 			);
 			case FAILED -> new QueryResource.FailedQueryResponse(
-					query.id(),
-					query.label(),
-					query.createdAt().toString(),
+					query.getId(),
+					query.getLabel(),
+					query.getCreatedAt().toString(),
 					true,
-					query.shared(),
+					query.isShared(),
 					false,
-					query.tags(),
-					query.definition(),
-					query.secondaryId(),
-					query.ownerName(),
-					query.groups(),
+					query.getTags(),
+					query.getDefinition(),
+					query.getSecondaryId(),
+					query.getOwnerName(),
+					query.getGroups(),
 					false,
 					List.of(),
 					new QueryResource.ErrorResponse("Query failed", "FAILED")
 			);
 			case CANCELED -> new QueryResource.CanceledQueryResponse(
-					query.id(),
-					query.label(),
-					query.createdAt().toString(),
+					query.getId(),
+					query.getLabel(),
+					query.getCreatedAt().toString(),
 					true,
-					query.shared(),
+					query.isShared(),
 					false,
-					query.tags(),
-					query.definition(),
-					query.secondaryId(),
-					query.ownerName(),
-					query.groups(),
+					query.getTags(),
+					query.getDefinition(),
+					query.getSecondaryId(),
+					query.getOwnerName(),
+					query.getGroups(),
 					false,
 					List.of(),
 					new QueryResource.ErrorResponse("Query canceled", "CANCELED")
 			);
 			case NEW -> new QueryResource.NewQueryResponse(
-					query.id(),
-					query.label(),
-					query.createdAt().toString(),
+					query.getId(),
+					query.getLabel(),
+					query.getCreatedAt().toString(),
 					true,
-					query.shared(),
+					query.isShared(),
 					false,
-					query.tags(),
-					query.definition(),
-					query.secondaryId(),
-					query.ownerName(),
-					query.groups(),
+					query.getTags(),
+					query.getDefinition(),
+					query.getSecondaryId(),
+					query.getOwnerName(),
+					query.getGroups(),
 					false,
 					List.of()
 			);
