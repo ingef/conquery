@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
+import com.bakdata.conquery.quarkus.storage.meta.ManagerMetaStorage;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -15,31 +16,31 @@ import jakarta.ws.rs.NotFoundException;
 public class DatasetService {
 
 	@Inject
-	DatasetCatalogRepository datasetCatalog;
+	ManagerMetaStorage metaStorage;
 
 	public List<DatasetCatalogRepository.DatasetRecord> listDatasets() {
-		return datasetCatalog.listDatasets();
+		return metaStorage.datasets().listDatasets();
 	}
 
 	public DatasetCatalogRepository.DatasetRecord requireDataset(String datasetId) {
-		return datasetCatalog.findDataset(datasetId)
+		return metaStorage.datasets().findDataset(datasetId)
 							 .orElseThrow(() -> new NotFoundException("Unknown dataset: " + datasetId));
 	}
 
 	public DatasetCatalogRepository.ConceptRecord requireConcept(String conceptId) {
-		return datasetCatalog.findConcept(conceptId)
+		return metaStorage.datasets().findConcept(conceptId)
 							 .orElseThrow(() -> new NotFoundException("Unknown concept: " + conceptId));
 	}
 
 	public List<DatasetCatalogRepository.ConceptRecord> listConceptsForDataset(String datasetId) {
-		return datasetCatalog.listConcepts().stream().filter(concept -> concept.datasetId().equals(datasetId))
+		return metaStorage.datasets().listConcepts().stream().filter(concept -> concept.datasetId().equals(datasetId))
 							 .toList();
 	}
 
 	public ConceptCodeResolution resolveConceptCodes(String rootConceptId, List<String> codes) {
 		DatasetCatalogRepository.ConceptRecord rootConcept = requireConcept(rootConceptId);
 
-		Map<String, String> lookupByCode = datasetCatalog.listConcepts().stream()
+		Map<String, String> lookupByCode = metaStorage.datasets().listConcepts().stream()
 													.filter(concept -> concept.datasetId().equals(rootConcept.datasetId()))
 													.flatMap(concept -> java.util.stream.Stream.of(
 															Map.entry(normalizeCode(concept.id()), concept.id()),

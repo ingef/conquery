@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import com.bakdata.conquery.quarkus.storage.FormConfigRepository;
+import com.bakdata.conquery.quarkus.storage.meta.ManagerMetaStorage;
 import com.bakdata.conquery.quarkus.storage.model.StoredFormConfig;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -15,7 +15,7 @@ import jakarta.ws.rs.NotFoundException;
 public class FormConfigService {
 
 	@Inject
-	FormConfigRepository formConfigRepository;
+	ManagerMetaStorage metaStorage;
 
 	public DatasetFormConfigResource.PostFormConfigResponse create(
 			String datasetId,
@@ -35,7 +35,7 @@ public class FormConfigService {
 				List.of(),
 				payload.values
 		);
-		formConfigRepository.save(stored);
+		metaStorage.formConfigs().save(stored);
 		return new DatasetFormConfigResource.PostFormConfigResponse(id);
 	}
 
@@ -44,7 +44,7 @@ public class FormConfigService {
 			Set<String> requestedFormTypes,
 			String requester
 	) {
-		return formConfigRepository.listByDataset(datasetId).stream()
+		return metaStorage.formConfigs().listByDataset(datasetId).stream()
 						  .filter(config -> requestedFormTypes == null
 								  || requestedFormTypes.isEmpty()
 								  || requestedFormTypes.contains(config.getFormType()))
@@ -75,12 +75,12 @@ public class FormConfigService {
 		if (payload.values != null) {
 			config.setValues(payload.values);
 		}
-		formConfigRepository.save(config);
+		metaStorage.formConfigs().save(config);
 		return toFull(config, requester);
 	}
 
 	public void delete(String formConfigId) {
-		if (!formConfigRepository.deleteById(formConfigId)) {
+		if (!metaStorage.formConfigs().deleteById(formConfigId)) {
 			throw new NotFoundException("Unknown form-config: " + formConfigId);
 		}
 	}
@@ -116,6 +116,6 @@ public class FormConfigService {
 	}
 
 	private StoredFormConfig require(String formConfigId) {
-		return formConfigRepository.findById(formConfigId).orElseThrow(() -> new NotFoundException("Unknown form-config: " + formConfigId));
+		return metaStorage.formConfigs().findById(formConfigId).orElseThrow(() -> new NotFoundException("Unknown form-config: " + formConfigId));
 	}
 }

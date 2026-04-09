@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-import com.bakdata.conquery.quarkus.storage.QueryRepository;
+import com.bakdata.conquery.quarkus.storage.meta.ManagerMetaStorage;
 import com.bakdata.conquery.quarkus.storage.model.StoredQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -17,7 +17,7 @@ import jakarta.ws.rs.NotFoundException;
 public class QueryStateService {
 
 	@Inject
-	QueryRepository queryRepository;
+	ManagerMetaStorage metaStorage;
 
 	public DatasetsResource.StartQueryResponse createQuery(String datasetId, QuerySubmissionPayload payload, String ownerName) {
 		String queryId = UUID.randomUUID().toString();
@@ -40,12 +40,12 @@ public class QueryStateService {
 				List.of()
 		);
 
-		queryRepository.save(stored);
+		metaStorage.queries().save(stored);
 		return new DatasetsResource.StartQueryResponse(queryId);
 	}
 
 	public List<DatasetsResource.QuerySummaryResponse> getDatasetQueries(String datasetId) {
-		return queryRepository.listByDataset(datasetId).stream()
+		return metaStorage.queries().listByDataset(datasetId).stream()
 						 .sorted(Comparator.comparing(StoredQuery::getCreatedAt).reversed())
 						 .map(this::toSummaryResponse)
 						 .toList();
@@ -80,7 +80,7 @@ public class QueryStateService {
 	}
 
 	public void deleteQuery(String queryId) {
-		if (!queryRepository.deleteById(queryId)) {
+		if (!metaStorage.queries().deleteById(queryId)) {
 			throw new NotFoundException("Unknown query: " + queryId);
 		}
 	}
@@ -274,7 +274,7 @@ public class QueryStateService {
 	}
 
 	private StoredQuery requireQuery(String queryId) {
-		return queryRepository.findById(queryId).orElseThrow(() -> new NotFoundException("Unknown query: " + queryId));
+		return metaStorage.queries().findById(queryId).orElseThrow(() -> new NotFoundException("Unknown query: " + queryId));
 	}
 
 	private static String labelFor(String queryId) {
