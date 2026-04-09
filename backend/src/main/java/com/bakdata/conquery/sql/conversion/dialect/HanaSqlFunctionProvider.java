@@ -313,9 +313,9 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 			return DSL.function("TO_VARCHAR", type.getType(), field);
 		}
 		return DSL.function(
-				"CAST",
+				unquotedName("CAST"),
 				type.getType(),
-				DSL.field("%s AS %s".formatted(field, type.getName()))
+				DSL.field("(%s) AS %s".formatted(field, type.getName()))
 		);
 	}
 

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.mode.local;
 
 import java.sql.SQLException;
-
 import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
@@ -54,9 +53,10 @@ public class ManagedConnection implements Managed {
 				.withRenderFormatted(config.isWithPrettyPrinting())
 				// enforces all identifiers to be quoted if not explicitly unquoted via DSL.unquotedName()
 				// to prevent any lowercase/uppercase SQL dialect specific identifier naming issues
-				.withRenderQuotedNames(RenderQuotedNames.ALWAYS)
+				.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
 				// always render "as" keyword for field aliases
-				.withRenderOptionalAsKeywordForFieldAliases(RenderOptionalKeyword.ON);
+				.withRenderOptionalAsKeywordForFieldAliases(RenderOptionalKeyword.ON)
+				;
 
 		return DSL.using(
 				this.dataSource,
