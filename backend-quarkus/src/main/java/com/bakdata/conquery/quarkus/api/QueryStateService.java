@@ -5,17 +5,19 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
+import com.bakdata.conquery.quarkus.storage.QueryRepository;
+import com.bakdata.conquery.quarkus.storage.model.StoredQuery;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 
 @ApplicationScoped
 public class QueryStateService {
 
-	private final Map<String, StoredQuery> queriesById = new ConcurrentHashMap<>();
+	@Inject
+	QueryRepository queryRepository;
 
 	public DatasetsResource.StartQueryResponse createQuery(String datasetId, QuerySubmissionPayload payload, String ownerName) {
 		String queryId = UUID.randomUUID().toString();
@@ -38,14 +40,12 @@ public class QueryStateService {
 				List.of()
 		);
 
-		queriesById.put(queryId, stored);
+		queryRepository.save(stored);
 		return new DatasetsResource.StartQueryResponse(queryId);
 	}
 
 	public List<DatasetsResource.QuerySummaryResponse> getDatasetQueries(String datasetId) {
-		return queriesById.values()
-						 .stream()
-						 .filter(query -> query.datasetId().equals(datasetId))
+		return queryRepository.listByDataset(datasetId).stream()
 						 .sorted(Comparator.comparing(StoredQuery::createdAt).reversed())
 						 .map(this::toSummaryResponse)
 						 .toList();
@@ -80,8 +80,7 @@ public class QueryStateService {
 	}
 
 	public void deleteQuery(String queryId) {
-		StoredQuery removed = queriesById.remove(queryId);
-		if (removed == null) {
+		if (!queryRepository.deleteById(queryId)) {
 			throw new NotFoundException("Unknown query: " + queryId);
 		}
 	}
@@ -275,126 +274,11 @@ public class QueryStateService {
 	}
 
 	private StoredQuery requireQuery(String queryId) {
-		StoredQuery query = queriesById.get(queryId);
-		if (query == null) {
-			throw new NotFoundException("Unknown query: " + queryId);
-		}
-		return query;
+		return queryRepository.findById(queryId).orElseThrow(() -> new NotFoundException("Unknown query: " + queryId));
 	}
 
 	private static String labelFor(String queryId) {
 		return "Query " + queryId;
-	}
-
-	private static final class StoredQuery {
-		private final String id;
-		private final String datasetId;
-		private volatile String label;
-		private final Instant createdAt;
-		private final String ownerName;
-		private final QueryResource.QueryDefinition definition;
-		private final String secondaryId;
-		private final boolean containsDates;
-		private volatile QueryResource.QueryStatus status;
-		private volatile List<String> tags;
-		private volatile boolean shared;
-		private volatile List<String> groups;
-
-		private StoredQuery(
-				String id,
-				String datasetId,
-				String label,
-				Instant createdAt,
-				String ownerName,
-				QueryResource.QueryDefinition definition,
-				String secondaryId,
-				boolean containsDates,
-				QueryResource.QueryStatus status,
-				List<String> tags,
-				boolean shared,
-				List<String> groups
-		) {
-			this.id = id;
-			this.datasetId = datasetId;
-			this.label = label;
-			this.createdAt = createdAt;
-			this.ownerName = ownerName;
-			this.definition = definition;
-			this.secondaryId = secondaryId;
-			this.containsDates = containsDates;
-			this.status = status;
-			this.tags = tags;
-			this.shared = shared;
-			this.groups = groups;
-		}
-
-		public String id() {
-			return id;
-		}
-
-		public String datasetId() {
-			return datasetId;
-		}
-
-		public String label() {
-			return label;
-		}
-
-		public void setLabel(String label) {
-			this.label = label;
-		}
-
-		public Instant createdAt() {
-			return createdAt;
-		}
-
-		public String ownerName() {
-			return ownerName;
-		}
-
-		public QueryResource.QueryDefinition definition() {
-			return definition;
-		}
-
-		public String secondaryId() {
-			return secondaryId;
-		}
-
-		public boolean containsDates() {
-			return containsDates;
-		}
-
-		public QueryResource.QueryStatus status() {
-			return status;
-		}
-
-		public void setStatus(QueryResource.QueryStatus status) {
-			this.status = status;
-		}
-
-		public List<String> tags() {
-			return tags;
-		}
-
-		public void setTags(List<String> tags) {
-			this.tags = tags;
-		}
-
-		public boolean shared() {
-			return shared;
-		}
-
-		public void setShared(boolean shared) {
-			this.shared = shared;
-		}
-
-		public List<String> groups() {
-			return groups;
-		}
-
-		public void setGroups(List<String> groups) {
-			this.groups = groups;
-		}
 	}
 
 	public record QueryPatch(

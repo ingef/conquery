@@ -1,6 +1,7 @@
 package com.bakdata.conquery.quarkus.api;
 
 import java.util.List;
+import java.util.Map;
 
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.inject.Instance;
@@ -69,7 +70,7 @@ public class FormConfigResource {
 				description = "Opaque form values payload saved by the frontend.",
 				implementation = Object.class
 		)
-		public Object values;
+		public Map<String, Object> values;
 	}
 
 	public record FormConfigFullResponse(
@@ -87,7 +88,7 @@ public class FormConfigResource {
 					description = "Opaque form values payload saved by the frontend.",
 					implementation = Object.class
 			)
-			Object values
+			Map<String, Object> values
 	) {
 	}
 }
