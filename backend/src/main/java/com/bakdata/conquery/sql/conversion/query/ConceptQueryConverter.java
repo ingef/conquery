@@ -88,7 +88,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 		else if (preFinalSelects.getValidityDate().isEmpty()) {
 			return preFinalSelects.withValidityDate(ColumnDateRange.empty());
 		}
-		Field<String> validityDateStringAggregation = functionProvider.daterangeStringAggregation(preFinalSelects.getValidityDate().get());
+		Field<?> validityDateStringAggregation = functionProvider.daterangeStringAggregation(preFinalSelects.getValidityDate().get());
 		return preFinalSelects.withValidityDate(ColumnDateRange.of(validityDateStringAggregation).as(SharedAliases.DATES_COLUMN.getAlias()));
 	}
 

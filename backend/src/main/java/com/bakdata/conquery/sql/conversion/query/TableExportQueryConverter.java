@@ -149,7 +149,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		final SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		final ColumnDateRange validityDate = functionProvider.forValidityDate(table.findValidityDate());
 		// when exporting tables, we want the validity date as a single-column daterange string expression straightaway
-		final Field<String> asStringExpression = functionProvider.encloseInCurlyBraces(functionProvider.daterangeStringExpression(validityDate));
+		final Field<?> asStringExpression = functionProvider.daterangeStringExpression(validityDate);
 		return Optional.of(ColumnDateRange.of(asStringExpression).asValidityDateRange(alias));
 	}
 

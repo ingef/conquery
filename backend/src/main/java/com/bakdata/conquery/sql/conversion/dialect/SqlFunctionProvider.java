@@ -127,14 +127,14 @@ public interface SqlFunctionProvider {
 	 * <p>
 	 * Example: {[-∞,2013-11-11),[2015-11-10,∞)}
 	 */
-	Field<String> daterangeStringAggregation(ColumnDateRange columnDateRange);
+	Field<?> daterangeStringAggregation(ColumnDateRange columnDateRange);
 
 	/**
 	 * Combines the start and end column of a validity date entry into one compound string expression.
 	 * <p>
 	 * Example: [2013-11-10,2013-11-11)
 	 */
-	Field<String> daterangeStringExpression(ColumnDateRange columnDateRange);
+	Field<?> daterangeStringExpression(ColumnDateRange columnDateRange);
 
 	/**
 	 * Calculates the date distance in the given {@link ChronoUnit} between an exclusive end date and an inclusive start date.

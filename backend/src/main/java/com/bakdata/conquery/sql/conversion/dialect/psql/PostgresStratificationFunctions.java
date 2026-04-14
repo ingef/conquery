@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.forms;
+package com.bakdata.conquery.sql.conversion.dialect.psql;
 
 import static com.bakdata.conquery.sql.conversion.forms.FormConstants.SERIES_INDEX;
 
@@ -10,7 +10,8 @@ import java.util.Map;
 
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.sql.conversion.dialect.Interval;
-import com.bakdata.conquery.sql.conversion.dialect.psql.PostgreSqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.forms.Offset;
+import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

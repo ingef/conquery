@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model;
 
+import static org.jooq.impl.DSL.inline;
+
 import java.sql.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,7 +56,7 @@ public class ColumnDateRange implements SqlSelect {
 	}
 
 	public static ColumnDateRange empty() {
-		Field<String> emptyRange = DSL.field(DSL.val("{}"));
+		Field<String> emptyRange = inline(null, String.class);
 		return ColumnDateRange.of(emptyRange);
 	}
 

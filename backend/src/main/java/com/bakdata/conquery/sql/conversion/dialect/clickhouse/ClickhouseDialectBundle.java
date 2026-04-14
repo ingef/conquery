@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.dialect.clickhouse;
 
 import java.util.List;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.Visitable;
@@ -12,36 +13,35 @@ import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.dialect.hana.HanaSqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.forms.HanaStratificationFunctions;
+import com.bakdata.conquery.sql.conversion.dialect.hana.HanaStratificationFunctions;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
-import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 
 public class ClickhouseDialectBundle implements DialectBundle {
 
-	private final SqlFunctionProvider hanaSqlFunctionProvider;
-	private final IntervalPacker hanaIntervalPacker;
-	private final SqlDateAggregator hanaSqlDateAggregator;
-	private final DefaultSqlCDateSetParser defaultNotationParser;
+	private final SqlFunctionProvider functionProvider;
+	private final IntervalPacker intervalPacker;
+	private final SqlDateAggregator dateAggregator;
+	private final SqlCDateSetParser dateSetParser;
 
 	public ClickhouseDialectBundle() {
-		this.hanaSqlFunctionProvider = new HanaSqlFunctionProvider();
-		this.hanaIntervalPacker = new AnsiSqlIntervalPacker();
-		this.hanaSqlDateAggregator = new AnsiSqlDateAggregator(this.hanaIntervalPacker);
-		this.defaultNotationParser = new DefaultSqlCDateSetParser();
+		this.functionProvider = new ClickhouseFunctionProvider();
+		this.intervalPacker = new AnsiSqlIntervalPacker();
+		this.dateAggregator = new AnsiSqlDateAggregator(this.intervalPacker);
+		this.dateSetParser = new ClickhouseCDateSetParser(); // TODO => ArrayCDateSetParser
 	}
 
 	@Override
 	public Dialect getDialect() {
-		return Dialect.HANA;
+		return Dialect.CLICKHOUSE;
 	}
 
 	@Override
 	public SqlCDateSetParser getCDateSetParser() {
-		return this.defaultNotationParser;
+		return this.dateSetParser;
 	}
 
 	@Override
@@ -51,36 +51,32 @@ public class ClickhouseDialectBundle implements DialectBundle {
 
 	@Override
 	public StratificationFunctions getStratificationFunctions() {
-		return new HanaStratificationFunctions((HanaSqlFunctionProvider) getFunctionProvider());
+		return new HanaStratificationFunctions(getFunctionProvider());
 	}
 
 	@Override
 	public boolean isTypeCompatible(Field<?> field, MajorTypeId type) {
-		return switch (type) {
-			case STRING -> field.getDataType().isString();
-			case INTEGER -> field.getDataType().isInteger();
-			case BOOLEAN -> field.getDataType().isBoolean();
-			case REAL -> field.getDataType().isNumeric();
-			case DECIMAL -> field.getDataType().isDecimal();
-			case MONEY -> field.getDataType().isDecimal();
-			case DATE -> field.getDataType().isDate();
-			case DATE_RANGE -> false; // HANA does not support single-column DateRange
-		};
+		return true; //TODO CLickhouse integration is bad here.
 	}
 
 	@Override
 	public SqlFunctionProvider getFunctionProvider() {
-		return this.hanaSqlFunctionProvider;
+		return this.functionProvider;
 	}
 
 	@Override
 	public IntervalPacker getIntervalPacker() {
-		return this.hanaIntervalPacker;
+		return this.intervalPacker;
 	}
 
 	@Override
 	public SqlDateAggregator getDateAggregator() {
-		return this.hanaSqlDateAggregator;
+		return this.dateAggregator;
+	}
+
+	@Override
+	public ResultSetProcessor getResultSetProcessor(ConqueryConfig config) {
+		return new ClickhouseResultSetProcessor(config, getCDateSetParser());
 	}
 
 }

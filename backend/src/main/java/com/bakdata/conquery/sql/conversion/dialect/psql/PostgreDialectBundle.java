@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.dialect.psql;
 
 import java.util.List;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.Visitable;
@@ -12,19 +13,21 @@ import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.forms.PostgresStratificationFunctions;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
+import com.bakdata.conquery.sql.execution.DefaultResultSetProcessor;
 import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 
 public class PostgreDialectBundle implements DialectBundle {
 
-	private final SqlFunctionProvider postgresqlFunctionProvider;
-	private final IntervalPacker postgresqlIntervalPacker;
-	private final SqlDateAggregator postgresqlDateAggregator;
-	private final DefaultSqlCDateSetParser defaultNotationParser;
+	private final SqlFunctionProvider functionProvider;
+	private final IntervalPacker intervalPacker;
+	private final SqlDateAggregator dateAggregator;
+	private final SqlCDateSetParser dateSetParser;
+
 
 	@Override
 	public Dialect getDialect() {
@@ -32,15 +35,15 @@ public class PostgreDialectBundle implements DialectBundle {
 	}
 
 	public PostgreDialectBundle() {
-		this.postgresqlFunctionProvider = new PostgreSqlFunctionProvider();
-		this.postgresqlIntervalPacker = new PostgreSqlIntervalPacker(this.postgresqlFunctionProvider);
-		this.postgresqlDateAggregator = new PostgreSqlDateAggregator(this.postgresqlFunctionProvider);
-		this.defaultNotationParser = new DefaultSqlCDateSetParser();
+		this.functionProvider = new PostgreSqlFunctionProvider();
+		this.intervalPacker = new PostgreSqlIntervalPacker(this.functionProvider);
+		this.dateAggregator = new PostgreSqlDateAggregator(this.functionProvider);
+		this.dateSetParser = new DefaultSqlCDateSetParser();
 	}
 
 	@Override
 	public SqlCDateSetParser getCDateSetParser() {
-		return this.defaultNotationParser;
+		return this.dateSetParser;
 	}
 
 	@Override
@@ -74,17 +77,22 @@ public class PostgreDialectBundle implements DialectBundle {
 
 	@Override
 	public SqlFunctionProvider getFunctionProvider() {
-		return this.postgresqlFunctionProvider;
+		return this.functionProvider;
 	}
 
 	@Override
 	public IntervalPacker getIntervalPacker() {
-		return this.postgresqlIntervalPacker;
+		return this.intervalPacker;
 	}
 
 	@Override
 	public SqlDateAggregator getDateAggregator() {
-		return this.postgresqlDateAggregator;
+		return this.dateAggregator;
+	}
+
+	@Override
+	public ResultSetProcessor getResultSetProcessor(ConqueryConfig config) {
+		return new DefaultResultSetProcessor(config, getCDateSetParser());
 	}
 
 }

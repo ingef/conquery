@@ -14,10 +14,10 @@ import com.bakdata.conquery.util.DateReader;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-class DefaultResultSetProcessor implements ResultSetProcessor {
+public class DefaultResultSetProcessor implements ResultSetProcessor {
 
-	private final ConqueryConfig config;
-	private final SqlCDateSetParser sqlCDateSetParser;
+	protected final ConqueryConfig config;
+	protected final SqlCDateSetParser sqlCDateSetParser;
 
 	@Override
 	public String getString(ResultSet resultSet, int columnIndex) throws SQLException {

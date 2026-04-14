@@ -1,13 +1,17 @@
-package com.bakdata.conquery.sql.conversion.forms;
+package com.bakdata.conquery.sql.conversion.dialect.clickhouse;
 
 import static com.bakdata.conquery.sql.conversion.dialect.Interval.MONTHS_PER_QUARTER;
+import static com.bakdata.conquery.sql.conversion.forms.FormConstants.SERIES_INDEX;
+import static org.jooq.impl.DSL.inline;
 
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
-import com.bakdata.conquery.sql.conversion.dialect.hana.HanaSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.dialect.Interval;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.forms.Offset;
+import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +23,7 @@ import org.jooq.impl.SQLDataType;
 
 @Getter
 @RequiredArgsConstructor
-public class HanaStratificationFunctions extends StratificationFunctions {
+public class ClickhouseStratificationFunctions extends StratificationFunctions {
 
 	private static final int INCREMENT = 1;
 
@@ -29,7 +33,19 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 	 */
 	private static final String GENERATED_PERIOD_END = "GENERATED_PERIOD_END";
 
-	private final HanaSqlFunctionProvider functionProvider;
+	private final SqlFunctionProvider functionProvider;
+
+	private static Field<Date> addMonths(Field<Date> yearStart, Field<Integer> amount) {
+		return DSL.function("addMonths", Date.class, yearStart, amount);
+	}
+
+	private static Field<Date> addDays(Field<Date> start, Field<Integer> amount) {
+		return DSL.function("addDays", Date.class, start, amount);
+	}
+
+	private static Field<Date> jumpToYearStart(Field<Date> date) {
+		return DSL.function("toStartOfYear", Date.class, date);
+	}
 
 	@Override
 	public Field<Date> lower(ColumnDateRange dateRange) {
@@ -68,13 +84,7 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Field<Date> upperBoundYearEnd(ColumnDateRange dateRange) {
-		return DSL.field(
-				"SERIES_ROUND({0}, {1}, {2})",
-				Date.class,
-				dateRange.getEnd(),
-				DSL.val("INTERVAL 1 YEAR"),
-				DSL.keyword("ROUND_UP")
-		);
+		return DSL.field("addYears(toStartOfYear({0}), {1})", Date.class, dateRange.getEnd(), inline(1));
 	}
 
 	@Override
@@ -116,15 +126,12 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Field<Integer> intSeriesField() {
-		return DSL.field(DSL.name(GENERATED_PERIOD_END), Integer.class);
+		return SERIES_INDEX;
 	}
 
 	@Override
 	public Table<Record> generateIntSeries(int start, int end) {
-		// HANA's SERIES_GENERATE_INTEGER generates an empty set if start and end are the same, but we expect it to return a set with exactly 1 value,
-		// so we shift the start by -1 and use the GENERATED_PERIOD_END as intSeriesField column to achieve this
-		int adjustedStart = start - 1;
-		return DSL.table("SERIES_GENERATE_INTEGER({0}, {1}, {2})", INCREMENT, adjustedStart, end);
+		return DSL.table("generate_series({0}, {1}, 1)", start, end);
 	}
 
 	@Override
@@ -149,20 +156,12 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 	public Field<Date> shiftByInterval(Field<Date> startDate, Interval interval, Field<Integer> amount, Offset offset) {
 		Field<Integer> multiplier = amount.plus(offset.getOffset());
 		return switch (interval) {
-			case ONE_YEAR_INTERVAL -> DSL.function("ADD_YEARS", Date.class, startDate, multiplier.times(Interval.ONE_YEAR_INTERVAL.getAmount()));
+			case ONE_YEAR_INTERVAL -> DSL.function("addYears", Date.class, startDate, multiplier.times(Interval.ONE_YEAR_INTERVAL.getAmount()));
 			case YEAR_AS_DAYS_INTERVAL -> addDays(startDate, multiplier.times(Interval.YEAR_AS_DAYS_INTERVAL.getAmount()));
 			case QUARTER_INTERVAL -> addMonths(startDate, multiplier.times(Interval.QUARTER_INTERVAL.getAmount()));
 			case NINETY_DAYS_INTERVAL -> addDays(startDate, multiplier.times(Interval.NINETY_DAYS_INTERVAL.getAmount()));
 			case ONE_DAY_INTERVAL -> addDays(startDate, multiplier.times(Interval.ONE_DAY_INTERVAL.getAmount()));
 		};
-	}
-
-	private static Field<Date> addMonths(Field<Date> yearStart, Field<Integer> amount) {
-		return DSL.function("ADD_MONTHS", Date.class, yearStart, amount);
-	}
-
-	private static Field<Date> addDays(Field<Date> start, Field<Integer> amount) {
-		return DSL.function("ADD_DAYS", Date.class, start, amount);
 	}
 
 	private Field<Date> calcStartDate(Field<Date> start, Interval interval) {
@@ -175,16 +174,6 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 
 	private Field<Date> calcDate(Field<Date> start, Interval interval, Offset offset) {
 		return shiftByInterval(start, interval, intSeriesField(), offset);
-	}
-
-	private static Field<Date> jumpToYearStart(Field<Date> date) {
-		return DSL.field(
-				"SERIES_ROUND({0}, {1}, {2})",
-				Date.class,
-				date,
-				DSL.val("INTERVAL 1 YEAR"),
-				DSL.keyword("ROUND_DOWN")
-		);
 	}
 
 	private Field<Integer> getQuartersInMonths(Field<Date> date, Offset offset) {

@@ -142,7 +142,7 @@ public class FormConversionHelper {
 
 		Selects stratificationSelects = stratificationTable.getQualifiedSelects();
 		SqlIdColumns ids = stratificationSelects.getIds().forFinalSelect();
-		Field<String> daterangeConcatenated = functionProvider.daterangeStringExpression(stratificationSelects.getStratificationDate().get())
+		Field<?> daterangeConcatenated = functionProvider.daterangeStringExpression(stratificationSelects.getStratificationDate().get())
 															  .as(SharedAliases.STRATIFICATION_BOUNDS.getAlias());
 
 		Selects.SelectsBuilder selects = Selects.builder()
