@@ -3,10 +3,12 @@ package com.bakdata.conquery.quarkus.storage.meta;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import com.bakdata.conquery.quarkus.storage.FormConfigRepository;
 import com.bakdata.conquery.quarkus.storage.QueryRepository;
+import io.quarkus.arc.properties.IfBuildProperty;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
+@IfBuildProperty(name = "conquery.storage.backend", stringValue = "IN_MEMORY", enableIfMissing = true)
 public class InMemoryMetaStorageFacade implements ManagerMetaStorage {
 
 	@Inject
