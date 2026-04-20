@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
-import static org.jooq.impl.DSL.*;
 import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import java.util.Map;
@@ -27,13 +27,17 @@ import org.jooq.impl.DSL;
 /**
  * This condition requires the value of another column to be equal to a given value.
  */
-@CPSType(id="COLUMN_EQUAL", base=CTCondition.class)
+@CPSType(id = "COLUMN_EQUAL", base = CTCondition.class)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ColumnEqualCondition implements CTCondition {
 
-	@Setter @Getter @NotEmpty
+	@Setter
+	@Getter
+	@NotEmpty
 	private Set<String> values;
-	@NotEmpty @Setter @Getter
+	@NotEmpty
+	@Setter
+	@Getter
 	private String column;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
@@ -44,7 +48,7 @@ public class ColumnEqualCondition implements CTCondition {
 	@Override
 	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) {
 		Object checkedValue = rowMap.getValue().get(column);
-		if(checkedValue == null) {
+		if (checkedValue == null) {
 			return false;
 		}
 		return values.contains(checkedValue.toString());
@@ -61,8 +65,9 @@ public class ColumnEqualCondition implements CTCondition {
 	}
 
 	@Override
-	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
-		return new Expression(id, Map.of(field(name(getColumn()), VARCHAR(fieldLength())).as("%s_equal".formatted(column)), values.stream().map(DSL::val).collect(Collectors.toSet())));
+	public ConceptConditions buildExpression(CTConditionContext context, ConceptElement<?> id) {
+		FieldCondition condition = new FieldCondition(field(name(getColumn()), VARCHAR), values.stream().map(DSL::val).collect(Collectors.toSet()));
 
+		return new ConceptConditions(id, Map.of(field(name("%s_equal".formatted(column)), VARCHAR(fieldLength())), condition));
 	}
 }

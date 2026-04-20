@@ -4,9 +4,9 @@ import static org.jooq.impl.DSL.*;
 
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,18 +79,18 @@ public class SqlMatchingStats {
 	/**
 	 * collect unique fields used/defined in the expressions.
 	 */
-	private static List<Field<?>> collectAllFields(List<CTCondition.Expression> expressions) {
-		List<Field<?>> fields = expressions.stream()
-										   .flatMap(e -> e.conditions().keySet().stream())
-										   .distinct()
-										   .toList();
+	private static List<Field<?>> collectAllFields(List<CTCondition.ConceptConditions> conceptConditions) {
+		List<Field<?>> fields = conceptConditions.stream()
+												 .flatMap(e -> e.conditions().keySet().stream())
+												 .distinct()
+												 .toList();
 		return fields;
 	}
 
-	private static <T extends Record> Select<T> unionSelects(List<Select<? extends T>> connectorTables) {
+	private static <T extends Record> Select<T> unionSelects(List<Select<? extends T>> connectorTableSelects) {
 		Select<T> unioned = null;
 
-		for (Select<? extends T> connectorTable : connectorTables) {
+		for (Select<? extends T> connectorTable : connectorTableSelects) {
 			if (unioned == null) {
 				unioned = (Select<T>) connectorTable;
 				continue;
@@ -103,6 +103,18 @@ public class SqlMatchingStats {
 		return unioned;
 	}
 
+	private static Param<?> defaultValue(Field<?> field) {
+		if (field.getDataType().isBoolean()) {
+			return inline(false);
+		}
+
+		if (field.getDataType().isString()) {
+			return inline(null, String.class);
+		}
+
+		throw new IllegalStateException("Fields of type %s are not expected".formatted(field.getDataType()));
+	}
+
 	/**
 	 * Assembles the join table and inserts it into the database.
 	 * @param concept
@@ -110,11 +122,11 @@ public class SqlMatchingStats {
 	public void createConceptIdJoinTable(TreeConcept concept) {
 		CTConditionContext context = CTConditionContext.forJoinTables(functionProvider);
 
-		List<CTCondition.Expression> expressions = collectAllExpressions(concept, null, context);
+		List<CTCondition.ConceptConditions> conceptConditions = collectAllExpressions(concept, null, context);
 
-		List<Field<?>> allFields = collectAllFields(expressions);
+		List<Field<?>> allFields = collectAllFields(conceptConditions);
 
-		List<RowN> rows = expressionsToRows(expressions, allFields);
+		List<RowN> rows = expressionsToRows(conceptConditions, allFields);
 
 		Name tableName = idsTableName(concept.getName());
 
@@ -233,7 +245,7 @@ public class SqlMatchingStats {
 	}
 
 	/**
-	 * Drop the table, then recreate it.
+	 * Create table and fields. Assumes, table has been dropped already.
 	 */
 	private void createConceptIdsTable(Name tableName, List<Field<?>> fields) {
 
@@ -246,11 +258,6 @@ public class SqlMatchingStats {
 		log.info("{}", createTable);
 
 		createTable.execute();
-	}
-
-	private int findMaxIdLength(List<CTCondition.Expression> expressions) {
-		return expressions.stream().mapToInt(e -> e.conceptElement().getId().toString().length()).max()
-						  .orElse(0);
 	}
 
 	public CompletionStage<?> collectMatchingStatsForConcept(TreeConcept concept, ExecutorService executorService) {
@@ -326,45 +333,43 @@ public class SqlMatchingStats {
 		}
 	}
 
-
 	/**
 	 * Using the expressions of a concept, build a Condition that descibes the left-join onto the ids table, from any connector-table.
 	 */
 	private Condition getJoinConditions(TreeConcept concept, CTConditionContext context) {
-		List<CTCondition.Expression> expressions = collectAllExpressions(concept, null, context);
+		List<CTCondition.ConceptConditions> conceptConditions = collectAllExpressions(concept, null, context);
 
-		Collection<Field<?>> allFields = collectAllFields(expressions);
 
-		if (allFields.isEmpty()) {
-			return context.getFunctionProvider().unconditionalJoin();
+		if (conceptConditions.isEmpty()) {
+			return context.getFunctionProvider().unconditionalJoinCondition();
 		}
 
-		Condition out = noCondition();
+		Set<Condition> conditions = new HashSet<>();
 
-		for (Field eField : allFields) {
-			// col_val needs extra handling because it's bound to the connector and not the concept.
-			// This feels like a bit of a hack, but comparing the actual names does not work for some reason.
-			if (eField.getName().equals(context.getConnectorColumn().last())) {
-				out = out.and(eField.eq(field(name(CTConditionContext.COLUMN_VALUE_FIELD))));
-				continue;
+		for (CTCondition.ConceptConditions conceptCondition : conceptConditions) {
+			for (Map.Entry<Field<?>, CTCondition.FieldCondition> entry : conceptCondition.conditions().entrySet()) {
+				conditions.add(entry.getKey().eq((Field) entry.getValue().extractor()));
 			}
-
-			// The conceptElement-tables names are derived from eField so this should work.
-			out = out.and(eField.eq(field(name(concept.getName(), eField.getName()))));
 		}
 
-		return out;
+		return conditions.stream().reduce(noCondition(), Condition::and);
 	}
 
-	private List<RowN> expressionsToRows(List<CTCondition.Expression> expressions, List<Field<?>> allFields) {
+	private List<RowN> expressionsToRows(List<CTCondition.ConceptConditions> conceptConditions, List<Field<?>> allFields) {
 		Map<List<Param<?>>, ConceptElement<?>> byDepth = new HashMap<>();
 
-		for (CTCondition.Expression expression : expressions) {
-			ConceptElement<?> elt = expression.conceptElement();
+		for (CTCondition.ConceptConditions conceptCondition : conceptConditions) {
+			ConceptElement<?> elt = conceptCondition.conceptElement();
+			Map<Field<?>, CTCondition.FieldCondition> conditions = conceptCondition.conditions();
 
 			List<Set<Param<?>>> rowValues = new ArrayList<>();
 			for (Field<?> field : allFields) {
-				rowValues.add(expression.conditions().getOrDefault(field, NULL_PARAMS));
+				if (conditions.containsKey(field)) {
+					rowValues.add(conditions.get(field).params());
+				}
+				else {
+					rowValues.add(Set.of(defaultValue(field)));
+				}
 			}
 
 			Set<List<Param<?>>> flattened = Sets.cartesianProduct(rowValues);
@@ -402,18 +407,18 @@ public class SqlMatchingStats {
 	 * Collect all mappings from values to conceptElement for the entire concept. This means the column-value and the auxiliary columns.
 	 * We use them to construct a table building an injective mapping from values to concept element that can be used for performant joins instead of resolving the concept every time.
 	 */
-	private List<CTCondition.Expression> collectAllExpressions(ConceptElement<?> current, CTCondition.Expression parentExpression, CTConditionContext context) {
+	private List<CTCondition.ConceptConditions> collectAllExpressions(ConceptElement<?> current, CTCondition.ConceptConditions parentConceptCondition, CTConditionContext context) {
 
-		final CTCondition.Expression forCurrent = switch (current) {
-			case TreeConcept concept -> new CTCondition.Expression(concept, Collections.emptyMap());
+		final CTCondition.ConceptConditions forCurrent = switch (current) {
+			case TreeConcept concept -> new CTCondition.ConceptConditions(concept, Collections.emptyMap());
 			// concept elements implicitly inherit the conditions of its parents
 			case ConceptTreeChild child -> child.getCondition()
 												.buildExpression(context, current)
-												.and(parentExpression);
+												.and(parentConceptCondition);
 			case null, default -> throw new IllegalStateException();
 		};
 
-		final List<CTCondition.Expression> out = new ArrayList<>();
+		final List<CTCondition.ConceptConditions> out = new ArrayList<>();
 
 		out.add(forCurrent);
 
@@ -431,16 +436,16 @@ public class SqlMatchingStats {
 	 *
 	 * TODO use this to implement joining in queries
 	 */
-	private CTCondition.Expression collectExpressionsForSingleNode(ConceptElement<?> current, CTConditionContext context) {
+	private CTCondition.ConceptConditions collectExpressionsForSingleNode(ConceptElement<?> current, CTConditionContext context) {
 
 		if (current instanceof TreeConcept concept) {
-			return new CTCondition.Expression(concept, Collections.emptyMap());
+			return new CTCondition.ConceptConditions(concept, Collections.emptyMap());
 		}
 
-		CTCondition.Expression parentExpression = collectExpressionsForSingleNode(current.getParent(), context);
-		CTCondition.Expression currentExpression = ((ConceptTreeChild) current).getCondition().buildExpression(context, current);
+		CTCondition.ConceptConditions parentConceptCondition = collectExpressionsForSingleNode(current.getParent(), context);
+		CTCondition.ConceptConditions currentConceptCondition = ((ConceptTreeChild) current).getCondition().buildExpression(context, current);
 
-		return currentExpression.and(parentExpression);
+		return currentConceptCondition.and(parentConceptCondition);
 	}
 
 

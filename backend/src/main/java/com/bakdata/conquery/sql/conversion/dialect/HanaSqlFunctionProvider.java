@@ -60,7 +60,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Condition unconditionalJoin() {
+	public Condition unconditionalJoinCondition() {
 		// Hana requires a specific syntax structure, this is the minimal solution.
 		return inline(true).eq(inline(true));
 	}

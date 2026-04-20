@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
+import org.jooq.impl.BuiltInDataType;
+import org.jooq.postgres.extensions.types.DateRange;
 
 @Slf4j
 public class PostgreDialectBundle implements DialectBundle {
@@ -83,9 +85,9 @@ public class PostgreDialectBundle implements DialectBundle {
 			case BOOLEAN -> field.getDataType().isBoolean();
 			case REAL -> field.getDataType().isNumeric();
 			case DECIMAL -> field.getDataType().isDecimal();
-			case MONEY -> true; // Not possible to introspect for
+			case MONEY -> field.getDataType().isNumeric(); // Not possible to introspect for
 			case DATE -> field.getDataType().isDate();
-			case DATE_RANGE -> true; // Not possible to introspect for
+			case DATE_RANGE -> field.getDataType().getSQLDataType().equals(new BuiltInDataType<>(DateRange.class, "daterange")); // Not possible to introspect for
 		};
 	}
 

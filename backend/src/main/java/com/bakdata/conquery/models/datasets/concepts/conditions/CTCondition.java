@@ -1,15 +1,15 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -19,8 +19,8 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.Sets;
-import org.jetbrains.annotations.NotNull;
 import org.jooq.Field;
+import org.jooq.Name;
 import org.jooq.Param;
 
 /**
@@ -38,62 +38,77 @@ public interface CTCondition {
 	//TODO implement using join-table
 	WhereCondition convertToSqlCondition(CTConditionContext context);
 
-	Expression buildExpression(CTConditionContext context, ConceptElement<?> id);
-
+	ConceptConditions buildExpression(CTConditionContext context, ConceptElement<?> id);
 
 	/**
+	 * Extractor is used to join original data onto join-Table.
+	 *
+	 * @param extractor field statement to extract value from source table
+	 * @param params values result of extractor is compared against.
+	 */
+	record FieldCondition(Field<?> extractor, Set<Param<?>> params) {
+
+	}
+
+	/**
+	 * Describes mapping of connector fields by way of {@link FieldCondition} to specific conceptElements.
+	 *
 	 * @param conceptElement The conceptElement being defined by the conditions
 	 * @param conditions The conditions defining the conceptElement. Fields are assumed to be and-ed, multiple entries in a field are or-ed.
 	 *                   So a definition of `{"a": [1], "b": [1,2]}` emits the rows [{a=1 AND b=1}, {a=1  AND b=2}].
 	 *
+	 *
 	 */
-	//TODO better name
-	record Expression(ConceptElement<?> conceptElement, Map<Field<?>, Set<Param<?>>> conditions) {
-		public Expression and(Expression other) {
+	record ConceptConditions(ConceptElement<?> conceptElement, Map<Field<?>, FieldCondition> conditions) {
+		public ConceptConditions and(ConceptConditions other) {
 			if (other == null) {
 				return this;
 			}
 
-			Set<Field<?>> fields = new HashSet<>();
-			fields.addAll(other.conditions.keySet());
-			fields.addAll(conditions.keySet());
+			Set<Name> fields = Stream.of(other.conditions.keySet(), conditions.keySet()).flatMap(Collection::stream)
+									 .map(Field::getUnqualifiedName)
+									 .collect(Collectors.toSet());
 
-			Map<Field<?>, Set<Param<?>>> combined = new HashMap<>();
+			Map<Name, Field<?>> rByName = other.conditions.keySet().stream().collect(Collectors.toMap(Field::getUnqualifiedName, Function.identity()));
+			Map<Name, Field<?>> lByName = conditions.keySet().stream().collect(Collectors.toMap(Field::getUnqualifiedName, Function.identity()));
 
-			Map<String, Field<?>> leftByName = conditions.keySet().stream().collect(Collectors.toMap(Field::getName, Function.identity()));
-			Map<String, Field<?>> rightByName = other.conditions.keySet().stream().collect(Collectors.toMap(Field::getName, Function.identity()));
-
+			Map<Field<?>, FieldCondition> combined = new HashMap<>();
 
 			// AND combine fields, if both are present.
-			for (Field<?> field : fields) {
-				Set<Param<?>> otherParams = other.conditions.get(field);
-				Set<Param<?>> myParams = conditions.get(field);
+			for (Name fieldName : fields) {
+				Field<?> rField = rByName.get(fieldName);
+				Field<?> lField = lByName.get(fieldName);
 
-				Set<Param<?>> fieldParams;
-
-				if (otherParams == null || otherParams.isEmpty()) {
-					fieldParams = myParams;
+				if (rField == null) {
+					combined.put(lField, conditions.get(lField));
+					continue;
 				}
-				else if (myParams == null || myParams.isEmpty()) {
-					fieldParams = otherParams;
+
+				if (lField == null) {
+					combined.put(rField, other.conditions.get(rField));
+					continue;
+				}
+
+				// If both are present, intersect params
+				FieldCondition otherCond = other.conditions.get(rField);
+				FieldCondition myCond = conditions.get(lField);
+
+				FieldCondition condition = new FieldCondition(myCond.extractor, Sets.intersection(otherCond.params, myCond.params));
+
+				// Recompute string field to fit in all values.
+				// Otherwise, assume both fields are the same type
+				Field<?> outField;
+				if (lField.getDataType().isString()) {
+					outField = field(lField.getUnqualifiedName(), VARCHAR(Math.max(lField.getDataType().length(), rField.getDataType().length())));
 				}
 				else {
-					fieldParams = Sets.intersection(otherParams, myParams);
+					assert lField.getDataType().equals(rField.getDataType());
+					outField = lField;
 				}
-
-				// Recompute length
-				if(field.getDataType().isString()){
-					final String name = field.getName();
-					final int leftLength = leftByName.containsKey(name) ? leftByName.get(name).getDataType().length() : 0;
-					final int rightLength = rightByName.containsKey(name) ? rightByName.get(name).getDataType().length() : 0;
-
-					field = field(name(name), VARCHAR(Math.max(leftLength, rightLength)));
-				}
-
-				combined.put(field, fieldParams);
+				combined.put(outField, condition);
 			}
 
-			return new Expression(conceptElement(), combined);
+			return new ConceptConditions(conceptElement(), combined);
 		}
 	}
 

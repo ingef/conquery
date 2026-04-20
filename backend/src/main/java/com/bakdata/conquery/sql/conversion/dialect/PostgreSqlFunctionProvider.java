@@ -217,7 +217,7 @@ PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Condition unconditionalJoin() {
+	public Condition unconditionalJoinCondition() {
 		return noCondition();
 	}
 

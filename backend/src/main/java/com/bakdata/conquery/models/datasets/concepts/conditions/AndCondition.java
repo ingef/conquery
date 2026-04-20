@@ -55,14 +55,14 @@ public class AndCondition implements CTCondition {
 	}
 
 	@Override
-	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
-		List<Expression> expressions = conditions.stream().map(cond -> cond.buildExpression(context, id))
-												 .toList();
+	public ConceptConditions buildExpression(CTConditionContext context, ConceptElement<?> id) {
+		List<ConceptConditions> conceptConditions = conditions.stream().map(cond -> cond.buildExpression(context, id))
+															  .toList();
 
-		Expression out = new Expression(id, Collections.emptyMap());
+		ConceptConditions out = new ConceptConditions(id, Collections.emptyMap());
 
-		for (Expression expression : expressions) {
-			out = out.and(expression);
+		for (ConceptConditions conceptCondition : conceptConditions) {
+			out = out.and(conceptCondition);
 		}
 
 		return out;

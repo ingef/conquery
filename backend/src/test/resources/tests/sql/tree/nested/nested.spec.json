@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "sqlSpec": {
-    "isEnabled": false
+    "isEnabled": true
   },
   "label": "TREE concept with multiple nested conditions",
   "expectedCsv": "tests/sql/tree/nested/expected.csv",
@@ -45,13 +45,13 @@
           "label": "test_child1",
           "description": " ",
           "condition": {
-            "type": "OR",
+            "type": "AND",
             "conditions": [
               {
-                "type": "PREFIX_LIST",
-                "prefixes": [
-                  "C",
-                  "C1"
+                "type": "EQUAL",
+                "values": [
+                  "A",
+                  "A1"
                 ]
               },
               {
@@ -64,11 +64,8 @@
                     ]
                   },
                   {
-                    "type": "NOT",
-                    "condition": {
-                      "type": "PRESENT",
-                      "column": "test_column2"
-                    }
+                    "type": "NOT_PRESENT",
+                    "column": "test_column2"
                   }
                 ]
               }

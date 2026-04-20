@@ -13,15 +13,17 @@ public class CTConditionContext {
 	public static final String COLUMN_VALUE_FIELD = "col_val";
 	Name connectorColumn;
 	SqlFunctionProvider functionProvider;
+	boolean forConnector;
 
 	public static CTConditionContext forJoinTables(SqlFunctionProvider functionProvider) {
-		return new CTConditionContext(name(COLUMN_VALUE_FIELD), functionProvider);
+		return new CTConditionContext(name(COLUMN_VALUE_FIELD), functionProvider, false);
 	}
 
 	public static CTConditionContext forConnector(Connector connector, SqlFunctionProvider functionProvider) {
 		return new CTConditionContext(
 				connector.getColumn() != null ? name(connector.resolveTableId().getTable(), connector.getColumn().getColumn()) : null,
-				functionProvider
+				functionProvider,
+				true
 		);
 	}
 

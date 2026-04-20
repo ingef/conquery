@@ -82,7 +82,7 @@ public class PrefixRangeCondition implements CTCondition {
 	}
 
 	@Override
-	public Expression buildExpression(CTConditionContext context, ConceptElement<?> id) {
+	public ConceptConditions buildExpression(CTConditionContext context, ConceptElement<?> id) {
 		throw new IllegalStateException("Not implemented");
 	}
 }

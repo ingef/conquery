@@ -243,5 +243,5 @@ public interface SqlFunctionProvider {
 		return function("upper", Date.class, daterange);
 	}
 
-	Condition unconditionalJoin();
+	Condition unconditionalJoinCondition();
 }
