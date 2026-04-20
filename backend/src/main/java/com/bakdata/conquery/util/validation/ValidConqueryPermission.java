@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {}) // No custom validator needed if only using built-ins
 public @interface ValidConqueryPermission {
-	String message() default "Invalid password";
+	String message() default "Invalid permission";
 	Class<?>[] groups() default {};
 	Class<? extends Payload>[] payload() default {};
 }
