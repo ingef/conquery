@@ -13,8 +13,8 @@ import java.lang.annotation.Target;
 /**
  * Validate Shiro permissions
  */
-@Pattern(regexp="^[\\w,*]+(?::[\\w,*@]+){0,2}$", message="Provide a valid shiro permission string with 3 sub-parts at most.")
 @NotBlank
+@Pattern(regexp="^[\\w,*]+(?::[\\w,*@]+){0,2}$", message="Provide a valid shiro permission string with 3 sub-parts at most.")
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {}) // No custom validator needed if only using built-ins
