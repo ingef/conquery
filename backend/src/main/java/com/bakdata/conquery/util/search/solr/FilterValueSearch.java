@@ -200,6 +200,9 @@ public class FilterValueSearch {
                 return new ConceptsProcessor.ExactFilterValueResult(List.of(), terms);
             }
 
+            // We are matching on label and value.
+            // So if for reason a value is present in multiple sources (map, template, ...) but has different labels
+            // both can be found.
             String collect = Stream.of(
                             SolrFrontendValue.Fields.value_s,
                             SolrFrontendValue.Fields.label_t
@@ -217,7 +220,8 @@ public class FilterValueSearch {
             try {
                 List<FrontendValue> resolvedValues = new ArrayList<>();
 
-                SolrQuery solrQuery = buildSolrQuery(collect, 0, batchSize, false, false, false);
+                // We sort to return value with the highest source priority and get the best description
+                SolrQuery solrQuery = buildSolrQuery(collect, 0, batchSize, true, false, false);
 
                 String decodedQuery = URLDecoder.decode(String.valueOf(solrQuery), StandardCharsets.UTF_8);
                 int queryHash = decodedQuery.hashCode();

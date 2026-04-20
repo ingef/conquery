@@ -68,7 +68,7 @@ public class ExecuteForm extends WorkerMessage {
 
 			final QueryExecutionContext
 					subQueryContext =
-					new QueryExecutionContext(formId, queryExecutor, worker.getStorage(), worker.getBucketManager());
+					new QueryExecutionContext(formId, queryExecutor, worker.getStorage(), worker.getBucketManager(), worker.getClock());
 
 			Set<Entity> entities = query.collectRequiredEntities(subQueryContext).resolve(worker.getBucketManager());
 

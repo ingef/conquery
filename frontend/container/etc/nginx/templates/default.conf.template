@@ -1,12 +1,12 @@
 server {
-    listen 80;
+    listen ${NGINX_PORT};
 
     gzip on;
     gzip_vary on;
     gzip_types */*;
 
     location / {
-        root /usr/share/nginx/html;
+        root /usr/share/nginx/html/frontend;
         index index.html;
 
         location ~ ^/(index\.html)?$ {

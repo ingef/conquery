@@ -61,7 +61,7 @@ public class ExecuteQuery extends WorkerMessage {
 			return;
 		}
 
-		final QueryExecutionContext executionContext = new QueryExecutionContext(id, queryExecutor, worker.getStorage(), worker.getBucketManager());
+		final QueryExecutionContext executionContext = new QueryExecutionContext(id, queryExecutor, worker.getStorage(), worker.getBucketManager(), worker.getClock());
 
 		final Set<Entity> entities = query.collectRequiredEntities(executionContext).resolve(worker.getBucketManager());
 
