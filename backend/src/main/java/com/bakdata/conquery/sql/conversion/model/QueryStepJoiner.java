@@ -1,5 +1,12 @@
 package com.bakdata.conquery.sql.conversion.model;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
@@ -11,12 +18,6 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.google.common.base.Preconditions;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -27,37 +28,37 @@ import org.jooq.impl.DSL;
 
 public class QueryStepJoiner {
 
-    private static final String NEGATED_CTE_SUFFIX = "_negated";
+	private static final String NEGATED_CTE_SUFFIX = "_negated";
 
-    public static QueryStep antiJoinWithAllIdsTable(QueryStep queryStep, ConversionContext context) {
+	public static QueryStep antiJoinWithAllIdsTable(QueryStep queryStep, ConversionContext context) {
 
-        SqlFunctionProvider functionProvider = context.getConversionContext().getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getConversionContext().getSqlDialect().getFunctionProvider();
 
-        Field<Object> queryStepPrimaryColumn = queryStep.getQualifiedSelects().getIds().getPrimaryColumn();
-        ColumnConfig idColumnConfig = context.getIdColumns().findPrimaryIdColumn();
-        Field<Object> allIdsPrimaryColumn = DSL.field(DSL.name(idColumnConfig.getField()));
+		Field<Object> queryStepPrimaryColumn = queryStep.getQualifiedSelects().getIds().getPrimaryColumn();
+		ColumnConfig idColumnConfig = context.getIdColumns().findPrimaryIdColumn();
+		Field<Object> allIdsPrimaryColumn = DSL.field(DSL.name(idColumnConfig.getField()));
 
-        Table<?> table = DSL.table(DSL.name(context.getIdColumns().getTable()))
-                .leftOuterJoin(DSL.table(DSL.name(queryStep.getCteName())))
-                .on(queryStepPrimaryColumn.eq(allIdsPrimaryColumn));
+		Table<?> table = DSL.table(DSL.name(context.getIdColumns().getTable()))
+							.leftOuterJoin(DSL.table(DSL.name(queryStep.getCteName())))
+							.on(queryStepPrimaryColumn.eq(allIdsPrimaryColumn));
 
-        Condition antiJoinCondition = queryStepPrimaryColumn.isNull();
+		Condition antiJoinCondition = queryStepPrimaryColumn.isNull();
 
-        // TODO
-        Selects selects = Selects.builder()
-                .ids(new SqlIdColumns(allIdsPrimaryColumn))
-                // negation results in +/-inf date for all entries that match the anti-join condition
-                .validityDate(Optional.of(functionProvider.maxRange()))
-                .build();
+		// TODO
+		Selects selects = Selects.builder()
+								 .ids(new SqlIdColumns(allIdsPrimaryColumn))
+								 // negation results in +/-inf date for all entries that match the anti-join condition
+								 .validityDate(Optional.of(functionProvider.maxRange()))
+								 .build();
 
-        return QueryStep.builder()
-                .cteName(queryStep.getCteName() + NEGATED_CTE_SUFFIX)
-                .selects(selects)
-                .fromTable(table)
-                .conditions(List.of(antiJoinCondition))
-                .predecessor(queryStep)
-                .build();
-    }
+		return QueryStep.builder()
+						.cteName(queryStep.getCteName() + NEGATED_CTE_SUFFIX)
+						.selects(selects)
+						.fromTable(table)
+						.conditions(List.of(antiJoinCondition))
+						.predecessor(queryStep)
+						.build();
+	}
 
 	public static QueryStep joinChildren(
 			Iterable<CQElement> children,
@@ -81,15 +82,24 @@ public class QueryStepJoiner {
 			DateAggregationAction dateAggregationAction,
 			ConversionContext context
 	) {
-		// no join required
-		if (queriesToJoin.size() == 1) {
-			return queriesToJoin.get(0);
+		// keep all entries from group A (non-negate steps), whose entity has no matching entry in group B (negate steps)
+		if (queriesToJoin.stream().anyMatch(QueryStep::isNegate)) {
+			return joinStepsContainingNegation(queriesToJoin, logicalOperation, dateAggregationAction, context);
 		}
 
-        // keep all entries from group A (non-negate steps), whose entity has no matching entry in group B (negate steps)
-        if (queriesToJoin.stream().anyMatch(QueryStep::isNegate)) {
-            return joinStepsContainingNegation(queriesToJoin, logicalOperation, dateAggregationAction, context);
-        }
+		// splitting out the actual join to be able to recur here
+		return doJoin(queriesToJoin, logicalOperation, dateAggregationAction, context);
+	}
+
+	private static QueryStep doJoin(
+			List<QueryStep> queriesToJoin,
+			ConqueryJoinType logicalOperation,
+			DateAggregationAction dateAggregationAction,
+			ConversionContext context) {
+		// no join required
+		if (queriesToJoin.size() == 1) {
+			return queriesToJoin.getFirst();
+		}
 
 		String joinedNodeName = context.getNameGenerator().joinedNodeName(logicalOperation);
 		SqlIdColumns ids = coalesceIds(queriesToJoin);
@@ -110,7 +120,7 @@ public class QueryStepJoiner {
 		}
 		// if there is only 1 child node containing a validity date, we just keep it as overall validity date for the joined node
 		else if (dateAggregationDates.getValidityDates().size() == 1) {
-			ColumnDateRange validityDate = dateAggregationDates.getValidityDates().get(0);
+			ColumnDateRange validityDate = dateAggregationDates.getValidityDates().getFirst();
 			joinedStep = buildJoinedStep(ids, mergedSelects, Optional.of(validityDate), Optional.empty(), joinedStepBuilder);
 		}
 		else {
@@ -119,88 +129,91 @@ public class QueryStepJoiner {
 		return joinedStep;
 	}
 
-    private static QueryStep joinStepsContainingNegation(
-            List<QueryStep> queriesToJoin,
-            ConqueryJoinType logicalOperation,
-            DateAggregationAction dateAggregationAction,
-            ConversionContext context
-    ) {
-        List<QueryStep> nonNegateSteps = queriesToJoin.stream().filter(Predicate.not(QueryStep::isNegate)).toList();
-        List<QueryStep>  negateSteps = queriesToJoin.stream().filter(QueryStep::isNegate).toList();
+	private static QueryStep joinStepsContainingNegation(
+			List<QueryStep> queriesToJoin,
+			ConqueryJoinType logicalOperation,
+			DateAggregationAction dateAggregationAction,
+			ConversionContext context
+	) {
+		Map<Boolean, List<QueryStep>> byNegation = queriesToJoin.stream().collect(Collectors.groupingBy(QueryStep::isNegate));
 
-        if (nonNegateSteps.isEmpty()) {
-            QueryStep negateJoined = joinSteps(negateSteps, logicalOperation, dateAggregationAction, context);
-            return antiJoinWithAllIdsTable(negateJoined, context);
-        }
+		List<QueryStep> withoutNegation = byNegation.get(false);
+		List<QueryStep> withNegation = byNegation.get(true);
 
-        String cteName = context.getNameGenerator().joinedNodeName(logicalOperation) + NEGATED_CTE_SUFFIX;
-        QueryStep nonNegateJoined = joinSteps(nonNegateSteps, logicalOperation, dateAggregationAction, context);
-        QueryStep negateJoined = joinSteps(negateSteps, logicalOperation, dateAggregationAction, context);
+		if (withoutNegation == null) {
+			QueryStep negateJoined = doJoin(withNegation, logicalOperation, dateAggregationAction, context);
+			return antiJoinWithAllIdsTable(negateJoined, context);
+		}
 
-        Selects selects = nonNegateJoined.getQualifiedSelects()
-                .toBuilder()
-                .sqlSelects(mergeSelects(List.of(nonNegateJoined, negateJoined)))
-                .build();
+		String cteName = context.getNameGenerator().joinedNodeName(logicalOperation) + NEGATED_CTE_SUFFIX;
+		QueryStep nonNegateJoined = doJoin(withoutNegation, logicalOperation, dateAggregationAction, context);
+		QueryStep negateJoined = doJoin(withNegation, logicalOperation, dateAggregationAction, context);
 
-        Table<?> table;
-        Condition joinCondition;
-        if (logicalOperation == ConqueryJoinType.INNER_JOIN) {
-            table = DSL.table(DSL.name(nonNegateJoined.getCteName()))
-                    .leftOuterJoin(DSL.table(DSL.name(negateJoined.getCteName())))
-                    .on(nonNegateJoined.getQualifiedSelects().getIds().getPrimaryColumn()
-                            .eq(negateJoined.getQualifiedSelects().getIds().getPrimaryColumn()));
+		Selects selects = nonNegateJoined.getQualifiedSelects()
+										 .toBuilder()
+										 .sqlSelects(mergeSelects(List.of(nonNegateJoined, negateJoined)))
+										 .build();
 
-            joinCondition = negateJoined.getQualifiedSelects().getIds().getPrimaryColumn().isNull();
-        } else {
-            // first, invert dates of negated step
-            negateJoined = context.getSqlDialect().getDateAggregator().invertAggregatedIntervals(negateJoined, context);
+		Table<?> table;
+		Condition joinCondition;
+		if (logicalOperation == ConqueryJoinType.INNER_JOIN) {
+			table = DSL.table(DSL.name(nonNegateJoined.getCteName()))
+					   .leftOuterJoin(DSL.table(DSL.name(negateJoined.getCteName())))
+					   .on(nonNegateJoined.getQualifiedSelects().getIds().getPrimaryColumn()
+										  .eq(negateJoined.getQualifiedSelects().getIds().getPrimaryColumn()));
 
-            // join with all-ids table necessary
-            ColumnConfig columnConfig = context.getIdColumns().findPrimaryIdColumn();
-            Field<Object> allIdsPrimaryColumn = DSL.field(DSL.name(columnConfig.getField()));
-            Field<Object> negatePrimaryColumn = negateJoined.getQualifiedSelects().getIds().getPrimaryColumn();
-            Field<Object> nonNegatePrimaryColumn = nonNegateJoined.getQualifiedSelects().getIds().getPrimaryColumn();
+			joinCondition = negateJoined.getQualifiedSelects().getIds().getPrimaryColumn().isNull();
+		}
+		else {
+			// first, invert dates of negated step
+			negateJoined = context.getSqlDialect().getDateAggregator().invertAggregatedIntervals(negateJoined, context);
 
-            // prepare date aggregation
-            Condition infinityRangeCondition = negatePrimaryColumn.isNull().or(nonNegatePrimaryColumn.isNull());
-            DateAggregationDates aggregationDates = DateAggregationDates.forValidityDates(List.of(
-                    nonNegateJoined.getQualifiedSelects().getValidityDate(),
-                    negateJoined.getQualifiedSelects().getValidityDate(),
-                    Optional.of(context.getSqlDialect().getFunctionProvider().maxRangeIf(infinityRangeCondition))
-            ));
-            PostgreSqlDateAggregator dateAggregator =
-                    (PostgreSqlDateAggregator) context.getSqlDialect().getDateAggregator();
-            ColumnDateRange merged =
-                    dateAggregator.getAggregatedValidityDate(aggregationDates, DateAggregationAction.MERGE)
-                            .as(cteName + SharedAliases.DATES_COLUMN.getAlias());
+			// join with all-ids table necessary
+			ColumnConfig columnConfig = context.getIdColumns().findPrimaryIdColumn();
+			Field<Object> allIdsPrimaryColumn = DSL.field(DSL.name(columnConfig.getField()));
+			Field<Object> negatePrimaryColumn = negateJoined.getQualifiedSelects().getIds().getPrimaryColumn();
+			Field<Object> nonNegatePrimaryColumn = nonNegateJoined.getQualifiedSelects().getIds().getPrimaryColumn();
 
-            Field<Object> coalescedId = DSL.coalesce(nonNegatePrimaryColumn, allIdsPrimaryColumn)
-                    .as(SharedAliases.PRIMARY_COLUMN.getAlias());
+			// prepare date aggregation
+			Condition infinityRangeCondition = negatePrimaryColumn.isNull().or(nonNegatePrimaryColumn.isNull());
+			DateAggregationDates aggregationDates = DateAggregationDates.forValidityDates(List.of(
+					nonNegateJoined.getQualifiedSelects().getValidityDate(),
+					negateJoined.getQualifiedSelects().getValidityDate(),
+					Optional.of(context.getSqlDialect().getFunctionProvider().maxRangeIf(infinityRangeCondition))
+			));
+			PostgreSqlDateAggregator dateAggregator =
+					(PostgreSqlDateAggregator) context.getSqlDialect().getDateAggregator();
+			ColumnDateRange merged =
+					dateAggregator.getAggregatedValidityDate(aggregationDates, DateAggregationAction.MERGE)
+								  .as(cteName + SharedAliases.DATES_COLUMN.getAlias());
 
-            selects = selects.toBuilder()
-                    .ids(new SqlIdColumns(coalescedId))
-                    .validityDate(Optional.of(merged))
-                    .build();
+			Field<Object> coalescedId = DSL.coalesce(nonNegatePrimaryColumn, allIdsPrimaryColumn)
+										   .as(SharedAliases.PRIMARY_COLUMN.getAlias());
 
-            table = DSL.table(DSL.name(context.getIdColumns().getTable()))
-                    .leftOuterJoin(DSL.table(DSL.name(negateJoined.getCteName())))
-                    .on(allIdsPrimaryColumn.eq(negatePrimaryColumn))
-                    .leftOuterJoin(DSL.table(DSL.name(nonNegateJoined.getCteName())))
-                    .on(allIdsPrimaryColumn.eq(nonNegatePrimaryColumn));
+			selects = selects.toBuilder()
+							 .ids(new SqlIdColumns(coalescedId))
+							 .validityDate(Optional.of(merged))
+							 .build();
 
-            joinCondition = negatePrimaryColumn.isNull().or(nonNegatePrimaryColumn.isNotNull());
-        }
+			table = DSL.table(DSL.name(context.getIdColumns().getTable()))
+					   .leftOuterJoin(DSL.table(DSL.name(negateJoined.getCteName())))
+					   .on(allIdsPrimaryColumn.eq(negatePrimaryColumn))
+					   .leftOuterJoin(DSL.table(DSL.name(nonNegateJoined.getCteName())))
+					   .on(allIdsPrimaryColumn.eq(nonNegatePrimaryColumn));
 
-        return QueryStep.builder()
-                .cteName(cteName)
-                .selects(selects)
-                .fromTable(table)
-                .conditions(List.of(joinCondition))
-                .predecessors(List.of(nonNegateJoined, negateJoined))
-                .build();
-    }
+			joinCondition = negatePrimaryColumn.isNull().or(nonNegatePrimaryColumn.isNotNull());
+		}
 
-    public static TableLike<Record> constructJoinedTable(List<QueryStep> queriesToJoin, ConqueryJoinType logicalOperation, ConversionContext context) {
+		return QueryStep.builder()
+						.cteName(cteName)
+						.selects(selects)
+						.fromTable(table)
+						.conditions(List.of(joinCondition))
+						.predecessors(List.of(nonNegateJoined, negateJoined))
+						.build();
+	}
+
+	public static TableLike<Record> constructJoinedTable(List<QueryStep> queriesToJoin, ConqueryJoinType logicalOperation, ConversionContext context) {
 		Table<Record> joinedQuery = getIntitialJoinTable(queriesToJoin);
 
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();

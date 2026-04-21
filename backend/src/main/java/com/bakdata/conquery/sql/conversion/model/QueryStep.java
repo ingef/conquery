@@ -42,6 +42,11 @@ public class QueryStep {
 	@Builder.Default
 	boolean unionAll = true;
 	/**
+	 * TODO
+	 */
+	@Builder.Default
+	boolean negate = false;
+	/**
 	 * Determines if the select should be distinct.
 	 */
 	boolean selectDistinct;
