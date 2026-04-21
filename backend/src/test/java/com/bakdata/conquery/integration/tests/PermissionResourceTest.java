@@ -38,6 +38,7 @@ public class PermissionResourceTest {
 				Arguments.of("domain:operation", 204),
 				Arguments.of("domain:operation:instance", 204),
 				Arguments.of("domain:operation1,:instance", 204),
+				Arguments.of("domain-hyphen:operation,:instance@at", 204),
 				Arguments.of("domain:operation1,operation2:instance", 204),
 				Arguments.of("", 422),
 				Arguments.of("domain:operation:instance:too_much", 422),
