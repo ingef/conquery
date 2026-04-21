@@ -39,7 +39,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 		String alias = selectContext.getNameGenerator().selectName(countQuartersSelect);
 		ConnectorSqlTables tables = selectContext.getTables();
 		SqlFunctionProvider functionProvider = selectContext.getFunctionProvider();
-		StratificationFunctions stratificationFunctions = StratificationFunctions.create(selectContext.getConversionContext());
+		StratificationFunctions stratificationFunctions = selectContext.getConversionContext().getStratificationFunctions();
 
 		CommonAggregationSelect<? extends Number> countAggregationSelect;
 		if (countQuartersSelect.isSingleColumnDaterange()) {
@@ -70,7 +70,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 		String alias = filterContext.getNameGenerator().selectName(countQuartersFilter);
 		ConnectorSqlTables tables = filterContext.getTables();
 		SqlFunctionProvider functionProvider = filterContext.getFunctionProvider();
-		StratificationFunctions stratificationFunctions = StratificationFunctions.create(filterContext.getConversionContext());
+		StratificationFunctions stratificationFunctions = filterContext.getConversionContext().getStratificationFunctions();
 
 		CommonAggregationSelect<? extends Number> countAggregationSelect;
 		if (countQuartersFilter.isSingleColumnDaterange()) {

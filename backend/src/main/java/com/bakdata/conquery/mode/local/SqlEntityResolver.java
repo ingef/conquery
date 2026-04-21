@@ -23,7 +23,7 @@ import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalId;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import com.bakdata.conquery.util.DateReader;
 import com.bakdata.conquery.util.io.IdColumnUtil;
@@ -49,7 +49,7 @@ public class SqlEntityResolver implements EntityResolver {
 
 	private final IdColumnConfig idColumns;
 	private final DSLContext context;
-	private final SqlDialect dialect;
+	private final DialectBundle dialect;
 	private final SqlExecutionService executionService;
 
 	@Override

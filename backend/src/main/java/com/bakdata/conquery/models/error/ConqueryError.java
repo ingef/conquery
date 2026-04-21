@@ -278,7 +278,14 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		public String getMessageTemplate(ErrorMessages errorMessages) {
 			return errorMessages.sqlError(error);
 		}
+	}
 
-
+	@CPSType(base = ConqueryError.class, id = "CQ_RELATIVE_NO_DATES")
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+	public static class RelativeFormMissingDatesError extends ConqueryError {
+		@Override
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.relativeFormMissingDates();
+		}
 	}
 }

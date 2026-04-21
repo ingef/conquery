@@ -126,7 +126,8 @@ public class SolrFilterValueTest {
 				LabelMap labelMap = new LabelMap(getId(), ImmutableBiMap.of(
 						"a", "Map A",
 						"map b", "Map B",
-						"map c", "Map C"
+						"map c", "Map C",
+						"e", "Map E" // exists in all sources
 				), 0, false);
 
 				final FilterTemplate index = new FilterTemplate(
@@ -150,6 +151,10 @@ public class SolrFilterValueTest {
 		};
 	}
 
+	public static Collection<FrontendValue> findExact(SolrProcessor solrProcessor, SelectFilter<?> filter, String searchTerm) {
+		return solrProcessor.findExact(filter, List.of(searchTerm)).resolved();
+	}
+
 	@Test
 	@Order(0)
 	public void addData() throws InterruptedException, SolrServerException, IOException {
@@ -163,6 +168,7 @@ public class SolrFilterValueTest {
 				"a", // should be shadowed by LabelMap
 				"b", // should be shadowed by external csv map
 				"column c",
+				"e", // exists in all sources
 				"column ab",
 				"column ba",
 				"" // Empty string handling
@@ -190,7 +196,7 @@ public class SolrFilterValueTest {
 	@Order(1)
 	public void findExactColumn() {
 
-		Collection<FrontendValue> actual = searchProcessor.findExact(FILTER, "column c");
+		Collection<FrontendValue> actual = findExact(searchProcessor, FILTER, "column c");
 
 		assertThat(actual).containsExactly(new FrontendValue("column c", "column c"));
 	}
@@ -198,12 +204,12 @@ public class SolrFilterValueTest {
 	@Test
 	@Order(1)
 	public void findExactMap() {
-		Collection<FrontendValue> actualLabel = searchProcessor.findExact(FILTER, "Map A");
+		Collection<FrontendValue> actualLabel = findExact(searchProcessor, FILTER, "Map A");
 
 		assertThat(actualLabel).containsExactly(new FrontendValue("a", "Map A"));
 
 
-		Collection<FrontendValue> actualValue = searchProcessor.findExact(FILTER, "map a");
+		Collection<FrontendValue> actualValue = findExact(searchProcessor, FILTER, "map a");
 
 		assertThat(actualValue).containsExactly(new FrontendValue("a", "Map A"));
 	}
@@ -217,11 +223,11 @@ public class SolrFilterValueTest {
 					assertThat(uut.values()).isEqualTo(List.of(
 							new FrontendValue("", "No Value", null),
 							new FrontendValue("a", "Map A", null),
+							new FrontendValue("e", "Map E", null),
 							new FrontendValue("map b", "Map B", null),
-							new FrontendValue("map c", "Map C", null),
-							new FrontendValue("b", "Data b", "b")
+							new FrontendValue("map c", "Map C", null)
 					));
-					assertThat(uut.total()).isEqualTo(13);
+					assertThat(uut.total()).isEqualTo(14);
 				}
 		);
 	}
@@ -233,13 +239,13 @@ public class SolrFilterValueTest {
 
 		assertThat(actual).satisfies(uut -> {
 					assertThat(uut.values()).isEqualTo(List.of(
+							new FrontendValue("b", "Data b", "b"),
 							new FrontendValue("data a", "data a", "data a"),
 							new FrontendValue("data c", "Data C", "data c"),
 							new FrontendValue("data d", "data d", "data d"),
-							new FrontendValue("external-null", "external-null", "external-null"),
-							new FrontendValue("","internal", null)
+							new FrontendValue("external-null", "external-null", "external-null")
 					));
-					assertThat(uut.total()).isEqualTo(13);
+					assertThat(uut.total()).isEqualTo(14);
 				}
 		);
 	}
@@ -251,11 +257,12 @@ public class SolrFilterValueTest {
 
 		assertThat(actual).satisfies(uut -> {
 					assertThat(uut.values()).isEqualTo(List.of(
+							new FrontendValue("","internal", null),
 							new FrontendValue("column ab", "column ab", "null"),
 							new FrontendValue("column ba", "column ba", "null"),
 							new FrontendValue("column c", "column c", "null")
 					));
-					assertThat(uut.total()).isEqualTo(13);
+					assertThat(uut.total()).isEqualTo(14);
 				}
 		);
 	}
@@ -272,6 +279,7 @@ public class SolrFilterValueTest {
 								new FrontendValue("data a", "Data", "data a"),
 								new FrontendValue("map b", "Map B", "null"),
 								new FrontendValue("map c", "Map C", "null"),
+								new FrontendValue("e", "Map E", "null"),
 								new FrontendValue("b", "Data b", "b"),
 								new FrontendValue("data c", "Data C", "data c"),
 								new FrontendValue("data d", "data d", "data d"),
@@ -281,7 +289,7 @@ public class SolrFilterValueTest {
 								new FrontendValue("column ba", "column ba", "null"),
 								new FrontendValue("column c", "column c", "null")
 						),
-						12
+						13
 				)
 		);
 	}
@@ -299,13 +307,14 @@ public class SolrFilterValueTest {
 								new FrontendValue("a", "Map A", null),
 								new FrontendValue("map b", "Map B", null),
 								new FrontendValue("map c", "Map C", null),
+								new FrontendValue("e", "Map E", "null"),
 								new FrontendValue("data a", "Data", "data a"),
 								new FrontendValue("b", "Data B", "b"),
 								new FrontendValue("data c", "Data C", "data c"),
 								new FrontendValue("data d", "data d", "data d"),
 								new FrontendValue("column c", "column c", null)
 						),
-						10
+						11
 				)
 		);
 	}
@@ -363,7 +372,7 @@ public class SolrFilterValueTest {
 	@Order(3)
 	public void findExactNothing() {
 
-		Collection<FrontendValue> actual = searchProcessor.findExact(FILTER, "");
+		Collection<FrontendValue> actual = findExact(searchProcessor, FILTER, "");
 
 		assertThat(actual).isEmpty();
 	}
@@ -372,7 +381,7 @@ public class SolrFilterValueTest {
 	@Order(3)
 	public void findExactUnknown() {
 
-		Collection<FrontendValue> actual = searchProcessor.findExact(FILTER, "z");
+		Collection<FrontendValue> actual = findExact(searchProcessor, FILTER, "z");
 
 		assertThat(actual).isEmpty();
 	}
@@ -381,7 +390,7 @@ public class SolrFilterValueTest {
 	@Order(3)
 	public void findExactUppercase() {
 
-		Collection<FrontendValue> actual = searchProcessor.findExact(FILTER, "MAP A");
+		Collection<FrontendValue> actual = findExact(searchProcessor, FILTER, "MAP A");
 
 		assertThat(actual).containsExactly(new FrontendValue("a", "Map A"));
 	}
@@ -390,9 +399,9 @@ public class SolrFilterValueTest {
 	@Order(3)
 	public void findExactMultiple() {
 
-		ConceptsProcessor.ExactFilterValueResult actual = searchProcessor.findExact(FILTER, List.of("MAP A", "z"));
+		ConceptsProcessor.ExactFilterValueResult actual = searchProcessor.findExact(FILTER, List.of("MAP A", "z", "Data e"));
 
-		assertThat(actual).usingRecursiveComparison().isEqualTo(new ConceptsProcessor.ExactFilterValueResult(List.of(new FrontendValue("a", "Map A")),Set.of("z")));
+		assertThat(actual).usingRecursiveComparison().isEqualTo(new ConceptsProcessor.ExactFilterValueResult(List.of(new FrontendValue("a", "Map A"), new FrontendValue("e", "Data E", "e")),Set.of("z")));
 	}
 
 	@Test

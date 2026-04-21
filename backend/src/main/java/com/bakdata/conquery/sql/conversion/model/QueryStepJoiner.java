@@ -81,7 +81,7 @@ public class QueryStepJoiner {
 	public static TableLike<Record> constructJoinedTable(List<QueryStep> queriesToJoin, ConqueryJoinType logicalOperation, ConversionContext context) {
 		Table<Record> joinedQuery = getIntitialJoinTable(queriesToJoin);
 
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		JoinType joinType = switch (logicalOperation) {
 			case INNER_JOIN -> functionProvider::innerJoin;
 			case OUTER_JOIN -> functionProvider::fullOuterJoin;
@@ -159,7 +159,7 @@ public class QueryStepJoiner {
 		withAllValidityDates.addAll(dateAggregationDates.allStartsAndEnds());
 		QueryStep joinedStep = buildJoinedStep(ids, withAllValidityDates, Optional.empty(), Optional.empty(), builder);
 
-		SqlDateAggregator sqlDateAggregator = context.getSqlDialect().getDateAggregator();
+		SqlDateAggregator sqlDateAggregator = context.getDialectBundle().getDateAggregator();
 		return sqlDateAggregator.apply(
 				joinedStep,
 				mergedSelects,

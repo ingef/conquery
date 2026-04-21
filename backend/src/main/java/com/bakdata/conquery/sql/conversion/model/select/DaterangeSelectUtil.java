@@ -46,7 +46,7 @@ class DaterangeSelectUtil {
 	) {
 		String alias = context.getNameGenerator().selectName(select);
 		ConnectorSqlTables tables = context.getTables();
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 
 		ColumnDateRange daterange = functionProvider.forArbitraryDateRange(select).as(alias);
 		List<SqlSelect> rootSelects = daterange.toFields().stream()
@@ -64,7 +64,7 @@ class DaterangeSelectUtil {
 				qualified,
 				aggregationField,
 				daterangeSelectTables,
-				context.getSqlDialect()
+				context.getDialectBundle()
 		);
 
 		ExtractingSqlSelect<?> finalSelect = aggregationField.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
@@ -95,8 +95,8 @@ class DaterangeSelectUtil {
 	private static SqlTables createTables(String alias, SelectContext<ConnectorSqlTables> context) {
 		Map<CteStep, CteStep> predecessorMapping = new HashMap<>();
 		String eventFilterCteName = context.getTables().cteName(EVENT_FILTER);
-		predecessorMapping.putAll(IntervalPackingCteStep.getMappings(context.getSqlDialect()));
-		if (context.getSqlDialect().supportsSingleColumnRanges()) {
+		predecessorMapping.putAll(IntervalPackingCteStep.getMappings(context.getDialectBundle()));
+		if (context.getDialectBundle().supportsSingleColumnRanges()) {
 			predecessorMapping.put(UNNEST_DATE, INTERVAL_COMPLETE);
 			predecessorMapping.put(INTERVAL_PACKING_SELECTS, UNNEST_DATE);
 		}
@@ -116,7 +116,7 @@ class DaterangeSelectUtil {
 																			  .tables(dateUnionTables)
 																			  .build();
 
-		return context.getSqlDialect()
+		return context.getDialectBundle()
 					  .getIntervalPacker()
 					  .aggregateAsArbitrarySelect(intervalPackingContext);
 	}

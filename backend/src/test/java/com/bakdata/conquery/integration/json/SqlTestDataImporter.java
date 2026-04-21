@@ -3,10 +3,15 @@ package com.bakdata.conquery.integration.json;
 import java.util.Collection;
 import java.util.List;
 
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
+
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.filter.FilterTest;
 import com.bakdata.conquery.integration.sql.CsvTableImporter;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import lombok.Data;
@@ -17,13 +22,14 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 public class SqlTestDataImporter implements TestDataImporter {
 
-	private static final RequiredTable ALL_IDS_TABLE = importRequiredTable("/shared/entities.table.json");
+	private static final RequiredTable ALL_IDS_TABLE = readRequiredTable("/shared/entities.table.json");
 
 	private final CsvTableImporter csvTableImporter;
 
 	@Override
 	public void importQueryTestData(StandaloneSupport support, QueryTest test) throws Exception {
 		RequiredData content = test.getContent();
+
 		content.getTables().add(ALL_IDS_TABLE);
 		importSecondaryIds(support, content.getSecondaryIds());
 		importTables(support, content.getTables(), true);
@@ -67,8 +73,14 @@ public class SqlTestDataImporter implements TestDataImporter {
 	}
 
 	@SneakyThrows
-	private static RequiredTable importRequiredTable(String fileResource) {
+	private static RequiredTable readRequiredTable(String fileResource) {
 		return RequiredTable.fromFile(fileResource);
 	}
 
+	@Override
+	public void importDataset(Client client, UriBuilder adminUriBuilder, String name) {
+		Dataset dataset = new Dataset(name);
+		dataset.setDataSource("test");
+		LoadingUtil.importDataset(client, adminUriBuilder, dataset);
+	}
 }
