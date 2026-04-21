@@ -352,7 +352,14 @@ public class SqlMatchingStats {
 			}
 		}
 
-		return conditions.stream().reduce(noCondition(), Condition::and);
+		Condition reduced = conditions.stream().reduce(noCondition(), Condition::and);
+
+		if(reduced.equals(noCondition())){
+			//TODO not sure why this happens
+			return context.getFunctionProvider().unconditionalJoinCondition();
+		}
+
+		return reduced;
 	}
 
 	private List<RowN> expressionsToRows(List<CTCondition.ConceptConditions> conceptConditions, List<Field<?>> allFields) {

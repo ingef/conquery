@@ -113,8 +113,8 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return DSL.function(
 				"TO_DATE",
 				Date.class,
-				DSL.val(dateExpression),
-				DSL.val(DEFAULT_DATE_FORMAT)
+				DSL.inline(dateExpression),
+				DSL.inline(DEFAULT_DATE_FORMAT)
 		);
 	}
 
@@ -154,7 +154,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		// when aggregating date ranges, we want to treat the last day of the range as excluded,
 		// so when using the date value of the end column, we add +1 day as end of the date range
 		Field<Date> rangeEnd = DSL.coalesce(
-				addDays(DSL.field(DSL.name(tableName, endColumn.getName()), Date.class), DSL.val(1)),
+				addDays(DSL.field(DSL.name(tableName, endColumn.getName()), Date.class), DSL.inline(1)),
 				toDateField(MAX_DATE_VALUE)
 		);
 
@@ -359,4 +359,9 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return DSL.function("QUARTER", String.class, dateField);
 	}
 
+	@Override
+	public Field<Boolean> isNull(Field<?> field) {
+		// DSl.isNull does not work in some cases for Hana. This accomplishes the same thing with extra steps (:
+		return DSL.function("IFNULL", Boolean.class, field, inline(true));
+	}
 }

@@ -244,4 +244,8 @@ public interface SqlFunctionProvider {
 	}
 
 	Condition unconditionalJoinCondition();
+
+	default Field<Boolean> isNull(Field<?> field){
+		return field.isNull();
+	}
 }
