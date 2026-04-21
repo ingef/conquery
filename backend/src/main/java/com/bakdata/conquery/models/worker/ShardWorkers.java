@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.worker;
 
+import java.time.Clock;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,13 +47,15 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 	private final ThreadPoolDefinition queryThreadPoolDefinition;
 	private final InternalMapperFactory internalMapperFactory;
 	private final int secondaryIdSubPlanRetention;
+	private final Clock clock;
+
 	private final AtomicInteger nextWorker = new AtomicInteger(0);
 
 
 	public ShardWorkers(
 			ThreadPoolDefinition queryThreadPoolDefinition,
 			InternalMapperFactory internalMapperFactory,
-			int secondaryIdSubPlanRetention) {
+			int secondaryIdSubPlanRetention, Clock clock) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
 
 		// TODO This shouldn't be coupled to the query thread pool definition
@@ -60,6 +63,7 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 
 		this.internalMapperFactory = internalMapperFactory;
 		this.secondaryIdSubPlanRetention = secondaryIdSubPlanRetention;
+		this.clock = clock;
 
 		jobsThreadPool.prestartAllCoreThreads();
 	}
@@ -69,7 +73,7 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 							 this,
 							 queryThreadPoolDefinition,
 							 jobsThreadPool,
-							 failOnError,
+							 clock, failOnError,
 							 secondaryIdSubPlanRetention,
 							 internalMapperFactory.createWorkerPersistenceMapper(storage),
 							 loadStorage
@@ -106,7 +110,7 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 											this,
 											queryThreadPoolDefinition,
 											jobsThreadPool,
-											failOnError,
+											clock, failOnError,
 											secondaryIdSubPlanRetention,
 											persistenceMapper,
 											true

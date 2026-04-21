@@ -124,18 +124,12 @@ public class ConceptsProcessor {
 	 * The user will upload a file and expect only well-corresponding resolutions.
 	 */
 	public ResolvedFilterValues resolveFilterValues(FilterId filterId, List<String> searchTerms) {
-		SelectFilter<?> filter = (SelectFilter<?>) filterId.resolve();
-
-
+		final SelectFilter<?> filter = (SelectFilter<?>) filterId.resolve();
 		final Namespace namespace = namespaces.get(filter.getDataset());
 
-		SearchProcessor filterSearch = namespace.getFilterSearch();
+		final ExactFilterValueResult exactResult = namespace.getFilterSearch().findExact(filter, searchTerms);
 
-		final ExactFilterValueResult exactResult = filterSearch.findExact(filter, searchTerms);
-
-		final ConnectorId connectorId = filter.getConnector().getId();
-
-		return new ResolvedFilterValues(new ResolvedFilterResult(connectorId, filter.getId().toString(), exactResult.resolved), exactResult.unresolved);
+		return new ResolvedFilterValues(new ResolvedFilterResult(filterId.getConnector(), filter.getId().toString(), exactResult.resolved), exactResult.unresolved);
 	}
 
 	public AutoCompleteResult autocompleteTextFilter(

@@ -13,17 +13,17 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import joptsimple.internal.Strings;
 import lombok.ToString;
-import org.apache.logging.log4j.util.Strings;
 
 /**
  * Aggregator gathering all unique values in a column, into a Set.
  */
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
-public class AllValuesAggregator extends SingleColumnAggregator<List<String>> {
+public class AllValuesAggregator extends SingleColumnAggregator<List<Object>> {
 
 	private final Range.IntegerRange substring;
-	private final Set<String> entries = new HashSet<>();
+	private final Set<Object> entries = new HashSet<>();
 
 	public AllValuesAggregator(Column column, Range.IntegerRange substring) {
 		super(column);
@@ -43,16 +43,22 @@ public class AllValuesAggregator extends SingleColumnAggregator<List<String>> {
 
 		if (substring != null) {
 			String string = bucket.getString(event, getColumn());
-			entries.add(getSubstringFromRange(string, substring));
+			String extract = getSubstringFromRange(string, substring);
+
+			if (Strings.isNullOrEmpty(extract)) {
+				return;
+			}
+
+			entries.add(extract);
 			return;
 		}
 
-		entries.add((String) bucket.createScriptValue(event, getColumn()));
+		entries.add(bucket.createScriptValue(event, getColumn()));
 	}
 
 	@Override
-	public List<String> createAggregationResult() {
-		List<String> rendered = entries.stream().filter(Strings::isNotBlank).sorted().collect(Collectors.toList());
+	public List<Object> createAggregationResult() {
+		List<Object> rendered = entries.stream().sorted().collect(Collectors.toList());
 		return rendered.isEmpty() ? null : rendered;
 	}
 

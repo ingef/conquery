@@ -46,23 +46,24 @@
         "column": "table.column",
         "validityDates": {
           "name": "datum",
-          "column": "table.datum"
+          "startColumn": "table.start",
+          "endColumn": "table.end"
         }
       },
       "children": [
         {
           "name": "a",
           "condition": {
-            "type": "PREFIX_LIST",
-            "prefixes": "A"
+            "type": "EQUAL",
+            "values": "A"
           },
           "children": []
         },
         {
           "name": "b",
           "condition": {
-            "type": "PREFIX_LIST",
-            "prefixes": "B"
+            "type": "EQUAL",
+            "values": "B"
           },
           "children": []
         }
@@ -80,8 +81,12 @@
         },
         "columns": [
           {
-            "name": "datum",
-            "type": "DATE_RANGE"
+            "name": "start",
+            "type": "DATE"
+          },
+          {
+            "name": "end",
+            "type": "DATE"
           },
           {
             "name": "column",

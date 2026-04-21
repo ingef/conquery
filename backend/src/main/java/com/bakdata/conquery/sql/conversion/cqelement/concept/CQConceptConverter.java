@@ -123,7 +123,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	public static SqlIdColumns convertIds(CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
 
 		Table table = cqTable.getConnector().resolve().getResolvedTable();
-		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(table, conversionContext.getConfig());
+		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(table, conversionContext.getDefaultPrimaryColumn());
 
 		if (cqConcept.isExcludeFromSecondaryId()
 			|| conversionContext.getSecondaryIdDescription() == null
@@ -147,7 +147,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	}
 
 	private static Optional<ColumnDateRange> convertValidityDate(CQTable cqTable, String connectorLabel, ConversionContext context) {
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		ValidityDate validityDate = cqTable.findValidityDate();
 		ColumnDateRange sqlValidityDate;
 
@@ -227,7 +227,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		conditions.add(ConditionUtil.wrap(validityDate.isNotEmpty()));
 
 		if (context.getDateRestrictionRange() != null) {
-			SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+			SqlFunctionProvider functionProvider = context.getFunctionProvider();
 			ColumnDateRange dateRestriction = functionProvider.forCDateRange(context.getDateRestrictionRange()).as(SharedAliases.DATE_RESTRICTION.getAlias());
 			conditions.add(ConditionUtil.wrap(functionProvider.dateRestriction(dateRestriction, validityDate)));
 
@@ -292,7 +292,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		Optional<ColumnDateRange> tablesValidityDate = convertValidityDate(cqTable, connectorTables.getLabel(), conversionContext);
 
 		// convert filters
-		SqlFunctionProvider functionProvider = conversionContext.getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = conversionContext.getFunctionProvider();
 		List<SqlFilters> allSqlFiltersForTable = new ArrayList<>();
 		cqTable.getFilters().stream()
 			   .map(filterValue -> filterValue.convertToSqlFilter(ids, conversionContext, connectorTables))

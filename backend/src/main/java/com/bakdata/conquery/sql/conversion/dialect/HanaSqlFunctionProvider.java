@@ -109,7 +109,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public ColumnDateRange maxRange() {
-		throw new UnsupportedOperationException("Not implemented yet");
+		return ColumnDateRange.of(toDateField(MIN_DATE_VALUE).as("begin"), toDateField(MAX_DATE_VALUE).as("end"));
 	}
 
 	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
@@ -142,7 +142,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		// when aggregating date ranges, we want to treat the last day of the range as excluded,
 		// so when using the date value of the end column, we add +1 day as end of the date range
 		Field<Date> rangeEnd = DSL.coalesce(
-				addDays(DSL.field(DSL.name(tableName, endColumn.getName()), Date.class), DSL.val(1)),
+				addDays(DSL.field(DSL.name(tableName, endColumn.getName()), Date.class), DSL.inline(1)),
 				toDateField(MAX_DATE_VALUE)
 		);
 
@@ -161,7 +161,11 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public ColumnDateRange maxRangeIf(Condition condition) {
-		throw new UnsupportedOperationException("Not implemented yet");
+		return ColumnDateRange.of(
+				DSL.when(condition.isTrue(),
+						 maxRange()
+				)
+		);
 	}
 
 	@Override

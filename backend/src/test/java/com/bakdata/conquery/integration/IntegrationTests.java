@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -30,7 +29,7 @@ import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
@@ -118,7 +117,7 @@ public class IntegrationTests {
 	}
 
 	@SneakyThrows
-	public Stream<DynamicNode> sqlProgrammaticTests(DatabaseConfig databaseConfig, TestSqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
+	public Stream<DynamicNode> sqlProgrammaticTests(DatabaseConnectionConfig databaseConfig, SqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
 		this.config.setSqlConnectorConfig(sqlConfig);
 		return programmaticTests(testDataImporter, StandaloneSupport.Mode.SQL);
 	}
@@ -169,7 +168,7 @@ public class IntegrationTests {
 	}
 
 	@SneakyThrows
-	public List<DynamicNode> sqlQueryTests(DatabaseConfig databaseConfig, TestSqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
+	public List<DynamicNode> sqlQueryTests(DatabaseConnectionConfig databaseConfig, SqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
 		this.config.setSqlConnectorConfig(sqlConfig);
 		final String testRoot = Objects.requireNonNullElse(System.getenv(TestTags.SQL_BACKEND_TEST_DIRECTORY_ENVIRONMENT_VARIABLE), defaultTestRoot);
 		ResourceTree tree = scanForResources(testRoot, SQL_TEST_PATTERN);

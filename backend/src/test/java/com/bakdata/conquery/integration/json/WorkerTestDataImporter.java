@@ -5,12 +5,15 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.*;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 import java.util.List;
 
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.filter.FilterTest;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -81,5 +84,13 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		List<File> cqpps = generateCqpp(support, tables);
 		importCqppFiles(support, cqpps);
 	}
+
+	@Override
+	public void importDataset(Client client, UriBuilder adminUriBuilder, String name) {
+		Dataset dataset = new Dataset(name);
+		LoadingUtil.importDataset(client, adminUriBuilder, dataset);
+	}
+
+
 
 }

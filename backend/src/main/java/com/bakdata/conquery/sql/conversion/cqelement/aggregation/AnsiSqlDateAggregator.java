@@ -1,5 +1,9 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.inline;
+
+import java.sql.Date;
 import java.util.List;
 
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
@@ -8,10 +12,12 @@ import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPac
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
 import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
+import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import org.jooq.impl.DSL;
 
 public class AnsiSqlDateAggregator implements SqlDateAggregator {
 
@@ -64,6 +70,15 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 									  .build();
 
 		return this.intervalPacker.aggregateAsValidityDate(intervalPackingContext);
+	}
+
+	@Override
+	public ColumnDateRange getAggregatedValidityDate(DateAggregationDates dateAggregationDates, DateAggregationAction dateAggregationAction) {
+		//TODO what do i even do here?
+		return ColumnDateRange.of(
+				field(inline(null, Date.class)).as(DateAggregationCte.RANGE_START),
+				field(inline(null, Date.class)).as(DateAggregationCte.RANGE_END)
+		);
 	}
 
 	@Override

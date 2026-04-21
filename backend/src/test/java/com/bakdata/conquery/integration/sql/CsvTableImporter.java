@@ -1,5 +1,8 @@
 package com.bakdata.conquery.integration.sql;
 
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
+
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
@@ -16,18 +19,17 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
-import com.bakdata.conquery.integration.sql.dialect.TestSqlDialect;
+import com.bakdata.conquery.integration.sql.dialect.TestDialectBundle;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.CSVConfig;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
+import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.util.DateReader;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.parquet.Strings;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -46,12 +48,12 @@ public class CsvTableImporter {
 	private final DSLContext dslContext;
 	private final DateReader dateReader;
 	private final CsvParser csvReader;
-	private final TestSqlDialect testSqlDialect;
-	private final DatabaseConfig databaseConfig;
+	private final TestDialectBundle testSqlDialect;
+	private final DatabaseConnectionConfig databaseConfig;
 
-	public CsvTableImporter(DSLContext dslContext, TestSqlDialect testSqlDialect, DatabaseConfig databaseConfig, ConqueryConfig config) {
+	public CsvTableImporter(DSLContext dslContext, TestDialectBundle testSqlDialect, DatabaseConnectionConfig databaseConfig) {
 		this.dslContext = dslContext;
-		this.dateReader = config.getLocale().getDateReader();
+		this.dateReader = new LocaleConfig().getDateReader();
 		this.csvReader = new CSVConfig().withParseHeaders(true).createParser();
 		this.testSqlDialect = testSqlDialect;
 		this.databaseConfig = databaseConfig;
@@ -79,8 +81,8 @@ public class CsvTableImporter {
 								   .flatMap(table -> collectAllIds(table.getCsv(), table.getPrimaryColumn()).stream())
 								   .collect(Collectors.toSet());
 
-		Table<Record> table = DSL.table(DSL.name("entities"));
-		List<Field<?>> columns = List.of(DSL.field("pid", SQLDataType.VARCHAR(20)));
+		Table<Record> table = DSL.table(name("entities"));
+		List<Field<?>> columns = List.of(field(name("pid"), SQLDataType.VARCHAR(20)));
 
 
 		List<RowN> content = allIds.stream()
@@ -99,7 +101,7 @@ public class CsvTableImporter {
 	}
 
 	public void createTable(RequiredTable requiredTable) {
-		Table<Record> table = DSL.table(DSL.name(requiredTable.getName()));
+		Table<Record> table = DSL.table(name(requiredTable.getName()));
 		List<RequiredColumn> allRequiredColumns = getAllRequiredColumns(requiredTable);
 		List<Field<?>> columns = createFieldsForColumns(allRequiredColumns);
 
@@ -159,7 +161,7 @@ public class CsvTableImporter {
 			dataType = dataType.nullable(true);
 		}
 
-		return DSL.field(DSL.name(requiredColumn.getName()), dataType);
+		return DSL.field(name(requiredColumn.getName()), dataType);
 	}
 
 	/**
@@ -168,7 +170,7 @@ public class CsvTableImporter {
 	 */
 	public void importTableIntoDatabase(RequiredTable requiredTable) {
 
-		Table<Record> table = DSL.table(DSL.name(requiredTable.getName()));
+		Table<Record> table = DSL.table(name(requiredTable.getName()));
 		List<RequiredColumn> allRequiredColumns = getAllRequiredColumns(requiredTable);
 		List<Field<?>> columns = createFieldsForColumns(allRequiredColumns);
 		List<RowN> content = getTablesContentFromCSV(requiredTable.getCsv(), allRequiredColumns);

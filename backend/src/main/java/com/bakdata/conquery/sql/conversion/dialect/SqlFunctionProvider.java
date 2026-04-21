@@ -5,7 +5,6 @@ import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -19,10 +18,6 @@ import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
-import java.sql.Date;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -181,15 +176,17 @@ public interface SqlFunctionProvider {
 				DSL.orderBy(orderByFields)
 		);
 	}
+
 	ColumnDateRange maxRangeIf(Condition condition);
+
 	default Field<String> concat(List<Field<String>> fields) {
 		String concatenated =
 				fields.stream()
-									// if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
-									// thus concat an empty string
-									.map(field -> field)
-									.map(Field::toString)
-									.collect(Collectors.joining(SQL_UNIT_SEPARATOR));
+					  // if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
+					  // thus concat an empty string
+					  .map(field -> field)
+					  .map(Field::toString)
+					  .collect(Collectors.joining(SQL_UNIT_SEPARATOR));
 		return DSL.field(concatenated, String.class);
 	}
 
@@ -249,8 +246,7 @@ public interface SqlFunctionProvider {
 		);
 	}
 
-	default
-	Condition validityDateFilter(ValidityDate validityDate) {
+	default Condition validityDateFilter(ValidityDate validityDate) {
 
 		if (validityDate.isSingleColumnDaterange()) {
 			Column column = validityDate.getColumn().resolve();

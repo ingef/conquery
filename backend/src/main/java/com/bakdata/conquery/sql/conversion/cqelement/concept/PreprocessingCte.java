@@ -2,10 +2,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
@@ -78,7 +75,7 @@ class PreprocessingCte extends ConnectorCte {
 		List<Condition> idConditions = stratificationIds.join(rootTableIds);
 
 		// join full stratification with connector table on all ID's from prerequisite query
-		SqlFunctionProvider functionProvider = tableContext.getConversionContext().getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = tableContext.getConversionContext().getFunctionProvider();
 		Table<Record> connectorTable = DSL.table(DSL.name(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING)));
 		TableLike<Record> joinedTable = functionProvider.innerJoin(connectorTable, stratificationTable, idConditions);
 

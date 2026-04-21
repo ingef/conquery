@@ -3,11 +3,18 @@ package com.bakdata.conquery.integration.json;
 import java.util.Collection;
 import java.util.List;
 
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
+
+import com.bakdata.conquery.integration.common.LoadingUtil;
+import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.sql.CsvTableImporter;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import lombok.Data;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -32,5 +39,17 @@ public class SqlTestDataImporter extends WorkerTestDataImporter {
 		for (RequiredTable table : tables) {
 			csvTableImporter.importTableIntoDatabase(table);
 		}
+	}
+
+	@SneakyThrows
+	private static RequiredTable readRequiredTable(String fileResource) {
+		return RequiredTable.fromFile(fileResource);
+	}
+
+	@Override
+	public void importDataset(Client client, UriBuilder adminUriBuilder, String name) {
+		Dataset dataset = new Dataset(name);
+		dataset.setDataSource("test");
+		LoadingUtil.importDataset(client, adminUriBuilder, dataset);
 	}
 }

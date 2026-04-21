@@ -123,7 +123,7 @@ public class FormConversionHelper {
 
 		List<QueryStep> queriesToJoin = List.of(stratificationTable, convertedFeatures);
 		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.LEFT_JOIN, context);
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 
 		QueryStep finalStep = QueryStep.builder()
 									   .cteName(null)  // the final QueryStep won't be converted to a CTE

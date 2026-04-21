@@ -3,10 +3,18 @@ package com.bakdata.conquery.sql.conversion.model.select;
 import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.*;
 import static com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep.INTERVAL_COMPLETE;
 
+import java.math.BigDecimal;
+import java.sql.Date;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
@@ -14,7 +22,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.IntervalPackingSelectsCte;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
@@ -24,29 +32,11 @@ import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
-import java.math.BigDecimal;
-import java.sql.Date;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 public class DaterangeSelectUtil {
-
-	@FunctionalInterface
-	public interface AggregationFunction {
-		FieldWrapper<?> apply(ColumnDateRange daterange, String alias, SqlFunctionProvider functionProvider);
-	}
-
-	@FunctionalInterface
-	public interface FilterFunction {
-		WhereCondition apply(Field<?> aggregationField);
-	}
 
 	/**
 	 * Aggregates the daterange of a corresponding {@link DaterangeSelectOrFilter} and applies the respective converted aggregation via
@@ -58,7 +48,7 @@ public class DaterangeSelectUtil {
 			SelectContext<ConnectorSqlTables> context
 	) {
 		String alias = context.getNameGenerator().selectName(select);
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 
 		ColumnDateRange daterange = functionProvider.forArbitraryDateRange(select).as(alias);
 		List<SqlSelect> rootSelects = daterange.toFields().stream()
@@ -66,7 +56,7 @@ public class DaterangeSelectUtil {
 											   .collect(Collectors.toList());
 
 		SqlTables daterangeSelectTables = createTables(alias, context.getTables(), context);
-		QueryStep lastIntervalPackingStep = applyIntervalPacking(daterange, daterangeSelectTables, context.getIds(), context.getTables(), context.getSqlDialect());
+		QueryStep lastIntervalPackingStep = applyIntervalPacking(daterange, daterangeSelectTables, context.getIds(), context.getTables(), context.getDialectBundle());
 
 		ColumnDateRange qualified = daterange.qualify(daterangeSelectTables.getPredecessor(INTERVAL_PACKING_SELECTS));
 		FieldWrapper<?> aggregationField = aggregationFunction.apply(qualified, alias, functionProvider);
@@ -76,7 +66,7 @@ public class DaterangeSelectUtil {
 				qualified,
 				aggregationField,
 				daterangeSelectTables,
-				context.getSqlDialect()
+				context.getDialectBundle()
 		);
 
 		ConnectorSqlTables tables = context.getTables();
@@ -100,15 +90,15 @@ public class DaterangeSelectUtil {
 			FilterContext<?> context
 	) {
 		String alias = context.getNameGenerator().selectName((LabeledNamespaceIdentifiable<?>) filter);
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getDialectBundle().getFunctionProvider();
 
 		ColumnDateRange daterange = functionProvider.forArbitraryDateRange(filter).as(alias);
 		List<SqlSelect> rootSelects = daterange.toFields().stream()
-				.map(FieldWrapper::new)
-				.collect(Collectors.toList());
+											   .map(FieldWrapper::new)
+											   .collect(Collectors.toList());
 
 		SqlTables daterangeSelectTables = createTables(alias, context.getTables(), context);
-		QueryStep lastIntervalPackingStep = applyIntervalPacking(daterange, daterangeSelectTables, context.getIds(), context.getTables(), context.getSqlDialect());
+		QueryStep lastIntervalPackingStep = applyIntervalPacking(daterange, daterangeSelectTables, context.getIds(), context.getTables(), context.getDialectBundle());
 
 		ColumnDateRange qualified = daterange.qualify(daterangeSelectTables.getPredecessor(INTERVAL_PACKING_SELECTS));
 		FieldWrapper<?> aggregationField = aggregationFunction.apply(qualified, alias, functionProvider);
@@ -118,13 +108,13 @@ public class DaterangeSelectUtil {
 				qualified,
 				aggregationField,
 				daterangeSelectTables,
-				context.getSqlDialect()
+				context.getDialectBundle()
 		);
 
 		ConnectorSqlSelects sqlSelects = ConnectorSqlSelects.builder()
-				.preprocessingSelects(rootSelects)
-				.additionalPredecessor(Optional.of(intervalPackingSelectsStep))
-				.build();
+															.preprocessingSelects(rootSelects)
+															.additionalPredecessor(Optional.of(intervalPackingSelectsStep))
+															.build();
 
 		ConnectorSqlTables tables = context.getTables();
 		Field<?> qualifiedAggregationField = aggregationField.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER)).select();
@@ -152,8 +142,8 @@ public class DaterangeSelectUtil {
 	private static SqlTables createTables(String alias, ConnectorSqlTables connectorTables, Context context) {
 		Map<CteStep, CteStep> predecessorMapping = new HashMap<>();
 		String eventFilterCteName = connectorTables.cteName(EVENT_FILTER);
-		predecessorMapping.putAll(IntervalPackingCteStep.getMappings(context.getSqlDialect()));
-		if (context.getSqlDialect().supportsSingleColumnRanges()) {
+		predecessorMapping.putAll(IntervalPackingCteStep.getMappings(context.getDialectBundle()));
+		if (context.getDialectBundle().supportsSingleColumnRanges()) {
 			predecessorMapping.put(UNNEST_DATE, INTERVAL_COMPLETE);
 			predecessorMapping.put(INTERVAL_PACKING_SELECTS, UNNEST_DATE);
 		}
@@ -169,7 +159,7 @@ public class DaterangeSelectUtil {
 			SqlTables dateUnionTables,
 			SqlIdColumns idColumns,
 			ConnectorSqlTables connectorSqlTables,
-			SqlDialect sqlDialect
+			DialectBundle sqlDialect
 	) {
 		String eventFilterCteName = connectorSqlTables.cteName(EVENT_FILTER);
 		IntervalPackingContext intervalPackingContext = IntervalPackingContext.builder()
@@ -178,7 +168,19 @@ public class DaterangeSelectUtil {
 																			  .tables(dateUnionTables)
 																			  .build();
 
-		return sqlDialect.getIntervalPacker().aggregateAsArbitrarySelect(intervalPackingContext);
+		return sqlDialect
+				.getIntervalPacker()
+				.aggregateAsArbitrarySelect(intervalPackingContext);
+	}
+
+	@FunctionalInterface
+	public interface AggregationFunction {
+		FieldWrapper<?> apply(ColumnDateRange daterange, String alias, SqlFunctionProvider functionProvider);
+	}
+
+	@FunctionalInterface
+	public interface FilterFunction {
+		WhereCondition apply(Field<?> aggregationField);
 	}
 
 }

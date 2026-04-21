@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,7 +8,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -54,7 +52,7 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 
 	@Override
 	public ResultSetProcessor.Reader<?> createResultSetReader(ResultSetProcessor processor) {
-		if (getMapping() != null){
+		if (getMapping() != null) {
 			return processor::getStringList;
 		}
 
@@ -63,13 +61,9 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 
 	@Override
 	public ResultType getResultType() {
-		return new ResultType.ListT<>(ResultType.Primitive.STRING);
+		return new ResultType.ListT<>(ResultType.resolveResultType(getColumn().resolve().getType()));
 	}
 
-	@Override
-	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
-		return EnumSet.of(MajorTypeId.STRING);
-	}
 
 	/**
 	 * Ensures that mapped values are still distinct.
