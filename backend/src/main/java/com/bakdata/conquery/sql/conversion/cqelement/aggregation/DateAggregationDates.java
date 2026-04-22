@@ -27,15 +27,15 @@ public class DateAggregationDates {
 	private static final String RANGE_END = "RANGE_END";
 	private final List<ColumnDateRange> validityDates;
 
-    public static DateAggregationDates forValidityDates(final List<Optional<ColumnDateRange>> validityDates) {
-        final AtomicInteger validityDateCounter = new AtomicInteger(0);
-        final List<ColumnDateRange> filtered = validityDates.stream()
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(dateRange -> numerateValidityDate(dateRange, validityDateCounter))
-                .toList();
-        return new DateAggregationDates(filtered);
-    }
+	public static DateAggregationDates forValidityDates(final List<Optional<ColumnDateRange>> validityDates) {
+		final AtomicInteger validityDateCounter = new AtomicInteger(0);
+		final List<ColumnDateRange> filtered = validityDates.stream()
+															.filter(Optional::isPresent)
+															.map(Optional::get)
+															.map(dateRange -> numerateValidityDate(dateRange, validityDateCounter))
+															.toList();
+		return new DateAggregationDates(filtered);
+	}
 
 	public static DateAggregationDates forSingleStep(QueryStep queryStep) {
 		List<ColumnDateRange> validityDates = queryStep.getSelects()
@@ -47,12 +47,23 @@ public class DateAggregationDates {
 
 	public static DateAggregationDates forSteps(List<QueryStep> querySteps) {
 		AtomicInteger validityDateCounter = new AtomicInteger(0);
-        final List<ColumnDateRange> validityDates = querySteps.stream()
-                .filter(queryStep -> queryStep.getSelects().getValidityDate().isPresent())
-                .map(queryStep -> queryStep.getQualifiedSelects().getValidityDate().get())
-                .map(dateRange -> numerateValidityDate(dateRange, validityDateCounter))
-                .toList();
-        return new DateAggregationDates(validityDates);
+		final List<ColumnDateRange> validityDates = querySteps.stream()
+															  .filter(queryStep -> queryStep.getSelects().getValidityDate().isPresent())
+															  .map(queryStep -> queryStep.getQualifiedSelects().getValidityDate().get())
+															  .map(dateRange -> numerateValidityDate(dateRange, validityDateCounter))
+															  .toList();
+		return new DateAggregationDates(validityDates);
+	}
+
+	private static ColumnDateRange numerateValidityDate(ColumnDateRange validityDate, AtomicInteger validityDateCounter) {
+		if (validityDate.isSingleColumnRange()) {
+			return validityDate;
+		}
+
+		Field<Date> rangeStart = validityDate.getStart().as("%s_%s".formatted(RANGE_START, validityDateCounter.get()));
+		Field<Date> rangeEnd = validityDate.getEnd().as("%s_%s".formatted(RANGE_END, validityDateCounter.getAndIncrement()));
+
+		return ColumnDateRange.of(rangeStart, rangeEnd);
 	}
 
 	public boolean dateAggregationImpossible() {
@@ -80,17 +91,6 @@ public class DateAggregationDates {
 															.toList();
 		// validity dates will already be numerated, no we don't need no apply a counter again
 		return new DateAggregationDates(qualified);
-	}
-
-	private static ColumnDateRange numerateValidityDate(ColumnDateRange validityDate, AtomicInteger validityDateCounter) {
-		if (validityDate.isSingleColumnRange()) {
-			return validityDate;
-		}
-
-		Field<Date> rangeStart = validityDate.getStart().as("%s_%s".formatted(RANGE_START, validityDateCounter.get()));
-		Field<Date> rangeEnd = validityDate.getEnd().as("%s_%s".formatted(RANGE_END, validityDateCounter.getAndIncrement()));
-
-		return ColumnDateRange.of(rangeStart, rangeEnd);
 	}
 
 }
