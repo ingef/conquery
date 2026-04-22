@@ -14,11 +14,12 @@ import java.lang.annotation.Target;
  * Validate Shiro permissions
  */
 @NotBlank
-@Pattern(regexp="^[\\w,*]+(?::[\\w,*@]+){0,2}$", message="Provide a valid shiro permission string with 3 parts at most.")
+@Pattern(regexp=ValidConqueryPermission.PERMISSION_PATTERN, message="Provide a valid shiro permission string with 3 parts at most, following this pattern: " + ValidConqueryPermission.PERMISSION_PATTERN)
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {}) // No custom validator needed if only using built-ins
 public @interface ValidConqueryPermission {
+	String PERMISSION_PATTERN = "^[\\w,*-]+(?::[\\w,*@-]+){0,2}$";
 	String message() default "Invalid permission";
 	Class<?>[] groups() default {};
 	Class<? extends Payload>[] payload() default {};
