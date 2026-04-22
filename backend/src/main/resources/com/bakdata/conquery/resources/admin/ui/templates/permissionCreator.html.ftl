@@ -1,7 +1,7 @@
 <#macro permissionCreator ownerId permissionTemplateMap>
     <#local INSTANCES = "instances_">
 	<#local ABILITIES = "abilities_">
-	<div class"table-responsive">
+	<div>
     <table class="table table-sm table-striped">
         <thead>
             <tr>
@@ -68,36 +68,38 @@
 
 
 		let abilitySelector = document.getElementById("${ABILITIES}"+domain);
-		abilityJoin = null;
+		let abilityJoin = null;
+		let abilities = [];
 		if (abilitySelector != null) {
-			let abilities = [];
 			let abilityCheckboxes =abilitySelector.getElementsByTagName('input');
 			for(let cb of abilityCheckboxes ) {
 				if(cb.checked){
 					abilities.push(cb.value.trim())
 				}
 			}
-			if(abilityCheckboxes.length > 0 && abilities.length == 0 ) {
+			if(abilityCheckboxes.length > 0 && abilities.length === 0 ) {
 				alert("No abilities for permission specified");
 				return;
 			}
 			abilityJoin = abilities.join(",");
 		}
 
-        // Collection only only as a member if a permission supports abilities and thus targets
+        // Collection only as a member if a permission supports abilities and thus targets
 		let instanceInput = document.getElementById("${INSTANCES}"+domain).getElementsByTagName("ul");
 
 
-		if(instanceInput.length != 0) {
+		let instances = null;
+		if(instanceInput.length !== 0) {
+			if (abilities.length === 0) {
+				alert("Abilities are required if instances are set");
+				return;
+			}
 		    // Permission can have targets
 		    instances = Array.from(instanceInput[0].children,c => c.innerHTML).join(",");
 		}
-		else {
-		    // Permission does not support abilities and targets (e.g. super permission)
-		    instances = null;
-		}
-		
-		permission = [domain, abilityJoin, instances].join(":")
+
+
+		let permission = [domain, abilityJoin, instances].filter(x => !!x).join(":");
 		console.log("Sending Permission: " + permission);
 		await rest('/admin/permissions/${ownerId}',
 			{
