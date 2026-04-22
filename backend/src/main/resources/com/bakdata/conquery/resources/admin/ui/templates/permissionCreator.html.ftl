@@ -101,12 +101,31 @@
 
 		let permission = [domain, abilityJoin, instances].filter(x => !!x).join(":");
 		console.log("Sending Permission: " + permission);
-		await rest('/admin/permissions/${ownerId}',
+		let response = await rest('/admin/permissions/${ownerId}',
 			{
 				method: 'post',
 				body: permission
-			});
-		location.reload();
+			}
+		);
+		if (!response.ok) {
+			showToastMessage(
+					ToastTypes.ERROR,
+					"Error",
+					"The send request came back with the following error: " + (await response.json()).message,
+					"Status " + response.status,
+			);
+		} else {
+			showToastMessage(
+					ToastTypes.SUCCESS,
+					"Permission Created",
+					`Permission was created`,
+					"Status " + response.status,
+			);
+			setTimeout(function(){
+				location.reload();
+			}, 500);
+
+		}
 	}
 	</script>
 </#macro>
