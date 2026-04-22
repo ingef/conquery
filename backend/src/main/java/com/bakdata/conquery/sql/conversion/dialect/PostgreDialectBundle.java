@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.dialect;
 
 import java.util.List;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.Visitable;
@@ -10,9 +11,10 @@ import com.bakdata.conquery.sql.conversion.cqelement.aggregation.PostgreSqlDateA
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.PostgreSqlIntervalPacker;
 import com.bakdata.conquery.sql.conversion.forms.PostgresStratificationFunctions;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
+import com.bakdata.conquery.sql.execution.DefaultResultSetProcessor;
 import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
-import lombok.Getter;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
@@ -23,6 +25,11 @@ public class PostgreDialectBundle implements DialectBundle {
 	private final IntervalPacker postgresqlIntervalPacker;
 	private final SqlDateAggregator postgresqlDateAggregator;
 	private final DefaultSqlCDateSetParser defaultNotationParser;
+
+	@Override
+	public ResultSetProcessor getResultSetProcessor(ConqueryConfig config) {
+		return new DefaultResultSetProcessor(config, getCDateSetParser());
+	}
 
 	@Override
 	public Dialect getDialect() {

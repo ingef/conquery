@@ -14,10 +14,10 @@ import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 
 @RequiredArgsConstructor
-class DefaultResultSetProcessor implements ResultSetProcessor {
+public class DefaultResultSetProcessor implements ResultSetProcessor {
 
-	private final ConqueryConfig config;
-	private final SqlCDateSetParser sqlCDateSetParser;
+	protected final ConqueryConfig config;
+	protected final SqlCDateSetParser dateSetParser;
 
 	/**
 	 * Use to keep null values for primitive data types.
@@ -73,12 +73,12 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	@Override
 	public List<Integer> getDateRange(ResultSet resultSet, int columnIndex) throws SQLException {
-		return this.sqlCDateSetParser.toEpochDayRange(resultSet.getString(columnIndex));
+		return this.dateSetParser.toEpochDayRange(resultSet.getString(columnIndex));
 	}
 
 	@Override
 	public List<List<Integer>> getDateRangeList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return this.sqlCDateSetParser.toEpochDayRangeList(resultSet.getString(columnIndex));
+		return this.dateSetParser.toEpochDayRangeList(resultSet.getString(columnIndex));
 	}
 
 	@Override
