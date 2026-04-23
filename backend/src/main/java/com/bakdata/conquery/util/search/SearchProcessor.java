@@ -78,7 +78,8 @@ public interface SearchProcessor {
 
 
 	/**
-	 * Query for an exact matching {@link FrontendValue}.
+	 * Query for an exact matching {@link FrontendValue}, per search term return only the first match by priority of search sources.
+	 *
 	 * Matches {@link FrontendValue#getValue()} or {@link FrontendValue#getLabel()} but case-insensitive.
 	 * @param filter The filter to the resulting value must correspond to (domain of the {@link FrontendValue})
 	 * @param searchTerms The exact terms to match

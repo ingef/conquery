@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.query;
 
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.temporal.TemporalField;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -36,8 +38,12 @@ public class QueryExecutionContext {
 	private final QueryExecutor executor;
 	private final ModificationShieldedWorkerStorage storage;
 	private final BucketManager bucketManager;
+	private final Clock clock;
 
-	private int today = CDate.ofLocalDate(LocalDate.now());
+
+	public int getToday() {
+		return CDate.ofLocalDate(LocalDate.now(clock));
+	}
 
 	private ValidityDate validityDateColumn;
 

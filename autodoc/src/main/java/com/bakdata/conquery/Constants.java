@@ -38,7 +38,7 @@ import com.bakdata.conquery.models.config.APIConfig;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ClusterConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.config.LocaleConfig;
@@ -129,7 +129,7 @@ public class Constants {
 				 .otherClass(MinaConfig.class)
 				 .otherClass(FrontendConfig.CurrencyConfig.class)
 				 .otherClass(XodusConfig.class)
-				 .otherClasses(List.of(SqlConnectorConfig.class, DatabaseConfig.class, Dialect.class))
+				 .otherClasses(List.of(SqlConnectorConfig.class, DatabaseConnectionConfig.class, Dialect.class))
 				 .hide(Charset.class)
 				 .hide(Currency.class)
 				 .hide(InetAddress.class)

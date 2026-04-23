@@ -24,7 +24,7 @@ import org.jooq.impl.SQLDataType;
 
 @Getter
 @RequiredArgsConstructor
-class PostgresStratificationFunctions extends StratificationFunctions {
+public class PostgresStratificationFunctions extends StratificationFunctions {
 
 	private static final Map<Interval, Field<String>> INTERVAL_MAP = Map.of(
 			Interval.ONE_YEAR_INTERVAL, DSL.val("1 year"),
@@ -37,6 +37,8 @@ class PostgresStratificationFunctions extends StratificationFunctions {
 	private static final Keyword INTERVAL_KEYWORD = DSL.keyword("interval");
 
 	private final PostgreSqlFunctionProvider functionProvider;
+
+
 
 	@Override
 	public ColumnDateRange ofStartAndEnd(Field<Date> start, Field<Date> end) {

@@ -90,14 +90,14 @@ class TablePath {
 
 		// interval packing required
 		tableInfo.setContainsIntervalPacking(true);
-		tableInfo.addMappings(IntervalPackingCteStep.getMappings(EVENT_FILTER, context.getSqlDialect()));
+		tableInfo.addMappings(IntervalPackingCteStep.getMappings(EVENT_FILTER, context.getDialectBundle()));
 
 		if (!eventDateSelectsPresent) {
 			return tableInfo;
 		}
 
 		// interval packing selects required with optional unnest step
-		if (context.getSqlDialect().supportsSingleColumnRanges()) {
+		if (context.getDialectBundle().supportsSingleColumnRanges()) {
 			tableInfo.addMappings(Map.of(
 					UNNEST_DATE, INTERVAL_COMPLETE,
 					INTERVAL_PACKING_SELECTS, UNNEST_DATE
@@ -129,7 +129,7 @@ class TablePath {
 		);
 
 		// universal event date selects required with optional additional unnest step
-		if (context.getSqlDialect().supportsSingleColumnRanges()) {
+		if (context.getDialectBundle().supportsSingleColumnRanges()) {
 			tableInfo.addRootTableMapping(UNNEST_DATE);
 			tableInfo.addMappings(Map.of(INTERVAL_PACKING_SELECTS, UNNEST_DATE));
 		}
