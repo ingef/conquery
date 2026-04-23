@@ -6,9 +6,11 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.bakdata.conquery.quarkus.storage.model.StoredQuery;
+import io.quarkus.arc.properties.IfBuildProperty;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
+@IfBuildProperty(name = "conquery.storage.backend", stringValue = "IN_MEMORY", enableIfMissing = true)
 public class InMemoryQueryRepository implements QueryRepository {
 
 	private final Map<String, StoredQuery> queriesById = new ConcurrentHashMap<>();

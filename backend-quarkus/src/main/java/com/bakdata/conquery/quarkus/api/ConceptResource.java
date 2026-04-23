@@ -2,7 +2,10 @@ package com.bakdata.conquery.quarkus.api;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
+import com.bakdata.conquery.quarkus.util.ScopedId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.inject.Inject;
@@ -33,6 +36,7 @@ public class ConceptResource {
 	)
 	public Map<String, ConceptNodeResponse> getConcept(@PathParam("conceptId") @NotBlank String conceptId) {
 		var concept = datasetService.requireConcept(conceptId);
+		List<TableResponse> tables = datasetService.listTablesForDataset(datasetId(concept.id())).stream().map(this::toTableResponse).toList();
 
 		ConceptNodeResponse node = new ConceptNodeResponse(
 				concept.label(),
@@ -43,11 +47,51 @@ public class ConceptResource {
 				0L,
 				true,
 				false,
-				List.of(),
+				tables,
 				List.of()
 		);
 
 		return Map.of(conceptId, node);
+	}
+
+	private TableResponse toTableResponse(DatasetCatalogRepository.TableRecord table) {
+		List<ColumnResponse> columns = table.columns().stream().map(this::toColumnResponse).toList();
+		List<FilterResponse> filters = columns.stream()
+											  .map(column -> new FilterResponse(column.id(), column.label(), null, null, column.type().name()))
+											  .toList();
+		List<String> supportedSecondaryIds = table.columns().stream()
+												   .map(DatasetCatalogRepository.ColumnRecord::secondaryId)
+												   .filter(Objects::nonNull)
+												   .distinct()
+												   .toList();
+
+		return new TableResponse(
+				table.id(),
+				datasetId(table.id()),
+				table.label(),
+				false,
+				true,
+				filters,
+				List.of(),
+				columns,
+				table.primaryColumn(),
+				supportedSecondaryIds,
+				null
+		);
+	}
+
+	private String datasetId(String scopedId) {
+		return ScopedId.extractDatasetId(scopedId)
+					   .orElseThrow(() -> new IllegalStateException("Expected dataset-scoped id but got: " + scopedId));
+	}
+
+	private ColumnResponse toColumnResponse(DatasetCatalogRepository.ColumnRecord column) {
+		return new ColumnResponse(
+				column.id(),
+				column.label(),
+				column.type(),
+				column.secondaryId()
+		);
 	}
 
 	@POST
@@ -87,8 +131,18 @@ public class ConceptResource {
 			Boolean defaultSelected,
 			List<FilterResponse> filters,
 			List<SelectResponse> selects,
+			List<ColumnResponse> columns,
+			String primaryColumn,
 			List<String> supportedSecondaryIds,
 			DateColumnResponse dateColumn
+	) {
+	}
+
+	public record ColumnResponse(
+			String id,
+			String label,
+			DatasetCatalogRepository.ColumnType type,
+			String secondaryId
 	) {
 	}
 
