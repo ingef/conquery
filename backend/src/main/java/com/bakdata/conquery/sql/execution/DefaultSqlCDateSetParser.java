@@ -83,6 +83,8 @@ public class DefaultSqlCDateSetParser implements SqlCDateSetParser {
 	 */
 	private List<String> parse(String multiDateRange) {
 
+		//TODO reimplement with scanner?
+		//TODO this is now the same again as PgResultSetParser
 		List<String> dateranges = new ArrayList<>();
 
 		// strip of curly braces

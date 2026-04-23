@@ -44,6 +44,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	private static final String INFINITY_DATE_VALUE = "infinity";
 	private static final String MINUS_INFINITY_DATE_VALUE = "-infinity";
 	private static final String ANY_CHAR_REGEX = "%";
+	public static final Field<Object> EMPTY_RANGE = field("{0}::daterange", inline("empty"), Object.class);
 
 	private static Field<?> unnest(Field<?> multirange) {
 		return function("unnest", Object.class, multirange);
@@ -78,7 +79,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	public Field<Object> emptyDateRange() {
-		return field("{0}::daterange", val("empty"));
+		return field("{0}::daterange", inline("empty"));
 	}
 
 	@Override
@@ -290,18 +291,16 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<String> daterangeStringAggregation(ColumnDateRange columnDateRange) {
-		Field<Object> asMultirange = rangeAgg(columnDateRange);
-		return daterangeStringExpression(ColumnDateRange.of(asMultirange));
+	public Field<Object> daterangeStringAggregation(ColumnDateRange columnDateRange) {
+		return field("{0}", rangeAgg(columnDateRange));
 	}
 
 	@Override
-	public Field<String> daterangeStringExpression(ColumnDateRange columnDateRange) {
+	public Field<Object> daterangeStringExpression(ColumnDateRange columnDateRange) {
 		if (!columnDateRange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("All column date ranges should have been converted to single column ranges.");
 		}
-		Field<String> aggregatedValidityDate = field("({0})::{1}", String.class, columnDateRange.getRange(), keyword("varchar"));
-		return replace(aggregatedValidityDate, INFINITY_DATE_VALUE, INFINITY_SIGN);
+		return columnDateRange.getRange();
 	}
 
 	@Override
@@ -371,6 +370,11 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Field<Date> toDateField(String dateValue) {
 		return field("{0}::{1}", Date.class, val(dateValue), keyword("date"));
+	}
+
+	@Override
+	public ColumnDateRange emptyColumnDateRange() {
+		return ColumnDateRange.of(EMPTY_RANGE);
 	}
 
 	@Override

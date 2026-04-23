@@ -101,7 +101,7 @@ public class ConversionContext implements Context {
 	 * Get the last query {@link QueryStep} that has been added to this context query steps.
 	 */
 	public QueryStep getLastConvertedStep() {
-		return this.querySteps.get(this.querySteps.size() - 1);
+		return this.querySteps.getLast();
 	}
 
 }

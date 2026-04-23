@@ -143,13 +143,11 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 
 	private static Optional<ColumnDateRange> convertTablesValidityDate(CQTable table, String alias, ConversionContext context) {
 		if (table.findValidityDate() == null) {
-			return Optional.of(ColumnDateRange.empty());
+			return Optional.of(context.getFunctionProvider().emptyColumnDateRange());
 		}
 		final SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		final ColumnDateRange validityDate = functionProvider.forValidityDate(table.findValidityDate());
-		// when exporting tables, we want the validity date as a single-column daterange string expression straightaway
-		final Field<String> asStringExpression = functionProvider.encloseInCurlyBraces(functionProvider.daterangeStringExpression(validityDate));
-		return Optional.of(ColumnDateRange.of(asStringExpression).asValidityDateRange(alias));
+		return Optional.of(validityDate.asValidityDateRange(alias));
 	}
 
 	private static List<FieldWrapper<?>> initializeFields(CQTable cqTable, Map<ColumnId, Integer> positions) {

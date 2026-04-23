@@ -18,7 +18,6 @@
       "tables": [
         {
           "id": "test_tree.test_column",
-          "filters": [],
           "selects": [
             "test_tree.test_column.test_select"
           ]

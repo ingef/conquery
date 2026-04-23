@@ -32,7 +32,7 @@ public class QueryStepJoiner {
 
 	private static final String NEGATED_CTE_SUFFIX = "_negated";
 
-	public static QueryStep antiJoinWithAllIdsTable(QueryStep queryStep, ConversionContext context) {
+	public static QueryStep antiJoinWithAllIdsTable(QueryStep queryStep, ConversionContext context, DateAggregationAction dateAggregationAction) {
 
 		SqlFunctionProvider functionProvider = context.getConversionContext().getDialectBundle().getFunctionProvider();
 
@@ -47,15 +47,20 @@ public class QueryStepJoiner {
 				.leftOuterJoin(table(name(queryStep.getCteName())))
 				.on(allIdsPrimaryColumn.eq(queryStepPrimaryColumn));
 
-		// TODO
+		String cteName = queryStep.getCteName() + NEGATED_CTE_SUFFIX;
+
+		Optional<ColumnDateRange> validityDate = switch (dateAggregationAction) {
+			case BLOCK, MERGE, INTERSECT -> Optional.of(functionProvider.emptyColumnDateRange());
+			case NEGATE -> Optional.of(functionProvider.maxRange());
+		};
+
 		Selects selects = Selects.builder()
 								 .ids(new SqlIdColumns(allIdsPrimaryColumn))
-								 // negation results in +/-inf date for all entries that match the anti-join condition
-								 .validityDate(Optional.of(functionProvider.maxRange()))
+								 .validityDate(validityDate.map(cdr -> cdr.asValidityDateRange(cteName)))
 								 .build();
 
 		return QueryStep.builder()
-						.cteName(queryStep.getCteName() + NEGATED_CTE_SUFFIX)
+						.cteName(cteName)
 						.selects(selects)
 						.fromTable(table)
 						.conditions(List.of(queryStepPrimaryColumn.isNull()))
@@ -116,6 +121,7 @@ public class QueryStepJoiner {
 																.predecessors(queriesToJoin);
 
 		DateAggregationDates dateAggregationDates = DateAggregationDates.forSteps(queriesToJoin);
+
 		if (dateAggregationAction == DateAggregationAction.BLOCK || dateAggregationDates.dateAggregationImpossible()) {
 			// for forms, date aggregation is allways blocked, but dates need to be coalesced in case we do a fulll outer join
 			Optional<ColumnDateRange> stratificationDate = coalesceStratificationDates(queriesToJoin);
@@ -145,7 +151,7 @@ public class QueryStepJoiner {
 
 		if (withoutNegation == null) {
 			QueryStep negateJoined = doJoin(withNegation, logicalOperation, dateAggregationAction, context);
-			return antiJoinWithAllIdsTable(negateJoined, context);
+			return antiJoinWithAllIdsTable(negateJoined, context, dateAggregationAction);
 		}
 
 		String cteName = context.getNameGenerator().joinedNodeName(logicalOperation) + NEGATED_CTE_SUFFIX;

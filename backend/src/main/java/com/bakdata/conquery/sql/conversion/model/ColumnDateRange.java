@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Getter;
 import org.jooq.Condition;
@@ -20,7 +21,6 @@ public class ColumnDateRange implements SqlSelect {
 	private static final String VALIDITY_DATE_COLUMN_NAME_SUFFIX = "_validity_date";
 	private static final String START_SUFFIX = "_start";
 	private static final String END_SUFFIX = "_end";
-	private static final Field<Object> EMPTY_RANGE = field("{0}::daterange",  DSL.val("empty"), Object.class);
 
 	private final Field<Object> range;
 	private final Field<Date> start;
@@ -55,10 +55,6 @@ public class ColumnDateRange implements SqlSelect {
 
 	public static ColumnDateRange of(Field<Date> startColumn, Field<Date> endColumn, String alias) {
 		return new ColumnDateRange(startColumn, endColumn, alias);
-	}
-
-	public static ColumnDateRange empty() {
-		return ColumnDateRange.of(EMPTY_RANGE);
 	}
 
 	public ColumnDateRange asValidityDateRange(String alias) {
@@ -135,7 +131,7 @@ public class ColumnDateRange implements SqlSelect {
 
 	public Condition isNotEmpty() {
 		if (this.isSingleColumnRange()) {
-			return this.range.notEqual(EMPTY_RANGE);
+			return this.range.notEqual(PostgreSqlFunctionProvider.EMPTY_RANGE);
 		}
 
 		//this is weird

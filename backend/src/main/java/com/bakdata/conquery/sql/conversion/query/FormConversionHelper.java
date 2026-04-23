@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import static org.jooq.impl.DSL.*;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -70,7 +72,7 @@ public class FormConversionHelper {
 			dateNotNullCondition = columnDateRange.get().isNotNull();
 		}
 		else {
-			dateNotNullCondition = DSL.falseCondition();
+			dateNotNullCondition = falseCondition();
 		}
 
 		return QueryStep.builder()
@@ -150,7 +152,7 @@ public class FormConversionHelper {
 
 		Selects stratificationSelects = stratificationTable.getQualifiedSelects();
 		SqlIdColumns ids = stratificationSelects.getIds().forFinalSelect();
-		Field<String> daterangeConcatenated = functionProvider.daterangeStringExpression(stratificationSelects.getStratificationDate().get())
+		Field<?> daterangeConcatenated = functionProvider.daterangeStringExpression(stratificationSelects.getStratificationDate().get())
 															  .as(SharedAliases.STRATIFICATION_BOUNDS.getAlias());
 
 		Selects.SelectsBuilder selects = Selects.builder()
@@ -163,9 +165,9 @@ public class FormConversionHelper {
 		}
 
 		// relative forms have FeatureGroup information after the stratification date and before all other selects
-		Field<Integer> indexField = DSL.field(DSL.name(stratificationTable.getCteName(), SharedAliases.INDEX.getAlias()), Integer.class);
-		Field<String> scope = DSL.when(indexField.isNull().or(indexField.lessThan(0)), DSL.val(FeatureGroup.FEATURE.toString()))
-								 .otherwise(DSL.val(FeatureGroup.OUTCOME.toString()))
+		Field<Integer> indexField = field(name(stratificationTable.getCteName(), SharedAliases.INDEX.getAlias()), Integer.class);
+		Field<String> scope = when(indexField.isNull().or(indexField.lessThan(0)), val(FeatureGroup.FEATURE.toString()))
+								 .otherwise(val(FeatureGroup.OUTCOME.toString()))
 								 .as(SharedAliases.OBSERVATION_SCOPE.getAlias());
 
 		return selects.sqlSelect(new FieldWrapper<>(scope))

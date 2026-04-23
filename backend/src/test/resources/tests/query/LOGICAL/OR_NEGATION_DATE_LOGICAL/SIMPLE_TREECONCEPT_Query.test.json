@@ -2,9 +2,15 @@
   "type": "QUERY_TEST",
   "label": "OR NEGATION DATE LOGIC Test",
   "expectedCsv": "tests/query/LOGICAL/OR_NEGATION_DATE_LOGICAL/expected.csv",
+  "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "query": {
     "type": "CONCEPT_QUERY",
-    "dateAggregationMode" : "LOGICAL",
+    "dateAggregationMode": "LOGICAL",
     "root": {
       "type": "OR",
       "createExists": true,

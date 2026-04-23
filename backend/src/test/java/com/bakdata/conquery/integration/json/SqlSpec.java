@@ -11,9 +11,12 @@ public class SqlSpec {
 
 	boolean isEnabled;
 
-
 	@Nullable
 	List<Dialect> supportedDialects;
+
+	// This does nothing, it's just a convenience field for describing why tests are disabled in certain dialects or cases
+	@Nullable
+	String comment;
 
 	/**
 	 * @return True if a test spec is allowed for a specific dialect.

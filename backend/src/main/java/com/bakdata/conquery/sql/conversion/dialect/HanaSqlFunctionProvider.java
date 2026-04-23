@@ -104,6 +104,11 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		);
 	}
 
+	@Override
+	public ColumnDateRange emptyColumnDateRange() {
+		return ColumnDateRange.of(field(inline(null, Date.class)), field(inline(null, Date.class)));
+	}
+
 
 	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate) {

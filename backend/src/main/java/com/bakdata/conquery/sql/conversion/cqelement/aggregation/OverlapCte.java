@@ -22,7 +22,7 @@ class OverlapCte extends DateAggregationCte {
 	}
 
 	@Override
-	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context) {
+	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor) {
 
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 
@@ -33,7 +33,7 @@ class OverlapCte extends DateAggregationCte {
 		ColumnDateRange overlapValidityDate = context.getSqlAggregationAction().getOverlapValidityDate(context.getDateAggregationDates(), functionProvider);
 		Selects overlapSelects = Selects.builder()
 										.ids(context.getIds())
-										.validityDate(Optional.of(overlapValidityDate))
+										.validityDate(Optional.of(overlapValidityDate.asValidityDateRange(predecessor)))
 										.sqlSelects(context.getCarryThroughSelects())
 										.build();
 
