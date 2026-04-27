@@ -35,12 +35,20 @@ public class PermissionResourceTest {
 	static Stream<Arguments> testParams() {
 		return Stream.of(
 				Arguments.of("domain", 204),
+				Arguments.of("domain:", 422),
 				Arguments.of("domain:operation", 204),
+				Arguments.of("domain:operation:", 422),
 				Arguments.of("domain:operation:instance", 204),
 				Arguments.of("domain:operation1,:instance", 204),
+				Arguments.of("domain-hyphen:operation,:instance@at", 204),
+				Arguments.of("domain-hyphen:operation,:instance_underscore", 204),
 				Arguments.of("domain:operation1,operation2:instance", 204),
+				Arguments.of("*", 204),
+				Arguments.of("*:", 422),
 				Arguments.of("", 422),
-				Arguments.of("domain:operation:instance:too_much", 422),
+				Arguments.of(":", 422),
+				Arguments.of("domain::instance", 422),
+				Arguments.of("domain:operation:instance:too_many_parts", 422),
 				Arguments.of("domain:,", 400)
 
 		);
