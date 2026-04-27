@@ -41,8 +41,9 @@ public class QueryStep {
 	 */
 	@Builder.Default
 	boolean unionAll = true;
+
 	/**
-	 * TODO
+	 * If the query should be negated or not.
 	 */
 	@Builder.Default
 	boolean negate = false;

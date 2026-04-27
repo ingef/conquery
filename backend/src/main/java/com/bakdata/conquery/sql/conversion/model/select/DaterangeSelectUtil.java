@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
@@ -86,7 +87,7 @@ public class DaterangeSelectUtil {
 	public static SqlFilters createForFilter(
 			DaterangeSelectOrFilter filter,
 			AggregationFunction aggregationFunction,
-			FilterFunction filterFunction,
+			Function<Field<?> , WhereCondition> filterFunction,
 			FilterContext<?> context
 	) {
 		String alias = context.getNameGenerator().selectName((LabeledNamespaceIdentifiable<?>) filter);
@@ -176,11 +177,6 @@ public class DaterangeSelectUtil {
 	@FunctionalInterface
 	public interface AggregationFunction {
 		FieldWrapper<?> apply(ColumnDateRange daterange, String alias, SqlFunctionProvider functionProvider);
-	}
-
-	@FunctionalInterface
-	public interface FilterFunction {
-		WhereCondition apply(Field<?> aggregationField);
 	}
 
 }

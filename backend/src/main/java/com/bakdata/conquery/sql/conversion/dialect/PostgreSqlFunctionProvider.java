@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
 import static org.jooq.impl.DSL.*;
-import static org.jooq.impl.DSL.nullif;
 
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
@@ -39,12 +38,12 @@ import org.jooq.impl.SQLDataType;
  */
 public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
-	private static final String OPEN_RANGE = "[)";
-	private static final String CLOSED_RANGE = "[]";
-	private static final String INFINITY_DATE_VALUE = "infinity";
-	private static final String MINUS_INFINITY_DATE_VALUE = "-infinity";
-	private static final String ANY_CHAR_REGEX = "%";
 	public static final Field<Object> EMPTY_RANGE = field("{0}::daterange", inline("empty"), Object.class);
+	public static final String INFINITY_DATE_VALUE = "infinity";
+	public static final String NEGATIVE_INFINITY_DATE_VALUE = "-infinity";
+	public static final String OPEN_RANGE = "[)";
+	public static final String CLOSED_RANGE = "[]";
+	private static final String ANY_CHAR_REGEX = "%";
 
 	private static Field<?> unnest(Field<?> multirange) {
 		return function("unnest", Object.class, multirange);
@@ -84,7 +83,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public String getMinDateExpression() {
-		return MINUS_INFINITY_DATE_VALUE;
+		return NEGATIVE_INFINITY_DATE_VALUE;
 	}
 
 	@Override
@@ -121,7 +120,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public ColumnDateRange forCDateRange(CDateRange daterange) {
 
-		String startDateExpression = MINUS_INFINITY_DATE_VALUE;
+		String startDateExpression = NEGATIVE_INFINITY_DATE_VALUE;
 		String endDateExpression = INFINITY_DATE_VALUE;
 
 		if (daterange.hasLowerBound()) {
@@ -143,11 +142,12 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate) {
 		// if there is no validity date, each entity has the max range {-inf/inf} as validity date
-		return validityDate == null ? maxRange() : toColumnDateRange(validityDate);
+		return validityDate == null ? allRange() : toColumnDateRange(validityDate);
 	}
 
-	public ColumnDateRange maxRange() {
-		return ColumnDateRange.of(daterange(toDateField(MINUS_INFINITY_DATE_VALUE), toDateField(INFINITY_DATE_VALUE), CLOSED_RANGE));
+	@Override
+	public ColumnDateRange allRange() {
+		return ColumnDateRange.of(daterange(toDateField(NEGATIVE_INFINITY_DATE_VALUE), toDateField(INFINITY_DATE_VALUE), CLOSED_RANGE));
 	}
 
 	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
@@ -168,18 +168,18 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 			// if validityDateColumn is a DATE_RANGE we can make use of Postgres' integrated daterange type, but the upper bound is exclusive by default
 			case DATE_RANGE -> {
 				Field<Object> daterange = field(name(column.getName()));
-				Field<Date> withOpenLowerEnd = coalesce(lower(daterange), toDateField(MINUS_INFINITY_DATE_VALUE));
+				Field<Date> withOpenLowerEnd = coalesce(lower(daterange), toDateField(NEGATIVE_INFINITY_DATE_VALUE));
 				Field<Date> withOpenUpperEnd = coalesce(upper(daterange), toDateField(INFINITY_DATE_VALUE));
 				yield when(daterange.isNull(), emptyDateRange())
-						 .otherwise(daterange(withOpenLowerEnd, withOpenUpperEnd, OPEN_RANGE));
+						.otherwise(daterange(withOpenLowerEnd, withOpenUpperEnd, OPEN_RANGE));
 			}
 			// if the validity date column is not of daterange type, we construct it manually
 			case DATE -> {
 				Field<Date> singleDate = field(name(tableName, column.getName()), Date.class);
-				Field<Date> withOpenLowerEnd = coalesce(singleDate, toDateField(MINUS_INFINITY_DATE_VALUE));
+				Field<Date> withOpenLowerEnd = coalesce(singleDate, toDateField(NEGATIVE_INFINITY_DATE_VALUE));
 				Field<Date> withOpenUpperEnd = coalesce(singleDate, toDateField(INFINITY_DATE_VALUE));
 				yield when(singleDate.isNull(), emptyDateRange())
-						 .otherwise(daterange(withOpenLowerEnd, withOpenUpperEnd, CLOSED_RANGE));
+						.otherwise(daterange(withOpenLowerEnd, withOpenUpperEnd, CLOSED_RANGE));
 			}
 			default -> throw new IllegalArgumentException(
 					"Given column type '%s' can't be converted to a proper date restriction.".formatted(column.getType())
@@ -192,21 +192,21 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
 
 		Field<Object> startField = field(name(tableName, startColumn.getName()));
-		Field<?> withOpenLowerEnd = coalesce(startField, toDateField(MINUS_INFINITY_DATE_VALUE));
+		Field<?> withOpenLowerEnd = coalesce(startField, toDateField(NEGATIVE_INFINITY_DATE_VALUE));
 		Field<Object> endField = field(name(tableName, endColumn.getName()));
 		Field<?> withOpenUpperEnd = coalesce(endField, toDateField(INFINITY_DATE_VALUE));
 
 		return ColumnDateRange.of(
 				when(startField.isNull().and(endField.isNull()), emptyDateRange())
-				   .otherwise(this.daterange(withOpenLowerEnd, withOpenUpperEnd, CLOSED_RANGE))
+						.otherwise(this.daterange(withOpenLowerEnd, withOpenUpperEnd, CLOSED_RANGE))
 		);
 	}
 
 	@Override
-	public ColumnDateRange maxRangeIf(Condition condition) {
+	public ColumnDateRange allRangeIf(Condition condition) {
 		return ColumnDateRange.of(
 				when(condition.isTrue(),
-						 datemultirange(daterange(toDateField(MINUS_INFINITY_DATE_VALUE), toDateField(INFINITY_DATE_VALUE), CLOSED_RANGE))
+					 datemultirange(daterange(toDateField(NEGATIVE_INFINITY_DATE_VALUE), toDateField(INFINITY_DATE_VALUE), CLOSED_RANGE))
 				)
 		);
 	}
@@ -214,7 +214,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction) {
 		// if there is no validity date, each entity has the max range {-inf/inf} as validity date
-		ColumnDateRange validityDateRange = validityDate == null ? maxRange() : toColumnDateRange(validityDate);
+		ColumnDateRange validityDateRange = validityDate == null ? allRange() : toColumnDateRange(validityDate);
 		ColumnDateRange restriction = toColumnDateRange(dateRestriction);
 		return intersection(validityDateRange, restriction);
 	}
@@ -229,7 +229,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	private ColumnDateRange toColumnDateRange(CDateRange dateRestriction) {
-		String startDateExpression = MINUS_INFINITY_DATE_VALUE;
+		String startDateExpression = NEGATIVE_INFINITY_DATE_VALUE;
 		String endDateExpression = INFINITY_DATE_VALUE;
 
 		if (dateRestriction.hasLowerBound()) {
@@ -266,8 +266,8 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public ColumnDateRange toDualColumn(ColumnDateRange columnDateRange) {
 		Field<?> daterange = columnDateRange.getRange();
-		Field<Date> start = function("lower", Date.class, daterange);
-		Field<Date> end = function("upper", Date.class, daterange);
+		Field<Date> start = lower(daterange);
+		Field<Date> end = upper(daterange);
 		return ColumnDateRange.of(start, end);
 	}
 
@@ -291,12 +291,12 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<Object> daterangeStringAggregation(ColumnDateRange columnDateRange) {
-		return field("{0}", rangeAgg(columnDateRange));
+	public Field<Object> dateRangeAggregation(ColumnDateRange columnDateRange) {
+		return rangeAgg(columnDateRange);
 	}
 
 	@Override
-	public Field<Object> daterangeStringExpression(ColumnDateRange columnDateRange) {
+	public Field<Object> dateRangeToField(ColumnDateRange columnDateRange) {
 		if (!columnDateRange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("All column date ranges should have been converted to single column ranges.");
 		}

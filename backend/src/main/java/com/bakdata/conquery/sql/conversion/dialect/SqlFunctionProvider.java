@@ -89,7 +89,7 @@ public interface SqlFunctionProvider {
 	/**
 	 * Creates a {@link ColumnDateRange} of maximum range.
 	 */
-	ColumnDateRange maxRange();
+	ColumnDateRange allRange();
 
 	/**
 	 * Creates a {@link ColumnDateRange} for a tables {@link CQTable}s validity date. The validity dates bounds will be restricted by the given date
@@ -132,14 +132,14 @@ public interface SqlFunctionProvider {
 	 * <p>
 	 * Example: {[-∞,2013-11-11),[2015-11-10,∞)}
 	 */
-	Field<?> daterangeStringAggregation(ColumnDateRange columnDateRange);
+	Field<?> dateRangeAggregation(ColumnDateRange columnDateRange);
 
 	/**
 	 * Combines the start and end column of a validity date entry into one compound string expression.
 	 * <p>
 	 * Example: [2013-11-10,2013-11-11)
 	 */
-	Field<?> daterangeStringExpression(ColumnDateRange columnDateRange);
+	Field<?> dateRangeToField(ColumnDateRange columnDateRange);
 
 	/**
 	 * Calculates the date distance in the given {@link ChronoUnit} between an exclusive end date and an inclusive start date.
@@ -178,7 +178,7 @@ public interface SqlFunctionProvider {
 		);
 	}
 
-	ColumnDateRange maxRangeIf(Condition condition);
+	ColumnDateRange allRangeIf(Condition condition);
 
 	default Field<String> concat(List<Field<String>> fields) {
 		String concatenated =

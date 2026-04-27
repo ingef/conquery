@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQNegation;
 import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
@@ -94,9 +93,9 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 			return preFinalSelects.blockValidityDate();
 		}
 		else if (preFinalSelects.getValidityDate().isEmpty()) {
-			return preFinalSelects.withValidityDate(functionProvider.maxRange());
+			return preFinalSelects.withValidityDate(functionProvider.allRange());
 		}
-		Field<?> validityDateStringAggregation = functionProvider.daterangeStringAggregation(preFinalSelects.getValidityDate().get());
+		Field<?> validityDateStringAggregation = functionProvider.dateRangeAggregation(preFinalSelects.getValidityDate().get());
 		return preFinalSelects.withValidityDate(ColumnDateRange.of(validityDateStringAggregation).as(SharedAliases.DATES_COLUMN.getAlias()));
 	}
 

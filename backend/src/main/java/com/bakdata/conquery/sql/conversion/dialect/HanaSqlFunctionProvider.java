@@ -36,7 +36,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	public static final String MIN_DATE_VALUE = "0001-01-01";
 	public static final String DATERANGE_SEPARATOR = "/";
 
-	private static final char DELIMITER = UNIT_SEPARATOR;
+	public static final char DATE_SET_SEPARATOR = UNIT_SEPARATOR;
 	private static final String ANY_CHAR_REGEX = ".*";
 	private static final String NOP_TABLE = "DUMMY";
 
@@ -116,8 +116,8 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange maxRange() {
-		return ColumnDateRange.of(toDateField(MIN_DATE_VALUE).as("begin"), toDateField(MAX_DATE_VALUE).as("end"));
+	public ColumnDateRange allRange() {
+		return ColumnDateRange.of(toDateField(MIN_DATE_VALUE).as("all_range_start"), toDateField(MAX_DATE_VALUE).as("all_range_end"));
 	}
 
 	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
@@ -168,10 +168,10 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange maxRangeIf(Condition condition) {
+	public ColumnDateRange allRangeIf(Condition condition) {
 		return ColumnDateRange.of(
 				when(condition.isTrue(),
-					 maxRange()
+					 allRange()
 				)
 		);
 	}
@@ -269,11 +269,11 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<String> daterangeStringAggregation(ColumnDateRange columnDateRange) {
+	public Field<String> dateRangeAggregation(ColumnDateRange columnDateRange) {
 
 		Field<String> stringAggregation = stringAggregation(
-				daterangeStringExpression(columnDateRange),
-				toChar(DELIMITER),
+				dateRangeToField(columnDateRange),
+				toChar(DATE_SET_SEPARATOR),
 				List.of(columnDateRange.getStart())
 		);
 
@@ -282,14 +282,14 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<String> daterangeStringExpression(ColumnDateRange columnDateRange) {
+	public Field<String> dateRangeToField(ColumnDateRange columnDateRange) {
 
 		if (columnDateRange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("HANA does not support single-column date ranges.");
 		}
 
 		// translation is handled in printer
-		return field("{0} || {2} || {1}", String.class,
+		return field("'[' || {0} || {2} || {1} || ')'", String.class,
 					 cast(columnDateRange.getStart(), SQLDataType.VARCHAR),
 					 cast(columnDateRange.getEnd(), SQLDataType.VARCHAR),
 					 DATERANGE_SEPARATOR
@@ -305,7 +305,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return function(
 				"CAST",
 				type.getType(),
-				field("{0} AS {1}", field, type.getName())
+				field("{0} AS {1}", field, keyword(type.getName()))
 		);
 	}
 

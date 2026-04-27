@@ -11,8 +11,8 @@ import com.bakdata.conquery.sql.conversion.cqelement.aggregation.PostgreSqlDateA
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.PostgreSqlIntervalPacker;
 import com.bakdata.conquery.sql.conversion.forms.PostgresStratificationFunctions;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
-import com.bakdata.conquery.sql.execution.PgResultSetProcessor;
-import com.bakdata.conquery.sql.execution.PostgreSqlCDateSetParser;
+import com.bakdata.conquery.sql.execution.DefaultResultSetProcessor;
+import com.bakdata.conquery.sql.execution.PgSqlCDateSetParser;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import org.jooq.DSLContext;
@@ -28,7 +28,7 @@ public class PostgreDialectBundle implements DialectBundle {
 
 	@Override
 	public ResultSetProcessor getResultSetProcessor(ConqueryConfig config) {
-		return new PgResultSetProcessor(config, getCDateSetParser());
+		return new DefaultResultSetProcessor(config, getCDateSetParser());
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class PostgreDialectBundle implements DialectBundle {
 		this.functionProvider = new PostgreSqlFunctionProvider();
 		this.intervalPacker = new PostgreSqlIntervalPacker(this.functionProvider);
 		this.dateAggregator = new PostgreSqlDateAggregator(this.functionProvider);
-		this.dateSetParser = new PostgreSqlCDateSetParser();
+		this.dateSetParser = new PgSqlCDateSetParser();
 	}
 
 

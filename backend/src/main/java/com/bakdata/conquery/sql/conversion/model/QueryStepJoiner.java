@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.models.config.ColumnConfig;
+import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
@@ -32,6 +33,9 @@ public class QueryStepJoiner {
 
 	private static final String NEGATED_CTE_SUFFIX = "_negated";
 
+	/**
+	 * Implements an antijoin against the allIdsTable defined in {@link IdColumnConfig#getTable()}, for negation without siblings.
+	 */
 	public static QueryStep antiJoinWithAllIdsTable(QueryStep queryStep, ConversionContext context, DateAggregationAction dateAggregationAction) {
 
 		SqlFunctionProvider functionProvider = context.getConversionContext().getDialectBundle().getFunctionProvider();
@@ -51,7 +55,7 @@ public class QueryStepJoiner {
 
 		Optional<ColumnDateRange> validityDate = switch (dateAggregationAction) {
 			case BLOCK, MERGE, INTERSECT -> Optional.of(functionProvider.emptyColumnDateRange());
-			case NEGATE -> Optional.of(functionProvider.maxRange());
+			case NEGATE -> Optional.of(functionProvider.allRange());
 		};
 
 		Selects selects = Selects.builder()
@@ -138,6 +142,11 @@ public class QueryStepJoiner {
 		return joinedStep;
 	}
 
+	/**
+	 * If queriesToJoin contains any negated queries, they will be used in an antijoin against their siblings.
+	 *
+	 * That means the negation works by removing the entities in the negated portion from the unnegated ones.
+	 */
 	private static QueryStep joinStepsContainingNegation(
 			List<QueryStep> queriesToJoin,
 			ConqueryJoinType logicalOperation,
@@ -193,7 +202,7 @@ public class QueryStepJoiner {
 		DateAggregationDates aggregationDates = DateAggregationDates.forValidityDates(List.of(
 				nonNegateJoined.getQualifiedSelects().getValidityDate(),
 				negateJoined.getQualifiedSelects().getValidityDate(),
-				Optional.of(context.getDialectBundle().getFunctionProvider().maxRangeIf(infinityRangeCondition))
+				Optional.of(context.getDialectBundle().getFunctionProvider().allRangeIf(infinityRangeCondition))
 		));
 		ColumnDateRange merged =
 				dateAggregator.getAggregatedValidityDate(aggregationDates, DateAggregationAction.MERGE)
@@ -245,7 +254,7 @@ public class QueryStepJoiner {
 
 			List<Condition> joinIdsCondition = leftIds.join(rightIds);
 
-			Condition joinDateCondition = getCondition(leftPartQS, rightPartQS);
+			Condition joinDateCondition = joinOnStratification(leftPartQS, rightPartQS);
 
 			List<Condition> joinConditions = Stream.concat(joinIdsCondition.stream(), Stream.of(joinDateCondition)).collect(Collectors.toList());
 
@@ -259,8 +268,9 @@ public class QueryStepJoiner {
 	/**
 	 * join on stratification date if present
 	 */
-	private static Condition getCondition(QueryStep leftPartQS, QueryStep rightPartQS) {
+	private static Condition joinOnStratification(QueryStep leftPartQS, QueryStep rightPartQS) {
 		if (leftPartQS.getSelects().getStratificationDate().isEmpty() || rightPartQS.getSelects().getStratificationDate().isEmpty()) {
+			//TODO use unconditionalJoin in the future. Hana does not like noCondition joins
 			return DSL.noCondition();
 		}
 

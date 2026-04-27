@@ -34,7 +34,6 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Select;
 import org.jooq.TableLike;
-import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 public class FormConversionHelper {
@@ -152,7 +151,7 @@ public class FormConversionHelper {
 
 		Selects stratificationSelects = stratificationTable.getQualifiedSelects();
 		SqlIdColumns ids = stratificationSelects.getIds().forFinalSelect();
-		Field<?> daterangeConcatenated = functionProvider.daterangeStringExpression(stratificationSelects.getStratificationDate().get())
+		Field<?> daterangeConcatenated = functionProvider.dateRangeToField(stratificationSelects.getStratificationDate().get())
 															  .as(SharedAliases.STRATIFICATION_BOUNDS.getAlias());
 
 		Selects.SelectsBuilder selects = Selects.builder()

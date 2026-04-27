@@ -43,7 +43,7 @@ public class EventDateUnionSelectConverter implements SelectConverter<EventDateU
 		String alias = selectContext.getNameGenerator().selectName(select);
 
 		ColumnDateRange qualified = validityDate.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.INTERVAL_PACKING_SELECTS));
-		return new FieldWrapper<>(functionProvider.daterangeStringAggregation(qualified).as(alias));
+		return new FieldWrapper<>(functionProvider.dateRangeAggregation(qualified).as(alias));
 	}
 
 }
