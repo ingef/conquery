@@ -43,9 +43,9 @@ public interface SqlFunctionProvider {
 			Function<Field<?>, ? extends SortField<?>> ordering,
 			List<Field<?>> validityDateFields);
 
-	String getMinDateExpression();
+	Field<Date> getMinDateExpression();
 
-	String getMaxDateExpression();
+	Field<Date> getMaxDateExpression();
 
 	<T> Field<T> cast(Field<?> field, DataType<T> type);
 

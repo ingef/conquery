@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.dialect.pg.PostgreSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Getter;
 import org.jooq.Condition;

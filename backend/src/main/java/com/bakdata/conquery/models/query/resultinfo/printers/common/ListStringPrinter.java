@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.resultinfo.printers.common;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 import com.bakdata.conquery.models.config.LocaleConfig;
@@ -24,7 +25,7 @@ public record ListStringPrinter<T>(Printer<T> elementPrinter, PrintSettings cfg,
 				continue;
 			}
 			
-			joiner.add(listFormat.escapeListElement(elementPrinter.apply(obj).toString()));
+			joiner.add(listFormat.escapeListElement(Objects.toString(elementPrinter.apply(obj))));
 		}
 		return joiner.toString();
 	}

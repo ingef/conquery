@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.dialect;
+package com.bakdata.conquery.sql.conversion.dialect.hana;
 
 import java.util.List;
 
@@ -9,7 +9,10 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.aggregation.AnsiSqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.AnsiSqlIntervalPacker;
-import com.bakdata.conquery.sql.conversion.forms.HanaStratificationFunctions;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
+import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.execution.DefaultResultSetProcessor;
 import com.bakdata.conquery.sql.execution.HanaSqlCDateSetParser;

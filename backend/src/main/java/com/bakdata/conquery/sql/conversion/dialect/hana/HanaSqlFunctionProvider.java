@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.dialect;
+package com.bakdata.conquery.sql.conversion.dialect.hana;
 
 import static com.bakdata.conquery.sql.execution.ResultSetProcessor.UNIT_SEPARATOR;
 import static org.jooq.impl.DSL.*;
@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import org.jetbrains.annotations.NotNull;
@@ -215,19 +216,19 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 			List<Field<?>> validityDateFields) {
 
 		return List.of(
-				ordering.apply(nullif(validityDateFields.getFirst(), toDateField(getMinDateExpression()))).nullsLast(),
-				ordering.apply(nullif(validityDateFields.getLast(), toDateField(getMaxDateExpression()))).nullsLast()
+				ordering.apply(nullif(validityDateFields.getFirst(), getMinDateExpression())).nullsLast(),
+				ordering.apply(nullif(validityDateFields.getLast(), getMaxDateExpression())).nullsLast()
 		);
 	}
 
 	@Override
-	public String getMinDateExpression() {
-		return MIN_DATE_VALUE;
+	public Field<Date> getMinDateExpression() {
+		return toDateField(MIN_DATE_VALUE);
 	}
 
 	@Override
-	public String getMaxDateExpression() {
-		return MAX_DATE_VALUE;
+	public Field<Date> getMaxDateExpression() {
+		return toDateField(MAX_DATE_VALUE);
 	}
 
 	@Override
