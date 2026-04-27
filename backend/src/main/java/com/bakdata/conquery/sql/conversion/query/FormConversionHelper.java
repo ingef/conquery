@@ -166,8 +166,8 @@ public class FormConversionHelper {
 
 		// relative forms have FeatureGroup information after the stratification date and before all other selects
 		Field<Integer> indexField = field(name(stratificationTable.getCteName(), SharedAliases.INDEX.getAlias()), Integer.class);
-		Field<String> scope = when(indexField.isNull().or(indexField.lessThan(0)), val(FeatureGroup.FEATURE.toString()))
-								 .otherwise(val(FeatureGroup.OUTCOME.toString()))
+		Field<String> scope = when(indexField.isNull().or(indexField.lessThan(0)), inline(FeatureGroup.FEATURE.toString()))
+								 .otherwise(inline(FeatureGroup.OUTCOME.toString()))
 								 .as(SharedAliases.OBSERVATION_SCOPE.getAlias());
 
 		return selects.sqlSelect(new FieldWrapper<>(scope))

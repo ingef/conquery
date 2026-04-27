@@ -73,7 +73,7 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 	}
 
 	private static SqlIdColumns createIdSelect(Map.Entry<String, CDateSet> entry) {
-		Field<Object> primaryColumn = DSL.val(entry.getKey()).coerce(Object.class).as(SharedAliases.PRIMARY_COLUMN.getAlias());
+		Field<Object> primaryColumn = DSL.inline(entry.getKey()).coerce(Object.class).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 		return new SqlIdColumns(primaryColumn);
 	}
 

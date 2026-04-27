@@ -144,9 +144,7 @@ public class SqlEntityResolver implements EntityResolver {
 		Field<Integer> rowIndex = field(name(ROW_INDEX), Integer.class);
 		Field<String> externalPrimaryColumn = field(name(SharedAliases.PRIMARY_COLUMN.getAlias()), String.class);
 		Field<String> innerPrimaryColumn = field(name(idColumns.findPrimaryIdColumn().getField()), String.class);
-		Field<Boolean> isResolved = when(innerPrimaryColumn.isNotNull(), val(true))
-				.otherwise(false)
-				.as(IS_RESOLVED_ALIAS);
+		Field<Boolean> isResolved = innerPrimaryColumn.isNotNull().as(IS_RESOLVED_ALIAS);
 
 		Table<Record> allIdsTable = table(name(idColumns.getTable()));
 
@@ -181,8 +179,8 @@ public class SqlEntityResolver implements EntityResolver {
 				continue;
 			}
 
-			Field<Integer> rowIndex = val(i).as(ROW_INDEX);
-			Field<String> externalPrimaryColumn = val(resolvedId).as(SharedAliases.PRIMARY_COLUMN.getAlias());
+			Field<Integer> rowIndex = inline(i).as(ROW_INDEX);
+			Field<String> externalPrimaryColumn = inline(resolvedId).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 			Select<Record2<Integer, String>> externalIdSelect = context.select(rowIndex, externalPrimaryColumn)
 																	   // some dialects can't just select static values without FROM clause
 																	   .from(dialect.getFunctionProvider().getNoOpTable());

@@ -126,7 +126,7 @@ public class DaterangeSelectUtil {
 	public static FieldWrapper<BigDecimal> createDurationSumSqlSelect(String alias, ColumnDateRange validityDate, SqlFunctionProvider functionProvider) {
 		Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd());
 		Field<BigDecimal> durationSum = DSL.sum(
-												   DSL.when(containsInfinityDate(validityDate, functionProvider), DSL.val(null, Integer.class))
+												   DSL.when(containsInfinityDate(validityDate, functionProvider), DSL.inline(null, Integer.class))
 													  .otherwise(dateDistanceInDays)
 										   )
 										   .as(alias);

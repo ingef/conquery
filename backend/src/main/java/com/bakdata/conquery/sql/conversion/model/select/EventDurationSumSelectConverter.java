@@ -52,7 +52,7 @@ public class EventDurationSumSelectConverter implements SelectConverter<EventDur
 		String alias = selectContext.getNameGenerator().selectName(select);
 
 		Field<BigDecimal> durationSum = DSL.sum(
-												   DSL.when(containsInfinityDate(asDualColumn, functionProvider), DSL.val(null, Integer.class))
+												   DSL.when(containsInfinityDate(asDualColumn, functionProvider), DSL.inline(null, Integer.class))
 													  .otherwise(functionProvider.dateDistance(ChronoUnit.DAYS, asDualColumn.getStart(), asDualColumn.getEnd()))
 										   )
 										   .as(alias);

@@ -87,7 +87,7 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 
 	@Override
 	public Condition convertForTableExport(CountFilter countFilter, FilterContext<Range.LongRange> filterContext) {
-		Param<Integer> field = DSL.val(1); // no grouping, count is always 1 per row
+		Param<Integer> field = DSL.inline(1); // no grouping, count is always 1 per row
 		return new CountCondition(field, filterContext.getValue()).condition();
 	}
 

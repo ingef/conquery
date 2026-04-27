@@ -62,7 +62,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Table<? extends Record> getNoOpTable() {
-		return table(select(val(1))).as(name(SharedAliases.NOP_TABLE.getAlias()));
+		return table(select(inline(1))).as(name(SharedAliases.NOP_TABLE.getAlias()));
 	}
 
 	@NotNull
@@ -103,7 +103,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 				Object.class,
 				startColumn,
 				endColumn,
-				val(bounds)
+				inline(bounds)
 		);
 	}
 
@@ -131,7 +131,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 			endDateExpression = daterange.getMax().toString();
 		}
 
-		Field<?> daterangeField = daterange(val(startDateExpression), val(endDateExpression), CLOSED_RANGE);
+		Field<?> daterangeField = daterange(inline(startDateExpression), inline(endDateExpression), CLOSED_RANGE);
 
 		return ColumnDateRange.of(daterangeField);
 	}
@@ -369,7 +369,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Field<Date> toDateField(String dateValue) {
-		return field("{0}::{1}", Date.class, val(dateValue), keyword("date"));
+		return field("{0}::{1}", Date.class, inline(dateValue), keyword("date"));
 	}
 
 	@Override

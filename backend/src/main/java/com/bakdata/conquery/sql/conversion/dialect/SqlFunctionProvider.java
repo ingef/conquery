@@ -28,7 +28,6 @@ import org.jooq.Record;
 import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.TableOnConditionStep;
-import org.jooq.impl.DSL;
 
 /**
  * Provider of SQL functions.
@@ -228,10 +227,6 @@ public interface SqlFunctionProvider {
 
 	default Field<Date> toDateField(String dateExpression) {
 		return toDate(dateExpression, DEFAULT_DATE_FORMAT);
-	}
-
-	default Field<String> replace(Field<String> target, String old, String _new) {
-		return function("replace", String.class, target, val(old), val(_new));
 	}
 
 	default Condition validityDateFilter(ValidityDate validityDate) {

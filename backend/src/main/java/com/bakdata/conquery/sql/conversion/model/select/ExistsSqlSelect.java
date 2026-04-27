@@ -11,7 +11,7 @@ import org.jooq.impl.DSL;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExistsSqlSelect implements SingleColumnSqlSelect {
 
-	private static final Field<Integer> EXISTS = DSL.val(1);
+	private static final Field<Integer> EXISTS = DSL.inline(1);
 
 	private final Field<Integer> exists;
 	private final Name alias;

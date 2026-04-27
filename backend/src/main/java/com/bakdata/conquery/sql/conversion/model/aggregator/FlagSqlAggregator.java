@@ -71,8 +71,6 @@ import org.jooq.Param;
  */
 public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterConverter<FlagFilter, Set<String>>, SqlAggregator {
 
-	private static final Param<Integer> NUMERIC_TRUE_VAL = val(1);
-
 	/**
 	 * @return A mapping between a flags key and the corresponding {@link ExtractingSqlSelect} that will be created to reference the flag's column.
 	 */

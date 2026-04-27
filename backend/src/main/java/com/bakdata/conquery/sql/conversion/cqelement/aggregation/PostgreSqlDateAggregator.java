@@ -86,7 +86,7 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 				Object.class,
 				this.functionProvider.toDateField(this.functionProvider.getMinDateExpression()),
 				this.functionProvider.toDateField(this.functionProvider.getMaxDateExpression()),
-				DSL.val("[]")
+				DSL.inline("[]")
 		);
 
 		// see https://www.postgresql.org/docs/current/functions-range.html

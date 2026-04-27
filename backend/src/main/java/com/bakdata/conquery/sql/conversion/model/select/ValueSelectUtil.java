@@ -89,7 +89,7 @@ class ValueSelectUtil {
 						.select(field(name(alias)), field(name("select-result", "row-number")))
 						.from(table(name(ValueSelectCteStep.ROW_NUMBER_STEP.cteName(alias)))
 									  .as("select-result"))
-						.where(or(rowNumber.equal(val(1)), rowNumber.isNull()));
+						.where(or(rowNumber.equal(inline(1)), rowNumber.isNull()));
 
 
 		return QueryStep.builder()

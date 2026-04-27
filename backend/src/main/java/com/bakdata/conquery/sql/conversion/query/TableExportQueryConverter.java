@@ -204,7 +204,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 
 	private static Field<String> createSourceInfoSelect(CQTable cqTable) {
 		final String tableName = cqTable.getConnector().resolve().resolveTableId().getTable();
-		return DSL.val(tableName).as(SharedAliases.SOURCE.getAlias());
+		return DSL.inline(tableName).as(SharedAliases.SOURCE.getAlias());
 	}
 
 	private static Field<?> createColumnSelect(Column column, int position) {

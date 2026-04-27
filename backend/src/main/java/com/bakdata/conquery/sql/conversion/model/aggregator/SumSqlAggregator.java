@@ -142,7 +142,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 
 		QueryStep rowNumberCte = createRowNumberCte(ids, rootSelect, distinctByRootSelects, alias, tables, nameGenerator);
 		Field<? extends Number> rootSelectQualified = rootSelect.qualify(rowNumberCte.getCteName()).select();
-		FieldWrapper<BigDecimal> sumGroupBy = new FieldWrapper<>(DSL.sum(DSL.coalesce(rootSelectQualified, DSL.val(0))).as(alias));
+		FieldWrapper<BigDecimal> sumGroupBy = new FieldWrapper<>(DSL.sum(DSL.coalesce(rootSelectQualified, DSL.inline(0))).as(alias));
 		QueryStep rowNumberFilteredCte = createRowNumberFilteredCte(rowNumberCte, sumGroupBy, alias, nameGenerator);
 
 		return CommonAggregationSelect.<BigDecimal>builder()
@@ -256,7 +256,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 												  .build();
 
 		Condition firstOccurrence = DSL.field(DSL.name(rowNumberCte.getCteName(), ROW_NUMBER_ALIAS))
-									   .eq(DSL.val(1));
+									   .eq(DSL.inline(1));
 
 		return QueryStep.builder()
 						.cteName(nameGenerator.cteStepName(SumDistinctCteStep.ROW_NUMBER_FILTERED, alias))

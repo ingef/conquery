@@ -99,8 +99,8 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return function(
 				"TO_DATE",
 				Date.class,
-				val(dateExpression),
-				val(DEFAULT_DATE_FORMAT)
+				inline(dateExpression),
+				inline(DEFAULT_DATE_FORMAT)
 		);
 	}
 
@@ -186,7 +186,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 				.otherwise(validityDateRange.getStart());
 
 		Field<Date> maxDate = toDateField(MAX_DATE_VALUE); // we want to add +1 day to the end date - except when it's the max date already
-		Field<Date> restrictionUpperBound = when(restriction.getEnd().eq(maxDate), maxDate).otherwise(addDays(restriction.getEnd(), val(1)));
+		Field<Date> restrictionUpperBound = when(restriction.getEnd().eq(maxDate), maxDate).otherwise(addDays(restriction.getEnd(), inline(1)));
 		Field<Date> upperBound = when(validityDateRange.getEnd().greaterThan(restriction.getEnd()), restrictionUpperBound)
 				.otherwise(validityDateRange.getEnd());
 
@@ -305,7 +305,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return function(
 				"CAST",
 				type.getType(),
-				field("%s AS %s".formatted(field, type.getName()))
+				field("{0} AS {1}", field, type.getName())
 		);
 	}
 
