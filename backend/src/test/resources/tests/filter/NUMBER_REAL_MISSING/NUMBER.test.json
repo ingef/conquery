@@ -1,12 +1,6 @@
 {
   "type": "FILTER_TEST",
   "label": "NUMBER_MISSING FILTER Test",
-    "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL", "HANA"
-    ]
-  },
   "expectedCsv": "tests/filter/NUMBER_REAL_MISSING/expected_NUMBER_Filter.csv",
   "content": {
     "tables": {

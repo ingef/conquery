@@ -1,12 +1,6 @@
 {
   "type": "FILTER_TEST",
   "label": "COUNT_QUARTERS Test",
-    "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL", "HANA"
-    ]
-  },
   "expectedCsv": "tests/filter/COUNT_QUARTERS/expected_COUNT_QUARTERS_Filter.csv",
   "content": {
     "tables": {

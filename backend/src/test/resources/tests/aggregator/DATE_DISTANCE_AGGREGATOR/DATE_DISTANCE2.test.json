@@ -1,12 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "DATE_DISTANCE_AGGREGATOR2 Test",
-    "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL"
-    ]
-  },
   "expectedCsv": "tests/aggregator/DATE_DISTANCE_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
@@ -40,7 +34,8 @@
           "table": "table",
           "validityDates": {
             "label": "indexdatum",
-            "column": "table.indexdatum"
+            "startColumn": "table.start",
+            "endColumn": "table.end"
           },
           "selects": {
             "name": "select",
@@ -62,8 +57,12 @@
         },
         "columns": [
           {
-            "name": "indexdatum",
-            "type": "DATE_RANGE"
+            "name": "start",
+            "type": "DATE"
+          },
+          {
+            "name": "end",
+            "type": "DATE"
           },
           {
             "name": "datum",

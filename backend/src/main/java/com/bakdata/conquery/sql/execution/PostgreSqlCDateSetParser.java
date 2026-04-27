@@ -15,6 +15,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 public class PostgreSqlCDateSetParser implements SqlCDateSetParser {
+	//TODO clean this up and use provided dateReader instead of Date.valueOf
+	//TODO can probably be unified with Hana implementation by supplying separators as fields
 
 	@Override
 	public List<List<Integer>> toEpochDayRangeList(String multiDateRange) {
