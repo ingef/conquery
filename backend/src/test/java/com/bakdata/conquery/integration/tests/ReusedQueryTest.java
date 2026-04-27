@@ -53,7 +53,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 	@Override
 	public Set<StandaloneSupport.Mode> forModes() {
-		return Set.of(StandaloneSupport.Mode.WORKER);
+		return Set.of(StandaloneSupport.Mode.WORKER, StandaloneSupport.Mode.SQL);
 	}
 
 
