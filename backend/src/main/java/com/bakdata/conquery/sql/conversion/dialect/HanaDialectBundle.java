@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.dialect;
 
 import java.util.List;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.Visitable;
@@ -10,7 +11,9 @@ import com.bakdata.conquery.sql.conversion.cqelement.aggregation.AnsiSqlDateAggr
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.AnsiSqlIntervalPacker;
 import com.bakdata.conquery.sql.conversion.forms.HanaStratificationFunctions;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
-import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
+import com.bakdata.conquery.sql.execution.DefaultResultSetProcessor;
+import com.bakdata.conquery.sql.execution.HanaSqlCDateSetParser;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -18,16 +21,21 @@ import org.jooq.SQLDialect;
 
 public class HanaDialectBundle implements DialectBundle {
 
-	private final SqlFunctionProvider hanaSqlFunctionProvider;
-	private final IntervalPacker hanaIntervalPacker;
-	private final SqlDateAggregator hanaSqlDateAggregator;
-	private final DefaultSqlCDateSetParser defaultNotationParser;
+	private final SqlFunctionProvider functionProvider;
+	private final IntervalPacker intervalPacker;
+	private final SqlDateAggregator dateAggregator;
+	private final SqlCDateSetParser dateSetParser;
 
 	public HanaDialectBundle() {
-		this.hanaSqlFunctionProvider = new HanaSqlFunctionProvider();
-		this.hanaIntervalPacker = new AnsiSqlIntervalPacker();
-		this.hanaSqlDateAggregator = new AnsiSqlDateAggregator(this.hanaIntervalPacker);
-		this.defaultNotationParser = new DefaultSqlCDateSetParser();
+		this.functionProvider = new HanaSqlFunctionProvider();
+		this.intervalPacker = new AnsiSqlIntervalPacker();
+		this.dateAggregator = new AnsiSqlDateAggregator(this.intervalPacker, functionProvider);
+		this.dateSetParser = new HanaSqlCDateSetParser();
+	}
+
+	@Override
+	public ResultSetProcessor getResultSetProcessor(ConqueryConfig config) {
+		return new DefaultResultSetProcessor(config, getCDateSetParser());
 	}
 
 	@Override
@@ -52,7 +60,7 @@ public class HanaDialectBundle implements DialectBundle {
 
 	@Override
 	public SqlCDateSetParser getCDateSetParser() {
-		return this.defaultNotationParser;
+		return this.dateSetParser;
 	}
 
 	@Override
@@ -81,17 +89,17 @@ public class HanaDialectBundle implements DialectBundle {
 
 	@Override
 	public SqlFunctionProvider getFunctionProvider() {
-		return this.hanaSqlFunctionProvider;
+		return this.functionProvider;
 	}
 
 	@Override
 	public IntervalPacker getIntervalPacker() {
-		return this.hanaIntervalPacker;
+		return this.intervalPacker;
 	}
 
 	@Override
 	public SqlDateAggregator getDateAggregator() {
-		return this.hanaSqlDateAggregator;
+		return this.dateAggregator;
 	}
 
 }

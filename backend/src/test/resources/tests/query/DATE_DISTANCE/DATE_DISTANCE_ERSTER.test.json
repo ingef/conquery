@@ -1,6 +1,12 @@
 {
   "type": "QUERY_TEST",
   "label": "DATE_DISTANCE_ERSTER Test",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "expectedCsv": "tests/query/DATE_DISTANCE/expected-erster.csv",
   "query": {
     "type": "CONCEPT_QUERY",
@@ -11,35 +17,26 @@
         "max": "2011-01-01"
       },
       "child": {
-        "type": "OR",
-        "children": [
+        "type": "CONCEPT",
+        "ids": [
+          "alter"
+        ],
+        "tables": [
           {
-            "type": "CONCEPT",
-            "ids": [
-              "alter"
-            ],
-            "label": "Alter",
-            "excludeFromTimeAggregation": false,
-            "tables": [
+            "id": "alter.alterxy",
+            "filters": [
               {
-                "id": "alter.alterxy",
-                "selects": [
-                ],
-                "filters": [
-                  {
-                    "filter": "alter.alterxy.alterseinschrankung",
-                    "type": "INTEGER_RANGE",
-                    "value": {
-                      "min": "11",
-                      "max": "11"
-                    }
-                  }
-                ]
+                "filter": "alter.alterxy.alterseinschrankung",
+                "type": "INTEGER_RANGE",
+                "value": {
+                  "min": "11",
+                  "max": "11"
+                }
               }
-            ],
-            "selects": [
             ]
           }
+        ],
+        "selects": [
         ]
       }
     }

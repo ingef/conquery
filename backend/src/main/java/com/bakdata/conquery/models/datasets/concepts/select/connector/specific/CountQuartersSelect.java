@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -15,6 +17,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQua
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountQuartersSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -59,6 +62,11 @@ public class CountQuartersSelect extends Select implements DaterangeSelectOrFilt
 	@Override
 	public ResultType getResultType() {
 		return ResultType.Primitive.INTEGER;
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<Integer> createResultSetReader(ResultSetProcessor processor) {
+		return processor::getInteger;
 	}
 
 	@Override

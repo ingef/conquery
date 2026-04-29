@@ -1,6 +1,12 @@
 {  
    "type":"QUERY_TEST",
    "label":"DATE_DISTANCE_AGE_SPAN_LETZTER Test",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
    "expectedCsv":"tests/query/DATE_DISTANCE_AGE_SPAN/expected-letzter.csv",
    "query":{  
       "type":"CONCEPT_QUERY",

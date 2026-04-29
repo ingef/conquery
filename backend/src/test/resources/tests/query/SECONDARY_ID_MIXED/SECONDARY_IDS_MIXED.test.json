@@ -1,6 +1,12 @@
 {
   "type": "QUERY_TEST",
   "label": "SECONDARY_ID_MIXED Test",
+  "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "expectedCsv": "tests/query/SECONDARY_ID_MIXED/expected.csv",
   "query": {
     "type": "SECONDARY_ID_QUERY",

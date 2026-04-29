@@ -122,8 +122,8 @@ class RelativeStratification {
 		Interval interval = getInterval(form.getTimeUnit(), Resolution.COMPLETE);
 		Range<Integer> intRange = toGenerateSeriesBounds(form, Resolution.COMPLETE);
 
-		Field<Date> minStratificationDate = stratificationFunctions.shiftByInterval(INDEX_START_NEGATIVE, interval, DSL.val(intRange.getMin()), Offset.NONE);
-		Field<Date> maxStratificationDate = stratificationFunctions.shiftByInterval(INDEX_START_POSITIVE, interval, DSL.val(intRange.getMax()), Offset.NONE);
+		Field<Date> minStratificationDate = stratificationFunctions.shiftByInterval(INDEX_START_NEGATIVE, interval, DSL.inline(intRange.getMin()), Offset.NONE);
+		Field<Date> maxStratificationDate = stratificationFunctions.shiftByInterval(INDEX_START_POSITIVE, interval, DSL.inline(intRange.getMax()), Offset.NONE);
 		ColumnDateRange minAndMaxStratificationDate = stratificationFunctions.ofStartAndEnd(minStratificationDate, maxStratificationDate)
 																			 .as(SharedAliases.STRATIFICATION_BOUNDS.getAlias());
 
@@ -164,16 +164,16 @@ class RelativeStratification {
 	}
 
 	private QueryStep createCompleteFeatureTable(Selects predecessorSelects, Interval interval, Range<Integer> intRange, QueryStep totalBoundsStep) {
-		Field<Integer> featureIndex = DSL.field(DSL.val(-1)).as(SharedAliases.INDEX.getAlias());
+		Field<Integer> featureIndex = DSL.field(DSL.inline(-1)).as(SharedAliases.INDEX.getAlias());
 		SqlIdColumns featureIds = predecessorSelects.getIds().withRelativeStratification(Resolution.COMPLETE, featureIndex, INDEX_SELECTOR);
-		Field<Date> rangeStart = stratificationFunctions.shiftByInterval(INDEX_START_NEGATIVE, interval, DSL.val(intRange.getMin()), Offset.NONE);
+		Field<Date> rangeStart = stratificationFunctions.shiftByInterval(INDEX_START_NEGATIVE, interval, DSL.inline(intRange.getMin()), Offset.NONE);
 		return createIntervalStep(featureIds, rangeStart, INDEX_START_NEGATIVE, Optional.empty(), totalBoundsStep);
 	}
 
 	private QueryStep createCompleteOutcomeTable(Selects predecessorSelects, Interval interval, Range<Integer> intRange, QueryStep totalBoundsStep) {
-		Field<Integer> outcomeIndex = DSL.field(DSL.val(1)).as(SharedAliases.INDEX.getAlias());
+		Field<Integer> outcomeIndex = DSL.field(DSL.inline(1)).as(SharedAliases.INDEX.getAlias());
 		SqlIdColumns outcomeIds = predecessorSelects.getIds().withRelativeStratification(Resolution.COMPLETE, outcomeIndex, INDEX_SELECTOR);
-		Field<Date> rangeEnd = stratificationFunctions.shiftByInterval(INDEX_START_POSITIVE, interval, DSL.val(intRange.getMax()), Offset.NONE);
+		Field<Date> rangeEnd = stratificationFunctions.shiftByInterval(INDEX_START_POSITIVE, interval, DSL.inline(intRange.getMax()), Offset.NONE);
 		return createIntervalStep(outcomeIds, INDEX_START_POSITIVE, rangeEnd, Optional.empty(), totalBoundsStep);
 	}
 

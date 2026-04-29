@@ -35,7 +35,6 @@ class PreprocessingCte extends ConnectorCte {
 											  .validityDate(tableContext.getValidityDate())
 											  .sqlSelects(forPreprocessing)
 											  .build();
-
 		// all where clauses that don't require any preprocessing (connector/child conditions)
 		List<Condition> conditions = new ArrayList<>();
 
@@ -50,12 +49,13 @@ class PreprocessingCte extends ConnectorCte {
 													  .selects(preprocessingSelects)
 													  .conditions(conditions);
 
-		if (!tableContext.getConversionContext().isWithStratification()) {
-			TableLike<Record> rootTable = QueryStep.toTableLike(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING));
-			return builder.fromTable(rootTable);
+		if (tableContext.getConversionContext().isWithStratification()) {
+			return joinWithStratificationTable(forPreprocessing, conditions, tableContext);
 		}
 
-		return joinWithStratificationTable(forPreprocessing, conditions, tableContext);
+		TableLike<Record> rootTable = QueryStep.toTableLike(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING));
+		return builder.fromTable(rootTable);
+
 	}
 
 

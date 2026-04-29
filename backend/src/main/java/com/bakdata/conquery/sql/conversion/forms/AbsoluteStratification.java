@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.forms;
 
+import static org.jooq.impl.DSL.*;
+
 import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +48,7 @@ class AbsoluteStratification {
 	private QueryStep createIntSeriesStep() {
 
 		// not actually required, but Selects expect at least 1 SqlIdColumn
-		Field<Object> rowNumber = DSL.rowNumber().over().coerce(Object.class);
+		Field<Object> rowNumber = rowNumber().over().coerce(Object.class);
 		SqlIdColumns ids = new SqlIdColumns(rowNumber);
 
 		FieldWrapper<Integer> seriesIndex = new FieldWrapper<>(stratificationFunctions.intSeriesField());
@@ -116,7 +118,7 @@ class AbsoluteStratification {
 
 		// complete range shall have a null index because it spans the complete range, but we set it to 1 to ensure we can join tables on index,
 		// because a condition involving null in a join (e.g., null = some_value or null = null) always evaluates to false
-		Field<Integer> index = DSL.field(DSL.val(1, Integer.class)).as(SharedAliases.INDEX.getAlias());
+		Field<Integer> index = field(inline(1)).as(SharedAliases.INDEX.getAlias());
 		SqlIdColumns ids = baseStepSelects.getIds().withAbsoluteStratification(Resolution.COMPLETE, index);
 
 		ColumnDateRange completeRange = baseStepSelects.getStratificationDate().get();

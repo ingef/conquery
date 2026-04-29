@@ -1,0 +1,79 @@
+{
+  "type": "QUERY_TEST",
+  "label": "CQExternal Extra Data Test",
+  "sqlSpec": {
+    "isEnabled": false,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
+  "expectedCsv": "tests/query/EXTERNAL_NEGATION/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "type": "NEGATION",
+          "child": {
+            "type": "EXTERNAL",
+            "format": [
+              "ID"
+            ],
+            "values": [
+              [
+                "result"
+              ],
+              [
+                1
+              ]
+            ]
+          }
+        },
+        {
+          "type": "CONCEPT",
+          "ids": [
+            "test_tree"
+          ],
+          "tables": [
+            {
+              "id": "test_tree.connector"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "test_tree",
+      "type": "TREE",
+      "connectors": {
+        "name": "connector",
+        "table": "test_table",
+        "validityDates": {
+          "label": "datum",
+          "column": "test_table.datum"
+        }
+      }
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/EXTERNAL_NEGATION/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

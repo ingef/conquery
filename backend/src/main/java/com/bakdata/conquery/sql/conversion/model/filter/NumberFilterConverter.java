@@ -42,7 +42,9 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 		Column column = filter.getColumn().resolve();
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
-		Field<Number> field = DSL.field(DSL.name(tableName, columnName), Number.class);
+		Class<? extends Number> numberClass = NumberMapUtil.getType(column);
+
+		Field<? extends Number> field = DSL.field(DSL.name(tableName, columnName), numberClass);
 		IRange<? extends Number, ?> range = filterContext.getValue();
 
 		return new NumberCondition(field, range).condition();

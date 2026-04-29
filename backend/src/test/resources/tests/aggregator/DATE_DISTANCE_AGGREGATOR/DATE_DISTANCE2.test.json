@@ -34,7 +34,8 @@
           "table": "table",
           "validityDates": {
             "label": "indexdatum",
-            "column": "table.indexdatum"
+            "startColumn": "table.start",
+            "endColumn": "table.end"
           },
           "selects": {
             "name": "select",
@@ -56,8 +57,12 @@
         },
         "columns": [
           {
-            "name": "indexdatum",
-            "type": "DATE_RANGE"
+            "name": "start",
+            "type": "DATE"
+          },
+          {
+            "name": "end",
+            "type": "DATE"
           },
           {
             "name": "datum",

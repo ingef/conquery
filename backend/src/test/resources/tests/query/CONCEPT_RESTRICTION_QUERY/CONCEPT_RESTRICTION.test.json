@@ -1,6 +1,12 @@
 {
 	"type": "QUERY_TEST",
 	"label": "CONCEPT_RESTRICTION Test",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
 	"expectedCsv": "tests/query/CONCEPT_RESTRICTION_QUERY/expected-kh.csv",
 	"query": {
 		"type": "CONCEPT_QUERY",

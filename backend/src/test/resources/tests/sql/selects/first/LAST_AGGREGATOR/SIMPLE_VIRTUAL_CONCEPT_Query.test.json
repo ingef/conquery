@@ -1,6 +1,12 @@
 {
   "type": "QUERY_TEST",
   "label": "LAST_AGGREGATOR Test",
+  "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "expectedCsv": "tests/sql/selects/first/LAST_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

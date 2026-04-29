@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.Visitable;
@@ -27,6 +28,7 @@ import com.bakdata.conquery.sql.conversion.query.FormConversionHelper;
 import com.bakdata.conquery.sql.conversion.query.RelativFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.SecondaryIdQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.TableExportQueryConverter;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -34,8 +36,6 @@ import org.jooq.SQLDialect;
 
 //TODO unify with com.bakdata.conquery.models.config.Dialect
 public interface DialectBundle {
-
-	Dialect getDialect();
 
 	private static <R, C extends Converter<?, R, ?>> List<C> customize(List<C> defaults, List<C> substitutes) {
 		Map<Class<?>, C> substituteMap = getSubstituteMap(substitutes);
@@ -51,6 +51,10 @@ public interface DialectBundle {
 								  Function.identity()
 						  ));
 	}
+
+	ResultSetProcessor getResultSetProcessor(ConqueryConfig config);
+
+	Dialect getDialect();
 
 	int getNameMaxLength();
 

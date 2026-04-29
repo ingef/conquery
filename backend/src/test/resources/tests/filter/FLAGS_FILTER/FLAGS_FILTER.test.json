@@ -1,6 +1,12 @@
 {
   "type": "FILTER_TEST",
   "label": "FLAGS FILTER Test",
+  "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "expectedCsv": "tests/filter/FLAGS_FILTER/expected.csv",
   "content": {
     "tables": {
@@ -10,6 +16,10 @@
         "type": "STRING"
       },
       "columns": [
+        {
+          "name": "date",
+          "type": "DATE"
+        },
         {
           "name": "a",
           "type": "BOOLEAN"
@@ -33,7 +43,13 @@
         "B": "table.b",
         "C": "table.c"
       }
-    }
+    },
+    "validityDates": [
+      {
+        "name": "date",
+        "column": "table.date"
+      }
+    ]
   },
   "filterValue": {
     "type": "MULTI_SELECT",

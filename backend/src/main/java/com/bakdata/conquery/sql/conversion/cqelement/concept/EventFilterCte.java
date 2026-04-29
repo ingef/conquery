@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -22,10 +23,17 @@ class EventFilterCte extends ConnectorCte {
 
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
+		List<Condition> conditions = new ArrayList<>();
+
+		if (tableContext.getIds().getSecondaryId().isPresent()) {
+			conditions.add(tableContext.getIds().getSecondaryId().get().isNotNull());
+		}
+
+		conditions.addAll(collectEventFilterConditions(tableContext));
 
 		return QueryStep.builder()
 						.selects(collectSelects(tableContext))
-						.conditions(collectEventFilterConditions(tableContext));
+						.conditions(conditions);
 	}
 
 	@Override

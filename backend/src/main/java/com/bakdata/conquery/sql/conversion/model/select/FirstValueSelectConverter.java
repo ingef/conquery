@@ -11,7 +11,9 @@ public class FirstValueSelectConverter implements SelectConverter<FirstValueSele
 		return ValueSelectUtil.createValueSelect(
 				select.getColumn().resolve(),
 				selectContext.getNameGenerator().selectName(select),
-				Field::asc, selectContext
+				Field::asc,
+				select.getSubstringRange(),
+				selectContext
 		);
 	}
 

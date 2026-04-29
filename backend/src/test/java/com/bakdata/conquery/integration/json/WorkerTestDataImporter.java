@@ -1,11 +1,13 @@
 package com.bakdata.conquery.integration.json;
 
-import static com.bakdata.conquery.integration.common.LoadingUtil.importInternToExternMappers;
+import static com.bakdata.conquery.integration.common.LoadingUtil.*;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.core.UriBuilder;
+import java.util.List;
 
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
@@ -29,7 +31,7 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		importSearchIndexes(support, test.getSearchIndexes());
 		importTables(support, content.getTables(), content.isAutoConcept());
 		importConcepts(support, test.getRawConcepts());
-		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, content.getTables()));
+		waitUntilDone(support, () -> importTableContents(support, content.getTables()));
 		importIdMapping(support, content);
 		importPreviousQueries(support, content);
 		waitUntilDone(support, () -> LoadingUtil.updateMatchingStats(support));
@@ -43,7 +45,7 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		importSecondaryIds(support, content.getSecondaryIds());
 		importTables(support, content.getTables(), content.isAutoConcept());
 		importConcepts(support, test.getRawConcepts());
-		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, content.getTables()));
+		waitUntilDone(support, () -> importTableContents(support, content.getTables()));
 		importIdMapping(support, content);
 		importPreviousQueries(support, content);
 	}
@@ -72,14 +74,15 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		test.getConcept().setConnectors(Collections.singletonList((ConceptTreeConnector) test.getConnector()));
 
 		waitUntilDone(support, () -> LoadingUtil.uploadConcept(support, support.getDataset(), test.getConcept()));
-		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, content.getTables()));
+		waitUntilDone(support, () -> importTableContents(support, content.getTables()));
 		waitUntilDone(support, () -> LoadingUtil.updateMatchingStats(support));
 	}
 
 
 	@Override
 	public void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
-		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, tables));
+		List<File> cqpps = generateCqpp(support, tables);
+		importCqppFiles(support, cqpps);
 	}
 
 	@Override

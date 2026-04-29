@@ -1,6 +1,12 @@
 {
   "type": "QUERY_TEST",
   "label": "DISTINCT Substring Mapped",
+  "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "expectedCsv": "tests/aggregator/SUBSTRING/DISTINCT/expected-mapped.csv",
   "query": {
     "type": "CONCEPT_QUERY",

@@ -1,6 +1,12 @@
 {
   "type": "QUERY_TEST",
   "label": "FIRST Substring",
+  "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "expectedCsv": "tests/aggregator/SUBSTRING/FIRST/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
