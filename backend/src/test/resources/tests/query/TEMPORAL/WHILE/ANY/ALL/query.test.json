@@ -1,6 +1,12 @@
 {
   "type": "QUERY_TEST",
   "label": "Temporal Test",
+  "sqlSpec": {
+    "isEnabled": false,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "expectedCsv": "tests/query/TEMPORAL/WHILE/ANY/ALL/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

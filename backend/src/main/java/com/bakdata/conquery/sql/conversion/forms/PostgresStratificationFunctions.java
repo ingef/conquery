@@ -27,11 +27,11 @@ import org.jooq.impl.SQLDataType;
 public class PostgresStratificationFunctions extends StratificationFunctions {
 
 	private static final Map<Interval, Field<String>> INTERVAL_MAP = Map.of(
-			Interval.ONE_YEAR_INTERVAL, DSL.val("1 year"),
-			Interval.YEAR_AS_DAYS_INTERVAL, DSL.val("365 days"),
-			Interval.QUARTER_INTERVAL, DSL.val("3 months"),
-			Interval.NINETY_DAYS_INTERVAL, DSL.val("90 days"),
-			Interval.ONE_DAY_INTERVAL, DSL.val("1 day")
+			Interval.ONE_YEAR_INTERVAL, DSL.inline("1 year"),
+			Interval.YEAR_AS_DAYS_INTERVAL, DSL.inline("365 days"),
+			Interval.QUARTER_INTERVAL, DSL.inline("3 months"),
+			Interval.NINETY_DAYS_INTERVAL, DSL.inline("90 days"),
+			Interval.ONE_DAY_INTERVAL, DSL.inline("1 day")
 	);
 
 	private static final Keyword INTERVAL_KEYWORD = DSL.keyword("interval");
@@ -60,7 +60,7 @@ public class PostgresStratificationFunctions extends StratificationFunctions {
 		return DSL.field(
 				"{0} + {1} {2}",
 				Date.class,
-				dateTruncate(DSL.val("year"), inclusiveUpper(dateRange)),
+				dateTruncate(DSL.inline("year"), inclusiveUpper(dateRange)),
 				INTERVAL_KEYWORD,
 				INTERVAL_MAP.get(Interval.ONE_YEAR_INTERVAL)
 		);
@@ -75,7 +75,7 @@ public class PostgresStratificationFunctions extends StratificationFunctions {
 		// we add +1 year to the quarter aligned end if it is less than the upper bound we want to align
 		return DSL.when(
 						  yearEndQuarterAligned.lessThan(upperBound),
-						  shiftByInterval(yearEndQuarterAligned, Interval.ONE_YEAR_INTERVAL, DSL.val(1), Offset.NONE)
+						  shiftByInterval(yearEndQuarterAligned, Interval.ONE_YEAR_INTERVAL, DSL.inline(1), Offset.NONE)
 				  )
 				  .otherwise(yearEndQuarterAligned);
 	}
@@ -99,7 +99,7 @@ public class PostgresStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Field<Date> jumpToNextQuarterStart(Field<Date> date) {
-		Field<Timestamp> yearStart = dateTruncate(DSL.val("year"), date);
+		Field<Timestamp> yearStart = dateTruncate(DSL.inline("year"), date);
 		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, date);
 		return addQuarters(yearStart, quarter, Offset.NONE);
 	}
@@ -199,7 +199,7 @@ public class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	private Field<Timestamp> jumpToYearStart(Field<Date> date) {
-		return dateTruncate(DSL.val("year"), date);
+		return dateTruncate(DSL.inline("year"), date);
 	}
 
 	private static Field<Date> castExpressionToDate(Field<Timestamp> shiftedDate) {

@@ -1,12 +1,5 @@
 package com.bakdata.conquery.sql.conversion.query;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -28,6 +21,12 @@ import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Preconditions;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -144,13 +143,11 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 
 	private static Optional<ColumnDateRange> convertTablesValidityDate(CQTable table, String alias, ConversionContext context) {
 		if (table.findValidityDate() == null) {
-			return Optional.of(ColumnDateRange.empty());
+			return Optional.of(context.getFunctionProvider().emptyColumnDateRange());
 		}
 		final SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		final ColumnDateRange validityDate = functionProvider.forValidityDate(table.findValidityDate());
-		// when exporting tables, we want the validity date as a single-column daterange string expression straightaway
-		final Field<String> asStringExpression = functionProvider.encloseInCurlyBraces(functionProvider.daterangeStringExpression(validityDate));
-		return Optional.of(ColumnDateRange.of(asStringExpression).asValidityDateRange(alias));
+		return Optional.of(validityDate.asValidityDateRange(alias));
 	}
 
 	private static List<FieldWrapper<?>> initializeFields(CQTable cqTable, Map<ColumnId, Integer> positions) {
@@ -207,7 +204,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 
 	private static Field<String> createSourceInfoSelect(CQTable cqTable) {
 		final String tableName = cqTable.getConnector().resolve().resolveTableId().getTable();
-		return DSL.val(tableName).as(SharedAliases.SOURCE.getAlias());
+		return DSL.inline(tableName).as(SharedAliases.SOURCE.getAlias());
 	}
 
 	private static Field<?> createColumnSelect(Column column, int position) {

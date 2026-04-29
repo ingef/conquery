@@ -7,17 +7,30 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.DateReader;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 
 @RequiredArgsConstructor
-class DefaultResultSetProcessor implements ResultSetProcessor {
+public class DefaultResultSetProcessor implements ResultSetProcessor {
 
-	private final ConqueryConfig config;
-	private final SqlCDateSetParser sqlCDateSetParser;
+	protected final ConqueryConfig config;
+	protected final SqlCDateSetParser dateSetParser;
+
+	/**
+	 * Use to keep null values for primitive data types.
+	 * <p>
+	 * For example, calling a primitives' ResultSet getter like getDouble, getInt etc. straightaway will never return null.
+	 */
+	private static <T> T checkForNullElseGet(ResultSet resultSet, int columnIndex, Getter getter, Class<T> resultType) throws SQLException {
+
+		if (resultSet.getObject(columnIndex) == null) {
+			return null;
+		}
+		return resultType.cast(getter.getFromResultSet(columnIndex));
+	}
 
 	@Override
 	public String getString(ResultSet resultSet, int columnIndex) throws SQLException {
@@ -60,37 +73,37 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	@Override
 	public List<Integer> getDateRange(ResultSet resultSet, int columnIndex) throws SQLException {
-		return this.sqlCDateSetParser.toEpochDayRange(resultSet.getString(columnIndex));
+		return this.dateSetParser.toEpochDayRange(resultSet.getString(columnIndex));
 	}
 
 	@Override
 	public List<List<Integer>> getDateRangeList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return this.sqlCDateSetParser.toEpochDayRangeList(resultSet.getString(columnIndex));
+		return this.dateSetParser.toEpochDayRangeList(resultSet.getString(columnIndex));
 	}
 
 	@Override
 	public List<String> getStringList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return fromString(resultSet, columnIndex, (string) -> string);
+		return list(resultSet, columnIndex, (string) -> string);
 	}
 
 	@Override
 	public List<Boolean> getBooleanList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return fromString(resultSet, columnIndex, Boolean::valueOf);
+		return list(resultSet, columnIndex, Boolean::valueOf);
 	}
 
 	@Override
 	public List<Integer> getIntegerList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return fromString(resultSet, columnIndex, Integer::valueOf);
+		return list(resultSet, columnIndex, Integer::valueOf);
 	}
 
 	@Override
 	public List<Double> getDoubleList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return fromString(resultSet, columnIndex, Double::valueOf);
+		return list(resultSet, columnIndex, Double::valueOf);
 	}
 
 	@Override
 	public List<BigDecimal> getMoneyList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return fromString(
+		return list(
 				resultSet,
 				columnIndex,
 				(string) -> BigDecimal.valueOf(Double.parseDouble(string))
@@ -100,40 +113,30 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	@Override
 	public List<Number> getDateList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return fromString(resultSet, columnIndex, this::parseWithDateReader);
+		return list(resultSet, columnIndex, this::parseWithDateReader);
 	}
 
 	private Number parseWithDateReader(String string) {
 		return config.getLocale().getDateReader().parseToLocalDate(string).toEpochDay();
 	}
 
-	private <T> List<T> fromString(ResultSet resultSet, int columnIndex, Function<String, T> parseFunction) throws SQLException {
+	private <T> List<T> list(ResultSet resultSet, int columnIndex, Function<String, T> parseFunction) throws SQLException {
 		String arrayExpression = resultSet.getString(columnIndex);
 		if (arrayExpression == null) {
 			return null;
+
 		}
-		return Arrays.stream(arrayExpression.split(String.valueOf(ResultSetProcessor.UNIT_SEPARATOR)))
-					 .filter(Predicate.not(String::isBlank))
-					 .map(parseFunction)
-					 .toList();
+
+		List<T> result = Arrays.stream(arrayExpression.split(String.valueOf(UNIT_SEPARATOR)))
+							   .filter(Strings::isNotBlank)
+							   .map(parseFunction)
+							   .toList();
+		return result.isEmpty() ? null : result;
 	}
 
 	@FunctionalInterface
 	private interface Getter {
 		Object getFromResultSet(int columnIndex) throws SQLException;
-	}
-
-	/**
-	 * Use to keep null values for primitive data types.
-	 * <p>
-	 * For example, calling a primitives' ResultSet getter like getDouble, getInt etc. straightaway will never return null.
-	 */
-	private static <T> T checkForNullElseGet(ResultSet resultSet, int columnIndex, Getter getter, Class<T> resultType) throws SQLException {
-
-		if (resultSet.getObject(columnIndex) == null) {
-			return null;
-		}
-		return resultType.cast(getter.getFromResultSet(columnIndex));
 	}
 
 }

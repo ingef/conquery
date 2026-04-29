@@ -1,0 +1,105 @@
+{
+  "type": "QUERY_TEST",
+  "label": "OR NEGATION DATE LOGIC Test",
+  "expectedCsv": "tests/query/LOGICAL/OR_NEGATION_DATE_LOGICAL/expected.csv",
+  "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "dateAggregationMode": "LOGICAL",
+    "root": {
+      "type": "OR",
+      "createExists": true,
+      "children": [
+        {
+          "type": "NEGATION",
+          "child": {
+            "type": "CONCEPT",
+            "ids": [
+              "tree.a"
+            ],
+            "tables": [
+              {
+                "id": "tree.connector"
+              }
+            ]
+          }
+        },
+        {
+          "type": "CONCEPT",
+          "ids": [
+            "tree.b"
+          ],
+          "tables": [
+            {
+              "id": "tree.connector"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "tree",
+      "type": "TREE",
+      "connectors": {
+        "name": "connector",
+        "column": "table.column",
+        "validityDates": {
+          "name": "datum",
+          "startColumn": "table.start",
+          "endColumn": "table.end"
+        }
+      },
+      "children": [
+        {
+          "name": "a",
+          "condition": {
+            "type": "EQUAL",
+            "values": "A"
+          },
+          "children": []
+        },
+        {
+          "name": "b",
+          "condition": {
+            "type": "EQUAL",
+            "values": "B"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/LOGICAL/OR_NEGATION_DATE_LOGICAL/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "start",
+            "type": "DATE"
+          },
+          {
+            "name": "end",
+            "type": "DATE"
+          },
+          {
+            "name": "column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

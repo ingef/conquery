@@ -1,6 +1,12 @@
 {  
    "type":"QUERY_TEST",
    "label":"NUMBER_MISSING_QUERY Test",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
    "expectedCsv":"tests/query/NUMBER_MISSING/expected.csv",
    "query":{  
       "type":"CONCEPT_QUERY",

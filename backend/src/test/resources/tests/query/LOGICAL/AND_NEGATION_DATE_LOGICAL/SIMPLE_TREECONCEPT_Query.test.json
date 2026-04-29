@@ -1,6 +1,12 @@
 {
   "type": "QUERY_TEST",
   "label": "AND NEGATION DATE LOGIC Test",
+  "sqlSpec": {
+    "isEnabled": false,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "expectedCsv": "tests/query/LOGICAL/AND_NEGATION_DATE_LOGICAL/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

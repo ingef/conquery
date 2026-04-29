@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -46,5 +47,10 @@ public class SecondaryIdResultInfo extends ResultInfo {
 	@Override
 	public String defaultColumnName(PrintSettings printSettings) {
 		return userColumnName(printSettings);
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+		return resultSetProcessor::getString;
 	}
 }

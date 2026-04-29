@@ -35,7 +35,7 @@ class InvertCte extends DateAggregationCte {
 	}
 
 	@Override
-	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context) {
+	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor) {
 
 		QueryStep rowNumberStep = context.getStep(DateAggregationCteStep.ROW_NUMBER);
 

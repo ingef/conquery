@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAgg
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
@@ -65,6 +66,10 @@ public class CountSelect extends Select {
 		return new CountSqlAggregator();
 	}
 
+	@Override
+	public ResultSetProcessor.Reader<Integer> createResultSetReader(ResultSetProcessor processor) {
+		return processor::getInteger;
+	}
 
 	@Override
 	public ResultType getResultType() {

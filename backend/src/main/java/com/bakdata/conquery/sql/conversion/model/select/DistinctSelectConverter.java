@@ -1,15 +1,17 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.name;
+import static org.jooq.impl.DSL.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.DistinctSelect;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
@@ -17,6 +19,8 @@ import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
@@ -68,12 +72,12 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 		String alias = selectContext.getNameGenerator().selectName(distinctSelect);
 
 		ConnectorSqlTables tables = selectContext.getTables();
-		FieldWrapper<Object> preprocessingSelect = new FieldWrapper<>(field(name(tables.getRootTable(), distinctSelect.getColumn().getColumn())).as(alias));
+		SingleColumnSqlSelect preprocessingSelect = MappableSingleColumnSelect.getSubstringSelect(distinctSelect.getColumn().get(), distinctSelect.getSubstringRange(), selectContext, alias);
 
 		QueryStep distinctSelectCte = createDistinctSelectCte(preprocessingSelect, alias, selectContext);
 		QueryStep aggregatedCte = createAggregationCte(selectContext, preprocessingSelect, distinctSelectCte, alias);
 
-		ExtractingSqlSelect<Object> finalSelect = preprocessingSelect.qualify(tables.cteName(ConceptCteStep.AGGREGATION_FILTER));
+		SingleColumnSqlSelect finalSelect = preprocessingSelect.qualify(tables.cteName(ConceptCteStep.AGGREGATION_FILTER));
 
 		return ConnectorSqlSelects.builder()
 								  .preprocessingSelect(preprocessingSelect)
@@ -84,7 +88,7 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 
 	private static QueryStep createAggregationCte(
 			SelectContext<ConnectorSqlTables> selectContext,
-			FieldWrapper<Object> preprocessingSelect,
+			SingleColumnSqlSelect preprocessingSelect,
 			QueryStep distinctSelectCte,
 			String alias
 	) {
@@ -110,13 +114,14 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 	}
 
 	private static QueryStep createDistinctSelectCte(
-			FieldWrapper<Object> preprocessingSelect,
+			SingleColumnSqlSelect preprocessingSelect,
 			String alias,
 			SelectContext<ConnectorSqlTables> selectContext
 	) {
 		// values to aggregate must be event-filtered first
 		String eventFilterTable = selectContext.getTables().cteName(ConceptCteStep.EVENT_FILTER);
-		ExtractingSqlSelect<Object> qualified = preprocessingSelect.qualify(eventFilterTable);
+		SingleColumnSqlSelect qualified = preprocessingSelect.qualify(eventFilterTable);
+
 		SqlIdColumns ids = selectContext.getIds().qualify(eventFilterTable);
 
 		Selects selects = Selects.builder()

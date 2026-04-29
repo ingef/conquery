@@ -1,6 +1,12 @@
 {
   "type": "FILTER_TEST",
   "label": "DURATION_SUM_2 Test",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "expectedCsv": "tests/filter/DURATION_SUM_2/expected_DURATION_SUM_2_Filter.csv",
   "content": {
     "tables": {

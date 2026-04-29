@@ -1,6 +1,11 @@
 {
   "type": "FILTER_TEST",
   "label": "SELECT Substring",
+  "sqlSpec": {
+    "isEnabled": false,
+    "supportedDialects": [
+    ]
+  },
   "expectedCsv": "tests/filter/SELECT_SUBSTRING/expected.csv",
   "content": {
     "tables":

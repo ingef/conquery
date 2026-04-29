@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
-import static org.jooq.impl.DSL.nullif;
+import static com.bakdata.conquery.sql.execution.ResultSetProcessor.UNIT_SEPARATOR;
+import static org.jooq.impl.DSL.*;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -31,9 +32,11 @@ import org.jooq.impl.SQLDataType;
 
 public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
-	private static final char DELIMITER = ',';
-	private static final String MAX_DATE_VALUE = "9999-12-31";
-	private static final String MIN_DATE_VALUE = "0001-01-01";
+	public static final String MAX_DATE_VALUE = "9999-12-31";
+	public static final String MIN_DATE_VALUE = "0001-01-01";
+	public static final String DATERANGE_SEPARATOR = "/";
+
+	public static final char DATE_SET_SEPARATOR = UNIT_SEPARATOR;
 	private static final String ANY_CHAR_REGEX = ".*";
 	private static final String NOP_TABLE = "DUMMY";
 
@@ -45,7 +48,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Table<? extends Record> getNoOpTable() {
 		// see https://help.sap.com/docs/SAP_DATA_HUB/e8d3e271a4554a35a5a6136d3d6af3f8/4d4b939b37b84bea8b2aa2ada640c392.html
-		return DSL.table(DSL.name(NOP_TABLE));
+		return table(name(NOP_TABLE));
 	}
 
 	@Override
@@ -58,7 +61,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		Condition dateRestrictionStartsBeforeDate = dateRestriction.getStart().lessThan(daterange.getEnd());
 		Condition dateRestrictionEndsAfterDate = dateRestriction.getEnd().greaterThan(daterange.getStart());
 
-		return DSL.condition(dateRestrictionStartsBeforeDate.and(dateRestrictionEndsAfterDate));
+		return condition(dateRestrictionStartsBeforeDate.and(dateRestrictionEndsAfterDate));
 	}
 
 	@Override
@@ -93,18 +96,28 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Field<Date> toDateField(String dateExpression) {
-		return DSL.function(
+		return function(
 				"TO_DATE",
 				Date.class,
-				DSL.val(dateExpression),
-				DSL.val(DEFAULT_DATE_FORMAT)
+				inline(dateExpression),
+				inline(DEFAULT_DATE_FORMAT)
 		);
+	}
+
+	@Override
+	public ColumnDateRange emptyColumnDateRange() {
+		return ColumnDateRange.of(field(inline(null, Date.class)), field(inline(null, Date.class)));
 	}
 
 
 	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate) {
 		return toColumnDateRange(validityDate);
+	}
+
+	@Override
+	public ColumnDateRange allRange() {
+		return ColumnDateRange.of(toDateField(MIN_DATE_VALUE).as("all_range_start"), toDateField(MAX_DATE_VALUE).as("all_range_end"));
 	}
 
 	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
@@ -130,14 +143,14 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
 
-		Field<Date> rangeStart = DSL.coalesce(
-				DSL.field(DSL.name(tableName, startColumn.getName()), Date.class),
+		Field<Date> rangeStart = coalesce(
+				field(name(tableName, startColumn.getName()), Date.class),
 				toDateField(MIN_DATE_VALUE)
 		);
 		// when aggregating date ranges, we want to treat the last day of the range as excluded,
 		// so when using the date value of the end column, we add +1 day as end of the date range
-		Field<Date> rangeEnd = DSL.coalesce(
-				addDays(DSL.field(DSL.name(tableName, endColumn.getName()), Date.class), DSL.val(1)),
+		Field<Date> rangeEnd = coalesce(
+				addDays(field(name(tableName, endColumn.getName()), Date.class), inline(1)),
 				toDateField(MAX_DATE_VALUE)
 		);
 
@@ -146,11 +159,20 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays) {
-		return DSL.function(
+		return function(
 				"ADD_DAYS",
 				Date.class,
 				dateColumn,
 				amountOfDays
+		);
+	}
+
+	@Override
+	public ColumnDateRange allRangeIf(Condition condition) {
+		return ColumnDateRange.of(
+				when(condition.isTrue(),
+					 allRange()
+				)
 		);
 	}
 
@@ -160,13 +182,13 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		ColumnDateRange validityDateRange = toColumnDateRange(validityDate);
 		ColumnDateRange restriction = toColumnDateRange(dateRestriction);
 
-		Field<Date> lowerBound = DSL.when(validityDateRange.getStart().lessThan(restriction.getStart()), restriction.getStart())
-									.otherwise(validityDateRange.getStart());
+		Field<Date> lowerBound = when(validityDateRange.getStart().lessThan(restriction.getStart()), restriction.getStart())
+				.otherwise(validityDateRange.getStart());
 
 		Field<Date> maxDate = toDateField(MAX_DATE_VALUE); // we want to add +1 day to the end date - except when it's the max date already
-		Field<Date> restrictionUpperBound = DSL.when(restriction.getEnd().eq(maxDate), maxDate).otherwise(addDays(restriction.getEnd(), DSL.val(1)));
-		Field<Date> upperBound = DSL.when(validityDateRange.getEnd().greaterThan(restriction.getEnd()), restrictionUpperBound)
-									.otherwise(validityDateRange.getEnd());
+		Field<Date> restrictionUpperBound = when(restriction.getEnd().eq(maxDate), maxDate).otherwise(addDays(restriction.getEnd(), inline(1)));
+		Field<Date> upperBound = when(validityDateRange.getEnd().greaterThan(restriction.getEnd()), restrictionUpperBound)
+				.otherwise(validityDateRange.getEnd());
 
 		return ColumnDateRange.of(lowerBound, upperBound);
 	}
@@ -221,8 +243,8 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public ColumnDateRange aggregated(ColumnDateRange columnDateRange) {
 		return ColumnDateRange.of(
-									  DSL.min(columnDateRange.getStart()),
-									  DSL.max(columnDateRange.getEnd())
+									  min(columnDateRange.getStart()),
+									  max(columnDateRange.getEnd())
 							  )
 							  .as(columnDateRange.getAlias());
 	}
@@ -247,53 +269,43 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<String> daterangeStringAggregation(ColumnDateRange columnDateRange) {
+	public Field<String> dateRangeAggregation(ColumnDateRange columnDateRange) {
 
 		Field<String> stringAggregation = stringAggregation(
-				daterangeStringExpression(columnDateRange),
-				DSL.toChar(DELIMITER),
+				dateRangeToField(columnDateRange),
+				toChar(DATE_SET_SEPARATOR),
 				List.of(columnDateRange.getStart())
 		);
 
 		// encapsulate all ranges (including empty ranges) within curly braces
-		return DSL.when(stringAggregation.isNull(), DSL.val("{}"))
-				  .otherwise(encloseInCurlyBraces(stringAggregation));
+		return stringAggregation;
 	}
 
 	@Override
-	public Field<String> daterangeStringExpression(ColumnDateRange columnDateRange) {
+	public Field<String> dateRangeToField(ColumnDateRange columnDateRange) {
 
 		if (columnDateRange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("HANA does not support single-column date ranges.");
 		}
 
-		Field<Date> startDate = columnDateRange.getStart();
-		Field<Date> endDate = columnDateRange.getEnd();
-
-		Field<String> startDateExpression = cast(startDate, SQLDataType.VARCHAR);
-		Field<String> endDateExpression = cast(endDate, SQLDataType.VARCHAR);
-
-		Field<String> withMinDateReplaced = replace(startDateExpression, MIN_DATE_VALUE, MINUS_INFINITY_SIGN);
-		Field<String> withMaxDateReplaced = replace(endDateExpression, MAX_DATE_VALUE, INFINITY_SIGN);
-
-		// add interval braces to ranges: start is allways included, end is allways excluded except if it's the maximum/infinity date
-		Field<String> enclosedMinDate = DSL.field("'[' || {0}", String.class, withMinDateReplaced);
-		Field<String> enclosedMaxDate = DSL.when(withMaxDateReplaced.like(INFINITY_SIGN), DSL.field("{0} || ']'", String.class, withMaxDateReplaced))
-										   .otherwise(DSL.field("{0} || ')'", String.class, withMaxDateReplaced));
-
-		return DSL.field("{0} || ',' || {1}", String.class, enclosedMinDate, enclosedMaxDate);
+		// translation is handled in printer
+		return field("'[' || {0} || {2} || {1} || ')'", String.class,
+					 cast(columnDateRange.getStart(), SQLDataType.VARCHAR),
+					 cast(columnDateRange.getEnd(), SQLDataType.VARCHAR),
+					 DATERANGE_SEPARATOR
+		);
 	}
 
 	@Override
 	public <T> Field<T> cast(Field<?> field, DataType<T> type) {
 		// HANA would require an explicit length param when using CAST with varchar type, TO_VARCHAR does not require this
 		if (type == SQLDataType.VARCHAR) {
-			return DSL.function("TO_VARCHAR", type.getType(), field);
+			return function("TO_VARCHAR", type.getType(), field);
 		}
-		return DSL.function(
+		return function(
 				"CAST",
 				type.getType(),
-				DSL.field("%s AS %s".formatted(field, type.getName()))
+				field("{0} AS {1}", field, keyword(type.getName()))
 		);
 	}
 
@@ -307,7 +319,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 			default -> throw new UnsupportedOperationException("Given ChronoUnit %s is not supported.");
 		};
 
-		Field<Integer> dateDistance = DSL.function(betweenFunction, Integer.class, startDate, endDate);
+		Field<Integer> dateDistance = function(betweenFunction, Integer.class, startDate, endDate);
 
 		// HANA does not support decades or centuries directly
 		dateDistance = switch (datePart) {
@@ -321,25 +333,35 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Field<Date> lower(Field<?> daterange) {
+		throw new UnsupportedOperationException("HANA does not support single-column date ranges.");
+	}
+
+	@Override
+	public Field<Date> upper(Field<?> daterange) {
+		throw new UnsupportedOperationException("HANA does not support single-column date ranges.");
+	}
+
+	@Override
 	public <T> Field<T> random(Field<T> column) {
-		return DSL.field(
+		return field(
 				"{0}({1} {2})",
 				column.getType(),
-				DSL.keyword("FIRST_VALUE"),
+				keyword("FIRST_VALUE"),
 				column,
-				DSL.orderBy(DSL.function("RAND", Object.class))
+				orderBy(function("RAND", Object.class))
 		);
 	}
 
 	@Override
 	public Condition likeRegex(Field<String> field, String pattern) {
-		return DSL.condition("{0} {1} {2}", field, DSL.keyword("LIKE_REGEXPR"), pattern);
+		return condition("{0} {1} {2}", field, keyword("LIKE_REGEXPR"), pattern);
 	}
 
 
 	@Override
 	public Field<String> yearQuarter(Field<Date> dateField) {
-		return DSL.function("QUARTER", String.class, dateField);
+		return function("QUARTER", String.class, dateField);
 	}
 
 }

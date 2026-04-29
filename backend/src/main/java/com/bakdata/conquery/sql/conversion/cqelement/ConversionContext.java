@@ -25,6 +25,7 @@ import lombok.Singular;
 import lombok.Value;
 import lombok.With;
 
+//TODO this class is less context and more state. It's also incredibly dangerous because it hides a lot of moving parts and creates indirections.
 @Value
 @With
 @Builder(toBuilder = true)
@@ -100,7 +101,7 @@ public class ConversionContext implements Context {
 	 * Get the last query {@link QueryStep} that has been added to this context query steps.
 	 */
 	public QueryStep getLastConvertedStep() {
-		return this.querySteps.get(this.querySteps.size() - 1);
+		return this.querySteps.getLast();
 	}
 
 }
