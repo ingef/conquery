@@ -3,7 +3,7 @@
   "sqlSpec": {
     "isEnabled": true,
     "supportedDialects": [
-      "POSTGRESQL"
+      "POSTGRESQL", "HANA"
     ]
   },
   "label": "COUNT_QUARTERS filter on single postgres daterange column",

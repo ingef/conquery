@@ -5,7 +5,7 @@
   "sqlSpec": {
     "isEnabled": true,
     "supportedDialects": [
-      "POSTGRESQL"
+      "POSTGRESQL", "HANA"
     ]
   },
   "query": {

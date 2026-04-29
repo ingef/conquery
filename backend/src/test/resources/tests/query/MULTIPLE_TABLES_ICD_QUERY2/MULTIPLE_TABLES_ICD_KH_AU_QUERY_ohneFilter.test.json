@@ -4,7 +4,7 @@
   "sqlSpec": {
     "isEnabled": true,
     "supportedDialects": [
-      "POSTGRESQL"
+      "POSTGRESQL", "HANA"
     ]
   },
   "expectedCsv": "tests/query/MULTIPLE_TABLES_ICD_QUERY2/expected.csv",

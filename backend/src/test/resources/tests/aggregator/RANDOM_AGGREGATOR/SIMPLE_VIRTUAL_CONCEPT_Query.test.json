@@ -4,7 +4,7 @@
   "sqlSpec": {
     "isEnabled": true,
     "supportedDialects": [
-      "POSTGRESQL"
+      "POSTGRESQL", "HANA"
     ]
   },
   "expectedCsv": "tests/aggregator/RANDOM_AGGREGATOR/expected.csv",

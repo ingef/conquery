@@ -4,7 +4,7 @@
     "sqlSpec": {
     "isEnabled": true,
     "supportedDialects": [
-      "POSTGRESQL"
+      "POSTGRESQL", "HANA"
     ]
   },
 	"expectedCsv": "tests/query/SECONDARY_ID_EXTERNAL_LOGICAL/expected.csv",

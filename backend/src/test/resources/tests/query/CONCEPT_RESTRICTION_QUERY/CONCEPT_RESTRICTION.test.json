@@ -4,7 +4,7 @@
     "sqlSpec": {
     "isEnabled": true,
     "supportedDialects": [
-      "POSTGRESQL"
+      "POSTGRESQL", "HANA"
     ]
   },
 	"expectedCsv": "tests/query/CONCEPT_RESTRICTION_QUERY/expected-kh.csv",
