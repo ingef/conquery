@@ -10,20 +10,25 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Getter;
+import lombok.ToString;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 //TODO split this class up into Dialect specific versions.
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 public class ColumnDateRange implements SqlSelect {
 
 	private static final String VALIDITY_DATE_COLUMN_NAME_SUFFIX = "_validity_date";
 	private static final String START_SUFFIX = "_start";
 	private static final String END_SUFFIX = "_end";
 
+	@ToString.Include
 	private final Field<Object> range;
+	@ToString.Include
 	private final Field<Date> start;
+	@ToString.Include
 	private final Field<Date> end;
 	private final String alias;
 

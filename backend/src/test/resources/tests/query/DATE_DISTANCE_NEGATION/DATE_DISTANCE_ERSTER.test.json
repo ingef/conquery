@@ -94,14 +94,6 @@
 			   {  
                   "name":"erster",
                   "type":"DATE"
-               },
-			   {  
-                  "name":"letzter",
-                  "type":"DATE"
-               },
-               {  
-                  "name":"versichertenzeit",
-                  "type":"DATE_RANGE"
                }
             ]
          }

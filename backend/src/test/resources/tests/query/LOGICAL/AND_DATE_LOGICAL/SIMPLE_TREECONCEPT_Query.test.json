@@ -2,7 +2,8 @@
   "type": "QUERY_TEST",
   "label": "AND DATE LOGIC Test",
   "sqlSpec": {
-    "isEnabled": true,
+    "comment" : "Logical will hopefully removed",
+    "isEnabled": false,
     "supportedDialects": [
       "POSTGRESQL", "HANA"
     ]

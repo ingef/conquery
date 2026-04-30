@@ -1,10 +1,11 @@
 {
   "type": "QUERY_TEST",
   "label": "RAW_TABLE_EXPORT Test",
-    "sqlSpec": {
+  "sqlSpec": {
     "isEnabled": true,
     "supportedDialects": [
-      "POSTGRESQL", "HANA"
+      "POSTGRESQL",
+      "HANA"
     ]
   },
   "expectedCsv": "tests/query/TABLE_EXPORT/raw_expected.csv",
@@ -88,7 +89,8 @@
           "column": "table1.code",
           "validityDates": {
             "label": "datum",
-            "column": "table1.datum"
+            "startColumn": "table1.start",
+            "endColumn": "table1.end"
           },
           "filters": {
             "name": "value",
@@ -101,7 +103,8 @@
           "column": "table2.code",
           "validityDates": {
             "label": "datum",
-            "column": "table2.datum"
+            "startColumn": "table2.start",
+            "endColumn": "table2.end"
           },
           "filters": {
             "name": "value",
@@ -147,8 +150,12 @@
             "type": "REAL"
           },
           {
-            "name": "datum",
-            "type": "DATE_RANGE"
+            "name": "start",
+            "type": "DATE"
+          },
+          {
+            "name": "end",
+            "type": "DATE"
           },
           {
             "name": "code",
@@ -174,8 +181,12 @@
             "type": "REAL"
           },
           {
-            "name": "datum",
-            "type": "DATE_RANGE"
+            "name": "start",
+            "type": "DATE"
+          },
+          {
+            "name": "end",
+            "type": "DATE"
           },
           {
             "name": "code",

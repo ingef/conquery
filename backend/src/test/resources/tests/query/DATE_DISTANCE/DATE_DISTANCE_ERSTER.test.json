@@ -1,10 +1,11 @@
 {
   "type": "QUERY_TEST",
   "label": "DATE_DISTANCE_ERSTER Test",
-    "sqlSpec": {
+  "sqlSpec": {
     "isEnabled": true,
     "supportedDialects": [
-      "POSTGRESQL", "HANA"
+      "POSTGRESQL",
+      "HANA"
     ]
   },
   "expectedCsv": "tests/query/DATE_DISTANCE/expected-erster.csv",
@@ -23,10 +24,10 @@
         ],
         "tables": [
           {
-            "id": "alter.alterxy",
+            "id": "alter.connector",
             "filters": [
               {
-                "filter": "alter.alterxy.alterseinschrankung",
+                "filter": "alter.connector.alterseinschrankung",
                 "type": "INTEGER_RANGE",
                 "value": {
                   "min": "11",
@@ -43,19 +44,18 @@
   },
   "concepts": [
     {
-      "label": "alter",
+      "name": "alter",
       "type": "TREE",
       "connectors": [
         {
-          "label": "alterxy",
+          "name" : "connector",
           "table": "table1",
           "validityDates": {
-            "label": "erster",
+            "name": "erster",
             "column": "table1.erster"
           },
           "filters": {
-            "label": "alterseinschrankung",
-            "description": "Geburtsdatum",
+            "name": "alterseinschrankung",
             "column": "table1.geburtsdatum",
             "type": "DATE_DISTANCE"
           }
@@ -80,14 +80,6 @@
           {
             "name": "erster",
             "type": "DATE"
-          },
-          {
-            "name": "letzter",
-            "type": "DATE"
-          },
-          {
-            "name": "versichertenzeit",
-            "type": "DATE_RANGE"
           }
         ]
       }

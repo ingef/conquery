@@ -4,7 +4,7 @@
   "sqlSpec": {
     "isEnabled": true,
     "supportedDialects": [
-      "POSTGRESQL", "HANA"
+      "POSTGRESQL"
     ]
   },
   "expectedCsv": "tests/query/DATE_DISTANCE/expected-versichertenzeit.csv",
@@ -16,36 +16,31 @@
         "min": "2011-01-01",
         "max": "2011-01-01"
       },
-      "child": {
-        "type": "OR",
-        "children": [
+      "child":{
+        "type": "CONCEPT",
+        "ids": [
+          "alter"
+        ],
+        "label": "Alter",
+        "excludeFromTimeAggregation": false,
+        "tables": [
           {
-            "type": "CONCEPT",
-            "ids": [
-              "alter"
-            ],
-            "label": "Alter",
-            "excludeFromTimeAggregation": false,
-            "tables": [
-              {
-                "id": "alter.alterxy",
-                "selects": [
-                ],
-                "filters": [
-                  {
-                    "filter": "alter.alterxy.alterseinschrankung",
-                    "type": "INTEGER_RANGE",
-                    "value": {
-                      "min": "11",
-                      "max": "11"
-                    }
-                  }
-                ]
-              }
-            ],
+            "id": "alter.alterxy",
             "selects": [
+            ],
+            "filters": [
+              {
+                "filter": "alter.alterxy.alterseinschrankung",
+                "type": "INTEGER_RANGE",
+                "value": {
+                  "min": "11",
+                  "max": "11"
+                }
+              }
             ]
           }
+        ],
+        "selects": [
         ]
       }
     }

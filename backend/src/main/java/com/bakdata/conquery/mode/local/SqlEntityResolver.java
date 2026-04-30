@@ -33,6 +33,7 @@ import org.jooq.Record3;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.Table;
+import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 public class SqlEntityResolver implements EntityResolver {
@@ -144,11 +145,12 @@ public class SqlEntityResolver implements EntityResolver {
 		Field<Integer> rowIndex = field(name(ROW_INDEX), Integer.class);
 		Field<String> externalPrimaryColumn = field(name(SharedAliases.PRIMARY_COLUMN.getAlias()), String.class);
 		Field<String> innerPrimaryColumn = field(name(idColumns.findPrimaryIdColumn().getField()), String.class);
-		Field<Boolean> isResolved = innerPrimaryColumn.isNotNull().as(IS_RESOLVED_ALIAS);
+		// Would prefer this to be `is not null`, but hana does not support that for fields
+		Field<String> isResolved = innerPrimaryColumn.as(IS_RESOLVED_ALIAS);
 
 		Table<Record> allIdsTable = table(name(idColumns.getTable()));
 
-		SelectConditionStep<Record3<Integer, String, Boolean>> resolveIdsQuery =
+		SelectConditionStep<Record3<Integer, String, String>> resolveIdsQuery =
 				context.with(unresolvedCte)
 					   .select(rowIndex, externalPrimaryColumn, isResolved)
 					   .from(dialect.getFunctionProvider().innerJoin(allIdsTable, unresolvedCte, List.of(externalPrimaryColumn.eq(innerPrimaryColumn))))
@@ -157,7 +159,7 @@ public class SqlEntityResolver implements EntityResolver {
 		return executionService.fetchStream(resolveIdsQuery)
 							   .collect(Collectors.toMap(
 									   record -> record.get(rowIndex),
-									   record -> new IdResolveInfo(record.get(externalPrimaryColumn), record.get(isResolved))
+									   record -> new IdResolveInfo(record.get(externalPrimaryColumn), record.get(isResolved) != null)
 							   ));
 	}
 

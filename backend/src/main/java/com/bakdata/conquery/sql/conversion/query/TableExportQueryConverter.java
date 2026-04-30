@@ -1,5 +1,14 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import static org.jooq.impl.DSL.field;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -21,12 +30,6 @@ import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Preconditions;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -45,39 +48,6 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	private static final int POSITION_OFFSET = 1;
 
 	private final QueryStepTransformer queryStepTransformer;
-
-	@Override
-	public Class<? extends TableExportQuery> getConversionClass() {
-		return TableExportQuery.class;
-	}
-
-	@Override
-	public ConversionContext convert(TableExportQuery tableExportQuery, ConversionContext context) {
-
-		final QueryStep convertedPrerequisite = convertPrerequisite(tableExportQuery, context);
-		final Map<ColumnId, Integer> positions = tableExportQuery.getPositions();
-		final CDateRange dateRestriction = CDateRange.of(tableExportQuery.getDateRange());
-
-		final List<QueryStep> convertedTables = tableExportQuery.getConcepts().stream()
-																.flatMap(concept -> concept.getTables().stream().map(table -> convertTable(
-																		table,
-																		concept,
-																		dateRestriction,
-																		convertedPrerequisite,
-																		positions,
-																		context
-																)))
-																.toList();
-
-		final QueryStep unionedTables = QueryStep.createUnionAllStep(
-				convertedTables,
-				null, // no CTE name required as this step will be the final select
-				List.of(convertedPrerequisite)
-		);
-		final Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables);
-
-		return context.withFinalQuery(new SqlQuery(selectQuery, tableExportQuery.getResultInfos()));
-	}
 
 	/**
 	 * Converts the {@link Query} of the given {@link TableExportQuery} and creates another {@link QueryStep} on top which extracts only the primary id.
@@ -142,12 +112,16 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	}
 
 	private static Optional<ColumnDateRange> convertTablesValidityDate(CQTable table, String alias, ConversionContext context) {
-		if (table.findValidityDate() == null) {
-			return Optional.of(context.getFunctionProvider().emptyColumnDateRange());
-		}
+
 		final SqlFunctionProvider functionProvider = context.getFunctionProvider();
-		final ColumnDateRange validityDate = functionProvider.forValidityDate(table.findValidityDate());
-		return Optional.of(validityDate.asValidityDateRange(alias));
+
+		if (table.findValidityDate() == null) {
+			return Optional.of(functionProvider.emptyColumnDateRange());
+		}
+
+		final Field<?> validityDateField = functionProvider.dateRangeToField(functionProvider.forValidityDate(table.findValidityDate()));
+
+		return Optional.of(ColumnDateRange.of(validityDateField).asValidityDateRange(alias));
 	}
 
 	private static List<FieldWrapper<?>> initializeFields(CQTable cqTable, Map<ColumnId, Integer> positions) {
@@ -209,8 +183,41 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 
 	private static Field<?> createColumnSelect(Column column, int position) {
 		final String columnName = "%s-%s".formatted(column.getName(), position);
-		return DSL.field(DSL.name(column.getTable().getName(), column.getName()))
+		return field(DSL.name(column.getTable().getName(), column.getName()))
 				  .as(columnName);
+	}
+
+	@Override
+	public Class<? extends TableExportQuery> getConversionClass() {
+		return TableExportQuery.class;
+	}
+
+	@Override
+	public ConversionContext convert(TableExportQuery tableExportQuery, ConversionContext context) {
+
+		final QueryStep convertedPrerequisite = convertPrerequisite(tableExportQuery, context);
+		final Map<ColumnId, Integer> positions = tableExportQuery.getPositions();
+		final CDateRange dateRestriction = CDateRange.of(tableExportQuery.getDateRange());
+
+		final List<QueryStep> convertedTables = tableExportQuery.getConcepts().stream()
+																.flatMap(concept -> concept.getTables().stream().map(table -> convertTable(
+																		table,
+																		concept,
+																		dateRestriction,
+																		convertedPrerequisite,
+																		positions,
+																		context
+																)))
+																.toList();
+
+		final QueryStep unionedTables = QueryStep.createUnionAllStep(
+				convertedTables,
+				null, // no CTE name required as this step will be the final select
+				List.of(convertedPrerequisite)
+		);
+		final Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables);
+
+		return context.withFinalQuery(new SqlQuery(selectQuery, tableExportQuery.getResultInfos()));
 	}
 
 }

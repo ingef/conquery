@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -20,6 +21,7 @@ import org.jooq.impl.DSL;
 
 @SuperBuilder
 @AllArgsConstructor
+@ToString
 public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 
 	@Getter
@@ -29,6 +31,7 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 	private final Field<Object> secondaryId;
 
 	@Nullable
+	@ToString.Exclude
 	private final SqlIdColumns predecessor;
 
 	public SqlIdColumns(Field<Object> primaryColumn, Field<Object> secondaryId) {
