@@ -1,7 +1,5 @@
 package com.bakdata.conquery.sql.conversion.model;
 
-import static org.jooq.impl.DSL.field;
-
 import java.sql.Date;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -36,7 +36,7 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 	public static final Integer MIN_DATE_VALUE = Integer.MIN_VALUE;
 	public static final Integer MAX_DATE_VALUE = Integer.MAX_VALUE;
-	private static final String ANY_CHAR_REGEX = "%";
+	private static final String ANY_CHAR_REGEX = ".*";
 
 	@Override
 	public String getAnyCharRegex() {
@@ -45,7 +45,7 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Table<? extends Record> getNoOpTable() {
-		return table(select(val(1))).as(name(SharedAliases.NOP_TABLE.getAlias()));
+		return table(select(inline(1))).as(name(SharedAliases.NOP_TABLE.getAlias()));
 	}
 
 	@Override
@@ -90,8 +90,8 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 		return function(
 				"toDate",
 				Date.class,
-				val(dateExpression),
-				val(DEFAULT_DATE_FORMAT)
+				inline(dateExpression),
+				inline(DEFAULT_DATE_FORMAT)
 		);
 	}
 
@@ -133,16 +133,20 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 	private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
 
-		Field<Date> rangeStart = coalesce(
+		// Since coalesce makes Clickhouse certain, that the field is not nullable, it will do silly stuff with it down the line:
+		// missing values (for example in outer-joins) will be coerced to 0 = 01-01-1970, which is clearly not correct
+		// Therefore we tag the values as Nullable again to make Clickhouse show some respect
+
+		Field<Date> rangeStart = field("{0}::Nullable(Date32)", Date.class, coalesce(
 				field(name(tableName, startColumn.getName()), Date.class),
 				getMinDateExpression()
-		);
+		));
 		// when aggregating date ranges, we want to treat the last day of the range as excluded,
 		// so when using the date value of the end column, we add +1 day as end of the date range
-		Field<Date> rangeEnd = coalesce(
-				addDays(field(name(tableName, endColumn.getName()), Date.class), val(1)),
+		Field<Date> rangeEnd = field("{0}::Nullable(Date32)", Date.class, coalesce(
+				addDays(field(name(tableName, endColumn.getName()), Date.class), inline(1)),
 				getMaxDateExpression()
-		);
+		));
 
 		return ColumnDateRange.of(rangeStart, rangeEnd);
 	}
@@ -167,7 +171,7 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 				.otherwise(validityDateRange.getStart());
 
 		Field<Date> maxDate = getMinDateExpression(); // we want to add +1 day to the end date - except when it's the max date already
-		Field<Date> restrictionUpperBound = when(restriction.getEnd().eq(maxDate), maxDate).otherwise(addDays(restriction.getEnd(), val(1)));
+		Field<Date> restrictionUpperBound = when(restriction.getEnd().eq(maxDate), maxDate).otherwise(addDays(restriction.getEnd(), inline(1)));
 		Field<Date> upperBound = when(validityDateRange.getEnd().greaterThan(restriction.getEnd()), restrictionUpperBound)
 				.otherwise(validityDateRange.getEnd());
 
@@ -325,7 +329,7 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Condition likeRegex(Field<String> field, String pattern) {
-		return condition(function("like", Boolean.class, field, inline(pattern)));
+		return condition(function("match", Boolean.class, field, inline(pattern)));
 	}
 
 

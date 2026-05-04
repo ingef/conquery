@@ -55,7 +55,7 @@ public class ClickhouseStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	protected Field<Date> inclusiveUpper(ColumnDateRange dateRange) {
-		return functionProvider.addDays(exclusiveUpper(dateRange), DSL.val(-1));
+		return functionProvider.addDays(exclusiveUpper(dateRange), DSL.inline(-1));
 	}
 
 	@Override
@@ -95,7 +95,7 @@ public class ClickhouseStratificationFunctions extends StratificationFunctions {
 		// we add +1 year to the quarter aligned end if it is less than the upper bound we want to align
 		return DSL.when(
 						  yearEndQuarterAligned.lessThan(dateRange.getEnd()),
-						  shiftByInterval(yearEndQuarterAligned, Interval.ONE_YEAR_INTERVAL, DSL.val(1), Offset.NONE)
+						  shiftByInterval(yearEndQuarterAligned, Interval.ONE_YEAR_INTERVAL, DSL.inline(1), Offset.NONE)
 				  )
 				  .otherwise(yearEndQuarterAligned);
 	}
@@ -179,7 +179,7 @@ public class ClickhouseStratificationFunctions extends StratificationFunctions {
 
 	private Field<Integer> getQuartersInMonths(Field<Date> date, Offset offset) {
 		Field<String> quarterExpression = functionProvider.yearQuarter(date);
-		Field<String> rightMostCharacter = DSL.function("RIGHT", String.class, quarterExpression, DSL.val(1));
+		Field<String> rightMostCharacter = DSL.function("RIGHT", String.class, quarterExpression, DSL.inline(1));
 		Field<Integer> amountOfQuarters = functionProvider.cast(rightMostCharacter, SQLDataType.INTEGER)
 														  .plus(offset.getOffset());
 		return amountOfQuarters.times(MONTHS_PER_QUARTER);

@@ -17,10 +17,12 @@ import com.bakdata.conquery.sql.conversion.dialect.hana.HanaStratificationFuncti
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
+import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 
+@Slf4j
 public class ClickhouseDialectBundle implements DialectBundle {
 
 	private final SqlFunctionProvider functionProvider;
@@ -72,7 +74,8 @@ public class ClickhouseDialectBundle implements DialectBundle {
 
 	@Override
 	public boolean isTypeCompatible(Field<?> field, MajorTypeId type) {
-		return true; //TODO CLickhouse integration is bad here.
+
+		return true; //TODO CLickhouse integration is terrible here. We always receive just Object.
 	}
 
 	@Override
