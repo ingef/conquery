@@ -4,7 +4,8 @@
   "sqlSpec": {
     "isEnabled": true,
     "supportedDialects": [
-      "POSTGRESQL"
+      "POSTGRESQL",
+      "CLICKHOUSE"
     ]
   },
   "expectedCsv": "tests/aggregator/FIRST_AGGREGATOR/expected.csv",

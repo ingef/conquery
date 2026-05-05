@@ -31,8 +31,14 @@ public class ClickhouseResultSetProcessor extends DefaultResultSetProcessor {
 			int begin = (Integer) rawTuple[0];
 			int end = (Integer) rawTuple[1];
 
-			if (end != Integer.MIN_VALUE) {
-				end -= 1;
+			if (begin == ClickhouseFunctionProvider.MIN_DATE_VALUE) {
+				begin = Integer.MIN_VALUE;
+			}
+			if (end == ClickhouseFunctionProvider.MAX_DATE_VALUE) {
+				end = Integer.MAX_VALUE;
+			}
+			else {
+				end--;
 			}
 
 			out.add(List.of(begin, end));
@@ -56,7 +62,6 @@ public class ClickhouseResultSetProcessor extends DefaultResultSetProcessor {
 		if (sqlArray == null) {
 			return null;
 		}
-
 
 		Object[] array = (Object[]) sqlArray.getArray();
 

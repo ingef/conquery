@@ -60,6 +60,8 @@ class ValueSelectUtil {
 			SingleColumnSqlSelect rootSelect, Function<Field<?>, ? extends SortField<?>> ordering, String alias,
 			SelectContext<ConnectorSqlTables> selectContext) {
 
+		SqlFunctionProvider functionProvider = selectContext.getFunctionProvider();
+
 		String predecessor = selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
 		Field<?> qualifiedRootSelect = rootSelect.qualify(predecessor).select();
 
@@ -70,12 +72,12 @@ class ValueSelectUtil {
 												new FieldWrapper<>(qualifiedRootSelect.as(alias), qualifiedRootSelect.getName()),
 												rowNumberField(predecessor, selectContext.getValidityDate(), ordering,
 															   selectContext.getIds(),
-															   selectContext.getFunctionProvider()
+															   functionProvider
 												)
 										))
 										.build())
 						.cteName(ValueSelectCteStep.ROW_NUMBER_STEP.cteName(alias))
-						.conditions(List.of(qualifiedRootSelect.isNotNull(), selectContext.getValidityDate().map(ColumnDateRange::isNotEmpty).orElse(noCondition())))
+						.conditions(List.of(qualifiedRootSelect.isNotNull(), selectContext.getValidityDate().map(functionProvider::isNotEmptyDateRange).orElse(noCondition())))
 						.fromTable(table(name(predecessor)))
 						.build();
 	}

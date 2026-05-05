@@ -106,6 +106,11 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Condition isNotEmptyDateRange(ColumnDateRange columnDateRange) {
+		return columnDateRange.getStart().isNotNull().and(columnDateRange.getEnd().isNotNull());
+	}
+
+	@Override
 	public ColumnDateRange emptyColumnDateRange() {
 		return ColumnDateRange.of(field(inline(null, Date.class)), field(inline(null, Date.class)));
 	}
@@ -176,6 +181,8 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 				)
 		);
 	}
+
+
 
 	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction) {

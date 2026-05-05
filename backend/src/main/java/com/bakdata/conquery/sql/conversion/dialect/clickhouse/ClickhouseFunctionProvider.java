@@ -7,7 +7,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 
 import com.bakdata.conquery.models.common.CDate;
@@ -34,8 +33,8 @@ import org.jooq.impl.SQLDataType;
 
 public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
-	public static final Integer MIN_DATE_VALUE = Integer.MIN_VALUE;
-	public static final Integer MAX_DATE_VALUE = Integer.MAX_VALUE;
+	public static final Integer MIN_DATE_VALUE = -25567;
+	public static final Integer MAX_DATE_VALUE = 24855;
 	private static final String ANY_CHAR_REGEX = ".*";
 
 	@Override
@@ -96,8 +95,13 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Condition isNotEmptyDateRange(ColumnDateRange columnDateRange) {
+		return columnDateRange.getStart().notEqual(getMinDateExpression()).or(columnDateRange.getEnd().notEqual(getMaxDateExpression()));
+	}
+
+	@Override
 	public ColumnDateRange emptyColumnDateRange() {
-		return ColumnDateRange.of(field("null::Nullable(Date)", Date.class), field("null::Nullable(Date)", Date.class));
+		return ColumnDateRange.of(getMinDateExpression(), getMaxDateExpression());
 	}
 
 	@Override
@@ -129,6 +133,11 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 		}
 
 		return ofStartAndEnd(tableName, startColumn, endColumn);
+	}
+
+	@Override
+	public Field<?> stringArray(List<Field<String>> fields) {
+		return field("arrayFilter(x -> x <> '', {0})", Object.class, array(fields));
 	}
 
 	private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
@@ -190,7 +199,7 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 			endDateExpression = inline(Date.valueOf(dateRestriction.getMax()));
 		}
 
-		return ColumnDateRange.of((startDateExpression), (endDateExpression));
+		return ColumnDateRange.of(startDateExpression, endDateExpression);
 	}
 
 	@NotNull
@@ -236,7 +245,6 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public ColumnDateRange toDualColumn(ColumnDateRange columnDateRange) {
-		// HANA does not support single column ranges
 		return ColumnDateRange.of(columnDateRange.getStart(), columnDateRange.getEnd());
 	}
 
@@ -249,14 +257,12 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public QueryStep unnestDaterange(ColumnDateRange nested, QueryStep predecessor, String cteName) {
-		// HANA does not support single column datemultiranges
 		return predecessor;
 	}
 
 	@Override
 	public Field<Object[]> dateRangeAggregation(ColumnDateRange columnDateRange) {
-		//TODO this is not a good fix imo; need to ensure columnDateRange is sorted? => probably ensure incoming CDR is sorted. Or just sort on the receiving end
-		return field("groupArraySorted(64)({0})", Object[].class, dateRangeToField(columnDateRange));
+		return field("groupArray({0})", Object[].class, dateRangeToField(columnDateRange));
 	}
 
 	@Override
@@ -335,7 +341,7 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Field<String> yearQuarter(Field<Date> dateField) {
-		return field("{0} || '-Q' || {1}", String.class, function("toYear", String.class, dateField), function("toQuarter", String.class, dateField));
+		return field("formatDateTime({0}, '%Y-Q%Q')", String.class, dateField);
 	}
 
 	@Override

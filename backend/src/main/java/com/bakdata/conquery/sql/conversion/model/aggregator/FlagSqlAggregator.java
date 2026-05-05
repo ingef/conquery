@@ -29,7 +29,6 @@ import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.Param;
 
 /**
  * {@link FlagSelect} conversion aggregates the keys of the flags of a {@link FlagSelect} into an array.
@@ -88,7 +87,7 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 						 ));
 	}
 
-	private static FieldWrapper<String> createFlagSelect(
+	private static FieldWrapper<?> createFlagSelect(
 			String alias,
 			SqlTables connectorTables,
 			SqlFunctionProvider functionProvider,
@@ -100,7 +99,7 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 		List<Field<String>> flagAggregations = new ArrayList<>();
 		for (Map.Entry<String, Field<Boolean>> entry : flagFieldsMap.entrySet()) {
 			Field<Boolean> boolColumn = entry.getValue();
-			Condition anyTrue = condition(boolOr(boolColumn));
+			Condition anyTrue = condition(max(boolColumn)); // Clickhouse doesnt have aggregate or, this does the same thing.
 
 			String flagName = entry.getKey();
 			Field<String> flag = when(anyTrue, inline(flagName)).otherwise(""); // else null is implicit in SQL
@@ -108,7 +107,7 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 		}
 
 		// and stuff them into 1 array field
-		Field<String> flagsArray = functionProvider.concat(flagAggregations).as(alias);
+		Field<?> flagsArray = functionProvider.stringArray(flagAggregations).as(alias);
 		// we also need the references for all flag columns for the flag aggregation of multiple columns
 		String[] requiredColumns = flagFieldsMap.values().stream().map(Field::getName).toArray(String[]::new);
 		return new FieldWrapper<>(flagsArray, requiredColumns);
@@ -144,9 +143,9 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 		Map<String, SingleColumnSqlSelect> rootSelects = createFlagRootSelectMap(flagSelect, connectorTables.getRootTable());
 
 		String alias = selectContext.getNameGenerator().selectName(flagSelect);
-		FieldWrapper<String> flagAggregation = createFlagSelect(alias, connectorTables, functionProvider, rootSelects);
+		FieldWrapper<?> flagAggregation = createFlagSelect(alias, connectorTables, functionProvider, rootSelects);
 
-		ExtractingSqlSelect<String> finalSelect = flagAggregation.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
+		ExtractingSqlSelect<?> finalSelect = flagAggregation.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
 
 		return ConnectorSqlSelects.builder()
 								  .preprocessingSelects(rootSelects.values())

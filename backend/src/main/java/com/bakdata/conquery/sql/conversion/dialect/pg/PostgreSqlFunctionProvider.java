@@ -374,6 +374,11 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Condition isNotEmptyDateRange(ColumnDateRange columnDateRange) {
+		return columnDateRange.getRange().notEqual(PostgreSqlFunctionProvider.EMPTY_RANGE);
+	}
+
+	@Override
 	public ColumnDateRange emptyColumnDateRange() {
 		return ColumnDateRange.of(EMPTY_RANGE);
 	}

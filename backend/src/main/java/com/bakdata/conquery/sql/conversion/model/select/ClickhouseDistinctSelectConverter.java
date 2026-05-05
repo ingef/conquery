@@ -52,7 +52,7 @@ public class ClickhouseDistinctSelectConverter implements SelectConverter<Distin
 		String eventFilterTable = selectContext.getTables().cteName(ConceptCteStep.EVENT_FILTER);
 		SingleColumnSqlSelect qualified = preprocessingSelect.qualify(eventFilterTable);
 
-		FieldWrapper<?> grouped = new FieldWrapper<>(field("groupUniqArray({0})", Object.class, qualified.select()).as(alias), qualified.select().getName());
+		FieldWrapper<?> grouped = new FieldWrapper<>(field("arrayFilter(x -> x <> '' and x is not null, groupUniqArray({0}))", Object.class, qualified.select()).as(alias), qualified.select().getName());
 
 		SingleColumnSqlSelect finalSelect = grouped.qualify(tables.cteName(ConceptCteStep.AGGREGATION_SELECT));
 

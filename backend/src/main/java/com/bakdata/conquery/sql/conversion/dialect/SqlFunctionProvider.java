@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
@@ -180,7 +179,7 @@ public interface SqlFunctionProvider {
 
 	ColumnDateRange allRangeIf(Condition condition);
 
-	default Field<String> concat(List<Field<String>> fields) {
+	default Field<?> stringArray(List<Field<String>> fields) {
 		String concatenated =
 				fields.stream()
 					  // if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
@@ -229,20 +228,7 @@ public interface SqlFunctionProvider {
 		return toDate(dateExpression, DEFAULT_DATE_FORMAT);
 	}
 
-	default Condition validityDateFilter(ValidityDate validityDate) {
-
-		if (validityDate.isSingleColumnDaterange()) {
-			Column column = validityDate.getColumn().resolve();
-			return field(name(column.getName())).isNotNull();
-		}
-
-		Column startColumn = validityDate.getStartColumn().resolve();
-		Column endColumn = validityDate.getEndColumn().resolve();
-
-		return or(field(name(startColumn.getName())).isNotNull(),
-				  field(name(endColumn.getName())).isNotNull()
-		);
-	}
+	Condition isNotEmptyDateRange(ColumnDateRange columnDateRange);
 
 	ColumnDateRange emptyColumnDateRange();
 

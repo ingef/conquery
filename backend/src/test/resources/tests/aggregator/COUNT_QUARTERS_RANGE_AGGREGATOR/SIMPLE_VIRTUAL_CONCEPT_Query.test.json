@@ -1,14 +1,13 @@
 {
   "type": "QUERY_TEST",
-  "label": "DISTINCT_MAPPED_AGGREGATOR Test",
-  "sqlSpec": {
+  "label": "COUNT_QUARTERS_AGGREGATOR Test",
+    "sqlSpec": {
     "isEnabled": true,
     "supportedDialects": [
-      "POSTGRESQL",
-      "CLICKHOUSE"
+      "POSTGRESQL"
     ]
   },
-  "expectedCsv": "tests/aggregator/MAPPED/DISTINCT/expected.csv",
+  "expectedCsv": "tests/aggregator/COUNT_QUARTERS_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -24,19 +23,12 @@
           ]
         }
       ]
+
     }
-  },
-  "internToExternMappings": {
-    "name": "test_map",
-    "type": "CSV_MAP",
-    "internalColumn": "internal",
-    "externalTemplate": "{{external}}",
-    "csv": "classpath:/tests/aggregator/MAPPED/mapping.csv",
-    "allowMultiple": false
   },
   "concepts": [
     {
-      "label": "concept",
+      "name": "concept",
       "type": "TREE",
       "connectors": [
         {
@@ -46,11 +38,10 @@
             "label": "datum",
             "column": "table.datum"
           },
-          "selects": {
-            "name": "select",
-            "type": "DISTINCT",
-            "column": "table.value",
-            "mapping": "test_map"
+          "selects":         {
+            "name" : "select",
+            "type": "COUNT_QUARTERS",
+            "column": "table.behandlungsdatum"
           }
         }
       ]
@@ -59,7 +50,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/aggregator/MAPPED/content.csv",
+        "csv": "tests/aggregator/COUNT_QUARTERS_AGGREGATOR/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",
@@ -67,12 +58,12 @@
         },
         "columns": [
           {
-            "name": "datum",
+            "name": "behandlungsdatum",
             "type": "DATE"
           },
           {
-            "name": "value",
-            "type": "STRING"
+            "name": "datum",
+            "type": "DATE_RANGE"
           }
         ]
       }
