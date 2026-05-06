@@ -223,11 +223,11 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		List<SqlSelect> dateRestrictionSelects = new ArrayList<>();
 		List<WhereCondition> conditions = new ArrayList<>();
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 
-		conditions.add(ConditionUtil.wrap(validityDate.isNotEmpty()));
+		conditions.add(ConditionUtil.wrap(functionProvider.isNotEmptyDateRange(validityDate)));
 
 		if (context.getDateRestrictionRange() != null) {
-			SqlFunctionProvider functionProvider = context.getFunctionProvider();
 			ColumnDateRange dateRestriction = functionProvider.forCDateRange(context.getDateRestrictionRange()).as(SharedAliases.DATE_RESTRICTION.getAlias());
 			conditions.add(ConditionUtil.wrap(functionProvider.dateRestriction(dateRestriction, validityDate)));
 

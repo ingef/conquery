@@ -1,13 +1,11 @@
 package com.bakdata.conquery.sql.conversion.model;
 
-import static org.jooq.impl.DSL.field;
-
 import java.sql.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.dialect.pg.PostgreSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Getter;
 import lombok.ToString;
@@ -128,26 +126,19 @@ public class ColumnDateRange implements SqlSelect {
 		if (this.isSingleColumnRange() != right.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("Can only join ColumnDateRanges of same type");
 		}
+
 		if (this.isSingleColumnRange()) {
 			return this.range.coerce(Object.class).eq(right.getRange());
 		}
 		return this.start.eq(right.getStart()).and(end.eq(right.getEnd()));
 	}
 
-	public Condition isNotEmpty() {
-		if (this.isSingleColumnRange()) {
-			return this.range.notEqual(PostgreSqlFunctionProvider.EMPTY_RANGE);
+	public static Condition isNotEmpty(ColumnDateRange columnDateRange) {
+		if (columnDateRange.isSingleColumnRange()) {
+			return columnDateRange.getRange().notEqual(PostgreSqlFunctionProvider.EMPTY_RANGE);
 		}
 
-		//this is weird
-		return this.start.isNotNull().and(this.end.isNotNull());
-	}
-
-	public Condition isNotNull() {
-		if (this.isSingleColumnRange()) {
-			return this.range.isNotNull();
-		}
-		return this.start.isNotNull().and(this.end.isNotNull());
+		return columnDateRange.getStart().isNotNull().and(columnDateRange.getEnd().isNotNull());
 	}
 
 }

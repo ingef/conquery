@@ -4,7 +4,8 @@
   "sqlSpec": {
     "isEnabled": false,
     "supportedDialects": [
-      "POSTGRESQL", "HANA"
+      "POSTGRESQL",
+      "CLICKHOUSE"
     ]
   },
   "expectedCsv": "tests/aggregator/DURATION_SUM_DISTINCT_AGGREGATOR/expected.csv",

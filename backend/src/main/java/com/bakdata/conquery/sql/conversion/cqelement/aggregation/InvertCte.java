@@ -59,12 +59,12 @@ class InvertCte extends DateAggregationCte {
 
 		Field<Date> rangeStart = DSL.coalesce(
 				QualifyingUtil.qualify(validityDate.getEnd(), ROWS_LEFT_TABLE_NAME),
-				functionProvider.toDateField(functionProvider.getMinDateExpression())
+				(functionProvider.getMinDateExpression())
 		).as(DateAggregationCte.RANGE_START);
 
 		Field<Date> rangeEnd = DSL.coalesce(
 				QualifyingUtil.qualify(validityDate.getStart(), ROWS_RIGHT_TABLE_NAME),
-				functionProvider.toDateField(functionProvider.getMaxDateExpression())
+				(functionProvider.getMaxDateExpression())
 		).as(DateAggregationCte.RANGE_END);
 
 		return Selects.builder()

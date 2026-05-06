@@ -1,6 +1,5 @@
-package com.bakdata.conquery.sql.conversion.dialect;
+package com.bakdata.conquery.sql.conversion.dialect.clickhouse;
 
-import static com.bakdata.conquery.sql.execution.ResultSetProcessor.UNIT_SEPARATOR;
 import static org.jooq.impl.DSL.*;
 
 import java.sql.Date;
@@ -8,17 +7,19 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.DataType;
@@ -30,15 +31,11 @@ import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
-public class HanaSqlFunctionProvider implements SqlFunctionProvider {
+public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
-	public static final String MAX_DATE_VALUE = "9999-12-31";
-	public static final String MIN_DATE_VALUE = "0001-01-01";
-	public static final String DATERANGE_SEPARATOR = "/";
-
-	public static final char DATE_SET_SEPARATOR = UNIT_SEPARATOR;
+	public static final Integer MIN_DATE_VALUE = -25567;
+	public static final Integer MAX_DATE_VALUE = 24855;
 	private static final String ANY_CHAR_REGEX = ".*";
-	private static final String NOP_TABLE = "DUMMY";
 
 	@Override
 	public String getAnyCharRegex() {
@@ -47,15 +44,14 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Table<? extends Record> getNoOpTable() {
-		// see https://help.sap.com/docs/SAP_DATA_HUB/e8d3e271a4554a35a5a6136d3d6af3f8/4d4b939b37b84bea8b2aa2ada640c392.html
-		return table(name(NOP_TABLE));
+		return table(select(inline(1))).as(name(SharedAliases.NOP_TABLE.getAlias()));
 	}
 
 	@Override
 	public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange daterange) {
 
 		if (dateRestriction.isSingleColumnRange() || daterange.isSingleColumnRange()) {
-			throw new UnsupportedOperationException("HANA does not support single column ranges.");
+			throw new UnsupportedOperationException("Clickhouse does not support single column ranges.");
 		}
 
 		Condition dateRestrictionStartsBeforeDate = dateRestriction.getStart().lessThan(daterange.getEnd());
@@ -75,29 +71,23 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public ColumnDateRange forCDateRange(CDateRange daterange) {
 
-		String startDateExpression = MIN_DATE_VALUE;
-		String endDateExpression = MAX_DATE_VALUE;
+		Field<Date> startDateExpression = getMinDateExpression();
+		Field<Date> endDateExpression = getMaxDateExpression();
 
 		if (daterange.hasLowerBound()) {
-			startDateExpression = daterange.getMin().toString();
+			startDateExpression = inline(Date.valueOf(daterange.getMin()));
 		}
 		if (daterange.hasUpperBound()) {
-			// end date is expected to be handled as exclusive, but if it's already the maximum date, we can't add +1 day
-			if (Objects.equals(daterange.getMax(), LocalDate.ofEpochDay(CDateRange.POSITIVE_INFINITY))) {
-				throw new UnsupportedOperationException(
-						"Given daterange has an upper bound of CDateRange.POSITIVE_INFINITY, which is not supported by ConQuery's HANA dialect.");
-			}
-			LocalDate exclusiveMaxDate = daterange.getMax().plusDays(1);
-			endDateExpression = exclusiveMaxDate.toString();
+			endDateExpression = inline(Date.valueOf(daterange.getMax().plusDays(1)));
 		}
 
-		return ColumnDateRange.of(toDateField(startDateExpression), toDateField(endDateExpression));
+		return ColumnDateRange.of(startDateExpression, endDateExpression);
 	}
 
 	@Override
 	public Field<Date> toDateField(String dateExpression) {
 		return function(
-				"TO_DATE",
+				"toDate",
 				Date.class,
 				inline(dateExpression),
 				inline(DEFAULT_DATE_FORMAT)
@@ -105,10 +95,14 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange emptyColumnDateRange() {
-		return ColumnDateRange.of(field(inline(null, Date.class)), field(inline(null, Date.class)));
+	public Condition isNotEmptyDateRange(ColumnDateRange columnDateRange) {
+		return columnDateRange.getStart().notEqual(getMinDateExpression()).or(columnDateRange.getEnd().notEqual(getMaxDateExpression()));
 	}
 
+	@Override
+	public ColumnDateRange emptyColumnDateRange() {
+		return ColumnDateRange.of(getMinDateExpression(), getMaxDateExpression());
+	}
 
 	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate) {
@@ -117,7 +111,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public ColumnDateRange allRange() {
-		return ColumnDateRange.of(toDateField(MIN_DATE_VALUE).as("all_range_start"), toDateField(MAX_DATE_VALUE).as("all_range_end"));
+		return ColumnDateRange.of(getMinDateExpression().as("all_range_start"), getMaxDateExpression().as("all_range_end"));
 	}
 
 	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
@@ -141,18 +135,27 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return ofStartAndEnd(tableName, startColumn, endColumn);
 	}
 
+	@Override
+	public Field<?> stringArray(List<Field<String>> fields) {
+		return field("arrayFilter(x -> x <> '', {0})", Object.class, array(fields));
+	}
+
 	private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
 
-		Field<Date> rangeStart = coalesce(
+		// Since coalesce makes Clickhouse certain, that the field is not nullable, it will do silly stuff with it down the line:
+		// missing values (for example in outer-joins) will be coerced to 0 = 01-01-1970, which is clearly not correct
+		// Therefore we tag the values as Nullable again to make Clickhouse show some respect
+
+		Field<Date> rangeStart = field("{0}::Nullable(Date32)", Date.class, coalesce(
 				field(name(tableName, startColumn.getName()), Date.class),
-				toDateField(MIN_DATE_VALUE)
-		);
+				getMinDateExpression()
+		));
 		// when aggregating date ranges, we want to treat the last day of the range as excluded,
 		// so when using the date value of the end column, we add +1 day as end of the date range
-		Field<Date> rangeEnd = coalesce(
+		Field<Date> rangeEnd = field("{0}::Nullable(Date32)", Date.class, coalesce(
 				addDays(field(name(tableName, endColumn.getName()), Date.class), inline(1)),
-				toDateField(MAX_DATE_VALUE)
-		);
+				getMaxDateExpression()
+		));
 
 		return ColumnDateRange.of(rangeStart, rangeEnd);
 	}
@@ -160,19 +163,10 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays) {
 		return function(
-				"ADD_DAYS",
+				"addDays",
 				Date.class,
 				dateColumn,
 				amountOfDays
-		);
-	}
-
-	@Override
-	public ColumnDateRange allRangeIf(Condition condition) {
-		return ColumnDateRange.of(
-				when(condition.isTrue(),
-					 allRange()
-				)
 		);
 	}
 
@@ -185,7 +179,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		Field<Date> lowerBound = when(validityDateRange.getStart().lessThan(restriction.getStart()), restriction.getStart())
 				.otherwise(validityDateRange.getStart());
 
-		Field<Date> maxDate = toDateField(MAX_DATE_VALUE); // we want to add +1 day to the end date - except when it's the max date already
+		Field<Date> maxDate = getMinDateExpression(); // we want to add +1 day to the end date - except when it's the max date already
 		Field<Date> restrictionUpperBound = when(restriction.getEnd().eq(maxDate), maxDate).otherwise(addDays(restriction.getEnd(), inline(1)));
 		Field<Date> upperBound = when(validityDateRange.getEnd().greaterThan(restriction.getEnd()), restrictionUpperBound)
 				.otherwise(validityDateRange.getEnd());
@@ -195,17 +189,17 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	private ColumnDateRange toColumnDateRange(CDateRange dateRestriction) {
 
-		String startDateExpression = MIN_DATE_VALUE;
-		String endDateExpression = MAX_DATE_VALUE;
+		Field<Date> startDateExpression = getMinDateExpression();
+		Field<Date> endDateExpression = getMaxDateExpression();
 
 		if (dateRestriction.hasLowerBound()) {
-			startDateExpression = dateRestriction.getMin().toString();
+			startDateExpression = inline(Date.valueOf(dateRestriction.getMin()));
 		}
 		if (dateRestriction.hasUpperBound()) {
-			endDateExpression = dateRestriction.getMax().toString();
+			endDateExpression = inline(Date.valueOf(dateRestriction.getMax()));
 		}
 
-		return ColumnDateRange.of(toDateField(startDateExpression), toDateField(endDateExpression));
+		return ColumnDateRange.of(startDateExpression, endDateExpression);
 	}
 
 	@NotNull
@@ -215,19 +209,19 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 			List<Field<?>> validityDateFields) {
 
 		return List.of(
-				ordering.apply(nullif(validityDateFields.getFirst(), toDateField(getMinDateExpression()))).nullsLast(),
-				ordering.apply(nullif(validityDateFields.getLast(), toDateField(getMaxDateExpression()))).nullsLast()
+				ordering.apply(nullif(validityDateFields.getFirst(), getMinDateExpression())).nullsLast(),
+				ordering.apply(nullif(validityDateFields.getLast(), getMaxDateExpression())).nullsLast()
 		);
 	}
 
 	@Override
-	public String getMinDateExpression() {
-		return MIN_DATE_VALUE;
+	public Field<Date> getMinDateExpression() {
+		return field("toDate32({0})", Date.class, MIN_DATE_VALUE);
 	}
 
 	@Override
-	public String getMaxDateExpression() {
-		return MAX_DATE_VALUE;
+	public Field<Date> getMaxDateExpression() {
+		return field("toDate32({0})", Date.class, MAX_DATE_VALUE);
 	}
 
 	@Override
@@ -251,7 +245,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public ColumnDateRange toDualColumn(ColumnDateRange columnDateRange) {
-		// HANA does not support single column ranges
 		return ColumnDateRange.of(columnDateRange.getStart(), columnDateRange.getEnd());
 	}
 
@@ -264,46 +257,35 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public QueryStep unnestDaterange(ColumnDateRange nested, QueryStep predecessor, String cteName) {
-		// HANA does not support single column datemultiranges
 		return predecessor;
 	}
 
 	@Override
-	public Field<String> dateRangeAggregation(ColumnDateRange columnDateRange) {
-
-		Field<String> stringAggregation = stringAggregation(
-				dateRangeToField(columnDateRange),
-				toChar(DATE_SET_SEPARATOR),
-				List.of(columnDateRange.getStart())
-		);
-
-		// encapsulate all ranges (including empty ranges) within curly braces
-		return stringAggregation;
+	public Field<Object[]> dateRangeAggregation(ColumnDateRange columnDateRange) {
+		return field("groupArray({0})", Object[].class, dateRangeToField(columnDateRange));
 	}
 
 	@Override
-	public Field<String> dateRangeToField(ColumnDateRange columnDateRange) {
+	public Field<Object> dateRangeToField(ColumnDateRange columnDateRange) {
 
 		if (columnDateRange.isSingleColumnRange()) {
-			throw new UnsupportedOperationException("HANA does not support single-column date ranges.");
+			throw new UnsupportedOperationException("Clickhouse does not support single-column date ranges.");
 		}
 
-		// translation is handled in printer
-		return field("'[' || {0} || {2} || {1} || ')'", String.class,
-					 cast(columnDateRange.getStart(), SQLDataType.VARCHAR),
-					 cast(columnDateRange.getEnd(), SQLDataType.VARCHAR),
-					 DATERANGE_SEPARATOR
-		);
+		//TODO this cast is necessary because we explicitly use null for empty. Maybe if we forego this we can simplify it again.
+		Field<?> startDateExpression = field("{0}::{1}", Object.class, columnDateRange.getStart(), keyword("Nullable(Integer)"));
+		Field<?> endDateExpression = field("{0}::{1}", Object.class, columnDateRange.getEnd(), keyword("Nullable(Integer)"));
+
+		return function("tuple", Object.class, startDateExpression, endDateExpression);
 	}
 
 	@Override
 	public <T> Field<T> cast(Field<?> field, DataType<T> type) {
-		// HANA would require an explicit length param when using CAST with varchar type, TO_VARCHAR does not require this
 		if (type == SQLDataType.VARCHAR) {
-			return function("TO_VARCHAR", type.getType(), field);
+			return function("toString", type.getType(), field);
 		}
 		return function(
-				"CAST",
+				name("CAST"),
 				type.getType(),
 				field("{0} AS {1}", field, keyword(type.getName()))
 		);
@@ -312,14 +294,14 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Field<Integer> dateDistance(ChronoUnit datePart, Field<Date> startDate, Field<Date> endDate) {
 
-		String betweenFunction = switch (datePart) {
-			case DAYS -> "DAYS_BETWEEN";
-			case MONTHS -> "MONTHS_BETWEEN";
-			case YEARS, DECADES, CENTURIES -> "YEARS_BETWEEN";
+		String unit = switch (datePart) {
+			case DAYS -> "days";
+			case MONTHS -> "months";
+			case YEARS, DECADES, CENTURIES -> "years";
 			default -> throw new UnsupportedOperationException("Given ChronoUnit %s is not supported.");
 		};
 
-		Field<Integer> dateDistance = function(betweenFunction, Integer.class, startDate, endDate);
+		Field<Integer> dateDistance = function("age", Integer.class, inline(unit), startDate, endDate);
 
 		// HANA does not support decades or centuries directly
 		dateDistance = switch (datePart) {
@@ -334,34 +316,41 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Field<Date> lower(Field<?> daterange) {
-		throw new UnsupportedOperationException("HANA does not support single-column date ranges.");
+		throw new NotImplementedException();
 	}
 
 	@Override
 	public Field<Date> upper(Field<?> daterange) {
-		throw new UnsupportedOperationException("HANA does not support single-column date ranges.");
+		throw new NotImplementedException();
 	}
 
 	@Override
 	public <T> Field<T> random(Field<T> column) {
 		return field(
-				"{0}({1} {2})",
+				"groupArraySample(1)({0})[1]",
 				column.getType(),
-				keyword("FIRST_VALUE"),
-				column,
-				orderBy(function("RAND", Object.class))
+				column
 		);
 	}
 
 	@Override
 	public Condition likeRegex(Field<String> field, String pattern) {
-		return condition("{0} {1} {2}", field, keyword("LIKE_REGEXPR"), pattern);
+		return condition(function("match", Boolean.class, field, inline(pattern)));
 	}
 
 
 	@Override
 	public Field<String> yearQuarter(Field<Date> dateField) {
-		return function("QUARTER", String.class, dateField);
+		return field("formatDateTime({0}, '%Y-Q%Q')", String.class, dateField);
+	}
+
+	@Override
+	public ColumnDateRange allRangeIf(Condition condition) {
+		return ColumnDateRange.of(
+				when(condition.isTrue(),
+					 allRange()
+				)
+		);
 	}
 
 }

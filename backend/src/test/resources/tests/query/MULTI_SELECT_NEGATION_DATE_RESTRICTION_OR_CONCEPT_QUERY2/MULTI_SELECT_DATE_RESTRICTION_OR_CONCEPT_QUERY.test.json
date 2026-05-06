@@ -13,24 +13,19 @@
           "max": "2012-11-11"
         },
         "child": {
-          "type": "OR",
-          "children": [
+          "ids": [
+            "geschlecht_select"
+          ],
+          "type": "CONCEPT",
+          "tables": [
             {
-              "ids": [
-                "geschlecht_select"
-              ],
-              "type": "CONCEPT",
-              "tables": [
+              "id": "geschlecht_select.geschlecht_connector",
+              "filters": [
                 {
-                  "id": "geschlecht_select.geschlecht_connector",
-                  "filters": [
-                    {
-                      "filter": "geschlecht_select.geschlecht_connector.geschlecht",
-                      "type": "MULTI_SELECT",
-                      "value": [
-                        "f"
-                      ]
-                    }
+                  "filter": "geschlecht_select.geschlecht_connector.geschlecht",
+                  "type": "MULTI_SELECT",
+                  "value": [
+                    "f"
                   ]
                 }
               ]

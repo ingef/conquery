@@ -4,7 +4,8 @@
     "sqlSpec": {
     "isEnabled": true,
     "supportedDialects": [
-      "POSTGRESQL", "HANA"
+      "POSTGRESQL",
+      "CLICKHOUSE"
     ]
   },
   "expectedCsv": "tests/aggregator/EVENT_DATE_AGGREGATOR/expected_restriction.csv",
@@ -37,11 +38,12 @@
       "type": "TREE",
       "connectors": [
         {
-          "label": "connector",
+          "name": "connector",
           "table": "table",
           "validityDates": {
-            "label": "indexdatum",
-            "column": "table.indexdatum"
+            "name": "indexdatum",
+            "startColumn": "table.start",
+            "endColumn": "table.ende"
           },
           "selects": {
             "type": "EVENT_DATE_UNION",
@@ -66,8 +68,12 @@
         },
         "columns": [
           {
-            "name": "indexdatum",
-            "type": "DATE_RANGE"
+            "name": "start",
+            "type": "DATE"
+          },
+          {
+            "name": "ende",
+            "type": "DATE"
           },
           {
             "name": "geburtsdatum",

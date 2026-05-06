@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.dialect;
+package com.bakdata.conquery.sql.conversion.dialect.pg;
 
 import static org.jooq.impl.DSL.*;
 
@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
@@ -50,8 +51,8 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public String getMaxDateExpression() {
-		return INFINITY_DATE_VALUE;
+	public Field<Date> getMaxDateExpression() {
+		return inline(INFINITY_DATE_VALUE, Date.class);
 	}
 
 	@Override
@@ -82,8 +83,8 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public String getMinDateExpression() {
-		return NEGATIVE_INFINITY_DATE_VALUE;
+	public Field<Date> getMinDateExpression() {
+		return inline(NEGATIVE_INFINITY_DATE_VALUE, Date.class);
 	}
 
 	@Override
@@ -370,6 +371,11 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Field<Date> toDateField(String dateValue) {
 		return field("{0}::{1}", Date.class, inline(dateValue), keyword("date"));
+	}
+
+	@Override
+	public Condition isNotEmptyDateRange(ColumnDateRange columnDateRange) {
+		return columnDateRange.getRange().notEqual(PostgreSqlFunctionProvider.EMPTY_RANGE);
 	}
 
 	@Override

@@ -1,0 +1,72 @@
+{
+  "type": "QUERY_TEST",
+  "label": "COUNT_QUARTERS_AGGREGATOR Test",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
+  "expectedCsv": "tests/aggregator/COUNT_QUARTERS_RANGE/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector",
+          "selects": [
+            "concept.connector.select"
+          ]
+        }
+      ]
+
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "connector",
+          "table": "table",
+          "validityDates": {
+            "label": "datum",
+            "column": "table.datum"
+          },
+          "selects":         {
+            "name" : "select",
+            "type": "COUNT_QUARTERS",
+            "column": "table.behandlungsdatum"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/aggregator/COUNT_QUARTERS_RANGE/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "behandlungsdatum",
+            "type": "DATE"
+          },
+          {
+            "name": "datum",
+            "type": "DATE_RANGE"
+          }
+        ]
+      }
+    ]
+  }
+}

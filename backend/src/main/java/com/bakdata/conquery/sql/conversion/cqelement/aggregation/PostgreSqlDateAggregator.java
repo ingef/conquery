@@ -84,8 +84,8 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 		Field<Object> maxDateRange = DSL.function(
 				"daterange",
 				Object.class,
-				this.functionProvider.toDateField(this.functionProvider.getMinDateExpression()),
-				this.functionProvider.toDateField(this.functionProvider.getMaxDateExpression()),
+				(this.functionProvider.getMinDateExpression()),
+				(this.functionProvider.getMaxDateExpression()),
 				DSL.inline("[]")
 		);
 

@@ -2,6 +2,14 @@
   "type": "QUERY_TEST",
   "label": "AND NEGATION DATE LOGIC Test",
   "expectedCsv": "tests/query/LOGICAL/NEGATION_LOGICAL/expected.csv",
+  "sqlSpec": {
+    "isEnabled": true,
+    "comment": "Logical will hopefully be kicked.",
+    "supportedDialects": [
+      "POSTGRESQL",
+      "HANA"
+    ]
+  },
   "query": {
     "type": "CONCEPT_QUERY",
     "dateAggregationMode": "LOGICAL",

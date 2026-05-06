@@ -135,8 +135,8 @@ public class DaterangeSelectUtil {
 	}
 
 	private static Condition containsInfinityDate(ColumnDateRange validityDate, SqlFunctionProvider functionProvider) {
-		Field<Date> negativeInfinity = functionProvider.toDateField(functionProvider.getMinDateExpression());
-		Field<Date> positiveInfinity = functionProvider.toDateField(functionProvider.getMaxDateExpression());
+		Field<Date> negativeInfinity = (functionProvider.getMinDateExpression());
+		Field<Date> positiveInfinity = (functionProvider.getMaxDateExpression());
 		return validityDate.getStart().eq(negativeInfinity).or(validityDate.getEnd().eq(positiveInfinity));
 	}
 
