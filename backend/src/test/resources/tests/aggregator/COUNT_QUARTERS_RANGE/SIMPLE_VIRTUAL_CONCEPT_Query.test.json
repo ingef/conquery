@@ -7,7 +7,7 @@
       "POSTGRESQL"
     ]
   },
-  "expectedCsv": "tests/aggregator/COUNT_QUARTERS_AGGREGATOR_RANGE/expected.csv",
+  "expectedCsv": "tests/aggregator/COUNT_QUARTERS_RANGE/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -50,7 +50,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/aggregator/COUNT_QUARTERS_AGGREGATOR_RANGE/content.csv",
+        "csv": "tests/aggregator/COUNT_QUARTERS_RANGE/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",
