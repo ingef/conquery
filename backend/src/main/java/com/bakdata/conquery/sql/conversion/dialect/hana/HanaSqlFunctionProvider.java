@@ -107,7 +107,8 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Condition isNotEmptyDateRange(ColumnDateRange columnDateRange) {
-		return columnDateRange.getStart().isNotNull().and(columnDateRange.getEnd().isNotNull());
+		return columnDateRange.getStart().notEqual(getMinDateExpression()).or(columnDateRange.getEnd().notEqual(getMaxDateExpression()));
+
 	}
 
 	@Override
@@ -181,7 +182,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 				)
 		);
 	}
-
 
 
 	@Override

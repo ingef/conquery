@@ -38,8 +38,7 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 
 	@Override
 	public SelectConverter<DistinctSelect> createConverter() {
-		//TODO inject this instead
-		return new ClickhouseDistinctSelectConverter();
+		return new DistinctSelectConverter();
 	}
 
 	@Override

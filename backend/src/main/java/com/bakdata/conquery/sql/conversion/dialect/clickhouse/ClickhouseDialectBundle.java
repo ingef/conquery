@@ -1,9 +1,12 @@
 package com.bakdata.conquery.sql.conversion.dialect.clickhouse;
 
 import java.util.List;
+import java.util.Map;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.DistinctSelect;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
@@ -15,6 +18,8 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.dialect.hana.HanaStratificationFunctions;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
+import com.bakdata.conquery.sql.conversion.model.select.ClickhouseDistinctSelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import lombok.extern.slf4j.Slf4j;
@@ -98,4 +103,8 @@ public class ClickhouseDialectBundle implements DialectBundle {
 		return new ClickhouseResultSetProcessor(config, getCDateSetParser());
 	}
 
+	@Override
+	public Map<Class<? extends Select>, ? extends SelectConverter<? extends Select>> getSelectConverterOverrides() {
+		return Map.of(DistinctSelect.class, new ClickhouseDistinctSelectConverter());
+	}
 }

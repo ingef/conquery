@@ -245,11 +245,13 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	}
 
 	private static ConnectorSqlSelects createConceptColumnConnectorSqlSelects(CQConcept cqConcept, SelectContext<ConnectorSqlTables> selectContext) {
+
+
 		return cqConcept.getSelects().stream()
 						.map(SelectId::resolve)
 						.filter(select -> select instanceof ConceptColumnSelect)
 						.findFirst()
-						.map(select -> select.createConverter().connectorSelect(select, selectContext))
+						.map(select -> selectContext.getDialectBundle().getSelectConverter(select).connectorSelect(select, selectContext))
 						.orElse(ConnectorSqlSelects.none());
 	}
 
