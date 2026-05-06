@@ -315,7 +315,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		return CQTableContext.builder()
 							 .ids(ids)
-							 .validityDate(Optional.of(tablesValidityDate))
+							 .validityDate(tablesValidityDate)
 							 .sqlSelects(allSelectsForTable)
 							 .sqlFilters(allSqlFiltersForTable)
 							 .connectorTables(connectorTables)

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import static org.jooq.impl.DSL.*;
 import static org.jooq.impl.DSL.field;
 
 import java.util.Arrays;
@@ -150,8 +151,8 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			ConversionContext context
 	) {
 		final SqlFunctionProvider functionProvider = context.getFunctionProvider();
-		final Table<Record> connectorTable = DSL.table(DSL.name(cqTable.getConnector().resolve().resolveTableId().getTable()));
-		final Table<Record> convertedPrerequisiteTable = DSL.table(DSL.name(convertedPrerequisite.getCteName()));
+		final Table<Record> connectorTable = table(name(cqTable.getConnector().resolve().resolveTableId().getTable()));
+		final Table<Record> convertedPrerequisiteTable = table(name(convertedPrerequisite.getCteName()));
 
 		final ColumnDateRange validityDate = functionProvider.forValidityDate(cqTable.findValidityDate());
 		final List<Condition> joinConditions = Stream.concat(
@@ -169,7 +170,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 
 		// if columns have the same computed position, they can share a common name because they will be unioned over multiple tables anyway
 		for (int index = 0; index < exportColumns.length; index++) {
-			final Field<?> columnSelect = DSL.inline(null, Object.class).as("null-%d".formatted(index));
+			final Field<?> columnSelect = inline(null, Object.class).as("null-%d".formatted(index));
 			exportColumns[index] = columnSelect;
 		}
 
@@ -178,12 +179,12 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 
 	private static Field<String> createSourceInfoSelect(CQTable cqTable) {
 		final String tableName = cqTable.getConnector().resolve().resolveTableId().getTable();
-		return DSL.inline(tableName).as(SharedAliases.SOURCE.getAlias());
+		return inline(tableName).as(SharedAliases.SOURCE.getAlias());
 	}
 
 	private static Field<?> createColumnSelect(Column column, int position) {
 		final String columnName = "%s-%s".formatted(column.getName(), position);
-		return field(DSL.name(column.getTable().getName(), column.getName()))
+		return field(name(column.getTable().getName(), column.getName()))
 				  .as(columnName);
 	}
 

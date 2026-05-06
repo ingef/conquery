@@ -146,11 +146,11 @@ public class SqlEntityResolver implements EntityResolver {
 		Field<String> externalPrimaryColumn = field(name(SharedAliases.PRIMARY_COLUMN.getAlias()), String.class);
 		Field<String> innerPrimaryColumn = field(name(idColumns.findPrimaryIdColumn().getField()), String.class);
 		// Would prefer this to be `is not null`, but hana does not support that for fields
-		Field<String> isResolved = innerPrimaryColumn.as(IS_RESOLVED_ALIAS);
+		Field<Boolean> isResolved = case_().when(innerPrimaryColumn.isNull(), inline(false)).otherwise(inline(true)).as(IS_RESOLVED_ALIAS);
 
 		Table<Record> allIdsTable = table(name(idColumns.getTable()));
 
-		SelectConditionStep<Record3<Integer, String, String>> resolveIdsQuery =
+		SelectConditionStep<Record3<Integer, String, Boolean>> resolveIdsQuery =
 				context.with(unresolvedCte)
 					   .select(rowIndex, externalPrimaryColumn, isResolved)
 					   .from(dialect.getFunctionProvider().innerJoin(allIdsTable, unresolvedCte, List.of(externalPrimaryColumn.eq(innerPrimaryColumn))))
@@ -159,7 +159,7 @@ public class SqlEntityResolver implements EntityResolver {
 		return executionService.fetchStream(resolveIdsQuery)
 							   .collect(Collectors.toMap(
 									   record -> record.get(rowIndex),
-									   record -> new IdResolveInfo(record.get(externalPrimaryColumn), record.get(isResolved) != null)
+									   record -> new IdResolveInfo(record.get(externalPrimaryColumn), record.get(isResolved))
 							   ));
 	}
 
