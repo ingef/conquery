@@ -16,7 +16,7 @@
         "min": "2011-01-01",
         "max": "2011-01-01"
       },
-      "child":{
+      "child": {
         "type": "CONCEPT",
         "ids": [
           "alter"
@@ -55,11 +55,11 @@
           "table": "table1",
           "validityDates": {
             "label": "versichertenzeit",
-            "column": "table1.versichertenzeit"
+            "startColumn": "table1.erster",
+            "endColumn": "table1.letzter"
           },
           "filters": {
             "label": "alterseinschrankung",
-            "description": "Geburtsdatum",
             "column": "table1.geburtsdatum",
             "type": "DATE_DISTANCE"
           }
@@ -88,10 +88,6 @@
           {
             "name": "letzter",
             "type": "DATE"
-          },
-          {
-            "name": "versichertenzeit",
-            "type": "DATE_RANGE"
           }
         ]
       }

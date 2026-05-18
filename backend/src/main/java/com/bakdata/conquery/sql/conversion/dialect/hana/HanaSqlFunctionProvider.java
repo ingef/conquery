@@ -113,7 +113,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public ColumnDateRange emptyColumnDateRange() {
-		return ColumnDateRange.of(field(inline(null, Date.class)), field(inline(null, Date.class)));
+		return ColumnDateRange.of(inline(null, Date.class), inline(null, Date.class));
 	}
 
 
@@ -124,7 +124,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public ColumnDateRange allRange() {
-		return ColumnDateRange.of(toDateField(MIN_DATE_VALUE).as("all_range_start"), toDateField(MAX_DATE_VALUE).as("all_range_end"));
+		return ColumnDateRange.of(getMinDateExpression().as("all_range_start"), getMaxDateExpression().as("all_range_end"));
 	}
 
 	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
@@ -152,13 +152,13 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 		Field<Date> rangeStart = coalesce(
 				field(name(tableName, startColumn.getName()), Date.class),
-				toDateField(MIN_DATE_VALUE)
+				getMinDateExpression()
 		);
 		// when aggregating date ranges, we want to treat the last day of the range as excluded,
 		// so when using the date value of the end column, we add +1 day as end of the date range
 		Field<Date> rangeEnd = coalesce(
 				addDays(field(name(tableName, endColumn.getName()), Date.class), inline(1)),
-				toDateField(MAX_DATE_VALUE)
+				getMaxDateExpression()
 		);
 
 		return ColumnDateRange.of(rangeStart, rangeEnd);

@@ -99,7 +99,7 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 		List<Field<String>> flagAggregations = new ArrayList<>();
 		for (Map.Entry<String, Field<Boolean>> entry : flagFieldsMap.entrySet()) {
 			Field<Boolean> boolColumn = entry.getValue();
-			Condition anyTrue = condition(max(boolColumn)); // Clickhouse doesnt have aggregate or, this does the same thing.
+			Condition anyTrue = functionProvider.orAgg(boolColumn);
 
 			String flagName = entry.getKey();
 			Field<String> flag = when(anyTrue, inline(flagName)).otherwise(""); // else null is implicit in SQL
@@ -107,7 +107,7 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 		}
 
 		// and stuff them into 1 array field
-		Field<?> flagsArray = functionProvider.stringArray(flagAggregations).as(alias);
+		Field<?> flagsArray = functionProvider.arrayOut(flagAggregations).as(alias);
 		// we also need the references for all flag columns for the flag aggregation of multiple columns
 		String[] requiredColumns = flagFieldsMap.values().stream().map(Field::getName).toArray(String[]::new);
 		return new FieldWrapper<>(flagsArray, requiredColumns);

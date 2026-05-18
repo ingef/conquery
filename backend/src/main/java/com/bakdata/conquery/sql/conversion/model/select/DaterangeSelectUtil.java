@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.model.select;
 
 import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.*;
 import static com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep.INTERVAL_COMPLETE;
+import static org.jooq.impl.DSL.*;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -126,8 +127,8 @@ public class DaterangeSelectUtil {
 
 	public static FieldWrapper<BigDecimal> createDurationSumSqlSelect(String alias, ColumnDateRange validityDate, SqlFunctionProvider functionProvider) {
 		Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd());
-		Field<BigDecimal> durationSum = DSL.sum(
-												   DSL.when(containsInfinityDate(validityDate, functionProvider), DSL.inline(null, Integer.class))
+		Field<BigDecimal> durationSum = sum(
+												   when(containsInfinityDate(validityDate, functionProvider), inline(null, Integer.class))
 													  .otherwise(dateDistanceInDays)
 										   )
 										   .as(alias);
@@ -135,8 +136,9 @@ public class DaterangeSelectUtil {
 	}
 
 	private static Condition containsInfinityDate(ColumnDateRange validityDate, SqlFunctionProvider functionProvider) {
-		Field<Date> negativeInfinity = (functionProvider.getMinDateExpression());
-		Field<Date> positiveInfinity = (functionProvider.getMaxDateExpression());
+		Field<Date> negativeInfinity = functionProvider.getMinDateExpression();
+		Field<Date> positiveInfinity = functionProvider.getMaxDateExpression();
+
 		return validityDate.getStart().eq(negativeInfinity).or(validityDate.getEnd().eq(positiveInfinity));
 	}
 

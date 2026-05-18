@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.dialect.pg;
 
 import static com.bakdata.conquery.sql.conversion.forms.FormConstants.SERIES_INDEX;
+import static org.jooq.impl.DSL.*;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -28,18 +29,26 @@ import org.jooq.impl.SQLDataType;
 public class PostgresStratificationFunctions extends StratificationFunctions {
 
 	private static final Map<Interval, Field<String>> INTERVAL_MAP = Map.of(
-			Interval.ONE_YEAR_INTERVAL, DSL.inline("1 year"),
-			Interval.YEAR_AS_DAYS_INTERVAL, DSL.inline("365 days"),
-			Interval.QUARTER_INTERVAL, DSL.inline("3 months"),
-			Interval.NINETY_DAYS_INTERVAL, DSL.inline("90 days"),
-			Interval.ONE_DAY_INTERVAL, DSL.inline("1 day")
+			Interval.ONE_YEAR_INTERVAL, inline("1 year"),
+			Interval.YEAR_AS_DAYS_INTERVAL, inline("365 days"),
+			Interval.QUARTER_INTERVAL, inline("3 months"),
+			Interval.NINETY_DAYS_INTERVAL, inline("90 days"),
+			Interval.ONE_DAY_INTERVAL, inline("1 day")
 	);
 
-	private static final Keyword INTERVAL_KEYWORD = DSL.keyword("interval");
+	private static final Keyword INTERVAL_KEYWORD = keyword("interval");
 
 	private final PostgreSqlFunctionProvider functionProvider;
 
+	private static Field<Date> castExpressionToDate(Field<Timestamp> shiftedDate) {
+		return field("({0})::{1}", Date.class, shiftedDate, keyword("date"));
+	}
 
+	private static void checkIsSingleColumnRange(ColumnDateRange dateRange) {
+		if (!dateRange.isSingleColumnRange()) {
+			throw new IllegalStateException("Expecting a single column range for Postgres SQL dialect.");
+		}
+	}
 
 	@Override
 	public ColumnDateRange ofStartAndEnd(Field<Date> start, Field<Date> end) {
@@ -58,10 +67,10 @@ public class PostgresStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Field<Date> upperBoundYearEnd(ColumnDateRange dateRange) {
-		return DSL.field(
+		return field(
 				"{0} + {1} {2}",
 				Date.class,
-				dateTruncate(DSL.inline("year"), inclusiveUpper(dateRange)),
+				dateTruncate(inline("year"), inclusiveUpper(dateRange)),
 				INTERVAL_KEYWORD,
 				INTERVAL_MAP.get(Interval.ONE_YEAR_INTERVAL)
 		);
@@ -74,9 +83,9 @@ public class PostgresStratificationFunctions extends StratificationFunctions {
 		Field<Date> yearStartOfUpperBound = castExpressionToDate(jumpToYearStart(upperBound));
 		Field<Date> yearEndQuarterAligned = addQuarters(yearStartOfUpperBound, lowerBoundQuarter, Offset.MINUS_ONE);
 		// we add +1 year to the quarter aligned end if it is less than the upper bound we want to align
-		return DSL.when(
+		return when(
 						  yearEndQuarterAligned.lessThan(upperBound),
-						  shiftByInterval(yearEndQuarterAligned, Interval.ONE_YEAR_INTERVAL, DSL.inline(1), Offset.NONE)
+						  shiftByInterval(yearEndQuarterAligned, Interval.ONE_YEAR_INTERVAL, inline(1), Offset.NONE)
 				  )
 				  .otherwise(yearEndQuarterAligned);
 	}
@@ -100,7 +109,7 @@ public class PostgresStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Field<Date> jumpToNextQuarterStart(Field<Date> date) {
-		Field<Timestamp> yearStart = dateTruncate(DSL.inline("year"), date);
+		Field<Timestamp> yearStart = dateTruncate(inline("year"), date);
 		Field<Integer> quarter = functionProvider.extract(DatePart.QUARTER, date);
 		return addQuarters(yearStart, quarter, Offset.NONE);
 	}
@@ -112,20 +121,20 @@ public class PostgresStratificationFunctions extends StratificationFunctions {
 
 	@Override
 	public Table<Record> generateIntSeries(int from, int to) {
-		return DSL.table("generate_series({0}, {1})", from, to);
+		return table("generate_series({0}, {1})", from, to);
 	}
 
 	@Override
 	public Field<Date> indexSelectorField(TemporalSamplerFactory indexSelector, ColumnDateRange validityDate) {
 		return switch (indexSelector) {
-			case EARLIEST -> DSL.min(lower(validityDate));
+			case EARLIEST -> min(lower(validityDate));
 			// upper returns the exclusive end date, we want to inclusive one, so we add -1 day
-			case LATEST -> DSL.max(inclusiveUpper(validityDate));
+			case LATEST -> max(inclusiveUpper(validityDate));
 			case RANDOM -> {
 				// we calculate a random int which is in range of the date distance between upper and lower bound
 				Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, lower(validityDate), exclusiveUpper(validityDate));
-				Field<BigDecimal> randomAmountOfDays = DSL.rand().times(dateDistanceInDays);
-				Field<Integer> flooredAsInt = functionProvider.cast(DSL.floor(randomAmountOfDays), SQLDataType.INTEGER);
+				Field<BigDecimal> randomAmountOfDays = rand().times(dateDistanceInDays);
+				Field<Integer> flooredAsInt = functionProvider.cast(floor(randomAmountOfDays), SQLDataType.INTEGER);
 				// then we add this random amount (of days) to the start date
 				Field<Date> randomDateInRange = functionProvider.addDays(lower(validityDate), flooredAsInt);
 				// finally, we handle multiple ranges by randomizing which range we use to select a random date from
@@ -143,7 +152,7 @@ public class PostgresStratificationFunctions extends StratificationFunctions {
 	@Override
 	public Field<Date> lower(ColumnDateRange dateRange) {
 		checkIsSingleColumnRange(dateRange);
-		return DSL.function("lower", Date.class, dateRange.getRange());
+		return function("lower", Date.class, dateRange.getRange());
 	}
 
 	@Override
@@ -155,7 +164,7 @@ public class PostgresStratificationFunctions extends StratificationFunctions {
 	@Override
 	protected Field<Date> exclusiveUpper(ColumnDateRange dateRange) {
 		checkIsSingleColumnRange(dateRange);
-		return DSL.function("upper", Date.class, dateRange.getRange());
+		return function("upper", Date.class, dateRange.getRange());
 	}
 
 	@Override
@@ -179,7 +188,7 @@ public class PostgresStratificationFunctions extends StratificationFunctions {
 
 	private Field<Date> addMultipliedInterval(Field<? extends java.util.Date> start, Field<String> intervalExpression, Field<Integer> amount, Offset offset) {
 		Field<Integer> multiplier = amount.plus(offset.getOffset());
-		Field<Timestamp> shiftedDate = DSL.field(
+		Field<Timestamp> shiftedDate = field(
 				"{0} + {1} {2} * {3}",
 				Timestamp.class,
 				start,
@@ -192,7 +201,7 @@ public class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	private Field<Timestamp> dateTruncate(Field<String> field, Field<Date> date) {
-		return DSL.function("date_trunc", Timestamp.class, field, date);
+		return function("date_trunc", Timestamp.class, field, date);
 	}
 
 	private Field<Date> addQuarters(Field<? extends java.util.Date> start, Field<Integer> amountOfQuarters, Offset offset) {
@@ -200,17 +209,7 @@ public class PostgresStratificationFunctions extends StratificationFunctions {
 	}
 
 	private Field<Timestamp> jumpToYearStart(Field<Date> date) {
-		return dateTruncate(DSL.inline("year"), date);
-	}
-
-	private static Field<Date> castExpressionToDate(Field<Timestamp> shiftedDate) {
-		return DSL.field("({0})::{1}", Date.class, shiftedDate, DSL.keyword("date"));
-	}
-
-	private static void checkIsSingleColumnRange(ColumnDateRange dateRange) {
-		if (!dateRange.isSingleColumnRange()) {
-			throw new IllegalStateException("Expecting a single column range for Postgres SQL dialect.");
-		}
+		return dateTruncate(inline("year"), date);
 	}
 
 }

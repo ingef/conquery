@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
@@ -34,8 +35,6 @@ import org.jooq.TableOnConditionStep;
 public interface SqlFunctionProvider {
 
 	String DEFAULT_DATE_FORMAT = "yyyy-mm-dd";
-	String INFINITY_SIGN = "∞";
-	String MINUS_INFINITY_SIGN = "-∞";
 	String SQL_UNIT_SEPARATOR = " || '%s' || ".formatted(ResultSetProcessor.UNIT_SEPARATOR);
 
 	Collection<? extends OrderField<?>> orderByValidityDates(
@@ -84,6 +83,21 @@ public interface SqlFunctionProvider {
 	 */
 	ColumnDateRange forValidityDate(ValidityDate validityDate);
 
+
+	default Condition isNotEmptyValidityDate(ValidityDate validityDate) {
+		ColumnId singleColumn = validityDate.getColumn();
+		if (singleColumn != null) {
+			return field(name(singleColumn.getTable().getTable(), singleColumn.getColumn())).isNotNull();
+		}
+
+		ColumnId startColumn = validityDate.getStartColumn();
+		ColumnId endColumn = validityDate.getEndColumn();
+
+		Condition isNotEmptyStart = field(name(startColumn.getTable().getTable(), startColumn.getColumn())).isNotNull();
+		Condition isNotEmptyEnd = field(name(endColumn.getTable().getTable(), endColumn.getColumn())).isNotNull();
+
+		return isNotEmptyStart.or(isNotEmptyEnd);
+	}
 
 	/**
 	 * Creates a {@link ColumnDateRange} of maximum range.
@@ -179,14 +193,17 @@ public interface SqlFunctionProvider {
 
 	ColumnDateRange allRangeIf(Condition condition);
 
-	default Field<?> stringArray(List<Field<String>> fields) {
+	/**
+	 * Render an array for Conquery processing.
+	 */
+	default Field<?> arrayOut(List<Field<String>> fields) {
 		String concatenated =
 				fields.stream()
-					  // if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
-					  // thus concat an empty string
-					  .map(field -> field)
-					  .map(Field::toString)
-					  .collect(Collectors.joining(SQL_UNIT_SEPARATOR));
+				      // if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
+				      // thus concat an empty string
+				      .map(field -> field)
+				      .map(Field::toString)
+				      .collect(Collectors.joining(SQL_UNIT_SEPARATOR));
 		return field(concatenated, String.class);
 	}
 
@@ -228,8 +245,15 @@ public interface SqlFunctionProvider {
 		return toDate(dateExpression, DEFAULT_DATE_FORMAT);
 	}
 
+	/**
+	 * Empty if start is equal to getMinDateExpression and end is equal to getMaxDateExpression.
+	 */
 	Condition isNotEmptyDateRange(ColumnDateRange columnDateRange);
 
 	ColumnDateRange emptyColumnDateRange();
+
+	default Condition orAgg(Field<Boolean> field){
+		return  condition(max(field));
+	}
 
 }

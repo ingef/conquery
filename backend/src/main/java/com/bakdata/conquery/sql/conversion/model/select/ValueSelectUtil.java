@@ -77,7 +77,7 @@ class ValueSelectUtil {
 										))
 										.build())
 						.cteName(ValueSelectCteStep.ROW_NUMBER_STEP.cteName(alias))
-						.conditions(List.of(qualifiedRootSelect.isNotNull(), selectContext.getValidityDate().map(functionProvider::isNotEmptyDateRange).orElse(noCondition())))
+						.conditions(List.of(qualifiedRootSelect.isNotNull()))
 						.fromTable(table(name(predecessor)))
 						.build();
 	}

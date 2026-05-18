@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
+import static org.jooq.impl.DSL.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,10 +42,10 @@ import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Preconditions;
+import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
-import org.jooq.impl.DSL;
 
 public class CQConceptConverter implements NodeConverter<CQConcept> {
 
@@ -69,11 +71,11 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		SelectContext<ConceptSqlTables> selectContext = SelectContext.create(ids, validityDate, universalTables, context);
 		List<ConceptSqlSelects> converted = cqConcept.getSelects().stream()
-													 .map(selectId -> {
+		                                             .map(selectId -> {
 														 Select select = selectId.resolve();
-														 return select.createConverter().conceptSelect(select, selectContext);
+														 return context.getDialectBundle().getSelectConverter(select).conceptSelect(select, selectContext);
 													 })
-													 .toList();
+		                                             .toList();
 
 		List<QueryStep> queriesToJoin = new ArrayList<>();
 		queriesToJoin.add(predecessor);
@@ -88,16 +90,16 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		List<SqlSelect> allConceptSelects = Stream.concat(
 														  converted.stream().flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream()),
 														  // aggregate special selects (e.g. Exists)
-														  predecessor.getQualifiedSelects().getSqlSelects().stream().map(SqlSelect::connectorAggregate)
+				                                          predecessor.getQualifiedSelects().getSqlSelects().stream().map(SqlSelect::connectorAggregate)
 												  )
-												  .toList();
+		                                          .toList();
 
 		Selects finalSelects = Selects.builder()
-									  .ids(ids)
-									  .stratificationDate(predecessorSelects.getStratificationDate())
-									  .validityDate(validityDate)
-									  .sqlSelects(allConceptSelects)
-									  .build();
+		                              .ids(ids)
+		                              .stratificationDate(predecessorSelects.getStratificationDate())
+		                              .validityDate(validityDate)
+		                              .sqlSelects(allConceptSelects)
+		                              .build();
 
 		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.INNER_JOIN, context);
 
@@ -106,18 +108,18 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				Stream.concat(
 						finalSelects.nonExplicitSelects().stream(),
 						finalSelects.getSqlSelects().stream()
-									.filter(Predicate.not(SqlSelect::isUniversal))
-									.flatMap(sqlSelect -> sqlSelect.toFields().stream())
+						            .filter(Predicate.not(SqlSelect::isUniversal))
+						            .flatMap(sqlSelect -> sqlSelect.toFields().stream())
 				).toList();
 
 		return QueryStep.builder()
-						.cteName(universalTables.cteName(ConceptCteStep.UNIVERSAL_SELECTS))
-						.selects(finalSelects)
-						.fromTable(joinedTable)
-						.groupBy(groupByFields)
-						.predecessors(queriesToJoin)
-						.negate(context.isNegation())
-						.build();
+		                .cteName(universalTables.cteName(ConceptCteStep.UNIVERSAL_SELECTS))
+		                .selects(finalSelects)
+		                .fromTable(joinedTable)
+		                .groupBy(groupByFields)
+		                .predecessors(queriesToJoin)
+		                .negate(context.isNegation())
+		                .build();
 	}
 
 	public static SqlIdColumns convertIds(CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
@@ -126,8 +128,8 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(table, conversionContext.getDefaultPrimaryColumn());
 
 		if (cqConcept.isExcludeFromSecondaryId()
-			|| conversionContext.getSecondaryIdDescription() == null
-			|| !cqTable.hasSelectedSecondaryId(conversionContext.getSecondaryIdDescription().getId())
+		    || conversionContext.getSecondaryIdDescription() == null
+		    || !cqTable.hasSelectedSecondaryId(conversionContext.getSecondaryIdDescription().getId())
 		) {
 			return new SqlIdColumns(primaryColumn).withAlias();
 		}
@@ -142,13 +144,12 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				)
 		);
 
-		Field<Object> secondaryId = DSL.field(DSL.name(table.getName(), secondaryIdColumn.getName()));
+		Field<Object> secondaryId = field(name(table.getName(), secondaryIdColumn.getName()));
 		return new SqlIdColumns(primaryColumn, secondaryId).withAlias();
 	}
 
-	private static ColumnDateRange convertValidityDate(CQTable cqTable, String connectorLabel, ConversionContext context) {
+	private static ColumnDateRange convertValidityDate(String connectorLabel, ConversionContext context, ValidityDate validityDate) {
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
-		ValidityDate validityDate = cqTable.findValidityDate();
 		ColumnDateRange sqlValidityDate;
 
 		boolean hasValidityDate = validityDate != null;
@@ -174,20 +175,31 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		return sqlValidityDate.asValidityDateRange(connectorLabel);
 	}
 
-	private static Optional<SqlFilters> collectConditionFilters(List<ConceptElement<?>> conceptElements, CQTable cqTable, SqlFunctionProvider functionProvider) {
-		return collectConditions(conceptElements, cqTable, functionProvider)
-				.stream()
-				.reduce(WhereCondition::and)
-				.map(whereCondition -> new SqlFilters(
-						ConnectorSqlSelects.none(),
-						WhereClauses.builder().preprocessingCondition(whereCondition).build()
-				));
+	private static SqlFilters collectConditionFilters(
+			List<ConceptElement<?>> conceptElements, CQTable cqTable, SqlFunctionProvider functionProvider) {
+		List<WhereCondition> conditions = new ArrayList<>();
+		conditions.addAll(collectConditions(conceptElements, cqTable, functionProvider));
+
+		ValidityDate validityDate = cqTable.findValidityDate();
+		Condition validityDateFilter = noCondition();
+		if (validityDate != null) {
+			validityDateFilter = functionProvider.isNotEmptyValidityDate(validityDate);
+		}
+
+		return new SqlFilters(ConnectorSqlSelects.none(),
+		                      WhereClauses.builder()
+		                                  .preprocessingConditions(conditions)
+		                                  .preprocessingCondition(ConditionUtil.wrap(validityDateFilter))
+		                                  .build()
+		);
 	}
 
 	private static List<WhereCondition> collectConditions(List<ConceptElement<?>> conceptElements, CQTable cqTable, SqlFunctionProvider functionProvider) {
 
 		List<WhereCondition> conditions = new ArrayList<>();
+
 		convertConnectorCondition(cqTable, functionProvider).ifPresent(conditions::add);
+
 
 		for (ConceptElement<?> conceptElement : conceptElements) {
 			collectConditions(cqTable, conceptElement, functionProvider)
@@ -216,7 +228,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		final Connector connector = cqTable.getConnector().resolve();
 
 		return Optional.ofNullable(connector.getCondition())
-					   .map(condition -> condition.convertToSqlCondition(CTConditionContext.create(connector, functionProvider)));
+		               .map(condition -> condition.convertToSqlCondition(CTConditionContext.create(connector, functionProvider)));
 	}
 
 	private static SqlFilters dateRestrictionFilter(ConversionContext context, ColumnDateRange validityDate) {
@@ -225,22 +237,22 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		List<WhereCondition> conditions = new ArrayList<>();
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 
-		conditions.add(ConditionUtil.wrap(functionProvider.isNotEmptyDateRange(validityDate)));
+		// conditions.add(ConditionUtil.wrap(functionProvider.isNotEmptyDateRange(validityDate)));
 
 		if (context.getDateRestrictionRange() != null) {
 			ColumnDateRange dateRestriction = functionProvider.forCDateRange(context.getDateRestrictionRange()).as(SharedAliases.DATE_RESTRICTION.getAlias());
 			conditions.add(ConditionUtil.wrap(functionProvider.dateRestriction(dateRestriction, validityDate)));
 
 			dateRestrictionSelects.addAll(dateRestriction.toFields().stream()
-														 .map(FieldWrapper::new)
-														 .toList());
+			                                             .map(FieldWrapper::new)
+			                                             .toList());
 		}
 
 		return new SqlFilters(
 				ConnectorSqlSelects.builder().preprocessingSelects(dateRestrictionSelects).build(),
 				WhereClauses.builder()
-							.eventFilters(conditions)
-							.build()
+				            .eventFilters(conditions)
+				            .build()
 		);
 	}
 
@@ -248,11 +260,11 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 
 		return cqConcept.getSelects().stream()
-						.map(SelectId::resolve)
-						.filter(select -> select instanceof ConceptColumnSelect)
-						.findFirst()
-						.map(select -> selectContext.getDialectBundle().getSelectConverter(select).connectorSelect(select, selectContext))
-						.orElse(ConnectorSqlSelects.none());
+		                .map(SelectId::resolve)
+		                .filter(select -> select instanceof ConceptColumnSelect)
+		                .findFirst()
+		                .map(select -> selectContext.getDialectBundle().getSelectConverter(select).connectorSelect(select, selectContext))
+		                .orElse(ConnectorSqlSelects.none());
 	}
 
 	@Override
@@ -265,8 +277,8 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		TablePath tablePath = new TablePath(cqConcept, context);
 		List<QueryStep> convertedCQTables = cqConcept.getTables().stream()
-													 .flatMap(cqTable -> convertCqTable(tablePath, cqConcept, cqTable, context).stream())
-													 .toList();
+		                                             .flatMap(cqTable -> convertCqTable(tablePath, cqConcept, cqTable, context).stream())
+		                                             .toList();
 
 		QueryStep joinedStep = QueryStepJoiner.joinSteps(convertedCQTables, ConqueryJoinType.OUTER_JOIN, DateAggregationAction.MERGE, context);
 		QueryStep lastConceptStep = finishConceptConversion(joinedStep, cqConcept, tablePath, context);
@@ -291,16 +303,20 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		SqlIdColumns ids = convertIds(cqConcept, cqTable, conversionContext);
 		ConnectorSqlTables connectorTables = tablePath.getConnectorTables(cqTable);
-		ColumnDateRange tablesValidityDate = convertValidityDate(cqTable, connectorTables.getLabel(), conversionContext);
+		ColumnDateRange tablesValidityDate = convertValidityDate(connectorTables.getLabel(), conversionContext, cqTable.findValidityDate());
+
+		//TODO validityDate Filter
 
 		// convert filters
 		SqlFunctionProvider functionProvider = conversionContext.getFunctionProvider();
 		List<SqlFilters> allSqlFiltersForTable = new ArrayList<>();
+
 		cqTable.getFilters().stream()
-			   .map(filterValue -> filterValue.convertToSqlFilter(ids, conversionContext, connectorTables))
-			   .forEach(allSqlFiltersForTable::add);
-		collectConditionFilters(cqConcept.getElements().stream().<ConceptElement<?>>map(ConceptElementId::resolve).toList(), cqTable, functionProvider).ifPresent(
-				allSqlFiltersForTable::add);
+		       .map(filterValue -> filterValue.convertToSqlFilter(ids, conversionContext, connectorTables))
+		       .forEach(allSqlFiltersForTable::add);
+
+		List<ConceptElement<?>> conceptElements = cqConcept.getElements().stream().<ConceptElement<?>>map(ConceptElementId::resolve).toList();
+		allSqlFiltersForTable.add(collectConditionFilters(conceptElements, cqTable, functionProvider));
 
 		allSqlFiltersForTable.add(dateRestrictionFilter(conversionContext, tablesValidityDate));
 
@@ -310,19 +326,19 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		ConnectorSqlSelects conceptColumnSelect = createConceptColumnConnectorSqlSelects(cqConcept, selectContext);
 		allSelectsForTable.add(conceptColumnSelect);
 		cqTable.getSelects()
-			   .stream()
-			   .map(SelectId::resolve)
-			   .map(select -> select.createConverter().connectorSelect(select, selectContext))
-			   .forEach(allSelectsForTable::add);
+		       .stream()
+		       .map(SelectId::resolve)
+		       .map(select -> selectContext.getDialectBundle().getSelectConverter(select).connectorSelect(select, selectContext))
+		       .forEach(allSelectsForTable::add);
 
 		return CQTableContext.builder()
-							 .ids(ids)
-							 .validityDate(tablesValidityDate)
-							 .sqlSelects(allSelectsForTable)
-							 .sqlFilters(allSqlFiltersForTable)
-							 .connectorTables(connectorTables)
-							 .conversionContext(conversionContext)
-							 .build();
+		                     .ids(ids)
+		                     .validityDate(tablesValidityDate)
+		                     .sqlSelects(allSelectsForTable)
+		                     .sqlFilters(allSqlFiltersForTable)
+		                     .connectorTables(connectorTables)
+		                     .conversionContext(conversionContext)
+		                     .build();
 	}
 
 }

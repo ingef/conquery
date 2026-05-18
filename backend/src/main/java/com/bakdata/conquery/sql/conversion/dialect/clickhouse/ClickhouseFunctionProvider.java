@@ -96,18 +96,22 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Condition isNotEmptyDateRange(ColumnDateRange columnDateRange) {
-		return columnDateRange.getStart().notEqual(getMinDateExpression()).or(columnDateRange.getEnd().notEqual(getMaxDateExpression()));
+		Condition startNotMin = columnDateRange.getStart().notEqual(getMinDateExpression());
+		Condition endNotMax = columnDateRange.getEnd().notEqual(getMaxDateExpression());
+		return condition(startNotMin.and(endNotMax).neg());
 	}
 
 	@Override
 	public ColumnDateRange emptyColumnDateRange() {
-		return ColumnDateRange.of(getMinDateExpression(), getMaxDateExpression());
+		return ColumnDateRange.of(inline(null, Date.class), inline(null, Date.class));
 	}
 
 	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate) {
 		return toColumnDateRange(validityDate);
 	}
+
+
 
 	@Override
 	public ColumnDateRange allRange() {
@@ -135,8 +139,9 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 		return ofStartAndEnd(tableName, startColumn, endColumn);
 	}
 
+
 	@Override
-	public Field<?> stringArray(List<Field<String>> fields) {
+	public Field<?> arrayOut(List<Field<String>> fields) {
 		return field("arrayFilter(x -> x <> '', {0})", Object.class, array(fields));
 	}
 

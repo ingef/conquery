@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
@@ -52,7 +53,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Field<Date> getMaxDateExpression() {
-		return inline(INFINITY_DATE_VALUE, Date.class);
+		return field("{0}::date", Date.class, INFINITY_DATE_VALUE);
 	}
 
 	@Override
@@ -72,10 +73,10 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 			List<Field<?>> validityDateFields) {
 
 		return validityDateFields.stream()
-								 .map(field -> nullif(field, emptyDateRange()))
-								 .map(ordering)
-								 .map(SortField::nullsLast)
-								 .toList();
+		                         .map(field -> nullif(field, emptyDateRange()))
+		                         .map(ordering)
+		                         .map(SortField::nullsLast)
+		                         .toList();
 	}
 
 	public Field<Object> emptyDateRange() {
@@ -84,7 +85,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Field<Date> getMinDateExpression() {
-		return inline(NEGATIVE_INFINITY_DATE_VALUE, Date.class);
+		return field("{0}::date", Date.class, NEGATIVE_INFINITY_DATE_VALUE);
 	}
 
 	@Override
@@ -111,9 +112,9 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	public List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias) {
 		// Postgres can return a date set as a single multidaterange
 		Field[] daterangeFields = dateset.asRanges().stream()
-										 .map(this::forCDateRange)
-										 .map(ColumnDateRange::getRange)
-										 .toArray(Field[]::new);
+		                                 .map(this::forCDateRange)
+		                                 .map(ColumnDateRange::getRange)
+		                                 .toArray(Field[]::new);
 		Field<Object> multirange = datemultirange(daterangeFields);
 		return List.of(ColumnDateRange.of(multirange).as(alias.getAlias()));
 	}
@@ -145,6 +146,8 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		// if there is no validity date, each entity has the max range {-inf/inf} as validity date
 		return validityDate == null ? allRange() : toColumnDateRange(validityDate);
 	}
+
+
 
 	@Override
 	public ColumnDateRange allRange() {
@@ -207,7 +210,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	public ColumnDateRange allRangeIf(Condition condition) {
 		return ColumnDateRange.of(
 				when(condition.isTrue(),
-					 datemultirange(daterange(toDateField(NEGATIVE_INFINITY_DATE_VALUE), toDateField(INFINITY_DATE_VALUE), CLOSED_RANGE))
+				     datemultirange(daterange(toDateField(NEGATIVE_INFINITY_DATE_VALUE), toDateField(INFINITY_DATE_VALUE), CLOSED_RANGE))
 				)
 		);
 	}
@@ -280,15 +283,15 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		ColumnDateRange unnested = ColumnDateRange.of(unnest(qualifiedRange.getRange()).as(qualifiedRange.getAlias()), qualifiedRange.getAlias());
 
 		Selects selects = Selects.builder()
-								 .ids(predecessor.getQualifiedSelects().getIds())
-								 .validityDate(Optional.of(unnested))
-								 .build();
+		                         .ids(predecessor.getQualifiedSelects().getIds())
+		                         .validityDate(Optional.of(unnested))
+		                         .build();
 
 		return QueryStep.builder()
-						.cteName(cteName)
-						.selects(selects)
-						.fromTable(QueryStep.toTableLike(predecessor.getCteName()))
-						.build();
+		                .cteName(cteName)
+		                .selects(selects)
+		                .fromTable(QueryStep.toTableLike(predecessor.getCteName()))
+		                .build();
 	}
 
 	@Override
@@ -375,12 +378,17 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Condition isNotEmptyDateRange(ColumnDateRange columnDateRange) {
-		return columnDateRange.getRange().notEqual(PostgreSqlFunctionProvider.EMPTY_RANGE);
+		return condition(function("isempty", Boolean.class, columnDateRange.getRange())).not();
 	}
 
 	@Override
 	public ColumnDateRange emptyColumnDateRange() {
 		return ColumnDateRange.of(EMPTY_RANGE);
+	}
+
+	@Override
+	public Condition orAgg(Field<Boolean> field) {
+		return condition(boolOr(field));
 	}
 
 	@Override
@@ -396,8 +404,8 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	private ColumnDateRange ensureIsSingleColumnRange(ColumnDateRange daterange) {
 		return daterange.isSingleColumnRange()
-			   ? daterange
-			   : ColumnDateRange.of(daterange(daterange.getStart(), daterange.getEnd(), OPEN_RANGE)); // end is already exclusive
+		       ? daterange
+		       : ColumnDateRange.of(daterange(daterange.getStart(), daterange.getEnd(), OPEN_RANGE)); // end is already exclusive
 	}
 
 }

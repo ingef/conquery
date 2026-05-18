@@ -25,14 +25,6 @@ import org.jooq.impl.SQLDataType;
 @RequiredArgsConstructor
 public class ClickhouseStratificationFunctions extends StratificationFunctions {
 
-	private static final int INCREMENT = 1;
-
-	/**
-	 * Hana pre-generates the column names of a generated series
-	 * (see <a href="https://help.sap.com/docs/hana-cloud-database/sap-hana-cloud-sap-hana-database-sql-reference-guide/series-generate-function-series-data">HANA docs</a>)
-	 */
-	private static final String GENERATED_PERIOD_END = "GENERATED_PERIOD_END";
-
 	private final SqlFunctionProvider functionProvider;
 
 	private static Field<Date> addMonths(Field<Date> yearStart, Field<Integer> amount) {
