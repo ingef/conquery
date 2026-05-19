@@ -237,8 +237,6 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		List<WhereCondition> conditions = new ArrayList<>();
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 
-		// conditions.add(ConditionUtil.wrap(functionProvider.isNotEmptyDateRange(validityDate)));
-
 		if (context.getDateRestrictionRange() != null) {
 			ColumnDateRange dateRestriction = functionProvider.forCDateRange(context.getDateRestrictionRange()).as(SharedAliases.DATE_RESTRICTION.getAlias());
 			conditions.add(ConditionUtil.wrap(functionProvider.dateRestriction(dateRestriction, validityDate)));
@@ -304,8 +302,6 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		SqlIdColumns ids = convertIds(cqConcept, cqTable, conversionContext);
 		ConnectorSqlTables connectorTables = tablePath.getConnectorTables(cqTable);
 		ColumnDateRange tablesValidityDate = convertValidityDate(connectorTables.getLabel(), conversionContext, cqTable.findValidityDate());
-
-		//TODO validityDate Filter
 
 		// convert filters
 		SqlFunctionProvider functionProvider = conversionContext.getFunctionProvider();

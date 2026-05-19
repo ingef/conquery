@@ -39,7 +39,6 @@ import org.testcontainers.utility.DockerImageName;
 @Slf4j
 public class ClickhouseSqlIntegrationTests extends IntegrationTests {
 
-	// SAP does not provide more than 1 image and on an update, the earlier image is deleted from dockerhub, thus latest tag is fine
 	private final static DockerImageName IMAGE_TAGE = DockerImageName.parse("clickhouse/clickhouse-server");
 	private static boolean useLocal = true;
 	private static DSLContext dslContext;

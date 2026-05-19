@@ -65,7 +65,7 @@ public class SqlExecutionService {
 		}
 		// not all DB vendors throw SQLExceptions
 		catch (SQLException | RuntimeException e) {
-			log.error("", e);
+			log.error("Query execution failed", e);
 			throw new ConqueryError.SqlError(e);
 		}
 	}

@@ -277,9 +277,8 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 			throw new UnsupportedOperationException("Clickhouse does not support single-column date ranges.");
 		}
 
-		//TODO this cast is necessary because we explicitly use null for empty. Maybe if we forego this we can simplify it again.
-		Field<?> startDateExpression = field("{0}::{1}", Object.class, columnDateRange.getStart(), keyword("Nullable(Integer)"));
-		Field<?> endDateExpression = field("{0}::{1}", Object.class, columnDateRange.getEnd(), keyword("Nullable(Integer)"));
+		Field<?> startDateExpression = field("{0}::Nullable(Integer)", Object.class, columnDateRange.getStart());
+		Field<?> endDateExpression = field("{0}::Nullable(Integer)", Object.class, columnDateRange.getEnd());
 
 		return function("tuple", Object.class, startDateExpression, endDateExpression);
 	}
@@ -321,11 +320,13 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Field<Date> lower(Field<?> daterange) {
+		// Only relevant for PG
 		throw new NotImplementedException();
 	}
 
 	@Override
 	public Field<Date> upper(Field<?> daterange) {
+		// Only relevant for PG
 		throw new NotImplementedException();
 	}
 

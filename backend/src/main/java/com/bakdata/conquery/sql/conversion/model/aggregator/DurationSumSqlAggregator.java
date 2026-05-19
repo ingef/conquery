@@ -46,18 +46,19 @@ public class DurationSumSqlAggregator implements SelectConverter<DurationSumSele
 
 		Field<Date> startDateField;
 		Field<Date> endDateField;
-		if (!filter.isSingleColumnDaterange()) {
-			Column startColumn = filter.getStartColumn().resolve();
-			Column endColumn = filter.getEndColumn().resolve();
-			String tableName = startColumn.getTable().getName();
-			startDateField = DSL.field(DSL.name(tableName, startColumn.getName()), Date.class);
-			endDateField = DSL.field(DSL.name(tableName, endColumn.getName()), Date.class);
-		} else {
+		if (filter.isSingleColumnDaterange()) {
 			Column column = filter.getColumn().resolve();
 			String tableName = column.getTable().getName();
 			Field<Date> daterangeField = DSL.field(DSL.name(tableName, column.getName()), Date.class);
 			startDateField = functionProvider.lower(daterangeField);
 			endDateField = functionProvider.upper(daterangeField);
+		}
+		else {
+			Column startColumn = filter.getStartColumn().resolve();
+			Column endColumn = filter.getEndColumn().resolve();
+			String tableName = startColumn.getTable().getName();
+			startDateField = DSL.field(DSL.name(tableName, startColumn.getName()), Date.class);
+			endDateField = DSL.field(DSL.name(tableName, endColumn.getName()), Date.class);
 		}
 		Field<Integer> dateDistance = functionProvider.dateDistance(ChronoUnit.DAYS, startDateField, endDateField);
 		// no need so compute a sum here - the duration sum of a single row is simply the date distance

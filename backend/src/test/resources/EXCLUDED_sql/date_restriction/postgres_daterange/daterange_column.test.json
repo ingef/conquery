@@ -3,7 +3,7 @@
   "sqlSpec": {
     "isEnabled": true,
     "supportedDialects": [
-      "POSTGRESQL", "HANA"
+      "POSTGRESQL"
     ]
   },
   "label": "Date restriction with a daterange column validity date (PostgreSQL only)",

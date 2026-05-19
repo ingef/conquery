@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
+import static org.jooq.impl.DSL.*;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.keyword;
 
@@ -81,12 +82,12 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 			return baseStep;
 		}
 
-		Field<Object> maxDateRange = DSL.function(
+		Field<Object> maxDateRange = function(
 				"daterange",
 				Object.class,
-				(this.functionProvider.getMinDateExpression()),
-				(this.functionProvider.getMaxDateExpression()),
-				DSL.inline("[]")
+				this.functionProvider.getMinDateExpression(),
+				this.functionProvider.getMaxDateExpression(),
+				inline("[]")
 		);
 
 		// see https://www.postgresql.org/docs/current/functions-range.html
@@ -126,7 +127,7 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 
 	private static String createEmptyRangeForNullValues(Field<?> field) {
 		Keyword datemultirange = keyword("datemultirange");
-		return DSL.coalesce(field("{0}::{1}", field, datemultirange), field("'{}'::{0}", datemultirange))
+		return coalesce(field("{0}::{1}", field, datemultirange), field("'{}'::{0}", datemultirange))
 				  .toString();
 	}
 
