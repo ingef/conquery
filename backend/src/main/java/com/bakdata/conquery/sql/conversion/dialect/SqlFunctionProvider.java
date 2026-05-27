@@ -23,12 +23,14 @@ import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
+import org.jooq.Nullability;
 import org.jooq.OrderField;
 import org.jooq.Record;
 import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.TableOnConditionStep;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -265,4 +267,10 @@ public interface SqlFunctionProvider {
 		return  condition(max(field));
 	}
 
+	/**
+	 * Only necessary to help with Clickhouse because Jooq does not translate nullability constraints into casts.
+	 */
+	default Field<String> externalId(String id){
+		return inline(id, SQLDataType.VARCHAR);
+	}
 }

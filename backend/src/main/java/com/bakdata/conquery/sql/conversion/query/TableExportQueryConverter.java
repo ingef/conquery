@@ -84,7 +84,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			Map<ColumnId, Integer> positions,
 			ConversionContext context
 	) {
-		final Field<Object> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().resolve().getResolvedTable(),
+		final Field<String> primaryColumn = TablePrimaryColumnUtil.findPrimaryColumn(cqTable.getConnector().resolve().getResolvedTable(),
 																					 context.getDefaultPrimaryColumn()
 		);
 		final SqlIdColumns ids = new SqlIdColumns(primaryColumn);

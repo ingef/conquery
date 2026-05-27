@@ -118,6 +118,8 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 
+
+
 	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate) {
 		return toColumnDateRange(validityDate);

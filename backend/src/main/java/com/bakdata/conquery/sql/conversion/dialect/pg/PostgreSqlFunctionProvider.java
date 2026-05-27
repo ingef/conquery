@@ -62,7 +62,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Table<? extends Record> getNoOpTable() {
-		return table(select(inline(1))).as(name(SharedAliases.NOP_TABLE.getAlias()));
+		return noTable();
 	}
 
 	@NotNull

@@ -23,9 +23,11 @@ import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.google.common.base.Preconditions;
 import org.jooq.Field;
 import org.jooq.Name;
+import org.jooq.Nullability;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 
 public class CQExternalConverter implements NodeConverter<CQExternal> {
 
@@ -64,15 +66,15 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 	 * 1 row per ID is sufficient. For other dialects there can be multiple rows with the same pid -> date range from the date set.
 	 */
 	private static List<QueryStep> createRowSelects(Map.Entry<String, CDateSet> entry, SqlFunctionProvider functionProvider) {
-		SqlIdColumns ids = createIdSelect(entry);
+		SqlIdColumns ids = createIdSelect(entry, functionProvider);
 		List<ColumnDateRange> validityDateEntries = functionProvider.forCDateSet(entry.getValue(), SharedAliases.DATES_COLUMN);
 		return validityDateEntries.stream()
 								  .map(validityDateEntry -> createIdRowSelect(ids, validityDateEntry, functionProvider))
 								  .toList();
 	}
 
-	private static SqlIdColumns createIdSelect(Map.Entry<String, CDateSet> entry) {
-		Field<Object> primaryColumn = DSL.inline(entry.getKey()).coerce(Object.class).as(SharedAliases.PRIMARY_COLUMN.getAlias());
+	private static SqlIdColumns createIdSelect(Map.Entry<String, CDateSet> entry, SqlFunctionProvider functionProvider) {
+		Field<String> primaryColumn = functionProvider.externalId(entry.getKey()).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 		return new SqlIdColumns(primaryColumn);
 	}
 
@@ -166,7 +168,7 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 			List<Map.Entry<String, List<String>>> extra,
 			SqlFunctionProvider functionProvider
 	) {
-		SqlIdColumns ids = createIdSelect(entry);
+		SqlIdColumns ids = createIdSelect(entry, functionProvider);
 		List<SqlSelect> extraSelects = extra.stream().map((Map.Entry<String, List<String>> extraEntry) -> createExtraColumnValue(extraEntry, functionProvider)).collect(Collectors.toList());
 		return createExtraRowSelect(ids, extraSelects, functionProvider);
 	}

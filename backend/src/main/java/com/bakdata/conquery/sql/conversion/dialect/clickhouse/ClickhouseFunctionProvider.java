@@ -47,7 +47,14 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Table<? extends Record> getNoOpTable() {
-		return table(select(inline(1))).as(name(SharedAliases.NOP_TABLE.getAlias()));
+		return noTable();
+	}
+
+
+	@Override
+	public Field<String> externalId(String id) {
+		// Only this explicit cast will get clickhouse query planner to accept `is null` as potentially false when doing anti-joins.
+		return field("{0}::Nullable(String)", String.class, inline(id, String.class));
 	}
 
 	@Override
@@ -65,7 +72,7 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias) {
-		if(dateset.isEmpty()) {
+		if (dateset.isEmpty()) {
 			// Need to explicitly provide an empty result
 			return List.of(emptyColumnDateRange().as(alias.getAlias()));
 		}
