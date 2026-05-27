@@ -1,13 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "DISTINCT MULTI MAPPED AGGREGATOR Test",
-  "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL",
-      "CLICKHOUSE"
-    ]
-  },
   "expectedCsv": "tests/aggregator/MAPPED/DISTINCT_MULTI/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

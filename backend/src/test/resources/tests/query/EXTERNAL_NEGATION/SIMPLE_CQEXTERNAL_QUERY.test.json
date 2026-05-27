@@ -1,12 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "CQExternal Extra Data Test",
-  "sqlSpec": {
-    "isEnabled": false,
-    "supportedDialects": [
-      "POSTGRESQL", "HANA"
-    ]
-  },
   "expectedCsv": "tests/query/EXTERNAL_NEGATION/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

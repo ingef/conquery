@@ -1,12 +1,6 @@
 {
   "type": "FILTER_TEST",
   "label": "FLAGS FILTER Test",
-  "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL", "HANA"
-    ]
-  },
   "expectedCsv": "tests/filter/FLAGS_FILTER/expected.csv",
   "content": {
     "tables": {

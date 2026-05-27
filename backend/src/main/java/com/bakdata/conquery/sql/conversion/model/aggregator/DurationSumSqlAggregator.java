@@ -1,5 +1,10 @@
 package com.bakdata.conquery.sql.conversion.model.aggregator;
 
+import static org.jooq.impl.DSL.field;
+
+import java.sql.Date;
+import java.time.temporal.ChronoUnit;
+
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -18,8 +23,6 @@ import com.bakdata.conquery.sql.conversion.model.select.DaterangeSelectUtil;
 import com.bakdata.conquery.sql.conversion.model.select.DaterangeSelectUtil.AggregationFunction;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
-import java.sql.Date;
-import java.time.temporal.ChronoUnit;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -49,7 +52,7 @@ public class DurationSumSqlAggregator implements SelectConverter<DurationSumSele
 		if (filter.isSingleColumnDaterange()) {
 			Column column = filter.getColumn().resolve();
 			String tableName = column.getTable().getName();
-			Field<Date> daterangeField = DSL.field(DSL.name(tableName, column.getName()), Date.class);
+			Field<Date> daterangeField = field(DSL.name(tableName, column.getName()), Date.class);
 			startDateField = functionProvider.lower(daterangeField);
 			endDateField = functionProvider.upper(daterangeField);
 		}
@@ -57,8 +60,8 @@ public class DurationSumSqlAggregator implements SelectConverter<DurationSumSele
 			Column startColumn = filter.getStartColumn().resolve();
 			Column endColumn = filter.getEndColumn().resolve();
 			String tableName = startColumn.getTable().getName();
-			startDateField = DSL.field(DSL.name(tableName, startColumn.getName()), Date.class);
-			endDateField = DSL.field(DSL.name(tableName, endColumn.getName()), Date.class);
+			startDateField = field(DSL.name(tableName, startColumn.getName()), Date.class);
+			endDateField = field(DSL.name(tableName, endColumn.getName()), Date.class);
 		}
 		Field<Integer> dateDistance = functionProvider.dateDistance(ChronoUnit.DAYS, startDateField, endDateField);
 		// no need so compute a sum here - the duration sum of a single row is simply the date distance

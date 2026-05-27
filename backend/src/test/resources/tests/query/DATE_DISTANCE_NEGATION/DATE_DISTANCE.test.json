@@ -1,13 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "DATE_DISTANCE_NEGATION_VERSICHERTENZEIT Test",
-  "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL",
-      "HANA"
-    ]
-  },
   "expectedCsv": "tests/query/DATE_DISTANCE_NEGATION/expected-versichertenzeit.csv",
   "query": {
     "type": "CONCEPT_QUERY",

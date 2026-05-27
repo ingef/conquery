@@ -1,13 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "FIRST_MULTI_MAPPED_AGGREGATOR Test",
-  "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL",
-      "CLICKHOUSE"
-    ]
-  },
   "expectedCsv": "tests/aggregator/MAPPED/FIRST_MULTI/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

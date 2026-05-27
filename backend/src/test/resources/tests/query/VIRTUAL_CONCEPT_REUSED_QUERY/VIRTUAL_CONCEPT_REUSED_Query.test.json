@@ -1,12 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "VIRTUAL_CONCEPT_REUSED_QUERY Test",
-  "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL", "HANA"
-    ]
-  },
   "expectedCsv": "tests/query/VIRTUAL_CONCEPT_REUSED_QUERY/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

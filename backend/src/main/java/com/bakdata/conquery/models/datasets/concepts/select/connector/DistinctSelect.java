@@ -17,7 +17,6 @@ import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.OneToManyMappingPrinter;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.conversion.model.select.ClickhouseDistinctSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.DistinctSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;

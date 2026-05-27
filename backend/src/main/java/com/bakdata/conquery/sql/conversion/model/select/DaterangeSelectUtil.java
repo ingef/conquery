@@ -36,7 +36,6 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 public class DaterangeSelectUtil {
 
@@ -88,7 +87,7 @@ public class DaterangeSelectUtil {
 	public static SqlFilters createForFilter(
 			DaterangeSelectOrFilter filter,
 			AggregationFunction aggregationFunction,
-			Function<Field<?> , WhereCondition> filterFunction,
+			Function<Field<?>, WhereCondition> filterFunction,
 			FilterContext<?> context
 	) {
 		String alias = context.getNameGenerator().selectName((LabeledNamespaceIdentifiable<?>) filter);
@@ -127,11 +126,10 @@ public class DaterangeSelectUtil {
 
 	public static FieldWrapper<BigDecimal> createDurationSumSqlSelect(String alias, ColumnDateRange validityDate, SqlFunctionProvider functionProvider) {
 		Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd());
-		Field<BigDecimal> durationSum = sum(
-												   when(containsInfinityDate(validityDate, functionProvider), inline(null, Integer.class))
-													  .otherwise(dateDistanceInDays)
-										   )
-										   .as(alias);
+		Field<BigDecimal> durationSum = sum(when(containsInfinityDate(validityDate, functionProvider), inline(null, Integer.class))
+													.otherwise(dateDistanceInDays)
+		)
+				.as(alias);
 		return new FieldWrapper<>(durationSum);
 	}
 

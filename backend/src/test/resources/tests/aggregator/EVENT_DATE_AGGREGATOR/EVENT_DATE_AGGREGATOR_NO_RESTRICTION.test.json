@@ -1,13 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "EVENT_DATE_AGGREGATOR_NO_RESTRICTION Test",
-  "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL",
-      "CLICKHOUSE"
-    ]
-  },
   "expectedCsv": "tests/aggregator/EVENT_DATE_AGGREGATOR/expected_no_restriction.csv",
   "query": {
     "type": "CONCEPT_QUERY",

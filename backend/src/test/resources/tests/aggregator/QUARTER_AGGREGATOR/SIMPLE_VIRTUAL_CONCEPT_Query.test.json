@@ -3,10 +3,7 @@
   "label": "QUARTER_AGGREGATOR",
   "sqlSpec": {
     "isEnabled": false,
-    "supportedDialects": [
-      "POSTGRESQL",
-      "CLICKHOUSE"
-    ]
+    "comment": "Not implemented yet."
   },
   "expectedCsv": "tests/aggregator/QUARTER_AGGREGATOR/expected.csv",
   "query": {

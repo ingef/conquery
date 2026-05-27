@@ -1,12 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "CQYES Test",
-  "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL", "HANA"
-    ]
-  },
   "expectedCsv": "tests/query/CQYES/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

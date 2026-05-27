@@ -1,13 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "DATE_DISTANCE_ERSTER Test",
-  "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL",
-      "HANA"
-    ]
-  },
   "expectedCsv": "tests/query/DATE_DISTANCE/expected-erster.csv",
   "query": {
     "type": "CONCEPT_QUERY",
@@ -48,7 +41,7 @@
       "type": "TREE",
       "connectors": [
         {
-          "name" : "connector",
+          "name": "connector",
           "table": "table1",
           "validityDates": {
             "name": "erster",

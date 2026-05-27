@@ -28,6 +28,8 @@ import org.jooq.Record;
 import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.TableOnConditionStep;
+import org.jooq.impl.DSL;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Provider of SQL functions.
@@ -36,6 +38,13 @@ public interface SqlFunctionProvider {
 
 	String DEFAULT_DATE_FORMAT = "yyyy-mm-dd";
 	String SQL_UNIT_SEPARATOR = " || '%s' || ".formatted(ResultSetProcessor.UNIT_SEPARATOR);
+
+	default Field<?> asArrayRepr(List<String> value) {
+		return inline(value.stream()
+					.map(DSL::val)
+					.map(Field::toString)
+					.collect(Collectors.joining(SQL_UNIT_SEPARATOR)));
+	}
 
 	Collection<? extends OrderField<?>> orderByValidityDates(
 			Function<Field<?>, ? extends SortField<?>> ordering,

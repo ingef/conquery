@@ -1,13 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "EXISTS_AGGREGATOR & NUMBER Test",
-  "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL",
-      "CLICKHOUSE"
-    ]
-  },
   "expectedCsv": "tests/aggregator/EXISTS_AGGREGATOR_OR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

@@ -3,8 +3,9 @@
   "label": "DURATION_SUM_AGGREGATOR Test",
   "sqlSpec": {
     "isEnabled": false,
+    "comment": "Distinct not yet implemented.",
     "supportedDialects": [
-      "POSTGRESQL", "HANA"
+      "POSTGRESQL"
     ]
   },
   "expectedCsv": "tests/filter/DURATION_SUM_DISTINCT_FILTER/expected.csv",

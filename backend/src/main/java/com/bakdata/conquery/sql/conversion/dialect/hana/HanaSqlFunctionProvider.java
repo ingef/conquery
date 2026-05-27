@@ -30,6 +30,7 @@ import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
+import org.jspecify.annotations.NonNull;
 
 public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
@@ -215,6 +216,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 		return ColumnDateRange.of(toDateField(startDateExpression), toDateField(endDateExpression));
 	}
+
 
 	@NotNull
 	@Override

@@ -1,12 +1,6 @@
 {
   "type": "FILTER_TEST",
   "label": "COUNT multi distinct Test",
-    "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL", "HANA"
-    ]
-  },
   "expectedCsv": "tests/filter/COUNT_DISTINCT_MULTI/expected_COUNT_Filter.csv",
   "content": {
     "tables": {

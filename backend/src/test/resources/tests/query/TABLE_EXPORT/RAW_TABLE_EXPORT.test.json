@@ -3,6 +3,7 @@
   "label": "RAW_TABLE_EXPORT Test",
   "sqlSpec": {
     "isEnabled": true,
+    "comment": "Bug in Clickhouse converter",
     "supportedDialects": [
       "POSTGRESQL",
       "HANA"

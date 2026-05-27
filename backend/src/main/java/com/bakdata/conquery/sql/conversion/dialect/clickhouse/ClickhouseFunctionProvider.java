@@ -3,13 +3,11 @@ package com.bakdata.conquery.sql.conversion.dialect.clickhouse;
 import static org.jooq.impl.DSL.*;
 
 import java.sql.Date;
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -43,6 +41,11 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Field<?> asArrayRepr(List<String> value) {
+		return array(value.toArray());
+	}
+
+	@Override
 	public Table<? extends Record> getNoOpTable() {
 		return table(select(inline(1))).as(name(SharedAliases.NOP_TABLE.getAlias()));
 	}
@@ -62,6 +65,11 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias) {
+		if(dateset.isEmpty()) {
+			// Need to explicitly provide an empty result
+			return List.of(emptyColumnDateRange().as(alias.getAlias()));
+		}
+
 		return dateset.asRanges().stream()
 					  .map(this::forCDateRange)
 					  .map(dateRange -> dateRange.as(alias.getAlias()))
@@ -112,7 +120,6 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 	}
 
 
-
 	@Override
 	public ColumnDateRange allRange() {
 		return ColumnDateRange.of(getMinDateExpression().as("all_range_start"), getMaxDateExpression().as("all_range_end"));
@@ -152,15 +159,17 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 		// Therefore we tag the values as Nullable again to make Clickhouse show some respect
 
 		Field<Date> rangeStart = field("{0}::Nullable(Date32)", Date.class, coalesce(
-				field(name(tableName, startColumn.getName()), Date.class),
-				getMinDateExpression()
-		));
+											   field(name(tableName, startColumn.getName()), Date.class),
+											   getMinDateExpression()
+									   )
+		);
 		// when aggregating date ranges, we want to treat the last day of the range as excluded,
 		// so when using the date value of the end column, we add +1 day as end of the date range
 		Field<Date> rangeEnd = field("{0}::Nullable(Date32)", Date.class, coalesce(
-				addDays(field(name(tableName, endColumn.getName()), Date.class), inline(1)),
-				getMaxDateExpression()
-		));
+											 addDays(field(name(tableName, endColumn.getName()), Date.class), inline(1)),
+											 getMaxDateExpression()
+									 )
+		);
 
 		return ColumnDateRange.of(rangeStart, rangeEnd);
 	}

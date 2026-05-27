@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.model.select;
+package com.bakdata.conquery.sql.conversion.dialect.clickhouse;
 
 import static org.jooq.impl.DSL.field;
 
@@ -6,37 +6,12 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.DistinctSe
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
-import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
 
-/**
- * <pre>
- *  The two additional CTEs this aggregator creates:
- * 	<ol>
- * 	    <li>
- * 	        Select distinct values of a column.
- *            {@code
- * 	        	"distinct" as (
- *     				select distinct "pid", "column"
- *     				from "event_filter"
- *  			)
- *            }
- * 	    </li>
- * 	    <li>
- * 	        String agg all distinct values of the column.
- *            {@code
- * 	        "aggregated" as (
- *    			 select
- *    			   "select-1-distinct"."pid",
- *    			   string_agg(cast("column" as varchar), cast(' ' as varchar) ) as "select-1"
- *    			 from "distinct"
- *    			 group by "pid"
- *   			)
- *            }
- * 	    </li>
- * 	</ol>
- * </pre>
- */
 public class ClickhouseDistinctSelectConverter implements SelectConverter<DistinctSelect> {
 
 
@@ -52,7 +27,10 @@ public class ClickhouseDistinctSelectConverter implements SelectConverter<Distin
 		String eventFilterTable = selectContext.getTables().cteName(ConceptCteStep.EVENT_FILTER);
 		SingleColumnSqlSelect qualified = preprocessingSelect.qualify(eventFilterTable);
 
-		FieldWrapper<?> grouped = new FieldWrapper<>(field("arrayFilter(x -> x <> '' and x is not null, groupUniqArray({0}))", Object.class, qualified.select()).as(alias), qualified.select().getName());
+		FieldWrapper<?> grouped =
+				new FieldWrapper<>(field("arrayFilter(x -> x <> '' and x is not null, groupUniqArray({0}))", Object.class, qualified.select()).as(alias),
+								   qualified.select().getName()
+				);
 
 		SingleColumnSqlSelect finalSelect = grouped.qualify(tables.cteName(ConceptCteStep.AGGREGATION_SELECT));
 

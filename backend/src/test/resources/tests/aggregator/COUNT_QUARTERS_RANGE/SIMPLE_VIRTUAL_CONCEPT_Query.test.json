@@ -1,8 +1,9 @@
 {
   "type": "QUERY_TEST",
   "label": "COUNT_QUARTERS_AGGREGATOR Test",
-    "sqlSpec": {
+  "sqlSpec": {
     "isEnabled": true,
+    "comment": "Special case for PG only.",
     "supportedDialects": [
       "POSTGRESQL"
     ]
@@ -23,7 +24,6 @@
           ]
         }
       ]
-
     }
   },
   "concepts": [
@@ -38,8 +38,8 @@
             "label": "datum",
             "column": "table.datum"
           },
-          "selects":         {
-            "name" : "select",
+          "selects": {
+            "name": "select",
             "type": "COUNT_QUARTERS",
             "column": "table.behandlungsdatum"
           }

@@ -3,7 +3,7 @@
   "label": "COUNT_QUARTERS Test",
   "sqlSpec": {
     "isEnabled": true,
-    "comment": "Hana does not support dateRanges and this specifically targets dateRanges",
+    "comment": "Special test case for dateRanges / PG",
     "supportedDialects": [
       "POSTGRESQL"
     ]

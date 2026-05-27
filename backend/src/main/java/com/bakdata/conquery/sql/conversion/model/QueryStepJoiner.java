@@ -94,6 +94,8 @@ public class QueryStepJoiner {
 			DateAggregationAction dateAggregationAction,
 			ConversionContext context
 	) {
+		//TODO somehow Negation does not show up here.
+
 		// keep all entries from group A (non-negate steps), whose entity has no matching entry in group B (negate steps)
 		if (queriesToJoin.stream().anyMatch(QueryStep::isNegate)) {
 			return joinStepsContainingNegation(queriesToJoin, logicalOperation, dateAggregationAction, context);

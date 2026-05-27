@@ -1,13 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "COUNT_QUARTERS_AGGREGATOR Test",
-    "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL",
-      "CLICKHOUSE"
-    ]
-  },
   "expectedCsv": "tests/aggregator/COUNT_QUARTERS_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
@@ -24,7 +17,6 @@
           ]
         }
       ]
-
     }
   },
   "concepts": [
@@ -40,8 +32,8 @@
             "startColumn": "table.start",
             "endColumn": "table.ende"
           },
-          "selects":         {
-            "name" : "select",
+          "selects": {
+            "name": "select",
             "type": "COUNT_QUARTERS",
             "column": "table.behandlungsdatum"
           }

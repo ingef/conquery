@@ -37,7 +37,6 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Select;
 import org.jooq.Table;
-import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 public class TableExportQueryConverter implements NodeConverter<TableExportQuery> {
@@ -214,7 +213,8 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		final QueryStep unionedTables = QueryStep.createUnionAllStep(
 				convertedTables,
 				null, // no CTE name required as this step will be the final select
-				List.of(convertedPrerequisite)
+				List.of(convertedPrerequisite),
+				context.isNegation()
 		);
 		final Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables);
 

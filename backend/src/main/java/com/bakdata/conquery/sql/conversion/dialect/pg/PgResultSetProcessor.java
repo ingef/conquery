@@ -1,20 +1,23 @@
-package com.bakdata.conquery.sql.execution;
+package com.bakdata.conquery.sql.conversion.dialect.pg;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Objects;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
+import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import com.bakdata.conquery.util.DateReader;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 
 @RequiredArgsConstructor
-public class DefaultResultSetProcessor implements ResultSetProcessor {
+public class PgResultSetProcessor implements ResultSetProcessor {
 
 	protected final ConqueryConfig config;
 	protected final SqlCDateSetParser dateSetParser;
@@ -83,53 +86,49 @@ public class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	@Override
 	public List<String> getStringList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return list(resultSet, columnIndex, (string) -> string);
+		return list(resultSet, columnIndex);
 	}
 
 	@Override
 	public List<Boolean> getBooleanList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return list(resultSet, columnIndex, Boolean::valueOf);
+		return list(resultSet, columnIndex);
 	}
 
 	@Override
 	public List<Integer> getIntegerList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return list(resultSet, columnIndex, Integer::valueOf);
+		return list(resultSet, columnIndex);
 	}
 
 	@Override
 	public List<Double> getDoubleList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return list(resultSet, columnIndex, Double::valueOf);
+		return list(resultSet, columnIndex);
 	}
 
 	@Override
 	public List<BigDecimal> getMoneyList(ResultSet resultSet, int columnIndex) throws SQLException {
 		return list(
 				resultSet,
-				columnIndex,
-				(string) -> BigDecimal.valueOf(Double.parseDouble(string))
-									  .setScale(2, RoundingMode.HALF_EVEN)
+				columnIndex
 		);
 	}
 
 	@Override
 	public List<Number> getDateList(ResultSet resultSet, int columnIndex) throws SQLException {
-		return list(resultSet, columnIndex, this::parseWithDateReader);
+		return list(resultSet, columnIndex);
 	}
 
-	private Number parseWithDateReader(String string) {
-		return config.getLocale().getDateReader().parseToLocalDate(string).toEpochDay();
-	}
-
-	private <T> List<T> list(ResultSet resultSet, int columnIndex, Function<String, T> parseFunction) throws SQLException {
-		String arrayExpression = resultSet.getString(columnIndex);
+	private <T> List<T> list(ResultSet resultSet, int columnIndex) throws SQLException {
+		Array arrayExpression = resultSet.getArray(columnIndex);
 		if (arrayExpression == null) {
 			return null;
 		}
 
-		List<T> result = Arrays.stream(arrayExpression.split(String.valueOf(UNIT_SEPARATOR)))
-							   .filter(Strings::isNotBlank)
-							   .map(parseFunction)
+		List<T> result = Arrays.stream(((Object[]) arrayExpression.getArray()))
+							   .filter(Objects::nonNull)
+							   .filter(obj -> !(obj instanceof String str) || Strings.isNotBlank(str))
+							   .map(o -> (T) o)
 							   .toList();
+
 		return result.isEmpty() ? null : result;
 	}
 
