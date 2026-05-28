@@ -77,8 +77,6 @@ public interface DialectBundle {
 
 	List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext context);
 
-	SqlCDateSetParser getCDateSetParser();
-
 	default boolean supportsSingleColumnRanges() {
 		return false;
 	}

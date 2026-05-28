@@ -39,7 +39,7 @@ import org.testcontainers.utility.DockerImageName;
 @Slf4j
 public class ClickhouseSqlIntegrationTests extends IntegrationTests {
 
-	private final static DockerImageName IMAGE_TAGE = DockerImageName.parse("clickhouse/clickhouse-server");
+	private final static DockerImageName IMAGE_TAG = DockerImageName.parse("clickhouse/clickhouse-server");
 	private static boolean useLocal = true;
 	private static DSLContext dslContext;
 	private static ManagedConnection managedConnection;
@@ -138,7 +138,7 @@ public class ClickhouseSqlIntegrationTests extends IntegrationTests {
 		private final ClickHouseContainer container;
 
 		public ClickhouseTestContainerContextProvider() {
-			this.container = new ClickHouseContainer(IMAGE_TAGE);
+			this.container = new ClickHouseContainer(IMAGE_TAG);
 			this.container.start();
 
 			this.databaseConfig = DatabaseConnectionConfig.builder()

@@ -38,7 +38,7 @@ public class HanaDialectBundle implements DialectBundle {
 
 	@Override
 	public ResultSetProcessor getResultSetProcessor(ConqueryConfig config) {
-		return new DefaultResultSetProcessor(config, getCDateSetParser());
+		return new DefaultResultSetProcessor(config, dateSetParser);
 	}
 
 	@Override
@@ -59,11 +59,6 @@ public class HanaDialectBundle implements DialectBundle {
 	@Override
 	public SQLDialect getJooqDialect() {
 		return SQLDialect.DEFAULT;
-	}
-
-	@Override
-	public SqlCDateSetParser getCDateSetParser() {
-		return this.dateSetParser;
 	}
 
 	@Override

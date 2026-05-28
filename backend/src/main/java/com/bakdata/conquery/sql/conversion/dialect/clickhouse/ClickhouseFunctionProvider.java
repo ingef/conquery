@@ -190,7 +190,8 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 		Field<Date> lowerBound = when(validityDateRange.getStart().lessThan(restriction.getStart()), restriction.getStart())
 				.otherwise(validityDateRange.getStart());
 
-		Field<Date> maxDate = getMinDateExpression(); // we want to add +1 day to the end date - except when it's the max date already
+		Field<Date> maxDate = getMinDateExpression();
+		// we want to add +1 day to the end date - except when it's the max date already
 		Field<Date> restrictionUpperBound = when(restriction.getEnd().eq(maxDate), maxDate).otherwise(addDays(restriction.getEnd(), inline(1)));
 		Field<Date> upperBound = when(validityDateRange.getEnd().greaterThan(restriction.getEnd()), restrictionUpperBound)
 				.otherwise(validityDateRange.getEnd());

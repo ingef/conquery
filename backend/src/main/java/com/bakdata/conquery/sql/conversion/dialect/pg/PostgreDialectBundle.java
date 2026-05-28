@@ -22,6 +22,7 @@ import com.bakdata.conquery.sql.execution.DefaultResultSetProcessor;
 import com.bakdata.conquery.sql.execution.PgSqlCDateSetParser;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
+import lombok.Getter;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
@@ -35,7 +36,7 @@ public class PostgreDialectBundle implements DialectBundle {
 
 	@Override
 	public ResultSetProcessor getResultSetProcessor(ConqueryConfig config) {
-		return new PgResultSetProcessor(config, getCDateSetParser());
+		return new PgResultSetProcessor(config, dateSetParser);
 	}
 
 	@Override
@@ -67,10 +68,6 @@ public class PostgreDialectBundle implements DialectBundle {
 
 
 
-	@Override
-	public SqlCDateSetParser getCDateSetParser() {
-		return this.dateSetParser;
-	}
 
 	@Override
 	public boolean supportsSingleColumnRanges() {

@@ -2,20 +2,61 @@ package com.bakdata.conquery.sql.conversion.dialect.clickhouse;
 
 import java.math.BigDecimal;
 import java.sql.Array;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.sql.execution.DefaultResultSetProcessor;
-import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
+import com.google.common.base.Preconditions;
 
 public class ClickhouseResultSetProcessor extends DefaultResultSetProcessor {
 
-	public ClickhouseResultSetProcessor(ConqueryConfig config, SqlCDateSetParser sqlCDateSetParser) {
-		super(config, sqlCDateSetParser);
+	public static final String DATE_SEPARATOR = ",";
+
+	public ClickhouseResultSetProcessor(ConqueryConfig config) {
+		super(config, null);
+	}
+
+	@Override
+	public List<Integer> getDateRange(ResultSet resultSet, int columnIndex) throws SQLException {
+		String daterange = resultSet.getString(columnIndex);
+
+		if (daterange == null) {
+			return Collections.emptyList();
+		}
+
+		String[] dates = daterange.split(DATE_SEPARATOR);
+		Preconditions.checkArgument(dates.length == 2, "Dateranges must have a start and end.");
+
+		String startDateExpression = dates[0];
+		int startDate;
+		if (startDateExpression.equals(ClickhouseFunctionProvider.MIN_DATE_VALUE)) {
+			startDate = CDateRange.NEGATIVE_INFINITY;
+		}
+		else {
+			LocalDate dateValue = Date.valueOf(startDateExpression).toLocalDate();
+			startDate = CDate.ofLocalDate(dateValue);
+		}
+
+		String endDateExpression = dates[1];
+		int endDate;
+		if (endDateExpression.equals(ClickhouseFunctionProvider.MAX_DATE_VALUE)) {
+			endDate = CDateRange.POSITIVE_INFINITY;
+		}
+		else {
+			LocalDate dateValue = Date.valueOf(endDateExpression).toLocalDate();
+			endDate = CDate.ofLocalDate(dateValue);
+		}
+
+		return List.of(startDate, endDate);
 	}
 
 	public List<List<Integer>> toEpochDayRangeList(List<Object[]> raw) {

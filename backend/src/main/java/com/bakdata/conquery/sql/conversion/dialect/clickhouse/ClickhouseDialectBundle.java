@@ -31,13 +31,11 @@ public class ClickhouseDialectBundle implements DialectBundle {
 	private final SqlFunctionProvider functionProvider;
 	private final IntervalPacker intervalPacker;
 	private final SqlDateAggregator dateAggregator;
-	private final SqlCDateSetParser dateSetParser;
 
 	public ClickhouseDialectBundle() {
 		this.functionProvider = new ClickhouseFunctionProvider();
 		this.intervalPacker = new AnsiSqlIntervalPacker();
 		this.dateAggregator = new AnsiSqlDateAggregator(this.intervalPacker, this.functionProvider);
-		this.dateSetParser = new ClickhouseCDateSetParser(); // TODO => ArrayCDateSetParser
 	}
 
 	@Override
@@ -61,11 +59,6 @@ public class ClickhouseDialectBundle implements DialectBundle {
 	}
 
 	@Override
-	public SqlCDateSetParser getCDateSetParser() {
-		return this.dateSetParser;
-	}
-
-	@Override
 	public List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext dslContext) {
 		return getDefaultNodeConverters(dslContext);
 	}
@@ -77,7 +70,6 @@ public class ClickhouseDialectBundle implements DialectBundle {
 
 	@Override
 	public boolean isTypeCompatible(Field<?> field, MajorTypeId type) {
-
 		return true; //TODO CLickhouse integration is terrible here. We always receive just Object.
 	}
 
@@ -98,7 +90,7 @@ public class ClickhouseDialectBundle implements DialectBundle {
 
 	@Override
 	public ResultSetProcessor getResultSetProcessor(ConqueryConfig config) {
-		return new ClickhouseResultSetProcessor(config, getCDateSetParser());
+		return new ClickhouseResultSetProcessor(config);
 	}
 
 	@Override
