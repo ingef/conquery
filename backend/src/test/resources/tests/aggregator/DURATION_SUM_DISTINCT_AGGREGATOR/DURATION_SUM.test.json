@@ -3,9 +3,7 @@
   "label": "DURATION_SUM (distinctBy)",
   "sqlSpec": {
     "isEnabled": false,
-    "supportedDialects": [
-      "POSTGRESQL"
-    ]
+    "comment" : "distinctBy not yet implemented."
   },
   "expectedCsv": "tests/aggregator/DURATION_SUM_DISTINCT_AGGREGATOR/expected.csv",
   "query": {

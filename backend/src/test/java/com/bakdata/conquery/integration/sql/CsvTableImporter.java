@@ -140,7 +140,7 @@ public class CsvTableImporter {
 	private void createTable(Table<Record> table, List<Field<?>> columns, Statement statement) throws SQLException {
 		String createTableStatement = testSqlDialect.getTestFunctionProvider().createTableStatement(table, columns, dslContext);
 
-		log.debug("Creating table: {}", createTableStatement);
+		log.info("Creating table: {}", createTableStatement);
 		statement.execute(createTableStatement);
 	}
 
@@ -152,7 +152,7 @@ public class CsvTableImporter {
 			case BOOLEAN -> SQLDataType.BOOLEAN;
 			// TODO (ja) how do we handle REAL and DECIMAL properly?
 			case REAL, DECIMAL, MONEY -> SQLDataType.DECIMAL(10, 2);
-			case DATE -> SQLDataType.DATE;
+			case DATE -> SQLDataType.DATE.nullable(true);
 			case DATE_RANGE -> new BuiltInDataType<>(DateRange.class, "daterange");
 		};
 

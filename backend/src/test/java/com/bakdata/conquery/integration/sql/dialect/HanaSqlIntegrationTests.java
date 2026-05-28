@@ -24,7 +24,7 @@ import com.bakdata.conquery.integration.sql.testcontainer.hana.HanaContainer;
 import com.bakdata.conquery.mode.local.ManagedConnection;
 import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.config.Dialect;
-import com.bakdata.conquery.sql.conversion.dialect.HanaDialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.hana.HanaDialectBundle;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.SneakyThrows;

@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
@@ -40,7 +41,9 @@ class RelativeStratification {
 	private final StratificationFunctions stratificationFunctions;
 	private final SqlFunctionProvider functionProvider;
 
-	public QueryStep createRelativeStratificationTable(RelativeFormQuery form) {
+	public QueryStep createRelativeStratificationTable(RelativeFormQuery form, ConversionContext context) {
+
+		//TODO why does this not have a conversion context?
 
 		// we want to create the stratification for each distinct validity date range of an entity,
 		// so we first need to unnest the validity date in case it is a multirange
@@ -54,7 +57,7 @@ class RelativeStratification {
 
 		List<QueryStep> tables = form.getResolutionsAndAlignmentMap().stream()
 									 .map(ExportForm.ResolutionAndAlignment::getResolution)
-									 .map(resolution -> createResolutionTable(totalBoundsStep, resolution, form))
+									 .map(resolution -> createResolutionTable(totalBoundsStep, resolution, form, context))
 									 .toList();
 
 		List<QueryStep> predecessors = new ArrayList<>();
@@ -64,7 +67,7 @@ class RelativeStratification {
 		}
 		predecessors.addAll(List.of(indexSelectorStep, indexStartStep, totalBoundsStep));
 
-		return StratificationTableFactory.unionResolutionTables(tables, predecessors);
+		return StratificationTableFactory.unionResolutionTables(tables, predecessors, context);
 	}
 
 	/**
@@ -140,14 +143,14 @@ class RelativeStratification {
 						.build();
 	}
 
-	private QueryStep createResolutionTable(QueryStep indexStartStep, Resolution resolution, RelativeFormQuery form) {
+	private QueryStep createResolutionTable(QueryStep indexStartStep, Resolution resolution, RelativeFormQuery form, ConversionContext context) {
 		return switch (resolution) {
-			case COMPLETE -> createCompleteTable(indexStartStep, form);
-			case YEARS, QUARTERS, DAYS -> createIntervalTable(indexStartStep, resolution, form);
+			case COMPLETE -> createCompleteTable(indexStartStep, form, context);
+			case YEARS, QUARTERS, DAYS -> createIntervalTable(indexStartStep, resolution, form, context);
 		};
 	}
 
-	private QueryStep createCompleteTable(QueryStep totalBoundsStep, RelativeFormQuery form) {
+	private QueryStep createCompleteTable(QueryStep totalBoundsStep, RelativeFormQuery form, ConversionContext context) {
 
 		Selects predecessorSelects = totalBoundsStep.getQualifiedSelects();
 		Interval interval = getInterval(form.getTimeUnit(), Resolution.COMPLETE);
@@ -159,7 +162,8 @@ class RelativeStratification {
 		return QueryStep.createUnionAllStep(
 				Stream.concat(Stream.ofNullable(outcomeTable), Stream.ofNullable(featureTable)).toList(),
 				FormCteStep.COMPLETE.getSuffix(),
-				Collections.emptyList()
+				Collections.emptyList(),
+				context.isNegation()
 		);
 	}
 
@@ -177,7 +181,7 @@ class RelativeStratification {
 		return createIntervalStep(outcomeIds, INDEX_START_POSITIVE, rangeEnd, Optional.empty(), totalBoundsStep);
 	}
 
-	private QueryStep createIntervalTable(QueryStep totalBoundsStep, Resolution resolution, RelativeFormQuery form) {
+	private QueryStep createIntervalTable(QueryStep totalBoundsStep, Resolution resolution, RelativeFormQuery form, ConversionContext context) {
 
 		Field<Integer> seriesIndex = stratificationFunctions.intSeriesField();
 		Selects predecessorSelects = totalBoundsStep.getQualifiedSelects();
@@ -191,7 +195,8 @@ class RelativeStratification {
 		return QueryStep.createUnionAllStep(
 				List.of(timeBeforeStep, timeAfterStep),
 				FormCteStep.stratificationCte(resolution).getSuffix(),
-				Collections.emptyList()
+				Collections.emptyList(),
+				context.isNegation()
 		);
 	}
 

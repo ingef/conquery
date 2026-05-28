@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.model.select;
 
 import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.*;
 import static com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep.INTERVAL_COMPLETE;
+import static org.jooq.impl.DSL.*;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -35,7 +36,6 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 public class DaterangeSelectUtil {
 
@@ -87,7 +87,7 @@ public class DaterangeSelectUtil {
 	public static SqlFilters createForFilter(
 			DaterangeSelectOrFilter filter,
 			AggregationFunction aggregationFunction,
-			Function<Field<?> , WhereCondition> filterFunction,
+			Function<Field<?>, WhereCondition> filterFunction,
 			FilterContext<?> context
 	) {
 		String alias = context.getNameGenerator().selectName((LabeledNamespaceIdentifiable<?>) filter);
@@ -126,17 +126,17 @@ public class DaterangeSelectUtil {
 
 	public static FieldWrapper<BigDecimal> createDurationSumSqlSelect(String alias, ColumnDateRange validityDate, SqlFunctionProvider functionProvider) {
 		Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd());
-		Field<BigDecimal> durationSum = DSL.sum(
-												   DSL.when(containsInfinityDate(validityDate, functionProvider), DSL.inline(null, Integer.class))
-													  .otherwise(dateDistanceInDays)
-										   )
-										   .as(alias);
+		Field<BigDecimal> durationSum = sum(when(containsInfinityDate(validityDate, functionProvider), inline(null, Integer.class))
+													.otherwise(dateDistanceInDays)
+		)
+				.as(alias);
 		return new FieldWrapper<>(durationSum);
 	}
 
 	private static Condition containsInfinityDate(ColumnDateRange validityDate, SqlFunctionProvider functionProvider) {
-		Field<Date> negativeInfinity = functionProvider.toDateField(functionProvider.getMinDateExpression());
-		Field<Date> positiveInfinity = functionProvider.toDateField(functionProvider.getMaxDateExpression());
+		Field<Date> negativeInfinity = functionProvider.getMinDateExpression();
+		Field<Date> positiveInfinity = functionProvider.getMaxDateExpression();
+
 		return validityDate.getStart().eq(negativeInfinity).or(validityDate.getEnd().eq(positiveInfinity));
 	}
 

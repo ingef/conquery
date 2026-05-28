@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.execution;
 import java.util.Collections;
 import java.util.Set;
 
-import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.dialect.pg.PostgreSqlFunctionProvider;
 import com.bakdata.conquery.util.DateReader;
 
 public class PgSqlCDateSetParser extends DefaultCDateSetParser {

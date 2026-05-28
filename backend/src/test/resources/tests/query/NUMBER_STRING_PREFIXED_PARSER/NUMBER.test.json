@@ -1,12 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "STRING NUMBER PARSER Test",
-    "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL"
-    ]
-  },
   "expectedCsv": "tests/query/NUMBER_STRING_PREFIXED_PARSER/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
@@ -38,7 +32,8 @@
           "table": "table1",
           "validityDates": {
             "label": "datum",
-            "column": "table1.datum"
+            "startColumn": "table1.start",
+            "endColumn": "table1.end"
           },
           "selects": {
             "name" : "value",
@@ -64,8 +59,12 @@
             "type": "STRING"
           },
           {
-            "name": "datum",
-            "type": "DATE_RANGE"
+            "name": "start",
+            "type": "DATE"
+          },
+          {
+            "name": "end",
+            "type": "DATE"
           }
         ]
       }

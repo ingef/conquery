@@ -3,6 +3,7 @@
   "label": "DURATION_SUM_AGGREGATOR Test",
   "sqlSpec": {
     "isEnabled": false,
+    "comment": "Distinct not yet implemented.",
     "supportedDialects": [
       "POSTGRESQL"
     ]

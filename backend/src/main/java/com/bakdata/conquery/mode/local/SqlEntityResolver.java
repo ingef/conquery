@@ -33,6 +33,7 @@ import org.jooq.Record3;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.Table;
+import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 public class SqlEntityResolver implements EntityResolver {
@@ -144,7 +145,8 @@ public class SqlEntityResolver implements EntityResolver {
 		Field<Integer> rowIndex = field(name(ROW_INDEX), Integer.class);
 		Field<String> externalPrimaryColumn = field(name(SharedAliases.PRIMARY_COLUMN.getAlias()), String.class);
 		Field<String> innerPrimaryColumn = field(name(idColumns.findPrimaryIdColumn().getField()), String.class);
-		Field<Boolean> isResolved = innerPrimaryColumn.isNotNull().as(IS_RESOLVED_ALIAS);
+		// Would prefer this to be `is not null`, but hana does not support that for fields
+		Field<Boolean> isResolved = case_().when(innerPrimaryColumn.isNull(), inline(false)).otherwise(inline(true)).as(IS_RESOLVED_ALIAS);
 
 		Table<Record> allIdsTable = table(name(idColumns.getTable()));
 

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -7,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.Converter;
@@ -20,6 +22,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.CQYesConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.query.AbsoluteFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.CQReusedQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.ConceptQueryConverter;
@@ -34,7 +37,6 @@ import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 
-//TODO unify with com.bakdata.conquery.models.config.Dialect
 public interface DialectBundle {
 
 	private static <R, C extends Converter<?, R, ?>> List<C> customize(List<C> defaults, List<C> substitutes) {
@@ -75,8 +77,6 @@ public interface DialectBundle {
 
 	List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext context);
 
-	SqlCDateSetParser getCDateSetParser();
-
 	default boolean supportsSingleColumnRanges() {
 		return false;
 	}
@@ -104,4 +104,17 @@ public interface DialectBundle {
 		);
 	}
 
+	default Map<Class<? extends Select>, ? extends SelectConverter<? extends Select>> getSelectConverterOverrides(){
+		return Collections.emptyMap();
+	}
+
+	default SelectConverter<Select> getSelectConverter(Select select){
+		SelectConverter<Select> maybeOverride = (SelectConverter<Select>) getSelectConverterOverrides().get(select.getClass());
+
+		if (maybeOverride != null){
+			return maybeOverride;
+		}
+
+		return select.createConverter();
+	}
 }

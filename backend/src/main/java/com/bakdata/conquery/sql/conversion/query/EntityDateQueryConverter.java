@@ -33,7 +33,7 @@ public class EntityDateQueryConverter implements NodeConverter<EntityDateQuery> 
 		QueryStep prerequisite = formHelper.convertPrerequisite(entityDateQuery.getQuery(), context);
 		QueryStep withOverwrittenValidityDateBounds = overwriteBounds(prerequisite, entityDateQuery, context);
 		StratificationTableFactory tableFactory = new StratificationTableFactory(withOverwrittenValidityDateBounds, context);
-		QueryStep stratificationTable = tableFactory.createAbsoluteStratificationTable(entityDateQuery.getResolutionsAndAlignments());
+		QueryStep stratificationTable = tableFactory.createAbsoluteStratificationTable(entityDateQuery.getResolutionsAndAlignments(), context);
 
 		return formHelper.convertForm(
 				FormType.ENTITY_DATE,

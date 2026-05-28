@@ -1,12 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "MULTI_SELECT_NEGATION_DATE_RESTRICTION_OR_CONCEPT_QUERY Test",
-  "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL"
-    ]
-  },
   "expectedCsv": "tests/query/MULTI_SELECT_NEGATION_DATE_RESTRICTION_OR_CONCEPT_QUERY/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

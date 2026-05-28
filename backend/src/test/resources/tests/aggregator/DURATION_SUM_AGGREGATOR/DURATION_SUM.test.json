@@ -1,12 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "DURATION_SUM_AGGREGATOR Test",
-    "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL"
-    ]
-  },
   "expectedCsv": "tests/aggregator/DURATION_SUM_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
@@ -35,12 +29,14 @@
           "table": "table",
           "validityDates": {
             "label": "datum",
-            "column": "table.datum"
+            "startColumn": "table.start",
+            "endColumn": "table.ende"
           },
           "selects": {
             "type": "DURATION_SUM",
             "name": "select",
-            "column": "table.datum"
+            "startColumn": "table.start",
+            "endColumn": "table.ende"
           }
         }
       ]
@@ -57,8 +53,12 @@
         },
         "columns": [
           {
-            "name": "datum",
-            "type": "DATE_RANGE"
+            "name": "start",
+            "type": "DATE"
+          },
+          {
+            "name": "ende",
+            "type": "DATE"
           }
         ]
       }

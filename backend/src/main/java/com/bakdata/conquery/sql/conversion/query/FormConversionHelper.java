@@ -68,7 +68,7 @@ public class FormConversionHelper {
 		Condition dateNotNullCondition;
 
 		if (columnDateRange.isPresent()) {
-			dateNotNullCondition = columnDateRange.get().isNotNull();
+			dateNotNullCondition = context.getFunctionProvider().isNotEmptyDateRange(columnDateRange.get());
 		}
 		else {
 			dateNotNullCondition = falseCondition();
