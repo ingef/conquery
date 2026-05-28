@@ -11,12 +11,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
@@ -30,7 +28,6 @@ import org.jooq.SortField;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
-import org.jspecify.annotations.NonNull;
 
 public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
@@ -66,13 +63,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return condition(dateRestrictionStartsBeforeDate.and(dateRestrictionEndsAfterDate));
 	}
 
-	@Override
-	public List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias) {
-		return dateset.asRanges().stream()
-					  .map(this::forCDateRange)
-					  .map(dateRange -> dateRange.as(alias.getAlias()))
-					  .toList();
-	}
 
 	@Override
 	public ColumnDateRange forCDateRange(CDateRange daterange) {
@@ -116,8 +106,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	public ColumnDateRange emptyColumnDateRange() {
 		return ColumnDateRange.of(inline(null, Date.class), inline(null, Date.class));
 	}
-
-
 
 
 	@Override

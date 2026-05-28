@@ -60,13 +60,10 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	public static SingleColumnSqlSelect getSubstringSelect(
 			Column column, Range.IntegerRange substringRange, SelectContext<ConnectorSqlTables> selectContext,
 			String alias) {
-		Field<String> field;
 
-		if (substringRange == null || substringRange.isAll()) {
-			field = field(name(selectContext.getTables().getRootTable(), column.getName()), String.class);
-		}
-		else {
-			field = field(name(selectContext.getTables().getRootTable(), column.getName()), String.class);
+		Field<String> field = field(name(selectContext.getTables().getRootTable(), column.getName()), String.class);
+
+		if (substringRange != null && !substringRange.isAll()) {
 			if (substringRange.isAtLeast()) {
 				field = substring(field, 1 + substringRange.getMin());
 			}
@@ -79,7 +76,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 		}
 
 		if (alias != null) {
-			field = field.as(alias);
+			field = field.as(name(alias));
 		}
 
 		return new FieldWrapper<>(field, column.getName());

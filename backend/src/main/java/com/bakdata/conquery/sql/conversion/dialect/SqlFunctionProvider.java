@@ -23,7 +23,6 @@ import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
-import org.jooq.Nullability;
 import org.jooq.OrderField;
 import org.jooq.Record;
 import org.jooq.SortField;
@@ -31,7 +30,6 @@ import org.jooq.Table;
 import org.jooq.TableOnConditionStep;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Provider of SQL functions.
@@ -42,10 +40,11 @@ public interface SqlFunctionProvider {
 	String SQL_UNIT_SEPARATOR = " || '%s' || ".formatted(ResultSetProcessor.UNIT_SEPARATOR);
 
 	default Field<?> asArrayRepr(List<String> value) {
-		return inline(value.stream()
-					.map(DSL::val)
-					.map(Field::toString)
-					.collect(Collectors.joining(SQL_UNIT_SEPARATOR)));
+		return field(value.stream()
+						   .map(DSL::inline)
+						   .map(Field::toString)
+						   .collect(Collectors.joining(SQL_UNIT_SEPARATOR)), Object.class
+		);
 	}
 
 	Collection<? extends OrderField<?>> orderByValidityDates(
@@ -87,7 +86,17 @@ public interface SqlFunctionProvider {
 	 * Creates a list of {@link ColumnDateRange}s for each {@link CDateRange} of the given {@link CDateSet}. Each {@link ColumnDateRange} will be aliased with
 	 * the same given {@link SharedAliases}.
 	 */
-	List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias);
+	default List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias){
+		if (dateset.isEmpty()) {
+			// Need to explicitly provide an empty result
+			return List.of(emptyColumnDateRange().as(alias.getAlias()));
+		}
+
+		return dateset.asRanges().stream()
+					  .map(this::forCDateRange)
+					  .map(dateRange -> dateRange.as(alias.getAlias()))
+					  .toList();
+	}
 
 	/**
 	 * Creates a {@link ColumnDateRange} for a tables {@link ValidityDate}.
@@ -210,11 +219,11 @@ public interface SqlFunctionProvider {
 	default Field<?> arrayOut(List<Field<String>> fields) {
 		String concatenated =
 				fields.stream()
-				      // if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
-				      // thus concat an empty string
-				      .map(field -> field)
-				      .map(Field::toString)
-				      .collect(Collectors.joining(SQL_UNIT_SEPARATOR));
+					  // if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
+					  // thus concat an empty string
+					  .map(field -> field)
+					  .map(Field::toString)
+					  .collect(Collectors.joining(SQL_UNIT_SEPARATOR));
 		return field(concatenated, String.class);
 	}
 
@@ -263,14 +272,14 @@ public interface SqlFunctionProvider {
 
 	ColumnDateRange emptyColumnDateRange();
 
-	default Condition orAgg(Field<Boolean> field){
-		return  condition(max(field));
+	default Condition orAgg(Field<Boolean> field) {
+		return condition(max(field.cast(Integer.class)).gt(0));
 	}
 
 	/**
 	 * Only necessary to help with Clickhouse because Jooq does not translate nullability constraints into casts.
 	 */
-	default Field<String> externalId(String id){
+	default Field<String> externalId(String id) {
 		return inline(id, SQLDataType.VARCHAR);
 	}
 }

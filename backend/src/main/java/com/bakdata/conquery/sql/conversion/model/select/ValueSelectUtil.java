@@ -34,7 +34,7 @@ class ValueSelectUtil {
 			Range.IntegerRange substringRange, SelectContext<ConnectorSqlTables> selectContext) {
 
 
-		SingleColumnSqlSelect rootSelect = MappableSingleColumnSelect.getSubstringSelect(column, substringRange, selectContext, null);
+		SingleColumnSqlSelect rootSelect = MappableSingleColumnSelect.getSubstringSelect(column, substringRange, selectContext, alias);
 
 		// create a CTE, that per row makes a window calculation to select for the rank of the validity date.
 		// Further down below, we select the values with rank=1, which is FIRST/LAST depending on sort order supplied by the creator.

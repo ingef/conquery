@@ -53,7 +53,9 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Field<String> externalId(String id) {
-		// Only this explicit cast will get clickhouse query planner to accept `is null` as potentially false when doing anti-joins.
+		// This is only used in CQExternal to define external Ids.
+		// Without explicitly tagging this value as Nullable, the Clickhouse QueryPlanner assumes that this it can never be null.
+		// But in the case of an anti-join (our Negation), this field will be sometimes null, while not testing as `is null` = true
 		return field("{0}::Nullable(String)", String.class, inline(id, String.class));
 	}
 
@@ -70,18 +72,6 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 		return condition(dateRestrictionStartsBeforeDate.and(dateRestrictionEndsAfterDate));
 	}
 
-	@Override
-	public List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias) {
-		if (dateset.isEmpty()) {
-			// Need to explicitly provide an empty result
-			return List.of(emptyColumnDateRange().as(alias.getAlias()));
-		}
-
-		return dateset.asRanges().stream()
-					  .map(this::forCDateRange)
-					  .map(dateRange -> dateRange.as(alias.getAlias()))
-					  .toList();
-	}
 
 	@Override
 	public ColumnDateRange forCDateRange(CDateRange daterange) {
