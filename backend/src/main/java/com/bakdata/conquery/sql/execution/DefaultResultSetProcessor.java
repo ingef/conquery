@@ -124,7 +124,6 @@ public class DefaultResultSetProcessor implements ResultSetProcessor {
 		String arrayExpression = resultSet.getString(columnIndex);
 		if (arrayExpression == null) {
 			return null;
-
 		}
 
 		List<T> result = Arrays.stream(arrayExpression.split(String.valueOf(UNIT_SEPARATOR)))

@@ -4,7 +4,7 @@
   "sqlSpec": {
     "isEnabled": false,
     "supportedDialects": [
-      "POSTGRESQL"
+      "POSTGRESQL", "HANA"
     ]
   },
   "expectedCsv": "tests/query/TEMPORAL/AFTER/ALL/LATEST/expected.csv",

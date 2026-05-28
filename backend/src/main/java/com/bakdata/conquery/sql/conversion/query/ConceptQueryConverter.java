@@ -93,6 +93,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 			return preFinalSelects.blockValidityDate();
 		}
 		else if (preFinalSelects.getValidityDate().isEmpty()) {
+			// TODO i think this is unreachable?
 			return preFinalSelects.withValidityDate(functionProvider.allRange());
 		}
 		Field<?> validityDateStringAggregation = functionProvider.dateRangeAggregation(preFinalSelects.getValidityDate().get());

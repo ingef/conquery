@@ -1,12 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "FIRST_MAPPED_AGGREGATOR Test",
-  "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL"
-    ]
-  },
   "expectedCsv": "tests/aggregator/MAPPED/FIRST/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

@@ -1,12 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "FIRST_AGGREGATOR Test",
-  "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL"
-    ]
-  },
   "expectedCsv": "tests/sql/selects/first/FIRST_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

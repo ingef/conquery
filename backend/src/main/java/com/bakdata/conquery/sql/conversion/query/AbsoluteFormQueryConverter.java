@@ -34,7 +34,7 @@ public class AbsoluteFormQueryConverter implements NodeConverter<AbsoluteFormQue
 
 		QueryStep convertedPrerequisite = convertPrerequisite(form, context);
 		StratificationTableFactory tableFactory = new StratificationTableFactory(convertedPrerequisite, context);
-		QueryStep stratificationTable = tableFactory.createAbsoluteStratificationTable(form.getResolutionsAndAlignmentMap());
+		QueryStep stratificationTable = tableFactory.createAbsoluteStratificationTable(form.getResolutionsAndAlignmentMap(), context);
 
 		return formHelper.convertForm(
 				FormType.ABSOLUTE,

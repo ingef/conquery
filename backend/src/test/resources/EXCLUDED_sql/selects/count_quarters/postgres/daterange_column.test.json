@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "sqlSpec": {
-    "isEnabled": false,
+    "isEnabled": true,
     "supportedDialects": [
       "POSTGRESQL"
     ]

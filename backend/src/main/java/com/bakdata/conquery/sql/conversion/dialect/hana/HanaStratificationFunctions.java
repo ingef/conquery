@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.forms;
+package com.bakdata.conquery.sql.conversion.dialect.hana;
 
 import static com.bakdata.conquery.sql.conversion.dialect.Interval.MONTHS_PER_QUARTER;
 
@@ -6,8 +6,9 @@ import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
-import com.bakdata.conquery.sql.conversion.dialect.HanaSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.dialect.Interval;
+import com.bakdata.conquery.sql.conversion.forms.Offset;
+import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

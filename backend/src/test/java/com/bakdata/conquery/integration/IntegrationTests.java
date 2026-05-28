@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
@@ -68,7 +69,7 @@ public class IntegrationTests {
 	}
 
 	@Getter
-	public final ConqueryConfig config  = new ConqueryConfig();
+	public final ConqueryConfig config = new ConqueryConfig();
 	private final Map<String, TestConquery> reusedInstances = new HashMap<>();
 	private final String defaultTestRoot;
 	private final String defaultTestRootPackage;
@@ -182,25 +183,34 @@ public class IntegrationTests {
 		final ResourceTree reduced = tree.reduce();
 
 		if (reduced.getChildren().isEmpty()) {
-			return Collections.singletonList(collectTests(reduced, testImporter, sqlDialect));
+			return collectTests(reduced, testImporter, sqlDialect)
+					.map(List::of)
+					.orElse(Collections.emptyList());
 		}
 		return reduced.getChildren().values().stream()
 					  .map(currentDir -> collectTests(currentDir, testImporter, sqlDialect))
+					  .flatMap(Optional::stream)
 					  .collect(Collectors.toList());
 	}
 
-	private DynamicNode collectTests(ResourceTree currentDir, TestDataImporter testImporter, Dialect sqlDialect) {
+	private Optional<DynamicNode> collectTests(ResourceTree currentDir, TestDataImporter testImporter, Dialect sqlDialect) {
 		if (currentDir.getValue() != null) {
 			Optional<DynamicTest> dynamicTest = readTest(currentDir.getValue(), currentDir.getName(), testImporter, sqlDialect);
 			if (dynamicTest.isPresent()) {
-				return dynamicTest.get();
+				return Optional.of(dynamicTest.get());
 			}
 		}
 		List<DynamicNode> list = new ArrayList<>();
 		for (ResourceTree child : currentDir.getChildren().values()) {
-			list.add(collectTests(child, testImporter, sqlDialect));
+			collectTests(child, testImporter, sqlDialect)
+					.ifPresent(list::add);
 		}
-		return toDynamicContainer(currentDir, list);
+
+		if (list.isEmpty()) {
+			return Optional.empty();
+		}
+
+		return Optional.of(toDynamicContainer(currentDir, list));
 	}
 
 	private Optional<DynamicTest> readTest(Resource resource, String name, TestDataImporter testImporter, Dialect sqlDialect) {

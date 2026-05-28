@@ -27,7 +27,7 @@ public class CQYesConverter implements NodeConverter<CQYes> {
 	public ConversionContext convert(CQYes cqYes, ConversionContext context) {
 
 		ColumnConfig primaryColumnConfig = context.getIdColumns().findPrimaryIdColumn();
-		Field<Object> primaryColumn = field(name(primaryColumnConfig.getField()));
+		Field<String> primaryColumn = field(name(primaryColumnConfig.getField()), String.class);
 		SqlIdColumns ids = new SqlIdColumns(primaryColumn);
 
 		Selects selects = Selects.builder().ids(ids)
