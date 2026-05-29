@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.dialect;
+package com.bakdata.conquery.sql.conversion.dialect.pg;
 
 import static org.jooq.impl.DSL.*;
 
@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
@@ -50,8 +51,8 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public String getMaxDateExpression() {
-		return INFINITY_DATE_VALUE;
+	public Field<Date> getMaxDateExpression() {
+		return field("{0}::date", Date.class, INFINITY_DATE_VALUE);
 	}
 
 	@Override
@@ -61,7 +62,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Table<? extends Record> getNoOpTable() {
-		return table(select(inline(1))).as(name(SharedAliases.NOP_TABLE.getAlias()));
+		return noTable();
 	}
 
 	@NotNull
@@ -82,8 +83,8 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public String getMinDateExpression() {
-		return NEGATIVE_INFINITY_DATE_VALUE;
+	public Field<Date> getMinDateExpression() {
+		return field("{0}::date", Date.class, NEGATIVE_INFINITY_DATE_VALUE);
 	}
 
 	@Override
@@ -144,6 +145,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		// if there is no validity date, each entity has the max range {-inf/inf} as validity date
 		return validityDate == null ? allRange() : toColumnDateRange(validityDate);
 	}
+
 
 	@Override
 	public ColumnDateRange allRange() {
@@ -307,7 +309,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	public Field<Integer> dateDistance(ChronoUnit datePart, Field<Date> startDate, Field<Date> endDate) {
 
 		if (datePart == ChronoUnit.DAYS) {
-			return cast(endDate.minus(startDate), SQLDataType.INTEGER);
+			return field("{0}", Integer.class, endDate.minus(startDate));
 		}
 
 		Field<Integer> age = function("age", Integer.class, endDate, startDate);
@@ -373,8 +375,18 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Condition isNotEmptyDateRange(ColumnDateRange columnDateRange) {
+		return condition(function("isempty", Boolean.class, columnDateRange.getRange())).not();
+	}
+
+	@Override
 	public ColumnDateRange emptyColumnDateRange() {
 		return ColumnDateRange.of(EMPTY_RANGE);
+	}
+
+	@Override
+	public Condition orAgg(Field<Boolean> field) {
+		return condition(boolOr(field));
 	}
 
 	@Override
@@ -392,6 +404,17 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		return daterange.isSingleColumnRange()
 			   ? daterange
 			   : ColumnDateRange.of(daterange(daterange.getStart(), daterange.getEnd(), OPEN_RANGE)); // end is already exclusive
+	}
+
+	@Override
+	public Field<?> asArrayRepr(List<String> value) {
+		return array(value.toArray());
+	}
+
+
+	@Override
+	public Field<?> arrayOut(List<Field<String>> fields) {
+		return array(fields);
 	}
 
 }

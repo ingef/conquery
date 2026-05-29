@@ -1,12 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "MULTIPLE_TABLES_ICD_QUERY2 Test",
-  "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL"
-    ]
-  },
   "expectedCsv": "tests/query/MULTIPLE_TABLES_ICD_QUERY2/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

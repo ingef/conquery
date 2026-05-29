@@ -6,11 +6,11 @@ import org.jooq.impl.DSL;
 
 public class TablePrimaryColumnUtil {
 
-	public static Field<Object> findPrimaryColumn(Table table, String defaultPrimaryColumn) {
+	public static Field<String> findPrimaryColumn(Table table, String defaultPrimaryColumn) {
 		String primaryColumnName = table.getPrimaryColumn() == null
 								   ? defaultPrimaryColumn
 								   : table.getPrimaryColumn().getName();
-		return DSL.field(DSL.name(table.getName(), primaryColumnName));
+		return DSL.field(DSL.name(table.getName(), primaryColumnName), String.class);
 	}
 
 }

@@ -78,6 +78,10 @@ public class ExcelResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
+		if(singleExecution.getResultInfos() == null){
+			return Collections.emptyList();
+		}
+
 		// Save id column count to later check if xlsx dimensions are feasible
 		idColumnsCount = exec.getConfig().getIdColumns().getIdResultInfos().size();
 

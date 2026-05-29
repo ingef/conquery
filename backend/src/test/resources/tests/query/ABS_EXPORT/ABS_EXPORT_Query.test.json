@@ -2,6 +2,14 @@
   "type": "QUERY_TEST",
   "label": "ABS_EXPORT Test",
   "expectedCsv": "tests/query/ABS_EXPORT/expected.csv",
+  "sqlSpec": {
+    "isEnabled": true,
+    "comment": "Clickhouse does not have Lateral joins at the moment. But fix is hopefully coming.",
+    "supportedDialects": [
+      "POSTGRESQL",
+      "HANA"
+    ]
+  },
   "query": {
     "type": "ABSOLUTE_FORM_QUERY",
     "dateRange": {

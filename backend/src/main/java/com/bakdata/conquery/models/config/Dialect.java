@@ -1,8 +1,9 @@
 package com.bakdata.conquery.models.config;
 
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
-import com.bakdata.conquery.sql.conversion.dialect.HanaDialectBundle;
-import com.bakdata.conquery.sql.conversion.dialect.PostgreDialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.clickhouse.ClickhouseDialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.hana.HanaDialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.pg.PostgreDialectBundle;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -15,13 +16,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum Dialect {
 
-	/**
-	 * Dialect for PostgreSQL database
-	 */
 	POSTGRESQL(new PostgreDialectBundle()),
-	/**
-	 * Dialect for SAP HANA database
-	 */
+	CLICKHOUSE(new ClickhouseDialectBundle()),
 	HANA(new HanaDialectBundle());
 
 	private final DialectBundle dialectBundle;

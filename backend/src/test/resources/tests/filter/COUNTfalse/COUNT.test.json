@@ -1,12 +1,6 @@
 {
   "type": "FILTER_TEST",
   "label": "COUNTfalse Test",
-    "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL"
-    ]
-  },
   "expectedCsv": "tests/filter/COUNTfalse/expected_COUNT_Filter.csv",
   "content": {
     "tables": {
@@ -22,7 +16,7 @@
         },
         {
           "name": "datum",
-          "type": "DATE_RANGE"
+          "type": "DATE"
         }
       ]
     }

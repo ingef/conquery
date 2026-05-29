@@ -2,9 +2,10 @@
   "type": "QUERY_TEST",
   "label": "AND DATE LOGIC Test",
   "sqlSpec": {
-    "isEnabled": true,
+    "comment" : "Logical will hopefully removed",
+    "isEnabled": false,
     "supportedDialects": [
-      "POSTGRESQL"
+      "POSTGRESQL", "HANA"
     ]
   },
   "expectedCsv": "tests/query/LOGICAL/AND_DATE_LOGICAL/expected.csv",

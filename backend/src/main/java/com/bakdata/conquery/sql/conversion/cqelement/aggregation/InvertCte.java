@@ -1,5 +1,8 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
+import static org.jooq.impl.DSL.*;
+import static org.jooq.impl.DSL.field;
+
 import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
@@ -57,14 +60,14 @@ class InvertCte extends DateAggregationCte {
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		ColumnDateRange validityDate = rowNumberStep.getSelects().getValidityDate().get();
 
-		Field<Date> rangeStart = DSL.coalesce(
+		Field<Date> rangeStart = coalesce(
 				QualifyingUtil.qualify(validityDate.getEnd(), ROWS_LEFT_TABLE_NAME),
-				functionProvider.toDateField(functionProvider.getMinDateExpression())
+				functionProvider.getMinDateExpression()
 		).as(DateAggregationCte.RANGE_START);
 
-		Field<Date> rangeEnd = DSL.coalesce(
+		Field<Date> rangeEnd = coalesce(
 				QualifyingUtil.qualify(validityDate.getStart(), ROWS_RIGHT_TABLE_NAME),
-				functionProvider.toDateField(functionProvider.getMaxDateExpression())
+				functionProvider.getMaxDateExpression()
 		).as(DateAggregationCte.RANGE_END);
 
 		return Selects.builder()
@@ -76,9 +79,9 @@ class InvertCte extends DateAggregationCte {
 
 	private TableOnConditionStep<Record> selfJoinWithShiftedRows(SqlIdColumns leftIds, SqlIdColumns rightIds, QueryStep rowNumberStep) {
 
-		Field<Integer> leftRowNumber = DSL.field(DSL.name(ROWS_LEFT_TABLE_NAME, RowNumberCte.ROW_NUMBER_FIELD_NAME), Integer.class)
-										  .plus(1);
-		Field<Integer> rightRowNumber = DSL.field(DSL.name(ROWS_RIGHT_TABLE_NAME, RowNumberCte.ROW_NUMBER_FIELD_NAME), Integer.class);
+		Field<Integer> leftRowNumber = field(name(ROWS_LEFT_TABLE_NAME, RowNumberCte.ROW_NUMBER_FIELD_NAME), Integer.class)
+				.plus(1);
+		Field<Integer> rightRowNumber = field(name(ROWS_RIGHT_TABLE_NAME, RowNumberCte.ROW_NUMBER_FIELD_NAME), Integer.class);
 
 		Condition[] joinConditions = Stream.concat(
 												   Stream.of(leftRowNumber.eq(rightRowNumber)),

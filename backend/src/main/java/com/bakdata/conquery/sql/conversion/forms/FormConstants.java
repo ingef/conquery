@@ -12,7 +12,7 @@ import org.jooq.impl.DSL;
 /**
  * Constant fields used for absolute and relative date stratification. See this modules README for more detailed information.
  */
-class FormConstants {
+public class FormConstants {
 
 	/**
 	 * The index date from which an absolute stratification for an entity starts. It is the lowest date bound of an absolute stratification.

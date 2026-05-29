@@ -1,11 +1,11 @@
 package com.bakdata.conquery.sql.execution;
 
-import static com.bakdata.conquery.sql.conversion.dialect.HanaSqlFunctionProvider.DATE_SET_SEPARATOR;
+import static com.bakdata.conquery.sql.conversion.dialect.hana.HanaSqlFunctionProvider.DATE_SET_SEPARATOR;
 
 import java.util.Collections;
 import java.util.Set;
 
-import com.bakdata.conquery.sql.conversion.dialect.HanaSqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.dialect.hana.HanaSqlFunctionProvider;
 import com.bakdata.conquery.util.DateReader;
 
 public class HanaSqlCDateSetParser extends DefaultCDateSetParser {

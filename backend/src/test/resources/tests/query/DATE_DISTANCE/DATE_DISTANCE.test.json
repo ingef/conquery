@@ -17,35 +17,30 @@
         "max": "2011-01-01"
       },
       "child": {
-        "type": "OR",
-        "children": [
+        "type": "CONCEPT",
+        "ids": [
+          "alter"
+        ],
+        "label": "Alter",
+        "excludeFromTimeAggregation": false,
+        "tables": [
           {
-            "type": "CONCEPT",
-            "ids": [
-              "alter"
-            ],
-            "label": "Alter",
-            "excludeFromTimeAggregation": false,
-            "tables": [
-              {
-                "id": "alter.alterxy",
-                "selects": [
-                ],
-                "filters": [
-                  {
-                    "filter": "alter.alterxy.alterseinschrankung",
-                    "type": "INTEGER_RANGE",
-                    "value": {
-                      "min": "11",
-                      "max": "11"
-                    }
-                  }
-                ]
-              }
-            ],
+            "id": "alter.alterxy",
             "selects": [
+            ],
+            "filters": [
+              {
+                "filter": "alter.alterxy.alterseinschrankung",
+                "type": "INTEGER_RANGE",
+                "value": {
+                  "min": "11",
+                  "max": "11"
+                }
+              }
             ]
           }
+        ],
+        "selects": [
         ]
       }
     }
@@ -60,11 +55,11 @@
           "table": "table1",
           "validityDates": {
             "label": "versichertenzeit",
-            "column": "table1.versichertenzeit"
+            "startColumn": "table1.erster",
+            "endColumn": "table1.letzter"
           },
           "filters": {
             "label": "alterseinschrankung",
-            "description": "Geburtsdatum",
             "column": "table1.geburtsdatum",
             "type": "DATE_DISTANCE"
           }
@@ -93,10 +88,6 @@
           {
             "name": "letzter",
             "type": "DATE"
-          },
-          {
-            "name": "versichertenzeit",
-            "type": "DATE_RANGE"
           }
         ]
       }
