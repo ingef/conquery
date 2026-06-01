@@ -27,10 +27,6 @@
         {
           "name": "connector",
           "table": "table",
-          "validityDates": {
-            "label": "datum",
-            "column": "table.datum"
-          },
           "selects": [
             {
               "name" : "select",
@@ -52,10 +48,6 @@
           "type": "STRING"
         },
         "columns": [
-          {
-            "name": "datum",
-            "type": "DATE"
-          },
           {
             "name": "value",
             "type": "INTEGER"
