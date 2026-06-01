@@ -7,11 +7,11 @@
     "root": {
       "type": "CONCEPT",
       "ids": [
-        "tree1.child1"
+        "tree1.child_a"
       ],
       "tables": [
         {
-          "id": "tree1.connectors",
+          "id": "tree1.connector",
           "filters": []
         }
       ]

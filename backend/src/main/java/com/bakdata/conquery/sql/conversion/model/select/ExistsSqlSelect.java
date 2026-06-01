@@ -11,7 +11,7 @@ import org.jooq.impl.DSL;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExistsSqlSelect implements SingleColumnSqlSelect {
 
-	private static final Field<Integer> EXISTS = DSL.val(1);
+	private static final Field<Integer> EXISTS = DSL.inline(1);
 
 	private final Field<Integer> exists;
 	private final Name alias;
@@ -48,6 +48,15 @@ public class ExistsSqlSelect implements SingleColumnSqlSelect {
 
 	@Override
 	public SqlSelect connectorAggregate() {
-		return new ExistsSqlSelect(DSL.max(select()).as(alias), alias);
+		return new ExistsSqlSelect(DSL.max(coalesceWithZero()).as(alias), alias);
+	}
+
+	@Override
+	public SqlSelect toFinalRepresentation() {
+		return new ExistsSqlSelect(coalesceWithZero().as(alias), alias);
+	}
+
+	private Field<Integer> coalesceWithZero() {
+		return DSL.coalesce(select(), DSL.value(0));
 	}
 }

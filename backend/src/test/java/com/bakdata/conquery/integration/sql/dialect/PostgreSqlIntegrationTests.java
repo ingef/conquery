@@ -13,10 +13,9 @@ import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.sql.conversion.dialect.PostgreDialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.pg.PostgreDialectBundle;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
-import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import com.google.common.base.Strings;
 import lombok.Getter;
@@ -93,7 +92,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	public void shouldThrowException() {
 		// This can be removed as soon as we switch to a full integration test including the REST API
 		I18n.init();
-		ResultSetProcessor resultSetProcessor = ResultSetProcessorFactory.create(config, testSqlDialect);
+		ResultSetProcessor resultSetProcessor = testSqlDialect.getResultSetProcessor(config);
 		SqlExecutionService executionService = new SqlExecutionService(dslContext, resultSetProcessor);
 		SqlQuery validQuery = new TestSqlQuery(Dialect.POSTGRESQL.getDialectBundle().getConnectionTestString());
 		Assertions.assertThatNoException().isThrownBy(() -> executionService.execute(validQuery));

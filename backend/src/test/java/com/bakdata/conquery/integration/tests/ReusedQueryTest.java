@@ -56,6 +56,8 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		return Set.of(StandaloneSupport.Mode.WORKER, StandaloneSupport.Mode.SQL);
 	}
 
+
+
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
 

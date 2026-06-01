@@ -17,7 +17,6 @@
           ]
         }
       ]
-
     }
   },
   "concepts": [
@@ -30,10 +29,11 @@
           "table": "table",
           "validityDates": {
             "label": "datum",
-            "column": "table.datum"
+            "startColumn": "table.start",
+            "endColumn": "table.ende"
           },
-          "selects":         {
-            "name" : "select",
+          "selects": {
+            "name": "select",
             "type": "COUNT_QUARTERS",
             "column": "table.behandlungsdatum"
           }
@@ -56,8 +56,12 @@
             "type": "DATE"
           },
           {
-            "name": "datum",
-            "type": "DATE_RANGE"
+            "name": "start",
+            "type": "DATE"
+          },
+          {
+            "name": "ende",
+            "type": "DATE"
           }
         ]
       }

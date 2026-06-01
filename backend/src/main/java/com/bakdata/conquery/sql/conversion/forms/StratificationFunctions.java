@@ -161,7 +161,7 @@ public abstract class StratificationFunctions {
 						negativeStart = INDEX_SELECTOR;
 					}
 					case NEUTRAL -> {
-						positiveStart = getFunctionProvider().addDays(INDEX_SELECTOR, DSL.val(1));
+						positiveStart = getFunctionProvider().addDays(INDEX_SELECTOR, DSL.inline(1));
 						negativeStart = INDEX_SELECTOR;
 					}
 					default -> throw new CombinationNotSupportedException(indexPlacement, timeUnit);
@@ -185,7 +185,7 @@ public abstract class StratificationFunctions {
 	public Field<Integer> calculateResolutionWindowCount(ExportForm.ResolutionAndAlignment resolutionAndAlignment, ColumnDateRange bounds) {
 		SqlFunctionProvider functionProvider = getFunctionProvider();
 		return switch (resolutionAndAlignment.getResolution()) {
-			case COMPLETE -> DSL.val(1);
+			case COMPLETE -> DSL.inline(1);
 			case YEARS -> calculateResolutionWindowForYearResolution(resolutionAndAlignment, bounds, functionProvider);
 			case QUARTERS -> calculateResolutionWindowForQuarterResolution(resolutionAndAlignment, bounds, functionProvider);
 			case DAYS -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), exclusiveUpper(bounds))

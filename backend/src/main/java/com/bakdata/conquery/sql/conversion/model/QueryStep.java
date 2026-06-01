@@ -41,6 +41,12 @@ public class QueryStep {
 	 */
 	@Builder.Default
 	boolean unionAll = true;
+
+	/**
+	 * If the query should be negated or not.
+	 */
+	@Builder.Default
+	boolean negate = false;
 	/**
 	 * Determines if the select should be distinct.
 	 */
@@ -51,21 +57,22 @@ public class QueryStep {
 	@Singular
 	List<QueryStep> predecessors;
 
-	public static QueryStep createUnionAllStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors) {
-		return createUnionStep(unionSteps, cteName, predecessors, true);
+	public static QueryStep createUnionAllStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors, boolean negation) {
+		return createUnionStep(unionSteps, cteName, predecessors, true, negation);
 	}
 
-	public static QueryStep createUnionStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors) {
-		return createUnionStep(unionSteps, cteName, predecessors, false);
+	public static QueryStep createUnionStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors, boolean negation) {
+		return createUnionStep(unionSteps, cteName, predecessors, false, negation);
 	}
 
-	private static QueryStep createUnionStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors, boolean unionAll) {
+	private static QueryStep createUnionStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors, boolean unionAll, boolean negation) {
 		return unionSteps.get(0)
 						 .toBuilder()
 						 .cteName(cteName)
 						 .union(unionSteps.subList(1, unionSteps.size()))
 						 .unionAll(unionAll)
 						 .predecessors(predecessors)
+						 .negate(negation)
 						 .build();
 	}
 

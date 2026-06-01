@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -40,5 +41,14 @@ public class ExternalResultInfo extends ResultInfo {
 	@Override
 	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		return printerFactory.printerFor(type, printSettings);
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+		if (type instanceof ResultType.ListT<?> list && list.getElementType().equals(ResultType.Primitive.STRING)) {
+			return resultSetProcessor::getStringList;
+		}
+
+		return resultSetProcessor::getString;
 	}
 }

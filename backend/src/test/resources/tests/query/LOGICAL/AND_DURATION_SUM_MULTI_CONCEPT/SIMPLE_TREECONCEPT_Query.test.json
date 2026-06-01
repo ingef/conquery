@@ -1,6 +1,12 @@
 {
   "type": "QUERY_TEST",
   "label": "AND DURATION SUM Test",
+  "sqlSpec": {
+    "isEnabled": false,
+    "supportedDialects": [
+      "POSTGRESQL", "HANA"
+    ]
+  },
   "expectedCsv": "tests/query/LOGICAL/AND_DURATION_SUM_MULTI_CONCEPT/expected.csv",
   "query": {
     "type": "SECONDARY_ID_QUERY",

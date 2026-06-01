@@ -1,6 +1,12 @@
 {
 	"type": "FORM_TEST",
 	"label": "ABS-EXPORT-FORM WITH NESTING DATE_RESTRICTION -> AND",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL", "HANA"
+    ]
+  },
 	"expectedCsv": {
 		"results": "tests/form/EXPORT_FORM/ABSOLUT/SIMPLE_DATE_RESTRICTION/expected.csv"
 	},

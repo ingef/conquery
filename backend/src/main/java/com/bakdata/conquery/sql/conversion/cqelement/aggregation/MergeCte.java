@@ -16,7 +16,7 @@ class MergeCte extends DateAggregationCte {
 	}
 
 	@Override
-	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context) {
+	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor) {
 
 		SqlAggregationAction aggregationAction = context.getSqlAggregationAction();
 		List<QueryStep> noOverlapSteps = aggregationAction.getNoOverlapSelects(context);

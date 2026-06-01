@@ -26,6 +26,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -38,6 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "ARRAY_CONCEPT_QUERY", base = QueryDescription.class)
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE, onConstructor_ = {@JsonCreator})
+@ToString
 public class ArrayConceptQuery extends Query {
 
 	@NotEmpty

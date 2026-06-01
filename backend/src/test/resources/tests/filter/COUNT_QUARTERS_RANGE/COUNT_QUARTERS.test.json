@@ -1,10 +1,17 @@
 {
   "type": "FILTER_TEST",
   "label": "COUNT_QUARTERS Test",
-  "expectedCsv": "tests/filter/COUNT_QUARTERS_RANGE/expected_COUNT_QUARTERS_Filter.csv",
+  "sqlSpec": {
+    "isEnabled": true,
+    "comment": "Special test case for dateRanges / PG",
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
+  "expectedCsv": "tests/filter/COUNT_QUARTERS_RANGE/expected.csv",
   "content": {
     "tables": {
-      "csv": "tests/filter/COUNT_QUARTERS_RANGE/content_COUNT_QUARTERS_Filter.csv",
+      "csv": "tests/filter/COUNT_QUARTERS_RANGE/content.csv",
       "primaryColumn": {
         "name": "pid",
         "type": "STRING"

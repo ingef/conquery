@@ -1,6 +1,12 @@
 {
   "type": "FORM_TEST",
   "label": "FULL_EXPORT_FORM",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL", "HANA"
+    ]
+  },
   "expectedCsv": {
     "results": "/tests/form/FULL_EXPORT_FORM//expected.csv"
   },

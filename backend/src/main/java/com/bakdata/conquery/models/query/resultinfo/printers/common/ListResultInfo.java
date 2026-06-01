@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 
 /**
  * Simple wrapper to turn results into Lists.
@@ -41,5 +42,10 @@ public class ListResultInfo extends ResultInfo {
 	@Override
 	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		return printerFactory.getListPrinter(resultInfo.createPrinter(printerFactory, printSettings), printSettings);
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+		return resultInfo.createReader(resultSetProcessor); //TODO not sure if this is correct
 	}
 }

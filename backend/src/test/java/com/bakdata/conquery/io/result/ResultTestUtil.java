@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import lombok.Getter;
@@ -166,6 +167,10 @@ public class ResultTestUtil {
 			return Collections.emptyList();
 		}
 
+		@Override
+		public ResultSetProcessor.Reader<?> createResultSetReader(ResultSetProcessor processor) {
+			throw new IllegalStateException("This should not be called");
+		}
 
 		@Override
 		public Aggregator<String> createAggregator() {

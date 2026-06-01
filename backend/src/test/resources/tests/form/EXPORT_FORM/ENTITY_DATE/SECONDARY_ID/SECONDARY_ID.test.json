@@ -1,6 +1,12 @@
 {
 	"type": "FORM_TEST",
 	"label": "ENTITY-DATE-EXPORT-FORM SECONDARY_ID",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL", "HANA"
+    ]
+  },
 	"expectedCsv": {
 		"results": "/tests/form/EXPORT_FORM/ENTITY_DATE/SECONDARY_ID/expected.csv"
 	},

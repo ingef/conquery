@@ -1,6 +1,12 @@
 {
 	"type": "FORM_TEST",
 	"label": "ADD DEFAULT SELECT Test",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL", "HANA"
+    ]
+  },
 	"expectedCsv": {
 		"results": "tests/form/EXPORT_FORM/ENTITY_DATE/LOGICAL/expected.csv"
 	},

@@ -1,5 +1,9 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
+import static org.jooq.impl.DSL.*;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.keyword;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -14,9 +18,13 @@ import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
+import org.jooq.Keyword;
 import org.jooq.impl.DSL;
 
 public class PostgreSqlDateAggregator implements SqlDateAggregator {
@@ -46,8 +54,10 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 			ConversionContext conversionContext
 	) {
 		String joinedStepCteName = joinedStep.getCteName();
+        DateAggregationDates qualified = dateAggregationDates.qualify(joinedStepCteName);
 
-		ColumnDateRange aggregatedValidityDate = getAggregatedValidityDate(dateAggregationDates, dateAggregationAction, joinedStepCteName);
+        ColumnDateRange aggregatedValidityDate = getAggregatedValidityDate(qualified, dateAggregationAction)
+                .asValidityDateRange(joinedStepCteName);
 
 		Selects dateAggregationSelects = Selects.builder()
 												.ids(joinedStep.getQualifiedSelects().getIds())
@@ -72,21 +82,21 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 			return baseStep;
 		}
 
-		Field<Object> maxDateRange = DSL.function(
+		Field<Object> maxDateRange = function(
 				"daterange",
 				Object.class,
-				this.functionProvider.toDateField(this.functionProvider.getMinDateExpression()),
-				this.functionProvider.toDateField(this.functionProvider.getMaxDateExpression()),
-				DSL.val("[]")
+				this.functionProvider.getMinDateExpression(),
+				this.functionProvider.getMaxDateExpression(),
+				inline("[]")
 		);
 
 		// see https://www.postgresql.org/docs/current/functions-range.html
 		// {[-infinity,infinity]} - {multirange} computes the inverse of a {multirange}
-		Field<Object> invertedValidityDate = DSL.field(
+		Field<Object> invertedValidityDate = field(
 				"{0}::{1} - {2}",
 				Object.class,
 				maxDateRange,
-				DSL.keyword("datemultirange"),
+				keyword("datemultirange"),
 				validityDate.get().getRange()
 		).as(PostgresDateAggregationCteStep.DATES_INVERTED.getSuffix());
 
@@ -98,28 +108,26 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 						.build();
 	}
 
-	private ColumnDateRange getAggregatedValidityDate(DateAggregationDates dateAggregationDates, DateAggregationAction dateAggregationAction, String joinedStepCteName) {
+	public ColumnDateRange getAggregatedValidityDate(DateAggregationDates dateAggregationDates, DateAggregationAction dateAggregationAction) {
 
 		// see https://www.postgresql.org/docs/current/functions-range.html
 		String aggregatingOperator = switch (dateAggregationAction) {
 			case MERGE -> " + ";
 			case INTERSECT -> " * ";
-			default -> throw new IllegalStateException("Unexpected aggregation mode: " + dateAggregationAction);
+			case BLOCK, NEGATE -> throw new IllegalStateException("Unexpected aggregation mode: " + dateAggregationAction);
 		};
 
-		String aggregatedExpression = dateAggregationDates.qualify(joinedStepCteName)
-														  .getValidityDates().stream()
+		String aggregatedExpression = dateAggregationDates.getValidityDates().stream()
 														  .flatMap(validityDate -> validityDate.toFields().stream())
 														  .map(PostgreSqlDateAggregator::createEmptyRangeForNullValues)
 														  .collect(Collectors.joining(aggregatingOperator));
 
-		return ColumnDateRange.of(DSL.field(aggregatedExpression))
-							  .asValidityDateRange(joinedStepCteName);
+		return ColumnDateRange.of(field(aggregatedExpression));
 	}
 
 	private static String createEmptyRangeForNullValues(Field<?> field) {
-		return DSL.when(field.isNull(), DSL.field("'{}'::{0}", DSL.keyword("datemultirange")))
-				  .otherwise(field)
+		Keyword datemultirange = keyword("datemultirange");
+		return coalesce(field("{0}::{1}", field, datemultirange), field("'{}'::{0}", datemultirange))
 				  .toString();
 	}
 

@@ -1,6 +1,13 @@
 {
   "type": "QUERY_TEST",
   "label": "DURATION_SUM_AGGREGATOR Test",
+  "sqlSpec": {
+    "isEnabled": false,
+    "comment": "Distinct not yet implemented.",
+    "supportedDialects": [
+      "POSTGRESQL"
+    ]
+  },
   "expectedCsv": "tests/filter/DURATION_SUM_DISTINCT_FILTER/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

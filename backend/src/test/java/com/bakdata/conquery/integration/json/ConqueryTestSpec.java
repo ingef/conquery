@@ -32,6 +32,7 @@ public abstract class ConqueryTestSpec {
 	private static final ObjectReader TEST_SPEC_READER = Jackson.MAPPER.readerFor(ConqueryTestSpec.class);
 
 
+
 	@Nullable
 	SqlSpec sqlSpec;
 	private String label;

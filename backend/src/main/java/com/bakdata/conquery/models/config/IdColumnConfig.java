@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.query.resultinfo.FixedLabelResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Functions;
 import com.google.common.collect.MoreCollectors;
@@ -138,6 +139,11 @@ public class IdColumnConfig {
 							// fall backs
 							labels.size() == 1 ? labels.values().stream().collect(MoreCollectors.onlyElement()) : col.getField()
 					), col.getField());
+				}
+
+				@Override
+				public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+					return resultSetProcessor::getString;
 				}
 			};
 		}).collect(Collectors.toUnmodifiableList());

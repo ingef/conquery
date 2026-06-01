@@ -35,7 +35,7 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 	@Override
 	public SqlIdColumns qualify(String qualifier) {
 
-		Field<Object> primaryColumn = QualifyingUtil.qualify(getPrimaryColumn(), qualifier);
+		Field<String> primaryColumn = QualifyingUtil.qualify(getPrimaryColumn(), qualifier);
 		Field<String> resolution = QualifyingUtil.qualify(this.resolution, qualifier);
 		Field<Integer> index = QualifyingUtil.qualify(this.index, qualifier);
 		Field<Date> eventDate = null;
@@ -59,8 +59,8 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 	public SqlIdColumns forFinalSelect() {
 
 		Field<Integer> withNulledCompleteIndex = DSL.when(
-															this.resolution.eq(DSL.val(Resolution.COMPLETE.toString().toUpperCase())),
-															DSL.val(null, Integer.class)
+															this.resolution.eq(DSL.inline(Resolution.COMPLETE.toString().toUpperCase())),
+															DSL.inline(null, Integer.class)
 													)
 													.otherwise(this.index)
 													.as(SharedAliases.INDEX.getAlias());
@@ -147,7 +147,7 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 			}
 		}
 
-		Field<Object> coalescedPrimaryColumn = coalesceFields(primaryColumns).as(SharedAliases.PRIMARY_COLUMN.getAlias());
+		Field<String> coalescedPrimaryColumn = coalesceFields(primaryColumns).coerce(String.class).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 		Field<String> coalescedResolutions = coalesceFields(resolutions).coerce(String.class).as(SharedAliases.RESOLUTION.getAlias());
 		Field<Integer> coalescedIndices = coalesceFields(indices).coerce(Integer.class).as(SharedAliases.INDEX.getAlias());
 		Field<Date> eventDate = null;

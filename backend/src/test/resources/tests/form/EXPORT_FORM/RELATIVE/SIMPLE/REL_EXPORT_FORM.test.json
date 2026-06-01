@@ -1,6 +1,12 @@
 {
 	"type": "FORM_TEST",
 	"label": "REL-EXPORT-FORM Test",
+    "sqlSpec": {
+    "isEnabled": true,
+    "supportedDialects": [
+      "POSTGRESQL", "HANA"
+    ]
+  },
 	"expectedCsv": {
 		"results": "tests/form/EXPORT_FORM/RELATIVE/SIMPLE/expected.csv"
 	},
