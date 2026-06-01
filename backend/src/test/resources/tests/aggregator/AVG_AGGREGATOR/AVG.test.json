@@ -1,0 +1,67 @@
+{
+  "type": "QUERY_TEST",
+  "label": "COUNT_AGGREGATOR Test",
+  "expectedCsv": "tests/aggregator/AVG_AGGREGATOR/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector",
+          "selects" : [
+            "concept.connector.select"
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "table",
+          "validityDates": {
+            "label": "datum",
+            "column": "table.datum"
+          },
+          "selects": [
+            {
+              "name" : "select",
+              "type": "AVG",
+              "column": "table.value"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/aggregator/AVG_AGGREGATOR/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "value",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    ]
+  }
+}
