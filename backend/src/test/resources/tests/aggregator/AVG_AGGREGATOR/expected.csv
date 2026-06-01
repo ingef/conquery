@@ -1,5 +1,5 @@
-result,concept select
-1,3
-2,4
-3,3
-4,2
+result,dates,concept select
+1,{-∞/+∞},3
+2,{-∞/+∞},4
+3,{-∞/+∞},3
+4,{-∞/+∞},2
