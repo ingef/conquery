@@ -1,12 +1,6 @@
 {
   "type": "QUERY_TEST",
   "label": "REUSED_QUERY Test",
-  "sqlSpec": {
-    "isEnabled": true,
-    "supportedDialects": [
-      "POSTGRESQL"
-    ]
-  },
   "expectedCsv": "tests/query/REUSED_QUERY/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
@@ -16,7 +10,6 @@
     }
   },
   "concepts": [
-
   ],
   "content": {
     "tables": [

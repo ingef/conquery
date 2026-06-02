@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.dialect;
+package com.bakdata.conquery.sql.conversion.dialect.hana;
 
 import static com.bakdata.conquery.sql.execution.ResultSetProcessor.UNIT_SEPARATOR;
 import static org.jooq.impl.DSL.*;
@@ -11,12 +11,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import org.jetbrains.annotations.NotNull;
@@ -64,13 +63,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return condition(dateRestrictionStartsBeforeDate.and(dateRestrictionEndsAfterDate));
 	}
 
-	@Override
-	public List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias) {
-		return dateset.asRanges().stream()
-					  .map(this::forCDateRange)
-					  .map(dateRange -> dateRange.as(alias.getAlias()))
-					  .toList();
-	}
 
 	@Override
 	public ColumnDateRange forCDateRange(CDateRange daterange) {
@@ -105,8 +97,14 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Condition isNotEmptyDateRange(ColumnDateRange columnDateRange) {
+		return columnDateRange.getStart().notEqual(getMinDateExpression()).or(columnDateRange.getEnd().notEqual(getMaxDateExpression()));
+
+	}
+
+	@Override
 	public ColumnDateRange emptyColumnDateRange() {
-		return ColumnDateRange.of(field(inline(null, Date.class)), field(inline(null, Date.class)));
+		return ColumnDateRange.of(inline(null, Date.class), inline(null, Date.class));
 	}
 
 
@@ -117,7 +115,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public ColumnDateRange allRange() {
-		return ColumnDateRange.of(toDateField(MIN_DATE_VALUE).as("all_range_start"), toDateField(MAX_DATE_VALUE).as("all_range_end"));
+		return ColumnDateRange.of(getMinDateExpression().as("all_range_start"), getMaxDateExpression().as("all_range_end"));
 	}
 
 	private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
@@ -145,13 +143,13 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 		Field<Date> rangeStart = coalesce(
 				field(name(tableName, startColumn.getName()), Date.class),
-				toDateField(MIN_DATE_VALUE)
+				getMinDateExpression()
 		);
 		// when aggregating date ranges, we want to treat the last day of the range as excluded,
 		// so when using the date value of the end column, we add +1 day as end of the date range
 		Field<Date> rangeEnd = coalesce(
 				addDays(field(name(tableName, endColumn.getName()), Date.class), inline(1)),
-				toDateField(MAX_DATE_VALUE)
+				getMaxDateExpression()
 		);
 
 		return ColumnDateRange.of(rangeStart, rangeEnd);
@@ -175,6 +173,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 				)
 		);
 	}
+
 
 	@Override
 	public ColumnDateRange forValidityDate(ValidityDate validityDate, CDateRange dateRestriction) {
@@ -208,6 +207,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return ColumnDateRange.of(toDateField(startDateExpression), toDateField(endDateExpression));
 	}
 
+
 	@NotNull
 	@Override
 	public Collection<? extends OrderField<?>> orderByValidityDates(
@@ -215,19 +215,19 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 			List<Field<?>> validityDateFields) {
 
 		return List.of(
-				ordering.apply(nullif(validityDateFields.getFirst(), toDateField(getMinDateExpression()))).nullsLast(),
-				ordering.apply(nullif(validityDateFields.getLast(), toDateField(getMaxDateExpression()))).nullsLast()
+				ordering.apply(nullif(validityDateFields.getFirst(), getMinDateExpression())).nullsLast(),
+				ordering.apply(nullif(validityDateFields.getLast(), getMaxDateExpression())).nullsLast()
 		);
 	}
 
 	@Override
-	public String getMinDateExpression() {
-		return MIN_DATE_VALUE;
+	public Field<Date> getMinDateExpression() {
+		return toDateField(MIN_DATE_VALUE);
 	}
 
 	@Override
-	public String getMaxDateExpression() {
-		return MAX_DATE_VALUE;
+	public Field<Date> getMaxDateExpression() {
+		return toDateField(MAX_DATE_VALUE);
 	}
 
 	@Override

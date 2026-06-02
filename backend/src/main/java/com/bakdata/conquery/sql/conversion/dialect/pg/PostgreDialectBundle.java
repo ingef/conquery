@@ -1,20 +1,28 @@
-package com.bakdata.conquery.sql.conversion.dialect;
+package com.bakdata.conquery.sql.conversion.dialect.pg;
 
 import java.util.List;
+import java.util.Map;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.DistinctSelect;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.aggregation.PostgreSqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.PostgreSqlIntervalPacker;
-import com.bakdata.conquery.sql.conversion.forms.PostgresStratificationFunctions;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
+import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
+import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.DefaultResultSetProcessor;
 import com.bakdata.conquery.sql.execution.PgSqlCDateSetParser;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
+import lombok.Getter;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
@@ -28,7 +36,7 @@ public class PostgreDialectBundle implements DialectBundle {
 
 	@Override
 	public ResultSetProcessor getResultSetProcessor(ConqueryConfig config) {
-		return new DefaultResultSetProcessor(config, getCDateSetParser());
+		return new PgResultSetProcessor(config, dateSetParser);
 	}
 
 	@Override
@@ -60,10 +68,6 @@ public class PostgreDialectBundle implements DialectBundle {
 
 
 
-	@Override
-	public SqlCDateSetParser getCDateSetParser() {
-		return this.dateSetParser;
-	}
 
 	@Override
 	public boolean supportsSingleColumnRanges() {
@@ -73,6 +77,11 @@ public class PostgreDialectBundle implements DialectBundle {
 	@Override
 	public List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext dslContext) {
 		return getDefaultNodeConverters(dslContext);
+	}
+
+	@Override
+	public Map<Class<? extends Select>, ? extends SelectConverter<? extends Select>> getSelectConverterOverrides() {
+		return Map.of(DistinctSelect.class, new PgDistinctSelectConverter());
 	}
 
 	@Override

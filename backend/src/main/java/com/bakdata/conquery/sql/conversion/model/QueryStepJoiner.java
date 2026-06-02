@@ -40,12 +40,12 @@ public class QueryStepJoiner {
 
 		SqlFunctionProvider functionProvider = context.getConversionContext().getDialectBundle().getFunctionProvider();
 
-		Field<Object> queryStepPrimaryColumn = queryStep.getQualifiedSelects().getIds().getPrimaryColumn();
+		Field<String> queryStepPrimaryColumn = queryStep.getQualifiedSelects().getIds().getPrimaryColumn();
 		ColumnConfig idColumnConfig = context.getIdColumns().findPrimaryIdColumn();
 
 		String allIdsTable = context.getIdColumns().getTable();
 
-		Field<Object> allIdsPrimaryColumn = field(name(allIdsTable, idColumnConfig.getField()));
+		Field<String> allIdsPrimaryColumn = field(name(allIdsTable, idColumnConfig.getField()), String.class);
 
 		Table<?> table = table(name(allIdsTable))
 				.leftOuterJoin(table(name(queryStep.getCteName())))
@@ -94,6 +94,8 @@ public class QueryStepJoiner {
 			DateAggregationAction dateAggregationAction,
 			ConversionContext context
 	) {
+		//TODO somehow Negation does not show up here.
+
 		// keep all entries from group A (non-negate steps), whose entity has no matching entry in group B (negate steps)
 		if (queriesToJoin.stream().anyMatch(QueryStep::isNegate)) {
 			return joinStepsContainingNegation(queriesToJoin, logicalOperation, dateAggregationAction, context);
@@ -194,8 +196,8 @@ public class QueryStepJoiner {
 		// join with all-ids table necessary
 		ColumnConfig columnConfig = context.getIdColumns().findPrimaryIdColumn();
 		Field<Object> allIdsPrimaryColumn = field(name(columnConfig.getField()));
-		Field<Object> negatePrimaryColumn = negateJoined.getQualifiedSelects().getIds().getPrimaryColumn();
-		Field<Object> nonNegatePrimaryColumn = nonNegateJoined.getQualifiedSelects().getIds().getPrimaryColumn();
+		Field<String> negatePrimaryColumn = negateJoined.getQualifiedSelects().getIds().getPrimaryColumn();
+		Field<String> nonNegatePrimaryColumn = nonNegateJoined.getQualifiedSelects().getIds().getPrimaryColumn();
 
 		// prepare date aggregation
 		Condition infinityRangeCondition = negatePrimaryColumn.isNull().or(nonNegatePrimaryColumn.isNull());
@@ -208,7 +210,7 @@ public class QueryStepJoiner {
 				dateAggregator.getAggregatedValidityDate(aggregationDates, DateAggregationAction.MERGE)
 							  .as(cteName + SharedAliases.DATES_COLUMN.getAlias());
 
-		Field<Object> coalescedId = DSL.coalesce(nonNegatePrimaryColumn, allIdsPrimaryColumn)
+		Field<String> coalescedId = DSL.coalesce(nonNegatePrimaryColumn, allIdsPrimaryColumn)
 									   .as(SharedAliases.PRIMARY_COLUMN.getAlias());
 
 		selects = selects

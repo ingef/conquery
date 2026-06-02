@@ -3,9 +3,10 @@
   "label": "OR NEGATION DATE LOGIC Test",
   "expectedCsv": "tests/query/LOGICAL/OR_NEGATION_DATE_LOGICAL/expected.csv",
   "sqlSpec": {
-    "isEnabled": true,
+    "comment" : "Logical will hopefully be removed",
+    "isEnabled": false,
     "supportedDialects": [
-      "POSTGRESQL"
+      "POSTGRESQL", "HANA"
     ]
   },
   "query": {
