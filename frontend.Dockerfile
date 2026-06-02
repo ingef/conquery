@@ -23,7 +23,7 @@ COPY --from=version-extractor /app/git_describe.txt .
 RUN PUBLIC_URL=/ npm run build
 
 # The final image is just an nginx with a webroot
-FROM nginxinc/nginx-unprivileged:1.29-alpine@sha256:ccbac1a4c20a8b41c5dd1691bd91d63eda3b7989d643a33fd47841838519bfb9
+FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:8122337ed6c475bb486bc9340da453d4599f225e6b920ff0d92ca2267486b9b5
 
 # This will be used by nginx's templating mechanism
 # NGINX_PORT sets the container port on which nginx is listening
