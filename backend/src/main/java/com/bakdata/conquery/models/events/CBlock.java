@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeCache;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
@@ -95,7 +96,7 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector, bucketManager);
 		//TODO Object2LongMap
 		final Map<String, Long> includedConcepts = calculateConceptElementPathBloomFilter(bucket, mostSpecificChildren);
-		final Map<String, CDateRange> entitySpans = calculateEntityDateIndices(bucket);
+		final Map<String, CDateRange> entitySpans = calculateEntityDateIndices(bucket, connector);
 
 		final CBlock cBlock = new CBlock(bucketId, connector.getId(), includedConcepts, entitySpans, mostSpecificChildren);
 		return cBlock;
@@ -147,17 +148,10 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 	 *
 	 * @implNote This is an unrolled implementation of {@link CDateRange#span(CDateRange)}.
 	 */
-	private static Map<String, CDateRange> calculateEntityDateIndices(Bucket bucket) {
+	private static Map<String, CDateRange> calculateEntityDateIndices(Bucket bucket, ConceptTreeConnector connector) {
 		final Map<String, CDateRange> spans = new HashMap<>();
 
-		final Table table = bucket.getTable().resolve();
-
-
-		for (Column column : table.getColumns()) {
-			if (!column.getType().isDateCompatible()) {
-				continue;
-			}
-
+		for (ValidityDate validityDate : connector.getValidityDates()) {
 			for (String entity : bucket.entities()) {
 				final int end = bucket.getEntityEnd(entity);
 
@@ -166,13 +160,13 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 				int max = Integer.MIN_VALUE;
 				int min = Integer.MAX_VALUE;
 
-
 				for (int event = bucket.getEntityStart(entity); event < end; event++) {
-					if (!bucket.has(event, column)) {
+
+					final CDateRange range = validityDate.getValidityDate(event, bucket);
+
+					if(range == null) {
 						continue;
 					}
-
-					final CDateRange range = bucket.getAsDateRange(event, column);
 
 					final int minValue = range.getMinValue();
 
@@ -192,7 +186,6 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 				final CDateRange span = CDateRange.of(min, max);
 
 				spans.compute(entity, (ignored, current) -> current == null ? span : current.span(span));
-
 			}
 		}
 

@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
 import jakarta.validation.constraints.NotNull;
@@ -14,6 +16,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DateDist
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.aggregator.DateDistanceSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,6 +47,11 @@ public class DateDistanceSelect extends SingleColumnSelect {
 	@Override
 	public SelectConverter<DateDistanceSelect> createConverter() {
 		return new DateDistanceSqlAggregator();
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<Integer> createResultSetReader(ResultSetProcessor processor) {
+		return processor::getInteger;
 	}
 
 	@Override

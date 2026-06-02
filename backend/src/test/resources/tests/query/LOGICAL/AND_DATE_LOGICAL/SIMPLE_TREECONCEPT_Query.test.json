@@ -1,6 +1,13 @@
 {
   "type": "QUERY_TEST",
   "label": "AND DATE LOGIC Test",
+  "sqlSpec": {
+    "comment" : "Logical will hopefully removed",
+    "isEnabled": false,
+    "supportedDialects": [
+      "POSTGRESQL", "HANA"
+    ]
+  },
   "expectedCsv": "tests/query/LOGICAL/AND_DATE_LOGICAL/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

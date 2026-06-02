@@ -277,8 +277,8 @@ public class SqlMatchingStats {
 
 		List<Select<? extends Record>> connectorTables = new ArrayList<>();
 
-		Field<Date> positiveInfinity = functionProvider.toDateField(functionProvider.getMaxDateExpression());
-		Field<Date> negativeInfinity = functionProvider.toDateField(functionProvider.getMinDateExpression());
+		Field<Date> positiveInfinity = functionProvider.getMaxDateExpression();
+		Field<Date> negativeInfinity = functionProvider.getMinDateExpression();
 
 		for (Connector connector : concept.getConnectors()) {
 

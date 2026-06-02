@@ -18,7 +18,6 @@ import com.bakdata.conquery.sql.conversion.NodeConversions;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
-import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import io.dropwizard.core.setup.Environment;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +46,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 		DSLContext dslContext = connection.connect();
 		DialectBundle dialectBundle = connection.getConnection().getDialect().getDialectBundle();
 
-		ResultSetProcessor resultSetProcessor = ResultSetProcessorFactory.create(config, dialectBundle);
+		ResultSetProcessor resultSetProcessor = dialectBundle.getResultSetProcessor(config);
 		SqlExecutionService sqlExecutionService = new SqlExecutionService(dslContext, resultSetProcessor);
 
 		NodeConversions nodeConversions = new NodeConversions(config.getIdColumns(), dialectBundle, dslContext, sqlExecutionService, clock);

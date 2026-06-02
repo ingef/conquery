@@ -1,5 +1,5 @@
 # Version Extractor
-FROM alpine/git:2.52.0@sha256:d453f54c83320412aa89c391b076930bd8569bc1012285e8c68ce2d4435826a3 AS version-extractor
+FROM alpine/git:v2.52.0@sha256:3136372ed3c9e112d5a2620c66a6803e1b0b7f14a428fcbd0c5028bec4256430 AS version-extractor
 
 WORKDIR /app
 COPY .git .
@@ -23,7 +23,7 @@ COPY --from=version-extractor /app/git_describe.txt .
 RUN PUBLIC_URL=/ npm run build
 
 # The final image is just an nginx with a webroot
-FROM nginxinc/nginx-unprivileged:1.29-alpine@sha256:ccbac1a4c20a8b41c5dd1691bd91d63eda3b7989d643a33fd47841838519bfb9
+FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:8122337ed6c475bb486bc9340da453d4599f225e6b920ff0d92ca2267486b9b5
 
 # This will be used by nginx's templating mechanism
 # NGINX_PORT sets the container port on which nginx is listening

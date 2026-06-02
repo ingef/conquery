@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
@@ -32,10 +33,9 @@ class PreprocessingCte extends ConnectorCte {
 
 		Selects preprocessingSelects = Selects.builder()
 											  .ids(tableContext.getIds())
-											  .validityDate(tableContext.getValidityDate())
+											  .validityDate(Optional.of(tableContext.getValidityDate()))
 											  .sqlSelects(forPreprocessing)
 											  .build();
-
 		// all where clauses that don't require any preprocessing (connector/child conditions)
 		List<Condition> conditions = new ArrayList<>();
 
@@ -50,12 +50,13 @@ class PreprocessingCte extends ConnectorCte {
 													  .selects(preprocessingSelects)
 													  .conditions(conditions);
 
-		if (!tableContext.getConversionContext().isWithStratification()) {
-			TableLike<Record> rootTable = QueryStep.toTableLike(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING));
-			return builder.fromTable(rootTable);
+		if (tableContext.getConversionContext().isWithStratification()) {
+			return joinWithStratificationTable(forPreprocessing, conditions, tableContext);
 		}
 
-		return joinWithStratificationTable(forPreprocessing, conditions, tableContext);
+		TableLike<Record> rootTable = QueryStep.toTableLike(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING));
+		return builder.fromTable(rootTable);
+
 	}
 
 
@@ -81,7 +82,7 @@ class PreprocessingCte extends ConnectorCte {
 
 		Selects selects = Selects.builder()
 								 .ids(stratificationSelects.getIds())
-								 .validityDate(tableContext.getValidityDate())
+								 .validityDate(Optional.of(tableContext.getValidityDate()))
 								 .stratificationDate(stratificationSelects.getStratificationDate())
 								 .sqlSelects(preprocessingSelects)
 								 .build();

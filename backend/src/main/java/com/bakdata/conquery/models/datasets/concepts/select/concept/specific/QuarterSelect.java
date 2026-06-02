@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept.specific;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
@@ -7,6 +10,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSel
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.QuarterAggregator;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -31,5 +35,10 @@ public class QuarterSelect extends UniversalSelect {
 	@Override
 	public ResultType getResultType() {
 		return ResultType.Primitive.STRING;
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<String> createResultSetReader(ResultSetProcessor processor) {
+		return processor::getString;
 	}
 }

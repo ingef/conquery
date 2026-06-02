@@ -25,6 +25,15 @@ public class Selects {
 	@Singular
 	List<SqlSelect> sqlSelects;
 
+	public Selects toFinalRepresentation() {
+		return builder()
+				.ids(this.ids)
+				.validityDate(this.validityDate)
+				.stratificationDate(this.stratificationDate)
+				.sqlSelects(this.sqlSelects.stream().map(SqlSelect::toFinalRepresentation).toList())
+				.build();
+	}
+
 	public Selects withValidityDate(ColumnDateRange validityDate) {
 		return this.toBuilder()
 				   .validityDate(Optional.of(validityDate))

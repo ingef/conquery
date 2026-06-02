@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.forms;
 
+import static org.jooq.impl.DSL.*;
+
 import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
@@ -8,6 +10,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
@@ -19,7 +22,6 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
-import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 class AbsoluteStratification {
@@ -30,7 +32,7 @@ class AbsoluteStratification {
 	private final QueryStep baseStep;
 	private final StratificationFunctions stratificationFunctions;
 
-	public QueryStep createStratificationTable(List<ExportForm.ResolutionAndAlignment> resolutionAndAlignments) {
+	public QueryStep createStratificationTable(List<ExportForm.ResolutionAndAlignment> resolutionAndAlignments, ConversionContext context) {
 
 		QueryStep intSeriesStep = createIntSeriesStep();
 		QueryStep indexStartStep = createIndexStartStep();
@@ -40,13 +42,13 @@ class AbsoluteStratification {
 														.toList();
 
 		List<QueryStep> predecessors = List.of(baseStep, intSeriesStep, indexStartStep);
-		return StratificationTableFactory.unionResolutionTables(resolutionTables, predecessors);
+		return StratificationTableFactory.unionResolutionTables(resolutionTables, predecessors, context);
 	}
 
 	private QueryStep createIntSeriesStep() {
 
 		// not actually required, but Selects expect at least 1 SqlIdColumn
-		Field<String> rowNumber = DSL.rowNumber().over().coerce(String.class);
+		Field<String> rowNumber = rowNumber().over().coerce(String.class);
 		SqlIdColumns ids = new SqlIdColumns(rowNumber);
 
 		FieldWrapper<Integer> seriesIndex = new FieldWrapper<>(stratificationFunctions.intSeriesField());
@@ -56,8 +58,7 @@ class AbsoluteStratification {
 								 .sqlSelect(seriesIndex)
 								 .build();
 
-		Table<Record> seriesTable = stratificationFunctions.generateIntSeries(INDEX_START, INDEX_END)
-														   .as(SharedAliases.SERIES_INDEX.getAlias());
+		Table<Record> seriesTable = stratificationFunctions.generateIntSeries(INDEX_START, INDEX_END).asTable(SharedAliases.INDEX.getAlias());
 
 		return QueryStep.builder()
 						.cteName(FormCteStep.INT_SERIES.getSuffix())
@@ -116,7 +117,7 @@ class AbsoluteStratification {
 
 		// complete range shall have a null index because it spans the complete range, but we set it to 1 to ensure we can join tables on index,
 		// because a condition involving null in a join (e.g., null = some_value or null = null) always evaluates to false
-		Field<Integer> index = DSL.field(DSL.val(1, Integer.class)).as(SharedAliases.INDEX.getAlias());
+		Field<Integer> index = field(inline(1)).as(SharedAliases.INDEX.getAlias());
 		SqlIdColumns ids = baseStepSelects.getIds().withAbsoluteStratification(Resolution.COMPLETE, index);
 
 		ColumnDateRange completeRange = baseStepSelects.getStratificationDate().get();

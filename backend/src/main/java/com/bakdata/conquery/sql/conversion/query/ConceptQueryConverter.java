@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQNegation;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
@@ -28,32 +29,6 @@ import org.jooq.TableLike;
 public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 
 	private final QueryStepTransformer queryStepTransformer;
-
-	@Override
-	public Class<ConceptQuery> getConversionClass() {
-		return ConceptQuery.class;
-	}
-
-	@Override
-	public ConversionContext convert(ConceptQuery conceptQuery, ConversionContext context) {
-
-		ConversionContext contextAfterConversion = context.getNodeConversions().convert(conceptQuery.getRoot(), context);
-
-		QueryStep preFinalStep = contextAfterConversion.getLastConvertedStep();
-		Selects preFinalSelects = getPreFinalSelects(preFinalStep, contextAfterConversion);
-		List<QueryStep> predecessors = Stream.concat(Stream.of(preFinalStep), Stream.ofNullable(contextAfterConversion.getExternalExtras())).toList();
-
-		QueryStep finalStep = QueryStep.builder()
-									   .cteName(null)  // the final QueryStep won't be converted to a CTE
-									   .selects(getFinalSelects(conceptQuery, preFinalSelects, context.getDialectBundle().getFunctionProvider()))
-									   .fromTable(getFinalTable(preFinalStep, contextAfterConversion))
-									   .groupBy(getFinalGroupBySelects(preFinalSelects))
-									   .predecessors(predecessors)
-									   .build();
-
-		Select<Record> finalQuery = this.queryStepTransformer.toSelectQuery(finalStep);
-		return contextAfterConversion.withFinalQuery(new SqlQuery(finalQuery, conceptQuery.getResultInfos()));
-	}
 
 	private static Selects getPreFinalSelects(QueryStep preFinalStep, ConversionContext context) {
 		Selects preFinalStepSelects = preFinalStep.getQualifiedSelects();
@@ -81,20 +56,54 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 		);
 	}
 
+	@Override
+	public Class<ConceptQuery> getConversionClass() {
+		return ConceptQuery.class;
+	}
+
+	@Override
+	public ConversionContext convert(ConceptQuery conceptQuery, ConversionContext context) {
+
+		SqlFunctionProvider functionProvider = context.getDialectBundle().getFunctionProvider();
+		ConversionContext contextAfterConversion = context.getNodeConversions().convert(conceptQuery.getRoot(), context);
+
+		QueryStep preFinalStep = contextAfterConversion.getLastConvertedStep();
+		// negation of a single node results in an anti-join with all ids table
+		if (preFinalStep.isNegate()) {
+			preFinalStep = QueryStepJoiner.antiJoinWithAllIdsTable(preFinalStep, contextAfterConversion, CQNegation.determineDateAction(conceptQuery.getDateAggregationMode()));
+		}
+
+		Selects preFinalSelects = getPreFinalSelects(preFinalStep, contextAfterConversion);
+		List<QueryStep> predecessors = Stream.concat(Stream.of(preFinalStep), Stream.ofNullable(contextAfterConversion.getExternalExtras())).toList();
+
+		QueryStep finalStep = QueryStep.builder()
+									   .cteName(null)  // the final QueryStep won't be converted to a CTE
+									   .selects(getFinalSelects(conceptQuery, preFinalSelects, functionProvider).toFinalRepresentation())
+									   .fromTable(getFinalTable(preFinalStep, contextAfterConversion))
+									   .groupBy(getFinalGroupBySelects(preFinalSelects))
+									   .predecessors(predecessors)
+									   .build();
+
+		Select<Record> finalQuery = this.queryStepTransformer.toSelectQuery(finalStep);
+		return contextAfterConversion.withFinalQuery(new SqlQuery(finalQuery, conceptQuery.getResultInfos()));
+	}
+
 	private Selects getFinalSelects(ConceptQuery conceptQuery, Selects preFinalSelects, SqlFunctionProvider functionProvider) {
 		if (conceptQuery.getDateAggregationMode() == DateAggregationMode.NONE) {
 			return preFinalSelects.blockValidityDate();
 		}
 		else if (preFinalSelects.getValidityDate().isEmpty()) {
-			return preFinalSelects.withValidityDate(ColumnDateRange.empty());
+			// TODO i think this is unreachable?
+			return preFinalSelects.withValidityDate(functionProvider.allRange());
 		}
-		Field<String> validityDateStringAggregation = functionProvider.daterangeStringAggregation(preFinalSelects.getValidityDate().get());
+		Field<?> validityDateStringAggregation = functionProvider.dateRangeAggregation(preFinalSelects.getValidityDate().get());
 		return preFinalSelects.withValidityDate(ColumnDateRange.of(validityDateStringAggregation).as(SharedAliases.DATES_COLUMN.getAlias()));
 	}
 
 	private List<Field<?>> getFinalGroupBySelects(Selects preFinalSelects) {
 		List<Field<?>> groupBySelects = new ArrayList<>();
 		groupBySelects.addAll(preFinalSelects.getIds().toFields());
+		// TODO instead us any_value selects
 		groupBySelects.addAll(preFinalSelects.explicitSelects());
 		return groupBySelects;
 	}

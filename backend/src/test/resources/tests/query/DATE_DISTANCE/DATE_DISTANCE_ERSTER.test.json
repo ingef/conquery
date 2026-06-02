@@ -11,54 +11,44 @@
         "max": "2011-01-01"
       },
       "child": {
-        "type": "OR",
-        "children": [
+        "type": "CONCEPT",
+        "ids": [
+          "alter"
+        ],
+        "tables": [
           {
-            "type": "CONCEPT",
-            "ids": [
-              "alter"
-            ],
-            "label": "Alter",
-            "excludeFromTimeAggregation": false,
-            "tables": [
+            "id": "alter.connector",
+            "filters": [
               {
-                "id": "alter.alterxy",
-                "selects": [
-                ],
-                "filters": [
-                  {
-                    "filter": "alter.alterxy.alterseinschrankung",
-                    "type": "INTEGER_RANGE",
-                    "value": {
-                      "min": "11",
-                      "max": "11"
-                    }
-                  }
-                ]
+                "filter": "alter.connector.alterseinschrankung",
+                "type": "INTEGER_RANGE",
+                "value": {
+                  "min": "11",
+                  "max": "11"
+                }
               }
-            ],
-            "selects": [
             ]
           }
+        ],
+        "selects": [
         ]
       }
     }
   },
   "concepts": [
     {
-      "label": "alter",
+      "name": "alter",
       "type": "TREE",
       "connectors": [
         {
-          "label": "alterxy",
+          "name": "connector",
           "table": "table1",
           "validityDates": {
-            "label": "erster",
+            "name": "erster",
             "column": "table1.erster"
           },
           "filters": {
-            "label": "alterseinschrankung",
-            "description": "Geburtsdatum",
+            "name": "alterseinschrankung",
             "column": "table1.geburtsdatum",
             "type": "DATE_DISTANCE"
           }
@@ -83,14 +73,6 @@
           {
             "name": "erster",
             "type": "DATE"
-          },
-          {
-            "name": "letzter",
-            "type": "DATE"
-          },
-          {
-            "name": "versichertenzeit",
-            "type": "DATE_RANGE"
           }
         ]
       }

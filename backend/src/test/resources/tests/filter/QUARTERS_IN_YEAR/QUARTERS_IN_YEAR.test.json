@@ -1,6 +1,11 @@
 {
   "type": "FILTER_TEST",
   "label": "QUARTERS_IN_YEAR Test",
+    "sqlSpec": {
+    "isEnabled": false,
+    "supportedDialects": [
+    ]
+  },
   "expectedCsv": "tests/filter/QUARTERS_IN_YEAR/expected_QUARTERS_IN_YEAR_Filter.csv",
   "content": {
     "tables": {

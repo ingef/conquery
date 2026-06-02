@@ -5,21 +5,28 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.sql.conversion.dialect.pg.PostgreSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Getter;
+import lombok.ToString;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
+//TODO split this class up into Dialect specific versions.
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 public class ColumnDateRange implements SqlSelect {
 
 	private static final String VALIDITY_DATE_COLUMN_NAME_SUFFIX = "_validity_date";
 	private static final String START_SUFFIX = "_start";
 	private static final String END_SUFFIX = "_end";
 
-	private final Field<?> range;
+	@ToString.Include
+	private final Field<Object> range;
+	@ToString.Include
 	private final Field<Date> start;
+	@ToString.Include
 	private final Field<Date> end;
 	private final String alias;
 
@@ -31,7 +38,7 @@ public class ColumnDateRange implements SqlSelect {
 	}
 
 	protected ColumnDateRange(Field<?> range, String alias) {
-		this.range = range;
+		this.range = (Field<Object>) range;
 		start = null;
 		end = null;
 		this.alias = alias;
@@ -124,6 +131,7 @@ public class ColumnDateRange implements SqlSelect {
 		if (isSingleColumnRange() != right.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("Can only join ColumnDateRanges of same type");
 		}
+
 		if (isSingleColumnRange()) {
 			return range.coerce(Object.class).eq(right.getRange());
 		}
@@ -135,6 +143,14 @@ public class ColumnDateRange implements SqlSelect {
 			return range.isNotNull();
 		}
 		return start.isNotNull().and(end.isNotNull());
+	}
+
+	public static Condition isNotEmpty(ColumnDateRange columnDateRange) {
+		if (columnDateRange.isSingleColumnRange()) {
+			return columnDateRange.getRange().notEqual(PostgreSqlFunctionProvider.EMPTY_RANGE);
+		}
+
+		return columnDateRange.getStart().isNotNull().and(columnDateRange.getEnd().isNotNull());
 	}
 
 }

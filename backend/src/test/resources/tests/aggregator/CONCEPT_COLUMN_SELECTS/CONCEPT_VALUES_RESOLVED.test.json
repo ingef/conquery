@@ -1,6 +1,9 @@
 {
   "type": "QUERY_TEST",
   "label": "CONCEPT_VALUES (Resolved) Test",
+  "sqlSpec": {
+    "isEnabled": false
+  },
   "expectedCsv": "tests/aggregator/CONCEPT_COLUMN_SELECTS/expected_resolved.csv",
   "query": {
     "type": "CONCEPT_QUERY",

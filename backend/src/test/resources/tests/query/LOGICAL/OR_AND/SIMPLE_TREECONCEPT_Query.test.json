@@ -2,6 +2,14 @@
   "type": "QUERY_TEST",
   "label": "OR_AND Select test",
   "expectedCsv": "tests/query/LOGICAL/OR_AND/expected.csv",
+  "sqlSpec": {
+    "isEnabled": true,
+    "comment": "Logical will hopefully be kicked.",
+    "supportedDialects": [
+      "POSTGRESQL",
+      "HANA"
+    ]
+  },
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

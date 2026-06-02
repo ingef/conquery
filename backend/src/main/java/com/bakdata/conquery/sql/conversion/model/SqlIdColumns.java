@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -20,6 +21,7 @@ import org.jooq.impl.DSL;
 
 @SuperBuilder
 @AllArgsConstructor
+@ToString
 public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 
 	@Getter
@@ -29,6 +31,7 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 	private final Field<String> secondaryId;
 
 	@Nullable
+	@ToString.Exclude
 	private final SqlIdColumns predecessor;
 
 	public SqlIdColumns(Field<String> primaryColumn, Field<String> secondaryId) {
@@ -65,7 +68,7 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 	}
 
 	public SqlIdColumns withAbsoluteStratification(Resolution resolution, Field<Integer> index) {
-		Field<String> resolutionField = DSL.val(resolution.toString()).as(SharedAliases.RESOLUTION.getAlias());
+		Field<String> resolutionField = DSL.inline(resolution.toString()).as(SharedAliases.RESOLUTION.getAlias());
 		return StratificationSqlIdColumns.builder()
 										 .primaryColumn(this.primaryColumn)
 										 .secondaryId(this.secondaryId)
@@ -76,7 +79,7 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 	}
 
 	public SqlIdColumns withRelativeStratification(Resolution resolution, Field<Integer> index, Field<Date> eventDate) {
-		Field<String> resolutionField = DSL.val(resolution.toString()).as(SharedAliases.RESOLUTION.getAlias());
+		Field<String> resolutionField = DSL.inline(resolution.toString()).as(SharedAliases.RESOLUTION.getAlias());
 		return StratificationSqlIdColumns.builder()
 										 .primaryColumn(this.primaryColumn)
 										 .secondaryId(this.secondaryId)
@@ -138,11 +141,11 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 			ids.getSecondaryId().ifPresent(secondaryIds::add);
 		});
 
-		Field<String> coalescedPrimaryColumn = coalesceFields(primaryColumns, String.class).as(SharedAliases.PRIMARY_COLUMN.getAlias());
+		Field<String> coalescedPrimaryColumn = coalesceFields(primaryColumns, String.class).coerce(String.class).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 		if (secondaryIds.isEmpty()) {
 			return new SqlIdColumns(coalescedPrimaryColumn);
 		}
-		Field<String> coalescedSecondaryIds = coalesceFields(secondaryIds, String.class).as(SharedAliases.SECONDARY_ID.getAlias());
+		Field<String> coalescedSecondaryIds = coalesceFields(secondaryIds, String.class).coerce(String.class).as(SharedAliases.SECONDARY_ID.getAlias());
 		return new SqlIdColumns(coalescedPrimaryColumn, coalescedSecondaryIds);
 	}
 

@@ -1,13 +1,7 @@
 package com.bakdata.conquery.mode.local;
 
-import static com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil.collectExtraData;
-import static com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil.readDates;
-import static com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil.verifyOnlySingles;
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.name;
-import static org.jooq.impl.DSL.table;
-import static org.jooq.impl.DSL.val;
-import static org.jooq.impl.DSL.when;
+import static com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil.*;
+import static org.jooq.impl.DSL.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil;
@@ -27,7 +22,6 @@ import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import com.bakdata.conquery.util.DateReader;
 import com.bakdata.conquery.util.io.IdColumnUtil;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.jooq.CommonTableExpression;
 import org.jooq.DSLContext;
@@ -39,14 +33,14 @@ import org.jooq.Record3;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.Table;
+import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 public class SqlEntityResolver implements EntityResolver {
 
+	public static final String ROW_INDEX = "rowIndex";
 	private static final Name IS_RESOLVED_ALIAS = name("is_resolved");
 	private static final Name UNRESOLVED_CTE = name("ids_unresolved");
-	public static final String ROW_INDEX = "rowIndex";
-
 	private final IdColumnConfig idColumns;
 	private final DSLContext context;
 	private final DialectBundle dialect;
@@ -151,11 +145,11 @@ public class SqlEntityResolver implements EntityResolver {
 		Field<Integer> rowIndex = field(name(ROW_INDEX), Integer.class);
 		Field<String> externalPrimaryColumn = field(name(SharedAliases.PRIMARY_COLUMN.getAlias()), String.class);
 		Field<String> innerPrimaryColumn = field(name(idColumns.findPrimaryIdColumn().getField()), String.class);
-		Field<Boolean> isResolved = when(innerPrimaryColumn.isNotNull(), val(true))
-				.otherwise(false)
-				.as(IS_RESOLVED_ALIAS);
+		// Would prefer this to be `is not null`, but hana does not support that for fields
+		Field<Boolean> isResolved = case_().when(innerPrimaryColumn.isNull(), inline(false)).otherwise(inline(true)).as(IS_RESOLVED_ALIAS);
 
 		Table<Record> allIdsTable = table(name(idColumns.getTable()));
+
 		SelectConditionStep<Record3<Integer, String, Boolean>> resolveIdsQuery =
 				context.with(unresolvedCte)
 					   .select(rowIndex, externalPrimaryColumn, isResolved)
@@ -187,8 +181,8 @@ public class SqlEntityResolver implements EntityResolver {
 				continue;
 			}
 
-			Field<Integer> rowIndex = val(i).as(ROW_INDEX);
-			Field<String> externalPrimaryColumn = val(resolvedId).as(SharedAliases.PRIMARY_COLUMN.getAlias());
+			Field<Integer> rowIndex = inline(i).as(ROW_INDEX);
+			Field<String> externalPrimaryColumn = inline(resolvedId).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 			Select<Record2<Integer, String>> externalIdSelect = context.select(rowIndex, externalPrimaryColumn)
 																	   // some dialects can't just select static values without FROM clause
 																	   .from(dialect.getFunctionProvider().getNoOpTable());
