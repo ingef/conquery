@@ -1,6 +1,7 @@
 package com.bakdata.conquery.util.search;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockserver.model.HttpRequest.request;
 
 import java.io.IOException;
@@ -620,9 +621,7 @@ public class SolrFilterValueTest {
 	@Order(3)
 	public void checkExactFailsValueTooLong() {
 
-		ConceptsProcessor.ExactFilterValueResult actual = searchProcessor.findExact(FILTER, List.of(String.join("",MANY_VALUES)));
-
-		assertThat(actual).usingRecursiveComparison().isEqualTo(new ConceptsProcessor.ExactFilterValueResult(List.of(),MANY_VALUES));
+		assertThatThrownBy( () -> searchProcessor.findExact(FILTER, List.of(String.join("",MANY_VALUES)))).isInstanceOf(IllegalArgumentException.class);
 	}
 
 	@Test
