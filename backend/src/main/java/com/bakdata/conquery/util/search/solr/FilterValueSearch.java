@@ -269,20 +269,23 @@ public class FilterValueSearch {
 
             int size = query.getBytes(StandardCharsets.UTF_8).length;
 
-            if (size > SOLR_MAX_URI_LENGTH) {
-                // remove last term and finish current batch
-                current.removeLast();
+			if (size <= SOLR_MAX_URI_LENGTH) {
+                // Length still fine, let's move on
+				continue;
+			}
 
-                if (current.isEmpty()) {
-                    // single term too large for query
-                    throw new IllegalArgumentException("Single term is too large for URI. Term: %s".formatted(term));
-                } else {
-                    result.add(current);
-                    current = new ArrayList<>();
-                    current.add(term);
-                }
-            }
-        }
+			// remove last term and finish current batch
+			current.removeLast();
+
+			if (current.isEmpty()) {
+				// single term too large for query
+				throw new IllegalArgumentException("Single term is too large for URI. Term: %s".formatted(term));
+			} else {
+				result.add(current);
+				current = new ArrayList<>();
+				current.add(term);
+			}
+		}
 
         if (!current.isEmpty()) {
             result.add(current);
