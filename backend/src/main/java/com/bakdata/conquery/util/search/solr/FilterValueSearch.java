@@ -277,8 +277,8 @@ public class FilterValueSearch {
                     // single term too large for query
                     throw new IllegalArgumentException("Single term is too large for URI. Term: %s".formatted(term));
                 } else {
-                    result.add(new ArrayList<>(current));
-                    current.clear();
+                    result.add(current);
+                    current = new ArrayList<>();
                     current.add(term);
                 }
             }
