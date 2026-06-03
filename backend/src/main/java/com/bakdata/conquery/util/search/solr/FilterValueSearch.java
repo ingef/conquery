@@ -41,7 +41,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class FilterValueSearch {
 
-    public static final int SOLR_MAX_URI_LENGTH = 7500 /* bytes */ ; // with some buffer, actual limit is 8192
+    public static final int SOLR_MAX_URI_LENGTH = 5000 /* bytes */ ; // with some buffer, actual limit is 8192, but setting this to 6000 already causes failures
 	private final SelectFilter<?> filter;
     private final SolrProcessor processor;
     private final SolrClient solrClient;
@@ -204,14 +204,18 @@ public class FilterValueSearch {
                 // We sort to return value with the highest source priority and get the best description
                 SolrQuery solrQuery = buildSolrQuery(queryString, 0, batchSize, true, false, false);
 
+
                 String decodedQuery = URLDecoder.decode(String.valueOf(solrQuery), StandardCharsets.UTF_8);
                 int queryHash = decodedQuery.hashCode();
                 log.trace("Query [{}] ({}/{}) created: {}", queryHash, chunkIndex, chunkCount, decodedQuery);
 
+                int queryByteLength = solrQuery.toString().getBytes(StandardCharsets.UTF_8).length;
+                log.trace("Query [{}] length in bytes: {}", queryHash, queryByteLength);
+
                 QueryResponse response = solrClient.queryAndStreamResponse(solrQuery, new StreamingResponseCallback() {
                     @Override
                     public void streamSolrDocument(SolrDocument doc) {
-                        log.trace("Received document: {}", doc);
+                        log.trace("Query [{}] received document: {}", queryHash, doc);
                         if (unresolvedMap.isEmpty()) {
                             // Shortcut: everything was resolved
                             return;
