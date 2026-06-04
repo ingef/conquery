@@ -7,6 +7,8 @@ import static org.jooq.impl.SQLDataType.VARCHAR;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -34,7 +36,7 @@ public class ColumnEqualCondition implements CTCondition {
 	@Setter
 	@Getter
 	@NotEmpty
-	private Set<String> values;
+	private Set<@NotBlank String> values;
 	@NotEmpty
 	@Setter
 	@Getter
