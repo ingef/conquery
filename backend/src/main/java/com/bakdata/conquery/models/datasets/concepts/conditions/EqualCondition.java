@@ -50,7 +50,7 @@ public class EqualCondition implements CTCondition {
 	}
 
 	private int fieldLength() {
-		return values.stream().mapToInt(String::length).max().orElse(0);
+		return values.stream().mapToInt(str -> str.getBytes().length).max().orElse(0);
 	}
 
 	@Override

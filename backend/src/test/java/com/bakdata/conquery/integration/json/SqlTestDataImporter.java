@@ -28,40 +28,6 @@ public class SqlTestDataImporter extends WorkerTestDataImporter {
 	private final CsvTableImporter csvTableImporter;
 
 	@Override
-	public void importQueryTestData(StandaloneSupport support, QueryTest test) throws Exception {
-		RequiredData content = test.getContent();
-
-		importSecondaryIds(support, content.getSecondaryIds());
-		importTables(support, content.getTables(), true);
-		importConcepts(support, test.getRawConcepts());
-		importTableContents(support, content.getTables());
-
-		importSearchIndexes(support, test.getSearchIndexes());
-		importIdMapping(support, content);
-		waitUntilDone(support, () -> LoadingUtil.updateMatchingStats(support));
-
-	}
-
-	@Override
-	public void importFormTestData(StandaloneSupport support, FormTest test) throws Exception {
-		RequiredData content = test.getContent();
-
-		importSecondaryIds(support, content.getSecondaryIds());
-		importTables(support, content.getTables(), true);
-		importConcepts(support, test.getRawConcepts());
-		importTableContents(support, content.getTables());
-		importIdMapping(support, content);
-		importPreviousQueries(support, content);
-		waitUntilDone(support, () -> LoadingUtil.updateMatchingStats(support));
-
-	}
-
-	@Override
-	public void importFilterTestData(StandaloneSupport support, FilterTest filterTest) {
-		throw new UnsupportedOperationException("Not implemented yet.");
-	}
-
-	@Override
 	public void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
 		for (RequiredTable table : tables) {
 			csvTableImporter.createTable(table);
