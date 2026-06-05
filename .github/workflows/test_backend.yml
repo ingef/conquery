@@ -8,9 +8,6 @@ on:
       - develop
       - release
   pull_request:
-    paths:
-      - "backend/**"
-      - ".github/workflows/test_backend.yml"
 
 jobs:
   build:
