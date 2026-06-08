@@ -1,6 +1,6 @@
 {
   "type": "QUERY_TEST",
-  "label": "COUNT_AGGREGATOR Test",
+  "label": "AVG_AGGREGATOR Test",
   "expectedCsv": "tests/aggregator/AVG_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

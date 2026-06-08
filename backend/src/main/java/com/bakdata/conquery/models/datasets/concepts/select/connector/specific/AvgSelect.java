@@ -59,7 +59,7 @@ public class AvgSelect extends Select {
 
     @Override
     public ResultType getResultType() {
-        return ResultType.Primitive.INTEGER;
+        return ResultType.resolveResultType(getColumn().resolve().getType());
     }
 
 }
