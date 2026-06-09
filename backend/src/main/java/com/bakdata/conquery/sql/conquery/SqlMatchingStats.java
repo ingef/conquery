@@ -74,8 +74,7 @@ public class SqlMatchingStats {
         ConceptElementId<?> id = element.getId();
 
         while (element != null) {
-            matchingStats.computeIfAbsent(id, (ignored) -> new MatchingStats.Entry())
-                    .addEvents(entity, 1, span);
+            matchingStats.computeIfAbsent(id, (ignored) -> new MatchingStats.Entry()).addEvents(entity, 1, span);
             element = element.getParent();
         }
     }
@@ -84,10 +83,7 @@ public class SqlMatchingStats {
      * collect unique fields used/defined in the expressions.
      */
     private static List<Field<?>> collectAllFields(List<CTCondition.ConceptConditions> conceptConditions) {
-        List<Field<?>> fields = conceptConditions.stream()
-                .flatMap(e -> e.conditions().keySet().stream())
-                .distinct()
-                .toList();
+        List<Field<?>> fields = conceptConditions.stream().flatMap(e -> e.conditions().keySet().stream()).distinct().toList();
         return fields;
     }
 
@@ -184,9 +180,7 @@ public class SqlMatchingStats {
     }
 
     @NotNull
-    private Map<ConceptElementId<?>, MatchingStats.Entry> readStats(
-            TreeConcept concept,
-            SelectJoinStep<? extends Record> selectJoinStep) {
+    private Map<ConceptElementId<?>, MatchingStats.Entry> readStats(TreeConcept concept, SelectJoinStep<? extends Record> selectJoinStep) {
         Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = new HashMap<>();
 
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -235,13 +229,10 @@ public class SqlMatchingStats {
         List<InsertValuesStepN<?>> inserts = new ArrayList<>(rows.size());
 
         for (RowN row : rows) {
-            inserts.add(dsl.insertInto(table(tableName))
-                    .columns(fieldNames)
-                    .values(row));
+            inserts.add(dsl.insertInto(table(tableName)).columns(fieldNames).values(row));
         }
 
-        dsl.batch(inserts)
-                .execute();
+        dsl.batch(inserts).execute();
 
 
         log.trace("DONE inserting into {}", tableName);
@@ -254,9 +245,7 @@ public class SqlMatchingStats {
 
         log.debug("Creating table {} with fields {}", tableName, fields);
 
-        CreateTableElementListStep createTable =
-                dslContext.createTable(tableName)
-                        .columns(fields);
+        CreateTableElementListStep createTable = dslContext.createTable(tableName).columns(fields);
 
         log.info("{}", createTable);
 
@@ -264,16 +253,12 @@ public class SqlMatchingStats {
     }
 
     public ListenableFuture<?> collectMatchingStatsForConcept(TreeConcept concept, ListeningExecutorService executorService) {
-        // The transaction implicitly disables autocommit, which we need for using the cursor
-
         return executorService.submit(() -> {
-            dslContext
-                    .connection(cfg -> {
-                                SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
-                                Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = readStats(concept, matchingStatsStatement);
-                                assignStats(matchingStats);
-                            }
-                    );
+            dslContext.connection(cfg -> {
+                SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
+                Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = readStats(concept, matchingStatsStatement);
+                assignStats(matchingStats);
+            });
         });
 
     }
@@ -298,11 +283,11 @@ public class SqlMatchingStats {
                                     // The infinities are intentionally swapped
                                     least(positiveInfinity, validityDates).as(LB_FIELD),
                                     greatest(negativeInfinity, validityDates).as(UB_FIELD),
-                                    CONCEPT_ID_FIELD
-                            )
+                                    CONCEPT_ID_FIELD)
                             .from(table(name(connector.getResolvedTable().getName())))
                             .leftJoin(idsTableName(concept.getName()))
-                            .on(getJoinConditions(concept, context)) // join onto the concept-ids table to assign the most specific id.
+                            // join onto the concept-ids table to assign the most specific id.
+                            .on(getJoinConditions(concept, context))
                             .where(connector.getCondition() != null ? connector.getCondition().convertToSqlCondition(context).condition() : noCondition());
 
             connectorTables.add(connectorTable);
@@ -311,16 +296,9 @@ public class SqlMatchingStats {
         Name ct_name = name("connector_tables");
         CommonTableExpression<?> unioned = ct_name.as(unionSelects(connectorTables));
 
-        SelectJoinStep<Record4<Integer, String, Date, Date>> records =
-                dslContext.with(unioned)
-                        .select(
-                                unioned.field(CONCEPT_ID_FIELD),
-                                PID_FIELD,
-                                // The infinities are intentionally swapped
-                                nullif(unioned.field(LB_FIELD), positiveInfinity).as(LB_FIELD),
-                                nullif(unioned.field(UB_FIELD), negativeInfinity).as(UB_FIELD)
-                        )
-                        .from(ct_name);
+        SelectJoinStep<Record4<Integer, String, Date, Date>> records = dslContext.with(unioned).select(unioned.field(CONCEPT_ID_FIELD), PID_FIELD,
+                // The infinities are intentionally swapped
+                nullif(unioned.field(LB_FIELD), positiveInfinity).as(LB_FIELD), nullif(unioned.field(UB_FIELD), negativeInfinity).as(UB_FIELD)).from(ct_name);
 
         return records;
     }
@@ -329,8 +307,7 @@ public class SqlMatchingStats {
         Name tableName = idsTableName(concept.getName());
         log.debug("Trying to delete id-table {}", tableName);
         try {
-            dslContext.dropTable(tableName)
-                    .execute();
+            dslContext.dropTable(tableName).execute();
         } catch (DataAccessException exception) {
             // Likely it doesn't exist. Some DBMS just don't support drop-IfExists so this is the next best thing :^)
             log.trace("Failed to drop table {}", tableName, exception);
@@ -359,7 +336,6 @@ public class SqlMatchingStats {
         Condition reduced = conditions.stream().reduce(noCondition(), Condition::and);
 
         if (reduced.equals(noCondition())) {
-            //TODO not sure why this happens
             return context.getFunctionProvider().unconditionalJoinCondition();
         }
 
@@ -386,17 +362,15 @@ public class SqlMatchingStats {
 
             // Group by params, find deepest params. This ensures we map to the most-specific element.
             for (List<Param<?>> params : flattened) {
-                byDepth.compute(params,
-                        (__, prior) -> {
-                            if (prior == null || prior.getDepth() < elt.getDepth()) {
-                                return elt;
-                            }
-                            if (prior.getDepth() == elt.getDepth() && !prior.equals(elt)) {
-                                log.warn("Nodes {} and {} are mapped by the same params {}", prior.getId(), elt.getId(), params);
-                            }
-                            return prior;
-                        }
-                );
+                byDepth.compute(params, (__, prior) -> {
+                    if (prior == null || prior.getDepth() < elt.getDepth()) {
+                        return elt;
+                    }
+                    if (prior.getDepth() == elt.getDepth() && !prior.equals(elt)) {
+                        log.warn("Nodes {} and {} are mapped by the same params {}", prior.getId(), elt.getId(), params);
+                    }
+                    return prior;
+                });
             }
         }
 
@@ -422,9 +396,8 @@ public class SqlMatchingStats {
         final CTCondition.ConceptConditions forCurrent = switch (current) {
             case TreeConcept concept -> new CTCondition.ConceptConditions(concept, Collections.emptyMap());
             // concept elements implicitly inherit the conditions of its parents
-            case ConceptTreeChild child -> child.getCondition()
-                    .buildExpression(context, current)
-                    .and(parentConceptCondition);
+            case ConceptTreeChild child ->
+                    child.getCondition().buildExpression(context, current).and(parentConceptCondition);
             case null, default -> throw new IllegalStateException();
         };
 

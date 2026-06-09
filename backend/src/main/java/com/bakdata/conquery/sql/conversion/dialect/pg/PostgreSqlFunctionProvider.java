@@ -60,11 +60,6 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
         return ANY_CHAR_REGEX;
     }
 
-    @Override
-    public Table<? extends Record> getNoOpTable() {
-        return noTable();
-    }
-
     @NotNull
     @Override
     public Collection<? extends OrderField<?>> orderByValidityDates(Function<Field<?>, ? extends SortField<?>> ordering, List<Field<?>> validityDateFields) {
@@ -184,10 +179,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
         return ColumnDateRange.of(when(startField.isNull().and(endField.isNull()), emptyDateRange()).otherwise(this.daterange(withOpenLowerEnd, withOpenUpperEnd, CLOSED_RANGE)));
     }
 
-    @Override
-    public Condition unconditionalJoinCondition() {
-        return noCondition();
-    }
+
 
     @Override
     public ColumnDateRange allRangeIf(Condition condition) {
@@ -250,6 +242,8 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
         Field<Date> end = upper(daterange);
         return ColumnDateRange.of(start, end);
     }
+
+
 
     @Override
     public QueryStep unnestDaterange(ColumnDateRange nested, QueryStep predecessor, String cteName) {
@@ -337,6 +331,16 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
     @Override
     public Condition orAgg(Field<Boolean> field) {
         return condition(boolOr(field));
+    }
+
+    @Override
+    public Field<Date> lower(Field<?> daterange) {
+        return function("lower", Date.class, daterange);
+    }
+
+    @Override
+    public Field<Date> upper(Field<?> daterange) {
+        return function("upper", Date.class, daterange);
     }
 
     private ColumnDateRange ensureIsSingleColumnRange(ColumnDateRange daterange) {
