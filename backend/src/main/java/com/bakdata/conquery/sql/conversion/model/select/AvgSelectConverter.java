@@ -1,15 +1,36 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.AvgFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.AvgSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.model.NumberMapUtil;
+import com.bakdata.conquery.sql.conversion.model.aggregator.SqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.bakdata.conquery.sql.conversion.model.filter.RangeCondition;
+import java.math.BigDecimal;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-import java.math.BigDecimal;
-
+/**
+ * Next steps:
+ * - See the new test case in src/test/resources/tests/aggregator/AVG_AGGREGATOR/filter/AVG_FILTER.test.json. Implement
+ * a conversion for the {@link AvgFilter}. Therefore, turn this {@link SelectConverter} into a {@link SqlAggregator}
+ * and implement {@link FilterConverter}.
+ * <p>
+ * Hints:
+ * - The filter is applied onto the aggregated avg value. Have a look at the select converter test case you already
+ * implemented, and at the filter value of the new test case. Every row, whose avg value is not in the applied
+ * filter range will be filtered.
+ * - Implementation is similar to COUNT/SUM filter conversion.
+ * - You do not need to implement FilterConverter::convertForTableExport(). Throw an {@link UnsupportedOperationException}.
+ * <p>
+ * Bonus:
+ * - After finishing the implementation, check if we actually need individual {@link RangeCondition} classes when
+ * converting filters or can use one generic class for this purpose. In the future, I'd like to reduce complexity in
+ * this repository, and getting rid of superfluous classes would be a first step.
+ */
 public class AvgSelectConverter implements SelectConverter<AvgSelect> {
 
     @Override
