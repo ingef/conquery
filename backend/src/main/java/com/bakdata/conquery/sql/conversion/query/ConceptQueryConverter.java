@@ -96,8 +96,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 			// TODO i think this is unreachable?
 			return preFinalSelects.withValidityDate(functionProvider.allRange());
 		}
-		Field<?> validityDateStringAggregation = functionProvider.dateRangeAggregation(preFinalSelects.getValidityDate().get());
-		return preFinalSelects.withValidityDate(ColumnDateRange.of(validityDateStringAggregation).as(SharedAliases.DATES_COLUMN.getAlias()));
+        return preFinalSelects.withValidityDate(preFinalSelects.getValidityDate().get().as(SharedAliases.DATES_COLUMN.getAlias()));
 	}
 
 	private List<Field<?>> getFinalGroupBySelects(Selects preFinalSelects) {

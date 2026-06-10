@@ -8,6 +8,7 @@ import io.dropwizard.validation.ValidationMethod;
 
 public interface DaterangeSelectOrFilter {
 
+	//TODO consider dropping this and require single column to just be same in start and end?
 	ColumnId getColumn();
 
 	ColumnId getStartColumn();

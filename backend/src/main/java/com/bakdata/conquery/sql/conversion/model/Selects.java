@@ -28,7 +28,7 @@ public class Selects {
 	public Selects toFinalRepresentation() {
 		return builder()
 				.ids(this.ids)
-				.validityDate(this.validityDate)
+				.validityDate(this.validityDate) //TODO map with
 				.stratificationDate(this.stratificationDate)
 				.sqlSelects(this.sqlSelects.stream().map(SqlSelect::toFinalRepresentation).toList())
 				.build();

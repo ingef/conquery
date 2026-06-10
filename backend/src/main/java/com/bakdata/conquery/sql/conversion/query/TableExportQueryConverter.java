@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.query;
 import static org.jooq.impl.DSL.*;
 import static org.jooq.impl.DSL.field;
 
+import java.sql.Date;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -119,9 +120,9 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 			return Optional.of(functionProvider.emptyColumnDateRange());
 		}
 
-		final Field<?> validityDateField = functionProvider.dateRangeToField(functionProvider.forValidityDate(table.findValidityDate()));
+		final ColumnDateRange validityDateField = functionProvider.forValidityDate(table.findValidityDate());
 
-		return Optional.of(ColumnDateRange.of(validityDateField).asValidityDateRange(alias));
+		return Optional.of(validityDateField.asValidityDateRange(alias));
 	}
 
 	private static List<FieldWrapper<?>> initializeFields(CQTable cqTable, Map<ColumnId, Integer> positions) {
