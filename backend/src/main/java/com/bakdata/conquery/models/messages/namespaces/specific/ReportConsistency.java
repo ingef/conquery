@@ -14,9 +14,7 @@ import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.google.common.collect.Sets;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NonNull;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -26,13 +24,16 @@ import lombok.extern.slf4j.Slf4j;
  */
 @CPSType(id = "REPORT_CONSISTENCY", base = NamespacedMessage.class)
 @Data
+@EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
 @Slf4j
 public class ReportConsistency extends NamespaceMessage {
 
 	private WorkerId workerId;
 	// Set default here because an empty set send by the worker is not set (it is null) after deserialization
+	@ToString.Exclude
 	private Set<ImportId> workerImports = Set.of();
+	@ToString.Exclude
 	private Set<BucketId> workerBuckets = Set.of();
 
 
