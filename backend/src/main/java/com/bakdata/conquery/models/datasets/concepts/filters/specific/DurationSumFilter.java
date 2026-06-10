@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
@@ -37,6 +39,7 @@ public class DurationSumFilter extends Filter<Range.LongRange> implements Datera
 	@Valid
 	@Nullable
 	private List<ColumnId> distinctBy;
+	@JsonAlias("dateRangeColumn")
 	@Nullable
 	private ColumnId column;
 	@Nullable
