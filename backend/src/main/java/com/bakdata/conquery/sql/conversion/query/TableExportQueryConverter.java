@@ -3,11 +3,7 @@ package com.bakdata.conquery.sql.conversion.query;
 import static org.jooq.impl.DSL.*;
 import static org.jooq.impl.DSL.field;
 
-import java.sql.Date;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -217,7 +213,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 				List.of(convertedPrerequisite),
 				context.isNegation()
 		);
-		final Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables);
+		final Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables, context.getFunctionProvider()); //TODO
 
 		return context.withFinalQuery(new SqlQuery(selectQuery, tableExportQuery.getResultInfos()));
 	}

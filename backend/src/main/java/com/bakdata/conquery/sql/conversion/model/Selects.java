@@ -1,17 +1,19 @@
 package com.bakdata.conquery.sql.conversion.model;
 
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 import org.jooq.Field;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Value
 @Builder(toBuilder = true)
@@ -25,25 +27,26 @@ public class Selects {
 	@Singular
 	List<SqlSelect> sqlSelects;
 
-	public Selects toFinalRepresentation() {
-		return builder()
-				.ids(this.ids)
-				.validityDate(this.validityDate) //TODO map with
-				.stratificationDate(this.stratificationDate)
-				.sqlSelects(this.sqlSelects.stream().map(SqlSelect::toFinalRepresentation).toList())
-				.build();
-	}
+	public List<Field<?>> toFinalRepresentation(SqlFunctionProvider functionProvider) {
+		final Optional<Field<?>> validityDateRendered = getValidityDate().map(vdd -> functionProvider.dateRangeAggregation(vdd).as(SharedAliases.DATES_COLUMN.getAlias()));
+		final Optional<Field<?>> stratificationDateRendered = getStratificationDate().map(vdd -> functionProvider.dateRangeToField(vdd).as(SharedAliases.STRATIFICATION_BOUNDS.getAlias()));
 
-	public Selects withValidityDate(ColumnDateRange validityDate) {
-		return this.toBuilder()
-				   .validityDate(Optional.of(validityDate))
-				   .build();
+		return Stream.of(
+						getIds().toFields().stream(),
+						stratificationDateRendered.stream(),
+						validityDateRendered.stream(),
+						getSqlSelects().stream().flatMap(sqlSelect -> sqlSelect.toFields().stream())
+				)
+				.flatMap(Function.identity())
+				.map(select -> (Field<?>) select)
+				.distinct()
+				.collect(Collectors.toList());
 	}
 
 	public Selects blockValidityDate() {
 		return this.toBuilder()
-				   .validityDate(Optional.empty())
-				   .build();
+				.validityDate(Optional.empty())
+				.build();
 	}
 
 	public Selects qualify(String qualifier) {
@@ -51,8 +54,8 @@ public class Selects {
 		List<SqlSelect> sqlSelects = this.sqlSelects.stream().map(sqlSelect -> sqlSelect.qualify(qualifier)).collect(Collectors.toList());
 
 		SelectsBuilder builder = Selects.builder()
-										.ids(ids)
-										.sqlSelects(sqlSelects);
+				.ids(ids)
+				.sqlSelects(sqlSelects);
 
 		if (this.validityDate.isPresent()) {
 			builder = builder.validityDate(this.validityDate.map(_validityDate -> _validityDate.qualify(qualifier)));
@@ -67,15 +70,15 @@ public class Selects {
 
 	public List<Field<?>> all() {
 		return Stream.of(
-							 this.ids.toFields().stream(),
-							 this.stratificationDate.stream().flatMap(range -> range.toFields().stream()),
-							 this.validityDate.stream().flatMap(range -> range.toFields().stream()),
-							 this.sqlSelects.stream().flatMap(sqlSelect -> sqlSelect.toFields().stream())
-					 )
-					 .flatMap(Function.identity())
-					 .map(select -> (Field<?>) select)
-					 .distinct()
-					 .collect(Collectors.toList());
+						this.ids.toFields().stream(),
+						this.stratificationDate.stream().flatMap(range -> range.toFields().stream()),
+						this.validityDate.stream().flatMap(range -> range.toFields().stream()),
+						this.sqlSelects.stream().flatMap(sqlSelect -> sqlSelect.toFields().stream())
+				)
+				.flatMap(Function.identity())
+				.map(select -> (Field<?>) select)
+				.distinct()
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -83,14 +86,14 @@ public class Selects {
 	 */
 	public List<Field<?>> nonExplicitSelects() {
 		return Stream.of(
-							this.ids.toFields().stream(),
-							this.stratificationDate.stream().flatMap(range -> range.toFields().stream()),
-							this.validityDate.stream().flatMap(range -> range.toFields().stream())
-					 )
-					 .flatMap(Function.identity())
-					 .map(select -> (Field<?>) select)
-					 .distinct()
-					 .collect(Collectors.toList());
+						this.ids.toFields().stream(),
+						this.stratificationDate.stream().flatMap(range -> range.toFields().stream()),
+						this.validityDate.stream().flatMap(range -> range.toFields().stream())
+				)
+				.flatMap(Function.identity())
+				.map(select -> (Field<?>) select)
+				.distinct()
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -98,9 +101,9 @@ public class Selects {
 	 */
 	public List<Field<?>> explicitSelects() {
 		return this.sqlSelects.stream()
-							  .flatMap(sqlSelect -> sqlSelect.toFields().stream())
-							  .distinct()
-							  .collect(Collectors.toList());
+				.flatMap(sqlSelect -> sqlSelect.toFields().stream())
+				.distinct()
+				.collect(Collectors.toList());
 	}
 
 }

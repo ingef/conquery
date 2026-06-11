@@ -3,13 +3,9 @@ package com.bakdata.conquery.sql.conversion.model;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.jooq.CommonTableExpression;
-import org.jooq.DSLContext;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.Select;
-import org.jooq.SelectConditionStep;
-import org.jooq.SelectHavingStep;
-import org.jooq.SelectSelectStep;
 import org.jooq.impl.DSL;
 
 /**
@@ -26,10 +22,10 @@ public class QueryStepTransformer {
     /**
      * Converts a given {@link QueryStep} into an executable SELECT statement.
      */
-    public Select<Record> toSelectQuery(QueryStep queryStep) {
+    public Select<Record> toSelectQuery(QueryStep queryStep, SqlFunctionProvider functionProvider) {
 
         SelectConditionStep<Record> queryBase = this.dslContext.with(constructPredecessorCteList(queryStep))
-                .select(queryStep.getSelects().all())
+                .select(queryStep.getSelects().toFinalRepresentation(functionProvider))
                 .from(queryStep.getFromTables())
                 .where(queryStep.getConditions());
 

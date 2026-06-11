@@ -223,7 +223,7 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
     @Override
     public ColumnDateRange forArbitraryDateRange(DaterangeSelectOrFilter daterangeSelectOrFilter) {
         String tableName = daterangeSelectOrFilter.getTable().getName();
-        if (!daterangeSelectOrFilter.isSingleColumnDaterange()) {
+        if (daterangeSelectOrFilter.isSingleColumnDaterange()) {
             Column column = daterangeSelectOrFilter.getColumn().resolve();
             return ofStartAndEnd(tableName, column, column);
         } else {

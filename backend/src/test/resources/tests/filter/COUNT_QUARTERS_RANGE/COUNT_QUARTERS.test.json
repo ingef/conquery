@@ -5,7 +5,7 @@
     "isEnabled": true,
     "comment": "Special test case for dateRanges / PG",
     "supportedDialects": [
-      "POSTGRESQL"
+
     ]
   },
   "expectedCsv": "tests/filter/COUNT_QUARTERS_RANGE/expected.csv",

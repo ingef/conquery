@@ -5,7 +5,7 @@
     "isEnabled": false,
     "comment": "Distinct not yet implemented.",
     "supportedDialects": [
-      "POSTGRESQL"
+
     ]
   },
   "expectedCsv": "tests/filter/DURATION_SUM_DISTINCT_FILTER/expected.csv",

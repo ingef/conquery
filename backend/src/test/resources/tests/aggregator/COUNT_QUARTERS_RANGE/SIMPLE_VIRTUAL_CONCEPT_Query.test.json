@@ -5,7 +5,7 @@
     "isEnabled": true,
     "comment": "Special case for PG only.",
     "supportedDialects": [
-      "POSTGRESQL"
+
     ]
   },
   "expectedCsv": "tests/aggregator/COUNT_QUARTERS_RANGE/expected.csv",
