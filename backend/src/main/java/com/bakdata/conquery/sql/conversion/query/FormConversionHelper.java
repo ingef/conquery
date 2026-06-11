@@ -47,7 +47,7 @@ public class FormConversionHelper {
 		Selects.SelectsBuilder selects = Selects.builder()
 				.ids(ids)
 				.validityDate(preFinalSelects.getValidityDate())
-				.stratificationDate(preFinalSelects.getStratificationDate());
+				.stratificationDate(stratificationSelects.getStratificationDate());
 
 		// relative forms have FeatureGroup information after the stratification date and before all other selects
 		if (formType.equals(FormType.RELATIVE)) {
