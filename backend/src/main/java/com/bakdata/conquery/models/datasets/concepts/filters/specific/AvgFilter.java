@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.bakdata.conquery.sql.conversion.model.aggregator.AvgSqlAggregator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,8 +64,7 @@ public class AvgFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
     @Override
     public FilterConverter<? extends AvgFilter<RANGE>, RANGE> createConverter() {
-        // TODO use new AvgSqlAggregator here
-        return null;
+        return new AvgSqlAggregator<>();
     }
 
     @JsonIgnore

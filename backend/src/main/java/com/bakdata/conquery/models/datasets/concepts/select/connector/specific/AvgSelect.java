@@ -8,7 +8,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.conversion.model.select.AvgSelectConverter;
+import com.bakdata.conquery.sql.conversion.model.aggregator.AvgSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import jakarta.validation.constraints.NotNull;
@@ -49,7 +49,7 @@ public class AvgSelect extends Select {
 
     @Override
     public SelectConverter<AvgSelect> createConverter() {
-        return new AvgSelectConverter();
+        return new AvgSqlAggregator();
     }
 
     @Override

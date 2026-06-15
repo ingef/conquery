@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.model.select;
+package com.bakdata.conquery.sql.conversion.model.aggregator;
 
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -12,6 +12,7 @@ import com.bakdata.conquery.sql.conversion.model.filter.*;
 
 import java.math.BigDecimal;
 
+import com.bakdata.conquery.sql.conversion.model.select.*;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -34,9 +35,8 @@ import org.jooq.impl.DSL;
  * converting filters or can use one generic class for this purpose. In the future, I'd like to reduce complexity in
  * this repository, and getting rid of superfluous classes would be a first step.
  */
-public class AvgSelectConverter<RANGE extends IRange<? extends Number, ?>> implements
-// Move to a different package?
-//        SqlAggregator,
+public class AvgSqlAggregator<RANGE extends IRange<? extends Number, ?>> implements
+        SqlAggregator,
         SelectConverter<AvgSelect>,
         FilterConverter<AvgFilter<RANGE>, RANGE> {
 
