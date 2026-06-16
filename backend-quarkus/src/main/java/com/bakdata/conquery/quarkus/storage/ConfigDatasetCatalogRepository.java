@@ -28,6 +28,9 @@ public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository 
 	@Inject
 	TablesRuntimeConfig tablesConfig;
 
+	@Inject
+	DatasetMetadataFolderLoader metadataFolderLoader;
+
 	private Map<String, DatasetRecord> datasetsById = Map.of();
 	private Map<String, Map<String, ConceptRecord>> conceptsByDatasetId = Map.of();
 	private Map<String, Map<String, TableRecord>> tablesByDatasetId = Map.of();
@@ -38,26 +41,31 @@ public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository 
 		Map<String, Map<String, ConceptRecord>> conceptDatasetIndex = new LinkedHashMap<>();
 		Map<String, Map<String, TableRecord>> tableDatasetIndex = new LinkedHashMap<>();
 
-		datasetsConfig.datasets().forEach(dataset -> datasetIndex.put(dataset.id(), new DatasetRecord(dataset.id(), dataset.label())));
-		conceptsConfig.concepts().forEach(concept -> {
+		datasetsConfig.datasets().orElse(List.of()).forEach(dataset -> datasetIndex.put(dataset.id(), new DatasetRecord(dataset.id(), dataset.label())));
+		conceptsConfig.concepts().orElse(List.of()).forEach(concept -> {
 			validateScopedIdBelongsToDataset(concept.id(), concept.dataset(), "concept");
 			ConceptRecord record = new ConceptRecord(concept.id(), concept.label());
 			conceptDatasetIndex.computeIfAbsent(concept.dataset(), ignored -> new LinkedHashMap<>()).put(record.id(), record);
 		});
-		tablesConfig.tables().forEach(table -> {
+		tablesConfig.tables().orElse(List.of()).forEach(table -> {
 			validateScopedIdBelongsToDataset(table.id(), table.dataset(), "table");
 			TableRecord record = new TableRecord(
-				table.id(),
-				table.label(),
-				table.columns().stream().map(column -> new ColumnRecord(
-						column.id(),
-						column.label(),
-						parseColumnType(column.type()),
-						blankToNull(column.secondaryId())
-				)).toList(),
+					table.id(),
+					table.label(),
+					table.columns().stream().map(column -> new ColumnRecord(
+							column.id(),
+							column.label(),
+							parseColumnType(column.type()),
+							blankToNull(column.secondaryId())
+					)).toList(),
 					blankToNull(table.primaryColumn())
 			);
 			tableDatasetIndex.computeIfAbsent(table.dataset(), ignored -> new LinkedHashMap<>()).put(record.id(), record);
+		});
+		metadataFolderLoader.loadConfiguredDatasets().forEach(dataset -> {
+			datasetIndex.put(dataset.dataset().id(), dataset.dataset());
+			conceptDatasetIndex.put(dataset.dataset().id(), new LinkedHashMap<>(dataset.conceptsById()));
+			tableDatasetIndex.put(dataset.dataset().id(), new LinkedHashMap<>(dataset.tablesById()));
 		});
 
 		datasetsById = java.util.Collections.unmodifiableMap(new LinkedHashMap<>(datasetIndex));

@@ -19,6 +19,20 @@ mvn -pl backend-quarkus quarkus:dev
 
 Default port is `8090`.
 
+### Ingest generated dataset metadata folders at startup
+
+You can mount generated metadata folders (for example `.../gen/demo`) into the container and let the backend ingest
+them during boot:
+
+```properties
+conquery.metadata.enabled=true
+conquery.metadata.root-path=/data/gen
+conquery.metadata.folders[0]=demo
+```
+
+This reads `conceptTrees/*.concept.json` and `tables/*.table.json` from each configured folder and loads them as
+dataset metadata.
+
 ## Migration strategy
 
 1. Keep `backend` (Dropwizard) running while we port feature slices.

@@ -2,11 +2,12 @@ package com.bakdata.conquery.quarkus.storage.xodus;
 
 import java.nio.file.Path;
 
+import com.bakdata.conquery.quarkus.api.config.StorageRuntimeConfig;
 import io.quarkus.arc.properties.IfBuildProperty;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import jakarta.inject.Inject;
 
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
@@ -15,14 +16,14 @@ import jetbrains.exodus.env.Environments;
 @IfBuildProperty(name = "conquery.storage.backend", stringValue = "XODUS")
 public class XodusEnvironmentProvider {
 
-	@ConfigProperty(name = "conquery.storage.xodus.path", defaultValue = "storage/quarkus-meta")
-	String xodusPath;
+	@Inject
+	StorageRuntimeConfig storageRuntimeConfig;
 
 	private Environment environment;
 
 	@PostConstruct
 	void init() {
-		environment = Environments.newInstance(Path.of(xodusPath).toFile());
+		environment = Environments.newInstance(Path.of(storageRuntimeConfig.xodus().path()).toFile());
 	}
 
 	@PreDestroy

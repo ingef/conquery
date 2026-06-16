@@ -9,10 +9,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.bakdata.conquery.quarkus.api.config.StorageRuntimeConfig;
 import io.quarkus.arc.properties.IfBuildProperty;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import jakarta.inject.Inject;
 
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
@@ -23,8 +24,8 @@ public class XodusDatasetEnvironmentProvider {
 
 	private static final String DATASET_PREFIX = "dataset_";
 
-	@ConfigProperty(name = "conquery.storage.xodus.path", defaultValue = "storage/quarkus-meta")
-	String xodusPath;
+	@Inject
+	StorageRuntimeConfig storageRuntimeConfig;
 
 	private final Map<String, Environment> environmentsByDatasetId = new ConcurrentHashMap<>();
 
@@ -80,7 +81,7 @@ public class XodusDatasetEnvironmentProvider {
 	}
 
 	private Path datasetBasePath() {
-		return Path.of(xodusPath, "datasets");
+		return Path.of(storageRuntimeConfig.xodus().path(), "datasets");
 	}
 
 	private Path datasetPath(String datasetId) {

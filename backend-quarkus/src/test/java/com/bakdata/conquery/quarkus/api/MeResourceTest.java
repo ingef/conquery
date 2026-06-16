@@ -25,7 +25,7 @@ class MeResourceTest {
 
 	@Test
 	@TestSecurity(user = "testUser")
-	void authneticatedMeEndpointRespondsWithExpectedShape() {
+	void authenticatedMeEndpointRespondsWithExpectedShape() {
 		given()
 				.when().get("/api/me")
 				.then()
