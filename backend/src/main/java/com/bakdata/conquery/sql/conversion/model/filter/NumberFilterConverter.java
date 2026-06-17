@@ -28,7 +28,7 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 
 		Field<? extends Number> eventFilterCtePredecessor = rootSelect.qualify(tables.getPredecessor(ConceptCteStep.EVENT_FILTER)).select();
 		IRange<? extends Number, ?> filterValue = filterContext.getValue();
-		NumberCondition condition = new NumberCondition(eventFilterCtePredecessor, filterValue);
+        RangeCondition condition = new RangeCondition(eventFilterCtePredecessor, filterValue);
 
 		ConnectorSqlSelects selects = ConnectorSqlSelects.builder().preprocessingSelects(List.of(rootSelect)).build();
 
@@ -47,6 +47,6 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 		Field<? extends Number> field = DSL.field(DSL.name(tableName, columnName), numberClass);
 		IRange<? extends Number, ?> range = filterContext.getValue();
 
-		return new NumberCondition(field, range).condition();
+		return new RangeCondition(field, range).condition();
 	}
 }

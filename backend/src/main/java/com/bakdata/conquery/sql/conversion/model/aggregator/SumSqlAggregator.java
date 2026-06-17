@@ -21,10 +21,7 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
+import com.bakdata.conquery.sql.conversion.model.filter.*;
 import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
@@ -298,7 +295,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		}
 
 		Field<BigDecimal> qualifiedSumSelect = sumAggregationSelect.getGroupBy().qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER)).select();
-		SumCondition sumCondition = new SumCondition(qualifiedSumSelect, filterContext.getValue());
+		RangeCondition sumCondition = new RangeCondition(qualifiedSumSelect, filterContext.getValue());
 		WhereClauses whereClauses = WhereClauses.builder()
 												.groupFilter(sumCondition)
 												.build();
@@ -318,14 +315,14 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 
 		ColumnId subtractColumn = filter.getSubtractColumn();
 		if (subtractColumn == null) {
-			return new SumCondition(field, filterContext.getValue()).condition();
+			return new RangeCondition(field, filterContext.getValue()).condition();
 		}
 
 		Column resolvedSubtractionColumn = subtractColumn.resolve();
 		String subtractColumnName = resolvedSubtractionColumn.getName();
 		String subtractTableName = resolvedSubtractionColumn.getTable().getName();
 		Field<? extends Number> subtractField = DSL.field(DSL.name(subtractTableName, subtractColumnName), numberClass);
-		return new SumCondition(field.minus(subtractField), filterContext.getValue()).condition();
+		return new RangeCondition(field.minus(subtractField), filterContext.getValue()).condition();
 	}
 
 	@Getter

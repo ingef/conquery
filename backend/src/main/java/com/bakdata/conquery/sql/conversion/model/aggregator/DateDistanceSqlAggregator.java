@@ -18,11 +18,7 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
-import com.bakdata.conquery.sql.conversion.model.filter.DateDistanceCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
+import com.bakdata.conquery.sql.conversion.model.filter.*;
 import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
@@ -68,7 +64,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 
 		String eventFilterCteName = tables.getPredecessor(ConceptCteStep.EVENT_FILTER);
 		Field<Integer> qualifiedDateDistanceSelect = dateDistanceSelect.qualify(eventFilterCteName).select();
-		WhereCondition dateDistanceCondition = new DateDistanceCondition(qualifiedDateDistanceSelect, filterContext.getValue());
+		WhereCondition dateDistanceCondition = new RangeCondition(qualifiedDateDistanceSelect, filterContext.getValue());
 
 		WhereClauses whereClauses = WhereClauses.builder().eventFilter(dateDistanceCondition).build();
 
@@ -86,7 +82,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 		Field<Date> endDate = getEndDate(filterContext.getConversionContext());
 
 		Field<Integer> dateDistance = filterContext.getFunctionProvider().dateDistance(filter.getTimeUnit(), startDateField, endDate);
-		return new DateDistanceCondition(dateDistance, filterContext.getValue()).condition();
+		return new RangeCondition(dateDistance, filterContext.getValue()).condition();
 	}
 
 	private FieldWrapper<Integer> createDateDistanceSelect(

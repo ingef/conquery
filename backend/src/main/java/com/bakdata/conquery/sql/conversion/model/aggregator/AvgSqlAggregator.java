@@ -100,8 +100,7 @@ public class AvgSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
         // TODO: Use the correct type
         Field<?> qualifiedAvgSelect = avgGroupBy.qualify(aggSelectPredecessor).select();
 
-        // TODO: Replace CountCondition
-        CountCondition condition = new CountCondition(qualifiedAvgSelect, filterContext.getValue());
+        RangeCondition condition = new RangeCondition(qualifiedAvgSelect, filterContext.getValue());
 
         WhereClauses whereClauses = WhereClauses.builder()
                 .groupFilter(condition)

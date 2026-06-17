@@ -14,10 +14,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.filter.DateDistanceCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
+import com.bakdata.conquery.sql.conversion.model.filter.*;
 import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.DaterangeSelectUtil;
 import com.bakdata.conquery.sql.conversion.model.select.DaterangeSelectUtil.AggregationFunction;
@@ -39,7 +36,7 @@ public class DurationSumSqlAggregator implements SelectConverter<DurationSumSele
 		return DaterangeSelectUtil.createForFilter(
 				filter,
 				durationSumSelectFunction(),
-				(aggregationField -> new SumCondition((Field<? extends Number>) aggregationField, context.getValue())),
+				(aggregationField -> new RangeCondition((Field<? extends Number>) aggregationField, context.getValue())),
 				context);
 	}
 
@@ -65,7 +62,7 @@ public class DurationSumSqlAggregator implements SelectConverter<DurationSumSele
 		}
 		Field<Integer> dateDistance = functionProvider.dateDistance(ChronoUnit.DAYS, startDateField, endDateField);
 		// no need so compute a sum here - the duration sum of a single row is simply the date distance
-		return new DateDistanceCondition(dateDistance, filterContext.getValue()).condition();
+		return new RangeCondition(dateDistance, filterContext.getValue()).condition();
 	}
 
 	private static AggregationFunction durationSumSelectFunction() {

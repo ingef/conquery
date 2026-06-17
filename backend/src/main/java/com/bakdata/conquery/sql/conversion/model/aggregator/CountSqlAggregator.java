@@ -7,10 +7,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.C
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
+import com.bakdata.conquery.sql.conversion.model.filter.*;
 import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
@@ -77,7 +74,7 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 														 .build();
 
 		Field<Integer> qualifiedCountSelect = countAggregationSelect.getGroupBy().qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER)).select();
-		CountCondition countCondition = new CountCondition(qualifiedCountSelect, filterContext.getValue());
+		RangeCondition countCondition = new RangeCondition(qualifiedCountSelect, filterContext.getValue());
 		WhereClauses whereClauses = WhereClauses.builder()
 												.groupFilter(countCondition)
 												.build();
@@ -88,7 +85,7 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 	@Override
 	public Condition convertForTableExport(CountFilter countFilter, FilterContext<Range.LongRange> filterContext) {
 		Param<Integer> field = DSL.inline(1); // no grouping, count is always 1 per row
-		return new CountCondition(field, filterContext.getValue()).condition();
+		return new RangeCondition(field, filterContext.getValue()).condition();
 	}
 
 
