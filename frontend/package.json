@@ -87,7 +87,7 @@
     "vite": "^6.4.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.23.2",
+    "@babel/core": "^7.29.6",
     "@storybook/addon-actions": "8.6.12",
     "@storybook/addon-essentials": "8.6.12",
     "@storybook/addon-interactions": "8.6.12",
