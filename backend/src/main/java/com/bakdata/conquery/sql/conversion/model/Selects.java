@@ -27,8 +27,13 @@ public class Selects {
 	@Singular
 	List<SqlSelect> sqlSelects;
 
-	public List<Field<?>> toFinalRepresentation(SqlFunctionProvider functionProvider) {
-		final Optional<Field<?>> validityDateRendered = getValidityDate().map(vdd -> functionProvider.dateRangeAggregation(vdd).as(SharedAliases.DATES_COLUMN.getAlias()));
+	public List<Field<?>> toFinalRepresentation(SqlFunctionProvider functionProvider, boolean forTableExport) {
+
+		final Optional<Field<?>> validityDateRendered =
+				!forTableExport
+						? getValidityDate().map(vdd -> functionProvider.dateRangeAggregation(vdd).as(SharedAliases.DATES_COLUMN.getAlias()))
+						: getValidityDate().map(vdd -> functionProvider.dateRangeToField(vdd).as(SharedAliases.DATES_COLUMN.getAlias()));
+
 		final Optional<Field<?>> stratificationDateRendered = getStratificationDate().map(vdd -> functionProvider.dateRangeToField(vdd).as(SharedAliases.STRATIFICATION_BOUNDS.getAlias()));
 
 		return Stream.of(

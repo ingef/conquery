@@ -55,7 +55,7 @@ public class StratificationTableFactory {
 				withQualifiedSelects,
 				FormCteStep.FULL_STRATIFICATION.getSuffix(),
 				Stream.concat(predecessors.stream(), unionSteps.stream()).toList(),
-				context.isNegation()
+				context.isNegation(), context.getFunctionProvider()
 		);
 	}
 

@@ -69,7 +69,6 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 		Selects preFinalSelects = getPreFinalSelects(preFinalStep, contextAfterConversion);
 		List<QueryStep> predecessors = Stream.concat(Stream.of(preFinalStep), Stream.ofNullable(contextAfterConversion.getExternalExtras())).toList();
 
-		List<Field<?>> selects = getFinalSelects(conceptQuery, preFinalSelects, functionProvider).toFinalRepresentation(functionProvider);
 		QueryStep finalStep = QueryStep.builder()
 				.cteName(null)  // the final QueryStep won't be converted to a CTE
 				.selects(getFinalSelects(conceptQuery, preFinalSelects, functionProvider))

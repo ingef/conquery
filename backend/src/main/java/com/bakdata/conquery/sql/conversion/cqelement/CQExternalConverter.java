@@ -23,11 +23,9 @@ import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.google.common.base.Preconditions;
 import org.jooq.Field;
 import org.jooq.Name;
-import org.jooq.Nullability;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
 
 public class CQExternalConverter implements NodeConverter<CQExternal> {
 
@@ -43,7 +41,7 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
             unions.addAll(rowSelects);
         }
         Preconditions.checkArgument(!unions.isEmpty(), "Expecting at least 1 resolved row when converting a CQExternal");
-        QueryStep allStep = QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_IDS_CTE_NAME, Collections.emptyList(), context.isNegation());
+        QueryStep allStep = QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_IDS_CTE_NAME, Collections.emptyList(), context.isNegation(), functionProvider);
 
         Optional<ColumnDateRange> maybeValidityDate = allStep.getSelects().getValidityDate();
 
@@ -175,7 +173,7 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
             unions.add(rowSelects);
         }
         Preconditions.checkArgument(!unions.isEmpty(), "Expecting at least 1 converted resolved row when converting a CQExternal");
-        return QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_EXTRAS_CTE_NAME, Collections.emptyList(), context.isNegation());
+        return QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_EXTRAS_CTE_NAME, Collections.emptyList(), context.isNegation(), functionProvider);
     }
 
 
