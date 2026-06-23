@@ -40,7 +40,7 @@ public class Selects {
 						getIds().toFields().stream(),
 						stratificationDateRendered.stream(),
 						validityDateRendered.stream(),
-						getSqlSelects().stream().flatMap(sqlSelect -> sqlSelect.toFields().stream())
+						getSqlSelects().stream().flatMap(sqlSelect -> sqlSelect.toFinalRepresentation().toFields().stream())
 				)
 				.flatMap(Function.identity())
 				.map(select -> (Field<?>) select)
