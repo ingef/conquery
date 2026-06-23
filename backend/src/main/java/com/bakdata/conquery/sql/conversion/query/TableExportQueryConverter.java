@@ -99,6 +99,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 				.selects(selects)
 				.fromTable(joinedTable)
 				.conditions(filters)
+				.forTableExport(true)
 				.build();
 	}
 
@@ -201,18 +202,13 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 				)))
 				.toList();
 
-		SqlFunctionProvider functionProvider = context.getFunctionProvider();
-
-
 		final QueryStep unionedTables = QueryStep.createUnionAllStep(
 						convertedTables,
 						null, // no CTE name required as this step will be the final select
 						List.of(convertedPrerequisite),
-						context.isNegation(), functionProvider
-				).toBuilder()
-				.forTableExport(true)
-				.build();
-		final Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables, functionProvider); //TODO
+						context.isNegation(), context.getFunctionProvider()
+				);
+		final Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables, context.getFunctionProvider());
 
 		return context.withFinalQuery(new SqlQuery(selectQuery, tableExportQuery.getResultInfos()));
 	}

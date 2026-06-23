@@ -95,7 +95,7 @@ public class QueryStepTransformer {
 			Select<Record> selectStep =
 					queryStep.isForTableExport() ?
 							// TODO this feels like a leaked abstraction, but i am not able to find the proper injection layer at the moment.
-							toSelectQuery(unionStep.toBuilder().forTableExport(true).build(), functionProvider) :
+							toSelectQuery(unionStep, functionProvider) :
 							toSelectStep(unionStep, functionProvider);
 
 			if (queryStep.isUnionAll()) {

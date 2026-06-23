@@ -1,11 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.annotation.Nullable;
-
-import jakarta.validation.Valid;
-
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -27,96 +21,101 @@ import com.bakdata.conquery.sql.conversion.model.aggregator.DurationSumSqlAggreg
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Slf4j
 @CPSType(id = "DURATION_SUM", base = Filter.class)
 public class DurationSumFilter extends Filter<Range.LongRange> implements DaterangeSelectOrFilter {
 
-    @Valid
-    @Nullable
-    private List<ColumnId> distinctBy;
-    @Nullable
-    private ColumnId column;
-    @Nullable
-    private ColumnId startColumn;
-    @Nullable
-    private ColumnId endColumn;
+	@Valid
+	@Nullable
+	private List<ColumnId> distinctBy;
+	@Nullable
+	private ColumnId column;
+	@Nullable
+	private ColumnId startColumn;
+	@Nullable
+	private ColumnId endColumn;
 
-    @JsonIgnore
-    @Override
-    public List<ColumnId> getRequiredColumns() {
-        List<ColumnId> required = new ArrayList<>();
+	@JsonIgnore
+	@Override
+	public List<ColumnId> getRequiredColumns() {
+		List<ColumnId> required = new ArrayList<>();
 
-        if (hasDistinct()) {
-            required.addAll(distinctBy);
-        }
-        if (column != null) {
-            required.add(column);
-        } else {
-            required.add(startColumn);
-            required.add(endColumn);
-        }
-        return required;
+		if (hasDistinct()) {
+			required.addAll(distinctBy);
+		}
+		if (column != null) {
+			required.add(column);
+		} else {
+			required.add(startColumn);
+			required.add(endColumn);
+		}
+		return required;
 
-    }
+	}
 
-    @Override
-    public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
-        f.setType(FrontendFilterType.Fields.INTEGER_RANGE);
-        f.setMin(0);
-    }
+	@Override
+	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
+		f.setType(FrontendFilterType.Fields.INTEGER_RANGE);
+		f.setMin(0);
+	}
 
-    @JsonIgnore
-    private boolean hasDistinct() {
-        return distinctBy != null && !distinctBy.isEmpty();
-    }
+	@JsonIgnore
+	private boolean hasDistinct() {
+		return distinctBy != null && !distinctBy.isEmpty();
+	}
 
-    @Override
-    public FilterNode createFilterNode(Range.LongRange value) {
-        ColumnAggregator<?> aggregator = isSingleColumnDaterange() ? new DurationSumAggregator(getColumn().resolve())
-                : new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
+	@Override
+	public FilterNode createFilterNode(Range.LongRange value) {
+		ColumnAggregator<?> aggregator = isSingleColumnDaterange() ? new DurationSumAggregator(getColumn().resolve())
+				: new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
 
-        if (hasDistinct()) {
-            aggregator = new DistinctValuesWrapperAggregator<>(aggregator, distinctBy.stream().map(ColumnId::resolve).toList());
-        }
+		if (hasDistinct()) {
+			aggregator = new DistinctValuesWrapperAggregator<>(aggregator, distinctBy.stream().map(ColumnId::resolve).toList());
+		}
 
-        return new RangeFilterNode(value, aggregator);
-    }
+		return new RangeFilterNode(value, aggregator);
+	}
 
-    @Override
-    public FilterConverter<DurationSumFilter, Range.LongRange> createConverter() {
-        return new DurationSumSqlAggregator();
-    }
-
-
-    @JsonIgnore
-    @ValidationMethod(message = "Columns do not match required Type.")
-    public boolean isValidColumnType() {
-        if (column != null) {
-            final Column resolved = getColumn().resolve();
-
-            if (!(resolved.getType().equals(MajorTypeId.DATE) || resolved.getType().equals(MajorTypeId.DATE_RANGE))) {
-                log.error("Column {} of type {} is not date compatible", resolved.getId(), resolved.getType());
-                return false;
-            }
-            return true;
-        }
-
-        if (!startColumn.resolve().getType().equals(MajorTypeId.DATE)) {
-            log.error("startColumn {} is not of type DATE", startColumn);
-            return false;
-        }
-
-        if (!endColumn.resolve().getType().equals(MajorTypeId.DATE)) {
-            log.error("startColumn {} is not of type DATE", endColumn);
-            return false;
-        }
+	@Override
+	public FilterConverter<DurationSumFilter, Range.LongRange> createConverter() {
+		return new DurationSumSqlAggregator();
+	}
 
 
-        return true;
-    }
+	@JsonIgnore
+	@ValidationMethod(message = "Columns do not match required Type.")
+	public boolean isValidColumnType() {
+		if (column != null) {
+			final Column resolved = getColumn().resolve();
+
+			if (!(resolved.getType().equals(MajorTypeId.DATE) || resolved.getType().equals(MajorTypeId.DATE_RANGE))) {
+				log.error("Column {} of type {} is not date compatible", resolved.getId(), resolved.getType());
+				return false;
+			}
+			return true;
+		}
+
+		if (!startColumn.resolve().getType().equals(MajorTypeId.DATE)) {
+			log.error("startColumn {} is not of type DATE", startColumn);
+			return false;
+		}
+
+		if (!endColumn.resolve().getType().equals(MajorTypeId.DATE)) {
+			log.error("startColumn {} is not of type DATE", endColumn);
+			return false;
+		}
+
+
+		return true;
+	}
 
 }

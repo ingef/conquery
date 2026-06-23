@@ -1,13 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
-import java.util.List;
-import javax.annotation.Nullable;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
@@ -20,6 +16,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.annotation.Nullable;
+import java.util.List;
+
 /**
  * Entity is included when the number of distinct quarters for all events is within a given range.
  * Implementation is specific for DateRanges
@@ -30,40 +29,40 @@ import lombok.Setter;
 @CPSType(id = "COUNT_QUARTERS", base = Select.class)
 public class CountQuartersSelect extends Select implements DaterangeSelectOrFilter {
 
-    @Nullable
-    private ColumnId column;
-    @Nullable
-    private ColumnId startColumn;
-    @Nullable
-    private ColumnId endColumn;
+	@Nullable
+	private ColumnId column;
+	@Nullable
+	private ColumnId startColumn;
+	@Nullable
+	private ColumnId endColumn;
 
-    @Override
-    public List<ColumnId> getRequiredColumns() {
-        if (isSingleColumnDaterange()) {
-            return List.of(column);
-        }
-        return List.of(startColumn, endColumn);
-    }
+	@Override
+	public List<ColumnId> getRequiredColumns() {
+		if (isSingleColumnDaterange()) {
+			return List.of(column);
+		}
+		return List.of(startColumn, endColumn);
+	}
 
-    @Override
-    public Aggregator<?> createAggregator() {
-        final Column column = getColumn().resolve();
-        //TODO missing case for start/end
-        return new CountQuartersOfDatesAggregator(column);
-    }
+	@Override
+	public Aggregator<?> createAggregator() {
+		final Column column = getColumn().resolve();
+		//TODO missing case for start/end
+		return new CountQuartersOfDatesAggregator(column);
+	}
 
-    @Override
-    public ResultType getResultType() {
-        return ResultType.Primitive.INTEGER;
-    }
+	@Override
+	public ResultType getResultType() {
+		return ResultType.Primitive.INTEGER;
+	}
 
-    @Override
-    public ResultSetProcessor.Reader<Integer> createResultSetReader(ResultSetProcessor processor) {
-        return processor::getInteger;
-    }
+	@Override
+	public ResultSetProcessor.Reader<Integer> createResultSetReader(ResultSetProcessor processor) {
+		return processor::getInteger;
+	}
 
-    @Override
-    public SelectConverter<CountQuartersSelect> createConverter() {
-        return new CountQuartersSqlAggregator();
-    }
+	@Override
+	public SelectConverter<CountQuartersSelect> createConverter() {
+		return new CountQuartersSqlAggregator();
+	}
 }
