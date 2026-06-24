@@ -149,22 +149,14 @@ public class SqlMatchingStats {
         List<Field<Date>> validityDates = new ArrayList<>();
 
         for (ValidityDate validityDate : connector.getValidityDates()) {
-            if (!validityDate.isSingleColumnDaterange()) {
+            if (validityDate.isSingleColumnDaterange()) {
+                Column column = validityDate.getColumn().get();
+                validityDates.add(field(name(column.getName()), Date.class));
+            } else {
                 validityDates.add(field(name(validityDate.getStartColumn().getColumn()), Date.class));
                 validityDates.add(field(name(validityDate.getEndColumn().getColumn()), Date.class));
-                continue;
             }
 
-            Column column = validityDate.getColumn().get();
-
-            if (column.getType() == MajorTypeId.DATE) {
-                validityDates.add(field(name(column.getName()), Date.class));
-            } else if (column.getType() == MajorTypeId.DATE_RANGE) {
-                Field<Object> rangeField = field(name(column.getName()));
-
-                validityDates.add(functionProvider.lower(rangeField));
-                validityDates.add(functionProvider.upper(rangeField));
-            }
         }
         return (Field<Date>[]) validityDates.toArray(Field[]::new);
     }

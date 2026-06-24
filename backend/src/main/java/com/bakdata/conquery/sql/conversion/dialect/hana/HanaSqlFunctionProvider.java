@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.DataType;
@@ -60,11 +59,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
     @Override
     public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange daterange) {
-
-        if (dateRestriction.isSingleColumnRange() || daterange.isSingleColumnRange()) {
-            throw new UnsupportedOperationException("HANA does not support single column ranges.");
-        }
-
         Condition dateRestrictionStartsBeforeDate = dateRestriction.getStart().lessThan(daterange.getEnd());
         Condition dateRestrictionEndsAfterDate = dateRestriction.getEnd().greaterThan(daterange.getStart());
 
@@ -115,16 +109,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
         return ColumnDateRange.of(inline(null, Date.class), inline(null, Date.class));
     }
 
-    @Override
-    public Field<Date> lower(Field<?> daterange) {
-        throw new NotImplementedException("Only relevant for PG.");
-    }
-
-    @Override
-    public Field<Date> upper(Field<?> daterange) {
-        throw new NotImplementedException("Only relevant for PG.");
-    }
-
 
     @Override
     public ColumnDateRange forValidityDate(ValidityDate validityDate) {
@@ -133,7 +117,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
     @Override
     public ColumnDateRange allRange() {
-        return ColumnDateRange.of(getMinDateExpression().as("all_range_start"), getMaxDateExpression().as("all_range_end"));
+        return ColumnDateRange.of(getMinDateExpression(), getMaxDateExpression());
     }
 
     private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
@@ -144,7 +128,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
         Column endColumn;
 
         // if no end column is present, the only existing column is both start and end of the date range
-        if (validityDate.getColumn() != null) {
+        if (validityDate.isSingleColumnDaterange()) {
             Column column = validityDate.getColumn().resolve();
             startColumn = column;
             endColumn = column;
@@ -186,7 +170,10 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
     public ColumnDateRange allRangeIf(Condition condition) {
         return ColumnDateRange.of(
                 when(condition.isTrue(),
-                        allRange()
+                        getMinDateExpression()
+                ),
+                when(condition.isTrue(),
+                        getMaxDateExpression()
                 )
         );
     }
@@ -250,11 +237,12 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
     @Override
     public ColumnDateRange forArbitraryDateRange(DaterangeSelectOrFilter daterangeSelectOrFilter) {
         String tableName = daterangeSelectOrFilter.getTable().getName();
-        if (daterangeSelectOrFilter.getEndColumn() != null) {
+        if (daterangeSelectOrFilter.isSingleColumnDaterange()) {
+            Column column = daterangeSelectOrFilter.getColumn().resolve();
+            return ofStartAndEnd(tableName, column, column);
+        } else {
             return ofStartAndEnd(tableName, daterangeSelectOrFilter.getStartColumn().resolve(), daterangeSelectOrFilter.getEndColumn().resolve());
         }
-        Column column = daterangeSelectOrFilter.getColumn().resolve();
-        return ofStartAndEnd(tableName, column, column);
     }
 
     @Override
@@ -300,11 +288,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
     @Override
     public Field<String> dateRangeToField(ColumnDateRange columnDateRange) {
-
-        if (columnDateRange.isSingleColumnRange()) {
-            throw new UnsupportedOperationException("HANA does not support single-column date ranges.");
-        }
-
         // translation is handled in printer
         return field("'[' || {0} || {2} || {1} || ')'", String.class,
                 cast(columnDateRange.getStart(), SQLDataType.VARCHAR),

@@ -124,8 +124,8 @@ public interface SqlFunctionProvider {
 	 * Empty means not having both start and end, having just one is acceptable.
 	 */
 	default Condition isNotEmptyValidityDate(ValidityDate validityDate) {
-		ColumnId singleColumn = validityDate.getColumn();
-		if (singleColumn != null) {
+		if (validityDate.isSingleColumnDaterange()) {
+			ColumnId singleColumn = validityDate.getColumn();
 			return field(name(singleColumn.getTable().getTable(), singleColumn.getColumn())).isNotNull();
 		}
 
@@ -302,10 +302,6 @@ public interface SqlFunctionProvider {
 	default Field<String> externalId(String id) {
 		return inline(id, SQLDataType.VARCHAR);
 	}
-
-	Field<Date> lower(Field<?> daterange);
-
-	Field<Date> upper(Field<?> daterange);
 
 	/**
 	 * Any condition that is acceptable for the specific database on a join.

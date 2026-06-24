@@ -6,7 +6,7 @@
     "isEnabled": true,
     "comment": "Logical will hopefully be kicked.",
     "supportedDialects": [
-      "POSTGRESQL",
+
       "HANA"
     ]
   },

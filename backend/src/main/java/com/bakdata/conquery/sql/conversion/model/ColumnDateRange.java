@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.sql.conversion.dialect.pg.PostgreSqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Getter;
 import lombok.ToString;
@@ -13,7 +12,6 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-//TODO split this class up into Dialect specific versions.
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 public class ColumnDateRange implements SqlSelect {
@@ -23,33 +21,15 @@ public class ColumnDateRange implements SqlSelect {
 	private static final String END_SUFFIX = "_end";
 
 	@ToString.Include
-	private final Field<Object> range;
-	@ToString.Include
 	private final Field<Date> start;
 	@ToString.Include
 	private final Field<Date> end;
 	private final String alias;
 
 	protected ColumnDateRange(Field<Date> startColumn, Field<Date> endColumn, String alias) {
-		range = null;
 		start = startColumn;
 		end = endColumn;
 		this.alias = alias;
-	}
-
-	protected ColumnDateRange(Field<?> range, String alias) {
-		this.range = (Field<Object>) range;
-		start = null;
-		end = null;
-		this.alias = alias;
-	}
-
-	public static ColumnDateRange of(Field<?> rangeColumn, String alias) {
-		return new ColumnDateRange(rangeColumn, alias);
-	}
-
-	public static ColumnDateRange of(Field<?> rangeColumn) {
-		return new ColumnDateRange(rangeColumn, "");
 	}
 
 	public static ColumnDateRange of(Field<Date> startColumn, Field<Date> endColumn) {
@@ -60,37 +40,19 @@ public class ColumnDateRange implements SqlSelect {
 		return new ColumnDateRange(startColumn, endColumn, alias);
 	}
 
-	public static ColumnDateRange empty() {
-		final Field<String> emptyRange = DSL.field(DSL.val("{}"));
-		return ColumnDateRange.of(emptyRange);
-	}
 
 	public ColumnDateRange asValidityDateRange(String alias) {
 		return as(alias + VALIDITY_DATE_COLUMN_NAME_SUFFIX);
 	}
 
-	/**
-	 * @return True if this {@link ColumnDateRange} consists of only 1 column.
-	 * False if it consists of a start and end field.
-	 */
-	public boolean isSingleColumnRange() {
-		return range != null;
-	}
-
 	@Override
 	public List<Field<?>> toFields() {
-		if (isSingleColumnRange()) {
-			return List.of(range);
-		}
 		return Stream.of(start, end)
 					 .collect(Collectors.toList());
 	}
 
 	@Override
 	public ColumnDateRange qualify(String qualifier) {
-		if (isSingleColumnRange()) {
-			return new ColumnDateRange(QualifyingUtil.qualify(getRange(), qualifier), getAlias());
-		}
 		return new ColumnDateRange(
 				QualifyingUtil.qualify(getStart(), qualifier),
 				QualifyingUtil.qualify(getEnd(), qualifier),
@@ -100,13 +62,13 @@ public class ColumnDateRange implements SqlSelect {
 
 	@Override
 	public List<String> requiredColumns() {
-		return toFields().stream().map(Field::getName).toList();
+		return toFields().stream()
+				.map(Field::getName)
+				.distinct()
+				.toList();
 	}
 
 	public ColumnDateRange as(String alias) {
-		if (isSingleColumnRange()) {
-			return new ColumnDateRange(range.as(alias), alias);
-		}
 		return new ColumnDateRange(
 				start.as(alias + START_SUFFIX),
 				end.as(alias + END_SUFFIX),
@@ -115,12 +77,6 @@ public class ColumnDateRange implements SqlSelect {
 	}
 
 	public ColumnDateRange coalesce(ColumnDateRange right) {
-		if (isSingleColumnRange() != right.isSingleColumnRange()) {
-			throw new UnsupportedOperationException("Can only join ColumnDateRanges of same type");
-		}
-		if (isSingleColumnRange()) {
-			return ColumnDateRange.of(DSL.coalesce(range, right.getRange())).as(alias);
-		}
 		return ColumnDateRange.of(
 				DSL.coalesce(start, right.getStart()),
 				DSL.coalesce(end, right.getEnd())
@@ -128,28 +84,14 @@ public class ColumnDateRange implements SqlSelect {
 	}
 
 	public Condition join(ColumnDateRange right) {
-		if (isSingleColumnRange() != right.isSingleColumnRange()) {
-			throw new UnsupportedOperationException("Can only join ColumnDateRanges of same type");
-		}
-
-		if (isSingleColumnRange()) {
-			return range.coerce(Object.class).eq(right.getRange());
-		}
 		return start.eq(right.getStart()).and(end.eq(right.getEnd()));
 	}
 
 	public Condition isNotNull() {
-		if (isSingleColumnRange()) {
-			return range.isNotNull();
-		}
 		return start.isNotNull().and(end.isNotNull());
 	}
 
 	public static Condition isNotEmpty(ColumnDateRange columnDateRange) {
-		if (columnDateRange.isSingleColumnRange()) {
-			return columnDateRange.getRange().notEqual(PostgreSqlFunctionProvider.EMPTY_RANGE);
-		}
-
 		return columnDateRange.getStart().isNotNull().and(columnDateRange.getEnd().isNotNull());
 	}
 

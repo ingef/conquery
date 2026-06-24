@@ -5,7 +5,7 @@
     "isEnabled": true,
     "comment": "Lateral JOINS are not possible with Clickhouse yet.",
     "supportedDialects": [
-      "POSTGRESQL",
+
       "HANA"
     ]
   },

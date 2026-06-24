@@ -49,12 +49,13 @@ public class DurationSumSqlAggregator implements SelectConverter<DurationSumSele
 
 		Field<Date> startDateField;
 		Field<Date> endDateField;
+
 		if (filter.isSingleColumnDaterange()) {
 			Column column = filter.getColumn().resolve();
 			String tableName = column.getTable().getName();
 			Field<Date> daterangeField = field(DSL.name(tableName, column.getName()), Date.class);
-			startDateField = functionProvider.lower(daterangeField);
-			endDateField = functionProvider.upper(daterangeField);
+			startDateField = daterangeField;
+			endDateField = daterangeField;
 		}
 		else {
 			Column startColumn = filter.getStartColumn().resolve();

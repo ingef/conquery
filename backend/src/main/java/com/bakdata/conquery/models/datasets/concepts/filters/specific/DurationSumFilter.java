@@ -1,12 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonAlias;
-import jakarta.validation.Valid;
-
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -28,8 +21,13 @@ import com.bakdata.conquery.sql.conversion.model.aggregator.DurationSumSqlAggreg
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Slf4j
@@ -39,7 +37,6 @@ public class DurationSumFilter extends Filter<Range.LongRange> implements Datera
 	@Valid
 	@Nullable
 	private List<ColumnId> distinctBy;
-	@JsonAlias("dateRangeColumn")
 	@Nullable
 	private ColumnId column;
 	@Nullable
@@ -57,8 +54,7 @@ public class DurationSumFilter extends Filter<Range.LongRange> implements Datera
 		}
 		if (column != null) {
 			required.add(column);
-		}
-		else {
+		} else {
 			required.add(startColumn);
 			required.add(endColumn);
 		}
@@ -79,8 +75,8 @@ public class DurationSumFilter extends Filter<Range.LongRange> implements Datera
 
 	@Override
 	public FilterNode createFilterNode(Range.LongRange value) {
-		ColumnAggregator<?> aggregator = getColumn() != null ? new DurationSumAggregator(getColumn().resolve())
-										 : new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
+		ColumnAggregator<?> aggregator = isSingleColumnDaterange() ? new DurationSumAggregator(getColumn().resolve())
+				: new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
 
 		if (hasDistinct()) {
 			aggregator = new DistinctValuesWrapperAggregator<>(aggregator, distinctBy.stream().map(ColumnId::resolve).toList());

@@ -4,7 +4,7 @@
   "sqlSpec": {
     "isEnabled": false,
     "supportedDialects": [
-      "POSTGRESQL", "HANA"
+       "HANA"
     ]
   },
   "expectedCsv": "tests/query/LOGICAL/AND_NEGATION_RESTRICTION_DATE_LOGICAL/expected.csv",

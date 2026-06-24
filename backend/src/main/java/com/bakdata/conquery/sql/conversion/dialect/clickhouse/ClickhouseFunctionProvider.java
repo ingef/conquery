@@ -8,24 +8,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.OrderField;
-import org.jooq.Record;
 import org.jooq.SortField;
-import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
@@ -56,11 +51,6 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
     @Override
     public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange daterange) {
-
-        if (dateRestriction.isSingleColumnRange() || daterange.isSingleColumnRange()) {
-            throw new UnsupportedOperationException("Clickhouse does not support single column ranges.");
-        }
-
         Condition dateRestrictionStartsBeforeDate = dateRestriction.getStart().lessThan(daterange.getEnd());
         Condition dateRestrictionEndsAfterDate = dateRestriction.getEnd().greaterThan(daterange.getStart());
 
@@ -125,7 +115,7 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
         Column endColumn;
 
         // if no end column is present, the only existing column is both start and end of the date range
-        if (validityDate.getColumn() != null) {
+        if (validityDate.isSingleColumnDaterange()) {
             Column column = validityDate.getColumn().resolve();
             startColumn = column;
             endColumn = column;
@@ -233,11 +223,12 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
     @Override
     public ColumnDateRange forArbitraryDateRange(DaterangeSelectOrFilter daterangeSelectOrFilter) {
         String tableName = daterangeSelectOrFilter.getTable().getName();
-        if (daterangeSelectOrFilter.getEndColumn() != null) {
+        if (daterangeSelectOrFilter.isSingleColumnDaterange()) {
+            Column column = daterangeSelectOrFilter.getColumn().resolve();
+            return ofStartAndEnd(tableName, column, column);
+        } else {
             return ofStartAndEnd(tableName, daterangeSelectOrFilter.getStartColumn().resolve(), daterangeSelectOrFilter.getEndColumn().resolve());
         }
-        Column column = daterangeSelectOrFilter.getColumn().resolve();
-        return ofStartAndEnd(tableName, column, column);
     }
 
     @Override
@@ -273,11 +264,6 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
     @Override
     public Field<Object> dateRangeToField(ColumnDateRange columnDateRange) {
-
-        if (columnDateRange.isSingleColumnRange()) {
-            throw new UnsupportedOperationException("Clickhouse does not support single-column date ranges.");
-        }
-
         Field<?> startDateExpression = field("{0}::Nullable(Integer)", Object.class, columnDateRange.getStart());
         Field<?> endDateExpression = field("{0}::Nullable(Integer)", Object.class, columnDateRange.getEnd());
 
@@ -319,18 +305,6 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
         return dateDistance.cast(Integer.class);
     }
 
-    @Override
-    public Field<Date> lower(Field<?> daterange) {
-        // Only relevant for PG
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public Field<Date> upper(Field<?> daterange) {
-        // Only relevant for PG
-        throw new NotImplementedException();
-    }
-
 
     @Override
     public <T> Field<T> random(Field<T> column) {
@@ -356,7 +330,10 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
     public ColumnDateRange allRangeIf(Condition condition) {
         return ColumnDateRange.of(
                 when(condition.isTrue(),
-                        allRange()
+                        getMinDateExpression()
+                ),
+                when(condition.isTrue(),
+                        getMaxDateExpression()
                 )
         );
     }

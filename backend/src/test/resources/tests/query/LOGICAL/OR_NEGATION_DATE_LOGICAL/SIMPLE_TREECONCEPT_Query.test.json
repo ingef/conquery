@@ -6,7 +6,7 @@
     "comment" : "Logical will hopefully be removed",
     "isEnabled": false,
     "supportedDialects": [
-      "POSTGRESQL", "HANA"
+       "HANA"
     ]
   },
   "query": {
