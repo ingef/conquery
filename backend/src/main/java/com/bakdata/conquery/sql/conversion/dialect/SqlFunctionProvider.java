@@ -39,6 +39,9 @@ public interface SqlFunctionProvider {
 	String DEFAULT_DATE_FORMAT = "yyyy-mm-dd";
 	String SQL_UNIT_SEPARATOR = " || '%s' || ".formatted(ResultSetProcessor.UNIT_SEPARATOR);
 
+	/**
+	 * Create database specific representation of the input list, such that it can be read by the respective {@link ResultSetProcessor}.
+	 */
 	default Field<?> asArrayRepr(List<String> value) {
 		return field(value.stream()
 						   .map(DSL::inline)
@@ -51,8 +54,18 @@ public interface SqlFunctionProvider {
 			Function<Field<?>, ? extends SortField<?>> ordering,
 			List<Field<?>> validityDateFields);
 
+	/**
+	 * Return date-Field for the lowest representable date. This is specific per Database engine.
+	 *
+	 * @implSpec We assume, that this value is unreachable and therefore treat it as infinity.
+	 */
 	Field<Date> getMinDateExpression();
 
+	/**
+	 * Return date-Field for the highest representable date. This is specific per Database engine.
+	 *
+	 * @implSpec We assume, that this value is unreachable and therefore treat it as infinity.
+	 */
 	Field<Date> getMaxDateExpression();
 
 	<T> Field<T> cast(Field<?> field, DataType<T> type);
@@ -66,12 +79,14 @@ public interface SqlFunctionProvider {
 	 */
 	String getAnyCharRegex();
 
-	/**
-	 * @return A dummy table that enables selection of static values.
-	 */
-	Table<? extends Record> getNoOpTable();
+    /**
+     * @return A dummy table that enables selection of static values.
+     */
+    default Table<? extends Record> getNoOpTable() {
+        return noTable();
+    }
 
-	/**
+    /**
 	 * A date restriction condition is true if holds: dateRestrictionStart < daterangeEnd and dateRestrictionEnd > daterangeStart. The ends of both ranges are
 	 * exclusive.
 	 */
@@ -104,6 +119,10 @@ public interface SqlFunctionProvider {
 	ColumnDateRange forValidityDate(ValidityDate validityDate);
 
 
+	/**
+	 * Create condition for if the validityDate is empty.
+	 * Empty means not having both start and end, having just one is acceptable.
+	 */
 	default Condition isNotEmptyValidityDate(ValidityDate validityDate) {
 		ColumnId singleColumn = validityDate.getColumn();
 		if (singleColumn != null) {
@@ -132,6 +151,9 @@ public interface SqlFunctionProvider {
 
 	ColumnDateRange forArbitraryDateRange(DaterangeSelectOrFilter daterangeSelectOrFilter);
 
+	/**
+	 * Aggregate columnDateRange into dateSpans of the grouping.
+	 */
 	ColumnDateRange aggregated(ColumnDateRange columnDateRange);
 
 	/**
@@ -142,6 +164,9 @@ public interface SqlFunctionProvider {
 	 */
 	ColumnDateRange toDualColumn(ColumnDateRange columnDateRange);
 
+	/**
+	 * Return {@link ColumnDateRange} containing intersection / shared time of input columns.
+	 */
 	ColumnDateRange intersection(ColumnDateRange left, ColumnDateRange right);
 
 
@@ -179,18 +204,11 @@ public interface SqlFunctionProvider {
 	 */
 	Field<Integer> dateDistance(ChronoUnit datePart, Field<Date> startDate, Field<Date> endDate);
 
-	/**
-	 * Extract the lower inclusive bound of a daterange field. Not supported for dialects without range type support.
-	 */
-	Field<Date> lower(Field<?> daterange);
-
-	/**
-	 * Extract the upper exclusive bound of a daterange field. Not supported for dialects without range type support.
-	 */
-	Field<Date> upper(Field<?> daterange);
-
 	Field<Date> addDays(Field<Date> dateColumn, Field<Integer> amountOfDays);
 
+	/**
+	 * Return a random aggregated value from the input column.
+	 */
 	<T> Field<T> random(Field<T> column);
 
 	Condition likeRegex(Field<String> field, String pattern);
@@ -221,7 +239,6 @@ public interface SqlFunctionProvider {
 				fields.stream()
 					  // if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
 					  // thus concat an empty string
-					  .map(field -> field)
 					  .map(Field::toString)
 					  .collect(Collectors.joining(SQL_UNIT_SEPARATOR));
 		return field(concatenated, String.class);
@@ -272,6 +289,9 @@ public interface SqlFunctionProvider {
 
 	ColumnDateRange emptyColumnDateRange();
 
+	/**
+	 * Or-Aggregation of the input field.
+	 */
 	default Condition orAgg(Field<Boolean> field) {
 		return condition(max(field.cast(Integer.class)).gt(0));
 	}
@@ -281,5 +301,21 @@ public interface SqlFunctionProvider {
 	 */
 	default Field<String> externalId(String id) {
 		return inline(id, SQLDataType.VARCHAR);
+	}
+
+	Field<Date> lower(Field<?> daterange);
+
+	Field<Date> upper(Field<?> daterange);
+
+	/**
+	 * Any condition that is acceptable for the specific database on a join.
+	 * (e.g. Hana does not like `true`)
+	 */
+	default Condition unconditionalJoinCondition(){
+		return noCondition();
+	}
+
+	default Field<Boolean> isNull(Field<?> field){
+		return field.isNull();
 	}
 }

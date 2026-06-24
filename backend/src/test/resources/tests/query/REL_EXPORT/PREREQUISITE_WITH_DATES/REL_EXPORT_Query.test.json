@@ -88,8 +88,8 @@
           "label": "test_child1",
           "description": " ",
           "condition": {
-            "type": "PREFIX_LIST",
-            "prefixes": "A1"
+            "type": "EQUAL",
+            "values": "A1"
           },
           "children": []
         },
@@ -97,8 +97,8 @@
           "label": "test_child2",
           "description": " ",
           "condition": {
-            "type": "PREFIX_LIST",
-            "prefixes": "B2"
+            "type": "EQUAL",
+            "values": "B2"
           },
           "children": []
         }
