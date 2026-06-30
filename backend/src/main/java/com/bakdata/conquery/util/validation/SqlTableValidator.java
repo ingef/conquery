@@ -41,6 +41,8 @@ public class SqlTableValidator implements HibernateConstraintValidator<ValidSqlT
 							   .fetch();
 		}
 		catch (DataAccessException e) {
+			log.trace("Failed to test for table {}", value.getName(), e);
+
 			context.buildConstraintViolationWithTemplate("SQL table %s does not exist".formatted(value.getName()))
 				   .addPropertyNode("name")
 				   .addConstraintViolation();
