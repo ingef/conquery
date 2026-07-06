@@ -2,7 +2,7 @@ package com.bakdata.conquery.quarkus.storage.xodus;
 
 import java.nio.file.Path;
 
-import com.bakdata.conquery.quarkus.api.config.StorageRuntimeConfig;
+import com.bakdata.conquery.quarkus.config.StorageRuntimeConfig;
 import io.quarkus.arc.properties.IfBuildProperty;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -11,6 +11,7 @@ import jakarta.inject.Inject;
 
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
+import lombok.Getter;
 
 @ApplicationScoped
 @IfBuildProperty(name = "conquery.storage.backend", stringValue = "XODUS")
@@ -19,7 +20,8 @@ public class XodusEnvironmentProvider {
 	@Inject
 	StorageRuntimeConfig storageRuntimeConfig;
 
-	private Environment environment;
+	@Getter
+    private Environment environment;
 
 	@PostConstruct
 	void init() {
@@ -33,7 +35,4 @@ public class XodusEnvironmentProvider {
 		}
 	}
 
-	public Environment getEnvironment() {
-		return environment;
-	}
 }

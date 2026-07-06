@@ -7,11 +7,11 @@ public interface NamespaceStorage {
 
 	DatasetCatalogRepository.DatasetRecord dataset();
 
-	List<DatasetCatalogRepository.ConceptRecord> listConcepts();
+	List<DatasetCatalogRepository.Concept> listConcepts();
 
-	Optional<DatasetCatalogRepository.ConceptRecord> findConcept(String conceptId);
+	Optional<DatasetCatalogRepository.Concept> findConcept(String conceptId);
 
-	void saveConcept(DatasetCatalogRepository.ConceptRecord concept);
+	void saveConcept(DatasetCatalogRepository.Concept concept);
 
 	boolean deleteConcept(String conceptId);
 

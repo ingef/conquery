@@ -1,4 +1,4 @@
-package com.bakdata.conquery.quarkus.api.config;
+package com.bakdata.conquery.quarkus.config;
 
 import java.util.List;
 import java.util.Map;

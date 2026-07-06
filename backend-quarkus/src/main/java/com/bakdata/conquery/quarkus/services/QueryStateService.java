@@ -1,4 +1,4 @@
-package com.bakdata.conquery.quarkus.api;
+package com.bakdata.conquery.quarkus.services;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import com.bakdata.conquery.quarkus.api.DatasetsResource;
+import com.bakdata.conquery.quarkus.api.QueryResource;
+import com.bakdata.conquery.quarkus.api.QuerySubmissionPayload;
 import com.bakdata.conquery.quarkus.storage.meta.ManagerMetaStorage;
 import com.bakdata.conquery.quarkus.storage.model.StoredQuery;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -246,20 +249,13 @@ public class QueryStateService {
 		if (node instanceof QuerySubmissionPayload.DateRestrictionNode || node instanceof QuerySubmissionPayload.TemporalNode) {
 			return true;
 		}
-		if (node instanceof QuerySubmissionPayload.AndNode andNode) {
-			return anyContainsDates(andNode.children);
-		}
-		if (node instanceof QuerySubmissionPayload.OrNode orNode) {
-			return anyContainsDates(orNode.children);
-		}
-		if (node instanceof QuerySubmissionPayload.NegationNode negationNode) {
-			return containsDates(negationNode.child);
-		}
-		if (node instanceof QuerySubmissionPayload.DateRestrictionNode dateRestrictionNode) {
-			return containsDates(dateRestrictionNode.child);
-		}
-		return false;
-	}
+        return switch (node) {
+            case QuerySubmissionPayload.AndNode andNode -> anyContainsDates(andNode.children);
+            case QuerySubmissionPayload.OrNode orNode -> anyContainsDates(orNode.children);
+            case QuerySubmissionPayload.NegationNode negationNode -> containsDates(negationNode.child);
+            default -> false;
+        };
+    }
 
 	private boolean anyContainsDates(List<QuerySubmissionPayload.QueryNode> children) {
 		if (children == null || children.isEmpty()) {

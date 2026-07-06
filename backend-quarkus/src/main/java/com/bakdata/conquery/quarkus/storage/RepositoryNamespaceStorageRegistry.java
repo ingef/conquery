@@ -41,12 +41,12 @@ public class RepositoryNamespaceStorageRegistry implements NamespaceStorageRegis
 		}
 
 		@Override
-		public List<DatasetCatalogRepository.ConceptRecord> listConcepts() {
+		public List<DatasetCatalogRepository.Concept> listConcepts() {
 			return catalogRepository.listConceptsForDataset(dataset.id());
 		}
 
 		@Override
-		public Optional<DatasetCatalogRepository.ConceptRecord> findConcept(String conceptId) {
+		public Optional<DatasetCatalogRepository.Concept> findConcept(String conceptId) {
 			if (!belongsToNamespace(conceptId)) {
 				return Optional.empty();
 			}
@@ -54,11 +54,11 @@ public class RepositoryNamespaceStorageRegistry implements NamespaceStorageRegis
 		}
 
 		@Override
-		public void saveConcept(DatasetCatalogRepository.ConceptRecord concept) {
+		public void saveConcept(DatasetCatalogRepository.Concept concept) {
 			if (!belongsToNamespace(concept.id())) {
 				throw new IllegalArgumentException("Concept id does not belong to namespace '" + dataset.id() + "': " + concept.id());
 			}
-			catalogRepository.saveConcept(new DatasetCatalogRepository.ConceptRecord(concept.id(), concept.label()));
+			catalogRepository.saveConcept(concept);
 		}
 
 		@Override

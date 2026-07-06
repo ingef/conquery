@@ -1,9 +1,8 @@
 package com.bakdata.conquery.quarkus.api;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
+import com.bakdata.conquery.quarkus.services.DatasetService;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import com.bakdata.conquery.quarkus.util.ScopedId;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -35,23 +34,48 @@ public class ConceptResource {
 			description = "Returns a concept map keyed by concept id, compatible with frontend tree loading."
 	)
 	public Map<String, ConceptNodeResponse> getConcept(@PathParam("conceptId") @NotBlank String conceptId) {
-		var concept = datasetService.requireConcept(conceptId);
-		List<TableResponse> tables = datasetService.listTablesForDataset(datasetId(concept.id())).stream().map(this::toTableResponse).toList();
 
+		DatasetCatalogRepository.Concept concept = datasetService.requireConcept(conceptId);
+		String datasetId = ScopedId.extractDatasetId(conceptId)
+								   .orElseThrow(() -> new IllegalStateException("Expected dataset-scoped concept id but got: " + conceptId));
+
+		Map<String, ConceptNodeResponse> nodes = new HashMap<>();
+
+		Map<String, DatasetCatalogRepository.ConceptElement> children = concept.children();
+
+		// Add main node
 		ConceptNodeResponse node = new ConceptNodeResponse(
 				concept.label(),
-				null,
+				concept.description(),
 				true,
-				List.of(),
+				concept.childrenIds(),
 				0L,
 				0L,
 				true,
-				false,
-				tables,
+				!children.isEmpty(),
+				datasetService.listTablesForDataset(datasetId).stream().map(this::toTableResponse).toList(),
 				List.of()
 		);
+		nodes.put(conceptId, node);
 
-		return Map.of(conceptId, node);
+		// Add children
+		children.forEach((id, child) -> {
+            ConceptNodeResponse childNode = new ConceptNodeResponse(
+                    child.label(),
+                    child.description(),
+                    true,
+                    child.children(),
+                    0L,
+                    0L,
+                    true,
+                    !children.isEmpty(),
+                    List.of(),
+                    List.of()
+            );
+            nodes.put(id, childNode);
+        });
+
+		return nodes;
 	}
 
 	private TableResponse toTableResponse(DatasetCatalogRepository.TableRecord table) {
@@ -60,14 +84,14 @@ public class ConceptResource {
 											  .map(column -> new FilterResponse(column.id(), column.label(), null, null, column.type().name()))
 											  .toList();
 		List<String> supportedSecondaryIds = table.columns().stream()
-												   .map(DatasetCatalogRepository.ColumnRecord::secondaryId)
-												   .filter(Objects::nonNull)
-												   .distinct()
-												   .toList();
+												 .map(DatasetCatalogRepository.ColumnRecord::secondaryId)
+												 .filter(Objects::nonNull)
+												 .distinct()
+												 .toList();
 
 		return new TableResponse(
 				table.id(),
-				datasetId(table.id()),
+				tableDatasetId(table.id()),
 				table.label(),
 				false,
 				true,
@@ -80,11 +104,6 @@ public class ConceptResource {
 		);
 	}
 
-	private String datasetId(String scopedId) {
-		return ScopedId.extractDatasetId(scopedId)
-					   .orElseThrow(() -> new IllegalStateException("Expected dataset-scoped id but got: " + scopedId));
-	}
-
 	private ColumnResponse toColumnResponse(DatasetCatalogRepository.ColumnRecord column) {
 		return new ColumnResponse(
 				column.id(),
@@ -93,6 +112,12 @@ public class ConceptResource {
 				column.secondaryId()
 		);
 	}
+
+	private String tableDatasetId(String scopedId) {
+		return ScopedId.extractDatasetId(scopedId)
+					   .orElseThrow(() -> new IllegalStateException("Expected dataset-scoped table id but got: " + scopedId));
+	}
+
 
 	@POST
 	@Path("/{conceptId}/resolve")

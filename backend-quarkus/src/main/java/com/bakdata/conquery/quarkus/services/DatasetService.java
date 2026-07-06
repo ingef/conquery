@@ -1,12 +1,11 @@
-package com.bakdata.conquery.quarkus.api;
+package com.bakdata.conquery.quarkus.services;
 
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import com.bakdata.conquery.quarkus.api.config.StorageRuntimeConfig;
+import com.bakdata.conquery.quarkus.config.StorageRuntimeConfig;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import com.bakdata.conquery.quarkus.storage.NamespaceStorage;
 import com.bakdata.conquery.quarkus.storage.NamespaceStorageRegistry;
@@ -14,6 +13,7 @@ import com.bakdata.conquery.quarkus.util.ScopedId;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
+import org.jboss.resteasy.reactive.common.NotImplementedYet;
 
 @ApplicationScoped
 public class DatasetService {
@@ -33,12 +33,12 @@ public class DatasetService {
 		return requireNamespace(datasetId).dataset();
 	}
 
-	public DatasetCatalogRepository.ConceptRecord requireConcept(String conceptId) {
+	public DatasetCatalogRepository.Concept requireConcept(String conceptId) {
 		NamespaceStorage namespace = requireNamespaceForScopedObject(conceptId, "concept");
 		return namespace.findConcept(conceptId).orElseThrow(() -> new NotFoundException("Unknown concept: " + conceptId));
 	}
 
-	public List<DatasetCatalogRepository.ConceptRecord> listConceptsForDataset(String datasetId) {
+	public List<DatasetCatalogRepository.Concept> listRootConceptsForDataset(String datasetId) {
 		return requireNamespace(datasetId).listConcepts();
 	}
 
@@ -52,32 +52,33 @@ public class DatasetService {
 	}
 
 	public ConceptCodeResolution resolveConceptCodes(String rootConceptId, List<String> codes) {
-		requireConcept(rootConceptId);
+		DatasetCatalogRepository.Concept rootConcept = requireConcept(rootConceptId);
 		NamespaceStorage namespace = requireNamespaceForScopedObject(rootConceptId, "concept");
 
-		// TODO This does not look right yet: Concept codes need to be resolved against the leaf-children of the provided root concept
-		Map<String, String> lookupByCode = namespace.listConcepts().stream()
-												.flatMap(concept -> java.util.stream.Stream.of(
-														Map.entry(normalizeCode(concept.id()), concept.id()),
-														Map.entry(normalizeCode(concept.label()), concept.id())
-												))
-												.collect(Collectors.toMap(
-														Map.Entry::getKey,
-														Map.Entry::getValue,
-														(existing, ignored) -> existing
-												));
+		// TODO implement with updated concept model
+		throw new NotImplementedYet();
 
-		List<String> resolvedInOrder = codes.stream()
-										.map(this::normalizeCode)
-										.map(lookupByCode::get)
-										.filter(java.util.Objects::nonNull)
-										.toList();
-		List<String> unknownCodes = codes.stream()
-									 .filter(code -> !lookupByCode.containsKey(normalizeCode(code)))
-									 .toList();
-
-		return new ConceptCodeResolution(List.copyOf(new LinkedHashSet<>(resolvedInOrder)), unknownCodes);
+//		List<String> resolvedInOrder = codes.stream()
+//										.map(this::normalizeCode)
+//										.map(lookupByCode::get)
+//										.filter(java.util.Objects::nonNull)
+//										.toList();
+//		List<String> unknownCodes = codes.stream()
+//									 .filter(code -> !lookupByCode.containsKey(normalizeCode(code)))
+//									 .toList();
+//
+//		return new ConceptCodeResolution(List.copyOf(new LinkedHashSet<>(resolvedInOrder)), unknownCodes);
 	}
+
+	private Stream<Map.Entry<String, String>> resolvableCodeEntries(DatasetCatalogRepository.ConceptElement concept) {
+		if (concept.condition() == null) {
+			return Stream.empty();
+		}
+		return concept.condition().connectorValues().stream()
+				.map(this::normalizeCode)
+				.map(code -> Map.entry(code, concept.id()));
+	}
+
 
 	private String normalizeCode(String value) {
 		return value.trim().toLowerCase(Locale.ROOT);

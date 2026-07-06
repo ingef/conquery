@@ -1,4 +1,4 @@
-package com.bakdata.conquery.quarkus.api;
+package com.bakdata.conquery.quarkus.services;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.quarkus.api.config.FrontendRuntimeConfig;
+import com.bakdata.conquery.quarkus.api.QuerySubmissionPayload;
+import com.bakdata.conquery.quarkus.config.FrontendRuntimeConfig;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 

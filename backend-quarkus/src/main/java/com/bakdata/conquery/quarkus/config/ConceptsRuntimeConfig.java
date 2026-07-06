@@ -1,4 +1,4 @@
-package com.bakdata.conquery.quarkus.api.config;
+package com.bakdata.conquery.quarkus.config;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +22,12 @@ public interface ConceptsRuntimeConfig {
 		 * Human-readable concept label shown in the concept tree.
 		 */
 		String label();
+
+		/**
+		 * Human-readable concept description shown in the concept tree.
+		 */
+		String description();
+
 
 		/**
 		 * Dataset id this concept belongs to.

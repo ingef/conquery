@@ -2,6 +2,7 @@ package com.bakdata.conquery.quarkus.api;
 
 import java.util.List;
 
+import com.bakdata.conquery.quarkus.services.QueryStateService;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.inject.Inject;
@@ -21,7 +22,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @Produces(MediaType.APPLICATION_JSON)
 public class QueryResource {
 	@Inject
-	QueryStateService queryStateService;
+    QueryStateService queryStateService;
 
 	@GET
 	@Path("/{queryId}")

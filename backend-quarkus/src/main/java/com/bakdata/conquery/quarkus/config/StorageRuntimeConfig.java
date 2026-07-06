@@ -1,4 +1,4 @@
-package com.bakdata.conquery.quarkus.api.config;
+package com.bakdata.conquery.quarkus.config;
 
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;

@@ -1,6 +1,5 @@
-package com.bakdata.conquery.quarkus.api.config;
+package com.bakdata.conquery.quarkus.config;
 
-import java.time.LocalDate;
 import java.time.Year;
 import java.util.List;
 import java.util.Locale;

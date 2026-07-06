@@ -1,4 +1,4 @@
-package com.bakdata.conquery.quarkus.api;
+package com.bakdata.conquery.quarkus.services;
 
 import java.util.ArrayList;
 import java.util.List;

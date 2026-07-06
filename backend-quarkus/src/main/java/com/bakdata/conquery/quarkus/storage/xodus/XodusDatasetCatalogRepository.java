@@ -75,16 +75,7 @@ public class XodusDatasetCatalogRepository implements DatasetCatalogRepository {
 	}
 
 	@Override
-	public List<ConceptRecord> listConcepts() {
-		List<ConceptRecord> concepts = new ArrayList<>();
-		for (String datasetId : datasetEnvironmentProvider.listDatasetIds()) {
-			concepts.addAll(listConceptsForDataset(datasetId));
-		}
-		return concepts;
-	}
-
-	@Override
-	public List<ConceptRecord> listConceptsForDataset(String datasetId) {
+	public List<Concept> listConceptsForDataset(String datasetId) {
 		Optional<Environment> environment = datasetEnvironmentProvider.findEnvironment(datasetId);
 		if (environment.isEmpty()) {
 			return List.of();
@@ -96,7 +87,7 @@ public class XodusDatasetCatalogRepository implements DatasetCatalogRepository {
 	}
 
 	@Override
-	public Optional<ConceptRecord> findConcept(String conceptId) {
+	public Optional<Concept> findConcept(String conceptId) {
 		Optional<String> derivedDatasetId = ScopedId.extractDatasetId(conceptId);
 		if (derivedDatasetId.isEmpty()) {
 			return Optional.empty();
@@ -111,12 +102,12 @@ public class XodusDatasetCatalogRepository implements DatasetCatalogRepository {
 			if (entry == null) {
 				return Optional.empty();
 			}
-			return Optional.of(deserialize(StringBinding.entryToString(entry), ConceptRecord.class));
+			return Optional.of(deserialize(StringBinding.entryToString(entry), Concept.class));
 		});
 	}
 
 	@Override
-	public void saveConcept(ConceptRecord concept) {
+	public void saveConcept(Concept concept) {
 		String datasetId = ScopedId.extractDatasetId(concept.id())
 				.orElseThrow(() -> new IllegalArgumentException("Concept id is not scoped by dataset: " + concept.id()));
 		Environment environment = datasetEnvironmentProvider.getOrCreateEnvironment(datasetId);
@@ -140,15 +131,6 @@ public class XodusDatasetCatalogRepository implements DatasetCatalogRepository {
 			var conceptsStore = environment.get().openStore(CONCEPT_STORE, StoreConfig.WITHOUT_DUPLICATES, tx);
 			return conceptsStore.delete(tx, StringBinding.stringToEntry(conceptId));
 		});
-	}
-
-	@Override
-	public List<TableRecord> listTables() {
-		List<TableRecord> tables = new ArrayList<>();
-		for (String datasetId : datasetEnvironmentProvider.listDatasetIds()) {
-			tables.addAll(listTablesForDataset(datasetId));
-		}
-		return tables;
 	}
 
 	@Override
@@ -210,11 +192,11 @@ public class XodusDatasetCatalogRepository implements DatasetCatalogRepository {
 		});
 	}
 
-	private List<ConceptRecord> readAllConcepts(jetbrains.exodus.env.Store conceptsStore, Transaction tx) {
-		List<ConceptRecord> result = new ArrayList<>();
+	private List<Concept> readAllConcepts(jetbrains.exodus.env.Store conceptsStore, Transaction tx) {
+		List<Concept> result = new ArrayList<>();
 		try (Cursor cursor = conceptsStore.openCursor(tx)) {
 			while (cursor.getNext()) {
-				result.add(deserialize(StringBinding.entryToString(cursor.getValue()), ConceptRecord.class));
+				result.add(deserialize(StringBinding.entryToString(cursor.getValue()), Concept.class));
 			}
 		}
 		return result;

@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.bakdata.conquery.quarkus.api.config.StorageRuntimeConfig;
+import com.bakdata.conquery.quarkus.config.StorageRuntimeConfig;
 import io.quarkus.arc.properties.IfBuildProperty;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;

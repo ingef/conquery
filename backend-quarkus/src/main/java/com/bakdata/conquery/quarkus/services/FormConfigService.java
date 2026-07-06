@@ -1,10 +1,12 @@
-package com.bakdata.conquery.quarkus.api;
+package com.bakdata.conquery.quarkus.services;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import com.bakdata.conquery.quarkus.api.DatasetFormConfigResource;
+import com.bakdata.conquery.quarkus.api.FormConfigResource;
 import com.bakdata.conquery.quarkus.storage.meta.ManagerMetaStorage;
 import com.bakdata.conquery.quarkus.storage.model.StoredFormConfig;
 import jakarta.enterprise.context.ApplicationScoped;

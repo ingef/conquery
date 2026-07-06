@@ -6,9 +6,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import com.bakdata.conquery.quarkus.api.config.ConceptsRuntimeConfig;
-import com.bakdata.conquery.quarkus.api.config.DatasetsRuntimeConfig;
-import com.bakdata.conquery.quarkus.api.config.TablesRuntimeConfig;
 import com.bakdata.conquery.quarkus.util.ScopedId;
 import io.quarkus.arc.properties.IfBuildProperty;
 import jakarta.annotation.PostConstruct;
@@ -20,48 +17,18 @@ import jakarta.inject.Inject;
 public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository {
 
 	@Inject
-	DatasetsRuntimeConfig datasetsConfig;
-
-	@Inject
-	ConceptsRuntimeConfig conceptsConfig;
-
-	@Inject
-	TablesRuntimeConfig tablesConfig;
-
-	@Inject
 	DatasetMetadataFolderLoader metadataFolderLoader;
 
 	private Map<String, DatasetRecord> datasetsById = Map.of();
-	private Map<String, Map<String, ConceptRecord>> conceptsByDatasetId = Map.of();
+	private Map<String, Map<String, Concept>> conceptsByDatasetId = Map.of();
 	private Map<String, Map<String, TableRecord>> tablesByDatasetId = Map.of();
 
 	@PostConstruct
 	void init() {
 		Map<String, DatasetRecord> datasetIndex = new LinkedHashMap<>();
-		Map<String, Map<String, ConceptRecord>> conceptDatasetIndex = new LinkedHashMap<>();
+		Map<String, Map<String, Concept>> conceptDatasetIndex = new LinkedHashMap<>();
 		Map<String, Map<String, TableRecord>> tableDatasetIndex = new LinkedHashMap<>();
 
-		datasetsConfig.datasets().orElse(List.of()).forEach(dataset -> datasetIndex.put(dataset.id(), new DatasetRecord(dataset.id(), dataset.label())));
-		conceptsConfig.concepts().orElse(List.of()).forEach(concept -> {
-			validateScopedIdBelongsToDataset(concept.id(), concept.dataset(), "concept");
-			ConceptRecord record = new ConceptRecord(concept.id(), concept.label());
-			conceptDatasetIndex.computeIfAbsent(concept.dataset(), ignored -> new LinkedHashMap<>()).put(record.id(), record);
-		});
-		tablesConfig.tables().orElse(List.of()).forEach(table -> {
-			validateScopedIdBelongsToDataset(table.id(), table.dataset(), "table");
-			TableRecord record = new TableRecord(
-					table.id(),
-					table.label(),
-					table.columns().stream().map(column -> new ColumnRecord(
-							column.id(),
-							column.label(),
-							parseColumnType(column.type()),
-							blankToNull(column.secondaryId())
-					)).toList(),
-					blankToNull(table.primaryColumn())
-			);
-			tableDatasetIndex.computeIfAbsent(table.dataset(), ignored -> new LinkedHashMap<>()).put(record.id(), record);
-		});
 		metadataFolderLoader.loadConfiguredDatasets().forEach(dataset -> {
 			datasetIndex.put(dataset.dataset().id(), dataset.dataset());
 			conceptDatasetIndex.put(dataset.dataset().id(), new LinkedHashMap<>(dataset.conceptsById()));
@@ -94,23 +61,18 @@ public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository 
 	}
 
 	@Override
-	public List<ConceptRecord> listConcepts() {
-		return conceptsByDatasetId.values().stream().flatMap(map -> map.values().stream()).toList();
-	}
-
-	@Override
-	public List<ConceptRecord> listConceptsForDataset(String datasetId) {
+	public List<Concept> listConceptsForDataset(String datasetId) {
 		return conceptsByDatasetId.getOrDefault(datasetId, Map.of()).values().stream().toList();
 	}
 
 	@Override
-	public Optional<ConceptRecord> findConcept(String conceptId) {
+	public Optional<Concept> findConcept(String conceptId) {
 		return ScopedId.extractDatasetId(conceptId)
 					   .flatMap(datasetId -> Optional.ofNullable(conceptsByDatasetId.getOrDefault(datasetId, Map.of()).get(conceptId)));
 	}
 
 	@Override
-	public void saveConcept(ConceptRecord concept) {
+	public void saveConcept(Concept concept) {
 		throw readOnly();
 	}
 
@@ -119,12 +81,6 @@ public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository 
 		throw readOnly();
 	}
 
-	@Override
-	public List<TableRecord> listTables() {
-		return tablesByDatasetId.values().stream().flatMap(map -> map.values().stream()).toList();
-	}
-
-	@Override
 	public List<TableRecord> listTablesForDataset(String datasetId) {
 		return tablesByDatasetId.getOrDefault(datasetId, Map.of()).values().stream().toList();
 	}

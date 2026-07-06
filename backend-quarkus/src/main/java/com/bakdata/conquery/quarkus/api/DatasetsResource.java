@@ -6,10 +6,17 @@ import java.io.UncheckedIOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.quarkus.api.config.EntityPreviewRuntimeConfig;
-import com.bakdata.conquery.quarkus.api.config.FormQueriesRuntimeConfig;
+import com.bakdata.conquery.quarkus.config.EntityPreviewRuntimeConfig;
+import com.bakdata.conquery.quarkus.config.FormQueriesRuntimeConfig;
+import com.bakdata.conquery.quarkus.services.DatasetService;
+import com.bakdata.conquery.quarkus.services.EntityQueryService;
+import com.bakdata.conquery.quarkus.services.QueryStateService;
+import com.bakdata.conquery.quarkus.services.QueryUploadService;
+import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
+import com.bakdata.conquery.quarkus.util.ScopedId;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -95,18 +102,18 @@ public class DatasetsResource {
 		datasetService.requireDataset(datasetId);
 
 		java.util.Map<String, ConceptsResponse.ConceptSummaryResponse> concepts = new LinkedHashMap<>();
-		datasetService.listConceptsForDataset(datasetId).forEach(entry -> concepts.put(
+		datasetService.listRootConceptsForDataset(datasetId).forEach(entry -> concepts.put(
 				entry.id(),
 				new ConceptsResponse.ConceptSummaryResponse(
 						entry.label(),
 						null,
 						true,
-						List.of(),
+						entry.childrenIds(),
 						0L,
 						0L,
 						true,
-						false,
-						List.of(),
+						!entry.children().isEmpty(),
+						datasetService.listTablesForDataset(datasetId(entry.id())).stream().map(this::toTableResponse).toList(),
 						List.of()
 				)
 		));
@@ -116,6 +123,48 @@ public class DatasetsResource {
 				concepts
 		);
 	}
+
+
+	private ConceptResource.TableResponse toTableResponse(DatasetCatalogRepository.TableRecord table) {
+		List<ConceptResource.ColumnResponse> columns = table.columns().stream().map(this::toColumnResponse).toList();
+		List<ConceptResource.FilterResponse> filters = columns.stream()
+				.map(column -> new ConceptResource.FilterResponse(column.id(), column.label(), null, null, column.type().name()))
+				.toList();
+		List<String> supportedSecondaryIds = table.columns().stream()
+				.map(DatasetCatalogRepository.ColumnRecord::secondaryId)
+				.filter(Objects::nonNull)
+				.distinct()
+				.toList();
+
+		return new ConceptResource.TableResponse(
+				table.id(),
+				datasetId(table.id()),
+				table.label(),
+				false,
+				true,
+				filters,
+				List.of(),
+				columns,
+				table.primaryColumn(),
+				supportedSecondaryIds,
+				null
+		);
+	}
+
+	private String datasetId(String scopedId) {
+		return ScopedId.extractDatasetId(scopedId)
+				.orElseThrow(() -> new IllegalStateException("Expected dataset-scoped id but got: " + scopedId));
+	}
+
+	private ConceptResource.ColumnResponse toColumnResponse(DatasetCatalogRepository.ColumnRecord column) {
+		return new ConceptResource.ColumnResponse(
+				column.id(),
+				column.label(),
+				column.type(),
+				column.secondaryId()
+		);
+	}
+
 
 	@GET
 	@Path("/{datasetId}/form-queries")

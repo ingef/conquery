@@ -29,9 +29,9 @@ class DatasetsResourceTest {
 				.when().get("/api/datasets/imdb/entity-preview")
 				.then()
 				.statusCode(200)
-				.body("all[0].name", equalTo("imdb:entities"))
+				.body("all[0].name", equalTo("all:entities"))
 				.body("all[0].label", equalTo("Entities"))
-				.body("default[0].name", equalTo("imdb:entities"))
+				.body("default[0].name", equalTo("default:entities"))
 				.body("default[0].label", equalTo("Entities"))
 				.body("searchConcept", nullValue())
 				.body("searchFilters.size()", equalTo(0));

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.bakdata.conquery.quarkus.services.DatasetService;
+import com.bakdata.conquery.quarkus.services.FormConfigService;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -25,10 +27,10 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 public class DatasetFormConfigResource {
 
 	@Inject
-	DatasetService datasetService;
+    DatasetService datasetService;
 
 	@Inject
-	FormConfigService formConfigService;
+    FormConfigService formConfigService;
 
 	@Inject
 	Instance<SecurityIdentity> identity;
