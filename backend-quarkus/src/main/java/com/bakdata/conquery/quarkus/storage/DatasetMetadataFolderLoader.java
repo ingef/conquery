@@ -12,8 +12,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
+@Slf4j
 public class DatasetMetadataFolderLoader {
 
 	@Inject
@@ -22,15 +27,16 @@ public class DatasetMetadataFolderLoader {
 	@Inject
 	ObjectMapper objectMapper;
 
+	@Inject
+	Validator validator;
+
 	public List<LoadedDatasetMetadata> loadConfiguredDatasets() {
 		if (!metadataConfig.enabled()) {
 			return List.of();
 		}
 
-		String rootPath = metadataConfig.rootPath()
-										 .orElseThrow(() -> new IllegalStateException("conquery.metadata.root-path is required when metadata ingestion is enabled."));
-		List<String> folders = metadataConfig.folders()
-											 .orElseThrow(() -> new IllegalStateException("conquery.metadata.folders must contain at least one folder when metadata ingestion is enabled."));
+		String rootPath = metadataConfig.rootPath().orElseThrow(() -> new IllegalStateException("conquery.metadata.root-path is required when metadata ingestion is enabled."));
+		List<String> folders = metadataConfig.folders().orElseThrow(() -> new IllegalStateException("conquery.metadata.folders must contain at least one folder when metadata ingestion is enabled."));
 		if (folders.isEmpty()) {
 			throw new IllegalStateException("conquery.metadata.folders must not be empty when metadata ingestion is enabled.");
 		}
@@ -63,11 +69,8 @@ public class DatasetMetadataFolderLoader {
 		Map<String, DatasetCatalogRepository.Concept> conceptsById = loadConcepts(folderPath, datasetId);
 		Map<String, DatasetCatalogRepository.TableRecord> tablesById = loadTables(folderPath, datasetId);
 
-		return new LoadedDatasetMetadata(
-				dataset,
-				Map.copyOf(conceptsById),
-				Map.copyOf(tablesById)
-		);
+		log.debug("Loaded dataset {} with {} concepts and {} tables", datasetId, conceptsById.size(), tablesById.size());
+		return new LoadedDatasetMetadata(dataset, Map.copyOf(conceptsById), Map.copyOf(tablesById));
 	}
 
 	private Map<String, DatasetCatalogRepository.Concept> loadConcepts(Path folderPath, String datasetId) {
@@ -78,76 +81,83 @@ public class DatasetMetadataFolderLoader {
 
 		Map<String, DatasetCatalogRepository.Concept> conceptsById = new LinkedHashMap<>();
 		try (Stream<Path> files = Files.list(conceptsDir)) {
-			files.filter(Files::isRegularFile)
-				 .filter(path -> path.getFileName().toString().endsWith(".concept.json"))
-				 .sorted()
-				 .forEach(path -> {
-					 ConceptPayload payload = read(path, ConceptPayload.class);
-					 String conceptName = firstNonBlank(payload.name(), stripSuffix(path.getFileName().toString(), ".concept.json"))
-							 .orElseThrow(() -> new IllegalStateException("Concept file has no name: " + path));
-					 String conceptId = conceptName.equals(datasetId) ? conceptName : ensureDatasetScopedId(datasetId, conceptName);
-					 conceptsById.put(conceptId,collectConcept(payload, conceptId));
-				 });
-		}
-		catch (IOException e) {
+			files.filter(Files::isRegularFile).filter(path -> path.getFileName().toString().endsWith(".concept.json")).sorted().forEach(path -> {
+				ConceptPayload payload = read(path, ConceptPayload.class);
+				String conceptName = firstNonBlank(payload.name(), stripSuffix(path.getFileName().toString(), ".concept.json")).orElseThrow(() -> new IllegalStateException("Concept file has no name: " + path));
+
+				Set<ConstraintViolation<ConceptPayload>> constraintViolations = validator.validate(payload);
+				if (!constraintViolations.isEmpty()) {
+					throw new ConstraintViolationException("Failed to validate concept payload: %s".formatted(path), constraintViolations);
+				}
+				String conceptId = conceptName.equals(datasetId) ? conceptName : ensureDatasetScopedId(datasetId, conceptName);
+				conceptsById.put(conceptId, collectConcept(payload, conceptId));
+			});
+		} catch (IOException e) {
 			throw new IllegalStateException("Failed to list concept metadata in " + conceptsDir, e);
 		}
 
+		log.debug("Loaded dataset {} with {} concepts", datasetId, conceptsById.size());
 		return conceptsById;
 	}
 
-	private DatasetCatalogRepository.Concept collectConcept(
-			ConceptPayload payload,
-			String thisId
-			) {
+	private DatasetCatalogRepository.Concept collectConcept(ConceptPayload payload, String conceptId) {
 		String conceptLabel = firstNonBlank(payload.label()).orElseGet(() -> payload.name);
 		List<ConceptElementPayload> children = Optional.ofNullable(payload.children()).orElse(List.of());
 
 		Map<String, DatasetCatalogRepository.ConceptElement> conceptElementsById = new LinkedHashMap<>();
-		List<String> directChildIds = children.stream()
-											  .map(child -> childId(thisId, child))
-											  .toList();
+		List<String> directChildIds = children.stream().map(child -> childId(conceptId, child)).toList();
 
-		children.forEach(child -> collectConceptChildren(child, childId(thisId, child), thisId, conceptElementsById));
+		children.forEach(child -> collectConceptChildren(child, childId(conceptId, child), conceptId, conceptElementsById));
 
-		List<DatasetCatalogRepository.Connector> connectors = Optional.ofNullable(payload.connectors()).orElse(List.of()).stream().map(p -> new DatasetCatalogRepository.Connector(
-				p.column,
-				p.label,
-				p.name,
-				Optional.ofNullable(p.selects()).orElse(List.of()),
-				Optional.ofNullable(p.filters()).orElse(List.of()),
-				Optional.ofNullable(p.validityDates()).orElse(List.of()),
-				p.isDefault
-		)).toList();
+		List<DatasetCatalogRepository.Connector> connectors = payload.connectors().stream().map(p -> {
 
+			String datasetName = ScopedId.extractDatasetId(conceptId).orElseThrow();
+			String tableName = p.table;
+			if (tableName != null && tableName.startsWith(datasetName + ".")) {
+				// Shorten tableId to name
+				tableName = tableName.substring(datasetName.length() + 1);
+			}
+			String columnName = p.column;
+			if (columnName != null) {
+				if (tableName != null && columnName.startsWith(datasetName + "." + tableName + ".")) {
+					// Shorten columnId to name
+					columnName = columnName.substring(datasetName.length() + 1 + tableName.length() + 1);
+				} else {
+					String[] split = columnName.split("\\.");
+					if (split.length != 2) {
+						throw new IllegalArgumentException("Invalid column name: " + columnName);
+					}
 
-		return new DatasetCatalogRepository.Concept(thisId, conceptLabel, payload.description, Map.copyOf(conceptElementsById), directChildIds, connectors);
+					tableName = split[0];
+					columnName = split[1];
+				}
+			}
+
+			return new DatasetCatalogRepository.Connector(
+					datasetName, tableName, columnName, conceptId, p.label, p.name, List.of(), // Optional.of(p.selects().stream().map(SelectPayload::new).toList()).orElse(List.of()),
+					Optional.ofNullable(p.filters()).orElse(List.of()).stream().map(DatasetCatalogRepository.Filter.class::cast).toList(), Optional.ofNullable(p.validityDates()).orElse(List.of()), p.isDefault
+			);
+
+		}).toList();
+
+		log.debug("Loaded concept {} with {} children", conceptId, children.size());
+
+		return new DatasetCatalogRepository.Concept(conceptId, conceptLabel, payload.description, Map.copyOf(conceptElementsById), directChildIds, connectors);
 	}
 
-	private void collectConceptChildren(
-			ConceptElementPayload payload,
-			String conceptId,
-			String parentId,
-			Map<String, DatasetCatalogRepository.ConceptElement> conceptElementsById
-	) {
+	private void collectConceptChildren(ConceptElementPayload payload, String conceptId, String parentId, Map<String, DatasetCatalogRepository.ConceptElement> conceptElementsById) {
 		String conceptLabel = firstNonBlank(payload.label()).orElse(payload.name);
 		List<ConceptElementPayload> children = Optional.ofNullable(payload.children()).orElse(List.of());
-		List<String> childIds = children.stream()
-										.map(child -> childId(conceptId, child))
-										.toList();
+		List<String> childIds = children.stream().map(child -> childId(conceptId, child)).toList();
 		DatasetCatalogRepository.ConceptCondition condition = toConceptCondition(payload.condition());
 
-		conceptElementsById.put(
-				conceptId,
-				new DatasetCatalogRepository.ConceptElement(conceptId, conceptLabel, payload.description, parentId, childIds, condition)
-		);
+		conceptElementsById.put(conceptId, new DatasetCatalogRepository.ConceptElement(conceptId, conceptLabel, payload.description, parentId, childIds, condition));
 		children.forEach(child -> collectConceptChildren(child, childId(conceptId, child), conceptId, conceptElementsById));
 	}
 
 
 	private String childId(String parentId, ConceptElementPayload child) {
-		String childName = firstNonBlank(child.name(), child.label())
-				.orElseThrow(() -> new IllegalStateException("Concept child of " + parentId + " has no name."));
+		String childName = firstNonBlank(child.name(), child.label()).orElseThrow(() -> new IllegalStateException("Concept child of " + parentId + " has no name."));
 		return parentId + "." + childName;
 	}
 
@@ -155,16 +165,8 @@ public class DatasetMetadataFolderLoader {
 		if (condition == null) {
 			return null;
 		}
-		String type = firstNonBlank(condition.type())
-				.orElseThrow(() -> new IllegalStateException("Concept condition is missing required type."));
-		return new DatasetCatalogRepository.ConceptCondition(
-				type,
-				condition.values(),
-				condition.column(),
-				Optional.ofNullable(condition.conditions()).orElse(List.of()).stream()
-						.map(this::toConceptCondition)
-						.toList()
-		);
+		String type = firstNonBlank(condition.type()).orElseThrow(() -> new IllegalStateException("Concept condition is missing required type."));
+		return new DatasetCatalogRepository.ConceptCondition(type, condition.values(), condition.column(), Optional.ofNullable(condition.conditions()).orElse(List.of()).stream().map(this::toConceptCondition).toList());
 	}
 
 	private Map<String, DatasetCatalogRepository.TableRecord> loadTables(Path folderPath, String datasetId) {
@@ -175,39 +177,25 @@ public class DatasetMetadataFolderLoader {
 
 		Map<String, DatasetCatalogRepository.TableRecord> tablesById = new LinkedHashMap<>();
 		try (Stream<Path> files = Files.list(tablesDir)) {
-			files.filter(Files::isRegularFile)
-				 .filter(path -> path.getFileName().toString().endsWith(".table.json"))
-				 .sorted()
-				 .forEach(path -> {
-					 TablePayload payload = read(path, TablePayload.class);
-					 String tableName = firstNonBlank(payload.name(), stripSuffix(path.getFileName().toString(), ".table.json"))
-							 .orElseThrow(() -> new IllegalStateException("Table file has no name: " + path));
-					 String tableId = ensureDatasetScopedId(datasetId, tableName);
-					 String tableLabel = firstNonBlank(payload.label(), tableName).orElse(tableName);
-					 List<DatasetCatalogRepository.ColumnRecord> columns = Optional.ofNullable(payload.columns()).orElse(List.of()).stream()
-																					.map(column -> toColumn(datasetId, tableName, tableId, column))
-																					.toList();
-					 String primaryColumn = toColumnId(datasetId, tableName, tableId, payload.primaryColumn()).orElse(null);
-					 tablesById.put(tableId, new DatasetCatalogRepository.TableRecord(tableId, tableLabel, columns, primaryColumn));
-				 });
-		}
-		catch (IOException e) {
+			files.filter(Files::isRegularFile).filter(path -> path.getFileName().toString().endsWith(".table.json")).sorted().forEach(path -> {
+				TablePayload payload = read(path, TablePayload.class);
+				String tableName = firstNonBlank(payload.name(), stripSuffix(path.getFileName().toString(), ".table.json")).orElseThrow(() -> new IllegalStateException("Table file has no name: " + path));
+				String tableId = ensureDatasetScopedId(datasetId, tableName);
+				String tableLabel = firstNonBlank(payload.label(), tableName).orElse(tableName);
+				List<DatasetCatalogRepository.ColumnRecord> columns = Optional.ofNullable(payload.columns()).orElse(List.of()).stream().map(column -> toColumn(datasetId, tableName, tableId, column)).toList();
+				String primaryColumn = toColumnId(datasetId, tableName, tableId, payload.primaryColumn()).orElse(null);
+				tablesById.put(tableId, new DatasetCatalogRepository.TableRecord(tableId, tableLabel, columns, primaryColumn));
+			});
+		} catch (IOException e) {
 			throw new IllegalStateException("Failed to list table metadata in " + tablesDir, e);
 		}
 
 		return tablesById;
 	}
 
-	private DatasetCatalogRepository.ColumnRecord toColumn(
-			String datasetId,
-			String tableName,
-			String tableId,
-			ColumnPayload payload
-	) {
-		String rawColumnName = firstNonBlank(payload.name(), payload.id())
-				.orElseThrow(() -> new IllegalStateException("Column entry is missing a name/id in table " + tableId));
-		String columnId = toColumnId(datasetId, tableName, tableId, rawColumnName)
-				.orElseThrow(() -> new IllegalStateException("Column id must not be blank in table " + tableId));
+	private DatasetCatalogRepository.ColumnRecord toColumn(String datasetId, String tableName, String tableId, ColumnPayload payload) {
+		String rawColumnName = firstNonBlank(payload.name(), payload.id()).orElseThrow(() -> new IllegalStateException("Column entry is missing a name/id in table " + tableId));
+		String columnId = toColumnId(datasetId, tableName, tableId, rawColumnName).orElseThrow(() -> new IllegalStateException("Column id must not be blank in table " + tableId));
 		String columnLabel = firstNonBlank(payload.label(), rawColumnName).orElse(rawColumnName);
 		DatasetCatalogRepository.ColumnType type = parseColumnType(payload.type());
 		String secondaryId = normalizeBlank(payload.secondaryId()).orElse(null);
@@ -256,26 +244,22 @@ public class DatasetMetadataFolderLoader {
 	private <T> T read(Path path, Class<T> type) {
 		try {
 			return objectMapper.readValue(path.toFile(), type);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new IllegalStateException("Failed to parse metadata file: " + path, e);
 		}
 	}
 
 	private Path toFolderPath(Path root, String configuredFolder) {
-		String value = normalizeBlank(configuredFolder)
-				.orElseThrow(() -> new IllegalStateException("conquery.metadata.folders must not contain blank entries."));
+		String value = normalizeBlank(configuredFolder).orElseThrow(() -> new IllegalStateException("conquery.metadata.folders must not contain blank entries."));
 		Path configuredPath = Path.of(value);
 		return configuredPath.isAbsolute() ? configuredPath : root.resolve(configuredPath);
 	}
 
 	private DatasetCatalogRepository.ColumnType parseColumnType(String rawType) {
-		String type = normalizeBlank(rawType)
-				.orElseThrow(() -> new IllegalStateException("Table column type must not be blank."));
+		String type = normalizeBlank(rawType).orElseThrow(() -> new IllegalStateException("Table column type must not be blank."));
 		try {
 			return DatasetCatalogRepository.ColumnType.valueOf(type.trim().toUpperCase(java.util.Locale.ROOT));
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new IllegalStateException("Unsupported table column type: " + rawType, e);
 		}
 	}
@@ -306,85 +290,67 @@ public class DatasetMetadataFolderLoader {
 	}
 
 	public record LoadedDatasetMetadata(
-			DatasetCatalogRepository.DatasetRecord dataset,
-			Map<String, DatasetCatalogRepository.Concept> conceptsById,
+			DatasetCatalogRepository.DatasetRecord dataset, Map<String, DatasetCatalogRepository.Concept> conceptsById,
 			Map<String, DatasetCatalogRepository.TableRecord> tablesById
 	) {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private record DatasetPayload(
-			String id,
-			String label
+			String id, String label
 	) {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private record ConceptPayload(
-			String name,
-			String label,
-			String description,
-			List<ConceptElementPayload> children,
-			List<ConnectorPayload> connectors
+			String name, String label, String description, List<ConceptElementPayload> children,
+			@NotEmpty @NotNull List<ConnectorPayload> connectors
 	) {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private record ConceptElementPayload(
-			String name,
-			String label,
-			String description,
-			List<ConceptElementPayload> children,
+			String name, String label, String description, List<ConceptElementPayload> children,
 			ConditionPayload condition
 	) {
 	}
 
 	private record ConnectorPayload(
-			String column,
-			String label,
-			String name,
-			List<DatasetCatalogRepository.Select> selects,
-			List<DatasetCatalogRepository.Filter> filters,
+			String table, String column, String label, String name, List<SelectPayload> selects,
+			List<FilterPayload> filters,
 			// Use internal rep directly as we won't need data mangling
-			List<DatasetCatalogRepository.ValidityDate> validityDates,
-			boolean isDefault
-	)
-	{
+			List<DatasetCatalogRepository.ValidityDate> validityDates, boolean isDefault
+	) {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	// TODO implement polymorphism
-	private record SelectPayload(){}
+	private record SelectPayload() implements DatasetCatalogRepository.Select {
+	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	// TODO implement polymorphism
-	private record FilterPayload(){}
+	private record FilterPayload(
+			String id, String name, String label, String type, List<String> options, String unit, String tooltip,
+			boolean allowDropFile, Object defaultValue
+	) implements DatasetCatalogRepository.Filter {
+	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private record ConditionPayload(
-			String type,
-			List<String> values,
-			String column,
-			List<ConditionPayload> conditions
+			String type, List<String> values, String column, List<ConditionPayload> conditions
 	) {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private record TablePayload(
-			String name,
-			String label,
-			String primaryColumn,
-			List<ColumnPayload> columns
+			String name, String label, String primaryColumn, List<ColumnPayload> columns
 	) {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private record ColumnPayload(
-			String id,
-			String name,
-			String label,
-			String type,
-			String secondaryId
+			String id, String name, String label, String type, String secondaryId
 	) {
 	}
 

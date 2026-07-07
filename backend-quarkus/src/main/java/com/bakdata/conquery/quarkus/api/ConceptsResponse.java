@@ -29,7 +29,7 @@ public record ConceptsResponse(
 								  + "If false, this node is a folder/structure node and should not be draggable.")
 			Boolean detailsAvailable,
 			Boolean codeListResolvable,
-			List<ConceptResource.TableResponse> tables,
+			List<ConceptResource.ConnectorResponse> tables,
 			List<ConceptResource.SelectResponse> selects
 	) {
 	}

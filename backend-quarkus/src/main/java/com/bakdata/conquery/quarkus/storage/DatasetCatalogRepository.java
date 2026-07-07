@@ -68,7 +68,10 @@ public interface DatasetCatalogRepository {
 	){}
 
 	record Connector(
+			String dataset,
+			String table,
 			String column,
+			String concept,
 			String label,
 			String name,
 			List<Select> selects,
@@ -76,7 +79,18 @@ public interface DatasetCatalogRepository {
 			// Use internal rep directly as we won't need data mangling
 			List<ValidityDate> validityDates,
 			boolean isDefault
-	){}
+	){
+		public String datasetId() {
+			return dataset;
+		}
+
+		public String tableId() {
+			return dataset + "." + table;
+		}
+		public String id() {
+			return dataset + "." + concept + "." + name;
+		}
+	}
 
 	record ValidityDate(
 			String column,
@@ -85,7 +99,12 @@ public interface DatasetCatalogRepository {
 	) {}
 
 	interface Select{}
-	interface Filter{}
+	interface Filter{
+		String id();
+		String label();
+		String type();
+		List<String> options();
+	}
 
 	record ConceptCondition(
 			String type,

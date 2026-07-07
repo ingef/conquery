@@ -7,6 +7,7 @@ import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import com.bakdata.conquery.quarkus.util.ScopedId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.smallrye.common.constraint.Nullable;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -36,99 +37,34 @@ public class ConceptResource {
 	public Map<String, ConceptNodeResponse> getConcept(@PathParam("conceptId") @NotBlank String conceptId) {
 
 		DatasetCatalogRepository.Concept concept = datasetService.requireConcept(conceptId);
-		String datasetId = ScopedId.extractDatasetId(conceptId)
-								   .orElseThrow(() -> new IllegalStateException("Expected dataset-scoped concept id but got: " + conceptId));
+		String datasetId = ScopedId.extractDatasetId(conceptId).orElseThrow(() -> new IllegalStateException("Expected dataset-scoped concept id but got: " + conceptId));
 
 		Map<String, ConceptNodeResponse> nodes = new HashMap<>();
 
 		Map<String, DatasetCatalogRepository.ConceptElement> children = concept.children();
 
 		// Add main node
-		ConceptNodeResponse node = new ConceptNodeResponse(
-				concept.label(),
-				concept.description(),
-				true,
-				concept.childrenIds(),
-				0L,
-				0L,
-				true,
-				!children.isEmpty(),
-				datasetService.listTablesForDataset(datasetId).stream().map(this::toTableResponse).toList(),
-				List.of()
-		);
+		ConceptNodeResponse node = new ConceptNodeResponse(concept.label(), concept.description(), true, concept.childrenIds(), 0L, 0L, true, !children.isEmpty(), concept.connectors().stream().map(this::toConnectorResponse).toList(), List.of());
 		nodes.put(conceptId, node);
 
 		// Add children
 		children.forEach((id, child) -> {
-            ConceptNodeResponse childNode = new ConceptNodeResponse(
-                    child.label(),
-                    child.description(),
-                    true,
-                    child.children(),
-                    0L,
-                    0L,
-                    true,
-                    !children.isEmpty(),
-                    List.of(),
-                    List.of()
-            );
-            nodes.put(id, childNode);
-        });
+			ConceptNodeResponse childNode = new ConceptNodeResponse(child.label(), child.description(), true, child.children(), 0L, 0L, true, !children.isEmpty(), List.of(), List.of());
+			nodes.put(id, childNode);
+		});
 
 		return nodes;
 	}
 
-	private TableResponse toTableResponse(DatasetCatalogRepository.TableRecord table) {
-		List<ColumnResponse> columns = table.columns().stream().map(this::toColumnResponse).toList();
-		List<FilterResponse> filters = columns.stream()
-											  .map(column -> new FilterResponse(column.id(), column.label(), null, null, column.type().name()))
-											  .toList();
-		List<String> supportedSecondaryIds = table.columns().stream()
-												 .map(DatasetCatalogRepository.ColumnRecord::secondaryId)
-												 .filter(Objects::nonNull)
-												 .distinct()
-												 .toList();
-
-		return new TableResponse(
-				table.id(),
-				tableDatasetId(table.id()),
-				table.label(),
-				false,
-				true,
-				filters,
-				List.of(),
-				columns,
-				table.primaryColumn(),
-				supportedSecondaryIds,
-				null
-		);
-	}
-
-	private ColumnResponse toColumnResponse(DatasetCatalogRepository.ColumnRecord column) {
-		return new ColumnResponse(
-				column.id(),
-				column.label(),
-				column.type(),
-				column.secondaryId()
-		);
-	}
-
-	private String tableDatasetId(String scopedId) {
-		return ScopedId.extractDatasetId(scopedId)
-					   .orElseThrow(() -> new IllegalStateException("Expected dataset-scoped table id but got: " + scopedId));
+	private ConnectorResponse toConnectorResponse(DatasetCatalogRepository.Connector connector) {
+		return new ConnectorResponse(connector.tableId(), connector.id(), connector.label(), connector.isDefault(), List.of(), List.of(), List.of());
 	}
 
 
 	@POST
 	@Path("/{conceptId}/resolve")
-	@Operation(
-			summary = "Resolve concept codes",
-			description = "Resolves uploaded concept codes to concept ids for the same dataset as the requested root concept."
-	)
-	public ConceptResolveResponse resolveConceptCodes(
-			@PathParam("conceptId") @NotBlank String conceptId,
-			@Valid @NotNull ConceptCodeList payload
-	) {
+	@Operation(summary = "Resolve concept codes", description = "Resolves uploaded concept codes to concept ids for the same dataset as the requested root concept.")
+	public ConceptResolveResponse resolveConceptCodes(@PathParam("conceptId") @NotBlank String conceptId, @Valid @NotNull ConceptCodeList payload) {
 		DatasetService.ConceptCodeResolution resolution = datasetService.resolveConceptCodes(conceptId, payload.concepts);
 		return new ConceptResolveResponse(resolution.resolvedConcepts(), resolution.unknownCodes());
 	}
@@ -142,24 +78,19 @@ public class ConceptResource {
 			Long matchingEntities,
 			Boolean detailsAvailable,
 			Boolean codeListResolvable,
-			List<TableResponse> tables,
+			List<ConnectorResponse> tables,
 			List<SelectResponse> selects
 	) {
 	}
 
-	public record TableResponse(
+	public record ConnectorResponse(
 			String id,
 			String connectorId,
 			String label,
-			Boolean exclude,
-			@JsonProperty("default")
-			Boolean defaultSelected,
+			@JsonProperty("default") Boolean isDefault,
 			List<FilterResponse> filters,
 			List<SelectResponse> selects,
-			List<ColumnResponse> columns,
-			String primaryColumn,
-			List<String> supportedSecondaryIds,
-			DateColumnResponse dateColumn
+			List<String> supportedSecondaryIds
 	) {
 	}
 
@@ -175,8 +106,7 @@ public class ConceptResource {
 			String id,
 			String label,
 			String description,
-			@JsonProperty("default")
-			Boolean defaultSelected,
+			@JsonProperty("default") Boolean defaultSelected,
 			SelectResultTypeResponse resultType
 	) {
 	}
@@ -187,46 +117,77 @@ public class ConceptResource {
 	) {
 	}
 
-	public record ElementTypeResponse(
-			String type
-	) {
+	public record ElementTypeResponse(String type) {
 	}
 
 	public record FilterResponse(
-			String id,
-			String label,
-			String description,
+
+			@NotNull String id,
+			/**
+			 * User readable name of the Filter.
+			 */
+			@NotEmpty String label,
+			/**
+			 * Kind of filter: Communicates to the frontend which UI element to use and what values are valid.
+			 */
+			@NotEmpty String type,
+			/**
+			 * Used as display unit for enumerations etc in UI elements.
+			 */
+			String unit,
+
+			/**
+			 * Displayed on hover for filters.
+			 */
 			String tooltip,
-			String type
+
+			List<FrontendValue> options,
+
+			/**
+			 * min value for range filters.
+			 */
+			Integer min,
+			/**
+			 * max value for range filters.
+			 */
+			Integer max,
+
+			String pattern,
+			/**
+			 * If true, enables users to use drag and drop files into the filter element (usually for {@link com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter}).
+			 */
+			boolean allowDropFile,
+			/**
+			 * If true, user can manually insert their input. At the moment only true for SelectFilter without any enabled backing searches.
+			 */
+			boolean creatable,
+			/**
+			 * If set, default value used for the filter by the frontend.
+			 */
+			@Nullable Object defaultValue
 	) {
 	}
 
-	public record DateColumnResponse(
-			List<ValueResponse> options,
-			String defaultValue,
-			String value,
-			String tooltip
-	) {
+	record FrontendValue(String value, String label, String optionValue) {
 	}
 
-	public record ValueResponse(
-			String value,
-			String label
-	) {
+	public record DateColumnResponse(List<ValueResponse> options, String defaultValue, String value, String tooltip) {
 	}
 
-	public record ConceptResolveResponse(
-			List<String> resolvedConcepts,
-			List<String> unknownCodes
-	) {
+	public record ValueResponse(String value, String label) {
+	}
+
+	public record ConceptResolveResponse(List<String> resolvedConcepts, List<String> unknownCodes) {
 	}
 
 	public static final class ConceptCodeList {
-		public final @NotNull @NotEmpty List<@NotBlank String> concepts;
+		public final @NotNull
+		@NotEmpty List<@NotBlank String> concepts;
 
 		@JsonCreator
 		public ConceptCodeList(@JsonProperty("concepts") List<String> concepts) {
 			this.concepts = concepts;
 		}
 	}
+
 }

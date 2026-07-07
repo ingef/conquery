@@ -17,4 +17,5 @@ public final class ScopedId {
 		}
 		return Optional.of(scopedId.substring(0, separator));
 	}
+
 }

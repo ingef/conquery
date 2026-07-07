@@ -99,7 +99,6 @@ public class DatasetsResource {
 			description = "Returns top-level concept nodes. Nodes with detailsAvailable=false represent folder/structure nodes."
 	)
 	public ConceptsResponse getConcepts(@PathParam("datasetId") String datasetId) {
-		datasetService.requireDataset(datasetId);
 
 		java.util.Map<String, ConceptsResponse.ConceptSummaryResponse> concepts = new LinkedHashMap<>();
 		datasetService.listRootConceptsForDataset(datasetId).forEach(entry -> concepts.put(
@@ -113,7 +112,7 @@ public class DatasetsResource {
 						0L,
 						true,
 						!entry.children().isEmpty(),
-						datasetService.listTablesForDataset(datasetId(entry.id())).stream().map(this::toTableResponse).toList(),
+						entry.connectors().stream().map(this::toTableResponse).toList(),
 						List.of()
 				)
 		));
@@ -125,30 +124,43 @@ public class DatasetsResource {
 	}
 
 
-	private ConceptResource.TableResponse toTableResponse(DatasetCatalogRepository.TableRecord table) {
-		List<ConceptResource.ColumnResponse> columns = table.columns().stream().map(this::toColumnResponse).toList();
-		List<ConceptResource.FilterResponse> filters = columns.stream()
-				.map(column -> new ConceptResource.FilterResponse(column.id(), column.label(), null, null, column.type().name()))
-				.toList();
-		List<String> supportedSecondaryIds = table.columns().stream()
+	private ConceptResource.ConnectorResponse toTableResponse(DatasetCatalogRepository.Connector connector) {
+		// TODO combine this with ConceptResource#toConnectorResponse
+		String tableId = connector.tableId();
+		DatasetCatalogRepository.TableRecord tableRecord = datasetService.requireTable(tableId);
+		List<String> supportedSecondaryIds = tableRecord.columns().stream()
 				.map(DatasetCatalogRepository.ColumnRecord::secondaryId)
 				.filter(Objects::nonNull)
 				.distinct()
 				.toList();
 
-		return new ConceptResource.TableResponse(
-				table.id(),
-				datasetId(table.id()),
-				table.label(),
-				false,
-				true,
-				filters,
+		return new ConceptResource.ConnectorResponse(
+				tableId,
+				connector.name(),
+				connector.label(),
+				connector.isDefault(),
+				connector.filters().stream().map(this::toFilterResponse).toList(),
 				List.of(),
-				columns,
-				table.primaryColumn(),
-				supportedSecondaryIds,
-				null
+				supportedSecondaryIds
 		);
+	}
+
+	private ConceptResource.FilterResponse toFilterResponse(DatasetCatalogRepository.Filter filter) {
+		// TODO map
+		return new ConceptResource.FilterResponse(
+				filter.id(),
+				filter.label(),
+				filter.type(),
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				false,
+				false,
+				null
+				);
 	}
 
 	private String datasetId(String scopedId) {

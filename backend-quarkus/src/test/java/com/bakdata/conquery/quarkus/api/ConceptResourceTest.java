@@ -18,11 +18,7 @@ class ConceptResourceTest {
 				.body("imdb.label", equalTo("IMDb"))
 				.body("imdb.detailsAvailable", equalTo(true))
 				.body("imdb.tables.size()", equalTo(1))
-				.body("imdb.tables[0].id", equalTo("imdb.title"))
-				.body("imdb.tables[0].columns.size()", equalTo(3))
-				.body("imdb.tables[0].columns[0].type", equalTo("INTEGER"))
-				.body("imdb.tables[0].primaryColumn", equalTo("imdb.title.id"))
-				.body("imdb.selects.size()", equalTo(0));
+				.body("imdb.tables[0].id", equalTo("imdb.title"));
 	}
 
 	@Test

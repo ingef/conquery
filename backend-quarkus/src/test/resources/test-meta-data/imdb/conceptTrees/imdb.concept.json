@@ -2,5 +2,11 @@
   "name": "imdb",
   "label": "IMDb",
   "children": [],
-  "connectors": []
+  "connectors": [
+    {
+      "name": "titles",
+      "label": "Titles",
+      "table": "title"
+    }
+  ]
 }

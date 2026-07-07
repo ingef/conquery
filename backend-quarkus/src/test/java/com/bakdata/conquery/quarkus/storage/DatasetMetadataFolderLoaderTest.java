@@ -12,16 +12,20 @@ import java.util.Optional;
 
 import com.bakdata.conquery.quarkus.config.DatasetMetadataRuntimeConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+@QuarkusTest
 class DatasetMetadataFolderLoaderTest {
 
-	@TempDir
-	Path tempDir;
+	@Inject
+	Validator validator;
 
 	@Test
-	void loadsConfiguredMetadataFolderAndScopesIds() throws Exception {
+	void loadsConfiguredMetadataFolderAndScopesIds(@TempDir Path tempDir) throws Exception {
 		Path root = tempDir.resolve("gen");
 		Path demo = root.resolve("demo");
 		Files.createDirectories(demo.resolve("conceptTrees"));
@@ -50,6 +54,13 @@ class DatasetMetadataFolderLoaderTest {
 				{
 				  "name":"icd",
 				  "label":"ICD",
+				  "connectors": [
+				  	{
+				  		"label": "kh-diagnose",
+				  		"name": "kh-diagnose",
+				  		"table": "kh_diagnose"
+				  	}
+				  ],
 				  "children":[
 				    {
 				      "name":"a00",
@@ -83,6 +94,7 @@ class DatasetMetadataFolderLoaderTest {
 
 		DatasetMetadataFolderLoader loader = new DatasetMetadataFolderLoader();
 		loader.objectMapper = new ObjectMapper();
+		loader.validator = validator;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
 			@Override
 			public boolean enabled() {
@@ -142,6 +154,7 @@ class DatasetMetadataFolderLoaderTest {
 
 		DatasetMetadataFolderLoader loader = new DatasetMetadataFolderLoader();
 		loader.objectMapper = new ObjectMapper();
+		loader.validator = validator;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
 			@Override
 			public boolean enabled() {
@@ -192,7 +205,7 @@ class DatasetMetadataFolderLoaderTest {
 	}
 
 	@Test
-	void fallsBackToFolderNameWhenDatasetJsonIsMissing() throws Exception {
+	void fallsBackToFolderNameWhenDatasetJsonIsMissing(@TempDir Path tempDir) throws Exception {
 		Path root = tempDir.resolve("test-datasets");
 		String datasetName = "fallback-dataset-name";
 		Path fallback = root.resolve(datasetName);
