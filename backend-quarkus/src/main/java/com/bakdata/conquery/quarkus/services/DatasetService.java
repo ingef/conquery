@@ -6,10 +6,12 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.quarkus.config.StorageRuntimeConfig;
+import com.bakdata.conquery.quarkus.ids.ConceptId;
+import com.bakdata.conquery.quarkus.ids.DatasetId;
+import com.bakdata.conquery.quarkus.ids.TableId;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import com.bakdata.conquery.quarkus.storage.NamespaceStorage;
 import com.bakdata.conquery.quarkus.storage.NamespaceStorageRegistry;
-import com.bakdata.conquery.quarkus.util.ScopedId;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
@@ -30,30 +32,51 @@ public class DatasetService {
 	}
 
 	public DatasetCatalogRepository.DatasetRecord requireDataset(String datasetId) {
+		return requireDataset(DatasetId.parse(datasetId));
+	}
+
+	public DatasetCatalogRepository.DatasetRecord requireDataset(DatasetId datasetId) {
 		return requireNamespace(datasetId).dataset();
 	}
 
 	public DatasetCatalogRepository.Concept requireConcept(String conceptId) {
-		NamespaceStorage namespace = requireNamespaceForScopedObject(conceptId, "concept");
+		return requireConcept(ConceptId.parse(conceptId));
+	}
+
+	public DatasetCatalogRepository.Concept requireConcept(ConceptId conceptId) {
+		NamespaceStorage namespace = requireNamespace(conceptId.datasetId());
 		return namespace.findConcept(conceptId).orElseThrow(() -> new NotFoundException("Unknown concept: " + conceptId));
 	}
 
 	public List<DatasetCatalogRepository.Concept> listRootConceptsForDataset(String datasetId) {
+		return listRootConceptsForDataset(DatasetId.parse(datasetId));
+	}
+
+	public List<DatasetCatalogRepository.Concept> listRootConceptsForDataset(DatasetId datasetId) {
 		return requireNamespace(datasetId).listConcepts();
 	}
 
 	public List<DatasetCatalogRepository.TableRecord> listTablesForDataset(String datasetId) {
+		return listTablesForDataset(DatasetId.parse(datasetId));
+	}
+
+	public List<DatasetCatalogRepository.TableRecord> listTablesForDataset(DatasetId datasetId) {
 		return requireNamespace(datasetId).listTables();
 	}
 
 	public DatasetCatalogRepository.TableRecord requireTable(String tableId) {
-		NamespaceStorage namespace = requireNamespaceForScopedObject(tableId, "table");
+		return requireTable(TableId.parse(tableId));
+	}
+
+	public DatasetCatalogRepository.TableRecord requireTable(TableId tableId) {
+		NamespaceStorage namespace = requireNamespace(tableId.datasetId());
 		return namespace.findTable(tableId).orElseThrow(() -> new NotFoundException("Unknown table: " + tableId));
 	}
 
 	public ConceptCodeResolution resolveConceptCodes(String rootConceptId, List<String> codes) {
-		DatasetCatalogRepository.Concept rootConcept = requireConcept(rootConceptId);
-		NamespaceStorage namespace = requireNamespaceForScopedObject(rootConceptId, "concept");
+		ConceptId parsedRootConceptId = ConceptId.parse(rootConceptId);
+		DatasetCatalogRepository.Concept rootConcept = requireConcept(parsedRootConceptId);
+		NamespaceStorage namespace = requireNamespace(parsedRootConceptId.datasetId());
 
 		// TODO implement with updated concept model
 		throw new NotImplementedYet();
@@ -70,7 +93,7 @@ public class DatasetService {
 //		return new ConceptCodeResolution(List.copyOf(new LinkedHashSet<>(resolvedInOrder)), unknownCodes);
 	}
 
-	private Stream<Map.Entry<String, String>> resolvableCodeEntries(DatasetCatalogRepository.ConceptElement concept) {
+	private Stream<Map.Entry<String, ConceptId>> resolvableCodeEntries(DatasetCatalogRepository.ConceptElement concept) {
 		if (concept.condition() == null) {
 			return Stream.empty();
 		}
@@ -84,15 +107,9 @@ public class DatasetService {
 		return value.trim().toLowerCase(Locale.ROOT);
 	}
 
-	private NamespaceStorage requireNamespace(String datasetId) {
+	private NamespaceStorage requireNamespace(DatasetId datasetId) {
 		return namespaceStorageRegistry.findNamespace(datasetId)
 									   .orElseThrow(() -> new NotFoundException("Unknown dataset: " + datasetId));
-	}
-
-	private NamespaceStorage requireNamespaceForScopedObject(String scopedId, String objectType) {
-		return ScopedId.extractDatasetId(scopedId)
-									   .flatMap(namespaceStorageRegistry::findNamespace)
-									   .orElseThrow(() -> new NotFoundException("Unknown " + objectType + ": " + scopedId));
 	}
 
 	public record ConceptCodeResolution(

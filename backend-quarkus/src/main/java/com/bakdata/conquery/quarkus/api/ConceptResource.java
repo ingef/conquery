@@ -2,9 +2,9 @@ package com.bakdata.conquery.quarkus.api;
 
 import java.util.*;
 
+import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.services.DatasetService;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
-import com.bakdata.conquery.quarkus.util.ScopedId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.smallrye.common.constraint.Nullable;
@@ -37,27 +37,27 @@ public class ConceptResource {
 	public Map<String, ConceptNodeResponse> getConcept(@PathParam("conceptId") @NotBlank String conceptId) {
 
 		DatasetCatalogRepository.Concept concept = datasetService.requireConcept(conceptId);
-		String datasetId = ScopedId.extractDatasetId(conceptId).orElseThrow(() -> new IllegalStateException("Expected dataset-scoped concept id but got: " + conceptId));
+		ConceptId parsedConceptId = ConceptId.parse(conceptId);
 
 		Map<String, ConceptNodeResponse> nodes = new HashMap<>();
 
-		Map<String, DatasetCatalogRepository.ConceptElement> children = concept.children();
+		Map<ConceptId, DatasetCatalogRepository.ConceptElement> children = concept.children();
 
 		// Add main node
-		ConceptNodeResponse node = new ConceptNodeResponse(concept.label(), concept.description(), true, concept.childrenIds(), 0L, 0L, true, !children.isEmpty(), concept.connectors().stream().map(this::toConnectorResponse).toList(), List.of());
-		nodes.put(conceptId, node);
+		ConceptNodeResponse node = new ConceptNodeResponse(concept.label(), concept.description(), true, concept.childrenIds().stream().map(ConceptId::toString).toList(), 0L, 0L, true, !children.isEmpty(), concept.connectors().stream().map(this::toConnectorResponse).toList(), List.of());
+		nodes.put(parsedConceptId.toString(), node);
 
 		// Add children
 		children.forEach((id, child) -> {
-			ConceptNodeResponse childNode = new ConceptNodeResponse(child.label(), child.description(), true, child.children(), 0L, 0L, true, !children.isEmpty(), List.of(), List.of());
-			nodes.put(id, childNode);
+			ConceptNodeResponse childNode = new ConceptNodeResponse(child.label(), child.description(), true, child.children().stream().map(ConceptId::toString).toList(), 0L, 0L, true, !children.isEmpty(), List.of(), List.of());
+			nodes.put(id.toString(), childNode);
 		});
 
 		return nodes;
 	}
 
 	private ConnectorResponse toConnectorResponse(DatasetCatalogRepository.Connector connector) {
-		return new ConnectorResponse(connector.tableId(), connector.id(), connector.label(), connector.isDefault(), List.of(), List.of(), List.of());
+		return new ConnectorResponse(connector.tableId().toString(), connector.id().toString(), connector.label(), connector.isDefault(), List.of(), List.of(), List.of());
 	}
 
 

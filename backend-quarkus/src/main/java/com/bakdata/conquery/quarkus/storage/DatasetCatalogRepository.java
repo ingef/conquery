@@ -2,47 +2,53 @@ package com.bakdata.conquery.quarkus.storage;
 
 import java.util.*;
 
+import com.bakdata.conquery.quarkus.ids.ColumnId;
+import com.bakdata.conquery.quarkus.ids.ConceptId;
+import com.bakdata.conquery.quarkus.ids.ConnectorId;
+import com.bakdata.conquery.quarkus.ids.DatasetId;
+import com.bakdata.conquery.quarkus.ids.TableId;
+
 public interface DatasetCatalogRepository {
 
 	List<DatasetRecord> listDatasets();
 
-	Optional<DatasetRecord> findDataset(String datasetId);
+	Optional<DatasetRecord> findDataset(DatasetId datasetId);
 
 	void saveDataset(DatasetRecord dataset);
 
-	boolean deleteDataset(String datasetId);
+	boolean deleteDataset(DatasetId datasetId);
 
-	List<Concept> listConceptsForDataset(String datasetId);
+	List<Concept> listConceptsForDataset(DatasetId datasetId);
 
-	Optional<Concept> findConcept(String conceptId);
+	Optional<Concept> findConcept(ConceptId conceptId);
 
 	void saveConcept(Concept concept);
 
-	boolean deleteConcept(String conceptId);
+	boolean deleteConcept(ConceptId conceptId);
 
-	List<TableRecord> listTablesForDataset(String datasetId);
+	List<TableRecord> listTablesForDataset(DatasetId datasetId);
 
-	Optional<TableRecord> findTable(String tableId);
+	Optional<TableRecord> findTable(TableId tableId);
 
 	void saveTable(TableRecord table);
 
-	boolean deleteTable(String tableId);
+	boolean deleteTable(TableId tableId);
 
 	record DatasetRecord(
-			String id,
+			DatasetId id,
 			String label
 	) {
 	}
 
 	record ConceptElement(
-			String id,
+			ConceptId id,
 			String label,
 			String description,
-			String parentId,
-			List<String> children,
+			ConceptId parentId,
+			List<ConceptId> children,
 			ConceptCondition condition
 	) {
-		public ConceptElement(String id, String label, String description) {
+		public ConceptElement(ConceptId id, String label, String description) {
 			this(id, label, description,null, List.of(), null);
 		}
 
@@ -56,22 +62,21 @@ public interface DatasetCatalogRepository {
 	}
 
 	record Concept(
-			String id,
+			ConceptId id,
 			String label,
 			String description,
 			// All Children flat lookup
-			Map<String,ConceptElement> children,
+			Map<ConceptId,ConceptElement> children,
 			// Direct children
-			List<String> childrenIds,
+			List<ConceptId> childrenIds,
 			List<Connector> connectors
 
 	){}
 
 	record Connector(
-			String dataset,
-			String table,
-			String column,
-			String concept,
+			ConnectorId id,
+			TableId tableId,
+			ColumnId columnId,
 			String label,
 			String name,
 			List<Select> selects,
@@ -80,15 +85,8 @@ public interface DatasetCatalogRepository {
 			List<ValidityDate> validityDates,
 			boolean isDefault
 	){
-		public String datasetId() {
-			return dataset;
-		}
-
-		public String tableId() {
-			return dataset + "." + table;
-		}
-		public String id() {
-			return dataset + "." + concept + "." + name;
+		public DatasetId datasetId() {
+			return id.datasetId();
 		}
 	}
 
@@ -131,10 +129,10 @@ public interface DatasetCatalogRepository {
 	}
 
 	record TableRecord(
-			String id,
+			TableId id,
 			String label,
 			List<ColumnRecord> columns,
-			String primaryColumn
+			ColumnId primaryColumn
 	) {
 		public TableRecord {
 			columns = columns == null ? List.of() : List.copyOf(columns);
@@ -142,7 +140,7 @@ public interface DatasetCatalogRepository {
 	}
 
 	record ColumnRecord(
-			String id,
+			ColumnId id,
 			String label,
 			ColumnType type,
 			String secondaryId

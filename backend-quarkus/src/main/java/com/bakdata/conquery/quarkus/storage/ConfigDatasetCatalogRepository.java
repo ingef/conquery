@@ -2,11 +2,12 @@ package com.bakdata.conquery.quarkus.storage;
 
 import java.util.List;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import com.bakdata.conquery.quarkus.util.ScopedId;
+import com.bakdata.conquery.quarkus.ids.ConceptId;
+import com.bakdata.conquery.quarkus.ids.DatasetId;
+import com.bakdata.conquery.quarkus.ids.TableId;
 import io.quarkus.arc.properties.IfBuildProperty;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,15 +20,15 @@ public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository 
 	@Inject
 	DatasetMetadataFolderLoader metadataFolderLoader;
 
-	private Map<String, DatasetRecord> datasetsById = Map.of();
-	private Map<String, Map<String, Concept>> conceptsByDatasetId = Map.of();
-	private Map<String, Map<String, TableRecord>> tablesByDatasetId = Map.of();
+	private Map<DatasetId, DatasetRecord> datasetsById = Map.of();
+	private Map<DatasetId, Map<ConceptId, Concept>> conceptsByDatasetId = Map.of();
+	private Map<DatasetId, Map<TableId, TableRecord>> tablesByDatasetId = Map.of();
 
 	@PostConstruct
 	void init() {
-		Map<String, DatasetRecord> datasetIndex = new LinkedHashMap<>();
-		Map<String, Map<String, Concept>> conceptDatasetIndex = new LinkedHashMap<>();
-		Map<String, Map<String, TableRecord>> tableDatasetIndex = new LinkedHashMap<>();
+		Map<DatasetId, DatasetRecord> datasetIndex = new LinkedHashMap<>();
+		Map<DatasetId, Map<ConceptId, Concept>> conceptDatasetIndex = new LinkedHashMap<>();
+		Map<DatasetId, Map<TableId, TableRecord>> tableDatasetIndex = new LinkedHashMap<>();
 
 		metadataFolderLoader.loadConfiguredDatasets().forEach(dataset -> {
 			datasetIndex.put(dataset.dataset().id(), dataset.dataset());
@@ -46,7 +47,7 @@ public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository 
 	}
 
 	@Override
-	public Optional<DatasetRecord> findDataset(String datasetId) {
+	public Optional<DatasetRecord> findDataset(DatasetId datasetId) {
 		return Optional.ofNullable(datasetsById.get(datasetId));
 	}
 
@@ -56,19 +57,18 @@ public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository 
 	}
 
 	@Override
-	public boolean deleteDataset(String datasetId) {
+	public boolean deleteDataset(DatasetId datasetId) {
 		throw readOnly();
 	}
 
 	@Override
-	public List<Concept> listConceptsForDataset(String datasetId) {
+	public List<Concept> listConceptsForDataset(DatasetId datasetId) {
 		return conceptsByDatasetId.getOrDefault(datasetId, Map.of()).values().stream().toList();
 	}
 
 	@Override
-	public Optional<Concept> findConcept(String conceptId) {
-		return ScopedId.extractDatasetId(conceptId)
-					   .flatMap(datasetId -> Optional.ofNullable(conceptsByDatasetId.getOrDefault(datasetId, Map.of()).get(conceptId)));
+	public Optional<Concept> findConcept(ConceptId conceptId) {
+		return Optional.ofNullable(conceptsByDatasetId.getOrDefault(conceptId.datasetId(), Map.of()).get(conceptId));
 	}
 
 	@Override
@@ -77,18 +77,17 @@ public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository 
 	}
 
 	@Override
-	public boolean deleteConcept(String conceptId) {
+	public boolean deleteConcept(ConceptId conceptId) {
 		throw readOnly();
 	}
 
-	public List<TableRecord> listTablesForDataset(String datasetId) {
+	public List<TableRecord> listTablesForDataset(DatasetId datasetId) {
 		return tablesByDatasetId.getOrDefault(datasetId, Map.of()).values().stream().toList();
 	}
 
 	@Override
-	public Optional<TableRecord> findTable(String tableId) {
-		return ScopedId.extractDatasetId(tableId)
-					   .flatMap(datasetId -> Optional.ofNullable(tablesByDatasetId.getOrDefault(datasetId, Map.of()).get(tableId)));
+	public Optional<TableRecord> findTable(TableId tableId) {
+		return Optional.ofNullable(tablesByDatasetId.getOrDefault(tableId.datasetId(), Map.of()).get(tableId));
 	}
 
 	@Override
@@ -97,35 +96,12 @@ public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository 
 	}
 
 	@Override
-	public boolean deleteTable(String tableId) {
+	public boolean deleteTable(TableId tableId) {
 		throw readOnly();
 	}
 
-	private DatasetCatalogRepository.ColumnType parseColumnType(String type) {
-		try {
-			return DatasetCatalogRepository.ColumnType.valueOf(type.trim().toUpperCase(Locale.ROOT));
-		}
-		catch (Exception e) {
-			throw new IllegalArgumentException("Unsupported table column type: " + type, e);
-		}
-	}
-
-	private String blankToNull(String value) {
-		return value == null || value.isBlank() || "__unset__".equals(value) ? null : value;
-	}
-
-	private void validateScopedIdBelongsToDataset(String scopedId, String datasetId, String objectType) {
-		String derivedDataset = ScopedId.extractDatasetId(scopedId)
-										.orElseThrow(() -> new IllegalArgumentException("Configured " + objectType + " id is blank"));
-		if (!derivedDataset.equals(datasetId)) {
-			throw new IllegalArgumentException(
-					"Configured " + objectType + " id '" + scopedId + "' does not match dataset '" + datasetId + "'."
-			);
-		}
-	}
-
-	private <T> Map<String, Map<String, T>> freezeNestedMap(Map<String, Map<String, T>> source) {
-		Map<String, Map<String, T>> result = new LinkedHashMap<>();
+	private <K, T> Map<DatasetId, Map<K, T>> freezeNestedMap(Map<DatasetId, Map<K, T>> source) {
+		Map<DatasetId, Map<K, T>> result = new LinkedHashMap<>();
 		source.forEach((datasetId, entries) -> result.put(datasetId, java.util.Collections.unmodifiableMap(new LinkedHashMap<>(entries))));
 		return java.util.Collections.unmodifiableMap(result);
 	}

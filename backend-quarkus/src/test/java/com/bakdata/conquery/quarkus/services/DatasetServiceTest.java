@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.bakdata.conquery.quarkus.ids.ConceptId;
+import com.bakdata.conquery.quarkus.ids.DatasetId;
+import com.bakdata.conquery.quarkus.ids.TableId;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import com.bakdata.conquery.quarkus.storage.NamespaceStorage;
 import com.bakdata.conquery.quarkus.storage.NamespaceStorageRegistry;
@@ -19,13 +22,13 @@ class DatasetServiceTest {
 	void resolvesConceptCodesAgainstRequestedConceptSubtree() {
 		DatasetService service = new DatasetService();
 		service.namespaceStorageRegistry = new TestNamespaceStorageRegistry(List.of(
-				new DatasetCatalogRepository.Concept("demo.icd", "ICD", null,  Map.of(
+				new DatasetCatalogRepository.Concept(cid("demo.icd"), "ICD", null,  Map.of(
 
-						"demo.icd.a00", new DatasetCatalogRepository.ConceptElement("demo.icd.a00", "A00",null,"demo.icd", List.of("demo.icd.a00.a00_0"), equal("A00", "A000")),
-						"demo.icd.a00.a00_0", new DatasetCatalogRepository.ConceptElement("demo.icd.a00.a00_0", "A00.0",null, "demo.icd.a00", List.of(), equal("A000"))
+						cid("demo.icd.a00"), new DatasetCatalogRepository.ConceptElement(cid("demo.icd.a00"), "A00",null,cid("demo.icd"), List.of(cid("demo.icd.a00.a00_0")), equal("A00", "A000")),
+						cid("demo.icd.a00.a00_0"), new DatasetCatalogRepository.ConceptElement(cid("demo.icd.a00.a00_0"), "A00.0",null, cid("demo.icd.a00"), List.of(), equal("A000"))
 
-				), List.of("demo.icd.a00"), null),
-				new DatasetCatalogRepository.Concept("demo.other", "Other",null, null, null, List.of())
+				), List.of(cid("demo.icd.a00")), null),
+				new DatasetCatalogRepository.Concept(cid("demo.other"), "Other",null, null, null, List.of())
 		));
 
 		DatasetService.ConceptCodeResolution resolution = service.resolveConceptCodes("demo.icd", List.of("A00", "A000", "OTHER", "UNKNOWN"));
@@ -38,15 +41,23 @@ class DatasetServiceTest {
 		return new DatasetCatalogRepository.ConceptCondition("EQUAL", List.of(values), null, List.of());
 	}
 
+	private ConceptId cid(String value) {
+		return ConceptId.parse(value);
+	}
+
+	private static DatasetId did(String value) {
+		return DatasetId.parse(value);
+	}
+
 	private record TestNamespaceStorageRegistry(List<DatasetCatalogRepository.Concept> concepts) implements NamespaceStorageRegistry {
 		@Override
 		public List<DatasetCatalogRepository.DatasetRecord> listDatasets() {
-			return List.of(new DatasetCatalogRepository.DatasetRecord("demo", "Demo"));
+			return List.of(new DatasetCatalogRepository.DatasetRecord(did("demo"), "Demo"));
 		}
 
 		@Override
-		public Optional<NamespaceStorage> findNamespace(String datasetId) {
-			if (!"demo".equals(datasetId)) {
+		public Optional<NamespaceStorage> findNamespace(DatasetId datasetId) {
+			if (!did("demo").equals(datasetId)) {
 				return Optional.empty();
 			}
 			return Optional.of(new TestNamespaceStorage(concepts));
@@ -56,7 +67,7 @@ class DatasetServiceTest {
 	private record TestNamespaceStorage(List<DatasetCatalogRepository.Concept> concepts) implements NamespaceStorage {
 		@Override
 		public DatasetCatalogRepository.DatasetRecord dataset() {
-			return new DatasetCatalogRepository.DatasetRecord("demo", "Demo");
+			return new DatasetCatalogRepository.DatasetRecord(did("demo"), "Demo");
 		}
 
 		@Override
@@ -65,7 +76,7 @@ class DatasetServiceTest {
 		}
 
 		@Override
-		public Optional<DatasetCatalogRepository.Concept> findConcept(String conceptId) {
+		public Optional<DatasetCatalogRepository.Concept> findConcept(ConceptId conceptId) {
 			return concepts.stream().filter(concept -> concept.id().equals(conceptId)).findFirst();
 		}
 
@@ -75,7 +86,7 @@ class DatasetServiceTest {
 		}
 
 		@Override
-		public boolean deleteConcept(String conceptId) {
+		public boolean deleteConcept(ConceptId conceptId) {
 			throw unsupported();
 		}
 
@@ -85,7 +96,7 @@ class DatasetServiceTest {
 		}
 
 		@Override
-		public Optional<DatasetCatalogRepository.TableRecord> findTable(String tableId) {
+		public Optional<DatasetCatalogRepository.TableRecord> findTable(TableId tableId) {
 			return Optional.empty();
 		}
 
@@ -95,7 +106,7 @@ class DatasetServiceTest {
 		}
 
 		@Override
-		public boolean deleteTable(String tableId) {
+		public boolean deleteTable(TableId tableId) {
 			throw unsupported();
 		}
 

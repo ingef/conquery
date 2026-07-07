@@ -11,12 +11,12 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.quarkus.config.EntityPreviewRuntimeConfig;
 import com.bakdata.conquery.quarkus.config.FormQueriesRuntimeConfig;
+import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.services.DatasetService;
 import com.bakdata.conquery.quarkus.services.EntityQueryService;
 import com.bakdata.conquery.quarkus.services.QueryStateService;
 import com.bakdata.conquery.quarkus.services.QueryUploadService;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
-import com.bakdata.conquery.quarkus.util.ScopedId;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,7 +66,7 @@ public class DatasetsResource {
 	@GET
 	public List<DatasetResponse> getDatasets() {
 		return datasetService.listDatasets().stream()
-							 .map(entry -> new DatasetResponse(entry.id(), entry.label()))
+							 .map(entry -> new DatasetResponse(entry.id().toString(), entry.label()))
 							 .toList();
 	}
 
@@ -102,12 +102,12 @@ public class DatasetsResource {
 
 		java.util.Map<String, ConceptsResponse.ConceptSummaryResponse> concepts = new LinkedHashMap<>();
 		datasetService.listRootConceptsForDataset(datasetId).forEach(entry -> concepts.put(
-				entry.id(),
+				entry.id().toString(),
 				new ConceptsResponse.ConceptSummaryResponse(
 						entry.label(),
 						null,
 						true,
-						entry.childrenIds(),
+						entry.childrenIds().stream().map(ConceptId::toString).toList(),
 						0L,
 						0L,
 						true,
@@ -126,8 +126,7 @@ public class DatasetsResource {
 
 	private ConceptResource.ConnectorResponse toTableResponse(DatasetCatalogRepository.Connector connector) {
 		// TODO combine this with ConceptResource#toConnectorResponse
-		String tableId = connector.tableId();
-		DatasetCatalogRepository.TableRecord tableRecord = datasetService.requireTable(tableId);
+		DatasetCatalogRepository.TableRecord tableRecord = datasetService.requireTable(connector.tableId());
 		List<String> supportedSecondaryIds = tableRecord.columns().stream()
 				.map(DatasetCatalogRepository.ColumnRecord::secondaryId)
 				.filter(Objects::nonNull)
@@ -135,7 +134,7 @@ public class DatasetsResource {
 				.toList();
 
 		return new ConceptResource.ConnectorResponse(
-				tableId,
+				connector.tableId().toString(),
 				connector.name(),
 				connector.label(),
 				connector.isDefault(),
@@ -163,14 +162,9 @@ public class DatasetsResource {
 				);
 	}
 
-	private String datasetId(String scopedId) {
-		return ScopedId.extractDatasetId(scopedId)
-				.orElseThrow(() -> new IllegalStateException("Expected dataset-scoped id but got: " + scopedId));
-	}
-
 	private ConceptResource.ColumnResponse toColumnResponse(DatasetCatalogRepository.ColumnRecord column) {
 		return new ConceptResource.ColumnResponse(
-				column.id(),
+				column.id().toString(),
 				column.label(),
 				column.type(),
 				column.secondaryId()

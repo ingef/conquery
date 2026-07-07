@@ -3,23 +3,26 @@ package com.bakdata.conquery.quarkus.storage;
 import java.util.List;
 import java.util.Optional;
 
+import com.bakdata.conquery.quarkus.ids.ConceptId;
+import com.bakdata.conquery.quarkus.ids.TableId;
+
 public interface NamespaceStorage {
 
 	DatasetCatalogRepository.DatasetRecord dataset();
 
 	List<DatasetCatalogRepository.Concept> listConcepts();
 
-	Optional<DatasetCatalogRepository.Concept> findConcept(String conceptId);
+	Optional<DatasetCatalogRepository.Concept> findConcept(ConceptId conceptId);
 
 	void saveConcept(DatasetCatalogRepository.Concept concept);
 
-	boolean deleteConcept(String conceptId);
+	boolean deleteConcept(ConceptId conceptId);
 
 	List<DatasetCatalogRepository.TableRecord> listTables();
 
-	Optional<DatasetCatalogRepository.TableRecord> findTable(String tableId);
+	Optional<DatasetCatalogRepository.TableRecord> findTable(TableId tableId);
 
 	void saveTable(DatasetCatalogRepository.TableRecord table);
 
-	boolean deleteTable(String tableId);
+	boolean deleteTable(TableId tableId);
 }

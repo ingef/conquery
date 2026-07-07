@@ -3,7 +3,9 @@ package com.bakdata.conquery.quarkus.storage;
 import java.util.List;
 import java.util.Optional;
 
-import com.bakdata.conquery.quarkus.util.ScopedId;
+import com.bakdata.conquery.quarkus.ids.ConceptId;
+import com.bakdata.conquery.quarkus.ids.DatasetId;
+import com.bakdata.conquery.quarkus.ids.TableId;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -19,7 +21,7 @@ public class RepositoryNamespaceStorageRegistry implements NamespaceStorageRegis
 	}
 
 	@Override
-	public Optional<NamespaceStorage> findNamespace(String datasetId) {
+	public Optional<NamespaceStorage> findNamespace(DatasetId datasetId) {
 		return catalogRepository.findDataset(datasetId).map(dataset -> new RepositoryNamespaceStorage(dataset, catalogRepository));
 	}
 
@@ -46,7 +48,7 @@ public class RepositoryNamespaceStorageRegistry implements NamespaceStorageRegis
 		}
 
 		@Override
-		public Optional<DatasetCatalogRepository.Concept> findConcept(String conceptId) {
+		public Optional<DatasetCatalogRepository.Concept> findConcept(ConceptId conceptId) {
 			if (!belongsToNamespace(conceptId)) {
 				return Optional.empty();
 			}
@@ -62,7 +64,7 @@ public class RepositoryNamespaceStorageRegistry implements NamespaceStorageRegis
 		}
 
 		@Override
-		public boolean deleteConcept(String conceptId) {
+		public boolean deleteConcept(ConceptId conceptId) {
 			if (!belongsToNamespace(conceptId)) {
 				return false;
 			}
@@ -75,7 +77,7 @@ public class RepositoryNamespaceStorageRegistry implements NamespaceStorageRegis
 		}
 
 		@Override
-		public Optional<DatasetCatalogRepository.TableRecord> findTable(String tableId) {
+		public Optional<DatasetCatalogRepository.TableRecord> findTable(TableId tableId) {
 			if (!belongsToNamespace(tableId)) {
 				return Optional.empty();
 			}
@@ -96,15 +98,19 @@ public class RepositoryNamespaceStorageRegistry implements NamespaceStorageRegis
 		}
 
 		@Override
-		public boolean deleteTable(String tableId) {
+		public boolean deleteTable(TableId tableId) {
 			if (!belongsToNamespace(tableId)) {
 				return false;
 			}
 			return catalogRepository.deleteTable(tableId);
 		}
 
-		private boolean belongsToNamespace(String scopedId) {
-			return ScopedId.extractDatasetId(scopedId).map(dataset.id()::equals).orElse(false);
+		private boolean belongsToNamespace(ConceptId scopedId) {
+			return dataset.id().equals(scopedId.datasetId());
+		}
+
+		private boolean belongsToNamespace(TableId scopedId) {
+			return dataset.id().equals(scopedId.datasetId());
 		}
 	}
 }

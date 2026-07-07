@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.bakdata.conquery.quarkus.config.StorageRuntimeConfig;
+import com.bakdata.conquery.quarkus.ids.DatasetId;
 import io.quarkus.arc.properties.IfBuildProperty;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -27,13 +28,13 @@ public class XodusDatasetEnvironmentProvider {
 	@Inject
 	StorageRuntimeConfig storageRuntimeConfig;
 
-	private final Map<String, Environment> environmentsByDatasetId = new ConcurrentHashMap<>();
+	private final Map<DatasetId, Environment> environmentsByDatasetId = new ConcurrentHashMap<>();
 
-	public Environment getOrCreateEnvironment(String datasetId) {
+	public Environment getOrCreateEnvironment(DatasetId datasetId) {
 		return environmentsByDatasetId.computeIfAbsent(datasetId, ignored -> Environments.newInstance(datasetPath(datasetId).toFile()));
 	}
 
-	public Optional<Environment> findEnvironment(String datasetId) {
+	public Optional<Environment> findEnvironment(DatasetId datasetId) {
 		Environment existing = environmentsByDatasetId.get(datasetId);
 		if (existing != null) {
 			return Optional.of(existing);
@@ -45,18 +46,18 @@ public class XodusDatasetEnvironmentProvider {
 		return Optional.of(getOrCreateEnvironment(datasetId));
 	}
 
-	public List<String> listDatasetIds() {
+	public List<DatasetId> listDatasetIds() {
 		Path base = datasetBasePath();
 		if (!Files.isDirectory(base)) {
 			return List.of();
 		}
 		try {
-			List<String> ids = new ArrayList<>();
+			List<DatasetId> ids = new ArrayList<>();
 			try (var stream = Files.list(base)) {
 				stream.filter(Files::isDirectory)
 					  .map(path -> path.getFileName().toString())
 					  .filter(name -> name.startsWith(DATASET_PREFIX))
-					  .map(name -> name.substring(DATASET_PREFIX.length()))
+					  .map(name -> DatasetId.parse(name.substring(DATASET_PREFIX.length())))
 					  .forEach(ids::add);
 			}
 			return ids;
@@ -66,7 +67,7 @@ public class XodusDatasetEnvironmentProvider {
 		}
 	}
 
-	public void removeEnvironment(String datasetId) {
+	public void removeEnvironment(DatasetId datasetId) {
 		Environment environment = environmentsByDatasetId.remove(datasetId);
 		if (environment != null) {
 			environment.close();
@@ -84,7 +85,7 @@ public class XodusDatasetEnvironmentProvider {
 		return Path.of(storageRuntimeConfig.xodus().path(), "datasets");
 	}
 
-	private Path datasetPath(String datasetId) {
+	private Path datasetPath(DatasetId datasetId) {
 		return datasetBasePath().resolve(DATASET_PREFIX + datasetId);
 	}
 
