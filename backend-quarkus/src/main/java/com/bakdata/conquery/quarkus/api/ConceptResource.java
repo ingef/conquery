@@ -57,7 +57,40 @@ public class ConceptResource {
 	}
 
 	private ConnectorResponse toConnectorResponse(DatasetCatalogRepository.Connector connector) {
-		return new ConnectorResponse(connector.tableId().toString(), connector.id().toString(), connector.label(), connector.isDefault(), List.of(), List.of(), List.of());
+		DatasetCatalogRepository.TableRecord tableRecord = datasetService.requireTable(connector.tableId());
+		List<String> supportedSecondaryIds = tableRecord.columns().stream()
+				.map(DatasetCatalogRepository.ColumnRecord::secondaryId)
+				.filter(Objects::nonNull)
+				.distinct()
+				.toList();
+		return new ConnectorResponse(
+				connector.tableId().toString(),
+				connector.id().toString(),
+				connector.label(),
+				connector.isDefault(),
+				connector.filters().stream().map(this::toFilterResponse).toList(),
+				List.of(),
+				supportedSecondaryIds
+		);
+	}
+
+	private FilterResponse toFilterResponse(DatasetCatalogRepository.Filter filter) {
+		return new FilterResponse(
+				filter.id().toString(),
+				filter.label(),
+				filter.type(),
+				filter.unit(),
+				filter.tooltip(),
+				filter.options().stream()
+						.map(option -> new FrontendValue(option.value(), option.label(), option.optionValue()))
+						.toList(),
+				filter.min(),
+				filter.max(),
+				filter.pattern(),
+				filter.allowDropFile(),
+				filter.creatable(),
+				filter.defaultValue()
+		);
 	}
 
 

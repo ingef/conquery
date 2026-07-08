@@ -7,6 +7,9 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.quarkus.config.DatasetMetadataRuntimeConfig;
+import com.bakdata.conquery.quarkus.concepts.filters.FilterConversionContext;
+import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionProvider;
+import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionRegistry;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.ConnectorId;
@@ -14,6 +17,8 @@ import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.IdPartSanitizer;
 import com.bakdata.conquery.quarkus.ids.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -33,6 +38,9 @@ public class DatasetMetadataFolderLoader {
 
 	@Inject
 	Validator validator;
+
+	@Inject
+	FilterDefinitionRegistry filterDefinitionRegistry;
 
 	public List<LoadedDatasetMetadata> loadConfiguredDatasets() {
 		if (!metadataConfig.enabled()) {
@@ -70,14 +78,14 @@ public class DatasetMetadataFolderLoader {
 		String datasetLabel = firstNonBlank(datasetPayload.label(), folderName).orElse(folderName);
 		DatasetCatalogRepository.DatasetRecord dataset = new DatasetCatalogRepository.DatasetRecord(datasetId, datasetLabel);
 
-		Map<ConceptId, DatasetCatalogRepository.Concept> conceptsById = loadConcepts(folderPath, datasetId);
 		Map<TableId, DatasetCatalogRepository.TableRecord> tablesById = loadTables(folderPath, datasetId);
+		Map<ConceptId, DatasetCatalogRepository.Concept> conceptsById = loadConcepts(folderPath, datasetId, tablesById);
 
 		log.debug("Loaded dataset {} with {} concepts and {} tables", datasetId, conceptsById.size(), tablesById.size());
 		return new LoadedDatasetMetadata(dataset, Map.copyOf(conceptsById), Map.copyOf(tablesById));
 	}
 
-	private Map<ConceptId, DatasetCatalogRepository.Concept> loadConcepts(Path folderPath, DatasetId datasetId) {
+	private Map<ConceptId, DatasetCatalogRepository.Concept> loadConcepts(Path folderPath, DatasetId datasetId, Map<TableId, DatasetCatalogRepository.TableRecord> tablesById) {
 		Path conceptsDir = folderPath.resolve("conceptTrees");
 		if (!Files.isDirectory(conceptsDir)) {
 			throw new IllegalStateException("Metadata folder is missing conceptTrees/: " + folderPath);
@@ -94,7 +102,7 @@ public class DatasetMetadataFolderLoader {
 					throw new ConstraintViolationException("Failed to validate concept payload: %s".formatted(path), constraintViolations);
 				}
 				ConceptId conceptId = conceptName.equals(datasetId.name()) ? new ConceptId(datasetId, List.of()) : new ConceptId(datasetId, List.of(conceptName));
-				conceptsById.put(conceptId, collectConcept(payload, conceptId));
+				conceptsById.put(conceptId, collectConcept(payload, conceptId, tablesById));
 			});
 		} catch (IOException e) {
 			throw new IllegalStateException("Failed to list concept metadata in " + conceptsDir, e);
@@ -104,7 +112,7 @@ public class DatasetMetadataFolderLoader {
 		return conceptsById;
 	}
 
-	private DatasetCatalogRepository.Concept collectConcept(ConceptPayload payload, ConceptId conceptId) {
+	private DatasetCatalogRepository.Concept collectConcept(ConceptPayload payload, ConceptId conceptId, Map<TableId, DatasetCatalogRepository.TableRecord> tablesById) {
 		String conceptLabel = firstNonBlank(payload.label()).orElseGet(() -> payload.name);
 		List<ConceptElementPayload> children = Optional.ofNullable(payload.children()).orElse(List.of());
 		FallbackLogCollector fallbackLogCollector = new FallbackLogCollector(conceptId);
@@ -119,36 +127,27 @@ public class DatasetMetadataFolderLoader {
 		List<DatasetCatalogRepository.Connector> connectors = payload.connectors().stream().map(p -> {
 
 			DatasetId datasetId = conceptId.datasetId();
-			String tableName = p.table;
-			if (tableName != null && tableName.startsWith(datasetId + ".")) {
-				// Shorten tableId to name
-				tableName = tableName.substring(datasetId.toString().length() + 1);
-			}
+			String tableName = normalizeBlank(p.table)
+					.orElseThrow(() -> new IllegalStateException("Connector '" + p.name + "' in concept '" + conceptId + "' must define a table."));
+			TableId tableId = toConnectorTableId(datasetId, tableName);
+			DatasetCatalogRepository.TableRecord table = Optional.ofNullable(tablesById.get(tableId))
+					.orElseThrow(() -> new IllegalStateException("Connector '" + p.name + "' in concept '" + conceptId + "' references unknown table '" + tableId + "'."));
 			String columnName = p.column;
 			if (columnName != null) {
-				if (tableName != null && columnName.startsWith(datasetId + "." + tableName + ".")) {
-					// Shorten columnId to name
-					columnName = columnName.substring(datasetId.toString().length() + 1 + tableName.length() + 1);
-				} else {
-					String[] split = columnName.split("\\.");
-					if (split.length != 2) {
-						throw new IllegalArgumentException("Invalid column name: " + columnName);
-					}
-
-					tableName = split[0];
-					columnName = split[1];
-				}
+				columnName = normalizeLocalColumnName(columnName);
 			}
 
-			TableId tableId = new TableId(datasetId, tableName);
+			ConnectorId connectorId = new ConnectorId(conceptId, p.name);
 			return new DatasetCatalogRepository.Connector(
-					new ConnectorId(conceptId, p.name),
+					connectorId,
 					tableId,
 					columnName == null ? null : new ColumnId(tableId, columnName),
 					p.label,
 					p.name,
 					List.of(), // Optional.of(p.selects().stream().map(SelectPayload::new).toList()).orElse(List.of()),
-					Optional.ofNullable(p.filters()).orElse(List.of()).stream().map(DatasetCatalogRepository.Filter.class::cast).toList(), Optional.ofNullable(p.validityDates()).orElse(List.of()), p.isDefault
+					convertFilters(connectorId, tableId, table, p.filters(), fallbackLogCollector),
+					Optional.ofNullable(p.validityDates()).orElse(List.of()),
+					p.isDefault
 			);
 
 		}).toList();
@@ -183,6 +182,73 @@ public class DatasetMetadataFolderLoader {
 		}
 		String type = firstNonBlank(condition.type()).orElseThrow(() -> new IllegalStateException("Concept condition is missing required type."));
 		return new DatasetCatalogRepository.ConceptCondition(type, condition.values(), condition.column(), Optional.ofNullable(condition.conditions()).orElse(List.of()).stream().map(this::toConceptCondition).toList());
+	}
+
+	private TableId toConnectorTableId(DatasetId datasetId, String rawTableName) {
+		String tableName = rawTableName;
+		if (tableName.startsWith(datasetId + ".")) {
+			tableName = tableName.substring(datasetId.toString().length() + 1);
+		}
+		return new TableId(datasetId, tableName);
+	}
+
+	private List<DatasetCatalogRepository.Filter> convertFilters(ConnectorId connectorId, TableId tableId, DatasetCatalogRepository.TableRecord table, JsonNode filters, FallbackLogCollector fallbackLogCollector) {
+		if (filters == null || filters.isNull()) {
+			return List.of();
+		}
+		List<JsonNode> rawFilters;
+		if (filters.isArray()) {
+			rawFilters = new ArrayList<>();
+			filters.forEach(rawFilters::add);
+		}
+		else if (filters.isObject()) {
+			rawFilters = List.of(filters);
+		}
+		else {
+			throw new IllegalStateException("Connector '" + connectorId + "' filters must be an object or array.");
+		}
+
+		FilterConversionContext context = new FilterConversionContext(connectorId, tableId, table, fallbackLogCollector::add);
+		List<DatasetCatalogRepository.Filter> converted = new ArrayList<>();
+		for (JsonNode rawFilter : rawFilters) {
+			Optional<DatasetCatalogRepository.Filter> filter = convertFilter(context, rawFilter);
+			filter.ifPresent(converted::add);
+		}
+		return List.copyOf(converted);
+	}
+
+	private Optional<DatasetCatalogRepository.Filter> convertFilter(FilterConversionContext context, JsonNode rawFilter) {
+		String type = normalizeBlank(rawFilter.path("type").asText(null)).orElse(null);
+		if (type == null) {
+			return unknownFilter(context, rawFilter, "missing filter type");
+		}
+		Optional<FilterDefinitionProvider<?>> provider = filterDefinitionRegistry.find(type);
+		return provider
+				.map(filterDefinitionProvider -> convertFilterWithProvider(context, rawFilter, filterDefinitionProvider))
+				.or(() -> unknownFilter(context, rawFilter, "unknown filter type '" + type + "'"));
+	}
+
+	private Optional<DatasetCatalogRepository.Filter> unknownFilter(FilterConversionContext context, JsonNode rawFilter, String reason) {
+		String message = "Skipping filter for connector '" + context.connectorId() + "' because of " + reason + ": " + rawFilter;
+		if (metadataConfig.strictFilterTypes()) {
+			throw new IllegalStateException(message);
+		}
+		log.warn("{}", message);
+		return Optional.empty();
+	}
+
+	private <T> DatasetCatalogRepository.Filter convertFilterWithProvider(FilterConversionContext context, JsonNode rawFilter, FilterDefinitionProvider<T> provider) {
+		T payload;
+		try {
+			payload = objectMapper.treeToValue(rawFilter, provider.payloadType());
+		} catch (JsonProcessingException e) {
+			throw new IllegalStateException("Failed to parse filter of type '" + provider.type() + "' for connector '" + context.connectorId() + "'.", e);
+		}
+		Set<ConstraintViolation<T>> constraintViolations = validator.validate(payload);
+		if (!constraintViolations.isEmpty()) {
+			throw new ConstraintViolationException("Failed to validate filter payload for connector '%s'.".formatted(context.connectorId()), constraintViolations);
+		}
+		return provider.convert(context, payload);
 	}
 
 	private Map<TableId, DatasetCatalogRepository.TableRecord> loadTables(Path folderPath, DatasetId datasetId) {
@@ -239,6 +305,14 @@ public class DatasetMetadataFolderLoader {
 			return Optional.of(ColumnId.parse(datasetId + "." + id));
 		}
 		return Optional.of(new ColumnId(tableId, id));
+	}
+
+	private String normalizeLocalColumnName(String rawColumnName) {
+		String columnName = normalizeBlank(rawColumnName).orElseThrow(() -> new IllegalStateException("Connector column" + " must not be blank."));
+		if (columnName.contains(".")) {
+			throw new IllegalStateException("Connector column must reference a local column name without dots: " + rawColumnName);
+		}
+		return columnName;
 	}
 
 	private Optional<DatasetPayload> loadDatasetPayload(Path folderPath) {
@@ -396,7 +470,7 @@ public class DatasetMetadataFolderLoader {
 
 	private record ConnectorPayload(
 			String table, String column, String label, String name, List<SelectPayload> selects,
-			List<FilterPayload> filters,
+			JsonNode filters,
 			// Use internal rep directly as we won't need data mangling
 			List<DatasetCatalogRepository.ValidityDate> validityDates, boolean isDefault
 	) {
@@ -405,14 +479,6 @@ public class DatasetMetadataFolderLoader {
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	// TODO implement polymorphism
 	private record SelectPayload() implements DatasetCatalogRepository.Select {
-	}
-
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	// TODO implement polymorphism
-	private record FilterPayload(
-			String id, String name, String label, String type, List<String> options, String unit, String tooltip,
-			boolean allowDropFile, Object defaultValue
-	) implements DatasetCatalogRepository.Filter {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

@@ -145,20 +145,21 @@ public class DatasetsResource {
 	}
 
 	private ConceptResource.FilterResponse toFilterResponse(DatasetCatalogRepository.Filter filter) {
-		// TODO map
 		return new ConceptResource.FilterResponse(
-				filter.id(),
+				filter.id().toString(),
 				filter.label(),
 				filter.type(),
-				null,
-				null,
-				null,
-				null,
-				null,
-				null,
-				false,
-				false,
-				null
+				filter.unit(),
+				filter.tooltip(),
+				filter.options().stream()
+						.map(option -> new ConceptResource.FrontendValue(option.value(), option.label(), option.optionValue()))
+						.toList(),
+				filter.min(),
+				filter.max(),
+				filter.pattern(),
+				filter.allowDropFile(),
+				filter.creatable(),
+				filter.defaultValue()
 				);
 	}
 

@@ -24,4 +24,10 @@ public interface DatasetMetadataRuntimeConfig {
 	 * Folder names or absolute paths to ingest as static dataset metadata.
 	 */
 	Optional<List<String>> folders();
+
+	/**
+	 * Fails metadata ingestion when a connector filter type has no registered provider.
+	 */
+	@WithDefault("true")
+	boolean strictFilterTypes();
 }

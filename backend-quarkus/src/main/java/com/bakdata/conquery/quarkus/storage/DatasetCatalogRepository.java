@@ -6,6 +6,7 @@ import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.ConnectorId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
+import com.bakdata.conquery.quarkus.ids.FilterId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 
 public interface DatasetCatalogRepository {
@@ -97,11 +98,32 @@ public interface DatasetCatalogRepository {
 	) {}
 
 	interface Select{}
-	interface Filter{
-		String id();
-		String label();
-		String type();
-		List<String> options();
+	record Filter(
+			FilterId id,
+			String label,
+			String type,
+			String unit,
+			String tooltip,
+			List<FrontendValue> options,
+			Integer min,
+			Integer max,
+			String pattern,
+			boolean allowDropFile,
+			boolean creatable,
+			Object defaultValue,
+			List<ColumnId> requiredColumns
+	) {
+		public Filter {
+			options = options == null ? List.of() : List.copyOf(options);
+			requiredColumns = requiredColumns == null ? List.of() : List.copyOf(requiredColumns);
+		}
+	}
+
+	record FrontendValue(
+			String value,
+			String label,
+			String optionValue
+	) {
 	}
 
 	record ConceptCondition(
