@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.sql.conquery.SqlExecutionManager;
-import com.bakdata.conquery.sql.conquery.SqlMatchingStats;
 import com.bakdata.conquery.sql.conversion.NodeConversions;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
@@ -49,7 +48,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 		ResultSetProcessor resultSetProcessor = dialectBundle.getResultSetProcessor(config);
 		SqlExecutionService sqlExecutionService = new SqlExecutionService(dslContext, resultSetProcessor);
 
-		NodeConversions nodeConversions = new NodeConversions(config.getIdColumns(), dialectBundle, dslContext, sqlExecutionService, clock);
+		NodeConversions nodeConversions = new NodeConversions(config.getIdColumns(), dialectBundle, dslContext, sqlExecutionService, clock, connection.getConnection().getPrimaryColumn());
 		SqlConverter sqlConverter = new SqlConverter(nodeConversions, config);
 		ExecutionManager executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage, datasetRegistry, config);
 		SqlStorageHandler sqlStorageHandler = new SqlStorageHandler(sqlExecutionService);
