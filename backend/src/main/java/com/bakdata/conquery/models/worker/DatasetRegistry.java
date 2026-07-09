@@ -53,19 +53,27 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 		// Prepare empty storage
 		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName());
 		final ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(datasetStorage, this);
-
 		dataset.setStorageProvider(this);
 
 		// Each store injects its own IdResolveCtx so each needs its own mapper
-		datasetStorage.openStores(Jackson.copyMapperAndInjectables((persistenceMapper)));
+		datasetStorage.openStores(Jackson.copyMapperAndInjectables(persistenceMapper));
 
-		datasetStorage.updateDataset(dataset);
-		datasetStorage.updateIdMapping(new EntityIdMap(datasetStorage));
-		datasetStorage.setPreviewConfig(new PreviewConfig());
+		try {
+			datasetStorage.updateDataset(dataset);
+			datasetStorage.updateIdMapping(new EntityIdMap(datasetStorage));
+			datasetStorage.setPreviewConfig(new PreviewConfig());
 
-		datasetStorage.close();
+			datasetStorage.close();
 
-		return createNamespace(datasetStorage, metaStorage, environment);
+			return createNamespace(datasetStorage, metaStorage, environment);
+		}catch (Exception e) {
+			log.error("Error while creating namespace for dataset {}. Deleting.", dataset.getId(), e);
+
+			datasetStorage.openStores(Jackson.copyMapperAndInjectables(persistenceMapper));
+			datasetStorage.removeStorage();
+
+			throw  e;
+		}
 	}
 
 	public N createNamespace(NamespaceStorage datasetStorage, MetaStorage metaStorage, Environment environment) {
