@@ -33,20 +33,8 @@ public class Histogram {
 
 	private int total;
 
-	public Histogram(TreeRangeMap<Double, Counter> nodes, double absMin, double absMax, boolean integral) {
+	protected Histogram(TreeRangeMap<Double, Counter> nodes, double absMin, double absMax, boolean integral) {
 		this.integral = integral;
-		Range<Double> span = nodes.span();
-		if (!span.contains(absMin)) {
-			nodes.put(Range.lessThan(span.lowerEndpoint()), new Counter());
-		}
-		if (!span.contains(absMax)) {
-			nodes.put(Range.atLeast(span.upperEndpoint()), new Counter());
-		}
-
-		if (span.contains(0d)) {
-			nodes.put(Range.singleton(0d), new Counter());
-		}
-
 		this.nodes = nodes;
 		this.absMin = absMin;
 		this.absMax = absMax;
@@ -57,8 +45,18 @@ public class Histogram {
 	 * Create a histogram that is segmented to always have 0 singled out.
 	 */
 	public static Histogram zeroAligned(double lower, double upper, double absMin, double absMax, int expectedBins, boolean roundWidth, boolean integral) {
+
 		if (lower == upper) {
 			TreeRangeMap<Double, Counter> nodes = TreeRangeMap.create();
+
+			if (lower > absMin) {
+				nodes.put(Range.lessThan(lower), new Counter());
+			}
+
+			if (upper < absMax) {
+				nodes.put(Range.atLeast(upper), new Counter());
+			}
+
 			nodes.put(Range.singleton(lower), new Counter());
 
 			// Short circuit for degenerate cases
@@ -101,6 +99,21 @@ public class Histogram {
 			nodes.put(Range.closedOpen(
 					adjLower + binWidth * index,
 					adjLower + binWidth * (index + 1)), node);
+		}
+
+		Range<Double> span = nodes.span();
+
+		if (!span.contains(absMin)) {
+			nodes.put(Range.lessThan(span.lowerEndpoint()), new Counter());
+		}
+
+		if (!span.contains(absMax)) {
+			nodes.put(Range.atLeast(span.upperEndpoint()), new Counter());
+		}
+
+		// if integral, and the bins intersect with 0 and are exactly 1 wide, 0..1 and 0 are the same.
+		if (!(integral && binWidth == 1.0d) && span.contains(0d)) {
+			nodes.put(Range.singleton(0d), new Counter());
 		}
 
 		return new Histogram(nodes, absMin, absMax, integral);
