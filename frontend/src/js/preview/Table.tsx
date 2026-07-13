@@ -6,7 +6,6 @@ import {
   Vector,
 } from "apache-arrow";
 import RcTable from "rc-table";
-import "rc-table/assets/index.css";
 import { memo, useMemo, useRef } from "react";
 import { GetQueryResponseDoneT, GetQueryResponseT } from "../api/types";
 import { useCustomTableRenderers } from "./tableUtils";
@@ -54,6 +53,19 @@ export const StyledTable = styled("table")`
   th:last-of-type,
   td:last-of-type {
     border-right: none;
+  }
+
+  .rc-table-measure-cell {
+    padding-top: 0;
+    padding-bottom: 0;
+    border-top: 0;
+    border-bottom: 0;
+  }
+  .rc-table-measure-cell-content {
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    pointer-events: none;
   }
 `;
 
