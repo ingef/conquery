@@ -31,7 +31,6 @@ public class ManagedConnection implements Managed {
 	@Override
 	public void start() throws Exception {
 		dataSource = connection.createDataSource(healthCheckRegistry);
-
 		try {
 			log.debug("TEST connecting to {}", connection.getJdbcConnectionUrl());
 			if (dataSource.getConnection().isValid(100)) {
@@ -43,6 +42,7 @@ public class ManagedConnection implements Managed {
 		}
 		catch (SQLException exception) {
 			log.error("FAILED connecting to {}", connection.getJdbcConnectionUrl(), exception);
+			throw exception;
 		}
 	}
 
