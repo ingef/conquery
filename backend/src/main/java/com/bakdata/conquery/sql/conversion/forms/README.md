@@ -375,7 +375,7 @@ from "vers_stamm"
               on "full_stratification"."primary_id" = "vers_stamm"."pid"
 ```
 
-2. In the `EVENT_FILTER` step, we filter all entries where the stratification range and the subjects validity date do
+2. In the `PREPROCESSING` step, we filter all entries where the stratification range and the subjects validity date do
    not overlap. This is important because we only want to compute aggregations for those ranges that satisfy this
    condition.
 

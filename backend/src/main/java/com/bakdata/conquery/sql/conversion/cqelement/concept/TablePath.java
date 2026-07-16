@@ -91,7 +91,7 @@ class TablePath {
 
 		// interval packing requiredw
 		tableInfo.setContainsIntervalPacking(true);
-		tableInfo.addMappings(IntervalPackingCteStep.getMappings(EVENT_FILTER, context.getDialectBundle()));
+		tableInfo.addMappings(IntervalPackingCteStep.getMappings(PREPROCESSING, context.getDialectBundle()));
 
 		// validity date propagation not necessary
 		if (!cqConcept.isAggregateEventDates()) {

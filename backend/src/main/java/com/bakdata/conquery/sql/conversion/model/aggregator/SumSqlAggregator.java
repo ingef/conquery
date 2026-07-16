@@ -165,7 +165,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), sumColumn.getName(), numberClass);
 		preprocessingSelects.add(rootSelect);
 
-		String eventFilterCte = tables.cteName(ConceptCteStep.EVENT_FILTER);
+		String eventFilterCte = tables.cteName(ConceptCteStep.PREPROCESSING);
 		Field<? extends Number> sumField = rootSelect.qualify(eventFilterCte).select();
 
 		FieldWrapper<BigDecimal> sumGroupBy;

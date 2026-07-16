@@ -142,7 +142,7 @@ public class DaterangeSelectUtil {
 
 	private static SqlTables createTables(String alias, ConnectorSqlTables connectorTables, Context context) {
 		Map<CteStep, CteStep> predecessorMapping = new HashMap<>();
-		String eventFilterCteName = connectorTables.cteName(EVENT_FILTER);
+		String eventFilterCteName = connectorTables.cteName(PREPROCESSING);
 		predecessorMapping.putAll(IntervalPackingCteStep.getMappings(context.getDialectBundle()));
 		if (context.getDialectBundle().supportsSingleColumnRanges()) {
 			predecessorMapping.put(UNNEST_DATE, INTERVAL_COMPLETE);
@@ -162,7 +162,7 @@ public class DaterangeSelectUtil {
 			ConnectorSqlTables connectorSqlTables,
 			DialectBundle sqlDialect
 	) {
-		String eventFilterCteName = connectorSqlTables.cteName(EVENT_FILTER);
+		String eventFilterCteName = connectorSqlTables.cteName(PREPROCESSING);
 		IntervalPackingContext intervalPackingContext = IntervalPackingContext.builder()
 																			  .ids(idColumns.qualify(eventFilterCteName))
 																			  .daterange(daterange.qualify(eventFilterCteName))
