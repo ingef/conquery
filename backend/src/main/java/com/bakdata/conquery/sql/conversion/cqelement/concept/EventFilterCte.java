@@ -5,31 +5,24 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
-import com.google.common.base.Preconditions;
 import org.jooq.Condition;
 
+//TODO merge this and PreprocessingCte
 class EventFilterCte extends ConnectorCte {
+
 
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 		List<Condition> conditions = new ArrayList<>();
-
-		if (tableContext.getIds().getSecondaryId().isPresent()) {
-			conditions.add(tableContext.getIds().getSecondaryId().get().isNotNull());
-		}
-
-		conditions.addAll(collectEventFilterConditions(tableContext));
 
 		return QueryStep.builder()
 						.selects(collectSelects(tableContext))
@@ -96,35 +89,6 @@ class EventFilterCte extends ConnectorCte {
 
 	private static Stream<ExtractingSqlSelect<?>> referenceRequiredColumns(SqlSelect sqlSelect, String predecessorTableName) {
 		return sqlSelect.requiredColumns().stream().map(column -> new ExtractingSqlSelect<>(predecessorTableName, column, Object.class));
-	}
-
-	private static List<Condition> collectEventFilterConditions(CQTableContext tableContext) {
-
-		List<Condition> eventFilterConditions = tableContext.getSqlFilters().stream()
-															.flatMap(conceptFilter -> conceptFilter.getWhereClauses().getEventFilters().stream())
-															.map(WhereCondition::condition)
-															.toList();
-
-		if (tableContext.getConversionContext().isWithStratification()) {
-			return addStratificationCondition(eventFilterConditions, tableContext);
-		}
-		return eventFilterConditions;
-	}
-
-	private static List<Condition> addStratificationCondition(List<Condition> eventFilterConditions, CQTableContext tableContext) {
-		Selects previousSelects = tableContext.getPrevious().getQualifiedSelects();
-		Preconditions.checkArgument(
-				previousSelects.getStratificationDate().isPresent() && previousSelects.getValidityDate().isPresent(),
-				"Can't apply stratification for table %s".formatted(tableContext.getConnectorTables().getRootTable())
-		);
-
-		// we filter every entry where stratification date range and validity date range do not overlap
-		SqlFunctionProvider functionProvider = tableContext.getFunctionProvider();
-		ColumnDateRange stratificationDate = previousSelects.getStratificationDate().get();
-		ColumnDateRange validityDate = previousSelects.getValidityDate().get();
-		Condition stratificationCondition = functionProvider.dateRestriction(stratificationDate, validityDate);
-
-		return Stream.concat(Stream.of(stratificationCondition), eventFilterConditions.stream()).toList();
 	}
 
 }

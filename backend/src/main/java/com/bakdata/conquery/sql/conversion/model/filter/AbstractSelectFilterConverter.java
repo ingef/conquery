@@ -10,27 +10,22 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
+import static com.codahale.metrics.MetricRegistry.name;
+import static org.jooq.impl.DSL.field;
+
 abstract class AbstractSelectFilterConverter<F extends SelectFilter<T>, T> implements FilterConverter<F, T> {
 
 	@Override
 	public SqlFilters convertToSqlFilter(F filter, FilterContext<T> filterContext) {
 
-		ExtractingSqlSelect<String> rootSelect = new ExtractingSqlSelect<>(
-				filterContext.getTables().getPredecessor(ConceptCteStep.PREPROCESSING),
-				filter.getColumn().getColumn(),
-				String.class
-		);
-
 		WhereCondition condition = new MultiSelectCondition(
-				rootSelect.qualify(filterContext.getTables().getPredecessor(ConceptCteStep.EVENT_FILTER)).select(),
+				field(name(filterContext.getTables().getRootTable(), filter.getColumn().getColumn()), String.class),
 				getValues(filterContext),
 				filterContext.getFunctionProvider()
 		);
 
 		return new SqlFilters(
-				ConnectorSqlSelects.builder()
-								   .preprocessingSelect(rootSelect)
-								   .build(),
+				ConnectorSqlSelects.none(),
 				WhereClauses.builder()
 							.eventFilter(condition)
 							.build()
@@ -42,7 +37,7 @@ abstract class AbstractSelectFilterConverter<F extends SelectFilter<T>, T> imple
 		Column column = filter.getColumn().resolve();
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
-		Field<String> field = DSL.field(DSL.name(tableName, columnName), String.class);
+		Field<String> field = field(DSL.name(tableName, columnName), String.class);
 		return new MultiSelectCondition(field, getValues(filterContext), filterContext.getFunctionProvider()).condition();
 	}
 

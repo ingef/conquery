@@ -155,29 +155,19 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 	}
 
 	@Override
-	public SqlFilters convertToSqlFilter(FlagFilter flagFilter, FilterContext<Set<String>> filterContext) {
-		SqlTables connectorTables = filterContext.getTables();
-		String rootTable = connectorTables.getPredecessor(ConceptCteStep.PREPROCESSING);
+	public SqlFilters convertToSqlFilter(FlagFilter filter, FilterContext<Set<String>> filterContext) {
 
-		List<ExtractingSqlSelect<Boolean>> rootSelects = getRequiredColumns(flagFilter.getFlags(), filterContext.getValue())
+		List<Field<Boolean>> flagFields = getRequiredColumns(filter.getFlags(), filterContext.getValue())
 				.stream()
-				.map(Column::getName)
-				.map(columnName -> new ExtractingSqlSelect<>(rootTable, columnName, Boolean.class))
-				.collect(Collectors.toList());
+				.map(column -> field(name(column.getTable().getName(), column.getName()), Boolean.class))
+				.toList();
 
-		ConnectorSqlSelects selects = ConnectorSqlSelects.builder()
-														 .preprocessingSelects(rootSelects)
-														 .build();
-
-		List<Field<Boolean>> flagFields = rootSelects.stream()
-													 .map(sqlSelect -> sqlSelect.qualify(connectorTables.getPredecessor(ConceptCteStep.EVENT_FILTER)).select())
-													 .toList();
 		FlagCondition flagCondition = new FlagCondition(flagFields);
 		WhereClauses whereClauses = WhereClauses.builder()
 												.eventFilter(flagCondition)
 												.build();
 
-		return new SqlFilters(selects, whereClauses);
+		return new SqlFilters(ConnectorSqlSelects.none(), whereClauses);
 	}
 
 	@Override

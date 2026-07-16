@@ -15,6 +15,9 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
+import static com.codahale.metrics.MetricRegistry.name;
+import static org.jooq.impl.DSL.field;
+
 public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> implements FilterConverter<NumberFilter<RANGE>, RANGE> {
 
 	@Override
@@ -24,17 +27,15 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 		ConnectorSqlTables tables = filterContext.getTables();
 
 		Class<? extends Number> numberClass = NumberMapUtil.getType(column);
-		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), column.getName(), numberClass);
 
-		Field<? extends Number> eventFilterCtePredecessor = rootSelect.qualify(tables.getPredecessor(ConceptCteStep.EVENT_FILTER)).select();
+		Field<? extends Number> eventFilterCtePredecessor = field(name(tables.getRootTable(), column.getName()), numberClass);
+
 		IRange<? extends Number, ?> filterValue = filterContext.getValue();
 		NumberCondition condition = new NumberCondition(eventFilterCtePredecessor, filterValue);
 
-		ConnectorSqlSelects selects = ConnectorSqlSelects.builder().preprocessingSelects(List.of(rootSelect)).build();
-
 		WhereClauses whereClauses = WhereClauses.builder().eventFilter(condition).build();
 
-		return new SqlFilters(selects, whereClauses);
+		return new SqlFilters(ConnectorSqlSelects.none(), whereClauses);
 	}
 
 	@Override

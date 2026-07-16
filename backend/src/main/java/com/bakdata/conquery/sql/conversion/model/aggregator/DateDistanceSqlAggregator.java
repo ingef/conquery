@@ -16,12 +16,12 @@ import com.bakdata.conquery.sql.conversion.model.filter.*;
 import com.bakdata.conquery.sql.conversion.model.select.*;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+import static org.jooq.impl.DSL.*;
 import static org.jooq.impl.DSL.field;
 
 public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSelect>, FilterConverter<DateDistanceFilter, Range.LongRange> {
@@ -33,16 +33,18 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 		String alias = selectContext.getNameGenerator().selectName(select);
 		ConnectorSqlTables tables = selectContext.getTables();
 
-		FieldWrapper<Integer> dateDistanceSelect = createDateDistanceSelect(column, alias, select.getTimeUnit(), tables, selectContext.getConversionContext());
+		Field<Integer> dateDistanceSelect = createDateDistanceSelect(column, select.getTimeUnit(), tables, selectContext.getConversionContext())
+				.as(alias);
+		FieldWrapper<Integer> dateDistanceWrapper = new FieldWrapper<>(dateDistanceSelect);
 
-		Field<Integer> qualifiedDateDistance = dateDistanceSelect.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
-		FieldWrapper<Integer> minDateDistance = new FieldWrapper<>(DSL.min(qualifiedDateDistance).as(alias));
+		Field<Integer> qualifiedDateDistance = dateDistanceWrapper.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
+		FieldWrapper<Integer> minDateDistance = new FieldWrapper<>(min(qualifiedDateDistance).as(alias));
 
 		String finalPredecessor = tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
 		ExtractingSqlSelect<Integer> finalSelect = minDateDistance.qualify(finalPredecessor);
 
 		return ConnectorSqlSelects.builder()
-								  .preprocessingSelect(dateDistanceSelect)
+								  .preprocessingSelect(dateDistanceWrapper)
 								  .aggregationSelect(minDateDistance)
 								  .finalSelect(finalSelect)
 								  .build();
@@ -52,48 +54,36 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 	public SqlFilters convertToSqlFilter(DateDistanceFilter filter, FilterContext<Range.LongRange> filterContext) {
 
 		Column column = filter.getColumn().resolve();
-		String alias = filterContext.getNameGenerator().selectName(filter);
-		ConnectorSqlTables tables = filterContext.getTables();
+		Field<Integer> dateDistance = createDateDistanceSelect(column , filter.getTimeUnit(), filterContext.getTables(), filterContext.getConversionContext());
 
-		FieldWrapper<Integer> dateDistanceSelect = createDateDistanceSelect(column, alias, filter.getTimeUnit(), tables, filterContext.getConversionContext());
-		ConnectorSqlSelects selects = ConnectorSqlSelects.builder().preprocessingSelect(dateDistanceSelect).build();
-
-		String eventFilterCteName = tables.getPredecessor(ConceptCteStep.EVENT_FILTER);
-		Field<Integer> qualifiedDateDistanceSelect = dateDistanceSelect.qualify(eventFilterCteName).select();
-		WhereCondition dateDistanceCondition = new DateDistanceCondition(qualifiedDateDistanceSelect, filterContext.getValue());
+		WhereCondition dateDistanceCondition = new DateDistanceCondition(dateDistance, filterContext.getValue());
 
 		WhereClauses whereClauses = WhereClauses.builder().eventFilter(dateDistanceCondition).build();
 
-		return new SqlFilters(selects, whereClauses);
+		return new SqlFilters(ConnectorSqlSelects.none(), whereClauses);
 	}
 
 	@Override
 	public Condition convertForTableExport(DateDistanceFilter filter, FilterContext<Range.LongRange> filterContext) {
 
 		Column column = filter.getColumn().resolve();
-		String tableName = column.getTable().getName();
-		String columnName = column.getName();
+		Field<Integer> dateDistance = createDateDistanceSelect(column , filter.getTimeUnit(), filterContext.getTables(), filterContext.getConversionContext());
 
-		Field<Date> startDateField = DSL.field(DSL.name(tableName, columnName), Date.class);
-		Field<Date> endDate = getEndDate(filterContext.getConversionContext());
-
-		Field<Integer> dateDistance = filterContext.getFunctionProvider().dateDistance(filter.getTimeUnit(), startDateField, endDate);
 		return new DateDistanceCondition(dateDistance, filterContext.getValue()).condition();
 	}
 
-	private FieldWrapper<Integer> createDateDistanceSelect(
+	private Field<Integer> createDateDistanceSelect(
 			Column column,
-			String alias,
 			ChronoUnit timeUnit,
 			SqlTables tables,
 			ConversionContext conversionContext
 	) {
-        Field<Date> startDate = field(DSL.name(tables.getRootTable(), column.getName()), Date.class);
+        Field<Date> startDate = field(name(tables.getRootTable(), column.getName()), Date.class);
 
         Field<Date> endDate = getEndDate(conversionContext);
 
 		SqlFunctionProvider functionProvider = conversionContext.getFunctionProvider();
-		return new FieldWrapper<>(functionProvider.dateDistance(timeUnit, startDate, endDate).as(alias));
+		return functionProvider.dateDistance(timeUnit, startDate, endDate);
 	}
 
 	private Field<Date> getEndDate(ConversionContext conversionContext) {
@@ -105,7 +95,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 			ColumnDateRange stratificationDate = conversionContext.getStratificationTable().getQualifiedSelects().getStratificationDate().get();
 			ColumnDateRange dualColumn = functionProvider.toDualColumn(stratificationDate);
 			// end date is allways treated exclusive, so we get the actual end date when subtracting 1 day
-			return functionProvider.addDays(dualColumn.getEnd(), DSL.inline(-1));
+			return functionProvider.addDays(dualColumn.getEnd(), inline(-1));
 		}
 
 		LocalDate endDate;
