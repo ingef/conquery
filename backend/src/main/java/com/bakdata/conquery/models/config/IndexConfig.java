@@ -27,9 +27,6 @@ public class IndexConfig  {
 	@Nullable
 	private URI baseUrl;
 
-	@NotNull
-	private String emptyLabel = "No Value";
-
 	@JsonIgnore
 	@ValidationMethod(message = "Specified baseUrl is not valid")
 	public boolean isValidUrl() {
