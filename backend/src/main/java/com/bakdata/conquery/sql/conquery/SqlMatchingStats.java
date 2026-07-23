@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
+import org.jooq.impl.DSL;
 
 import java.sql.Date;
 import java.util.*;
@@ -108,15 +109,9 @@ public class SqlMatchingStats {
 
 		Name tableName = idsTableName(concept.getName());
 
-		// allFields are the statements to extract values from the underlying tables, we use them to generate the field names
-		List<Field<?>> fields = new ArrayList<>();
-
-		fields.addAll(allFields);
-		fields.addFirst(CONCEPT_ID_FIELD);
-
 		// Make sure there's no table present.
 		deleteConceptIdJoinTable(concept.getId());
-		createConceptIdsTable(tableName, fields);
+		List<Field<?>> fields = createConceptIdsTable(tableName, allFields);
 
 		insertConceptIdMappings(tableName, fields, rows, dslContext);
 	}
@@ -210,15 +205,24 @@ public class SqlMatchingStats {
 	/**
 	 * Create table and fields. Assumes, table has been dropped already.
 	 */
-	private void createConceptIdsTable(Name tableName, List<Field<?>> fields) {
+	private List<Field<?>> createConceptIdsTable(Name tableName, List<Field<?>> keyFields) {
+
+		List<Field<?>> fields = new ArrayList<>();
+
+		fields.addAll(keyFields);
+		fields.addFirst(CONCEPT_ID_FIELD);
 
 		log.debug("Creating table {} with fields {}", tableName, fields);
 
-		CreateTableElementListStep createTable = dslContext.createTable(tableName).columns(fields);
+		//TODO Option to create primaryKeys and indices here, but Hana is a bit flaky with it, would need to differentiate the impls.
 
-		log.trace("{}", createTable);
+		CreateTableElementListStep createTable =
+				dslContext.createTable(tableName)
+						.columns(fields);
 
 		createTable.execute();
+
+		return fields;
 	}
 
 	public ListenableFuture<?> collectMatchingStatsForConcept(TreeConcept concept, ListeningExecutorService executorService, int tries) {
