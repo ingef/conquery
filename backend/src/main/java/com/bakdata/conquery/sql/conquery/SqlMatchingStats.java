@@ -46,6 +46,7 @@ public class SqlMatchingStats {
 	private final SqlFunctionProvider functionProvider;
 	private final String defaultPrimaryColumn;
 	private final int fetchBatchSize = 100;
+	private final int matchingStatsWorkers;
 
 	private static void assignStatsToPath(ConceptElement<?> element, Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats, String entity, CDateRange span) {
 		while (element != null) {
@@ -176,7 +177,6 @@ public class SqlMatchingStats {
 
 		log.debug("DONE fetching matching stats for {} within {}", concept.getId(), stopwatch);
 
-
 		return matchingStats;
 	}
 
@@ -287,6 +287,7 @@ public class SqlMatchingStats {
 	public void deleteConceptIdJoinTable(ConceptId concept) {
 		Name tableName = idsTableName(concept.getName());
 		log.debug("Trying to delete id-table {}", tableName);
+
 		try {
 			dslContext.dropTable(tableName).execute();
 		} catch (DataAccessException exception) {

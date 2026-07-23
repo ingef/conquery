@@ -1,9 +1,5 @@
 package com.bakdata.conquery.models.worker;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.local.SqlEntityResolver;
 import com.bakdata.conquery.mode.local.SqlStorageHandler;
@@ -19,6 +15,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Getter
 @Slf4j
@@ -41,10 +41,11 @@ public class LocalNamespace extends Namespace {
 			SqlEntityResolver sqlEntityResolver, DatabaseConnectionConfig databaseConfig
 	) {
 		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, sqlEntityResolver);
+
 		this.dslContext = dslContext;
 		this.storageHandler = storageHandler;
 		this.dialect = dialect;
-		matchingStats = new SqlMatchingStats(dslContext, dialect.getFunctionProvider(), databaseConfig.getPrimaryColumn());
+		this.matchingStats = new SqlMatchingStats(dslContext, dialect.getFunctionProvider(), databaseConfig.getPrimaryColumn(), databaseConfig.getMatchingStatsWorkers());
 	}
 
 
@@ -61,8 +62,7 @@ public class LocalNamespace extends Namespace {
 			try {
 				final Stream<String> stringStream = storageHandler.lookupColumnValues(getStorage(), column);
 				getFilterSearch().registerValues(column, stringStream.collect(Collectors.toSet()));
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error("Problem collecting column values for {}", column, e);
 			}
 		}

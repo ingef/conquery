@@ -4,6 +4,7 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.util.Duration;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
@@ -29,6 +30,13 @@ public class DatabaseConnectionConfig {
 	 */
 	@NotNull
 	private Dialect dialect;
+
+	/**
+	 * Maximum workers to schedule for matching stats. This depends on your HikariCP configuration as well.
+	 */
+	@Min(1)
+	@Builder.Default
+	private int matchingStatsWorkers = 5;
 
 	/**
 	 * Name of the column which is shared among the table and all aggregations are grouped by.
