@@ -6,7 +6,6 @@ import {
   Vector,
 } from "apache-arrow";
 import RcTable from "rc-table";
-import "rc-table/assets/index.css";
 import { memo, useMemo, useRef } from "react";
 import { GetQueryResponseDoneT, GetQueryResponseT } from "../api/types";
 import { useCustomTableRenderers } from "./tableUtils";
