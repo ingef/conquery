@@ -14,8 +14,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.StreamingResponseCallback;
+import org.apache.solr.client.solrj.impl.StreamingBinaryResponseParser;
+import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
@@ -111,7 +114,7 @@ public class FilterValueSearch {
 
             List<FrontendValue> beans = new ArrayList<>();
             final AtomicLong numFound = new AtomicLong();
-            QueryResponse response = solrClient.queryAndStreamResponse(query, new StreamingResponseCallback() {
+            final StreamingResponseCallback callback = new StreamingResponseCallback() {
                 @Override
                 public void streamSolrDocument(SolrDocument doc) {
                     SolrFrontendValue bean = solrClient.getBinder().getBean(SolrFrontendValue.class, doc);
@@ -122,7 +125,11 @@ public class FilterValueSearch {
                 public void streamDocListInfo(long numFoundCallBack, long start, Float maxScore) {
                     numFound.set(numFoundCallBack);
                 }
-            });
+            };
+
+            final QueryRequest request = new QueryRequest(query, SolrRequest.METHOD.POST);
+            request.setResponseParser(new StreamingBinaryResponseParser(callback));
+            final QueryResponse response = request.process(solrClient);
 
             log.debug("Query [{}] Found: {} | Collected: {} | QTime: {} | ElapsedTime: {}", queryHash, numFound.get(), beans.size(), response.getQTime(), response.getElapsedTime());
 
@@ -182,6 +189,7 @@ public class FilterValueSearch {
         final List<FrontendValue> resolved = new ArrayList<>(terms.size());
 
 
+        // TODO also use Solr's POST method to avoid too long URIs
         List<List<String>> chunks = chunkByUriLength(escapedTerms);
         int chunkIndex = 1;
         final int chunkCount = chunks.size();
