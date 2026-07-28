@@ -189,7 +189,7 @@ public class FilterValueSearch {
         final List<FrontendValue> resolved = new ArrayList<>(terms.size());
 
 
-        // TODO also use Solr's POST method to avoid too long URIs
+        // TODO also use Solr's POST method to avoid too long URIs (see sendQuery)
         List<List<String>> chunks = chunkByUriLength(escapedTerms);
         int chunkIndex = 1;
         final int chunkCount = chunks.size();
