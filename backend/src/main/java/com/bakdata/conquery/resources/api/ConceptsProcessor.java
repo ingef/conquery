@@ -124,7 +124,7 @@ public class ConceptsProcessor {
 	 * The user will upload a file and expect only well-corresponding resolutions.
 	 */
 	public ResolvedFilterValues resolveFilterValues(FilterId filterId, List<String> searchTerms) {
-		final SelectFilter<?> filter = (SelectFilter<?>) filterId.resolve();
+		final SelectFilter filter = (SelectFilter) filterId.resolve();
 		final Namespace namespace = namespaces.get(filter.getDataset());
 
 		final ExactFilterValueResult exactResult = namespace.getFilterSearch().findExact(filter, searchTerms);
@@ -144,7 +144,7 @@ public class ConceptsProcessor {
 		Preconditions.checkArgument(pageNumber >= 0, "Page number must be 0 or a positive integer.");
 		Preconditions.checkArgument(itemsPerPage > 1, "Must at least have one item per page.");
 
-		final SelectFilter<?> filter = (SelectFilter<?>) filterId.resolve();
+		final SelectFilter filter = (SelectFilter) filterId.resolve();
 
 		log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, filterId, pageNumber, itemsPerPage);
 

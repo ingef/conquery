@@ -26,7 +26,7 @@
     ],
     "table": "vers_stamm",
     "filters": {
-      "type": "SELECT",
+      "type": "BIG_MULTI_SELECT",
       "name": "geschlecht",
       "label": "Geschlecht",
       "column": "vers_stamm.geschlecht",

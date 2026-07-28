@@ -49,7 +49,7 @@ public class UpdateFilterSearchJob extends Job {
 		log.info("BEGIN loading SourceSearch");
 
 		// collect all SelectFilters to create searches for them
-		final List<SelectFilter<?>> allSelectFilters =
+		final List<SelectFilter> allSelectFilters =
 				getAllSelectFilters(storage);
 
 
@@ -82,13 +82,13 @@ public class UpdateFilterSearchJob extends Job {
 
 
 	@NotNull
-	public static List<SelectFilter<?>> getAllSelectFilters(NamespaceStorage storage) {
+	public static List<SelectFilter> getAllSelectFilters(NamespaceStorage storage) {
 		try(Stream<Concept<?>> allConcepts = storage.getAllConcepts()) {
 			return allConcepts
 					.flatMap(c -> c.getConnectors().stream())
 					.flatMap(co -> co.collectAllFilters().stream())
 					.filter(SelectFilter.class::isInstance)
-					.map(f -> ((SelectFilter<?>) f))
+					.map(f -> ((SelectFilter) f))
 					.collect(Collectors.toList());
 		}
 	}

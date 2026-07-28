@@ -42,12 +42,12 @@ import java.util.stream.Stream;
 public class FilterValueSearch {
 
     public static final int SOLR_MAX_URI_LENGTH = 5000 /* bytes */ ; // with some buffer, actual limit is 8192, but setting this to 6000 already causes failures
-	private final SelectFilter<?> filter;
+	private final SelectFilter filter;
     private final SolrProcessor processor;
     private final SolrClient solrClient;
     private final FilterValueConfig filterValueConfig;
 
-    public List<FilterValueIndexer> getSearchesFor(SelectFilter<?> searchable, boolean withEmptySource) {
+    public List<FilterValueIndexer> getSearchesFor(SelectFilter searchable, boolean withEmptySource) {
         List<Searchable> searchReferences = new ArrayList<>(searchable.getSearchReferences());
 
         if (withEmptySource) {

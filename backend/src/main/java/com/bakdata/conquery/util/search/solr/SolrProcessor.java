@@ -224,7 +224,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		indexer.finalizeSearch();
 	}
 
-	public AutoCompleteResult topItems(SelectFilter<?> filter, String text, Integer start, Integer limit) {
+	public AutoCompleteResult topItems(SelectFilter filter, String text, Integer start, Integer limit) {
 		FilterValueSearch filterValueSearch = new FilterValueSearch(filter, this, solrSearchClient, filterValueConfig);
 
 		return filterValueSearch.topItems(text, start, limit);
@@ -360,14 +360,14 @@ public class SolrProcessor implements SearchProcessor, Managed {
 
 
 	@Override
-	public ConceptsProcessor.ExactFilterValueResult findExact(SelectFilter<?> filter, List<String> searchTerms) {
+	public ConceptsProcessor.ExactFilterValueResult findExact(SelectFilter filter, List<String> searchTerms) {
 		FilterValueSearch filterValueSearch = new FilterValueSearch(filter, this, solrSearchClient, filterValueConfig);
 
 		return filterValueSearch.exact(searchTerms);
 	}
 
 	@Override
-	public AutoCompleteResult query(SelectFilter<?> filter, String maybeText, int itemsPerPage, int pageNumber) {
+	public AutoCompleteResult query(SelectFilter filter, String maybeText, int itemsPerPage, int pageNumber) {
 		int start = itemsPerPage * pageNumber;
 		return topItems(filter, maybeText, start, itemsPerPage);
 	}

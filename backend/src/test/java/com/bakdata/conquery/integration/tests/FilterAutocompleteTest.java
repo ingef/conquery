@@ -66,7 +66,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
-		final SelectFilter<?> filter = setupSearch(conquery);
+		final SelectFilter filter = setupSearch(conquery);
 
 		final Concept<?> concept = filter.getConnector().getConcept();
 
@@ -144,7 +144,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		}
 	}
 
-	private static SelectFilter<?> setupSearch(StandaloneSupport conquery) throws Exception {
+	private static SelectFilter setupSearch(StandaloneSupport conquery) throws Exception {
 		//read test specification
 		final String testJson =
 				LoadingUtil.readResource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json");
@@ -165,7 +165,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		final Concept<?> concept = allConcepts.filter(c -> c.getName().equals("geschlecht_select")).findFirst().orElseThrow();
 		allConcepts.close();
 		final Connector connector = concept.getConnectors().getFirst();
-		final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
+		final SelectFilter filter = (SelectFilter) connector.getFilters().iterator().next();
 
 		// Copy search csv from resources to tmp folder.
 		// TODO this file is not deleted at the end of this test

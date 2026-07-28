@@ -24,7 +24,7 @@
               "filters": [
                 {
                   "filter": "test_concept.test_connector.test_filter",
-                  "type": "MULTI_SELECT",
+                  "type": "BIG_MULTI_SELECT",
                   "value": [
                     "2"
                   ]
@@ -52,7 +52,7 @@
             "label": "test_filter",
             "description": "Tests a column against a specified value",
             "column": "test_table.test_column",
-            "type": "SELECT"
+            "type": "BIG_MULTI_SELECT"
           }
         }
       ]

@@ -67,14 +67,9 @@
                 "column": "table.DATE_RANGE"
             },
             {
-                "label": "SINGLE_SELECT",
+                "label": "BIG_MULTI_SELECT",
                 "column": "table.STRING",
-                "type": "SINGLE_SELECT"
-            },
-            {
-                "label": "SELECT",
-                "column": "table.STRING",
-                "type": "SELECT"
+                "type": "BIG_MULTI_SELECT"
             },
             {
                 "label": "BIG_MULTI_SELECT",

@@ -10,10 +10,12 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-abstract class AbstractSelectFilterConverter<F extends SelectFilter<T>, T> implements FilterConverter<F, T> {
+import java.util.Set;
+
+abstract class AbstractSelectFilterConverter implements FilterConverter<SelectFilter, Set<String>> {
 
 	@Override
-	public SqlFilters convertToSqlFilter(F filter, FilterContext<T> filterContext) {
+	public SqlFilters convertToSqlFilter(SelectFilter filter, FilterContext<Set<String>> filterContext) {
 
 		ExtractingSqlSelect<String> rootSelect = new ExtractingSqlSelect<>(
 				filterContext.getTables().getPredecessor(ConceptCteStep.PREPROCESSING),
@@ -38,7 +40,7 @@ abstract class AbstractSelectFilterConverter<F extends SelectFilter<T>, T> imple
 	}
 
 	@Override
-	public Condition convertForTableExport(F filter, FilterContext<T> filterContext) {
+	public Condition convertForTableExport(SelectFilter filter, FilterContext<Set<String>> filterContext) {
 		Column column = filter.getColumn().resolve();
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
@@ -46,5 +48,5 @@ abstract class AbstractSelectFilterConverter<F extends SelectFilter<T>, T> imple
 		return new MultiSelectCondition(field, getValues(filterContext), filterContext.getFunctionProvider()).condition();
 	}
 
-	protected abstract String[] getValues(FilterContext<T> filterContext);
+	protected abstract String[] getValues(FilterContext<Set<String>> filterContext);
 }

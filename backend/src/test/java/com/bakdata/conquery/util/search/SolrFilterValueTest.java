@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.index.IndexService;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
@@ -74,7 +75,7 @@ public class SolrFilterValueTest {
 	@RegisterExtension
 	private static final SolrServerExtension SOLR_SERVER = new SolrServerExtension(DATASET_ID.toString());
 	private static final IndexService INDEX_SERVICE = new IndexService(new CsvParserSettings(){{setDelimiterDetectionEnabled(true);setLineSeparatorDetectionEnabled(true);}}, "emptyDefaultLabel");
-	public static final SelectFilter<?> FILTER = createFilter();
+	public static final SelectFilter FILTER = createFilter();
 	public static SolrConfig solrConfig;
 	public static SolrProcessor searchProcessor;
 
@@ -108,16 +109,11 @@ public class SolrFilterValueTest {
 		searchProcessor.clearSearch();
 	}
 
-	private static @NotNull SelectFilter<Object> createFilter() {
-		return new SelectFilter<>() {
+	private static @NotNull SelectFilter createFilter() {
+		return new SelectFilter() {
 
 			@Override
-			public FilterNode<?> createFilterNode(Object o) {
-				throw new UnsupportedOperationException();
-			}
-
-			@Override
-			public String getFilterType() {
+			public EventFilterNode createFilterNode(Set<String> o) {
 				throw new UnsupportedOperationException();
 			}
 
@@ -152,10 +148,6 @@ public class SolrFilterValueTest {
 		};
 	}
 
-	public static Collection<FrontendValue> findExact(SolrProcessor solrProcessor, SelectFilter<?> filter, String searchTerm) {
-		return solrProcessor.findExact(filter, List.of(searchTerm)).resolved();
-	}
-
 	@Test
 	@Order(0)
 	public void addData() throws InterruptedException, SolrServerException, IOException {
@@ -181,6 +173,10 @@ public class SolrFilterValueTest {
 		searchProcessor.registerValues(column, strings);
 		searchProcessor.finalizeSearch(column);
 		searchProcessor.explicitCommit();
+	}
+
+	public static Collection<FrontendValue> findExact(SolrProcessor solrProcessor, SelectFilter filter, String searchTerm) {
+		return solrProcessor.findExact(filter, List.of(searchTerm)).resolved();
 	}
 
 	private static @NotNull Column createSearchable() {

@@ -27,7 +27,7 @@
                   "filters": [
                     {
                       "filter": "geschlecht_select.geschlecht_connector.geschlecht",
-                      "type": "MULTI_SELECT",
+                      "type": "BIG_MULTI_SELECT",
                       "value": [
                         "f"
                       ]
@@ -48,7 +48,7 @@
                   "filters": [
                     {
                       "filter": "geschlecht_select.geschlecht_connector.geschlecht",
-                      "type": "MULTI_SELECT",
+                      "type": "BIG_MULTI_SELECT",
                       "value": [
                         "m"
                       ]
@@ -77,7 +77,7 @@
           "filters": {
             "label": "geschlecht",
             "column": "table1.geschlecht",
-            "type": "SELECT"
+            "type": "BIG_MULTI_SELECT"
           }
         }
       ]

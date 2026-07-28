@@ -50,7 +50,7 @@
           "filters": {
             "label": "geschlecht",
             "column": "table1.geschlecht",
-            "type": "SELECT"
+            "type": "BIG_MULTI_SELECT"
           }
         }
       ]

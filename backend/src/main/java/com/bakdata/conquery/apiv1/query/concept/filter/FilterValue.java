@@ -77,30 +77,6 @@ public abstract class FilterValue<VALUE> {
 		return resolve.createConverter().convertForTableExport(resolve, filterContext);
 	}
 
-	@CPSType(id = FrontendFilterType.Fields.MULTI_SELECT, base = FilterValue.class)
-	public static class CQMultiSelectFilter extends FilterValue<Set<String>> {
-		@JsonCreator
-		public CQMultiSelectFilter(FilterId filter, Set<String> value) {
-			super(filter, value);
-		}
-
-		@Override
-		public String toString() {
-			final String valueString;
-			final int size = readValue().size();
-
-			if (size > 20) {
-				valueString = size + " values";
-			}
-			else {
-				valueString = readValue().toString();
-			}
-
-			return "%s(value=%s)".formatted(FrontendFilterType.Fields.MULTI_SELECT, valueString);
-		}
-
-	}
-
 	@CPSType(id = FrontendFilterType.Fields.BIG_MULTI_SELECT, base = FilterValue.class)
 	public static class CQBigMultiSelectFilter extends FilterValue<Set<String>> {
 
@@ -125,14 +101,6 @@ public abstract class FilterValue<VALUE> {
 		}
 	}
 
-	@CPSType(id = FrontendFilterType.Fields.SELECT, base = FilterValue.class)
-	@ToString(callSuper = true)
-	public static class CQSelectFilter extends FilterValue<String> {
-		@JsonCreator
-		public CQSelectFilter(FilterId filter, String value) {
-			super(filter, value);
-		}
-	}
 
 	@CPSType(id = FrontendFilterType.Fields.STRING, base = FilterValue.class)
 	@ToString(callSuper = true)

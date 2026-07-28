@@ -163,7 +163,7 @@
             },
             {
               "name": "indexSelector",
-              "type": "SELECT",
+              "type": "BIG_MULTI_SELECT",
               "label": {
                 "de": "Zeitstempel Indexdatum",
                 "en": "Index date sampler"
@@ -202,7 +202,7 @@
             },
             {
               "name": "indexPlacement",
-              "type": "SELECT",
+              "type": "BIG_MULTI_SELECT",
               "label": {
                 "de": "Zugehörigkeit Indexdatum",
                 "en": "Index period inclusion"
@@ -285,7 +285,7 @@
     },
     {
       "name": "resolution",
-      "type": "SELECT",
+      "type": "BIG_MULTI_SELECT",
       "label": {
         "de": "Stratifizierung Beobachtungszeitraum",
         "en": "Temporal stratification"

@@ -86,8 +86,8 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 													  .post(Entity.json(
 															  new FilterValue[]{
 																	  // Bit lazy, but this explicitly or's two filters
-																	  new FilterValue.CQMultiSelectFilter(filter.getId(), Set.of("A1")),
-																	  new FilterValue.CQMultiSelectFilter(filter.getId(), Set.of("B2"))
+																	  new FilterValue.CQBigMultiSelectFilter(filter.getId(), Set.of("A1")),
+																	  new FilterValue.CQBigMultiSelectFilter(filter.getId(), Set.of("B2"))
 															  }
 													  ))) {
 

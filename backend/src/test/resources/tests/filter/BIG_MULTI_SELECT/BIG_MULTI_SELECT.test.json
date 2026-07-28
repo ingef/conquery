@@ -32,7 +32,7 @@
     }
   },
   "filterValue": {
-    "type": "MULTI_SELECT",
-    "value": "1"
+    "type": "BIG_MULTI_SELECT",
+    "value": ["1"]
   }
 }

@@ -74,7 +74,7 @@
             {
               "id": "studio",
               "label": "Production Studio",
-              "type": "MULTI_SELECT",
+              "type": "BIG_MULTI_SELECT",
               "tooltip": "Test tooltip for the production studio that includes a nice<br />line break.",
               "description": "The studio producing the movie",
               "options": [
@@ -165,7 +165,7 @@
             {
               "id": "network",
               "label": "Network",
-              "type": "MULTI_SELECT",
+              "type": "BIG_MULTI_SELECT",
               "description": "The original broadcasting network",
               "options": [
                 {
@@ -225,7 +225,7 @@
             {
               "id": "picture_format",
               "label": "Picture Format",
-              "type": "SELECT",
+              "type": "BIG_MULTI_SELECT",
               "description": "The original picture format",
               "defaultValue": "hdtv",
               "options": [
@@ -288,7 +288,7 @@
             {
               "id": "award_type",
               "label": "Type of award",
-              "type": "MULTI_SELECT",
+              "type": "BIG_MULTI_SELECT",
               "options": [
                 {
                   "value": "nominated",

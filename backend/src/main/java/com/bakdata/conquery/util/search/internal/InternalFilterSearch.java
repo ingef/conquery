@@ -66,20 +66,20 @@ public class InternalFilterSearch implements SearchProcessor {
 	 */
 	@JsonIgnore
 	private ConcurrentMap<Searchable, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
-	private ConcurrentMap<SelectFilter<?>, Integer> totals = new ConcurrentHashMap<>();
+	private ConcurrentMap<SelectFilter, Integer> totals = new ConcurrentHashMap<>();
 
 
 	/**
 	 * Cache of all search results on SelectFilters.
 	 */
-	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FrontendValue>>
+	private final LoadingCache<Pair<SelectFilter, String>, List<FrontendValue>>
 			searchResults =
 			CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
 
 				@Override
-				public List<FrontendValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
+				public List<FrontendValue> load(Pair<SelectFilter, String> filterAndSearch) {
 					final String searchTerm = filterAndSearch.getValue();
-					final SelectFilter<?> searchable = filterAndSearch.getKey();
+					final SelectFilter searchable = filterAndSearch.getKey();
 
 					log.trace("Calculating a new search cache for the term \"{}\" on Searchable[{}]", searchTerm, searchable.getId());
 
@@ -92,9 +92,9 @@ public class InternalFilterSearch implements SearchProcessor {
 	 * Cache of raw listing of values on a filter.
 	 * We use Cursor here to reduce strain on memory and increase response time.
 	 */
-	private final LoadingCache<SelectFilter<?>, CursorAndLength> listResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
+	private final LoadingCache<SelectFilter, CursorAndLength> listResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
 		@Override
-		public CursorAndLength load(SelectFilter<?> searchable) {
+		public CursorAndLength load(SelectFilter searchable) {
 			log.trace("Creating cursor for `{}`", searchable.getId());
 			return new CursorAndLength(listAllValues(searchable), getTotal(searchable));
 		}
@@ -104,7 +104,7 @@ public class InternalFilterSearch implements SearchProcessor {
 	/**
 	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
 	 */
-	public final List<TrieSearch<FrontendValue>> getSearchesFor(SelectFilter<?> searchable) {
+	public final List<TrieSearch<FrontendValue>> getSearchesFor(SelectFilter searchable) {
 		final List<? extends Searchable> references = searchable.getSearchReferences();
 
 		if (log.isTraceEnabled()) {
@@ -119,7 +119,7 @@ public class InternalFilterSearch implements SearchProcessor {
 
 
 
-	private Cursor<FrontendValue> listAllValues(SelectFilter<?> searchable) {
+	private Cursor<FrontendValue> listAllValues(SelectFilter searchable) {
 		/*
 		Don't worry, I am as confused as you are!
 		For some reason, flatMapped streams in conjunction with distinct will be evaluated full before further operation.
@@ -144,7 +144,7 @@ public class InternalFilterSearch implements SearchProcessor {
 		return new Cursor<>(Iterators.filter(iterators, seen::add));
 	}
 
-	public long getTotal(SelectFilter<?> filter) {
+	public long getTotal(SelectFilter filter) {
 		return totals.computeIfAbsent(filter, (f) -> {
 			HashSet<FrontendValue> count = new HashSet<>();
 
@@ -199,7 +199,7 @@ public class InternalFilterSearch implements SearchProcessor {
 	 * Autocompletion for search terms. For values of {@link SelectFilter <?>}.
 	 * Is used by the search cache to load missing items
 	 */
-	public List<FrontendValue> topItems(SelectFilter<?> searchable, String text) {
+	public List<FrontendValue> topItems(SelectFilter searchable, String text) {
 		List<TrieSearch<FrontendValue>> searches = getSearchesFor(searchable);
 
 		final Object2LongMap<FrontendValue> overlayedWeights = new Object2LongOpenHashMap<>();
@@ -281,7 +281,7 @@ public class InternalFilterSearch implements SearchProcessor {
 		}
 	}
 
-	public List<FrontendValue> findExact(SelectFilter<?> filter, String searchTerm) {
+	public List<FrontendValue> findExact(SelectFilter filter, String searchTerm) {
 
 		final List<FrontendValue> out = new ArrayList<>();
 
@@ -294,7 +294,7 @@ public class InternalFilterSearch implements SearchProcessor {
 
 
 	@Override
-	public ConceptsProcessor.ExactFilterValueResult findExact(SelectFilter<?> filter, List<String> searchTerms) {
+	public ConceptsProcessor.ExactFilterValueResult findExact(SelectFilter filter, List<String> searchTerms) {
 		final List<FrontendValue> out = new ArrayList<>();
 		// search in the full text engine
 		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
@@ -316,7 +316,7 @@ public class InternalFilterSearch implements SearchProcessor {
 	}
 
 	@Override
-	public ConceptsProcessor.AutoCompleteResult query(SelectFilter<?> filter, String maybeText, int itemsPerPage, int pageNumber) {
+	public ConceptsProcessor.AutoCompleteResult query(SelectFilter filter, String maybeText, int itemsPerPage, int pageNumber) {
 		final int startIncl = itemsPerPage * pageNumber;
 		final int endExcl = startIncl + itemsPerPage;
 
@@ -366,7 +366,7 @@ public class InternalFilterSearch implements SearchProcessor {
 		@Override
 		public void execute() {
 
-			final List<SelectFilter<?>> allSelectFilters = UpdateFilterSearchJob.getAllSelectFilters(storage);
+			final List<SelectFilter> allSelectFilters = UpdateFilterSearchJob.getAllSelectFilters(storage);
 
 			getProgressReporter().setMax(allSelectFilters.size() + columns.size());
 
@@ -388,7 +388,7 @@ public class InternalFilterSearch implements SearchProcessor {
 			DatasetId datasetId = storage.getDataset().getId();
 			log.info("BEGIN counting search totals on {}", datasetId);
 
-			for (SelectFilter<?> filter : allSelectFilters) {
+			for (SelectFilter filter : allSelectFilters) {
 				log.trace("Calculate totals for filter: {}", filter.getId());
 				try {
 					final long total = filterSearch.getTotal(filter);

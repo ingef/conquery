@@ -31,11 +31,11 @@
     "filters": {
       "description": "Test SELECT_Filter",
       "column": "table.value",
-      "type": "SINGLE_SELECT"
+      "type": "BIG_MULTI_SELECT"
     }
   },
   "filterValue": {
-    "type": "SELECT",
-    "value": "1"
+    "type": "BIG_MULTI_SELECT",
+    "value": ["1"]
   }
 }

@@ -71,7 +71,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		final Concept<?> concept = allConcepts.findFirst().orElseThrow();
 		allConcepts.close();
 		final Connector connector = concept.getConnectors().getFirst();
-		final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
+		final SelectFilter filter = (SelectFilter) connector.getFilters().iterator().next();
 
 		// Copy search csv from resources to tmp folder.
 		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");

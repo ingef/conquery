@@ -69,7 +69,7 @@
           "filters" : [
             {
               "name" : "values-filter",
-              "type" : "SELECT",
+              "type" : "BIG_MULTI_SELECT",
               "column" : "table1.column"
             }
           ],

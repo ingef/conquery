@@ -54,7 +54,7 @@
                   "label":"geschlecht",
                   "description":"Geschlecht zur gegebenen Datumseinschränkung",
                   "column":"table1.geschlecht",
-                  "type":"SELECT"
+                  "type":"BIG_MULTI_SELECT"
                }
             }
          ]

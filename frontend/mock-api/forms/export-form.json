@@ -144,7 +144,7 @@
             "fields": [
               {
                 "name": "timeUnit",
-                "type": "SELECT",
+                "type": "BIG_MULTI_SELECT",
                 "label": {
                   "de": "Zeiteinheit des Vor- und Nachbeobachtungszeitraums"
                 },
@@ -225,7 +225,7 @@
               },
               {
                 "name": "indexSelector",
-                "type": "SELECT",
+                "type": "BIG_MULTI_SELECT",
                 "label": {
                   "de": "Zeitstempel Indexdatum"
                 },
@@ -257,7 +257,7 @@
               },
               {
                 "name": "indexPlacement",
-                "type": "SELECT",
+                "type": "BIG_MULTI_SELECT",
                 "label": {
                   "de": "Zugehörigkeit Indexdatum"
                 },

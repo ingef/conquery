@@ -85,7 +85,7 @@ public interface SearchProcessor {
 	 * @param searchTerms The exact terms to match
 	 * @return A container with the exact matches and unmatched values.
 	 */
-	ConceptsProcessor.ExactFilterValueResult findExact(SelectFilter<?> filter, List<String> searchTerms);
+	ConceptsProcessor.ExactFilterValueResult findExact(SelectFilter filter, List<String> searchTerms);
 
 	/**
 	 * Query for close matches or general recommendations (empty search)
@@ -95,7 +95,7 @@ public interface SearchProcessor {
 	 * @param pageNumber Pagination: page (zero-based)
 	 * @return Found matches
 	 */
-	ConceptsProcessor.AutoCompleteResult query(SelectFilter<?> filter, @CheckForNull String maybeText, int itemsPerPage, int pageNumber);
+	ConceptsProcessor.AutoCompleteResult query(SelectFilter filter, @CheckForNull String maybeText, int itemsPerPage, int pageNumber);
 
 	/**
 	 * Job to run after all ColumnValues are processed by the manager.

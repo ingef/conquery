@@ -20,7 +20,7 @@
       "filters": {
         "name": "value",
         "column": "table.column",
-        "type": "SELECT"
+        "type": "BIG_MULTI_SELECT"
       }
     }
   ],
@@ -29,7 +29,9 @@
       "name": "a",
       "condition": {
         "type": "EQUAL",
-        "values": ["A"]
+        "values": [
+          "A"
+        ]
       },
       "children": []
     },
@@ -37,7 +39,9 @@
       "name": "b",
       "condition": {
         "type": "EQUAL",
-        "values": ["B"]
+        "values": [
+          "B"
+        ]
       },
       "children": []
     }

@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.models.datasets.concepts.filters.specific.SingleSelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
@@ -35,7 +34,7 @@ public class InternalFilterSearchTest {
 		InternalFilterSearch search = new InternalFilterSearch(searchConfig);
 
 		// Column Searchable
-		SelectFilter<String> filter = new SingleSelectFilter();
+		SelectFilter filter = new SelectFilter();
 		ConceptTreeConnector connector = new ConceptTreeConnector();
 		TreeConcept concept = new TreeConcept();
 		Column column = new Column();
@@ -91,7 +90,7 @@ public class InternalFilterSearchTest {
 		InternalFilterSearch search = new InternalFilterSearch(searchConfig);
 
 		// Column Searchable
-		SelectFilter<String> filter = new SingleSelectFilter();
+		SelectFilter filter = new SelectFilter();
 		ConceptTreeConnector connector = new ConceptTreeConnector();
 		TreeConcept concept = new TreeConcept();
 		Column column = new Column();
