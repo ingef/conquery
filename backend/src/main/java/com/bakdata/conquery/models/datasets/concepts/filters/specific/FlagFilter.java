@@ -12,6 +12,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.filters.EventFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -38,13 +39,13 @@ import lombok.ToString;
 @CPSType(base = Filter.class, id = "FLAGS")
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @ToString
-public class FlagFilter extends Filter<Set<String>> {
+public class FlagFilter extends EventFilter<Set<String>> {
 
 	private final Map<String, ColumnId> flags;
 
 	@Override
 	protected void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
-		f.setType(FrontendFilterType.Fields.MULTI_SELECT);
+		f.setType(FrontendFilterType.Fields.BIG_MULTI_SELECT);
 
 		f.setOptions(flags.keySet().stream().map(key -> new FrontendValue(key, key)).toList());
 	}
@@ -55,7 +56,7 @@ public class FlagFilter extends Filter<Set<String>> {
 	}
 
 	@Override
-	public FilterNode<?> createFilterNode(Set<String> labels) {
+	public FlagColumnsFilterNode createFilterNode(Set<String> labels) {
 
 		final Set<String> missing = new HashSet<>(labels.size());
 		final List<Column> columns = new ArrayList<>();

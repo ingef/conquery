@@ -1,63 +1,72 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
-import jakarta.validation.Valid;
-
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.LabelMap;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
-import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
-import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.datasets.concepts.filters.EventFilter;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
+import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
+import com.bakdata.conquery.models.query.filter.event.SubstringMultiSelectFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import com.bakdata.conquery.sql.conversion.model.filter.MultiSelectFilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
-@Setter
+import javax.annotation.CheckForNull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+
+/**
+ * This filter represents a multi-option-select in the front end. This means that the user can select one or more values from a list of values.
+ * <p>
+ * This Filter can use optional labels or a template for displaying.
+ * However, the frontend will fetch and display data beyond the  defined values for {@link BigMultiSelectFilter}/BIG_MULTI_SELECT.
+ */
 @Getter
+@Setter
+@CPSType(id = "BIG_MULTI_SELECT", base = Filter.class)
 @NoArgsConstructor
 @Slf4j
 @JsonIgnoreProperties({"searchType"})
-public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> {
-
-	@CheckForNull
-	@Valid
-	private Range.IntegerRange substringRange = null;
+public class SelectFilter extends EventFilter<Set<String>> {
 
 	/**
 	 * user given mapping from the values in the columns to shown labels
 	 */
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
-
-
+	private ColumnId column;
+	@CheckForNull
+	@Valid
+	private Range.IntegerRange substringRange = null;
 	@View.ApiManagerPersistence
 	private SearchIndexId template;
 	private int searchMinSuffixLength = 3;
 	private boolean generateSearchSuffixes = true;
 
-	@Override
-	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
-		return EnumSet.of(MajorTypeId.STRING);
-	}
 
 	@Override
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
@@ -65,16 +74,13 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		if (searchIndexId != null) {
 			f.setTemplate((FilterTemplate) searchIndexId.resolve());
 		}
-		f.setType(getFilterType());
+		f.setType(FrontendFilterType.Fields.BIG_MULTI_SELECT);
 
 		// If either not searches are available or all are disabled, we allow users to supply their own values
 		f.setCreatable(conqueryConfig.getFrontend().isAlwaysAllowCreateValue() || getSearchReferences().stream().noneMatch(Predicate.not(Searchable::isSearchDisabled)));
 
 		f.setOptions(collectLabels());
 	}
-
-	@JsonIgnore
-	public abstract String getFilterType();
 
 
 	/**
@@ -108,8 +114,8 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	@NotNull
 	protected List<FrontendValue> collectLabels() {
 		return labels.entrySet().stream()
-					 .map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
-					 .collect(Collectors.toList());
+				.map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
+				.collect(Collectors.toList());
 	}
 
 	@JsonIgnore
@@ -134,5 +140,26 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		}
 
 		return getSubstringRange().getMin() >= 0;
+	}
+
+
+	@Override
+	public EventFilterNode<Set<String>> createFilterNode(Set<String> value) {
+		if (getSubstringRange() != null && !getSubstringRange().isAll()) {
+			return new SubstringMultiSelectFilterNode(getColumn().resolve(), value, getSubstringRange());
+		}
+
+		return new MultiSelectFilterNode(getColumn().resolve(), value);
+	}
+
+	@Override
+	public List<ColumnId> getRequiredColumns() {
+		return List.of(column);
+	}
+
+	@Override
+	public MultiSelectFilterConverter createConverter() {
+		//TODO (FK) Converter for Substring
+		return new MultiSelectFilterConverter();
 	}
 }

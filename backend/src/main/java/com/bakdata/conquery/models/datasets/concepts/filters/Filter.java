@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSBase
 @Slf4j
 @EqualsAndHashCode(callSuper = true)
-public abstract class Filter<FILTER_VALUE> extends LabeledNamespaceIdentifiable<FilterId> {
+public abstract sealed class Filter<FILTER_VALUE> extends LabeledNamespaceIdentifiable<FilterId> permits EventFilter, AggregationFilter {
 
 	private String unit;
 	@JsonAlias("description")

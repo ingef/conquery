@@ -3,6 +3,11 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import com.bakdata.conquery.models.common.IRange;
+import com.bakdata.conquery.models.datasets.concepts.filters.AggregationFilter;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
@@ -24,7 +29,7 @@ import lombok.NoArgsConstructor;
 @CPSType(id = "COUNT", base = Filter.class)
 @NoArgsConstructor
 @Data
-public class CountFilter extends Filter<Range.LongRange> {
+public class CountFilter extends AggregationFilter<Range.LongRange> {
 
 	private ColumnId column;
 
@@ -42,7 +47,7 @@ public class CountFilter extends Filter<Range.LongRange> {
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
-	public FilterNode createFilterNode(Range.LongRange value) {
+	public AggregationResultFilterNode createFilterNode(Range.LongRange value) {
 		if (!isDistinct()) {
 			return new RangeFilterNode(value, new CountAggregator(getColumn().resolve()));
 		}

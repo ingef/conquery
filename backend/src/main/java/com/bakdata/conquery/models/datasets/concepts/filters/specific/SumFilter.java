@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
+
+import com.bakdata.conquery.models.datasets.concepts.filters.AggregationFilter;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
@@ -43,7 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 @Data
 @CPSType(id = "SUM", base = Filter.class)
-public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter<RANGE> {
+public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends AggregationFilter<RANGE> {
 
 	private ColumnId column;
 
@@ -84,7 +87,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	}
 
 	@Override
-	public FilterNode createFilterNode(RANGE value) {
+	public AggregationResultFilterNode createFilterNode(RANGE value) {
 		IRange<? extends Number, ?> range = value;
 
 		// Real and Decimal share FilterValue
