@@ -4,6 +4,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
@@ -15,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Data
 @Slf4j
+@JsonIgnoreProperties({"emptyLabel"})
 public class IndexConfig  {
 
 	/**
