@@ -33,6 +33,9 @@ class DatasetMetadataFolderLoaderTest {
 	@Inject
 	FilterDefinitionRegistry filterDefinitionRegistry;
 
+	@Inject
+	ObjectMapper objectMapper;
+
 	@Test
 	void loadsConfiguredMetadataFolderAndScopesIds(@TempDir Path tempDir) throws Exception {
 		Path root = tempDir.resolve("gen");
@@ -77,6 +80,13 @@ class DatasetMetadataFolderLoaderTest {
 				  		      "A00": "A00",
 				  		      "A000": "A00.0"
 				  		    }
+				  		  },
+				  		  {
+				  		    "type": "COUNT",
+				  		    "name": "icd_count",
+				  		    "label": "ICD Count",
+				  		    "column": "icd_code",
+				  		    "distinctByColumn": "entlassungsdatum"
 				  		  }
 				  		]
 				  	}
@@ -112,7 +122,7 @@ class DatasetMetadataFolderLoaderTest {
 		);
 
 		DatasetMetadataFolderLoader loader = new DatasetMetadataFolderLoader();
-		loader.objectMapper = new ObjectMapper();
+		loader.objectMapper = objectMapper;
 		loader.validator = validator;
 		loader.filterDefinitionRegistry = filterDefinitionRegistry;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
@@ -154,6 +164,12 @@ class DatasetMetadataFolderLoaderTest {
 		assertEquals("MULTI_SELECT", filter.type());
 		assertEquals(List.of(ColumnId.parse("fdb_demo.kh_diagnose.icd_code")), filter.requiredColumns());
 		assertEquals(2, filter.options().size());
+		DatasetCatalogRepository.Filter countFilter = concept.connectors().getFirst().filters().get(1);
+		assertEquals(FilterId.parse("fdb_demo.icd.kh_diagnose.icd_count"), countFilter.id());
+		assertEquals(
+				List.of(ColumnId.parse("fdb_demo.kh_diagnose.icd_code"), ColumnId.parse("fdb_demo.kh_diagnose.entlassungsdatum")),
+				countFilter.requiredColumns()
+		);
 
 		DatasetCatalogRepository.ConceptElement child = concept.children().get(ConceptId.parse("fdb_demo.icd.a00"));
 		assertEquals(ConceptId.parse("fdb_demo.icd"), child.parentId());
@@ -184,7 +200,7 @@ class DatasetMetadataFolderLoaderTest {
 		Path root = Path.of(Objects.requireNonNull(getClass().getResource("/test-meta-data")).toURI());
 
 		DatasetMetadataFolderLoader loader = new DatasetMetadataFolderLoader();
-		loader.objectMapper = new ObjectMapper();
+		loader.objectMapper = objectMapper;
 		loader.validator = validator;
 		loader.filterDefinitionRegistry = filterDefinitionRegistry;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
@@ -220,9 +236,9 @@ class DatasetMetadataFolderLoaderTest {
 		assertEquals("IMDb", imdb.dataset().label());
 		assertTrue(imdb.conceptsById().containsKey(ConceptId.parse("imdb")));
 		DatasetCatalogRepository.Filter titleFilter = imdb.conceptsById().get(ConceptId.parse("imdb")).connectors().getFirst().filters().getFirst();
-		assertEquals(FilterId.parse("imdb.titles.release_year"), titleFilter.id());
+		assertEquals(FilterId.parse("imdb.titles.release_age"), titleFilter.id());
 		assertEquals("INTEGER_RANGE", titleFilter.type());
-		assertEquals(List.of(ColumnId.parse("imdb.title.id")), titleFilter.requiredColumns());
+		assertEquals(List.of(ColumnId.parse("imdb.title.release_date")), titleFilter.requiredColumns());
 		assertTrue(imdb.tablesById().containsKey(TableId.parse("imdb.title")));
 
 		DatasetCatalogRepository.TableRecord title = imdb.tablesById().get(TableId.parse("imdb.title"));
@@ -254,7 +270,7 @@ class DatasetMetadataFolderLoaderTest {
 		Files.createDirectories(fallback.resolve("tables"));
 
 		DatasetMetadataFolderLoader loader = new DatasetMetadataFolderLoader();
-		loader.objectMapper = new ObjectMapper();
+		loader.objectMapper = objectMapper;
 		loader.validator = validator;
 		loader.filterDefinitionRegistry = filterDefinitionRegistry;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {

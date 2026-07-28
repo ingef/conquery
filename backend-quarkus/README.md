@@ -33,6 +33,23 @@ conquery.metadata.folders[0]=demo
 This reads `conceptTrees/*.concept.json` and `tables/*.table.json` from each configured folder and loads them as
 dataset metadata.
 
+### Concept JSON migration helpers
+
+Some Dropwizard concept metadata still uses connector column references in the old `table.column` form. The migration
+helper `scripts/normalize_concept_connector_columns.py` rewrites those references for the Quarkus metadata loader:
+
+- connector `"column": "table.column"` becomes `"table": "table", "column": "column"`
+- filter `"column": "table.column"` becomes `"column": "column"`
+
+Run it from the repository root:
+
+```bash
+python3 scripts/normalize_concept_connector_columns.py path/to/*.concept.json
+```
+
+Use `--dry-run` first to see how many connector and filter columns would be changed. This script is intended to grow
+with additional concept metadata migration steps as they become necessary.
+
 ## Migration strategy
 
 1. Keep `backend` (Dropwizard) running while we port feature slices.

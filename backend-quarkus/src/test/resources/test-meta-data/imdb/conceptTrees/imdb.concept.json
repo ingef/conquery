@@ -6,7 +6,15 @@
     {
       "name": "titles",
       "label": "Titles",
-      "table": "title"
+      "table": "title",
+      "filters": [
+        {
+          "type": "DATE_DISTANCE",
+          "name": "release_age",
+          "label": "Release Age",
+          "column": "release_date"
+        }
+      ]
     }
   ]
 }

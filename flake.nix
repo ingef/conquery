@@ -21,6 +21,7 @@
             curl
             jq
             ripgrep
+            python312
           ];
 
           shellHook = ''
