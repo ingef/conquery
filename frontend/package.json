@@ -120,7 +120,7 @@
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",
     "baseline-browser-mapping": "^2.9.18",
-    "body-parser": "^1.20.4",
+    "body-parser": "^1.20.6",
     "cors": "^2.8.5",
     "eslint": "^8.53.0",
     "eslint-plugin-cypress": "^2.15.1",
