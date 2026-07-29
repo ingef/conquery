@@ -60,7 +60,6 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 	@Override
 	public ConqueryConfig overrideConfig(ConqueryConfig conf, File workdir) {
-		conf.getIndex().setEmptyLabel("emptyDefaultLabel");
 		return conf;
 	}
 
