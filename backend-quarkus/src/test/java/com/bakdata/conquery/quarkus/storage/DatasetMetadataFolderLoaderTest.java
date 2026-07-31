@@ -2,6 +2,7 @@ package com.bakdata.conquery.quarkus.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -11,7 +12,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.bakdata.conquery.quarkus.config.DatasetMetadataRuntimeConfig;
-import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionRegistry;
+import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionAssembler;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
@@ -20,6 +21,7 @@ import com.bakdata.conquery.quarkus.ids.TableId;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -31,7 +33,7 @@ class DatasetMetadataFolderLoaderTest {
 	Validator validator;
 
 	@Inject
-	FilterDefinitionRegistry filterDefinitionRegistry;
+	FilterDefinitionAssembler filterDefinitionAssembler;
 
 	@Inject
 	ObjectMapper objectMapper;
@@ -124,7 +126,7 @@ class DatasetMetadataFolderLoaderTest {
 		DatasetMetadataFolderLoader loader = new DatasetMetadataFolderLoader();
 		loader.objectMapper = objectMapper;
 		loader.validator = validator;
-		loader.filterDefinitionRegistry = filterDefinitionRegistry;
+		loader.filterDefinitionAssembler = filterDefinitionAssembler;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
 			@Override
 			public boolean enabled() {
@@ -202,7 +204,7 @@ class DatasetMetadataFolderLoaderTest {
 		DatasetMetadataFolderLoader loader = new DatasetMetadataFolderLoader();
 		loader.objectMapper = objectMapper;
 		loader.validator = validator;
-		loader.filterDefinitionRegistry = filterDefinitionRegistry;
+		loader.filterDefinitionAssembler = filterDefinitionAssembler;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
 			@Override
 			public boolean enabled() {
@@ -272,7 +274,7 @@ class DatasetMetadataFolderLoaderTest {
 		DatasetMetadataFolderLoader loader = new DatasetMetadataFolderLoader();
 		loader.objectMapper = objectMapper;
 		loader.validator = validator;
-		loader.filterDefinitionRegistry = filterDefinitionRegistry;
+		loader.filterDefinitionAssembler = filterDefinitionAssembler;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
 			@Override
 			public boolean enabled() {
@@ -298,5 +300,94 @@ class DatasetMetadataFolderLoaderTest {
 		DatasetCatalogRepository.DatasetRecord dataset = loader.loadConfiguredDatasets().getFirst().dataset();
 		assertEquals(DatasetId.parse(datasetName), dataset.id());
 		assertEquals(datasetName, dataset.label());
+	}
+
+	@Test
+	void skipsUnknownFilterInLenientModeAndRejectsItInStrictMode(@TempDir Path tempDir) throws Exception {
+		Path dataset = tempDir.resolve("demo");
+		Files.createDirectories(dataset.resolve("conceptTrees"));
+		Files.createDirectories(dataset.resolve("tables"));
+		Files.writeString(dataset.resolve("tables/events.table.json"), """
+				{"name":"events","columns":[{"name":"value","type":"STRING"}]}
+				""");
+		Files.writeString(dataset.resolve("conceptTrees/events.concept.json"), """
+				{
+				  "name":"events",
+				  "children":[],
+				  "connectors":[{
+				    "name":"events",
+				    "table":"events",
+				    "filters":[{"type":"EXTERNAL_FILTER","column":"value"}]
+				  }]
+				}
+				""");
+
+		DatasetMetadataFolderLoader lenientLoader = loader(tempDir, false);
+		DatasetCatalogRepository.Concept concept = lenientLoader.loadConfiguredDatasets().getFirst().conceptsById().get(ConceptId.parse("demo.events"));
+		assertTrue(concept.connectors().getFirst().filters().isEmpty());
+
+		DatasetMetadataFolderLoader strictLoader = loader(tempDir, true);
+		IllegalStateException error = assertThrows(IllegalStateException.class, strictLoader::loadConfiguredDatasets);
+		assertTrue(error.getMessage().contains("unknown filter type 'EXTERNAL_FILTER'"));
+	}
+
+	@Test
+	void reportsCascadedFilterConstraintWithFileAndPropertyPath(@TempDir Path tempDir) throws Exception {
+		Path dataset = tempDir.resolve("demo");
+		Files.createDirectories(dataset.resolve("conceptTrees"));
+		Files.createDirectories(dataset.resolve("tables"));
+		Files.writeString(dataset.resolve("tables/events.table.json"), """
+				{"name":"events","columns":[{"name":"value","type":"INTEGER"}]}
+				""");
+		Path conceptFile = dataset.resolve("conceptTrees/events.concept.json");
+		Files.writeString(conceptFile, """
+				{
+				  "name":"events",
+				  "children":[],
+				  "connectors":[{
+				    "name":"events",
+				    "table":"events",
+				    "filters":[{"type":"NUMBER","name":"missing_column"}]
+				  }]
+				}
+				""");
+
+		ConstraintViolationException error = assertThrows(
+				ConstraintViolationException.class,
+				() -> loader(tempDir, true).loadConfiguredDatasets()
+		);
+
+		assertTrue(error.getMessage().contains(conceptFile.toString()));
+		assertTrue(error.getMessage().contains("connectors[0].filters[0].column: must not be blank"));
+		assertTrue(error.getMessage().contains("invalid value: null"));
+	}
+
+	private DatasetMetadataFolderLoader loader(Path root, boolean strictFilterTypes) {
+		DatasetMetadataFolderLoader loader = new DatasetMetadataFolderLoader();
+		loader.objectMapper = objectMapper;
+		loader.validator = validator;
+		loader.filterDefinitionAssembler = filterDefinitionAssembler;
+		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
+			@Override
+			public boolean enabled() {
+				return true;
+			}
+
+			@Override
+			public Optional<String> rootPath() {
+				return Optional.of(root.toString());
+			}
+
+			@Override
+			public Optional<List<String>> folders() {
+				return Optional.of(List.of("demo"));
+			}
+
+			@Override
+			public boolean strictFilterTypes() {
+				return strictFilterTypes;
+			}
+		};
+		return loader;
 	}
 }

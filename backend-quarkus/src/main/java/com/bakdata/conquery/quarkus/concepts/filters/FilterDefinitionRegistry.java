@@ -15,21 +15,21 @@ public class FilterDefinitionRegistry {
 	@Inject
 	Instance<FilterDefinitionProvider<?>> providers;
 
-	private Map<String, FilterDefinitionProvider<?>> providersByType = Map.of();
+	private Map<Class<? extends FilterDefinition>, FilterDefinitionProvider<?>> providersByModelType = Map.of();
 
 	@PostConstruct
 	void init() {
-		Map<String, FilterDefinitionProvider<?>> index = new LinkedHashMap<>();
+		Map<Class<? extends FilterDefinition>, FilterDefinitionProvider<?>> index = new LinkedHashMap<>();
 		for (FilterDefinitionProvider<?> provider : providers) {
-			FilterDefinitionProvider<?> previous = index.put(provider.type(), provider);
+			FilterDefinitionProvider<?> previous = index.put(provider.payloadType(), provider);
 			if (previous != null) {
-				throw new IllegalStateException("Duplicate filter type provider for '" + provider.type() + "': " + previous.getClass().getName() + " and " + provider.getClass().getName());
+				throw new IllegalStateException("Duplicate filter provider for model type " + provider.payloadType().getName() + ": " + previous.getClass().getName() + " and " + provider.getClass().getName());
 			}
 		}
-		providersByType = Map.copyOf(index);
+		providersByModelType = Map.copyOf(index);
 	}
 
-	public Optional<FilterDefinitionProvider<?>> find(String type) {
-		return Optional.ofNullable(providersByType.get(type));
+	public Optional<FilterDefinitionProvider<?>> find(FilterDefinition definition) {
+		return Optional.ofNullable(providersByModelType.get(definition.getClass()));
 	}
 }

@@ -3,18 +3,22 @@ package com.bakdata.conquery.quarkus.concepts.filters.specific;
 import java.util.List;
 
 import com.bakdata.conquery.quarkus.concepts.filters.FilterConversionContext;
+import com.bakdata.conquery.quarkus.concepts.filters.definitions.BigMultiSelectFilterDefinition;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public class BigMultiSelectFilterProvider extends AbstractBuiltinFilterProvider {
+public class BigMultiSelectFilterProvider extends AbstractBuiltinFilterProvider<BigMultiSelectFilterDefinition> {
+	public BigMultiSelectFilterProvider() {
+		super(BigMultiSelectFilterDefinition.class);
+	}
 	@Override
 	public String type() {
 		return "BIG_MULTI_SELECT";
 	}
 
 	@Override
-	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, CommonFilterPayload payload) {
+	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, BigMultiSelectFilterDefinition payload) {
 		return filter(context, payload, "BIG_MULTI_SELECT", null, null, true, List.of(requiredColumn(context, payload)));
 	}
 }

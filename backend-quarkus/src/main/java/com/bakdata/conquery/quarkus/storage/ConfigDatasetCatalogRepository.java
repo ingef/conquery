@@ -9,11 +9,13 @@ import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 import io.quarkus.arc.properties.IfBuildProperty;
+import io.quarkus.runtime.Startup;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
+@Startup
 @IfBuildProperty(name = "conquery.storage.backend", stringValue = "IN_MEMORY", enableIfMissing = true)
 public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository {
 

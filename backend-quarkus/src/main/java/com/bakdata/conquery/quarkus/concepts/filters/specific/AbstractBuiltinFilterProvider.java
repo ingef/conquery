@@ -2,6 +2,9 @@ package com.bakdata.conquery.quarkus.concepts.filters.specific;
 
 import com.bakdata.conquery.quarkus.concepts.filters.FilterConversionContext;
 import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionProvider;
+import com.bakdata.conquery.quarkus.concepts.filters.definitions.AbstractFilterDefinition;
+import com.bakdata.conquery.quarkus.concepts.filters.definitions.SelectFilterDefinition;
+import com.bakdata.conquery.quarkus.concepts.filters.definitions.SingleColumnFilterDefinition;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.FilterId;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
@@ -10,44 +13,50 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-abstract class AbstractBuiltinFilterProvider implements FilterDefinitionProvider<CommonFilterPayload> {
+abstract class AbstractBuiltinFilterProvider<T extends AbstractFilterDefinition> implements FilterDefinitionProvider<T> {
+
+	private final Class<T> payloadType;
+
+	protected AbstractBuiltinFilterProvider(Class<T> payloadType) {
+		this.payloadType = payloadType;
+	}
 
 	@Override
-	public Class<CommonFilterPayload> payloadType() {
-		return CommonFilterPayload.class;
+	public Class<T> payloadType() {
+		return payloadType;
 	}
 
 	protected DatasetCatalogRepository.Filter filter(
 			FilterConversionContext context,
-			CommonFilterPayload payload,
+			T payload,
 			String frontendType,
 			Integer min,
 			Integer max,
 			boolean creatable,
 			List<ColumnId> requiredColumns
 	) {
-		String name = context.idPartFromPreferredOrFallback(payload.name(), payload.label(), "filter id", type());
-		String label = firstNonBlank(payload.label(), payload.name()).orElse(name);
+		String name = context.idPartFromPreferredOrFallback(payload.getName(), payload.getLabel(), "filter id", type());
+		String label = firstNonBlank(payload.getLabel(), payload.getName()).orElse(name);
 		FilterId id = context.filterId(name);
 		return new DatasetCatalogRepository.Filter(
 				id,
 				label,
 				frontendType,
-				payload.unit(),
-				payload.tooltip(),
+				payload.getUnit(),
+				payload.getTooltip(),
 				options(payload),
-				min == null ? payload.min() : min,
-				max == null ? payload.max() : max,
-				payload.pattern(),
-				payload.allowDropFile(),
+				min == null ? payload.getMin() : min,
+				max == null ? payload.getMax() : max,
+				payload.getPattern(),
+				Boolean.TRUE.equals(payload.getAllowDropFile()),
 				creatable,
-				payload.defaultValue(),
+				payload.getDefaultValue(),
 				requiredColumns
 		);
 	}
 
-	protected ColumnId requiredColumn(FilterConversionContext context, CommonFilterPayload payload) {
-		String column = firstNonBlank(payload.column())
+	protected ColumnId requiredColumn(FilterConversionContext context, SingleColumnFilterDefinition payload) {
+		String column = firstNonBlank(payload.getColumn())
 				.orElseThrow(() -> new IllegalArgumentException("Filter " + type() + " must define column."));
 		return context.columnId(column);
 	}
@@ -59,16 +68,21 @@ abstract class AbstractBuiltinFilterProvider implements FilterDefinitionProvider
 		return values.stream().map(context::columnId).toList();
 	}
 
-	protected List<DatasetCatalogRepository.FrontendValue> options(CommonFilterPayload payload) {
-		if (payload.options() != null) {
-			return payload.options().stream()
+	protected List<DatasetCatalogRepository.FrontendValue> options(AbstractFilterDefinition payload) {
+		if (payload instanceof SelectFilterDefinition select && select.getOptions() != null) {
+			return select.getOptions().stream()
 						  .map(value -> new DatasetCatalogRepository.FrontendValue(value.value(), value.label(), value.optionValue()))
 						  .toList();
 		}
-		if (payload.labels() != null) {
-			return payload.labels().entrySet().stream()
+		if (payload instanceof SelectFilterDefinition select && select.getLabels() != null) {
+			return select.getLabels().entrySet().stream()
 						  .map(entry -> new DatasetCatalogRepository.FrontendValue(entry.getKey(), entry.getValue(), entry.getKey()))
 						  .toList();
+		}
+		if (payload instanceof com.bakdata.conquery.quarkus.concepts.filters.definitions.FlagsFilterDefinition flags && flags.getFlags() != null) {
+			return flags.getFlags().keySet().stream()
+					.map(value -> new DatasetCatalogRepository.FrontendValue(value, value, value))
+					.toList();
 		}
 		return List.of();
 	}

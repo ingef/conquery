@@ -50,6 +50,21 @@ python3 scripts/normalize_concept_connector_columns.py path/to/*.concept.json
 Use `--dry-run` first to see how many connector and filter columns would be changed. This script is intended to grow
 with additional concept metadata migration steps as they become necessary.
 
+### Polymorphic metadata models
+
+Metadata models are code-first. Java model classes, Jackson annotations, Bean Validation constraints, and OpenAPI
+`@Schema` annotations are used both for loading metadata files and for generating their schemas. Registered model
+families are exposed in the OpenAPI document at `GET /q/openapi` as `oneOf` schemas with discriminator mappings.
+
+Filter implementations are extensible from another CDI-enabled JAR. An extension provides:
+
+1. A concrete class implementing `FilterDefinition`, annotated with OpenAPI `@Schema`.
+2. A CDI bean implementing `FilterDefinitionProvider<T>` for its type id, model class, and business-model conversion.
+
+The generic `PolymorphicModelRegistry` validates duplicate type ids and base/model compatibility at startup. Its
+registrations are also installed into Jackson and projected into OpenAPI. Extension JARs must be discoverable by
+Quarkus bean and Jandex indexing so their provider and annotated model class are available during application assembly.
+
 ## Migration strategy
 
 1. Keep `backend` (Dropwizard) running while we port feature slices.

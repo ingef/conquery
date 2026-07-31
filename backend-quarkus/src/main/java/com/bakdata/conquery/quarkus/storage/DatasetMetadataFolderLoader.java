@@ -5,11 +5,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.quarkus.config.DatasetMetadataRuntimeConfig;
-import com.bakdata.conquery.quarkus.concepts.filters.FilterConversionContext;
-import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionProvider;
-import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionRegistry;
+import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinition;
+import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionAssembler;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.ConnectorId;
@@ -17,8 +17,6 @@ import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.IdPartSanitizer;
 import com.bakdata.conquery.quarkus.ids.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -40,7 +38,7 @@ public class DatasetMetadataFolderLoader {
 	Validator validator;
 
 	@Inject
-	FilterDefinitionRegistry filterDefinitionRegistry;
+	FilterDefinitionAssembler filterDefinitionAssembler;
 
 	public List<LoadedDatasetMetadata> loadConfiguredDatasets() {
 		if (!metadataConfig.enabled()) {
@@ -95,12 +93,8 @@ public class DatasetMetadataFolderLoader {
 		try (Stream<Path> files = Files.list(conceptsDir)) {
 			files.filter(Files::isRegularFile).filter(path -> path.getFileName().toString().endsWith(".concept.json")).sorted().forEach(path -> {
 				ConceptPayload payload = read(path, ConceptPayload.class);
+				validate(path, payload);
 				String conceptName = idPartFromPreferredOrFallback(payload.name(), stripSuffix(path.getFileName().toString(), ".concept.json"), "concept id", path);
-
-				Set<ConstraintViolation<ConceptPayload>> constraintViolations = validator.validate(payload);
-				if (!constraintViolations.isEmpty()) {
-					throw new ConstraintViolationException("Failed to validate concept payload: %s".formatted(path), constraintViolations);
-				}
 				ConceptId conceptId = conceptName.equals(datasetId.name()) ? new ConceptId(datasetId, List.of()) : new ConceptId(datasetId, List.of(conceptName));
 				conceptsById.put(conceptId, collectConcept(payload, conceptId, tablesById));
 			});
@@ -145,7 +139,7 @@ public class DatasetMetadataFolderLoader {
 					p.label,
 					p.name,
 					List.of(), // Optional.of(p.selects().stream().map(SelectPayload::new).toList()).orElse(List.of()),
-					convertFilters(connectorId, tableId, table, p.filters(), fallbackLogCollector),
+					filterDefinitionAssembler.assemble(connectorId, tableId, table, p.filters(), fallbackLogCollector::add, metadataConfig.strictFilterTypes()),
 					Optional.ofNullable(p.validityDates()).orElse(List.of()),
 					p.isDefault
 			);
@@ -190,65 +184,6 @@ public class DatasetMetadataFolderLoader {
 			tableName = tableName.substring(datasetId.toString().length() + 1);
 		}
 		return new TableId(datasetId, tableName);
-	}
-
-	private List<DatasetCatalogRepository.Filter> convertFilters(ConnectorId connectorId, TableId tableId, DatasetCatalogRepository.TableRecord table, JsonNode filters, FallbackLogCollector fallbackLogCollector) {
-		if (filters == null || filters.isNull()) {
-			return List.of();
-		}
-		List<JsonNode> rawFilters;
-		if (filters.isArray()) {
-			rawFilters = new ArrayList<>();
-			filters.forEach(rawFilters::add);
-		}
-		else if (filters.isObject()) {
-			rawFilters = List.of(filters);
-		}
-		else {
-			throw new IllegalStateException("Connector '" + connectorId + "' filters must be an object or array.");
-		}
-
-		FilterConversionContext context = new FilterConversionContext(connectorId, tableId, table, fallbackLogCollector::add);
-		List<DatasetCatalogRepository.Filter> converted = new ArrayList<>();
-		for (JsonNode rawFilter : rawFilters) {
-			Optional<DatasetCatalogRepository.Filter> filter = convertFilter(context, rawFilter);
-			filter.ifPresent(converted::add);
-		}
-		return List.copyOf(converted);
-	}
-
-	private Optional<DatasetCatalogRepository.Filter> convertFilter(FilterConversionContext context, JsonNode rawFilter) {
-		String type = normalizeBlank(rawFilter.path("type").asText(null)).orElse(null);
-		if (type == null) {
-			return unknownFilter(context, rawFilter, "missing filter type");
-		}
-		Optional<FilterDefinitionProvider<?>> provider = filterDefinitionRegistry.find(type);
-		return provider
-				.map(filterDefinitionProvider -> convertFilterWithProvider(context, rawFilter, filterDefinitionProvider))
-				.or(() -> unknownFilter(context, rawFilter, "unknown filter type '" + type + "'"));
-	}
-
-	private Optional<DatasetCatalogRepository.Filter> unknownFilter(FilterConversionContext context, JsonNode rawFilter, String reason) {
-		String message = "Skipping filter for connector '" + context.connectorId() + "' because of " + reason + ": " + rawFilter;
-		if (metadataConfig.strictFilterTypes()) {
-			throw new IllegalStateException(message);
-		}
-		log.warn("{}", message);
-		return Optional.empty();
-	}
-
-	private <T> DatasetCatalogRepository.Filter convertFilterWithProvider(FilterConversionContext context, JsonNode rawFilter, FilterDefinitionProvider<T> provider) {
-		T payload;
-		try {
-			payload = objectMapper.treeToValue(rawFilter, provider.payloadType());
-		} catch (JsonProcessingException e) {
-			throw new IllegalStateException("Failed to parse filter of type '" + provider.type() + "' for connector '" + context.connectorId() + "'.", e);
-		}
-		Set<ConstraintViolation<T>> constraintViolations = validator.validate(payload);
-		if (!constraintViolations.isEmpty()) {
-			throw new ConstraintViolationException("Failed to validate filter payload for connector '%s'.".formatted(context.connectorId()), constraintViolations);
-		}
-		return provider.convert(context, payload);
 	}
 
 	private Map<TableId, DatasetCatalogRepository.TableRecord> loadTables(Path folderPath, DatasetId datasetId) {
@@ -329,6 +264,35 @@ public class DatasetMetadataFolderLoader {
 		} catch (IOException e) {
 			throw new IllegalStateException("Failed to parse metadata file: " + path, e);
 		}
+	}
+
+	private <T> void validate(Path path, T payload) {
+		Set<ConstraintViolation<T>> violations = validator.validate(payload);
+		if (violations.isEmpty()) {
+			return;
+		}
+		String details = violations.stream()
+				.sorted(Comparator.comparing(violation -> violation.getPropertyPath().toString()))
+				.map(violation -> " - %s: %s (invalid value: %s)".formatted(
+						propertyPath(violation),
+						violation.getMessage(),
+						formatInvalidValue(violation.getInvalidValue())
+				))
+				.collect(Collectors.joining(System.lineSeparator()));
+		String message = "Failed to validate metadata file '%s':%n%s".formatted(path, details);
+		log.error("{}", message);
+		throw new ConstraintViolationException(message, violations);
+	}
+
+	private String propertyPath(ConstraintViolation<?> violation) {
+		String path = violation.getPropertyPath().toString();
+		return path.isBlank() ? "<document>" : path;
+	}
+
+	private String formatInvalidValue(Object invalidValue) {
+		String value = objectMapper.valueToTree(invalidValue).toString();
+		int limit = 200;
+		return value.length() <= limit ? value : value.substring(0, limit) + "...";
 	}
 
 	private Path toFolderPath(Path root, String configuredFolder) {
@@ -456,21 +420,21 @@ public class DatasetMetadataFolderLoader {
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private record ConceptPayload(
-			String name, String label, String description, List<ConceptElementPayload> children,
-			@NotNull List<ConnectorPayload> connectors
+			String name, String label, String description, List<@Valid ConceptElementPayload> children,
+			@NotNull @Valid List<@Valid ConnectorPayload> connectors
 	) {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private record ConceptElementPayload(
-			String name, String label, String description, List<ConceptElementPayload> children,
-			ConditionPayload condition
+			String name, String label, String description, List<@Valid ConceptElementPayload> children,
+			@Valid ConditionPayload condition
 	) {
 	}
 
 	private record ConnectorPayload(
 			String table, String column, String label, String name, List<SelectPayload> selects,
-			JsonNode filters,
+			List<@Valid FilterDefinition> filters,
 			// Use internal rep directly as we won't need data mangling
 			List<DatasetCatalogRepository.ValidityDate> validityDates, boolean isDefault
 	) {
@@ -483,7 +447,7 @@ public class DatasetMetadataFolderLoader {
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private record ConditionPayload(
-			String type, List<String> values, String column, List<ConditionPayload> conditions
+			String type, List<String> values, String column, List<@Valid ConditionPayload> conditions
 	) {
 	}
 
