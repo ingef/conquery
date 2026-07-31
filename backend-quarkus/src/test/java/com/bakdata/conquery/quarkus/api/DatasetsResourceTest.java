@@ -53,8 +53,14 @@ class DatasetsResourceTest {
 				.statusCode(200)
 				.body("secondaryIds.size()", equalTo(0))
 				.body("concepts.imdb.label", equalTo("IMDb"))
+				.body("concepts.imdb.active", equalTo(true))
 				.body("concepts.imdb.detailsAvailable", equalTo(true))
-				.body("concepts.imdb.children.size()", equalTo(0));
+				.body("concepts.imdb.children.size()", equalTo(0))
+				.body("concepts.imdb.tables[0].default", equalTo(true))
+				.body("concepts.imdb.tables[0].filters[0].id", equalTo("imdb.titles.release_age"))
+				.body("concepts.imdb.tables[0].selects[0].id", equalTo("imdb.titles.Title"))
+				.body("concepts.imdb.tables[0].selects[0].default", equalTo(true))
+				.body("concepts.imdb.tables[0].selects[0].resultType.type", equalTo("STRING"));
 	}
 
 	@Test

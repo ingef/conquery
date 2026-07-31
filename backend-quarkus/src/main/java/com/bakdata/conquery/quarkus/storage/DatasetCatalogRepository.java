@@ -7,6 +7,7 @@ import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.ConnectorId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.FilterId;
+import com.bakdata.conquery.quarkus.ids.SelectId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 
 public interface DatasetCatalogRepository {
@@ -97,7 +98,29 @@ public interface DatasetCatalogRepository {
 			String endColumn
 	) {}
 
-	interface Select{}
+	record Select(
+			SelectId id,
+			String label,
+			String description,
+			boolean defaultSelected,
+			String implementationType,
+			SelectResultType resultType,
+			List<ColumnId> requiredColumns
+	) {
+		public Select {
+			requiredColumns = requiredColumns == null ? List.of() : List.copyOf(requiredColumns);
+		}
+	}
+
+	record SelectResultType(String type, SelectResultType elementType) {
+		public static SelectResultType primitive(String type) {
+			return new SelectResultType(type, null);
+		}
+
+		public static SelectResultType list(SelectResultType elementType) {
+			return new SelectResultType("LIST", elementType);
+		}
+	}
 	record Filter(
 			FilterId id,
 			String label,

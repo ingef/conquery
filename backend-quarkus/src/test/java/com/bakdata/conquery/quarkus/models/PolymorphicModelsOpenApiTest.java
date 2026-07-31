@@ -37,6 +37,16 @@ class PolymorphicModelsOpenApiTest {
 		assertEquals("COUNT", findProperty(countSchema, "type").path("const").asText());
 		assertNotNull(findProperty(countSchema, "column"));
 		assertNotNull(findProperty(countSchema, "distinctByColumn"));
+
+		JsonNode selectSchema = schemas.path("MetadataSelectDefinition");
+		assertEquals("type", selectSchema.path("discriminator").path("propertyName").asText());
+		assertEquals("#/components/schemas/MetadataCountSelect", selectSchema.path("discriminator").path("mapping").path("COUNT").asText());
+		assertEquals(13, selectSchema.path("oneOf").size());
+
+		JsonNode countSelectSchema = schemas.path("MetadataCountSelect");
+		assertEquals("COUNT", findProperty(countSelectSchema, "type").path("const").asText());
+		assertNotNull(findProperty(countSelectSchema, "column"));
+		assertNotNull(findProperty(countSelectSchema, "distinctByColumn"));
 	}
 
 	private JsonNode findProperty(JsonNode schema, String name) {

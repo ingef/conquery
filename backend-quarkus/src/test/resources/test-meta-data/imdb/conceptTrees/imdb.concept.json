@@ -14,7 +14,14 @@
           "label": "Release Age",
           "column": "release_date"
         }
-      ]
+      ],
+      "selects": {
+        "type": "FIRST",
+        "label": "Title",
+        "description": "First matching title",
+        "default": true,
+        "column": "name"
+      }
     }
   ]
 }

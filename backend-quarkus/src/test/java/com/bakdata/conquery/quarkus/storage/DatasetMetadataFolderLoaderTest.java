@@ -13,10 +13,12 @@ import java.util.Optional;
 
 import com.bakdata.conquery.quarkus.config.DatasetMetadataRuntimeConfig;
 import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionAssembler;
+import com.bakdata.conquery.quarkus.concepts.selects.SelectDefinitionAssembler;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.FilterId;
+import com.bakdata.conquery.quarkus.ids.SelectId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusTest;
@@ -34,6 +36,9 @@ class DatasetMetadataFolderLoaderTest {
 
 	@Inject
 	FilterDefinitionAssembler filterDefinitionAssembler;
+
+	@Inject
+	SelectDefinitionAssembler selectDefinitionAssembler;
 
 	@Inject
 	ObjectMapper objectMapper;
@@ -73,6 +78,7 @@ class DatasetMetadataFolderLoaderTest {
 				  		"label": "kh-diagnose",
 				  		"name": "kh_diagnose",
 				  		"table": "kh_diagnose",
+						"default": false,
 				  		"filters": [
 				  		  {
 				  		    "type": "SELECT",
@@ -127,6 +133,7 @@ class DatasetMetadataFolderLoaderTest {
 		loader.objectMapper = objectMapper;
 		loader.validator = validator;
 		loader.filterDefinitionAssembler = filterDefinitionAssembler;
+		loader.selectDefinitionAssembler = selectDefinitionAssembler;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
 			@Override
 			public boolean enabled() {
@@ -147,6 +154,11 @@ class DatasetMetadataFolderLoaderTest {
 			public boolean strictFilterTypes() {
 				return true;
 			}
+
+			@Override
+			public boolean strictSelectTypes() {
+				return true;
+			}
 		};
 
 		List<DatasetMetadataFolderLoader.LoadedDatasetMetadata> loaded = loader.loadConfiguredDatasets();
@@ -160,6 +172,7 @@ class DatasetMetadataFolderLoaderTest {
 		DatasetCatalogRepository.Concept concept = dataset.conceptsById().get(ConceptId.parse("fdb_demo.icd"));
 		assertEquals("ICD", concept.label());
 		assertEquals(List.of(ConceptId.parse("fdb_demo.icd.a00")), concept.childrenIds());
+		assertEquals(false, concept.connectors().getFirst().isDefault());
 		DatasetCatalogRepository.Filter filter = concept.connectors().getFirst().filters().getFirst();
 		assertEquals(FilterId.parse("fdb_demo.icd.kh_diagnose.ICD_Code"), filter.id());
 		assertEquals("ICD Code", filter.label());
@@ -205,6 +218,7 @@ class DatasetMetadataFolderLoaderTest {
 		loader.objectMapper = objectMapper;
 		loader.validator = validator;
 		loader.filterDefinitionAssembler = filterDefinitionAssembler;
+		loader.selectDefinitionAssembler = selectDefinitionAssembler;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
 			@Override
 			public boolean enabled() {
@@ -225,6 +239,11 @@ class DatasetMetadataFolderLoaderTest {
 			public boolean strictFilterTypes() {
 				return true;
 			}
+
+			@Override
+			public boolean strictSelectTypes() {
+				return true;
+			}
 		};
 
 		List<DatasetMetadataFolderLoader.LoadedDatasetMetadata> loaded = loader.loadConfiguredDatasets();
@@ -241,6 +260,11 @@ class DatasetMetadataFolderLoaderTest {
 		assertEquals(FilterId.parse("imdb.titles.release_age"), titleFilter.id());
 		assertEquals("INTEGER_RANGE", titleFilter.type());
 		assertEquals(List.of(ColumnId.parse("imdb.title.release_date")), titleFilter.requiredColumns());
+		DatasetCatalogRepository.Select titleSelect = imdb.conceptsById().get(ConceptId.parse("imdb")).connectors().getFirst().selects().getFirst();
+		assertEquals(SelectId.parse("imdb.titles.Title"), titleSelect.id());
+		assertEquals("FIRST", titleSelect.implementationType());
+		assertEquals(DatasetCatalogRepository.SelectResultType.primitive("STRING"), titleSelect.resultType());
+		assertEquals(List.of(ColumnId.parse("imdb.title.name")), titleSelect.requiredColumns());
 		assertTrue(imdb.tablesById().containsKey(TableId.parse("imdb.title")));
 
 		DatasetCatalogRepository.TableRecord title = imdb.tablesById().get(TableId.parse("imdb.title"));
@@ -275,6 +299,7 @@ class DatasetMetadataFolderLoaderTest {
 		loader.objectMapper = objectMapper;
 		loader.validator = validator;
 		loader.filterDefinitionAssembler = filterDefinitionAssembler;
+		loader.selectDefinitionAssembler = selectDefinitionAssembler;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
 			@Override
 			public boolean enabled() {
@@ -293,6 +318,11 @@ class DatasetMetadataFolderLoaderTest {
 
 			@Override
 			public boolean strictFilterTypes() {
+				return true;
+			}
+
+			@Override
+			public boolean strictSelectTypes() {
 				return true;
 			}
 		};
@@ -332,6 +362,33 @@ class DatasetMetadataFolderLoaderTest {
 	}
 
 	@Test
+	void skipsUnknownSelectInLenientModeAndRejectsItInStrictMode(@TempDir Path tempDir) throws Exception {
+		Path dataset = tempDir.resolve("demo");
+		Files.createDirectories(dataset.resolve("conceptTrees"));
+		Files.createDirectories(dataset.resolve("tables"));
+		Files.writeString(dataset.resolve("tables/events.table.json"), """
+				{"name":"events","columns":[{"name":"value","type":"STRING"}]}
+				""");
+		Files.writeString(dataset.resolve("conceptTrees/events.concept.json"), """
+				{
+				  "name":"events",
+				  "children":[],
+				  "connectors":[{
+				    "name":"events",
+				    "table":"events",
+				    "selects":[{"type":"EXTERNAL_SELECT","column":"value"}]
+				  }]
+				}
+				""");
+
+		DatasetCatalogRepository.Concept concept = loader(tempDir, false).loadConfiguredDatasets().getFirst().conceptsById().get(ConceptId.parse("demo.events"));
+		assertTrue(concept.connectors().getFirst().selects().isEmpty());
+
+		IllegalStateException error = assertThrows(IllegalStateException.class, () -> loader(tempDir, true).loadConfiguredDatasets());
+		assertTrue(error.getMessage().contains("unknown select type 'EXTERNAL_SELECT'"));
+	}
+
+	@Test
 	void reportsCascadedFilterConstraintWithFileAndPropertyPath(@TempDir Path tempDir) throws Exception {
 		Path dataset = tempDir.resolve("demo");
 		Files.createDirectories(dataset.resolve("conceptTrees"));
@@ -367,6 +424,7 @@ class DatasetMetadataFolderLoaderTest {
 		loader.objectMapper = objectMapper;
 		loader.validator = validator;
 		loader.filterDefinitionAssembler = filterDefinitionAssembler;
+		loader.selectDefinitionAssembler = selectDefinitionAssembler;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
 			@Override
 			public boolean enabled() {
@@ -385,6 +443,11 @@ class DatasetMetadataFolderLoaderTest {
 
 			@Override
 			public boolean strictFilterTypes() {
+				return strictFilterTypes;
+			}
+
+			@Override
+			public boolean strictSelectTypes() {
 				return strictFilterTypes;
 			}
 		};

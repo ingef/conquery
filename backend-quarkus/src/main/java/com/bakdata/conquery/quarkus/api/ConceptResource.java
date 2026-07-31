@@ -44,12 +44,12 @@ public class ConceptResource {
 		Map<ConceptId, DatasetCatalogRepository.ConceptElement> children = concept.children();
 
 		// Add main node
-		ConceptNodeResponse node = new ConceptNodeResponse(concept.label(), concept.description(), true, concept.childrenIds().stream().map(ConceptId::toString).toList(), 0L, 0L, true, !children.isEmpty(), concept.connectors().stream().map(this::toConnectorResponse).toList(), List.of());
+		ConceptNodeResponse node = new ConceptNodeResponse(concept.label(), concept.description(), null, concept.childrenIds().stream().map(ConceptId::toString).toList(), 0L, 0L, true, !children.isEmpty(), concept.connectors().stream().map(this::toConnectorResponse).toList(), List.of());
 		nodes.put(parsedConceptId.toString(), node);
 
 		// Add children
 		children.forEach((id, child) -> {
-			ConceptNodeResponse childNode = new ConceptNodeResponse(child.label(), child.description(), true, child.children().stream().map(ConceptId::toString).toList(), 0L, 0L, true, !children.isEmpty(), List.of(), List.of());
+			ConceptNodeResponse childNode = new ConceptNodeResponse(child.label(), child.description(), null, child.children().stream().map(ConceptId::toString).toList(), 0L, 0L, true, !children.isEmpty(), List.of(), List.of());
 			nodes.put(id.toString(), childNode);
 		});
 
@@ -69,8 +69,25 @@ public class ConceptResource {
 				connector.label(),
 				connector.isDefault(),
 				connector.filters().stream().map(this::toFilterResponse).toList(),
-				List.of(),
+				connector.selects().stream().map(this::toSelectResponse).toList(),
 				supportedSecondaryIds
+		);
+	}
+
+	private SelectResponse toSelectResponse(DatasetCatalogRepository.Select select) {
+		return new SelectResponse(
+				select.id().toString(),
+				select.label(),
+				select.description(),
+				select.defaultSelected(),
+				toSelectResultTypeResponse(select.resultType())
+		);
+	}
+
+	private SelectResultTypeResponse toSelectResultTypeResponse(DatasetCatalogRepository.SelectResultType resultType) {
+		return new SelectResultTypeResponse(
+				resultType.type(),
+				resultType.elementType() == null ? null : new ElementTypeResponse(resultType.elementType().type())
 		);
 	}
 

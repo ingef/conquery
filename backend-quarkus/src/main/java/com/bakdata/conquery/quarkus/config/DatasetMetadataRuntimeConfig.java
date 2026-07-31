@@ -30,4 +30,10 @@ public interface DatasetMetadataRuntimeConfig {
 	 */
 	@WithDefault("true")
 	boolean strictFilterTypes();
+
+	/**
+	 * Fails metadata ingestion when a connector select type has no registered provider.
+	 */
+	@WithDefault("true")
+	boolean strictSelectTypes();
 }

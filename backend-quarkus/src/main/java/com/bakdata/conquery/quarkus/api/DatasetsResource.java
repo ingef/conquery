@@ -112,6 +112,7 @@ public class DatasetsResource {
 						0L,
 						true,
 						!entry.children().isEmpty(),
+						// TODO Remove detailed connector filters/selects from this summary once the frontend loads them via /api/concepts/{conceptId}.
 						entry.connectors().stream().map(this::toTableResponse).toList(),
 						List.of()
 				)
@@ -139,8 +140,25 @@ public class DatasetsResource {
 				connector.label(),
 				connector.isDefault(),
 				connector.filters().stream().map(this::toFilterResponse).toList(),
-				List.of(),
+				connector.selects().stream().map(this::toSelectResponse).toList(),
 				supportedSecondaryIds
+		);
+	}
+
+	private ConceptResource.SelectResponse toSelectResponse(DatasetCatalogRepository.Select select) {
+		return new ConceptResource.SelectResponse(
+				select.id().toString(),
+				select.label(),
+				select.description(),
+				select.defaultSelected(),
+				toSelectResultTypeResponse(select.resultType())
+		);
+	}
+
+	private ConceptResource.SelectResultTypeResponse toSelectResultTypeResponse(DatasetCatalogRepository.SelectResultType resultType) {
+		return new ConceptResource.SelectResultTypeResponse(
+				resultType.type(),
+				resultType.elementType() == null ? null : new ConceptResource.ElementTypeResponse(resultType.elementType().type())
 		);
 	}
 

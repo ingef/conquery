@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.quarkus.config.DatasetMetadataRuntimeConfig;
 import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinition;
 import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionAssembler;
+import com.bakdata.conquery.quarkus.concepts.selects.SelectDefinition;
+import com.bakdata.conquery.quarkus.concepts.selects.SelectDefinitionAssembler;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.ConnectorId;
@@ -17,6 +19,7 @@ import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.IdPartSanitizer;
 import com.bakdata.conquery.quarkus.ids.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -39,6 +42,9 @@ public class DatasetMetadataFolderLoader {
 
 	@Inject
 	FilterDefinitionAssembler filterDefinitionAssembler;
+
+	@Inject
+	SelectDefinitionAssembler selectDefinitionAssembler;
 
 	public List<LoadedDatasetMetadata> loadConfiguredDatasets() {
 		if (!metadataConfig.enabled()) {
@@ -138,10 +144,10 @@ public class DatasetMetadataFolderLoader {
 					columnName == null ? null : new ColumnId(tableId, columnName),
 					p.label,
 					p.name,
-					List.of(), // Optional.of(p.selects().stream().map(SelectPayload::new).toList()).orElse(List.of()),
+					selectDefinitionAssembler.assemble(connectorId, tableId, table, p.selects(), fallbackLogCollector::add, metadataConfig.strictSelectTypes()),
 					filterDefinitionAssembler.assemble(connectorId, tableId, table, p.filters(), fallbackLogCollector::add, metadataConfig.strictFilterTypes()),
 					Optional.ofNullable(p.validityDates()).orElse(List.of()),
-					p.isDefault
+					p.isDefault == null || p.isDefault
 			);
 
 		}).toList();
@@ -433,16 +439,11 @@ public class DatasetMetadataFolderLoader {
 	}
 
 	private record ConnectorPayload(
-			String table, String column, String label, String name, List<SelectPayload> selects,
+			String table, String column, String label, String name, List<@Valid SelectDefinition> selects,
 			List<@Valid FilterDefinition> filters,
 			// Use internal rep directly as we won't need data mangling
-			List<DatasetCatalogRepository.ValidityDate> validityDates, boolean isDefault
+			List<DatasetCatalogRepository.ValidityDate> validityDates, @JsonProperty("default") Boolean isDefault
 	) {
-	}
-
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	// TODO implement polymorphism
-	private record SelectPayload() implements DatasetCatalogRepository.Select {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Normalize connector and filter column references in concept JSON files.
+"""Normalize connector, filter, and select column references in concept JSON files.
 
 Connector columns of the form "table.column" become:
   "table": "table",
@@ -7,6 +7,10 @@ Connector columns of the form "table.column" become:
 
 Filter columns of the form "table.column" become:
   "column": "column"
+
+Connector-select column references become local column names as well. This includes
+column, startColumn, endColumn, subtractColumn, distinctByColumn, distinctBy, and
+the values in flags maps.
 """
 
 from __future__ import annotations
@@ -45,44 +49,72 @@ def set_connector_table_column(connector: dict[str, Any], table: str, column: st
     connector.update(reordered)
 
 
-def normalize_filter_columns(value: Any) -> int:
+def normalize_column(value: Any) -> tuple[Any, int]:
+    split = split_table_column(value)
+    if split is None:
+        return value, 0
+    return split[1], 1
+
+
+def normalize_column_collection(value: Any) -> tuple[Any, int]:
+    if isinstance(value, list):
+        changed = 0
+        normalized = []
+        for item in value:
+            normalized_item, item_changes = normalize_column(item)
+            normalized.append(normalized_item)
+            changed += item_changes
+        return normalized, changed
+    return normalize_column(value)
+
+
+def normalize_definition_columns(
+    value: Any,
+    scalar_fields: tuple[str, ...],
+    collection_fields: tuple[str, ...],
+) -> int:
     changed = 0
     if isinstance(value, dict):
-        split = split_table_column(value.get("column"))
-        if split is not None:
-            value["column"] = split[1]
-            changed += 1
+        for field in scalar_fields:
+            if field in value:
+                value[field], field_changes = normalize_column(value[field])
+                changed += field_changes
 
-        # FLAGS filter
-        flags = value.get("flags") or {}
-        for key,val in flags.items():
-            split = split_table_column(val)
-            if split is not None:
-                flags[key] = split[1]
-                changed += 1
+        for field in collection_fields:
+            if field in value:
+                value[field], field_changes = normalize_column_collection(value[field])
+                changed += field_changes
 
-        # distinctByColumn (actually a list, but sometimes a scalar)
-        distinctByColumn = value.get("distinctByColumn") or []
-        if distinctByColumn:
-            distinctByColumn = [distinctByColumn] if isinstance(distinctByColumn, str) else distinctByColumn
-            for i, item in enumerate(distinctByColumn):
-                split = split_table_column(item)
-                if split is not None:
-                    distinctByColumn[i] = split[1]
-                    changed += 1    
-            value["distinctByColumn"] = distinctByColumn
+        flags = value.get("flags")
+        if isinstance(flags, dict):
+            for key, column in flags.items():
+                flags[key], field_changes = normalize_column(column)
+                changed += field_changes
 
         for child in value.values():
-            changed += normalize_filter_columns(child)
+            changed += normalize_definition_columns(child, scalar_fields, collection_fields)
     elif isinstance(value, list):
         for child in value:
-            changed += normalize_filter_columns(child)
+            changed += normalize_definition_columns(child, scalar_fields, collection_fields)
     return changed
 
 
-def normalize_connectors(value: Any) -> tuple[int, int]:
+def normalize_filter_columns(value: Any) -> int:
+    return normalize_definition_columns(value, ("column",), ("distinctByColumn",))
+
+
+def normalize_select_columns(value: Any) -> int:
+    return normalize_definition_columns(
+        value,
+        ("column", "startColumn", "endColumn", "subtractColumn"),
+        ("distinctByColumn", "distinctBy"),
+    )
+
+
+def normalize_connectors(value: Any) -> tuple[int, int, int]:
     connector_changes = 0
     filter_changes = 0
+    select_changes = 0
 
     if isinstance(value, dict):
         connectors = value.get("connectors")
@@ -97,29 +129,32 @@ def normalize_connectors(value: Any) -> tuple[int, int]:
                     connector_changes += 1
 
                 filter_changes += normalize_filter_columns(connector.get("filters"))
+                select_changes += normalize_select_columns(connector.get("selects"))
 
         for child in value.values():
-            child_connector_changes, child_filter_changes = normalize_connectors(child)
+            child_connector_changes, child_filter_changes, child_select_changes = normalize_connectors(child)
             connector_changes += child_connector_changes
             filter_changes += child_filter_changes
+            select_changes += child_select_changes
 
     elif isinstance(value, list):
         for child in value:
-            child_connector_changes, child_filter_changes = normalize_connectors(child)
+            child_connector_changes, child_filter_changes, child_select_changes = normalize_connectors(child)
             connector_changes += child_connector_changes
             filter_changes += child_filter_changes
+            select_changes += child_select_changes
 
-    return connector_changes, filter_changes
+    return connector_changes, filter_changes, select_changes
 
 
-def normalize_file(path: Path, dry_run: bool) -> tuple[int, int]:
+def normalize_file(path: Path, dry_run: bool) -> tuple[int, int, int]:
     data = json.loads(path.read_text(encoding="utf-8"))
-    connector_changes, filter_changes = normalize_connectors(data)
+    connector_changes, filter_changes, select_changes = normalize_connectors(data)
 
-    if not dry_run and (connector_changes or filter_changes):
+    if not dry_run and (connector_changes or filter_changes or select_changes):
         path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    return connector_changes, filter_changes
+    return connector_changes, filter_changes, select_changes
 
 
 def main() -> int:
@@ -129,9 +164,12 @@ def main() -> int:
     args = parser.parse_args()
 
     for path in args.concept_json:
-        connector_changes, filter_changes = normalize_file(path, args.dry_run)
+        connector_changes, filter_changes, select_changes = normalize_file(path, args.dry_run)
         action = "would update" if args.dry_run else "updated"
-        print(f"{path}: {action} {connector_changes} connector column(s), {filter_changes} filter column(s)")
+        print(
+            f"{path}: {action} {connector_changes} connector column(s), "
+            f"{filter_changes} filter column(s), {select_changes} select column(s)"
+        )
 
     return 0
 
