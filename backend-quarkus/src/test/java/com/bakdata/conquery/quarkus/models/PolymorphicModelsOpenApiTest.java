@@ -75,8 +75,12 @@ class PolymorphicModelsOpenApiTest {
 
 		JsonNode integerRangeFilterValueSchema = schemas.path("QueryIntegerRangeFilterValue");
 		assertEquals("INTEGER_RANGE", findProperty(integerRangeFilterValueSchema, "type").path("const").asText());
-		assertNotNull(findProperty(integerRangeFilterValueSchema, "filter"));
+		assertEquals("#/components/schemas/FilterId", findProperty(integerRangeFilterValueSchema, "filter").path("$ref").asText());
 		assertNotNull(findProperty(integerRangeFilterValueSchema, "value"));
+
+		JsonNode filterIdSchema = schemas.path("FilterId");
+		assertEquals("string", filterIdSchema.path("type").asText());
+		assertTrue(filterIdSchema.path("properties").isMissingNode());
 	}
 
 	private JsonNode findProperty(JsonNode schema, String name) {
