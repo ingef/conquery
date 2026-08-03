@@ -3,6 +3,7 @@ package com.bakdata.conquery.quarkus.api;
 import java.util.List;
 import java.util.Map;
 
+import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 public record ConceptsResponse(
@@ -30,6 +31,8 @@ public record ConceptsResponse(
 								  + "If false, this node is a folder/structure node and should not be draggable.")
 			Boolean detailsAvailable,
 			Boolean codeListResolvable,
+			List<DatasetCatalogRepository.AdditionalInfo> additionalInfos,
+			Boolean excludeFromTimeAggregation,
 			List<ConceptResource.ConnectorResponse> tables,
 			List<ConceptResource.SelectResponse> selects
 	) {

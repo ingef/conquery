@@ -21,9 +21,17 @@ class ConceptResourceTest {
 				.body("imdb.parent", nullValue())
 				.body("imdb.detailsAvailable", nullValue())
 				.body("imdb.codeListResolvable", equalTo(false))
+				.body("imdb.additionalInfos[0].key", equalTo("Source"))
+				.body("imdb.additionalInfos[0].value", equalTo("IMDb test metadata"))
+				.body("imdb.excludeFromTimeAggregation", equalTo(false))
 				.body("imdb.tables.size()", equalTo(1))
 				.body("imdb.tables[0].id", equalTo("imdb.title"))
 				.body("imdb.tables[0].default", equalTo(true))
+				.body("imdb.tables[0].dateColumn.tooltip", equalTo("Choose the release date"))
+				.body("imdb.tables[0].dateColumn.defaultValue", equalTo("imdb.titles.Release_date"))
+				.body("imdb.tables[0].dateColumn.value", nullValue())
+				.body("imdb.tables[0].dateColumn.options[0].value", equalTo("imdb.titles.Release_date"))
+				.body("imdb.tables[0].dateColumn.options[0].label", equalTo("Release date"))
 				.body("imdb.tables[0].selects[0].id", equalTo("imdb.titles.Title"))
 				.body("imdb.tables[0].selects[0].label", equalTo("Title"))
 				.body("imdb.tables[0].selects[0].default", equalTo(true))
@@ -31,7 +39,9 @@ class ConceptResourceTest {
 				.body("'imdb.movie'.parent", equalTo("imdb"))
 				.body("'imdb.movie'.active", nullValue())
 				.body("'imdb.movie'.detailsAvailable", nullValue())
-				.body("'imdb.movie'.codeListResolvable", equalTo(false));
+				.body("'imdb.movie'.codeListResolvable", equalTo(false))
+				.body("'imdb.movie'.additionalInfos[0].key", equalTo("Kind"))
+				.body("'imdb.movie'.excludeFromTimeAggregation", nullValue());
 	}
 
 	@Test

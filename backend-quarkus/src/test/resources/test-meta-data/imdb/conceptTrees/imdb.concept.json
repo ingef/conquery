@@ -1,10 +1,22 @@
 {
   "name": "imdb",
   "label": "IMDb",
+  "additionalInfos": [
+    {
+      "key": "Source",
+      "value": "IMDb test metadata"
+    }
+  ],
   "children": [
     {
       "name": "movie",
       "label": "Movie",
+      "additionalInfos": [
+        {
+          "key": "Kind",
+          "value": "Feature film"
+        }
+      ],
       "children": []
     }
   ],
@@ -13,6 +25,11 @@
       "name": "titles",
       "label": "Titles",
       "table": "title",
+      "validityDatesDescription": "Choose the release date",
+      "validityDates": {
+        "label": "Release date",
+        "column": "release_date"
+      },
       "filters": [
         {
           "type": "DATE_DISTANCE",

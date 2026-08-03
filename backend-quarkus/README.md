@@ -40,6 +40,7 @@ helper `scripts/normalize_concept_connector_columns.py` rewrites those reference
 
 - connector `"column": "table.column"` becomes `"table": "table", "column": "column"`
 - filter `"column": "table.column"` becomes `"column": "column"`
+- validity-date `column`, `startColumn`, and `endColumn` references become local column names
 
 Run it from the repository root:
 
@@ -47,7 +48,7 @@ Run it from the repository root:
 python3 scripts/normalize_concept_connector_columns.py path/to/*.concept.json
 ```
 
-Use `--dry-run` first to see how many connector, filter, and connector-select columns would be changed. Select fields
+Use `--dry-run` first to see how many connector, filter, connector-select, and validity-date columns would be changed. Select fields
 covered by the script are `column`, `startColumn`, `endColumn`, `subtractColumn`, `distinctByColumn`, `distinctBy`, and
 the column values in `flags`. This script is intended to grow with additional concept metadata migration steps as they
 become necessary.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Normalize connector, filter, and select column references in concept JSON files.
+"""Normalize connector, filter, select, and validity-date columns in concept JSON files.
 
 Connector columns of the form "table.column" become:
   "table": "table",
@@ -11,6 +11,9 @@ Filter columns of the form "table.column" become:
 Connector-select column references become local column names as well. This includes
 column, startColumn, endColumn, subtractColumn, distinctByColumn, distinctBy, and
 the values in flags maps.
+
+Validity-date column, startColumn, and endColumn references become local column
+names as well.
 """
 
 from __future__ import annotations
@@ -111,50 +114,58 @@ def normalize_select_columns(value: Any) -> int:
     )
 
 
-def normalize_connectors(value: Any) -> tuple[int, int, int]:
+def normalize_validity_date_columns(value: Any) -> int:
+    return normalize_definition_columns(value, ("column", "startColumn", "endColumn"), ())
+
+
+def normalize_connectors(value: Any) -> tuple[int, int, int, int]:
     connector_changes = 0
     filter_changes = 0
     select_changes = 0
+    validity_date_changes = 0
 
     if isinstance(value, dict):
         connectors = value.get("connectors")
-        if isinstance(connectors, list):
-            for connector in connectors:
-                if not isinstance(connector, dict):
-                    continue
+        connector_definitions = connectors if isinstance(connectors, list) else [connectors]
+        for connector in connector_definitions:
+            if not isinstance(connector, dict):
+                continue
 
-                split = split_table_column(connector.get("column"))
-                if split is not None:
-                    set_connector_table_column(connector, split[0], split[1])
-                    connector_changes += 1
+            split = split_table_column(connector.get("column"))
+            if split is not None:
+                set_connector_table_column(connector, split[0], split[1])
+                connector_changes += 1
 
-                filter_changes += normalize_filter_columns(connector.get("filters"))
-                select_changes += normalize_select_columns(connector.get("selects"))
+            filter_changes += normalize_filter_columns(connector.get("filters"))
+            select_changes += normalize_select_columns(connector.get("selects"))
+            validity_date_changes += normalize_validity_date_columns(connector.get("validityDates"))
 
         for child in value.values():
-            child_connector_changes, child_filter_changes, child_select_changes = normalize_connectors(child)
+            child_connector_changes, child_filter_changes, child_select_changes, child_validity_date_changes = normalize_connectors(child)
             connector_changes += child_connector_changes
             filter_changes += child_filter_changes
             select_changes += child_select_changes
+            validity_date_changes += child_validity_date_changes
 
     elif isinstance(value, list):
         for child in value:
-            child_connector_changes, child_filter_changes, child_select_changes = normalize_connectors(child)
+            child_connector_changes, child_filter_changes, child_select_changes, child_validity_date_changes = normalize_connectors(child)
             connector_changes += child_connector_changes
             filter_changes += child_filter_changes
             select_changes += child_select_changes
+            validity_date_changes += child_validity_date_changes
 
-    return connector_changes, filter_changes, select_changes
+    return connector_changes, filter_changes, select_changes, validity_date_changes
 
 
-def normalize_file(path: Path, dry_run: bool) -> tuple[int, int, int]:
+def normalize_file(path: Path, dry_run: bool) -> tuple[int, int, int, int]:
     data = json.loads(path.read_text(encoding="utf-8"))
-    connector_changes, filter_changes, select_changes = normalize_connectors(data)
+    connector_changes, filter_changes, select_changes, validity_date_changes = normalize_connectors(data)
 
-    if not dry_run and (connector_changes or filter_changes or select_changes):
+    if not dry_run and (connector_changes or filter_changes or select_changes or validity_date_changes):
         path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    return connector_changes, filter_changes, select_changes
+    return connector_changes, filter_changes, select_changes, validity_date_changes
 
 
 def main() -> int:
@@ -164,11 +175,12 @@ def main() -> int:
     args = parser.parse_args()
 
     for path in args.concept_json:
-        connector_changes, filter_changes, select_changes = normalize_file(path, args.dry_run)
+        connector_changes, filter_changes, select_changes, validity_date_changes = normalize_file(path, args.dry_run)
         action = "would update" if args.dry_run else "updated"
         print(
             f"{path}: {action} {connector_changes} connector column(s), "
-            f"{filter_changes} filter column(s), {select_changes} select column(s)"
+            f"{filter_changes} filter column(s), {select_changes} select column(s), "
+            f"{validity_date_changes} validity-date column(s)"
         )
 
     return 0

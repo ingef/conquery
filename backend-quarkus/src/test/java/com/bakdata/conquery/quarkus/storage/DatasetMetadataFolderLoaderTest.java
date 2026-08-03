@@ -21,6 +21,7 @@ import com.bakdata.conquery.quarkus.ids.FilterId;
 import com.bakdata.conquery.quarkus.ids.SelectId;
 import com.bakdata.conquery.quarkus.ids.StructureNodeId;
 import com.bakdata.conquery.quarkus.ids.TableId;
+import com.bakdata.conquery.quarkus.ids.ValidityDateId;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -273,6 +274,12 @@ class DatasetMetadataFolderLoaderTest {
 		assertEquals("FIRST", titleSelect.implementationType());
 		assertEquals(DatasetCatalogRepository.SelectResultType.primitive("STRING"), titleSelect.resultType());
 		assertEquals(List.of(ColumnId.parse("imdb.title.name")), titleSelect.requiredColumns());
+		DatasetCatalogRepository.Connector titleConnector = imdb.conceptsById().get(ConceptId.parse("imdb")).connectors().getFirst();
+		assertEquals("Choose the release date", titleConnector.validityDatesDescription());
+		DatasetCatalogRepository.ValidityDate releaseDate = titleConnector.validityDates().getFirst();
+		assertEquals(ValidityDateId.parse("imdb.titles.Release_date"), releaseDate.id());
+		assertEquals("Release date", releaseDate.label());
+		assertEquals(ColumnId.parse("imdb.title.release_date"), releaseDate.columnId());
 		assertTrue(imdb.tablesById().containsKey(TableId.parse("imdb.title")));
 
 		DatasetCatalogRepository.TableRecord title = imdb.tablesById().get(TableId.parse("imdb.title"));
@@ -407,6 +414,30 @@ class DatasetMetadataFolderLoaderTest {
 
 		IllegalStateException error = assertThrows(IllegalStateException.class, () -> loader(tempDir, true).loadConfiguredDatasets());
 		assertTrue(error.getMessage().contains("Structure node 'demo.invalid' references unknown concept 'demo.missing'"));
+	}
+
+	@Test
+	void rejectsIncompleteValidityDateAtStartup(@TempDir Path tempDir) throws Exception {
+		Path dataset = tempDir.resolve("demo");
+		Files.createDirectories(dataset.resolve("conceptTrees"));
+		Files.createDirectories(dataset.resolve("tables"));
+		Files.writeString(dataset.resolve("tables/events.table.json"), """
+				{"name":"events","columns":[{"name":"start","type":"DATE"}]}
+				""");
+		Files.writeString(dataset.resolve("conceptTrees/events.concept.json"), """
+				{
+				  "name":"events",
+				  "children":[],
+				  "connectors":[{
+				    "name":"events",
+				    "table":"events",
+				    "validityDates":{"name":"period","startColumn":"start"}
+				  }]
+				}
+				""");
+
+		IllegalStateException error = assertThrows(IllegalStateException.class, () -> loader(tempDir, true).loadConfiguredDatasets());
+		assertTrue(error.getMessage().contains("Validity date 'demo.events.events.period' must define either column or both startColumn and endColumn"));
 	}
 
 	@Test

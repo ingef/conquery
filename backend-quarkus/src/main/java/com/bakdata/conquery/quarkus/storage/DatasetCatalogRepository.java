@@ -10,6 +10,7 @@ import com.bakdata.conquery.quarkus.ids.FilterId;
 import com.bakdata.conquery.quarkus.ids.SelectId;
 import com.bakdata.conquery.quarkus.ids.StructureNodeId;
 import com.bakdata.conquery.quarkus.ids.TableId;
+import com.bakdata.conquery.quarkus.ids.ValidityDateId;
 
 public interface DatasetCatalogRepository {
 
@@ -55,15 +56,17 @@ public interface DatasetCatalogRepository {
 			ConceptId id,
 			String label,
 			String description,
+			List<AdditionalInfo> additionalInfos,
 			ConceptId parentId,
 			List<ConceptId> children,
 			ConceptCondition condition
 	) {
 		public ConceptElement(ConceptId id, String label, String description) {
-			this(id, label, description,null, List.of(), null);
+			this(id, label, description, List.of(), null, List.of(), null);
 		}
 
 		public ConceptElement {
+			additionalInfos = additionalInfos == null ? List.of() : List.copyOf(additionalInfos);
 			children = children == null ? List.of() : List.copyOf(children);
 		}
 
@@ -76,6 +79,8 @@ public interface DatasetCatalogRepository {
 			ConceptId id,
 			String label,
 			String description,
+			List<AdditionalInfo> additionalInfos,
+			boolean defaultExcludeFromTimeAggregation,
 			// All Children flat lookup
 			Map<ConceptId,ConceptElement> children,
 			// Direct children
@@ -83,7 +88,14 @@ public interface DatasetCatalogRepository {
 			List<Connector> connectors
 
 	){
+		public Concept {
+			additionalInfos = additionalInfos == null ? List.of() : List.copyOf(additionalInfos);
+		}
+
 		// TODO Add concept-level selects (for example EXISTS) once their separate provider and ID hierarchy is migrated.
+	}
+
+	record AdditionalInfo(String key, String value) {
 	}
 
 	record StructureNode(
@@ -111,7 +123,7 @@ public interface DatasetCatalogRepository {
 			String name,
 			List<Select> selects,
 			List<Filter> filters,
-			// Use internal rep directly as we won't need data mangling
+			String validityDatesDescription,
 			List<ValidityDate> validityDates,
 			boolean isDefault
 	){
@@ -121,9 +133,11 @@ public interface DatasetCatalogRepository {
 	}
 
 	record ValidityDate(
-			String column,
-			String startColumn,
-			String endColumn
+			ValidityDateId id,
+			String label,
+			ColumnId columnId,
+			ColumnId startColumnId,
+			ColumnId endColumnId
 	) {}
 
 	record Select(

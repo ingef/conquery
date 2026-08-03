@@ -20,6 +20,8 @@ import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.IdPartSanitizer;
 import com.bakdata.conquery.quarkus.ids.StructureNodeId;
 import com.bakdata.conquery.quarkus.ids.TableId;
+import com.bakdata.conquery.quarkus.ids.ValidityDateId;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -230,6 +232,9 @@ public class DatasetMetadataFolderLoader {
 			}
 
 			ConnectorId connectorId = new ConnectorId(conceptId, p.name);
+			List<DatasetCatalogRepository.ValidityDate> validityDates = assembleValidityDates(
+					connectorId, tableId, table, p.validityDates(), fallbackLogCollector
+			);
 			return new DatasetCatalogRepository.Connector(
 					connectorId,
 					tableId,
@@ -238,7 +243,8 @@ public class DatasetMetadataFolderLoader {
 					p.name,
 					selectDefinitionAssembler.assemble(connectorId, tableId, table, p.selects(), fallbackLogCollector::add, metadataConfig.strictSelectTypes()),
 					filterDefinitionAssembler.assemble(connectorId, tableId, table, p.filters(), fallbackLogCollector::add, metadataConfig.strictFilterTypes()),
-					Optional.ofNullable(p.validityDates()).orElse(List.of()),
+					p.validityDatesDescription(),
+					validityDates,
 					p.isDefault == null || p.isDefault
 			);
 
@@ -247,7 +253,69 @@ public class DatasetMetadataFolderLoader {
 		log.debug("Loaded concept {} with {} children", conceptId, children.size());
 		fallbackLogCollector.logSummary();
 
-		return new DatasetCatalogRepository.Concept(conceptId, conceptLabel, payload.description, Map.copyOf(conceptElementsById), directChildIds, connectors);
+		return new DatasetCatalogRepository.Concept(
+				conceptId,
+				conceptLabel,
+				payload.description,
+				copyAdditionalInfos(payload.additionalInfos()),
+				Boolean.TRUE.equals(payload.defaultExcludeFromTimeAggregation()),
+				Map.copyOf(conceptElementsById),
+				directChildIds,
+				connectors
+		);
+	}
+
+	private List<DatasetCatalogRepository.ValidityDate> assembleValidityDates(
+			ConnectorId connectorId,
+			TableId tableId,
+			DatasetCatalogRepository.TableRecord table,
+			List<ValidityDatePayload> payloads,
+			FallbackLogCollector fallbackLogCollector
+	) {
+		Map<String, DatasetCatalogRepository.ColumnRecord> columnsByName = table.columns().stream()
+				.collect(Collectors.toMap(column -> column.id().name(), column -> column));
+		Set<ValidityDateId> ids = new HashSet<>();
+		List<DatasetCatalogRepository.ValidityDate> validityDates = new ArrayList<>();
+		for (ValidityDatePayload payload : Optional.ofNullable(payloads).orElse(List.of())) {
+			String name = idPartFromPreferredOrFallback(
+					payload.name(), payload.label(), "validity date id", connectorId, fallbackLogCollector
+			);
+			ValidityDateId id = new ValidityDateId(connectorId, name);
+			if (!ids.add(id)) {
+				throw new IllegalStateException("Connector '" + connectorId + "' contains duplicate validity date id '" + id + "'.");
+			}
+
+			boolean hasColumn = normalizeBlank(payload.column()).isPresent();
+			boolean hasStartColumn = normalizeBlank(payload.startColumn()).isPresent();
+			boolean hasEndColumn = normalizeBlank(payload.endColumn()).isPresent();
+			if (hasColumn == (hasStartColumn || hasEndColumn) || hasStartColumn != hasEndColumn) {
+				throw new IllegalStateException("Validity date '" + id + "' must define either column or both startColumn and endColumn.");
+			}
+
+			ColumnId columnId = hasColumn ? requireValidityDateColumn(id, tableId, columnsByName, payload.column()) : null;
+			ColumnId startColumnId = hasStartColumn ? requireValidityDateColumn(id, tableId, columnsByName, payload.startColumn()) : null;
+			ColumnId endColumnId = hasEndColumn ? requireValidityDateColumn(id, tableId, columnsByName, payload.endColumn()) : null;
+			String label = firstNonBlank(payload.label(), payload.name(), name).orElse(name);
+			validityDates.add(new DatasetCatalogRepository.ValidityDate(id, label, columnId, startColumnId, endColumnId));
+		}
+		return List.copyOf(validityDates);
+	}
+
+	private ColumnId requireValidityDateColumn(
+			ValidityDateId validityDateId,
+			TableId tableId,
+			Map<String, DatasetCatalogRepository.ColumnRecord> columnsByName,
+			String rawColumnName
+	) {
+		String columnName = normalizeLocalColumnName(rawColumnName);
+		DatasetCatalogRepository.ColumnRecord column = columnsByName.get(columnName);
+		if (column == null) {
+			throw new IllegalStateException("Validity date '" + validityDateId + "' references unknown column '" + columnName + "' in table '" + tableId + "'.");
+		}
+		if (column.type() != DatasetCatalogRepository.ColumnType.DATE && column.type() != DatasetCatalogRepository.ColumnType.DATE_RANGE) {
+			throw new IllegalStateException("Validity date '" + validityDateId + "' references non-date column '" + column.id() + "'.");
+		}
+		return column.id();
 	}
 
 	private void collectConceptChildren(ConceptElementPayload payload, ConceptId conceptId, ConceptId parentId, Map<ConceptId, DatasetCatalogRepository.ConceptElement> conceptElementsById, FallbackLogCollector fallbackLogCollector) {
@@ -256,10 +324,16 @@ public class DatasetMetadataFolderLoader {
 		List<ConceptId> childIds = children.stream().map(child -> childId(conceptId, child, fallbackLogCollector)).toList();
 		DatasetCatalogRepository.ConceptCondition condition = toConceptCondition(payload.condition());
 
-		conceptElementsById.put(conceptId, new DatasetCatalogRepository.ConceptElement(conceptId, conceptLabel, payload.description, parentId, childIds, condition));
+		conceptElementsById.put(conceptId, new DatasetCatalogRepository.ConceptElement(
+				conceptId, conceptLabel, payload.description, copyAdditionalInfos(payload.additionalInfos()), parentId, childIds, condition
+		));
 		for (int index = 0; index < children.size(); index++) {
 			collectConceptChildren(children.get(index), childIds.get(index), conceptId, conceptElementsById, fallbackLogCollector);
 		}
+	}
+
+	private List<DatasetCatalogRepository.AdditionalInfo> copyAdditionalInfos(List<DatasetCatalogRepository.AdditionalInfo> additionalInfos) {
+		return List.copyOf(Optional.ofNullable(additionalInfos).orElse(List.of()));
 	}
 
 
@@ -519,14 +593,19 @@ public class DatasetMetadataFolderLoader {
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private record ConceptPayload(
-			String name, String label, String description, List<@Valid ConceptElementPayload> children,
+			String name, String label, String description,
+			List<DatasetCatalogRepository.AdditionalInfo> additionalInfos,
+			Boolean defaultExcludeFromTimeAggregation,
+			List<@Valid ConceptElementPayload> children,
 			@NotNull @Valid List<@Valid ConnectorPayload> connectors
 	) {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private record ConceptElementPayload(
-			String name, String label, String description, List<@Valid ConceptElementPayload> children,
+			String name, String label, String description,
+			List<DatasetCatalogRepository.AdditionalInfo> additionalInfos,
+			List<@Valid ConceptElementPayload> children,
 			@Valid ConditionPayload condition
 	) {
 	}
@@ -542,8 +621,14 @@ public class DatasetMetadataFolderLoader {
 	private record ConnectorPayload(
 			String table, String column, String label, String name, List<@Valid SelectDefinition> selects,
 			List<@Valid FilterDefinition> filters,
-			// Use internal rep directly as we won't need data mangling
-			List<DatasetCatalogRepository.ValidityDate> validityDates, @JsonProperty("default") Boolean isDefault
+			@JsonAlias("validityDatesTooltip") String validityDatesDescription,
+			List<ValidityDatePayload> validityDates, @JsonProperty("default") Boolean isDefault
+	) {
+	}
+
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	private record ValidityDatePayload(
+			String name, String label, String column, String startColumn, String endColumn
 	) {
 	}
 

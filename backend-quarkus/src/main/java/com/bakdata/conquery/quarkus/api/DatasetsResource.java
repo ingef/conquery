@@ -122,6 +122,8 @@ public class DatasetsResource {
 						0L,
 						true,
 						!entry.children().isEmpty(),
+						entry.additionalInfos(),
+						excludeFromTimeAggregation(entry),
 						// TODO Remove detailed connector filters/selects from this summary once the frontend loads them via /api/concepts/{conceptId}.
 						entry.connectors().stream().map(this::toTableResponse).toList(),
 						List.of()
@@ -141,6 +143,11 @@ public class DatasetsResource {
 				List.of(),
 				concepts
 		);
+	}
+
+	private boolean excludeFromTimeAggregation(DatasetCatalogRepository.Concept concept) {
+		return concept.defaultExcludeFromTimeAggregation()
+				|| concept.connectors().stream().allMatch(connector -> connector.validityDates().isEmpty());
 	}
 
 	private boolean isVisibleStructureNode(
@@ -171,6 +178,8 @@ public class DatasetsResource {
 				0L,
 				false,
 				false,
+				List.of(),
+				null,
 				null,
 				null
 		);
@@ -193,8 +202,19 @@ public class DatasetsResource {
 				connector.isDefault(),
 				connector.filters().stream().map(this::toFilterResponse).toList(),
 				connector.selects().stream().map(this::toSelectResponse).toList(),
+				toDateColumnResponse(connector),
 				supportedSecondaryIds
 		);
+	}
+
+	private ConceptResource.DateColumnResponse toDateColumnResponse(DatasetCatalogRepository.Connector connector) {
+		if (connector.validityDates().isEmpty()) {
+			return null;
+		}
+		List<ConceptResource.ValueResponse> options = connector.validityDates().stream()
+				.map(validityDate -> new ConceptResource.ValueResponse(validityDate.id().toString(), validityDate.label()))
+				.toList();
+		return new ConceptResource.DateColumnResponse(options, options.getFirst().value(), null, connector.validityDatesDescription());
 	}
 
 	private ConceptResource.SelectResponse toSelectResponse(DatasetCatalogRepository.Select select) {

@@ -43,17 +43,22 @@ public class ConceptResource {
 
 		Map<ConceptId, DatasetCatalogRepository.ConceptElement> children = concept.children();
 
-		// TODO Populate matching statistics, date ranges, additional infos, and time-aggregation defaults once those models are migrated.
-		ConceptNodeResponse node = new ConceptNodeResponse(concept.label(), concept.description(), null, null, concept.childrenIds().stream().map(ConceptId::toString).toList(), 0L, 0L, null, false, concept.connectors().stream().map(this::toConnectorResponse).toList(), List.of());
+		// TODO Populate matching statistics and their derived date ranges once imported event statistics are available.
+		ConceptNodeResponse node = new ConceptNodeResponse(concept.label(), concept.description(), null, null, concept.childrenIds().stream().map(ConceptId::toString).toList(), 0L, 0L, null, false, concept.additionalInfos(), excludeFromTimeAggregation(concept), concept.connectors().stream().map(this::toConnectorResponse).toList(), List.of());
 		nodes.put(parsedConceptId.toString(), node);
 
 		// Add children
 		children.forEach((id, child) -> {
-			ConceptNodeResponse childNode = new ConceptNodeResponse(child.label(), child.description(), null, child.parentId().toString(), child.children().stream().map(ConceptId::toString).toList(), 0L, 0L, null, false, List.of(), List.of());
+			ConceptNodeResponse childNode = new ConceptNodeResponse(child.label(), child.description(), null, child.parentId().toString(), child.children().stream().map(ConceptId::toString).toList(), 0L, 0L, null, false, child.additionalInfos(), null, List.of(), List.of());
 			nodes.put(id.toString(), childNode);
 		});
 
 		return nodes;
+	}
+
+	private boolean excludeFromTimeAggregation(DatasetCatalogRepository.Concept concept) {
+		return concept.defaultExcludeFromTimeAggregation()
+				|| concept.connectors().stream().allMatch(connector -> connector.validityDates().isEmpty());
 	}
 
 	private ConnectorResponse toConnectorResponse(DatasetCatalogRepository.Connector connector) {
@@ -70,9 +75,19 @@ public class ConceptResource {
 				connector.isDefault(),
 				connector.filters().stream().map(this::toFilterResponse).toList(),
 				connector.selects().stream().map(this::toSelectResponse).toList(),
-				// TODO Expose connector validity dates as the frontend dateColumn once validity-date metadata is migrated.
+				toDateColumnResponse(connector),
 				supportedSecondaryIds
 		);
+	}
+
+	private DateColumnResponse toDateColumnResponse(DatasetCatalogRepository.Connector connector) {
+		if (connector.validityDates().isEmpty()) {
+			return null;
+		}
+		List<ValueResponse> options = connector.validityDates().stream()
+				.map(validityDate -> new ValueResponse(validityDate.id().toString(), validityDate.label()))
+				.toList();
+		return new DateColumnResponse(options, options.getFirst().value(), null, connector.validityDatesDescription());
 	}
 
 	private SelectResponse toSelectResponse(DatasetCatalogRepository.Select select) {
@@ -130,6 +145,8 @@ public class ConceptResource {
 			Long matchingEntities,
 			Boolean detailsAvailable,
 			Boolean codeListResolvable,
+			List<DatasetCatalogRepository.AdditionalInfo> additionalInfos,
+			Boolean excludeFromTimeAggregation,
 			List<ConnectorResponse> tables,
 			List<SelectResponse> selects
 	) {
@@ -142,6 +159,7 @@ public class ConceptResource {
 			@JsonProperty("default") Boolean isDefault,
 			List<FilterResponse> filters,
 			List<SelectResponse> selects,
+			DateColumnResponse dateColumn,
 			List<String> supportedSecondaryIds
 	) {
 	}

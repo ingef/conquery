@@ -23,13 +23,13 @@ class DatasetServiceTest {
 	void resolvesConceptCodesAgainstRequestedConceptSubtree() {
 		DatasetService service = new DatasetService();
 		service.namespaceStorageRegistry = new TestNamespaceStorageRegistry(List.of(
-				new DatasetCatalogRepository.Concept(cid("demo.icd"), "ICD", null,  Map.of(
+				new DatasetCatalogRepository.Concept(cid("demo.icd"), "ICD", null, List.of(), false, Map.of(
 
-						cid("demo.icd.a00"), new DatasetCatalogRepository.ConceptElement(cid("demo.icd.a00"), "A00",null,cid("demo.icd"), List.of(cid("demo.icd.a00.a00_0")), equal("A00", "A000")),
-						cid("demo.icd.a00.a00_0"), new DatasetCatalogRepository.ConceptElement(cid("demo.icd.a00.a00_0"), "A00.0",null, cid("demo.icd.a00"), List.of(), equal("A000"))
+						cid("demo.icd.a00"), new DatasetCatalogRepository.ConceptElement(cid("demo.icd.a00"), "A00", null, List.of(), cid("demo.icd"), List.of(cid("demo.icd.a00.a00_0")), equal("A00", "A000")),
+						cid("demo.icd.a00.a00_0"), new DatasetCatalogRepository.ConceptElement(cid("demo.icd.a00.a00_0"), "A00.0", null, List.of(), cid("demo.icd.a00"), List.of(), equal("A000"))
 
 				), List.of(cid("demo.icd.a00")), null),
-				new DatasetCatalogRepository.Concept(cid("demo.other"), "Other",null, null, null, List.of())
+				new DatasetCatalogRepository.Concept(cid("demo.other"), "Other", null, List.of(), false, null, null, List.of())
 		));
 
 		DatasetService.ConceptCodeResolution resolution = service.resolveConceptCodes("demo.icd", List.of("A00", "A000", "OTHER", "UNKNOWN"));
