@@ -29,4 +29,12 @@ public interface SqlSelect extends Qualifiable<SqlSelect> {
 		return this;
 	}
 
+	/**
+	 * Special selects like {@link ExistsSelect} require to be converted into a specific format before executing the
+	 * final query.
+	 */
+	default SqlSelect toFinalRepresentation() {
+		return this;
+	}
+
 }

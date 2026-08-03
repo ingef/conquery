@@ -8,8 +8,6 @@ on:
       - develop
       - release
   pull_request:
-    paths:
-      - "**"
 
 jobs:
   test:

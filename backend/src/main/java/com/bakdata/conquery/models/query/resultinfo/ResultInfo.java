@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.google.common.collect.ImmutableSet;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -63,4 +64,6 @@ public abstract class ResultInfo {
 	public abstract String getDescription();
 
 	public abstract Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings);
+
+	public abstract ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor);
 }

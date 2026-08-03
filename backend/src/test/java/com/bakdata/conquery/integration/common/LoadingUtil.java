@@ -32,7 +32,6 @@ import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -178,9 +177,7 @@ public class LoadingUtil {
 	}
 
 	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
-		List<File> cqpps = generateCqpp(support, tables);
-
-		importCqppFiles(support, cqpps);
+		support.getTestImporter().importTableContents(support, tables);
 	}
 
 	public static List<File> generateCqpp(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
@@ -230,12 +227,10 @@ public class LoadingUtil {
 		}
 
 		support.waitUntilWorkDone();
-
-
 	}
 
 	public static void uploadCqpp(StandaloneSupport support, File cqpp, boolean update, Response.Status.Family expectedResponseFamily) {
-		if(update) {
+		if (update) {
 			assertThat(cqpp).exists();
 		}
 
@@ -276,7 +271,8 @@ public class LoadingUtil {
 				support,
 				rawConcepts,
 				Concept.class,
-				c -> {}
+				c -> {
+				}
 		);
 
 		for (Concept<?> concept : concepts) {
@@ -299,7 +295,8 @@ public class LoadingUtil {
 				support,
 				rawConcepts,
 				Concept.class,
-				c -> {}
+				c -> {
+				}
 		);
 	}
 
@@ -413,14 +410,15 @@ public class LoadingUtil {
 		Invocation.Builder request = support.getClient()
 											.target(conceptURI)
 											.request(MediaType.APPLICATION_JSON);
-		try(final Response response = request.post(Entity.entity(searchIndex, MediaType.APPLICATION_JSON_TYPE))) {
+		try (final Response response = request.post(Entity.entity(searchIndex, MediaType.APPLICATION_JSON_TYPE))) {
 			assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
 		}
 	}
 
 	public static void updateMatchingStats(@NonNull StandaloneSupport support) {
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "postprocessNamespace")
+															, AdminDatasetResource.class, "postprocessNamespace"
+													)
 													.buildFromMap(Map.of(DATASET, support.getDataset()));
 
 		final Response post = support.getClient().target(matchingStatsUri)

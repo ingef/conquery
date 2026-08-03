@@ -17,18 +17,23 @@ import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.google.common.base.Preconditions;
-import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
-import org.jooq.Field;
 
 class EventFilterCte extends ConnectorCte {
 
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
+		List<Condition> conditions = new ArrayList<>();
+
+		if (tableContext.getIds().getSecondaryId().isPresent()) {
+			conditions.add(tableContext.getIds().getSecondaryId().get().isNotNull());
+		}
+
+		conditions.addAll(collectEventFilterConditions(tableContext));
 
 		return QueryStep.builder()
 						.selects(collectSelects(tableContext))
-						.conditions(collectEventFilterConditions(tableContext));
+						.conditions(conditions);
 	}
 
 	@Override
@@ -114,7 +119,7 @@ class EventFilterCte extends ConnectorCte {
 		);
 
 		// we filter every entry where stratification date range and validity date range do not overlap
-		SqlFunctionProvider functionProvider = tableContext.getConversionContext().getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = tableContext.getFunctionProvider();
 		ColumnDateRange stratificationDate = previousSelects.getStratificationDate().get();
 		ColumnDateRange validityDate = previousSelects.getValidityDate().get();
 		Condition stratificationCondition = functionProvider.dateRestriction(stratificationDate, validityDate);

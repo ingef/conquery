@@ -57,7 +57,8 @@ class TablePath {
 				tableInfo.getRootTable(),
 				cteNameMap,
 				tableInfo.getMappings(),
-				tableInfo.isContainsIntervalPacking()
+				tableInfo.isContainsIntervalPacking(),
+				tableInfo.isExcludedFromTimeAggregation()
 		);
 	}
 
@@ -83,21 +84,26 @@ class TablePath {
 		tableInfo.addWithDefaultMapping(MANDATORY_STEPS);
 
 		boolean eventDateSelectsPresent = cqTable.getSelects().stream().map(SelectId::resolve).anyMatch(Select::isEventDateSelect);
-		// no validity date aggregation possible nor necessary
-		if (cqTable.findValidityDate() == null || (!cqConcept.isAggregateEventDates() && !eventDateSelectsPresent)) {
+		// no validity date aggregation necessary
+		if (!cqConcept.isAggregateEventDates() && !eventDateSelectsPresent) {
 			return tableInfo;
 		}
 
-		// interval packing required
+		// interval packing requiredw
 		tableInfo.setContainsIntervalPacking(true);
-		tableInfo.addMappings(IntervalPackingCteStep.getMappings(EVENT_FILTER, context.getSqlDialect()));
+		tableInfo.addMappings(IntervalPackingCteStep.getMappings(EVENT_FILTER, context.getDialectBundle()));
+
+		// validity date propagation not necessary
+		if (!cqConcept.isAggregateEventDates()) {
+			tableInfo.setExcludedFromTimeAggregation(true);
+		}
 
 		if (!eventDateSelectsPresent) {
 			return tableInfo;
 		}
 
 		// interval packing selects required with optional unnest step
-		if (context.getSqlDialect().supportsSingleColumnRanges()) {
+		if (context.getDialectBundle().supportsSingleColumnRanges()) {
 			tableInfo.addMappings(Map.of(
 					UNNEST_DATE, INTERVAL_COMPLETE,
 					INTERVAL_PACKING_SELECTS, UNNEST_DATE
@@ -129,7 +135,7 @@ class TablePath {
 		);
 
 		// universal event date selects required with optional additional unnest step
-		if (context.getSqlDialect().supportsSingleColumnRanges()) {
+		if (context.getDialectBundle().supportsSingleColumnRanges()) {
 			tableInfo.addRootTableMapping(UNNEST_DATE);
 			tableInfo.addMappings(Map.of(INTERVAL_PACKING_SELECTS, UNNEST_DATE));
 		}
@@ -159,6 +165,11 @@ class TablePath {
 		 * True if this path info contains CTEs from {@link IntervalPackingCteStep}.
 		 */
 		private boolean containsIntervalPacking;
+
+		/**
+		 * True if these tables should not propagate a present validity date.
+		 */
+		private boolean excludedFromTimeAggregation;
 
 		public TablePathInfo() {
 			this.mappings = new HashMap<>();

@@ -1,6 +1,10 @@
 {
   "type": "QUERY_TEST",
-  "label": "DURATION_SUM_AGGREGATOR Test",
+  "label": "DURATION_SUM (distinctBy)",
+  "sqlSpec": {
+    "isEnabled": false,
+    "comment" : "distinctBy not yet implemented."
+  },
   "expectedCsv": "tests/aggregator/DURATION_SUM_DISTINCT_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

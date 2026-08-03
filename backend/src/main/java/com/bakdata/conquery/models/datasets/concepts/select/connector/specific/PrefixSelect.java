@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.EnumSet;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -10,6 +12,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.PrefixTextAggregator;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,6 +38,11 @@ public class PrefixSelect extends SingleColumnSelect {
 	@Override
 	public Aggregator<?> createAggregator() {
 		return new PrefixTextAggregator(getColumn().resolve(), prefix);
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<Integer> createResultSetReader(ResultSetProcessor processor) {
+		throw new IllegalStateException("PREFIX select is not implemented for SQL mode.");
 	}
 
 	@Override
