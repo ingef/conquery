@@ -36,3 +36,7 @@ pid,datum,value,sum,description
 5,2011-01-16,compare,1,
 5,2011-01-18,compare,1,
 
+
+7,2010-01-01/2011-01-01,index,,this one is weird: the latest day
+7,2011-01-06,compare,1,
+7,2011-01-08,compare,1,
