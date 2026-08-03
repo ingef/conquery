@@ -48,6 +48,15 @@ class PolymorphicModelsOpenApiTest {
 		assertNotNull(findProperty(countSelectSchema, "column"));
 		assertNotNull(findProperty(countSelectSchema, "distinctByColumn"));
 
+		JsonNode conceptSelectSchema = schemas.path("MetadataConceptSelectDefinition");
+		assertEquals("type", conceptSelectSchema.path("discriminator").path("propertyName").asText());
+		assertEquals("#/components/schemas/MetadataExistsConceptSelect", conceptSelectSchema.path("discriminator").path("mapping").path("EXISTS").asText());
+		assertEquals(5, conceptSelectSchema.path("oneOf").size());
+
+		JsonNode quarterConceptSelectSchema = schemas.path("MetadataQuarterConceptSelect");
+		assertEquals("QUARTER", findProperty(quarterConceptSelectSchema, "type").path("const").asText());
+		assertNotNull(findProperty(quarterConceptSelectSchema, "sample"));
+
 		JsonNode conditionSchema = schemas.path("MetadataConceptCondition");
 		assertEquals("type", conditionSchema.path("discriminator").path("propertyName").asText());
 		assertEquals("#/components/schemas/MetadataEqualConceptCondition", conditionSchema.path("discriminator").path("mapping").path("EQUAL").asText());

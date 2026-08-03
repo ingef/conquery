@@ -64,8 +64,9 @@ Filter, select, and concept-condition implementations are extensible from anothe
 1. A concrete class implementing `FilterDefinition`, annotated with OpenAPI `@Schema`.
 2. A CDI bean implementing `FilterDefinitionProvider<T>` for its type id, model class, and business-model conversion.
 
-Connector selects use the equivalent `SelectDefinition` and `SelectDefinitionProvider<T>` extension points. Unknown
-types fail startup by default; `conquery.metadata.strict-filter-types` and
+Connector selects use the equivalent `SelectDefinition` and `SelectDefinitionProvider<T>` extension points. Concept-level
+selects form a separate family with `ConceptSelectDefinition` and `ConceptSelectDefinitionProvider<T>`. Unknown types
+fail startup by default; `conquery.metadata.strict-filter-types` and
 `conquery.metadata.strict-select-types` can independently switch their family to warning-and-skip behavior.
 
 Concept-tree conditions use `ConceptCondition` and `ConceptConditionProvider<T>`. Because skipping a condition would

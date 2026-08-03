@@ -14,6 +14,8 @@ import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinition;
 import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionAssembler;
 import com.bakdata.conquery.quarkus.concepts.selects.SelectDefinition;
 import com.bakdata.conquery.quarkus.concepts.selects.SelectDefinitionAssembler;
+import com.bakdata.conquery.quarkus.concepts.selects.concept.ConceptSelectDefinition;
+import com.bakdata.conquery.quarkus.concepts.selects.concept.ConceptSelectDefinitionAssembler;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.ConnectorId;
@@ -50,6 +52,9 @@ public class DatasetMetadataFolderLoader {
 
 	@Inject
 	SelectDefinitionAssembler selectDefinitionAssembler;
+
+	@Inject
+	ConceptSelectDefinitionAssembler conceptSelectDefinitionAssembler;
 
 	public List<LoadedDatasetMetadata> loadConfiguredDatasets() {
 		if (!metadataConfig.enabled()) {
@@ -251,6 +256,10 @@ public class DatasetMetadataFolderLoader {
 
 		}).toList();
 
+		List<DatasetCatalogRepository.ConceptSelect> selects = conceptSelectDefinitionAssembler.assemble(
+				conceptId, payload.selects(), fallbackLogCollector::add, metadataConfig.strictSelectTypes()
+		);
+
 		log.debug("Loaded concept {} with {} children", conceptId, children.size());
 		fallbackLogCollector.logSummary();
 
@@ -262,7 +271,8 @@ public class DatasetMetadataFolderLoader {
 				Boolean.TRUE.equals(payload.defaultExcludeFromTimeAggregation()),
 				Map.copyOf(conceptElementsById),
 				directChildIds,
-				connectors
+				connectors,
+				selects
 		);
 	}
 
@@ -588,7 +598,8 @@ public class DatasetMetadataFolderLoader {
 			List<DatasetCatalogRepository.AdditionalInfo> additionalInfos,
 			Boolean defaultExcludeFromTimeAggregation,
 			List<@Valid ConceptElementPayload> children,
-			@NotNull @Valid List<@Valid ConnectorPayload> connectors
+			@NotNull @Valid List<@Valid ConnectorPayload> connectors,
+			List<@Valid ConceptSelectDefinition> selects
 	) {
 	}
 

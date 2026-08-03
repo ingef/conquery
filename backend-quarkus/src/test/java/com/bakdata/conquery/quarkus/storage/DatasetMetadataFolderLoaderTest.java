@@ -18,8 +18,10 @@ import com.bakdata.conquery.quarkus.concepts.conditions.definitions.ColumnEqualC
 import com.bakdata.conquery.quarkus.concepts.conditions.definitions.EqualConceptCondition;
 import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionAssembler;
 import com.bakdata.conquery.quarkus.concepts.selects.SelectDefinitionAssembler;
+import com.bakdata.conquery.quarkus.concepts.selects.concept.ConceptSelectDefinitionAssembler;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
+import com.bakdata.conquery.quarkus.ids.ConceptSelectId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.FilterId;
 import com.bakdata.conquery.quarkus.ids.SelectId;
@@ -45,6 +47,9 @@ class DatasetMetadataFolderLoaderTest {
 
 	@Inject
 	SelectDefinitionAssembler selectDefinitionAssembler;
+
+	@Inject
+	ConceptSelectDefinitionAssembler conceptSelectDefinitionAssembler;
 
 	@Inject
 	ObjectMapper objectMapper;
@@ -143,6 +148,7 @@ class DatasetMetadataFolderLoaderTest {
 		loader.validator = validator;
 		loader.filterDefinitionAssembler = filterDefinitionAssembler;
 		loader.selectDefinitionAssembler = selectDefinitionAssembler;
+		loader.conceptSelectDefinitionAssembler = conceptSelectDefinitionAssembler;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
 			@Override
 			public boolean enabled() {
@@ -232,6 +238,7 @@ class DatasetMetadataFolderLoaderTest {
 		loader.validator = validator;
 		loader.filterDefinitionAssembler = filterDefinitionAssembler;
 		loader.selectDefinitionAssembler = selectDefinitionAssembler;
+		loader.conceptSelectDefinitionAssembler = conceptSelectDefinitionAssembler;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
 			@Override
 			public boolean enabled() {
@@ -278,6 +285,10 @@ class DatasetMetadataFolderLoaderTest {
 		assertEquals("FIRST", titleSelect.implementationType());
 		assertEquals(DatasetCatalogRepository.SelectResultType.primitive("STRING"), titleSelect.resultType());
 		assertEquals(List.of(ColumnId.parse("imdb.title.name")), titleSelect.requiredColumns());
+		DatasetCatalogRepository.ConceptSelect conceptSelect = imdb.conceptsById().get(ConceptId.parse("imdb")).selects().getFirst();
+		assertEquals(ConceptSelectId.parse("imdb.exists"), conceptSelect.id());
+		assertEquals("EXISTS", conceptSelect.implementationType());
+		assertEquals(DatasetCatalogRepository.SelectResultType.primitive("BOOLEAN"), conceptSelect.resultType());
 		DatasetCatalogRepository.Connector titleConnector = imdb.conceptsById().get(ConceptId.parse("imdb")).connectors().getFirst();
 		assertEquals("Choose the release date", titleConnector.validityDatesDescription());
 		DatasetCatalogRepository.ValidityDate releaseDate = titleConnector.validityDates().getFirst();
@@ -319,6 +330,7 @@ class DatasetMetadataFolderLoaderTest {
 		loader.validator = validator;
 		loader.filterDefinitionAssembler = filterDefinitionAssembler;
 		loader.selectDefinitionAssembler = selectDefinitionAssembler;
+		loader.conceptSelectDefinitionAssembler = conceptSelectDefinitionAssembler;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
 			@Override
 			public boolean enabled() {
@@ -405,6 +417,27 @@ class DatasetMetadataFolderLoaderTest {
 
 		IllegalStateException error = assertThrows(IllegalStateException.class, () -> loader(tempDir, true).loadConfiguredDatasets());
 		assertTrue(error.getMessage().contains("unknown select type 'EXTERNAL_SELECT'"));
+	}
+
+	@Test
+	void skipsUnknownConceptSelectInLenientModeAndRejectsItInStrictMode(@TempDir Path tempDir) throws Exception {
+		Path dataset = tempDir.resolve("demo");
+		Files.createDirectories(dataset.resolve("conceptTrees"));
+		Files.createDirectories(dataset.resolve("tables"));
+		Files.writeString(dataset.resolve("conceptTrees/events.concept.json"), """
+				{
+				  "name":"events",
+				  "children":[],
+				  "connectors":[],
+				  "selects":{"type":"EXTERNAL_CONCEPT_SELECT","name":"external"}
+				}
+				""");
+
+		DatasetCatalogRepository.Concept concept = loader(tempDir, false).loadConfiguredDatasets().getFirst().conceptsById().get(ConceptId.parse("demo.events"));
+		assertTrue(concept.selects().isEmpty());
+
+		IllegalStateException error = assertThrows(IllegalStateException.class, () -> loader(tempDir, true).loadConfiguredDatasets());
+		assertTrue(error.getMessage().contains("unknown concept select type 'EXTERNAL_CONCEPT_SELECT'"));
 	}
 
 	@Test
@@ -505,6 +538,7 @@ class DatasetMetadataFolderLoaderTest {
 		loader.validator = validator;
 		loader.filterDefinitionAssembler = filterDefinitionAssembler;
 		loader.selectDefinitionAssembler = selectDefinitionAssembler;
+		loader.conceptSelectDefinitionAssembler = conceptSelectDefinitionAssembler;
 		loader.metadataConfig = new DatasetMetadataRuntimeConfig() {
 			@Override
 			public boolean enabled() {

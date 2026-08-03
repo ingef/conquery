@@ -5,6 +5,7 @@ import java.util.*;
 import com.bakdata.conquery.quarkus.concepts.conditions.ConceptCondition;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
+import com.bakdata.conquery.quarkus.ids.ConceptSelectId;
 import com.bakdata.conquery.quarkus.ids.ConnectorId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.FilterId;
@@ -83,14 +84,14 @@ public interface DatasetCatalogRepository {
 			Map<ConceptId,ConceptElement> children,
 			// Direct children
 			List<ConceptId> childrenIds,
-			List<Connector> connectors
+			List<Connector> connectors,
+			List<ConceptSelect> selects
 
 	){
 		public Concept {
 			additionalInfos = additionalInfos == null ? List.of() : List.copyOf(additionalInfos);
+			selects = selects == null ? List.of() : List.copyOf(selects);
 		}
-
-		// TODO Add concept-level selects (for example EXISTS) once their separate provider and ID hierarchy is migrated.
 	}
 
 	record AdditionalInfo(String key, String value) {
@@ -150,6 +151,16 @@ public interface DatasetCatalogRepository {
 		public Select {
 			requiredColumns = requiredColumns == null ? List.of() : List.copyOf(requiredColumns);
 		}
+	}
+
+	record ConceptSelect(
+			ConceptSelectId id,
+			String label,
+			String description,
+			boolean defaultSelected,
+			String implementationType,
+			SelectResultType resultType
+	) {
 	}
 
 	record SelectResultType(String type, SelectResultType elementType) {

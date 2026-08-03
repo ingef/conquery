@@ -30,8 +30,8 @@ class DatasetServiceTest {
 						cid("demo.icd.a00"), new DatasetCatalogRepository.ConceptElement(cid("demo.icd.a00"), "A00", null, List.of(), cid("demo.icd"), List.of(cid("demo.icd.a00.a00_0")), equal("A00", "A000")),
 						cid("demo.icd.a00.a00_0"), new DatasetCatalogRepository.ConceptElement(cid("demo.icd.a00.a00_0"), "A00.0", null, List.of(), cid("demo.icd.a00"), List.of(), equal("A000"))
 
-				), List.of(cid("demo.icd.a00")), null),
-				new DatasetCatalogRepository.Concept(cid("demo.other"), "Other", null, List.of(), false, null, null, List.of())
+				), List.of(cid("demo.icd.a00")), null, List.of()),
+				new DatasetCatalogRepository.Concept(cid("demo.other"), "Other", null, List.of(), false, null, null, List.of(), List.of())
 		));
 
 		DatasetService.ConceptCodeResolution resolution = service.resolveConceptCodes("demo.icd", List.of("A00", "A000", "OTHER", "UNKNOWN"));

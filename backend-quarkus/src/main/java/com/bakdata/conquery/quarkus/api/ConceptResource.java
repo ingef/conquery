@@ -44,7 +44,7 @@ public class ConceptResource {
 		Map<ConceptId, DatasetCatalogRepository.ConceptElement> children = concept.children();
 
 		// TODO Populate matching statistics and their derived date ranges once imported event statistics are available.
-		ConceptNodeResponse node = new ConceptNodeResponse(concept.label(), concept.description(), null, null, concept.childrenIds().stream().map(ConceptId::toString).toList(), 0L, 0L, null, false, concept.additionalInfos(), excludeFromTimeAggregation(concept), concept.connectors().stream().map(this::toConnectorResponse).toList(), List.of());
+		ConceptNodeResponse node = new ConceptNodeResponse(concept.label(), concept.description(), null, null, concept.childrenIds().stream().map(ConceptId::toString).toList(), 0L, 0L, null, false, concept.additionalInfos(), excludeFromTimeAggregation(concept), concept.connectors().stream().map(this::toConnectorResponse).toList(), concept.selects().stream().map(this::toSelectResponse).toList());
 		nodes.put(parsedConceptId.toString(), node);
 
 		// Add children
@@ -91,6 +91,16 @@ public class ConceptResource {
 	}
 
 	private SelectResponse toSelectResponse(DatasetCatalogRepository.Select select) {
+		return new SelectResponse(
+				select.id().toString(),
+				select.label(),
+				select.description(),
+				select.defaultSelected(),
+				toSelectResultTypeResponse(select.resultType())
+		);
+	}
+
+	private SelectResponse toSelectResponse(DatasetCatalogRepository.ConceptSelect select) {
 		return new SelectResponse(
 				select.id().toString(),
 				select.label(),

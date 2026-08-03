@@ -126,7 +126,7 @@ public class DatasetsResource {
 						excludeFromTimeAggregation(entry),
 						// TODO Remove detailed connector filters/selects from this summary once the frontend loads them via /api/concepts/{conceptId}.
 						entry.connectors().stream().map(this::toTableResponse).toList(),
-						List.of()
+						entry.selects().stream().map(this::toSelectResponse).toList()
 				)
 		));
 
@@ -218,6 +218,16 @@ public class DatasetsResource {
 	}
 
 	private ConceptResource.SelectResponse toSelectResponse(DatasetCatalogRepository.Select select) {
+		return new ConceptResource.SelectResponse(
+				select.id().toString(),
+				select.label(),
+				select.description(),
+				select.defaultSelected(),
+				toSelectResultTypeResponse(select.resultType())
+		);
+	}
+
+	private ConceptResource.SelectResponse toSelectResponse(DatasetCatalogRepository.ConceptSelect select) {
 		return new ConceptResource.SelectResponse(
 				select.id().toString(),
 				select.label(),

@@ -7,6 +7,13 @@
       "value": "IMDb test metadata"
     }
   ],
+  "selects": {
+    "type": "EXISTS",
+    "name": "exists",
+    "label": "Exists",
+    "description": "Whether any title exists",
+    "default": true
+  },
   "children": [
     {
       "name": "movie",
