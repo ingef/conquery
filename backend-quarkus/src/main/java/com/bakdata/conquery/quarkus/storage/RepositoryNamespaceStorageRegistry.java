@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
+import com.bakdata.conquery.quarkus.ids.StructureNodeId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -72,6 +73,35 @@ public class RepositoryNamespaceStorageRegistry implements NamespaceStorageRegis
 		}
 
 		@Override
+		public List<DatasetCatalogRepository.StructureNode> listStructureNodes() {
+			return catalogRepository.listStructureNodesForDataset(dataset.id());
+		}
+
+		@Override
+		public Optional<DatasetCatalogRepository.StructureNode> findStructureNode(StructureNodeId structureNodeId) {
+			if (!belongsToNamespace(structureNodeId)) {
+				return Optional.empty();
+			}
+			return catalogRepository.findStructureNode(structureNodeId);
+		}
+
+		@Override
+		public void saveStructureNode(DatasetCatalogRepository.StructureNode structureNode) {
+			if (!belongsToNamespace(structureNode.id())) {
+				throw new IllegalArgumentException("Structure node id does not belong to namespace '" + dataset.id() + "': " + structureNode.id());
+			}
+			catalogRepository.saveStructureNode(structureNode);
+		}
+
+		@Override
+		public boolean deleteStructureNode(StructureNodeId structureNodeId) {
+			if (!belongsToNamespace(structureNodeId)) {
+				return false;
+			}
+			return catalogRepository.deleteStructureNode(structureNodeId);
+		}
+
+		@Override
 		public List<DatasetCatalogRepository.TableRecord> listTables() {
 			return catalogRepository.listTablesForDataset(dataset.id());
 		}
@@ -110,6 +140,10 @@ public class RepositoryNamespaceStorageRegistry implements NamespaceStorageRegis
 		}
 
 		private boolean belongsToNamespace(TableId scopedId) {
+			return dataset.id().equals(scopedId.datasetId());
+		}
+
+		private boolean belongsToNamespace(StructureNodeId scopedId) {
 			return dataset.id().equals(scopedId.datasetId());
 		}
 	}

@@ -7,11 +7,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.quarkus.config.EntityPreviewRuntimeConfig;
 import com.bakdata.conquery.quarkus.config.FormQueriesRuntimeConfig;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
+import com.bakdata.conquery.quarkus.ids.StructureNodeId;
 import com.bakdata.conquery.quarkus.services.DatasetService;
 import com.bakdata.conquery.quarkus.services.EntityQueryService;
 import com.bakdata.conquery.quarkus.services.QueryStateService;
@@ -101,12 +104,19 @@ public class DatasetsResource {
 	public ConceptsResponse getConcepts(@PathParam("datasetId") String datasetId) {
 
 		java.util.Map<String, ConceptsResponse.ConceptSummaryResponse> concepts = new LinkedHashMap<>();
+		List<DatasetCatalogRepository.StructureNode> structureNodes = datasetService.listStructureNodesForDataset(datasetId);
+		Map<StructureNodeId, DatasetCatalogRepository.StructureNode> structureNodesById = structureNodes.stream()
+				.collect(java.util.stream.Collectors.toMap(DatasetCatalogRepository.StructureNode::id, node -> node));
+		Map<ConceptId, StructureNodeId> structureParentByConcept = new LinkedHashMap<>();
+		structureNodes.forEach(node -> node.containedRoots().forEach(conceptId -> structureParentByConcept.put(conceptId, node.id())));
+		// TODO Add concept search after the metadata tree and its indexing requirements have been migrated.
 		datasetService.listRootConceptsForDataset(datasetId).forEach(entry -> concepts.put(
 				entry.id().toString(),
 				new ConceptsResponse.ConceptSummaryResponse(
 						entry.label(),
-						null,
+						entry.description(),
 						true,
+						Optional.ofNullable(structureParentByConcept.get(entry.id())).map(StructureNodeId::toString).orElse(null),
 						entry.childrenIds().stream().map(ConceptId::toString).toList(),
 						0L,
 						0L,
@@ -118,9 +128,51 @@ public class DatasetsResource {
 				)
 		));
 
+		Set<StructureNodeId> visibleStructureNodes = structureNodes.stream()
+				.filter(node -> isVisibleStructureNode(node, structureNodesById))
+				.map(DatasetCatalogRepository.StructureNode::id)
+				.collect(java.util.stream.Collectors.toSet());
+		structureNodes.stream()
+				.sorted(java.util.Comparator.comparingInt(DatasetCatalogRepository.StructureNode::sourceOrder))
+				.filter(node -> visibleStructureNodes.contains(node.id()))
+				.forEach(node -> concepts.put(node.id().toString(), toStructureNodeResponse(node, visibleStructureNodes)));
+
 		return new ConceptsResponse(
 				List.of(),
 				concepts
+		);
+	}
+
+	private boolean isVisibleStructureNode(
+			DatasetCatalogRepository.StructureNode node,
+			Map<StructureNodeId, DatasetCatalogRepository.StructureNode> nodesById
+	) {
+		return !node.containedRoots().isEmpty() || node.children().stream()
+				.map(nodesById::get)
+				.filter(Objects::nonNull)
+				.anyMatch(child -> isVisibleStructureNode(child, nodesById));
+	}
+
+	private ConceptsResponse.ConceptSummaryResponse toStructureNodeResponse(
+			DatasetCatalogRepository.StructureNode node,
+			Set<StructureNodeId> visibleStructureNodes
+	) {
+		List<String> children = Stream.concat(
+				node.children().stream().filter(visibleStructureNodes::contains).map(StructureNodeId::toString),
+				node.containedRoots().stream().map(ConceptId::toString)
+		).toList();
+		return new ConceptsResponse.ConceptSummaryResponse(
+				node.label(),
+				node.description(),
+				false,
+				node.parentId() == null ? null : node.parentId().toString(),
+				children,
+				0L,
+				0L,
+				false,
+				false,
+				null,
+				null
 		);
 	}
 
@@ -136,7 +188,7 @@ public class DatasetsResource {
 
 		return new ConceptResource.ConnectorResponse(
 				connector.tableId().toString(),
-				connector.name(),
+				connector.id().toString(),
 				connector.label(),
 				connector.isDefault(),
 				connector.filters().stream().map(this::toFilterResponse).toList(),

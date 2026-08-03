@@ -19,6 +19,7 @@ import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.FilterId;
 import com.bakdata.conquery.quarkus.ids.SelectId;
+import com.bakdata.conquery.quarkus.ids.StructureNodeId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusTest;
@@ -62,7 +63,10 @@ class DatasetMetadataFolderLoaderTest {
 				demo.resolve("structure_demo.json"),
 				"""
 				[
-				  {"label":"Group 1"},
+				  {
+				    "label":"Group 1",
+				    "children":[{"name":"diagnoses","label":"Diagnoses","containedRoots":["icd"]}]
+				  },
 				  {"label":"Group 2"}
 				]
 				"""
@@ -173,6 +177,10 @@ class DatasetMetadataFolderLoaderTest {
 		assertEquals("ICD", concept.label());
 		assertEquals(List.of(ConceptId.parse("fdb_demo.icd.a00")), concept.childrenIds());
 		assertEquals(false, concept.connectors().getFirst().isDefault());
+		assertEquals(3, dataset.structureNodesById().size());
+		DatasetCatalogRepository.StructureNode diagnoses = dataset.structureNodesById().get(StructureNodeId.parse("fdb_demo.Group_1.diagnoses"));
+		assertEquals(StructureNodeId.parse("fdb_demo.Group_1"), diagnoses.parentId());
+		assertEquals(List.of(ConceptId.parse("fdb_demo.icd")), diagnoses.containedRoots());
 		DatasetCatalogRepository.Filter filter = concept.connectors().getFirst().filters().getFirst();
 		assertEquals(FilterId.parse("fdb_demo.icd.kh_diagnose.ICD_Code"), filter.id());
 		assertEquals("ICD Code", filter.label());
@@ -386,6 +394,19 @@ class DatasetMetadataFolderLoaderTest {
 
 		IllegalStateException error = assertThrows(IllegalStateException.class, () -> loader(tempDir, true).loadConfiguredDatasets());
 		assertTrue(error.getMessage().contains("unknown select type 'EXTERNAL_SELECT'"));
+	}
+
+	@Test
+	void rejectsStructureNodeWithUnknownConceptAtStartup(@TempDir Path tempDir) throws Exception {
+		Path dataset = tempDir.resolve("demo");
+		Files.createDirectories(dataset.resolve("conceptTrees"));
+		Files.createDirectories(dataset.resolve("tables"));
+		Files.writeString(dataset.resolve("structure_demo.json"), """
+				[{"name":"invalid","containedRoots":["missing"]}]
+				""");
+
+		IllegalStateException error = assertThrows(IllegalStateException.class, () -> loader(tempDir, true).loadConfiguredDatasets());
+		assertTrue(error.getMessage().contains("Structure node 'demo.invalid' references unknown concept 'demo.missing'"));
 	}
 
 	@Test

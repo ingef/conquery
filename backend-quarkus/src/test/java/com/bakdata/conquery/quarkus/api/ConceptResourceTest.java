@@ -18,14 +18,20 @@ class ConceptResourceTest {
 				.statusCode(200)
 				.body("imdb.label", equalTo("IMDb"))
 				.body("imdb.active", nullValue())
-				.body("imdb.detailsAvailable", equalTo(true))
+				.body("imdb.parent", nullValue())
+				.body("imdb.detailsAvailable", nullValue())
+				.body("imdb.codeListResolvable", equalTo(false))
 				.body("imdb.tables.size()", equalTo(1))
 				.body("imdb.tables[0].id", equalTo("imdb.title"))
 				.body("imdb.tables[0].default", equalTo(true))
 				.body("imdb.tables[0].selects[0].id", equalTo("imdb.titles.Title"))
 				.body("imdb.tables[0].selects[0].label", equalTo("Title"))
 				.body("imdb.tables[0].selects[0].default", equalTo(true))
-				.body("imdb.tables[0].selects[0].resultType.type", equalTo("STRING"));
+				.body("imdb.tables[0].selects[0].resultType.type", equalTo("STRING"))
+				.body("'imdb.movie'.parent", equalTo("imdb"))
+				.body("'imdb.movie'.active", nullValue())
+				.body("'imdb.movie'.detailsAvailable", nullValue())
+				.body("'imdb.movie'.codeListResolvable", equalTo(false));
 	}
 
 	@Test

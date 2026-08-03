@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 
@@ -17,6 +18,7 @@ import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.ConnectorId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.IdPartSanitizer;
+import com.bakdata.conquery.quarkus.ids.StructureNodeId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -84,9 +86,99 @@ public class DatasetMetadataFolderLoader {
 
 		Map<TableId, DatasetCatalogRepository.TableRecord> tablesById = loadTables(folderPath, datasetId);
 		Map<ConceptId, DatasetCatalogRepository.Concept> conceptsById = loadConcepts(folderPath, datasetId, tablesById);
+		Map<StructureNodeId, DatasetCatalogRepository.StructureNode> structureNodesById = loadStructureNodes(folderPath, datasetId, conceptsById);
 
-		log.debug("Loaded dataset {} with {} concepts and {} tables", datasetId, conceptsById.size(), tablesById.size());
-		return new LoadedDatasetMetadata(dataset, Map.copyOf(conceptsById), Map.copyOf(tablesById));
+		log.debug("Loaded dataset {} with {} concepts, {} structure nodes, and {} tables", datasetId, conceptsById.size(), structureNodesById.size(), tablesById.size());
+		return new LoadedDatasetMetadata(dataset, Map.copyOf(conceptsById), Map.copyOf(structureNodesById), Map.copyOf(tablesById));
+	}
+
+	private Map<StructureNodeId, DatasetCatalogRepository.StructureNode> loadStructureNodes(
+			Path folderPath,
+			DatasetId datasetId,
+			Map<ConceptId, DatasetCatalogRepository.Concept> conceptsById
+	) {
+		Map<StructureNodeId, DatasetCatalogRepository.StructureNode> nodesById = new LinkedHashMap<>();
+		Map<ConceptId, StructureNodeId> placementByConcept = new LinkedHashMap<>();
+		AtomicInteger nextSourceOrder = new AtomicInteger();
+		try (Stream<Path> files = Files.list(folderPath)) {
+			files.filter(Files::isRegularFile)
+					.filter(path -> path.getFileName().toString().startsWith("structure"))
+					.filter(path -> path.getFileName().toString().endsWith(".json"))
+					.sorted()
+					.forEach(path -> {
+						StructureNodePayload[] roots = read(path, StructureNodePayload[].class);
+						for (StructureNodePayload root : roots) {
+							validate(path, root);
+							collectStructureNode(path, root, datasetId, null, conceptsById, nodesById, placementByConcept, nextSourceOrder);
+						}
+					});
+		}
+		catch (IOException e) {
+			throw new IllegalStateException("Failed to list structure metadata in " + folderPath, e);
+		}
+		return nodesById;
+	}
+
+	private StructureNodeId collectStructureNode(
+			Path source,
+			StructureNodePayload payload,
+			DatasetId datasetId,
+			StructureNodeId parentId,
+			Map<ConceptId, DatasetCatalogRepository.Concept> conceptsById,
+			Map<StructureNodeId, DatasetCatalogRepository.StructureNode> nodesById,
+			Map<ConceptId, StructureNodeId> placementByConcept,
+			AtomicInteger nextSourceOrder
+	) {
+		int sourceOrder = nextSourceOrder.getAndIncrement();
+		String name = idPartFromPreferredOrFallback(payload.name(), payload.label(), "structure node id", source);
+		StructureNodeId id = parentId == null
+				? new StructureNodeId(datasetId, List.of(name))
+				: parentId.child(name);
+		ConceptId collidingConceptId = new ConceptId(datasetId, id.path());
+		if (conceptsById.containsKey(collidingConceptId)) {
+			throw new IllegalStateException("Structure node '" + id + "' collides with concept id '" + collidingConceptId + "' in " + source + ".");
+		}
+		List<StructureNodeId> childIds = Optional.ofNullable(payload.children()).orElse(List.of()).stream()
+				.map(child -> collectStructureNode(source, child, datasetId, id, conceptsById, nodesById, placementByConcept, nextSourceOrder))
+				.toList();
+		List<ConceptId> containedRoots = Optional.ofNullable(payload.containedRoots()).orElse(List.of()).stream()
+				.map(value -> resolveStructureConceptId(source, id, datasetId, value, conceptsById))
+				.toList();
+		for (ConceptId conceptId : containedRoots) {
+			StructureNodeId previous = placementByConcept.put(conceptId, id);
+			if (previous != null) {
+				throw new IllegalStateException("Concept '" + conceptId + "' is contained by multiple structure nodes: '" + previous + "' and '" + id + "'.");
+			}
+		}
+		String label = firstNonBlank(payload.label(), payload.name(), name).orElse(name);
+		DatasetCatalogRepository.StructureNode node = new DatasetCatalogRepository.StructureNode(id, label, payload.description(), sourceOrder, parentId, childIds, containedRoots);
+		DatasetCatalogRepository.StructureNode previous = nodesById.put(id, node);
+		if (previous != null) {
+			throw new IllegalStateException("Duplicate structure node id '" + id + "' in " + source + ".");
+		}
+		return id;
+	}
+
+	private ConceptId resolveStructureConceptId(
+			Path source,
+			StructureNodeId structureNodeId,
+			DatasetId datasetId,
+			String value,
+			Map<ConceptId, DatasetCatalogRepository.Concept> conceptsById
+	) {
+		String rawId = normalizeBlank(value)
+				.orElseThrow(() -> new IllegalStateException("Structure node '" + structureNodeId + "' contains a blank concept reference in " + source + "."));
+		ConceptId conceptId;
+		if (rawId.equals(datasetId.toString()) || rawId.startsWith(datasetId + ".")) {
+			conceptId = ConceptId.parse(rawId);
+		}
+		else {
+			conceptId = new ConceptId(datasetId, Arrays.asList(rawId.split("\\.")));
+		}
+		if (!conceptsById.containsKey(conceptId)) {
+			throw new IllegalStateException("Structure node '" + structureNodeId + "' references unknown concept '" + conceptId + "' in " + source + ".");
+		}
+		return conceptId;
 	}
 
 	private Map<ConceptId, DatasetCatalogRepository.Concept> loadConcepts(Path folderPath, DatasetId datasetId, Map<TableId, DatasetCatalogRepository.TableRecord> tablesById) {
@@ -414,6 +506,7 @@ public class DatasetMetadataFolderLoader {
 
 	public record LoadedDatasetMetadata(
 			DatasetCatalogRepository.DatasetRecord dataset, Map<ConceptId, DatasetCatalogRepository.Concept> conceptsById,
+			Map<StructureNodeId, DatasetCatalogRepository.StructureNode> structureNodesById,
 			Map<TableId, DatasetCatalogRepository.TableRecord> tablesById
 	) {
 	}
@@ -435,6 +528,14 @@ public class DatasetMetadataFolderLoader {
 	private record ConceptElementPayload(
 			String name, String label, String description, List<@Valid ConceptElementPayload> children,
 			@Valid ConditionPayload condition
+	) {
+	}
+
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	private record StructureNodePayload(
+			String name, String label, String description,
+			List<@Valid StructureNodePayload> children,
+			List<String> containedRoots
 	) {
 	}
 

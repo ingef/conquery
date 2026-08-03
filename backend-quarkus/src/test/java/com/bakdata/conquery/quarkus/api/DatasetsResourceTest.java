@@ -6,6 +6,10 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
@@ -54,13 +58,36 @@ class DatasetsResourceTest {
 				.body("secondaryIds.size()", equalTo(0))
 				.body("concepts.imdb.label", equalTo("IMDb"))
 				.body("concepts.imdb.active", equalTo(true))
+				.body("concepts.imdb.parent", equalTo("imdb.catalog.Movies"))
 				.body("concepts.imdb.detailsAvailable", equalTo(true))
-				.body("concepts.imdb.children.size()", equalTo(0))
+				.body("concepts.imdb.children", equalTo(java.util.List.of("imdb.movie")))
 				.body("concepts.imdb.tables[0].default", equalTo(true))
+				.body("concepts.imdb.tables[0].connectorId", equalTo("imdb.titles"))
 				.body("concepts.imdb.tables[0].filters[0].id", equalTo("imdb.titles.release_age"))
 				.body("concepts.imdb.tables[0].selects[0].id", equalTo("imdb.titles.Title"))
 				.body("concepts.imdb.tables[0].selects[0].default", equalTo(true))
-				.body("concepts.imdb.tables[0].selects[0].resultType.type", equalTo("STRING"));
+				.body("concepts.imdb.tables[0].selects[0].resultType.type", equalTo("STRING"))
+				.body("concepts.'imdb.catalog'.label", equalTo("Catalog"))
+				.body("concepts.'imdb.catalog'.active", equalTo(false))
+				.body("concepts.'imdb.catalog'.detailsAvailable", equalTo(false))
+				.body("concepts.'imdb.catalog'.children", equalTo(java.util.List.of("imdb.catalog.Movies")))
+				.body("concepts.'imdb.catalog.Movies'.parent", equalTo("imdb.catalog"))
+				.body("concepts.'imdb.catalog.Movies'.children", equalTo(java.util.List.of("imdb")))
+				.body("concepts.'imdb.empty'", nullValue());
+	}
+
+	@Test
+	void conceptsEndpointPreservesStructureNodeJsonOrder() {
+		Map<String, Object> concepts = given()
+				.when().get("/api/datasets/imdb/concepts")
+				.then()
+				.statusCode(200)
+				.extract().path("concepts");
+
+		org.hamcrest.MatcherAssert.assertThat(
+				new ArrayList<>(concepts.keySet()),
+				equalTo(List.of("imdb", "imdb.catalog", "imdb.catalog.Movies"))
+		);
 	}
 
 	@Test

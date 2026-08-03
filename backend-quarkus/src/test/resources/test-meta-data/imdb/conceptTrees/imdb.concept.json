@@ -1,7 +1,13 @@
 {
   "name": "imdb",
   "label": "IMDb",
-  "children": [],
+  "children": [
+    {
+      "name": "movie",
+      "label": "Movie",
+      "children": []
+    }
+  ],
   "connectors": [
     {
       "name": "titles",

@@ -22,6 +22,7 @@ public record ConceptsResponse(
 			@Schema(description = "Whether this node can be dragged/selected in the query editor. "
 								  + "When detailsAvailable is false (folder/structure node), this should be false.")
 			Boolean active,
+			String parent,
 			List<String> children,
 			Long matchingEntries,
 			Long matchingEntities,

@@ -43,13 +43,13 @@ public class ConceptResource {
 
 		Map<ConceptId, DatasetCatalogRepository.ConceptElement> children = concept.children();
 
-		// Add main node
-		ConceptNodeResponse node = new ConceptNodeResponse(concept.label(), concept.description(), null, concept.childrenIds().stream().map(ConceptId::toString).toList(), 0L, 0L, true, !children.isEmpty(), concept.connectors().stream().map(this::toConnectorResponse).toList(), List.of());
+		// TODO Populate matching statistics, date ranges, additional infos, and time-aggregation defaults once those models are migrated.
+		ConceptNodeResponse node = new ConceptNodeResponse(concept.label(), concept.description(), null, null, concept.childrenIds().stream().map(ConceptId::toString).toList(), 0L, 0L, null, false, concept.connectors().stream().map(this::toConnectorResponse).toList(), List.of());
 		nodes.put(parsedConceptId.toString(), node);
 
 		// Add children
 		children.forEach((id, child) -> {
-			ConceptNodeResponse childNode = new ConceptNodeResponse(child.label(), child.description(), null, child.children().stream().map(ConceptId::toString).toList(), 0L, 0L, true, !children.isEmpty(), List.of(), List.of());
+			ConceptNodeResponse childNode = new ConceptNodeResponse(child.label(), child.description(), null, child.parentId().toString(), child.children().stream().map(ConceptId::toString).toList(), 0L, 0L, null, false, List.of(), List.of());
 			nodes.put(id.toString(), childNode);
 		});
 
@@ -70,6 +70,7 @@ public class ConceptResource {
 				connector.isDefault(),
 				connector.filters().stream().map(this::toFilterResponse).toList(),
 				connector.selects().stream().map(this::toSelectResponse).toList(),
+				// TODO Expose connector validity dates as the frontend dateColumn once validity-date metadata is migrated.
 				supportedSecondaryIds
 		);
 	}
@@ -123,6 +124,7 @@ public class ConceptResource {
 			String label,
 			String description,
 			Boolean active,
+			String parent,
 			List<String> children,
 			Long matchingEntries,
 			Long matchingEntities,

@@ -56,6 +56,10 @@ public class DatasetService {
 		return requireNamespace(datasetId).listConcepts();
 	}
 
+	public List<DatasetCatalogRepository.StructureNode> listStructureNodesForDataset(String datasetId) {
+		return requireNamespace(DatasetId.parse(datasetId)).listStructureNodes();
+	}
+
 	public List<DatasetCatalogRepository.TableRecord> listTablesForDataset(String datasetId) {
 		return listTablesForDataset(DatasetId.parse(datasetId));
 	}

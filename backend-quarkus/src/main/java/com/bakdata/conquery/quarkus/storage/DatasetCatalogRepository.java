@@ -8,6 +8,7 @@ import com.bakdata.conquery.quarkus.ids.ConnectorId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.FilterId;
 import com.bakdata.conquery.quarkus.ids.SelectId;
+import com.bakdata.conquery.quarkus.ids.StructureNodeId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 
 public interface DatasetCatalogRepository {
@@ -27,6 +28,14 @@ public interface DatasetCatalogRepository {
 	void saveConcept(Concept concept);
 
 	boolean deleteConcept(ConceptId conceptId);
+
+	List<StructureNode> listStructureNodesForDataset(DatasetId datasetId);
+
+	Optional<StructureNode> findStructureNode(StructureNodeId structureNodeId);
+
+	void saveStructureNode(StructureNode structureNode);
+
+	boolean deleteStructureNode(StructureNodeId structureNodeId);
 
 	List<TableRecord> listTablesForDataset(DatasetId datasetId);
 
@@ -73,7 +82,26 @@ public interface DatasetCatalogRepository {
 			List<ConceptId> childrenIds,
 			List<Connector> connectors
 
-	){}
+	){
+		// TODO Add concept-level selects (for example EXISTS) once their separate provider and ID hierarchy is migrated.
+	}
+
+	record StructureNode(
+			StructureNodeId id,
+			String label,
+			String description,
+			int sourceOrder,
+			StructureNodeId parentId,
+			List<StructureNodeId> children,
+			List<ConceptId> containedRoots
+	) {
+		public StructureNode {
+			children = children == null ? List.of() : List.copyOf(children);
+			containedRoots = containedRoots == null ? List.of() : List.copyOf(containedRoots);
+		}
+
+		// TODO Add structure-node additionalInfos once the shared frontend metadata model is migrated.
+	}
 
 	record Connector(
 			ConnectorId id,

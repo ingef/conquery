@@ -9,6 +9,7 @@ import java.util.Optional;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.TableId;
+import com.bakdata.conquery.quarkus.ids.StructureNodeId;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import com.bakdata.conquery.quarkus.storage.NamespaceStorage;
 import com.bakdata.conquery.quarkus.storage.NamespaceStorageRegistry;
@@ -87,6 +88,26 @@ class DatasetServiceTest {
 
 		@Override
 		public boolean deleteConcept(ConceptId conceptId) {
+			throw unsupported();
+		}
+
+		@Override
+		public List<DatasetCatalogRepository.StructureNode> listStructureNodes() {
+			return List.of();
+		}
+
+		@Override
+		public Optional<DatasetCatalogRepository.StructureNode> findStructureNode(StructureNodeId structureNodeId) {
+			return Optional.empty();
+		}
+
+		@Override
+		public void saveStructureNode(DatasetCatalogRepository.StructureNode structureNode) {
+			throw unsupported();
+		}
+
+		@Override
+		public boolean deleteStructureNode(StructureNodeId structureNodeId) {
 			throw unsupported();
 		}
 

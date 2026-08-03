@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
+import com.bakdata.conquery.quarkus.ids.StructureNodeId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,6 +26,7 @@ public class XodusDatasetCatalogRepository implements DatasetCatalogRepository {
 
 	private static final String DATASET_STORE = "dataset";
 	private static final String CONCEPT_STORE = "concepts";
+	private static final String STRUCTURE_NODE_STORE = "structure-nodes";
 	private static final String TABLE_STORE = "tables";
 	private static final String DATASET_KEY = "dataset";
 
@@ -126,6 +128,52 @@ public class XodusDatasetCatalogRepository implements DatasetCatalogRepository {
 	}
 
 	@Override
+	public List<StructureNode> listStructureNodesForDataset(DatasetId datasetId) {
+		Optional<Environment> environment = datasetEnvironmentProvider.findEnvironment(datasetId);
+		if (environment.isEmpty()) {
+			return List.of();
+		}
+		return environment.get().computeInReadonlyTransaction(tx -> {
+			var store = environment.get().openStore(STRUCTURE_NODE_STORE, StoreConfig.WITHOUT_DUPLICATES, tx);
+			return readAll(store, tx, StructureNode.class);
+		});
+	}
+
+	@Override
+	public Optional<StructureNode> findStructureNode(StructureNodeId structureNodeId) {
+		Optional<Environment> environment = datasetEnvironmentProvider.findEnvironment(structureNodeId.datasetId());
+		if (environment.isEmpty()) {
+			return Optional.empty();
+		}
+		return environment.get().computeInReadonlyTransaction(tx -> {
+			var store = environment.get().openStore(STRUCTURE_NODE_STORE, StoreConfig.WITHOUT_DUPLICATES, tx);
+			var entry = store.get(tx, StringBinding.stringToEntry(structureNodeId.toString()));
+			return entry == null ? Optional.empty() : Optional.of(deserialize(StringBinding.entryToString(entry), StructureNode.class));
+		});
+	}
+
+	@Override
+	public void saveStructureNode(StructureNode structureNode) {
+		Environment environment = datasetEnvironmentProvider.getOrCreateEnvironment(structureNode.id().datasetId());
+		environment.executeInTransaction(tx -> {
+			var store = environment.openStore(STRUCTURE_NODE_STORE, StoreConfig.WITHOUT_DUPLICATES, tx);
+			store.put(tx, StringBinding.stringToEntry(structureNode.id().toString()), StringBinding.stringToEntry(serialize(structureNode)));
+		});
+	}
+
+	@Override
+	public boolean deleteStructureNode(StructureNodeId structureNodeId) {
+		Optional<Environment> environment = datasetEnvironmentProvider.findEnvironment(structureNodeId.datasetId());
+		if (environment.isEmpty()) {
+			return false;
+		}
+		return environment.get().computeInTransaction(tx -> {
+			var store = environment.get().openStore(STRUCTURE_NODE_STORE, StoreConfig.WITHOUT_DUPLICATES, tx);
+			return store.delete(tx, StringBinding.stringToEntry(structureNodeId.toString()));
+		});
+	}
+
+	@Override
 	public List<TableRecord> listTablesForDataset(DatasetId datasetId) {
 		Optional<Environment> environment = datasetEnvironmentProvider.findEnvironment(datasetId);
 		if (environment.isEmpty()) {
@@ -189,6 +237,16 @@ public class XodusDatasetCatalogRepository implements DatasetCatalogRepository {
 		try (Cursor cursor = tablesStore.openCursor(tx)) {
 			while (cursor.getNext()) {
 				result.add(deserialize(StringBinding.entryToString(cursor.getValue()), TableRecord.class));
+			}
+		}
+		return result;
+	}
+
+	private <T> List<T> readAll(jetbrains.exodus.env.Store store, Transaction tx, Class<T> type) {
+		List<T> result = new ArrayList<>();
+		try (Cursor cursor = store.openCursor(tx)) {
+			while (cursor.getNext()) {
+				result.add(deserialize(StringBinding.entryToString(cursor.getValue()), type));
 			}
 		}
 		return result;

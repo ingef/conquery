@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.quarkus.ids.ConceptId;
+import com.bakdata.conquery.quarkus.ids.StructureNodeId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 
 public interface NamespaceStorage {
@@ -17,6 +18,14 @@ public interface NamespaceStorage {
 	void saveConcept(DatasetCatalogRepository.Concept concept);
 
 	boolean deleteConcept(ConceptId conceptId);
+
+	List<DatasetCatalogRepository.StructureNode> listStructureNodes();
+
+	Optional<DatasetCatalogRepository.StructureNode> findStructureNode(StructureNodeId structureNodeId);
+
+	void saveStructureNode(DatasetCatalogRepository.StructureNode structureNode);
+
+	boolean deleteStructureNode(StructureNodeId structureNodeId);
 
 	List<DatasetCatalogRepository.TableRecord> listTables();
 
