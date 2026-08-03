@@ -161,4 +161,35 @@ class DatasetsResourceTest {
 				.then()
 				.statusCode(404);
 	}
+
+	@Test
+	void resolveEntitiesEndpointIsMarkedAsNotImplemented() {
+		given()
+				.contentType("application/json")
+				.body("""
+						[{
+						  "filter":"imdb.titles.release_age",
+						  "type":"MULTI_SELECT",
+						  "value":["one","two"]
+						}]
+						""")
+				.when().post("/api/datasets/imdb/queries/resolve-entities")
+				.then().statusCode(501);
+	}
+
+	@Test
+	void entityHistoryEndpointIsMarkedAsNotImplemented() {
+		given()
+				.contentType("application/json")
+				.body("""
+						{
+						  "idKind":"ID",
+						  "entityId":"one",
+						  "time":{"min":"2020-01-01","max":"2020-12-31"},
+						  "sources":["imdb.titles"]
+						}
+						""")
+				.when().post("/api/datasets/imdb/queries/entity")
+				.then().statusCode(501);
+	}
 }

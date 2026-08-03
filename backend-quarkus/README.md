@@ -63,6 +63,7 @@ Filter, select, and concept-condition implementations are extensible from anothe
 
 1. A concrete class implementing `FilterDefinition`, annotated with OpenAPI `@Schema`.
 2. A CDI bean implementing `FilterDefinitionProvider<T>` for its type id, model class, and business-model conversion.
+3. The filter value model types accepted by that provider. Each model type needs a registered `FilterValueProvider<T>`.
 
 Connector selects use the equivalent `SelectDefinition` and `SelectDefinitionProvider<T>` extension points. Concept-level
 selects form a separate family with `ConceptSelectDefinition` and `ConceptSelectDefinitionProvider<T>`. Unknown types
@@ -73,6 +74,13 @@ Concept-tree conditions use `ConceptCondition` and `ConceptConditionProvider<T>`
 change the meaning of a concept node, unknown condition types always fail metadata validation. The built-in condition
 types are `EQUAL`, `PREFIX_LIST`, `PREFIX_RANGE`, `COLUMN_EQUAL`, `PRESENT`, `AND`, `OR`, and `NOT`. The old `GROOVY`
 condition is intentionally not registered because script execution requires a separate security and runtime decision.
+
+Query filter values use the separate `FilterValue` and `FilterValueProvider<T>` family. Their discriminator ids may
+overlap metadata filter definitions (for example `SELECT`) because polymorphic registrations are scoped by base type.
+Filter providers declare their accepted `FilterValue` model classes through `acceptedValueTypes()`. Startup verifies
+that each declared model has a registered value provider, and metadata conversion verifies the emitted value type.
+Entity-query execution is intentionally not implemented yet. The filter value and entity-history API models are kept,
+but the entity-history and entity-resolution endpoints return `501 Not Implemented` until their business semantics are migrated.
 
 The generic `PolymorphicModelRegistry` validates duplicate type ids and base/model compatibility at startup. Its
 registrations are also installed into Jackson and projected into OpenAPI. Extension JARs must be discoverable by

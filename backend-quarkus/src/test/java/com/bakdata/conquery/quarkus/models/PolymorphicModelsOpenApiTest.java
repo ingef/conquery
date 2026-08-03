@@ -66,6 +66,17 @@ class PolymorphicModelsOpenApiTest {
 		JsonNode andConditionSchema = schemas.path("MetadataAndConceptCondition");
 		assertEquals("AND", findProperty(andConditionSchema, "type").path("const").asText());
 		assertNotNull(findProperty(andConditionSchema, "conditions"));
+
+		JsonNode filterValueSchema = schemas.path("QueryFilterValue");
+		assertEquals("type", filterValueSchema.path("discriminator").path("propertyName").asText());
+		assertEquals("#/components/schemas/QuerySelectFilterValue", filterValueSchema.path("discriminator").path("mapping").path("SELECT").asText());
+		assertEquals(9, filterValueSchema.path("oneOf").size());
+		assertEquals("#/components/schemas/MetadataMultiSelectFilter", filterSchema.path("discriminator").path("mapping").path("SELECT").asText());
+
+		JsonNode integerRangeFilterValueSchema = schemas.path("QueryIntegerRangeFilterValue");
+		assertEquals("INTEGER_RANGE", findProperty(integerRangeFilterValueSchema, "type").path("const").asText());
+		assertNotNull(findProperty(integerRangeFilterValueSchema, "filter"));
+		assertNotNull(findProperty(integerRangeFilterValueSchema, "value"));
 	}
 
 	private JsonNode findProperty(JsonNode schema, String name) {

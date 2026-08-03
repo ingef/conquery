@@ -1,63 +1,28 @@
 package com.bakdata.conquery.quarkus.services;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.quarkus.api.QuerySubmissionPayload;
-import com.bakdata.conquery.quarkus.config.FrontendRuntimeConfig;
+import com.bakdata.conquery.quarkus.concepts.filters.values.FilterValue;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
 public class EntityQueryService {
 
-	@Inject
-	FrontendRuntimeConfig frontendConfig;
-
+	// TODO(quarkus-migration): Implement entity queries against dataset data. The records below only preserve the API models.
 	public EntityHistoryResponse getEntityHistory(EntityHistoryRequest request) {
-		return new EntityHistoryResponse(
-				List.of(),
-				List.of(),
-				List.of(
-						new EntityInfoResponse(
-								"entityId",
-								request.entityId(),
-								"STRING",
-								List.of()
-						)
-				),
-				List.of()
-		);
+		throw notImplemented();
 	}
 
-	public List<Map<String, String>> resolveEntities(List<FilterValuesRequest> filters) {
-		String idKind = resolveOutputIdKind();
-		return filters.stream()
-					  .flatMap(filter -> filter.value().stream().map(value -> Map.of(idKind, syntheticEntityId(filter.filter(), value))))
-					  .distinct()
-					  .collect(Collectors.toCollection(ArrayList::new));
+	public List<Map<String, String>> resolveEntities(List<FilterValue> filters) {
+		throw notImplemented();
 	}
 
-	private String resolveOutputIdKind() {
-		Optional<List<FrontendRuntimeConfig.IdColumn>> configured = frontendConfig.queryUpload().ids();
-		if (configured.isPresent() && !configured.get().isEmpty()) {
-			return configured.get().stream()
-							 .filter(FrontendRuntimeConfig.IdColumn::print)
-							 .findFirst()
-							 .map(FrontendRuntimeConfig.IdColumn::name)
-							 .orElse(configured.get().getFirst().name());
-		}
-		return "ID";
-	}
-
-	private String syntheticEntityId(String filterId, String filterValue) {
-		// TODO(quarkus-migration): Replace synthetic IDs with actual entity resolution against dataset data.
-		//  The legacy backend executes a concept query and returns matching entity IDs.
-		String input = (filterId == null ? "" : filterId) + "|" + (filterValue == null ? "" : filterValue);
-		return "entity-" + Integer.toUnsignedString(input.hashCode(), 36);
+	private WebApplicationException notImplemented() {
+		return new WebApplicationException("Entity queries are not implemented yet.", Response.Status.NOT_IMPLEMENTED);
 	}
 
 	public record EntityHistoryRequest(
@@ -65,13 +30,6 @@ public class EntityQueryService {
 			String entityId,
 			QuerySubmissionPayload.DateRangePayload time,
 			List<String> sources
-	) {
-	}
-
-	public record FilterValuesRequest(
-			String filter,
-			String type,
-			List<String> value
 	) {
 	}
 

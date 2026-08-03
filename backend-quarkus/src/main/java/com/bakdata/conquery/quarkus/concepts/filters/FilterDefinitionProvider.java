@@ -1,5 +1,8 @@
 package com.bakdata.conquery.quarkus.concepts.filters;
 
+import java.util.Set;
+
+import com.bakdata.conquery.quarkus.concepts.filters.values.FilterValue;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import com.bakdata.conquery.quarkus.models.PolymorphicModelTypeProvider;
 
@@ -8,6 +11,8 @@ public interface FilterDefinitionProvider<T extends FilterDefinition> extends Po
 	String type();
 
 	Class<T> payloadType();
+
+	Set<Class<? extends FilterValue>> acceptedValueTypes();
 
 	DatasetCatalogRepository.Filter convert(FilterConversionContext context, T payload);
 

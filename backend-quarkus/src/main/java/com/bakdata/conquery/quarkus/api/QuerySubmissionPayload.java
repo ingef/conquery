@@ -4,8 +4,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import com.bakdata.conquery.quarkus.concepts.filters.values.FilterValue;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import jakarta.validation.Valid;
 import org.eclipse.microprofile.openapi.annotations.media.DiscriminatorMapping;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
@@ -40,6 +42,7 @@ public abstract class QuerySubmissionPayload {
 
 	public static final class ConceptQuerySubmissionPayload extends QuerySubmissionPayload {
 		@Schema(description = "Query root node. Polymorphic and discriminated by field `type`.")
+		@Valid
 		public QueryNode root;
 
 		public ConceptQuerySubmissionPayload() {
@@ -50,6 +53,7 @@ public abstract class QuerySubmissionPayload {
 	public static final class SecondaryIdQuerySubmissionPayload extends QuerySubmissionPayload {
 		public String secondaryId;
 		@Schema(description = "Query root node. Polymorphic and discriminated by field `type`.")
+		@Valid
 		public QueryNode root;
 
 		public SecondaryIdQuerySubmissionPayload() {
@@ -104,22 +108,25 @@ public abstract class QuerySubmissionPayload {
 
 	@Schema(name = "AndQueryNode")
 	public static class AndNode extends QueryNode {
-		public List<QueryNode> children;
+		public List<@Valid QueryNode> children;
 	}
 
 	@Schema(name = "OrQueryNode")
 	public static class OrNode extends QueryNode {
-		public List<QueryNode> children;
+		public List<@Valid QueryNode> children;
 	}
 
 	@Schema(name = "NegationQueryNode")
 	public static class NegationNode extends QueryNode {
+		@Valid
 		public QueryNode child;
 	}
 
 	@Schema(name = "DateRestrictionQueryNode")
 	public static class DateRestrictionNode extends QueryNode {
+		@Valid
 		public DateRangePayload dateRange;
+		@Valid
 		public QueryNode child;
 	}
 
@@ -129,7 +136,7 @@ public abstract class QuerySubmissionPayload {
 		public String label;
 		public Boolean excludeFromTimeAggregation;
 		public Boolean excludeFromSecondaryId;
-		public List<TableConfigPayload> tables;
+		public List<@Valid TableConfigPayload> tables;
 		public List<String> selects;
 	}
 
@@ -232,18 +239,14 @@ public abstract class QuerySubmissionPayload {
 
 	public static class TableConfigPayload {
 		public String id;
+		@Valid
 		public DateColumnConfigPayload dateColumn;
 		public List<String> selects;
-		public List<FilterConfigPayload> filters;
+		public List<@Valid FilterValue> filters;
 	}
 
 	public static class DateColumnConfigPayload {
 		public String value;
 	}
 
-	public static class FilterConfigPayload {
-		public String filter;
-		public String type;
-		public Object value;
-	}
 }

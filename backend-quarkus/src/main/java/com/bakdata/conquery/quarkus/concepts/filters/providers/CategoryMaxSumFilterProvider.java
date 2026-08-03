@@ -5,6 +5,9 @@ import java.util.List;
 
 import com.bakdata.conquery.quarkus.concepts.filters.FilterConversionContext;
 import com.bakdata.conquery.quarkus.concepts.filters.definitions.CategoryMaxSumFilterDefinition;
+import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.IntegerRangeFilterValue;
+import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.MoneyRangeFilterValue;
+import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.RealRangeFilterValue;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -13,7 +16,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 public class CategoryMaxSumFilterProvider extends AbstractFilterProvider<CategoryMaxSumFilterDefinition> {
 
 	public CategoryMaxSumFilterProvider() {
-		super(CategoryMaxSumFilterDefinition.class);
+		super(CategoryMaxSumFilterDefinition.class, IntegerRangeFilterValue.class, MoneyRangeFilterValue.class, RealRangeFilterValue.class);
 	}
 
 	@Override
@@ -27,7 +30,7 @@ public class CategoryMaxSumFilterProvider extends AbstractFilterProvider<Categor
 		ColumnId valueColumnId = context.columnId(payload.getValueColumn());
 		required.add(valueColumnId);
 		required.add(context.columnId(payload.getCategoryColumn()));
-		return filter(context, payload, numericFrontendType(context, valueColumnId), null, null, false, List.copyOf(required));
+		return filter(context, payload, numericRangeValueType(context, valueColumnId), null, null, false, List.copyOf(required));
 	}
 
 	private void addOptional(FilterConversionContext context, List<ColumnId> columns, String value) {

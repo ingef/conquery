@@ -4,13 +4,14 @@ import java.util.List;
 
 import com.bakdata.conquery.quarkus.concepts.filters.FilterConversionContext;
 import com.bakdata.conquery.quarkus.concepts.filters.definitions.BigMultiSelectFilterDefinition;
+import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.BigMultiSelectFilterValue;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class BigMultiSelectFilterProvider extends AbstractFilterProvider<BigMultiSelectFilterDefinition> {
 	public BigMultiSelectFilterProvider() {
-		super(BigMultiSelectFilterDefinition.class);
+		super(BigMultiSelectFilterDefinition.class, BigMultiSelectFilterValue.class);
 	}
 	@Override
 	public String type() {
@@ -19,6 +20,6 @@ public class BigMultiSelectFilterProvider extends AbstractFilterProvider<BigMult
 
 	@Override
 	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, BigMultiSelectFilterDefinition payload) {
-		return filter(context, payload, "BIG_MULTI_SELECT", null, null, true, List.of(requiredColumn(context, payload)));
+		return filter(context, payload, BigMultiSelectFilterValue.class, null, null, true, List.of(requiredColumn(context, payload)));
 	}
 }
