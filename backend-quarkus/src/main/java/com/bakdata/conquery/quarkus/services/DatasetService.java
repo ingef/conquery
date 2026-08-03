@@ -1,9 +1,6 @@
 package com.bakdata.conquery.quarkus.services;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.quarkus.config.StorageRuntimeConfig;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
@@ -95,20 +92,6 @@ public class DatasetService {
 //									 .toList();
 //
 //		return new ConceptCodeResolution(List.copyOf(new LinkedHashSet<>(resolvedInOrder)), unknownCodes);
-	}
-
-	private Stream<Map.Entry<String, ConceptId>> resolvableCodeEntries(DatasetCatalogRepository.ConceptElement concept) {
-		if (concept.condition() == null) {
-			return Stream.empty();
-		}
-		return concept.condition().connectorValues().stream()
-				.map(this::normalizeCode)
-				.map(code -> Map.entry(code, concept.id()));
-	}
-
-
-	private String normalizeCode(String value) {
-		return value.trim().toLowerCase(Locale.ROOT);
 	}
 
 	private NamespaceStorage requireNamespace(DatasetId datasetId) {

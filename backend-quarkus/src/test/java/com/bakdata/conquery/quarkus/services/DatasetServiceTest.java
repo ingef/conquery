@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.bakdata.conquery.quarkus.concepts.conditions.ConceptCondition;
+import com.bakdata.conquery.quarkus.concepts.conditions.definitions.EqualConceptCondition;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.TableId;
@@ -38,8 +40,11 @@ class DatasetServiceTest {
 		assertEquals(List.of("OTHER", "UNKNOWN"), resolution.unknownCodes());
 	}
 
-	private DatasetCatalogRepository.ConceptCondition equal(String... values) {
-		return new DatasetCatalogRepository.ConceptCondition("EQUAL", List.of(values), null, List.of());
+	private ConceptCondition equal(String... values) {
+		EqualConceptCondition condition = new EqualConceptCondition();
+		condition.setType("EQUAL");
+		condition.setValues(List.of(values));
+		return condition;
 	}
 
 	private ConceptId cid(String value) {

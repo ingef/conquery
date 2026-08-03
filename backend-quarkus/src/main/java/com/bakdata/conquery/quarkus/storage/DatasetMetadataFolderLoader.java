@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.quarkus.config.DatasetMetadataRuntimeConfig;
+import com.bakdata.conquery.quarkus.concepts.conditions.ConceptCondition;
 import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinition;
 import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionAssembler;
 import com.bakdata.conquery.quarkus.concepts.selects.SelectDefinition;
@@ -322,10 +323,8 @@ public class DatasetMetadataFolderLoader {
 		String conceptLabel = firstNonBlank(payload.label()).orElse(payload.name);
 		List<ConceptElementPayload> children = Optional.ofNullable(payload.children()).orElse(List.of());
 		List<ConceptId> childIds = children.stream().map(child -> childId(conceptId, child, fallbackLogCollector)).toList();
-		DatasetCatalogRepository.ConceptCondition condition = toConceptCondition(payload.condition());
-
 		conceptElementsById.put(conceptId, new DatasetCatalogRepository.ConceptElement(
-				conceptId, conceptLabel, payload.description, copyAdditionalInfos(payload.additionalInfos()), parentId, childIds, condition
+				conceptId, conceptLabel, payload.description, copyAdditionalInfos(payload.additionalInfos()), parentId, childIds, payload.condition()
 		));
 		for (int index = 0; index < children.size(); index++) {
 			collectConceptChildren(children.get(index), childIds.get(index), conceptId, conceptElementsById, fallbackLogCollector);
@@ -340,14 +339,6 @@ public class DatasetMetadataFolderLoader {
 	private ConceptId childId(ConceptId parentId, ConceptElementPayload child, FallbackLogCollector fallbackLogCollector) {
 		String childName = idPartFromPreferredOrFallback(child.name(), child.label(), "concept child id", parentId, fallbackLogCollector);
 		return parentId.child(childName);
-	}
-
-	private DatasetCatalogRepository.ConceptCondition toConceptCondition(ConditionPayload condition) {
-		if (condition == null) {
-			return null;
-		}
-		String type = firstNonBlank(condition.type()).orElseThrow(() -> new IllegalStateException("Concept condition is missing required type."));
-		return new DatasetCatalogRepository.ConceptCondition(type, condition.values(), condition.column(), Optional.ofNullable(condition.conditions()).orElse(List.of()).stream().map(this::toConceptCondition).toList());
 	}
 
 	private TableId toConnectorTableId(DatasetId datasetId, String rawTableName) {
@@ -606,7 +597,7 @@ public class DatasetMetadataFolderLoader {
 			String name, String label, String description,
 			List<DatasetCatalogRepository.AdditionalInfo> additionalInfos,
 			List<@Valid ConceptElementPayload> children,
-			@Valid ConditionPayload condition
+			@Valid ConceptCondition condition
 	) {
 	}
 
@@ -629,12 +620,6 @@ public class DatasetMetadataFolderLoader {
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private record ValidityDatePayload(
 			String name, String label, String column, String startColumn, String endColumn
-	) {
-	}
-
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	private record ConditionPayload(
-			String type, List<String> values, String column, List<@Valid ConditionPayload> conditions
 	) {
 	}
 

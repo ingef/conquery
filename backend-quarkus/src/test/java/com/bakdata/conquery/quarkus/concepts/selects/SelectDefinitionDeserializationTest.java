@@ -23,7 +23,7 @@ class SelectDefinitionDeserializationTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = {"DISTINCT", "FIRST", "LAST", "RANDOM", "COUNT", "COUNT_QUARTERS", "DATE_DISTANCE", "DATE_UNION", "DURATION_SUM", "FLAGS", "PREFIX", "QUARTERS_IN_YEAR", "SUM"})
-	void deserializesEveryBuiltinType(String type) throws Exception {
+	void deserializesEveryRegisteredType(String type) throws Exception {
 		SelectDefinition definition = objectMapper.readValue("{\"type\":\"" + type + "\"}", SelectDefinition.class);
 
 		assertFalse(definition instanceof UnknownSelectDefinition, type);

@@ -59,7 +59,7 @@ Metadata models are code-first. Java model classes, Jackson annotations, Bean Va
 `@Schema` annotations are used both for loading metadata files and for generating their schemas. Registered model
 families are exposed in the OpenAPI document at `GET /q/openapi` as `oneOf` schemas with discriminator mappings.
 
-Filter and select implementations are extensible from another CDI-enabled JAR. An extension provides:
+Filter, select, and concept-condition implementations are extensible from another CDI-enabled JAR. A filter extension provides:
 
 1. A concrete class implementing `FilterDefinition`, annotated with OpenAPI `@Schema`.
 2. A CDI bean implementing `FilterDefinitionProvider<T>` for its type id, model class, and business-model conversion.
@@ -67,6 +67,11 @@ Filter and select implementations are extensible from another CDI-enabled JAR. A
 Connector selects use the equivalent `SelectDefinition` and `SelectDefinitionProvider<T>` extension points. Unknown
 types fail startup by default; `conquery.metadata.strict-filter-types` and
 `conquery.metadata.strict-select-types` can independently switch their family to warning-and-skip behavior.
+
+Concept-tree conditions use `ConceptCondition` and `ConceptConditionProvider<T>`. Because skipping a condition would
+change the meaning of a concept node, unknown condition types always fail metadata validation. The built-in condition
+types are `EQUAL`, `PREFIX_LIST`, `PREFIX_RANGE`, `COLUMN_EQUAL`, `PRESENT`, `AND`, `OR`, and `NOT`. The old `GROOVY`
+condition is intentionally not registered because script execution requires a separate security and runtime decision.
 
 The generic `PolymorphicModelRegistry` validates duplicate type ids and base/model compatibility at startup. Its
 registrations are also installed into Jackson and projected into OpenAPI. Extension JARs must be discoverable by

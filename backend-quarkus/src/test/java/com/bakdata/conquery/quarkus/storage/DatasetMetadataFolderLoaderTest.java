@@ -2,6 +2,7 @@ package com.bakdata.conquery.quarkus.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -12,6 +13,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.bakdata.conquery.quarkus.config.DatasetMetadataRuntimeConfig;
+import com.bakdata.conquery.quarkus.concepts.conditions.definitions.AndConceptCondition;
+import com.bakdata.conquery.quarkus.concepts.conditions.definitions.ColumnEqualConceptCondition;
+import com.bakdata.conquery.quarkus.concepts.conditions.definitions.EqualConceptCondition;
 import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionAssembler;
 import com.bakdata.conquery.quarkus.concepts.selects.SelectDefinitionAssembler;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
@@ -197,19 +201,19 @@ class DatasetMetadataFolderLoaderTest {
 
 		DatasetCatalogRepository.ConceptElement child = concept.children().get(ConceptId.parse("fdb_demo.icd.a00"));
 		assertEquals(ConceptId.parse("fdb_demo.icd"), child.parentId());
-		assertEquals("AND", child.condition().type());
-		assertEquals(2, child.condition().conditions().size());
-		assertEquals(List.of("A00", "A000"), child.condition().connectorValues());
-		DatasetCatalogRepository.ConceptCondition columnCondition = child.condition().conditions().get(1);
-		assertEquals("COLUMN_EQUAL", columnCondition.type());
-		assertEquals("aufnahmeart", columnCondition.column());
-		assertEquals(List.of("stationaer"), columnCondition.values());
+		AndConceptCondition andCondition = assertInstanceOf(AndConceptCondition.class, child.condition());
+		assertEquals(2, andCondition.getConditions().size());
+		EqualConceptCondition equalCondition = assertInstanceOf(EqualConceptCondition.class, andCondition.getConditions().getFirst());
+		assertEquals(List.of("A00", "A000"), equalCondition.getValues());
+		ColumnEqualConceptCondition columnCondition = assertInstanceOf(ColumnEqualConceptCondition.class, andCondition.getConditions().get(1));
+		assertEquals("aufnahmeart", columnCondition.getColumn());
+		assertEquals(List.of("stationaer"), columnCondition.getValues());
 		assertEquals(List.of(ConceptId.parse("fdb_demo.icd.a00.A00_0")), child.children());
 
 		DatasetCatalogRepository.ConceptElement leaf = concept.children().get(ConceptId.parse("fdb_demo.icd.a00.A00_0"));
 		assertEquals(ConceptId.parse("fdb_demo.icd.a00"), leaf.parentId());
-		assertEquals("EQUAL", leaf.condition().type());
-		assertEquals(List.of("A000"), leaf.condition().connectorValues());
+		EqualConceptCondition leafCondition = assertInstanceOf(EqualConceptCondition.class, leaf.condition());
+		assertEquals(List.of("A000"), leafCondition.getValues());
 
 		assertTrue(dataset.tablesById().containsKey(TableId.parse("fdb_demo.kh_diagnose")));
 		DatasetCatalogRepository.TableRecord table = dataset.tablesById().get(TableId.parse("fdb_demo.kh_diagnose"));
@@ -438,6 +442,30 @@ class DatasetMetadataFolderLoaderTest {
 
 		IllegalStateException error = assertThrows(IllegalStateException.class, () -> loader(tempDir, true).loadConfiguredDatasets());
 		assertTrue(error.getMessage().contains("Validity date 'demo.events.events.period' must define either column or both startColumn and endColumn"));
+	}
+
+	@Test
+	void rejectsUnknownConceptConditionAtStartup(@TempDir Path tempDir) throws Exception {
+		Path dataset = tempDir.resolve("demo");
+		Files.createDirectories(dataset.resolve("conceptTrees"));
+		Files.createDirectories(dataset.resolve("tables"));
+		Files.writeString(dataset.resolve("conceptTrees/events.concept.json"), """
+				{
+				  "name":"events",
+				  "connectors":[],
+				  "children":[{
+				    "name":"invalid",
+				    "condition":{"type":"EXTERNAL_CONDITION","expression":"value != null"}
+				  }]
+				}
+				""");
+
+		ConstraintViolationException error = assertThrows(
+				ConstraintViolationException.class,
+				() -> loader(tempDir, true).loadConfiguredDatasets()
+		);
+		assertTrue(error.getMessage().contains("children[0].condition.registeredType"));
+		assertTrue(error.getMessage().contains("must use a registered concept condition type"));
 	}
 
 	@Test

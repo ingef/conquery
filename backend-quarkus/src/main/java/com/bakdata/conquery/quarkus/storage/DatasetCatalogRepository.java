@@ -2,6 +2,7 @@ package com.bakdata.conquery.quarkus.storage;
 
 import java.util.*;
 
+import com.bakdata.conquery.quarkus.concepts.conditions.ConceptCondition;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.ConnectorId;
@@ -70,9 +71,6 @@ public interface DatasetCatalogRepository {
 			children = children == null ? List.of() : List.copyOf(children);
 		}
 
-		public boolean hasResolvableCodes() {
-			return condition != null && !condition.connectorValues().isEmpty();
-		}
 	}
 
 	record Concept(
@@ -189,30 +187,6 @@ public interface DatasetCatalogRepository {
 			String label,
 			String optionValue
 	) {
-	}
-
-	record ConceptCondition(
-			String type,
-			List<String> values,
-			String column,
-			List<ConceptCondition> conditions
-	) {
-		public ConceptCondition {
-			type = type == null ? null : type.trim().toUpperCase(Locale.ROOT);
-			values = values == null ? List.of() : List.copyOf(values);
-			conditions = conditions == null ? List.of() : List.copyOf(conditions);
-		}
-
-		public List<String> connectorValues() {
-			// TODO This method is wrong, conditions don't work that way, that you can simply collect a final list of values from them
-			return switch (type == null ? "" : type) {
-				case "EQUAL" -> values;
-				case "AND" -> conditions.stream()
-						.flatMap(condition -> condition.connectorValues().stream())
-						.toList();
-				default -> List.of();
-			};
-		}
 	}
 
 	record TableRecord(
