@@ -7,14 +7,15 @@ import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.*;
+import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Select;
 import org.jooq.TableLike;
+import org.jooq.impl.DSL;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -72,7 +73,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 
 		QueryStep finalStep = QueryStep.builder()
 				.cteName(null)  // the final QueryStep won't be converted to a CTE
-				.selects(getFinalSelects(conceptQuery, preFinalSelects, functionProvider))
+				.selects(getFinalSelects(conceptQuery, preFinalSelects))
 				.fromTable(getFinalTable(preFinalStep, contextAfterConversion))
 				.groupBy(getFinalGroupBySelects(preFinalSelects))
 				.predecessors(predecessors)
@@ -82,25 +83,40 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 		return contextAfterConversion.withFinalQuery(new SqlQuery(finalQuery, conceptQuery.getResultInfos()));
 	}
 
-	private Selects getFinalSelects(ConceptQuery conceptQuery, Selects preFinalSelects, SqlFunctionProvider functionProvider) {
+	private Selects getFinalSelects(ConceptQuery conceptQuery, Selects preFinalSelects) {
+		Selects finalSelects = preFinalSelects;
 		if (conceptQuery.getDateAggregationMode() == DateAggregationMode.NONE) {
-			return preFinalSelects.blockValidityDate();
+			finalSelects = preFinalSelects.blockValidityDate();
 		}
-		// In case all final selects have no validity-date, we convert it to infinity.
+
+// In case all final selects have no validity-date, we convert it to infinity.
 		if (preFinalSelects.getValidityDate().isEmpty()) {
 			return preFinalSelects.toBuilder()
 					.validityDate(Optional.of(functionProvider.emptyColumnDateRange()))
 					.build();
 		}
-		return preFinalSelects;
+		return Selects.builder()
+				.ids(finalSelects.getIds())
+				.validityDate(finalSelects.getValidityDate())
+				.stratificationDate(finalSelects.getStratificationDate())
+				.sqlSelects(getAnyValueSelects(finalSelects))
+				.build();
+	}
+
+	private List<FieldWrapper<?>> getAnyValueSelects(Selects finalSelects) {
+		return finalSelects.getSqlSelects().stream()
+				.map(SqlSelect::toFinalRepresentation)
+				.flatMap(sqlSelect -> sqlSelect.toFields().stream())
+				.map(this::toAnyValueSelect)
+				.toList();
+	}
+
+	private FieldWrapper<?> toAnyValueSelect(Field<?> field) {
+		return new FieldWrapper<>(DSL.anyValue(field).as(field.getName()));
 	}
 
 	private List<Field<?>> getFinalGroupBySelects(Selects preFinalSelects) {
-		List<Field<?>> groupBySelects = new ArrayList<>();
-		groupBySelects.addAll(preFinalSelects.getIds().toFields());
-		// TODO instead us any_value selects
-		groupBySelects.addAll(preFinalSelects.explicitSelects());
-		return groupBySelects;
+		return preFinalSelects.getIds().toFields();
 	}
 
 }
