@@ -39,6 +39,13 @@ public class DatabaseConnectionConfig {
 	private int matchingStatsWorkers = 5;
 
 	/**
+	 * Retries for matching stats. This is a bit of a workaround because some DBMS seem to struggle to properly communicate workload to HikariCP.
+	 */
+	@Min(1)
+	@Builder.Default
+	private int matchingStatsRetries = 3;
+
+	/**
 	 * Name of the column which is shared among the table and all aggregations are grouped by.
 	 */
 	@Builder.Default

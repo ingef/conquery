@@ -45,7 +45,7 @@ public class LocalNamespace extends Namespace {
 		this.dslContext = dslContext;
 		this.storageHandler = storageHandler;
 		this.dialect = dialect;
-		this.matchingStats = new SqlMatchingStats(dslContext, dialect.getFunctionProvider(), databaseConfig.getPrimaryColumn(), databaseConfig.getMatchingStatsWorkers());
+		this.matchingStats = new SqlMatchingStats(dslContext, dialect.getFunctionProvider(), databaseConfig.getPrimaryColumn(), databaseConfig.getMatchingStatsWorkers(), databaseConfig.getMatchingStatsRetries());
 	}
 
 

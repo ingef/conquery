@@ -47,13 +47,18 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		Collection<ListenableFuture<?>> jobs = jobsByConcept.values();
 
 		for (Concept<?> concept : concepts) {
-			if (!(concept instanceof TreeConcept)) {
-				continue;
+			if (concept instanceof TreeConcept) {
+				jobsByConcept.put(concept.getId(), matchingStats.collectMatchingStatsForConcept((TreeConcept) concept, executorService, getMatchingStats().getMatchingStatsRetries()));
 			}
-			jobsByConcept.put(concept.getId(), matchingStats.collectMatchingStatsForConcept((TreeConcept) concept, executorService, 5));
 		}
 
 		while (jobs.stream().anyMatch(job -> job.state().equals(Future.State.RUNNING))) {
+			if (isCancelled()) {
+				for (ListenableFuture<?> job : jobs) {
+					job.cancel(true);
+				}
+			}
+
 			for (ListenableFuture<?> someJob : jobs) {
 				if (someJob.isDone()) {
 					continue;

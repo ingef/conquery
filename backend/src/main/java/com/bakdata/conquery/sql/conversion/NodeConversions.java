@@ -33,7 +33,9 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 			IdColumnConfig idColumns,
 			DialectBundle dialectBundle,
 			DSLContext dslContext,
-			SqlExecutionService executionService, Clock clock, String defaultPrimaryColumn
+			SqlExecutionService executionService,
+			Clock clock,
+			String defaultPrimaryColumn
 	) {
 		super(dialectBundle.getNodeConverters(dslContext));
 		this.idColumns = idColumns;

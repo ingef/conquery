@@ -67,8 +67,8 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 					connection.getConnection()
 			);
 		} catch (Exception e) {
-			log.error("Failed to load namespaceStorage for {}", namespaceStorage.getDataset(), e);
-			throw  e;
+			log.error("Failed to load namespaceStorage for {}", namespaceStorage.getPathName(), e);
+			throw e;
 		}
 	}
 

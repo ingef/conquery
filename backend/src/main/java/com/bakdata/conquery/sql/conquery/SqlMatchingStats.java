@@ -25,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
-import org.jooq.impl.DSL;
 
 import java.sql.Date;
 import java.util.*;
@@ -36,17 +35,23 @@ import static org.jooq.impl.DSL.*;
 @Data
 public class SqlMatchingStats {
 
-	private final Field<String> PID_FIELD = field(name("pid"), String.class);
-	private final Field<Date> LB_FIELD = field(name("lower_bound"), Date.class);
-	private final Field<Date> UB_FIELD = field(name("upper_bound"), Date.class);
-	private final Field<Integer> CONCEPT_ID_FIELD = field(name("resolved_id"), Integer.class);
-	private final Set<Param<?>> NULL_PARAMS = Collections.singleton(inline(null, String.class));
+	/**
+	 * Legacy backend implementation requires separation by source (in that case different shards). For sql it's a constant.
+	 */
+	private static final String SQL_SOURCE_MATCHING_STATS_LABEL = "sql";
+
+	private static final Field<String> PID_FIELD = field(name("pid"), String.class);
+	private static final Field<Date> LB_FIELD = field(name("lower_bound"), Date.class);
+	private static final Field<Date> UB_FIELD = field(name("upper_bound"), Date.class);
+	private static final Field<Integer> CONCEPT_ID_FIELD = field(name("resolved_id"), Integer.class);
+	private static final Set<Param<?>> NULL_PARAMS = Collections.singleton(inline(null, String.class));
 
 	private final DSLContext dslContext;
 	private final SqlFunctionProvider functionProvider;
 	private final String defaultPrimaryColumn;
 	private final int fetchBatchSize = 100;
 	private final int matchingStatsWorkers;
+	private final int matchingStatsRetries;
 
 	private static void assignStatsToPath(ConceptElement<?> element, Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats, String entity, CDateRange span) {
 		while (element != null) {
@@ -61,7 +66,7 @@ public class SqlMatchingStats {
 	/**
 	 * collect unique fields used/defined in the expressions.
 	 */
-	private static List<Field<?>> collectAllFields(List<CTCondition.ConceptConditions> conceptConditions) {
+	private static List<Field<?>> collectReferencedFields(List<CTCondition.ConceptConditions> conceptConditions) {
 		List<Field<?>> fields = conceptConditions.stream().flatMap(e -> e.conditions().keySet().stream()).distinct().toList();
 		return fields;
 	}
@@ -104,7 +109,7 @@ public class SqlMatchingStats {
 
 		List<CTCondition.ConceptConditions> conceptConditions = collectAllExpressions(concept, null, context);
 
-		List<Field<?>> allFields = collectAllFields(conceptConditions);
+		List<Field<?>> allFields = collectReferencedFields(conceptConditions);
 
 		List<RowN> rows = expressionsToRows(conceptConditions, allFields);
 
@@ -139,7 +144,7 @@ public class SqlMatchingStats {
 			ConceptElementId<?> conceptElementId = entry.getKey();
 
 			MatchingStats stats = new MatchingStats();
-			stats.putEntry("sql", entry.getValue());
+			stats.putEntry(SQL_SOURCE_MATCHING_STATS_LABEL, entry.getValue());
 			conceptElementId.resolve().setMatchingStats(stats);
 		}
 	}
