@@ -10,11 +10,8 @@ import com.bakdata.conquery.sql.conversion.model.*;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
-import org.jooq.Field;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.Select;
-import org.jooq.TableLike;
-import org.jooq.impl.DSL;
 
 import java.util.List;
 import java.util.Optional;
@@ -73,7 +70,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 
 		QueryStep finalStep = QueryStep.builder()
 				.cteName(null)  // the final QueryStep won't be converted to a CTE
-				.selects(getFinalSelects(conceptQuery, preFinalSelects))
+				.selects(getFinalSelects(conceptQuery, preFinalSelects, functionProvider))
 				.fromTable(getFinalTable(preFinalStep, contextAfterConversion))
 				.groupBy(getFinalGroupBySelects(preFinalSelects))
 				.predecessors(predecessors)
@@ -83,7 +80,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 		return contextAfterConversion.withFinalQuery(new SqlQuery(finalQuery, conceptQuery.getResultInfos()));
 	}
 
-	private Selects getFinalSelects(ConceptQuery conceptQuery, Selects preFinalSelects) {
+	private Selects getFinalSelects(ConceptQuery conceptQuery, Selects preFinalSelects, SqlFunctionProvider functionProvider) {
 		Selects finalSelects = preFinalSelects;
 		if (conceptQuery.getDateAggregationMode() == DateAggregationMode.NONE) {
 			finalSelects = preFinalSelects.blockValidityDate();
@@ -99,20 +96,21 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 				.ids(finalSelects.getIds())
 				.validityDate(finalSelects.getValidityDate())
 				.stratificationDate(finalSelects.getStratificationDate())
-				.sqlSelects(getAnyValueSelects(finalSelects))
+				.sqlSelects(getAnyValueSelects(finalSelects, functionProvider))
 				.build();
 	}
 
-	private List<FieldWrapper<?>> getAnyValueSelects(Selects finalSelects) {
+	private List<? extends FieldWrapper<?>> getAnyValueSelects(Selects finalSelects, SqlFunctionProvider functionProvider) {
 		return finalSelects.getSqlSelects().stream()
 				.map(SqlSelect::toFinalRepresentation)
 				.flatMap(sqlSelect -> sqlSelect.toFields().stream())
-				.map(this::toAnyValueSelect)
+				.map((Field<?> field) -> toAnyValueSelect(field, functionProvider))
 				.toList();
 	}
 
-	private FieldWrapper<?> toAnyValueSelect(Field<?> field) {
-		return new FieldWrapper<>(DSL.anyValue(field).as(field.getName()));
+	private FieldWrapper<?> toAnyValueSelect(Field<?> field, SqlFunctionProvider functionProvider) {
+		Field<?> anyValue = functionProvider.anyValue(field);
+		return new FieldWrapper<>(anyValue.as(field.getName()));
 	}
 
 	private List<Field<?>> getFinalGroupBySelects(Selects preFinalSelects) {
