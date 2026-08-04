@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
+import com.bakdata.conquery.models.datasets.concepts.filters.AggregationFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
@@ -23,7 +24,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.TwoColumnDurationSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.DurationSumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -34,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @Slf4j
 @CPSType(id = "DURATION_SUM", base = Filter.class)
-public class DurationSumFilter extends Filter<Range.LongRange> implements DaterangeSelectOrFilter {
+public class DurationSumFilter extends AggregationFilter<Range.LongRange> implements DaterangeSelectOrFilter {
 
 	@Valid
 	@Nullable
@@ -77,7 +78,7 @@ public class DurationSumFilter extends Filter<Range.LongRange> implements Datera
 	}
 
 	@Override
-	public FilterNode createFilterNode(Range.LongRange value) {
+	public AggregationResultFilterNode<?, ?> createFilterNode(Range.LongRange value) {
 		ColumnAggregator<?> aggregator = isSingleColumnDaterange() ? new DurationSumAggregator(getColumn().resolve())
 				: new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
 

@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
+import java.util.List;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
@@ -9,14 +11,18 @@ import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.filters.EventFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
-import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.event.DateDistanceFilterNode;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.DateDistanceSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -28,14 +34,35 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "DATE_DISTANCE", base = Filter.class)
-public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
+public class DateDistanceFilter extends EventFilter<Range.LongRange> {
+
+	@Valid
+	@NotNull
+	private ColumnId column;
 
 	@NotNull
 	private ChronoUnit timeUnit = ChronoUnit.YEARS;
 
-	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.DATE);
+	}
+
+	@Override
+	public List<ColumnId> getRequiredColumns() {
+		return List.of(getColumn());
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Columns do not match required Type.")
+	public boolean isValidColumnType() {
+		final Column resolved = getColumn().resolve();
+		final boolean acceptable = getAcceptedColumnTypes().contains(resolved.getType());
+
+		if (!acceptable) {
+			log.error("Column[{}] is of Type[{}]. Not one of [{}]", resolved.getId(), resolved.getType(), getAcceptedColumnTypes());
+		}
+
+		return acceptable;
 	}
 
 	@Override
@@ -49,7 +76,7 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 	}
 
 	@Override
-	public FilterNode<?> createFilterNode(Range.LongRange value) {
+	public EventFilterNode<?> createFilterNode(Range.LongRange value) {
 		return new DateDistanceFilterNode(getColumn().resolve(), timeUnit, value);
 	}
 

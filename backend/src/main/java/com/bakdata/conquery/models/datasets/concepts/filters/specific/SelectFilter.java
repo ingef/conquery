@@ -17,9 +17,10 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
-import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
+import com.bakdata.conquery.models.datasets.concepts.filters.EventFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -37,7 +38,11 @@ import org.jetbrains.annotations.NotNull;
 @NoArgsConstructor
 @Slf4j
 @JsonIgnoreProperties({"searchType"})
-public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> {
+public abstract class SelectFilter<FE_TYPE> extends EventFilter<FE_TYPE> {
+
+	@Valid
+	@jakarta.validation.constraints.NotNull
+	private ColumnId column;
 
 	@CheckForNull
 	@Valid
@@ -54,9 +59,26 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	private int searchMinSuffixLength = 3;
 	private boolean generateSearchSuffixes = true;
 
-	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.STRING);
+	}
+
+	@Override
+	public List<ColumnId> getRequiredColumns() {
+		return List.of(getColumn());
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Columns do not match required Type.")
+	public boolean isValidColumnType() {
+		final Column resolved = getColumn().resolve();
+		final boolean acceptable = getAcceptedColumnTypes().contains(resolved.getType());
+
+		if (!acceptable) {
+			log.error("Column[{}] is of Type[{}]. Not one of [{}]", resolved.getId(), resolved.getType(), getAcceptedColumnTypes());
+		}
+
+		return acceptable;
 	}
 
 	@Override

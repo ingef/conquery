@@ -10,12 +10,13 @@ import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.concepts.filters.AggregationFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import lombok.Data;
@@ -24,7 +25,7 @@ import lombok.NoArgsConstructor;
 @CPSType(id = "COUNT", base = Filter.class)
 @NoArgsConstructor
 @Data
-public class CountFilter extends Filter<Range.LongRange> {
+public class CountFilter extends AggregationFilter<Range.LongRange> {
 
 	private ColumnId column;
 
@@ -42,7 +43,7 @@ public class CountFilter extends Filter<Range.LongRange> {
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
-	public FilterNode createFilterNode(Range.LongRange value) {
+	public AggregationResultFilterNode<?, ?> createFilterNode(Range.LongRange value) {
 		if (!isDistinct()) {
 			return new RangeFilterNode(value, new CountAggregator(getColumn().resolve()));
 		}

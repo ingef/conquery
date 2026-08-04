@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +20,7 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
+import com.bakdata.conquery.models.datasets.concepts.filters.EventFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
@@ -42,7 +42,6 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
-import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
@@ -267,17 +266,9 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	}
 
 	private static List<FilterNode<?>> createFilters(CQTable table, boolean disableAggregationFilters) {
-		Stream<? extends FilterNode<?>> filterNodes = table.getFilters().stream()
-														   .map(FilterValue::createNode);
-
-		if (disableAggregationFilters) {
-			return filterNodes
-					.filter(filterNode -> !(filterNode instanceof AggregationResultFilterNode))
-					.collect(Collectors.toList());
-		}
-
-
-		return filterNodes
+		return table.getFilters().stream()
+				.filter(filter -> !disableAggregationFilters || filter.getFilter().resolve() instanceof EventFilter<?>)
+				.map(FilterValue::createNode)
 				.collect(Collectors.toList());
 	}
 
