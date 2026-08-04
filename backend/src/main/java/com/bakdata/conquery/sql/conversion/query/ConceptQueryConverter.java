@@ -96,21 +96,19 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 				.ids(finalSelects.getIds())
 				.validityDate(finalSelects.getValidityDate())
 				.stratificationDate(finalSelects.getStratificationDate())
-				.sqlSelects(getAnyValueSelects(finalSelects, functionProvider))
+				.sqlSelects(getFinalAggregatedSelects(finalSelects, functionProvider))
 				.build();
 	}
 
-	private List<? extends FieldWrapper<?>> getAnyValueSelects(Selects finalSelects, SqlFunctionProvider functionProvider) {
+	private List<? extends FieldWrapper<?>> getFinalAggregatedSelects(Selects finalSelects, SqlFunctionProvider functionProvider) {
 		return finalSelects.getSqlSelects().stream()
-				.map(SqlSelect::toFinalRepresentation)
-				.flatMap(sqlSelect -> sqlSelect.toFields().stream())
-				.map((Field<?> field) -> toAnyValueSelect(field, functionProvider))
+				.flatMap(sqlSelect -> sqlSelect.aggregateForFinalQuery(functionProvider).stream())
+				.map(this::toFieldWrapper)
 				.toList();
 	}
 
-	private FieldWrapper<?> toAnyValueSelect(Field<?> field, SqlFunctionProvider functionProvider) {
-		Field<?> anyValue = functionProvider.anyValue(field);
-		return new FieldWrapper<>(anyValue.as(field.getName()));
+	private FieldWrapper<?> toFieldWrapper(Field<?> field) {
+		return new FieldWrapper<>(field);
 	}
 
 	private List<Field<?>> getFinalGroupBySelects(Selects preFinalSelects) {
