@@ -104,7 +104,7 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
     @Override
     public ColumnDateRange allRange() {
-        return ColumnDateRange.of(getMinDateExpression().as("all_range_start"), getMaxDateExpression().as("all_range_end"));
+        return ColumnDateRange.of(getMinDateExpression(), getMaxDateExpression());
     }
 
     private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
