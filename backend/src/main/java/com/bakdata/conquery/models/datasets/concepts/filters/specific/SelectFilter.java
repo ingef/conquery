@@ -1,18 +1,11 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import javax.annotation.CheckForNull;
-import jakarta.validation.Valid;
-
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.LabelMap;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.models.common.ColumnUtils;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
@@ -27,11 +20,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.CheckForNull;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Setter
 @Getter
@@ -40,28 +41,20 @@ import org.jetbrains.annotations.NotNull;
 @JsonIgnoreProperties({"searchType"})
 public abstract class SelectFilter<FE_TYPE> extends EventFilter<FE_TYPE> {
 
-	@Valid
-	@jakarta.validation.constraints.NotNull
-	private ColumnId column;
-
-	@CheckForNull
-	@Valid
-	private Range.IntegerRange substringRange = null;
-
 	/**
 	 * user given mapping from the values in the columns to shown labels
 	 */
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
-
-
+	@Valid
+	@jakarta.validation.constraints.NotNull
+	private ColumnId column;
+	@CheckForNull
+	@Valid
+	private Range.IntegerRange substringRange = null;
 	@View.ApiManagerPersistence
 	private SearchIndexId template;
 	private int searchMinSuffixLength = 3;
 	private boolean generateSearchSuffixes = true;
-
-	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
-		return EnumSet.of(MajorTypeId.STRING);
-	}
 
 	@Override
 	public List<ColumnId> getRequiredColumns() {
@@ -71,14 +64,7 @@ public abstract class SelectFilter<FE_TYPE> extends EventFilter<FE_TYPE> {
 	@JsonIgnore
 	@ValidationMethod(message = "Columns do not match required Type.")
 	public boolean isValidColumnType() {
-		final Column resolved = getColumn().resolve();
-		final boolean acceptable = getAcceptedColumnTypes().contains(resolved.getType());
-
-		if (!acceptable) {
-			log.error("Column[{}] is of Type[{}]. Not one of [{}]", resolved.getId(), resolved.getType(), getAcceptedColumnTypes());
-		}
-
-		return acceptable;
+		return ColumnUtils.assertValidColumnTypes(this, getColumn(), EnumSet.of(MajorTypeId.STRING));
 	}
 
 	@Override
@@ -130,8 +116,8 @@ public abstract class SelectFilter<FE_TYPE> extends EventFilter<FE_TYPE> {
 	@NotNull
 	protected List<FrontendValue> collectLabels() {
 		return labels.entrySet().stream()
-					 .map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
-					 .collect(Collectors.toList());
+				.map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
+				.collect(Collectors.toList());
 	}
 
 	@JsonIgnore

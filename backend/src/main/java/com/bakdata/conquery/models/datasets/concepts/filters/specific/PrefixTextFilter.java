@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.EnumSet;
 import java.util.List;
+
+import com.bakdata.conquery.models.common.ColumnUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -37,27 +39,17 @@ public class PrefixTextFilter extends EventFilter<String> {
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) {
 		f.setType(FrontendFilterType.Fields.STRING);
 	}
-	
-	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
-		return EnumSet.of(MajorTypeId.STRING);
-	}
 
 	@Override
 	public List<ColumnId> getRequiredColumns() {
 		return List.of(getColumn());
 	}
 
+
 	@JsonIgnore
 	@ValidationMethod(message = "Columns do not match required Type.")
 	public boolean isValidColumnType() {
-		final Column resolved = getColumn().resolve();
-		final boolean acceptable = getAcceptedColumnTypes().contains(resolved.getType());
-
-		if (!acceptable) {
-			log.error("Column[{}] is of Type[{}]. Not one of [{}]", resolved.getId(), resolved.getType(), getAcceptedColumnTypes());
-		}
-
-		return acceptable;
+		return ColumnUtils.assertValidColumnTypes(this, getColumn(), EnumSet.of(MajorTypeId.STRING));
 	}
 
 	@Override

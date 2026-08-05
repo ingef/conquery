@@ -10,9 +10,9 @@ import jakarta.validation.Valid;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.ColumnUtils;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.AggregationFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
@@ -98,28 +98,13 @@ public class DurationSumFilter extends AggregationFilter<Range.LongRange> implem
 	@JsonIgnore
 	@ValidationMethod(message = "Columns do not match required Type.")
 	public boolean isValidColumnType() {
+
 		if (column != null) {
-			final Column resolved = getColumn().resolve();
-
-			if (!(resolved.getType().equals(MajorTypeId.DATE) || resolved.getType().equals(MajorTypeId.DATE_RANGE))) {
-				log.error("Column {} of type {} is not date compatible", resolved.getId(), resolved.getType());
-				return false;
-			}
-			return true;
+			return ColumnUtils.assertValidColumnTypes(this, column, Set.of(MajorTypeId.DATE, DATE_RANGE));
 		}
 
-		if (!startColumn.resolve().getType().equals(MajorTypeId.DATE)) {
-			log.error("startColumn {} is not of type DATE", startColumn);
-			return false;
-		}
-
-		if (!endColumn.resolve().getType().equals(MajorTypeId.DATE)) {
-			log.error("startColumn {} is not of type DATE", endColumn);
-			return false;
-		}
-
-
-		return true;
+		return ColumnUtils.assertValidColumnTypes(this, startColumn, Set.of(MajorTypeId.DATE)) &&
+				ColumnUtils.assertValidColumnTypes(this, endColumn, Set.of(MajorTypeId.DATE));
 	}
 
 }

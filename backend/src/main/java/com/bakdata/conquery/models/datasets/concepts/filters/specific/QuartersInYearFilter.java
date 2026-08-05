@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.EnumSet;
 import java.util.List;
+
+import com.bakdata.conquery.models.common.ColumnUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -10,7 +12,6 @@ import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.AggregationFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -34,10 +35,6 @@ public class QuartersInYearFilter extends AggregationFilter<Range.LongRange> {
 	@Valid
 	@NotNull
 	private ColumnId column;
-	
-	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
-		return EnumSet.of(MajorTypeId.DATE);
-	}
 
 	@Override
 	public List<ColumnId> getRequiredColumns() {
@@ -45,16 +42,9 @@ public class QuartersInYearFilter extends AggregationFilter<Range.LongRange> {
 	}
 
 	@JsonIgnore
-	@ValidationMethod(message = "Columns do not match required Type.")
+	@ValidationMethod(message = "Column do not match required Type.")
 	public boolean isValidColumnType() {
-		final Column resolved = getColumn().resolve();
-		final boolean acceptable = getAcceptedColumnTypes().contains(resolved.getType());
-
-		if (!acceptable) {
-			log.error("Column[{}] is of Type[{}]. Not one of [{}]", resolved.getId(), resolved.getType(), getAcceptedColumnTypes());
-		}
-
-		return acceptable;
+		return ColumnUtils.assertValidColumnTypes(this, getColumn(), EnumSet.of(MajorTypeId.DATE));
 	}
 
 	@Override

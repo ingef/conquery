@@ -1,11 +1,13 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.ColumnUtils;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
@@ -19,8 +21,12 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQua
 import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountQuartersSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
+
+import static com.bakdata.conquery.models.events.MajorTypeId.DATE_RANGE;
 
 @Setter
 @Getter
@@ -60,4 +66,16 @@ public class CountQuartersFilter extends AggregationFilter<Range.LongRange> impl
 		return new CountQuartersSqlAggregator();
 	}
 
+
+	@JsonIgnore
+	@ValidationMethod(message = "Columns do not match required Type.")
+	public boolean isValidColumnType() {
+
+		if (column != null) {
+			return ColumnUtils.assertValidColumnTypes(this, column, Set.of(MajorTypeId.DATE, DATE_RANGE));
+		}
+
+		return ColumnUtils.assertValidColumnTypes(this, startColumn, Set.of(MajorTypeId.DATE)) &&
+				ColumnUtils.assertValidColumnTypes(this, endColumn, Set.of(MajorTypeId.DATE));
+	}
 }

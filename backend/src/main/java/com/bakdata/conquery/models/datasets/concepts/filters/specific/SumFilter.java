@@ -2,8 +2,12 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import javax.annotation.Nullable;
+
+import com.bakdata.conquery.models.common.ColumnUtils;
+import io.dropwizard.validation.ValidationMethod;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
@@ -36,6 +40,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.impl.QOM;
 
 /**
  * This filter represents a filter on the sum of one integer column.
@@ -130,5 +135,11 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Aggreg
 			case REAL -> new RealDiffSumAggregator(resolvedColumn, subtrahend);
 			default -> throw new IllegalStateException("No Sum Filter for type " + typeId.name());
 		};
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Columns do not match required Type.")
+	public boolean isValidColumnType() {
+		return ColumnUtils.assertValidColumnTypes(this, getColumn(), MajorTypeId.numeric());
 	}
 }

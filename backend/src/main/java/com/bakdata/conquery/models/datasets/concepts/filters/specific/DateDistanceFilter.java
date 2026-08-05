@@ -1,17 +1,11 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.time.temporal.ChronoUnit;
-import java.util.EnumSet;
-import java.util.List;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.ColumnUtils;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.EventFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -23,9 +17,15 @@ import com.bakdata.conquery.sql.conversion.model.aggregator.DateDistanceSqlAggre
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
@@ -43,10 +43,6 @@ public class DateDistanceFilter extends EventFilter<Range.LongRange> {
 	@NotNull
 	private ChronoUnit timeUnit = ChronoUnit.YEARS;
 
-	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
-		return EnumSet.of(MajorTypeId.DATE);
-	}
-
 	@Override
 	public List<ColumnId> getRequiredColumns() {
 		return List.of(getColumn());
@@ -55,14 +51,7 @@ public class DateDistanceFilter extends EventFilter<Range.LongRange> {
 	@JsonIgnore
 	@ValidationMethod(message = "Columns do not match required Type.")
 	public boolean isValidColumnType() {
-		final Column resolved = getColumn().resolve();
-		final boolean acceptable = getAcceptedColumnTypes().contains(resolved.getType());
-
-		if (!acceptable) {
-			log.error("Column[{}] is of Type[{}]. Not one of [{}]", resolved.getId(), resolved.getType(), getAcceptedColumnTypes());
-		}
-
-		return acceptable;
+		return ColumnUtils.assertValidColumnTypes(this, getColumn(), Set.of(MajorTypeId.DATE));
 	}
 
 	@Override

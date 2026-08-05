@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import java.math.BigDecimal;
 import java.util.EnumSet;
 import java.util.List;
+
+import com.bakdata.conquery.models.common.ColumnUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -58,23 +60,6 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Eve
 		return List.of(getColumn());
 	}
 
-	@JsonIgnore
-	@ValidationMethod(message = "Columns do not match required Type.")
-	public boolean isValidColumnType() {
-		final Column resolved = getColumn().resolve();
-		final boolean acceptable = getAcceptedColumnTypes().contains(resolved.getType());
-
-		if (!acceptable) {
-			log.error("Column[{}] is of Type[{}]. Not one of [{}]", resolved.getId(), resolved.getType(), getAcceptedColumnTypes());
-		}
-
-		return acceptable;
-	}
-
-	@JsonIgnore
-	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
-		return EnumSet.of(MajorTypeId.MONEY, MajorTypeId.INTEGER, MajorTypeId.DECIMAL, MajorTypeId.REAL);
-	}
 
 	@Override
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
@@ -106,5 +91,12 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Eve
 	@Override
 	public FilterConverter<? extends NumberFilter<RANGE>, RANGE> createConverter() {
 		return new NumberFilterConverter<>();
+	}
+
+
+	@JsonIgnore
+	@ValidationMethod(message = "Columns do not match required Type.")
+	public boolean isValidColumnType() {
+		return ColumnUtils.assertValidColumnTypes(this, getColumn(), MajorTypeId.numeric());
 	}
 }
