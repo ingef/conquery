@@ -5,7 +5,7 @@
     "comment" : "Logical will hopefully removed",
     "isEnabled": false,
     "supportedDialects": [
-      "POSTGRESQL", "HANA"
+       "HANA"
     ]
   },
   "expectedCsv": "tests/query/LOGICAL/AND_DATE_LOGICAL/expected.csv",

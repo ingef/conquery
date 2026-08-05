@@ -6,10 +6,10 @@ import org.jooq.Condition;
 import org.jooq.Field;
 
 @RequiredArgsConstructor
-abstract class RangeCondition implements WhereCondition {
+abstract class RangeCondition<T extends Comparable<?>> implements WhereCondition {
 
-	private final Field<?> column;
-	private final IRange<?,?> range;
+	private final Field<T> column;
+	private final IRange<T,?> range;
 
 	@Override
 	public Condition condition() {

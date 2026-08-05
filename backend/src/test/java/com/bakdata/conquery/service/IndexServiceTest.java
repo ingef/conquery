@@ -49,7 +49,7 @@ public class IndexServiceTest {
 
 	private static final Dataset DATASET = new Dataset("dataset");
 	private static final ConqueryConfig CONFIG = new ConqueryConfig();
-	private final IndexService indexService = new IndexService(new CsvParserSettings(), "emptyDefaultLabel");
+	private final IndexService indexService = new IndexService(new CsvParserSettings());
 
 	@SneakyThrows(IOException.class)
 	public static void initRefServer(ClientAndServer mockServer) {

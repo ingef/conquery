@@ -54,6 +54,19 @@ export const StyledTable = styled("table")`
   td:last-of-type {
     border-right: none;
   }
+
+  .rc-table-measure-cell {
+    padding-top: 0;
+    padding-bottom: 0;
+    border-top: 0;
+    border-bottom: 0;
+  }
+  .rc-table-measure-cell-content {
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    pointer-events: none;
+  }
 `;
 
 export default memo(function Table({
