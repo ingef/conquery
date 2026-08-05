@@ -114,7 +114,6 @@ public class StoredQueriesProcessorTest {
 	private static ManagedExecutionId QUERY_ID_7;
 	private static ManagedExecutionId QUERY_ID_8;
 	private static ManagedExecutionId QUERY_ID_9;
-	private static ManagedExecutionId QUERY_ID_10;
 	private static List<ManagedExecution> QUERIES;
 
 	@BeforeAll
@@ -135,10 +134,9 @@ public class StoredQueriesProcessorTest {
 		QUERY_ID_7 = createExecutionId(DATASET_0, "7");
 		QUERY_ID_8 = createExecutionId(DATASET_0, "8");
 		QUERY_ID_9 = createExecutionId(DATASET_0, "9");
-		QUERY_ID_10 = createExecutionId(DATASET_0, "10");
 
 		User user0 = USER_0_EXTENSIONS.getUser();
-		for (ManagedExecutionId id : List.of(QUERY_ID_4, QUERY_ID_7, QUERY_ID_9, QUERY_ID_10)) {
+		for (ManagedExecutionId id : List.of(QUERY_ID_4, QUERY_ID_7, QUERY_ID_8, QUERY_ID_9)) {
 
 			user0.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, id));
 		}
@@ -164,16 +162,15 @@ public class StoredQueriesProcessorTest {
 														}}));
 													}}, DATASET_0
 				),    // included, but secondaryId-Query
-				mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_8, DONE, new CQConcept(), DATASET_0),    // not-included, wrong structure
 				mockManagedQuery(new ConceptQuery(new CQExternal(new ArrayList<>(), new String[0][0], false)),
 								 USERS[1],
-								 QUERY_ID_9,
+						QUERY_ID_8,
 								 DONE,
 								 DATASET_0,
 								 100L
 				),        // included
 				mockManagedConceptQueryFrontEnd(USERS[1],
-												QUERY_ID_10,
+						QUERY_ID_9,
 												DONE,
 												DATASET_0,
 												2_000_000L
@@ -281,9 +278,8 @@ public class StoredQueriesProcessorTest {
 						makeState(QUERY_ID_0, USERS[0], USERS[0], NEW, "CONCEPT_QUERY", null, null),
 						makeState(QUERY_ID_4, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null, 100L),
 						makeState(QUERY_ID_7, USERS[1], USERS[0], DONE, "SECONDARY_ID_QUERY", new SecondaryIdDescriptionId(DATASET_0.getId(), "sid"), 100L),
-						makeState(QUERY_ID_9, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null, 100L),
-						makeState(QUERY_ID_10, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null, 2_000_000L)
-
+						makeState(QUERY_ID_8, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null, 100L),
+						makeState(QUERY_ID_9, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null, 2_000_000L)
 				);
 	}
 

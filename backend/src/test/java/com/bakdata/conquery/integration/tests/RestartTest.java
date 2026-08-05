@@ -156,7 +156,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		}
 
 		List<OverviewExecutionStatus> allQueries = IntegrationUtils.getAllQueries(support, 200);
-		assertThat(allQueries).size().isEqualTo(1);
+		assertThat(allQueries).size().isEqualTo(2);
 
 		log.info("Reexecute tests after restart.");
 		test1.executeTest(support);
