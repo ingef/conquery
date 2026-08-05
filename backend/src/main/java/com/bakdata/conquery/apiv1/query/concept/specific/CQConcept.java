@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.bakdata.conquery.models.datasets.concepts.filters.AggregationFilter;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -20,7 +23,6 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.models.datasets.concepts.filters.EventFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
@@ -179,7 +181,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 
-		final List<Aggregator<?>> conceptAggregators = createAggregators(plan, selects, context);
+		final List<Aggregator<?>> conceptAggregators = createAggregators(plan, selects, context.isDisableAggregators());
 
 		final List<QPNode> tableNodes = new ArrayList<>();
 		for (CQTable table : tables) {
@@ -187,10 +189,9 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			final List<FilterNode<?>> filters = createFilters(table, context.isDisableAggregationFilters());
 
 			//add filter to children
-
 			final List<Aggregator<?>> aggregators = new ArrayList<>(conceptAggregators);
 
-			final List<Aggregator<?>> connectorAggregators = createAggregators(plan, table.getSelects(), context);
+			final List<Aggregator<?>> connectorAggregators = createAggregators(plan, table.getSelects(), context.isDisableAggregators());
 
 			// Exists aggregators hold a reference to their parent FiltersNode, so they need to be treated separately.
 			// They also don't need aggregation as they simply imitate their reference.
@@ -253,8 +254,8 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	 * Generates Aggregators from Selects. These are collected and also appended to the list of aggregators in the
 	 * query plan that contribute to columns the result.
 	 */
-	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId> selects, QueryPlanContext context) {
-		if (context.isDisableAggregators()) {
+	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId> selects, boolean disableAggregators) {
+		if (disableAggregators) {
 			return Collections.emptyList();
 		}
 
@@ -266,10 +267,19 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	}
 
 	private static List<FilterNode<?>> createFilters(CQTable table, boolean disableAggregationFilters) {
-		return table.getFilters().stream()
-				.filter(filter -> !disableAggregationFilters || filter.getFilter().resolve() instanceof EventFilter<?>)
-				.map(FilterValue::createNode)
-				.collect(Collectors.toList());
+		List<FilterNode<?>> out = new ArrayList<>();
+		for (FilterValue<?> filterValue : table.getFilters()) {
+
+			Filter<Object> resolved = (Filter<Object>) filterValue.getFilter().resolve();
+
+			if(resolved instanceof AggregationFilter<?> && disableAggregationFilters) {
+				continue;
+			}
+
+			FilterNode<?> node = resolved.createFilterNode(filterValue.readValue());
+			out.add(node);
+		}
+		return out;
 	}
 
 	private ValidityDate selectValidityDate(CQTable table) {

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
@@ -30,8 +31,10 @@ import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
+@EqualsAndHashCode(callSuper = false)
 @Data
 @Slf4j
 @CPSType(id = "DURATION_SUM", base = Filter.class)
@@ -100,7 +103,7 @@ public class DurationSumFilter extends AggregationFilter<Range.LongRange> implem
 	public boolean isValidColumnType() {
 
 		if (column != null) {
-			return ColumnUtils.assertValidColumnTypes(this, column, Set.of(MajorTypeId.DATE, DATE_RANGE));
+			return ColumnUtils.assertValidColumnTypes(this, column, Set.of(MajorTypeId.DATE, MajorTypeId.DATE_RANGE));
 		}
 
 		return ColumnUtils.assertValidColumnTypes(this, startColumn, Set.of(MajorTypeId.DATE)) &&

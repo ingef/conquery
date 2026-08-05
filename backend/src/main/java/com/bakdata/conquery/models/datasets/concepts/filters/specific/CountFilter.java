@@ -20,11 +20,13 @@ import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilte
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @CPSType(id = "COUNT", base = Filter.class)
 @NoArgsConstructor
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class CountFilter extends AggregationFilter<Range.LongRange> {
 
 	private ColumnId column;

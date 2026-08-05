@@ -39,8 +39,8 @@ public class FiltersNode extends QPNode {
 			throw new IllegalStateException("Unable to create FilterNode without filters or aggregators.");
 		}
 
-		final List<EventFilterNode<?>> eventFilters = new ArrayList<>(filters.size());
-		final List<AggregationResultFilterNode<?, ?>> aggregationFilters = new ArrayList<>(filters.size());
+		final List<EventFilterNode<?>> eventFilters = new ArrayList<>();
+		final List<AggregationResultFilterNode<?, ?>> aggregationFilters = new ArrayList<>();
 
 		// Event and AggregationResultFilterNodes are used differently
 		for (FilterNode<?> filter : filters) {
