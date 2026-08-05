@@ -91,12 +91,7 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
         return condition(startNotMin.and(endNotMax).neg());
     }
 
-    @Override
-    public ColumnDateRange emptyColumnDateRange() {
-        return ColumnDateRange.of(inline(null, Date.class), inline(null, Date.class));
-    }
-
-    @Override
+	@Override
     public ColumnDateRange forValidityDate(ValidityDate validityDate) {
         return toColumnDateRange(validityDate);
     }

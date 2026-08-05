@@ -89,7 +89,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 		// In case all final selects have no validity-date, we convert it to infinity.
 		if (preFinalSelects.getValidityDate().isEmpty()) {
 			return preFinalSelects.toBuilder()
-					.validityDate(Optional.of(functionProvider.allRange()))
+					.validityDate(Optional.of(functionProvider.emptyColumnDateRange()))
 					.build();
 		}
 		return preFinalSelects;
