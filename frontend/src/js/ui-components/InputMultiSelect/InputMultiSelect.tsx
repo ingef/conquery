@@ -69,6 +69,7 @@ interface Props {
   defaultValue?: SelectOptionT[];
   placeholder?: string;
   autoFocus?: boolean;
+  maxInputLength?: number;
   onChange: (value: SelectOptionT[]) => void;
   loading?: boolean;
   onResolve?: (csvFileLines: string[]) => void; // The assumption is that this will somehow update `options`
@@ -89,6 +90,7 @@ const InputMultiSelect = ({
   defaultValue,
   placeholder,
   autoFocus,
+  maxInputLength,
   onChange,
   loading,
   onResolve,
@@ -310,6 +312,7 @@ const InputMultiSelect = ({
             }}
             disabled={disabled}
             spellCheck={false}
+            maxLength={maxInputLength}
             placeholder={
               selectedItems.length > 0
                 ? null
