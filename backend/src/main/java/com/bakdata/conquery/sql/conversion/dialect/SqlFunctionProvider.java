@@ -287,7 +287,9 @@ public interface SqlFunctionProvider {
 	 */
 	Condition isNotEmptyDateRange(ColumnDateRange columnDateRange);
 
-	ColumnDateRange emptyColumnDateRange();
+	default ColumnDateRange emptyColumnDateRange() {
+		return ColumnDateRange.of(inline(null, Date.class), inline(null, Date.class));
+	}
 
 	/**
 	 * Or-Aggregation of the input field.

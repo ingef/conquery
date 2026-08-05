@@ -104,16 +104,11 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	}
 
-	@Override
-	public ColumnDateRange emptyColumnDateRange() {
-		return ColumnDateRange.of(inline(null, Date.class), inline(null, Date.class));
-	}
-
 
 	@Override
-	public ColumnDateRange forValidityDate(ValidityDate validityDate) {
-		return toColumnDateRange(validityDate);
-	}
+    public ColumnDateRange forValidityDate(ValidityDate validityDate) {
+        return toColumnDateRange(validityDate);
+    }
 
 	@Override
 	public ColumnDateRange allRange() {
@@ -279,7 +274,8 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		Field<String> stringAggregation = stringAggregation(
 				dateRangeToField(columnDateRange),
 				toChar(DATE_SET_SEPARATOR),
-				List.of(columnDateRange.getStart())
+				// The coalesce is necessary so that hana isn't upset about a potential `order by null` which happens for empty date-ranges
+                List.of(coalesce(columnDateRange.getStart(), getMinDateExpression()))
 		);
 
 		// encapsulate all ranges (including empty ranges) within curly braces
