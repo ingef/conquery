@@ -4,14 +4,10 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.util.Duration;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.DSLContext;
 
 /**
  * Connection properties for a SQL database.
@@ -31,7 +27,17 @@ public class DatabaseConnectionConfig {
 	/**
 	 * SQL vendor specific dialect used to transform queries to SQL
 	 */
+	@NotNull
 	private Dialect dialect;
+
+	/**
+	 * Name of the column which is shared among the table and all aggregations are grouped by.
+	 */
+	@Builder.Default
+	@NotNull
+	private String primaryColumn = DEFAULT_PRIMARY_COLUMN;
+
+	private String propertiesFile;
 
 	/**
 	 * Username used to connect to the database.
@@ -52,18 +58,22 @@ public class DatabaseConnectionConfig {
 
 	private Duration connectivityTimeout;
 
-	/**
-	 * Name of the column which is shared among the table and all aggregations are grouped by.
-	 */
-	@Builder.Default
-	private String primaryColumn = DEFAULT_PRIMARY_COLUMN;
-
 
 	public HikariDataSource createDataSource(HealthCheckRegistry healthCheckRegistry) {
-		HikariConfig hikariConfig = new HikariConfig();
-		hikariConfig.setJdbcUrl(getJdbcConnectionUrl());
-		hikariConfig.setUsername(getDatabaseUsername());
-		hikariConfig.setPassword(getDatabasePassword());
+
+		// If propertiesFile is provided start with that and overwrite with internal settings. Allows us to use both.
+		HikariConfig hikariConfig = propertiesFile != null ? new HikariConfig(propertiesFile) : new HikariConfig();
+
+		if (getJdbcConnectionUrl() != null) {
+			hikariConfig.setJdbcUrl(getJdbcConnectionUrl());
+		}
+
+		if (getDatabaseUsername() != null) {
+			hikariConfig.setUsername(getDatabaseUsername());
+		}
+		if (getDatabasePassword() != null) {
+			hikariConfig.setPassword(getDatabasePassword());
+		}
 
 		if (healthCheckRegistry != null) {
 			hikariConfig.setHealthCheckRegistry(healthCheckRegistry);

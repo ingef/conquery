@@ -1,7 +1,9 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -11,6 +13,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -33,6 +37,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.future.WriteFuture;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * For each {@link com.bakdata.conquery.models.query.queryplan.specific.ConceptNode} calculate the number of matching events and the span of date-ranges.
@@ -44,6 +49,45 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 	@Getter
 	private final Collection<ConceptId> concepts;
+
+	@Nullable
+	private static CDateRange spannedValidityDates(Bucket bucket, int event, Iterable<Column> dateColumns) {
+		int maxDate = Integer.MIN_VALUE;
+		int minDate = Integer.MAX_VALUE;
+
+		for (Column c : dateColumns) {
+
+			if (!bucket.has(event, c)) {
+				continue;
+			}
+
+			final CDateRange time = bucket.getAsDateRange(event, c);
+
+			if (time.hasUpperBound()) {
+				maxDate = Math.max(time.getMaxValue(), maxDate);
+			}
+
+			if (time.hasLowerBound()) {
+				minDate = Math.min(time.getMinValue(), minDate);
+			}
+		}
+
+		final CDateRange span;
+
+		if (minDate == Integer.MAX_VALUE && maxDate == Integer.MIN_VALUE) {
+			span = null;
+		}
+		else if (minDate == Integer.MAX_VALUE) {
+			span = CDateRange.atMost(maxDate);
+		}
+		else if (maxDate == Integer.MIN_VALUE) {
+			span = CDateRange.atLeast(minDate);
+		}
+		else {
+			span = CDateRange.of(minDate, maxDate);
+		}
+		return span;
+	}
 
 
 	@Override
@@ -144,6 +188,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 						CBlock cBlock = cBlockId.resolve();
 						final Bucket bucket = cBlock.getBucket().resolve();
 						final Table table = bucket.getTable().resolve();
+						final List<Column> dateColumns = Arrays.stream(table.getColumns()).filter(c -> c.getType().isDateCompatible()).toList();
 
 						for (String entity : bucket.entities()) {
 
@@ -152,10 +197,12 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 							for (int event = bucket.getEntityStart(entity); event < entityEnd; event++) {
 
 								final int[] localIds = cBlock.getPathToMostSpecificChild(event);
+								final CDateRange span = spannedValidityDates(bucket, event, dateColumns);
 
 
 								if (!(concept instanceof TreeConcept) || localIds == null) {
-									matchingStats.computeIfAbsent(conceptId, (ignored) -> new MatchingStats.Entry()).addEvent(table, bucket, event, entity);
+									matchingStats.computeIfAbsent(conceptId, (ignored) -> new MatchingStats.Entry())
+												 .addEvents(entity, 1, span);
 									continue;
 								}
 
@@ -167,7 +214,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 								while (element != null) {
 									matchingStats.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Entry())
-												 .addEvent(table, bucket, event, entity);
+												 .addEvents(entity, 1, span);
 									element = element.getParent();
 								}
 							}

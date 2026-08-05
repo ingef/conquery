@@ -12,6 +12,7 @@ import com.bakdata.conquery.mode.ManagerProvider;
 import com.bakdata.conquery.mode.NamespaceHandler;
 import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
@@ -29,6 +30,8 @@ public class LocalManagerProvider implements ManagerProvider {
 
 		final ConnectionManager connectionManager = config.getSqlConnectorConfig().toConnectionManager(environment);
 
+		final JobManager jobManager = ManagerProvider.newJobManager(config);
+
 		final MetaStorage storage = new MetaStorage(config.getStorage());
 		final InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, environment.getValidator());
 		final NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, internalMapperFactory, connectionManager, clock);
@@ -40,7 +43,7 @@ public class LocalManagerProvider implements ManagerProvider {
 				datasetRegistry,
 				storage,
 				new FailingImportHandler(),
-				new LocalStorageListener(),
+				new LocalStorageListener(jobManager, datasetRegistry),
 				EMPTY_NODE_PROVIDER,
 				List.of(),
 				internalMapperFactory,

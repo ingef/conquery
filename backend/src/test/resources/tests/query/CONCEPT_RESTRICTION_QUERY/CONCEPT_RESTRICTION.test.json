@@ -2,6 +2,10 @@
   "type": "QUERY_TEST",
   "label": "CONCEPT_RESTRICTION Test",
   "expectedCsv": "tests/query/CONCEPT_RESTRICTION_QUERY/expected-kh.csv",
+  "sqlSpec": {
+    "isEnabled": false,
+    "comment": "Prefix not supported in SQL Mode."
+  },
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

@@ -19,7 +19,7 @@ import lombok.Data;
 @Data
 public class FilterValueConfig {
 
-    /**
+	/**
      * Label for the special empty value to filter for empty entries.
      */
     @NotNull

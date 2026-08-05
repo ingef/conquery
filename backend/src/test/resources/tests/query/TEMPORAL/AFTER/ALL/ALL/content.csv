@@ -27,3 +27,17 @@ pid,datum,value,sum,description
 5,2011-01-11,index,,
 5,2011-01-16,compare,,
 5,2011-01-18,compare,1,
+
+
+6,2011-01-01,index,,
+6,2011-01-06,compare,1,
+
+6,2011-01-11,index,,the sum brings them below 1 again
+6,2011-01-16,compare,1,
+6,2011-01-17,compare,-1,
+
+
+
+7,2010-01-01/2011-01-01,index,,
+7,2011-01-06,compare,1,
+7,2011-01-08,compare,1,

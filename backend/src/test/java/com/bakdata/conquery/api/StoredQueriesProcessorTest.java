@@ -69,7 +69,7 @@ public class StoredQueriesProcessorTest {
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
 	public static final UriBuilder URI_BUILDER = UriBuilder.fromPath("http://localhost");
-	public static final IndexService INDEX_SERVICE = new IndexService(CONFIG.getCsv().createCsvParserSettings(), "empty");
+	public static final IndexService INDEX_SERVICE = new IndexService(CONFIG.getCsv().createCsvParserSettings());
 	private static final Environment ENVIRONMENT = new Environment("StoredQueriesProcessorTest");
 	@RegisterExtension
 	private static final MetaStorageExtension STORAGE_EXTENSION = new MetaStorageExtension(ENVIRONMENT.metrics());

@@ -39,7 +39,7 @@ class DateAggregationContext implements Context, Qualifiable<DateAggregationCont
 	public QueryStep getStep(DateAggregationCteStep dateAggregationCteStep) {
 		List<QueryStep> querySteps = intervalMergeSteps.get(dateAggregationCteStep);
 		if (querySteps != null && !querySteps.isEmpty()) {
-			return querySteps.get(0);
+			return querySteps.getFirst();
 		}
 		return null;
 	}

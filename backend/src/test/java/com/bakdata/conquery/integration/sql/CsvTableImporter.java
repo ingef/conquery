@@ -198,7 +198,7 @@ public class CsvTableImporter {
 		if (content.isEmpty()) {
 			return;
 		}
-		log.debug("Inserting into table: {}", content);
+		log.trace("Inserting into table: {}", content);
 		testSqlDialect.getTestFunctionProvider().insertValuesIntoTable(table, columns, content, statement, dslContext);
 	}
 

@@ -5,7 +5,7 @@
     "isEnabled": true,
     "comment": "Bug in Clickhouse converter",
     "supportedDialects": [
-      "POSTGRESQL",
+
       "HANA"
     ]
   },

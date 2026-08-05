@@ -7,17 +7,24 @@ import com.bakdata.conquery.models.common.IRange;
 import lombok.experimental.UtilityClass;
 import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 @UtilityClass
 public class ConditionUtil {
 
-	public Condition rangeCondition(final Field<?> column, final IRange<?, ?> range) {
-		Field<Object> col = (Field<Object>) column;
-		Optional<Condition> greaterOrEqualCondition = Optional.ofNullable(range.getMin()).map(col::greaterOrEqual);
-		Optional<Condition> lessOrEqualCondition = Optional.ofNullable(range.getMax()).map(col::lessOrEqual);
-		return Stream.concat(greaterOrEqualCondition.stream(), lessOrEqualCondition.stream())
-					 .reduce(Condition::and)
-					 .orElseThrow(() -> new IllegalArgumentException("Missing min or max value for real range filter."));
+	public <T extends Comparable<?>> Condition rangeCondition(final Field<T> column, final IRange<T, ?> range) {
+		Condition condition = DSL.noCondition();
+
+		if (range.hasLowerBound()){
+			condition = condition.and(column.greaterOrEqual(DSL.inline(range.getMin())));
+		}
+
+		if (range.hasUpperBound()){
+			condition = condition.and(column.lessOrEqual(DSL.inline(range.getMax())));
+		}
+
+
+		return condition;
 	}
 
 	/**

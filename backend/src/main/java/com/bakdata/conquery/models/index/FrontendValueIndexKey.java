@@ -50,7 +50,7 @@ public class FrontendValueIndexKey implements IndexKey {
 	}
 
 	@Override
-	public FrontendValueIndex createIndex(String defaultEmptyLabel) {
-		return new FrontendValueIndex(indexSupplier.get(), valueTemplate, optionValueTemplate, defaultEmptyLabel);
+	public FrontendValueIndex createIndex() {
+		return new FrontendValueIndex(indexSupplier.get(), valueTemplate, optionValueTemplate);
 	}
 }

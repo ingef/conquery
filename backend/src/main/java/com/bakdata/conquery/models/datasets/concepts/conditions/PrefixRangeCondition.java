@@ -1,9 +1,13 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.SQLDataType.VARCHAR;
+
 import java.util.Map;
 import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
@@ -15,12 +19,12 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 /**
  * This condition requires each value to start with a prefix between the two given values
  */
 @CPSType(id = "PREFIX_RANGE", base = CTCondition.class)
+@Deprecated
 public class PrefixRangeCondition implements CTCondition {
 
 	private static final String ANY_CHAR_REGEX = ".*";
@@ -54,7 +58,7 @@ public class PrefixRangeCondition implements CTCondition {
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		Field<String> field = DSL.field(DSL.name(context.getConnectorTable().getName(), context.getConnectorColumn().getName()), String.class);
+		Field<String> field = field(context.getConnectorColumn(), VARCHAR);
 		String pattern = buildSqlRegexPattern(context.getFunctionProvider());
 		Condition regexCondition = context.getFunctionProvider().likeRegex(field, pattern);
 		return new ConditionWrappingWhereCondition(regexCondition);
@@ -75,5 +79,10 @@ public class PrefixRangeCondition implements CTCondition {
 			}
 		}
 		return builder.append(functionProvider.getAnyCharRegex()).toString();
+	}
+
+	@Override
+	public ConceptConditions buildExpression(CTConditionContext context, ConceptElement<?> id) {
+		throw new IllegalStateException("Not implemented");
 	}
 }

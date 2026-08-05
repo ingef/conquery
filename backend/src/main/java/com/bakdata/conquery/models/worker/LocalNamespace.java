@@ -7,9 +7,12 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.local.SqlEntityResolver;
 import com.bakdata.conquery.mode.local.SqlStorageHandler;
+import com.bakdata.conquery.mode.local.UpdateMatchingStatsSqlJob;
+import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.ExecutionManager;
+import com.bakdata.conquery.sql.conquery.SqlMatchingStats;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +27,7 @@ public class LocalNamespace extends Namespace {
 	private final DialectBundle dialect;
 	private final DSLContext dslContext;
 	private final SqlStorageHandler storageHandler;
+	private final SqlMatchingStats matchingStats;
 
 	public LocalNamespace(
 			DialectBundle dialect,
@@ -34,17 +38,21 @@ public class LocalNamespace extends Namespace {
 			SqlStorageHandler storageHandler,
 			JobManager jobManager,
 			SearchProcessor filterSearch,
-			SqlEntityResolver sqlEntityResolver
+			SqlEntityResolver sqlEntityResolver, DatabaseConnectionConfig databaseConfig
 	) {
 		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, sqlEntityResolver);
 		this.dslContext = dslContext;
 		this.storageHandler = storageHandler;
 		this.dialect = dialect;
+		matchingStats = new SqlMatchingStats(dslContext, dialect.getFunctionProvider(), databaseConfig.getPrimaryColumn());
 	}
+
 
 	@Override
 	void updateMatchingStats() {
-		// TODO Build basic statistic on data
+		getJobManager().addSlowJob(
+				new UpdateMatchingStatsSqlJob(getStorage().getAllConcepts().toList(), getDataset(), getMatchingStats())
+		);
 	}
 
 	@Override

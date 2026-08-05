@@ -57,8 +57,7 @@ public class DurationSumFilter extends Filter<Range.LongRange> implements Datera
 		}
 		if (column != null) {
 			required.add(column);
-		}
-		else {
+		} else {
 			required.add(startColumn);
 			required.add(endColumn);
 		}
@@ -79,8 +78,8 @@ public class DurationSumFilter extends Filter<Range.LongRange> implements Datera
 
 	@Override
 	public FilterNode createFilterNode(Range.LongRange value) {
-		ColumnAggregator<?> aggregator = getColumn() != null ? new DurationSumAggregator(getColumn().resolve())
-										 : new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
+		ColumnAggregator<?> aggregator = isSingleColumnDaterange() ? new DurationSumAggregator(getColumn().resolve())
+				: new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
 
 		if (hasDistinct()) {
 			aggregator = new DistinctValuesWrapperAggregator<>(aggregator, distinctBy.stream().map(ColumnId::resolve).toList());

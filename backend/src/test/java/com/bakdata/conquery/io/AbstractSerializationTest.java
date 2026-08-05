@@ -44,7 +44,7 @@ public abstract class AbstractSerializationTest {
 	@BeforeEach
 	public void before() {
 		final InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, validator);
-		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), "emptyDefaultLabel");
+		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings());
 		NonPersistentStoreFactory storageFactory = new NonPersistentStoreFactory();
 		metaStorage = storageFactory.createMetaStorage();
 		namespaceStorage = storageFactory.createNamespaceStorage();

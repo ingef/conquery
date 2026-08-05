@@ -217,7 +217,9 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		if (!(conceptElement instanceof ConceptTreeChild child)) {
 			return Stream.empty();
 		}
-		WhereCondition childCondition = child.getCondition().convertToSqlCondition(CTConditionContext.create(cqTable.getConnector().resolve(), functionProvider));
+		WhereCondition childCondition = child.getCondition().convertToSqlCondition(CTConditionContext.forConnector(
+				cqTable.getConnector().resolve(), functionProvider
+		));
 		return Stream.concat(
 				collectConditions(cqTable, child.getParent(), functionProvider),
 				Stream.of(childCondition)
@@ -228,7 +230,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		final Connector connector = cqTable.getConnector().resolve();
 
 		return Optional.ofNullable(connector.getCondition())
-		               .map(condition -> condition.convertToSqlCondition(CTConditionContext.create(connector, functionProvider)));
+		               .map(condition -> condition.convertToSqlCondition(CTConditionContext.forConnector(connector, functionProvider)));
 	}
 
 	private static SqlFilters dateRestrictionFilter(ConversionContext context, ColumnDateRange validityDate) {
