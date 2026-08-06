@@ -5,6 +5,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
@@ -95,11 +96,11 @@ public class DatasetQueryResource {
 	}
 
 	@POST
-	public Response postQuery(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders, @NotNull @Valid QueryDescription query) {
+	public Response postQuery(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders, @QueryParam("queryId") Optional<UUID> queryId, @NotNull @Valid QueryDescription query) {
 
 		subject.authorize(dataset, Ability.READ);
 
-		final ManagedExecution execution = processor.postQuery(dataset, query, subject, false);
+		final ManagedExecution execution = processor.postQuery(dataset, query, subject, false, queryId);
 
 		return Response.ok(processor.getQueryFullStatus(execution.getId(),
 														subject,
