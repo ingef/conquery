@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.math.BigDecimal;
-import java.util.EnumSet;
 import java.util.List;
 
 import com.bakdata.conquery.models.common.ColumnUtils;
@@ -97,6 +96,6 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Eve
 	@JsonIgnore
 	@ValidationMethod(message = "Columns do not match required Type.")
 	public boolean isValidColumnType() {
-		return ColumnUtils.assertValidColumnTypes(this, getColumn(), MajorTypeId.numeric());
+		return ColumnUtils.assertValidColumnTypes(this, getColumn(), MajorTypeId.NUMERIC);
 	}
 }

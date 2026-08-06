@@ -25,7 +25,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.TwoColumnDurationSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.DurationSumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -81,7 +81,7 @@ public class DurationSumFilter extends AggregationFilter<Range.LongRange> implem
 	}
 
 	@Override
-	public AggregationResultFilterNode<?, ?> createFilterNode(Range.LongRange value) {
+	public AggregationFilterNode<?, ?> createFilterNode(Range.LongRange value) {
 		ColumnAggregator<?> aggregator = isSingleColumnDaterange() ? new DurationSumAggregator(getColumn().resolve())
 				: new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
 
@@ -97,17 +97,5 @@ public class DurationSumFilter extends AggregationFilter<Range.LongRange> implem
 		return new DurationSumSqlAggregator();
 	}
 
-
-	@JsonIgnore
-	@ValidationMethod(message = "Columns do not match required Type.")
-	public boolean isValidColumnType() {
-
-		if (column != null) {
-			return ColumnUtils.assertValidColumnTypes(this, column, Set.of(MajorTypeId.DATE, MajorTypeId.DATE_RANGE));
-		}
-
-		return ColumnUtils.assertValidColumnTypes(this, startColumn, Set.of(MajorTypeId.DATE)) &&
-				ColumnUtils.assertValidColumnTypes(this, endColumn, Set.of(MajorTypeId.DATE));
-	}
 
 }

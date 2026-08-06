@@ -21,11 +21,11 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import io.dropwizard.validation.ValidationMethod;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.CheckForNull;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public abstract class SelectFilter<FE_TYPE> extends EventFilter<FE_TYPE> {
 	 */
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
 	@Valid
-	@jakarta.validation.constraints.NotNull
+	@NotNull
 	private ColumnId column;
 	@CheckForNull
 	@Valid

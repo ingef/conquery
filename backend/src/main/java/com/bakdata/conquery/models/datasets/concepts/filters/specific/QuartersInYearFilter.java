@@ -18,7 +18,7 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.QuartersInYearAggregator;
-import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
@@ -56,7 +56,7 @@ public class QuartersInYearFilter extends AggregationFilter<Range.LongRange> {
 
 
 	@Override
-	public AggregationResultFilterNode<?, ?> createFilterNode(Range.LongRange value) {
+	public AggregationFilterNode<?, ?> createFilterNode(Range.LongRange value) {
 		return new RangeFilterNode(value, new QuartersInYearAggregator(getColumn().resolve()));
 	}
 

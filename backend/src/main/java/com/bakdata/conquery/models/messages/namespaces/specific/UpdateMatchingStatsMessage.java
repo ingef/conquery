@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -188,7 +189,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 						CBlock cBlock = cBlockId.resolve();
 						final Bucket bucket = cBlock.getBucket().resolve();
 						final Table table = bucket.getTable().resolve();
-						final List<Column> dateColumns = Arrays.stream(table.getColumns()).filter(c -> c.getType().isDateCompatible()).toList();
+						final List<Column> dateColumns = Arrays.stream(table.getColumns()).filter(c -> MajorTypeId.DATE_COMPATIBLE.contains(c.getType())).toList();
 
 						for (String entity : bucket.entities()) {
 

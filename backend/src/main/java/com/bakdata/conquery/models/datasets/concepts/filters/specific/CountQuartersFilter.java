@@ -18,7 +18,7 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
-import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountQuartersSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -55,7 +55,7 @@ public class CountQuartersFilter extends AggregationFilter<Range.LongRange> impl
 	}
 
 	@Override
-	public AggregationResultFilterNode<?, ?> createFilterNode(Range.LongRange value) {
+	public AggregationFilterNode<?, ?> createFilterNode(Range.LongRange value) {
 		final Column column = getColumn().resolve();
 		//TODO missing impl for start/end
 		return new RangeFilterNode(value, new CountQuartersOfDatesAggregator(column));
@@ -64,18 +64,5 @@ public class CountQuartersFilter extends AggregationFilter<Range.LongRange> impl
 	@Override
 	public FilterConverter<CountQuartersFilter, Range.LongRange> createConverter() {
 		return new CountQuartersSqlAggregator();
-	}
-
-
-	@JsonIgnore
-	@ValidationMethod(message = "Columns do not match required Type.")
-	public boolean isValidColumnType() {
-
-		if (column != null) {
-			return ColumnUtils.assertValidColumnTypes(this, column, Set.of(MajorTypeId.DATE, DATE_RANGE));
-		}
-
-		return ColumnUtils.assertValidColumnTypes(this, startColumn, Set.of(MajorTypeId.DATE)) &&
-				ColumnUtils.assertValidColumnTypes(this, endColumn, Set.of(MajorTypeId.DATE));
 	}
 }

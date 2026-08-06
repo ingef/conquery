@@ -24,7 +24,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Deci
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.IntegerSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -90,7 +90,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Aggreg
 	}
 
 	@Override
-	public AggregationResultFilterNode<?, ?> createFilterNode(RANGE value) {
+	public AggregationFilterNode<?, ?> createFilterNode(RANGE value) {
 		IRange<? extends Number, ?> range = value;
 
 		// Real and Decimal share FilterValue
@@ -140,6 +140,6 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Aggreg
 	@JsonIgnore
 	@ValidationMethod(message = "Columns do not match required Type.")
 	public boolean isValidColumnType() {
-		return ColumnUtils.assertValidColumnTypes(this, getColumn(), MajorTypeId.numeric());
+		return ColumnUtils.assertValidColumnTypes(this, getColumn(), MajorTypeId.NUMERIC);
 	}
 }

@@ -16,7 +16,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
-import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import lombok.Data;
@@ -45,7 +45,7 @@ public class CountFilter extends AggregationFilter<Range.LongRange> {
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
-	public AggregationResultFilterNode<?, ?> createFilterNode(Range.LongRange value) {
+	public AggregationFilterNode<?, ?> createFilterNode(Range.LongRange value) {
 		if (!isDistinct()) {
 			return new RangeFilterNode(value, new CountAggregator(getColumn().resolve()));
 		}
