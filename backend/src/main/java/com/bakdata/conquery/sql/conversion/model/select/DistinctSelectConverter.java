@@ -34,7 +34,7 @@ import org.jooq.impl.SQLDataType;
  *            {@code
  * 	        	"distinct" as (
  *     				select distinct "pid", "column"
- *     				from "event_filter"
+ *     				from "preprocessing"
  *  			)
  *            }
  * 	    </li>
@@ -119,10 +119,10 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 			SelectContext<ConnectorSqlTables> selectContext
 	) {
 		// values to aggregate must be event-filtered first
-		String eventFilterTable = selectContext.getTables().cteName(ConceptCteStep.EVENT_FILTER);
-		SingleColumnSqlSelect qualified = preprocessingSelect.qualify(eventFilterTable);
+		String preprocessingTable = selectContext.getTables().cteName(ConceptCteStep.PREPROCESSING);
+		SingleColumnSqlSelect qualified = preprocessingSelect.qualify(preprocessingTable);
 
-		SqlIdColumns ids = selectContext.getIds().qualify(eventFilterTable);
+		SqlIdColumns ids = selectContext.getIds().qualify(preprocessingTable);
 
 		Selects selects = Selects.builder()
 								 .ids(ids)
@@ -133,7 +133,7 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 						.cteName(selectContext.getNameGenerator().cteStepName(DistinctSelectCteStep.DISTINCT_SELECT, alias))
 						.selectDistinct(true)
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(eventFilterTable))
+						.fromTable(QueryStep.toTableLike(preprocessingTable))
 						.build();
 	}
 }
