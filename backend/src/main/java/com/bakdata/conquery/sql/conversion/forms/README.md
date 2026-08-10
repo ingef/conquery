@@ -353,12 +353,11 @@ from "quarters"
 ## Feature conversion
 
 After we got our full stratification table, containing all stratification windows for each ID, we want to convert all
-the features of the form, while using our stratification table as a starting point:
-
-1. When converting a concept and creating the `PREPROCESSING` CTE, which is the starting point of each concept
-   conversion, we join the concepts or respectively the connectors table with the stratification table for all IDs from
-   the stratification table. In the same step, we filter all entries where the stratification range and the subject's
-   validity date do not overlap. This is important because we only want to compute aggregations for overlapping ranges.
+the features of the form, while using our stratification table as a starting point:  
+When converting a concept and creating the `PREPROCESSING` CTE, which is the starting point of each concept 
+conversion, we join the concepts or respectively the connectors table with the stratification table for all IDs from
+the stratification table. In the same step, we filter all entries where the stratification range and the subject's
+validity date do not overlap. This is important because we only want to compute aggregations for overlapping ranges.
 
 **CTE:** `preprocessing`
 

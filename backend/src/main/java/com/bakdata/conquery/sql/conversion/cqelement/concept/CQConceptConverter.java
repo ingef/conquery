@@ -1,5 +1,11 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
@@ -31,12 +37,6 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import static org.jooq.impl.DSL.*;
 
@@ -303,7 +303,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		allSqlFiltersForTable.add(dateRestrictionFilter(conversionContext, validityDateCalculation));
 
 		// convert selects
-		SelectContext<ConnectorSqlTables> selectContext = SelectContext.create(ids, Optional.of(validityDateCalculation.asValidityDateRange(connectorTables.getLabel())), connectorTables, conversionContext);
+		SelectContext<ConnectorSqlTables> selectContext = SelectContext.create(ids, Optional.of(validityDateCalculation.asValidityDateRange(connectorTables.getName())), connectorTables, conversionContext);
 		List<ConnectorSqlSelects> allSelectsForTable = new ArrayList<>();
 		ConnectorSqlSelects conceptColumnSelect = createConceptColumnConnectorSqlSelects(cqConcept, selectContext);
 		allSelectsForTable.add(conceptColumnSelect);
@@ -315,7 +315,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		return CQTableContext.builder()
 				.ids(ids)
-				.connector(connectorTables.getLabel())
+				.connector(connectorTables.getName())
 				.rawValidityDate(validityDateCalculation)
 				.sqlSelects(allSelectsForTable)
 				.sqlFilters(allSqlFiltersForTable)

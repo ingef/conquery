@@ -36,7 +36,7 @@ class CQTableContext implements Context {
 
 
 	public ColumnDateRange getValidityDate() {
-		return rawValidityDate.asValidityDateRange(connectorTables.getLabel());
+		return rawValidityDate.asValidityDateRange(connectorTables.getName());
 	}
 
 	/**
