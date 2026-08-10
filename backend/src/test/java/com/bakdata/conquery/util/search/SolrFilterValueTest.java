@@ -73,7 +73,7 @@ public class SolrFilterValueTest {
 	private static final MockServerExtension REF_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(), SolrFilterValueTest::initRefServer);
 	@RegisterExtension
 	private static final SolrServerExtension SOLR_SERVER = new SolrServerExtension(DATASET_ID.toString());
-	private static final IndexService INDEX_SERVICE = new IndexService(new CsvParserSettings(){{setDelimiterDetectionEnabled(true);setLineSeparatorDetectionEnabled(true);}}, "emptyDefaultLabel");
+	private static final IndexService INDEX_SERVICE = new IndexService(new CsvParserSettings(){{setDelimiterDetectionEnabled(true);setLineSeparatorDetectionEnabled(true);}});
 	public static final SelectFilter<?> FILTER = createFilter();
 	public static SolrConfig solrConfig;
 	public static SolrProcessor searchProcessor;

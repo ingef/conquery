@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
@@ -22,15 +21,23 @@ import lombok.With;
 @Builder
 class CQTableContext implements Context {
 
-
+	String connector;
 	SqlIdColumns ids;
-	ColumnDateRange validityDate;
+	/**
+	 * Unaliased validity-date expression for predicates rendered in the preprocessing SELECT.
+	 */
+	ColumnDateRange rawValidityDate;
 	List<ConnectorSqlSelects> sqlSelects;
 	List<SqlFilters> sqlFilters;
 	ConnectorSqlTables connectorTables;
 	ConversionContext conversionContext;
 	@With
 	QueryStep previous;
+
+
+	public ColumnDateRange getValidityDate() {
+		return rawValidityDate.asValidityDateRange(connectorTables.getName());
+	}
 
 	/**
 	 * @return All {@link ConnectorSqlSelects} that are either required for {@link Filter}'s or {@link Select}'s.
