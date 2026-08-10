@@ -15,10 +15,6 @@ public class DateUnionSelectProvider extends AbstractSelectProvider<DateUnionSel
 		super(DateUnionSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "DATE_UNION";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, DateUnionSelectDefinition payload) {

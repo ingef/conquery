@@ -12,10 +12,6 @@ public class RandomSelectProvider extends AbstractMappableSelectProvider<RandomS
 		super(RandomSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "RANDOM";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, RandomSelectDefinition payload) {

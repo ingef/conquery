@@ -12,10 +12,6 @@ public class FirstSelectProvider extends AbstractMappableSelectProvider<FirstSel
 		super(FirstSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "FIRST";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, FirstSelectDefinition payload) {

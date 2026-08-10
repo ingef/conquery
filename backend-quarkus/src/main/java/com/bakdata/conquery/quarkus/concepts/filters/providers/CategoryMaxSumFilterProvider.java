@@ -19,10 +19,6 @@ public class CategoryMaxSumFilterProvider extends AbstractFilterProvider<Categor
 		super(CategoryMaxSumFilterDefinition.class, IntegerRangeFilterValue.class, MoneyRangeFilterValue.class, RealRangeFilterValue.class);
 	}
 
-	@Override
-	public String type() {
-		return "CATEGORY_MAX_SUM";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, CategoryMaxSumFilterDefinition payload) {
@@ -30,12 +26,6 @@ public class CategoryMaxSumFilterProvider extends AbstractFilterProvider<Categor
 		ColumnId valueColumnId = context.columnId(payload.getValueColumn());
 		required.add(valueColumnId);
 		required.add(context.columnId(payload.getCategoryColumn()));
-		return filter(context, payload, numericRangeValueType(context, valueColumnId), null, null, false, List.copyOf(required));
-	}
-
-	private void addOptional(FilterConversionContext context, List<ColumnId> columns, String value) {
-		if (value != null && !value.isBlank()) {
-			columns.add(context.columnId(value));
-		}
+		return filter(context, payload, numericRangeValueType(context, valueColumnId), null, null, false, required);
 	}
 }

@@ -9,8 +9,4 @@ public class StringFilterValueProvider extends AbstractFilterValueProvider<Strin
 		super(StringFilterValue.class);
 	}
 
-	@Override
-	public String type() {
-		return "STRING";
-	}
 }

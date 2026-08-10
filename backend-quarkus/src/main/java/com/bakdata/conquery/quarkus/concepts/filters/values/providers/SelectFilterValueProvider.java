@@ -10,8 +10,4 @@ public class SelectFilterValueProvider extends AbstractFilterValueProvider<Selec
 		super(SelectFilterValue.class);
 	}
 
-	@Override
-	public String type() {
-		return "SELECT";
-	}
 }

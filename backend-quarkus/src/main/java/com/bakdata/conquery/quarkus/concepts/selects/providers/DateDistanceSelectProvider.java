@@ -15,10 +15,6 @@ public class DateDistanceSelectProvider extends AbstractSingleColumnSelectProvid
 		super(DateDistanceSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "DATE_DISTANCE";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, DateDistanceSelectDefinition payload) {

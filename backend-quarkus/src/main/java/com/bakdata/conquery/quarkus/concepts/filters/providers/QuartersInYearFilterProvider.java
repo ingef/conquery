@@ -13,10 +13,6 @@ public class QuartersInYearFilterProvider extends AbstractFilterProvider<Quarter
 	public QuartersInYearFilterProvider() {
 		super(QuartersInYearFilterDefinition.class, IntegerRangeFilterValue.class);
 	}
-	@Override
-	public String type() {
-		return "QUARTERS_IN_YEAR";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, QuartersInYearFilterDefinition payload) {

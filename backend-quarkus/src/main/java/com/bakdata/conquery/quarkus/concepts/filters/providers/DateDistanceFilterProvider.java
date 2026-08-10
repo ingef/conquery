@@ -13,10 +13,6 @@ public class DateDistanceFilterProvider extends AbstractFilterProvider<DateDista
 	public DateDistanceFilterProvider() {
 		super(DateDistanceFilterDefinition.class, IntegerRangeFilterValue.class);
 	}
-	@Override
-	public String type() {
-		return "DATE_DISTANCE";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, DateDistanceFilterDefinition payload) {

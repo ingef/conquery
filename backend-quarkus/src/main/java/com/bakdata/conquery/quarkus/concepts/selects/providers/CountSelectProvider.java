@@ -16,10 +16,6 @@ public class CountSelectProvider extends AbstractSelectProvider<CountSelectDefin
 		super(CountSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "COUNT";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, CountSelectDefinition payload) {

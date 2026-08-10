@@ -12,10 +12,6 @@ public class LastSelectProvider extends AbstractMappableSelectProvider<LastSelec
 		super(LastSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "LAST";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, LastSelectDefinition payload) {

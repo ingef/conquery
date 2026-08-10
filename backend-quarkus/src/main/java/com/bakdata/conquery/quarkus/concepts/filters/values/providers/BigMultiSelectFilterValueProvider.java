@@ -9,8 +9,4 @@ public class BigMultiSelectFilterValueProvider extends AbstractFilterValueProvid
 		super(BigMultiSelectFilterValue.class);
 	}
 
-	@Override
-	public String type() {
-		return "BIG_MULTI_SELECT";
-	}
 }

@@ -9,8 +9,4 @@ public class RealRangeFilterValueProvider extends AbstractFilterValueProvider<Re
 		super(RealRangeFilterValue.class);
 	}
 
-	@Override
-	public String type() {
-		return "REAL_RANGE";
-	}
 }

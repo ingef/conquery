@@ -12,10 +12,6 @@ public class ConceptValuesConceptSelectProvider extends AbstractConceptSelectPro
 		super(ConceptValuesConceptSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "CONCEPT_VALUES";
-	}
 
 	@Override
 	public DatasetCatalogRepository.ConceptSelect convert(ConceptSelectConversionContext context, ConceptValuesConceptSelectDefinition payload) {

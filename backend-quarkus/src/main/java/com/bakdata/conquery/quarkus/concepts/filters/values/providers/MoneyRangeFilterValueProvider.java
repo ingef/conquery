@@ -9,8 +9,4 @@ public class MoneyRangeFilterValueProvider extends AbstractFilterValueProvider<M
 		super(MoneyRangeFilterValue.class);
 	}
 
-	@Override
-	public String type() {
-		return "MONEY_RANGE";
-	}
 }

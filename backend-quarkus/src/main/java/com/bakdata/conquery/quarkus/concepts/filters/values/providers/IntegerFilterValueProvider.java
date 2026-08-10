@@ -9,8 +9,4 @@ public class IntegerFilterValueProvider extends AbstractFilterValueProvider<Inte
 		super(IntegerFilterValue.class);
 	}
 
-	@Override
-	public String type() {
-		return "INTEGER";
-	}
 }

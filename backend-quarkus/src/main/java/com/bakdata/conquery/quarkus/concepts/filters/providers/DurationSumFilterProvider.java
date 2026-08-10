@@ -12,10 +12,6 @@ public class DurationSumFilterProvider extends AbstractFilterProvider<DurationSu
 	public DurationSumFilterProvider() {
 		super(DurationSumFilterDefinition.class, IntegerRangeFilterValue.class);
 	}
-	@Override
-	public String type() {
-		return "DURATION_SUM";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, DurationSumFilterDefinition payload) {

@@ -16,10 +16,6 @@ public class NumberFilterProvider extends AbstractFilterProvider<NumberFilterDef
 	public NumberFilterProvider() {
 		super(NumberFilterDefinition.class, IntegerRangeFilterValue.class, MoneyRangeFilterValue.class, RealRangeFilterValue.class);
 	}
-	@Override
-	public String type() {
-		return "NUMBER";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, NumberFilterDefinition payload) {

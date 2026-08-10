@@ -17,10 +17,6 @@ public class SumFilterProvider extends AbstractFilterProvider<SumFilterDefinitio
 	public SumFilterProvider() {
 		super(SumFilterDefinition.class, IntegerRangeFilterValue.class, MoneyRangeFilterValue.class, RealRangeFilterValue.class);
 	}
-	@Override
-	public String type() {
-		return "SUM";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, SumFilterDefinition payload) {

@@ -61,8 +61,10 @@ families are exposed in the OpenAPI document at `GET /q/openapi` as `oneOf` sche
 
 Filter, select, and concept-condition implementations are extensible from another CDI-enabled JAR. A filter extension provides:
 
-1. A concrete class implementing `FilterDefinition`, annotated with OpenAPI `@Schema`.
-2. A CDI bean implementing `FilterDefinitionProvider<T>` for its type id, model class, and business-model conversion.
+1. A concrete class implementing `FilterDefinition`, annotated with OpenAPI `@Schema` and
+   `@PolymorphicModelSubtype(base = FilterDefinition.class, id = "...")`.
+2. A CDI bean implementing `FilterDefinitionProvider<T>` for its model class and business-model conversion and integrity validation. The
+   provider remains the discovery hook for implementations from external JARs.
 3. The filter value model types accepted by that provider. Each model type needs a registered `FilterValueProvider<T>`.
 
 Connector selects use the equivalent `SelectDefinition` and `SelectDefinitionProvider<T>` extension points. Concept-level

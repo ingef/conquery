@@ -13,5 +13,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 )
 public interface FilterValue {
 
+	@Schema(description = "The filter this value submitted to.")
 	FilterId filter();
 }

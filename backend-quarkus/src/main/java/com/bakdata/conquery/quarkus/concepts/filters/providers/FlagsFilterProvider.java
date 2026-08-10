@@ -11,10 +11,6 @@ public class FlagsFilterProvider extends AbstractFilterProvider<FlagsFilterDefin
 	public FlagsFilterProvider() {
 		super(FlagsFilterDefinition.class, MultiSelectFilterValue.class);
 	}
-	@Override
-	public String type() {
-		return "FLAGS";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, FlagsFilterDefinition payload) {

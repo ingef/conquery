@@ -29,9 +29,9 @@ public class FilterDefinitionRegistry {
 				throw new IllegalStateException("Filter provider " + provider.getClass().getName() + " does not declare any accepted filter value types");
 			}
 			provider.acceptedValueTypes().forEach(filterValueRegistry::require);
-			FilterDefinitionProvider<?> previous = index.put(provider.payloadType(), provider);
+			FilterDefinitionProvider<?> previous = index.put(provider.modelType(), provider);
 			if (previous != null) {
-				throw new IllegalStateException("Duplicate filter provider for model type " + provider.payloadType().getName() + ": " + previous.getClass().getName() + " and " + provider.getClass().getName());
+				throw new IllegalStateException("Duplicate filter provider for model type " + provider.modelType().getName() + ": " + previous.getClass().getName() + " and " + provider.getClass().getName());
 			}
 		}
 		providersByModelType = Map.copyOf(index);

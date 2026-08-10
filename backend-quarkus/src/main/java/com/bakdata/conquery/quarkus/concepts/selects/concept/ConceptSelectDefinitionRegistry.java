@@ -21,9 +21,9 @@ public class ConceptSelectDefinitionRegistry {
 	void init() {
 		Map<Class<? extends ConceptSelectDefinition>, ConceptSelectDefinitionProvider<?>> index = new LinkedHashMap<>();
 		for (ConceptSelectDefinitionProvider<?> provider : providers) {
-			ConceptSelectDefinitionProvider<?> previous = index.put(provider.payloadType(), provider);
+			ConceptSelectDefinitionProvider<?> previous = index.put(provider.modelType(), provider);
 			if (previous != null) {
-				throw new IllegalStateException("Duplicate concept select provider for model type " + provider.payloadType().getName() + ": " + previous.getClass().getName() + " and " + provider.getClass().getName());
+				throw new IllegalStateException("Duplicate concept select provider for model type " + provider.modelType().getName() + ": " + previous.getClass().getName() + " and " + provider.getClass().getName());
 			}
 		}
 		providersByModelType = Map.copyOf(index);

@@ -12,10 +12,6 @@ public class QuarterConceptSelectProvider extends AbstractConceptSelectProvider<
 		super(QuarterConceptSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "QUARTER";
-	}
 
 	@Override
 	public DatasetCatalogRepository.ConceptSelect convert(ConceptSelectConversionContext context, QuarterConceptSelectDefinition payload) {

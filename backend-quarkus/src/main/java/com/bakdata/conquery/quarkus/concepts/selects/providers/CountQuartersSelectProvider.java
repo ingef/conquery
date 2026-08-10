@@ -15,10 +15,6 @@ public class CountQuartersSelectProvider extends AbstractSelectProvider<CountQua
 		super(CountQuartersSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "COUNT_QUARTERS";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, CountQuartersSelectDefinition payload) {

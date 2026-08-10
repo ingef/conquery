@@ -13,10 +13,6 @@ public class CountQuartersFilterProvider extends AbstractFilterProvider<CountQua
 	public CountQuartersFilterProvider() {
 		super(CountQuartersFilterDefinition.class, IntegerRangeFilterValue.class);
 	}
-	@Override
-	public String type() {
-		return "COUNT_QUARTERS";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, CountQuartersFilterDefinition payload) {

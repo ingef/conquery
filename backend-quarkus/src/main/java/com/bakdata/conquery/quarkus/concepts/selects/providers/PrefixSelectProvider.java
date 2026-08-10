@@ -15,10 +15,6 @@ public class PrefixSelectProvider extends AbstractSingleColumnSelectProvider<Pre
 		super(PrefixSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "PREFIX";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, PrefixSelectDefinition payload) {

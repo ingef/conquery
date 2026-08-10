@@ -15,10 +15,6 @@ public class SelectFilterProvider extends AbstractFilterProvider<MultiSelectFilt
 	public SelectFilterProvider() {
 		super(MultiSelectFilterDefinition.class, MultiSelectFilterValue.class, BigMultiSelectFilterValue.class);
 	}
-	@Override
-	public String type() {
-		return "SELECT";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, MultiSelectFilterDefinition payload) {

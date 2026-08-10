@@ -10,8 +10,4 @@ public class NotConceptConditionProvider extends AbstractConceptConditionProvide
 		super(NotConceptCondition.class);
 	}
 
-	@Override
-	public String type() {
-		return "NOT";
-	}
 }

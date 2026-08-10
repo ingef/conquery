@@ -15,10 +15,6 @@ public class DistinctSelectProvider extends AbstractMappableSelectProvider<Disti
 		super(DistinctSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "DISTINCT";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, DistinctSelectDefinition payload) {

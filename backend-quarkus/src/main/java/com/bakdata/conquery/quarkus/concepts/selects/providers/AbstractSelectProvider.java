@@ -15,15 +15,15 @@ import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 
 abstract class AbstractSelectProvider<T extends AbstractSelectDefinition> implements SelectDefinitionProvider<T> {
 
-	private final Class<T> payloadType;
+	private final Class<T> modelType;
 
-	protected AbstractSelectProvider(Class<T> payloadType) {
-		this.payloadType = payloadType;
+	protected AbstractSelectProvider(Class<T> modelType) {
+		this.modelType = modelType;
 	}
 
 	@Override
-	public Class<T> payloadType() {
-		return payloadType;
+	public Class<T> modelType() {
+		return modelType;
 	}
 
 	protected DatasetCatalogRepository.Select select(

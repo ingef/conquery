@@ -10,8 +10,4 @@ public class PresentConceptConditionProvider extends AbstractConceptConditionPro
 		super(PresentConceptCondition.class);
 	}
 
-	@Override
-	public String type() {
-		return "PRESENT";
-	}
 }

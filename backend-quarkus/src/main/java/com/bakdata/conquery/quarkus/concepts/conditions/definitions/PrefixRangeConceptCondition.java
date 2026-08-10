@@ -1,5 +1,7 @@
 package com.bakdata.conquery.quarkus.concepts.conditions.definitions;
 
+import com.bakdata.conquery.quarkus.concepts.conditions.ConceptCondition;
+import com.bakdata.conquery.quarkus.models.PolymorphicModelSubtype;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -9,6 +11,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @Getter
 @Setter
 @Schema(name = "MetadataPrefixRangeConceptCondition", description = "Matches fixed-length prefixes inside an inclusive lexical range.")
+@PolymorphicModelSubtype(base = ConceptCondition.class, id = "PREFIX_RANGE")
 public final class PrefixRangeConceptCondition extends AbstractConceptCondition {
 
 	@NotBlank

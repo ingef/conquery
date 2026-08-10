@@ -15,10 +15,6 @@ public class FlagsSelectProvider extends AbstractSelectProvider<FlagsSelectDefin
 		super(FlagsSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "FLAGS";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, FlagsSelectDefinition payload) {

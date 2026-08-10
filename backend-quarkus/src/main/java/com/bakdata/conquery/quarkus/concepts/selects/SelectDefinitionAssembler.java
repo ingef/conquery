@@ -57,6 +57,6 @@ public class SelectDefinitionAssembler {
 	}
 
 	private <T extends SelectDefinition> DatasetCatalogRepository.Select convert(SelectConversionContext context, SelectDefinition definition, SelectDefinitionProvider<T> provider) {
-		return provider.convert(context, provider.payloadType().cast(definition));
+		return provider.convert(context, provider.modelType().cast(definition));
 	}
 }

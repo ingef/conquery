@@ -4,22 +4,7 @@ import com.bakdata.conquery.quarkus.models.PolymorphicModelTypeProvider;
 
 public interface FilterValueProvider<T extends FilterValue> extends PolymorphicModelTypeProvider<FilterValue, T> {
 
-	String type();
-
-	Class<T> payloadType();
-
-	@Override
-	default Class<FilterValue> baseType() {
-		return FilterValue.class;
-	}
-
-	@Override
-	default String typeId() {
-		return type();
-	}
-
-	@Override
-	default Class<T> modelType() {
-		return payloadType();
+	default String type() {
+		return typeId();
 	}
 }

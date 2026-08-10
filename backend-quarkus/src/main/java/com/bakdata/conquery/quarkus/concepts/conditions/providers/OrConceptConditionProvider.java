@@ -10,8 +10,4 @@ public class OrConceptConditionProvider extends AbstractConceptConditionProvider
 		super(OrConceptCondition.class);
 	}
 
-	@Override
-	public String type() {
-		return "OR";
-	}
 }

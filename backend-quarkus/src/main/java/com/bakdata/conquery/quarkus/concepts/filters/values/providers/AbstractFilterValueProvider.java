@@ -5,14 +5,14 @@ import com.bakdata.conquery.quarkus.concepts.filters.values.FilterValueProvider;
 
 abstract class AbstractFilterValueProvider<T extends FilterValue> implements FilterValueProvider<T> {
 
-	private final Class<T> payloadType;
+	private final Class<T> modelType;
 
-	protected AbstractFilterValueProvider(Class<T> payloadType) {
-		this.payloadType = payloadType;
+	protected AbstractFilterValueProvider(Class<T> modelType) {
+		this.modelType = modelType;
 	}
 
 	@Override
-	public Class<T> payloadType() {
-		return payloadType;
+	public Class<T> modelType() {
+		return modelType;
 	}
 }

@@ -13,10 +13,6 @@ public class BigMultiSelectFilterProvider extends AbstractFilterProvider<BigMult
 	public BigMultiSelectFilterProvider() {
 		super(BigMultiSelectFilterDefinition.class, BigMultiSelectFilterValue.class);
 	}
-	@Override
-	public String type() {
-		return "BIG_MULTI_SELECT";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, BigMultiSelectFilterDefinition payload) {

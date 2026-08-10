@@ -12,10 +12,6 @@ public class CountFilterProvider extends AbstractFilterProvider<CountFilterDefin
 	public CountFilterProvider() {
 		super(CountFilterDefinition.class, IntegerRangeFilterValue.class);
 	}
-	@Override
-	public String type() {
-		return "COUNT";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, CountFilterDefinition payload) {

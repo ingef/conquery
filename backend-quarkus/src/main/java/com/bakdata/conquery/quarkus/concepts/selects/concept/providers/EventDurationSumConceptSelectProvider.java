@@ -12,10 +12,6 @@ public class EventDurationSumConceptSelectProvider extends AbstractConceptSelect
 		super(EventDurationSumConceptSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "EVENT_DURATION_SUM";
-	}
 
 	@Override
 	public DatasetCatalogRepository.ConceptSelect convert(ConceptSelectConversionContext context, EventDurationSumConceptSelectDefinition payload) {

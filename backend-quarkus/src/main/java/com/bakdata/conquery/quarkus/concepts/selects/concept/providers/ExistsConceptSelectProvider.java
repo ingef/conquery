@@ -12,10 +12,6 @@ public class ExistsConceptSelectProvider extends AbstractConceptSelectProvider<E
 		super(ExistsConceptSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "EXISTS";
-	}
 
 	@Override
 	public DatasetCatalogRepository.ConceptSelect convert(ConceptSelectConversionContext context, ExistsConceptSelectDefinition payload) {

@@ -54,6 +54,6 @@ public class ConceptSelectDefinitionAssembler {
 	}
 
 	private <T extends ConceptSelectDefinition> DatasetCatalogRepository.ConceptSelect convert(ConceptSelectConversionContext context, ConceptSelectDefinition definition, ConceptSelectDefinitionProvider<T> provider) {
-		return provider.convert(context, provider.payloadType().cast(definition));
+		return provider.convert(context, provider.modelType().cast(definition));
 	}
 }

@@ -10,8 +10,4 @@ public class EqualConceptConditionProvider extends AbstractConceptConditionProvi
 		super(EqualConceptCondition.class);
 	}
 
-	@Override
-	public String type() {
-		return "EQUAL";
-	}
 }

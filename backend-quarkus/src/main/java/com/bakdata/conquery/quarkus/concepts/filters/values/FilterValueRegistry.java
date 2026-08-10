@@ -20,9 +20,9 @@ public class FilterValueRegistry {
 	void init() {
 		Map<Class<? extends FilterValue>, FilterValueProvider<?>> index = new LinkedHashMap<>();
 		for (FilterValueProvider<?> provider : providers) {
-			FilterValueProvider<?> previous = index.put(provider.payloadType(), provider);
+			FilterValueProvider<?> previous = index.put(provider.modelType(), provider);
 			if (previous != null) {
-				throw new IllegalStateException("Duplicate filter value provider for model type " + provider.payloadType().getName() + ": " + previous.getClass().getName() + " and " + provider.getClass().getName());
+				throw new IllegalStateException("Duplicate filter value provider for model type " + provider.modelType().getName() + ": " + previous.getClass().getName() + " and " + provider.getClass().getName());
 			}
 		}
 		providersByModelType = Map.copyOf(index);

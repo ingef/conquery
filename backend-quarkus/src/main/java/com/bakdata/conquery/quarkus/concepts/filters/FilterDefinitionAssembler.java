@@ -66,7 +66,7 @@ public class FilterDefinitionAssembler {
 	}
 
 	private <T extends FilterDefinition> DatasetCatalogRepository.Filter convert(FilterConversionContext context, FilterDefinition definition, FilterDefinitionProvider<T> provider) {
-		T payload = provider.payloadType().cast(definition);
+		T payload = provider.modelType().cast(definition);
 		DatasetCatalogRepository.Filter filter = provider.convert(context, payload);
 		Set<String> acceptedTypes = provider.acceptedValueTypes().stream()
 				.map(filterValueRegistry::require)

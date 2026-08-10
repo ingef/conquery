@@ -23,21 +23,21 @@ import jakarta.inject.Inject;
 
 abstract class AbstractFilterProvider<T extends AbstractFilterDefinition> implements FilterDefinitionProvider<T> {
 
-	private final Class<T> payloadType;
+	private final Class<T> modelType;
 	private final Set<Class<? extends FilterValue>> acceptedValueTypes;
 
 	@Inject
 	FilterValueRegistry filterValueRegistry;
 
 	@SafeVarargs
-	protected AbstractFilterProvider(Class<T> payloadType, Class<? extends FilterValue>... acceptedValueTypes) {
-		this.payloadType = payloadType;
+	protected AbstractFilterProvider(Class<T> modelType, Class<? extends FilterValue>... acceptedValueTypes) {
+		this.modelType = modelType;
 		this.acceptedValueTypes = Set.of(acceptedValueTypes);
 	}
 
 	@Override
-	public Class<T> payloadType() {
-		return payloadType;
+	public Class<T> modelType() {
+		return modelType;
 	}
 
 	@Override

@@ -9,8 +9,4 @@ public class MultiSelectFilterValueProvider extends AbstractFilterValueProvider<
 		super(MultiSelectFilterValue.class);
 	}
 
-	@Override
-	public String type() {
-		return "MULTI_SELECT";
-	}
 }

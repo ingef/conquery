@@ -10,8 +10,4 @@ public class ColumnEqualConceptConditionProvider extends AbstractConceptConditio
 		super(ColumnEqualConceptCondition.class);
 	}
 
-	@Override
-	public String type() {
-		return "COLUMN_EQUAL";
-	}
 }

@@ -9,8 +9,4 @@ public class RealFilterValueProvider extends AbstractFilterValueProvider<RealFil
 		super(RealFilterValue.class);
 	}
 
-	@Override
-	public String type() {
-		return "REAL";
-	}
 }

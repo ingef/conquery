@@ -12,10 +12,6 @@ public class EventDateUnionConceptSelectProvider extends AbstractConceptSelectPr
 		super(EventDateUnionConceptSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "EVENT_DATE_UNION";
-	}
 
 	@Override
 	public DatasetCatalogRepository.ConceptSelect convert(ConceptSelectConversionContext context, EventDateUnionConceptSelectDefinition payload) {

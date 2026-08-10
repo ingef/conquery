@@ -14,10 +14,6 @@ public class SingleSelectFilterProvider extends AbstractFilterProvider<SingleSel
 	public SingleSelectFilterProvider() {
 		super(SingleSelectFilterDefinition.class, SelectFilterValue.class);
 	}
-	@Override
-	public String type() {
-		return "SINGLE_SELECT";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, SingleSelectFilterDefinition payload) {

@@ -16,10 +16,6 @@ public class SumSelectProvider extends AbstractSingleColumnSelectProvider<SumSel
 		super(SumSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "SUM";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, SumSelectDefinition payload) {

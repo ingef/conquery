@@ -15,10 +15,6 @@ public class DurationSumSelectProvider extends AbstractSelectProvider<DurationSu
 		super(DurationSumSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "DURATION_SUM";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, DurationSumSelectDefinition payload) {

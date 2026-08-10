@@ -10,8 +10,4 @@ public class PrefixRangeConceptConditionProvider extends AbstractConceptConditio
 		super(PrefixRangeConceptCondition.class);
 	}
 
-	@Override
-	public String type() {
-		return "PREFIX_RANGE";
-	}
 }

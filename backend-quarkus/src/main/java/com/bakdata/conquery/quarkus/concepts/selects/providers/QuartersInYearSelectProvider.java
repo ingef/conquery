@@ -15,10 +15,6 @@ public class QuartersInYearSelectProvider extends AbstractSingleColumnSelectProv
 		super(QuartersInYearSelectDefinition.class);
 	}
 
-	@Override
-	public String type() {
-		return "QUARTERS_IN_YEAR";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, QuartersInYearSelectDefinition payload) {

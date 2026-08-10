@@ -10,8 +10,4 @@ public class PrefixListConceptConditionProvider extends AbstractConceptCondition
 		super(PrefixListConceptCondition.class);
 	}
 
-	@Override
-	public String type() {
-		return "PREFIX_LIST";
-	}
 }

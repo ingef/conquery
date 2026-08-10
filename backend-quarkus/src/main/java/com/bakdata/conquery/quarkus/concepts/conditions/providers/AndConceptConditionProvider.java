@@ -10,8 +10,4 @@ public class AndConceptConditionProvider extends AbstractConceptConditionProvide
 		super(AndConceptCondition.class);
 	}
 
-	@Override
-	public String type() {
-		return "AND";
-	}
 }

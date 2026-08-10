@@ -13,10 +13,6 @@ public class PrefixTextFilterProvider extends AbstractFilterProvider<PrefixTextF
 	public PrefixTextFilterProvider() {
 		super(PrefixTextFilterDefinition.class, StringFilterValue.class);
 	}
-	@Override
-	public String type() {
-		return "PREFIX_TEXT";
-	}
 
 	@Override
 	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, PrefixTextFilterDefinition payload) {
