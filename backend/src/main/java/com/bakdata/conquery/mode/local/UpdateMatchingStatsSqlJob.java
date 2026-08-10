@@ -1,5 +1,12 @@
 package com.bakdata.conquery.mode.local;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
@@ -11,19 +18,14 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.map.HashedMap;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 @Slf4j
 @Data
+@EqualsAndHashCode(callSuper = false)
 public class UpdateMatchingStatsSqlJob extends Job {
 
 	@ToString.Exclude
@@ -48,7 +50,16 @@ public class UpdateMatchingStatsSqlJob extends Job {
 
 		for (Concept<?> concept : concepts) {
 			if (concept instanceof TreeConcept) {
-				jobsByConcept.put(concept.getId(), matchingStats.collectMatchingStatsForConcept((TreeConcept) concept, executorService, getMatchingStats().getMatchingStatsRetries()));
+				ListenableFuture<?> job = matchingStats.collectMatchingStatsForConcept((TreeConcept) concept, executorService, getMatchingStats().getMatchingStatsRetries());
+
+				job.addListener(
+						() -> {
+							if (job.state().equals(Future.State.FAILED)) {
+								log.warn("FAILED to collect SQL matching stats for {}", concept, job.exceptionNow());
+							}
+						}, MoreExecutors.directExecutor());
+
+				jobsByConcept.put(concept.getId(), job);
 			}
 		}
 
@@ -71,12 +82,6 @@ public class UpdateMatchingStatsSqlJob extends Job {
 				}
 
 				log.debug("WAITING for {} matching stats to finish.", jobs.stream().filter(job -> job.state().equals(Future.State.RUNNING)).count());
-			}
-		}
-
-		for (Map.Entry<ConceptId, ListenableFuture<?>> conceptState : jobsByConcept.entrySet()) {
-			if (conceptState.getValue().state().equals(Future.State.FAILED)) {
-				log.warn("FAILED to collect SQL matching stats for {}", conceptState.getKey(), conceptState.getValue().exceptionNow());
 			}
 		}
 

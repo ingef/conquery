@@ -33,16 +33,13 @@ public class ManagedConnection implements Managed {
 		dataSource = connection.createDataSource(healthCheckRegistry);
 		try {
 			log.debug("TEST connecting to {}", connection.getJdbcConnectionUrl());
-			if (dataSource.getConnection().isValid(100)) {
+			if (dataSource.getConnection().isValid(1000)) {
 				log.info("SUCCESS connecting to {}", connection.getJdbcConnectionUrl());
-			}
-			else {
+			} else {
 				log.error("FAILED connecting to {}. Connection did not become valid.", connection.getJdbcConnectionUrl());
 			}
-		}
-		catch (SQLException exception) {
-			log.error("FAILED connecting to {}", connection.getJdbcConnectionUrl(), exception);
-			throw exception;
+		} catch (SQLException exception) {
+			throw new RuntimeException("FAILED connecting to %s".formatted(connection.getJdbcConnectionUrl()), exception);
 		}
 	}
 
