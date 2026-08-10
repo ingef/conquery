@@ -2,44 +2,21 @@ package com.bakdata.conquery.apiv1;
 
 import java.text.NumberFormat;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalLong;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import jakarta.inject.Inject;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
-import com.bakdata.conquery.apiv1.query.CQElement;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
-import com.bakdata.conquery.apiv1.query.ExternalUpload;
-import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
-import com.bakdata.conquery.apiv1.query.Query;
-import com.bakdata.conquery.apiv1.query.QueryDescription;
-import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
+import com.bakdata.conquery.apiv1.query.*;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
@@ -63,17 +40,9 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
-import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.preview.EntityPreviewExecution;
 import com.bakdata.conquery.models.query.preview.EntityPreviewForm;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
@@ -88,6 +57,12 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.bakdata.conquery.util.io.IdColumnUtil;
+import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -106,6 +81,53 @@ public class QueryProcessor {
 	@Inject
 	private Validator validator;
 
+	/**
+	 * Test if the query is structured in a way the Frontend can render it.
+	 */
+	private static boolean canFrontendRender(ManagedExecution q) {
+		if (!(q instanceof ManagedQuery)) {
+			return false;
+		}
+
+		final Query query = ((ManagedQuery) q).getQuery();
+
+		return switch (query) {
+			case ConceptQuery ignored -> true;
+			case SecondaryIdQuery ignored -> true;
+			case null -> throw new IllegalArgumentException("Query cannot be null");
+			default -> false;
+		};
+
+	}
+
+	/**
+	 * Sets the result urls for the given result renderer. Result urls are only rendered for providers that match the
+	 * result type of the execution.
+	 *
+	 * @param renderer     The renderer that are requested for a result url generation.
+	 * @param exec         The execution that is used for generating the url
+	 * @param uriBuilder   The Uribuilder with the base configuration to generate the urls
+	 * @param allProviders If true, forces {@link ResultRendererProvider} to return an URL if possible.
+	 * @return The modified status
+	 */
+	public static List<ResultAsset> getResultAssets(
+			List<ResultRendererProvider> renderer, ManagedExecution exec,
+			UriBuilder uriBuilder, boolean allProviders) {
+
+		return renderer.stream()
+				.map(rendererProvider -> {
+					try {
+						return rendererProvider.generateResultURLs(exec, uriBuilder.clone(), allProviders);
+					} catch (Exception e) {
+						log.error("Cannot generate result urls for execution '{}' with provider {}", exec.getId(), rendererProvider, e);
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.flatMap(Collection::stream)
+				.toList();
+
+	}
 
 	public List<? extends ExecutionStatus> getAllQueries(DatasetId dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
 		try (Stream<ManagedExecutionId> allQueries = storage.getAllExecutionIds()) {
@@ -145,71 +167,12 @@ public class QueryProcessor {
 							status.setResultUrls(getResultAssets(config.getResultProviders(), mq, uriBuilder, allProviders));
 						}
 						return status;
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						log.error("FAILED building status for {}", mq, e);
 					}
 					return null;
 				})
 				.filter(Objects::nonNull);
-	}
-
-	/**
-	 * Test if the query is structured in a way the Frontend can render it.
-	 */
-	private static boolean canFrontendRender(ManagedExecution q) {
-		//TODO FK: should this be used to fill into canExpand instead of hiding the Executions?
-		if (!(q instanceof ManagedQuery)) {
-			return false;
-		}
-
-		final Query query = ((ManagedQuery) q).getQuery();
-
-		return switch (query) {
-			case ConceptQuery conceptQuery -> isFrontendStructure(conceptQuery.getRoot());
-			case SecondaryIdQuery secondaryIdQuery -> isFrontendStructure(secondaryIdQuery.getRoot());
-			case null, default -> false;
-		};
-
-	}
-
-	/**
-	 * Sets the result urls for the given result renderer. Result urls are only rendered for providers that match the
-	 * result type of the execution.
-	 *
-	 * @param renderer     The renderer that are requested for a result url generation.
-	 * @param exec         The execution that is used for generating the url
-	 * @param uriBuilder   The Uribuilder with the base configuration to generate the urls
-	 * @param allProviders If true, forces {@link ResultRendererProvider} to return an URL if possible.
-	 * @return The modified status
-	 */
-	public static List<ResultAsset> getResultAssets(
-			List<ResultRendererProvider> renderer, ManagedExecution exec,
-			UriBuilder uriBuilder, boolean allProviders) {
-
-		return renderer.stream()
-					   .map(rendererProvider -> {
-						   try {
-							   return rendererProvider.generateResultURLs(exec, uriBuilder.clone(), allProviders);
-						   }
-						   catch (Exception e) {
-							   log.error("Cannot generate result urls for execution '{}' with provider {}", exec.getId(), rendererProvider, e);
-							   return null;
-						   }
-					   })
-					   .filter(Objects::nonNull)
-					   .flatMap(Collection::stream)
-					   .toList();
-
-	}
-
-	/**
-	 * Frontend can only render very specific formats properly.
-	 *
-	 * @implNote We filter for just the bare minimum, as the structure of the frontend is very specific and hard to fix in java code.
-	 */
-	public static boolean isFrontendStructure(CQElement root) {
-		return root instanceof CQAnd || root instanceof CQExternal;
 	}
 
 	/**
@@ -263,8 +226,8 @@ public class QueryProcessor {
 				}
 
 				final MetaDataPatch sharePatch = MetaDataPatch.builder()
-															  .groups(new ArrayList<>(groupsToShareWith))
-															  .build();
+						.groups(new ArrayList<>(groupsToShareWith))
+						.build();
 
 				patchQuery(subject, subExecutionId, sharePatch);
 			}
@@ -294,8 +257,8 @@ public class QueryProcessor {
 		log.info("User[{}] deleted Query[{}]", subject.getId(), executionId);
 
 		datasetRegistry.get(executionId.getDataset())
-					   .getExecutionManager() // Don't go over execution#getExecutionManager() as that's only set when query is initialized
-					   .clearQueryResults(executionId);
+				.getExecutionManager() // Don't go over execution#getExecutionManager() as that's only set when query is initialized
+				.clearQueryResults(executionId);
 
 		storage.removeExecution(executionId);
 	}
@@ -338,8 +301,8 @@ public class QueryProcessor {
 		// Resolving nothing is a problem thus we fail.
 		if (statistic.getResolved().isEmpty()) {
 			throw new BadRequestException(Response.status(Response.Status.BAD_REQUEST)
-												  .entity(new ExternalUploadResult(null, 0, statistic.getUnresolvedId(), statistic.getUnreadableDate()))
-												  .build());
+					.entity(new ExternalUploadResult(null, 0, statistic.getUnresolvedId(), statistic.getUnreadableDate()))
+					.build());
 		}
 
 		final ConceptQuery query = new ConceptQuery(new CQExternal(upload.getFormat(), upload.getValues(), upload.isOneRowPerEntity()));
@@ -563,39 +526,39 @@ public class QueryProcessor {
 
 
 		final List<ColumnConfig> ids = config.getIdColumns()
-											 .getIds().stream()
-											 // We're only interested in returning printable ids
-											 .filter(ColumnConfig::isPrint)
-											 .collect(Collectors.toList());
+				.getIds().stream()
+				// We're only interested in returning printable ids
+				.filter(ColumnConfig::isPrint)
+				.collect(Collectors.toList());
 
 
 		final Map<String, Integer> id2index = IntStream.range(0, ids.size())
-													   .boxed()
-													   .collect(Collectors.toMap(
-															   idx -> ids.get(idx).getName(),
-															   idx -> idx
-													   ));
+				.boxed()
+				.collect(Collectors.toMap(
+						idx -> ids.get(idx).getName(),
+						idx -> idx
+				));
 
 		final IdPrinter printer = IdColumnUtil.getIdPrinter(subject, execution, namespace, ids);
 
 		// For each included entity emit a Map of { Id-Name -> Id-Value }
 		return result.streamResults(OptionalLong.empty())
-					 .map(printer::createId)
-					 .map(entityPrintId -> {
-						 final Map<String, String> out = new HashMap<>();
+				.map(printer::createId)
+				.map(entityPrintId -> {
+					final Map<String, String> out = new HashMap<>();
 
-						 for (Map.Entry<String, Integer> entry : id2index.entrySet()) {
-							 // Not all ExternalIds are expected to be set.
-							 if (entityPrintId.getExternalId()[entry.getValue()] == null) {
-								 continue;
-							 }
+					for (Map.Entry<String, Integer> entry : id2index.entrySet()) {
+						// Not all ExternalIds are expected to be set.
+						if (entityPrintId.getExternalId()[entry.getValue()] == null) {
+							continue;
+						}
 
-							 out.put(entry.getKey(), entityPrintId.getExternalId()[entry.getValue()]);
-						 }
+						out.put(entry.getKey(), entityPrintId.getExternalId()[entry.getValue()]);
+					}
 
-						 return out;
-					 })
-					 .filter(Predicate.not(Map::isEmpty));
+					return out;
+				})
+				.filter(Predicate.not(Map::isEmpty));
 	}
 
 	public <E extends ManagedExecution & SingleTableResult> ResultStatistics getResultStatistics(ManagedExecutionId queryId, Subject subject) {
@@ -635,13 +598,13 @@ public class QueryProcessor {
 		final Optional<Integer> dateIndex = dateInfo.map(resultInfos::indexOf);
 
 		return ResultStatistics.collectResultStatistics(managedQuery,
-														resultInfos,
-														dateInfo,
-														dateIndex,
-														printSettings,
-														uniqueNamer,
-														config,
-														new JavaResultPrinters()
+				resultInfos,
+				dateInfo,
+				dateIndex,
+				printSettings,
+				uniqueNamer,
+				config,
+				new JavaResultPrinters()
 		);
 	}
 
