@@ -203,11 +203,11 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 				.toList();
 
 		final QueryStep unionedTables = QueryStep.createUnionAllStep(
-						convertedTables,
-						null, // no CTE name required as this step will be the final select
-						List.of(convertedPrerequisite),
-						context.isNegation(), context.getFunctionProvider()
-				);
+				convertedTables,
+				null, // no CTE name required as this step will be the final select
+				List.of(convertedPrerequisite),
+				context.isNegation(), context.getFunctionProvider()
+		);
 		final Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables, context.getFunctionProvider());
 
 		return context.withFinalQuery(new SqlQuery(selectQuery, tableExportQuery.getResultInfos()));
