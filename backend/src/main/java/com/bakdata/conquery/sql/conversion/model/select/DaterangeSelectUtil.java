@@ -142,7 +142,7 @@ public class DaterangeSelectUtil {
 
 	private static SqlTables createTables(String alias, ConnectorSqlTables connectorTables, Context context) {
 		Map<CteStep, CteStep> predecessorMapping = new HashMap<>();
-		String eventFilterCteName = connectorTables.cteName(EVENT_FILTER);
+		String preprocessingCteName = connectorTables.cteName(PREPROCESSING);
 		predecessorMapping.putAll(IntervalPackingCteStep.getMappings(context.getDialectBundle()));
 		if (context.getDialectBundle().supportsSingleColumnRanges()) {
 			predecessorMapping.put(UNNEST_DATE, INTERVAL_COMPLETE);
@@ -152,7 +152,7 @@ public class DaterangeSelectUtil {
 			predecessorMapping.put(INTERVAL_PACKING_SELECTS, INTERVAL_COMPLETE);
 		}
 		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(predecessorMapping.keySet(), alias, context.getNameGenerator());
-		return new SqlTables(eventFilterCteName, cteNameMap, predecessorMapping);
+		return new SqlTables(preprocessingCteName, cteNameMap, predecessorMapping);
 	}
 
 	private static QueryStep applyIntervalPacking(
@@ -162,12 +162,12 @@ public class DaterangeSelectUtil {
 			ConnectorSqlTables connectorSqlTables,
 			DialectBundle sqlDialect
 	) {
-		String eventFilterCteName = connectorSqlTables.cteName(EVENT_FILTER);
+		String preprocessingCteName = connectorSqlTables.cteName(PREPROCESSING);
 		IntervalPackingContext intervalPackingContext = IntervalPackingContext.builder()
-																			  .ids(idColumns.qualify(eventFilterCteName))
-																			  .daterange(daterange.qualify(eventFilterCteName))
-																			  .tables(dateUnionTables)
-																			  .build();
+																							  .ids(idColumns.qualify(preprocessingCteName))
+																							  .daterange(daterange.qualify(preprocessingCteName))
+																							  .tables(dateUnionTables)
+																							  .build();
 
 		return sqlDialect
 				.getIntervalPacker()

@@ -44,9 +44,9 @@ public interface SqlFunctionProvider {
 	 */
 	default Field<?> asArrayRepr(List<String> value) {
 		return field(value.stream()
-						   .map(DSL::inline)
-						   .map(Field::toString)
-						   .collect(Collectors.joining(SQL_UNIT_SEPARATOR)), Object.class
+				.map(DSL::inline)
+				.map(Field::toString)
+				.collect(Collectors.joining(SQL_UNIT_SEPARATOR)), Object.class
 		);
 	}
 
@@ -79,14 +79,14 @@ public interface SqlFunctionProvider {
 	 */
 	String getAnyCharRegex();
 
-    /**
-     * @return A dummy table that enables selection of static values.
-     */
-    default Table<? extends Record> getNoOpTable() {
-        return noTable();
-    }
+	/**
+	 * @return A dummy table that enables selection of static values.
+	 */
+	default Table<? extends Record> getNoOpTable() {
+		return noTable();
+	}
 
-    /**
+	/**
 	 * A date restriction condition is true if holds: dateRestrictionStart < daterangeEnd and dateRestrictionEnd > daterangeStart. The ends of both ranges are
 	 * exclusive.
 	 */
@@ -108,9 +108,9 @@ public interface SqlFunctionProvider {
 		}
 
 		return dateset.asRanges().stream()
-					  .map(this::forCDateRange)
-					  .map(dateRange -> dateRange.as(alias.getAlias()))
-					  .toList();
+				.map(this::forCDateRange)
+				.map(dateRange -> dateRange.as(alias.getAlias()))
+				.toList();
 	}
 
 	/**
@@ -237,10 +237,10 @@ public interface SqlFunctionProvider {
 	default Field<?> arrayOut(List<Field<String>> fields) {
 		String concatenated =
 				fields.stream()
-					  // if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
-					  // thus concat an empty string
-					  .map(Field::toString)
-					  .collect(Collectors.joining(SQL_UNIT_SEPARATOR));
+						// if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
+						// thus concat an empty string
+						.map(Field::toString)
+						.collect(Collectors.joining(SQL_UNIT_SEPARATOR));
 		return field(concatenated, String.class);
 	}
 
@@ -287,7 +287,9 @@ public interface SqlFunctionProvider {
 	 */
 	Condition isNotEmptyDateRange(ColumnDateRange columnDateRange);
 
-	ColumnDateRange emptyColumnDateRange();
+	default ColumnDateRange emptyColumnDateRange() {
+		return ColumnDateRange.of(inline(null, Date.class), inline(null, Date.class));
+	}
 
 	/**
 	 * Or-Aggregation of the input field.
