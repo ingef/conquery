@@ -93,15 +93,8 @@ public class IntervalPackingSelectsCte {
 		Preconditions.checkArgument(validityDate.isPresent(), "Can't create a IntervalPackingSelectsCte without a validity date present.");
 
 		// we need an additional predecessor to unnest the validity date if it is a single column range
-		List<QueryStep> predecessors = List.of();
-		QueryStep directPredecessor = predecessor;
-		if (validityDate.get().isSingleColumnRange()) {
-			String unnestCteName = tables.cteName(ConceptCteStep.UNNEST_DATE);
-			directPredecessor = functionProvider.unnestDaterange(validityDate.get(), predecessor, unnestCteName);
-			predecessors = List.of(directPredecessor);
-		}
 
-		Selects predecessorSelects = directPredecessor.getQualifiedSelects();
+        Selects predecessorSelects = predecessor.getQualifiedSelects();
 		Selects selects = Selects.builder()
 								 .ids(predecessorSelects.getIds())
 								 .sqlSelects(intervalPackingSelects)
@@ -110,9 +103,9 @@ public class IntervalPackingSelectsCte {
 		return QueryStep.builder()
 						.cteName(tables.cteName(ConceptCteStep.INTERVAL_PACKING_SELECTS))
 						.selects(selects)
-						.fromTable(QueryStep.toTableLike(directPredecessor.getCteName()))
+						.fromTable(QueryStep.toTableLike(predecessor.getCteName()))
 						.groupBy(predecessorSelects.getIds().toFields())
-						.predecessors(predecessors)
+						.predecessors(List.of())
 						.build();
 	}
 

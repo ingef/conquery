@@ -45,7 +45,7 @@ public class DateUnionSelect extends Select implements DaterangeSelectOrFilter {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		// TODO fix this for 2 columns
+		// TODO Missing case for two columns
 		return new DateUnionAggregator(getColumn().resolve());
 	}
 

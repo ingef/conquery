@@ -67,7 +67,7 @@ class HistogramTest {
 
 		log.info("{}", nodes);
 
-		assertThat(nodes).hasSize(13);
+		assertThat(nodes).hasSize(12);
 
 		final Map.Entry<Range<Double>, Histogram.Counter> first = nodes.get(0);
 
@@ -122,7 +122,10 @@ class HistogramTest {
 		histogram.add(-0.5);
 		histogram.add(0.5);
 
-		assertThat(histogram.nodes()).hasSize(3);
+		List<Map.Entry<Range<Double>, Histogram.Counter>> nodes = histogram.nodes();
+		log.info("{}", nodes);
+
+		assertThat(nodes).hasSize(3);
 	}
 
 

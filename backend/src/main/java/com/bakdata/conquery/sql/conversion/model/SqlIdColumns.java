@@ -106,7 +106,11 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 	}
 
 	public List<Field<?>> toFields() {
-		return Stream.concat(Stream.of(this.primaryColumn), Optional.ofNullable(this.secondaryId).stream()).collect(Collectors.toList());
+		if (getSecondaryId().isEmpty()){
+			return List.of(getPrimaryColumn());
+		}
+
+		return List.of(getPrimaryColumn(), getSecondaryId().get());
 	}
 
 	public List<Condition> join(SqlIdColumns rightIds) {
@@ -137,20 +141,23 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 			ids.getSecondaryId().ifPresent(secondaryIds::add);
 		});
 
-		Field<String> coalescedPrimaryColumn = coalesceFields(primaryColumns).coerce(String.class).as(SharedAliases.PRIMARY_COLUMN.getAlias());
+		Field<String> coalescedPrimaryColumn = coalesceFields(primaryColumns, String.class).coerce(String.class).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 		if (secondaryIds.isEmpty()) {
 			return new SqlIdColumns(coalescedPrimaryColumn);
 		}
-		Field<String> coalescedSecondaryIds = coalesceFields(secondaryIds).coerce(String.class).as(SharedAliases.SECONDARY_ID.getAlias());
+		Field<String> coalescedSecondaryIds = coalesceFields(secondaryIds, String.class).coerce(String.class).as(SharedAliases.SECONDARY_ID.getAlias());
 		return new SqlIdColumns(coalescedPrimaryColumn, coalescedSecondaryIds);
 	}
 
 
-	protected static Field<?> coalesceFields(List<? extends Field<?>> fields) {
-		if (fields.size() == 1) {
-			return fields.get(0);
+	protected static <T> Field<T> coalesceFields(List<? extends Field<?>> fields, Class<T> type) {
+		Field<T> out = fields.getFirst().coerce(type);
+
+		for (int index = 1; index < fields.size(); index++) {
+			out = DSL.coalesce(out, fields.get(index).coerce(type));
 		}
-		return DSL.coalesce(fields.get(0), fields.subList(1, fields.size()).toArray());
+
+		return out;
 	}
 
 }

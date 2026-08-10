@@ -3,9 +3,11 @@ package com.bakdata.conquery.integration.json;
 import java.util.Collection;
 import java.util.List;
 
+import com.bakdata.conquery.integration.json.filter.FilterTest;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
@@ -17,12 +19,13 @@ import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.bakdata.conquery.ConqueryConstants.ALL_IDS_TABLE;
+
 @Slf4j
 @Data
 public class SqlTestDataImporter extends WorkerTestDataImporter {
 
 	private final CsvTableImporter csvTableImporter;
-
 
 	@Override
 	public void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
@@ -39,11 +42,6 @@ public class SqlTestDataImporter extends WorkerTestDataImporter {
 		for (RequiredTable table : tables) {
 			csvTableImporter.importTableIntoDatabase(table);
 		}
-	}
-
-	@SneakyThrows
-	private static RequiredTable readRequiredTable(String fileResource) {
-		return RequiredTable.fromFile(fileResource);
 	}
 
 	@Override

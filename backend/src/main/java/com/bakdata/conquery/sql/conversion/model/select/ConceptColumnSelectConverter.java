@@ -44,10 +44,8 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 			return ConnectorSqlSelects.none();
 		}
 		ExtractingSqlSelect<Object> connectorColumn = new ExtractingSqlSelect<>(connector.resolveTableId().getTable(), connector.getColumn().getColumn(), Object.class);
-		ExtractingSqlSelect<Object> qualified = connectorColumn.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.EVENT_FILTER));
 		return ConnectorSqlSelects.builder()
 								  .preprocessingSelect(connectorColumn)
-								  .connectorColumn(Optional.of(qualified))
 								  .build();
 	}
 
@@ -104,7 +102,7 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 	) {
 		List<QueryStep> unionSteps = connectors.stream().map(connector -> createConnectorColumnSelectQuery(connector, alias, selectContext)).toList();
 		String unionedColumnsCteName = selectContext.getNameGenerator().cteStepName(CONCEPT_COLUMN_STEPS.UNIONED_COLUMNS, alias);
-		return QueryStep.createUnionStep(unionSteps, unionedColumnsCteName, Collections.emptyList(), false); //TODO is false correct here?
+		return QueryStep.createUnionStep(unionSteps, unionedColumnsCteName, Collections.emptyList(), false, selectContext.getFunctionProvider()); //TODO is false correct here?
 	}
 
 	private static QueryStep createConnectorColumnSelectQuery(
@@ -113,13 +111,13 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 			SelectContext<ConceptSqlTables> selectContext
 	) {
 		// a  ConceptColumn select uses all connectors a Concept has, even if they are not part of the CQConcept
-		// but if they are, we need to make sure we use the event-filtered table instead of the root table
+		// but if they are, we need to make sure we use the preprocessed and event-filtered table instead of the root table
 		String tableName = selectContext.getTables()
 										.getConnectorTables()
 										.stream()
 										.filter(tables -> Objects.equals(tables.getRootTable(), connector.resolveTableId().getTable()))
 										.findFirst()
-										.map(tables -> tables.cteName(ConceptCteStep.EVENT_FILTER))
+										.map(tables -> tables.cteName(ConceptCteStep.PREPROCESSING))
 										.orElse(connector.resolveTableId().getTable());
 
 		Table<Record> connectorTable = DSL.table(DSL.name(tableName));

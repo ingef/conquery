@@ -1,16 +1,21 @@
 package com.bakdata.conquery.util;
 
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
+
 import com.bakdata.conquery.models.datasets.Table;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 public class TablePrimaryColumnUtil {
 
 	public static Field<String> findPrimaryColumn(Table table, String defaultPrimaryColumn) {
-		String primaryColumnName = table.getPrimaryColumn() == null
-								   ? defaultPrimaryColumn
-								   : table.getPrimaryColumn().getName();
-		return DSL.field(DSL.name(table.getName(), primaryColumnName), String.class);
+		String primaryColumnName = defaultPrimaryColumn;
+
+		if (table.getPrimaryColumn() != null) {
+			primaryColumnName = table.getPrimaryColumn().getName();
+		}
+
+		return field(name(table.getName(), primaryColumnName), String.class);
 	}
 
 }

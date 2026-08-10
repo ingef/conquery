@@ -23,11 +23,9 @@ import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.google.common.base.Preconditions;
 import org.jooq.Field;
 import org.jooq.Name;
-import org.jooq.Nullability;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
 
 public class CQExternalConverter implements NodeConverter<CQExternal> {
 
@@ -43,7 +41,7 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 			unions.addAll(rowSelects);
 		}
 		Preconditions.checkArgument(!unions.isEmpty(), "Expecting at least 1 resolved row when converting a CQExternal");
-		QueryStep allStep = QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_IDS_CTE_NAME, Collections.emptyList(), context.isNegation());
+		QueryStep allStep = QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_IDS_CTE_NAME, Collections.emptyList(), context.isNegation(), functionProvider);
 
 		Optional<ColumnDateRange> maybeValidityDate = allStep.getSelects().getValidityDate();
 
@@ -52,12 +50,12 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 		}
 
 		return QueryStep.builder()
-						.predecessors(List.of(allStep))
-						.conditions(List.of(functionProvider.dateRestriction(functionProvider.forCDateRange(context.getDateRestrictionRange()), maybeValidityDate.get())))
-						.selects(allStep.getQualifiedSelects())
-						.fromTable(table(name(allStep.getCteName())))
-						.cteName(CQ_EXTERNAL_IDS_CTE_NAME + "_date_restriction")
-						.build();
+				.predecessors(List.of(allStep))
+				.conditions(List.of(functionProvider.dateRestriction(functionProvider.forCDateRange(context.getDateRestrictionRange()), maybeValidityDate.get())))
+				.selects(allStep.getQualifiedSelects())
+				.fromTable(table(name(allStep.getCteName())))
+				.cteName(CQ_EXTERNAL_IDS_CTE_NAME + "_date_restriction")
+				.build();
 
 	}
 
@@ -69,12 +67,30 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 		SqlIdColumns ids = createIdSelect(entry, functionProvider);
 		List<ColumnDateRange> validityDateEntries = functionProvider.forCDateSet(entry.getValue(), SharedAliases.DATES_COLUMN);
 		return validityDateEntries.stream()
-								  .map(validityDateEntry -> createIdRowSelect(ids, validityDateEntry, functionProvider))
-								  .toList();
+				.map(validityDateEntry -> createIdRowSelect(ids, validityDateEntry, functionProvider))
+				.toList();
 	}
 
 	private static SqlIdColumns createIdSelect(Map.Entry<String, CDateSet> entry, SqlFunctionProvider functionProvider) {
 		Field<String> primaryColumn = functionProvider.externalId(entry.getKey()).as(SharedAliases.PRIMARY_COLUMN.getAlias());
+		return new SqlIdColumns(primaryColumn);
+	}
+
+	/**
+	 * For each entry, we need to create a SELECT statement of static values for each pid -> extras.
+	 */
+	private QueryStep createRowSelects(
+			Map.Entry<String, CDateSet> entry,
+			List<Map.Entry<String, List<String>>> extra,
+			SqlFunctionProvider functionProvider
+	) {
+		SqlIdColumns ids = createIdSelect(entry);
+		List<SqlSelect> extraSelects = extra.stream().map(extraEntry -> createExtraColumnValue(extraEntry, functionProvider)).collect(Collectors.toList());
+		return createExtraRowSelect(ids, extraSelects, functionProvider);
+	}
+
+	private static SqlIdColumns createIdSelect(Map.Entry<String, CDateSet> entry) {
+		Field<String> primaryColumn = DSL.val(entry.getKey()).coerce(String.class).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 		return new SqlIdColumns(primaryColumn);
 	}
 
@@ -95,9 +111,9 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 			SqlFunctionProvider functionProvider
 	) {
 		Selects selects = Selects.builder()
-								 .ids(ids)
-								 .validityDate(Optional.ofNullable(validityDate))
-								 .build();
+				.ids(ids)
+				.validityDate(Optional.ofNullable(validityDate))
+				.build();
 		return wrapInQueryStep(selects, functionProvider);
 	}
 
@@ -111,9 +127,9 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 			SqlFunctionProvider functionProvider
 	) {
 		Selects selects = Selects.builder()
-								 .ids(ids)
-								 .sqlSelects(extraSelects)
-								 .build();
+				.ids(ids)
+				.sqlSelects(extraSelects)
+				.build();
 		return wrapInQueryStep(selects, functionProvider);
 	}
 
@@ -124,9 +140,9 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 		Table<? extends Record> table = functionProvider.getNoOpTable();
 
 		return QueryStep.builder()
-						.selects(selects)
-						.fromTable(table)
-						.build();
+				.selects(selects)
+				.fromTable(table)
+				.build();
 	}
 
 	@Override
@@ -157,20 +173,8 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 			unions.add(rowSelects);
 		}
 		Preconditions.checkArgument(!unions.isEmpty(), "Expecting at least 1 converted resolved row when converting a CQExternal");
-		return QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_EXTRAS_CTE_NAME, Collections.emptyList(), context.isNegation());
+		return QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_EXTRAS_CTE_NAME, Collections.emptyList(), context.isNegation(), functionProvider);
 	}
 
-	/**
-	 * For each entry, we need to create a SELECT statement of static values for each pid -> extras.
-	 */
-	private QueryStep createRowSelects(
-			Map.Entry<String, CDateSet> entry,
-			List<Map.Entry<String, List<String>>> extra,
-			SqlFunctionProvider functionProvider
-	) {
-		SqlIdColumns ids = createIdSelect(entry, functionProvider);
-		List<SqlSelect> extraSelects = extra.stream().map((Map.Entry<String, List<String>> extraEntry) -> createExtraColumnValue(extraEntry, functionProvider)).collect(Collectors.toList());
-		return createExtraRowSelect(ids, extraSelects, functionProvider);
-	}
 
 }

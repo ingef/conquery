@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.CountQuartersFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.CountQuartersSelect;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
@@ -16,7 +15,6 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
@@ -42,26 +40,11 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 
 		ExtractingSqlSelect<Date> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), countColumn.getName(), Date.class);
 
-		Field<Date> qualifiedRootSelect = rootSelect.qualify(tables.cteName(ConceptCteStep.EVENT_FILTER)).select();
+		Field<Date> qualifiedRootSelect = rootSelect.qualify(tables.cteName(ConceptCteStep.PREPROCESSING)).select();
 		FieldWrapper<Integer> countQuartersAggregation =
 				new FieldWrapper<>(DSL.nullif(DSL.countDistinct(functionProvider.yearQuarter(qualifiedRootSelect)), 0).as(alias), countColumn.getName());
 
 		return CommonAggregationSelect.<Integer>builder().rootSelect(rootSelect).groupBy(countQuartersAggregation).build();
-	}
-
-	private static CommonAggregationSelect<BigDecimal> createSingleDaterangeColumnAggregationSelect(
-			Column countColumn,
-			String alias,
-			ConnectorSqlTables tables,
-			SqlFunctionProvider functionProvider,
-			StratificationFunctions stratificationFunctions) {
-
-		ColumnDateRange daterange = ColumnDateRange.of(DSL.field(DSL.name(tables.getRootTable(), countColumn.getName())));
-
-		Field<Date> quarterStart = stratificationFunctions.lowerBoundQuarterStart(daterange);
-		Field<Date> nextQuarterStart = stratificationFunctions.upperBoundQuarterEnd(daterange);
-
-		return sumQuarterCount(quarterStart, nextQuarterStart, alias, tables, functionProvider);
 	}
 
 	private static CommonAggregationSelect<BigDecimal> createTwoDateColumnAggregationSelect(
@@ -90,7 +73,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 		Field<Integer> quarterCount = calcQuarterCount(quarterStart, nextQuarterStart, alias, functionProvider);
 		FieldWrapper<Integer> quarterCountWrapper = new FieldWrapper<>(quarterCount);
 
-		Field<Integer> qualifiedQuarterCount = quarterCountWrapper.qualify(tables.cteName(ConceptCteStep.EVENT_FILTER)).select();
+		Field<Integer> qualifiedQuarterCount = quarterCountWrapper.qualify(tables.cteName(ConceptCteStep.PREPROCESSING)).select();
 		FieldWrapper<BigDecimal> quarterCountAggregation = new FieldWrapper<>(DSL.nullif(DSL.sum(qualifiedQuarterCount), BigDecimal.ZERO).as(alias));
 
 		return CommonAggregationSelect.<BigDecimal>builder().rootSelect(quarterCountWrapper).groupBy(quarterCountAggregation).build();
@@ -114,16 +97,8 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 		}
 
 		Column countColumn = column.resolve();
-		if (countColumn.getType() == MajorTypeId.DATE_RANGE) {
-			return createSingleDaterangeColumnAggregationSelect(countColumn,
-																alias,
-																tables,
-																functionProvider,
-																stratificationFunctions
-			);
-		}
 
-		return createSingleDateColumnAggregationSelect(countColumn, alias, tables, functionProvider);
+        return createSingleDateColumnAggregationSelect(countColumn, alias, tables, functionProvider);
 	}
 
 	@Override

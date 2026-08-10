@@ -29,62 +29,62 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties("categorical")
 public class DurationSumSelect extends Select implements DaterangeSelectOrFilter {
 
-	@Nullable
-	private ColumnId column;
+    @Nullable
+    private ColumnId column;
 
-	@Nullable
-	private ColumnId startColumn, endColumn;
+    @Nullable
+    private ColumnId startColumn, endColumn;
 
-	private List<ColumnId> distinctBy;
+    private List<ColumnId> distinctBy;
 
-	@Override
-	public List<ColumnId> getRequiredColumns() {
-		List<ColumnId> out = new ArrayList<>();
+    @Override
+    public List<ColumnId> getRequiredColumns() {
+        List<ColumnId> out = new ArrayList<>();
 
-		if (column != null) {
-			out.add(column);
-		}
-		else {
-			out.add(startColumn);
-			out.add(endColumn);
-		}
+        if (column != null) {
+            out.add(column);
+        } else {
+            out.add(startColumn);
+            out.add(endColumn);
+        }
 
-		if (hasDistinct()) {
-			out.addAll(distinctBy);
-		}
-		return out;
-	}
+        if (hasDistinct()) {
+            out.addAll(distinctBy);
+        }
+        return out;
+    }
 
-	@Override
-	public ResultSetProcessor.Reader<Integer> createResultSetReader(ResultSetProcessor processor) {
-		return processor::getInteger;
-	}
+    @Override
+    public ResultSetProcessor.Reader<Integer> createResultSetReader(ResultSetProcessor processor) {
+        return processor::getInteger;
+    }
 
-	@JsonIgnore
-	private boolean hasDistinct() {
-		return distinctBy != null && !distinctBy.isEmpty();
-	}
+    @JsonIgnore
+    private boolean hasDistinct() {
+        return distinctBy != null && !distinctBy.isEmpty();
+    }
 
-	@Override
-	public Aggregator<?> createAggregator() {
-		ColumnAggregator<?> aggregator = getColumn() != null ? new DurationSumAggregator(getColumn().resolve())
-															 : new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
+    @Override
+    public Aggregator<?> createAggregator() {
+        ColumnAggregator<?> aggregator = isSingleColumnDaterange()
+                ? new DurationSumAggregator(getColumn().resolve())
+                : new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
 
-		if (!hasDistinct()) {
-			return aggregator;
-		}
+        if (!hasDistinct()) {
+            return aggregator;
+        }
 
-		return new DistinctValuesWrapperAggregator<>(aggregator, distinctBy.stream().map(ColumnId::resolve).toList());
-	}
+        return new DistinctValuesWrapperAggregator<>(aggregator, distinctBy.stream().map(ColumnId::resolve).toList());
+    }
 
-	@Override
-	public ResultType getResultType() {
-		return ResultType.Primitive.INTEGER;
-	}
+    @Override
+    public ResultType getResultType() {
+        return ResultType.Primitive.INTEGER;
+    }
 
-	@Override
-	public SelectConverter<DurationSumSelect> createConverter() {
-		//TODO apply distinctBy (though needs to be done once other branches are merged)
-		return new DurationSumSqlAggregator();
-	}
+    @Override
+    public SelectConverter<DurationSumSelect> createConverter() {
+        //TODO apply distinctBy (though needs to be done once other branches are merged)
+        return new DurationSumSqlAggregator();
+    }
 }

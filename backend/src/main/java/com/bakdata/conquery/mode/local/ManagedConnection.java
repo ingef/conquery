@@ -1,7 +1,6 @@
 package com.bakdata.conquery.mode.local;
 
 import java.sql.SQLException;
-
 import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.models.config.DatabaseConnectionConfig;

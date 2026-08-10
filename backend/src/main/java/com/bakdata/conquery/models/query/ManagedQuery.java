@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -51,6 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ManagedQuery extends ManagedExecution implements SingleTableResult, InternalExecution {
 
 	// Needs to be resolved externally before being executed
+	@NotNull
 	private Query query;
 
 	public ManagedQuery(Query query, UserId owner, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {

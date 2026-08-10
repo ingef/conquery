@@ -10,7 +10,6 @@ public enum SharedAliases {
 	PRIMARY_COLUMN("primary_id"),
 	SECONDARY_ID("secondary_id"),
 	DATES_COLUMN("dates"),
-	DATE_RESTRICTION("date_restriction"),
 
 	NOP_TABLE("nop_table"),
 

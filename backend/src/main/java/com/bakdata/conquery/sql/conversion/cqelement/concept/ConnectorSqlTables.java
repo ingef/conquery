@@ -14,7 +14,7 @@ public class ConnectorSqlTables extends SqlTables {
 	/**
 	 * A unique label for these tables to create unique SQL CTE/Select names.
 	 */
-	private final String label;
+	private final String name;
 
 	/**
 	 * True if these tables contain interval packing CTEs {@link IntervalPackingCteStep}.
@@ -33,7 +33,7 @@ public class ConnectorSqlTables extends SqlTables {
 
 	public ConnectorSqlTables(
 			Connector connector,
-			String conceptConnectorLabel,
+			String connectorName,
 			String rootTable,
 			Map<CteStep, String> cteNameMap,
 			Map<CteStep, CteStep> predecessorMap,
@@ -42,7 +42,7 @@ public class ConnectorSqlTables extends SqlTables {
 	) {
 		super(rootTable, cteNameMap, predecessorMap);
 		this.connector = connector;
-		this.label = conceptConnectorLabel;
+		this.name = connectorName;
 		this.withIntervalPacking = containsIntervalPacking;
 		this.excludedFromTimeAggregation = excludedFromTimeAggregation;
 	}

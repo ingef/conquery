@@ -227,8 +227,6 @@ public class LoadingUtil {
 		}
 
 		support.waitUntilWorkDone();
-
-
 	}
 
 	public static void uploadCqpp(StandaloneSupport support, File cqpp, boolean update, Response.Status.Family expectedResponseFamily) {
