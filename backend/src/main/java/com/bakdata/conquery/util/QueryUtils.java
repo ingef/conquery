@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import c10n.C10N;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
@@ -26,19 +27,18 @@ import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.query.NamespacedIdentifiableHolding;
-import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.google.common.base.Strings;
 import com.google.common.collect.MoreCollectors;
+import lombok.Data;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -184,10 +184,14 @@ public class QueryUtils {
 	/**
 	 * Test if this query is only reusing a different query (ie not combining it with other elements, or changing its secondaryId)
 	 */
+	@Data
 	public static class OnlyReusingChecker implements QueryVisitor {
+
+		private final ExecutionManager storage;
 
 		private CQReusedQuery reusedQuery = null;
 		private boolean containsOthersElements = false;
+
 
 		@Override
 		public void accept(Visitable element) {
@@ -213,12 +217,34 @@ public class QueryUtils {
 			}
 		}
 
-		public Optional<ManagedExecutionId> getOnlyReused() {
+		public Optional<ManagedExecution> getOnlyReused(QueryDescription query) {
 			if (containsOthersElements || reusedQuery == null) {
 				return Optional.empty();
 			}
 
-			return Optional.of(reusedQuery.getQueryId());
+			ManagedExecutionId executionId = getReusedQuery().getQueryId();
+			ManagedQuery execution = (ManagedQuery) storage.getExecution(executionId);
+
+			if (execution == null) {
+				return Optional.empty();
+			}
+
+			// Direct reuse only works if the queries are of the same type (As reuse reconstructs the Query for different types)
+			if (!query.getClass().equals(execution.getSubmitted().getClass())) {
+				return Optional.empty();
+			}
+
+			// If SecondaryIds differ from selected and prior, we cannot reuse them.
+			if (query instanceof SecondaryIdQuery secondaryIdQuery) {
+				final SecondaryIdDescriptionId selectedSecondaryId = secondaryIdQuery.getSecondaryId();
+				final SecondaryIdDescriptionId reusedSecondaryId = ((SecondaryIdQuery) execution.getSubmitted()).getSecondaryId();
+
+				if (!selectedSecondaryId.equals(reusedSecondaryId)) {
+					return Optional.empty();
+				}
+			}
+
+			return Optional.of(execution);
 		}
 	}
 

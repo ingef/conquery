@@ -211,7 +211,6 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 			{
 				// Reuse by another user (create a copy of the actual query)
-
 				final SecondaryIdQuery reused = new SecondaryIdQuery();
 				reused.setRoot(new CQReusedQuery(execution.getId()));
 
