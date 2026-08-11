@@ -24,8 +24,8 @@ public class ClickhouseDistinctSelectConverter implements SelectConverter<Distin
 		SingleColumnSqlSelect preprocessingSelect =
 				MappableSingleColumnSelect.getSubstringSelect(distinctSelect.getColumn().get(), distinctSelect.getSubstringRange(), selectContext, alias);
 
-		String eventFilterTable = selectContext.getTables().cteName(ConceptCteStep.EVENT_FILTER);
-		SingleColumnSqlSelect qualified = preprocessingSelect.qualify(eventFilterTable);
+		String preprocessingTable = selectContext.getTables().cteName(ConceptCteStep.PREPROCESSING);
+		SingleColumnSqlSelect qualified = preprocessingSelect.qualify(preprocessingTable);
 
 		FieldWrapper<?> grouped =
 				new FieldWrapper<>(field("arrayFilter(x -> x <> '' and x is not null, groupUniqArray({0}))", Object.class, qualified.select()).as(alias),

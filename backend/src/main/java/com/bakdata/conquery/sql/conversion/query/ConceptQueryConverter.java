@@ -16,6 +16,7 @@ import org.jooq.TableLike;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
@@ -84,6 +85,12 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 	private Selects getFinalSelects(ConceptQuery conceptQuery, Selects preFinalSelects, SqlFunctionProvider functionProvider) {
 		if (conceptQuery.getDateAggregationMode() == DateAggregationMode.NONE) {
 			return preFinalSelects.blockValidityDate();
+		}
+		// In case all final selects have no validity-date, we convert it to infinity.
+		if (preFinalSelects.getValidityDate().isEmpty()) {
+			return preFinalSelects.toBuilder()
+					.validityDate(Optional.of(functionProvider.emptyColumnDateRange()))
+					.build();
 		}
 		return preFinalSelects;
 	}

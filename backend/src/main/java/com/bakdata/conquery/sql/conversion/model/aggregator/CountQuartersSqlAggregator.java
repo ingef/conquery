@@ -40,7 +40,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 
 		ExtractingSqlSelect<Date> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), countColumn.getName(), Date.class);
 
-		Field<Date> qualifiedRootSelect = rootSelect.qualify(tables.cteName(ConceptCteStep.EVENT_FILTER)).select();
+		Field<Date> qualifiedRootSelect = rootSelect.qualify(tables.cteName(ConceptCteStep.PREPROCESSING)).select();
 		FieldWrapper<Integer> countQuartersAggregation =
 				new FieldWrapper<>(DSL.nullif(DSL.countDistinct(functionProvider.yearQuarter(qualifiedRootSelect)), 0).as(alias), countColumn.getName());
 
@@ -73,7 +73,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 		Field<Integer> quarterCount = calcQuarterCount(quarterStart, nextQuarterStart, alias, functionProvider);
 		FieldWrapper<Integer> quarterCountWrapper = new FieldWrapper<>(quarterCount);
 
-		Field<Integer> qualifiedQuarterCount = quarterCountWrapper.qualify(tables.cteName(ConceptCteStep.EVENT_FILTER)).select();
+		Field<Integer> qualifiedQuarterCount = quarterCountWrapper.qualify(tables.cteName(ConceptCteStep.PREPROCESSING)).select();
 		FieldWrapper<BigDecimal> quarterCountAggregation = new FieldWrapper<>(DSL.nullif(DSL.sum(qualifiedQuarterCount), BigDecimal.ZERO).as(alias));
 
 		return CommonAggregationSelect.<BigDecimal>builder().rootSelect(quarterCountWrapper).groupBy(quarterCountAggregation).build();

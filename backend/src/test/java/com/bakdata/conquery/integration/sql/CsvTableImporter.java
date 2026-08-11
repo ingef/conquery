@@ -39,7 +39,6 @@ import org.jooq.Table;
 import org.jooq.impl.BuiltInDataType;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
-import org.jooq.postgres.extensions.types.DateRange;
 
 @Slf4j
 public class CsvTableImporter {
@@ -153,7 +152,7 @@ public class CsvTableImporter {
 			// TODO (ja) how do we handle REAL and DECIMAL properly?
 			case REAL, DECIMAL, MONEY -> SQLDataType.DECIMAL(10, 2);
 			case DATE -> SQLDataType.DATE.nullable(true);
-			case DATE_RANGE -> new BuiltInDataType<>(DateRange.class, "daterange");
+			default -> throw new IllegalArgumentException("Unsupported data type: " + requiredColumn.getType());
 		};
 
 		// Set all columns except 'pid' to nullable, important for ClickHouse compatibility
@@ -236,12 +235,7 @@ public class CsvTableImporter {
 			case REAL -> record.getDouble(column);
 			case DECIMAL, MONEY -> record.getBigDecimal(column);
 			case DATE -> dateReader.parseToLocalDate(record.getString(column));
-			case DATE_RANGE -> {
-				CDateRange dateRange = dateReader.parseToCDateRange(record.getString(column));
-				yield DateRange.dateRange(dateRange.getMin() != null ? Date.valueOf(dateRange.getMin()) : null, true,
-										  dateRange.getMax() != null ? Date.valueOf(dateRange.getMax()) : null, true
-				);
-			}
+			default -> throw new IllegalArgumentException("Unsupported data type: " + type);
 		};
 	}
 
