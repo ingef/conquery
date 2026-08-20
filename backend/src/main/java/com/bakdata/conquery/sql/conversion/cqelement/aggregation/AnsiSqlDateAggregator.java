@@ -1,5 +1,9 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.inline;
+
+import java.sql.Date;
 import java.util.List;
 
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
@@ -8,18 +12,21 @@ import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPac
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
 import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import lombok.Data;
+import org.jooq.Field;
 
+@Data
 public class AnsiSqlDateAggregator implements SqlDateAggregator {
 
 	private final IntervalPacker intervalPacker;
+	private final SqlFunctionProvider functionProvider;
 
-	public AnsiSqlDateAggregator(IntervalPacker intervalPacker) {
-		this.intervalPacker = intervalPacker;
-	}
 
 	@Override
 	public QueryStep apply(
@@ -64,6 +71,18 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 									  .build();
 
 		return this.intervalPacker.aggregateAsValidityDate(intervalPackingContext);
+	}
+
+	@Override
+	public ColumnDateRange getAggregatedValidityDate(DateAggregationDates dateAggregationDates, DateAggregationAction dateAggregationAction) {
+		//TODO(FK): i think this is only ever relevant with dateMode=Logical which i want to remove
+		Field<Date> rangeStart = functionProvider.least(dateAggregationDates.allStarts());
+		Field<Date> rangeEnd = functionProvider.greatest(dateAggregationDates.allEnds());
+
+		return ColumnDateRange.of(
+				rangeStart.as(DateAggregationCte.RANGE_START),
+				rangeEnd.as(DateAggregationCte.RANGE_END)
+		);
 	}
 
 	@Override

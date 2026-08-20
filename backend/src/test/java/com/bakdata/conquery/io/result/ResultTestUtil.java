@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import lombok.Getter;
@@ -80,7 +81,7 @@ public class ResultTestUtil {
 	public static ManagedQuery getTestQuery() {
 		return new ManagedQuery(null, new UserId("test_user"), DATASET.getId(), META_STORAGE, null, null) {
 			@Override
-			public List<ResultInfo> getResultInfos() {
+			public List<ResultInfo> collectResultInfos() {
 				return getResultTypes().stream()
 									   .map(TypedSelectDummy::new)
 									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet()))
@@ -166,6 +167,10 @@ public class ResultTestUtil {
 			return Collections.emptyList();
 		}
 
+		@Override
+		public ResultSetProcessor.Reader<?> createResultSetReader(ResultSetProcessor processor) {
+			throw new IllegalStateException("This should not be called");
+		}
 
 		@Override
 		public Aggregator<String> createAggregator() {

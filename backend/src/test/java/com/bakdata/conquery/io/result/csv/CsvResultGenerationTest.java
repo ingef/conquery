@@ -67,13 +67,13 @@ public class CsvResultGenerationTest {
 		try (Writer writer = new BufferedWriter(new OutputStreamWriter(bufferOut, charset))) {
 
 			final CsvRenderer renderer = new CsvRenderer(CONFIG.getCsv().createWriter(writer), printSettings);
-			renderer.toCSV(getIdFields(), mquery.getResultInfos(), mquery.streamResults(OptionalLong.empty()), printSettings, charset);
+			renderer.toCSV(getIdFields(), mquery.collectResultInfos(), mquery.streamResults(OptionalLong.empty()), printSettings, charset);
 		}
 
 		final String computed = bufferOut.toString(charset);
 
 		final StringResultPrinters printers = StringResultPrinters.forCharset(charset);
-		final String expected = generateExpectedCSV(results, mquery.getResultInfos(), printSettings, printers);
+		final String expected = generateExpectedCSV(results, mquery.collectResultInfos(), printSettings, printers);
 
 		log.info("Wrote and than read this csv data: {}", computed);
 

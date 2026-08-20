@@ -133,7 +133,8 @@ public class TemporalQueryNode extends QPNode {
 			return false;
 		}
 
-		final CDateRange[] periods = indexSelector.sample(indexQueryPlan.getDateAggregator().createAggregationResult());
+		CDateSet indexDates = indexQueryPlan.getDateAggregator().createAggregationResult();
+		final CDateRange[] periods = indexSelector.sample(indexDates);
 		final CDateRange[] indexPeriods = indexMode.convert(periods, indexSelector);
 
 		final boolean[] results = new boolean[indexPeriods.length];
@@ -181,14 +182,14 @@ public class TemporalQueryNode extends QPNode {
 					  satisfies
 			);
 
+			results[current] = satisfies;
+
 			// If compare's selector is satisfied, we append current to the results and collect the aggregation results
 			if (!satisfies) {
 				continue;
 			}
 
-			results[current] = true;
 			indexDateResult.add(periods[current]);
-
 			addAggregationResults(compareContained, compareDates, compareAggregationResults);
 		}
 

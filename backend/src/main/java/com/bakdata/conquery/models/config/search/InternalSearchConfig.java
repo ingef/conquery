@@ -45,8 +45,6 @@ public class InternalSearchConfig implements SearchConfig {
 	@NotNull
 	private String emptyLabel = "No Value";
 
-
-
 	@Override
 	public SearchProcessor createSearchProcessor(Environment environment, DatasetId id) {
 		return new InternalFilterSearch(this);

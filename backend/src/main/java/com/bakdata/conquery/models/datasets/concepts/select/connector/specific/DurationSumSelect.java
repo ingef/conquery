@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -8,50 +11,80 @@ import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.TwoColumnDurationSumAggregator;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.conversion.model.select.DurationSumSelectConverter;
+import com.bakdata.conquery.sql.conversion.model.aggregator.DurationSumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Setter
-@Getter
-@NoArgsConstructor(onConstructor_ = @JsonCreator)
+@Data
 @CPSType(id = "DURATION_SUM", base = Select.class)
 @JsonIgnoreProperties("categorical")
 public class DurationSumSelect extends Select implements DaterangeSelectOrFilter {
 
-	@Nullable
-	private ColumnId column;
-	@Nullable
-	private ColumnId startColumn;
-	@Nullable
-	private ColumnId endColumn;
+    @Nullable
+    private ColumnId column;
 
-	@Override
-	public List<ColumnId> getRequiredColumns() {
-		if (column != null) {
-			return List.of(column);
-		}
-		return List.of(startColumn, endColumn);
-	}
+    @Nullable
+    private ColumnId startColumn, endColumn;
 
-	@Override
-	public Aggregator<?> createAggregator() {
-		return new DurationSumAggregator(getColumn().resolve());
-	}
+    private List<ColumnId> distinctBy;
 
-	@Override
-	public ResultType getResultType() {
-		return ResultType.Primitive.INTEGER;
-	}
+    @Override
+    public List<ColumnId> getRequiredColumns() {
+        List<ColumnId> out = new ArrayList<>();
 
-	@Override
-	public SelectConverter<DurationSumSelect> createConverter() {
-		return new DurationSumSelectConverter();
-	}
+        if (column != null) {
+            out.add(column);
+        } else {
+            out.add(startColumn);
+            out.add(endColumn);
+        }
+
+        if (hasDistinct()) {
+            out.addAll(distinctBy);
+        }
+        return out;
+    }
+
+    @Override
+    public ResultSetProcessor.Reader<Integer> createResultSetReader(ResultSetProcessor processor) {
+        return processor::getInteger;
+    }
+
+    @JsonIgnore
+    private boolean hasDistinct() {
+        return distinctBy != null && !distinctBy.isEmpty();
+    }
+
+    @Override
+    public Aggregator<?> createAggregator() {
+        ColumnAggregator<?> aggregator = isSingleColumnDaterange()
+                ? new DurationSumAggregator(getColumn().resolve())
+                : new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
+
+        if (!hasDistinct()) {
+            return aggregator;
+        }
+
+        return new DistinctValuesWrapperAggregator<>(aggregator, distinctBy.stream().map(ColumnId::resolve).toList());
+    }
+
+    @Override
+    public ResultType getResultType() {
+        return ResultType.Primitive.INTEGER;
+    }
+
+    @Override
+    public SelectConverter<DurationSumSelect> createConverter() {
+        //TODO apply distinctBy (though needs to be done once other branches are merged)
+        return new DurationSumSqlAggregator();
+    }
 }

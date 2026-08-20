@@ -146,7 +146,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 		super.finish(executionState);
 
-		AuthUtil.cleanUpUserAndBelongings(serviceUser, getMetaStorage());
+		AuthUtil.cleanUpUserAndBelongings(serviceUser, getMetaStorage(), getDatasetRegistry());
 
 	}
 

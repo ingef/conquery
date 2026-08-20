@@ -31,6 +31,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
 import com.bakdata.conquery.models.query.resultinfo.FixedLabelResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Preconditions;
@@ -128,6 +129,11 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 				@Override
 				public String defaultColumnName(PrintSettings printSettings) {
 					return defaultLabel(printSettings.getLocale());
+				}
+
+				@Override
+				public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+					return resultSetProcessor::getBoolean;
 				}
 			});
 		}

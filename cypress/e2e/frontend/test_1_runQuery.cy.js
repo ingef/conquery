@@ -5,10 +5,6 @@ const USER_TOKEN_WITH_PERMISSIONS = "user.user2";
 
 describe("Run query", () => {
     beforeEach(() => {
-        // run these tests as if in a desktop
-        // browser with a 720p monitor
-        cy.viewport(1280, 720)
-
         visitWithToken(USER_TOKEN_WITH_PERMISSIONS);
     });
 
@@ -85,14 +81,45 @@ describe("Run query", () => {
         // Check for specific user error message
         cy.get('[data-test-id="query-runner"]').contains("Die ausgewählte Analyseebenen konnte in keinem der ausgewählten Konzepten gefunden werden.")
     })
+
+    it("Limits filter autocomplete search terms to 500 characters", () => {
+        cy.get('[data-test-id="right-pane-container"] >div:visible').as("queryEditor");
+
+        cy.contains("MultiConnector").trigger("dragstart").trigger("dragleave");
+        cy.get("@queryEditor")
+            .trigger("dragenter")
+            .trigger("dragover")
+            .trigger("drop")
+            .trigger("dragend");
+
+        cy.get("@queryEditor").contains("MultiConnector").click();
+
+        cy.intercept("POST", "**/filters/*/autocomplete", (request) => {
+            if (request.body.text) {
+                request.alias = "filterAutocomplete";
+            }
+        });
+
+        const searchTerm = "a".repeat(501);
+        cy.get("@queryEditor")
+            .find('[data-test-id="table-filter-dataset1.multiconnector.connector1.big_multi_select"]')
+            .as("multiSelect")
+            .scrollIntoView();
+
+        cy.get("@multiSelect")
+            .find('input[type="text"]')
+            .should("have.attr", "maxlength", "500")
+            .type(searchTerm, {delay: 0})
+            .should("have.value", searchTerm.slice(0, 500));
+
+        cy.wait("@filterAutocomplete")
+            .its("request.body.text")
+            .should("have.length", 500);
+    });
 });
 
 describe("Reference list", () => {
     beforeEach(() => {
-        // run these tests as if in a desktop
-        // browser with a 720p monitor
-        cy.viewport(1280, 720)
-
         visitWithToken(USER_TOKEN_WITH_PERMISSIONS);
     });
 

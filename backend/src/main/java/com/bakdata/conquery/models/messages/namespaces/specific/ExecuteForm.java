@@ -61,15 +61,14 @@ public class ExecuteForm extends WorkerMessage {
 				query.createQueryPlan(new QueryPlanContext(worker.getStorage(), queryExecutor.getSecondaryIdSubPlanLimit()));
 			}
 			catch (Exception e) {
-				ConqueryError err = asConqueryError(e);
-				log.warn("Failed to create query plans for {}.", formId, err);
-				queryExecutor.sendFailureToManagerNode(result, err, worker);
+				log.warn("Failed to create query plans for {}.", formId, e);
+				queryExecutor.sendFailureToManagerNode(e, formId);
 				return;
 			}
 
 			final QueryExecutionContext
 					subQueryContext =
-					new QueryExecutionContext(formId, queryExecutor, worker.getStorage(), worker.getBucketManager());
+					new QueryExecutionContext(formId, queryExecutor, worker.getStorage(), worker.getBucketManager(), worker.getClock());
 
 			Set<Entity> entities = query.collectRequiredEntities(subQueryContext).resolve(worker.getBucketManager());
 

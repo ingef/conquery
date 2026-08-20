@@ -13,6 +13,7 @@ import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.SqlTestDataImporter;
 import com.bakdata.conquery.integration.sql.CsvTableImporter;
+import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -29,6 +30,7 @@ import org.assertj.core.description.LazyTextDescription;
  */
 @Slf4j
 public class SqlSchemaValidationTest implements ProgrammaticIntegrationTest {
+
 	@Override
 	public Set<StandaloneSupport.Mode> forModes() {
 		return Set.of(StandaloneSupport.Mode.SQL);
@@ -38,6 +40,12 @@ public class SqlSchemaValidationTest implements ProgrammaticIntegrationTest {
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
 		StandaloneSupport support = testConquery.getSupport("dataset");
+
+		if (support.getConfig().getSqlConnectorConfig().getDatabaseConfigs().values()
+				   .stream().allMatch(dbconf -> dbconf.getDialect().equals(Dialect.CLICKHOUSE))) {
+			log.info("Clickhouse validation does not work.");
+			return;
+		}
 
 		CsvTableImporter importer = ((SqlTestDataImporter) testConquery.getTestDataImporter()).getCsvTableImporter();
 

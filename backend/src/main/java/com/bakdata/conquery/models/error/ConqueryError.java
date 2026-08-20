@@ -246,6 +246,19 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		}
 	}
 
+	/**
+	 * Result size was too large
+	 */
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_RESULT_SIZE")
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+	public static class ExecutionProcessingResultSizeError extends ConqueryError {
+
+		@Override
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.resultSizeTooLarge();
+		}
+	}
+
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_NO_SECONDARY_ID")
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class NoSecondaryIdSelectedError extends ConqueryError {
@@ -265,7 +278,14 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		public String getMessageTemplate(ErrorMessages errorMessages) {
 			return errorMessages.sqlError(error);
 		}
+	}
 
-
+	@CPSType(base = ConqueryError.class, id = "CQ_RELATIVE_NO_DATES")
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+	public static class RelativeFormMissingDatesError extends ConqueryError {
+		@Override
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.relativeFormMissingDates();
+		}
 	}
 }

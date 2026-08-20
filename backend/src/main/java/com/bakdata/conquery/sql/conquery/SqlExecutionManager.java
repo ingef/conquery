@@ -72,7 +72,7 @@ public class SqlExecutionManager extends ExecutionManager {
 									SqlExecutionExecutionInfo startResult = getExecutionInfo(id);
 									SqlExecutionExecutionInfo
 											finishResult =
-											new SqlExecutionExecutionInfo(ExecutionState.DONE, result.getColumnNames(), result.getTable(), startResult.getExecutingLock());
+											new SqlExecutionExecutionInfo(ExecutionState.DONE, result.getColumnNames(), result.getTable(), result.getResultInfos(), startResult.getExecutingLock());
 									addState(id, finishResult);
 
 									managedQuery.finish(ExecutionState.DONE);

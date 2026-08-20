@@ -43,7 +43,8 @@ spec:
                 value: "{{ .Values.frontend.idp.clientId }}"
           ports:
           - name: ui
-            containerPort: 80
+            # NGINX_PORT default
+            containerPort: 8000
           resources:
             {{ toYaml .Values.frontend.resources | nindent 10 }}
         - name: "{{ .Release.Name }}-backend"

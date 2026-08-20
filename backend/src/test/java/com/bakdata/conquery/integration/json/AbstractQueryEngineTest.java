@@ -52,7 +52,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		execution.initExecutable();
 		SingleTableResult executionResult = (SingleTableResult) execution;
 
-		List<ResultInfo> resultInfos = executionResult.getResultInfos();
+		List<ResultInfo> resultInfos = executionResult.collectResultInfos();
 
 		assertThat(executionResult.streamResults(OptionalLong.empty()).flatMap(EntityResult::streamValues))
 				.as("Should have same size as result infos")
@@ -84,7 +84,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		if (executionResult.streamResults(OptionalLong.empty()).noneMatch(MultilineEntityResult.class::isInstance)) {
 			long lastResultCount;
 			if (executionResult instanceof ManagedQuery editorQuery) {
-				lastResultCount = editorQuery.getLastResultCount();
+				lastResultCount = editorQuery.resultRowCount().orElseThrow();
 			}
 			else {
 				throw new UnexpectedTypeException("Did expect an EditorQuery, but got element of type %s.".formatted(execution.getClass()));

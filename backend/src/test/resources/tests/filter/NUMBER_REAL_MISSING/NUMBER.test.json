@@ -16,7 +16,7 @@
         },
         {
           "name": "datum",
-          "type": "DATE_RANGE"
+          "type": "DATE"
         }
       ]
     }

@@ -80,7 +80,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		);
 
 
-		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings(), "emptyDefaultLabel");
+		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings());
 
 		final FilterTemplate
 				filterTemplate =

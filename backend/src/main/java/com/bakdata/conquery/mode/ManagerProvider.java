@@ -26,7 +26,7 @@ public interface ManagerProvider {
 			ConqueryConfig config,
 			InternalMapperFactory internalMapperFactory
 	) {
-		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), config.getIndex().getEmptyLabel());
+		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings());
 		return new DatasetRegistry<>(
 				config,
 				internalMapperFactory,

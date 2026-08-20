@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import lombok.ToString;
+import org.jetbrains.annotations.NotNull;
 
 @ToString(callSuper = true)
 public class BooleanParser extends Parser<Boolean, BooleanStore> {
@@ -19,6 +20,11 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 
 	@Override
 	protected Boolean parseValue(@Nonnull String value) throws ParsingException {
+		return parseBoolean(value);
+	}
+
+	@NotNull
+	public static Boolean parseBoolean(@NotNull String value) {
 		return switch (value) {
 			case "J", "true", "1" -> true;
 			case "N", "false", "0" -> false;

@@ -10,6 +10,7 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -50,12 +51,12 @@ public class CQNegation extends CQElement {
 	public void resolve(QueryResolveContext context) {
 		Preconditions.checkNotNull(context.getDateAggregationMode());
 
-		dateAction = determineDateAction(context);
+		dateAction = determineDateAction(context.getDateAggregationMode());
 		child.resolve(context);
 	}
 
-	private DateAggregationAction determineDateAction(QueryResolveContext context) {
-		return switch (context.getDateAggregationMode()) {
+	public static DateAggregationAction determineDateAction(DateAggregationMode dateAggregationMode) {
+		return switch (dateAggregationMode) {
 			case MERGE, NONE, INTERSECT -> DateAggregationAction.BLOCK;
 			case LOGICAL -> DateAggregationAction.NEGATE;
 		};

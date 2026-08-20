@@ -14,6 +14,7 @@ import UploadFilterListModal from "./UploadFilterListModal";
 import { filterSuggestionToSelectOption } from "./suggestionsHelper";
 
 const PAGE_SIZE = 25;
+const MAX_AUTOCOMPLETE_TEXT_LENGTH = 500;
 
 const getPageToLoad = (
   prevPageLoaded: number | null,
@@ -194,6 +195,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
         disabled={disabled}
         indexPrefix={indexPrefix}
         creatable={creatable}
+        maxInputLength={onLoad ? MAX_AUTOCOMPLETE_TEXT_LENGTH : undefined}
         onLoadMore={onLoad ? onLoadMore : undefined}
         onLoadAndInsertAll={onLoad ? onLoadAndInsertAll : undefined}
         onResolve={allowDropFile ? onDropFile : undefined}
