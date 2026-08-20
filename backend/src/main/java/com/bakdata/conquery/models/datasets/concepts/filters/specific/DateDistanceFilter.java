@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -16,7 +17,6 @@ import com.bakdata.conquery.models.query.filter.event.DateDistanceFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.DateDistanceSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -40,16 +40,17 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@Override
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
-		if (getColumn().getType() != MajorTypeId.DATE) {
-			throw new ConceptConfigurationException(getConnector(), "DATE_DISTANCE filter is incompatible with columns of type " + getColumn().getType());
+		MajorTypeId type = getColumn().resolve().getType();
+		if (type != MajorTypeId.DATE) {
+			throw new ConceptConfigurationException(getConnector(), "DATE_DISTANCE filter is incompatible with columns of type " + type);
 		}
 
 		f.setType(FrontendFilterType.Fields.INTEGER_RANGE);
 	}
 
 	@Override
-	public FilterNode createFilterNode(Range.LongRange value) {
-		return new DateDistanceFilterNode(getColumn(), timeUnit, value);
+	public FilterNode<?> createFilterNode(Range.LongRange value) {
+		return new DateDistanceFilterNode(getColumn().resolve(), timeUnit, value);
 	}
 
 	@Override

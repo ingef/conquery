@@ -9,22 +9,19 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
  * Helper Aggregator, returning if it was used at least once.
  */
 @RequiredArgsConstructor
-@ToString(of = "requiredTables")
+@ToString
 public class ExistsAggregator extends Aggregator<Boolean> {
 
 	private final Set<Table> requiredTables;
 
-
-	public void setReference(QPNode ref) {
-		reference = ref;
-	}
-
+	@Setter
 	private QPNode reference;
 
 	@Override

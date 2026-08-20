@@ -21,18 +21,42 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 public class CBlockDeserializer extends JsonDeserializer<CBlock> implements ContextualDeserializer {
 
 	private JsonDeserializer<CBlock> beanDeserializer;
-	
+
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	@Override
+	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
+		JavaType type = Optional
+				.ofNullable(ctxt.getContextualType())
+				.orElseGet(Optional.ofNullable(property).map(BeanProperty::getType)::get);
+
+		while (type.isContainerType()) {
+			type = type.getContentType();
+		}
+		BeanDescription descr = ctxt.getConfig().introspect(type);
+		JsonDeserializer<?> deser = ctxt.getFactory().createBeanDeserializer(ctxt, type, descr);
+		if (deser instanceof ResolvableDeserializer) {
+			((ResolvableDeserializer) deser).resolve(ctxt);
+		}
+		return new CBlockDeserializer((JsonDeserializer) deser);
+	}
+
+	@Override
+	public CBlock deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
+		return this.deserialize(p, ctxt);
+	}
+
 	@Override
 	public CBlock deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		CBlock block = beanDeserializer.deserialize(p, ctxt);
 
-		TreeConcept concept = block.getConnector().getConcept();
 
-		if(block.getMostSpecificChildren() != null) {
+		if (block.getMostSpecificChildren() != null) {
+			TreeConcept concept = (TreeConcept) block.getConnector().getConcept().resolve();
 
 			// deduplicate concrete paths after loading from disk.
 			for (int event = 0; event < block.getMostSpecificChildren().length; event++) {
@@ -50,26 +74,5 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 		return block;
 	}
 
-	@Override
-	public CBlock deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
-		return this.deserialize(p, ctxt);
-	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Override
-	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
-		JavaType type = Optional
-				.ofNullable(ctxt.getContextualType())
-				.orElseGet(Optional.ofNullable(property).map(BeanProperty::getType)::get);
-
-		while(type.isContainerType()) {
-			type = type.getContentType();
-		}
-		BeanDescription descr = ctxt.getConfig().introspect(type);
-		JsonDeserializer<?> deser = ctxt.getFactory().createBeanDeserializer(ctxt, type, descr);
-		if(deser instanceof ResolvableDeserializer) {
-			((ResolvableDeserializer) deser).resolve(ctxt);
-		}
-		return new CBlockDeserializer((JsonDeserializer)deser);
-	}
 }

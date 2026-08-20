@@ -161,7 +161,7 @@ const EventCard = ({
                       {...currencyConfig}
                       suffix={" " + currencyConfig.unit}
                       displayType="text"
-                      value={parseInt(row[column.label] as string) / 100}
+                      value={parseFloat(row[column.label] as string)}
                     />
                   </code>
                 </div>

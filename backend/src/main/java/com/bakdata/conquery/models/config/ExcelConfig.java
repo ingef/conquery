@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.config;
 
+import java.util.Collections;
+import java.util.Map;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.google.common.collect.ImmutableMap;
 import lombok.AllArgsConstructor;
@@ -12,15 +18,6 @@ import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFDataFormat;
-import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import java.util.Collections;
-import java.util.Map;
 
 @Data
 public class ExcelConfig {
@@ -33,7 +30,8 @@ public class ExcelConfig {
 
 	private static final Map<String, CellStyler> FALLBACK_STYLES = Map.of(
 			BASIC_STYLE, new CellStyler(),
-			CURRENCY_STYLE_PREFIX + "EUR", new CellStyler().withDataFormatString("#,##0.00 €"),
+			// \u00A0 is the non breakable space
+			CURRENCY_STYLE_PREFIX + "EUR", new CellStyler().withDataFormatString("#,##0.00\u00A0€"),
 			NUMERIC_STYLE, new CellStyler().withDataFormatString("#,##0.00"),
 			INTEGER_STYLE, new CellStyler().withDataFormatString("#,##0")
 	);

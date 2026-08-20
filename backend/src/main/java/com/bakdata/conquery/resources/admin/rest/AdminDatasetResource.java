@@ -3,27 +3,11 @@ package com.bakdata.conquery.resources.admin.rest;
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
-
-import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.StructureNode;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
-import com.bakdata.conquery.models.index.InternToExternMapper;
-import com.bakdata.conquery.models.index.search.SearchIndex;
-import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.util.io.FileUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -40,9 +24,25 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response.Status;
+
+import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.StructureNode;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
+import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -61,13 +61,13 @@ public class AdminDatasetResource {
 	private final AdminDatasetProcessor processor;
 
 	@PathParam(DATASET)
-	private Dataset dataset;
+	private DatasetId dataset;
 
 	private Namespace namespace;
 
 	@PostConstruct
 	public void init() {
-		namespace = processor.getDatasetRegistry().get(dataset.getId());
+		namespace = processor.getDatasetRegistry().get(dataset);
 	}
 
 	@GET
@@ -145,17 +145,6 @@ public class AdminDatasetResource {
 		processor.updateImport(namespace, new GZIPInputStream(new BufferedInputStream(importStream)));
 	}
 
-	@PUT
-	@Path("imports")
-	public void updateImport(@NotNull @QueryParam("file") File importFile) throws WebApplicationException {
-		try {
-			processor.updateImport(namespace, new GZIPInputStream(FileUtil.cqppFileToInputstream(importFile)));
-		}
-		catch (IOException err) {
-			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied.", importFile), err, Status.BAD_REQUEST);
-		}
-	}
-
 	@POST
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
@@ -166,39 +155,26 @@ public class AdminDatasetResource {
 	}
 
 	@POST
-	@Path("imports")
-	public void addImport(@QueryParam("file") File importFile) throws WebApplicationException {
-		try {
-			processor.addImport(namespace, new GZIPInputStream(FileUtil.cqppFileToInputstream(importFile)));
-		}
-		catch (IOException err) {
-			log.warn("Unable to process import", err);
-			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied.", importFile), err, Status.BAD_REQUEST);
-		}
-	}
-
-
-	@POST
 	@Path("concepts")
-	public void addConcept(@QueryParam("force") @DefaultValue("false") boolean force, Concept concept) {
-		processor.addConcept(namespace.getDataset(), concept, force);
+	public void addConcept(@QueryParam("force") @DefaultValue("false") boolean force, Concept<?> concept) {
+		processor.addConcept(namespace, concept, force);
 	}
 
 	@PUT
 	@Path("concepts")
-	public void updateConcept(Concept concept) {
-		processor.updateConcept(namespace.getDataset(), concept);
+	public void updateConcept(Concept<?> concept) {
+		processor.updateConcept(namespace, concept);
 	}
 
 	@DELETE
 	@Path("secondaryId/{" + SECONDARY_ID + "}")
-	public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescription secondaryId) {
+	public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescriptionId secondaryId) {
 		processor.deleteSecondaryId(secondaryId);
 	}
 
 	@DELETE
 	@Path("searchIndex/{" + SEARCH_INDEX_ID + "}")
-	public List<ConceptId> deleteSearchIndex(@PathParam(SEARCH_INDEX_ID) SearchIndex searchIndex, @QueryParam("force") @DefaultValue("false") boolean force) {
+	public List<ConceptId> deleteSearchIndex(@PathParam(SEARCH_INDEX_ID) SearchIndexId searchIndex, @QueryParam("force") @DefaultValue("false") boolean force) {
 
 		final List<ConceptId> conceptIds = processor.deleteSearchIndex(searchIndex, force);
 		if (!conceptIds.isEmpty() && !force) {
@@ -209,13 +185,15 @@ public class AdminDatasetResource {
 
 	@DELETE
 	@Path("internToExtern/{" + INTERN_TO_EXTERN_ID + "}")
-	public List<ConceptId> deleteInternToExternMapping(@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapper internToExternMapper, @QueryParam("force") @DefaultValue("false") boolean force) {
+	public List<ConceptId> deleteInternToExternMapping(
+			@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapperId internToExternMapper,
+			@QueryParam("force") @DefaultValue("false") boolean force) {
 		return processor.deleteInternToExternMapping(internToExternMapper, force);
 	}
 
 	@GET
 	public Dataset getDatasetInfos() {
-		return dataset;
+		return dataset.resolve();
 	}
 
 	@POST
@@ -228,13 +206,16 @@ public class AdminDatasetResource {
 	@GET
 	@Path("tables")
 	public List<TableId> listTables() {
-		return namespace.getStorage().getTables().stream().map(Table::getId).collect(Collectors.toList());
+		return namespace.getStorage().getTables().map(Table::getId).collect(Collectors.toList());
 	}
 
 	@GET
 	@Path("concepts")
 	public List<ConceptId> listConcepts() {
-		return namespace.getStorage().getAllConcepts().stream().map(Concept::getId).collect(Collectors.toList());
+		return namespace.getStorage()
+						.getAllConcepts()
+						.map(Concept::getId)
+						.collect(Collectors.toList());
 	}
 
 	@DELETE
@@ -249,14 +230,14 @@ public class AdminDatasetResource {
 	@POST
 	@Path("/update-matching-stats")
 	@Consumes(MediaType.WILDCARD)
-	public void postprocessNamespace(@PathParam(DATASET) Dataset dataset) {
+	public void postprocessNamespace(@PathParam(DATASET) DatasetId dataset) {
 		processor.postprocessNamespace(dataset);
 	}
 
 	@POST
 	@Path("clear-index-cache")
 	public void clearIndexCache() {
-		processor.clearIndexCache(namespace);
+		processor.clearIndexCache();
 	}
 
 }

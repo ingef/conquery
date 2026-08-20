@@ -1,4 +1,4 @@
-import { ComponentMeta, Story } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 import { ComponentProps, useState } from "react";
 
 import wordslist from "../../../fixtures/words.json";
@@ -15,11 +15,13 @@ export default {
   argTypes: {
     backgroundColor: { control: "#fafafa" },
   },
-} as ComponentMeta<typeof InputMultiSelect>;
+} as Meta<typeof InputMultiSelect>;
 
-const Template: Story<
-  ComponentProps<typeof InputMultiSelect> & { passOnResolve?: boolean }
-> = ({ passOnResolve, ...args }) => {
+type Props = ComponentProps<typeof InputMultiSelect> & {
+  passOnResolve?: boolean;
+};
+
+const Render = ({ passOnResolve, ...args }: Props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [options, setOptions] = useState<SelectOptionT[]>(
     wl.map((w) => ({ label: w, value: w, disabled: Math.random() < 0.1 })),
@@ -31,7 +33,6 @@ const Template: Story<
     },
   ]);
   const onLoad = (str: string) => {
-    console.log("ONLOAD MORE WITH ", str);
     setLoading(true);
     setTimeout(() => {
       setOptions((opts) => {
@@ -52,7 +53,6 @@ const Template: Story<
   };
 
   const onResolve = (csvLines: string[]) => {
-    console.log(csvLines);
     setValue(csvLines.map((line) => ({ value: line, label: line })));
   };
 
@@ -69,22 +69,26 @@ const Template: Story<
   );
 };
 
-export const Default = Template.bind({});
-Default.args = {
-  indexPrefix: 5,
-  label: "This is a nice label",
-  tooltip:
-    "And here goes some tooltip that really helps the user understand what's going on",
-  disabled: false,
-  passOnResolve: true,
-  creatable: true,
-  loading: false,
-};
-Default.argTypes = {
-  passOnResolve: {
-    type: { name: "boolean" },
+type Story = StoryObj<Props>;
+
+export const Default: Story = {
+  args: {
+    indexPrefix: 5,
+    label: "This is a nice label",
+    tooltip:
+      "And here goes some tooltip that really helps the user understand what's going on",
+    disabled: false,
+    passOnResolve: true,
+    creatable: true,
+    loading: false,
   },
-  indexPrefix: {
-    type: { name: "number", required: false },
+  argTypes: {
+    passOnResolve: {
+      type: { name: "boolean" },
+    },
+    indexPrefix: {
+      type: { name: "number", required: false },
+    },
   },
+  render: Render,
 };

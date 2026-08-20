@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 jar="./executable/target/executable-0.0.0-SNAPSHOT.jar"
 config="./cypress/support/backend_config.json"

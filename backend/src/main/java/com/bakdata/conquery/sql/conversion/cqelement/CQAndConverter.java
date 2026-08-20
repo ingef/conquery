@@ -36,7 +36,7 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 		}
 
 		String joinedNodeName = joined.getCteName();
-		ExistsSqlSelect existsSqlSelect = new ExistsSqlSelect(joinedNodeName);
+		ExistsSqlSelect existsSqlSelect = ExistsSqlSelect.withAlias(joinedNodeName);
 		return context.withQueryStep(joined.addSqlSelect(existsSqlSelect));
 	}
 

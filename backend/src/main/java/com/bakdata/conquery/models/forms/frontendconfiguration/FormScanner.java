@@ -6,12 +6,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.forms.Form;
@@ -43,7 +43,7 @@ public class FormScanner extends Task {
 	 * task accounts the change.
 	 */
 	private final ConqueryConfig config;
-	private List<FormConfigProvider> formConfigProviders = new ArrayList<>();
+	private final Map<String, FormConfigProvider> formConfigProviders = new ConcurrentHashMap<>();
 
 	public FormScanner(ConqueryConfig config) {
 		super("form-scanner");
@@ -51,10 +51,9 @@ public class FormScanner extends Task {
 		registerFrontendFormConfigProvider(new FormConfigProvider("internal", ResourceFormConfigProvider::accept));
 	}
 
-	public synchronized void registerFrontendFormConfigProvider(FormConfigProvider provider) {
-		formConfigProviders.add(provider);
+	public void registerFrontendFormConfigProvider(FormConfigProvider provider) {
+		formConfigProviders.put(provider.getProviderName(), provider);
 	}
-
 
 	@Nullable
 	public static FormType resolveFormType(String formType) {
@@ -65,8 +64,17 @@ public class FormScanner extends Task {
 		return Set.copyOf(FRONTEND_FORM_CONFIGS.values());
 	}
 
+	public FormConfigProvider unregisterFrontendFormConfigProvider(String providerName) {
+		return formConfigProviders.remove(providerName);
+	}
+
+	public Collection<String> listFrontendFormConfigProviders() {
+		return formConfigProviders.keySet();
+	}
+
+	@SneakyThrows(Exception.class)
 	@Override
-	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
+	public void execute(Map<String, List<String>> parameters, PrintWriter output) {
 		FRONTEND_FORM_CONFIGS = generateFEFormConfigMap();
 
 		if (output == null) {
@@ -189,7 +197,7 @@ public class FormScanner extends Task {
 
 		log.trace("Begin collecting form frontend configurations");
 
-		for (FormConfigProvider formConfigProvider : formConfigProviders) {
+		for (FormConfigProvider formConfigProvider : formConfigProviders.values()) {
 
 			try {
 				formConfigProvider.addFormConfigs(frontendConfigs);

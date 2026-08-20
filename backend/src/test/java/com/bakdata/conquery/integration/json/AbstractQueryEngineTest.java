@@ -6,10 +6,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.OptionalLong;
+import jakarta.validation.UnexpectedTypeException;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -28,10 +31,8 @@ import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.powerlibraries.io.In;
-import jakarta.validation.UnexpectedTypeException;
-import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 
 @Slf4j
 public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
@@ -40,22 +41,18 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
 		Query query = getQuery();
 
-		assertThat(standaloneSupport.getValidator().validate(query))
-				.describedAs("Query Validation Errors")
-				.isEmpty();
-
-
 		log.info("{} QUERY INIT", getLabel());
 
 		final User testUser = standaloneSupport.getTestUser();
 
+
 		final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(standaloneSupport, query, -1, ExecutionState.DONE, testUser, 201);
 
 		final ManagedExecution execution = standaloneSupport.getMetaStorage().getExecution(executionId);
+		execution.initExecutable();
 		SingleTableResult executionResult = (SingleTableResult) execution;
 
-		//check result info size
-		List<ResultInfo> resultInfos = executionResult.getResultInfos();
+		List<ResultInfo> resultInfos = executionResult.collectResultInfos();
 
 		assertThat(executionResult.streamResults(OptionalLong.empty()).flatMap(EntityResult::streamValues))
 				.as("Should have same size as result infos")
@@ -76,11 +73,9 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 								 .acceptLanguage(Locale.ENGLISH)
 								 .get();
 
-		List<String> actual = In.stream(((InputStream) csvResponse.getEntity())).readLines();
+		List<String> actual = IOUtils.readLines((InputStream) csvResponse.getEntity(), StandardCharsets.UTF_8);
 
-		ResourceFile expectedCsv = getExpectedCsv();
-
-		List<String> expected = In.stream(expectedCsv.stream()).readLines();
+		List<String> expected = IOUtils.readLines(getExpectedCsv().stream(), StandardCharsets.UTF_8);
 
 		assertThat(actual).as("Results for %s are not as expected.", this)
 						  .containsExactlyInAnyOrderElementsOf(expected);
@@ -89,7 +84,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		if (executionResult.streamResults(OptionalLong.empty()).noneMatch(MultilineEntityResult.class::isInstance)) {
 			long lastResultCount;
 			if (executionResult instanceof ManagedQuery editorQuery) {
-				lastResultCount = editorQuery.getLastResultCount();
+				lastResultCount = editorQuery.resultRowCount().orElseThrow();
 			}
 			else {
 				throw new UnexpectedTypeException("Did expect an EditorQuery, but got element of type %s.".formatted(execution.getClass()));

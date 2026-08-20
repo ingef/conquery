@@ -2,10 +2,12 @@ package com.bakdata.conquery.tasks;
 
 import java.io.PrintWriter;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
@@ -28,33 +30,38 @@ import org.jetbrains.annotations.Nullable;
 @Slf4j
 public class PermissionCleanupTask extends Task {
 
-    private final MetaStorage storage;
+	private final MetaStorage storage;
 
-    public PermissionCleanupTask(MetaStorage storage) {
-        super("permission-cleanup");
-        this.storage = storage;
-    }
+	public PermissionCleanupTask(MetaStorage storage) {
+		super("permission-cleanup");
+		this.storage = storage;
+	}
 
-    @Override
-    public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
-        log.info("Permissions deleted from all users: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllUsers()));
-        log.info("Permissions deleted from all groups: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllGroups()));
-        log.info("Permissions deleted from all roles: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllRoles()));
-        log.info("Owned Execution permissions deleted: {}", deletePermissionsOfOwnedInstances(storage, ExecutionPermission.DOMAIN.toLowerCase(), ManagedExecutionId.Parser.INSTANCE, storage::getExecution));
-        log.info("Owned FormConfig permissions deleted: {}", deletePermissionsOfOwnedInstances(storage, FormConfigPermission.DOMAIN.toLowerCase(), FormConfigId.Parser.INSTANCE, storage::getFormConfig));
-    }
+	@Override
+	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
+		log.info("Permissions deleted from all users: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllUsers()));
+		log.info("Permissions deleted from all groups: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllGroups()));
+		log.info("Permissions deleted from all roles: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllRoles()));
+		log.info("Owned Execution permissions deleted: {}",
+				 deletePermissionsOfOwnedInstances(storage, ExecutionPermission.DOMAIN.toLowerCase(), ManagedExecutionId.Parser.INSTANCE, storage::getExecution)
+		);
+		log.info("Owned FormConfig permissions deleted: {}",
+				 deletePermissionsOfOwnedInstances(storage, FormConfigPermission.DOMAIN.toLowerCase(), FormConfigId.Parser.INSTANCE, storage::getFormConfig)
+		);
+	}
 
 
-    /**
-     * Deletes permission that reference non-existing executions.
-     *
-     * @return The number of deleted permissions.
-     */
-    public static int deleteQueryPermissionsWithMissingRef(MetaStorage storage, Iterable<? extends PermissionOwner<?>> owners) {
-        int countDeleted = 0;
-        // Do the loop-di-loop
-        for (PermissionOwner<?> owner : owners) {
-            Set<ConqueryPermission> permissions = owner.getPermissions();
+	/**
+	 * Deletes permission that reference non-existing executions.
+	 *
+	 * @return The number of deleted permissions.
+	 */
+	public static int deleteQueryPermissionsWithMissingRef(MetaStorage storage, Stream<? extends PermissionOwner<?>> owners) {
+		int countDeleted = 0;
+		// Do the loop-di-loop
+		for (Iterator<? extends PermissionOwner<?>> it = owners.iterator(); it.hasNext(); ) {
+			PermissionOwner<?> owner = it.next();
+			Set<ConqueryPermission> permissions = owner.getPermissions();
 			for (Permission permission : permissions) {
 				WildcardPermission wpermission = getAsWildcardPermission(permission);
 				if (wpermission == null) {
@@ -90,30 +97,36 @@ public class PermissionCleanupTask extends Task {
 				countDeleted++;
 
 			}
-        }
-        return countDeleted;
-    }
+		}
+		return countDeleted;
+	}
 
-    @Nullable
-    private static WildcardPermission getAsWildcardPermission(Permission permission) {
-        if (!(permission instanceof WildcardPermission)) {
-            log.warn(
-                    "Encountered the permission type {} that is not handled by this routine. Permission was: {}",
-                    permission.getClass(),
-                    permission);
-            return null;
-        }
+	@Nullable
+	private static WildcardPermission getAsWildcardPermission(Permission permission) {
+		if (!(permission instanceof WildcardPermission)) {
+			log.warn(
+					"Encountered the permission type {} that is not handled by this routine. Permission was: {}",
+					permission.getClass(),
+					permission
+			);
+			return null;
+		}
 		return (WildcardPermission) permission;
-    }
+	}
 
 	/**
 	 * Deletes permission that are unnecessary because the user is the owner of the referenced instance
 	 *
 	 * @return The number of deleted permissions.
 	 */
-	public static <E extends IdentifiableImpl<ID> & Owned, ID extends Id<E>> int deletePermissionsOfOwnedInstances(MetaStorage storage, String permissionDomain, IdUtil.Parser<ID> idParser, Function<ID, E> instanceStorageExtractor) {
+	public static <E extends IdentifiableImpl<ID, ?> & Owned, ID extends Id<?, ?>> int deletePermissionsOfOwnedInstances(
+			MetaStorage storage,
+			String permissionDomain,
+			IdUtil.Parser<ID> idParser,
+			Function<ID, E> instanceStorageExtractor) {
 		int countDeleted = 0;
-		for (User user : storage.getAllUsers()) {
+		for (Iterator<User> it = storage.getAllUsers().iterator(); it.hasNext(); ) {
+			User user = it.next();
 			Set<ConqueryPermission> permissions = user.getPermissions();
 			for (Permission permission : permissions) {
 				WildcardPermission wpermission = getAsWildcardPermission(permission);
@@ -129,7 +142,7 @@ public class PermissionCleanupTask extends Task {
 				if (wpermission.getInstances().size() != 1) {
 					log.trace("Skipping permission {} because it refers to multiple instances.", wpermission);
 				}
-				ID executionId = null;
+				ID executionId;
 				try {
 					executionId = idParser.parse(wpermission.getInstances().iterator().next());
 				}
@@ -140,14 +153,17 @@ public class PermissionCleanupTask extends Task {
 
 				E execution = instanceStorageExtractor.apply(executionId);
 				if (execution == null) {
-					log.trace("The execution referenced in permission {} does not exist. Skipping permission");
+					log.trace("The execution referenced in permission {} does not exist. Skipping permission", wpermission);
 					continue;
 				}
 
 				if (!user.isOwner(execution)) {
-					log.trace("The user is not owner of the instance. Keeping the permission. User: {}, Owner: {}, Instance: {}, Permission: {}", user.getId(), execution
-																																										.getOwner(), execution
-																																															 .getId(), wpermission);
+					log.trace("The user is not owner of the instance. Keeping the permission. User: {}, Owner: {}, Instance: {}, Permission: {}",
+							  user.getId(),
+							  execution.getOwner(),
+							  execution.getId(),
+							  wpermission
+					);
 					continue;
 				}
 
@@ -157,9 +173,9 @@ public class PermissionCleanupTask extends Task {
 
 
 			}
-        }
+		}
 
-        return countDeleted;
+		return countDeleted;
 
-    }
+	}
 }

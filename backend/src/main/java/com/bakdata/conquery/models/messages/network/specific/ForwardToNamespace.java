@@ -13,12 +13,13 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext.Manage
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @CPSType(id = "FORWARD_TO_NAMESPACE", base = NetworkMessage.class)
-@RequiredArgsConstructor
-@Getter
+@Data
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class ForwardToNamespace extends MessageToManagerNode implements SlowMessage {
 
 	private final DatasetId datasetId;
@@ -30,6 +31,7 @@ public class ForwardToNamespace extends MessageToManagerNode implements SlowMess
 
 		DistributedNamespace ns = Objects.requireNonNull(context.getDatasetRegistry().get(datasetId), () -> String.format("Missing dataset `%s`", datasetId));
 		ConqueryMDC.setLocation(ns.getStorage().getDataset().toString());
+
 		message.react(ns);
 
 		if (message instanceof ReactionMessage reactionMessage) {
@@ -39,16 +41,11 @@ public class ForwardToNamespace extends MessageToManagerNode implements SlowMess
 
 	@Override
 	public ProgressReporter getProgressReporter() {
-		return ((SlowMessage) message).getProgressReporter();
+		return message.getProgressReporter();
 	}
 
 	@Override
 	public void setProgressReporter(ProgressReporter progressReporter) {
-		((SlowMessage) message).setProgressReporter(progressReporter);
-	}
-
-	@Override
-	public String toString() {
-		return message.toString() + " for dataset " + datasetId;
+		message.setProgressReporter(progressReporter);
 	}
 }

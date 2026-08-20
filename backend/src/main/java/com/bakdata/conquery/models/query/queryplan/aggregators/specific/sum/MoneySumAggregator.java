@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum;
 
+import java.math.BigDecimal;
+
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -11,10 +13,10 @@ import lombok.ToString;
  * Aggregator implementing a sum over {@code column}, for money columns.
  */
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
-public class MoneySumAggregator extends SingleColumnAggregator<Long> {
+public class MoneySumAggregator extends SingleColumnAggregator<BigDecimal> {
 
 	private boolean hit = false;
-	private long sum = 0L;
+	private BigDecimal sum;
 
 	public MoneySumAggregator(Column column) {
 		super(column);
@@ -23,7 +25,7 @@ public class MoneySumAggregator extends SingleColumnAggregator<Long> {
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		hit = false;
-		sum = 0;
+		sum = BigDecimal.ZERO;
 	}
 
 
@@ -35,13 +37,13 @@ public class MoneySumAggregator extends SingleColumnAggregator<Long> {
 
 		hit = true;
 
-		long addend = bucket.getMoney(event, getColumn());
+		final BigDecimal addend = bucket.getMoney(event, getColumn());
 
-		sum = sum + addend;
+		sum = sum.add(addend);
 	}
 
 	@Override
-	public Long createAggregationResult() {
+	public BigDecimal createAggregationResult() {
 		return hit ? sum : null;
 	}
 

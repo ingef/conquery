@@ -34,7 +34,7 @@ public class EntityPreviewStatus extends FullExecutionStatus {
 		private final Object value;
 
 		public Info(String label, Object value, String typeInfo, String description, Set<SemanticType> semantics) {
-			super(label, description, label, typeInfo, semantics);
+			super(label, label, description, typeInfo, semantics);
 			this.value = value;
 		}
 	}

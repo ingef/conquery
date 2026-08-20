@@ -2,6 +2,7 @@ package com.bakdata.conquery.util.support;
 
 import java.io.File;
 import java.net.ServerSocket;
+import java.nio.file.Path;
 import java.util.Collection;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -30,9 +31,6 @@ public final class ConfigOverride {
 		config.getStandalone().setNumberOfShardNodes(2);
 		// configure logging
 		config.setLoggingFactory(new TestLoggingFactory());
-
-		config.getCluster().setEntityBucketSize(3);
-
 	}
 
 	@SneakyThrows
@@ -52,5 +50,12 @@ public final class ConfigOverride {
 		try (ServerSocket s = new ServerSocket(0)) {
 			config.getCluster().setPort(s.getLocalPort());
 		}
+	}
+
+
+	public static void configureWorkdir(XodusStoreFactory storageConfig, Path workdir) {
+
+		// Create new storage path to prevent xodus lock conflicts
+		storageConfig.setDirectory(workdir);
 	}
 }

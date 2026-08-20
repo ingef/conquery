@@ -1,15 +1,13 @@
 package com.bakdata.conquery.mode.cluster;
 
-import static com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil.collectExtraData;
-import static com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil.readDates;
-import static com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil.tryResolveId;
-import static com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil.verifyOnlySingles;
+import static com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil;
@@ -19,7 +17,6 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalId;
 import com.bakdata.conquery.util.DateReader;
 import com.bakdata.conquery.util.io.IdColumnUtil;
-import jakarta.validation.constraints.NotEmpty;
 
 public class ClusterEntityResolver implements EntityResolver {
 
@@ -58,15 +55,15 @@ public class ClusterEntityResolver implements EntityResolver {
 
 			final String[] row = values[rowNum];
 
-			if (rowDates[rowNum] == null) {
-				unresolvedDate.add(row);
+			// Try to resolve the id first, because it has higher priority for the uploader than the dates
+			String resolvedId = tryResolveId(row, readers, mapping);
+			if (resolvedId == null) {
+				unresolvedId.add(row);
 				continue;
 			}
 
-			String resolvedId = tryResolveId(row, readers, mapping);
-
-			if (resolvedId == null) {
-				unresolvedId.add(row);
+			if (rowDates[rowNum] == null) {
+				unresolvedDate.add(row);
 				continue;
 			}
 

@@ -1,18 +1,19 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 
 public interface DaterangeSelectOrFilter {
 
-	Column getColumn();
+	//TODO consider dropping this and require single column to just be same in start and end?
+	ColumnId getColumn();
 
-	Column getStartColumn();
+	ColumnId getStartColumn();
 
-	Column getEndColumn();
+	ColumnId getEndColumn();
 
 	@JsonIgnore
 	default boolean isSingleColumnDaterange() {
@@ -22,10 +23,10 @@ public interface DaterangeSelectOrFilter {
 	@JsonIgnore
 	default Table getTable() {
 		if (getColumn() != null) {
-			return getColumn().getTable();
+			return getColumn().resolve().getTable();
 		}
 		// start and end column are of the same table, so it does not matter which one we choose
-		return getStartColumn().getTable();
+		return getStartColumn().resolve().getTable();
 	}
 
 	@JsonIgnore
@@ -43,7 +44,7 @@ public interface DaterangeSelectOrFilter {
 		if (getColumn() != null) {
 			return true;
 		}
-		return getStartColumn().getTable() == getEndColumn().getTable();
+		return getStartColumn().getTable().equals(getEndColumn().getTable());
 	}
 
 	@JsonIgnore
@@ -52,7 +53,7 @@ public interface DaterangeSelectOrFilter {
 		if (getStartColumn() == null || getEndColumn() == null) {
 			return true;
 		}
-		return getStartColumn().getType() == MajorTypeId.DATE && getEndColumn().getType() == MajorTypeId.DATE;
+		return getStartColumn().resolve().getType() == MajorTypeId.DATE && getEndColumn().resolve().getType() == MajorTypeId.DATE;
 	}
 
 	@JsonIgnore
@@ -61,7 +62,7 @@ public interface DaterangeSelectOrFilter {
 		if (getColumn() == null) {
 			return true;
 		}
-		return getColumn().getType().isDateCompatible();
+		return getColumn().resolve().getType().isDateCompatible();
 	}
 
 }

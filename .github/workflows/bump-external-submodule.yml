@@ -6,12 +6,11 @@ on:
       - develop
 
 jobs:
-  trigger-external-action:
+  webhook:
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
       - name: Trigger webhook event
-      
         env: 
           URL: ${{ secrets.EXTERNAL_REPO_BUMP_WEBHOOK }}
           TOKEN: ${{ secrets.EXTERNAL_REPO_BUMP_WEBHOOK_TOKEN }}

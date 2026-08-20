@@ -3,8 +3,11 @@ package com.bakdata.conquery.apiv1.query.concept.specific;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -21,8 +24,6 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.DateRestrictingNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -61,6 +62,11 @@ public class CQDateRestriction extends CQElement {
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		return child.getResultInfos();
+	}
+
+	@Override
+	public String defaultLabel(Locale locale) {
+		return child.defaultLabel(locale);
 	}
 
 	@Override

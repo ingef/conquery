@@ -1,16 +1,12 @@
-import { ComponentMeta, Story } from "@storybook/react";
-import { ComponentProps } from "react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import FormSymbol from "./FormSymbol";
 
-export default {
+const meta = {
   title: "Symbols/FormSymbol",
   component: FormSymbol,
-} as ComponentMeta<typeof FormSymbol>;
+} as Meta<typeof FormSymbol>;
 
-const Template: Story<ComponentProps<typeof FormSymbol>> = () => {
-  return <FormSymbol />;
-};
+export default meta;
 
-export const Default = Template.bind({});
-Default.args = {};
+export const Default: StoryFn = () => <FormSymbol />;

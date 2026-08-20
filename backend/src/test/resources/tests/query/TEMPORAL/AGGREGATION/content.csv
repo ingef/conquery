@@ -1,0 +1,10 @@
+pid,datum,value,sum
+00,2011-01-01,index,
+01,2011-01-01,compare,
+
+1,2011-01-01,index,
+1,2011-01-01,compare,1
+
+1,2011-01-05/2011-01-10,compare,1
+1,2011-01-08,compare,1
+1,2011-01-09,compare,1

@@ -68,7 +68,7 @@ export const TimeConnection = memo(
           <ConceptName>{a}</ConceptName>
         </Row>
         <Row>
-          {conditions.operator !== "while" && <Interval>{interval}</Interval>}
+          {conditions.operator !== "WHILE" && <Interval>{interval}</Interval>}
           <Operator>{operator}</Operator>
         </Row>
         <Row>

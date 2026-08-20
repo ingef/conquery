@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.result.arrow;
 
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
-import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
 
@@ -11,26 +10,30 @@ import java.util.List;
 import java.util.Locale;
 import java.util.OptionalLong;
 import java.util.function.Function;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ArrowConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.printers.ArrowResultPrinters;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.IdColumnUtil;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
+import com.google.common.io.CountingOutputStream;
+import io.dropwizard.util.DataSize;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -53,11 +56,11 @@ public class ResultArrowProcessor {
 	private final ArrowConfig arrowConfig;
 
 
-	public Response createResultFile(Subject subject, ManagedExecution exec, boolean pretty, OptionalLong limit) {
+	public Response createResultFile(Subject subject, ManagedExecutionId exec, boolean pretty, OptionalLong limit) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
 				subject,
-				(ManagedExecution & SingleTableResult) exec,
+				(ManagedExecution & SingleTableResult) exec.resolve(),
 				datasetRegistry,
 				pretty,
 				FILE_EXTENTION_ARROW_FILE,
@@ -83,55 +86,59 @@ public class ResultArrowProcessor {
 
 		ConqueryMDC.setLocation(subject.getName());
 
-		final Dataset dataset = exec.getDataset();
+		final DatasetId datasetId = exec.getDataset();
 
-		log.info("Downloading results for {}", exec.getId());
+		log.info("Downloading results for {}", datasetId);
 
 		ResultUtil.authorizeExecutable(subject, exec);
 
 		// Get the locale extracted by the LocaleFilter
 
-		final Namespace namespace = datasetRegistry.get(dataset.getId());
+		final Namespace namespace = datasetRegistry.get(datasetId);
 		IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 		final Locale locale = I18n.LOCALE.get();
 
-		PrintSettings settings = new PrintSettings(
-				pretty,
-				locale,
-				namespace,
-				config,
-				idPrinter::createId
-		);
+		PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId, null);
 
 
 		// Collect ResultInfos for id columns and result columns
 		final List<ResultInfo> resultInfosId = config.getIdColumns().getIdResultInfos();
-		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
+		final List<ResultInfo> resultInfosExec = exec.collectResultInfos();
 
 		StreamingOutput out = output -> {
+			CountingOutputStream countingOutputStream = new CountingOutputStream(output);
 			try {
-				renderToStream(
-						writerProducer.apply(output),
+				ArrowRenderer.renderToStream(
+						writerProducer.apply(countingOutputStream),
 						settings,
 						arrowConfig,
 						resultInfosId,
 						resultInfosExec,
-						exec.streamResults(limit)
+						exec.streamResults(limit),
+						new ArrowResultPrinters()
+				);
+			}
+			catch (Exception e) {
+				throw new IllegalStateException("Failed streaming the result for execution %s requested by %s after %s".formatted(exec.getId(),
+																																  subject.getId(),
+																																  DataSize.bytes(countingOutputStream.getCount())
+				),
+												e
 				);
 			}
 			finally {
-				log.trace("DONE downloading data for `{}`", exec.getId());
+				log.trace("DONE downloading data for `{}` ({})", exec.getId(), DataSize.bytes(countingOutputStream.getCount()));
 			}
 		};
 
 		return makeResponseWithFileName(Response.ok(out), String.join(".", exec.getLabelWithoutAutoLabelSuffix(), fileExtension), mediaType, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 
-	public Response createResultStream(Subject subject, ManagedExecution exec, boolean pretty, OptionalLong limit) {
+	public Response createResultStream(Subject subject, ManagedExecutionId exec, boolean pretty, OptionalLong limit) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
 				subject,
-				((ManagedExecution & SingleTableResult) exec),
+				((ManagedExecution & SingleTableResult) exec.resolve()),
 				datasetRegistry,
 				pretty,
 				FILE_EXTENTION_ARROW_STREAM,

@@ -112,6 +112,7 @@ const QueryNodeActions = (props: Props) => {
           <RelativeContainer>
             <StyledIconButton
               icon={faMicroscope}
+              data-test-id="secondary-id-toggle"
               onClick={(e) => {
                 e.stopPropagation();
                 props.onToggleSecondaryIdExclude(props.andIdx, props.orIdx);

@@ -2,12 +2,11 @@ package com.bakdata.conquery.sql.conversion.model.select;
 
 import java.util.Optional;
 
-import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
@@ -25,8 +24,12 @@ public class SelectContext<T extends SqlTables> implements Context {
 	T tables;
 	ConversionContext conversionContext;
 
+	@Override
+	public DialectBundle getDialectBundle() {
+		return getConversionContext().getDialectBundle();
+	}
+
 	public static SelectContext<ConnectorSqlTables> create(
-			CQTable cqTable,
 			SqlIdColumns ids,
 			Optional<ColumnDateRange> validityDate,
 			ConnectorSqlTables tables,
@@ -36,7 +39,6 @@ public class SelectContext<T extends SqlTables> implements Context {
 	}
 
 	public static SelectContext<ConceptSqlTables> create(
-			CQConcept cqConcept,
 			SqlIdColumns ids,
 			Optional<ColumnDateRange> validityDate,
 			ConceptSqlTables tables,
@@ -46,7 +48,12 @@ public class SelectContext<T extends SqlTables> implements Context {
 	}
 
 	public SqlFunctionProvider getFunctionProvider() {
-		return getSqlDialect().getFunctionProvider();
+		return getDialectBundle().getFunctionProvider();
 	}
 
+    public SqlIdColumns getIds() {
+        return this.conversionContext.isWithStratification()
+                ? this.conversionContext.getStratificationTable().getSelects().getIds()
+                : this.ids;
+    }
 }

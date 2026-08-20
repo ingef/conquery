@@ -3,6 +3,7 @@ package com.bakdata.conquery.integration.tests;
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,14 +12,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.stream.Stream;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.integration.IntegrationTest;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
@@ -30,11 +37,6 @@ import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
-import com.github.powerlibraries.io.In;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.Invocation;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -57,6 +59,11 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 	}
 
 	@Override
+	public ConqueryConfig overrideConfig(ConqueryConfig conf, File workdir) {
+		return conf;
+	}
+
+	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		final SelectFilter<?> filter = setupSearch(conquery);
 
@@ -69,9 +76,9 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 							   )
 							   .buildFromMap(
 									   Map.of(
-											   DATASET, conquery.getDataset().getId(),
+											   DATASET, conquery.getDataset(),
 											   CONCEPT, concept.getId(),
-											   TABLE, filter.getConnector().getTable().getId(),
+											   TABLE, filter.getConnector().getResolvedTable().getId(),
 											   FILTER, filter.getId()
 									   )
 							   );
@@ -81,10 +88,11 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		// Data starting with a is in reference csv
 		{
 			try (final Response fromCsvResponse = autocompleteRequestBuilder.post(Entity.entity(new FilterResource.AutocompleteRequest(
-					Optional.of("a"),
-					OptionalInt.empty(),
-					OptionalInt.empty()
-			), MediaType.APPLICATION_JSON_TYPE))) {
+																										Optional.of("a"),
+																										OptionalInt.empty(),
+																										OptionalInt.empty()
+																								), MediaType.APPLICATION_JSON_TYPE
+			))) {
 
 				final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 
@@ -92,7 +100,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 				// The empty string results from `No V*a*lue` and `..Def*au*lt..`
 
 				assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
-						.containsExactly("a", "aab", "aaa", "male", "" /* `No V*a*lue` :^) */, "female", "baaa");
+						.containsExactly("a", "aab", "aaa", "male", "female", "baaa");
 
 			}
 		}
@@ -102,16 +110,17 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		{
 			try (final Response fromCsvResponse = autocompleteRequestBuilder
 					.post(Entity.entity(new FilterResource.AutocompleteRequest(
-							Optional.of("f"),
-							OptionalInt.empty(),
-							OptionalInt.empty()
-					), MediaType.APPLICATION_JSON_TYPE))) {
+												Optional.of("f"),
+												OptionalInt.empty(),
+												OptionalInt.empty()
+										), MediaType.APPLICATION_JSON_TYPE
+					))) {
 
 				final ConceptsProcessor.AutoCompleteResult resolvedFromValues = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 
 				//check the resolved values
 				assertThat(resolvedFromValues.values().stream().map(FrontendValue::getValue))
-						.containsExactly("f", "female", "fm", "");
+						.containsExactly("f", "female", "fm");
 			}
 		}
 
@@ -120,15 +129,16 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		{
 			try (final Response fromCsvResponse = autocompleteRequestBuilder
 					.post(Entity.entity(new FilterResource.AutocompleteRequest(
-							Optional.of(""),
-							OptionalInt.empty(),
-							OptionalInt.empty()
-					), MediaType.APPLICATION_JSON_TYPE))) {
+												Optional.of(""),
+												OptionalInt.empty(),
+												OptionalInt.empty()
+										), MediaType.APPLICATION_JSON_TYPE
+					))) {
 
 				final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 				// This is probably the insertion order
 				assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue))
-						.containsExactlyInAnyOrder("", "aaa", "a", "aab", "b", "baaa", "female", "male", "f", "fm", "m", "mf");
+						.containsExactlyInAnyOrder("","aaa", "a", "aab", "b", "baaa", "female", "male", "f", "fm", "m", "mf");
 			}
 		}
 	}
@@ -136,13 +146,10 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 	private static SelectFilter<?> setupSearch(StandaloneSupport conquery) throws Exception {
 		//read test specification
 		final String testJson =
-				In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json")
-				  .withUTF8()
-				  .readAll();
+				LoadingUtil.readResource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json");
+		final DatasetId dataset = conquery.getDataset();
 
-		final DatasetId dataset = conquery.getDataset().getId();
-
-		final ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
+		final ConqueryTestSpec test = ConqueryTestSpec.readJson(dataset, testJson);
 
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
@@ -153,26 +160,40 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		final CSVConfig csvConf = conquery.getConfig().getCsv();
 
 		NamespaceStorage namespaceStorage = conquery.getNamespace().getStorage();
-		final Concept<?> concept = namespaceStorage.getAllConcepts().stream().filter(c -> c.getName().equals("geschlecht_select")).findFirst().orElseThrow();
-		final Connector connector = concept.getConnectors().iterator().next();
+		Stream<Concept<?>> allConcepts = namespaceStorage.getAllConcepts();
+		final Concept<?> concept = allConcepts.filter(c -> c.getName().equals("geschlecht_select")).findFirst().orElseThrow();
+		allConcepts.close();
+		final Connector connector = concept.getConnectors().getFirst();
 		final SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
 
 		// Copy search csv from resources to tmp folder.
-		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
+		// TODO this file is not deleted at the end of this test
+		final Path tmpCsv = Files.createTempFile("conquery_search", "csv");
 
 		Files.write(
-				tmpCSv,
+				tmpCsv,
 				String.join(csvConf.getLineSeparator(), RAW_LINES).getBytes(),
 				StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE
 		);
 
-		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings(), "emptyDefaultLabel");
+		IndexService indexService = conquery.getDatasetRegistry().getIndexService();
 
-		filter.setTemplate(new FilterTemplate(conquery.getDataset(), "test", tmpCSv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService));
+		final FilterTemplate
+				filterTemplate =
+				new FilterTemplate(tmpCsv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService, conquery.getConfig());
+
+		filterTemplate.setDataset(conquery.getDataset());
+		filterTemplate.setName("test");
+		filter.setTemplate(filterTemplate.getId());
+
+		// We need to persist the modification before we submit the update matching stats request
+		namespaceStorage.addSearchIndex(filterTemplate);
+		namespaceStorage.updateConcept(concept);
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "postprocessNamespace")
-													.buildFromMap(Map.of(DATASET, conquery.getDataset().getId()));
+															, AdminDatasetResource.class, "postprocessNamespace"
+													)
+													.buildFromMap(Map.of(DATASET, conquery.getDataset()));
 
 		conquery.getClient().target(matchingStatsUri)
 				.request(MediaType.APPLICATION_JSON_TYPE)

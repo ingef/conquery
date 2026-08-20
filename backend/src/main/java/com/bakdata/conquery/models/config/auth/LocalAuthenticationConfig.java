@@ -4,6 +4,10 @@ import java.io.File;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.RequestHelper;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -21,6 +25,8 @@ import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementResource;
 import com.bakdata.conquery.resources.unprotected.LoginResource;
 import com.bakdata.conquery.resources.unprotected.TokenResource;
+import com.bakdata.conquery.util.validation.ValidCaffeineSpec;
+import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.password4j.BcryptFunction;
 import com.password4j.BenchmarkResult;
 import com.password4j.SystemChecker;
@@ -29,10 +35,6 @@ import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.util.Duration;
 import io.dropwizard.validation.MinDuration;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.UriBuilder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +64,10 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 	
 	@NotNull
 	private File directory = new File("storage");
+
+	@NotNull
+	@ValidCaffeineSpec
+	private String caffeineSpec = "";
 
 
 	@ValidationMethod(message = "Storage has no encryption configured")
@@ -97,7 +103,9 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 				directory,
 				passwordStoreConfig,
 				jwtDuration,
-				prototype
+				prototype,
+				CaffeineSpec.parse(caffeineSpec),
+				environment.metrics()
 		);
 		UserAuthenticationManagementProcessor processor = new UserAuthenticationManagementProcessor(realm, authorizationController.getStorage());
 
@@ -111,18 +119,6 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 //TODO		redirectingAuthFilter.getLoginInitiators().add(loginProvider(authorizationController.getUnprotectedAuthAdmin()));
 
 		return realm;
-	}
-
-	private Function<ContainerRequestContext,URI> loginProvider(DropwizardResourceConfig unprotectedAuthAdmin) {
-		return (ContainerRequestContext request) -> {
-			return UriBuilder.fromPath(unprotectedAuthAdmin.getUrlPattern())
-							 .path(LoginResource.class)
-							 .queryParam(RedirectingAuthFilter.REDIRECT_URI, UriBuilder.fromUri(RequestHelper.getRequestURL(request))
-																					   .path(AdminServlet.ADMIN_UI)
-																					   .build())
-							 .build();
-		};
-
 	}
 
 	//////////////////// RESOURCE REGISTRATION ////////////////////
@@ -139,5 +135,17 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 		jerseyConfig.register(userProcessor);
 
 		jerseyConfig.register(UserAuthenticationManagementResource.class);
+	}
+
+	private Function<ContainerRequestContext,URI> loginProvider(DropwizardResourceConfig unprotectedAuthAdmin) {
+		return (ContainerRequestContext request) -> {
+			return UriBuilder.fromPath(unprotectedAuthAdmin.getUrlPattern())
+							 .path(LoginResource.class)
+							 .queryParam(RedirectingAuthFilter.REDIRECT_URI, UriBuilder.fromUri(RequestHelper.getRequestURL(request))
+																					   .path(AdminServlet.ADMIN_UI)
+																					   .build())
+							 .build();
+		};
+
 	}
 }

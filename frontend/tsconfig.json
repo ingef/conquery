@@ -2,7 +2,7 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "@emotion/react",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "sourceMap": true,
     "inlineSourceMap": false,
     "inlineSources": false,
@@ -16,15 +16,9 @@
     "strict": true,
     "noEmit": true,
     "module": "ESNext",
-    "target": "es6",
+    "target": "es2019",
     "allowJs": true,
-    "lib": [
-      "es5",
-      "es6",
-      "dom",
-      "dom.iterable",
-      "es2019"
-    ],
+    "lib": ["es5", "es6", "dom", "dom.iterable", "es2019"],
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -34,13 +28,10 @@
   },
   "include": [
     "src",
-    "node_modules/**/*/*.d.ts"
+    "node_modules/**/*/*.d.ts",
+    ".storybook/main.ts",
+    ".storybook/manager.js",
+    ".storybook/preview.tsx"
   ],
-  "exclude": [
-    "node_modules",
-    "public",
-    ".cache",
-    ".idea",
-    "src/ignored/*"
-  ]
+  "exclude": ["node_modules", "public", ".cache", ".idea", "src/ignored/*"]
 }

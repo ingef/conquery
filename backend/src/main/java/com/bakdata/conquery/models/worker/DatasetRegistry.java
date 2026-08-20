@@ -3,24 +3,23 @@ package com.bakdata.conquery.models.worker;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.mode.InternalObjectMapperCreator;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.mode.NamespaceHandler;
+import com.bakdata.conquery.mode.cluster.InternalMapperFactory;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.IndexKey;
@@ -28,6 +27,7 @@ import com.bakdata.conquery.models.index.IndexService;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.CacheStats;
+import io.dropwizard.core.setup.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,39 +35,49 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @JsonIgnoreType
-public class DatasetRegistry<N extends Namespace> extends IdResolveContext implements Closeable {
+public class DatasetRegistry<N extends Namespace> implements Closeable, NamespacedStorageProvider, Injectable {
 
 	private final ConcurrentMap<DatasetId, N> datasets = new ConcurrentHashMap<>();
-	@Getter
-	private final int entityBucketSize;
 
 	@Getter
 	private final ConqueryConfig config;
 
-	private final InternalObjectMapperCreator internalObjectMapperCreator;
+	private final InternalMapperFactory internalMapperFactory;
 
 	private final NamespaceHandler<N> namespaceHandler;
 
+	@Getter
 	private final IndexService indexService;
 
-	public N createNamespace(Dataset dataset, MetaStorage metaStorage) throws IOException {
+	public N createNamespace(Dataset dataset, MetaStorage metaStorage, Environment environment) throws IOException {
 		// Prepare empty storage
 		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName());
-		final ObjectMapper persistenceMapper = internalObjectMapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
+		final ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(datasetStorage, this);
+		dataset.setStorageProvider(this);
 
 		// Each store injects its own IdResolveCtx so each needs its own mapper
-		datasetStorage.openStores(Jackson.copyMapperAndInjectables((persistenceMapper)));
-		datasetStorage.loadData();
-		datasetStorage.updateDataset(dataset);
-		datasetStorage.updateIdMapping(new EntityIdMap());
-		datasetStorage.setPreviewConfig(new PreviewConfig());
-		datasetStorage.close();
+		datasetStorage.openStores(Jackson.copyMapperAndInjectables(persistenceMapper));
 
-		return createNamespace(datasetStorage, metaStorage);
+		try {
+			datasetStorage.updateDataset(dataset);
+			datasetStorage.updateIdMapping(new EntityIdMap(datasetStorage));
+			datasetStorage.setPreviewConfig(new PreviewConfig());
+
+			datasetStorage.close();
+
+			return createNamespace(datasetStorage, metaStorage, environment);
+		}catch (Exception e) {
+			log.error("Error while creating namespace for dataset {}. Deleting.", dataset.getId(), e);
+
+			datasetStorage.openStores(Jackson.copyMapperAndInjectables(persistenceMapper));
+			datasetStorage.removeStorage();
+
+			throw  e;
+		}
 	}
 
-	public N createNamespace(NamespaceStorage datasetStorage, MetaStorage metaStorage) {
-		final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage, indexService);
+	public N createNamespace(NamespaceStorage datasetStorage, MetaStorage metaStorage, Environment environment) {
+		final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage, this, environment);
 		add(namespace);
 		return namespace;
 	}
@@ -89,24 +99,17 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 		}
 	}
 
-	@Override
-	public CentralRegistry findRegistry(DatasetId dataset) throws NoSuchElementException {
-		if (!datasets.containsKey(dataset)) {
-			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, datasets.keySet()));
-		}
-
-		return datasets.get(dataset).getStorage().getCentralRegistry();
+	public Stream<DatasetId> getAllDatasets() {
+		return datasets.values().stream()
+					   .map(Namespace::getStorage)
+					   .map(namespaceStorage -> namespaceStorage.getDataset().getId());
 	}
 
-	public List<Dataset> getAllDatasets() {
-		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toList());
-	}
-
-	public Collection<N> getDatasets() {
+	public Collection<N> getNamespaces() {
 		return datasets.values();
 	}
 
-	public Set<IndexKey<?>> getLoadedIndexes() {
+	public Set<IndexKey> getLoadedIndexes() {
 		return indexService.getLoadedIndexes();
 	}
 
@@ -128,11 +131,24 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
+		indexService.inject(values);
 		// Make this class also available under DatasetRegistry
-		return super.inject(values).add(DatasetRegistry.class, this);
+		return values.add(NamespacedStorageProvider.class, this)
+					 .add(DatasetRegistry.class, this);
 	}
 
 	public void resetIndexService() {
 		indexService.evictCache();
+	}
+
+	@Override
+	public NamespacedStorage getStorage(DatasetId datasetId) {
+		N namespace = datasets.get(datasetId);
+		return namespace.getStorage();
+	}
+
+	@Override
+	public Collection<DatasetId> getAllDatasetIds() {
+		return datasets.keySet();
 	}
 }

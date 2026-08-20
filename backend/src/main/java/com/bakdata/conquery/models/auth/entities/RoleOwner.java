@@ -2,18 +2,14 @@ package com.bakdata.conquery.models.auth.entities;
 
 import java.util.Set;
 
-import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Sets;
-import lombok.extern.slf4j.Slf4j;
 
 public interface RoleOwner {
 
-	void addRole(Role role);
+	void addRole(RoleId role);
 
-	void removeRole(Role role);
+	void removeRole(RoleId role);
 
 	/**
 	 * Return a copy of the roles hold by the owner.

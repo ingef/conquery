@@ -10,6 +10,8 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -26,7 +28,7 @@ public class ConceptElementsAggregator extends Aggregator<Set<Integer>> {
 
 	private Column column;
 	private Entity entity;
-	private Map<Bucket, CBlock> cblocks;
+	private Map<BucketId, CBlockId> cblocks;
 	private CBlock cblock;
 
 	private final Map<Table, Connector> tableConnectors;
@@ -35,7 +37,7 @@ public class ConceptElementsAggregator extends Aggregator<Set<Integer>> {
 		super();
 		tableConnectors = concept.getConnectors().stream()
 								 .filter(conn -> conn.getColumn() != null)
-								 .collect(Collectors.toMap(Connector::getTable, Functions.identity()));
+								 .collect(Collectors.toMap(Connector::getResolvedTable, Functions.identity()));
 	}
 
 	@Override
@@ -52,13 +54,13 @@ public class ConceptElementsAggregator extends Aggregator<Set<Integer>> {
 			return;
 		}
 
-		column = connector.getColumn();
-		cblocks = ctx.getBucketManager().getEntityCBlocksForConnector(entity, connector);
+		column = connector.getColumn().resolve();
+		cblocks = ctx.getBucketManager().getEntityCBlocksForConnector(entity, connector.getId());
 	}
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		cblock = cblocks.get(bucket);
+		cblock = cblocks.get(bucket.getId()).resolve();
 	}
 
 	@Override

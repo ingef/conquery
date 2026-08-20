@@ -2,12 +2,14 @@ package com.bakdata.conquery.models.error;
 
 import java.util.Set;
 import java.util.UUID;
+import jakarta.validation.constraints.NotNull;
 
 import c10n.C10N;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.util.VariableDefaultValue;
@@ -15,7 +17,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -79,7 +80,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@JsonIgnore
 	@ToString.Include
 	public final String getMessage() {
-		return getMessageTemplate(C10N.get(ErrorMessages.class));
+		return getMessageTemplate(C10N.get(ErrorMessages.class, I18n.LOCALE.get()));
 	}
 
 	@JsonIgnore
@@ -121,7 +122,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		private final String unknownId;
 		private final String clazz;
 
-		public ExecutionCreationResolveError(Id<?> unresolvableElementId) {
+		public ExecutionCreationResolveError(Id<?, ?> unresolvableElementId) {
 			unknownId = unresolvableElementId.toString();
 			clazz = unresolvableElementId.getClass().getSimpleName();
 		}
@@ -245,6 +246,19 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		}
 	}
 
+	/**
+	 * Result size was too large
+	 */
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_RESULT_SIZE")
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+	public static class ExecutionProcessingResultSizeError extends ConqueryError {
+
+		@Override
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.resultSizeTooLarge();
+		}
+	}
+
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_NO_SECONDARY_ID")
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class NoSecondaryIdSelectedError extends ConqueryError {
@@ -264,7 +278,14 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		public String getMessageTemplate(ErrorMessages errorMessages) {
 			return errorMessages.sqlError(error);
 		}
+	}
 
-
+	@CPSType(base = ConqueryError.class, id = "CQ_RELATIVE_NO_DATES")
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+	public static class RelativeFormMissingDatesError extends ConqueryError {
+		@Override
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.relativeFormMissingDates();
+		}
 	}
 }

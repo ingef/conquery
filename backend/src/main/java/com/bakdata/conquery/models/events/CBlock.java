@@ -4,31 +4,34 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.IntFunction;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeCache;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import jakarta.validation.constraints.NotNull;
+import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -47,20 +50,15 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
-public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIdentifiable<CBlockId> {
+@JsonIgnoreProperties({"root"})
+public class CBlock extends NamespacedIdentifiable<CBlockId> {
 	//TODO Index per StringStore for isOfInterest
 	@ToString.Include
-	@NsIdRef
-	private final Bucket bucket;
+	private final BucketId bucket;
 	@NotNull
-	@NsIdRef
 	@ToString.Include
-	private final ConceptTreeConnector connector;
-	/**
-	 * We leverage the fact that a Bucket contains entities from bucketSize * {@link Bucket#getBucket()} to (1 + bucketSize) * {@link Bucket#getBucket()} - 1 to layout our internal structure.
-	 * This is maps the first Entities entry in this bucket to 0.
-	 */
-	private final int root;
+	private final ConnectorId connector;
+
 	/**
 	 * Crude Bloomfilter for Concept inclusion per Entity: Each set bit denotes that the concept (with localId <= 64) or a descendant of that concept (with localId > 64) is present for the entity in this Bucket.
 	 */
@@ -91,108 +89,29 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		);
 	}
 
-	public static CBlock createCBlock(ConceptTreeConnector connector, Bucket bucket, int bucketSize) {
-		final int root = bucket.getBucket() * bucketSize;
+	public static CBlock createCBlock(ConceptTreeConnector connector, BucketId bucketId, BucketManager bucketManager) {
 
-		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector);
+		final Bucket bucket = bucketId.resolve();
+
+		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector, bucketManager);
 		//TODO Object2LongMap
-		final Map<String, Long> includedConcepts = calculateConceptElementPathBloomFilter(bucketSize, bucket, mostSpecificChildren);
-		final Map<String, CDateRange> entitySpans = calculateEntityDateIndices(bucket);
+		final Map<String, Long> includedConcepts = calculateConceptElementPathBloomFilter(bucket, mostSpecificChildren);
+		final Map<String, CDateRange> entitySpans = calculateEntityDateIndices(bucket, connector);
 
-		return new CBlock(bucket, connector, root, includedConcepts, entitySpans, mostSpecificChildren);
+		final CBlock cBlock = new CBlock(bucketId, connector.getId(), includedConcepts, entitySpans, mostSpecificChildren);
+		return cBlock;
 	}
 
 	/**
 	 * Calculates the path for each event from the root of the {@link TreeConcept} to the most specific {@link ConceptTreeChild}
 	 * denoted by the individual {@link ConceptTreeChild#getPrefix()}.
 	 */
-	private static int[][] calculateSpecificChildrenPaths(Bucket bucket, ConceptTreeConnector connector) {
-
-		final Column column;
-
-		final TreeConcept treeConcept = connector.getConcept();
-
-		// If we have a column, and it is of string-type, we initialize a cache.
-		if (connector.getColumn() != null && bucket.getStore(connector.getColumn()) instanceof StringStore) {
-
-			column = connector.getColumn();
-
-			treeConcept.initializeIdCache(bucket.getImp());
-		}
-		// No column only possible if we have just one tree element!
-		else if (treeConcept.countElements() == 1) {
-			column = null;
-		}
-		else {
-			throw new IllegalStateException(String.format("Cannot build tree over Connector[%s] without Column", connector.getId()));
+	private static int[][] calculateSpecificChildrenPaths(Bucket bucket, ConceptTreeConnector connector, BucketManager bucketManager) {
+		if (connector.getColumn() == null) {
+			return calculateSpecificChildrenPathsWithoutColumn(bucket, connector);
 		}
 
-		final CTCondition connectorCondition = connector.getCondition();
-
-		final int[][] mostSpecificChildren = new int[bucket.getNumberOfEvents()][];
-
-		Arrays.fill(mostSpecificChildren, ConceptTreeConnector.NOT_CONTAINED);
-
-		final ConceptTreeCache cache = treeConcept.getCache(bucket.getImp());
-
-		for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
-
-
-			try {
-				String stringValue = "";
-
-				final boolean has = column != null && bucket.has(event, column);
-
-				if (column != null && has) {
-					stringValue = bucket.getString(event, column);
-				}
-
-				// Events can also be filtered, allowing a single table to be used by multiple connectors.
-				// Lazy evaluation of map to avoid allocations if possible.
-				// Copy event for closure.
-				final int _event = event;
-				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(_event));
-
-				if (connectorCondition != null && !connectorCondition.matches(stringValue, rowMap)) {
-					mostSpecificChildren[event] = Connector.NOT_CONTAINED;
-					continue;
-				}
-
-				// Events without values are assigned to the root
-				if (column != null && !has) {
-					mostSpecificChildren[event] = treeConcept.getPrefix();
-					continue;
-				}
-
-				final ConceptTreeChild child = cache == null
-											   ? treeConcept.findMostSpecificChild(stringValue, rowMap)
-											   : cache.findMostSpecificChild(stringValue, rowMap);
-
-				// All unresolved elements resolve to the root.
-				if (child == null) {
-					mostSpecificChildren[event] = treeConcept.getPrefix();
-					continue;
-				}
-
-				// put path into event
-				mostSpecificChildren[event] = child.getPrefix();
-			}
-			catch (ConceptConfigurationException ex) {
-				log.error("Failed to resolve event {}-{} against concept {}", bucket, event, treeConcept, ex);
-			}
-		}
-
-		if (cache != null) {
-			log.trace(
-					"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
-					cache.getHits(),
-					cache.getMisses(),
-					(double) cache.getHits() / cache.getMisses(),
-					(double) cache.getHits() / (cache.getHits() + cache.getMisses())
-			);
-		}
-
-		return mostSpecificChildren;
+		return calculateSpecificChildrenPathsWithColumn(bucket, connector, bucketManager);
 	}
 
 	/**
@@ -201,8 +120,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * This is used in the evaluation of a query to quickly decide if an event is of interest by logically ANDing
 	 * the bitmask of the event with the bitmask calculated by {@link ConceptNode#calculateBitMask(Collection)}
 	 */
-	private static Map<String, Long> calculateConceptElementPathBloomFilter(int bucketSize, Bucket bucket, int[][] mostSpecificChildren) {
-		final Map<String, Long> includedConcepts = new HashMap<>(bucketSize);
+	private static Map<String, Long> calculateConceptElementPathBloomFilter(Bucket bucket, int[][] mostSpecificChildren) {
+		final Map<String, Long> includedConcepts = new HashMap<>(bucket.entities().size());
 
 		for (String entity : bucket.entities()) {
 
@@ -225,36 +144,14 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	}
 
 	/**
-	 * Calculates the bloom filter from the precomputed path to the most specific {@link ConceptTreeChild}.
-	 */
-	public static long calculateBitMask(int pathIndex, int[] mostSpecificChild) {
-
-		for (int index = pathIndex; index > 0; index--) {
-			// TODO how could they be > Long.SIZE?
-			if (mostSpecificChild[index] < Long.SIZE) {
-				return 1L << mostSpecificChild[index];
-			}
-		}
-
-		return 0;
-	}
-
-	/**
 	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
 	 *
 	 * @implNote This is an unrolled implementation of {@link CDateRange#span(CDateRange)}.
 	 */
-	private static Map<String, CDateRange> calculateEntityDateIndices(Bucket bucket) {
+	private static Map<String, CDateRange> calculateEntityDateIndices(Bucket bucket, ConceptTreeConnector connector) {
 		final Map<String, CDateRange> spans = new HashMap<>();
 
-		final Table table = bucket.getTable();
-
-
-		for (Column column : table.getColumns()) {
-			if (!column.getType().isDateCompatible()) {
-				continue;
-			}
-
+		for (ValidityDate validityDate : connector.getValidityDates()) {
 			for (String entity : bucket.entities()) {
 				final int end = bucket.getEntityEnd(entity);
 
@@ -263,13 +160,13 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				int max = Integer.MIN_VALUE;
 				int min = Integer.MAX_VALUE;
 
-
 				for (int event = bucket.getEntityStart(entity); event < end; event++) {
-					if (!bucket.has(event, column)) {
+
+					final CDateRange range = validityDate.getValidityDate(event, bucket);
+
+					if(range == null) {
 						continue;
 					}
-
-					final CDateRange range = bucket.getAsDateRange(event, column);
 
 					final int minValue = range.getMinValue();
 
@@ -289,11 +186,145 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				final CDateRange span = CDateRange.of(min, max);
 
 				spans.compute(entity, (ignored, current) -> current == null ? span : current.span(span));
-
 			}
 		}
 
 		return spans;
+	}
+
+	private static int[][] calculateSpecificChildrenPathsWithoutColumn(Bucket bucket, Connector connector) {
+
+		final int[][] mostSpecificChildren = new int[bucket.getNumberOfEvents()][];
+
+		// All elements resolve to the root, unless they are filtered out by the condition.
+		Arrays.fill(mostSpecificChildren, connector.getConcept().getPrefix());
+
+		if (connector.getCondition() == null) {
+			return mostSpecificChildren;
+		}
+
+		final IntFunction<Map<String, Object>> mapCalculator = bucket.mapCalculator();
+
+		// Since the connector has no column, there is no real columnValue.
+		// All downstream code assumes the presence of a column value, so we just pass an empty string to avoid exceptions.
+		final String columnValue = "";
+
+		for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
+			try {
+
+				// Events can also be filtered, allowing a single table to be used by multiple connectors.
+				// Lazy evaluation of map to avoid allocations if possible.
+				// Copy event for closure.
+				final int _event = event;
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> mapCalculator.apply(_event));
+
+				if (connector.getCondition().matches(columnValue, rowMap)) {
+					// by default initialized to the only element, the root.
+					continue;
+				}
+
+				mostSpecificChildren[event] = Connector.NOT_CONTAINED;
+			}
+			catch (ConceptConfigurationException ex) {
+				log.error("Failed to evaluate event {}, row {} against connector {}", bucket.getId(), event, connector.getId(), ex);
+			}
+		}
+
+		return mostSpecificChildren;
+	}
+
+	/**
+	 * Calculates the path for each event from the root of the {@link TreeConcept} to the most specific {@link ConceptTreeChild}
+	 * denoted by the individual {@link ConceptTreeChild#getPrefix()}.
+	 */
+	private static int[][] calculateSpecificChildrenPathsWithColumn(Bucket bucket, ConceptTreeConnector connector, BucketManager bucketManager) {
+
+		final Column column = connector.getColumn().resolve();
+
+		final ConceptTreeCache cache = bucketManager.getConceptTreeCache(connector.getConcept(), bucket.getImp());
+		final int[] rootPrefix = connector.getConcept().getPrefix();
+
+		final IntFunction<Map<String, Object>> mapCalculator = bucket.mapCalculator();
+
+		final int[][] mostSpecificChildren = new int[bucket.getNumberOfEvents()][];
+		Arrays.fill(mostSpecificChildren, ConceptTreeConnector.NOT_CONTAINED);
+
+
+		for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
+			try {
+
+				if (!bucket.has(event, column)) {
+					continue;
+				}
+
+				final String columnValue = bucket.getString(event, column);
+
+				// Events can also be filtered, allowing a single table to be used by multiple connectors.
+				// Lazy evaluation of map to avoid allocations if possible.
+				// Copy event for closure.
+				final int _event = event;
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> mapCalculator.apply(_event));
+
+				if (connector.getCondition() != null && !connector.getCondition().matches(columnValue, rowMap)) {
+					continue;
+				}
+
+				final ConceptTreeChild child = cache.findMostSpecificChild(columnValue, rowMap);
+
+				// All unresolved elements resolve to the root.
+				if (child == null) {
+					mostSpecificChildren[event] = rootPrefix;
+					continue;
+				}
+
+				mostSpecificChildren[event] = child.getPrefix();
+			}
+			catch (ConceptConfigurationException ex) {
+				log.error("Failed to resolve event {}, row {} against connector {}", bucket.getId(), event, connector.getId(), ex);
+			}
+		}
+
+
+		log.trace(
+				"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
+				cache.getHits(),
+				cache.getMisses(),
+				(double) cache.getHits() / cache.getMisses(),
+				(double) cache.getHits() / (cache.getHits() + cache.getMisses())
+		);
+
+
+		return mostSpecificChildren;
+	}
+
+	/**
+	 * Calculates the bloom filter from the precomputed path to the most specific {@link ConceptTreeChild}.
+	 */
+	public static long calculateBitMask(int pathIndex, int[] mostSpecificChild) {
+
+		for (int index = pathIndex; index > 0; index--) {
+			// TODO how could they be > Long.SIZE?
+			if (mostSpecificChild[index] < Long.SIZE) {
+				return 1L << mostSpecificChild[index];
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 *
+	 * @return All entities that are included in the {@link Bucket} referenced by {@link CBlock#getBucket()}.
+	 *
+	 * @apiNote If you have not resolved the {@link Bucket} yet use this method to get the entities because resolving a large bucket is more expensive.
+	 */
+	@JsonIgnore
+	Set<String> getEntities() {
+		return ImmutableSet.copyOf(includedConceptElementsPerEntity.keySet());
+	}
+
+	public boolean containsEntity(String entity) {
+		return includedConceptElementsPerEntity.containsKey(entity);
 	}
 
 	public int[] getPathToMostSpecificChild(int event) {
@@ -320,7 +351,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	@Override
 	@JsonIgnore
 	public CBlockId createId() {
-		return new CBlockId(bucket.getId(), connector.getId());
+		return new CBlockId(bucket, connector);
 	}
 
 	public boolean isConceptIncluded(String entity, long requiredBits) {
@@ -328,7 +359,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 			return true;
 		}
 
-		if(!includedConceptElementsPerEntity.containsKey(entity)){
+		if (!includedConceptElementsPerEntity.containsKey(entity)) {
 			return false;
 		}
 
@@ -340,7 +371,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 	@Override
 	@JsonIgnore
-	public Dataset getDataset() {
+	public DatasetId getDataset() {
 		return bucket.getDataset();
 	}
 

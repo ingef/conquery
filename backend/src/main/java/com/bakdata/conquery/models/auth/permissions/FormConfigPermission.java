@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
+import org.jetbrains.annotations.TestOnly;
 
 @CPSType(id = "FORM_CONFIG", base = StringPermissionBuilder.class)
 public class FormConfigPermission extends StringPermissionBuilder {
@@ -36,7 +37,7 @@ public class FormConfigPermission extends StringPermissionBuilder {
 	}
 
 	//// Helper functions
-	@Deprecated
+	@TestOnly
 	public static ConqueryPermission onInstance(Set<Ability> abilities, FormConfigId instance) {
 		return INSTANCE.instancePermission(abilities, instance);
 	}

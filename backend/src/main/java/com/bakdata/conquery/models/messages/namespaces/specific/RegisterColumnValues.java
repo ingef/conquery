@@ -1,12 +1,7 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.UUID;
-
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.ReactionMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
@@ -19,8 +14,11 @@ import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collection;
+import java.util.UUID;
+
 /**
- * This message returns the result of the {@link CollectColumnValuesJob} to the namespace on the manager.
+ * This message returns the result of the {@link CollectColumnValuesMessage} to the namespace on the manager.
  */
 @CPSType(id = "REGISTER_COLUMN_VALUES", base = NamespacedMessage.class)
 @AllArgsConstructor(onConstructor_ = @JsonCreator)
@@ -33,8 +31,7 @@ public class RegisterColumnValues extends NamespaceMessage implements ReactionMe
 
 	private WorkerId workerId;
 
-	@NsIdRef
-	private final Column column;
+	private final ColumnId column;
 
 	@ToString.Exclude
 	private final Collection<String> values;
@@ -47,14 +44,9 @@ public class RegisterColumnValues extends NamespaceMessage implements ReactionMe
 
 	@Override
 	public void react(DistributedNamespace context) throws Exception {
-		if (log.isTraceEnabled()) {
-			log.trace("Registering {} values for column '{}': {}", size(), column.getId(), Arrays.toString(values.toArray()));
-		}
-		else {
-			log.debug("Registering {} values for column '{}'", size(), column.getId());
-		}
+		log.trace("Registering {} values for column '{}'", size(), column);
 
-		context.getFilterSearch().registerValues(column, values);
+		context.getFilterSearch().registerValues(column.resolve(), values);
 	}
 
 	@Override

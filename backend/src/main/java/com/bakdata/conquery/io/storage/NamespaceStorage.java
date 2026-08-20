@@ -1,10 +1,9 @@
 package com.bakdata.conquery.io.storage;
 
-import java.util.Collection;
 import java.util.Objects;
-import java.util.OptionalInt;
+import java.util.stream.Stream;
 
-import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -20,7 +19,7 @@ import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class NamespaceStorage extends NamespacedStorage {
+public class NamespaceStorage extends NamespacedStorageImpl {
 
 	protected IdentifiableStore<InternToExternMapper> internToExternMappers;
 	protected IdentifiableStore<SearchIndex> searchIndexes;
@@ -29,37 +28,21 @@ public class NamespaceStorage extends NamespacedStorage {
 	protected SingletonStore<PreviewConfig> preview;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
 
-	protected CachedStore<String, Integer> entity2Bucket;
 
 	public NamespaceStorage(StoreFactory storageFactory, String pathName) {
 		super(storageFactory, pathName);
 	}
 
-
-	private void decorateIdMapping(SingletonStore<EntityIdMap> idMapping) {
-		idMapping
-				.onAdd(mapping -> mapping.setStorage(this));
-	}
-
-	private void decorateInternToExternMappingStore(IdentifiableStore<InternToExternMapper> store) {
-		// We don't call internToExternMapper::init this is done by the first select that needs the mapping
-	}
-
-
 	@Override
 	public void openStores(ObjectMapper objectMapper) {
 		super.openStores(objectMapper);
 
-		internToExternMappers = getStorageFactory().createInternToExternMappingStore(super.getPathName(), getCentralRegistry(), objectMapper);
-		searchIndexes = getStorageFactory().createSearchIndexStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		internToExternMappers = getStorageFactory().createInternToExternMappingStore(super.getPathName(), objectMapper);
+		searchIndexes = getStorageFactory().createSearchIndexStore(super.getPathName(), objectMapper);
 		idMapping = getStorageFactory().createIdMappingStore(super.getPathName(), objectMapper);
-		structure = getStorageFactory().createStructureStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		structure = getStorageFactory().createStructureStore(super.getPathName(), objectMapper);
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
-		preview = getStorageFactory().createPreviewStore(super.getPathName(), getCentralRegistry(), objectMapper);
-		entity2Bucket = getStorageFactory().createEntity2BucketStore(super.getPathName(), objectMapper);
-
-		decorateInternToExternMappingStore(internToExternMappers);
-		decorateIdMapping(idMapping);
+		preview = getStorageFactory().createPreviewStore(super.getPathName(), objectMapper);
 	}
 
 	@Override
@@ -86,16 +69,17 @@ public class NamespaceStorage extends NamespacedStorage {
 	}
 
 
-
+	// IdMapping
 
 	public EntityIdMap getIdMapping() {
 		return idMapping.get();
 	}
 
-
 	public void updateIdMapping(EntityIdMap idMapping) {
 		this.idMapping.update(idMapping);
 	}
+
+	// Bucket to Worker Assignment
 
 	public void setWorkerToBucketsMap(WorkerToBucketsMap map) {
 		workerToBuckets.update(map);
@@ -109,24 +93,16 @@ public class NamespaceStorage extends NamespacedStorage {
 		return entity2Bucket.count();
 	}
 
-	public OptionalInt getEntityBucket(String entity) {
-		final Integer bucket = entity2Bucket.get(entity);
 
-		if(bucket == null){
-			return OptionalInt.empty();
-		}
-
-		return OptionalInt.of(bucket);
+	public boolean containsEntity(String entity) {
+		return entity2Bucket.hasKey(entity);
 	}
 
-	public int assignEntityBucket(String entity, int bucketSize) {
-		final int bucket = (int) Math.ceil((1d + getNumberOfEntities()) / (double) bucketSize);
-
-		entity2Bucket.add(entity, bucket);
-
-		return bucket;
+	public void registerEntity(String entity, int bucket) {
+		entity2Bucket.update(entity, bucket);
 	}
 
+	// Structure
 
 	public StructureNode[] getStructure() {
 		return Objects.requireNonNullElseGet(structure.get(), () -> new StructureNode[0]);
@@ -136,7 +112,13 @@ public class NamespaceStorage extends NamespacedStorage {
 		this.structure.update(structure);
 	}
 
+	// InternToExternMappers
+
 	public InternToExternMapper getInternToExternMapper(InternToExternMapperId id) {
+		return getInternToExternMapperFromStorage(id);
+	}
+
+	private InternToExternMapper getInternToExternMapperFromStorage(InternToExternMapperId id) {
 		return internToExternMappers.get(id);
 	}
 
@@ -148,35 +130,50 @@ public class NamespaceStorage extends NamespacedStorage {
 		internToExternMappers.remove(id);
 	}
 
-	public Collection<InternToExternMapper> getInternToExternMappers() {
+	public Stream<InternToExternMapper> getInternToExternMappers() {
 		return internToExternMappers.getAll();
+	}
+
+	// SearchIndices
+
+	public SearchIndex getSearchIndex(SearchIndexId id) {
+		return getSearchIndexFromStorage(id);
+	}
+
+	private SearchIndex getSearchIndexFromStorage(SearchIndexId id) {
+		return searchIndexes.get(id);
 	}
 
 	public void removeSearchIndex(SearchIndexId id) {
 		searchIndexes.remove(id);
 	}
 
-	public SearchIndex getSearchIndex(SearchIndexId id) {
-		return searchIndexes.get(id);
-	}
-
 	public void addSearchIndex(SearchIndex searchIndex) {
 		searchIndexes.add(searchIndex);
 	}
 
-	public Collection<SearchIndex> getSearchIndices() {
+	public Stream<SearchIndex> getSearchIndices() {
 		return searchIndexes.getAll();
+	}
+
+	// PreviewConfig
+
+	public PreviewConfig getPreviewConfig() {
+		return preview.get();
 	}
 
 	public void setPreviewConfig(PreviewConfig previewConfig){
 		preview.update(previewConfig);
 	}
 
-	public PreviewConfig getPreviewConfig() {
-		return preview.get();
-	}
-
 	public void removePreviewConfig() {
 		preview.remove();
+	}
+
+	// Utilities
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return super.inject(values).add(NamespaceStorage.class, this);
 	}
 }

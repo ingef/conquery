@@ -6,11 +6,11 @@
 
 <@layout.layout>
   <@breadcrumbs.breadcrumbs
-    labels=["Datasets", c.dataset.label, "Concepts", c.label]
+    labels=["Datasets", c.dataset.resolve().label, "Concepts", c.label]
     links=[
       "/admin-ui/datasets",
-      "/admin-ui/datasets/${c.dataset.id}",
-      "/admin-ui/datasets/${c.dataset.id}#Concepts"
+      "/admin-ui/datasets/${c.dataset}",
+      "/admin-ui/datasets/${c.dataset}#Concepts"
     ]
   />
   <@infoCard.infoCard
@@ -59,7 +59,7 @@
               "${descriptionHeader}": x.description!""
             }
           )
-        link="/admin-ui/datasets/${c.dataset.id}/connectors/"
+        link="/admin-ui/datasets/${c.dataset}/connectors/"
       />
     </@accordion.accordion>
   </@accordion.accordionGroup>

@@ -1,7 +1,13 @@
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ConnectionKind, Tree, TreeChildrenTime } from "./types";
+import {
+  ConnectionKind,
+  TimeOperator,
+  TimeTimestamp,
+  Tree,
+  TreeChildrenTime,
+} from "./types";
 
 export const findNodeById = (tree: Tree, id: string): Tree | undefined => {
   if (tree.id === id) {
@@ -65,34 +71,30 @@ export const useGetTranslatedTimestamp = () => {
   const { t } = useTranslation();
 
   return useCallback(
-    (timestamp: "every" | "some" | "earliest" | "latest") => {
-      if (timestamp === "every") {
-        return t("editorV2.every");
-      } else if (timestamp === "some") {
-        return t("editorV2.some");
-      } else if (timestamp === "earliest") {
-        return t("editorV2.earliest");
-      } else if (timestamp === "latest") {
-        return t("editorV2.latest");
-      } else {
-        return "";
+    (timestamp: TimeTimestamp) => {
+      if (timestamp === "ALL") {
+        return t("editorV2.ALL");
+      } else if (timestamp === "ANY") {
+        return t("editorV2.ANY");
+      } else if (timestamp === "EARLIEST") {
+        return t("editorV2.EARLIEST");
+      } else if (timestamp === "LATEST") {
+        return t("editorV2.LATEST");
       }
     },
     [t],
   );
 };
 
-export const useTranslatedOperator = (
-  operator: "before" | "after" | "while",
-) => {
+export const useTranslatedOperator = (operator: TimeOperator) => {
   const { t } = useTranslation();
 
-  if (operator === "before") {
-    return t("editorV2.before");
-  } else if (operator === "after") {
-    return t("editorV2.after");
-  } else if (operator === "while") {
-    return t("editorV2.while");
+  if (operator === "BEFORE") {
+    return t("editorV2.BEFORE");
+  } else if (operator === "AFTER") {
+    return t("editorV2.AFTER");
+  } else if (operator === "WHILE") {
+    return t("editorV2.WHILE");
   }
 };
 

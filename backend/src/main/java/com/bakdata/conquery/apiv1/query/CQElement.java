@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
@@ -21,7 +22,6 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,7 +38,10 @@ public abstract class CQElement implements Visitable {
 	@Getter
 	private String label;
 
-	public String getUserOrDefaultLabel(Locale locale) {
+	/**
+	 * Get the user label for this element if provided or fall back to {@link CQElement#defaultLabel(Locale)}.
+	 */
+	public String userLabel(Locale locale) {
 		// Prefer the user label
 		if (label != null) {
 			return label;
@@ -46,6 +49,9 @@ public abstract class CQElement implements Visitable {
 		return defaultLabel(locale);
 	}
 
+	/**
+	 * Get the default label for this element usually ignoring {@link CQElement#label}.
+	 */
 	@NotNull
 	public String defaultLabel(Locale locale) {
 		// Fallback to CPSType#id() implementation is provided or class name
@@ -60,10 +66,7 @@ public abstract class CQElement implements Visitable {
 	 * Allows a query element to initialize data structures from resources, that are only available on the {@link ManagerNode}.
 	 * The contract is:
 	 * - no data structures are allowed to be altered, that were deserialized from a request and are serialized into a permanent storage
-	 * - all initialized data structures must be annotated with {@link InternalOnly} so they only exist at runtime between and in the communication between {@link ManagerNode} and {@link ShardNode}s
-	 *
-	 * @param context
-	 * @return
+	 * - all initialized data structures must be annotated with {@link com.bakdata.conquery.io.jackson.View.InternalCommunication} so they only exist at runtime between and in the communication between {@link ManagerNode} and {@link ShardNode}s
 	 */
 	public abstract void resolve(QueryResolveContext context);
 

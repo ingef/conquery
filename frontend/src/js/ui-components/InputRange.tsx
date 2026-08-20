@@ -99,7 +99,7 @@ const InputRange = ({
     type: "exact" | "max" | "min",
     newValue: number | null,
   ) => {
-    const nextValue = exists(newValue) && newValue >= 0 ? newValue : null;
+    const nextValue = exists(newValue) ? newValue : null;
 
     if (type === "exact") {
       if (nextValue === null) {

@@ -7,14 +7,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.OptionalLong;
-
-import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
-import com.bakdata.conquery.io.result.arrow.ResultArrowProcessor;
-import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.resources.ResourceConstants;
-import io.dropwizard.auth.Auth;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
@@ -26,6 +18,15 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
+
+import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.io.result.arrow.ResultArrowProcessor;
+import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.SingleTableResult;
+import com.bakdata.conquery.resources.ResourceConstants;
+import io.dropwizard.auth.Auth;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,14 +42,14 @@ public class ResultArrowResource {
 	@Produces(AdditionalMediaTypes.ARROW_FILE)
 	public Response getFile(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution query,
+			@PathParam(QUERY) ManagedExecutionId query,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") @DefaultValue("false") boolean pretty,
 			@QueryParam("limit") OptionalLong limit
 			) {
 
-		checkSingleTableResult(query);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), query.getDataset().getId(), subject.getId(), subject.getName());
+		checkSingleTableResult(query.resolve());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", query, query.getDataset(), subject.getId(), subject.getName());
 		return processor.createResultFile(subject, query, pretty, limit);
 	}
 
@@ -78,13 +79,13 @@ public class ResultArrowResource {
 	@Produces(AdditionalMediaTypes.ARROW_STREAM)
 	public Response getStream(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution execution,
+			@PathParam(QUERY) ManagedExecutionId execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") Optional<Boolean> pretty,
 			@QueryParam("limit") OptionalLong limit
 	) {
-		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset().getId(), subject.getId(), subject.getName());
+		checkSingleTableResult(execution.resolve());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 		return processor.createResultStream(subject, execution, pretty.orElse(false), limit);
 	}
 }

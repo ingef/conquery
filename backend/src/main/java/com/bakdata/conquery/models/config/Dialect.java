@@ -1,24 +1,22 @@
 package com.bakdata.conquery.models.config;
 
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.clickhouse.ClickhouseDialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.hana.HanaDialectBundle;
 import lombok.Getter;
-import org.jooq.SQLDialect;
+import lombok.RequiredArgsConstructor;
 
+/**
+ * The dialect sets SQL vendor specific query transformation rules.
+ * <p/>
+ * There is no fallback dialect, so the dialect must fit the targeted database.
+ */
+@RequiredArgsConstructor
 @Getter
 public enum Dialect {
 
-	POSTGRESQL(SQLDialect.POSTGRES, 63),
-	HANA(SQLDialect.DEFAULT, 127);
+	CLICKHOUSE(new ClickhouseDialectBundle()),
+	HANA(new HanaDialectBundle());
 
-	private final SQLDialect jooqDialect;
-
-	/**
-	 * Set's the max length of database identifiers (column names, qualifiers, etc.).
-	 */
-	private final int nameMaxLength;
-
-	Dialect(SQLDialect jooqDialect, int nameMaxLength) {
-		this.jooqDialect = jooqDialect;
-		this.nameMaxLength = nameMaxLength;
-	}
-
+	private final DialectBundle dialectBundle;
 }

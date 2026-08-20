@@ -14,8 +14,8 @@ public class ListColumnStatsCollector extends ColumnStatsCollector {
 
 	private final ColumnStatsCollector underlying;
 
-	public ListColumnStatsCollector(String name, String label, String description, ColumnStatsCollector underlying, PrintSettings printSettings) {
-		super(name, label, description, printSettings);
+	public ListColumnStatsCollector(ColumnStatsCollector underlying, PrintSettings printSettings) {
+		super(null, null, null, printSettings);
 		this.underlying = underlying;
 	}
 

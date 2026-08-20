@@ -1,54 +1,59 @@
 package com.bakdata.conquery.models.worker;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.local.SqlEntityResolver;
 import com.bakdata.conquery.mode.local.SqlStorageHandler;
+import com.bakdata.conquery.mode.local.UpdateMatchingStatsSqlJob;
+import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.FilterSearch;
-import com.bakdata.conquery.sql.DSLContextWrapper;
-import com.bakdata.conquery.sql.execution.SqlExecutionResult;
+import com.bakdata.conquery.sql.conquery.SqlMatchingStats;
+import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
+import com.bakdata.conquery.util.search.SearchProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.DSLContext;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Getter
 @Slf4j
 public class LocalNamespace extends Namespace {
 
-	private final DSLContextWrapper dslContextWrapper;
+	private final DialectBundle dialect;
+	private final DSLContext dslContext;
 	private final SqlStorageHandler storageHandler;
+	private final SqlMatchingStats matchingStats;
 
 	public LocalNamespace(
+			DialectBundle dialect,
 			ObjectMapper preprocessMapper,
-			ObjectMapper communicationMapper,
 			NamespaceStorage storage,
-			ExecutionManager<SqlExecutionResult> executionManager,
-			DSLContextWrapper dslContextWrapper,
+			ExecutionManager executionManager,
+			DSLContext dslContext,
 			SqlStorageHandler storageHandler,
 			JobManager jobManager,
-			FilterSearch filterSearch,
-			IndexService indexService,
-			SqlEntityResolver sqlEntityResolver,
-			List<Injectable> injectables
+			SearchProcessor filterSearch,
+			SqlEntityResolver sqlEntityResolver, DatabaseConnectionConfig databaseConfig
 	) {
-		super(preprocessMapper, communicationMapper, storage, executionManager, jobManager, filterSearch, indexService, sqlEntityResolver, injectables);
-		this.dslContextWrapper = dslContextWrapper;
+		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, sqlEntityResolver);
+
+		this.dslContext = dslContext;
 		this.storageHandler = storageHandler;
+		this.dialect = dialect;
+		this.matchingStats = new SqlMatchingStats(dslContext, dialect.getFunctionProvider(), databaseConfig.getPrimaryColumn(), databaseConfig.getMatchingStatsWorkers(), databaseConfig.getMatchingStatsRetries());
 	}
+
 
 	@Override
 	void updateMatchingStats() {
-		// TODO Build basic statistic on data
+		getJobManager().addSlowJob(
+				new UpdateMatchingStatsSqlJob(getStorage().getAllConcepts().toList(), getDataset(), getMatchingStats())
+		);
 	}
 
 	@Override
@@ -57,32 +62,9 @@ public class LocalNamespace extends Namespace {
 			try {
 				final Stream<String> stringStream = storageHandler.lookupColumnValues(getStorage(), column);
 				getFilterSearch().registerValues(column, stringStream.collect(Collectors.toSet()));
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error("Problem collecting column values for {}", column, e);
 			}
 		}
 	}
-
-	@Override
-	public void close() {
-		closeDslContextWrapper();
-		super.close();
-	}
-
-	@Override
-	public void remove() {
-		closeDslContextWrapper();
-		super.remove();
-	}
-
-	private void closeDslContextWrapper() {
-		try {
-			dslContextWrapper.close();
-		}
-		catch (IOException e) {
-			log.warn("Could not  close namespace's {} DSLContext/Datasource directly", getDataset().getId(), e);
-		}
-	}
-
 }

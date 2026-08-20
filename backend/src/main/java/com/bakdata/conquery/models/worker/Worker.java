@@ -2,23 +2,23 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.time.Clock;
 import java.util.concurrent.ExecutorService;
 
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
-import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
@@ -26,7 +26,7 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.validation.Validator;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -34,85 +34,62 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Getter
 public class Worker implements MessageSender.Transforming<NamespaceMessage, NetworkMessage<?>>, Closeable {
 	// Making this private to have more control over adding and deleting and keeping a consistent state
-	private final WorkerStorage storage;
-
-	@Getter
-	private final JobManager jobManager;
-	@Getter
-	private final QueryExecutor queryExecutor;
-	@Setter
-	private NetworkSession session;
+	@Getter(AccessLevel.NONE)
+	private WorkerStorage storage;
 	/**
 	 * Pool that can be used in Jobs to execute a job in parallel.
 	 */
-	@Getter
-	private final ExecutorService jobsExecutorService;
-	@Getter
-	private final BucketManager bucketManager;
+	private ExecutorService jobsExecutorService;
 
-	@Getter
-	private final ObjectMapper communicationMapper;
+	private JobManager jobManager;
 
+	private QueryExecutor queryExecutor;
+	private BucketManager bucketManager;
+	@Setter
+	private NetworkSession session;
 
-	public Worker(
-			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-			@NonNull WorkerStorage storage,
+	private Clock clock;
+
+	/**
+	 * @implSpec storage must not be open yet.
+	 */
+	public static Worker create(
+			@NonNull WorkerStorage storage, ShardWorkers shardWorkers, @NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 			@NonNull ExecutorService jobsExecutorService,
-			boolean failOnError,
-			int entityBucketSize,
-			ObjectMapper persistenceMapper,
-			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit) {
-		this.storage = storage;
-		this.jobsExecutorService = jobsExecutorService;
-		this.communicationMapper = communicationMapper;
+			Clock clock, boolean failOnError,
+			int secondaryIdSubPlanLimit, ObjectMapper persistenceMapper, boolean loadStorage) {
 
 
+		final Worker worker = new Worker();
+
+		worker.clock = clock;
+		worker.storage = storage;
+		worker.jobsExecutorService = jobsExecutorService;
+		worker.queryExecutor = new QueryExecutor(worker, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);
+
+		// The order of the remaining code cannot be changed, there are dependencies throughout.
 		storage.openStores(persistenceMapper);
-		storage.loadData();
+		storage.loadKeys();
 
-		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
-		queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);
-		bucketManager = BucketManager.create(this, storage, entityBucketSize);
-	}
+		shardWorkers.addWorker(worker);
 
-	@SneakyThrows(IOException.class)
-	public static Worker newWorker(
-			@NonNull Dataset dataset,
-			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-			@NonNull ExecutorService jobsExecutorService,
-			@NonNull StoreFactory config,
-			@NonNull String directory,
-			@NonNull Validator validator,
-			boolean failOnError,
-			int entityBucketSize,
-			ObjectMapper persistenceMapper,
-			ObjectMapper communicationMapper, int secondaryIdSubPlanLimit) {
+		if (loadStorage) {
+			storage.loadData();
+		}
 
-		WorkerStorage workerStorage = new WorkerStorage(config, validator, directory);
+		worker.jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 
-		// On the worker side we don't have to set the object writer for ForwardToWorkerMessages in WorkerInformation
-		WorkerInformation info = new WorkerInformation();
-		info.setDataset(dataset.getId());
-		info.setName(directory);
-		info.setEntityBucketSize(entityBucketSize);
+		// BucketManager.create loads NamespacedStorage keys
+		worker.bucketManager = BucketManager.create(worker, storage);
 
-		workerStorage.openStores(persistenceMapper);
-		workerStorage.loadData();
-		workerStorage.updateDataset(dataset);
-		workerStorage.setWorker(info);
-		workerStorage.close();
-
-		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper, secondaryIdSubPlanLimit);
+		return worker;
 	}
 
 	public ModificationShieldedWorkerStorage getStorage() {
 		return new ModificationShieldedWorkerStorage(storage);
-	}
-
-	public WorkerInformation getInfo() {
-		return storage.getWorker();
 	}
 
 	@Override
@@ -123,6 +100,10 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	@Override
 	public MessageToManagerNode transform(NamespaceMessage message) {
 		return new ForwardToNamespace(getInfo().getDataset(), message);
+	}
+
+	public WorkerInformation getInfo() {
+		return storage.getWorker();
 	}
 
 	@Override
@@ -163,7 +144,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		storage.addImport(imp);
 	}
 
-	public void removeImport(Import imp) {
+	public void removeImport(ImportId imp) {
 		bucketManager.removeImport(imp);
 	}
 
@@ -177,10 +158,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 	public void updateConcept(Concept<?> concept) {
 		bucketManager.updateConcept(concept);
-	}
-
-	public void updateDataset(Dataset dataset) {
-		storage.updateDataset(dataset);
 	}
 
 	public void updateWorkerInfo(WorkerInformation info) {
@@ -211,7 +188,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		storage.addTable(table);
 	}
 
-	public void removeTable(@NsIdRef Table table) {
+	public void removeTable(TableId table) {
 		bucketManager.removeTable(table);
 	}
 

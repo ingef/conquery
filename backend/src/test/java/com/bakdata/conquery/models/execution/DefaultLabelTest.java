@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.execution;
 
 import static com.bakdata.conquery.models.execution.ManagedExecution.AUTO_LABEL_SUFFIX;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doAnswer;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,17 +15,21 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -35,33 +38,34 @@ import org.mockito.Mockito;
 
 public class DefaultLabelTest {
 
-	private final static MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
-
+	public static final ConqueryConfig CONFIG = new ConqueryConfig();
+	private final static MetaStorage META_STORAGE = new NonPersistentStoreFactory().createMetaStorage();
+	private final static NamespaceStorage NAMESPACE_STORAGE = new NonPersistentStoreFactory().createNamespaceStorage();
+	public static final NamespacedStorageProvider STORAGE_PROVIDER = new TestNamespacedStorageProvider(NAMESPACE_STORAGE);
 	private static final Namespace NAMESPACE = Mockito.mock(LocalNamespace.class);
 	private static final Dataset DATASET = new Dataset("dataset");
-	private static final User user = new User("user","user", STORAGE);
-
-	private static final TreeConcept CONCEPT = new TreeConcept() {
-		{
-			setDataset(DATASET);
-			setName("defaultconcept");
-			setLabel("Default Concept");
-		}
-	};
-	public static final ConqueryConfig CONFIG = new ConqueryConfig();
+	private static final User user = new User("user", "user", META_STORAGE);
+	private static final TreeConcept CONCEPT = new TreeConcept();
 
 	@BeforeAll
-	public static void beforeAll() {
+	public static void beforeAll() throws Exception {
+		DATASET.setStorageProvider(STORAGE_PROVIDER);
+
+		NAMESPACE_STORAGE.updateDataset(DATASET);
+
+
 		// no mapper required
-		STORAGE.openStores(null);
+		META_STORAGE.openStores(null);
+
+		CONCEPT.setNamespacedStorageProvider(NAMESPACE_STORAGE);
+		CONCEPT.init();
+		CONCEPT.setName("defaultconcept");
+		CONCEPT.setLabel("Default Concept");
+
+
+		NAMESPACE_STORAGE.updateConcept(CONCEPT);
 
 		I18n.init();
-
-		doAnswer((invocation -> {
-			return CONCEPT;
-
-		})).when(NAMESPACE)
-		   .resolve(CONCEPT.getId());
 	}
 
 	@ParameterizedTest
@@ -72,9 +76,9 @@ public class DefaultLabelTest {
 	void autoLabelConceptQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 
-		CQConcept concept = makeCQConcept("Concept");
+		CQConcept concept = makeCQConceptWithLabel("Concept");
 		ConceptQuery cq = new ConceptQuery(concept);
-		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET, STORAGE);
+		ManagedQuery mQuery = cq.toManagedExecution(user.getId(), DATASET.getId(), META_STORAGE, null, CONFIG);
 
 		mQuery.setLabel(mQuery.makeAutoLabel(getPrintSettings(locale)));
 
@@ -82,17 +86,17 @@ public class DefaultLabelTest {
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
 	}
 
+	private static CQConcept makeCQConceptWithLabel(String label) {
+		CQConcept concept = new CQConcept();
+		concept.setLabel(label);
+		concept.setElements(List.of(CONCEPT.getId()));
+		return concept;
+
+	}
+
 	@NotNull
 	private PrintSettings getPrintSettings(Locale locale) {
 		return new PrintSettings(true, locale, NAMESPACE, CONFIG, null, null);
-	}
-
-	private static CQConcept makeCQConcept(String label) {
-		CQConcept concept = new CQConcept();
-		concept.setLabel(label);
-		concept.setElements(List.of(CONCEPT));
-		return concept;
-
 	}
 
 	@ParameterizedTest
@@ -104,12 +108,13 @@ public class DefaultLabelTest {
 		I18n.LOCALE.set(locale);
 
 		CQConcept concept = new CQConcept();
+
 		concept.setLabel(null);
-		concept.setElements(List.of(CONCEPT));
+		concept.setElements(List.of(CONCEPT.getId()));
 		ConceptQuery cq = new ConceptQuery(concept);
-		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET, STORAGE);
-		UUID uuid = UUID.randomUUID();
-		mQuery.setQueryId(uuid);
+		ManagedQuery mQuery = cq.toManagedExecution(user.getId(), DATASET.getId(), META_STORAGE, null, CONFIG);
+		mQuery.setQueryId(UUID.randomUUID());
+		mQuery.setMetaStorage(META_STORAGE);
 
 		mQuery.setLabel(mQuery.makeAutoLabel(getPrintSettings(locale)));
 
@@ -126,12 +131,12 @@ public class DefaultLabelTest {
 	void autoLabelReusedQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, null, DATASET, STORAGE);
+		final ManagedQuery managedQuery = new ManagedQuery(null, new UserId("test"), DATASET.getId(), META_STORAGE, null, CONFIG);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		CQReusedQuery reused = new CQReusedQuery(managedQuery.getId());
 		ConceptQuery cq = new ConceptQuery(reused);
-		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET, STORAGE);
+		ManagedQuery mQuery = cq.toManagedExecution(user.getId(), DATASET.getId(), META_STORAGE, null, CONFIG);
 
 		mQuery.setLabel(mQuery.makeAutoLabel(getPrintSettings(locale)));
 
@@ -150,7 +155,7 @@ public class DefaultLabelTest {
 
 		CQExternal external = new CQExternal(List.of(), new String[0][0], false);
 		ConceptQuery cq = new ConceptQuery(external);
-		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET, STORAGE);
+		ManagedQuery mQuery = cq.toManagedExecution(user.getId(), DATASET.getId(), META_STORAGE, null, CONFIG);
 
 		mQuery.setLabel(mQuery.makeAutoLabel(getPrintSettings(locale)));
 
@@ -166,13 +171,15 @@ public class DefaultLabelTest {
 	void autoLabelComplexQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, null, DATASET, STORAGE);
+		final ManagedQuery managedQuery = new ManagedQuery(null, new UserId("test"), DATASET.getId(), META_STORAGE, null, CONFIG);
+		managedQuery.setMetaStorage(META_STORAGE);
+
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		CQAnd and = new CQAnd();
-		CQConcept concept1 = makeCQConcept("Concept1");
-		CQConcept concept2 = makeCQConcept("Concept2");
-		CQConcept concept3 = makeCQConcept("Concept3veryveryveryveryveryveryveryverylooooooooooooooooooooonglabel");
+		CQConcept concept1 = makeCQConceptWithLabel("Concept1");
+		CQConcept concept2 = makeCQConceptWithLabel("Concept2");
+		CQConcept concept3 = makeCQConceptWithLabel("Concept3veryveryveryveryveryveryveryverylooooooooooooooooooooonglabel");
 
 		and.setChildren(List.of(
 				new CQExternal(List.of(), new String[0][0], false),
@@ -182,7 +189,7 @@ public class DefaultLabelTest {
 				concept3
 		));
 		ConceptQuery cq = new ConceptQuery(and);
-		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET, STORAGE);
+		ManagedQuery mQuery = cq.toManagedExecution(user.getId(), DATASET.getId(), META_STORAGE, null, CONFIG);
 
 		mQuery.setLabel(mQuery.makeAutoLabel(getPrintSettings(locale)));
 
@@ -199,15 +206,15 @@ public class DefaultLabelTest {
 	void autoLabelComplexQueryNullLabels(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, null, DATASET, STORAGE);
+		final ManagedQuery managedQuery = new ManagedQuery(null, new UserId("test"), DATASET.getId(), META_STORAGE, null, CONFIG);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		CQAnd and = new CQAnd();
 		CQConcept concept1 = new CQConcept();
 		concept1.setLabel(null);
-		concept1.setElements(List.of(CONCEPT));
-		CQConcept concept2 = makeCQConcept("Concept2");
-		CQConcept concept3 = makeCQConcept("Concept3");
+		concept1.setElements(List.of(CONCEPT.getId()));
+		CQConcept concept2 = makeCQConceptWithLabel("Concept2");
+		CQConcept concept3 = makeCQConceptWithLabel("Concept3");
 		and.setChildren(List.of(
 				new CQExternal(List.of(), new String[0][0], false),
 				new CQReusedQuery(managedQuery.getId()),
@@ -216,7 +223,7 @@ public class DefaultLabelTest {
 				concept3
 		));
 		ConceptQuery cq = new ConceptQuery(and);
-		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET, STORAGE);
+		ManagedQuery mQuery = cq.toManagedExecution(user.getId(), DATASET.getId(), META_STORAGE, null, CONFIG);
 
 		mQuery.setLabel(mQuery.makeAutoLabel(getPrintSettings(locale)));
 
@@ -233,7 +240,7 @@ public class DefaultLabelTest {
 		I18n.LOCALE.set(locale);
 
 		ExportForm form = new ExportForm();
-		ManagedForm<?> mForm = form.toManagedExecution(user, DATASET, STORAGE);
+		ManagedForm<?> mForm = form.toManagedExecution(user.getId(), DATASET.getId(), META_STORAGE, null, CONFIG);
 		mForm.setCreationTime(LocalDateTime.of(2020, 10, 30, 12, 37));
 
 		mForm.setLabel(mForm.makeAutoLabel(getPrintSettings(locale)));

@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +25,11 @@ import lombok.ToString;
 public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VALUE> {
 
 	private final ColumnAggregator<VALUE> aggregator;
-
-	private final Set<List<Object>> observed = new HashSet<>();
-
 	@Getter
 	private final List<Column> columns;
+
+
+	private final Set<List<Object>> observed = new HashSet<>();
 
 
 	@Override
@@ -44,6 +43,16 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 							.addAll(aggregator.getRequiredColumns())
 							.addAll(getColumns())
 							.build();
+	}
+
+	@Override
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+		aggregator.nextTable(ctx, currentTable);
+	}
+
+	@Override
+	public void nextBlock(Bucket bucket) {
+		aggregator.nextBlock(bucket);
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import c10n.annotations.De;
 import c10n.annotations.En;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.query.entity.Entity;
 
 public interface ErrorMessages {
@@ -52,6 +53,10 @@ public interface ErrorMessages {
 	@De("Die Anfrage lief zu lange und wurde abgebrochen.")
 	String executionTimeout();
 
+	@En("Query result was too large.")
+	@De("Das Anfrageergebnis ist zu groß.")
+	String resultSizeTooLarge();
+
 	@En("No secondaryId could be selected.")
 	@De("Die ausgewählte Analyseebenen konnte in keinem der ausgewählten Konzepten gefunden werden.")
 	String noSecondaryIdSelected();
@@ -59,4 +64,12 @@ public interface ErrorMessages {
 	@En("Something went wrong while querying the database: ${0}.")
 	@De("Etwas ist beim Anfragen des Servers fehlgeschlagen: ${0}.")
 	String sqlError(Throwable error);
+
+	@En("The id {0} could not be resolved'.")
+	@De("Die id {0} konnte nicht aufgelöst werden.")
+	String idUnresolvable(Id<?, ?> id);
+
+	@En("The selected query does not contain any dates.")
+	@De("Die ausgewählte Anfrage enthält keine Zeiträume.")
+	String relativeFormMissingDates();
 }

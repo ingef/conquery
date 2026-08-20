@@ -112,7 +112,7 @@ export const useSelectDataset = () => {
 
       dispatch(selectDatasetInput({ id: datasetId }));
 
-      dispatch(resetHistory());
+      dispatch(resetHistory({ includingDefaultParams: true }));
       dispatch(queryResultReset({ queryType: "standard" }));
       dispatch(queryResultReset({ queryType: "timebased" }));
       dispatch(queryResultReset({ queryType: "editorV2" }));

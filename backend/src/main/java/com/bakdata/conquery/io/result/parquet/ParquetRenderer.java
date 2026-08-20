@@ -24,65 +24,21 @@ import org.apache.parquet.io.PositionOutputStream;
 @UtilityClass
 public class ParquetRenderer {
 
-	@RequiredArgsConstructor
-	public static class StreamOutputFile implements OutputFile {
-
-		private final PositionTrackingOutputStream outputStream;
-
-		@Override
-		public PositionOutputStream create(long blockSizeHint) throws IOException {
-			return outputStream;
-		}
-
-		@Override
-		public PositionOutputStream createOrOverwrite(long blockSizeHint) throws IOException {
-			return outputStream;
-		}
-
-		@Override
-		public boolean supportsBlockSize() {
-			return false;
-		}
-
-		@Override
-		public long defaultBlockSize() {
-			return 0;
-		}
-	}
-
-	@RequiredArgsConstructor
-	public static class PositionTrackingOutputStream extends PositionOutputStream {
-
-		final private CountingOutputStream stream;
-
-		@Override
-		public long getPos() throws IOException {
-			return stream.getCount();
-		}
-
-		@Override
-		public void write(int b) throws IOException {
-			stream.write(b);
-		}
-	}
-
 	public static void writeToStream(
 			OutputStream outputStream,
-
 			List<ResultInfo> idHeaders,
 			List<ResultInfo> resultInfo,
 			PrintSettings printSettings,
 			Stream<EntityResult> results) throws IOException {
 
 		// Wrap the request output stream in an output file, so the parquet writer can consume it
-		final OutputFile outputFile = new StreamOutputFile(
-				new PositionTrackingOutputStream(
-						new CountingOutputStream(outputStream)));
+		final OutputFile outputFile = new StreamOutputFile(new PositionTrackingOutputStream(new CountingOutputStream(outputStream)));
 
-		final ConqueryParquetWriterBuilder conqueryParquetWriterBuilder = new ConqueryParquetWriterBuilder(outputFile)
-				.setIdHeaders(idHeaders)
-				.setResultInfo(resultInfo)
-				.setPrintSettings(printSettings);
+		final ConqueryParquetWriterBuilder conqueryParquetWriterBuilder =
+				new ConqueryParquetWriterBuilder(outputFile)
+						.setIdHeaders(idHeaders)
+						.setResultInfo(resultInfo)
+						.setPrintSettings(printSettings);
 
 		try (final ParquetWriter<EntityResult> parquetWriter = conqueryParquetWriterBuilder.build()) {
 
@@ -110,6 +66,48 @@ public class ParquetRenderer {
 			return Stream.of((SinglelineEntityResult) entityResult);
 		}
 		return entityResult.streamValues().map(line -> new SinglelineEntityResult(entityResult.getEntityId(), line));
+	}
+
+	@RequiredArgsConstructor
+	public static class StreamOutputFile implements OutputFile {
+
+		private final PositionTrackingOutputStream outputStream;
+
+		@Override
+		public PositionOutputStream create(long blockSizeHint) throws IOException {
+			return outputStream;
+		}
+
+		@Override
+		public PositionOutputStream createOrOverwrite(long blockSizeHint) {
+			return outputStream;
+		}
+
+		@Override
+		public boolean supportsBlockSize() {
+			return false;
+		}
+
+		@Override
+		public long defaultBlockSize() {
+			return 0;
+		}
+	}
+
+	@RequiredArgsConstructor
+	public static class PositionTrackingOutputStream extends PositionOutputStream {
+
+		private final CountingOutputStream stream;
+
+		@Override
+		public long getPos() {
+			return stream.getCount();
+		}
+
+		@Override
+		public void write(int b) throws IOException {
+			stream.write(b);
+		}
 	}
 
 

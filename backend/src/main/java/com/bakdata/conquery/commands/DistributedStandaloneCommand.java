@@ -1,22 +1,20 @@
 package com.bakdata.conquery.commands;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.time.Clock;
 import java.util.List;
 import java.util.Vector;
-import java.util.concurrent.*;
 
-import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.mode.cluster.ClusterManager;
 import com.bakdata.conquery.mode.cluster.ClusterManagerProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
+import com.bakdata.conquery.util.commands.NoOpConquery;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.dropwizard.core.cli.ServerCommand;
-import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
 
@@ -24,113 +22,56 @@ import net.sourceforge.argparse4j.inf.Namespace;
 @Getter
 public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> implements StandaloneCommand {
 
-	private final Conquery conquery;
-	private ClusterManager manager;
 	private final ManagerNode managerNode = new ManagerNode();
 	private final List<ShardNode> shardNodes = new Vector<>();
+	private ClusterManager manager;
 
-	// TODO clean up the command structure, so we can use the Environment from EnvironmentCommand
-	private Environment environment;
+	@Setter
+	private Clock clock = Clock.systemDefaultZone();
 
-	public DistributedStandaloneCommand(Conquery conquery) {
-		super(conquery, "standalone", "starts a server and a client at the same time.");
-		this.conquery = conquery;
+	public DistributedStandaloneCommand() {
+		super(new NoOpConquery(), "standalone", "starts a manager node and shard node(s) at the same time in a single JVM.");
 	}
 
-	// this must be overridden so that
 	@Override
-	public void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
-		environment = new Environment(
-				bootstrap.getApplication().getName(),
-				bootstrap.getObjectMapper(),
-				bootstrap.getValidatorFactory(),
-				bootstrap.getMetricRegistry(),
-				bootstrap.getClassLoader(),
-				bootstrap.getHealthCheckRegistry(),
-				configuration
-		);
-		configuration.getMetricsFactory().configure(environment.lifecycle(), bootstrap.getMetricRegistry());
-		configuration.getServerFactory().configure(environment);
+	protected void run(Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception {
 
-		bootstrap.run(configuration, environment);
-		startStandalone(environment, namespace, configuration);
-	}
 
-	public void startStandalone(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
-		// start ManagerNode
-		ConqueryMDC.setLocation("ManagerNode");
-		log.debug("Starting ManagerNode");
+		ConqueryConfig managerConfig = configuration;
 
-		ConqueryConfig managerConfig = config;
-
-		if (config.getStorage() instanceof XodusStoreFactory) {
-			final Path managerDir = ((XodusStoreFactory) config.getStorage()).getDirectory().resolve("manager");
-			managerConfig = config.withStorage(((XodusStoreFactory) config.getStorage()).withDirectory(managerDir));
+		if (configuration.getStorage() instanceof XodusStoreFactory) {
+			final Path managerDir = ((XodusStoreFactory) configuration.getStorage()).getDirectory().resolve("manager");
+			managerConfig = configuration.withStorage(((XodusStoreFactory) configuration.getStorage()).withDirectory(managerDir));
 		}
 
 		manager = new ClusterManagerProvider().provideManager(managerConfig, environment);
 
-		conquery.setManagerNode(managerNode);
-		conquery.run(manager);
+		managerNode.run(manager);
 
-		//create thread pool to start multiple ShardNodes at the same time
-		ExecutorService starterPool = Executors.newFixedThreadPool(
-				config.getStandalone().getNumberOfShardNodes(),
-				new ThreadFactoryBuilder()
-						.setNameFormat("ShardNode Storage Loader %d")
-						.setUncaughtExceptionHandler((t, e) -> {
-							ConqueryMDC.setLocation(t.getName());
-							log.error("{} failed to init storage of ShardNode", t.getName(), e);
-						})
-						.build()
-		);
+		for (int id = 0; id < configuration.getStandalone().getNumberOfShardNodes(); id++) {
 
-		List<Future<ShardNode>> tasks = new ArrayList<>();
-		for (int i = 0; i < config.getStandalone().getNumberOfShardNodes(); i++) {
+			ShardNode sc = new ShardNode(ShardNode.DEFAULT_NAME + id);
+			sc.setClock(clock);
 
-			final int id = i;
+			shardNodes.add(sc);
 
-			tasks.add(starterPool.submit(() -> {
-				ShardNode sc = new ShardNode(ShardNode.DEFAULT_NAME + id);
+			ConqueryMDC.setLocation(sc.getName());
 
-				shardNodes.add(sc);
+			ConqueryConfig clone = configuration;
 
-				ConqueryMDC.setLocation(sc.getName());
-
-				ConqueryConfig clone = config;
-
-				if (config.getStorage() instanceof XodusStoreFactory) {
-					final Path managerDir = ((XodusStoreFactory) config.getStorage()).getDirectory().resolve("shard-node" + id);
-					clone = config.withStorage(((XodusStoreFactory) config.getStorage()).withDirectory(managerDir));
-				}
-
-				sc.run(clone, environment);
-				return sc;
-			}));
-		}
-		ConqueryMDC.setLocation("ManagerNode");
-		log.debug("Waiting for ShardNodes to start");
-		starterPool.shutdown();
-		starterPool.awaitTermination(1, TimeUnit.HOURS);
-		//catch exceptions on tasks
-		boolean failed = false;
-		for (Future<ShardNode> f : tasks) {
-			try {
-				f.get();
-
+			if (configuration.getStorage() instanceof XodusStoreFactory) {
+				final Path managerDir = ((XodusStoreFactory) configuration.getStorage()).getDirectory().resolve("shard-node" + id);
+				clone = configuration.withStorage(((XodusStoreFactory) configuration.getStorage()).withDirectory(managerDir));
 			}
-			catch (ExecutionException e) {
-				log.error("during ShardNodes creation", e);
-				failed = true;
-			}
+
+			sc.run(clone, environment);
 		}
-		if (failed) {
-			System.exit(-1);
-		}
+
 
 		// starts the Jersey Server
+		ConqueryMDC.setLocation("ManagerNode");
 		log.debug("Starting REST Server");
 		ConqueryMDC.setLocation(null);
-		super.run(environment, namespace, config);
+		super.run(environment, namespace, configuration);
 	}
 }

@@ -4,20 +4,34 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
-
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
-
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.storage.NamespacedStorage;
-import com.bakdata.conquery.models.identifiable.Labeled;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import io.dropwizard.validation.ValidationMethod;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+
+import com.bakdata.conquery.io.jackson.Initializing;
+import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.mode.ValidationMode;
+import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.util.validation.ValidSqlTable;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.annotations.VisibleForTesting;
+import io.dropwizard.validation.ValidationMethod;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -25,30 +39,49 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Slf4j
-public class Table extends Labeled<TableId> implements NamespacedIdentifiable<TableId> {
+@JsonDeserialize(converter = Table.Initializer.class)
+@ValidSqlTable(groups = {ValidationMode.Local.class})
+@EqualsAndHashCode(callSuper=false)
+public class Table extends LabeledNamespaceIdentifiable<TableId> implements Initializing {
 
-	// TODO: 10.01.2020 fk: register imports here?
+	/**
+	 * Needed for SQL-Validation
+	 */
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@JsonIgnore
+	@Setter(AccessLevel.PRIVATE)
+	@EqualsAndHashCode.Exclude
+	private Namespace namespace;
 
-	@NsIdRef
-	private Dataset dataset;
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@JsonIgnore
+	@Getter(AccessLevel.PRIVATE)
+	@EqualsAndHashCode.Exclude
+	private NamespacedStorageProvider namespacedStorageProvider;
+
 	@NotNull
 	@Valid
 	@JsonManagedReference
 	private Column[] columns = new Column[0];
 	/**
 	 * Defines the primary key/column of this table. Only required for SQL mode.
-	 * If unset {@link ...SqlConnectorConfig#primaryColumn} is assumed.
+	 * If unset {@link DatabaseConnectionConfig#getPrimaryColumn()} is assumed.
 	 */
 	@Nullable
 	@JsonManagedReference
 	private Column primaryColumn;
 
+	@JsonView(View.InternalCommunication.class)
+	@Setter(value = AccessLevel.PUBLIC, onMethod_ = @VisibleForTesting)
+	private DatasetId dataset;
+
+
 	@ValidationMethod(message = "More than one column map to the same secondaryId")
 	@JsonIgnore
 	public boolean isDistinctSecondaryIds() {
-		final Set<SecondaryIdDescription> secondaryIds = new HashSet<>();
+		final Set<SecondaryIdDescriptionId> secondaryIds = new HashSet<>();
 		for (Column column : columns) {
-			final SecondaryIdDescription secondaryId = column.getSecondaryId();
+			final SecondaryIdDescriptionId secondaryId = column.getSecondaryId();
 			if (secondaryId != null && !secondaryIds.add(secondaryId)) {
 				log.error("{} is duplicated", secondaryId);
 				return false;
@@ -71,13 +104,17 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 		return true;
 	}
 
+
 	@Override
 	public TableId createId() {
-		return new TableId(dataset.getId(), getName());
+		return new TableId(getDataset(), getName());
 	}
 
 	public Stream<Import> findImports(NamespacedStorage storage) {
-		return storage.getAllImports().stream().filter(imp -> imp.getTable().equals(this));
+		final TableId thisId = getId();
+		return storage.getAllImports()
+					  .filter(imp -> imp.getTable().equals(thisId))
+					  .map(ImportId::resolve);
 	}
 
 	public Column getColumnByName(@NotNull String columnName) {
@@ -91,17 +128,30 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	 * selects the right column for the given secondaryId from this table
 	 */
 	@CheckForNull
-	public Column findSecondaryIdColumn(SecondaryIdDescription secondaryId) {
+	public Column findSecondaryIdColumn(SecondaryIdDescriptionId secondaryId) {
 
 		for (Column col : columns) {
-			if (col.getSecondaryId() == null || !secondaryId.equals(col.getSecondaryId())) {
-				continue;
+			if (secondaryId.equals(col.getSecondaryId())) {
+				return col;
 			}
-
-			return col;
 		}
 
 		return null;
 	}
 
+
+	@Override
+	public void init() {
+
+		if (this.dataset == null && namespacedStorageProvider != null) {
+			this.dataset = namespacedStorageProvider.getStorage(null).getDataset().getId();
+		}
+
+		for (Column column : columns) {
+			column.init();
+		}
+	}
+
+	public static class Initializer extends Converter<Table> {
+	}
 }

@@ -1,17 +1,21 @@
-import { ComponentMeta, Story } from "@storybook/react";
+import { Meta, StoryObj } from "@storybook/react";
 import { ComponentProps, useState } from "react";
 
 import InputPlain from "./InputPlain";
 
-export default {
+const meta = {
   title: "FormComponents/InputPlain",
   component: InputPlain,
   argTypes: {
     backgroundColor: { control: "#fafafa" },
   },
-} as ComponentMeta<typeof InputPlain>;
+} as Meta<typeof InputPlain>;
 
-const TemplateString: Story<ComponentProps<typeof InputPlain>> = (args) => {
+export default meta;
+
+type Story = StoryObj<typeof InputPlain>;
+
+const RenderWithString = (args: ComponentProps<typeof InputPlain>) => {
   const [value, setValue] = useState<string>("");
 
   console.log(value);
@@ -25,20 +29,22 @@ const TemplateString: Story<ComponentProps<typeof InputPlain>> = (args) => {
   );
 };
 
-export const WithString = TemplateString.bind({});
-WithString.args = {
-  label: "This is a nice label",
-  tooltip:
-    "And here goes some tooltip that really helps the user understand what's going on",
-  indexPrefix: 5,
-};
-WithString.argTypes = {
-  indexPrefix: {
-    type: { name: "number", required: false },
+export const WithString: Story = {
+  args: {
+    label: "This is a nice label",
+    tooltip:
+      "And here goes some tooltip that really helps the user understand what's going on",
+    indexPrefix: 5,
   },
+  argTypes: {
+    indexPrefix: {
+      type: { name: "number", required: false },
+    },
+  },
+  render: RenderWithString,
 };
 
-const TemplateNumber: Story<ComponentProps<typeof InputPlain>> = (args) => {
+const RenderWithNumber = (args: ComponentProps<typeof InputPlain>) => {
   const [value, setValue] = useState<number | null>(null);
 
   console.log(value);
@@ -53,15 +59,17 @@ const TemplateNumber: Story<ComponentProps<typeof InputPlain>> = (args) => {
   );
 };
 
-export const WithNumber = TemplateNumber.bind({});
-WithNumber.args = {
-  label: "This is a nice label",
-  tooltip:
-    "And here goes some tooltip that really helps the user understand what's going on",
-  indexPrefix: 5,
-};
-WithNumber.argTypes = {
-  indexPrefix: {
-    type: { name: "number", required: false },
+export const WithNumber: Story = {
+  args: {
+    label: "This is a nice label",
+    tooltip:
+      "And here goes some tooltip that really helps the user understand what's going on",
+    indexPrefix: 5,
   },
+  argTypes: {
+    indexPrefix: {
+      type: { name: "number", required: false },
+    },
+  },
+  render: RenderWithNumber,
 };

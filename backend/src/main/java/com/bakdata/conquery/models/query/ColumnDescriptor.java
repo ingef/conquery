@@ -1,12 +1,11 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.types.SemanticType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -14,16 +13,14 @@ import lombok.Data;
  * csv result. This can be used for the result preview in the frontend.
  */
 @Data
-@Builder
-@AllArgsConstructor
 public class ColumnDescriptor {
 
 	/**
 	 * The name of the column. This label should be generated as a unique label among the columns.
 	 */
-	private String label;
+	private final String label;
 
-	private String description;
+	private final String description;
 
 	/**
 	 * If this descriptor originates from a {@link Select} which is a child of {@link CQConcept},
@@ -32,13 +29,23 @@ public class ColumnDescriptor {
 	 * <p>
 	 * Beware that this label must not be unique among the columns
 	 */
-	private String defaultLabel;
+	private final String defaultLabel;
 
 	/**
 	 * The datatype that corresponds to this column.
 	 */
-	private String type;
+	private final String type;
 
-	private Set<SemanticType> semantics;
+	private final Set<SemanticType> semantics;
+
+	public ColumnDescriptor(String label, String defaultLabel, String description, String type, Set<SemanticType> semantics){
+
+		this.label = label;
+		this.description = description;
+		this.defaultLabel = defaultLabel;
+		this.type = type;
+		this.semantics = new HashSet<>();
+		this.semantics.addAll(semantics);
+	}
 
 }

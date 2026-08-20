@@ -20,28 +20,41 @@ public interface SingleTableResult {
 
 	default List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, ConqueryConfig config) {
 		Preconditions.checkArgument(isInitialized, "The execution must have been initialized first");
-		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
+		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
 		final Locale locale = I18n.LOCALE.get();
+		// The printer is never used to generate results. But downstream code might touch them
+		final PrintSettings settings = new PrintSettings(true, locale, getNamespace(), config, null, null);
 
-		PrintSettings settings = new PrintSettings(true, locale, getNamespace(), config, null);
-
-		UniqueNamer uniqNamer = new UniqueNamer(settings);
+		final UniqueNamer uniqNamer = new UniqueNamer(settings);
 
 		// First add the id columns to the descriptor list. The are the first columns
 		for (ResultInfo header : config.getIdColumns().getIdResultInfos()) {
-			columnDescriptions.add(ColumnDescriptor.builder()
-												   .label(uniqNamer.getUniqueName(header))
-												   .type(ResultType.StringT.getINSTANCE().typeInfo())
-												   .semantics(header.getSemantics())
-												   .build());
+			final ColumnDescriptor descriptor =
+					new ColumnDescriptor(uniqNamer.getUniqueName(header, settings), null, null, ResultType.Primitive.STRING.typeInfo(), header.getSemantics());
+			columnDescriptions.add(descriptor);
 		}
 
 		final UniqueNamer collector = new UniqueNamer(settings);
-		getResultInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings, collector)));
+		collectResultInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(collector, settings)));
 		return columnDescriptions;
 	}
 
+	@JsonIgnore
+	Namespace getNamespace();
+
+	/**
+	 * Collect result infos from the submitted query that this execution wraps
+	 * @return The result infos for this execution
+	 * @implNote The execution may need to be initialised beforehand
+	 */
+	@JsonIgnore
+	List<ResultInfo> collectResultInfos();
+
+	/**
+	 * Collect result infos from the submitted query that this execution wraps
+	 * @return The result infos for this execution
+	 */
 	@JsonIgnore
 	List<ResultInfo> getResultInfos();
 
@@ -51,10 +64,7 @@ public interface SingleTableResult {
 	Stream<EntityResult> streamResults(OptionalLong limit);
 
 	@JsonIgnore
-	long resultRowCount();
-
-	@JsonIgnore
-	Namespace getNamespace();
+	OptionalLong resultRowCount();
 
 
 }

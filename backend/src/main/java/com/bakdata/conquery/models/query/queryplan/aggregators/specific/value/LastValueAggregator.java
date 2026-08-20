@@ -1,7 +1,8 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
-import java.util.OptionalInt;
+import static com.bakdata.conquery.models.query.StringUtils.getSubstringFromRange;
 
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
@@ -21,20 +22,22 @@ import lombok.extern.slf4j.Slf4j;
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
+	private final Range.IntegerRange substring;
 
-	private OptionalInt selectedEvent = OptionalInt.empty();
+	private int selectedEvent = -1;
 	private Bucket selectedBucket;
 	private int date;
 
 	private ValidityDate validityDateColumn;
 
-	public LastValueAggregator(Column column) {
+	public LastValueAggregator(Column column, Range.IntegerRange substring) {
 		super(column);
+		this.substring = substring;
 	}
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
-		selectedEvent = OptionalInt.empty();
+		selectedEvent = -1;
 		date = CDateRange.NEGATIVE_INFINITY;
 		selectedBucket = null;
 	}
@@ -54,7 +57,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 			// If there is no validity date, take the first possible value
 			if(selectedBucket == null) {
 				selectedBucket = bucket;
-				selectedEvent = OptionalInt.of(event);
+				selectedEvent = event;
 			} else {
 				log.trace("There is more than one value for the {}. Choosing the very first one encountered", this.getClass().getSimpleName());
 			}
@@ -71,7 +74,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 		if (next > date) {
 			date = next;
-			selectedEvent = OptionalInt.of(event);
+			selectedEvent = event;
 			selectedBucket = bucket;
 		}
 		else if (next == date) {
@@ -81,11 +84,16 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	@Override
 	public VALUE createAggregationResult() {
-		if (selectedBucket == null && selectedEvent.isEmpty()) {
+		if (selectedBucket == null) {
 			return null;
 		}
 
-		return (VALUE) selectedBucket.createScriptValue(selectedEvent.getAsInt(), getColumn());
+		if (substring != null) {
+			String string = selectedBucket.getString(selectedEvent, getColumn());
+			return (VALUE) getSubstringFromRange(string, substring);
+		}
+
+		return (VALUE) selectedBucket.createScriptValue(selectedEvent, getColumn());
 	}
 
 }

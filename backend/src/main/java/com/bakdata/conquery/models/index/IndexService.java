@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.index;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +9,8 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.util.io.LogUtil;
+import com.bakdata.conquery.util.search.solr.FilterValueSearch;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Functions;
 import com.google.common.cache.CacheBuilder;
@@ -37,11 +38,16 @@ import org.jetbrains.annotations.Nullable;
 public class IndexService implements Injectable {
 
 	private final CsvParserSettings csvParserSettings;
-	private final String emptyDefaultLabel;
 
-	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<>() {
+	/** TODO
+	 * We use the {@link IndexService} not only for the {@link InternToExternMapper} anymore, but also to index the {@link FilterValueSearch}.
+	 * The Index interface offers methods, that are only relevant for the {@link InternToExternMapper} like {@link Index#external(String)}.
+	 * We should clean this up and split the async CSV parsing from the index functionality.
+	 */
+	private final LoadingCache<IndexKey, Index<?>> mappings = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<>() {
+		@NotNull
 		@Override
-		public Index<?> load(@NotNull IndexKey<?> key) throws Exception {
+		public Index<?> load(@NotNull IndexKey key) throws Exception {
 
 			final StopWatch timer = StopWatch.createStarted();
 
@@ -49,7 +55,7 @@ public class IndexService implements Injectable {
 
 			final Map<String, String> emptyDefaults = computeEmptyDefaults(key);
 
-			final Index<?> int2ext = key.createIndex(emptyDefaultLabel);
+			final Index<?> int2ext = key.createIndex();
 
 			final CsvParser csvParser = new CsvParser(csvParserSettings);
 
@@ -81,14 +87,10 @@ public class IndexService implements Injectable {
 					catch (IllegalArgumentException e) {
 						log.warn("Skipping mapping '{}'->'{}' in row {}, because there was already a mapping",
 								 internalValue, externalValue, csvParser.getContext().currentLine(),
-								 (Exception) (log.isTraceEnabled() ? e : null) // Cast to Exception to satisfy format-string check
+								 LogUtil.passExceptionOnTrace(log,e)
 						);
 					}
 				}
-			}
-			catch (IOException ioException) {
-				log.warn("Failed to open `{}`", key.getCsv(), ioException);
-				throw ioException;
 			}
 
 			// Run finalizing operations on the index
@@ -100,14 +102,13 @@ public class IndexService implements Injectable {
 		}
 	});
 
-	public IndexService(CsvParserSettings csvParserSettings, String emptyDefaultLabel) {
+	public IndexService(CsvParserSettings csvParserSettings) {
 		this.csvParserSettings = csvParserSettings.clone();
-		this.emptyDefaultLabel = emptyDefaultLabel;
 		this.csvParserSettings.setHeaderExtractionEnabled(true);
 	}
 
 	@Nullable
-	private Pair<String, Map<String, String>> computeInternalExternal(@NotNull IndexKey<?> key, CsvParser csvParser, Record row) {
+	private Pair<String, Map<String, String>> computeInternalExternal(@NotNull IndexKey key, CsvParser csvParser, Record row) {
 		final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
 
 		final String internalValue = row.getString(key.getInternalColumn());
@@ -137,7 +138,7 @@ public class IndexService implements Injectable {
 								.collect(Collectors.toMap(Functions.identity(), value -> whitespaceMatcher.trimAndCollapseFrom(substitutor.replace(value), ' ')));
 	}
 
-	private Map<String, String> computeEmptyDefaults(IndexKey<?> key) {
+	private Map<String, String> computeEmptyDefaults(IndexKey key) {
 		final StringSubstitutor substitutor = new StringSubstitutor((ignored) -> "", "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
 
 		final List<String> externalTemplates = key.getExternalTemplates();
@@ -150,13 +151,22 @@ public class IndexService implements Injectable {
 	}
 
 
+	/**
+	 * Returns an index mapping from the information in the given key.
+	 * If the index is not yet present, it is loaded.<
+	 * <p/>
+	 * @param key the key describing the requested index
+	 * @return the index mapping
+	 * @throws IndexCreationException if the index mapping could not be loaded.
+	 */
 	@SuppressWarnings("unchecked")
-	public <K extends IndexKey<I>, I extends Index<K>> I getIndex(K key) {
+	@NotNull
+	public <I extends Index<?>> I getIndex(@NotNull IndexKey key) throws IndexCreationException {
 		try {
 			return (I) mappings.get(key);
 		}
 		catch (ExecutionException e) {
-			throw new IllegalStateException(String.format("Unable to build index from index configuration: %s)", key), e);
+			throw new IndexCreationException(key, e);
 		}
 	}
 
@@ -164,7 +174,7 @@ public class IndexService implements Injectable {
 		return mappings.stats();
 	}
 
-	public Set<IndexKey<?>> getLoadedIndexes() {
+	public Set<IndexKey> getLoadedIndexes() {
 		return mappings.asMap().keySet();
 	}
 

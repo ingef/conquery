@@ -4,13 +4,17 @@ import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName
 
 import java.util.Locale;
 import java.util.OptionalLong;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -20,10 +24,6 @@ import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultParquetResource;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.IdColumnUtil;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,41 +32,35 @@ import lombok.extern.slf4j.Slf4j;
 public class ResultParquetProcessor {
 	public static final MediaType PARQUET_MEDIA_TYPE = MediaType.valueOf(ResultParquetResource.PARQUET_MEDIA_TYPE_STRING);
 
-	private final DatasetRegistry datasetRegistry;
+	private final DatasetRegistry<?> datasetRegistry;
 	private final ConqueryConfig config;
 
-	public Response createResultFile(Subject subject, ManagedExecution exec, boolean pretty, OptionalLong limit) {
+	public Response createResultFile(Subject subject, ManagedExecutionId execId, boolean pretty, OptionalLong limit) {
 
 		ConqueryMDC.setLocation(subject.getName());
 
-		final Dataset dataset = exec.getDataset();
+		final ManagedExecution execution = execId.resolve();
 
-		log.info("Downloading results for {}", exec.getId());
+		log.info("Downloading results for {}", execId);
 
-		ResultUtil.authorizeExecutable(subject, exec);
+		ResultUtil.authorizeExecutable(subject, execution);
 
-		ResultUtil.checkSingleTableResult(exec);
+		ResultUtil.checkSingleTableResult(execution);
 
-		final Namespace namespace = datasetRegistry.get(dataset.getId());
+		final Namespace namespace = datasetRegistry.get(execution.getDataset());
 
-		IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
+		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, execution, namespace, config.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();
-		PrintSettings settings = new PrintSettings(
-				pretty,
-				locale,
-				namespace,
-				config,
-				idPrinter::createId
-		);
+		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId, null);
 
-		StreamingOutput out = output -> {
+		final StreamingOutput out = output -> {
 
-			final SingleTableResult singleTableResult = (SingleTableResult) exec;
+			final SingleTableResult singleTableResult = (SingleTableResult) execution;
 			ParquetRenderer.writeToStream(
 					output,
 					config.getIdColumns().getIdResultInfos(),
-					singleTableResult.getResultInfos(),
+					singleTableResult.collectResultInfos(),
 					settings,
 					singleTableResult.streamResults(limit)
 			);
@@ -74,6 +68,10 @@ public class ResultParquetProcessor {
 		};
 
 
-		return makeResponseWithFileName(Response.ok(out), String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_PARQUET), PARQUET_MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(Response.ok(out),
+										String.join(".", execution.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_PARQUET),
+										PARQUET_MEDIA_TYPE,
+										ResultUtil.ContentDispositionOption.ATTACHMENT
+		);
 	}
 }

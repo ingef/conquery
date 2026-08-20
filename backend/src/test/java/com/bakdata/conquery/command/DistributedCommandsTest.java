@@ -1,8 +1,10 @@
 package com.bakdata.conquery.command;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.Response;
@@ -42,17 +44,15 @@ public class DistributedCommandsTest {
 		this.getCluster().setConnectRetryTimeout(CONNECT_RETRY_TIMEOUT);
 		this.setStorage(new NonPersistentStoreFactory());
 	}};
-
-	private static final DropwizardAppExtension<ConqueryConfig> MANAGER = new DropwizardAppExtension<>(
-			Conquery.class,
-			CONQUERY_CONFIG_MANAGER,
-			ServerCommand::new
-	);
-
 	private static final DropwizardAppExtension<ConqueryConfig> SHARD = new DropwizardAppExtension<>(
 			Conquery.class,
 			CONQUERY_CONFIG_SHARD,
 			application -> new ShardCommand()
+	);
+	private static final DropwizardAppExtension<ConqueryConfig> MANAGER = new DropwizardAppExtension<>(
+			Conquery.class,
+			CONQUERY_CONFIG_MANAGER,
+			ServerCommand::new
 	);
 
 	@Test
@@ -83,27 +83,28 @@ public class DistributedCommandsTest {
 
 	@Test
 	@Order(1)
-	void clusterEstablished() throws InterruptedException {
+	void clusterEstablished() {
 		Client client = MANAGER.client();
 
 		// Wait for Shard to be connected
-		// May use https://github.com/awaitility/awaitility here in the future
-		Thread.sleep(2 * CONNECT_RETRY_TIMEOUT.toMilliseconds());
-
-		Response response = client.target(
-										  String.format("http://localhost:%d/healthcheck", MANAGER.getAdminPort()))
-								  .request()
-								  .get();
+		await().atMost(5, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS).untilAsserted(() -> {
+			Response response = client.target(
+											  String.format("http://localhost:%d/healthcheck", MANAGER.getAdminPort()))
+									  .request()
+									  .get();
 
 
-		assertThat(response.getStatus()).isEqualTo(200);
 
-		Map<String, GenericHealthCheckResult> healthCheck = response.readEntity(new GenericType<>() {
+			assertThat(response.getStatus()).isEqualTo(200);
+
+			Map<String, GenericHealthCheckResult> healthCheck = response.readEntity(new GenericType<>() {
+			});
+
+			assertThat(healthCheck).containsKey("cluster");
+			assertThat(healthCheck.get("cluster").healthy).isTrue();
+			assertThat(healthCheck.get("cluster").getMessage()).isEqualTo(String.format(ClusterHealthCheck.HEALTHY_MESSAGE_FMT, 1));
 		});
 
-		assertThat(healthCheck).containsKey("cluster");
-		assertThat(healthCheck.get("cluster").healthy).isTrue();
-		assertThat(healthCheck.get("cluster").getMessage()).isEqualTo(String.format(ClusterHealthCheck.HEALTHY_MESSAGE_FMT, 1));
 	}
 
 	@Data

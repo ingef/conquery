@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -15,14 +15,20 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class CBlockId extends Id<CBlock> implements NamespacedId {
+public class CBlockId extends NamespacedId<CBlock> {
 
 	private final BucketId bucket;
 	private final ConnectorId connector;
 
 	@Override
 	public DatasetId getDataset() {
-		return connector.getDataset();
+		return bucket.getDataset();
+	}
+
+	@Override
+	public CBlock get() {
+		return assertWorkerStorage(getDomain().getStorage(getDataset()))
+				.getCBlock(this);
 	}
 
 	@Override
@@ -31,7 +37,14 @@ public class CBlockId extends Id<CBlock> implements NamespacedId {
 		connector.collectComponents(components);
 	}
 
-	public static enum Parser implements IdUtil.Parser<CBlockId> {
+	@Override
+	public void collectIds(Collection<Id<?, ?>> collect) {
+		collect.add(this);
+		bucket.collectIds(collect);
+		connector.collectIds(collect);
+	}
+
+	public enum Parser implements IdUtil.Parser<CBlockId> {
 		INSTANCE;
 
 		@Override

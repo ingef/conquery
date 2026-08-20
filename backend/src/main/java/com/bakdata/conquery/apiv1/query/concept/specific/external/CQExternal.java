@@ -27,8 +27,8 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.ExternalNode;
+import com.bakdata.conquery.models.query.resultinfo.ExternalResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -144,7 +144,7 @@ public class CQExternal extends CQElement {
 		final Map<String, ConstantValueAggregator<String>> extraAggregators = new HashMap<>(extraHeaders.length);
 		for (String extraHeader : extraHeaders) {
 			// Just allocating, the result type is irrelevant here
-			final ConstantValueAggregator<String> aggregator = new ConstantValueAggregator<>(null, null);
+			final ConstantValueAggregator<String> aggregator = new ConstantValueAggregator<>(null);
 			extraAggregators.put(extraHeader, aggregator);
 			plan.registerAggregator(aggregator);
 
@@ -157,7 +157,7 @@ public class CQExternal extends CQElement {
 		final Map<String, ConstantValueAggregator<List<String>>> extraAggregators = new HashMap<>(extraHeaders.length);
 		for (String extraHeader : extraHeaders) {
 			// Just allocating, the result type is irrelevant here
-			final ConstantValueAggregator<List<String>> aggregator = new ConstantValueAggregator<>(null, null);
+			final ConstantValueAggregator<List<String>> aggregator = new ConstantValueAggregator<>(null);
 			extraAggregators.put(extraHeader, aggregator);
 			plan.registerAggregator(aggregator);
 		}
@@ -224,11 +224,10 @@ public class CQExternal extends CQElement {
 				continue;
 			}
 
-			String column = headers[col];
+			final String column = headers[col];
 
-			resultInfos.add(new SimpleResultInfo(column, onlySingles ?
-														 ResultType.StringT.INSTANCE :
-														 new ResultType.ListT(ResultType.StringT.INSTANCE)));
+			final ResultType type = onlySingles ? ResultType.Primitive.STRING : new ResultType.ListT<>(ResultType.Primitive.STRING);
+			resultInfos.add(new ExternalResultInfo(column, type));
 		}
 
 		return resultInfos;
@@ -261,6 +260,21 @@ public class CQExternal extends CQElement {
 		log.error("Duplicate Headers {}", duplicates);
 
 		return false;
+	}
+
+	@JsonIgnore
+	public boolean isWithExtras() {
+		return extra != null && !extra.isEmpty();
+	}
+
+	public List<Map.Entry<String, List<String>>> getExtrasForId(String id) {
+		Map<String, List<String>> extras = extra.getOrDefault(id, Collections.emptyMap());
+		// we need to bring the extras in the correct order
+		List<Map.Entry<String, List<String>>> inOrder = new ArrayList<>();
+		Arrays.stream(headers)
+			  .filter(extras::containsKey)
+			  .forEach(header -> inOrder.add(Map.entry(header, extras.get(header))));
+		return inOrder;
 	}
 
 }

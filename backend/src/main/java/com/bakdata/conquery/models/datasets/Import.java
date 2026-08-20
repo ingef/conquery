@@ -4,10 +4,10 @@ package com.bakdata.conquery.models.datasets;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.identifiable.NamedImpl;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -23,12 +23,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @Setter
-public class Import extends NamedImpl<ImportId> implements NamespacedIdentifiable<ImportId> {
+public class Import extends NamespacedIdentifiable<ImportId> {
+
+	private final String name;
 
 	@Valid
 	@NotNull
-	@NsIdRef
-	private final Table table;
+	private final TableId table;
 
 	private long numberOfEntities;
 
@@ -39,9 +40,10 @@ public class Import extends NamedImpl<ImportId> implements NamespacedIdentifiabl
 	@NotNull
 	private ImportColumn[] columns = new ImportColumn[0];
 
+
 	@Override
 	public ImportId createId() {
-		return new ImportId(table.getId(), getName());
+		return new ImportId(table, getName());
 	}
 
 	public long estimateMemoryConsumption() {
@@ -54,7 +56,8 @@ public class Import extends NamedImpl<ImportId> implements NamespacedIdentifiabl
 
 	@JsonIgnore
 	@Override
-	public Dataset getDataset() {
+	public DatasetId getDataset() {
 		return getTable().getDataset();
 	}
+
 }

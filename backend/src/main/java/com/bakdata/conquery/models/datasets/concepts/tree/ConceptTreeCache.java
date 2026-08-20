@@ -40,8 +40,6 @@ public class ConceptTreeCache {
 
 	/**
 	 * If id is already in cache, use that. If not calculate it by querying treeConcept. If rowMap was not used to query, cache the response.
-	 *
-	 * @param value
 	 */
 	public ConceptTreeChild findMostSpecificChild(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 

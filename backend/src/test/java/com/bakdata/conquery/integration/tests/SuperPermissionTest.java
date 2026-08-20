@@ -18,8 +18,9 @@ public class SuperPermissionTest extends IntegrationTest.Simple implements Progr
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
-		Dataset dataset1 = new Dataset();
-		dataset1.setLabel("dataset1");
+		Dataset dataset1 = new Dataset("dataset1");
+		dataset1.setStorageProvider(conquery.getDatasetRegistry());
+
 		MetaStorage storage = conquery.getMetaStorage();
 
 		Role role1 = new Role("company", "company", storage);
@@ -28,7 +29,7 @@ public class SuperPermissionTest extends IntegrationTest.Simple implements Progr
 		storage.addRole(role1);
 		
 		try {
-			user1.addRole(role1);
+			user1.addRole(role1.getId());
 			// Add SuperPermission to User
 			user1.addPermission(SuperPermission.onDomain());
 		

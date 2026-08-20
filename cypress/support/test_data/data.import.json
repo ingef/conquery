@@ -1,0 +1,73 @@
+{
+    "inputs": [
+        {
+            "output": [
+                {
+                    "inputColumn": "id",
+                    "name": "id",
+                    "inputType": "STRING",
+                    "operation": "COPY"
+                },
+                {
+                    "inputColumn": "STRING",
+                    "name": "STRING",
+                    "inputType": "STRING",
+                    "operation": "COPY"
+                },
+                {
+                    "inputColumn": "INTEGER",
+                    "name": "INTEGER",
+                    "inputType": "INTEGER",
+                    "operation": "COPY"
+                },
+                {
+                    "inputColumn": "BOOLEAN",
+                    "name": "BOOLEAN",
+                    "inputType": "BOOLEAN",
+                    "operation": "COPY"
+                },
+                {
+                    "inputColumn": "REAL",
+                    "name": "REAL",
+                    "inputType": "REAL",
+                    "operation": "COPY"
+                },
+                {
+                    "inputColumn": "DECIMAL",
+                    "name": "DECIMAL",
+                    "inputType": "DECIMAL",
+                    "operation": "COPY"
+                },
+                {
+                    "inputColumn": "MONEY",
+                    "name": "MONEY",
+                    "inputType": "MONEY",
+                    "operation": "COPY"
+                },
+                {
+                    "inputColumn": "DATE",
+                    "name": "DATE",
+                    "inputType": "DATE",
+                    "operation": "COPY"
+                },
+                {
+                    "inputColumn": "DATE_RANGE",
+                    "name": "DATE_RANGE",
+                    "inputType": "DATE_RANGE",
+                    "operation": "COPY"
+                }
+            ],
+			"primary": {
+				"inputColumn": "id",
+				"inputType": "STRING",
+				"name": "id",
+				"operation": "COPY",
+				"required": true
+			},
+			"sourceFile": "data.csv"
+        }
+    ],
+	"label": "table",
+	"name": "table",
+	"table": "table"
+}

@@ -114,12 +114,12 @@ public enum EmptyStore implements
 	}
 
 	@Override
-	public long getMoney(int event) {
-		return 0;
+	public BigDecimal getMoney(int event) {
+		return BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setMoney(int event, long money) {
+	public void setMoney(int event, BigDecimal money) {
 
 	}
 

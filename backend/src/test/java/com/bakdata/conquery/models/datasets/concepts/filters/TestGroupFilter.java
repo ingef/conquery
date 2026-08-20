@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -18,8 +20,6 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
@@ -36,7 +36,7 @@ public class TestGroupFilter extends SingleColumnFilter<TestGroupFilter.GroupFil
 
 	@Override
 	public FilterNode<?> createFilterNode(GroupFilterValue compoundFilterValue) {
-		return new MultiSelectFilterNode(getColumn(), Set.of(compoundFilterValue.getResolvedValues()));
+		return new MultiSelectFilterNode(getColumn().resolve(), Set.of(compoundFilterValue.getResolvedValues()));
 	}
 
 	private Map<String, FrontendFilterConfiguration.Nested> getFEFilter() {

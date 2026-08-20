@@ -5,7 +5,7 @@
 		<div class="row">
 		<div class="col">${key}</div>
 		<#list val.externalId as externalIdPart>
-			<div class="col">${externalIdPart}</div>
+			<div class="col">${externalIdPart!""}</div>
 		</#list>
 		</div>
 	</#list>

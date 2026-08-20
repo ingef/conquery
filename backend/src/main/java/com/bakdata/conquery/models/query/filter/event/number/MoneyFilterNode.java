@@ -6,9 +6,9 @@ import com.bakdata.conquery.models.events.Bucket;
 import lombok.ToString;
 
 @ToString(callSuper = true)
-public class MoneyFilterNode extends NumberFilterNode<Range.LongRange> {
+public class MoneyFilterNode extends NumberFilterNode<Range.MoneyRange> {
 
-	public MoneyFilterNode(Column column, Range.LongRange filterValue) {
+	public MoneyFilterNode(Column column, Range.MoneyRange filterValue) {
 		super(column, filterValue);
 	}
 

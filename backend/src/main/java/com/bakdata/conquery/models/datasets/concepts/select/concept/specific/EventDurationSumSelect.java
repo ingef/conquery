@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept.specific;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
@@ -8,6 +11,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDur
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.EventDurationSumSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -36,12 +40,17 @@ public class EventDurationSumSelect extends UniversalSelect {
 	}
 
 	@Override
+	public ResultSetProcessor.Reader<Integer> createResultSetReader(ResultSetProcessor processor) {
+		return processor::getInteger;
+	}
+
+	@Override
 	public SelectConverter<EventDurationSumSelect> createConverter() {
 		return new EventDurationSumSelectConverter();
 	}
 
 	@Override
-	public ResultType<?> getResultType() {
-		return ResultType.IntegerT.INSTANCE;
+	public ResultType getResultType() {
+		return ResultType.Primitive.INTEGER;
 	}
 }

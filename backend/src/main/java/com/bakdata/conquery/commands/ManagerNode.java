@@ -11,9 +11,6 @@ import java.util.concurrent.TimeUnit;
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.io.jackson.PathParamInjector;
-import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -28,15 +25,11 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
+import com.bakdata.conquery.tasks.LoadStorageTask;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
-import com.bakdata.conquery.tasks.ReloadMetaStorageTask;
-import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.google.common.base.Throwables;
 import io.dropwizard.core.setup.Environment;
-import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.lifecycle.Managed;
 import lombok.Getter;
 import lombok.NonNull;
@@ -44,6 +37,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.server.ResourceConfig;
 
 /**
  * Central node of Conquery. Hosts the frontend, api, metadata and takes care of query distribution to
@@ -57,12 +51,11 @@ public class ManagerNode implements Managed {
 	public static final String DEFAULT_NAME = "manager";
 
 	private final String name;
-
+	private final List<ResourcesProvider> providers = new ArrayList<>();
 	private Validator validator;
 	private AdminServlet admin;
 	private AuthorizationController authController;
 	private ScheduledExecutorService maintenanceService;
-	private final List<ResourcesProvider> providers = new ArrayList<>();
 	@Delegate(excludes = Managed.class)
 	private Manager manager;
 
@@ -80,35 +73,29 @@ public class ManagerNode implements Managed {
 	public void run(Manager manager) throws InterruptedException {
 		Environment environment = manager.getEnvironment();
 		ConqueryConfig config = manager.getConfig();
-		validator = environment.getValidator();
 
+		validator = environment.getValidator();
 		this.manager = manager;
 
-		final ObjectMapper objectMapper = environment.getObjectMapper();
-		customizeApiObjectMapper(objectMapper);
-
+		final ObjectMapper apiObjectMapper = environment.getObjectMapper();
+		getInternalMapperFactory().customizeApiObjectMapper(apiObjectMapper, getDatasetRegistry(), getMetaStorage());
 
 		// FormScanner needs to be instantiated before plugins are initialized
 		formScanner = new FormScanner(config);
 
-
-		config.initialize(this);
-
+		// Init all plugins
+		config.getPlugins().forEach(pluginConfig -> pluginConfig.initialize(this));
 
 		// Initialization of internationalization
 		I18n.init();
 
-		configureApiServlet(config, environment.jersey().getResourceConfig());
+		configureApiServlet(config, environment);
 
 		maintenanceService = environment.lifecycle()
 										.scheduledExecutorService("Maintenance Service")
 										.build();
 
 		environment.lifecycle().manage(this);
-
-		loadNamespaces();
-
-		loadMetaStorage();
 
 		// Create AdminServlet first to make it available to the realms
 		admin = new AdminServlet(this);
@@ -131,15 +118,60 @@ public class ManagerNode implements Managed {
 			}
 		}
 
-		try {
-			formScanner.execute(null, null);
-		}
-		catch (Exception e) {
-			Throwables.throwIfUnchecked(e);
-			throw new RuntimeException(e);
-		}
+		formScanner.execute(null, null);
 
 		registerTasks(manager, environment, config);
+	}
+
+	private void configureApiServlet(ConqueryConfig config, Environment environment) {
+		ResourceConfig jerseyConfig = environment.jersey().getResourceConfig();
+		RESTServer.configure(config, jerseyConfig);
+		jerseyConfig.register(new AbstractBinder() {
+			@Override
+			protected void configure() {
+				bind(getMetaStorage()).to(MetaStorage.class);
+				bind(getDatasetRegistry()).to(DatasetRegistry.class);
+			}
+		});
+
+		getInternalMapperFactory().customizeApiObjectMapper(environment.getObjectMapper(), getDatasetRegistry(), getMetaStorage());
+
+	}
+
+	@SneakyThrows(InterruptedException.class)
+	public void loadNamespaces() {
+
+		try(ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())) {
+			DatasetRegistry<? extends Namespace> registry = getDatasetRegistry();
+
+			// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
+			final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
+			for (NamespaceStorage namespaceStorage : namespaceStorages) {
+				loaders.submit(() -> {
+					registry.createNamespace(namespaceStorage, getMetaStorage(), getEnvironment());
+				});
+			}
+
+			loaders.shutdown();
+			while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
+				final int countLoaded = registry.getNamespaces().size();
+				log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", countLoaded, namespaceStorages.size()
+																													  - countLoaded);
+			}
+		}
+	}
+
+	private void loadMetaStorage() {
+		log.info("Opening MetaStorage");
+		getMetaStorage().openStores(getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()));
+
+		getMetaStorage().loadKeys();
+
+		if (getConfig().getStorage().isLoadStoresOnStart()) {
+			log.info("BEGIN loading MetaStorage");
+			getMetaStorage().loadData();
+			log.debug("DONE loading MetaStorage {}", getMetaStorage());
+		}
 	}
 
 	private void registerTasks(Manager manager, Environment environment, ConqueryConfig config) {
@@ -152,105 +184,18 @@ public class ManagerNode implements Managed {
 
 		environment.admin().addTask(new PermissionCleanupTask(getMetaStorage()));
 		manager.getAdminTasks().forEach(environment.admin()::addTask);
-		environment.admin().addTask(new ReloadMetaStorageTask(getMetaStorage()));
+		environment.admin().addTask(new LoadStorageTask(getName(), getMetaStorage(), getDatasetRegistry()));
 
 		final ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
 		environment.lifecycle().addServerLifecycleListener(shutdown);
 	}
 
-	private void configureApiServlet(ConqueryConfig config, DropwizardResourceConfig jerseyConfig) {
-		RESTServer.configure(config, jerseyConfig);
-		jerseyConfig.register(new AbstractBinder() {
-			@Override
-			protected void configure() {
-				bind(getMetaStorage()).to(MetaStorage.class);
-				bind(getDatasetRegistry()).to(DatasetRegistry.class);
-			}
-		});
-
-		jerseyConfig.register(PathParamInjector.class);
-	}
-
-	/**
-	 * Customize the mapper from the environment, that is used in the REST-API.
-	 * In contrast to the internal object mapper this uses textual JSON representation
-	 * instead of the binary smile format. It also does not expose internal fields through serialization.
-	 * <p>
-	 * Internal and external mapper have in common that they might process the same classes/objects and that
-	 * they are configured to understand certain Conquery specific data types.
-	 *
-	 * @param objectMapper to be configured (should be a JSON mapper)
-	 */
-	public void customizeApiObjectMapper(ObjectMapper objectMapper) {
-
-		// Set serialization config
-		SerializationConfig serializationConfig = objectMapper.getSerializationConfig();
-
-		serializationConfig = serializationConfig.withView(View.Api.class);
-
-		objectMapper.setConfig(serializationConfig);
-
-		// Set deserialization config
-		DeserializationConfig deserializationConfig = objectMapper.getDeserializationConfig();
-
-		deserializationConfig = deserializationConfig.withView(View.Api.class);
-
-		objectMapper.setConfig(deserializationConfig);
-
-		final MutableInjectableValues injectableValues = new MutableInjectableValues();
-		objectMapper.setInjectableValues(injectableValues);
-		injectableValues.add(Validator.class, getValidator());
-
-		getDatasetRegistry().injectInto(objectMapper);
-		getMetaStorage().injectInto(objectMapper);
-		getConfig().injectInto(objectMapper);
-	}
-
-	/**
-	 * Create a new internal object mapper for binary (de-)serialization that is equipped with {@link ManagerNode} related injectables.
-	 *
-	 * @return a preconfigured binary object mapper
-	 * @see ManagerNode#customizeApiObjectMapper(ObjectMapper)
-	 */
-	public ObjectMapper createInternalObjectMapper(Class<? extends View> viewClass) {
-		return getInternalObjectMapperCreator().createInternalObjectMapper(viewClass);
-	}
-
-	private void loadMetaStorage() {
-		log.info("Opening MetaStorage");
-		getMetaStorage().openStores(getInternalObjectMapperCreator().createInternalObjectMapper(View.Persistence.Manager.class));
-		log.info("Loading MetaStorage");
-		getMetaStorage().loadData();
-		log.info("MetaStorage loaded {}", getMetaStorage());
-	}
-
-	@SneakyThrows(InterruptedException.class)
-	public void loadNamespaces() {
-
-
-		ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-		DatasetRegistry<? extends Namespace> registry = getDatasetRegistry();
-
-		// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
-		final Collection<NamespaceStorage> namespaceStorages = getConfig().getStorage().discoverNamespaceStorages();
-		for (NamespaceStorage namespaceStorage : namespaceStorages) {
-			loaders.submit(() -> {
-				registry.createNamespace(namespaceStorage, getMetaStorage());
-			});
-		}
-
-
-		loaders.shutdown();
-		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-			final int coundLoaded = registry.getDatasets().size();
-			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", coundLoaded, namespaceStorages.size()
-																												  - coundLoaded);
-		}
-	}
-
 	@Override
 	public void start() throws Exception {
+		loadNamespaces();
+		loadMetaStorage();
+
 		manager.start();
 	}
 
@@ -264,7 +209,6 @@ public class ManagerNode implements Managed {
 			catch (Exception e) {
 				log.error("{} could not be closed", provider, e);
 			}
-
 		}
 
 		try {

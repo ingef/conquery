@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
@@ -55,7 +56,7 @@ import org.jooq.impl.DSL;
  *   			    "pid",
  *   			    "value",
  *   			    row_number() over (partition by "pid", "k1", "k2") "row_number"
- *   			  from "event_filter"
+ *   			  from "preprocessing"
  *   			)
  *            }
  * 	    </li>
@@ -80,32 +81,25 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		FilterConverter<SumFilter<RANGE>, RANGE>,
 		SqlAggregator {
 
-	@Getter
-	@RequiredArgsConstructor
-	private enum SumDistinctCteStep implements CteStep {
-
-		ROW_NUMBER_ASSIGNED("row_number_assigned", null),
-		ROW_NUMBER_FILTERED("row_number_filtered", ROW_NUMBER_ASSIGNED);
-
-		private final String suffix;
-		private final SumDistinctCteStep predecessor;
-	}
-
 	private static final String ROW_NUMBER_ALIAS = "row_number";
 	private static final String SUM_DISTINCT_SUFFIX = "sum_distinct";
 
 	@Override
 	public ConnectorSqlSelects connectorSelect(SumSelect sumSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
-		Column sumColumn = sumSelect.getColumn();
-		Column subtractColumn = sumSelect.getSubtractColumn();
-		List<Column> distinctByColumns = sumSelect.getDistinctByColumn();
 		NameGenerator nameGenerator = selectContext.getNameGenerator();
 		String alias = nameGenerator.selectName(sumSelect);
+
+		Column sumColumn = sumSelect.getColumn().resolve();
+		Column subtractColumn = sumSelect.getSubtractColumn() != null ? sumSelect.getSubtractColumn().resolve() : null;
+
+		List<Column> distinctByColumns = sumSelect.getDistinctByColumn().stream().map(ColumnId::resolve).toList();
+
 		ConnectorSqlTables tables = selectContext.getTables();
 
 		CommonAggregationSelect<BigDecimal> sumAggregationSelect;
-		if (distinctByColumns != null && !distinctByColumns.isEmpty()) {
+
+		if (!distinctByColumns.isEmpty()) {
 			SqlIdColumns ids = selectContext.getIds();
 			sumAggregationSelect = createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, ids, tables, nameGenerator);
 			ExtractingSqlSelect<BigDecimal> finalSelect = createFinalSelect(sumAggregationSelect, tables);
@@ -126,98 +120,6 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		}
 	}
 
-	@Override
-	public SqlFilters convertToSqlFilter(SumFilter<RANGE> sumFilter, FilterContext<RANGE> filterContext) {
-
-		Column sumColumn = sumFilter.getColumn();
-		Column subtractColumn = sumFilter.getSubtractColumn();
-		List<Column> distinctByColumns = sumFilter.getDistinctByColumn();
-		String alias = filterContext.getNameGenerator().selectName(sumFilter);
-		ConnectorSqlTables tables = filterContext.getTables();
-
-		CommonAggregationSelect<BigDecimal> sumAggregationSelect;
-		ConnectorSqlSelects selects;
-
-		if (distinctByColumns != null && !distinctByColumns.isEmpty()) {
-			sumAggregationSelect =
-					createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, filterContext.getIds(), tables, filterContext.getNameGenerator());
-			selects = ConnectorSqlSelects.builder()
-										 .preprocessingSelects(sumAggregationSelect.getRootSelects())
-										 .additionalPredecessor(sumAggregationSelect.getAdditionalPredecessor())
-										 .build();
-		}
-		else {
-			sumAggregationSelect = createSumAggregationSelect(sumColumn, subtractColumn, alias, tables);
-			selects = ConnectorSqlSelects.builder()
-										 .preprocessingSelects(sumAggregationSelect.getRootSelects())
-										 .additionalPredecessor(sumAggregationSelect.getAdditionalPredecessor())
-										 .aggregationSelect(sumAggregationSelect.getGroupBy())
-										 .build();
-		}
-
-		Field<BigDecimal> qualifiedSumSelect = sumAggregationSelect.getGroupBy().qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER)).select();
-		SumCondition sumCondition = new SumCondition(qualifiedSumSelect, filterContext.getValue());
-		WhereClauses whereClauses = WhereClauses.builder()
-												.groupFilter(sumCondition)
-												.build();
-
-		return new SqlFilters(selects, whereClauses);
-
-	}
-
-	@Override
-	public Condition convertForTableExport(SumFilter<RANGE> filter, FilterContext<RANGE> filterContext) {
-
-		Column column = filter.getColumn();
-		String tableName = column.getTable().getName();
-		String columnName = column.getName();
-		Field<Number> field = DSL.field(DSL.name(tableName, columnName), Number.class);
-
-		Column subtractColumn = filter.getSubtractColumn();
-		if (subtractColumn == null) {
-			return new SumCondition(field, filterContext.getValue()).condition();
-		}
-
-		String subtractColumnName = subtractColumn.getName();
-		String subtractTableName = subtractColumn.getTable().getName();
-		Field<Number> subtractField = DSL.field(DSL.name(subtractTableName, subtractColumnName), Number.class);
-		return new SumCondition(field.minus(subtractField), filterContext.getValue()).condition();
-	}
-
-	private CommonAggregationSelect<BigDecimal> createSumAggregationSelect(Column sumColumn, Column subtractColumn, String alias, ConnectorSqlTables tables) {
-
-		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
-		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
-
-		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), sumColumn.getName(), numberClass);
-		preprocessingSelects.add(rootSelect);
-
-		String eventFilterCte = tables.cteName(ConceptCteStep.EVENT_FILTER);
-		Field<? extends Number> sumField = rootSelect.qualify(eventFilterCte).select();
-
-		FieldWrapper<BigDecimal> sumGroupBy;
-
-		if (subtractColumn != null) {
-			ExtractingSqlSelect<? extends Number> subtractColumnRootSelect = new ExtractingSqlSelect<>(
-					tables.getRootTable(),
-					subtractColumn.getName(),
-					numberClass
-			);
-			preprocessingSelects.add(subtractColumnRootSelect);
-
-			Field<? extends Number> subtractField = subtractColumnRootSelect.qualify(eventFilterCte).select();
-			sumGroupBy = new FieldWrapper<>(DSL.sum(sumField.minus(subtractField)).as(alias), sumColumn.getName(), subtractColumn.getName());
-		}
-		else {
-			sumGroupBy = new FieldWrapper<>(DSL.sum(sumField).as(alias), sumColumn.getName());
-		}
-
-		return CommonAggregationSelect.<BigDecimal>builder()
-									  .rootSelects(preprocessingSelects)
-									  .groupBy(sumGroupBy)
-									  .build();
-	}
-
 	private CommonAggregationSelect<BigDecimal> createDistinctSumAggregationSelect(
 			Column sumColumn,
 			List<Column> distinctByColumns,
@@ -228,7 +130,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	) {
 		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
 
-		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
+		Class<? extends Number> numberClass = NumberMapUtil.getType(sumColumn);
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), sumColumn.getName(), numberClass);
 		preprocessingSelects.add(rootSelect);
 
@@ -240,12 +142,61 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 
 		QueryStep rowNumberCte = createRowNumberCte(ids, rootSelect, distinctByRootSelects, alias, tables, nameGenerator);
 		Field<? extends Number> rootSelectQualified = rootSelect.qualify(rowNumberCte.getCteName()).select();
-		FieldWrapper<BigDecimal> sumGroupBy = new FieldWrapper<>(DSL.sum(rootSelectQualified).as(alias));
+		FieldWrapper<BigDecimal> sumGroupBy = new FieldWrapper<>(DSL.sum(DSL.coalesce(rootSelectQualified, DSL.inline(0))).as(alias));
 		QueryStep rowNumberFilteredCte = createRowNumberFilteredCte(rowNumberCte, sumGroupBy, alias, nameGenerator);
 
 		return CommonAggregationSelect.<BigDecimal>builder()
 									  .rootSelects(preprocessingSelects)
 									  .additionalPredecessor(rowNumberFilteredCte)
+									  .groupBy(sumGroupBy)
+									  .build();
+	}
+
+	private static ExtractingSqlSelect<BigDecimal> createFinalSelect(CommonAggregationSelect<BigDecimal> sumAggregationSelect, ConnectorSqlTables tables) {
+		String finalPredecessor = tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
+		return sumAggregationSelect.getGroupBy().qualify(finalPredecessor);
+	}
+
+	private CommonAggregationSelect<BigDecimal> createSumAggregationSelect(Column sumColumn, Column subtractColumn, String alias, ConnectorSqlTables tables) {
+
+		Class<? extends Number> numberClass = NumberMapUtil.getType(sumColumn);
+		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
+
+		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), sumColumn.getName(), numberClass);
+		preprocessingSelects.add(rootSelect);
+
+		String preprocessingCte = tables.cteName(ConceptCteStep.PREPROCESSING);
+		Field<? extends Number> sumField = rootSelect.qualify(preprocessingCte).select();
+
+		FieldWrapper<BigDecimal> sumGroupBy;
+
+
+		if (subtractColumn != null) {
+			ExtractingSqlSelect<? extends Number> subtractColumnRootSelect = new ExtractingSqlSelect<>(
+					tables.getRootTable(),
+					subtractColumn.getName(),
+					numberClass
+			);
+			preprocessingSelects.add(subtractColumnRootSelect);
+
+			Field<? extends Number> subtractField = subtractColumnRootSelect.qualify(preprocessingCte).select();
+
+
+			// This expression ensures that if there's any non-null field, we get a 0. But if there's only nulls we get a null:
+			// COALESCE would always result in 0 which is undesired to differentiate between missing-values and 0 sums.
+			Field<? extends Number> zeroIfAnyNonNull = DSL.coalesce(sumField.multiply(0), subtractField.multiply(0));
+
+			sumGroupBy = new FieldWrapper<>(DSL.sum(DSL.coalesce(sumField, zeroIfAnyNonNull).minus(DSL.coalesce(subtractField, zeroIfAnyNonNull))).as(alias),
+											sumColumn.getName(),
+											subtractColumn.getName()
+			);
+		}
+		else {
+			sumGroupBy = new FieldWrapper<>(DSL.sum(sumField).as(alias), sumColumn.getName());
+		}
+
+		return CommonAggregationSelect.<BigDecimal>builder()
+									  .rootSelects(preprocessingSelects)
 									  .groupBy(sumGroupBy)
 									  .build();
 	}
@@ -305,7 +256,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 												  .build();
 
 		Condition firstOccurrence = DSL.field(DSL.name(rowNumberCte.getCteName(), ROW_NUMBER_ALIAS))
-									   .eq(DSL.val(1));
+									   .eq(DSL.inline(1));
 
 		return QueryStep.builder()
 						.cteName(nameGenerator.cteStepName(SumDistinctCteStep.ROW_NUMBER_FILTERED, alias))
@@ -317,9 +268,75 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 						.build();
 	}
 
-	private static ExtractingSqlSelect<BigDecimal> createFinalSelect(CommonAggregationSelect<BigDecimal> sumAggregationSelect, ConnectorSqlTables tables) {
-		String finalPredecessor = tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
-		return sumAggregationSelect.getGroupBy().qualify(finalPredecessor);
+	@Override
+	public SqlFilters convertToSqlFilter(SumFilter<RANGE> sumFilter, FilterContext<RANGE> filterContext) {
+
+		Column sumColumn = sumFilter.getColumn().resolve();
+		Column subtractColumn = sumFilter.getSubtractColumn() != null ? sumFilter.getSubtractColumn().resolve() : null;
+		List<Column> distinctByColumns = sumFilter.getDistinctByColumn().stream().map(ColumnId::resolve).toList();
+		String alias = filterContext.getNameGenerator().selectName(sumFilter);
+		ConnectorSqlTables tables = filterContext.getTables();
+
+		CommonAggregationSelect<BigDecimal> sumAggregationSelect;
+		ConnectorSqlSelects selects;
+
+		if (!distinctByColumns.isEmpty()) {
+			sumAggregationSelect =
+					createDistinctSumAggregationSelect(sumColumn, distinctByColumns, alias, filterContext.getIds(), tables, filterContext.getNameGenerator());
+			selects = ConnectorSqlSelects.builder()
+										 .preprocessingSelects(sumAggregationSelect.getRootSelects())
+										 .additionalPredecessor(sumAggregationSelect.getAdditionalPredecessor())
+										 .build();
+		}
+		else {
+			sumAggregationSelect = createSumAggregationSelect(sumColumn, subtractColumn, alias, tables);
+			selects = ConnectorSqlSelects.builder()
+										 .preprocessingSelects(sumAggregationSelect.getRootSelects())
+										 .additionalPredecessor(sumAggregationSelect.getAdditionalPredecessor())
+										 .aggregationSelect(sumAggregationSelect.getGroupBy())
+										 .build();
+		}
+
+		Field<BigDecimal> qualifiedSumSelect = sumAggregationSelect.getGroupBy().qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER)).select();
+		SumCondition sumCondition = new SumCondition(qualifiedSumSelect, filterContext.getValue());
+		WhereClauses whereClauses = WhereClauses.builder()
+												.groupFilter(sumCondition)
+												.build();
+
+		return new SqlFilters(selects, whereClauses);
+
+	}
+
+	@Override
+	public Condition convertForTableExport(SumFilter<RANGE> filter, FilterContext<RANGE> filterContext) {
+
+		Column column = filter.getColumn().resolve();
+		String tableName = column.getTable().getName();
+		String columnName = column.getName();
+		Class<? extends Number> numberClass = NumberMapUtil.getType(column);
+		Field<? extends Number> field = DSL.field(DSL.name(tableName, columnName), numberClass);
+
+		ColumnId subtractColumn = filter.getSubtractColumn();
+		if (subtractColumn == null) {
+			return new SumCondition(field, filterContext.getValue()).condition();
+		}
+
+		Column resolvedSubtractionColumn = subtractColumn.resolve();
+		String subtractColumnName = resolvedSubtractionColumn.getName();
+		String subtractTableName = resolvedSubtractionColumn.getTable().getName();
+		Field<? extends Number> subtractField = DSL.field(DSL.name(subtractTableName, subtractColumnName), numberClass);
+		return new SumCondition(field.minus(subtractField), filterContext.getValue()).condition();
+	}
+
+	@Getter
+	@RequiredArgsConstructor
+	private enum SumDistinctCteStep implements CteStep {
+
+		ROW_NUMBER_ASSIGNED("row_number_assigned", null),
+		ROW_NUMBER_FILTERED("row_number_filtered", ROW_NUMBER_ASSIGNED);
+
+		private final String suffix;
+		private final SumDistinctCteStep predecessor;
 	}
 
 }

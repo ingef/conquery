@@ -41,6 +41,7 @@ export const DeleteProjectItemButton = ({ item }: { item: ProjectItemT }) => {
         <IconButton
           icon={faTimes}
           bare
+          title="delete"
           data-test-id="project-item-delete-button"
         />
       </WithTooltip>

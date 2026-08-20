@@ -13,7 +13,7 @@ public class EventDateUnionSelectConverter implements SelectConverter<EventDateU
 	@Override
 	public ConnectorSqlSelects connectorSelect(EventDateUnionSelect select, SelectContext<ConnectorSqlTables> selectContext) {
 
-		FieldWrapper<String> stringAggregation = createEventDateUnionAggregation(select, selectContext);
+		FieldWrapper<?> stringAggregation = createEventDateUnionAggregation(select, selectContext);
 		ExtractingSqlSelect<?> finalSelect = stringAggregation.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
 
 		return ConnectorSqlSelects.builder()
@@ -25,7 +25,7 @@ public class EventDateUnionSelectConverter implements SelectConverter<EventDateU
 	@Override
 	public ConceptSqlSelects conceptSelect(EventDateUnionSelect select, SelectContext<ConceptSqlTables> selectContext) {
 
-		FieldWrapper<String> stringAggregation = createEventDateUnionAggregation(select, selectContext);
+		FieldWrapper<?> stringAggregation = createEventDateUnionAggregation(select, selectContext);
 		ExtractingSqlSelect<?> finalSelect = stringAggregation.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.UNIVERSAL_SELECTS));
 
 		return ConceptSqlSelects.builder()
@@ -34,7 +34,7 @@ public class EventDateUnionSelectConverter implements SelectConverter<EventDateU
 								.build();
 	}
 
-	private static FieldWrapper<String> createEventDateUnionAggregation(EventDateUnionSelect select, SelectContext<?> selectContext) {
+	private static FieldWrapper<?> createEventDateUnionAggregation(EventDateUnionSelect select, SelectContext<?> selectContext) {
 
 		Preconditions.checkArgument(selectContext.getValidityDate().isPresent(), "Can't convert an EventDateUnionSelect without a validity date being present");
 		ColumnDateRange validityDate = selectContext.getValidityDate().get();
@@ -43,7 +43,7 @@ public class EventDateUnionSelectConverter implements SelectConverter<EventDateU
 		String alias = selectContext.getNameGenerator().selectName(select);
 
 		ColumnDateRange qualified = validityDate.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.INTERVAL_PACKING_SELECTS));
-		return new FieldWrapper<>(functionProvider.daterangeStringAggregation(qualified).as(alias));
+		return new FieldWrapper<>(functionProvider.dateRangeAggregation(qualified).as(alias));
 	}
 
 }

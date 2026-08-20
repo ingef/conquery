@@ -12,10 +12,12 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
-import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
+import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.FixedLabelResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Functions;
 import com.google.common.collect.MoreCollectors;
@@ -122,27 +124,29 @@ public class IdColumnConfig {
 	 */
 	@JsonIgnore
 	public List<ResultInfo> getIdResultInfos() {
-		return ids.stream()
-				  .filter(ColumnConfig::isPrint)
-				  .map(col -> new LocalizedDefaultResultInfo(
-						  locale -> {
-							  final Map<Locale, String> label = col.getLabel();
-							  // Get the label for the locale,
-							  // fall back to any label if there is exactly one defined,
-							  // then fall back to the field name.
-							  return label.getOrDefault(
-									  locale,
-									  // fall backs
-									  label.size() == 1 ?
-									  label.values().stream().collect(MoreCollectors.onlyElement()) :
-									  col.getField()
-							  );
-						  },
-						  locale -> col.getField(),
-						  ResultType.StringT.getINSTANCE(),
-						  Set.of(new SemanticType.IdT(col.getName()))
-				  ))
-				  .collect(Collectors.toUnmodifiableList());
+		return ids.stream().filter(ColumnConfig::isPrint).map(col -> {
+
+			//TODO we can now hook our anonymizers into this
+			return new FixedLabelResultInfo(ResultType.Primitive.STRING, Set.of(new SemanticType.IdT(col.getName()))) {
+				@Override
+				public String userColumnName(PrintSettings printSettings) {
+					final Map<Locale, String> labels = col.getLabel();
+					// Get the label for the locale,
+					// fall back to any label if there is exactly one defined,
+					// then fall back to the field name.
+					return Objects.requireNonNullElse(labels.getOrDefault(
+							printSettings.getLocale(),
+							// fall backs
+							labels.size() == 1 ? labels.values().stream().collect(MoreCollectors.onlyElement()) : col.getField()
+					), col.getField());
+				}
+
+				@Override
+				public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+					return resultSetProcessor::getString;
+				}
+			};
+		}).collect(Collectors.toUnmodifiableList());
 	}
 
 

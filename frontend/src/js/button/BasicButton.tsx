@@ -20,12 +20,12 @@ const Button = styled("button")<BasicButtonProps>`
     bare
       ? "0"
       : tiny
-      ? "4px 6px"
-      : small
-      ? "6px 8px"
-      : large
-      ? "12px 18px"
-      : "8px 15px"};
+        ? "4px 6px"
+        : small
+          ? "6px 8px"
+          : large
+            ? "12px 18px"
+            : "8px 15px"};
   font-size: ${({ theme, small, tiny, large }) =>
     tiny || small ? theme.font.xs : large ? theme.font.lg : theme.font.sm};
   transition: all 0.2s;

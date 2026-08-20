@@ -3,12 +3,16 @@ package com.bakdata.conquery;
 import static com.bakdata.conquery.Constants.GROUPS;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 
 import com.bakdata.conquery.handler.GroupHandler;
 import com.bakdata.conquery.handler.SimpleWriter;
 import com.bakdata.conquery.model.Group;
-import com.github.powerlibraries.io.Out;
+import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.StaticJavaParser;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +21,17 @@ import lombok.extern.slf4j.Slf4j;
 public class AutoDoc {
 
 	public static void main(String[] args) throws IOException {
+		configureJavaParser();
+
 		new AutoDoc().start(new File(args.length == 0 ? "./docs/" : args[0]));
 	}
 
-	private ScanResult scan;
+	private static void configureJavaParser() {
+		ParserConfiguration parserConfiguration = StaticJavaParser.getParserConfiguration();
+		parserConfiguration.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
+	}
+
+	private final ScanResult scan;
 
 	public AutoDoc() {
 		scan = new ClassGraph()
@@ -41,7 +52,7 @@ public class AutoDoc {
 		for (Group group : GROUPS) {
 			File target = new File(docs, group.getName().replace(' ', '-') + ".md");
 			try (var out = new SimpleWriter(
-					Out.file(target).withUTF8().asWriter()
+					new OutputStreamWriter(new FileOutputStream(target), StandardCharsets.UTF_8)
 			)) {
 				new GroupHandler(scan, group, out, docs.getCanonicalFile().getParentFile()).handle();
 			}

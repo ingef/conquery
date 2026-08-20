@@ -39,6 +39,7 @@ declare module "@emotion/react" {
         pdf: string;
         zip: string;
         xlsx: string;
+        json: string;
       };
     };
     img: {

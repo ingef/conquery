@@ -1,21 +1,21 @@
 package com.bakdata.conquery.models.index;
 
-import java.util.List;
-import java.util.Map;
-
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.models.query.FilterSearch;
-import com.bakdata.conquery.util.search.TrieSearch;
+import com.bakdata.conquery.util.search.Search;
+import com.bakdata.conquery.util.search.SearchProcessor;
+import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 @Slf4j
 @ToString
-public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Index<FrontendValueIndexKey> {
-
-
+public class FrontendValueIndex implements Index<FrontendValue> {
 	/**
 	 * @see FilterTemplate#getValue()
 	 */
@@ -26,13 +26,14 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 	 * @see FilterTemplate#getOptionValue()
 	 */
 	private final String optionValueTemplate;
-	private final String defaultEmptyLabel;
 
-	public FrontendValueIndex(int suffixCutoff, String split, String valueTemplate, String optionValueTemplate, String defaultEmptyLabel1) {
-		super(suffixCutoff, split);
+	@Getter
+	private final Search<FrontendValue> delegate;
+
+	public FrontendValueIndex(Search<FrontendValue> delegate, String valueTemplate, String optionValueTemplate) {
 		this.valueTemplate = valueTemplate;
 		this.optionValueTemplate = optionValueTemplate;
-		this.defaultEmptyLabel = defaultEmptyLabel1;
+		this.delegate = delegate;
 	}
 
 	@Override
@@ -43,12 +44,12 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 				templateToConcrete.get(optionValueTemplate)
 		);
 
-		addItem(feValue, FilterSearch.extractKeywords(feValue));
+		delegate.addItem(feValue, SearchProcessor.extractKeywords(feValue));
 	}
 
 	@Override
 	public int size() {
-		final long longSize = calculateSize();
+		final long longSize = delegate.calculateSize();
 		if (longSize > Integer.MAX_VALUE) {
 			log.trace("Trie size was larger than an int. Reporting Integer.MAX_VALUE. Was actually: {}", longSize);
 			return Integer.MAX_VALUE;
@@ -56,23 +57,36 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 		return (int) longSize;
 	}
 
+	@Override
+	public Collection<FrontendValue> externalMultiple(String key) {
+		final List<FrontendValue> matches = delegate.findExact(key, Integer.MAX_VALUE);
+		if (matches.isEmpty()) {
+			return null;
+		}
+		return matches;
+	}
+
+	@Override
+	public FrontendValue external(String key) {
+		final List<FrontendValue> matches = delegate.findExact(key, 1);
+
+		if (matches.isEmpty()) {
+			return null;
+		}
+
+		return matches.getFirst();
+	}
 
 	@Override
 	public void finalizer() {
-
-		StopWatch timer = StopWatch.createStarted();
-
-		// If no empty label was provided by the mapping, we insert the configured default-label
-		if (findExact(List.of(""), 1).isEmpty()) {
-			addItem(new FrontendValue("", defaultEmptyLabel), List.of(defaultEmptyLabel));
-		}
+		final StopWatch timer = StopWatch.createStarted();
 
 		log.trace("DONE-FINALIZER ADDING_ITEMS in {}", timer);
 
 		timer.reset();
 		log.trace("START-FV-FIN SHRINKING");
 
-		shrinkToFit();
+		delegate.finalizeSearch();
 
 		log.trace("DONE-FV-FIN SHRINKING in {}", timer);
 

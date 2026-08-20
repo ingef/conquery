@@ -11,40 +11,64 @@ import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 @SuperBuilder
+@AllArgsConstructor
+@ToString
 public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 
 	@Getter
-	private final Field<Object> primaryColumn;
+	private final Field<String> primaryColumn;
 
 	@Nullable
-	private final Field<Object> secondaryId;
+	private final Field<String> secondaryId;
 
-	public SqlIdColumns(Field<Object> primaryColumn, Field<Object> secondaryId) {
+	@Nullable
+	@ToString.Exclude
+	private final SqlIdColumns predecessor;
+
+	public SqlIdColumns(Field<String> primaryColumn, Field<String> secondaryId) {
 		this.primaryColumn = primaryColumn;
 		this.secondaryId = secondaryId;
+		this.predecessor = null;
 	}
 
-	public SqlIdColumns(Field<Object> primaryColumn) {
+	public SqlIdColumns(Field<String> primaryColumn) {
 		this.primaryColumn = primaryColumn;
 		this.secondaryId = null;
+		this.predecessor = null;
+	}
+
+	public SqlIdColumns withAlias() {
+		if (this.secondaryId == null) {
+			return new SqlIdColumns(this.primaryColumn.as(SharedAliases.PRIMARY_COLUMN.getAlias()), null, this);
+		}
+		return new SqlIdColumns(
+				this.primaryColumn.as(SharedAliases.PRIMARY_COLUMN.getAlias()),
+				this.secondaryId.as(SharedAliases.SECONDARY_ID.getAlias()),
+				this
+		);
 	}
 
 	@Override
 	public SqlIdColumns qualify(String qualifier) {
-		Field<Object> primaryColumn = QualifyingUtil.qualify(this.primaryColumn, qualifier);
-		Field<Object> secondaryId = this.secondaryId != null ? QualifyingUtil.qualify(this.secondaryId, qualifier) : null;
-		return new SqlIdColumns(primaryColumn, secondaryId);
+		Field<String> primaryColumn = QualifyingUtil.qualify(this.primaryColumn, qualifier);
+		if (secondaryId == null) {
+			return new SqlIdColumns(primaryColumn, null, this);
+		}
+		Field<String> secondaryId = QualifyingUtil.qualify(this.secondaryId, qualifier);
+		return new SqlIdColumns(primaryColumn, secondaryId, this);
 	}
 
 	public SqlIdColumns withAbsoluteStratification(Resolution resolution, Field<Integer> index) {
-		Field<String> resolutionField = DSL.val(resolution.toString()).as(SharedAliases.RESOLUTION.getAlias());
+		Field<String> resolutionField = DSL.inline(resolution.toString()).as(SharedAliases.RESOLUTION.getAlias());
 		return StratificationSqlIdColumns.builder()
 										 .primaryColumn(this.primaryColumn)
 										 .secondaryId(this.secondaryId)
@@ -55,7 +79,7 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 	}
 
 	public SqlIdColumns withRelativeStratification(Resolution resolution, Field<Integer> index, Field<Date> eventDate) {
-		Field<String> resolutionField = DSL.val(resolution.toString()).as(SharedAliases.RESOLUTION.getAlias());
+		Field<String> resolutionField = DSL.inline(resolution.toString()).as(SharedAliases.RESOLUTION.getAlias());
 		return StratificationSqlIdColumns.builder()
 										 .primaryColumn(this.primaryColumn)
 										 .secondaryId(this.secondaryId)
@@ -69,8 +93,12 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 		return this;
 	}
 
-	public Optional<Field<Object>> getSecondaryId() {
+	public Optional<Field<String>> getSecondaryId() {
 		return Optional.ofNullable(this.secondaryId);
+	}
+
+	public Optional<SqlIdColumns> getPredecessor() {
+		return Optional.ofNullable(this.predecessor);
 	}
 
 	public boolean isWithStratification() {
@@ -78,7 +106,11 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 	}
 
 	public List<Field<?>> toFields() {
-		return Stream.concat(Stream.of(this.primaryColumn), Optional.ofNullable(this.secondaryId).stream()).collect(Collectors.toList());
+		if (getSecondaryId().isEmpty()){
+			return List.of(getPrimaryColumn());
+		}
+
+		return List.of(getPrimaryColumn(), getSecondaryId().get());
 	}
 
 	public List<Condition> join(SqlIdColumns rightIds) {
@@ -96,8 +128,8 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 
 	public SqlIdColumns coalesce(List<SqlIdColumns> selectsIds) {
 
-		List<Field<?>> primaryColumns = new ArrayList<>();
-		List<Field<?>> secondaryIds = new ArrayList<>();
+		List<Field<String>> primaryColumns = new ArrayList<>();
+		List<Field<String>> secondaryIds = new ArrayList<>();
 
 		// add this ids
 		primaryColumns.add(this.primaryColumn);
@@ -109,20 +141,23 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 			ids.getSecondaryId().ifPresent(secondaryIds::add);
 		});
 
-		Field<Object> coalescedPrimaryColumn = coalesceFields(primaryColumns).as(SharedAliases.PRIMARY_COLUMN.getAlias());
-		Field<Object> coalescedSecondaryIds = !secondaryIds.isEmpty()
-											  ? coalesceFields(secondaryIds).as(SharedAliases.SECONDARY_ID.getAlias())
-											  : null;
-
+		Field<String> coalescedPrimaryColumn = coalesceFields(primaryColumns, String.class).coerce(String.class).as(SharedAliases.PRIMARY_COLUMN.getAlias());
+		if (secondaryIds.isEmpty()) {
+			return new SqlIdColumns(coalescedPrimaryColumn);
+		}
+		Field<String> coalescedSecondaryIds = coalesceFields(secondaryIds, String.class).coerce(String.class).as(SharedAliases.SECONDARY_ID.getAlias());
 		return new SqlIdColumns(coalescedPrimaryColumn, coalescedSecondaryIds);
 	}
 
 
-	protected static Field<Object> coalesceFields(List<Field<?>> fields) {
-		if (fields.size() == 1) {
-			return fields.get(0).coerce(Object.class);
+	protected static <T> Field<T> coalesceFields(List<? extends Field<?>> fields, Class<T> type) {
+		Field<T> out = fields.getFirst().coerce(type);
+
+		for (int index = 1; index < fields.size(); index++) {
+			out = DSL.coalesce(out, fields.get(index).coerce(type));
 		}
-		return DSL.coalesce(fields.get(0), fields.subList(1, fields.size()).toArray());
+
+		return out;
 	}
 
 }

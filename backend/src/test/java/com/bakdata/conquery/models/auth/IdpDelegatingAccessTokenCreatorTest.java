@@ -10,7 +10,6 @@ import static org.mockserver.model.Parameter.param;
 import static org.mockserver.model.ParameterBody.params;
 
 import java.util.Map;
-
 import jakarta.validation.Validator;
 
 import com.auth0.jwt.JWT;
@@ -18,20 +17,23 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.bakdata.conquery.models.auth.oidc.passwordflow.IdpDelegatingAccessTokenCreator;
 import com.bakdata.conquery.models.config.auth.IntrospectionDelegatingRealmFactory;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.util.extensions.MockServerExtension;
 import io.dropwizard.validation.BaseValidator;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.JsonBody;
 import org.mockserver.model.MediaType;
 
 @Slf4j
 public class IdpDelegatingAccessTokenCreatorTest {
+	@RegisterExtension
+	private static final MockServerExtension OIDC_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(1080), IdpDelegatingAccessTokenCreatorTest::initOIDCServer);
 
-	private static final OIDCMockServer OIDC_SERVER =  new OIDCMockServer();
 	private static final IntrospectionDelegatingRealmFactory CONFIG = new IntrospectionDelegatingRealmFactory();
 	private static final Validator VALIDATOR = BaseValidator.newValidator();
 
@@ -45,8 +47,6 @@ public class IdpDelegatingAccessTokenCreatorTest {
 
 	@BeforeAll
 	public static void beforeAll() {
-		initOIDCServer();
-
 		initRealmConfig();
 
 		idpDelegatingAccessTokenCreator = new IdpDelegatingAccessTokenCreator(CONFIG);
@@ -57,16 +57,14 @@ public class IdpDelegatingAccessTokenCreatorTest {
 		CONFIG.setRealm(OIDCMockServer.REALM_NAME);
 		CONFIG.setResource("test_cred");
 		CONFIG.setCredentials(Map.of(CONFIDENTIAL_CREDENTIAL, "test_cred"));
-		CONFIG.setAuthServerUrl(OIDCMockServer.MOCK_SERVER_URL);
+		CONFIG.setAuthServerUrl(OIDC_SERVER.baseUrl());
 
 		ValidatorHelper.failOnError(log, VALIDATOR.validate(CONFIG));
 	}
 
-	private static void initOIDCServer() {
+	private static void initOIDCServer(ClientAndServer clientAndServer) {
 
-		OIDC_SERVER.init( (server) -> {
-
-
+		OIDCMockServer.init(clientAndServer, (server) -> {
 			// Mock username-password-for-token exchange
 			server.when(
 					request().withMethod("POST").withPath(String.format("/realms/%s/protocol/openid-connect/token", OIDCMockServer.REALM_NAME))
@@ -81,9 +79,9 @@ public class IdpDelegatingAccessTokenCreatorTest {
 									.withBody(JsonBody.json(
 											new Object() {
 												@Getter
-												String token_type = "Bearer";
+												final String token_type = "Bearer";
 												@Getter
-												String access_token = USER_1_TOKEN;
+												final String access_token = USER_1_TOKEN;
 											}
 									)));
 			// Block other exchange requests (this has a lower prio than the above)
@@ -109,12 +107,6 @@ public class IdpDelegatingAccessTokenCreatorTest {
 		assertThatThrownBy(
 				() -> idpDelegatingAccessTokenCreator.createAccessToken(USER_1_NAME, "bad_password"))
 				.isInstanceOf(IllegalStateException.class);
-	}
-
-
-	@AfterAll
-	public static void afterAll() {
-		OIDC_SERVER.deinit();
 	}
 
 

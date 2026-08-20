@@ -40,14 +40,6 @@ public class ExecuteForm extends WorkerMessage {
 
 	private final Map<ManagedExecutionId, Query> queries;
 
-	private FormShardResult createResult(Worker worker, ManagedExecutionId subQueryId) {
-		return new FormShardResult(
-				getFormId(),
-				subQueryId,
-				worker.getInfo().getId()
-		);
-	}
-
 	@Override
 	public void react(Worker worker) throws Exception {
 
@@ -62,22 +54,21 @@ public class ExecuteForm extends WorkerMessage {
 		// Execute all plans.
 		for (Entry<ManagedExecutionId, Query> entry : queries.entrySet()) {
 			final Query query = entry.getValue();
-			ShardResult result = createResult(worker, entry.getKey());
+			final ShardResult result = new FormShardResult(getFormId(), entry.getKey(), worker.getInfo().getId());
 
 			// Before we start the query, we create it once to test if it will succeed before creating it multiple times for evaluation per core.
 			try {
-				query.createQueryPlan(new QueryPlanContext(worker, queryExecutor.getSecondaryIdSubPlanLimit()));
+				query.createQueryPlan(new QueryPlanContext(worker.getStorage(), queryExecutor.getSecondaryIdSubPlanLimit()));
 			}
 			catch (Exception e) {
-				ConqueryError err = asConqueryError(e);
-				log.warn("Failed to create query plans for {}.", formId, err);
-				queryExecutor.sendFailureToManagerNode(result, err);
+				log.warn("Failed to create query plans for {}.", formId, e);
+				queryExecutor.sendFailureToManagerNode(e, formId);
 				return;
 			}
 
 			final QueryExecutionContext
 					subQueryContext =
-					new QueryExecutionContext(formId, queryExecutor, worker.getStorage(), worker.getBucketManager());
+					new QueryExecutionContext(formId, queryExecutor, worker.getStorage(), worker.getBucketManager(), worker.getClock());
 
 			Set<Entity> entities = query.collectRequiredEntities(subQueryContext).resolve(worker.getBucketManager());
 

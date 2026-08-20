@@ -5,12 +5,22 @@ import static com.bakdata.conquery.resources.admin.rest.UIProcessor.calculateCBl
 
 import java.util.Collection;
 import java.util.stream.Collectors;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
@@ -20,14 +30,6 @@ import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import io.dropwizard.views.common.View;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -59,24 +61,24 @@ public class DatasetsUIResource {
 		return new UIView<>(
 				"datasets.html.ftl",
 				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
-				uiProcessor.getDatasetRegistry().getAllDatasets()
+				uiProcessor.getDatasetRegistry().getAllDatasets().map(DatasetId::resolve).toList()
 		);
 	}
 
 
 	@GET
 	@Path("{" + DATASET + "}")
-	public View getDataset(@PathParam(DATASET) Dataset dataset) {
-		final Namespace namespace = uiProcessor.getDatasetRegistry().get(dataset.getId());
+	public View getDataset(@PathParam(DATASET) DatasetId dataset) {
+		final Namespace namespace = uiProcessor.getDatasetRegistry().get(dataset);
 		return new UIView<>(
 				"dataset.html.ftl",
 				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
 				new DatasetInfos(
 						namespace.getDataset(),
-						namespace.getStorage().getSecondaryIds(),
-						namespace.getStorage().getInternToExternMappers(),
-						namespace.getStorage().getSearchIndices(),
-						namespace.getStorage().getTables().stream()
+						namespace.getStorage().getSecondaryIds().toList(),
+						namespace.getStorage().getInternToExternMappers().toList(),
+						namespace.getStorage().getSearchIndices().toList(),
+						namespace.getStorage().getTables()
 								 .map(table -> new TableInfos(
 										 table.getId(),
 										 table.getName(),
@@ -88,18 +90,17 @@ public class DatasetsUIResource {
 										 table.findImports(namespace.getStorage()).mapToLong(Import::getNumberOfEntries).sum()
 								 ))
 								 .collect(Collectors.toList()),
-						namespace.getStorage().getAllConcepts(),
+						namespace.getStorage().getAllConcepts().toList(),
 						// Total size of CBlocks
 						namespace
 								.getStorage().getTables()
-								.stream()
 								.flatMap(table -> table.findImports(namespace.getStorage()))
 								.mapToLong(imp -> calculateCBlocksSizeBytes(
 										imp, namespace.getStorage().getAllConcepts()
 								))
 								.sum(),
 						// total size of entries
-						namespace.getStorage().getAllImports().stream().mapToLong(Import::estimateMemoryConsumption).sum()
+						namespace.getStorage().getAllImports().map(Id::resolve).mapToLong(Import::estimateMemoryConsumption).sum()
 				)
 		);
 	}
@@ -107,8 +108,8 @@ public class DatasetsUIResource {
 
 	@GET
 	@Path("{" + DATASET + "}/mapping")
-	public View getIdMapping(@PathParam(DATASET) Dataset dataset) {
-		final Namespace namespace = uiProcessor.getDatasetRegistry().get(dataset.getId());
+	public View getIdMapping(@PathParam(DATASET) DatasetId dataset) {
+		final Namespace namespace = uiProcessor.getDatasetRegistry().get(dataset);
 		final EntityIdMap mapping = namespace.getStorage().getIdMapping();
 		final UIContext uiContext = uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext));
 

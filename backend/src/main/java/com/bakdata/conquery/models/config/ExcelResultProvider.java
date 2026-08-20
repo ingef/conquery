@@ -6,7 +6,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
+import java.util.OptionalLong;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.core.MediaType;
@@ -63,14 +63,27 @@ public class ExcelResultProvider implements ResultRendererProvider {
 		}
 
 		// Check if resulting dimensions are possible for the xlsx format
-		final long rowCount = singleExecution.resultRowCount();
+		final OptionalLong rowCount = singleExecution.resultRowCount();
+
+		if (rowCount.isEmpty()) {
+			log.warn("Cannot check maximum row requirement, because the result has no rows");
+			return Collections.emptyList();
+		}
+
 		final int maxRowCount = SpreadsheetVersion.EXCEL2007.getMaxRows();
-		if (rowCount + 1 /* header row*/ > maxRowCount) {
+		if (rowCount.getAsLong() + 1 /* header row*/ > maxRowCount) {
 
 			log.trace("Row count is too high for XLSX format (is: {}, max: {}). Not producing a result URL", rowCount, maxRowCount);
 
 			return Collections.emptyList();
 		}
+
+		if(singleExecution.getResultInfos() == null){
+			return Collections.emptyList();
+		}
+
+		// Save id column count to later check if xlsx dimensions are feasible
+		idColumnsCount = exec.getConfig().getIdColumns().getIdResultInfos().size();
 
 		final int columnCount = singleExecution.getResultInfos().size() + idColumnsCount;
 		final int maxColumnCount = SpreadsheetVersion.EXCEL2007.getMaxColumns();
@@ -90,8 +103,6 @@ public class ExcelResultProvider implements ResultRendererProvider {
 	@Override
 	public void registerResultResource(DropwizardResourceConfig environment, ManagerNode manager) {
 
-		// Save id column count to later check if xlsx dimensions are feasible
-		idColumnsCount = manager.getConfig().getIdColumns().getIdResultInfos().size();
 
 		// inject required services
 		environment.register(new AbstractBinder() {

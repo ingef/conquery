@@ -29,4 +29,8 @@ public interface CQElementC10n {
 	@De("oder")
 	String or();
 
+	@En("exists")
+	@De("existiert")
+	String exists();
+
 }

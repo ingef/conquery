@@ -54,7 +54,7 @@ public class Preprocessor {
 	 * <p>
 	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link ColumnStore}.
 	 */
-	public static void preprocess(PreprocessingJob preprocessingJob, ProgressBar totalProgress, ConqueryConfig config) throws IOException {
+	public static void preprocess(PreprocessingJob preprocessingJob, ProgressBar totalProgress, ConqueryConfig config, int buckets) throws IOException {
 
 		final File preprocessedFile = preprocessingJob.getPreprocessedFile();
 		TableImportDescriptor descriptor = preprocessingJob.getDescriptor();
@@ -209,7 +209,7 @@ public class Preprocessor {
 			exceptions.forEach((clazz, count) -> log.warn("Got {} `{}`", count, clazz.getSimpleName()));
 		}
 
-		result.write(tmp);
+		result.write(tmp, buckets);
 
 		if (errors > 0) {
 			log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%.2f", 100d * (double) errors / (double) lineId), errors, lineId);

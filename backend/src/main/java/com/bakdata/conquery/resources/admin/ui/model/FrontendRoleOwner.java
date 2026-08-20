@@ -10,7 +10,7 @@ import com.bakdata.conquery.models.auth.entities.Role;
  */
 public interface FrontendRoleOwner {
 
-	Collection<Role> getRoles();
+	Collection<FrontendRoleContent> getRoles();
 
 	Collection<Role> getAvailableRoles();
 }
