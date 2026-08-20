@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.LocalizedEnumPrinter;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -27,6 +28,11 @@ public class ResultHeaders {
 			public String userColumnName(PrintSettings printSettings) {
 				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).dates();
 			}
+
+			@Override
+			public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+				return resultSetProcessor::getDateRangeList;
+			}
 		};
 	}
 
@@ -39,6 +45,11 @@ public class ResultHeaders {
 			public String userColumnName(PrintSettings printSettings) {
 				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).dates();
 			}
+
+			@Override
+			public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+				return resultSetProcessor::getDateRangeList;
+			}
 		};
 	}
 
@@ -47,6 +58,11 @@ public class ResultHeaders {
 			@Override
 			public String userColumnName(PrintSettings printSettings) {
 				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).source();
+			}
+
+			@Override
+			public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+				return resultSetProcessor::getString;
 			}
 		};
 	}
@@ -58,6 +74,11 @@ public class ResultHeaders {
 			public String userColumnName(PrintSettings printSettings) {
 				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).index();
 			}
+
+			@Override
+			public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+				return resultSetProcessor::getInteger;
+			}
 		};
 	}
 
@@ -67,6 +88,11 @@ public class ResultHeaders {
 			@Override
 			public String userColumnName(PrintSettings printSettings) {
 				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).dateRange();
+			}
+
+			@Override
+			public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+				return resultSetProcessor::getDateRange;
 			}
 		};
 	}
@@ -83,6 +109,11 @@ public class ResultHeaders {
 			public String userColumnName(PrintSettings printSettings) {
 				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).resolution();
 			}
+
+			@Override
+			public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+				return resultSetProcessor::getString;
+			}
 		};
 	}
 
@@ -92,6 +123,11 @@ public class ResultHeaders {
 			@Override
 			public String userColumnName(PrintSettings printSettings) {
 				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).eventDate();
+			}
+
+			@Override
+			public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+				return resultSetProcessor::getDate;
 			}
 		};
 	}
@@ -107,6 +143,11 @@ public class ResultHeaders {
 			@Override
 			public String userColumnName(PrintSettings printSettings) {
 				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).observationScope();
+			}
+
+			@Override
+			public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+				return resultSetProcessor::getString;
 			}
 		};
 	}

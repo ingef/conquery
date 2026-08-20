@@ -1,5 +1,5 @@
 # Version Extractor
-FROM bitnami/git:2.38.1 AS version-extractor
+FROM alpine/git:v2.52.0@sha256:3136372ed3c9e112d5a2620c66a6803e1b0b7f14a428fcbd0c5028bec4256430 AS version-extractor
 
 WORKDIR /app
 COPY .git .
@@ -7,7 +7,7 @@ COPY .git .
 RUN git describe --tags |  sed 's/^v//' > git_describe.txt
 
 # Builder
-FROM node:18-alpine AS builder
+FROM node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e AS builder
 
 WORKDIR /app
 COPY ./frontend/package.json ./frontend/package-lock.json ./
@@ -23,31 +23,17 @@ COPY --from=version-extractor /app/git_describe.txt .
 RUN PUBLIC_URL=/ npm run build
 
 # The final image is just an nginx with a webroot
-FROM nginx:stable-alpine
+FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:8122337ed6c475bb486bc9340da453d4599f225e6b920ff0d92ca2267486b9b5
 
-# To allow passing env variables at RUN TIME
-# we're injecting them into the built artifacts.
-# See `./scripts/replace-env-at-runtime.sh`, `.env`, `.env.example` for details
-ENV REACT_APP_API_URL=$REACT_APP_API_URL
-ENV REACT_APP_DISABLE_LOGIN=$REACT_APP_DISABLE_LOGIN
-ENV REACT_APP_LANG=$REACT_APP_LANG
-ENV REACT_APP_BASENAME=$REACT_APP_BASENAME
-ENV REACT_APP_IDP_ENABLE=$REACT_APP_IDP_ENABLE
-ENV REACT_APP_IDP_URL=$REACT_APP_IDP_URL
-ENV REACT_APP_IDP_REALM=$REACT_APP_IDP_REALM
-ENV REACT_APP_IDP_CLIENT_ID=$REACT_APP_IDP_CLIENT_ID
+# This will be used by nginx's templating mechanism
+# NGINX_PORT sets the container port on which nginx is listening
+ENV NGINX_PORT=8000
 
 # Copy the build artifacts from the builder phase
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder --chown=nginx /app/dist /usr/share/nginx/html/frontend
 # Copy the env replacer
-COPY ./frontend/scripts/replace-env-at-runtime.sh /
+COPY --chown=nginx ./frontend/scripts/replace-env-at-runtime.sh /
 
-# Copy nginx config
-COPY ./frontend/container/ /
-
-# The default command replaces the environment variables and starts nginx as a subprocess
-CMD [ "/bin/sh", "-c", "/replace-env-at-runtime.sh /usr/share/nginx/html/index.html && nginx -g \"daemon off;\""]
-
-
-EXPOSE 80
+# Copy nginx config template
+COPY --chown=nginx ./frontend/container/ /
 

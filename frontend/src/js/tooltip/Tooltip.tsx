@@ -12,6 +12,7 @@ import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
 
+import { PluggableList } from "react-markdown/lib/react-markdown";
 import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import ActivateTooltip from "./ActivateTooltip";
 import type { AdditionalInfosType } from "./reducer";
@@ -256,7 +257,12 @@ const Tooltip = () => {
                 <InfoHeadline>
                   <HighlightedText words={words} text={info.key} />
                 </InfoHeadline>
-                <Markdown remarkPlugins={[remarkGfm, remarkFlexibleMarkers]}>
+                {/* Explicit cast to PluggableList here, see: https://github.com/orgs/rehypejs/discussions/63 */}
+                <Markdown
+                  remarkPlugins={
+                    [remarkGfm, remarkFlexibleMarkers] as PluggableList
+                  }
+                >
                   {mark(info.value, highlightRegex)}
                 </Markdown>
               </PieceOfInfo>

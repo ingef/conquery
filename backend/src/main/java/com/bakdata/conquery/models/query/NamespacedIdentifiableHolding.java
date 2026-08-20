@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query;
 import java.util.Set;
 
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 
 /**
  * Classes that contain {@link NamespacedIdentifiable}s on their first level should implement this interface.

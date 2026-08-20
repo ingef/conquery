@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.google.common.base.Joiner;
 import lombok.experimental.UtilityClass;
@@ -20,11 +21,11 @@ public final class IdUtil {
 	public static final Joiner JOINER = Joiner.on(JOIN_CHAR);
 	private static final Map<Class<?>, Class<?>> CLASS_TO_ID_MAP = new ConcurrentHashMap<>();
 
-	public static <T extends Id<?>> Parser<T> createParser(Class<T> idClass) {
+	public static <T extends Id<?, ?>> Parser<T> createParser(Class<T> idClass) {
 		return (Parser<T>) idClass.getDeclaredClasses()[0].getEnumConstants()[0];
 	}
 
-	public static <T extends Id<?>> Class<T> findIdClass(Class<?> cl) {
+	public static <T extends Id<?, ?>> Class<T> findIdClass(Class<?> cl) {
 		Class<?> result = CLASS_TO_ID_MAP.get(cl);
 
 		if (result != null) {
@@ -56,7 +57,7 @@ public final class IdUtil {
 		}
 	}
 
-	public interface Parser<ID extends Id<?>> {
+	public interface Parser<ID extends Id<?, ?>> {
 
 		static List<String> asComponents(String id) {
 			return Arrays.asList(split(id));

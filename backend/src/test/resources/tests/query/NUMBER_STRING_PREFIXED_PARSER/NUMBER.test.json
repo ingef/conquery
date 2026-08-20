@@ -32,7 +32,8 @@
           "table": "table1",
           "validityDates": {
             "label": "datum",
-            "column": "table1.datum"
+            "startColumn": "table1.start",
+            "endColumn": "table1.end"
           },
           "selects": {
             "name" : "value",
@@ -58,8 +59,12 @@
             "type": "STRING"
           },
           {
-            "name": "datum",
-            "type": "DATE_RANGE"
+            "name": "start",
+            "type": "DATE"
+          },
+          {
+            "name": "end",
+            "type": "DATE"
           }
         ]
       }

@@ -28,19 +28,19 @@ public class ClusterNamespaceHandler implements NamespaceHandler<DistributedName
 			MetaStorage metaStorage,
 			DatasetRegistry<DistributedNamespace> datasetRegistry,
 			Environment environment) {
+
 		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, internalMapperFactory, datasetRegistry, environment);
 		DistributedExecutionManager executionManager = new DistributedExecutionManager(metaStorage, datasetRegistry, clusterState, config);
 		WorkerHandler workerHandler = new WorkerHandler(namespaceStorage);
 		clusterState.getWorkerHandlers().put(namespaceStorage.getDataset().getId(), workerHandler);
 
 		DistributedNamespace distributedNamespace = new DistributedNamespace(
-				namespaceData.getPreprocessMapper(),
+				namespaceData.preprocessMapper(),
 				namespaceStorage,
 				executionManager,
-				namespaceData.getJobManager(),
-				namespaceData.getFilterSearch(),
+				namespaceData.jobManager(),
+				namespaceData.filterSearch(),
 				new ClusterEntityResolver(),
-				namespaceData.getInjectables(),
 				workerHandler,
 				config.getCluster()
 		);

@@ -225,8 +225,8 @@ const useProjectItems = ({
     typeFilter === "queries"
       ? queries
       : typeFilter === "configs"
-      ? formConfigs
-      : [...queries, ...formConfigs];
+        ? formConfigs
+        : [...queries, ...formConfigs];
 
   const items: ProjectItemT[] = baseItems.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),

@@ -24,5 +24,5 @@ public enum DateAggregationMode {
      * Merge or intersect the dates depending on certain nodes in the query plan (OR -> MERGE, AND -> INTERSECT,
      * NOT -> INVERT)
      */
-    LOGICAL;
+	LOGICAL
 }

@@ -1,16 +1,5 @@
 package com.bakdata.conquery.models.query.statistics;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalLong;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.stream.IntStream;
-
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -33,8 +22,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
+
 @Slf4j
-public record ResultStatistics(int entities, int total, List<ColumnStatsCollector.ResultColumnStatistics> statistics, Range<LocalDate> dateRange) {
+public record ResultStatistics(int entities, int total, List<ColumnStatsCollector.ResultColumnStatistics> statistics,
+                               Range<LocalDate> dateRange) {
 	@SneakyThrows
 	@NotNull
 	public static ResultStatistics collectResultStatistics(
@@ -49,70 +50,69 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 
 
 		//TODO pull inner executor service from ManagerNode
-		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1));
+		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(Math.max(1, Runtime.getRuntime().availableProcessors() - 1)));
 
 		// Yes, we are actually iterating the result for every job.
 
 		// Span date-column
 		final ListenableFuture<Range<LocalDate>> futureSpan;
 
-		final boolean containsDates = dateInfo.isPresent();
+		final boolean containsDates = dateInfo.isPresent() && dateIndex.isPresent();
 
 		if (containsDates) {
 			futureSpan = executorService.submit(() -> calculateDateSpan(managedQuery, dateInfo, dateIndex.get(), printSettings));
-		}
-		else {
+		} else {
 			futureSpan = Futures.immediateFuture(CDateRange.all().toSimpleRange());
 		}
 
 		// Count result lines and entities (may differ in case of form or SecondaryIdQuery)
-		final ListenableFuture<Integer> futureLines = executorService.submit(() -> (int) managedQuery.resultRowCount());
+		final ListenableFuture<Integer> futureLines = executorService.submit(() -> (int) managedQuery.resultRowCount().orElse(0));
 
 		final ListenableFuture<Integer> futureEntities = executorService.submit(() -> (int) managedQuery.streamResults(OptionalLong.empty()).count());
 
 		// compute ResultColumnStatistics for each column
 		final List<ListenableFuture<ColumnStatsCollector.ResultColumnStatistics>> futureDescriptions =
 				IntStream.range(0, resultInfos.size())
-						 // If the query doesn't contain dates, we can skip the dates-column.
-						 .filter(col -> !resultInfos.get(col).getSemantics().contains(new SemanticType.EventDateT()) || containsDates)
-						 .mapToObj(col -> (Callable<ColumnStatsCollector.ResultColumnStatistics>) () -> {
-							 final StopWatch started = StopWatch.createStarted();
+						// If the query doesn't contain dates, we can skip the dates-column.
+						.filter(col -> !resultInfos.get(col).getSemantics().contains(new SemanticType.EventDateT()) || containsDates)
+						.mapToObj(col -> (Callable<ColumnStatsCollector.ResultColumnStatistics>) () -> {
+							final StopWatch started = StopWatch.createStarted();
 
-							 final ResultInfo info = resultInfos.get(col);
-							 final Printer printer = info.createPrinter(printerFactory, printSettings);
-							 final ColumnStatsCollector statsCollector =
-									 ColumnStatsCollector.getStatsCollector(uniqueNamer.getUniqueName(info, printSettings),
-																			info.getDescription(),
-																			info.getType(),
-																			printSettings,
-																			conqueryConfig.getFrontend()
-									 );
+							final ResultInfo info = resultInfos.get(col);
+							final Printer printer = info.createPrinter(printerFactory, printSettings);
+							final ColumnStatsCollector statsCollector =
+									ColumnStatsCollector.getStatsCollector(uniqueNamer.getUniqueName(info, printSettings),
+											info.getDescription(),
+											info.getType(),
+											printSettings,
+											conqueryConfig.getFrontend()
+									);
 
-							 log.trace("BEGIN stats collection for {}", info);
+							log.trace("BEGIN stats collection for {}", info);
 
-							 managedQuery.streamResults(OptionalLong.empty())
-										 .map(EntityResult::listResultLines)
-										 .flatMap(List::stream)
-										 .forEach(line -> {
-											 final Object value = line[col];
-											 if (value == null) {
-												 // Printers dont handle null
-												 statsCollector.consume(null);
-												 return;
-											 }
-											 statsCollector.consume(printer.apply(value));
-										 });
+							managedQuery.streamResults(OptionalLong.empty())
+									.map(EntityResult::listResultLines)
+									.flatMap(List::stream)
+									.forEach(line -> {
+										final Object value = line[col];
+										if (value == null) {
+											// Printers dont handle null
+											statsCollector.consume(null);
+											return;
+										}
+										statsCollector.consume(printer.apply(value));
+									});
 
-							 log.trace("DONE collecting values for {}, in {}", info, started);
+							log.trace("DONE collecting values for {}, in {}", info, started);
 
-							 final ColumnStatsCollector.ResultColumnStatistics description = statsCollector.describe();
+							final ColumnStatsCollector.ResultColumnStatistics description = statsCollector.describe();
 
-							 log.debug("DONE description for {}, in {}", info, started);
+							log.debug("DONE description for {}, in {}", info, started);
 
-							 return description;
-						 })
-						 .map(executorService::submit)
-						 .toList();
+							return description;
+						})
+						.map(executorService::submit)
+						.toList();
 
 		final Range<LocalDate> span = futureSpan.get();
 		final List<ColumnStatsCollector.ResultColumnStatistics> descriptions = Futures.allAsList(futureDescriptions).get();

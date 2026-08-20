@@ -1,6 +1,9 @@
 {
   "type": "QUERY_TEST",
   "label": "TABLE_EXPORT Test",
+  "sqlSpec": {
+    "isEnabled": false
+  },
   "expectedCsv": "tests/query/TABLE_EXPORT/expected.csv",
   "query": {
     "type": "TABLE_EXPORT",

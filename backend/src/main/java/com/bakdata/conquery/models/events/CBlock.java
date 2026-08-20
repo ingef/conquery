@@ -14,13 +14,13 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeCache;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableSet;
 import lombok.Getter;
@@ -49,18 +50,15 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
-public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIdentifiable<CBlockId> {
+@JsonIgnoreProperties({"root"})
+public class CBlock extends NamespacedIdentifiable<CBlockId> {
 	//TODO Index per StringStore for isOfInterest
 	@ToString.Include
 	private final BucketId bucket;
 	@NotNull
 	@ToString.Include
 	private final ConnectorId connector;
-	/**
-	 * We leverage the fact that a Bucket contains entities from bucketSize * {@link Bucket#getBucket()} to (1 + bucketSize) * {@link Bucket#getBucket()} - 1 to layout our internal structure.
-	 * This is maps the first Entities entry in this bucket to 0.
-	 */
-	private final int root;
+
 	/**
 	 * Crude Bloomfilter for Concept inclusion per Entity: Each set bit denotes that the concept (with localId <= 64) or a descendant of that concept (with localId > 64) is present for the entity in this Bucket.
 	 */
@@ -92,34 +90,16 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	}
 
 	public static CBlock createCBlock(ConceptTreeConnector connector, BucketId bucketId, BucketManager bucketManager) {
-		final int bucketSize = bucketManager.getEntityBucketSize();
-		final int root = bucketId.getBucket() * bucketSize;
 
-		Bucket bucket = bucketId.resolve();
+		final Bucket bucket = bucketId.resolve();
 
 		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector, bucketManager);
 		//TODO Object2LongMap
-		final Map<String, Long> includedConcepts = calculateConceptElementPathBloomFilter(bucketSize, bucket, mostSpecificChildren);
-		final Map<String, CDateRange> entitySpans = calculateEntityDateIndices(bucket);
+		final Map<String, Long> includedConcepts = calculateConceptElementPathBloomFilter(bucket, mostSpecificChildren);
+		final Map<String, CDateRange> entitySpans = calculateEntityDateIndices(bucket, connector);
 
-		final CBlock cBlock = new CBlock(bucket.getId(), connector.getId(), root, includedConcepts, entitySpans, mostSpecificChildren);
+		final CBlock cBlock = new CBlock(bucketId, connector.getId(), includedConcepts, entitySpans, mostSpecificChildren);
 		return cBlock;
-	}
-
-	/**
-	 *
-	 * @return All entities that are included in the {@link Bucket} referenced by {@link CBlock#getBucket()}.
-	 *
-	 * @apiNote If you have not resolved the {@link Bucket} yet use this method to get the entities because resolving a large bucket is more expensive.
-	 */
-	@JsonIgnore
-	Set<String> getEntities() {
-		return ImmutableSet.copyOf(includedConceptElementsPerEntity.keySet());
-	}
-
-
-	public boolean containsEntity(String entity) {
-		return includedConceptElementsPerEntity.containsKey(entity);
 	}
 
 	/**
@@ -140,8 +120,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * This is used in the evaluation of a query to quickly decide if an event is of interest by logically ANDing
 	 * the bitmask of the event with the bitmask calculated by {@link ConceptNode#calculateBitMask(Collection)}
 	 */
-	private static Map<String, Long> calculateConceptElementPathBloomFilter(int bucketSize, Bucket bucket, int[][] mostSpecificChildren) {
-		final Map<String, Long> includedConcepts = new HashMap<>(bucketSize);
+	private static Map<String, Long> calculateConceptElementPathBloomFilter(Bucket bucket, int[][] mostSpecificChildren) {
+		final Map<String, Long> includedConcepts = new HashMap<>(bucket.entities().size());
 
 		for (String entity : bucket.entities()) {
 
@@ -168,17 +148,10 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 *
 	 * @implNote This is an unrolled implementation of {@link CDateRange#span(CDateRange)}.
 	 */
-	private static Map<String, CDateRange> calculateEntityDateIndices(Bucket bucket) {
+	private static Map<String, CDateRange> calculateEntityDateIndices(Bucket bucket, ConceptTreeConnector connector) {
 		final Map<String, CDateRange> spans = new HashMap<>();
 
-		final Table table = bucket.getTable().resolve();
-
-
-		for (Column column : table.getColumns()) {
-			if (!column.getType().isDateCompatible()) {
-				continue;
-			}
-
+		for (ValidityDate validityDate : connector.getValidityDates()) {
 			for (String entity : bucket.entities()) {
 				final int end = bucket.getEntityEnd(entity);
 
@@ -187,13 +160,13 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				int max = Integer.MIN_VALUE;
 				int min = Integer.MAX_VALUE;
 
-
 				for (int event = bucket.getEntityStart(entity); event < end; event++) {
-					if (!bucket.has(event, column)) {
+
+					final CDateRange range = validityDate.getValidityDate(event, bucket);
+
+					if(range == null) {
 						continue;
 					}
-
-					final CDateRange range = bucket.getAsDateRange(event, column);
 
 					final int minValue = range.getMinValue();
 
@@ -213,7 +186,6 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				final CDateRange span = CDateRange.of(min, max);
 
 				spans.compute(entity, (ignored, current) -> current == null ? span : current.span(span));
-
 			}
 		}
 
@@ -338,6 +310,21 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		}
 
 		return 0;
+	}
+
+	/**
+	 *
+	 * @return All entities that are included in the {@link Bucket} referenced by {@link CBlock#getBucket()}.
+	 *
+	 * @apiNote If you have not resolved the {@link Bucket} yet use this method to get the entities because resolving a large bucket is more expensive.
+	 */
+	@JsonIgnore
+	Set<String> getEntities() {
+		return ImmutableSet.copyOf(includedConceptElementsPerEntity.keySet());
+	}
+
+	public boolean containsEntity(String entity) {
+		return includedConceptElementsPerEntity.containsKey(entity);
 	}
 
 	public int[] getPathToMostSpecificChild(int event) {

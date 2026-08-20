@@ -23,6 +23,9 @@ public abstract class KeyIncludingStore<KEY, VALUE> implements Closeable, Manage
 
 	protected abstract KEY extractKey(VALUE value);
 
+	public boolean hasKey(KEY key) {
+		return store.hasKey(key);
+	}
 
 	public void update(VALUE value) {
 		store.update(extractKey(value), value);

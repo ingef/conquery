@@ -1,17 +1,12 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import static com.bakdata.conquery.models.identifiable.ids.NamespacedId.assertNamespaceStorage;
-
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -19,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode
-public class InternToExternMapperId extends Id<InternToExternMapper> implements NamespacedId {
+public class InternToExternMapperId extends NamespacedId<InternToExternMapper> {
 	@Getter
 	private final DatasetId dataset;
 	private final String name;
@@ -31,20 +26,16 @@ public class InternToExternMapperId extends Id<InternToExternMapper> implements 
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		dataset.collectIds(collect);
 	}
 
 	@Override
-	public NamespacedIdentifiable<?> get(NamespacedStorage storage) {
-		return assertNamespaceStorage(storage).getInternToExternMapper(this);
+	public InternToExternMapper get() {
+		return assertNamespaceStorage(getDomain().getStorage(getDataset())).getInternToExternMapper(this);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return dataset.getNamespacedStorageProvider();
-	}
 
 	public enum Parser implements IdUtil.Parser<InternToExternMapperId> {
 		INSTANCE;

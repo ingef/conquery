@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Stream;
 
@@ -19,17 +20,16 @@ import com.github.benmanes.caffeine.cache.CaffeineSpec;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.github.benmanes.caffeine.cache.stats.StatsCounter;
 import com.google.common.base.Stopwatch;
-import com.jakewharton.byteunits.BinaryByteUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
 @RequiredArgsConstructor
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
 public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
-
-	private static final ProgressBar PROGRESS_BAR = new ProgressBar(0);
+	public static final ProgressBar PROGRESS_BAR = new ProgressBar(0);
 
 	private final LoadingCache<KEY, VALUE> cache;
 
@@ -60,7 +60,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private VALUE getFromStore(KEY key) {
 		final Stopwatch stopwatch = log.isTraceEnabled() ? Stopwatch.createStarted() : null;
 		final VALUE value = store.get(key);
-		log.trace("Loaded {} from store {} in {}", key, store, stopwatch);
+		log.trace("Loaded {} from store {} in {} (is null: {})", key, store, stopwatch, value == null);
 
 		if (value != null) {
 			keys.add(key);
@@ -109,6 +109,11 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		return remove;
 	}
 
+	@Override
+	public boolean hasKey(KEY key) {
+		return keys.contains(key);
+	}
+
 	private void removed(KEY key) {
 		cache.invalidate(key);
 
@@ -120,14 +125,14 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		log.info("BEGIN loading keys {}", this);
 
-		store.getAllKeys().forEach(keys::add);
+		store.getAllKeys().forEach(key -> {
+			boolean hasPrior = !keys.add(key);
+			if (hasPrior) {
+				log.warn("Multiple keys deserialize to `{}`", key);
+			}
+		});
 
 		log.debug("DONE loading keys from {} in {}", this, stopwatch);
-	}
-
-	@Override
-	public Stream<KEY> getAllKeys() {
-		return (Stream<KEY>) Arrays.stream(keys.toArray());
 	}
 
 	@Override
@@ -136,25 +141,29 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		final int count = count();
 		final ProgressBar bar;
 
-		if (count > 100) {
-			synchronized (PROGRESS_BAR) {
-				bar = PROGRESS_BAR;
-				bar.addMaxValue(count);
-			}
-		}
-		else {
+		if (count < 100) {
 			bar = null;
 		}
+		else {
+			bar = PROGRESS_BAR;
+			bar.addMaxValue(count);
+		}
+
 
 		log.info("BEGIN loading store {}", this);
 
-
 		final Stopwatch timer = Stopwatch.createStarted();
+
+		final Set<KEY> dupes = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
 		store.forEach((key, value, size) -> {
 			try {
 				totalSize.add(size);
 				added(key, value);
+
+				if (!dupes.add(key)) {
+					log.warn("Multiple Keys deserialize to `{}`", key);
+				}
 			}
 			catch (RuntimeException e) {
 				if (e.getCause() != null && e.getCause() instanceof IdReferenceResolvingException) {
@@ -170,7 +179,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				}
 			}
 		});
-		log.debug("\tloaded store {}: {} entries, {} within {}", this, count, BinaryByteUnit.format(totalSize.sum()), timer.stop());
+		log.debug("\tloaded store {}: {} entries, {} within {}", this, count, FileUtils.byteCountToDisplaySize(totalSize.sum()), timer.stop());
 	}
 
 	@Override
@@ -181,6 +190,11 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public Stream<VALUE> getAll() {
 		return getAllKeys().map(cache::get);
+	}
+
+	@Override
+	public Stream<KEY> getAllKeys() {
+		return (Stream<KEY>) Arrays.stream(keys.toArray());
 	}
 
 	@Override

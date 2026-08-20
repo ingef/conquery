@@ -15,8 +15,7 @@ import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.IdMap;
-import com.bakdata.conquery.models.identifiable.Labeled;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -45,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 @Valid
 @Slf4j
 @JsonIgnoreProperties({"defaultForEntityPreview"})
-public abstract class Connector extends Labeled<ConnectorId> implements SelectHolder<Select>, NamespacedIdentifiable<ConnectorId> {
+public abstract class Connector extends LabeledNamespaceIdentifiable<ConnectorId> implements SelectHolder<Select> {
 
 	public static final int[] NOT_CONTAINED = new int[]{-1};
 
@@ -112,7 +111,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 
 	public abstract Table getResolvedTable();
 
-	public abstract TableId getResolvedTableId();
+	public abstract TableId resolveTableId();
 
 	@JsonIgnore
 	@ValidationMethod(message = "Filter names are not unique.")

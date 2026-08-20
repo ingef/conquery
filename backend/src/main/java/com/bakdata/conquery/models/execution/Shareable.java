@@ -24,16 +24,18 @@ import org.slf4j.LoggerFactory;
  * Allows sharing of implementations among groups of a given user.
  */
 public interface  Shareable extends Authorized {
-	static final Logger log = LoggerFactory.getLogger(Shareable.class);
+	Logger log = LoggerFactory.getLogger(Shareable.class);
 
 	/**
 	 * Sets the flag that indicated if an instance is shared among groups.
 	 */
 	void setShared(boolean shared);
 
-	default <ID extends Id<?>, S extends Identifiable<? extends ID> & Shareable & Authorized> Consumer<ShareInformation> sharer(MetaStorage storage, Subject subject) {
-		if (!(this instanceof Identifiable<?>)) {
-			log.warn("Cannot share {} ({}) because it does not implement Identifiable", this.getClass(), this.toString());
+	default <ID extends Id<?, ?>, S extends Identifiable<? extends ID, ?> & Shareable & Authorized> Consumer<ShareInformation> sharer(
+			MetaStorage storage,
+			Subject subject) {
+		if (!(this instanceof Identifiable<?, ?>)) {
+			log.warn("Cannot share {} ({}) because it does not implement Identifiable", getClass(), this);
 			return QueryUtils.getNoOpEntryPoint();
 		}
 
@@ -70,7 +72,7 @@ public interface  Shareable extends Authorized {
 		
 	}
 
-	public interface ShareInformation {
+	interface ShareInformation {
 		List<GroupId> getGroups();
 	}
 }

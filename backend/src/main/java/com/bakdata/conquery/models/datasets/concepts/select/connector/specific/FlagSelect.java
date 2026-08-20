@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -15,6 +17,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.FlagsAgg
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -40,6 +43,11 @@ public class FlagSelect extends Select {
 	@Override
 	public List<ColumnId> getRequiredColumns() {
 		return flags.values().stream().toList();
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<List<String>> createResultSetReader(ResultSetProcessor processor) {
+		return processor::getStringList;
 	}
 
 	@Override

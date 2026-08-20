@@ -1,14 +1,19 @@
 package com.bakdata.conquery.integration.json;
 
-import static com.bakdata.conquery.integration.common.LoadingUtil.importInternToExternMappers;
+import static com.bakdata.conquery.integration.common.LoadingUtil.*;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
+import java.util.List;
 
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.filter.FilterTest;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -26,7 +31,7 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		importSearchIndexes(support, test.getSearchIndexes());
 		importTables(support, content.getTables(), content.isAutoConcept());
 		importConcepts(support, test.getRawConcepts());
-		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, content.getTables()));
+		waitUntilDone(support, () -> importTableContents(support, content.getTables()));
 		importIdMapping(support, content);
 		importPreviousQueries(support, content);
 		waitUntilDone(support, () -> LoadingUtil.updateMatchingStats(support));
@@ -40,7 +45,7 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		importSecondaryIds(support, content.getSecondaryIds());
 		importTables(support, content.getTables(), content.isAutoConcept());
 		importConcepts(support, test.getRawConcepts());
-		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, content.getTables()));
+		waitUntilDone(support, () -> importTableContents(support, content.getTables()));
 		importIdMapping(support, content);
 		importPreviousQueries(support, content);
 	}
@@ -55,7 +60,7 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		importTables(support, content.getTables(), content.isAutoConcept());
 
 
-		test.setConnector(ConqueryTestSpec.parseSubTree(
+		test.setConnector(LoadingUtil.parseSubTree(
 								  support,
 								  test.getRawConnector(),
 								  ConceptTreeConnector.class,
@@ -63,20 +68,29 @@ public class WorkerTestDataImporter implements TestDataImporter {
 									  conn.setTable(new TableId(support.getDataset().getDataset(), FilterTest.TABLE_NAME));
 									  conn.setConcept(test.getConcept());
 								  },
-								  true
+								  false
 						  )
 		);
 		test.getConcept().setConnectors(Collections.singletonList((ConceptTreeConnector) test.getConnector()));
 
 		waitUntilDone(support, () -> LoadingUtil.uploadConcept(support, support.getDataset(), test.getConcept()));
-		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, content.getTables()));
+		waitUntilDone(support, () -> importTableContents(support, content.getTables()));
 		waitUntilDone(support, () -> LoadingUtil.updateMatchingStats(support));
 	}
 
 
 	@Override
 	public void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
-		waitUntilDone(support, () -> LoadingUtil.importTableContents(support, tables));
+		List<File> cqpps = generateCqpp(support, tables);
+		importCqppFiles(support, cqpps);
 	}
+
+	@Override
+	public void importDataset(Client client, UriBuilder adminUriBuilder, String name) {
+		Dataset dataset = new Dataset(name);
+		LoadingUtil.importDataset(client, adminUriBuilder, dataset);
+	}
+
+
 
 }

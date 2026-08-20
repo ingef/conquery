@@ -7,10 +7,6 @@
     },
     "columns" : [
         {
-            "name" : "date",
-            "type" : "DATE_RANGE"
-        },
-        {
             "name" : "date_start",
             "type" : "DATE"
         },

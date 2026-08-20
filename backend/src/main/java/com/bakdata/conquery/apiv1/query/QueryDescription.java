@@ -11,12 +11,10 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.Id;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -71,18 +69,17 @@ public interface QueryDescription extends Visitable {
 	/**
 	 * Check implementation specific permissions. Is called after all visitors have been registered and executed.
 	 */
-	default void authorize(Subject subject, Dataset submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
+	default void authorize(Subject subject, DatasetId submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
 		authorizeQuery(this, subject, submittedDataset, visitors, storage);
 	}
 
-	static void authorizeQuery(QueryDescription queryDescription, Subject subject, Dataset submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
+	static void authorizeQuery(QueryDescription queryDescription, Subject subject, DatasetId submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
 		NamespacedIdentifiableCollector nsIdCollector = QueryUtils.getVisitor(visitors, NamespacedIdentifiableCollector.class);
 		ExternalIdChecker externalIdChecker = QueryUtils.getVisitor(visitors, ExternalIdChecker.class);
 
 		// Generate DatasetPermissions
-		final Set<Dataset> datasets = nsIdCollector.getIdentifiables().stream()
+		final Set<DatasetId> datasets = nsIdCollector.getIdentifiables().stream()
 												   .map(NamespacedIdentifiable::getDataset)
-												   .map(Id::resolve)
 												   .collect(Collectors.toSet());
 
 		subject.authorize(datasets, Ability.READ);

@@ -502,6 +502,7 @@ export function EditorV2({
           )}
         </Grid>
       </Main>
+
       <EditorV2QueryRunner query={{ tree }} />
     </Root>
   );

@@ -22,6 +22,7 @@ import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.ResourceConstants;
 import io.dropwizard.auth.Auth;
@@ -40,15 +41,15 @@ public class ResultExcelResource {
 	@GET
 	@Path("{" + QUERY + "}.xlsx")
 	@Produces(AdditionalMediaTypes.EXCEL)
-	public <E extends ManagedExecution & SingleTableResult> Response get(
+	public Response get(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution execution,
+			@PathParam(QUERY) ManagedExecutionId execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") @DefaultValue("true") boolean pretty,
 			@QueryParam("limit") OptionalLong limit) {
-		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), execution.getDataset(), subject.getId(), subject.getName());
-		return processor.createResult(subject, (E) execution, pretty, limit);
+		checkSingleTableResult(execution.resolve());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
+		return processor.createResult(subject, execution, pretty, limit);
 	}
 
 	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {

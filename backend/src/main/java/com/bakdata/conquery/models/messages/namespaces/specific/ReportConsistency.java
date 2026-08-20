@@ -6,8 +6,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
@@ -15,9 +14,7 @@ import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.google.common.collect.Sets;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NonNull;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -27,20 +24,23 @@ import lombok.extern.slf4j.Slf4j;
  */
 @CPSType(id = "REPORT_CONSISTENCY", base = NamespacedMessage.class)
 @Data
+@EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
 @Slf4j
 public class ReportConsistency extends NamespaceMessage {
 
 	private WorkerId workerId;
 	// Set default here because an empty set send by the worker is not set (it is null) after deserialization
+	@ToString.Exclude
 	private Set<ImportId> workerImports = Set.of();
+	@ToString.Exclude
 	private Set<BucketId> workerBuckets = Set.of();
 
 
 	@Override
 	public void react(DistributedNamespace context) throws Exception {
-		try (Stream<Import> allImports = context.getStorage().getAllImports()) {
-			Set<ImportId> managerImports = allImports.map(Import::getId).collect(Collectors.toSet());
+		try (Stream<ImportId> allImports = context.getStorage().getAllImports()) {
+			Set<ImportId> managerImports = allImports.collect(Collectors.toSet());
 
 			Set<BucketId> assignedWorkerBuckets = context.getWorkerHandler().getBucketsForWorker(workerId);
 
@@ -58,7 +58,7 @@ public class ReportConsistency extends NamespaceMessage {
 		throw new IllegalStateException("Detected inconsistency between manager and worker [" + workerId + "]");
 	}
 
-	private static <ID extends Id<?>> boolean isConsistent(String typeName, @NonNull Set<ID> managerIds, @NonNull Set<ID> workerIds, WorkerId workerId) {
+	private static <ID extends NamespacedId<?>> boolean isConsistent(String typeName, @NonNull Set<ID> managerIds, @NonNull Set<ID> workerIds, WorkerId workerId) {
 		Sets.SetView<ID> notInWorker = Sets.difference(managerIds, workerIds);
 		Sets.SetView<ID> notInManager = Sets.difference(workerIds, managerIds);
 

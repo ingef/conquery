@@ -1,0 +1,158 @@
+{
+  "type": "QUERY_TEST",
+  "sqlSpec": {
+    "isEnabled": false
+  },
+  "label": "Temporal Test AND in compare",
+  "expectedCsv": "tests/query/TEMPORAL/AND/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "TEMPORAL",
+      "indexSelector": "ALL",
+      "compareSelector": "ALL",
+      "mode": {
+        "type": "AFTER",
+        "days": {
+          "min": 0,
+          "max": 10
+        }
+      },
+      "index": {
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "concept.connector",
+            "filters": [
+              {
+                "filter": "concept.connector.filter",
+                "type": "SELECT",
+                "value": "index"
+              }
+            ]
+          }
+        ]
+      },
+      "compare": {
+        "type": "AND",
+        "children": [
+          {
+            "ids": [
+              "concept"
+            ],
+            "type": "CONCEPT",
+            "tables": [
+              {
+                "id": "concept.connector",
+                "selects": [
+                ],
+                "filters": [
+                  {
+                    "filter": "concept.connector.filter",
+                    "type": "SELECT",
+                    "value": "compare_1"
+                  },
+                  {
+                    "filter": "concept.connector.sum",
+                    "type": "INTEGER_RANGE",
+                    "value": {
+                      "min": 1,
+                      "max": 1
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "ids": [
+              "concept"
+            ],
+            "type": "CONCEPT",
+            "tables": [
+              {
+                "id": "concept.connector",
+                "selects": [
+                ],
+                "filters": [
+                  {
+                    "filter": "concept.connector.filter",
+                    "type": "SELECT",
+                    "value": "compare_2"
+                  },
+                  {
+                    "filter": "concept.connector.sum",
+                    "type": "INTEGER_RANGE",
+                    "value": {
+                      "min": 1,
+                      "max": 1
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "table",
+          "validityDates": {
+            "name": "datum",
+            "column": "table.datum"
+          },
+          "selects": [
+          ],
+          "filters": [
+            {
+              "name": "filter",
+              "column": "table.value",
+              "type": "SINGLE_SELECT"
+            },
+            {
+              "name": "sum",
+              "column": "table.sum",
+              "type": "SUM"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/TEMPORAL/AND/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE_RANGE"
+          },
+          {
+            "name": "value",
+            "type": "STRING"
+          },
+          {
+            "name": "sum",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    ]
+  }
+}

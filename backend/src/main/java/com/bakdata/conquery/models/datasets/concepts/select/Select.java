@@ -8,8 +8,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
-import com.bakdata.conquery.models.identifiable.Labeled;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
@@ -22,6 +21,7 @@ import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,7 +39,7 @@ import org.jetbrains.annotations.NotNull;
 @CPSBase
 @Slf4j
 @EqualsAndHashCode(callSuper = true)
-public abstract class Select extends Labeled<SelectId> implements NamespacedIdentifiable<SelectId> {
+public abstract class Select extends LabeledNamespaceIdentifiable<SelectId> {
 
 	@EqualsAndHashCode.Exclude
 	@JsonBackReference
@@ -93,12 +93,11 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 
 		for (ColumnId column : getRequiredColumns()) {
 
-			if (column == null || column.getTable().equals(connector.getResolvedTableId())) {
+			if (column == null || column.getTable().equals(connector.resolveTableId())) {
 				continue;
 			}
 
-			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable(), connector.getId(), connector.getResolvedTable()
-																																		   .getId());
+			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable(), connector.getId(), connector.resolveTableId());
 
 			valid = false;
 		}
@@ -122,6 +121,8 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		return printerFactory.printerFor(getResultType(), printSettings);
 	}
+
+	public abstract ResultSetProcessor.Reader<?> createResultSetReader(ResultSetProcessor processor);
 
 	@JsonIgnore
 	public abstract ResultType getResultType();

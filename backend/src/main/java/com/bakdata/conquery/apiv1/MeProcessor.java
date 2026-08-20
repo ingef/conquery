@@ -4,14 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import jakarta.inject.Inject;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -46,7 +44,7 @@ public class MeProcessor {
 	public FrontendMeInformation getUserInformation(@NonNull User user) {
 		// Compute dataset ablilities
 		Map<DatasetId, FrontendDatasetAbility> datasetAblilites = new HashMap<>();
-		for (Dataset dataset : datasetRegistry.getAllDatasets()) {
+		for (DatasetId dataset : datasetRegistry.getAllDatasets().toList()) {
 			if (!user.isPermitted(dataset, Ability.READ)) {
 				// User is not allowed to use dataset
 				continue;
@@ -54,7 +52,7 @@ public class MeProcessor {
 
 			// User can use the dataset and can possibly upload ids for resolving
 			datasetAblilites.put(
-					dataset.getId(),
+					dataset,
 					new FrontendDatasetAbility(
 							user.isPermitted(dataset, Ability.PRESERVE_ID),
 							user.isPermitted(dataset, Ability.ENTITY_PREVIEW) && user.isPermitted(dataset, Ability.PRESERVE_ID),

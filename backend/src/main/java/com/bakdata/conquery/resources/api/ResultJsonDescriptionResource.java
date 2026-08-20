@@ -15,7 +15,7 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.io.result.json.ResultJsonDescriptionProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.resources.ResourceConstants;
 import io.dropwizard.auth.Auth;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class ResultJsonDescriptionResource {
 	@GET
 	@Path("{" + QUERY + "}.json")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAsJson(@Auth Subject subject, @PathParam(QUERY) ManagedExecution execution) {
+	public Response getAsJson(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId execution) {
 
 		log.debug("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 
@@ -39,10 +39,10 @@ public class ResultJsonDescriptionResource {
 	}
 
 
-	public static URL getDownloadURL(UriBuilder uriBuilder, ManagedExecution exec) throws MalformedURLException {
+	public static URL getDownloadURL(UriBuilder uriBuilder, ManagedExecutionId execId) throws MalformedURLException {
 		return uriBuilder.path(ResultJsonDescriptionResource.class)
 						 .path(ResultJsonDescriptionResource.class, "getAsJson")
-						 .resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
+						 .resolveTemplate(ResourceConstants.QUERY, execId.toString())
 						 .build()
 						 .toURL();
 	}

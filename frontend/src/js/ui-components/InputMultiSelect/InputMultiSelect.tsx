@@ -69,6 +69,7 @@ interface Props {
   defaultValue?: SelectOptionT[];
   placeholder?: string;
   autoFocus?: boolean;
+  maxInputLength?: number;
   onChange: (value: SelectOptionT[]) => void;
   loading?: boolean;
   onResolve?: (csvFileLines: string[]) => void; // The assumption is that this will somehow update `options`
@@ -89,6 +90,7 @@ const InputMultiSelect = ({
   defaultValue,
   placeholder,
   autoFocus,
+  maxInputLength,
   onChange,
   loading,
   onResolve,
@@ -126,16 +128,6 @@ const InputMultiSelect = ({
       }
     },
   });
-
-  useDebounce(
-    () => {
-      if (onLoadMore && !loading) {
-        onLoadMore(inputValue, { shouldReset: true });
-      }
-    },
-    350,
-    [inputValue],
-  );
 
   const filteredOptions = useFilteredOptions({
     options,
@@ -243,6 +235,16 @@ const InputMultiSelect = ({
     },
   });
 
+  useDebounce(
+    () => {
+      if (onLoadMore && isOpen && !loading) {
+        onLoadMore(inputValue, { shouldReset: true });
+      }
+    },
+    350,
+    [inputValue, isOpen],
+  );
+
   useLoadMoreInitially({ onLoadMore, isOpen, optionsLength: options.length });
 
   const { ref: menuPropsRef, ...menuProps } = getMenuProps();
@@ -310,14 +312,15 @@ const InputMultiSelect = ({
             }}
             disabled={disabled}
             spellCheck={false}
+            maxLength={maxInputLength}
             placeholder={
               selectedItems.length > 0
                 ? null
                 : placeholder
-                ? placeholder
-                : onResolve
-                ? t("inputMultiSelect.dndPlaceholder")
-                : t("inputSelect.placeholder")
+                  ? placeholder
+                  : onResolve
+                    ? t("inputMultiSelect.dndPlaceholder")
+                    : t("inputSelect.placeholder")
             }
             onClick={(e) => {
               inputProps.onClick?.(e);

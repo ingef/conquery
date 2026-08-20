@@ -3,9 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
-import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
@@ -17,7 +15,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = false)
-public class FilterId extends Id<Filter<?>> implements NamespacedId {
+public class FilterId extends NamespacedId<Filter<?>> {
 
 	private final ConnectorId connector;
 	private final String filter;
@@ -28,8 +26,10 @@ public class FilterId extends Id<Filter<?>> implements NamespacedId {
 	}
 
 	@Override
-	public Filter<?> get(NamespacedStorage storage) {
-		return storage.getConcept(connector.getConcept()).getConnectorByName(connector.getConnector()).getFilterByName(getFilter());
+	public Filter<?> get() {
+		return getDomain().getStorage(getDataset())
+						  .getConcept(connector.getConcept()).getConnectorByName(connector.getConnector())
+						  .getFilterByName(getFilter());
 	}
 
 	@Override
@@ -39,17 +39,13 @@ public class FilterId extends Id<Filter<?>> implements NamespacedId {
 	}
 
 	@Override
-	public void collectIds(Collection<? super Id<?>> collect) {
+	public void collectIds(Collection<Id<?, ?>> collect) {
 		collect.add(this);
 		connector.collectIds(collect);
 	}
 
-	@Override
-	public NamespacedStorageProvider getNamespacedStorageProvider() {
-		return connector.getNamespacedStorageProvider();
-	}
 
-	public static enum Parser implements IdUtil.Parser<FilterId> {
+	public enum Parser implements IdUtil.Parser<FilterId> {
 		INSTANCE;
 
 		@Override

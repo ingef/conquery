@@ -28,8 +28,7 @@ import com.bakdata.conquery.models.messages.network.specific.ForwardToWorker;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.util.DataSize;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -400,10 +399,9 @@ public class MinaStackTest {
 	}
 
 	@CPSType(id = "TEST_MSG", base = NetworkMessage.class)
+	@Data
 	@RequiredArgsConstructor
-	@Getter
-	@EqualsAndHashCode(callSuper = false)
-	@ToString(onlyExplicitlyIncluded = true, callSuper = true)
+	@ToString(callSuper = true)
 	public static class TestMessage extends NetworkMessage<TestNetworkMessageContext> {
 
 		@ToString.Include

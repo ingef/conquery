@@ -2,16 +2,17 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.GROUP_ID;
 
-import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
-import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.util.io.FileUtil;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
+
+import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.util.io.FileUtil;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -35,10 +36,10 @@ public class AuthOverviewResource {
 
 	@GET
 	@Path("csv/group/{" + GROUP_ID + "}")
-	public Response getPermissionOverviewAsCSV(@PathParam(GROUP_ID) Group group) {
+	public Response getPermissionOverviewAsCSV(@PathParam(GROUP_ID) GroupId group) {
 		return Response
 				.ok(processor.getPermissionOverviewAsCSV(group))
-				.header("Content-Disposition", String.format("attachment; filename=\"authOverview_%s.csv\"", FileUtil.makeSafeFileName(group.getName())))
+				.header("Content-Disposition", String.format("attachment; filename=\"authOverview_%s.csv\"", FileUtil.makeSafeFileName(group.getGroup())))
 				.build();
 	}
 }

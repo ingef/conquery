@@ -1,10 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.EVENT_FILTER;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.INTERVAL_PACKING_SELECTS;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.MANDATORY_STEPS;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.UNIVERSAL_SELECTS;
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.UNNEST_DATE;
+import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.*;
 import static com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep.INTERVAL_COMPLETE;
 
 import java.util.HashMap;
@@ -50,18 +46,19 @@ class TablePath {
 
 	private static ConnectorSqlTables createConnectorTables(CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
 
-		String conceptConnectorLabel = context.getNameGenerator().conceptConnectorName(cqConcept, cqTable.getConnector().resolve(), context.getSqlPrintSettings()
+		String connectorName = context.getNameGenerator().conceptConnectorName(cqConcept, cqTable.getConnector().resolve(), context.getSqlPrintSettings()
 																																 .getLocale());
 		TablePathInfo tableInfo = collectConnectorTables(cqConcept, cqTable, context);
-		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), conceptConnectorLabel, context.getNameGenerator());
+		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), connectorName, context.getNameGenerator());
 
 		return new ConnectorSqlTables(
 				cqTable.getConnector().resolve(),
-				conceptConnectorLabel,
+				connectorName,
 				tableInfo.getRootTable(),
 				cteNameMap,
 				tableInfo.getMappings(),
-				tableInfo.isContainsIntervalPacking()
+				tableInfo.isContainsIntervalPacking(),
+				tableInfo.isExcludedFromTimeAggregation()
 		);
 	}
 
@@ -83,25 +80,30 @@ class TablePath {
 	private static TablePathInfo collectConnectorTables(CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
 
 		TablePathInfo tableInfo = new TablePathInfo();
-		tableInfo.setRootTable(cqTable.getConnector().resolve().getResolvedTableId().getTable());
+		tableInfo.setRootTable(cqTable.getConnector().resolve().resolveTableId().getTable());
 		tableInfo.addWithDefaultMapping(MANDATORY_STEPS);
 
 		boolean eventDateSelectsPresent = cqTable.getSelects().stream().map(SelectId::resolve).anyMatch(Select::isEventDateSelect);
-		// no validity date aggregation possible nor necessary
-		if (cqTable.findValidityDate() == null || (!cqConcept.isAggregateEventDates() && !eventDateSelectsPresent)) {
+		// no validity date aggregation necessary
+		if (!cqConcept.isAggregateEventDates() && !eventDateSelectsPresent) {
 			return tableInfo;
 		}
 
-		// interval packing required
+		// interval packing requiredw
 		tableInfo.setContainsIntervalPacking(true);
-		tableInfo.addMappings(IntervalPackingCteStep.getMappings(EVENT_FILTER, context.getSqlDialect()));
+		tableInfo.addMappings(IntervalPackingCteStep.getMappings(PREPROCESSING, context.getDialectBundle()));
+
+		// validity date propagation not necessary
+		if (!cqConcept.isAggregateEventDates()) {
+			tableInfo.setExcludedFromTimeAggregation(true);
+		}
 
 		if (!eventDateSelectsPresent) {
 			return tableInfo;
 		}
 
 		// interval packing selects required with optional unnest step
-		if (context.getSqlDialect().supportsSingleColumnRanges()) {
+		if (context.getDialectBundle().supportsSingleColumnRanges()) {
 			tableInfo.addMappings(Map.of(
 					UNNEST_DATE, INTERVAL_COMPLETE,
 					INTERVAL_PACKING_SELECTS, UNNEST_DATE
@@ -133,7 +135,7 @@ class TablePath {
 		);
 
 		// universal event date selects required with optional additional unnest step
-		if (context.getSqlDialect().supportsSingleColumnRanges()) {
+		if (context.getDialectBundle().supportsSingleColumnRanges()) {
 			tableInfo.addRootTableMapping(UNNEST_DATE);
 			tableInfo.addMappings(Map.of(INTERVAL_PACKING_SELECTS, UNNEST_DATE));
 		}
@@ -163,6 +165,11 @@ class TablePath {
 		 * True if this path info contains CTEs from {@link IntervalPackingCteStep}.
 		 */
 		private boolean containsIntervalPacking;
+
+		/**
+		 * True if these tables should not propagate a present validity date.
+		 */
+		private boolean excludedFromTimeAggregation;
 
 		public TablePathInfo() {
 			this.mappings = new HashMap<>();

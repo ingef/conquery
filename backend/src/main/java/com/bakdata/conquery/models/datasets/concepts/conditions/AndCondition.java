@@ -1,16 +1,17 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -37,7 +38,7 @@ public class AndCondition implements CTCondition {
 	}
 
 	@Override
-	public void init(ConceptTreeNode node) throws ConceptConfigurationException {
+	public void init(ConceptElement<?> node) throws ConceptConfigurationException {
 		for (CTCondition cond : conditions) {
 			cond.init(node);
 		}
@@ -51,5 +52,19 @@ public class AndCondition implements CTCondition {
 						 .orElseThrow(
 								 () -> new IllegalStateException("At least one condition is required to convert %s to a SQL condition.".formatted(getClass()))
 						 );
+	}
+
+	@Override
+	public ConceptConditions buildExpression(CTConditionContext context, ConceptElement<?> id) {
+		List<ConceptConditions> conceptConditions = conditions.stream().map(cond -> cond.buildExpression(context, id))
+															  .toList();
+
+		ConceptConditions out = new ConceptConditions(id, Collections.emptyMap());
+
+		for (ConceptConditions conceptCondition : conceptConditions) {
+			out = out.and(conceptCondition);
+		}
+
+		return out;
 	}
 }

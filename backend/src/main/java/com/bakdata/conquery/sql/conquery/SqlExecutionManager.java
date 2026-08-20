@@ -72,7 +72,7 @@ public class SqlExecutionManager extends ExecutionManager {
 									SqlExecutionExecutionInfo startResult = getExecutionInfo(id);
 									SqlExecutionExecutionInfo
 											finishResult =
-											new SqlExecutionExecutionInfo(ExecutionState.DONE, result.getColumnNames(), result.getTable(), startResult.getExecutingLock());
+											new SqlExecutionExecutionInfo(ExecutionState.DONE, result.getColumnNames(), result.getTable(), result.getResultInfos(), startResult.getExecutingLock());
 									addState(id, finishResult);
 
 									managedQuery.finish(ExecutionState.DONE);
@@ -86,9 +86,9 @@ public class SqlExecutionManager extends ExecutionManager {
 	}
 
 	@Override
-	public void doCancelQuery(ManagedExecution execution) {
+	public void doCancelQuery(ManagedExecutionId managedExecutionId) {
 
-		CompletableFuture<Void> sqlQueryExecution = runningExecutions.remove(execution.getId());
+		CompletableFuture<Void> sqlQueryExecution = runningExecutions.remove(managedExecutionId);
 
 		// already finished/canceled
 		if (sqlQueryExecution == null) {

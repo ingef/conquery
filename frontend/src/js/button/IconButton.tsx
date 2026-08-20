@@ -19,14 +19,14 @@ const SxFaIcon = styled(FaIcon)<StyledFaIconProps>`
     iconColor
       ? iconColor
       : red
-      ? theme.col.red
-      : active
-      ? theme.col.blueGrayDark
-      : light
-      ? theme.col.gray
-      : secondary
-      ? theme.col.orange
-      : theme.col.black};
+        ? theme.col.red
+        : active
+          ? theme.col.blueGrayDark
+          : light
+            ? theme.col.gray
+            : secondary
+              ? theme.col.orange
+              : theme.col.black};
   font-size: ${({ theme, large, small }) =>
     large ? theme.font.md : small ? theme.font.xs : theme.font.sm};
 `;
@@ -52,10 +52,10 @@ const SxBasicButton = styled(BasicButton)<{
     red
       ? theme.col.red
       : active
-      ? theme.col.blueGrayDark
-      : secondary
-      ? theme.col.orange
-      : theme.col.black};
+        ? theme.col.blueGrayDark
+        : secondary
+          ? theme.col.orange
+          : theme.col.black};
   opacity: ${({ frame }) => (frame ? 1 : 0.75)};
   transition:
     opacity ${({ theme }) => theme.transitionTime},

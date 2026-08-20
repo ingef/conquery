@@ -1,11 +1,10 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.Map;
-
 import jakarta.validation.Valid;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
@@ -17,6 +16,7 @@ import lombok.Setter;
  * This condition matches if its child does not.
  */
 @CPSType(id="NOT", base=CTCondition.class)
+@Deprecated
 public class NotCondition implements CTCondition {
 
 	@Setter @Getter @Valid
@@ -28,7 +28,7 @@ public class NotCondition implements CTCondition {
 	}
 
 	@Override
-	public void init(ConceptTreeNode node) throws ConceptConfigurationException {
+	public void init(ConceptElement<?> node) throws ConceptConfigurationException {
 		condition.init(node);
 	}
 
@@ -36,5 +36,10 @@ public class NotCondition implements CTCondition {
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
 		WhereCondition whereCondition = condition.convertToSqlCondition(context);
 		return whereCondition.negate();
+	}
+
+	@Override
+	public ConceptConditions buildExpression(CTConditionContext context, ConceptElement<?> id) {
+		throw new IllegalStateException("Not implemented");
 	}
 }
