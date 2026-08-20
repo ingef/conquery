@@ -14,7 +14,7 @@
         <mock-server.version>5.11.1</mock-server.version>
         <apache-poi.version>5.4.1</apache-poi.version>
         <apache-arrow.version>18.2.0</apache-arrow.version>
-        <apache-parquet.version>1.12.3</apache-parquet.version>
+        <apache-parquet.version>1.18.0</apache-parquet.version>
         <prometheus-metrics.version>1.3.5</prometheus-metrics.version>
         <openapi-generator.version>7.9.0</openapi-generator.version>
     </properties>
