@@ -50,7 +50,7 @@ public record ResultStatistics(int entities, int total, List<ColumnStatsCollecto
 
 
 		//TODO pull inner executor service from ManagerNode
-		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(Math.min(1, Runtime.getRuntime().availableProcessors() - 1)));
+		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(Math.max(1, Runtime.getRuntime().availableProcessors() - 1)));
 
 		// Yes, we are actually iterating the result for every job.
 
