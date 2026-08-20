@@ -49,11 +49,10 @@ public class IndexServiceTest {
 
 	private static final Dataset DATASET = new Dataset("dataset");
 	private static final ConqueryConfig CONFIG = new ConqueryConfig();
-	private final IndexService indexService = new IndexService(new CsvParserSettings(), "emptyDefaultLabel");
+	private final IndexService indexService = new IndexService(new CsvParserSettings());
 
 	@SneakyThrows(IOException.class)
-	private static void initRefServer(ClientAndServer mockServer) {
-		log.info("Test loading of mapping");
+	public static void initRefServer(ClientAndServer mockServer) {
 
 		try (InputStream inputStream = LoadingUtil.openResource(MAPPING_PATH)) {
 			mockServer.when(request().withPath("/mapping.csv"))

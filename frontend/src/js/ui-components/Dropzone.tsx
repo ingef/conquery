@@ -24,10 +24,10 @@ const Root = styled("div")<{
     naked
       ? "none"
       : isOver && !canDrop
-      ? `3px solid ${theme.col.red}`
-      : isOver
-      ? `3px solid ${theme.col.black}`
-      : `3px dashed ${theme.col.grayMediumLight}`};
+        ? `3px solid ${theme.col.red}`
+        : isOver
+          ? `3px solid ${theme.col.black}`
+          : `3px dashed ${theme.col.grayMediumLight}`};
   border-radius: ${({ theme }) => theme.borderRadius};
   padding: ${({ bare }) => (bare ? "0" : "10px")};
   display: ${({ invisible }) => (invisible ? "none" : "flex")};
@@ -37,17 +37,17 @@ const Root = styled("div")<{
     naked && isOver && canDrop
       ? theme.col.grayLight
       : canDrop
-      ? theme.col.grayVeryLight
-      : transparent
-      ? "transparent"
-      : theme.col.bg};
+        ? theme.col.grayVeryLight
+        : transparent
+          ? "transparent"
+          : theme.col.bg};
   width: 100%;
   color: ${({ theme, isOver, canDrop }) =>
     isOver && !canDrop
       ? theme.col.red
       : isOver
-      ? theme.col.black
-      : theme.col.gray};
+        ? theme.col.black
+        : theme.col.gray};
 `;
 
 export interface ChildArgs<DroppableObject> {

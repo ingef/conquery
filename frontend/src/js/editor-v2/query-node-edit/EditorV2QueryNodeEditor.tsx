@@ -194,6 +194,10 @@ export const EditorV2QueryNodeEditor = ({
     [node, onChange],
   );
 
+  const onToggleTimeStamps = useCallback(() => {
+    onChange({ ...node, excludeTimestamps: !node.excludeTimestamps });
+  }, [node, onChange]);
+
   return (
     <QueryNodeEditor
       name={`editorv2`}
@@ -205,6 +209,7 @@ export const EditorV2QueryNodeEditor = ({
       onDropConcept={onDropConcept}
       onRemoveConcept={onRemoveConcept}
       onToggleTable={onToggleTable}
+      onToggleTimestamps={onToggleTimeStamps}
       onSelectSelects={onSelectSelects}
       onSelectTableSelects={onSelectTableSelects}
       onSetFilterValue={onSetFilterValue}

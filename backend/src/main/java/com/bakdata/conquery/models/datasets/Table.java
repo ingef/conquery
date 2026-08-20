@@ -13,7 +13,7 @@ import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.mode.ValidationMode;
-import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
@@ -64,14 +65,14 @@ public class Table extends LabeledNamespaceIdentifiable<TableId> implements Init
 	private Column[] columns = new Column[0];
 	/**
 	 * Defines the primary key/column of this table. Only required for SQL mode.
-	 * If unset {@link DatabaseConfig#getPrimaryColumn()} is assumed.
+	 * If unset {@link DatabaseConnectionConfig#getPrimaryColumn()} is assumed.
 	 */
 	@Nullable
 	@JsonManagedReference
 	private Column primaryColumn;
 
 	@JsonView(View.InternalCommunication.class)
-	@Setter(AccessLevel.PRIVATE)
+	@Setter(value = AccessLevel.PUBLIC, onMethod_ = @VisibleForTesting)
 	private DatasetId dataset;
 
 

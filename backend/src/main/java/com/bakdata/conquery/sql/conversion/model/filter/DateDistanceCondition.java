@@ -9,9 +9,4 @@ public class DateDistanceCondition extends RangeCondition {
 		super(column, range);
 	}
 
-	@Override
-	public ConditionType type() {
-		return ConditionType.EVENT;
-	}
-
 }

@@ -1,37 +1,33 @@
 package com.bakdata.conquery.sql.conversion.model;
 
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import lombok.RequiredArgsConstructor;
+import org.jooq.*;
+import org.jooq.Record;
+import org.jooq.impl.DSL;
+
 import java.util.List;
 import java.util.stream.Stream;
-
-import org.jooq.CommonTableExpression;
-import org.jooq.DSLContext;
-import org.jooq.Record;
-import org.jooq.Select;
-import org.jooq.SelectConditionStep;
-import org.jooq.SelectHavingStep;
-import org.jooq.SelectSelectStep;
-import org.jooq.impl.DSL;
 
 /**
  * Transformer for translating the intermediate representation of {@link QueryStep} into the final SQL query.
  */
+@RequiredArgsConstructor
 public class QueryStepTransformer {
 
 	private final DSLContext dslContext;
 
-	public QueryStepTransformer(DSLContext dslContext) {
-		this.dslContext = dslContext;
-	}
-
 	/**
 	 * Converts a given {@link QueryStep} into an executable SELECT statement.
 	 */
-	public Select<Record> toSelectQuery(QueryStep queryStep) {
+	public Select<Record> toSelectQuery(QueryStep queryStep, SqlFunctionProvider functionProvider) {
 
-		SelectConditionStep<Record> queryBase = this.dslContext.with(constructPredecessorCteList(queryStep))
-															   .select(queryStep.getSelects().all())
-															   .from(queryStep.getFromTables())
-															   .where(queryStep.getConditions());
+		List<Field<?>> finalRepresentation = queryStep.getSelects().toFinalRepresentation(functionProvider, queryStep.isForTableExport());
+
+		SelectConditionStep<Record> queryBase = this.dslContext.with(constructPredecessorCteList(queryStep, functionProvider))
+				.select(finalRepresentation)
+				.from(queryStep.getFromTables())
+				.where(queryStep.getConditions());
 
 		// grouping
 		SelectHavingStep<Record> grouped = queryBase;
@@ -40,43 +36,45 @@ public class QueryStepTransformer {
 		}
 
 		// union
-		if (!queryStep.isUnion()) {
-			return grouped;
+		if (queryStep.isUnion()) {
+			return union(queryStep, grouped, functionProvider);
 		}
-		return union(queryStep, grouped);
+
+		return grouped;
 	}
 
-	private List<CommonTableExpression<Record>> constructPredecessorCteList(QueryStep queryStep) {
-		return queryStep.getPredecessors().stream()
-						.flatMap(predecessor -> toCteList(predecessor).stream())
-						.toList();
+	private List<CommonTableExpression<Record>> constructPredecessorCteList(QueryStep queryStep, SqlFunctionProvider functionProvider) {
+		return predecessorCtes(queryStep, functionProvider)
+				.toList();
 	}
 
-	private List<CommonTableExpression<Record>> toCteList(QueryStep queryStep) {
+	private List<CommonTableExpression<Record>> toCteList(QueryStep queryStep, SqlFunctionProvider functionProvider) {
 		return Stream.concat(
-				this.predecessorCtes(queryStep),
-				Stream.of(toCte(queryStep))
+				this.predecessorCtes(queryStep, functionProvider),
+				Stream.of(toCte(queryStep, functionProvider))
 		).toList();
 	}
 
-	private Stream<CommonTableExpression<Record>> predecessorCtes(QueryStep queryStep) {
+	private Stream<CommonTableExpression<Record>> predecessorCtes(QueryStep queryStep, SqlFunctionProvider functionProvider) {
 		return queryStep.getPredecessors().stream()
-						.flatMap(predecessor -> toCteList(predecessor).stream());
+				.flatMap(predecessor -> toCteList(predecessor, functionProvider).stream());
 	}
 
-	private CommonTableExpression<Record> toCte(QueryStep queryStep) {
-		Select<Record> selectStep = toSelectStep(queryStep);
+	private CommonTableExpression<Record> toCte(QueryStep queryStep, SqlFunctionProvider functionProvider) {
+		Select<Record> selectStep = toSelectStep(queryStep, functionProvider);
 		return DSL.name(queryStep.getCteName()).as(selectStep);
 	}
 
-	private Select<Record> toSelectStep(QueryStep queryStep) {
+	private Select<Record> toSelectStep(QueryStep queryStep, SqlFunctionProvider functionProvider) {
 
 		SelectSelectStep<Record> selectClause;
+
+		List<Field<?>> allSelects = queryStep.isForTableExport() ? queryStep.getSelects().toFinalRepresentation(functionProvider, true) : queryStep.getSelects().all();
+
 		if (queryStep.isSelectDistinct()) {
-			selectClause = dslContext.selectDistinct(queryStep.getSelects().all());
-		}
-		else {
-			selectClause = dslContext.select(queryStep.getSelects().all());
+			selectClause = dslContext.selectDistinct(allSelects);
+		} else {
+			selectClause = dslContext.select(allSelects);
 		}
 
 		Select<Record> selectStep = selectClause.from(queryStep.getFromTables()).where(queryStep.getConditions());
@@ -86,15 +84,25 @@ public class QueryStepTransformer {
 		}
 
 		if (queryStep.isUnion()) {
-			selectStep = union(queryStep, selectStep);
+			selectStep = union(queryStep, selectStep, functionProvider);
 		}
 
 		return selectStep;
 	}
 
-	private Select<Record> union(QueryStep queryStep, Select<Record> base) {
+	private Select<Record> union(QueryStep queryStep, Select<Record> base, SqlFunctionProvider functionProvider) {
 		for (QueryStep unionStep : queryStep.getUnion()) {
-			base = queryStep.isUnionAll() ? base.unionAll(toSelectStep(unionStep)) : base.union(toSelectStep(unionStep));
+			Select<Record> selectStep =
+					queryStep.isForTableExport() ?
+							// TODO this feels like a leaked abstraction, but i am not able to find the proper injection layer at the moment.
+							toSelectQuery(unionStep, functionProvider) :
+							toSelectStep(unionStep, functionProvider);
+
+			if (queryStep.isUnionAll()) {
+				base = base.unionAll(selectStep);
+			} else {
+				base = base.union(selectStep);
+			}
 		}
 		return base;
 	}

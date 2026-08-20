@@ -52,7 +52,7 @@ public class EventDurationSumSelectConverter implements SelectConverter<EventDur
 		String alias = selectContext.getNameGenerator().selectName(select);
 
 		Field<BigDecimal> durationSum = DSL.sum(
-												   DSL.when(containsInfinityDate(asDualColumn, functionProvider), DSL.val(null, Integer.class))
+												   DSL.when(containsInfinityDate(asDualColumn, functionProvider), DSL.inline(null, Integer.class))
 													  .otherwise(functionProvider.dateDistance(ChronoUnit.DAYS, asDualColumn.getStart(), asDualColumn.getEnd()))
 										   )
 										   .as(alias);
@@ -60,8 +60,8 @@ public class EventDurationSumSelectConverter implements SelectConverter<EventDur
 	}
 
 	private static Condition containsInfinityDate(ColumnDateRange validityDate, SqlFunctionProvider functionProvider) {
-		Field<Date> negativeInfinity = functionProvider.toDateField(functionProvider.getMinDateExpression());
-		Field<Date> positiveInfinity = functionProvider.toDateField(functionProvider.getMaxDateExpression());
+		Field<Date> negativeInfinity = functionProvider.getMinDateExpression();
+		Field<Date> positiveInfinity = functionProvider.getMaxDateExpression();
 		return validityDate.getStart().eq(negativeInfinity).or(validityDate.getEnd().eq(positiveInfinity));
 	}
 

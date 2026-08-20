@@ -11,7 +11,7 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
@@ -50,8 +50,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 		final ConceptId conceptId = new ConceptId(dataset, "test_tree");
 
-		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
-		final QueryTest test2 = JsonIntegrationTest.readJson(dataset, testJson2);
+		final QueryTest test = ConqueryTestSpec.readJson(dataset, testJson);
+		final QueryTest test2 = ConqueryTestSpec.readJson(dataset, testJson2);
 
 		// Manually import data, so we can do our own work.
 		{

@@ -1,0 +1,64 @@
+{
+  "type": "QUERY_TEST",
+  "label": "Test without validity Dates",
+  "expectedCsv": "tests/query/NO_VALIDITY_DATE_CONCEPT_QUERY/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "excludeFromTimeAggregation": true,
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector",
+          "filters": [
+            {
+              "filter": "concept.connector.filter",
+              "type": "BIG_MULTI_SELECT",
+              "value": [
+                "f"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "table",
+          "filters": {
+            "name": "filter",
+            "column": "table.value",
+            "type": "BIG_MULTI_SELECT"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/NO_VALIDITY_DATE_CONCEPT_QUERY/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "value",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

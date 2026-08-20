@@ -12,7 +12,7 @@ import jakarta.ws.rs.core.UriBuilder;
 import c10n.C10N;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -43,7 +43,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 
 		final DatasetId dataset = conquery.getDataset();
 
-		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
+		final QueryTest test = ConqueryTestSpec.readJson(dataset, testJson);
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
 		test.importRequiredData(conquery);

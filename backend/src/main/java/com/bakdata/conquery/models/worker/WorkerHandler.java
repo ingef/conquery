@@ -1,15 +1,5 @@
 package com.bakdata.conquery.models.worker;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -26,6 +16,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Handler for worker in a single namespace.
@@ -65,7 +58,7 @@ public class WorkerHandler {
 		// Register tracker for pending reactions if applicable
 		if (msg instanceof ActionReactionMessage actionReactionMessage) {
 			final UUID callerId = actionReactionMessage.getMessageId();
-			pendingReactions.put(callerId, new PendingReaction(callerId, new HashSet<>(workers.keySet()), actionReactionMessage));
+			pendingReactions.put(callerId, new PendingReaction(new HashSet<>(workers.keySet()), actionReactionMessage));
 		}
 
 		// Send message to all workers
@@ -136,7 +129,6 @@ public class WorkerHandler {
 	}
 
 	/**
-	 * @return
 	 * @implNote Currently the least occupied Worker receives a new Bucket, this can change in later implementations. (For example for
 	 * dedicated Workers, or entity weightings)
 	 */
@@ -208,7 +200,11 @@ public class WorkerHandler {
 		return !pendingReactions.isEmpty();
 	}
 
-	private record PendingReaction(UUID callerId, Set<WorkerId> pendingWorkers, ActionReactionMessage parent) {
+	/**
+	 * @param pendingWorkers Workers, that need to send a final reaction message.
+	 * @param parent         The message, that initiated the reactions and hold the reaction hook code.
+	 */
+	private record PendingReaction(Set<WorkerId> pendingWorkers, ActionReactionMessage parent) {
 
 		/**
 		 * Marks the given worker as not pending. If the last pending worker checks off the afterAllReaction is executed.
@@ -222,7 +218,7 @@ public class WorkerHandler {
 			}
 
 			if (!pendingWorkers.remove(workerId)) {
-				throw new IllegalStateException(String.format("Could not check off worker %s for action-reaction message '%s'. Worker was not checked in.", workerId, callerId));
+				throw new IllegalStateException(String.format("Could not check off worker %s for action-reaction message '%s'. Worker was not checked in.", workerId, parent.getMessageId()));
 			}
 
 			log.debug("Checked off worker '{}' for action-reaction message '{}', still waiting for {}.", workerId, parent, pendingWorkers.size());

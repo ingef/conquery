@@ -56,13 +56,12 @@ public class ExecuteQuery extends WorkerMessage {
 			log.trace("Created query plan in {}", stopwatch);
 		}
 		catch (Exception e) {
-			ConqueryError err = asConqueryError(e);
-			log.warn("Failed to create query plans for {}.", id, err);
-			queryExecutor.sendFailureToManagerNode(result, err, worker);
+			log.warn("Failed to create query plans for {}.", id, e);
+			queryExecutor.sendFailureToManagerNode(e, id);
 			return;
 		}
 
-		final QueryExecutionContext executionContext = new QueryExecutionContext(id, queryExecutor, worker.getStorage(), worker.getBucketManager());
+		final QueryExecutionContext executionContext = new QueryExecutionContext(id, queryExecutor, worker.getStorage(), worker.getBucketManager(), worker.getClock());
 
 		final Set<Entity> entities = query.collectRequiredEntities(executionContext).resolve(worker.getBucketManager());
 

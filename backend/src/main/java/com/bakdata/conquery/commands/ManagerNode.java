@@ -73,21 +73,18 @@ public class ManagerNode implements Managed {
 	public void run(Manager manager) throws InterruptedException {
 		Environment environment = manager.getEnvironment();
 		ConqueryConfig config = manager.getConfig();
-		validator = environment.getValidator();
 
+		validator = environment.getValidator();
 		this.manager = manager;
 
 		final ObjectMapper apiObjectMapper = environment.getObjectMapper();
 		getInternalMapperFactory().customizeApiObjectMapper(apiObjectMapper, getDatasetRegistry(), getMetaStorage());
 
-
 		// FormScanner needs to be instantiated before plugins are initialized
 		formScanner = new FormScanner(config);
 
-
 		// Init all plugins
 		config.getPlugins().forEach(pluginConfig -> pluginConfig.initialize(this));
-
 
 		// Initialization of internationalization
 		I18n.init();
@@ -99,10 +96,6 @@ public class ManagerNode implements Managed {
 										.build();
 
 		environment.lifecycle().manage(this);
-
-		loadNamespaces();
-
-		loadMetaStorage();
 
 		// Create AdminServlet first to make it available to the realms
 		admin = new AdminServlet(this);
@@ -159,7 +152,6 @@ public class ManagerNode implements Managed {
 				});
 			}
 
-
 			loaders.shutdown();
 			while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
 				final int countLoaded = registry.getNamespaces().size();
@@ -201,6 +193,9 @@ public class ManagerNode implements Managed {
 
 	@Override
 	public void start() throws Exception {
+		loadNamespaces();
+		loadMetaStorage();
+
 		manager.start();
 	}
 
@@ -214,7 +209,6 @@ public class ManagerNode implements Managed {
 			catch (Exception e) {
 				log.error("{} could not be closed", provider, e);
 			}
-
 		}
 
 		try {

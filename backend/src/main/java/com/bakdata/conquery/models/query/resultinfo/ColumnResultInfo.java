@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.ConceptIdPrinter;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -49,6 +50,11 @@ public class ColumnResultInfo extends ResultInfo {
 			return new ConceptIdPrinter(concept, printSettings);
 		}
 		return printerFactory.printerFor(type, printSettings);
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+		return ResultSetProcessor.readerForType(getType(), resultSetProcessor);
 	}
 
 }

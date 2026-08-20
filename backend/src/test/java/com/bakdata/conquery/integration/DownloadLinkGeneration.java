@@ -2,9 +2,12 @@ package com.bakdata.conquery.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.InputStream;
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
@@ -12,7 +15,6 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -22,9 +24,14 @@ import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.query.DistributedExecutionManager;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.sql.execution.SqlExecutionExecutionInfo;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 public class DownloadLinkGeneration extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
@@ -35,8 +42,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		final User user = new User("testU", "testU", storage);
 
-		final InputStream testJson = LoadingUtil.openResource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json");
-		final QueryTest test = (QueryTest) new JsonIntegrationTest(testJson).getTestSpec();
+		final QueryTest test = (QueryTest) ConqueryTestSpec.fromResourcePath("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json");
 
 		storage.updateUser(user);
 
@@ -45,11 +51,10 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		test.importRequiredData(conquery);
 
 		// Parse the query in the context of the conquery instance, not the test, to have the IdResolver properly set
-		Query query = ConqueryTestSpec.parseSubTree(conquery, test.getRawQuery(), Query.class, true);
+		Query query = LoadingUtil.parseSubTree(conquery, test.getRawQuery(), Query.class, true);
 
 		// Create execution for download
 		ManagedQuery exec = new ManagedQuery(query, user.getId(), conquery.getDataset(), storage, conquery.getDatasetRegistry(), conquery.getConfig());
-		exec.setLastResultCount(100L);
 
 		storage.addExecution(exec);
 
@@ -63,7 +68,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		{
 			// Tinker the state of the execution and try again: still not possible because of missing permissions
-			DistributedExecutionManager.DistributedExecutionInfo distributedState = new DistributedExecutionManager.DistributedExecutionInfo();
+			DistributedExecutionManager.DistributedExecutionInfo distributedState = new DistributedExecutionManager.DistributedExecutionInfo(Collections.emptyList());
 			distributedState.setExecutionState(ExecutionState.DONE);
 			distributedState.getExecutingLock().countDown();
 			conquery.getNamespace().getExecutionManager().addState(exec.getId(), distributedState);

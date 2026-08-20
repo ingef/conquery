@@ -8,6 +8,7 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -18,6 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
@@ -43,8 +45,13 @@ public class Dataset extends LabeledNamespaceIdentifiable<DatasetId> implements 
 	@Setter
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
 	private NamespacedStorageProvider storageProvider;
 
+	/**
+	 * Name of a datasource to link up with an entry in {@link SqlConnectorConfig#getDatabaseConfigs()}.
+	 */
+	private String dataSource;
 
 	public Dataset(String name) {
 		setName(name);
@@ -52,6 +59,10 @@ public class Dataset extends LabeledNamespaceIdentifiable<DatasetId> implements 
 
 	public static boolean isAllIdsTable(Table table) {
 		return table.getName().equalsIgnoreCase(ConqueryConstants.ALL_IDS_TABLE);
+	}
+
+	public String getDataSource() {
+		return dataSource == null ? getName() : dataSource;
 	}
 
 	@JsonIgnore

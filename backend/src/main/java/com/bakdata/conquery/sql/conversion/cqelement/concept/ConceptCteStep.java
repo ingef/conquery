@@ -13,8 +13,7 @@ public enum ConceptCteStep implements CteStep {
 
 	// connector
 	PREPROCESSING("preprocessing", null),
-	EVENT_FILTER("event_filter", PREPROCESSING),
-	AGGREGATION_SELECT("group_select", EVENT_FILTER),
+	AGGREGATION_SELECT("group_select", PREPROCESSING),
 	JOIN_BRANCHES("join_branches", AGGREGATION_SELECT),
 	AGGREGATION_FILTER("group_filter", JOIN_BRANCHES),
 
@@ -27,7 +26,6 @@ public enum ConceptCteStep implements CteStep {
 
 	public static final Set<CteStep> MANDATORY_STEPS = Set.of(
 			PREPROCESSING,
-			EVENT_FILTER,
 			AGGREGATION_SELECT,
 			JOIN_BRANCHES,
 			AGGREGATION_FILTER

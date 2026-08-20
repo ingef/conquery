@@ -1,8 +1,8 @@
-id,a,b,c
-1,J,N,N
-2,N,J,N
-3,N,N,J
-4,1,1,0
-5,false,false,true
-7,,,J
-6,,,
+id,date,a,b,c
+1,2000-01-01,true,false,false
+2,2000-01-01,false,true,false
+3,2000-01-01,false,false,true
+4,2000-01-01,true,true,false
+5,2000-01-01,false,false,true
+7,2000-01-01,,,true
+6,2000-01-01,,,

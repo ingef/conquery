@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
@@ -29,7 +28,7 @@ public class MetadataCollectionTest extends IntegrationTest.Simple implements Pr
 
 		DatasetId dataset = conquery.getDataset();
 
-		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
+		ConqueryTestSpec test = ConqueryTestSpec.readJson(dataset, testJson);
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
 		test.importRequiredData(conquery);

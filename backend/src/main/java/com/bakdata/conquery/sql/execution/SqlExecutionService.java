@@ -16,14 +16,12 @@ import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.Record;
-import org.jooq.Result;
 import org.jooq.Select;
 import org.jooq.exception.DataAccessException;
 
@@ -50,7 +48,10 @@ public class SqlExecutionService {
 	private SqlExecutionExecutionInfo createStatementAndExecute(SqlQuery sqlQuery, Connection connection) {
 
 		final String sqlString = sqlQuery.getSql();
-		final List<ResultType> resultTypes = sqlQuery.getResultInfos().stream().map(ResultInfo::getType).collect(Collectors.toList());
+		List<ResultInfo> resultInfos = sqlQuery.getResultInfos();
+		final List<ResultSetProcessor.Reader<?>> resultTypes = resultInfos.stream()
+														.map(resultInfo -> resultInfo.createReader(resultSetProcessor))
+														.collect(Collectors.toList());
 
 		log.info("Executing query: \n{}", sqlString);
 
@@ -60,10 +61,11 @@ public class SqlExecutionService {
 			final List<String> columnNames = getColumnNames(resultSet, columnCount);
 			final List<EntityResult> resultTable = createResultTable(resultSet, resultTypes, columnCount);
 
-			return new SqlExecutionExecutionInfo(ExecutionState.RUNNING, columnNames, resultTable, new CountDownLatch(1));
+			return new SqlExecutionExecutionInfo(ExecutionState.RUNNING, columnNames, resultTable, resultInfos, new CountDownLatch(1));
 		}
 		// not all DB vendors throw SQLExceptions
 		catch (SQLException | RuntimeException e) {
+			log.error("Query execution failed", e);
 			throw new ConqueryError.SqlError(e);
 		}
 	}
@@ -75,7 +77,7 @@ public class SqlExecutionService {
 						.toList();
 	}
 
-	private List<EntityResult> createResultTable(ResultSet resultSet, List<ResultType> resultTypes, int columnCount) throws SQLException {
+	private List<EntityResult> createResultTable(ResultSet resultSet, List<ResultSetProcessor.Reader<?>> resultTypes, int columnCount) throws SQLException {
 		final List<EntityResult> resultTable = new ArrayList<>(resultSet.getFetchSize());
 		while (resultSet.next()) {
 			final SqlEntityResult resultRow = getResultRow(resultSet, resultTypes, columnCount);
@@ -93,27 +95,17 @@ public class SqlExecutionService {
 		}
 	}
 
-	private SqlEntityResult getResultRow(ResultSet resultSet, List<ResultType> resultTypes, int columnCount) throws SQLException {
+	private SqlEntityResult getResultRow(ResultSet resultSet, List<ResultSetProcessor.Reader<?>> resultTypes, int columnCount) throws SQLException {
 
 		final String id = resultSet.getString(PID_COLUMN_INDEX);
 		final Object[] resultRow = new Object[columnCount - 1];
 
 		for (int resultSetIndex = VALUES_OFFSET_INDEX; resultSetIndex <= columnCount; resultSetIndex++) {
 			final int resultTypeIndex = resultSetIndex - VALUES_OFFSET_INDEX;
-			resultRow[resultTypeIndex] = resultTypes.get(resultTypeIndex).getFromResultSet(resultSet, resultSetIndex, resultSetProcessor);
+			resultRow[resultTypeIndex] = resultTypes.get(resultTypeIndex).read(resultSet, resultSetIndex);
 		}
 
 		return new SqlEntityResult(id, resultRow);
-	}
-
-	public Result<?> fetch(Select<?> query) {
-		log.debug("Executing query: \n{}", query);
-		try {
-			return dslContext.fetch(query);
-		}
-		catch (DataAccessException exception) {
-			throw new ConqueryError.SqlError(exception);
-		}
 	}
 
 	/**
