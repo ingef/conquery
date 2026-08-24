@@ -195,8 +195,8 @@ public class PolymorphicModelsOpenApiFilter implements OASFilter {
 	}
 
 	private void addFamilySchema(Components components, Class<?> baseType, List<PolymorphicModelType<?, ?>> types) {
-		PolymorphicModelBase base = baseType.getAnnotation(PolymorphicModelBase.class);
-		Discriminator discriminator = OASFactory.createDiscriminator().propertyName(base.discriminator());
+		FamilySchema family = familySchema(baseType);
+		Discriminator discriminator = OASFactory.createDiscriminator().propertyName(family.discriminator());
 		List<Schema> alternatives = new ArrayList<>();
 		for (PolymorphicModelType<?, ?> type : types) {
 			String schemaName = schemaName(type.modelType());
@@ -204,19 +204,35 @@ public class PolymorphicModelsOpenApiFilter implements OASFilter {
 			if (concreteSchema == null) {
 				throw new IllegalStateException("No generated OpenAPI schema found for registered polymorphic model " + type.modelType().getName() + ". Annotate and index the model class so SmallRye OpenAPI can discover it.");
 			}
-			concreteSchema.addProperty(base.discriminator(), OASFactory.createSchema()
+			concreteSchema.addProperty(family.discriminator(), OASFactory.createSchema()
 					.addType(Schema.SchemaType.STRING)
 					.constValue(type.typeId()));
-			concreteSchema.addRequired(base.discriminator());
+			concreteSchema.addRequired(family.discriminator());
 			String reference = "#/components/schemas/" + schemaName;
 			discriminator.addMapping(type.typeId(), reference);
 			alternatives.add(OASFactory.createSchema().ref(reference));
 		}
 		Schema familySchema = OASFactory.createSchema()
-				.description(base.description())
+				.description(family.description())
 				.discriminator(discriminator)
 				.oneOf(List.copyOf(alternatives));
-		components.addSchema(base.schemaName(), familySchema);
+		components.addSchema(family.schemaName(), familySchema);
+	}
+
+	private FamilySchema familySchema(Class<?> baseType) {
+		PolymorphicModelBase internal = baseType.getAnnotation(PolymorphicModelBase.class);
+		if (internal != null) {
+			return new FamilySchema(internal.discriminator(), internal.schemaName(), internal.description());
+		}
+		com.bakdata.conquery.quarkus.plugin.api.models.PolymorphicModelBase plugin =
+				baseType.getAnnotation(com.bakdata.conquery.quarkus.plugin.api.models.PolymorphicModelBase.class);
+		if (plugin != null) {
+			return new FamilySchema(plugin.discriminator(), plugin.schemaName(), plugin.description());
+		}
+		throw new IllegalStateException("Polymorphic model base " + baseType.getName() + " is not annotated");
+	}
+
+	private record FamilySchema(String discriminator, String schemaName, String description) {
 	}
 
 	private String schemaName(Class<?> modelType) {

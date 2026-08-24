@@ -18,40 +18,29 @@ import com.bakdata.conquery.quarkus.concepts.filters.providers.QuartersInYearFil
 import com.bakdata.conquery.quarkus.concepts.filters.providers.SelectFilterProvider;
 import com.bakdata.conquery.quarkus.concepts.filters.providers.SingleSelectFilterProvider;
 import com.bakdata.conquery.quarkus.concepts.filters.providers.SumFilterProvider;
-import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.BigMultiSelectFilterValue;
-import com.bakdata.conquery.quarkus.concepts.filters.values.FilterValue;
-import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.IntegerRangeFilterValue;
-import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.MoneyRangeFilterValue;
-import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.MultiSelectFilterValue;
-import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.RealRangeFilterValue;
-import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.SelectFilterValue;
-import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.StringFilterValue;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinitionProvider;
 import org.junit.jupiter.api.Test;
 
 class FilterDefinitionProviderValueTypesTest {
 
-	private static final Set<Class<? extends FilterValue>> INTEGER_RANGE = Set.of(IntegerRangeFilterValue.class);
-	private static final Set<Class<? extends FilterValue>> NUMERIC_RANGES = Set.of(
-			IntegerRangeFilterValue.class,
-			MoneyRangeFilterValue.class,
-			RealRangeFilterValue.class
-	);
+	private static final Set<String> INTEGER_RANGE = Set.of("INTEGER_RANGE");
+	private static final Set<String> NUMERIC_RANGES = Set.of("INTEGER_RANGE", "MONEY_RANGE", "REAL_RANGE");
 
 	@Test
 	void declaresAcceptedFilterValueTypesForEveryBuiltInProvider() {
-		Map<FilterDefinitionProvider<?>, Set<Class<? extends FilterValue>>> expected = Map.ofEntries(
-				Map.entry(new BigMultiSelectFilterProvider(), Set.of(BigMultiSelectFilterValue.class)),
+		Map<FilterDefinitionProvider<?>, Set<String>> expected = Map.ofEntries(
+				Map.entry(new BigMultiSelectFilterProvider(), Set.of("BIG_MULTI_SELECT")),
 				Map.entry(new CategoryMaxSumFilterProvider(), NUMERIC_RANGES),
 				Map.entry(new CountFilterProvider(), INTEGER_RANGE),
 				Map.entry(new CountQuartersFilterProvider(), INTEGER_RANGE),
 				Map.entry(new DateDistanceFilterProvider(), INTEGER_RANGE),
 				Map.entry(new DurationSumFilterProvider(), INTEGER_RANGE),
-				Map.entry(new FlagsFilterProvider(), Set.of(MultiSelectFilterValue.class)),
+				Map.entry(new FlagsFilterProvider(), Set.of("MULTI_SELECT")),
 				Map.entry(new NumberFilterProvider(), NUMERIC_RANGES),
-				Map.entry(new PrefixTextFilterProvider(), Set.of(StringFilterValue.class)),
+				Map.entry(new PrefixTextFilterProvider(), Set.of("STRING")),
 				Map.entry(new QuartersInYearFilterProvider(), INTEGER_RANGE),
-				Map.entry(new SelectFilterProvider(), Set.of(MultiSelectFilterValue.class, BigMultiSelectFilterValue.class)),
-				Map.entry(new SingleSelectFilterProvider(), Set.of(SelectFilterValue.class)),
+				Map.entry(new SelectFilterProvider(), Set.of("MULTI_SELECT", "BIG_MULTI_SELECT")),
+				Map.entry(new SingleSelectFilterProvider(), Set.of("SELECT")),
 				Map.entry(new SumFilterProvider(), NUMERIC_RANGES)
 		);
 

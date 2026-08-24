@@ -38,6 +38,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.bakdata.conquery</groupId>
+            <artifactId>backend-quarkus-plugin-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
         </dependency>

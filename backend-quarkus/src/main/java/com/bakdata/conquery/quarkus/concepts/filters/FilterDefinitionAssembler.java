@@ -3,13 +3,14 @@ package com.bakdata.conquery.quarkus.concepts.filters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import com.bakdata.conquery.quarkus.concepts.filters.values.FilterValueProvider;
 import com.bakdata.conquery.quarkus.concepts.filters.values.FilterValueRegistry;
+import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConnectorId;
+import com.bakdata.conquery.quarkus.ids.FilterId;
 import com.bakdata.conquery.quarkus.ids.TableId;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinition;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinitionProvider;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterResult;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -34,14 +35,14 @@ public class FilterDefinitionAssembler {
 			TableId tableId,
 			DatasetCatalogRepository.TableRecord table,
 			List<FilterDefinition> definitions,
-			FilterConversionContext.FallbackReporter fallbackReporter,
+			FilterFallbackReporter fallbackReporter,
 			boolean strictFilterTypes
 	) {
 		if (definitions == null) {
 			return List.of();
 		}
 
-		FilterConversionContext context = new FilterConversionContext(connectorId, tableId, table, fallbackReporter);
+		BackendFilterConversionContext context = new BackendFilterConversionContext(connectorId, tableId, table, fallbackReporter);
 		List<DatasetCatalogRepository.Filter> filters = new ArrayList<>();
 		for (FilterDefinition definition : definitions) {
 			assemble(context, definition, strictFilterTypes).ifPresent(filters::add);
@@ -49,7 +50,7 @@ public class FilterDefinitionAssembler {
 		return List.copyOf(filters);
 	}
 
-	private Optional<DatasetCatalogRepository.Filter> assemble(FilterConversionContext context, FilterDefinition definition, boolean strictFilterTypes) {
+	private Optional<DatasetCatalogRepository.Filter> assemble(BackendFilterConversionContext context, FilterDefinition definition, boolean strictFilterTypes) {
 		Optional<FilterDefinitionProvider<?>> provider = registry.find(definition);
 		if (provider.isPresent()) {
 			return Optional.of(convert(context, definition, provider.get()));
@@ -65,17 +66,34 @@ public class FilterDefinitionAssembler {
 		return Optional.empty();
 	}
 
-	private <T extends FilterDefinition> DatasetCatalogRepository.Filter convert(FilterConversionContext context, FilterDefinition definition, FilterDefinitionProvider<T> provider) {
+	private <T extends FilterDefinition> DatasetCatalogRepository.Filter convert(BackendFilterConversionContext context, FilterDefinition definition, FilterDefinitionProvider<T> provider) {
 		T payload = provider.modelType().cast(definition);
-		DatasetCatalogRepository.Filter filter = provider.convert(context, payload);
-		Set<String> acceptedTypes = provider.acceptedValueTypes().stream()
-				.map(filterValueRegistry::require)
-				.map(FilterValueProvider::type)
-				.collect(Collectors.toUnmodifiableSet());
-		if (!acceptedTypes.contains(filter.type())) {
+		FilterResult result = provider.convert(context, payload);
+		if (!provider.acceptedValueTypes().contains(result.valueType())) {
 			throw new IllegalStateException("Filter provider " + provider.getClass().getName()
-					+ " produced filter value type '" + filter.type() + "' but accepts " + acceptedTypes);
+					+ " produced filter value type '" + result.valueType() + "' but accepts " + provider.acceptedValueTypes());
 		}
-		return filter;
+		filterValueRegistry.require(result.valueType());
+		List<ColumnId> requiredColumns = result.requiredColumns().stream()
+				.map(context::requireColumn)
+				.map(column -> context.columnId(column.name()))
+				.toList();
+		return new DatasetCatalogRepository.Filter(
+				new FilterId(context.connectorId(), result.name()),
+				result.label(),
+				result.valueType(),
+				result.unit(),
+				result.tooltip(),
+				result.options().stream()
+						.map(option -> new DatasetCatalogRepository.FrontendValue(option.value(), option.label(), option.optionValue()))
+						.toList(),
+				result.min(),
+				result.max(),
+				result.pattern(),
+				result.allowDropFile(),
+				result.creatable(),
+				result.defaultValue(),
+				requiredColumns
+		);
 	}
 }

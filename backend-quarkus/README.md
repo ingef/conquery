@@ -76,13 +76,13 @@ runtime integrations; they do not install polymorphic model implementations.
 
 ### Supported extension points
 
-| Model family | Model base | Provider bean |
-| --- | --- | --- |
-| Metadata filters | `FilterDefinition` | `FilterDefinitionProvider<T>` |
-| Query filter values | `FilterValue` | `FilterValueProvider<T>` |
-| Connector selects | `SelectDefinition` | `SelectDefinitionProvider<T>` |
-| Concept-level selects | `ConceptSelectDefinition` | `ConceptSelectDefinitionProvider<T>` |
-| Concept-tree conditions | `ConceptCondition` | `ConceptConditionProvider<T>` |
+| Model family | Model base | Provider bean | Contract |
+| --- | --- | --- | --- |
+| Metadata filters | `FilterDefinition` | `FilterDefinitionProvider<T>` | Stable plugin API |
+| Query filter values | `FilterValue` | `FilterValueProvider<T>` | Provisional backend API |
+| Connector selects | `SelectDefinition` | `SelectDefinitionProvider<T>` | Provisional backend API |
+| Concept-level selects | `ConceptSelectDefinition` | `ConceptSelectDefinitionProvider<T>` | Provisional backend API |
+| Concept-tree conditions | `ConceptCondition` | `ConceptConditionProvider<T>` | Provisional backend API |
 
 A metadata filter plugin provides:
 
@@ -114,23 +114,23 @@ Quarkus bean and Jandex indexing so their provider and annotated model class are
 
 ### Develop a plugin JAR
 
-Use a separate Maven project with Java 21. Its dependency on the backend is a compilation contract and should be
-`provided`, because the host application supplies those classes:
+Use a separate Maven project with Java 21. Filter plugins compile against the dedicated plugin API, not the backend
+application. Keep the dependency `provided`, because the host distribution supplies the API classes:
 
 ```xml
 <dependency>
     <groupId>com.bakdata.conquery</groupId>
-    <artifactId>backend-quarkus</artifactId>
+    <artifactId>backend-quarkus-plugin-api</artifactId>
     <version>${conquery.version}</version>
     <scope>provided</scope>
 </dependency>
 ```
 
-The backend artifact must be available from a Maven repository. For local development from this repository, install it
+The API artifact must be available from a Maven repository. For local development from this repository, install it
 first:
 
 ```bash
-./mvnw -pl backend-quarkus -am install -DskipTests
+./mvnw -pl backend-quarkus-plugin-api -am install -DskipTests
 ```
 
 Quarkus discovers the plugin's CDI beans and OpenAPI models from its build-time index. Generate
@@ -158,12 +158,19 @@ For each implementation:
 2. Implement a concrete model with public Jackson-accessible properties.
 3. Add `@Schema(name = "...")` and `@PolymorphicModelSubtype(base = ..., id = "...")` to the model.
 4. Implement the matching provider interface and annotate the provider with a CDI scope such as `@ApplicationScoped`.
-5. For filters, return a non-empty `acceptedValueTypes()` set and ensure `convert()` emits one of those registered
-   frontend value types.
-6. Run `mvn verify` and confirm the built JAR contains `META-INF/jandex.idx`.
+5. Return the accepted frontend value discriminator IDs from `acceptedValueTypes()`, for example `Set.of("STRING")`.
+6. Convert the model into a plugin API `FilterResult`. Use `FilterConversionContext.requireColumn()` to validate and
+   inspect referenced columns. Do not construct backend IDs or repository records in a plugin.
+7. Run `mvn verify` and confirm the built JAR contains `META-INF/jandex.idx`.
+
+The filter contract is contained in `backend-quarkus-plugin-api` under `com.bakdata.conquery.quarkus.plugin.api`. It
+contains the definition bases, provider interface, conversion context/result, and plugin polymorphism annotations.
+Backend IDs, storage repositories, and implementation DTOs are intentionally excluded. Query filter-value, select,
+and condition extension contracts are still provisional and remain in `backend-quarkus`; extract them into this API
+before treating them as compatibility-stable third-party extension points.
 
 The executable example is in `backend-quarkus-plugin-test/plugin`. Its `PLUGIN_PREFIX` filter deliberately lives in a
-separate JAR and only uses public backend contracts.
+separate JAR and has no dependency on the backend application artifact.
 
 ### Install a plugin in a distribution
 
@@ -217,7 +224,7 @@ The repository contains a downstream test application because testing the plugin
 a Maven dependency cycle. The reactor order is:
 
 ```text
-backend-quarkus -> backend-quarkus-test-plugin -> backend-quarkus-plugin-test-application
+backend-quarkus-plugin-api -> backend-quarkus -> backend-quarkus-test-plugin -> backend-quarkus-plugin-test-application
 ```
 
 Run the fast application-level contract from the repository root:

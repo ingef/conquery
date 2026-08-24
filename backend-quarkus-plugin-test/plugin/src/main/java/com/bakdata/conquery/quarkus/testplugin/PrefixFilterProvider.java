@@ -3,12 +3,9 @@ package com.bakdata.conquery.quarkus.testplugin;
 import java.util.List;
 import java.util.Set;
 
-import com.bakdata.conquery.quarkus.concepts.filters.FilterConversionContext;
-import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionProvider;
-import com.bakdata.conquery.quarkus.concepts.filters.values.FilterValue;
-import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.StringFilterValue;
-import com.bakdata.conquery.quarkus.ids.ColumnId;
-import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinitionProvider;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterResult;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
@@ -20,16 +17,16 @@ public class PrefixFilterProvider implements FilterDefinitionProvider<PrefixFilt
 	}
 
 	@Override
-	public Set<Class<? extends FilterValue>> acceptedValueTypes() {
-		return Set.of(StringFilterValue.class);
+	public Set<String> acceptedValueTypes() {
+		return Set.of("STRING");
 	}
 
 	@Override
-	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, PrefixFilterDefinition payload) {
-		ColumnId column = context.columnId(payload.getColumn());
+	public FilterResult convert(FilterConversionContext context, PrefixFilterDefinition payload) {
+		FilterConversionContext.Column column = context.requireColumn(payload.getColumn());
 		String name = context.idPartFromPreferredOrFallback(payload.getName(), payload.getLabel(), "filter id", type());
-		return new DatasetCatalogRepository.Filter(
-				context.filterId(name),
+		return new FilterResult(
+				name,
 				payload.getLabel(),
 				"STRING",
 				payload.getUnit(),
@@ -41,7 +38,7 @@ public class PrefixFilterProvider implements FilterDefinitionProvider<PrefixFilt
 				false,
 				false,
 				payload.getPrefix(),
-				List.of(column)
+				List.of(column.name())
 		);
 	}
 }

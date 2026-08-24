@@ -39,4 +39,11 @@ public class FilterValueRegistry {
 		}
 		return provider;
 	}
+
+	public FilterValueProvider<?> require(String type) {
+		return providersByModelType.values().stream()
+				.filter(provider -> provider.type().equals(type))
+				.findFirst()
+				.orElseThrow(() -> new IllegalArgumentException("No filter value provider registered for type " + type));
+	}
 }

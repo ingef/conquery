@@ -45,6 +45,11 @@
         </dependency>
         <dependency>
             <groupId>com.bakdata.conquery</groupId>
+            <artifactId>backend-quarkus-plugin-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.bakdata.conquery</groupId>
             <artifactId>backend-quarkus-test-plugin</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

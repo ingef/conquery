@@ -30,6 +30,7 @@
 
     <modules>
         <module>backend</module>
+        <module>backend-quarkus-plugin-api</module>
         <module>backend-quarkus</module>
         <module>backend-quarkus-plugin-test</module>
         <module>executable</module>

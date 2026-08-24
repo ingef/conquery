@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.bakdata.conquery.quarkus.concepts.filters.values.FilterValueRegistry;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinition;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinitionProvider;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;

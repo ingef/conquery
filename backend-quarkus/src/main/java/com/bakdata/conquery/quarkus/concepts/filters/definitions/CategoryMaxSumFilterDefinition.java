@@ -2,8 +2,9 @@ package com.bakdata.conquery.quarkus.concepts.filters.definitions;
 
 import java.util.List;
 
-import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinition;
-import com.bakdata.conquery.quarkus.models.PolymorphicModelSubtype;
+import com.bakdata.conquery.quarkus.plugin.api.filters.AbstractFilterDefinition;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinition;
+import com.bakdata.conquery.quarkus.plugin.api.models.PolymorphicModelSubtype;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Getter;
 import lombok.Setter;

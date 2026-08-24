@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.quarkus.config.DatasetMetadataRuntimeConfig;
 import com.bakdata.conquery.quarkus.concepts.conditions.ConceptCondition;
-import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinition;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinition;
 import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionAssembler;
 import com.bakdata.conquery.quarkus.concepts.selects.SelectDefinition;
 import com.bakdata.conquery.quarkus.concepts.selects.SelectDefinitionAssembler;

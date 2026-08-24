@@ -1,5 +1,7 @@
 package com.bakdata.conquery.quarkus.concepts.filters.definitions;
 
+import com.bakdata.conquery.quarkus.plugin.api.filters.SingleColumnFilterDefinition;
+
 import java.util.List;
 import java.util.Map;
 

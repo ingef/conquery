@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import java.util.List;
 
 import com.bakdata.conquery.quarkus.concepts.filters.definitions.CountFilterDefinition;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinition;
+import com.bakdata.conquery.quarkus.plugin.api.filters.UnknownFilterDefinition;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;

@@ -6,10 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import java.math.BigDecimal;
 import java.util.Set;
 
-import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinition;
 import com.bakdata.conquery.quarkus.concepts.filters.definitions.MultiSelectFilterDefinition;
 import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.*;
 import com.bakdata.conquery.quarkus.ids.FilterId;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinition;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;

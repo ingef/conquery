@@ -17,6 +17,8 @@ public class PolymorphicModelRegistry {
 
 	@Inject
 	Instance<PolymorphicModelTypeProvider<?, ?>> providers;
+	@Inject
+	Instance<com.bakdata.conquery.quarkus.plugin.api.models.PolymorphicModelTypeProvider<?, ?>> pluginProviders;
 
 	private Map<Class<?>, Map<String, PolymorphicModelType<?, ?>>> typesByBase = Map.of();
 
@@ -24,6 +26,9 @@ public class PolymorphicModelRegistry {
 	void init() {
 		Map<Class<?>, Map<String, PolymorphicModelType<?, ?>>> index = new LinkedHashMap<>();
 		for (PolymorphicModelTypeProvider<?, ?> provider : providers) {
+			register(index, provider);
+		}
+		for (com.bakdata.conquery.quarkus.plugin.api.models.PolymorphicModelTypeProvider<?, ?> provider : pluginProviders) {
 			register(index, provider);
 		}
 		Map<Class<?>, Map<String, PolymorphicModelType<?, ?>>> immutableIndex = new LinkedHashMap<>();
@@ -52,19 +57,33 @@ public class PolymorphicModelRegistry {
 	}
 
 	private void register(Map<Class<?>, Map<String, PolymorphicModelType<?, ?>>> index, PolymorphicModelTypeProvider<?, ?> provider) {
-		Class<?> baseType = provider.baseType();
-		Class<?> modelType = provider.modelType();
-		String typeId = provider.typeId();
+		register(index, provider.baseType(), provider.modelType(), provider.typeId(), descriptor(provider));
+	}
+
+	private void register(
+			Map<Class<?>, Map<String, PolymorphicModelType<?, ?>>> index,
+			com.bakdata.conquery.quarkus.plugin.api.models.PolymorphicModelTypeProvider<?, ?> provider
+	) {
+		register(index, provider.baseType(), provider.modelType(), provider.typeId(), descriptor(provider));
+	}
+
+	private void register(
+			Map<Class<?>, Map<String, PolymorphicModelType<?, ?>>> index,
+			Class<?> baseType,
+			Class<?> modelType,
+			String typeId,
+			PolymorphicModelType<?, ?> descriptor
+	) {
 		if (typeId == null || typeId.isBlank()) {
 			throw new IllegalStateException("Polymorphic model type id must not be blank for " + modelType.getName());
 		}
 		if (!baseType.isAssignableFrom(modelType)) {
 			throw new IllegalStateException("Polymorphic model " + modelType.getName() + " does not implement " + baseType.getName());
 		}
-		if (baseType.getAnnotation(PolymorphicModelBase.class) == null) {
+		if (baseType.getAnnotation(PolymorphicModelBase.class) == null
+				&& baseType.getAnnotation(com.bakdata.conquery.quarkus.plugin.api.models.PolymorphicModelBase.class) == null) {
 			throw new IllegalStateException("Polymorphic model base " + baseType.getName() + " must be annotated with @PolymorphicModelBase");
 		}
-		PolymorphicModelType<?, ?> descriptor = descriptor(provider);
 		PolymorphicModelType<?, ?> previous = index.computeIfAbsent(baseType, ignored -> new LinkedHashMap<>()).put(typeId, descriptor);
 		if (previous != null) {
 			throw new IllegalStateException("Duplicate polymorphic model type '" + typeId + "' for " + baseType.getName() + ": " + previous.modelType().getName() + " and " + modelType.getName());
@@ -72,6 +91,12 @@ public class PolymorphicModelRegistry {
 	}
 
 	private <B, T extends B> PolymorphicModelType<B, T> descriptor(PolymorphicModelTypeProvider<B, T> provider) {
+		return new PolymorphicModelType<>(provider.baseType(), provider.typeId(), provider.modelType());
+	}
+
+	private <B, T extends B> PolymorphicModelType<B, T> descriptor(
+			com.bakdata.conquery.quarkus.plugin.api.models.PolymorphicModelTypeProvider<B, T> provider
+	) {
 		return new PolymorphicModelType<>(provider.baseType(), provider.typeId(), provider.modelType());
 	}
 

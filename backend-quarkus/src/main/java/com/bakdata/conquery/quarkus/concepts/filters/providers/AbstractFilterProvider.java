@@ -1,38 +1,37 @@
 package com.bakdata.conquery.quarkus.concepts.filters.providers;
 
-import com.bakdata.conquery.quarkus.concepts.filters.FilterConversionContext;
-import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionProvider;
-import com.bakdata.conquery.quarkus.concepts.filters.definitions.AbstractFilterDefinition;
-import com.bakdata.conquery.quarkus.concepts.filters.definitions.SelectFilterDefinition;
-import com.bakdata.conquery.quarkus.concepts.filters.definitions.SingleColumnFilterDefinition;
-import com.bakdata.conquery.quarkus.concepts.filters.values.FilterValue;
-import com.bakdata.conquery.quarkus.concepts.filters.values.FilterValueRegistry;
-import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.IntegerRangeFilterValue;
-import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.MoneyRangeFilterValue;
-import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.RealRangeFilterValue;
-import com.bakdata.conquery.quarkus.ids.ColumnId;
-import com.bakdata.conquery.quarkus.ids.FilterId;
-import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import jakarta.inject.Inject;
+import com.bakdata.conquery.quarkus.concepts.filters.definitions.FlagsFilterDefinition;
+import com.bakdata.conquery.quarkus.concepts.filters.definitions.SelectFilterDefinition;
+import com.bakdata.conquery.quarkus.concepts.filters.values.FilterValue;
+import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.IntegerRangeFilterValue;
+import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.MoneyRangeFilterValue;
+import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.RealRangeFilterValue;
+import com.bakdata.conquery.quarkus.models.PolymorphicModelSubtype;
+import com.bakdata.conquery.quarkus.plugin.api.filters.AbstractFilterDefinition;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext.Column;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinitionProvider;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterResult;
+import com.bakdata.conquery.quarkus.plugin.api.filters.SingleColumnFilterDefinition;
 
 abstract class AbstractFilterProvider<T extends AbstractFilterDefinition> implements FilterDefinitionProvider<T> {
 
 	private final Class<T> modelType;
-	private final Set<Class<? extends FilterValue>> acceptedValueTypes;
-
-	@Inject
-	FilterValueRegistry filterValueRegistry;
+	private final Set<String> acceptedValueTypes;
 
 	@SafeVarargs
 	protected AbstractFilterProvider(Class<T> modelType, Class<? extends FilterValue>... acceptedValueTypes) {
 		this.modelType = modelType;
-		this.acceptedValueTypes = Set.of(acceptedValueTypes);
+		this.acceptedValueTypes = Set.of(acceptedValueTypes).stream()
+				.map(AbstractFilterProvider::valueType)
+				.collect(Collectors.toUnmodifiableSet());
 	}
 
 	@Override
@@ -41,27 +40,25 @@ abstract class AbstractFilterProvider<T extends AbstractFilterDefinition> implem
 	}
 
 	@Override
-	public Set<Class<? extends FilterValue>> acceptedValueTypes() {
+	public Set<String> acceptedValueTypes() {
 		return acceptedValueTypes;
 	}
 
-	protected DatasetCatalogRepository.Filter filter(
+	protected FilterResult filter(
 			FilterConversionContext context,
 			T payload,
 			Class<? extends FilterValue> valueType,
 			Integer min,
 			Integer max,
 			boolean creatable,
-			List<ColumnId> requiredColumns
+			List<Column> requiredColumns
 	) {
 		String name = context.idPartFromPreferredOrFallback(payload.getName(), payload.getLabel(), "filter id", type());
 		String label = firstNonBlank(payload.getLabel(), payload.getName()).orElse(name);
-		FilterId id = context.filterId(name);
-		String frontendType = frontendType(valueType);
-		return new DatasetCatalogRepository.Filter(
-				id,
+		return new FilterResult(
+				name,
 				label,
-				frontendType,
+				frontendType(valueType),
 				payload.getUnit(),
 				payload.getTooltip(),
 				options(payload),
@@ -71,52 +68,53 @@ abstract class AbstractFilterProvider<T extends AbstractFilterDefinition> implem
 				Boolean.TRUE.equals(payload.getAllowDropFile()),
 				creatable,
 				payload.getDefaultValue(),
-				requiredColumns
+				requiredColumns.stream().map(Column::name).toList()
 		);
 	}
 
 	protected String frontendType(Class<? extends FilterValue> valueType) {
-		if (!acceptedValueTypes.contains(valueType)) {
+		String type = valueType(valueType);
+		if (!acceptedValueTypes.contains(type)) {
 			throw new IllegalArgumentException("Filter provider " + getClass().getName()
-					+ " does not accept filter value type " + valueType.getName());
+					+ " does not accept filter value type " + type);
 		}
-		return filterValueRegistry.require(valueType).type();
+		return type;
 	}
 
-	protected ColumnId requiredColumn(FilterConversionContext context, SingleColumnFilterDefinition payload) {
+	protected Column requiredColumn(FilterConversionContext context, SingleColumnFilterDefinition payload) {
 		String column = firstNonBlank(payload.getColumn())
 				.orElseThrow(() -> new IllegalArgumentException("Filter " + type() + " must define column."));
-		return context.columnId(column);
+		return context.requireColumn(column);
 	}
 
-	protected List<ColumnId> optionalColumns(FilterConversionContext context, List<String> values) {
+	protected List<Column> optionalColumns(FilterConversionContext context, List<String> values) {
 		if (values == null) {
 			return List.of();
 		}
-		return values.stream().map(context::columnId).toList();
+		return values.stream().map(context::requireColumn).toList();
 	}
 
-	protected List<DatasetCatalogRepository.FrontendValue> options(AbstractFilterDefinition payload) {
+	protected List<FilterResult.Option> options(AbstractFilterDefinition payload) {
 		if (payload instanceof SelectFilterDefinition select && select.getOptions() != null) {
 			return select.getOptions().stream()
-						  .map(value -> new DatasetCatalogRepository.FrontendValue(value.value(), value.label(), value.optionValue()))
-						  .toList();
+					.map(value -> new FilterResult.Option(value.value(), value.label(), value.optionValue()))
+					.toList();
 		}
 		if (payload instanceof SelectFilterDefinition select && select.getLabels() != null) {
 			return select.getLabels().entrySet().stream()
-						  .map(entry -> new DatasetCatalogRepository.FrontendValue(entry.getKey(), entry.getValue(), entry.getKey()))
-						  .toList();
+					.map(entry -> new FilterResult.Option(entry.getKey(), entry.getValue(), entry.getKey()))
+					.toList();
 		}
-		if (payload instanceof com.bakdata.conquery.quarkus.concepts.filters.definitions.FlagsFilterDefinition flags && flags.getFlags() != null) {
+		if (payload instanceof FlagsFilterDefinition flags && flags.getFlags() != null) {
 			return flags.getFlags().keySet().stream()
-					.map(value -> new DatasetCatalogRepository.FrontendValue(value, value, value))
+					.map(value -> new FilterResult.Option(value, value, value))
 					.toList();
 		}
 		return List.of();
 	}
 
-	protected List<ColumnId> columns(ColumnId primary, List<ColumnId> additional) {
-		List<ColumnId> columns = new ArrayList<>();
+	protected List<Column> columns(Column primary, List<Column> additional) {
+		List<Column> columns = new ArrayList<>();
 		if (primary != null) {
 			columns.add(primary);
 		}
@@ -126,29 +124,36 @@ abstract class AbstractFilterProvider<T extends AbstractFilterDefinition> implem
 		return columns;
 	}
 
-	protected List<ColumnId> flagColumns(FilterConversionContext context, Map<String, String> flags) {
+	protected List<Column> flagColumns(FilterConversionContext context, Map<String, String> flags) {
 		if (flags == null) {
 			return List.of();
 		}
-		return flags.values().stream().map(context::columnId).toList();
+		return flags.values().stream().map(context::requireColumn).toList();
 	}
 
-	protected Class<? extends FilterValue> numericRangeValueType(FilterConversionContext context, ColumnId column) {
-		return switch (context.columnType(column)) {
+	protected Class<? extends FilterValue> numericRangeValueType(Column column) {
+		return switch (column.type()) {
 			case MONEY -> MoneyRangeFilterValue.class;
 			case INTEGER -> IntegerRangeFilterValue.class;
 			case DECIMAL, REAL -> RealRangeFilterValue.class;
-			// TODO may fail here
 			default -> RealRangeFilterValue.class;
 		};
 	}
 
-	private java.util.Optional<String> firstNonBlank(String... values) {
+	private static String valueType(Class<? extends FilterValue> valueType) {
+		PolymorphicModelSubtype subtype = valueType.getAnnotation(PolymorphicModelSubtype.class);
+		if (subtype == null) {
+			throw new IllegalArgumentException("Filter value " + valueType.getName() + " has no @PolymorphicModelSubtype");
+		}
+		return subtype.id();
+	}
+
+	private Optional<String> firstNonBlank(String... values) {
 		for (String value : values) {
 			if (value != null && !value.isBlank()) {
-				return java.util.Optional.of(value.trim());
+				return Optional.of(value.trim());
 			}
 		}
-		return java.util.Optional.empty();
+		return Optional.empty();
 	}
 }

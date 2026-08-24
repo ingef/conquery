@@ -2,13 +2,13 @@ package com.bakdata.conquery.quarkus.concepts.filters.providers;
 
 import java.util.List;
 
-import com.bakdata.conquery.quarkus.concepts.filters.FilterConversionContext;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext.Column;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterResult;
 import com.bakdata.conquery.quarkus.concepts.filters.definitions.NumberFilterDefinition;
 import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.IntegerRangeFilterValue;
 import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.MoneyRangeFilterValue;
 import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.RealRangeFilterValue;
-import com.bakdata.conquery.quarkus.ids.ColumnId;
-import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
@@ -18,8 +18,8 @@ public class NumberFilterProvider extends AbstractFilterProvider<NumberFilterDef
 	}
 
 	@Override
-	public DatasetCatalogRepository.Filter convert(FilterConversionContext context, NumberFilterDefinition payload) {
-		ColumnId column = requiredColumn(context, payload);
-		return filter(context, payload, numericRangeValueType(context, column), null, null, false, List.of(column));
+	public FilterResult convert(FilterConversionContext context, NumberFilterDefinition payload) {
+		Column column = requiredColumn(context, payload);
+		return filter(context, payload, numericRangeValueType(column), null, null, false, List.of(column));
 	}
 }

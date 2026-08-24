@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinition;
 import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionAssembler;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
@@ -15,6 +14,7 @@ import com.bakdata.conquery.quarkus.ids.ConnectorId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 import com.bakdata.conquery.quarkus.models.PolymorphicModelRegistry;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinition;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import com.bakdata.conquery.quarkus.testplugin.PrefixFilterDefinition;
 import com.fasterxml.jackson.databind.JsonNode;

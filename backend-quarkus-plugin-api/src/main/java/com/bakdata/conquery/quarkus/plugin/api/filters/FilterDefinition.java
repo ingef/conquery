@@ -1,6 +1,6 @@
-package com.bakdata.conquery.quarkus.concepts.filters;
+package com.bakdata.conquery.quarkus.plugin.api.filters;
 
-import com.bakdata.conquery.quarkus.models.PolymorphicModelBase;
+import com.bakdata.conquery.quarkus.plugin.api.models.PolymorphicModelBase;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 

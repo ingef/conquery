@@ -1,4 +1,4 @@
-package com.bakdata.conquery.quarkus.concepts.filters;
+package com.bakdata.conquery.quarkus.plugin.api.filters;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
