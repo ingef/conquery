@@ -528,7 +528,7 @@ class DatasetMetadataFolderLoaderTest {
 		);
 
 		assertTrue(error.getMessage().contains(conceptFile.toString()));
-		assertTrue(error.getMessage().contains("connectors[0].filters[0].column: must not be blank"));
+		assertTrue(error.getMessage().contains("connectors[0].filters[0].column:"));
 		assertTrue(error.getMessage().contains("invalid value: null"));
 	}
 

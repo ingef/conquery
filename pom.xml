@@ -31,6 +31,7 @@
     <modules>
         <module>backend</module>
         <module>backend-quarkus</module>
+        <module>backend-quarkus-plugin-test</module>
         <module>executable</module>
         <module>autodoc</module>
     </modules>
