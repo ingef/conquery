@@ -33,7 +33,7 @@ public class EntityDateQueryConverter implements NodeConverter<EntityDateQuery> 
 		QueryStep prerequisite = formHelper.convertPrerequisite(entityDateQuery.getQuery(), context);
 		QueryStep withOverwrittenValidityDateBounds = overwriteBounds(prerequisite, entityDateQuery, context);
 		StratificationTableFactory tableFactory = new StratificationTableFactory(withOverwrittenValidityDateBounds, context);
-		QueryStep stratificationTable = tableFactory.createAbsoluteStratificationTable(entityDateQuery.getResolutionsAndAlignments());
+		QueryStep stratificationTable = tableFactory.createAbsoluteStratificationTable(entityDateQuery.getResolutionsAndAlignments(), context);
 
 		return formHelper.convertForm(
 				FormType.ENTITY_DATE,
@@ -54,7 +54,7 @@ public class EntityDateQueryConverter implements NodeConverter<EntityDateQuery> 
 				"Expecting the prerequisite step's Selects to contain a validity date"
 		);
 
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		// we want to create a stratification for each distinct validity date range of an entity,
 		// so we first need to unnest the validity date in case it is a multirange
 		String unnestCteName = FormCteStep.UNNEST_ENTITY_DATE_CTE.getSuffix();

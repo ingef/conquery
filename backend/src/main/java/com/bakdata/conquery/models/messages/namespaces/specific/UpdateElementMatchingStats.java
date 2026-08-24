@@ -33,6 +33,8 @@ public class UpdateElementMatchingStats extends NamespaceMessage {
 
 	@Override
 	public void react(DistributedNamespace context) throws Exception {
+		String sourceString = source.toString();
+
 		// We collect the concepts outside the loop to update the storage afterward
 		Map<ConceptId, Concept<?>> conceptsToUpdate = new HashMap<>();
 
@@ -56,7 +58,7 @@ public class UpdateElementMatchingStats extends NamespaceMessage {
 					matchingStats = new MatchingStats();
 					target.setMatchingStats(matchingStats);
 				}
-				matchingStats.putEntry(source, value);
+				matchingStats.putEntry(sourceString, value);
 			} catch (Exception e) {
 				log.error("Failed to set matching stats for '{}' (enable TRACE for exception)", entry.getKey(), (Exception) (log.isTraceEnabled() ? e : null));
 			}

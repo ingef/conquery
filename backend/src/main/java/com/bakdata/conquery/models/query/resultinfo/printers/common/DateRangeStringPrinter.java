@@ -20,6 +20,10 @@ public record DateRangeStringPrinter(
 
 	@Override
 	public String apply(@NotNull List<Integer> f) {
+		if (f.isEmpty()) {
+			return null;
+		}
+
 		Preconditions.checkArgument(f.size() == 2, "Expected a list with 2 elements, one min, one max. The list was: %s ", f);
 
 		final Integer min = f.get(0);

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -18,6 +17,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
@@ -30,7 +30,7 @@ import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.DatabaseConfig;
+import com.bakdata.conquery.models.config.DatabaseConnectionConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
@@ -53,7 +53,7 @@ public class IntegrationTests {
 
 	public static final ObjectMapper MAPPER;
 	public static final String JSON_TEST_PATTERN = ".*\\.test\\.json$";
-	public static final String SQL_TEST_PATTERN = ".*\\.json$";
+	public static final String SQL_TEST_PATTERN = ".*\\.test\\.json$";
 	private static final ObjectWriter CONFIG_WRITER;
 
 	static {
@@ -69,7 +69,7 @@ public class IntegrationTests {
 	}
 
 	@Getter
-	public final ConqueryConfig config  = new ConqueryConfig();
+	public final ConqueryConfig config = new ConqueryConfig();
 	private final Map<String, TestConquery> reusedInstances = new HashMap<>();
 	private final String defaultTestRoot;
 	private final String defaultTestRootPackage;
@@ -118,7 +118,7 @@ public class IntegrationTests {
 	}
 
 	@SneakyThrows
-	public Stream<DynamicNode> sqlProgrammaticTests(DatabaseConfig databaseConfig, TestSqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
+	public Stream<DynamicNode> sqlProgrammaticTests(DatabaseConnectionConfig databaseConfig, SqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
 		this.config.setSqlConnectorConfig(sqlConfig);
 		return programmaticTests(testDataImporter, StandaloneSupport.Mode.SQL);
 	}
@@ -169,7 +169,7 @@ public class IntegrationTests {
 	}
 
 	@SneakyThrows
-	public List<DynamicNode> sqlQueryTests(DatabaseConfig databaseConfig, TestSqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
+	public List<DynamicNode> sqlQueryTests(DatabaseConnectionConfig databaseConfig, SqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
 		this.config.setSqlConnectorConfig(sqlConfig);
 		final String testRoot = Objects.requireNonNullElse(System.getenv(TestTags.SQL_BACKEND_TEST_DIRECTORY_ENVIRONMENT_VARIABLE), defaultTestRoot);
 		ResourceTree tree = scanForResources(testRoot, SQL_TEST_PATTERN);
@@ -183,25 +183,34 @@ public class IntegrationTests {
 		final ResourceTree reduced = tree.reduce();
 
 		if (reduced.getChildren().isEmpty()) {
-			return Collections.singletonList(collectTests(reduced, testImporter, sqlDialect));
+			return collectTests(reduced, testImporter, sqlDialect)
+					.map(List::of)
+					.orElse(Collections.emptyList());
 		}
 		return reduced.getChildren().values().stream()
 					  .map(currentDir -> collectTests(currentDir, testImporter, sqlDialect))
+					  .flatMap(Optional::stream)
 					  .collect(Collectors.toList());
 	}
 
-	private DynamicNode collectTests(ResourceTree currentDir, TestDataImporter testImporter, Dialect sqlDialect) {
+	private Optional<DynamicNode> collectTests(ResourceTree currentDir, TestDataImporter testImporter, Dialect sqlDialect) {
 		if (currentDir.getValue() != null) {
 			Optional<DynamicTest> dynamicTest = readTest(currentDir.getValue(), currentDir.getName(), testImporter, sqlDialect);
 			if (dynamicTest.isPresent()) {
-				return dynamicTest.get();
+				return Optional.of(dynamicTest.get());
 			}
 		}
 		List<DynamicNode> list = new ArrayList<>();
 		for (ResourceTree child : currentDir.getChildren().values()) {
-			list.add(collectTests(child, testImporter, sqlDialect));
+			collectTests(child, testImporter, sqlDialect)
+					.ifPresent(list::add);
 		}
-		return toDynamicContainer(currentDir, list);
+
+		if (list.isEmpty()) {
+			return Optional.empty();
+		}
+
+		return Optional.of(toDynamicContainer(currentDir, list));
 	}
 
 	private Optional<DynamicTest> readTest(Resource resource, String name, TestDataImporter testImporter, Dialect sqlDialect) {

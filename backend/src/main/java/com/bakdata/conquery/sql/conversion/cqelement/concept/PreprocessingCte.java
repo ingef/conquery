@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
@@ -35,30 +34,38 @@ class PreprocessingCte extends ConnectorCte {
 
 		Selects preprocessingSelects = Selects.builder()
 											  .ids(tableContext.getIds())
-											  .validityDate(tableContext.getValidityDate())
+											  .validityDate(Optional.of(tableContext.getValidityDate()))
 											  .sqlSelects(forPreprocessing)
 											  .build();
-
-		// all where clauses that don't require any preprocessing (connector/child conditions)
+		// All event-level where clauses are applied directly to the connector table while preprocessing.
 		List<Condition> conditions = new ArrayList<>();
 
 		for (SqlFilters sqlFilter : tableContext.getSqlFilters()) {
 			for (WhereCondition whereCondition : sqlFilter.getWhereClauses().getPreprocessingConditions()) {
 				conditions.add(whereCondition.condition());
 			}
+			for (WhereCondition whereCondition : sqlFilter.getWhereClauses().getEventFilters()) {
+				conditions.add(whereCondition.condition());
+			}
 		}
 
+		// The aliased secondary ID is selected in this CTE, so its root-table expression must be used in the WHERE clause.
+		tableContext.getIds()
+					.getPredecessor()
+					.flatMap(SqlIdColumns::getSecondaryId)
+					.ifPresent(secondaryId -> conditions.add(secondaryId.isNotNull()));
 
 		QueryStep.QueryStepBuilder builder = QueryStep.builder()
 													  .selects(preprocessingSelects)
 													  .conditions(conditions);
 
-		if (!tableContext.getConversionContext().isWithStratification()) {
-			TableLike<Record> rootTable = QueryStep.toTableLike(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING));
-			return builder.fromTable(rootTable);
+		if (tableContext.getConversionContext().isWithStratification()) {
+			return joinWithStratificationTable(forPreprocessing, conditions, tableContext);
 		}
 
-		return joinWithStratificationTable(forPreprocessing, conditions, tableContext);
+		TableLike<Record> rootTable = QueryStep.toTableLike(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING));
+		return builder.fromTable(rootTable);
+
 	}
 
 
@@ -78,13 +85,19 @@ class PreprocessingCte extends ConnectorCte {
 		List<Condition> idConditions = stratificationIds.join(rootTableIds);
 
 		// join full stratification with connector table on all ID's from prerequisite query
-		SqlFunctionProvider functionProvider = tableContext.getConversionContext().getSqlDialect().getFunctionProvider();
+		SqlFunctionProvider functionProvider = tableContext.getConversionContext().getFunctionProvider();
+		ColumnDateRange stratificationDate = stratificationSelects.getStratificationDate().orElseThrow(() -> new IllegalStateException(
+				"Stratification table must provide a stratification date"
+		));
+		// Both expressions are available from the joined source tables; do not reference aliases produced by this SELECT.
+		conditions.add(functionProvider.dateRestriction(stratificationDate, tableContext.getRawValidityDate()));
+
 		Table<Record> connectorTable = DSL.table(DSL.name(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING)));
 		TableLike<Record> joinedTable = functionProvider.innerJoin(connectorTable, stratificationTable, idConditions);
 
 		Selects selects = Selects.builder()
 								 .ids(stratificationSelects.getIds())
-								 .validityDate(tableContext.getValidityDate())
+								 .validityDate(Optional.of(tableContext.getValidityDate()))
 								 .stratificationDate(stratificationSelects.getStratificationDate())
 								 .sqlSelects(preprocessingSelects)
 								 .build();

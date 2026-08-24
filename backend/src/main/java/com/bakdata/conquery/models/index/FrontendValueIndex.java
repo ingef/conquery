@@ -16,8 +16,6 @@ import java.util.Map;
 @Slf4j
 @ToString
 public class FrontendValueIndex implements Index<FrontendValue> {
-
-
 	/**
 	 * @see FilterTemplate#getValue()
 	 */
@@ -28,16 +26,13 @@ public class FrontendValueIndex implements Index<FrontendValue> {
 	 * @see FilterTemplate#getOptionValue()
 	 */
 	private final String optionValueTemplate;
-	private final String defaultEmptyLabel;
 
 	@Getter
 	private final Search<FrontendValue> delegate;
 
-	public FrontendValueIndex(Search<FrontendValue> delegate, String valueTemplate, String optionValueTemplate, String defaultEmptyLabel) {
+	public FrontendValueIndex(Search<FrontendValue> delegate, String valueTemplate, String optionValueTemplate) {
 		this.valueTemplate = valueTemplate;
 		this.optionValueTemplate = optionValueTemplate;
-		this.defaultEmptyLabel = defaultEmptyLabel;
-
 		this.delegate = delegate;
 	}
 
@@ -84,7 +79,6 @@ public class FrontendValueIndex implements Index<FrontendValue> {
 
 	@Override
 	public void finalizer() {
-
 		final StopWatch timer = StopWatch.createStarted();
 
 		log.trace("DONE-FINALIZER ADDING_ITEMS in {}", timer);

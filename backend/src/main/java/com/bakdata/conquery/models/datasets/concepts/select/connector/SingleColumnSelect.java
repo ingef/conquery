@@ -72,7 +72,7 @@ public abstract class SingleColumnSelect extends Select {
 			return true;
 		}
 
-		log.error("Column[{}] is of Type[{}]. Not one of [{}]", column, type, getAcceptedColumnTypes());
+		log.error("Column[{}] is of Type[{}]. Not one of {} for {}", column, type, getAcceptedColumnTypes(), getClass().getSimpleName());
 
 		return false;
 	}

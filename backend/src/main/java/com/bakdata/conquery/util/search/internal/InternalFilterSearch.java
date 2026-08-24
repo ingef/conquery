@@ -292,12 +292,12 @@ public class InternalFilterSearch implements SearchProcessor {
 		return out;
 	}
 
+
 	@Override
 	public ConceptsProcessor.ExactFilterValueResult findExact(SelectFilter<?> filter, List<String> searchTerms) {
 		final List<FrontendValue> out = new ArrayList<>();
 		// search in the full text engine
 		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
-
 
 		for (final Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext(); ) {
 
@@ -309,7 +309,7 @@ public class InternalFilterSearch implements SearchProcessor {
 			}
 
 			iterator.remove();
-			out.addAll(results);
+			out.add(results.getFirst());
 		}
 
 		return new ConceptsProcessor.ExactFilterValueResult(out, openSearchTerms);

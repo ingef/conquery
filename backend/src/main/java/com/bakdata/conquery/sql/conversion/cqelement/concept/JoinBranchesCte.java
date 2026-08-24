@@ -63,7 +63,7 @@ class JoinBranchesCte extends ConnectorCte {
 		}
 		else {
 			IntervalPackingContext intervalPackingContext = createIntervalPackingContext(tableContext);
-			IntervalPacker intervalPacker = tableContext.getConversionContext().getSqlDialect().getIntervalPacker();
+			IntervalPacker intervalPacker = tableContext.getConversionContext().getDialectBundle().getIntervalPacker();
 			QueryStep lastIntervalPackingStep = intervalPacker.aggregateAsValidityDate(intervalPackingContext);
 			queriesToJoin.add(lastIntervalPackingStep);
 			validityDate = lastIntervalPackingStep.getQualifiedSelects().getValidityDate();
@@ -71,6 +71,11 @@ class JoinBranchesCte extends ConnectorCte {
 			QueryStep intervalPackingSelectsStep = IntervalPackingSelectsCte.forConnector(lastIntervalPackingStep, tableContext);
 			if (intervalPackingSelectsStep != lastIntervalPackingStep) {
 				queriesToJoin.add(intervalPackingSelectsStep);
+			}
+
+			// interval packing was required for event date selects, but we won't propagate it
+			if (tableContext.getConnectorTables().isExcludedFromTimeAggregation()) {
+				validityDate = Optional.empty();
 			}
 		}
 
@@ -92,7 +97,7 @@ class JoinBranchesCte extends ConnectorCte {
 		Selects predcessorSelects = tableContext.getPrevious().getQualifiedSelects();
 		return IntervalPackingContext.builder()
 									 .ids(predcessorSelects.getIds())
-									 .daterange(tableContext.getValidityDate().get())
+									 .daterange(tableContext.getValidityDate())
 									 .tables(tableContext.getConnectorTables())
 									 .build();
 	}

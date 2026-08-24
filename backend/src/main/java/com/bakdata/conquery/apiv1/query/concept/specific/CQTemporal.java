@@ -32,6 +32,7 @@ import com.bakdata.conquery.models.query.resultinfo.FixedLabelResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.printers.common.ListResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Data;
 import lombok.Setter;
@@ -187,6 +188,11 @@ public class CQTemporal extends CQElement {
 				@Override
 				public String userColumnName(PrintSettings printSettings) {
 					return C10N.get(ResultHeadersC10n.class, printSettings.getLocale()).temporalCompareLabel(compare.userLabel(printSettings.getLocale()));
+				}
+
+				@Override
+				public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+					return resultSetProcessor::getDateRangeList;
 				}
 			});
 		}

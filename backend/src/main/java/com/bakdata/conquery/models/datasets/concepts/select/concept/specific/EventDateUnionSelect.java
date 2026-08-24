@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept.specific;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -12,6 +15,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDat
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.EventDateUnionSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 
 /**
  * Collects the event dates that are corresponding to an enclosing {@link Connector} or {@link Concept} provided in a query.
@@ -47,5 +51,10 @@ public class EventDateUnionSelect extends UniversalSelect {
 	@Override
 	public ResultType getResultType() {
 		return new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE);
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<List<List<Integer>>> createResultSetReader(ResultSetProcessor processor) {
+		return processor::getDateRangeList;
 	}
 }

@@ -1,21 +1,5 @@
 package com.bakdata.conquery.util.search.solr;
 
-import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
-
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.config.search.solr.FilterValueConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
@@ -24,19 +8,33 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilt
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.AutoCompleteResult;
 import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
-import com.google.common.collect.Iterables;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.StreamingResponseCallback;
+import org.apache.solr.client.solrj.impl.StreamingBinaryResponseParser;
+import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
 import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Helper class to abstract/capsule the {@link Searchable}s of the filter away.
@@ -46,7 +44,7 @@ import org.jetbrains.annotations.NotNull;
 @Slf4j
 public class FilterValueSearch {
 
-	public static final int EXACT_VALUE_CHUNK_SIZE = 200;
+    public static final int SOLR_MAX_URI_LENGTH = 5000 /* bytes */ ; // with some buffer, actual limit is 8192, but setting this to 6000 already causes failures
 	private final SelectFilter<?> filter;
     private final SolrProcessor processor;
     private final SolrClient solrClient;
@@ -116,7 +114,7 @@ public class FilterValueSearch {
 
             List<FrontendValue> beans = new ArrayList<>();
             final AtomicLong numFound = new AtomicLong();
-            QueryResponse response = solrClient.queryAndStreamResponse(query, new StreamingResponseCallback() {
+            final StreamingResponseCallback callback = new StreamingResponseCallback() {
                 @Override
                 public void streamSolrDocument(SolrDocument doc) {
                     SolrFrontendValue bean = solrClient.getBinder().getBean(SolrFrontendValue.class, doc);
@@ -127,7 +125,11 @@ public class FilterValueSearch {
                 public void streamDocListInfo(long numFoundCallBack, long start, Float maxScore) {
                     numFound.set(numFoundCallBack);
                 }
-            });
+            };
+
+            final QueryRequest request = new QueryRequest(query, SolrRequest.METHOD.POST);
+            request.setResponseParser(new StreamingBinaryResponseParser(callback));
+            final QueryResponse response = request.process(solrClient);
 
             log.debug("Query [{}] Found: {} | Collected: {} | QTime: {} | ElapsedTime: {}", queryHash, numFound.get(), beans.size(), response.getQTime(), response.getElapsedTime());
 
@@ -186,46 +188,42 @@ public class FilterValueSearch {
         final Map<String, String> unresolvedMap = terms.stream().collect(Collectors.toMap(String::toLowerCase, Function.identity(), (v1, v2) -> v1));
         final List<FrontendValue> resolved = new ArrayList<>(terms.size());
 
-		/*
-		We chunk the values for resolving here so that the request does not bust any URI or query limitations (e.g. "too many boolean operators")
-		 */
-		int chunkIndex = 1;
-        int chunkCount = (escapedTerms.size() + (EXACT_VALUE_CHUNK_SIZE - 1)) / EXACT_VALUE_CHUNK_SIZE;
-        final Iterable<List<String>> partition = Iterables.partition(escapedTerms, EXACT_VALUE_CHUNK_SIZE);
-        for (List<String> chunk : partition) {
 
-            String finalTerms = chunk.stream().collect(Collectors.joining(" ", "(", ")"));
+        // TODO also use Solr's POST method to avoid too long URIs (see sendQuery)
+        List<List<String>> chunks = chunkByUriLength(escapedTerms);
+        int chunkIndex = 1;
+        final int chunkCount = chunks.size();
+        int source_count = getSearchesFor(filter, false).size();
+        for (List<String> chunk : chunks) {
 
-            if (StringUtils.isBlank(finalTerms)) {
+            String queryString = buildExactQuery(chunk);
+
+            if (StringUtils.isBlank(queryString)) {
                 return new ConceptsProcessor.ExactFilterValueResult(List.of(), terms);
             }
 
-            String collect = Stream.of(
-                            SolrFrontendValue.Fields.value_s,
-                            SolrFrontendValue.Fields.label_t
-                    )
-                    .map(field -> "%s:%s".formatted(field, finalTerms))
-					// We are not interested in the result score, so we make it static: ^=1
-                    .collect(Collectors.joining(" OR ", "(", ")^=1"));
-
-
             // The batchsize is twice the size of the chunk size because a term is often (at most) found in two documents (from the column and from a mapping)
-            // Technically a filter could use more than 2 sources, but this is not practical
-            final int batchSize = EXACT_VALUE_CHUNK_SIZE * 2;
+            final int batchSize = chunk.size() * source_count;
 
             final AtomicLong numFound = new AtomicLong();
             try {
                 List<FrontendValue> resolvedValues = new ArrayList<>();
 
-                SolrQuery solrQuery = buildSolrQuery(collect, 0, batchSize, false, false, false);
+                // We sort to return value with the highest source priority and get the best description
+                SolrQuery solrQuery = buildSolrQuery(queryString, 0, batchSize, true, false, false);
+
 
                 String decodedQuery = URLDecoder.decode(String.valueOf(solrQuery), StandardCharsets.UTF_8);
                 int queryHash = decodedQuery.hashCode();
                 log.trace("Query [{}] ({}/{}) created: {}", queryHash, chunkIndex, chunkCount, decodedQuery);
 
+                int queryByteLength = solrQuery.toString().getBytes(StandardCharsets.UTF_8).length;
+                log.trace("Query [{}] length in bytes: {}", queryHash, queryByteLength);
+
                 QueryResponse response = solrClient.queryAndStreamResponse(solrQuery, new StreamingResponseCallback() {
                     @Override
                     public void streamSolrDocument(SolrDocument doc) {
+                        log.trace("Query [{}] received document: {}", queryHash, doc);
                         if (unresolvedMap.isEmpty()) {
                             // Shortcut: everything was resolved
                             return;
@@ -248,7 +246,7 @@ public class FilterValueSearch {
                     public void streamDocListInfo(long numFoundCallBack, long start, Float maxScore) {
                         numFound.set(numFoundCallBack);
                         if (numFoundCallBack > batchSize) {
-                            log.warn("Query found more documents ({}) than expected ({}). We expect a term to be found in at most 2 documents (from a column and a mapping).", numFoundCallBack, batchSize);
+                            log.warn("Query found more documents ({}) than expected ({}). We expect a term to be found in at most {} documents (from a column and a mapping).", numFoundCallBack, batchSize, source_count);
                         }
                     }
                 });
@@ -263,6 +261,65 @@ public class FilterValueSearch {
         }
 
         return new ConceptsProcessor.ExactFilterValueResult(resolved, unresolvedMap.values());
+    }
+
+    private List<List<String>> chunkByUriLength(Collection<String> terms) {
+        List<List<String>> result = new ArrayList<>();
+        List<String> current = new ArrayList<>();
+
+        for (String term : terms) {
+            if (StringUtils.isBlank(term)) {
+                continue;
+            }
+            current.add(term);
+
+            String query = buildExactQuery(current);
+
+            int size = query.getBytes(StandardCharsets.UTF_8).length;
+
+			if (size <= SOLR_MAX_URI_LENGTH) {
+                // Length still fine, let's move on
+				continue;
+			}
+
+			// remove last term and finish current batch
+			current.removeLast();
+
+			if (current.isEmpty()) {
+				// single term too large for query
+				throw new IllegalArgumentException("Single term is too large for URI. Term: %s".formatted(term));
+			} else {
+				result.add(current);
+				current = new ArrayList<>();
+				current.add(term);
+			}
+		}
+
+        if (!current.isEmpty()) {
+            result.add(current);
+        }
+
+        return result;
+    }
+
+    @NotNull
+    private static String buildExactQuery(List<String> chunk) {
+        String finalTerms = chunk.stream().collect(Collectors.joining(" ", "(", ")"));
+
+        if (StringUtils.isBlank(finalTerms)) {
+            return finalTerms;
+        }
+
+        // We are matching on label and value.
+        // So if for reason a value is present in multiple sources (map, template, ...) but has different labels
+        // both can be found.
+		return Stream.of(
+						SolrFrontendValue.Fields.value_s,
+						SolrFrontendValue.Fields.label_t
+				)
+				.map(field -> "%s:%s".formatted(field, finalTerms))
+				// We are not interested in the result score, so we make it static: ^=1
+				.collect(Collectors.joining(" OR ", "(", ")^=1"));
     }
 
 }

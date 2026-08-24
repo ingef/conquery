@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -12,6 +14,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DateUnio
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.select.DateUnionSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
@@ -42,13 +45,18 @@ public class DateUnionSelect extends Select implements DaterangeSelectOrFilter {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		// TODO fix this for 2 columns
+		// TODO Missing case for two columns
 		return new DateUnionAggregator(getColumn().resolve());
 	}
 
 	@Override
 	public ResultType getResultType() {
 		return new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE);
+	}
+
+	@Override
+	public ResultSetProcessor.Reader<List<List<Integer>>> createResultSetReader(ResultSetProcessor processor) {
+		return processor::getDateRangeList;
 	}
 
 	@Override
