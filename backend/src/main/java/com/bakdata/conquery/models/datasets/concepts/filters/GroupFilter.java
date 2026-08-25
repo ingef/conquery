@@ -12,7 +12,7 @@ public interface GroupFilter {
 	 *
 	 * <pre>
 	 *     &#64;CPSType(id = "TEST_GROUP_FILTER", base = Filter.class)
-	 * 	   public class GroupFilter extends SingleColumnFilter<GroupContainer> implements GroupFilter {
+	 * 	   public class GroupFilter extends EventFilter<GroupContainer> implements GroupFilter {
 	 * 	   ...
 	 *         &#64;Override
 	 *         public JavaType getFilterValueType(TypeFactory tf) {

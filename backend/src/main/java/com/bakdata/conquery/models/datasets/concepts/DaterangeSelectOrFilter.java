@@ -1,10 +1,13 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
+import com.bakdata.conquery.models.common.ColumnUtils;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+
+import java.util.EnumSet;
 
 public interface DaterangeSelectOrFilter {
 
@@ -53,7 +56,8 @@ public interface DaterangeSelectOrFilter {
 		if (getStartColumn() == null || getEndColumn() == null) {
 			return true;
 		}
-		return getStartColumn().resolve().getType() == MajorTypeId.DATE && getEndColumn().resolve().getType() == MajorTypeId.DATE;
+
+		return ColumnUtils.assertValidColumnTypes(getStartColumn(), EnumSet.of(MajorTypeId.DATE)) && ColumnUtils.assertValidColumnTypes(getEndColumn(), EnumSet.of(MajorTypeId.DATE));
 	}
 
 	@JsonIgnore
@@ -62,7 +66,8 @@ public interface DaterangeSelectOrFilter {
 		if (getColumn() == null) {
 			return true;
 		}
-		return getColumn().resolve().getType().isDateCompatible();
+
+		return ColumnUtils.assertValidColumnTypes(getColumn(), EnumSet.of(MajorTypeId.DATE, MajorTypeId.DATE_RANGE));
 	}
 
 }
