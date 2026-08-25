@@ -4,6 +4,7 @@ import static com.bakdata.conquery.integration.common.IntegrationUtils.getPostQu
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
+import java.util.Locale;
 import java.util.Map;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
@@ -50,7 +51,7 @@ public class UserErrorTest extends IntegrationTest.Simple implements Programmati
 																	   ResourceConstants.DATASET, conquery.getDataset().toString(),
 																	   ResourceConstants.CONCEPT, unknownConcept.toString()
 															   )
-													   ).request(MediaType.APPLICATION_JSON_TYPE);
+													   ).request(MediaType.APPLICATION_JSON_TYPE).acceptLanguage(Locale.ENGLISH);
 			try (final Response response = request.get()) {
 				assertThat(response.getStatus())
 						.describedAs(() -> response.readEntity(String.class))
