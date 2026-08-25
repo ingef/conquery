@@ -584,7 +584,7 @@ public class QueryProcessor {
 
 
 		final PrintSettings printSettings =
-				new PrintSettings(true, locale, managedQuery.getNamespace(), config, null, null, decimalFormat, integerFormat);
+				new PrintSettings(true, locale, config, null, null, decimalFormat, integerFormat);
 		final UniqueNamer uniqueNamer = new UniqueNamer(printSettings);
 
 		managedQuery.initExecutable();

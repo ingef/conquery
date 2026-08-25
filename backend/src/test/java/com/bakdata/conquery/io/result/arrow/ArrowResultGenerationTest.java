@@ -82,7 +82,6 @@ public class ArrowResultGenerationTest {
 	public static String generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos) {
 		String expected =
 				results.stream()
-					   .map(EntityResult.class::cast)
 					   .map(res -> {
 						   StringJoiner lineJoiner = new StringJoiner("\n");
 
@@ -142,10 +141,9 @@ public class ArrowResultGenerationTest {
 			sb.append("}");
 			return sb.toString();
 		}
-		if (obj instanceof Collection) {
-			Collection<?> col = (Collection<?>) obj;
-			// Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
-			ResultType elemType = ((ResultType.ListT) type).getElementType();
+		if (obj instanceof Collection<?> col) {
+            // Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
+			ResultType elemType = ((ResultType.ListT<?>) type).getElementType();
 			return col.stream().map(v -> getPrintValue(v, elemType)).collect(Collectors.joining(",", "[", "]"));
 		}
 		return obj.toString();

@@ -65,7 +65,7 @@ public class PrintSettings {
 		this.integerFormat = numberFormat;
 		this.decimalFormat = decimalFormat;
 
-		this.listFormat = prettyPrint ? config.getLocale().getListFormats().get(0) : UNPRETTY_LIST_FORMAT;
+		this.listFormat = prettyPrint ? config.getLocale().getListFormats().getFirst() : UNPRETTY_LIST_FORMAT;
 		this.dateRangeSeparator = prettyPrint ? config.getLocale().findDateRangeSeparator(locale) : UNPRETTY_DATERANGE_SEPERATOR;
 
 		this.dateFormat = config.getLocale().findDateFormat(locale);

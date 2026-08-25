@@ -26,15 +26,12 @@ import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.worker.LocalNamespace;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.TestNamespacedStorageProvider;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.Mockito;
 
 public class DefaultLabelTest {
 
@@ -42,8 +39,7 @@ public class DefaultLabelTest {
 	private final static MetaStorage META_STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 	private final static NamespaceStorage NAMESPACE_STORAGE = new NonPersistentStoreFactory().createNamespaceStorage();
 	public static final NamespacedStorageProvider STORAGE_PROVIDER = new TestNamespacedStorageProvider(NAMESPACE_STORAGE);
-	private static final Namespace NAMESPACE = Mockito.mock(LocalNamespace.class);
-	private static final Dataset DATASET = new Dataset("dataset");
+    private static final Dataset DATASET = new Dataset("dataset");
 	private static final User user = new User("user", "user", META_STORAGE);
 	private static final TreeConcept CONCEPT = new TreeConcept();
 

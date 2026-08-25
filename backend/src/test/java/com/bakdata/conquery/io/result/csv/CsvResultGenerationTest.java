@@ -92,8 +92,7 @@ public class CsvResultGenerationTest {
 
 		final String delimiter = String.valueOf(CONFIG.getCsv().getDelimeter());
 
-		results.stream()
-			   .map(EntityResult.class::cast)
+		results
 			   .forEach(res -> {
 
 				   for (Object[] line : res.listResultLines()) {
