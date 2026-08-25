@@ -51,8 +51,7 @@ public class CsvResultGenerationTest {
 		// Prepare every input data
 		final PrintSettings printSettings = new PrintSettings(true,
 															  Locale.GERMANY,
-															  null,
-															  CONFIG,
+                CONFIG,
 															  (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
 															  (selectInfo) -> selectInfo.getSelect().getLabel()
 		);

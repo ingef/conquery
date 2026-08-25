@@ -7,12 +7,10 @@ import java.util.Currency;
 import java.util.Locale;
 import java.util.function.Function;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -45,11 +43,6 @@ public class PrintSettings {
 	private final NumberFormat currencyFormat;
 	private final Currency currency;
 
-	/**
-	 * Use the registry to resolve ids to objects/labels where this was not done yet, such as {@link CQConcept#getElements()}.
-	 */
-	private final Namespace namespace;
-
 	private final Function<SelectResultInfo, String> columnNamer;
 
 	private final String dateRangeSeparator;
@@ -58,14 +51,13 @@ public class PrintSettings {
 
 	private final PrintIdMapper idMapper;
 
-	public PrintSettings(boolean prettyPrint, Locale locale, Namespace namespace, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer) {
-		this(prettyPrint, locale, namespace, config, idMapper, columnNamer, DECIMAL_FORMAT.apply(locale), NUMBER_FORMAT.apply(locale));
+	public PrintSettings(boolean prettyPrint, Locale locale, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer) {
+		this(prettyPrint, locale, config, idMapper, columnNamer, DECIMAL_FORMAT.apply(locale), NUMBER_FORMAT.apply(locale));
 	}
 
-	public PrintSettings(boolean prettyPrint, Locale locale, Namespace namespace, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer, NumberFormat decimalFormat, NumberFormat numberFormat) {
+	public PrintSettings(boolean prettyPrint, Locale locale, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer, NumberFormat decimalFormat, NumberFormat numberFormat) {
 		this.prettyPrint = prettyPrint;
 		this.locale = locale;
-		this.namespace = namespace;
 		this.currency = config.getPreprocessor().getParsers().getCurrency();
 		this.columnNamer = columnNamer;
 		this.idMapper = idMapper;

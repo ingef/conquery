@@ -96,7 +96,7 @@ public class DefaultLabelTest {
 
 	@NotNull
 	private PrintSettings getPrintSettings(Locale locale) {
-		return new PrintSettings(true, locale, NAMESPACE, CONFIG, null, null);
+		return new PrintSettings(true, locale, CONFIG, null, null);
 	}
 
 	@ParameterizedTest

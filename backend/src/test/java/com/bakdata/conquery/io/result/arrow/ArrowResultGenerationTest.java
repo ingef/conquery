@@ -55,7 +55,7 @@ public class ArrowResultGenerationTest {
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
 	private static final int BATCH_SIZE = 2;
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false, Locale.ROOT, null, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel());
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false, Locale.ROOT, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel());
 
 	public static String readTSV(InputStream inputStream) throws IOException {
 		StringJoiner stringJoiner = new StringJoiner("\n");
@@ -230,8 +230,7 @@ public class ArrowResultGenerationTest {
 		// Prepare every input data
 		PrintSettings printSettings = new PrintSettings(false,
 														Locale.ROOT,
-														null,
-														CONFIG,
+                CONFIG,
 														(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
 														(selectInfo) -> selectInfo.getSelect().getLabel()
 		);
