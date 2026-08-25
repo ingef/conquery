@@ -168,6 +168,7 @@ public class ManagerNode implements Managed {
 																							  - countLoaded);
 			}
 
+			// Check for failed storages
 			final List<NamespaceLoadFailure> failures = new ArrayList<>();
 			for (NamespaceLoadTask loadTask : loadTasks) {
 				try {
@@ -186,6 +187,7 @@ public class ManagerNode implements Managed {
 			}
 
 			if (!failures.isEmpty()) {
+				// Fail and stop startup if at least one storage caught a problem
 				throw createNamespaceLoadingException(namespaceStorages.size(), failures);
 			}
 		}

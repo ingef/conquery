@@ -74,14 +74,21 @@ class ManagerNodeTest {
 
 	@Test
 	void loadNamespacesReportsAllFailures() {
+		// Setup storages
+		//// First failing storage
 		NamespaceStorage firstStorage = createStorage("dataset_first");
-		NamespaceStorage workingStorage = createStorage("dataset_working");
-		NamespaceStorage secondStorage = createStorage("dataset_second");
 		IllegalStateException firstFailure = new IllegalStateException("First failure");
-		IllegalArgumentException secondFailure = new IllegalArgumentException("Second failure");
 		doThrow(firstFailure).when(registry).createNamespace(firstStorage, metaStorage, environment);
+
+		//// Second failing storage
+		NamespaceStorage secondStorage = createStorage("dataset_second");
+		IllegalArgumentException secondFailure = new IllegalArgumentException("Second failure");
 		doThrow(secondFailure).when(registry).createNamespace(secondStorage, metaStorage, environment);
 
+		//// Working storage
+		NamespaceStorage workingStorage = createStorage("dataset_working");
+
+		// Load storages
 		ListAppender<ILoggingEvent> appender = attachLogAppender();
 		try {
 			Throwable thrown = catchThrowable(
