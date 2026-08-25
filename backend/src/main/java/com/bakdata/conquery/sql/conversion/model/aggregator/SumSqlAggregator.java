@@ -56,7 +56,7 @@ import org.jooq.impl.DSL;
  *   			    "pid",
  *   			    "value",
  *   			    row_number() over (partition by "pid", "k1", "k2") "row_number"
- *   			  from "event_filter"
+ *   			  from "preprocessing"
  *   			)
  *            }
  * 	    </li>
@@ -165,8 +165,8 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), sumColumn.getName(), numberClass);
 		preprocessingSelects.add(rootSelect);
 
-		String eventFilterCte = tables.cteName(ConceptCteStep.EVENT_FILTER);
-		Field<? extends Number> sumField = rootSelect.qualify(eventFilterCte).select();
+		String preprocessingCte = tables.cteName(ConceptCteStep.PREPROCESSING);
+		Field<? extends Number> sumField = rootSelect.qualify(preprocessingCte).select();
 
 		FieldWrapper<BigDecimal> sumGroupBy;
 
@@ -179,7 +179,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 			);
 			preprocessingSelects.add(subtractColumnRootSelect);
 
-			Field<? extends Number> subtractField = subtractColumnRootSelect.qualify(eventFilterCte).select();
+			Field<? extends Number> subtractField = subtractColumnRootSelect.qualify(preprocessingCte).select();
 
 
 			// This expression ensures that if there's any non-null field, we get a 0. But if there's only nulls we get a null:

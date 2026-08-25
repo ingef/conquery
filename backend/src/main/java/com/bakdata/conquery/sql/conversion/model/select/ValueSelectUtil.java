@@ -132,7 +132,7 @@ class ValueSelectUtil {
 	@RequiredArgsConstructor
 	@Getter
 	enum ValueSelectCteStep implements CteStep {
-		ROW_NUMBER_STEP("value_select_assign_row_number_step", ConceptCteStep.EVENT_FILTER), ROW_SELECT_STEP("value_select_first_row_step", ROW_NUMBER_STEP);
+		ROW_NUMBER_STEP("value_select_assign_row_number_step", ConceptCteStep.PREPROCESSING), ROW_SELECT_STEP("value_select_first_row_step", ROW_NUMBER_STEP);
 
 		private final String suffix;
 		private final CteStep predecessor;

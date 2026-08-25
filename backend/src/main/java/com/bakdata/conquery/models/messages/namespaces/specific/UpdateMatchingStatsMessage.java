@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Functions;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +47,7 @@ import org.jetbrains.annotations.Nullable;
 @CPSType(id = "UPDATE_MATCHING_STATS", base = NamespacedMessage.class)
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+@EqualsAndHashCode(callSuper = false)
 public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 	@Getter

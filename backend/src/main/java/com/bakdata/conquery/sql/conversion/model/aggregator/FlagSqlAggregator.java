@@ -57,12 +57,12 @@ import org.jooq.Field;
  *
  * <pre>
  * {@code
- * "event_filter" as (
+ * "preprocessing" as (
  * 		select "pid"
- * 		from "preprocessing"
+ * 		from "root_table"
  * 		where (
- * 			"preprocessing"."b" = true
- * 			or "preprocessing"."c" = true
+ * 			"root_table"."b" = true
+ * 			or "root_table"."c" = true
  * 		)
  * )
  * }
@@ -165,19 +165,15 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 				.map(columnName -> new ExtractingSqlSelect<>(rootTable, columnName, Boolean.class))
 				.collect(Collectors.toList());
 
-		ConnectorSqlSelects selects = ConnectorSqlSelects.builder()
-														 .preprocessingSelects(rootSelects)
-														 .build();
-
 		List<Field<Boolean>> flagFields = rootSelects.stream()
-													 .map(sqlSelect -> sqlSelect.qualify(connectorTables.getPredecessor(ConceptCteStep.EVENT_FILTER)).select())
+													 .map(ExtractingSqlSelect::select)
 													 .toList();
 		FlagCondition flagCondition = new FlagCondition(flagFields);
 		WhereClauses whereClauses = WhereClauses.builder()
 												.eventFilter(flagCondition)
 												.build();
 
-		return new SqlFilters(selects, whereClauses);
+		return new SqlFilters(ConnectorSqlSelects.none(), whereClauses);
 	}
 
 	@Override
