@@ -25,7 +25,7 @@ abstract class AbstractConceptSelectProvider<T extends AbstractConceptSelectDefi
 		String name = context.idPartFromPreferredOrFallback(payload.getName(), payload.getLabel(), type());
 		String label = firstNonBlank(payload.getLabel(), payload.getName()).orElse(name);
 		ConceptSelectId id = context.selectId(name);
-		return new DatasetCatalogRepository.ConceptSelect(id, label, payload.getDescription(), payload.isDefault(), type(), resultType);
+		return new DatasetCatalogRepository.ConceptSelect(id, payload, label, payload.getDescription(), payload.isDefault(), type(), resultType);
 	}
 
 	protected DatasetCatalogRepository.SelectResultType primitive(String type) {

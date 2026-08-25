@@ -5,6 +5,7 @@ import java.util.List;
 import com.bakdata.conquery.quarkus.concepts.selects.SelectConversionContext;
 import com.bakdata.conquery.quarkus.concepts.selects.definitions.DistinctSelectDefinition;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -20,7 +21,7 @@ public class DistinctSelectProvider extends AbstractMappableSelectProvider<Disti
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, DistinctSelectDefinition payload) {
 		ColumnId column = context.columnId(payload.getColumn());
 		if (payload.getMapping() != null || payload.getSubstring() != null) {
-			requireColumnType(context, column, DatasetCatalogRepository.ColumnType.STRING);
+			requireColumnType(context, column, ColumnType.STRING);
 		}
 		DatasetCatalogRepository.SelectResultType elementType = payload.getMapping() == null
 				? resultType(context, column)

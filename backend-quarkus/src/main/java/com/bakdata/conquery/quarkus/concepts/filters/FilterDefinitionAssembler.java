@@ -80,6 +80,7 @@ public class FilterDefinitionAssembler {
 				.toList();
 		return new DatasetCatalogRepository.Filter(
 				new FilterId(context.connectorId(), result.name()),
+				definition,
 				result.label(),
 				result.valueType(),
 				result.unit(),

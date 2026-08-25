@@ -58,7 +58,7 @@ class DatasetServiceTest {
 	private record TestNamespaceStorageRegistry(List<DatasetCatalogRepository.Concept> concepts) implements NamespaceStorageRegistry {
 		@Override
 		public List<DatasetCatalogRepository.DatasetRecord> listDatasets() {
-			return List.of(new DatasetCatalogRepository.DatasetRecord(did("demo"), "Demo"));
+			return List.of(new DatasetCatalogRepository.DatasetRecord(did("demo"), "Demo", "analytics"));
 		}
 
 		@Override
@@ -73,7 +73,7 @@ class DatasetServiceTest {
 	private record TestNamespaceStorage(List<DatasetCatalogRepository.Concept> concepts) implements NamespaceStorage {
 		@Override
 		public DatasetCatalogRepository.DatasetRecord dataset() {
-			return new DatasetCatalogRepository.DatasetRecord(did("demo"), "Demo");
+			return new DatasetCatalogRepository.DatasetRecord(did("demo"), "Demo", "analytics");
 		}
 
 		@Override
@@ -87,16 +87,6 @@ class DatasetServiceTest {
 		}
 
 		@Override
-		public void saveConcept(DatasetCatalogRepository.Concept concept) {
-			throw unsupported();
-		}
-
-		@Override
-		public boolean deleteConcept(ConceptId conceptId) {
-			throw unsupported();
-		}
-
-		@Override
 		public List<DatasetCatalogRepository.StructureNode> listStructureNodes() {
 			return List.of();
 		}
@@ -104,16 +94,6 @@ class DatasetServiceTest {
 		@Override
 		public Optional<DatasetCatalogRepository.StructureNode> findStructureNode(StructureNodeId structureNodeId) {
 			return Optional.empty();
-		}
-
-		@Override
-		public void saveStructureNode(DatasetCatalogRepository.StructureNode structureNode) {
-			throw unsupported();
-		}
-
-		@Override
-		public boolean deleteStructureNode(StructureNodeId structureNodeId) {
-			throw unsupported();
 		}
 
 		@Override
@@ -126,18 +106,5 @@ class DatasetServiceTest {
 			return Optional.empty();
 		}
 
-		@Override
-		public void saveTable(DatasetCatalogRepository.TableRecord table) {
-			throw unsupported();
-		}
-
-		@Override
-		public boolean deleteTable(TableId tableId) {
-			throw unsupported();
-		}
-
-		private UnsupportedOperationException unsupported() {
-			return new UnsupportedOperationException("Test storage is read-only.");
-		}
 	}
 }

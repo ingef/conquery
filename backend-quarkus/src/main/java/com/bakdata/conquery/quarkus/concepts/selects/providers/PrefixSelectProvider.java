@@ -5,6 +5,7 @@ import java.util.List;
 import com.bakdata.conquery.quarkus.concepts.selects.SelectConversionContext;
 import com.bakdata.conquery.quarkus.concepts.selects.definitions.PrefixSelectDefinition;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -19,7 +20,7 @@ public class PrefixSelectProvider extends AbstractSingleColumnSelectProvider<Pre
 	@Override
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, PrefixSelectDefinition payload) {
 		ColumnId column = context.columnId(payload.getColumn());
-		requireColumnType(context, column, DatasetCatalogRepository.ColumnType.STRING);
+		requireColumnType(context, column, ColumnType.STRING);
 		return select(context, payload, list("STRING"), List.of(column));
 	}
 }

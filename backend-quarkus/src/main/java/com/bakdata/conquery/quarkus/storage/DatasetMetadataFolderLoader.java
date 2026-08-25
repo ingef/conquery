@@ -24,6 +24,7 @@ import com.bakdata.conquery.quarkus.ids.IdPartSanitizer;
 import com.bakdata.conquery.quarkus.ids.StructureNodeId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 import com.bakdata.conquery.quarkus.ids.ValidityDateId;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -87,10 +88,11 @@ public class DatasetMetadataFolderLoader {
 		}
 
 		String folderName = folderPath.getFileName() == null ? folderPath.toString() : folderPath.getFileName().toString();
-		DatasetPayload datasetPayload = loadDatasetPayload(folderPath).orElse(new DatasetPayload(null, null));
+		DatasetPayload datasetPayload = loadDatasetPayload(folderPath).orElse(new DatasetPayload(null, null, null));
 		DatasetId datasetId = DatasetId.parse(idPartFromPreferredOrFallback(datasetPayload.id(), folderName, "dataset id", folderPath));
 		String datasetLabel = firstNonBlank(datasetPayload.label(), folderName).orElse(folderName);
-		DatasetCatalogRepository.DatasetRecord dataset = new DatasetCatalogRepository.DatasetRecord(datasetId, datasetLabel);
+		String dataSource = firstNonBlank(datasetPayload.dataSource(), datasetId.toString()).orElse(datasetId.toString());
+		DatasetCatalogRepository.DatasetRecord dataset = new DatasetCatalogRepository.DatasetRecord(datasetId, datasetLabel, dataSource);
 
 		Map<TableId, DatasetCatalogRepository.TableRecord> tablesById = loadTables(folderPath, datasetId);
 		Map<ConceptId, DatasetCatalogRepository.Concept> conceptsById = loadConcepts(folderPath, datasetId, tablesById);
@@ -323,7 +325,7 @@ public class DatasetMetadataFolderLoader {
 		if (column == null) {
 			throw new IllegalStateException("Validity date '" + validityDateId + "' references unknown column '" + columnName + "' in table '" + tableId + "'.");
 		}
-		if (column.type() != DatasetCatalogRepository.ColumnType.DATE && column.type() != DatasetCatalogRepository.ColumnType.DATE_RANGE) {
+		if (column.type() != ColumnType.DATE && column.type() != ColumnType.DATE_RANGE) {
 			throw new IllegalStateException("Validity date '" + validityDateId + "' references non-date column '" + column.id() + "'.");
 		}
 		return column.id();
@@ -387,7 +389,7 @@ public class DatasetMetadataFolderLoader {
 		String rawColumnName = firstNonBlank(payload.name(), payload.id()).orElseThrow(() -> new IllegalStateException("Column entry is missing a name/id in table " + tableId));
 		ColumnId columnId = toColumnId(datasetId, tableName, tableId, rawColumnName).orElseThrow(() -> new IllegalStateException("Column id must not be blank in table " + tableId));
 		String columnLabel = firstNonBlank(payload.label(), rawColumnName).orElse(rawColumnName);
-		DatasetCatalogRepository.ColumnType type = parseColumnType(payload.type());
+		ColumnType type = parseColumnType(payload.type());
 		String secondaryId = normalizeBlank(payload.secondaryId()).orElse(null);
 		return new DatasetCatalogRepository.ColumnRecord(columnId, columnLabel, type, secondaryId);
 	}
@@ -474,10 +476,10 @@ public class DatasetMetadataFolderLoader {
 		return configuredPath.isAbsolute() ? configuredPath : root.resolve(configuredPath);
 	}
 
-	private DatasetCatalogRepository.ColumnType parseColumnType(String rawType) {
+	private ColumnType parseColumnType(String rawType) {
 		String type = normalizeBlank(rawType).orElseThrow(() -> new IllegalStateException("Table column type must not be blank."));
 		try {
-			return DatasetCatalogRepository.ColumnType.valueOf(type.trim().toUpperCase(java.util.Locale.ROOT));
+			return ColumnType.valueOf(type.trim().toUpperCase(java.util.Locale.ROOT));
 		} catch (Exception e) {
 			throw new IllegalStateException("Unsupported table column type: " + rawType, e);
 		}
@@ -588,7 +590,7 @@ public class DatasetMetadataFolderLoader {
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private record DatasetPayload(
-			String id, String label
+			String id, String label, String dataSource
 	) {
 	}
 

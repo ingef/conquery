@@ -14,9 +14,9 @@ import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.IntegerR
 import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.MoneyRangeFilterValue;
 import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.RealRangeFilterValue;
 import com.bakdata.conquery.quarkus.models.PolymorphicModelSubtype;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnDescriptor;
 import com.bakdata.conquery.quarkus.plugin.api.filters.AbstractFilterDefinition;
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext;
-import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext.Column;
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinitionProvider;
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterResult;
 import com.bakdata.conquery.quarkus.plugin.api.filters.SingleColumnFilterDefinition;
@@ -51,7 +51,7 @@ abstract class AbstractFilterProvider<T extends AbstractFilterDefinition> implem
 			Integer min,
 			Integer max,
 			boolean creatable,
-			List<Column> requiredColumns
+			List<ColumnDescriptor> requiredColumns
 	) {
 		String name = context.idPartFromPreferredOrFallback(payload.getName(), payload.getLabel(), "filter id", type());
 		String label = firstNonBlank(payload.getLabel(), payload.getName()).orElse(name);
@@ -68,7 +68,7 @@ abstract class AbstractFilterProvider<T extends AbstractFilterDefinition> implem
 				Boolean.TRUE.equals(payload.getAllowDropFile()),
 				creatable,
 				payload.getDefaultValue(),
-				requiredColumns.stream().map(Column::name).toList()
+				requiredColumns.stream().map(ColumnDescriptor::name).toList()
 		);
 	}
 
@@ -81,13 +81,13 @@ abstract class AbstractFilterProvider<T extends AbstractFilterDefinition> implem
 		return type;
 	}
 
-	protected Column requiredColumn(FilterConversionContext context, SingleColumnFilterDefinition payload) {
+	protected ColumnDescriptor requiredColumn(FilterConversionContext context, SingleColumnFilterDefinition payload) {
 		String column = firstNonBlank(payload.getColumn())
 				.orElseThrow(() -> new IllegalArgumentException("Filter " + type() + " must define column."));
 		return context.requireColumn(column);
 	}
 
-	protected List<Column> optionalColumns(FilterConversionContext context, List<String> values) {
+	protected List<ColumnDescriptor> optionalColumns(FilterConversionContext context, List<String> values) {
 		if (values == null) {
 			return List.of();
 		}
@@ -113,8 +113,8 @@ abstract class AbstractFilterProvider<T extends AbstractFilterDefinition> implem
 		return List.of();
 	}
 
-	protected List<Column> columns(Column primary, List<Column> additional) {
-		List<Column> columns = new ArrayList<>();
+	protected List<ColumnDescriptor> columns(ColumnDescriptor primary, List<ColumnDescriptor> additional) {
+		List<ColumnDescriptor> columns = new ArrayList<>();
 		if (primary != null) {
 			columns.add(primary);
 		}
@@ -124,14 +124,14 @@ abstract class AbstractFilterProvider<T extends AbstractFilterDefinition> implem
 		return columns;
 	}
 
-	protected List<Column> flagColumns(FilterConversionContext context, Map<String, String> flags) {
+	protected List<ColumnDescriptor> flagColumns(FilterConversionContext context, Map<String, String> flags) {
 		if (flags == null) {
 			return List.of();
 		}
 		return flags.values().stream().map(context::requireColumn).toList();
 	}
 
-	protected Class<? extends FilterValue> numericRangeValueType(Column column) {
+	protected Class<? extends FilterValue> numericRangeValueType(ColumnDescriptor column) {
 		return switch (column.type()) {
 			case MONEY -> MoneyRangeFilterValue.class;
 			case INTEGER -> IntegerRangeFilterValue.class;

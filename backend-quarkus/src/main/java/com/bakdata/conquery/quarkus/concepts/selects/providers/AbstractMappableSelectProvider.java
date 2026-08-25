@@ -5,6 +5,7 @@ import java.util.List;
 import com.bakdata.conquery.quarkus.concepts.selects.SelectConversionContext;
 import com.bakdata.conquery.quarkus.concepts.selects.definitions.MappableSelectDefinition;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 
 abstract class AbstractMappableSelectProvider<T extends MappableSelectDefinition> extends AbstractSingleColumnSelectProvider<T> {
@@ -16,7 +17,7 @@ abstract class AbstractMappableSelectProvider<T extends MappableSelectDefinition
 	protected DatasetCatalogRepository.Select convertMapped(SelectConversionContext context, T payload) {
 		ColumnId column = context.columnId(payload.getColumn());
 		if (payload.getMapping() != null || payload.getSubstring() != null) {
-			requireColumnType(context, column, DatasetCatalogRepository.ColumnType.STRING);
+			requireColumnType(context, column, ColumnType.STRING);
 		}
 		DatasetCatalogRepository.SelectResultType result = payload.getMapping() == null
 				? resultType(context, column)

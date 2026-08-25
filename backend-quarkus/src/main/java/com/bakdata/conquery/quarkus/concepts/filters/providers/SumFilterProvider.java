@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext;
-import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext.Column;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnDescriptor;
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterResult;
 import com.bakdata.conquery.quarkus.concepts.filters.definitions.SumFilterDefinition;
 import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.IntegerRangeFilterValue;
@@ -20,8 +20,8 @@ public class SumFilterProvider extends AbstractFilterProvider<SumFilterDefinitio
 
 	@Override
 	public FilterResult convert(FilterConversionContext context, SumFilterDefinition payload) {
-		Column column = requiredColumn(context, payload);
-		List<Column> required = new ArrayList<>(columns(column, optionalColumns(context, payload.getDistinctByColumn())));
+		ColumnDescriptor column = requiredColumn(context, payload);
+		List<ColumnDescriptor> required = new ArrayList<>(columns(column, optionalColumns(context, payload.getDistinctByColumn())));
 		if (payload.getSubtractColumn() != null && !payload.getSubtractColumn().isBlank()) {
 			required.add(context.requireColumn(payload.getSubtractColumn()));
 		}

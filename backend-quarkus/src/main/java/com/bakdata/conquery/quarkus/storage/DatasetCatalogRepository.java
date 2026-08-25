@@ -3,6 +3,10 @@ package com.bakdata.conquery.quarkus.storage;
 import java.util.*;
 
 import com.bakdata.conquery.quarkus.concepts.conditions.ConceptCondition;
+import com.bakdata.conquery.quarkus.concepts.selects.SelectDefinition;
+import com.bakdata.conquery.quarkus.concepts.selects.concept.ConceptSelectDefinition;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
+import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinition;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.ConceptSelectId;
@@ -20,38 +24,28 @@ public interface DatasetCatalogRepository {
 
 	Optional<DatasetRecord> findDataset(DatasetId datasetId);
 
-	void saveDataset(DatasetRecord dataset);
-
-	boolean deleteDataset(DatasetId datasetId);
-
 	List<Concept> listConceptsForDataset(DatasetId datasetId);
 
 	Optional<Concept> findConcept(ConceptId conceptId);
-
-	void saveConcept(Concept concept);
-
-	boolean deleteConcept(ConceptId conceptId);
 
 	List<StructureNode> listStructureNodesForDataset(DatasetId datasetId);
 
 	Optional<StructureNode> findStructureNode(StructureNodeId structureNodeId);
 
-	void saveStructureNode(StructureNode structureNode);
-
-	boolean deleteStructureNode(StructureNodeId structureNodeId);
-
 	List<TableRecord> listTablesForDataset(DatasetId datasetId);
 
 	Optional<TableRecord> findTable(TableId tableId);
 
-	void saveTable(TableRecord table);
-
-	boolean deleteTable(TableId tableId);
-
 	record DatasetRecord(
 			DatasetId id,
-			String label
+			String label,
+			String dataSource
 	) {
+		public DatasetRecord {
+			if (dataSource == null || dataSource.isBlank()) {
+				dataSource = id.toString();
+			}
+		}
 	}
 
 	record ConceptElement(
@@ -141,6 +135,7 @@ public interface DatasetCatalogRepository {
 
 	record Select(
 			SelectId id,
+			SelectDefinition definition,
 			String label,
 			String description,
 			boolean defaultSelected,
@@ -155,6 +150,7 @@ public interface DatasetCatalogRepository {
 
 	record ConceptSelect(
 			ConceptSelectId id,
+			ConceptSelectDefinition definition,
 			String label,
 			String description,
 			boolean defaultSelected,
@@ -174,6 +170,7 @@ public interface DatasetCatalogRepository {
 	}
 	record Filter(
 			FilterId id,
+			FilterDefinition definition,
 			String label,
 			String type,
 			String unit,
@@ -219,14 +216,4 @@ public interface DatasetCatalogRepository {
 	) {
 	}
 
-	enum ColumnType {
-		STRING,
-		INTEGER,
-		BOOLEAN,
-		REAL,
-		DECIMAL,
-		MONEY,
-		DATE,
-		DATE_RANGE
-	}
 }

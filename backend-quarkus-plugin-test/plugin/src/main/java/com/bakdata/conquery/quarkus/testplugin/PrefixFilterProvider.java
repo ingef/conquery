@@ -3,6 +3,7 @@ package com.bakdata.conquery.quarkus.testplugin;
 import java.util.List;
 import java.util.Set;
 
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnDescriptor;
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext;
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinitionProvider;
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterResult;
@@ -23,7 +24,7 @@ public class PrefixFilterProvider implements FilterDefinitionProvider<PrefixFilt
 
 	@Override
 	public FilterResult convert(FilterConversionContext context, PrefixFilterDefinition payload) {
-		FilterConversionContext.Column column = context.requireColumn(payload.getColumn());
+		ColumnDescriptor column = context.requireColumn(payload.getColumn());
 		String name = context.idPartFromPreferredOrFallback(payload.getName(), payload.getLabel(), "filter id", type());
 		return new FilterResult(
 				name,

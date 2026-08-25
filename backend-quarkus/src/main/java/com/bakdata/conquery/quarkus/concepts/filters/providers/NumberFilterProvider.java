@@ -3,7 +3,7 @@ package com.bakdata.conquery.quarkus.concepts.filters.providers;
 import java.util.List;
 
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext;
-import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext.Column;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnDescriptor;
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterResult;
 import com.bakdata.conquery.quarkus.concepts.filters.definitions.NumberFilterDefinition;
 import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.IntegerRangeFilterValue;
@@ -19,7 +19,7 @@ public class NumberFilterProvider extends AbstractFilterProvider<NumberFilterDef
 
 	@Override
 	public FilterResult convert(FilterConversionContext context, NumberFilterDefinition payload) {
-		Column column = requiredColumn(context, payload);
+		ColumnDescriptor column = requiredColumn(context, payload);
 		return filter(context, payload, numericRangeValueType(column), null, null, false, List.of(column));
 	}
 }

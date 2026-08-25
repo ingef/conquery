@@ -1,7 +1,7 @@
 package com.bakdata.conquery.quarkus.concepts.filters.providers;
 
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext;
-import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext.Column;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnDescriptor;
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterResult;
 import com.bakdata.conquery.quarkus.concepts.filters.definitions.CountFilterDefinition;
 import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.IntegerRangeFilterValue;
@@ -15,7 +15,7 @@ public class CountFilterProvider extends AbstractFilterProvider<CountFilterDefin
 
 	@Override
 	public FilterResult convert(FilterConversionContext context, CountFilterDefinition payload) {
-		Column column = requiredColumn(context, payload);
+		ColumnDescriptor column = requiredColumn(context, payload);
 		return filter(context, payload, IntegerRangeFilterValue.class, 1, null, false, columns(column, optionalColumns(context, payload.getDistinctByColumn())));
 	}
 }

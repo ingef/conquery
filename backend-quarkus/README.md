@@ -8,8 +8,8 @@ This module is the migration target for replacing the Dropwizard backend with Qu
 - Quarkus REST runtime with JSON support
 - Health and OpenAPI extensions
 - Dataset, concept, filter, form-config, query, frontend-config, and user API slices
-- In-memory and Xodus-backed metadata storage
-- Folder-based ingestion of generated dataset metadata
+- In-memory and Xodus-backed manager metadata storage
+- Read-only folder-based ingestion of dataset definitions into a rich in-memory model
 - Extensible polymorphic metadata and query models
 
 The Dropwizard `backend` remains the production backend. Entity-query execution and some compatibility slices are not
@@ -37,7 +37,45 @@ conquery.metadata.folders[0]=demo
 ```
 
 This reads `conceptTrees/*.concept.json` and `tables/*.table.json` from each configured folder and loads them as
-dataset metadata.
+dataset metadata. Dataset definitions are derived state: they are rebuilt on every application start and are not
+persisted in Xodus. Change the source metadata and restart the application to update them.
+
+Each `dataset.json` can select a Quarkus named datasource. If omitted, `dataSource` defaults to the dataset id:
+
+```json
+{
+  "id": "claims",
+  "label": "Claims",
+  "dataSource": "analytics"
+}
+```
+
+The loaded repository retains the complete typed filter, select, and condition definitions. REST resources map this
+internal model to their dedicated response records, while query planning can use the same repository without loading
+or persisting a second dataset representation.
+
+### Configure SQL datasources
+
+SQL execution is disabled until `conquery.sql.enabled=true`. Dataset datasource names refer to standard Quarkus named
+JDBC datasources. HANA and ClickHouse use custom JDBC drivers and therefore use `db-kind=other`:
+
+```properties
+conquery.sql.enabled=true
+conquery.sql.datasources.analytics.dialect=CLICKHOUSE
+
+quarkus.datasource.analytics.db-kind=other
+quarkus.datasource.analytics.jdbc.driver=com.clickhouse.jdbc.ClickHouseDriver
+quarkus.datasource.analytics.jdbc.url=${ANALYTICS_JDBC_URL}
+quarkus.datasource.analytics.jdbc.transactions=disabled
+quarkus.datasource.analytics.username=${ANALYTICS_USER}
+quarkus.datasource.analytics.password=${ANALYTICS_PASSWORD}
+```
+
+For HANA, set `conquery.sql.datasources.<name>.dialect=HANA` and use `com.sap.db.jdbc.Driver`. Quarkus manages the
+Agroal pools and contributes their readiness checks through SmallRye Health. Datasource names and `db-kind` are
+build-time configuration; URLs, credentials, activation, and pool sizing can remain runtime configuration. When SQL
+is enabled, startup fails if a loaded dataset references a datasource without Conquery dialect metadata or without a
+matching Quarkus named datasource.
 
 ### Concept JSON migration helpers
 
@@ -160,14 +198,16 @@ For each implementation:
 4. Implement the matching provider interface and annotate the provider with a CDI scope such as `@ApplicationScoped`.
 5. Return the accepted frontend value discriminator IDs from `acceptedValueTypes()`, for example `Set.of("STRING")`.
 6. Convert the model into a plugin API `FilterResult`. Use `FilterConversionContext.requireColumn()` to validate and
-   inspect referenced columns. Do not construct backend IDs or repository records in a plugin.
+   inspect referenced columns through the shared `ColumnDescriptor` and `ColumnType` dataset contracts. Do not
+   construct backend IDs or repository records in a plugin.
 7. Run `mvn verify` and confirm the built JAR contains `META-INF/jandex.idx`.
 
 The filter contract is contained in `backend-quarkus-plugin-api` under `com.bakdata.conquery.quarkus.plugin.api`. It
-contains the definition bases, provider interface, conversion context/result, and plugin polymorphism annotations.
-Backend IDs, storage repositories, and implementation DTOs are intentionally excluded. Query filter-value, select,
-and condition extension contracts are still provisional and remain in `backend-quarkus`; extract them into this API
-before treating them as compatibility-stable third-party extension points.
+contains the definition bases, provider interface, conversion context/result, shared dataset column descriptors, and
+plugin polymorphism annotations. Backend IDs, storage repositories, and implementation DTOs are intentionally
+excluded. Query filter-value, select, and condition extension contracts are still provisional and remain in
+`backend-quarkus`; extract them into this API before treating them as compatibility-stable third-party extension
+points.
 
 The executable example is in `backend-quarkus-plugin-test/plugin`. Its `PLUGIN_PREFIX` filter deliberately lives in a
 separate JAR and has no dependency on the backend application artifact.

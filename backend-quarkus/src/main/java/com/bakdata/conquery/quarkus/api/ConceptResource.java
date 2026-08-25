@@ -3,6 +3,7 @@ package com.bakdata.conquery.quarkus.api;
 import java.util.*;
 
 import com.bakdata.conquery.quarkus.ids.ConceptId;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
 import com.bakdata.conquery.quarkus.services.DatasetService;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -177,7 +178,7 @@ public class ConceptResource {
 	public record ColumnResponse(
 			String id,
 			String label,
-			DatasetCatalogRepository.ColumnType type,
+			ColumnType type,
 			String secondaryId
 	) {
 	}

@@ -9,7 +9,6 @@ import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.StructureNodeId;
 import com.bakdata.conquery.quarkus.ids.TableId;
-import io.quarkus.arc.properties.IfBuildProperty;
 import io.quarkus.runtime.Startup;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -17,7 +16,6 @@ import jakarta.inject.Inject;
 
 @ApplicationScoped
 @Startup
-@IfBuildProperty(name = "conquery.storage.backend", stringValue = "IN_MEMORY", enableIfMissing = true)
 public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository {
 
 	@Inject
@@ -59,16 +57,6 @@ public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository 
 	}
 
 	@Override
-	public void saveDataset(DatasetRecord dataset) {
-		throw readOnly();
-	}
-
-	@Override
-	public boolean deleteDataset(DatasetId datasetId) {
-		throw readOnly();
-	}
-
-	@Override
 	public List<Concept> listConceptsForDataset(DatasetId datasetId) {
 		return conceptsByDatasetId.getOrDefault(datasetId, Map.of()).values().stream().toList();
 	}
@@ -76,16 +64,6 @@ public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository 
 	@Override
 	public Optional<Concept> findConcept(ConceptId conceptId) {
 		return Optional.ofNullable(conceptsByDatasetId.getOrDefault(conceptId.datasetId(), Map.of()).get(conceptId));
-	}
-
-	@Override
-	public void saveConcept(Concept concept) {
-		throw readOnly();
-	}
-
-	@Override
-	public boolean deleteConcept(ConceptId conceptId) {
-		throw readOnly();
 	}
 
 	@Override
@@ -98,16 +76,6 @@ public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository 
 		return Optional.ofNullable(structureNodesByDatasetId.getOrDefault(structureNodeId.datasetId(), Map.of()).get(structureNodeId));
 	}
 
-	@Override
-	public void saveStructureNode(StructureNode structureNode) {
-		throw readOnly();
-	}
-
-	@Override
-	public boolean deleteStructureNode(StructureNodeId structureNodeId) {
-		throw readOnly();
-	}
-
 	public List<TableRecord> listTablesForDataset(DatasetId datasetId) {
 		return tablesByDatasetId.getOrDefault(datasetId, Map.of()).values().stream().toList();
 	}
@@ -117,25 +85,10 @@ public class ConfigDatasetCatalogRepository implements DatasetCatalogRepository 
 		return Optional.ofNullable(tablesByDatasetId.getOrDefault(tableId.datasetId(), Map.of()).get(tableId));
 	}
 
-	@Override
-	public void saveTable(TableRecord table) {
-		throw readOnly();
-	}
-
-	@Override
-	public boolean deleteTable(TableId tableId) {
-		throw readOnly();
-	}
-
 	private <K, T> Map<DatasetId, Map<K, T>> freezeNestedMap(Map<DatasetId, Map<K, T>> source) {
 		Map<DatasetId, Map<K, T>> result = new LinkedHashMap<>();
 		source.forEach((datasetId, entries) -> result.put(datasetId, java.util.Collections.unmodifiableMap(new LinkedHashMap<>(entries))));
 		return java.util.Collections.unmodifiableMap(result);
 	}
 
-	private UnsupportedOperationException readOnly() {
-		return new UnsupportedOperationException(
-				"ConfigDatasetCatalogRepository is read-only. Adapt application configuration and restart."
-		);
-	}
 }

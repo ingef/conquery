@@ -57,22 +57,6 @@ public class RepositoryNamespaceStorageRegistry implements NamespaceStorageRegis
 		}
 
 		@Override
-		public void saveConcept(DatasetCatalogRepository.Concept concept) {
-			if (!belongsToNamespace(concept.id())) {
-				throw new IllegalArgumentException("Concept id does not belong to namespace '" + dataset.id() + "': " + concept.id());
-			}
-			catalogRepository.saveConcept(concept);
-		}
-
-		@Override
-		public boolean deleteConcept(ConceptId conceptId) {
-			if (!belongsToNamespace(conceptId)) {
-				return false;
-			}
-			return catalogRepository.deleteConcept(conceptId);
-		}
-
-		@Override
 		public List<DatasetCatalogRepository.StructureNode> listStructureNodes() {
 			return catalogRepository.listStructureNodesForDataset(dataset.id());
 		}
@@ -86,22 +70,6 @@ public class RepositoryNamespaceStorageRegistry implements NamespaceStorageRegis
 		}
 
 		@Override
-		public void saveStructureNode(DatasetCatalogRepository.StructureNode structureNode) {
-			if (!belongsToNamespace(structureNode.id())) {
-				throw new IllegalArgumentException("Structure node id does not belong to namespace '" + dataset.id() + "': " + structureNode.id());
-			}
-			catalogRepository.saveStructureNode(structureNode);
-		}
-
-		@Override
-		public boolean deleteStructureNode(StructureNodeId structureNodeId) {
-			if (!belongsToNamespace(structureNodeId)) {
-				return false;
-			}
-			return catalogRepository.deleteStructureNode(structureNodeId);
-		}
-
-		@Override
 		public List<DatasetCatalogRepository.TableRecord> listTables() {
 			return catalogRepository.listTablesForDataset(dataset.id());
 		}
@@ -112,27 +80,6 @@ public class RepositoryNamespaceStorageRegistry implements NamespaceStorageRegis
 				return Optional.empty();
 			}
 			return catalogRepository.findTable(tableId);
-		}
-
-		@Override
-		public void saveTable(DatasetCatalogRepository.TableRecord table) {
-			if (!belongsToNamespace(table.id())) {
-				throw new IllegalArgumentException("Table id does not belong to namespace '" + dataset.id() + "': " + table.id());
-			}
-			catalogRepository.saveTable(new DatasetCatalogRepository.TableRecord(
-					table.id(),
-					table.label(),
-					table.columns(),
-					table.primaryColumn()
-			));
-		}
-
-		@Override
-		public boolean deleteTable(TableId tableId) {
-			if (!belongsToNamespace(tableId)) {
-				return false;
-			}
-			return catalogRepository.deleteTable(tableId);
 		}
 
 		private boolean belongsToNamespace(ConceptId scopedId) {

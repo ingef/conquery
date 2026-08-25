@@ -17,8 +17,11 @@ import com.bakdata.conquery.quarkus.concepts.conditions.definitions.AndConceptCo
 import com.bakdata.conquery.quarkus.concepts.conditions.definitions.ColumnEqualConceptCondition;
 import com.bakdata.conquery.quarkus.concepts.conditions.definitions.EqualConceptCondition;
 import com.bakdata.conquery.quarkus.concepts.filters.FilterDefinitionAssembler;
+import com.bakdata.conquery.quarkus.concepts.filters.definitions.CountFilterDefinition;
 import com.bakdata.conquery.quarkus.concepts.selects.SelectDefinitionAssembler;
+import com.bakdata.conquery.quarkus.concepts.selects.definitions.FirstSelectDefinition;
 import com.bakdata.conquery.quarkus.concepts.selects.concept.ConceptSelectDefinitionAssembler;
+import com.bakdata.conquery.quarkus.concepts.selects.concept.definitions.ExistsConceptSelectDefinition;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConceptId;
 import com.bakdata.conquery.quarkus.ids.ConceptSelectId;
@@ -28,6 +31,7 @@ import com.bakdata.conquery.quarkus.ids.SelectId;
 import com.bakdata.conquery.quarkus.ids.StructureNodeId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 import com.bakdata.conquery.quarkus.ids.ValidityDateId;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -65,7 +69,8 @@ class DatasetMetadataFolderLoaderTest {
 				demo.resolve("dataset.json"),
 				"""
 				{
-				  "id":"fdb_demo"
+				  "id":"fdb_demo",
+				  "dataSource":"analytics"
 				}
 				"""
 		);
@@ -182,6 +187,7 @@ class DatasetMetadataFolderLoaderTest {
 		DatasetMetadataFolderLoader.LoadedDatasetMetadata dataset = loaded.getFirst();
 		assertEquals(DatasetId.parse("fdb_demo"), dataset.dataset().id());
 		assertEquals("demo", dataset.dataset().label());
+		assertEquals("analytics", dataset.dataset().dataSource());
 
 		assertTrue(dataset.conceptsById().containsKey(ConceptId.parse("fdb_demo.icd")));
 		DatasetCatalogRepository.Concept concept = dataset.conceptsById().get(ConceptId.parse("fdb_demo.icd"));
@@ -199,6 +205,8 @@ class DatasetMetadataFolderLoaderTest {
 		assertEquals(List.of(ColumnId.parse("fdb_demo.kh_diagnose.icd_code")), filter.requiredColumns());
 		assertEquals(2, filter.options().size());
 		DatasetCatalogRepository.Filter countFilter = concept.connectors().getFirst().filters().get(1);
+		CountFilterDefinition countDefinition = assertInstanceOf(CountFilterDefinition.class, countFilter.definition());
+		assertEquals(List.of("entlassungsdatum"), countDefinition.getDistinctByColumn());
 		assertEquals(FilterId.parse("fdb_demo.icd.kh_diagnose.icd_count"), countFilter.id());
 		assertEquals(
 				List.of(ColumnId.parse("fdb_demo.kh_diagnose.icd_code"), ColumnId.parse("fdb_demo.kh_diagnose.entlassungsdatum")),
@@ -275,6 +283,7 @@ class DatasetMetadataFolderLoaderTest {
 																	  .orElseThrow();
 		assertEquals(DatasetId.parse("imdb"), imdb.dataset().id());
 		assertEquals("IMDb", imdb.dataset().label());
+		assertEquals("imdb", imdb.dataset().dataSource());
 		assertTrue(imdb.conceptsById().containsKey(ConceptId.parse("imdb")));
 		DatasetCatalogRepository.Filter titleFilter = imdb.conceptsById().get(ConceptId.parse("imdb")).connectors().getFirst().filters().getFirst();
 		assertEquals(FilterId.parse("imdb.titles.release_age"), titleFilter.id());
@@ -283,11 +292,13 @@ class DatasetMetadataFolderLoaderTest {
 		DatasetCatalogRepository.Select titleSelect = imdb.conceptsById().get(ConceptId.parse("imdb")).connectors().getFirst().selects().getFirst();
 		assertEquals(SelectId.parse("imdb.titles.Title"), titleSelect.id());
 		assertEquals("FIRST", titleSelect.implementationType());
+		assertInstanceOf(FirstSelectDefinition.class, titleSelect.definition());
 		assertEquals(DatasetCatalogRepository.SelectResultType.primitive("STRING"), titleSelect.resultType());
 		assertEquals(List.of(ColumnId.parse("imdb.title.name")), titleSelect.requiredColumns());
 		DatasetCatalogRepository.ConceptSelect conceptSelect = imdb.conceptsById().get(ConceptId.parse("imdb")).selects().getFirst();
 		assertEquals(ConceptSelectId.parse("imdb.exists"), conceptSelect.id());
 		assertEquals("EXISTS", conceptSelect.implementationType());
+		assertInstanceOf(ExistsConceptSelectDefinition.class, conceptSelect.definition());
 		assertEquals(DatasetCatalogRepository.SelectResultType.primitive("BOOLEAN"), conceptSelect.resultType());
 		DatasetCatalogRepository.Connector titleConnector = imdb.conceptsById().get(ConceptId.parse("imdb")).connectors().getFirst();
 		assertEquals("Choose the release date", titleConnector.validityDatesDescription());
@@ -302,12 +313,12 @@ class DatasetMetadataFolderLoaderTest {
 		assertEquals(ColumnId.parse("imdb.title.id"), title.primaryColumn());
 		assertEquals(3, title.columns().size());
 		assertEquals("Title ID", title.columns().getFirst().label());
-		assertEquals(DatasetCatalogRepository.ColumnType.INTEGER, title.columns().get(0).type());
+		assertEquals(ColumnType.INTEGER, title.columns().get(0).type());
 		assertEquals("pid", title.columns().get(0).secondaryId());
 		assertEquals("Title", title.columns().get(1).label());
-		assertEquals(DatasetCatalogRepository.ColumnType.STRING, title.columns().get(1).type());
+		assertEquals(ColumnType.STRING, title.columns().get(1).type());
 		assertEquals("Release Date", title.columns().get(2).label());
-		assertEquals(DatasetCatalogRepository.ColumnType.DATE, title.columns().get(2).type());
+		assertEquals(ColumnType.DATE, title.columns().get(2).type());
 
 		DatasetMetadataFolderLoader.LoadedDatasetMetadata emptySet = loaded.stream()
 																		   .filter(metadata -> metadata.dataset().id().toString().equals("empty_set"))
@@ -361,6 +372,7 @@ class DatasetMetadataFolderLoaderTest {
 		DatasetCatalogRepository.DatasetRecord dataset = loader.loadConfiguredDatasets().getFirst().dataset();
 		assertEquals(DatasetId.parse(datasetName), dataset.id());
 		assertEquals(datasetName, dataset.label());
+		assertEquals(datasetName, dataset.dataSource());
 	}
 
 	@Test

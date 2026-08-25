@@ -4,6 +4,7 @@ import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConnectorId;
 import com.bakdata.conquery.quarkus.ids.IdPartSanitizer;
 import com.bakdata.conquery.quarkus.ids.TableId;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnDescriptor;
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 
@@ -29,14 +30,14 @@ record BackendFilterConversionContext(
 	}
 
 	@Override
-	public Column requireColumn(String columnName) {
+	public ColumnDescriptor requireColumn(String columnName) {
 		ColumnId columnId = columnId(columnName);
-		DatasetCatalogRepository.ColumnType type = table.columns().stream()
+		ColumnDescriptor resolvedColumn = table.columns().stream()
 				.filter(column -> column.id().equals(columnId))
-				.map(DatasetCatalogRepository.ColumnRecord::type)
+				.map(record -> new ColumnDescriptor(columnName, record.type()))
 				.findFirst()
 				.orElseThrow(() -> new IllegalArgumentException("Unknown filter column '" + columnId + "' in table '" + tableId + "'."));
-		return new Column(columnName, ColumnType.valueOf(type.name()));
+		return resolvedColumn;
 	}
 
 	ColumnId columnId(String columnName) {

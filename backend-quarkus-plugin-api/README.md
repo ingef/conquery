@@ -7,7 +7,8 @@ The current stable surface covers metadata filters:
 
 - `FilterDefinition`, `AbstractFilterDefinition`, and `SingleColumnFilterDefinition` describe plugin metadata.
 - `FilterDefinitionProvider<T>` is the CDI discovery hook.
-- `FilterConversionContext` validates referenced columns without exposing backend repositories or IDs.
+- `FilterConversionContext` validates referenced columns without exposing backend repositories or IDs. It returns the
+  shared dataset `ColumnDescriptor` and `ColumnType` contracts rather than filter-specific column models.
 - `FilterResult` is the implementation-neutral result mapped to the backend catalog by the host.
 - `PolymorphicModelSubtype` declares the JSON/OpenAPI discriminator.
 

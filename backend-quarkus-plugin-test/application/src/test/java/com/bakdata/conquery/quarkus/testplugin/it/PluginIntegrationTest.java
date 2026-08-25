@@ -14,6 +14,7 @@ import com.bakdata.conquery.quarkus.ids.ConnectorId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 import com.bakdata.conquery.quarkus.models.PolymorphicModelRegistry;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinition;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import com.bakdata.conquery.quarkus.testplugin.PrefixFilterDefinition;
@@ -53,7 +54,7 @@ class PluginIntegrationTest {
 		DatasetCatalogRepository.TableRecord table = new DatasetCatalogRepository.TableRecord(
 				tableId,
 				"Events",
-				List.of(new DatasetCatalogRepository.ColumnRecord(columnId, "Code", DatasetCatalogRepository.ColumnType.STRING, null)),
+				List.of(new DatasetCatalogRepository.ColumnRecord(columnId, "Code", ColumnType.STRING, null)),
 				columnId
 		);
 

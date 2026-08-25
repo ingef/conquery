@@ -5,6 +5,7 @@ import java.util.List;
 import com.bakdata.conquery.quarkus.concepts.selects.SelectConversionContext;
 import com.bakdata.conquery.quarkus.concepts.selects.definitions.FlagsSelectDefinition;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -19,7 +20,7 @@ public class FlagsSelectProvider extends AbstractSelectProvider<FlagsSelectDefin
 	@Override
 	public DatasetCatalogRepository.Select convert(SelectConversionContext context, FlagsSelectDefinition payload) {
 		List<ColumnId> columns = payload.getFlags().values().stream().map(context::columnId).toList();
-		columns.forEach(column -> requireColumnType(context, column, DatasetCatalogRepository.ColumnType.BOOLEAN));
+		columns.forEach(column -> requireColumnType(context, column, ColumnType.BOOLEAN));
 		return select(context, payload, list("STRING"), columns);
 	}
 }

@@ -1,5 +1,7 @@
 package com.bakdata.conquery.quarkus.plugin.api.filters;
 
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnDescriptor;
+
 /** Host services available while converting a plugin filter definition. */
 public interface FilterConversionContext {
 
@@ -11,20 +13,5 @@ public interface FilterConversionContext {
 	 *
 	 * @throws IllegalArgumentException when the name is invalid or the column does not exist
 	 */
-	Column requireColumn(String columnName);
-
-	/** Validated plugin-facing description of a table column. */
-	record Column(String name, ColumnType type) {
-	}
-
-	/** Column types that plugins may use to select conversion behavior. */
-	enum ColumnType {
-		STRING,
-		INTEGER,
-		DECIMAL,
-		REAL,
-		MONEY,
-		DATE,
-		BOOLEAN
-	}
+	ColumnDescriptor requireColumn(String columnName);
 }

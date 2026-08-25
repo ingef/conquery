@@ -11,6 +11,7 @@ import com.bakdata.conquery.quarkus.concepts.selects.definitions.AbstractSelectD
 import com.bakdata.conquery.quarkus.concepts.selects.definitions.DateRangeSelectDefinition;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.SelectId;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 
 abstract class AbstractSelectProvider<T extends AbstractSelectDefinition> implements SelectDefinitionProvider<T> {
@@ -35,7 +36,7 @@ abstract class AbstractSelectProvider<T extends AbstractSelectDefinition> implem
 		String name = context.idPartFromPreferredOrFallback(payload.getName(), payload.getLabel(), "select id", type());
 		String label = firstNonBlank(payload.getLabel(), payload.getName()).orElse(name);
 		SelectId id = context.selectId(name);
-		return new DatasetCatalogRepository.Select(id, label, payload.getDescription(), payload.isDefault(), type(), resultType, requiredColumns);
+		return new DatasetCatalogRepository.Select(id, payload, label, payload.getDescription(), payload.isDefault(), type(), resultType, requiredColumns);
 	}
 
 	protected List<ColumnId> optionalColumns(SelectConversionContext context, List<String> columns) {
@@ -68,8 +69,8 @@ abstract class AbstractSelectProvider<T extends AbstractSelectDefinition> implem
 		return DatasetCatalogRepository.SelectResultType.primitive(context.columnType(column).name());
 	}
 
-	protected void requireColumnType(SelectConversionContext context, ColumnId column, DatasetCatalogRepository.ColumnType... accepted) {
-		DatasetCatalogRepository.ColumnType actual = context.columnType(column);
+	protected void requireColumnType(SelectConversionContext context, ColumnId column, ColumnType... accepted) {
+		ColumnType actual = context.columnType(column);
 		if (!Set.of(accepted).contains(actual)) {
 			throw new IllegalArgumentException("Select " + type() + " column '" + column + "' has type " + actual + ", expected one of " + Set.of(accepted) + ".");
 		}
@@ -77,10 +78,10 @@ abstract class AbstractSelectProvider<T extends AbstractSelectDefinition> implem
 
 	protected void requireDateRangeTypes(SelectConversionContext context, List<ColumnId> columns) {
 		if (columns.size() == 1) {
-			requireColumnType(context, columns.getFirst(), DatasetCatalogRepository.ColumnType.DATE, DatasetCatalogRepository.ColumnType.DATE_RANGE);
+			requireColumnType(context, columns.getFirst(), ColumnType.DATE, ColumnType.DATE_RANGE);
 			return;
 		}
-		columns.forEach(column -> requireColumnType(context, column, DatasetCatalogRepository.ColumnType.DATE));
+		columns.forEach(column -> requireColumnType(context, column, ColumnType.DATE));
 	}
 
 	protected DatasetCatalogRepository.SelectResultType primitive(String type) {

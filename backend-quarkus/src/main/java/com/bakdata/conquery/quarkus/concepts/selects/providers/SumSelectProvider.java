@@ -6,6 +6,7 @@ import java.util.List;
 import com.bakdata.conquery.quarkus.concepts.selects.SelectConversionContext;
 import com.bakdata.conquery.quarkus.concepts.selects.definitions.SumSelectDefinition;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
+import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -23,10 +24,10 @@ public class SumSelectProvider extends AbstractSingleColumnSelectProvider<SumSel
 		requireColumnType(
 				context,
 				column,
-				DatasetCatalogRepository.ColumnType.INTEGER,
-				DatasetCatalogRepository.ColumnType.MONEY,
-				DatasetCatalogRepository.ColumnType.DECIMAL,
-				DatasetCatalogRepository.ColumnType.REAL
+				ColumnType.INTEGER,
+				ColumnType.MONEY,
+				ColumnType.DECIMAL,
+				ColumnType.REAL
 		);
 		List<ColumnId> columns = new ArrayList<>(List.of(column));
 		if (payload.getSubtractColumn() != null && !payload.getSubtractColumn().isBlank()) {
