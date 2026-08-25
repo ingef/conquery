@@ -2,7 +2,6 @@ package com.bakdata.conquery.sql.conversion;
 
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 
@@ -16,8 +15,8 @@ public class SqlConverter {
 		this.config = config;
 	}
 
-	public SqlQuery convert(QueryDescription queryDescription, Namespace namespace) {
-		ConversionContext converted = nodeConversions.convert(queryDescription, namespace, config);
+	public SqlQuery convert(QueryDescription queryDescription) {
+		ConversionContext converted = nodeConversions.convert(queryDescription, config);
 		return converted.getFinalQuery();
 	}
 }

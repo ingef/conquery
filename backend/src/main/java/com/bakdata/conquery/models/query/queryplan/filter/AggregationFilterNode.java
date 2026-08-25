@@ -17,7 +17,7 @@ import lombok.ToString;
  * @param <FILTER_VALUE> Type of the used FilterValue
  */
 @ToString(callSuper = true)
-public abstract non-sealed class AggregationResultFilterNode<AGGREGATOR extends Aggregator<?>, FILTER_VALUE> extends FilterNode<FILTER_VALUE> {
+public abstract non-sealed class AggregationFilterNode<AGGREGATOR extends Aggregator<?>, FILTER_VALUE> extends FilterNode<FILTER_VALUE> {
 
 	@Getter
 	private AGGREGATOR aggregator;
@@ -27,7 +27,7 @@ public abstract non-sealed class AggregationResultFilterNode<AGGREGATOR extends 
 		aggregator.init(entity, context);
 	}
 
-	public AggregationResultFilterNode(AGGREGATOR aggregator, FILTER_VALUE filterValue) {
+	public AggregationFilterNode(AGGREGATOR aggregator, FILTER_VALUE filterValue) {
 		super(filterValue);
 		this.aggregator = aggregator;
 	}

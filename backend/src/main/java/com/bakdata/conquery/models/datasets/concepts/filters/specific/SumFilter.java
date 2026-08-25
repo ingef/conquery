@@ -1,18 +1,14 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.ColumnUtils;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.filters.AggregationFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
@@ -28,13 +24,21 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Deci
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.IntegerSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * This filter represents a filter on the sum of one integer column.
@@ -42,8 +46,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @NoArgsConstructor
 @Data
+@EqualsAndHashCode(callSuper = false)
 @CPSType(id = "SUM", base = Filter.class)
-public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter<RANGE> {
+public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends AggregationFilter<RANGE> {
 
 	private ColumnId column;
 
@@ -60,7 +65,8 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 			case MONEY -> FrontendFilterType.Fields.MONEY_RANGE;
 			case INTEGER -> FrontendFilterType.Fields.INTEGER_RANGE;
 			case DECIMAL, REAL -> FrontendFilterType.Fields.REAL_RANGE;
-			default -> throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + typeId);
+			default ->
+					throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + typeId);
 		};
 
 		f.setType(type);
@@ -84,7 +90,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	}
 
 	@Override
-	public FilterNode createFilterNode(RANGE value) {
+	public AggregationFilterNode<?, ?> createFilterNode(RANGE value) {
 		IRange<? extends Number, ?> range = value;
 
 		// Real and Decimal share FilterValue
@@ -94,8 +100,8 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
 			return new RangeFilterNode(range, new DistinctValuesWrapperAggregator(getAggregator(), getDistinctByColumn().stream()
-																														.map(ColumnId::resolve)
-																														.toList()));
+					.map(ColumnId::resolve)
+					.toList()));
 		}
 
 		return new RangeFilterNode(range, getAggregator());
@@ -129,5 +135,11 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 			case REAL -> new RealDiffSumAggregator(resolvedColumn, subtrahend);
 			default -> throw new IllegalStateException("No Sum Filter for type " + typeId.name());
 		};
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Columns do not match required Type.")
+	public boolean isValidColumnType() {
+		return ColumnUtils.assertValidColumnTypes(getColumn(), MajorTypeId.NUMERIC);
 	}
 }
