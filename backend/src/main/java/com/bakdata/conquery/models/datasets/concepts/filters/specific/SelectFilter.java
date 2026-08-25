@@ -64,7 +64,7 @@ public abstract class SelectFilter<FE_TYPE> extends EventFilter<FE_TYPE> {
 	@JsonIgnore
 	@ValidationMethod(message = "Columns do not match required Type.")
 	public boolean isValidColumnType() {
-		return ColumnUtils.assertValidColumnTypes(this, getColumn(), EnumSet.of(MajorTypeId.STRING));
+		return ColumnUtils.assertValidColumnTypes(getColumn(), EnumSet.of(MajorTypeId.STRING));
 	}
 
 	@Override

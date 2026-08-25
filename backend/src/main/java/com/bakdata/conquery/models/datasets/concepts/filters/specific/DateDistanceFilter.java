@@ -51,7 +51,7 @@ public class DateDistanceFilter extends EventFilter<Range.LongRange> {
 	@JsonIgnore
 	@ValidationMethod(message = "Columns do not match required Type.")
 	public boolean isValidColumnType() {
-		return ColumnUtils.assertValidColumnTypes(this, getColumn(), Set.of(MajorTypeId.DATE));
+		return ColumnUtils.assertValidColumnTypes(getColumn(), Set.of(MajorTypeId.DATE));
 	}
 
 	@Override

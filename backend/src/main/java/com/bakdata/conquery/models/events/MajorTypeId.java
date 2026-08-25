@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.events;
 
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.function.Function;
+
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.*;
 import lombok.RequiredArgsConstructor;
-
-import java.util.EnumSet;
-import java.util.Set;
-import java.util.function.Function;
 
 @RequiredArgsConstructor
 public enum MajorTypeId {
@@ -28,5 +28,13 @@ public enum MajorTypeId {
 
 	public Parser createParser(ConqueryConfig config) {
 		return supplier.apply(config);
+	}
+
+	public boolean isNumeric() {
+		return NUMERIC.contains(this);
+	}
+
+	public boolean isDateCompatible() {
+		return DATE_COMPATIBLE.contains(this);
 	}
 }

@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.datasets.concepts;
 import com.bakdata.conquery.models.common.ColumnUtils;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -58,7 +57,7 @@ public interface DaterangeSelectOrFilter {
 			return true;
 		}
 
-		return ColumnUtils.assertValidColumnTypes(((Identifiable<?, ?>) this), getStartColumn(), EnumSet.of(MajorTypeId.DATE)) && ColumnUtils.assertValidColumnTypes(((Identifiable<?, ?>) this), getEndColumn(), EnumSet.of(MajorTypeId.DATE));
+		return ColumnUtils.assertValidColumnTypes(getStartColumn(), EnumSet.of(MajorTypeId.DATE)) && ColumnUtils.assertValidColumnTypes(getEndColumn(), EnumSet.of(MajorTypeId.DATE));
 	}
 
 	@JsonIgnore
@@ -68,7 +67,7 @@ public interface DaterangeSelectOrFilter {
 			return true;
 		}
 
-		return ColumnUtils.assertValidColumnTypes(((Identifiable<?, ?>) this), getColumn(), EnumSet.of(MajorTypeId.DATE, MajorTypeId.DATE_RANGE));
+		return ColumnUtils.assertValidColumnTypes(getColumn(), EnumSet.of(MajorTypeId.DATE, MajorTypeId.DATE_RANGE));
 	}
 
 }

@@ -96,6 +96,6 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Eve
 	@JsonIgnore
 	@ValidationMethod(message = "Columns do not match required Type.")
 	public boolean isValidColumnType() {
-		return ColumnUtils.assertValidColumnTypes(this, getColumn(), MajorTypeId.NUMERIC);
+		return ColumnUtils.assertValidColumnTypes(getColumn(), MajorTypeId.NUMERIC);
 	}
 }

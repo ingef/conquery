@@ -189,7 +189,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 						CBlock cBlock = cBlockId.resolve();
 						final Bucket bucket = cBlock.getBucket().resolve();
 						final Table table = bucket.getTable().resolve();
-						final List<Column> dateColumns = Arrays.stream(table.getColumns()).filter(c -> MajorTypeId.DATE_COMPATIBLE.contains(c.getType())).toList();
+						final List<Column> dateColumns = Arrays.stream(table.getColumns()).filter(t -> t.getType().isDateCompatible()).toList();
 
 						for (String entity : bucket.entities()) {
 

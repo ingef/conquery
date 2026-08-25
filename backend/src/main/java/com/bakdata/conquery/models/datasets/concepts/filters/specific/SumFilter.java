@@ -140,6 +140,6 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Aggreg
 	@JsonIgnore
 	@ValidationMethod(message = "Columns do not match required Type.")
 	public boolean isValidColumnType() {
-		return ColumnUtils.assertValidColumnTypes(this, getColumn(), MajorTypeId.NUMERIC);
+		return ColumnUtils.assertValidColumnTypes(getColumn(), MajorTypeId.NUMERIC);
 	}
 }

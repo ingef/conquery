@@ -88,7 +88,7 @@ public class FlagFilter extends EventFilter<Set<String>> {
 	public boolean isAllColumnsBoolean() {
 		boolean valid = true;
 		for (ColumnId column : flags.values()) {
-			valid &= ColumnUtils.assertValidColumnTypes(this, column, EnumSet.of(MajorTypeId.BOOLEAN));
+			valid &= ColumnUtils.assertValidColumnTypes(column, EnumSet.of(MajorTypeId.BOOLEAN));
 
 		}
 

@@ -44,7 +44,7 @@ public class QuartersInYearFilter extends AggregationFilter<Range.LongRange> {
 	@JsonIgnore
 	@ValidationMethod(message = "Column do not match required Type.")
 	public boolean isValidColumnType() {
-		return ColumnUtils.assertValidColumnTypes(this, getColumn(), EnumSet.of(MajorTypeId.DATE));
+		return ColumnUtils.assertValidColumnTypes(getColumn(), EnumSet.of(MajorTypeId.DATE));
 	}
 
 	@Override
