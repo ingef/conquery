@@ -13,7 +13,7 @@ import lombok.Getter;
  * @param <X> context of the convertible
  * @see Converter
  */
-public abstract class Conversions<C, R, X extends Context> {
+public class Conversions<C, R, X extends Context> {
 
 	@Getter
 	private final List<? extends Converter<? extends C, R, X>> converters;
@@ -29,8 +29,7 @@ public abstract class Conversions<C, R, X extends Context> {
 			if (maybeConverted.isPresent()) {
 				if (converted == null) {
 					converted = maybeConverted.get();
-				}
-				else {
+				} else {
 					throw new IllegalStateException("Multiple Converters for %s".formatted(node));
 				}
 			}

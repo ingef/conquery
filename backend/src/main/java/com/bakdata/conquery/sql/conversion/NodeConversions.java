@@ -4,7 +4,6 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
@@ -18,8 +17,9 @@ import java.util.Locale;
 /**
  * Entry point for converting {@link QueryDescription} to an SQL query.
  */
-public class NodeConversions extends Conversions<Visitable, ConversionContext, ConversionContext> {
+public class NodeConversions implements NodeConversionDispatcher {
 
+	private final Conversions<Object, ConversionContext, ConversionContext> conversions;
 	private final IdColumnConfig idColumns;
 	private final DialectBundle dialect;
 	private final NameGenerator nameGenerator;
@@ -36,13 +36,18 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 			Clock clock,
 			String defaultPrimaryColumn
 	) {
-		super(dialectBundle.getNodeConverters(dslContext));
+		this.conversions = new Conversions<>(dialectBundle.getNodeConverters(dslContext));
 		this.idColumns = idColumns;
 		this.dialect = dialectBundle;
 		this.nameGenerator = new NameGenerator(dialectBundle.getNameMaxLength());
 		this.executionService = executionService;
 		this.clock = clock;
 		this.defaultPrimaryColumn = defaultPrimaryColumn;
+	}
+
+	@Override
+	public ConversionContext convert(Object node, ConversionContext context) {
+		return conversions.convert(node, context);
 	}
 
 	public ConversionContext convert(QueryDescription queryDescription, ConqueryConfig conqueryConfig) {
