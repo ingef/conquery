@@ -29,6 +29,7 @@
     </properties>
 
     <modules>
+        <module>sql-connector</module>
         <module>backend</module>
         <module>executable</module>
         <module>autodoc</module>
