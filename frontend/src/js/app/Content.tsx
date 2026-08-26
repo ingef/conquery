@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Group, Panel } from "react-resizable-panels";
 import { ResizeHandle } from "../common/ResizeHandle";
+import { useCollapsiblePanel } from "../common/useCollapsiblePanel";
 import { History } from "../entity-history/History";
 import Preview from "../preview/Preview";
 import ActivateTooltip from "../tooltip/ActivateTooltip";
@@ -31,30 +31,23 @@ const Content = () => {
     (state) => state.entityHistory.isOpen,
   );
 
-  const collapsedStyles = useMemo(() => {
-    if (displayTooltip) return {};
-
-    return {
-      width: "30px",
-      minWidth: "30px",
-      maxWidth: "30px",
-      overflow: "hidden",
-    };
-  }, [displayTooltip]);
+  const tooltipPanelRef = useCollapsiblePanel(!displayTooltip);
 
   return (
     <DndProvider>
       <Root>
         <Group orientation="horizontal">
           <Panel
-            style={collapsedStyles}
+            panelRef={tooltipPanelRef}
+            collapsible
+            collapsedSize={30}
             minSize={200}
             maxSize={600}
             defaultSize={displayTooltip ? 200 : 30}
           >
             {displayTooltip ? <Tooltip /> : <ActivateTooltip />}
           </Panel>
-          <ResizeHandle />
+          <ResizeHandle disabled={!displayTooltip} />
           <Panel minSize={350} defaultSize={600}>
             <LeftPane />
           </Panel>
