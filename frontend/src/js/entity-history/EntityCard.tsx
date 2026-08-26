@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 
-import { EntityInfo, TimeStratifiedInfo } from "../api/types";
+import type { EntityInfo, TimeStratifiedInfo } from "../api/types";
 
 import EntityInfos from "./EntityInfos";
 import { TabbableTimeStratifiedInfos } from "./TabbableTimeStratifiedInfos";

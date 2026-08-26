@@ -1,11 +1,11 @@
 import styled from "@emotion/styled";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faBullseye,
   faCircle,
   faCircleDot,
 } from "@fortawesome/free-solid-svg-icons";
-import { Dispatch, SetStateAction, memo, useMemo } from "react";
+import { type Dispatch, memo, type SetStateAction, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";

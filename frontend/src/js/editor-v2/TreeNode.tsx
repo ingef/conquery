@@ -1,26 +1,25 @@
 import styled from "@emotion/styled";
 import { faCalendarMinus } from "@fortawesome/free-regular-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
-import { DOMAttributes, memo } from "react";
+import { type DOMAttributes, memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DNDType } from "../common/constants/dndTypes";
 import { Icon } from "../icon/FaIcon";
 import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { getRootNodeLabel } from "../standard-query-editor/helper";
-import WithTooltip from "../tooltip/WithTooltip";
-import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
-
-import {
+import type {
   DragItemConceptTreeNode,
   DragItemQuery,
 } from "../standard-query-editor/types";
-import { Connector, Grid } from "./EditorLayout";
-import { TreeNodeConcept } from "./TreeNodeConcept";
+import WithTooltip from "../tooltip/WithTooltip";
+import Dropzone, { type DropzoneProps } from "../ui-components/Dropzone";
 import { EDITOR_DROP_TYPES } from "./config";
 import { DateRange } from "./date-restriction/DateRange";
+import { Connector, Grid } from "./EditorLayout";
+import { TreeNodeConcept } from "./TreeNodeConcept";
 import { TimeConnection } from "./time-connection/TimeConnection";
-import { ConnectionKind, Tree } from "./types";
+import type { ConnectionKind, Tree } from "./types";
 import { useGetTranslatedConnection } from "./util";
 
 const NodeContainer = styled("div")`

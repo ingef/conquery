@@ -1,13 +1,11 @@
+import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-
 import type { StateT } from "../app/reducers";
 import { HistoryButton } from "../button/HistoryButton";
 import DatasetSelector from "../dataset/DatasetSelector";
 import { canViewEntityPreview, useHideLogoutButton } from "../user/selectors";
-
-import { useTheme } from "@emotion/react";
 import { HelpMenu } from "./HelpMenu";
 import LogoutButton from "./LogoutButton";
 

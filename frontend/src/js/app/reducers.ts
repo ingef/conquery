@@ -1,49 +1,54 @@
 import { combineReducers } from "redux";
-
+import conceptTrees, {
+  type ConceptTreesStateT,
+} from "../concept-trees/reducer";
 import conceptTreesOpen, {
-  ConceptTreesOpenStateT,
+  type ConceptTreesOpenStateT,
 } from "../concept-trees-open/reducer";
-import conceptTrees, { ConceptTreesStateT } from "../concept-trees/reducer";
-import datasets, { DatasetStateT } from "../dataset/reducer";
-import entityHistory, { EntityHistoryStateT } from "../entity-history/reducer";
+import datasets, { type DatasetStateT } from "../dataset/reducer";
+import entityHistory, {
+  type EntityHistoryStateT,
+} from "../entity-history/reducer";
 import type { Form } from "../external-forms/config-types";
 import {
   activeFormReducer,
   availableFormsReducer,
 } from "../external-forms/reducer";
-import panes, { PanesStateT } from "../pane/reducer";
-import preview, { PreviewStateT } from "../preview/reducer";
+import panes, { type PanesStateT } from "../pane/reducer";
+import preview, { type PreviewStateT } from "../preview/reducer";
 import projectItemsFilter, {
-  ProjectItemsFilterStateT,
+  type ProjectItemsFilterStateT,
 } from "../previous-queries/filter/reducer";
 import previousQueriesFolderFilter, {
-  PreviousQueriesFolderFilterStateT,
+  type PreviousQueriesFolderFilterStateT,
 } from "../previous-queries/folder-filter/reducer";
 import previousQueries, {
-  PreviousQueriesStateT,
+  type PreviousQueriesStateT,
 } from "../previous-queries/list/reducer";
 import projectItemsSearch, {
-  ProjectItemsSearchStateT,
+  type ProjectItemsSearchStateT,
 } from "../previous-queries/search/reducer";
 import projectItemsTypeFilter, {
-  ProjectItemsTypeFilterStateT,
+  type ProjectItemsTypeFilterStateT,
 } from "../previous-queries/type-filter/reducer";
 import createQueryRunnerReducer, {
-  QueryRunnerStateT,
+  type QueryRunnerStateT,
 } from "../query-runner/reducer";
-import snackMessage, { SnackMessageStateT } from "../snack-message/reducer";
+import snackMessage, {
+  type SnackMessageStateT,
+} from "../snack-message/reducer";
 import queryReducer, {
-  StandardQueryStateT,
+  type StandardQueryStateT,
 } from "../standard-query-editor/queryReducer";
 import selectedSecondaryIdsReducer, {
-  SelectedSecondaryIdStateT,
+  type SelectedSecondaryIdStateT,
 } from "../standard-query-editor/selectedSecondaryIdReducer";
-import startup, { StartupStateT } from "../startup/reducer";
-import tooltip, { TooltipStateT } from "../tooltip/reducer";
+import startup, { type StartupStateT } from "../startup/reducer";
+import tooltip, { type TooltipStateT } from "../tooltip/reducer";
 import uploadConceptListModal, {
-  UploadConceptListModalStateT,
+  type UploadConceptListModalStateT,
 } from "../upload-concept-list-modal/reducer";
-import user, { UserStateT } from "../user/reducer";
+import user, { type UserStateT } from "../user/reducer";
 
 export type StateT = {
   conceptTrees: ConceptTreesStateT;

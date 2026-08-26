@@ -2,7 +2,6 @@
 .DS_Store
 *.log
 *.tgz
-.eslintcache
 
 # Libraries
 node_modules

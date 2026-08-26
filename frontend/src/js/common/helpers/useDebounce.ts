@@ -20,6 +20,7 @@ export const useDebounce = (
     delayRef.current = delay;
   }, [delay]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies are passed in by the caller, so useDebounce works like useEffect
   useEffect(() => {
     if (handle.current) clearTimeout(handle.current);
 
@@ -31,9 +32,5 @@ export const useDebounce = (
     return () => {
       if (handle.current) clearTimeout(handle.current);
     };
-
-    // Yes, dependencies can't be statically verified,
-    // but this way, useDebounce almost works like useEffect
-    // eslint-disable-next-line
   }, debounceTriggers);
 };

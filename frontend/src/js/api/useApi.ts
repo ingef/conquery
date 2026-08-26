@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { useCallback, useContext, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -161,7 +161,7 @@ export async function fetchJsonUnauthorized(
     // Reject other status
     try {
       return Promise.reject({ status: response.status, ...response.data });
-    } catch (e) {
+    } catch {
       return Promise.reject({ status: response.status });
     }
   }

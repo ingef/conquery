@@ -1,9 +1,9 @@
 import { memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { SelectOptionT, SelectorResultType } from "../api/types";
+import type { SelectOptionT, SelectorResultType } from "../api/types";
 import { isSelectDisabled, sortSelects } from "../model/select";
-import { SelectedSelectorT } from "../standard-query-editor/types";
+import type { SelectedSelectorT } from "../standard-query-editor/types";
 import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
 
 import ContentCell from "./ContentCell";

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC, ReactNode, memo, useEffect, useState } from "react";
+import { type FC, memo, type ReactNode, useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,7 +8,7 @@ import { useGetFormConfig } from "../api/api";
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { DNDType } from "../common/constants/dndTypes";
-import { Language, useActiveLang } from "../localization/useActiveLang";
+import { type Language, useActiveLang } from "../localization/useActiveLang";
 import type { FormConfigT } from "../previous-queries/list/reducer";
 import { setMessage } from "../snack-message/actions";
 import Dropzone from "../ui-components/Dropzone";
@@ -174,7 +174,7 @@ const FormConfigLoader: FC<Props> = ({
       }
 
       setFormConfigToLoadNext(config);
-    } catch (e) {
+    } catch {
       dispatch(
         setMessage({
           message: t("formConfig.loadError"),

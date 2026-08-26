@@ -1,6 +1,5 @@
-import type { Location } from "history";
 import { createContext, useCallback, useState } from "react";
-import { useLocation } from "react-router";
+import { type Location, useLocation } from "react-router-dom";
 
 import { isIDPEnabled } from "../environment";
 

@@ -1,5 +1,5 @@
 import type { DatasetT } from "../api/types";
-import { DNDType } from "../common/constants/dndTypes";
+import type { DNDType } from "../common/constants/dndTypes";
 
 export interface ExternalFormPropsType {
   selectedDatasetId: DatasetT["id"];

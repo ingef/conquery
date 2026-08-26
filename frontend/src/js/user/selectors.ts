@@ -10,7 +10,7 @@ interface ContextT {
 export function selectPermissions(
   state: StateT,
 ): Record<DatasetT["id"], PermissionsT> | null {
-  return !!state.user.me && !!state.user.me.datasetAbilities
+  return state.user.me && state.user.me.datasetAbilities
     ? state.user.me.datasetAbilities
     : null;
 }

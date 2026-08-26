@@ -1,16 +1,16 @@
-import { css, Theme } from "@emotion/react";
+import { css, type Theme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { memo, ReactNode, useMemo } from "react";
+import { memo, type ReactNode, useMemo } from "react";
 import { NumericFormat } from "react-number-format";
 
-import {
+import type {
   ColumnDescription,
   ConceptIdT,
   CurrencyConfigT,
 } from "../../api/types";
-import { ContentFilterValue, ContentType } from "../ContentControl";
-import { DateRow, EntityEvent } from "../reducer";
+import type { ContentFilterValue, ContentType } from "../ContentControl";
 import { formatHistoryDayRange } from "../RowDates";
+import type { DateRow, EntityEvent } from "../reducer";
 
 import ConceptName from "./ConceptName";
 import { TinyLabel } from "./TinyLabel";

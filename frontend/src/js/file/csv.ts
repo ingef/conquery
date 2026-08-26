@@ -1,4 +1,4 @@
-import Papa, { ParseResult } from "papaparse";
+import Papa, { type ParseResult } from "papaparse";
 
 export function parseCSV(file: File, delimiter?: string) {
   return new Promise<ParseResult<string[]>>((resolve) => {

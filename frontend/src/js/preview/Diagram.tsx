@@ -1,14 +1,16 @@
-import { ChartData, ChartOptions } from "chart.js";
+import { type Theme, useTheme } from "@emotion/react";
+import type { ChartData, ChartOptions } from "chart.js";
 import { addMonths, format } from "date-fns";
 import { useMemo } from "react";
 import { Bar, Line } from "react-chartjs-2";
-
-import { BarStatistics, DateStatistics, PreviewStatistics } from "../api/types";
+import { useTranslation } from "react-i18next";
+import type {
+  BarStatistics,
+  DateStatistics,
+  PreviewStatistics,
+} from "../api/types";
 import { parseDate, parseStdDate } from "../common/helpers/dateHelper";
 import { hexToRgbA } from "../entity-history/TimeStratifiedChart";
-
-import { Theme, useTheme } from "@emotion/react";
-import { useTranslation } from "react-i18next";
 import {
   formatNumber,
   previewStatsIsBarStats,

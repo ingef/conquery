@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
-import { ConnectionKind, Tree, TreeChildren } from "../types";
+import type { ConnectionKind, Tree, TreeChildren } from "../types";
 
 const CONNECTIONS = ["and", "or", "time"] as ConnectionKind[];
 

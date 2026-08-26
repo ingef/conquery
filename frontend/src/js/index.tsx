@@ -1,13 +1,13 @@
-import { Theme, ThemeProvider } from "@emotion/react";
+import { type Theme, ThemeProvider } from "@emotion/react";
 import { createRoot } from "react-dom/client";
-import { Store } from "redux";
+import type { Store } from "redux";
 
 import "../fonts.css";
 import "../index.css";
 
 import AppRoot from "./AppRoot";
-import GlobalStyles from "./GlobalStyles";
 import type { StateT } from "./app/reducers";
+import GlobalStyles from "./GlobalStyles";
 import { makeStore } from "./store";
 
 // TODO: OG image required?

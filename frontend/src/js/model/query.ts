@@ -1,11 +1,10 @@
 import { exists } from "../common/helpers/exists";
+import { TIME_OPERATORS } from "../editor-v2/types";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type {
   PreviousQueryQueryNodeType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-
-import { TIME_OPERATORS } from "../editor-v2/types";
 
 import { nodeIsConceptQueryNode } from "./node";
 

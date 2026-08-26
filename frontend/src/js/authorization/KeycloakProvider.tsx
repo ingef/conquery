@@ -1,5 +1,5 @@
 import { ReactKeycloakProvider } from "@react-keycloak-fork/web";
-import { ReactNode, useContext } from "react";
+import { type ReactNode, useContext } from "react";
 
 import keycloak from "../../keycloak";
 import { isIDPEnabled } from "../environment";
@@ -12,12 +12,10 @@ const KeycloakProvider = ({ children }: { children: ReactNode }) => {
   return (
     <ReactKeycloakProvider
       authClient={keycloak}
-      onEvent={
-        (/*event: unknown, error: unknown*/) => {
-          // USEFUL FOR DEBUGGING
-          // console.log("onKeycloakEvent", event, error);
-        }
-      }
+      onEvent={(/*event: unknown, error: unknown*/) => {
+        // USEFUL FOR DEBUGGING
+        // console.log("onKeycloakEvent", event, error);
+      }}
       onTokens={(tokens) => {
         if (tokens.token) {
           setAuthToken(tokens.token);

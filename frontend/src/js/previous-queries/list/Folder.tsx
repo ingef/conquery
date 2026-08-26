@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { faFolder as faFolderRegular } from "@fortawesome/free-regular-svg-icons";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
-import { FC } from "react";
+import type { FC } from "react";
 import Highlighter from "react-highlight-words";
 
 import { exists } from "../../common/helpers/exists";

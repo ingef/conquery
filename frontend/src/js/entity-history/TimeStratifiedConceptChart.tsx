@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { faBan } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
-import {
+import type {
   ColumnDescriptionSemanticConceptColumn,
   TimeStratifiedInfo,
 } from "../api/types";

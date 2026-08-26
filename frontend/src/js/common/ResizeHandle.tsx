@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { CSSProperties } from "react";
+import type { CSSProperties } from "react";
 import { PanelResizeHandle } from "react-resizable-panels";
 
 const SxPanelResizeHandle = styled(PanelResizeHandle)`

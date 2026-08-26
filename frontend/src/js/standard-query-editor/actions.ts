@@ -1,10 +1,10 @@
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
-import { ActionType, createAction } from "typesafe-actions";
+import { type ActionType, createAction } from "typesafe-actions";
 
 import {
-  PostPrefixForSuggestionsParams,
+  type PostPrefixForSuggestionsParams,
   usePostFilterValuesResolve,
   usePostPrefixForSuggestions,
 } from "../api/api";
@@ -18,12 +18,12 @@ import type {
 } from "../api/types";
 import { successPayload } from "../common/actions/genericActions";
 import type { TreesT } from "../concept-trees/reducer";
-import { NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
+import { type NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
 import { useLoadQuery } from "../previous-queries/list/actions";
 import type { ModeT } from "../ui-components/InputRange";
 
 import { expandNode } from "./expandNode";
-import { StandardQueryStateT } from "./queryReducer";
+import type { StandardQueryStateT } from "./queryReducer";
 import type {
   DragItemConceptTreeNode,
   DragItemQuery,

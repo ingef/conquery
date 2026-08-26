@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import {
   faCaretDown,
   faCaretRight,
-  IconDefinition,
+  type IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import { forwardRef } from "react";
 import Highlighter from "react-highlight-words";

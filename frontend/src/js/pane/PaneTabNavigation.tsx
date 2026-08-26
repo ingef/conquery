@@ -1,10 +1,9 @@
-import { FC } from "react";
+import type { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../app/reducers";
-
-import TabNavigation, { TabNavigationTab } from "./TabNavigation";
 import { clickPaneTab } from "./actions";
+import TabNavigation, { type TabNavigationTab } from "./TabNavigation";
 
 interface PropsT {
   paneType: "left" | "right";

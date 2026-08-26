@@ -1,11 +1,11 @@
 import styled from "@emotion/styled";
 import { memo } from "react";
-import { UseFormReturn } from "react-hook-form";
+import type { UseFormReturn } from "react-hook-form";
 
 import type { SelectOptionT } from "../../api/types";
 import { useActiveLang } from "../../localization/useActiveLang";
-import FormHeader from "../FormHeader";
 import type { Form as FormType } from "../config-types";
+import FormHeader from "../FormHeader";
 import { getFieldKey, getH1Index } from "../helper";
 
 import Field from "./Field";

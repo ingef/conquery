@@ -1,11 +1,11 @@
 import { useCallback } from "react";
 import { useDispatch } from "react-redux";
-import { ActionType, createAsyncAction } from "typesafe-actions";
+import { type ActionType, createAsyncAction } from "typesafe-actions";
 
 import { useGetMe } from "../api/api";
 import type { GetMeResponseT } from "../api/types";
 import {
-  ErrorObject,
+  type ErrorObject,
   errorPayload,
   successPayload,
 } from "../common/actions/genericActions";

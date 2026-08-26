@@ -6,7 +6,7 @@
 // Some keys are added (e.g. the query type attribute)
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
-import { EditorV2Query, Tree, TreeChildrenTime } from "../editor-v2/types";
+import type { EditorV2Query, Tree, TreeChildrenTime } from "../editor-v2/types";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { isLabelPristine } from "../standard-query-editor/helper";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
@@ -19,7 +19,7 @@ import type {
   TableWithFilterValueT,
 } from "../standard-query-editor/types";
 
-import { ConceptIdT, DateRangeT } from "./types";
+import type { ConceptIdT, DateRangeT } from "./types";
 
 export const transformFilterValueToApi = (
   filter: FilterWithValueType,
@@ -189,17 +189,17 @@ const createTimeMode = (timeNode: TreeChildrenTime) => {
   }
 };
 const transformTreeToApi = (tree: Tree): unknown => {
-  let dateRestriction;
+  let dateRestriction: ReturnType<typeof createDateRestriction> | undefined;
   if (tree.dates?.restriction) {
     dateRestriction = createDateRestriction(tree.dates.restriction, null);
   }
 
-  let negation;
+  let negation: ReturnType<typeof createNegation> | undefined;
   if (tree.negation) {
     negation = createNegation(null);
   }
 
-  let node;
+  let node: unknown;
   if (!tree.children) {
     if (!tree.data) {
       throw new Error(

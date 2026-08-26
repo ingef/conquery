@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 const KeyShape = styled("kbd")`
   padding: 2px 4px;

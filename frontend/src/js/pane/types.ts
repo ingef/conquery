@@ -1,4 +1,4 @@
-import { ComponentType } from "react";
+import type { ComponentType } from "react";
 
 // Used for right pane tabs at the moment
 export type TabT = {

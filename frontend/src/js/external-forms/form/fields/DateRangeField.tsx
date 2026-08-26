@@ -1,9 +1,9 @@
-import { ComponentProps } from "react";
-import { DateStringMinMax } from "../../../common/helpers/dateHelper";
+import type { ComponentProps } from "react";
+import type { DateStringMinMax } from "../../../common/helpers/dateHelper";
 import InputDateRange from "../../../ui-components/InputDateRange";
-import { DateRangeField as DateRangeFieldT } from "../../config-types";
+import type { DateRangeField as DateRangeFieldT } from "../../config-types";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
-import Field from "../Field";
+import type Field from "../Field";
 
 export const DateRangeField = ({
   field,

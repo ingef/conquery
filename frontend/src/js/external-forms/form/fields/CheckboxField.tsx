@@ -1,8 +1,8 @@
-import { ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import InputCheckbox from "../../../ui-components/InputCheckbox";
-import { CheckboxField as CheckboxFieldT } from "../../config-types";
+import type { CheckboxField as CheckboxFieldT } from "../../config-types";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
-import Field from "../Field";
+import type Field from "../Field";
 
 export const CheckboxField = ({
   field,

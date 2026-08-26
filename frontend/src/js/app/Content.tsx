@@ -1,14 +1,12 @@
 import styled from "@emotion/styled";
-import { useSelector } from "react-redux";
-
-import { History } from "../entity-history/History";
-import ActivateTooltip from "../tooltip/ActivateTooltip";
-import Tooltip from "../tooltip/Tooltip";
-
 import { useMemo } from "react";
+import { useSelector } from "react-redux";
 import { Panel, PanelGroup } from "react-resizable-panels";
 import { ResizeHandle } from "../common/ResizeHandle";
+import { History } from "../entity-history/History";
 import Preview from "../preview/Preview";
+import ActivateTooltip from "../tooltip/ActivateTooltip";
+import Tooltip from "../tooltip/Tooltip";
 import DndProvider from "./DndProvider";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";

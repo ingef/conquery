@@ -11,9 +11,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { parseISO } from "date-fns";
 import { forwardRef, useState } from "react";
+import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-
 import type { SecondaryId } from "../../api/types";
 import type { StateT } from "../../app/reducers";
 import DownloadButton from "../../button/DownloadButton";
@@ -25,12 +25,10 @@ import FaIcon from "../../icon/FaIcon";
 import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
 import WithTooltip from "../../tooltip/WithTooltip";
-
-import Highlighter from "react-highlight-words";
-import { DeleteProjectItemButton } from "./DeleteProjectItemButton";
-import ProjectItemLabel from "./ProjectItemLabel";
 import { useUpdateFormConfig, useUpdateQuery } from "./actions";
+import { DeleteProjectItemButton } from "./DeleteProjectItemButton";
 import { isFormConfig } from "./helpers";
+import ProjectItemLabel from "./ProjectItemLabel";
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 
 export type ProjectItemT = PreviousQueryT | FormConfigT;

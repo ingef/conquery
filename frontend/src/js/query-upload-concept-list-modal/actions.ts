@@ -1,7 +1,7 @@
-import { ActionType, createAction } from "typesafe-actions";
+import { type ActionType, createAction } from "typesafe-actions";
 
-import { SelectOptionT } from "../api/types";
-import { TreesT } from "../concept-trees/reducer";
+import type { SelectOptionT } from "../api/types";
+import type { TreesT } from "../concept-trees/reducer";
 
 export type QueryUploadConceptListModalActions = ActionType<
   typeof acceptUploadedConceptsOrFilter

@@ -1,16 +1,22 @@
 import styled from "@emotion/styled";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import { ForwardedRef, ReactElement, ReactNode, Ref, forwardRef } from "react";
-import { DropTargetMonitor } from "react-dnd";
+import {
+  type ForwardedRef,
+  forwardRef,
+  type ReactElement,
+  type ReactNode,
+  type Ref,
+} from "react";
+import type { DropTargetMonitor } from "react-dnd";
 
 import IconButton from "../../button/IconButton";
 import InfoTooltip from "../../tooltip/InfoTooltip";
-import {
+import type {
   ChildArgs,
   PossibleDroppableObject,
 } from "../../ui-components/Dropzone";
 import DropzoneWithFileInput, {
-  DragItemFile,
+  type DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
 import Label from "../../ui-components/Label";
 

@@ -15,11 +15,10 @@ import {
 import { isQueryExpandable } from "../model/query";
 import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
-
+import { getRootNodeLabel } from "./helper";
 import QueryNodeActions from "./QueryNodeActions";
 import QueryNodeContent from "./QueryNodeContent";
-import { getRootNodeLabel } from "./helper";
-import { StandardQueryNodeT } from "./types";
+import type { StandardQueryNodeT } from "./types";
 
 const FlexHoverNavigatable = styled(HoverNavigatable)`
   display: flex;

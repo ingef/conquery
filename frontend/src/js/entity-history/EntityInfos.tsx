@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { Fragment, memo } from "react";
 
-import { EntityInfo } from "../api/types";
+import type { EntityInfo } from "../api/types";
 
 const Grid = styled("div")`
   display: inline-grid;

@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { useMemo, useState } from "react";
 
-import { TimeStratifiedInfo } from "../api/types";
+import type { TimeStratifiedInfo } from "../api/types";
 import SmallTabNavigation from "../small-tab-navigation/SmallTabNavigation";
 
 import { TimeStratifiedChart } from "./TimeStratifiedChart";
