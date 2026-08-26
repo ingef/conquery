@@ -1,6 +1,6 @@
 import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { useCallback, useContext, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { useIsCacheEnabled } from "../common/feature-flags/useIsCacheEnabled";
