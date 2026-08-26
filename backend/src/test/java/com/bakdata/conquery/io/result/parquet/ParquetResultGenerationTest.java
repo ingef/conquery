@@ -47,7 +47,7 @@ public class ParquetResultGenerationTest {
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
 	private static final PrintSettings
 			PRINT_SETTINGS =
-			new PrintSettings(false, Locale.ROOT, null, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel());
+			new PrintSettings(false, Locale.ROOT, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel());
 
 
 	@Test
@@ -105,8 +105,7 @@ public class ParquetResultGenerationTest {
 		// Prepare every input data
 		PrintSettings printSettings = new PrintSettings(false,
 														Locale.ROOT,
-														null,
-														CONFIG,
+                CONFIG,
 														(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
 														(selectInfo) -> selectInfo.getSelect().getLabel()
 		);

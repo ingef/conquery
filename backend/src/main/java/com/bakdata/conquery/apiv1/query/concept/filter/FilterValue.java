@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
@@ -53,11 +52,6 @@ public abstract class FilterValue<VALUE> {
 	private Object value;
 
 	public void resolve(QueryResolveContext context) {
-	}
-
-	public FilterNode<?> createNode() {
-		final Filter<VALUE> resolve = (Filter<VALUE>) getFilter().resolve();
-		return resolve.createFilterNode(readValue());
 	}
 
 	public VALUE readValue() {

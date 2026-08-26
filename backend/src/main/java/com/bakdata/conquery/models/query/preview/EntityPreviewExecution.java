@@ -136,10 +136,10 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 
 		JsonResultPrinters printers = new JsonResultPrinters();
-		final PrintSettings infoSettings = new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
+		final PrintSettings infoSettings = new PrintSettings(true, I18n.LOCALE.get(), getConfig(), null, previewConfig::resolveSelectLabel);
 		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), infoSettings, printers));
 
-		final PrintSettings stratifiedSettings = new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
+		final PrintSettings stratifiedSettings = new PrintSettings(false, I18n.LOCALE.get(), getConfig(), null, previewConfig::resolveSelectLabel);
 		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, resolvedSubQueries(), stratifiedSettings, printers));
 
 		return status;

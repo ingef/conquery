@@ -67,8 +67,7 @@ public class ExcelResultRenderTest {
 		// Prepare every input data
 		final PrintSettings printSettings = new PrintSettings(true,
 															  Locale.GERMAN,
-															  null,
-															  CONFIG,
+                CONFIG,
 															  (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
 															  (selectInfo) -> selectInfo.getSelect().getLabel()
 		);
@@ -95,8 +94,7 @@ public class ExcelResultRenderTest {
 		// We have to do some magic here to emulate the excel printed results.
 		PrintSettings tsvPrintSettings = new PrintSettings(true,
 														   Locale.GERMAN,
-														   null,
-														   CONFIG,
+                CONFIG,
 														   (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
 														   (selectInfo) -> selectInfo.getSelect().getLabel()
 		);

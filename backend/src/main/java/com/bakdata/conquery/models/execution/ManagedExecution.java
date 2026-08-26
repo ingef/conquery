@@ -164,8 +164,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 															  .<Concept<?>>map(ConceptElement::getConcept)
 															  .collect(Collectors.toSet());
 
-		boolean canExpand = subject.isPermittedAll(concepts, Ability.READ);
-		return canExpand;
+        return subject.isPermittedAll(concepts, Ability.READ);
 	}
 
 	/**
@@ -180,7 +179,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 			}
 			if (label == null) {
 				// IdMapper is not necessary here
-				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), config, null, null));
+				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), config, null, null));
 			}
 
 			doInitExecutable();

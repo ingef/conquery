@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
@@ -10,10 +11,11 @@ import jakarta.validation.Valid;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.ColumnUtils;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
+import com.bakdata.conquery.models.datasets.concepts.filters.AggregationFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
@@ -23,18 +25,20 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.TwoColumnDurationSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.DurationSumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
+@EqualsAndHashCode(callSuper = false)
 @Data
 @Slf4j
 @CPSType(id = "DURATION_SUM", base = Filter.class)
-public class DurationSumFilter extends Filter<Range.LongRange> implements DaterangeSelectOrFilter {
+public class DurationSumFilter extends AggregationFilter<Range.LongRange> implements DaterangeSelectOrFilter {
 
 	@Valid
 	@Nullable
@@ -77,7 +81,7 @@ public class DurationSumFilter extends Filter<Range.LongRange> implements Datera
 	}
 
 	@Override
-	public FilterNode createFilterNode(Range.LongRange value) {
+	public AggregationFilterNode<?, ?> createFilterNode(Range.LongRange value) {
 		ColumnAggregator<?> aggregator = isSingleColumnDaterange() ? new DurationSumAggregator(getColumn().resolve())
 				: new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
 
@@ -93,32 +97,5 @@ public class DurationSumFilter extends Filter<Range.LongRange> implements Datera
 		return new DurationSumSqlAggregator();
 	}
 
-
-	@JsonIgnore
-	@ValidationMethod(message = "Columns do not match required Type.")
-	public boolean isValidColumnType() {
-		if (column != null) {
-			final Column resolved = getColumn().resolve();
-
-			if (!(resolved.getType().equals(MajorTypeId.DATE) || resolved.getType().equals(MajorTypeId.DATE_RANGE))) {
-				log.error("Column {} of type {} is not date compatible", resolved.getId(), resolved.getType());
-				return false;
-			}
-			return true;
-		}
-
-		if (!startColumn.resolve().getType().equals(MajorTypeId.DATE)) {
-			log.error("startColumn {} is not of type DATE", startColumn);
-			return false;
-		}
-
-		if (!endColumn.resolve().getType().equals(MajorTypeId.DATE)) {
-			log.error("startColumn {} is not of type DATE", endColumn);
-			return false;
-		}
-
-
-		return true;
-	}
 
 }

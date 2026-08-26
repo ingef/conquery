@@ -1,16 +1,5 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -21,43 +10,35 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
+import com.bakdata.conquery.models.datasets.concepts.filters.AggregationFilter;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
-import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.models.query.NamespacedIdentifiableHolding;
-import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.RequiredEntities;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
-import com.bakdata.conquery.models.query.queryplan.filter.AggregationResultFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.annotation.*;
 import io.dropwizard.validation.ValidationMethod;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -97,12 +78,12 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		switch (selectId) {
 			case ConceptSelectId conceptSelectId -> {
 				cqConcept.setTables(conceptSelectId.getConcept().resolve()
-												   .getConnectors().stream()
-												   .map(conn -> {
-													   final CQTable table = new CQTable();
-													   table.setConnector(conn.getId());
-													   return table;
-												   }).toList());
+						.getConnectors().stream()
+						.map(conn -> {
+							final CQTable table = new CQTable();
+							table.setConnector(conn.getId());
+							return table;
+						}).toList());
 
 				cqConcept.setSelects(List.of(conceptSelectId));
 			}
@@ -130,6 +111,35 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		cqConcept.setTables(List.of(cqTable));
 
 		return cqConcept;
+	}
+
+	/**
+	 * Generates Aggregators from Selects. These are collected and also appended to the list of aggregators in the
+	 * query plan that contribute to columns the result.
+	 */
+	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId> selects) {
+
+		return selects.stream()
+				.map(SelectId::resolve)
+				.map(Select::createAggregator)
+				.peek(plan::registerAggregator)
+				.collect(Collectors.toList());
+	}
+
+	private static List<FilterNode<?>> createFilters(CQTable table, boolean disableAggregationFilters) {
+		List<FilterNode<?>> out = new ArrayList<>();
+		for (FilterValue<?> filterValue : table.getFilters()) {
+
+			Filter<Object> resolved = (Filter<Object>) filterValue.getFilter().resolve();
+
+			if (resolved instanceof AggregationFilter<?> && disableAggregationFilters) {
+				continue;
+			}
+
+			FilterNode<?> node = resolved.createFilterNode(filterValue.readValue());
+			out.add(node);
+		}
+		return out;
 	}
 
 	@Override
@@ -180,7 +190,13 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 
-		final List<Aggregator<?>> conceptAggregators = createAggregators(plan, selects, context);
+		final List<Aggregator<?>> conceptAggregators;
+
+		if (context.isDisableAggregators()) {
+			conceptAggregators = Collections.emptyList();
+		} else {
+			conceptAggregators = createAggregators(plan, selects);
+		}
 
 		final List<QPNode> tableNodes = new ArrayList<>();
 		for (CQTable table : tables) {
@@ -188,18 +204,23 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			final List<FilterNode<?>> filters = createFilters(table, context.isDisableAggregationFilters());
 
 			//add filter to children
-
 			final List<Aggregator<?>> aggregators = new ArrayList<>(conceptAggregators);
 
-			final List<Aggregator<?>> connectorAggregators = createAggregators(plan, table.getSelects(), context);
+			final List<Aggregator<?>> connectorAggregators;
+
+			if (context.isDisableAggregators()) {
+				connectorAggregators = Collections.emptyList();
+			} else {
+				connectorAggregators = createAggregators(plan, table.getSelects());
+			}
 
 			// Exists aggregators hold a reference to their parent FiltersNode, so they need to be treated separately.
 			// They also don't need aggregation as they simply imitate their reference.
 			final List<ExistsAggregator> existsAggregators =
 					connectorAggregators.stream()
-										.filter(ExistsAggregator.class::isInstance)
-										.map(ExistsAggregator.class::cast)
-										.toList();
+							.filter(ExistsAggregator.class::isInstance)
+							.map(ExistsAggregator.class::cast)
+							.toList();
 
 			aggregators.addAll(connectorAggregators);
 
@@ -208,7 +229,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 			final EventDateUnionAggregator eventDateUnionAggregator =
 					aggregateEventDates ? new EventDateUnionAggregator()
-										: null;
+							: null;
 
 			if (aggregateEventDates) {
 				aggregators.add(eventDateUnionAggregator);
@@ -244,41 +265,10 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 		// Link concept-level Exists-select to outer node.
 		conceptAggregators.stream()
-						  .filter(aggregator -> aggregator instanceof ExistsAggregator)
-						  .forEach(aggregator -> ((ExistsAggregator) aggregator).setReference(outNode));
+				.filter(aggregator -> aggregator instanceof ExistsAggregator)
+				.forEach(aggregator -> ((ExistsAggregator) aggregator).setReference(outNode));
 
 		return outNode;
-	}
-
-	/**
-	 * Generates Aggregators from Selects. These are collected and also appended to the list of aggregators in the
-	 * query plan that contribute to columns the result.
-	 */
-	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId> selects, QueryPlanContext context) {
-		if (context.isDisableAggregators()) {
-			return Collections.emptyList();
-		}
-
-		return selects.stream()
-					  .map(SelectId::resolve)
-					  .map(Select::createAggregator)
-					  .peek(plan::registerAggregator)
-					  .collect(Collectors.toList());
-	}
-
-	private static List<FilterNode<?>> createFilters(CQTable table, boolean disableAggregationFilters) {
-		Stream<? extends FilterNode<?>> filterNodes = table.getFilters().stream()
-														   .map(FilterValue::createNode);
-
-		if (disableAggregationFilters) {
-			return filterNodes
-					.filter(filterNode -> !(filterNode instanceof AggregationResultFilterNode))
-					.collect(Collectors.toList());
-		}
-
-
-		return filterNodes
-				.collect(Collectors.toList());
 	}
 
 	private ValidityDate selectValidityDate(CQTable table) {
@@ -324,9 +314,9 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		final Set<ConnectorId> connectors = getTables().stream().map(CQTable::getConnector).collect(Collectors.toSet());
 
 		return new RequiredEntities(context.getBucketManager()
-										   .getEntitiesWithConcepts(getElements(),
-																	connectors, context.getDateRestriction()
-										   ));
+				.getEntitiesWithConcepts(getElements(),
+						connectors, context.getDateRestriction()
+				));
 	}
 
 
@@ -374,8 +364,8 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	@Override
 	public void setDefaultSelects() {
 		final boolean allTablesEmpty = getTables().stream()
-												  .map(CQTable::getSelects)
-												  .allMatch(List::isEmpty);
+				.map(CQTable::getSelects)
+				.allMatch(List::isEmpty);
 
 		if (!(getSelects().isEmpty() && (tables.isEmpty() || allTablesEmpty))) {
 			// Don't fill if there are any selects on concept level or on any table level
@@ -390,10 +380,10 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		for (CQTable t : getTables()) {
 			final List<ConnectorSelectId> conSelects = new ArrayList<>(t.getSelects());
 			conSelects.addAll(t.getConnector().resolve()
-							   .getDefaultSelects().stream()
-							   .map(Select::getId)
-							   .map(ConnectorSelectId.class::cast)
-							   .toList());
+					.getDefaultSelects().stream()
+					.map(Select::getId)
+					.map(ConnectorSelectId.class::cast)
+					.toList());
 
 			t.setSelects(conSelects);
 		}
