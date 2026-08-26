@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1.frontend;
 import java.util.Collection;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
@@ -25,4 +26,5 @@ public class FrontendPreviewConfig {
 	 * Search concept needs to be parent of searchFilters, so frontend can resolve the filters.
 	 */
 	private final ConceptId searchConcept;
+	private final ConnectorId searchConnector;
 }
