@@ -19,5 +19,3 @@ allowBuilds:
 overrides:
   # GHSA-48c2-rrv3-qjmp: cosmiconfig@7 (emotion's babel-plugin-macros) declares yaml ^1.10.0 -> patched 1.10.3
   "yaml@1": "^1.10.3"
-  # GHSA-48c2-rrv3-qjmp: vite's optional yaml dependency, patched in 2.8.3
-  "yaml@2": "^2.8.3"
