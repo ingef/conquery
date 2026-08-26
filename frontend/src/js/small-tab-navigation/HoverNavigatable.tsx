@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import { ReactNode, useState } from "react";
-import { DropTargetMonitor, useDrop } from "react-dnd";
+import { type ReactNode, useState } from "react";
+import { type DropTargetMonitor, useDrop } from "react-dnd";
 
 import { DNDType } from "../common/constants/dndTypes";
 import { exists } from "../common/helpers/exists";
-import { PossibleDroppableObject } from "../ui-components/Dropzone";
+import type { PossibleDroppableObject } from "../ui-components/Dropzone";
 
 interface PropsT {
   triggerNavigate: () => void;

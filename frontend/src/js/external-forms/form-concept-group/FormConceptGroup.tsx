@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
-import { SelectorResultType } from "../../api/types";
+import type { SelectorResultType } from "../../api/types";
 import { TransparentButton } from "../../button/TransparentButton";
 import { DNDType } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";
@@ -17,11 +17,11 @@ import {
 } from "../../model/node";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import {
-  PossibleDroppableObject,
   isMovedObject,
+  type PossibleDroppableObject,
 } from "../../ui-components/Dropzone";
 import DropzoneWithFileInput, {
-  DragItemFile,
+  type DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
 import ToggleButton from "../../ui-components/ToggleButton";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
@@ -38,10 +38,10 @@ import {
 import FormConceptCopyModal from "./FormConceptCopyModal";
 import FormConceptNode from "./FormConceptNode";
 import {
-  FormConceptGroupT,
   addConcept,
   addValue,
   copyConcept,
+  type FormConceptGroupT,
   initializeConcept,
   insertValue,
   onToggleIncludeSubnodes,

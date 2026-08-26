@@ -1,6 +1,6 @@
 import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faDownload,
   faFileArchive,
@@ -10,13 +10,13 @@ import {
   faFileExcel,
   faFilePdf,
 } from "@fortawesome/free-solid-svg-icons";
-import { ReactNode, forwardRef, useContext, useMemo } from "react";
+import { forwardRef, type ReactNode, useContext, useMemo } from "react";
 
-import { ResultUrlWithLabel } from "../api/types";
+import type { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { getEnding } from "../query-runner/DownloadResultsDropdownButton";
 
-import IconButton, { IconButtonPropsT } from "./IconButton";
+import IconButton, { type IconButtonPropsT } from "./IconButton";
 
 const SxIconButton = styled(IconButton)`
   white-space: nowrap;

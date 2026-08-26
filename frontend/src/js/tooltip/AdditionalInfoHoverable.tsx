@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useDispatch } from "react-redux";
 
 import type { ConceptT } from "../api/types";
@@ -7,7 +7,7 @@ import { isEmpty } from "../common/helpers/commonHelper";
 import { getNodeIcon } from "../model/node";
 
 import { displayAdditionalInfos, toggleAdditionalInfos } from "./actions";
-import { AdditionalInfosType } from "./reducer";
+import type { AdditionalInfosType } from "./reducer";
 
 const Root = styled("div")`
   cursor: pointer;

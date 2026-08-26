@@ -5,8 +5,8 @@ import { exists } from "../common/helpers/exists";
 import type { DragItemQuery } from "../standard-query-editor/types";
 
 import type { Form, GeneralField } from "./config-types";
-import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 import type { DynamicFormValues } from "./form/Form";
+import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 import { collectAllFormFields, getRawFieldname, isFormField } from "./helper";
 
 function transformElementGroupsToApi(elementGroups: FormConceptGroupT[]) {

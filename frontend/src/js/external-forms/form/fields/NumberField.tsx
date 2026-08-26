@@ -1,8 +1,8 @@
-import { ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import InputPlain from "../../../ui-components/InputPlain/InputPlain";
-import { NumberField as NumberFieldT } from "../../config-types";
+import type { NumberField as NumberFieldT } from "../../config-types";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
-import Field from "../Field";
+import type Field from "../Field";
 
 export const NumberField = ({
   field,

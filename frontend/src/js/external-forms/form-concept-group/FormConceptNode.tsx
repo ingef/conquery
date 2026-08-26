@@ -3,7 +3,7 @@ import {
   faCompressArrowsAlt,
   faExpandArrowsAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { FC, useRef } from "react";
+import { type FC, useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 

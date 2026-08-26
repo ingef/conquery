@@ -1,0 +1,11 @@
+# Supply-chain hardening (see https://pnpm.io/settings)
+# Refuse versions published less than 7 days ago
+minimumReleaseAge: 10080
+# Refuse versions whose publish provenance/trust is weaker than a previous release
+trustPolicy: no-downgrade
+# ...but older releases (>180 days) predate provenance/trusted publishing and are vetted by time
+trustPolicyIgnoreAfter: 259200
+# Lifecycle scripts are blocked unless explicitly allowed here
+allowBuilds:
+  "@swc/core": true
+  esbuild: true

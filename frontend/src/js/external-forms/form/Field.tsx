@@ -1,5 +1,5 @@
 import { memo } from "react";
-import {
+import type {
   Control,
   UseFormRegister,
   UseFormSetValue,

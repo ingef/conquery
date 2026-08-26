@@ -3,10 +3,8 @@ import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
-
-import IconButton from "../button/IconButton";
-
 import tw from "tailwind-styled-components";
+import IconButton from "../button/IconButton";
 import { toggleDisplayTooltip } from "./actions";
 
 const Header = tw("h2")`

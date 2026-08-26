@@ -6,24 +6,32 @@ import {
   faDownload,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import { Dispatch, SetStateAction, memo, useCallback, useMemo } from "react";
+import {
+  type Dispatch,
+  memo,
+  type SetStateAction,
+  useCallback,
+  useMemo,
+} from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
-import { SelectOptionT } from "../api/types";
-import { StateT } from "../app/reducers";
+import type { SelectOptionT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
 import WithTooltip from "../tooltip/WithTooltip";
-
+import { closeHistory, resetHistory, useUpdateHistorySession } from "./actions";
 import { EntityIdsList } from "./EntityIdsList";
 import type { EntityIdsStatus } from "./History";
-import { LoadHistoryDropzone, LoadingPayload } from "./LoadHistoryDropzone";
+import {
+  LoadHistoryDropzone,
+  type LoadingPayload,
+} from "./LoadHistoryDropzone";
 import { NavigationHeader } from "./NavigationHeader";
+import type { EntityId } from "./reducer";
 import { SearchEntites } from "./SearchEntities";
-import { closeHistory, resetHistory, useUpdateHistorySession } from "./actions";
-import { EntityId } from "./reducer";
 import { saveHistory } from "./saveAndLoad";
 
 const Root = styled("div")`

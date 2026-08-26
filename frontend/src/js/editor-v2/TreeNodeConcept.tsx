@@ -3,7 +3,7 @@ import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 
 import { exists } from "../common/helpers/exists";
-import { DragItemConceptTreeNode } from "../standard-query-editor/types";
+import type { DragItemConceptTreeNode } from "../standard-query-editor/types";
 
 const Bold = styled("span")`
   font-weight: 400;

@@ -1,11 +1,15 @@
 import styled from "@emotion/styled";
-import { ReactNode } from "react";
-import { Control, ControllerRenderProps, useController } from "react-hook-form";
+import type { ReactNode } from "react";
+import {
+  type Control,
+  type ControllerRenderProps,
+  useController,
+} from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { exists } from "../../common/helpers/exists";
-import { Field, Tabs } from "../config-types";
+import type { Field, Tabs } from "../config-types";
 import { getErrorForField } from "../validators";
-import { DynamicFormValues } from "./Form";
+import type { DynamicFormValues } from "./Form";
 
 // TODO: REFINE COLORS
 // const useColorByField = (fieldType: FormField["type"]) => {

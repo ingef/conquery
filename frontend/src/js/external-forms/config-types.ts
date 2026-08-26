@@ -1,4 +1,4 @@
-import { SelectorResultType } from "../api/types";
+import type { SelectorResultType } from "../api/types";
 
 /* ------------------------------ */
 

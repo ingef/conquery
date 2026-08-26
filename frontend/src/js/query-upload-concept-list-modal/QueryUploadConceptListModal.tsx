@@ -1,11 +1,11 @@
 import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { SelectOptionT } from "../api/types";
+import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { TreesT } from "../concept-trees/reducer";
-import UploadConceptListModal from "../upload-concept-list-modal/UploadConceptListModal";
+import type { TreesT } from "../concept-trees/reducer";
 import { resetUploadConceptListModal } from "../upload-concept-list-modal/actions";
+import UploadConceptListModal from "../upload-concept-list-modal/UploadConceptListModal";
 
 import { acceptUploadedConceptsOrFilter } from "./actions";
 

@@ -1,8 +1,8 @@
-import { Meta, StoryObj } from "@storybook/react";
-import { ComponentProps, useState } from "react";
+import type { Meta, StoryObj } from "@storybook/react";
+import { type ComponentProps, useState } from "react";
 
 import wordslist from "../../../fixtures/words.json";
-import { SelectOptionT } from "../../api/types";
+import type { SelectOptionT } from "../../api/types";
 
 import InputSelect from "./InputSelect";
 

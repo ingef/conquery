@@ -34,8 +34,8 @@ function selectTypesMatch(
   if (
     resultType1.type === "LIST" &&
     resultType2.type === "LIST" &&
-    !!resultType1.elementType &&
-    !!resultType2.elementType
+    resultType1.elementType &&
+    resultType2.elementType
   ) {
     return resultType1.elementType.type === resultType2.elementType.type;
   }

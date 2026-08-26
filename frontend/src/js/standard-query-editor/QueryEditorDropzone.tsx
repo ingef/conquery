@@ -7,7 +7,7 @@ import type { QueryIdT } from "../api/types";
 import { DNDType } from "../common/constants/dndTypes";
 import { nodeIsConceptQueryNode } from "../model/node";
 import DropzoneWithFileInput, {
-  DragItemFile,
+  type DragItemFile,
 } from "../ui-components/DropzoneWithFileInput";
 
 import { EmptyQueryEditorDropzone } from "./EmptyQueryEditorDropzone";

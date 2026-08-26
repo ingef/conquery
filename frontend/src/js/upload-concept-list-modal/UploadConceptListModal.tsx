@@ -5,7 +5,7 @@ import {
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import {
-  FormEvent,
+  type FormEvent,
   memo,
   useCallback,
   useEffect,
@@ -34,12 +34,11 @@ import FaIcon from "../icon/FaIcon";
 import Modal from "../modal/Modal";
 import { nodeIsElement } from "../model/node";
 import ScrollableList from "../scrollable-list/ScrollableList";
+import InputCheckbox from "../ui-components/InputCheckbox";
 import InputPlain from "../ui-components/InputPlain/InputPlain";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
-
-import InputCheckbox from "../ui-components/InputCheckbox";
 import { DropdownOption } from "./DropdownOption";
-import { UploadConceptListModalStateT } from "./reducer";
+import type { UploadConceptListModalStateT } from "./reducer";
 
 const Root = styled("div")`
   padding: 0 0 10px;

@@ -4,9 +4,9 @@ import {
   BarElement,
   CategoryScale,
   Chart as ChartJS,
-  ChartOptions,
-  LineElement,
+  type ChartOptions,
   LinearScale,
+  LineElement,
   PointElement,
   Title,
   Tooltip,
@@ -14,7 +14,7 @@ import {
 import { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
 
-import { TimeStratifiedInfo } from "../api/types";
+import type { TimeStratifiedInfo } from "../api/types";
 import { exists } from "../common/helpers/exists";
 
 import { formatCurrency } from "./timeline/util/util";

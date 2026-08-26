@@ -1,13 +1,12 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import Modal from "../../modal/Modal";
 import EditableTagsForm from "../../ui-components/EditableTagsForm";
-
-import { ProjectItemT } from "./ProjectItem";
 import { useUpdateFormConfig, useUpdateQuery } from "./actions";
 import { isFormConfig } from "./helpers";
+import type { ProjectItemT } from "./ProjectItem";
 import { useFolders } from "./selector";
 
 const SxEditableTagsForm = styled(EditableTagsForm)`

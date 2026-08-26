@@ -5,7 +5,7 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ComponentProps, useEffect, useState } from "react";
+import { type ComponentProps, useEffect, useState } from "react";
 import { useFieldArray } from "react-hook-form";
 import tw from "tailwind-styled-components";
 import IconButton from "../../../button/IconButton";
@@ -14,7 +14,7 @@ import { exists } from "../../../common/helpers/exists";
 import { usePrevious } from "../../../common/helpers/usePrevious";
 import FaIcon from "../../../icon/FaIcon";
 import InfoTooltip from "../../../tooltip/InfoTooltip";
-import { DisclosureListField as DisclosureListFieldT } from "../../config-types";
+import type { DisclosureListField as DisclosureListFieldT } from "../../config-types";
 import {
   getFieldKey,
   getInitialValue,

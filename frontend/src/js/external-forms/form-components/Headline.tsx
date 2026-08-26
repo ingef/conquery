@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
-import { Headline as HeadlineField } from "../config-types";
+import type { Headline as HeadlineField } from "../config-types";
 
 const HEADLINE_DOM = {
   h1: "h3" as const,

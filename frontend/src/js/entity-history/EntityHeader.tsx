@@ -7,7 +7,7 @@ import type { StateT } from "../app/reducers";
 import { BadgeToggleButton } from "../button/BadgeToggleButton";
 import { Heading3 } from "../headings/Headings";
 
-import { EntityId } from "./reducer";
+import type { EntityId } from "./reducer";
 
 const Root = styled("div")`
   display: flex;

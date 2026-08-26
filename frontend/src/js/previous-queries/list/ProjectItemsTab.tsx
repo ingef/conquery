@@ -3,10 +3,11 @@ import styled from "@emotion/styled";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-
+import { Panel, PanelGroup } from "react-resizable-panels";
 import type { DatasetT } from "../../api/types";
 import type { StateT } from "../../app/reducers";
 import { usePrevious } from "../../common/helpers/usePrevious";
+import { ResizeHandle } from "../../common/ResizeHandle";
 import { selectFormConfigs } from "../../external-forms/form-configs/selectors";
 import EmptyList from "../../list/EmptyList";
 import { canUploadResult } from "../../user/selectors";
@@ -15,16 +16,13 @@ import type { ProjectItemsFilterStateT } from "../filter/reducer";
 import { toggleFoldersOpen } from "../folder-filter/actions";
 import ProjectItemsSearchBox from "../search/ProjectItemsSearchBox";
 import ProjectItemsTypeFilter from "../type-filter/ProjectItemsTypeFilter";
-import { ProjectItemsTypeFilterStateT } from "../type-filter/reducer";
+import type { ProjectItemsTypeFilterStateT } from "../type-filter/reducer";
 import UploadQueryResults from "../upload/UploadQueryResults";
-
-import { Panel, PanelGroup } from "react-resizable-panels";
-import { ResizeHandle } from "../../common/ResizeHandle";
+import { useLoadFormConfigs, useLoadQueries } from "./actions";
 import Folders from "./Folders";
 import FoldersToggleButton from "./FoldersToggleButton";
-import { ProjectItemT } from "./ProjectItem";
+import type { ProjectItemT } from "./ProjectItem";
 import { ProjectItems } from "./ProjectItems";
-import { useLoadFormConfigs, useLoadQueries } from "./actions";
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 import { selectPreviousQueries } from "./selector";
 

@@ -1,9 +1,9 @@
-import { ComponentProps } from "react";
-import { DragItemQuery } from "../../../standard-query-editor/types";
-import { ResultGroupField as ResultGroupFieldT } from "../../config-types";
+import type { ComponentProps } from "react";
+import type { DragItemQuery } from "../../../standard-query-editor/types";
+import type { ResultGroupField as ResultGroupFieldT } from "../../config-types";
 import FormQueryDropzone from "../../form-query-dropzone/FormQueryDropzone";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
-import Field from "../Field";
+import type Field from "../Field";
 
 export const ResultGroupField = ({
   field,

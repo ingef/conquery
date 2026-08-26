@@ -1,11 +1,9 @@
 import styled from "@emotion/styled";
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { t } from "i18next";
-
-import { PreviewStatistics } from "../api/types";
-import IconButton from "../button/IconButton";
-
 import { useHotkeys } from "react-hotkeys-hook";
+import type { PreviewStatistics } from "../api/types";
+import IconButton from "../button/IconButton";
 import Diagram from "./Diagram";
 
 const Root = styled("div")``;

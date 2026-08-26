@@ -4,9 +4,8 @@ import {
   faExclamationCircle,
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
-import { useTranslation } from "react-i18next";
-
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { PostFilterResolveResponseT } from "../api/types";
 import PrimaryButton from "../button/PrimaryButton";
 import FaIcon from "../icon/FaIcon";

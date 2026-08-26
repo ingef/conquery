@@ -7,7 +7,7 @@ import { EditorV2 } from "../editor-v2/EditorV2";
 import { ResetableErrorBoundary } from "../error-fallback/ResetableErrorBoundary";
 import FormsTab from "../external-forms/FormsTab";
 import Pane from "../pane/Pane";
-import { TabNavigationTab } from "../pane/TabNavigation";
+import type { TabNavigationTab } from "../pane/TabNavigation";
 import StandardQueryEditorTab from "../standard-query-editor/StandardQueryEditorTab";
 
 import type { StateT } from "./reducers";

@@ -1,4 +1,4 @@
-import { ReactNode, createContext, useContext, useState } from "react";
+import { createContext, type ReactNode, useContext, useState } from "react";
 
 const Context = createContext<{
   searchVisible: boolean;

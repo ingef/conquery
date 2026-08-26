@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { DndProvider as ReactDndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import {
@@ -10,7 +10,7 @@ import {
 import { TouchBackend } from "react-dnd-touch-backend";
 
 import { DNDType } from "../common/constants/dndTypes";
-import { PossibleDroppableObject } from "../ui-components/Dropzone";
+import type { PossibleDroppableObject } from "../ui-components/Dropzone";
 
 const PreviewItem = styled("div")<{ width: number; height: number }>`
   background-color: ${({ theme }) => theme.col.grayVeryLight};

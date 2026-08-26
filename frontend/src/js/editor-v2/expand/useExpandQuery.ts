@@ -4,7 +4,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useSelector } from "react-redux";
 
 import { useGetQuery } from "../../api/api";
-import {
+import type {
   AndNodeT,
   DateRangeT,
   DateRestrictionNodeT,
@@ -13,16 +13,16 @@ import {
   QueryConceptNodeT,
   SavedQueryNodeT,
 } from "../../api/types";
-import { StateT } from "../../app/reducers";
+import type { StateT } from "../../app/reducers";
 import { DNDType } from "../../common/constants/dndTypes";
 import { getConceptsByIdsWithTablesAndSelects } from "../../concept-trees/globalTreeStoreHelper";
-import { TreesT } from "../../concept-trees/reducer";
+import type { TreesT } from "../../concept-trees/reducer";
 import { mergeFromSavedConceptIntoNode } from "../../standard-query-editor/expandNode";
-import {
+import type {
   DragItemConceptTreeNode,
   DragItemQuery,
 } from "../../standard-query-editor/types";
-import { Tree } from "../types";
+import type { Tree } from "../types";
 import { findNodeById } from "../util";
 
 export const useExpandQuery = ({
@@ -165,7 +165,9 @@ export const useExpandQuery = ({
   const expandQuery = useCallback(
     async (id: string) => {
       if (!tree) return;
-      const queryId = (findNodeById(tree, id)?.data as DragItemQuery).id;
+      const node = findNodeById(tree, id);
+      if (!node) return;
+      const queryId = (node.data as DragItemQuery).id;
       const query = await getQuery(queryId);
 
       updateTreeNode(id, (node) => {

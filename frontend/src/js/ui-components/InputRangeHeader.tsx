@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FC } from "react";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
 import { exists } from "../common/helpers/exists";

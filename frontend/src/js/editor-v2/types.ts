@@ -1,5 +1,5 @@
-import { DateRangeT } from "../api/types";
-import {
+import type { DateRangeT } from "../api/types";
+import type {
   DragItemConceptTreeNode,
   DragItemQuery,
 } from "../standard-query-editor/types";

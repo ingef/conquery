@@ -1,14 +1,12 @@
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { memo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
+import tw from "tailwind-styled-components";
 import type { StateT } from "../app/reducers";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import FaIcon from "../icon/FaIcon";
-
-import tw from "tailwind-styled-components";
 import { resetMessage as resetMessageAction } from "./actions";
-import { SnackMessageStateT } from "./reducer";
+import type { SnackMessageStateT } from "./reducer";
 
 const Root = tw("div")<{ $success?: boolean }>`
   fixed

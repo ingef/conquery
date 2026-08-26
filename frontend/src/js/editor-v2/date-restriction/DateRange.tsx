@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 
-import { DateRangeT } from "../../api/types";
+import type { DateRangeT } from "../../api/types";
 import { formatDate } from "../../common/helpers/dateHelper";
 
 const Root = styled("div")`

@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import { Dispatch, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
 
-import { SelectOptionT } from "../api/types";
+import type { SelectOptionT } from "../api/types";
 import Modal from "../modal/Modal";
 import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
 

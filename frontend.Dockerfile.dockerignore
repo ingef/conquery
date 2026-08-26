@@ -1,0 +1,8 @@
+# Applies to builds with -f frontend.Dockerfile (context = repo root)
+**/node_modules
+frontend/dist
+frontend/storybook-static
+frontend/mock-api
+frontend/.env*
+!frontend/.env.example
+*.log

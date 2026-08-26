@@ -9,12 +9,12 @@ import type {
 import type { Action } from "../app/actions";
 
 import {
+  type QueryTypeT,
   queryResultErrorAction,
   queryResultReset,
   queryResultRunning,
   queryResultStart,
   queryResultSuccess,
-  QueryTypeT,
   startQuery,
   stopQuery,
 } from "./actions";

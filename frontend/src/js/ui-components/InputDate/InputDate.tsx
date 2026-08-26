@@ -7,7 +7,7 @@ import { mergeRefs } from "react-merge-refs";
 
 import IconButton from "../../button/IconButton";
 import { formatDate, parseDate } from "../../common/helpers/dateHelper";
-import BaseInput, { Props as BaseInputProps } from "../BaseInput";
+import BaseInput, { type Props as BaseInputProps } from "../BaseInput";
 
 import { CustomHeader } from "./CustomHeader";
 

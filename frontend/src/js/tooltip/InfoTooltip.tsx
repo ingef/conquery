@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
-import { FC, ReactElement } from "react";
+import type { FC, ReactElement } from "react";
 
 import FaIcon from "../icon/FaIcon";
 

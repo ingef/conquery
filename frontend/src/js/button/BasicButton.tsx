@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ButtonHTMLAttributes, forwardRef } from "react";
+import { type ButtonHTMLAttributes, forwardRef } from "react";
 
 export interface BasicButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement> {

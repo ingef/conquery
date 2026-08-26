@@ -2,21 +2,24 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { faFileImport } from "@fortawesome/free-solid-svg-icons";
 import {
-  ReactElement,
-  ReactNode,
-  Ref,
   forwardRef,
+  type ReactElement,
+  type ReactNode,
+  type Ref,
   useRef,
   useState,
 } from "react";
-import { DropTargetMonitor } from "react-dnd";
+import type { DropTargetMonitor } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
 
 import { SelectFileButton } from "../button/SelectFileButton";
 import FaIcon from "../icon/FaIcon";
 
-import Dropzone, { ChildArgs, PossibleDroppableObject } from "./Dropzone";
+import Dropzone, {
+  type ChildArgs,
+  type PossibleDroppableObject,
+} from "./Dropzone";
 import { ImportModal } from "./ImportModal";
 
 export interface DragItemFile {

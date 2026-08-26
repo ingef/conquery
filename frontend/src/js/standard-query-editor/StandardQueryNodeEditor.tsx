@@ -3,10 +3,10 @@ import { useDispatch, useSelector } from "react-redux";
 
 import type { ConceptIdT, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
+import { type NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
 import { tableIsEditable } from "../model/table";
 import QueryNodeEditor from "../query-node-editor/QueryNodeEditor";
-import { ModeT } from "../ui-components/InputRange";
+import type { ModeT } from "../ui-components/InputRange";
 
 import {
   addConceptToNode,
@@ -24,7 +24,7 @@ import {
   updateNodeLabel,
   useLoadFilterSuggestions,
 } from "./actions";
-import {
+import type {
   DragItemConceptTreeNode,
   FilterWithValueType,
   StandardQueryNodeT,

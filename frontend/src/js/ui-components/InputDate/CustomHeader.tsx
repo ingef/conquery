@@ -4,9 +4,9 @@ import {
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
-import { ReactDatePickerCustomHeaderProps } from "react-datepicker";
+import type { ReactDatePickerCustomHeaderProps } from "react-datepicker";
 
-import { SelectOptionT } from "../../api/types";
+import type { SelectOptionT } from "../../api/types";
 import IconButton from "../../button/IconButton";
 import { TransparentButton } from "../../button/TransparentButton";
 import { useMonthName, useMonthNames } from "../../common/helpers/dateHelper";
