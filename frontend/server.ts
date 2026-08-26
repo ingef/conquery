@@ -33,12 +33,12 @@ app.use(cors());
 app.use(
   rateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: Number(requestsPerMinute),
+    limit: Number(requestsPerMinute),
   }),
 );
 
 app.use(express.static(path.resolve(__dirname, BUILD_FOLDER)));
-app.get("*", (_, res) =>
+app.get("/{*splat}", (_, res) =>
   res.sendFile(path.join(__dirname, BUILD_FOLDER, "index.html")),
 );
 app.use((req, res, next) => {
