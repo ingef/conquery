@@ -15,7 +15,7 @@
     "strict": true,
     "noEmit": true,
     "rootDir": ".",
-    "types": ["node", "jest"],
+    "types": ["node"],
     "module": "ESNext",
     "target": "es2019",
     "allowJs": true,

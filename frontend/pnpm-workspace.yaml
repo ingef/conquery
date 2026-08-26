@@ -6,26 +6,13 @@ trustPolicy: no-downgrade
 # Old transitive releases that predate their package's provenance; revisit when they drop out of the tree
 trustPolicyExclude:
   - "semver@6.3.1"
-  - "@swc/core@1.13.5"
-  # security backports on old lines (jest's istanbul/glob chain), the newer lines had provenance first
-  - "js-yaml@3.15.1"
-  - "minimatch@3.1.4"
-  - "brace-expansion@1.1.18"
+  # security backport on the 1.x line (cosmiconfig via emotion's babel-plugin-macros), 2.x had provenance first
   - "yaml@1.10.3"
-  - "diff@4.0.4"
 # Lifecycle scripts are blocked unless explicitly allowed here
 allowBuilds:
   esbuild: true
-  # optional peer of ts-node (via jest-config), unused: never run its postinstall
-  "@swc/core": false
-  # jest 30 resolver ships prebuilt binaries as optional deps, postinstall is only a fallback
-  unrs-resolver: false
-# Security fixes for transitive deps (jest's istanbul/glob chain, storybook's docgen plugin) that their
-# parents don't pull in by themselves (GHSA-52cp-r559-cp3m, GHSA-23c5-xmqv-rm74, GHSA-48c2-rrv3-qjmp, ...).
+# Security fixes for transitive deps whose parents allow but don't pull in the patched version
+# (yaml 1.x via emotion's babel-plugin-macros, yaml 2.x as vite's optional dep; GHSA-48c2-rrv3-qjmp)
 overrides:
-  "js-yaml@3": "^3.15.1"
-  "minimatch@3": "^3.1.4"
-  "brace-expansion@1": "^1.1.18"
   "yaml@1": "^1.10.3"
   "yaml@2": "^2.8.3"
-  "diff@4": "^4.0.4"
