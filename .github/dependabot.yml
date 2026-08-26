@@ -21,6 +21,10 @@ updates:
     # otherwise dependabot proposes versions that pnpm refuses to install.
     cooldown:
       default-days: 7
+    # Majors are migrations and are done by hand, dependabot only proposes minor/patch
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       frontend-minor-and-patch:
         update-types:
