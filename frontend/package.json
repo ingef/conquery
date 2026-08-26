@@ -79,9 +79,7 @@
     "typesafe-actions": "^5.1.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.7",
     "@biomejs/biome": "2.5.9",
-    "@emotion/babel-plugin": "^11.13.5",
     "@storybook/react": "10.5.9",
     "@storybook/react-vite": "10.5.9",
     "@types/chance": "^1.1.8",
@@ -97,7 +95,7 @@
     "@types/react-dom": "^19.2.4",
     "@types/react-highlight-words": "^0.20.1",
     "@types/react-list": "^0.8.12",
-    "@vitejs/plugin-react": "^4.7.0",
+    "@vitejs/plugin-react": "^6.0.5",
     "autoprefixer": "^10.5.4",
     "cors": "^2.8.6",
     "express": "^5.2.1",
@@ -111,7 +109,7 @@
     "ts-jest": "^29.4.12",
     "tsx": "^4.23.12",
     "typescript": "^6.0.3",
-    "vite": "^6.4.3"
+    "vite": "^8.2.1"
   },
   "browserslist": [
     "> 0.5%",
