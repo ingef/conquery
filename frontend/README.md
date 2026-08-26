@@ -53,13 +53,14 @@ Commands analogoues to `start_production.sh` script.
 
 **Requirements**
 
-- `node` >= 18
+- `node` 24
+- `pnpm` >= 11 (`npm install -g pnpm`)
 
 **Install and start**
 
 ```bash
-npm
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Adjust your local `.env` file as necessary to apply environment variables during development
@@ -67,7 +68,7 @@ Adjust your local `.env` file as necessary to apply environment variables during
 **Mock API**
 
 ```bash
-$ npm run server
+$ pnpm server
 ```
 
 **Login**
@@ -87,7 +88,7 @@ We recommend you configure your editor to auto-format on save. If you're using V
 
 You could also invoke prettier on the command line:
 ```
-npm run prettier --write /path/to/file
+pnpm exec prettier --write /path/to/file
 ```
 
 ## Glossary

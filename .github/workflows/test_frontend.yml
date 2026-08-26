@@ -17,22 +17,26 @@ jobs:
     timeout-minutes: 6
     steps:
       - uses: actions/checkout@v6
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: 18
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
       - name: install dependencies
         working-directory: ./frontend
-        run: npm install
+        run: pnpm install --frozen-lockfile
       - name: setup env variables
         working-directory: ./frontend
         run: cp .env.example .env
       - name: lint
         working-directory: ./frontend
-        run: npm run lint
+        run: pnpm lint
       - name: check format
         working-directory: ./frontend
-        run: npm run checkformat
+        run: pnpm checkformat
       - name: test
         working-directory: ./frontend
-        run: npm run test
+        run: pnpm test

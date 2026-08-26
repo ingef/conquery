@@ -1,0 +1,7 @@
+# Supply-chain hardening (see https://pnpm.io/settings)
+minimumReleaseAge: 10080
+trustPolicy: no-downgrade
+# ...but older releases (>180 days) predate provenance/trusted publishing and are vetted by time
+trustPolicyIgnoreAfter: 259200
+allowBuilds:
+  cypress: true
