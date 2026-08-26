@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.util.validation.ValidUUID4;
 import io.dropwizard.auth.Auth;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -92,14 +93,10 @@ public class DatasetQueryResource {
 	 * Create and run the submitted query
 	 */
 	@POST
-	public Response postQuery(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders, @QueryParam("queryId") Optional<UUID> queryId, @NotNull @Valid QueryDescription query) {
-		if (queryId.isPresent() && queryId.get().version() != 4) {
-			throw new BadRequestException("Invalid query id: UUID version 4 required.");
-		}
-
+	public Response postQuery(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders, @QueryParam("queryId") Optional<@ValidUUID4 UUID> queryId, @NotNull @Valid QueryDescription query) {
 		subject.authorize(dataset, Ability.READ);
 
-		final ManagedExecution execution = processor.createQuery(dataset, query, subject, false, queryId);
+		final ManagedExecution execution = processor.createExecution(dataset, query, subject, false, queryId);
 		processor.runExecution(execution);
 
 		return Response.ok(processor.getQueryFullStatus(execution.getId(),
@@ -116,14 +113,10 @@ public class DatasetQueryResource {
 	 * Only create the query.
 	 */
 	@PUT
-	public Response putQuery(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders, @QueryParam("queryId") Optional<UUID> queryId, @NotNull @Valid QueryDescription query) {
-		if (queryId.isPresent() && queryId.get().version() != 4) {
-			throw new BadRequestException("Invalid query id: UUID version 4 required.");
-		}
-
+	public Response putQuery(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders, @QueryParam("queryId") Optional<@ValidUUID4 UUID> queryId, @NotNull @Valid QueryDescription query) {
 		subject.authorize(dataset, Ability.READ);
 
-		final ManagedExecution execution = processor.createQuery(dataset, query, subject, false, queryId);
+		final ManagedExecution execution = processor.createExecution(dataset, query, subject, false, queryId);
 
 		return Response.ok(processor.getQueryFullStatus(execution.getId(),
 						subject,

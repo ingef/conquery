@@ -372,7 +372,7 @@ public class QueryProcessor {
 
 		// TODO make sure that subqueries are also system
 		// TODO do not persist system queries
-		final EntityPreviewExecution execution = (EntityPreviewExecution) createQuery(dataset, form, subject, true, Optional.empty());
+		final EntityPreviewExecution execution = (EntityPreviewExecution) createExecution(dataset, form, subject, true, Optional.empty());
 		runExecution(execution);
 
 		final ExecutionManager executionManager = namespace.getExecutionManager();
@@ -398,7 +398,7 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public ManagedExecution createQuery(DatasetId dataset, QueryDescription queryContent, Subject subject, boolean system, Optional<UUID> maybeQueryId) {
+	public ManagedExecution createExecution(DatasetId dataset, QueryDescription queryContent, Subject subject, boolean system, Optional<UUID> maybeQueryId) {
 
 		log.info("Query posted on Dataset[{}] by User[{{}].", dataset, subject.getId());
 
@@ -413,9 +413,10 @@ public class QueryProcessor {
 		final QueryUtils.OnlyReusingChecker onlyReusingChecker = QueryUtils.getVisitor(visitors, QueryUtils.OnlyReusingChecker.class);
 
 		queryContent.authorize(subject, dataset, visitors, storage);
-		// After all authorization checks we can now use the actual subject to invoke the query and do not to bubble down the User-ish in methods
 
-		if (maybeQueryId.isPresent() && storage.getExecution(new ManagedExecutionId(dataset, maybeQueryId.get())) != null) {
+		// After all authorization checks we can now use the actual subject to invoke the query and do not to bubble down the User-ish in method
+
+		if (maybeQueryId.filter(id -> storage.getExecution(new ManagedExecutionId(dataset, id)) != null).isPresent()) {
 			throw new WebApplicationException("Query[%s] already exists.".formatted(maybeQueryId.get()), Response.Status.CONFLICT);
 		}
 
@@ -453,7 +454,7 @@ public class QueryProcessor {
 		final ExecutionState state = execution.getState();
 
 		if (!state.equals(ExecutionState.RUNNING)) {
-			log.trace("Re-executing Query {}", execution.getId());
+			log.trace("Reusing Query {}", execution.getId());
 		}
 
 		return execution;
@@ -498,7 +499,7 @@ public class QueryProcessor {
 
 		final QueryDescription query = new ConceptQuery(new CQOr(queries, Optional.of(false), DateAggregationAction.BLOCK));
 
-		final ManagedExecution execution = createQuery(dataset, query, subject, true, Optional.empty());
+		final ManagedExecution execution = createExecution(dataset, query, subject, true, Optional.empty());
 		runExecution(execution);
 
 		if (namespace.getExecutionManager().awaitDone(execution.getId(), 10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
