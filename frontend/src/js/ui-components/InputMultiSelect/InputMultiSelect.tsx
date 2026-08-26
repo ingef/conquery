@@ -147,10 +147,13 @@ const InputMultiSelect = ({
     getInputProps,
     getItemProps,
     highlightedIndex,
-    setHighlightedIndex,
     reset: resetComboboxState,
   } = useCombobox({
     inputValue,
+    // Keep this a plain option instead of calling setHighlightedIndex from onStateChange:
+    // downshift 9 runs onStateChange in an effect, so a setState there is a nested
+    // update on every keystroke and React bails with "maximum update depth" on long input.
+    defaultHighlightedIndex: 0,
     items: filteredOptions,
     stateReducer: (state, { type, changes }) => {
       // This modifies the action payload itself
@@ -203,11 +206,6 @@ const InputMultiSelect = ({
     onStateChange: (action) => {
       // This only modifies the behavior of some of the actions, after the state has been changed
       switch (action.type) {
-        case useCombobox.stateChangeTypes.InputChange:
-          if (action.highlightedIndex !== 0) {
-            setHighlightedIndex(0);
-          }
-          break;
         case useCombobox.stateChangeTypes.InputKeyDownEscape:
           if (action.isOpen) {
             // Sometimes closing the menu on esc didn't work, this fixes it
