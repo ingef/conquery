@@ -16,20 +16,11 @@ updates:
     directory: "/frontend"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 5
-    # Must match minimumReleaseAge (7 days) in frontend/pnpm-workspace.yaml,
-    # otherwise dependabot proposes versions that pnpm refuses to install.
-    cooldown:
-      default-days: 7
-    # Majors are migrations and are done by hand, dependabot only proposes minor/patch
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
-    groups:
-      frontend-minor-and-patch:
-        update-types:
-          - minor
-          - patch
+    # Version updates are done by hand (upgrades are cheap now, majors are migrations);
+    # dependabot only opens security PRs here, which ignore this limit. Note that a
+    # security fix younger than minimumReleaseAge (frontend/pnpm-workspace.yaml) needs a
+    # minimumReleaseAgeExclude before it installs.
+    open-pull-requests-limit: 0
     assignees:
       - Kadrian
     labels:
