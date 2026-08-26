@@ -10,3 +10,5 @@ allowBuilds:
   esbuild: true
   # optional peer of ts-node (via jest-config), unused: never run its postinstall
   "@swc/core": false
+  # jest 30 resolver ships prebuilt binaries as optional deps, postinstall is only a fallback
+  unrs-resolver: false
