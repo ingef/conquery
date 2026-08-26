@@ -1,5 +1,5 @@
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FC } from "react";
+import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 

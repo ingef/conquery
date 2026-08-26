@@ -164,7 +164,7 @@ const InputSelect = ({
   const labelProps = getLabelProps();
 
   const handleBlur = useCallback(() => {
-    if (!!selectedItem && inputValue !== selectedItem.label) {
+    if (selectedItem && inputValue !== selectedItem.label) {
       setInputValue(selectedItem.label);
     }
   }, [inputValue, setInputValue, selectedItem]);

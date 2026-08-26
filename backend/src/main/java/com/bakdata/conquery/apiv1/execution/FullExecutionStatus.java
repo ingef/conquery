@@ -6,9 +6,11 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import lombok.Data;
@@ -65,4 +67,9 @@ public class FullExecutionStatus extends ExecutionStatus {
 	 * Possible {@link SecondaryIdDescription}s available, of {@link com.bakdata.conquery.models.datasets.concepts.Concept}s used in this Query.
 	 */
 	private Set<SecondaryIdDescriptionId> availableSecondaryIds;
+
+	/**
+	 * If true, {@link com.bakdata.conquery.resources.api.QueryResource#getStatus(Subject, ManagedExecutionId, boolean)} is available for the query.
+	 */
+	private boolean previewAvailable = false;
 }

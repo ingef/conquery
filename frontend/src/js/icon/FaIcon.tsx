@@ -1,7 +1,7 @@
 import isPropValid from "@emotion/is-prop-valid";
 import { keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { forwardRef } from "react";
 

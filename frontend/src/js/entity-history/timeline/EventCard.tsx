@@ -4,9 +4,9 @@ import {
   faFingerprint,
   faInfo,
 } from "@fortawesome/free-solid-svg-icons";
+import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import { NumericFormat } from "react-number-format";
-
 import type {
   ColumnDescription,
   ConceptIdT,
@@ -18,13 +18,11 @@ import WithTooltip from "../../tooltip/WithTooltip";
 import type { ContentFilterValue } from "../ContentControl";
 import { RowDates } from "../RowDates";
 import type { DateRow, EntityEvent } from "../reducer";
-
-import Highlighter from "react-highlight-words";
 import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 import GroupedContent from "./GroupedContent";
 import { RawDataBadge } from "./RawDataBadge";
 import { TinyLabel } from "./TinyLabel";
-import { ColumnBuckets } from "./util/useColumnInformation";
+import type { ColumnBuckets } from "./util/useColumnInformation";
 import { isDateColumn, isSourceColumn } from "./util/util";
 
 const Card = styled("div")`

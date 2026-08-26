@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { FC } from "react";
+import type { FC } from "react";
 
 import WithTooltip from "../tooltip/WithTooltip";
 

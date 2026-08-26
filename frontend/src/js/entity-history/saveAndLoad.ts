@@ -1,15 +1,13 @@
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
-
+import type { SelectOptionT } from "../api/types";
 import { downloadBlob } from "../common/helpers/downloadBlob";
 import { toCSV } from "../file/csv";
 import { setMessage } from "../snack-message/actions";
-
-import type { SelectOptionT } from "../api/types";
-import { EntityIdsStatus } from "./History";
-import { LoadingPayload } from "./LoadHistoryDropzone";
-import { EntityId } from "./reducer";
+import type { EntityIdsStatus } from "./History";
+import type { LoadingPayload } from "./LoadHistoryDropzone";
+import type { EntityId } from "./reducer";
 
 export const saveHistory = ({
   entityIds,

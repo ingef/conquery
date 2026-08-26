@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode, useRef } from "react";
+import { type ReactNode, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 

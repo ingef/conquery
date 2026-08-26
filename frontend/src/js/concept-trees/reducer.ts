@@ -1,4 +1,4 @@
-import { ActionType, getType } from "typesafe-actions";
+import { type ActionType, getType } from "typesafe-actions";
 
 import type { ConceptIdT, ConceptT, SecondaryId } from "../api/types";
 import type { Action } from "../app/actions";

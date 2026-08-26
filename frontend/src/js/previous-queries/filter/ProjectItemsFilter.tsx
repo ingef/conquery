@@ -1,4 +1,4 @@
-import { FC, ReactNode, useMemo } from "react";
+import { type FC, type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -6,7 +6,7 @@ import type { StateT } from "../../app/reducers";
 import SmallTabNavigation from "../../small-tab-navigation/SmallTabNavigation";
 
 import { setFilter } from "./actions";
-import { ProjectItemsFilterStateT } from "./reducer";
+import type { ProjectItemsFilterStateT } from "./reducer";
 
 interface Props {
   className?: string;

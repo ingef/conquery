@@ -13,7 +13,6 @@ import jakarta.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -149,9 +148,9 @@ public class PreviewConfig {
 
 
 	@JsonIgnore
-	@ValidationMethod(message = "SearchFilters must be of same concept.")
-	public boolean isSearchFiltersOfSameConcept() {
-		return searchFilters.stream().map(id -> id.getConnector().getConcept()).distinct().count() <= 1;
+	@ValidationMethod(message = "SearchFilters must be of same connector.")
+	public boolean isSearchFiltersOfSameConnector() {
+		return searchFilters.stream().map(FilterId::getConnector).distinct().count() <= 1;
 	}
 
 	/**
@@ -177,7 +176,7 @@ public class PreviewConfig {
 								   .collect(Collectors.toList());
 	}
 
-	public ConceptId resolveSearchConcept() {
+	public ConnectorId resolveSearchConnector() {
 		if (searchFilters == null) {
 			return null;
 		}
@@ -186,6 +185,6 @@ public class PreviewConfig {
 			return null;
 		}
 
-		return searchFilters.iterator().next().getConnector().getConcept();
+		return searchFilters.iterator().next().getConnector();
 	}
 }

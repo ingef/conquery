@@ -356,7 +356,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	public void setStatusFull(FullExecutionStatus status, Subject subject, Namespace namespace) {
 		setStatusBase(subject, status);
 
-		setAdditionalFieldsForStatusWithColumnDescription(subject, status);
+		setAdditionalStatusFields(subject, status);
 		setAdditionalFieldsForStatusWithSource(subject, status, namespace);
 		setAdditionalFieldsForStatusWithGroups(status);
 		setAvailableSecondaryIds(status);
@@ -396,7 +396,7 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 		status.setGroups(permittedGroups);
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
+	protected void setAdditionalStatusFields(Subject subject, FullExecutionStatus status) {
 		// Implementation specific
 	}
 

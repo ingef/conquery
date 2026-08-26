@@ -6,13 +6,20 @@ import java.util.List;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
 public class FrontendPreviewConfig {
-	private final Collection<Labelled> all;
+	@Data
+	public static class Labelled {
+		private final String name;
+		private final String label;
+	}
+  
+  private final Collection<Labelled> all;
 	@JsonProperty("default")
 	private final Collection<Labelled> defaultConnectors;
 	private final Collection<FilterId> searchFilters;
@@ -29,9 +36,5 @@ public class FrontendPreviewConfig {
 	 */
 	private final ConceptId searchConcept;
 
-	@Data
-	public static class Labelled {
-		private final String name;
-		private final String label;
-	}
+	private final ConnectorId searchConnector;
 }

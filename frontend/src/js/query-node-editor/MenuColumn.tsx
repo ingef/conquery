@@ -1,11 +1,11 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ConceptIdT } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { Heading3 } from "../headings/Headings";
-import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
+import { type NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
 import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,

@@ -3,7 +3,7 @@ import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 
 import Highlighter from "react-highlight-words";
-import { ConceptIdT, ConceptT } from "../../api/types";
+import type { ConceptIdT, ConceptT } from "../../api/types";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
 import FaIcon from "../../icon/FaIcon";
 import { useTimelineSearch } from "../timeline-search/timelineSearchState";

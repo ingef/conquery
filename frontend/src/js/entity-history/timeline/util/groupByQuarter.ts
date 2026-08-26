@@ -1,7 +1,7 @@
-import { ColumnDescription, ConceptIdT } from "../../../api/types";
+import type { ColumnDescription, ConceptIdT } from "../../../api/types";
 import { getConceptById } from "../../../concept-trees/globalTreeStoreHelper";
 import type { DateRow, EntityEvent, EntityHistoryStateT } from "../../reducer";
-import { ColumnBuckets } from "./useColumnInformation";
+import type { ColumnBuckets } from "./useColumnInformation";
 import { isDateColumn, isSourceColumn } from "./util";
 
 // Filter concepts by searchTerm

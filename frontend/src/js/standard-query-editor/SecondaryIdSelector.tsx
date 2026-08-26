@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
 import { faMicroscope } from "@fortawesome/free-solid-svg-icons";
-import { FC, memo, useCallback, useEffect, useMemo, useRef } from "react";
+import { type FC, memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
-import { SecondaryId } from "../api/types";
+import type { SecondaryId } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
@@ -88,6 +88,7 @@ const SecondaryIdSelector: FC = () => {
 
   const availableSecondaryIdsString = JSON.stringify(availableSecondaryIds);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally keyed on the stringified ids, see above
   useEffect(
     function unselectSecondaryId() {
       const activeSecondaryIdNotFound =
@@ -108,6 +109,7 @@ const SecondaryIdSelector: FC = () => {
     ],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally keyed on the stringified ids, see above
   const options = useMemo(
     () => [
       {
@@ -122,7 +124,6 @@ const SecondaryIdSelector: FC = () => {
     ],
     // We DO want to recompute this when the availableSecondaryIds change,
     // see explanation above
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [availableSecondaryIdsString, t],
   );
 

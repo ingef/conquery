@@ -1,7 +1,7 @@
 import { css, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import Tippy, { TippyProps } from "@tippyjs/react";
-import { ReactElement, forwardRef, memo, useMemo } from "react";
+import Tippy, { type TippyProps } from "@tippyjs/react";
+import { forwardRef, memo, type ReactElement, useMemo } from "react";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light.css";
 

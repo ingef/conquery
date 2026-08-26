@@ -1,17 +1,17 @@
-import { TFunction } from "i18next";
+import type { TFunction } from "i18next";
 
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import { isValidSelect } from "../model/select";
 
-import {
+import type {
   CheckboxField,
   ConceptListField,
   DisclosureListField,
   Field,
   FormField,
 } from "./config-types";
-import { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
+import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 
 export const validateRequired = (
   t: TFunction,
@@ -169,7 +169,7 @@ export function getErrorForField(
 
   if (
     isFieldWithValidations(field) &&
-    !!field.validations &&
+    field.validations &&
     field.validations.length > 0
   ) {
     for (const validation of field.validations) {

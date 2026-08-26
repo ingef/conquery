@@ -5,7 +5,7 @@ import type {
   ResultUrlWithLabel,
   UserGroupIdT,
 } from "../../api/types";
-import { Action } from "../../app/actions";
+import type { Action } from "../../app/actions";
 
 import {
   addFolder,

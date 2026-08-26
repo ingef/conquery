@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { t } from "i18next";
 import RcTable from "rc-table";
 import { useHotkeys } from "react-hotkeys-hook";
-import { PreviewStatistics } from "../api/types";
+import type { PreviewStatistics } from "../api/types";
 import Modal from "../modal/Modal";
 import Diagram from "./Diagram";
 import { StyledTable } from "./Table";

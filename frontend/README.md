@@ -53,13 +53,14 @@ Commands analogoues to `start_production.sh` script.
 
 **Requirements**
 
-- `node` >= 18
+- `node` 24
+- `pnpm` >= 11 (`npm install -g pnpm`)
 
 **Install and start**
 
 ```bash
-npm
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Adjust your local `.env` file as necessary to apply environment variables during development
@@ -67,7 +68,7 @@ Adjust your local `.env` file as necessary to apply environment variables during
 **Mock API**
 
 ```bash
-$ npm run server
+$ pnpm server
 ```
 
 **Login**
@@ -79,16 +80,18 @@ When queried for login:
 
 This is documented in [the mock-API](https://github.com/ingef/conquery/blob/develop/frontend/mock-api/index.js).
 
-**Code formatting**  [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+**Linting & formatting**
 
-The frontend TypeScript code is formatted using `prettier`.
+The frontend is linted and formatted with [Biome](https://biomejs.dev) (config in `biome.json`).
 
-We recommend you configure your editor to auto-format on save. If you're using VS-Code, for example, there's a plugin: [Prettier – Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode).
+We recommend you configure your editor to format on save, e.g. with the [Biome VS Code extension](https://marketplace.visualstudio.com/items?itemName=biomejs.biome).
 
-You could also invoke prettier on the command line:
+On the command line:
 ```
-npm run prettier --write /path/to/file
+pnpm check   # lint + format + import order, read-only
+pnpm fix     # same, but writes formatting and safe fixes
 ```
+CI runs `biome ci`, which is the read-only equivalent of `pnpm check`.
 
 ## Glossary
 

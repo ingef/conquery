@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import { ForwardedRef, forwardRef, ReactNode } from "react";
-import { DropTargetMonitor, useDrop } from "react-dnd";
+import { type ForwardedRef, forwardRef, type ReactNode } from "react";
+import { type DropTargetMonitor, useDrop } from "react-dnd";
 
 import { DNDType } from "../common/constants/dndTypes";
 import { exists } from "../common/helpers/exists";
-import { DragItemFormConfig } from "../external-forms/types";
+import type { DragItemFormConfig } from "../external-forms/types";
 import type {
   DragItemConceptTreeNode,
   DragItemQuery,

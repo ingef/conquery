@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC, useEffect, useRef } from "react";
+import { type FC, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
@@ -10,7 +10,7 @@ import type {
 } from "../api/types";
 import { Heading3 } from "../headings/Headings";
 import { nodeIsConceptQueryNode } from "../model/node";
-import {
+import type {
   ConceptQueryNodeType,
   FilterWithValueType,
   StandardQueryNodeT,

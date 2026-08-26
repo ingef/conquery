@@ -1,12 +1,11 @@
 import styled from "@emotion/styled";
 import { faListUl, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-
-import { useMemo } from "react";
-import { StateT } from "../../app/reducers";
+import type { StateT } from "../../app/reducers";
 import FaIcon from "../../icon/FaIcon";
-import { EntityHistoryStateT } from "../reducer";
+import type { EntityHistoryStateT } from "../reducer";
 
 const Root = styled("div")`
   display: flex;

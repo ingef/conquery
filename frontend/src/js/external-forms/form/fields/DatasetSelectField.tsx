@@ -1,9 +1,9 @@
-import { ComponentProps } from "react";
-import { SelectOptionT } from "../../../api/types";
+import type { ComponentProps } from "react";
+import type { SelectOptionT } from "../../../api/types";
 import InputSelect from "../../../ui-components/InputSelect/InputSelect";
-import { DatasetSelectField as DatasetSelectFieldT } from "../../config-types";
+import type { DatasetSelectField as DatasetSelectFieldT } from "../../config-types";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
-import Field from "../Field";
+import type Field from "../Field";
 
 export const DatasetSelectField = ({
   field,

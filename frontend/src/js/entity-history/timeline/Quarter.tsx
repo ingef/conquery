@@ -3,19 +3,18 @@ import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
+import type {
   ColumnDescription,
   ConceptIdT,
   CurrencyConfigT,
 } from "../../api/types";
 import FaIcon from "../../icon/FaIcon";
-import { ContentFilterValue } from "../ContentControl";
-import { DetailLevel } from "../DetailControl";
-import { EntityEvent } from "../reducer";
-import { ColumnBuckets } from "./util/useColumnInformation";
-
+import type { ContentFilterValue } from "../ContentControl";
+import type { DetailLevel } from "../DetailControl";
+import type { EntityEvent } from "../reducer";
 import EventCard from "./EventCard";
 import { SmallHeading } from "./SmallHeading";
+import type { ColumnBuckets } from "./util/useColumnInformation";
 
 const EventTimeline = styled("div")`
   display: grid;

@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
-import { ComponentProps } from "react";
-import { Group } from "../../config-types";
+import type { ComponentProps } from "react";
+import type { Group } from "../../config-types";
 import { Description } from "../../form-components/Description";
 import { Headline } from "../../form-components/Headline";
 import { getFieldKey } from "../../helper";

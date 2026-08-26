@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { forwardRef, memo, useMemo } from "react";
 
-import FaIcon, { FaIconPropsT, IconStyleProps } from "../icon/FaIcon";
+import FaIcon, { type FaIconPropsT, type IconStyleProps } from "../icon/FaIcon";
 
-import BasicButton, { BasicButtonProps } from "./BasicButton";
+import BasicButton, { type BasicButtonProps } from "./BasicButton";
 
 interface StyledFaIconProps extends FaIconPropsT {
   tight?: boolean;

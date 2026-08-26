@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { FC, useMemo } from "react";
+import { type FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";

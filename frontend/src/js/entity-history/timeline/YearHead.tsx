@@ -3,7 +3,7 @@ import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
 import { Fragment, memo } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
+import type {
   ColumnDescriptionSemanticConceptColumn,
   TimeStratifiedInfo,
 } from "../../api/types";

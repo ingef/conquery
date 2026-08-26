@@ -6,7 +6,7 @@ import { exists } from "../../common/helpers/exists";
 import Modal from "../../modal/Modal";
 import BaseInput from "../../ui-components/BaseInput";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
-import { TimeOperator, TimeTimestamp, TreeChildrenTime } from "../types";
+import type { TimeOperator, TimeTimestamp, TreeChildrenTime } from "../types";
 import { useGetNodeLabel } from "../util";
 
 const Content = styled("div")`

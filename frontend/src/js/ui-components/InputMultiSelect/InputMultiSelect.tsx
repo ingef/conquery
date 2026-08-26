@@ -165,7 +165,6 @@ const InputMultiSelect = ({
             return state;
           }
 
-          /* eslint-disable no-case-declarations */
           // Make sure we're staying around the index of the item that was just selected
           const stayAlmostAtTheSamePositionIndex =
             state.highlightedIndex === filteredOptions.length - 1
@@ -184,7 +183,6 @@ const InputMultiSelect = ({
           const isNotSelectedYet =
             !!selectedItem &&
             !selectedItems.find((item) => selectedItem.value === item.value);
-          /* eslint-enable no-case-declarations */
 
           if (isNotSelectedYet && hasItemHighlighted) {
             addSelectedItem(selectedItem);
@@ -360,7 +358,7 @@ const InputMultiSelect = ({
                 const moreInsertableThanCurrentlyLoaded =
                   exists(total) && total > filterOptionsCount;
 
-                if (!!onLoadAndInsertAll && moreInsertableThanCurrentlyLoaded) {
+                if (onLoadAndInsertAll && moreInsertableThanCurrentlyLoaded) {
                   onLoadAndInsertAll(inputValue);
                 } else {
                   const optionsWithoutCreatable =

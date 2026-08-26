@@ -1,10 +1,9 @@
 import styled from "@emotion/styled";
-import { ComponentProps, memo } from "react";
+import { type ComponentProps, memo } from "react";
 
 import { exists } from "../common/helpers/exists";
-
-import FormConfigLoader from "./FormConfigLoader";
 import type { Form as FormType } from "./config-types";
+import FormConfigLoader from "./FormConfigLoader";
 import Form from "./form/Form";
 
 const Root = styled("div")`

@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import { DOMAttributes, memo } from "react";
+import { type DOMAttributes, memo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { TreeChildrenTime } from "../types";
+import type { TreeChildrenTime } from "../types";
 import {
   useGetNodeLabel,
   useGetTranslatedTimestamp,

@@ -1,7 +1,6 @@
 import react from "@vitejs/plugin-react";
 import fs from "fs";
 import { defineConfig } from "vite";
-import eslint from "vite-plugin-eslint";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -12,7 +11,6 @@ export default defineConfig({
   },
   envPrefix: "REACT_APP_",
   plugins: [
-    eslint(),
     react({
       jsxImportSource: "@emotion/react",
       babel: {

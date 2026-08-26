@@ -1,10 +1,10 @@
-import { Vector } from "apache-arrow";
+import type { Vector } from "apache-arrow";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-import { CurrencyConfigT, GetQueryResponseDoneT } from "../api/types";
-import { StateT } from "../app/reducers";
-import { NUMBER_TYPES, currencyFromSymbol } from "./util";
+import type { CurrencyConfigT, GetQueryResponseDoneT } from "../api/types";
+import type { StateT } from "../app/reducers";
+import { currencyFromSymbol, NUMBER_TYPES } from "./util";
 
 export type CellValue = string | Vector;
 

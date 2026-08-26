@@ -1,0 +1,82 @@
+{
+  // Schema ships with the installed biome version, so it never needs a manual bump
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    // "!!" = force-ignore: never even index these (build outputs, static assets)
+    "includes": [
+      "**",
+      "!!dist",
+      "!!storybook-static",
+      "!!public",
+      "!mock-api/**/*.json"
+    ],
+    "ignoreUnknown": true
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 80
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "trailingCommas": "all",
+      "semicolons": "always"
+    }
+  },
+  "css": {
+    "parser": { "tailwindDirectives": true }
+  },
+  "linter": {
+    "enabled": true,
+    // Domains are auto-detected from package.json, listed here to make it explicit
+    "domains": {
+      "react": "recommended",
+      "test": "recommended"
+    },
+    "rules": {
+      "preset": "recommended",
+      "correctness": {
+        "noUnusedVariables": {
+          "level": "error",
+          "options": { "ignoreRestSiblings": true }
+        },
+        // Carried over from the previous eslint config
+        "noSwitchDeclarations": "off",
+        "useExhaustiveDependencies": "warn",
+        "useHookAtTopLevel": "error",
+        // TODO: 7 lists render without keys, fix and raise to error
+        "useJsxKeyInIterable": "warn"
+      },
+      "security": {
+        // Markdown/HTML rendering from trusted backend content is intentional
+        "noDangerouslySetInnerHtml": "off"
+      },
+      "style": {
+        // Was allowed by the previous eslint config
+        "noNonNullAssertion": "off"
+      },
+      "suspicious": {
+        // TODO: ~30 index keys, revisit
+        "noArrayIndexKey": "off",
+        "noDoubleEquals": "error",
+        "noDebugger": "warn",
+        // @ts-ignore with description was allowed by the previous eslint config
+        "noTsIgnore": "off"
+      }
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": { "source": { "organizeImports": "on" } }
+  },
+  "overrides": [
+    {
+      // tailwind v3 entry directives
+      "includes": ["src/index.css"],
+      "linter": { "rules": { "suspicious": { "noUnknownAtRules": "off" } } }
+    }
+  ]
+}

@@ -9,22 +9,22 @@ import {
   usePostResolveEntities,
 } from "../api/api";
 import { transformFilterValueToApi } from "../api/apiHelper";
-import { ConceptT, TableT } from "../api/types";
-import { StateT } from "../app/reducers";
+import type { ConceptT, TableT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import PrimaryButton from "../button/PrimaryButton";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { useDatasetId } from "../dataset/selectors";
 import FaIcon from "../icon/FaIcon";
 import { isMultiSelectFilter, resetFilters } from "../model/filter";
 import { nodeIsElement } from "../model/node";
-import TableFilters from "../query-node-editor/TableFilters";
 import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
-import {
+import TableFilters from "../query-node-editor/TableFilters";
+import type {
   BigMultiSelectFilterWithValueType,
   MultiSelectFilterWithValueType,
 } from "../standard-query-editor/types";
 
-import { LoadingPayload } from "./LoadHistoryDropzone";
+import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { useDefaultStatusOptions } from "./useDefaultStatusOptions";
 
 export const SearchEntites = ({

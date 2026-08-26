@@ -1,6 +1,6 @@
 import type { ConceptIdT, ConceptT, GetConceptResponseT } from "../api/types";
 import { exists } from "../common/helpers/exists";
-import { NodeResetConfig, nodeIsElement } from "../model/node";
+import { type NodeResetConfig, nodeIsElement } from "../model/node";
 import { resetSelects } from "../model/select";
 import { resetTables } from "../model/table";
 import type {

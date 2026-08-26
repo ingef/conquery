@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import BasicButton from "./BasicButton";

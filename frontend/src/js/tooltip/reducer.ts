@@ -1,5 +1,5 @@
-import { IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import { ActionType, getType } from "typesafe-actions";
+import type { IconDefinition } from "@fortawesome/free-solid-svg-icons";
+import { type ActionType, getType } from "typesafe-actions";
 
 import type { DateRangeT } from "../api/types";
 import type { Action } from "../app/actions";

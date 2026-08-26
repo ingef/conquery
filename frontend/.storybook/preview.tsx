@@ -2,8 +2,8 @@ import { ThemeProvider } from "@emotion/react";
 import type { Preview } from "@storybook/react";
 
 import { theme } from "../src/app-theme";
-import GlobalStyles from "../src/js/GlobalStyles";
 import DndProvider from "../src/js/app/DndProvider";
+import GlobalStyles from "../src/js/GlobalStyles";
 import i18next from "../src/js/localization/i18next";
 import translationsDe from "../src/localization/de.json";
 

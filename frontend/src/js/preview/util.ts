@@ -1,4 +1,8 @@
-import { BarStatistics, DateStatistics, PreviewStatistics } from "../api/types";
+import type {
+  BarStatistics,
+  DateStatistics,
+  PreviewStatistics,
+} from "../api/types";
 
 export const NUMBER_TYPES = ["NUMERIC", "INTEGER"];
 

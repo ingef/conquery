@@ -1,8 +1,8 @@
-import { ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import InputPlain from "../../../ui-components/InputPlain/InputPlain";
 import type { StringField as StringFieldT } from "../../config-types";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
-import Field from "../Field";
+import type Field from "../Field";
 
 export const StringField = ({
   field,
