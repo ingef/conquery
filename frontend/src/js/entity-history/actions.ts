@@ -220,7 +220,7 @@ export function useUpdateHistorySession() {
   const getAuthorizedUrl = useGetAuthorizedUrl();
   const { t } = useTranslation();
 
-  const loadingIdTimeout = useRef<NodeJS.Timeout>();
+  const loadingIdTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const [loadingId, setLoadingId] = useState<string>();
 
   const defaultEntityHistoryParams = useSelector<
