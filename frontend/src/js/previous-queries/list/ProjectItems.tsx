@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { FixedSizeList } from "react-window";
+import { List, type RowComponentProps } from "react-window";
 
 import type { DatasetT } from "../../api/types";
 import { useResizeObserver } from "../../common/helpers/useResizeObserver";
@@ -17,6 +17,29 @@ import ProjectItemDragContainer from "./ProjectItemDragContainer";
 import ShareProjectItemModal from "./ShareProjectItemModal";
 
 const ROW_SIZE = 62;
+
+type ProjectItemRowProps = {
+  items: ProjectItemT[];
+  setItemToShare: (item: ProjectItemT) => void;
+  setItemToEditFolders: (item: ProjectItemT) => void;
+};
+
+const ProjectItemRow = ({
+  index,
+  style,
+  items,
+  setItemToShare,
+  setItemToEditFolders,
+}: RowComponentProps<ProjectItemRowProps>) => (
+  <div style={style}>
+    <ProjectItemDragContainer
+      item={items[index]}
+      onIndicateShare={() => setItemToShare(items[index])}
+      onIndicateEditFolders={() => setItemToEditFolders(items[index])}
+    />
+  </div>
+);
+
 const ROOT_PADDING_Y = 4;
 
 const Root = styled("div")`
@@ -99,27 +122,14 @@ export const ProjectItems = ({
         />
       )}
       {datasetId && (
-        <FixedSizeList
+        <List
           key={items.length}
-          itemSize={ROW_SIZE}
-          itemCount={items.length}
-          height={height}
-          width="100%"
-        >
-          {({ index, style }) => {
-            return (
-              <div style={style}>
-                <ProjectItemDragContainer
-                  item={items[index]}
-                  onIndicateShare={() => setItemToShare(items[index])}
-                  onIndicateEditFolders={() =>
-                    setItemToEditFolders(items[index])
-                  }
-                />
-              </div>
-            );
-          }}
-        </FixedSizeList>
+          rowCount={items.length}
+          rowHeight={ROW_SIZE}
+          style={{ height, width: "100%" }}
+          rowComponent={ProjectItemRow}
+          rowProps={{ items, setItemToShare, setItemToEditFolders }}
+        />
       )}
     </Root>
   );

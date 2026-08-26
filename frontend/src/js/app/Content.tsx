@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
-import { Panel, PanelGroup } from "react-resizable-panels";
+import { Group, Panel } from "react-resizable-panels";
 import { ResizeHandle } from "../common/ResizeHandle";
 import { History } from "../entity-history/History";
 import Preview from "../preview/Preview";
@@ -45,7 +45,7 @@ const Content = () => {
   return (
     <DndProvider>
       <Root>
-        <PanelGroup direction="horizontal" units="pixels">
+        <Group orientation="horizontal">
           <Panel
             style={collapsedStyles}
             minSize={200}
@@ -62,7 +62,7 @@ const Content = () => {
           <Panel minSize={250}>
             <RightPane />
           </Panel>
-        </PanelGroup>
+        </Group>
         {isHistoryOpen && <History />}
         {isPreviewOpen && <Preview />}
       </Root>

@@ -7,7 +7,7 @@ import {
   faTrash,
   faUpload,
 } from "@fortawesome/free-solid-svg-icons";
-import format from "date-fns/format";
+import { format } from "date-fns";
 import { saveAs } from "file-saver";
 import { type FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";

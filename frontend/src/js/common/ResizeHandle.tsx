@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
 import type { CSSProperties } from "react";
-import { PanelResizeHandle } from "react-resizable-panels";
+import { Separator } from "react-resizable-panels";
 
-const SxPanelResizeHandle = styled(PanelResizeHandle)`
+const SxSeparator = styled(Separator)`
   position: relative;
   background-color: ${({ theme }) => theme.col.grayMediumLight};
   width: 1px;
@@ -42,10 +42,10 @@ export const ResizeHandle = ({
   disabled?: boolean;
 }) => {
   return (
-    <SxPanelResizeHandle style={style} disabled={disabled}>
+    <SxSeparator style={style} disabled={disabled}>
       <Handle>
         <Line />
       </Handle>
-    </SxPanelResizeHandle>
+    </SxSeparator>
   );
 };

@@ -7,7 +7,6 @@ import { type ReactNode, useMemo } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
-import type { PluggableList } from "react-markdown/lib/react-markdown";
 import { useDispatch, useSelector } from "react-redux";
 import remarkFlexibleMarkers from "remark-flexible-markers";
 import remarkGfm from "remark-gfm";
@@ -258,12 +257,7 @@ const Tooltip = () => {
                 <InfoHeadline>
                   <HighlightedText words={words} text={info.key} />
                 </InfoHeadline>
-                {/* Explicit cast to PluggableList here, see: https://github.com/orgs/rehypejs/discussions/63 */}
-                <Markdown
-                  remarkPlugins={
-                    [remarkGfm, remarkFlexibleMarkers] as PluggableList
-                  }
-                >
+                <Markdown remarkPlugins={[remarkGfm, remarkFlexibleMarkers]}>
                   {mark(info.value, highlightRegex)}
                 </Markdown>
               </PieceOfInfo>

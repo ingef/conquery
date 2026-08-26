@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { Panel, PanelGroup } from "react-resizable-panels";
+import { Group, Panel } from "react-resizable-panels";
 import type { DatasetT } from "../../api/types";
 import type { StateT } from "../../app/reducers";
 import { usePrevious } from "../../common/helpers/usePrevious";
@@ -123,8 +123,8 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
         )}
       </Row>
       <FoldersAndQueries>
-        <PanelGroup direction="horizontal">
-          <Panel key="left" defaultSize={25} style={collapsedStyles}>
+        <Group orientation="horizontal">
+          <Panel key="left" defaultSize="25" style={collapsedStyles}>
             <SxFolders />
           </Panel>
           <ResizeHandle style={collapsedStyles} />
@@ -144,7 +144,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
               <ProjectItems items={items} datasetId={datasetId} />
             </Expand>
           </Panel>
-        </PanelGroup>
+        </Group>
       </FoldersAndQueries>
     </>
   );
