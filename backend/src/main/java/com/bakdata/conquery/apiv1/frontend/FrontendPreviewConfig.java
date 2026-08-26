@@ -18,8 +18,8 @@ public class FrontendPreviewConfig {
 		private final String name;
 		private final String label;
 	}
-  
-  private final Collection<Labelled> all;
+
+	private final Collection<Labelled> all;
 	@JsonProperty("default")
 	private final Collection<Labelled> defaultConnectors;
 	private final Collection<FilterId> searchFilters;
@@ -35,6 +35,5 @@ public class FrontendPreviewConfig {
 	 * Search concept needs to be parent of searchFilters, so frontend can resolve the filters.
 	 */
 	private final ConceptId searchConcept;
-
 	private final ConnectorId searchConnector;
 }
