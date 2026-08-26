@@ -16,7 +16,16 @@ updates:
     directory: "/frontend"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 0
+    open-pull-requests-limit: 5
+    # Must match minimumReleaseAge (7 days) in frontend/pnpm-workspace.yaml,
+    # otherwise dependabot proposes versions that pnpm refuses to install.
+    cooldown:
+      default-days: 7
+    groups:
+      frontend-minor-and-patch:
+        update-types:
+          - minor
+          - patch
     assignees:
       - Kadrian
     labels:
