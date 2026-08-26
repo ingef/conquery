@@ -5,7 +5,6 @@ import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import { Icon } from "../icon/FaIcon";
 import WithTooltip from "../tooltip/WithTooltip";
 
 const Actions = styled("div")`
@@ -32,14 +31,14 @@ const RedIconButton = styled(IconButton)`
   padding: 0 3px;
 
   color: ${({ active, theme }) => (active ? theme.col.red : theme.col.black)};
-  ${Icon} {
+  svg {
     color: ${({ active, theme }) => (active ? theme.col.red : theme.col.black)};
   }
 
   &:hover {
     opacity: 0.7;
     color: ${({ active, theme }) => (active ? theme.col.red : theme.col.black)};
-    ${Icon} {
+    svg {
       color: ${({ active, theme }) =>
         active ? theme.col.red : theme.col.black};
     }

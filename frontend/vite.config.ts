@@ -10,6 +10,11 @@ export default defineConfig({
     assetsInlineLimit: 0,
   },
   envPrefix: "REACT_APP_",
+  legacy: {
+    // react-list and react-highlight-words are CJS with `exports.default`; vite 8 hands
+    // ESM importers module.exports instead. Drop once those two are replaced.
+    inconsistentCjsInterop: true,
+  },
   plugins: [
     tailwindcss(),
     react({
