@@ -78,7 +78,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		previewConfig = getNamespace().getPreviewConfig();
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
+	protected void setAdditionalStatusFields(Subject subject, FullExecutionStatus status) {
 		status.setColumnDescriptions(generateColumnDescriptions(isInitialized(), getConfig()));
 	}
 
