@@ -17,7 +17,7 @@ import { useRootConceptIds } from "./useRootConceptIds";
   instead of mounting / unmounting it. Maybe we can remove this in the future.
 */
 const Root = tw("div")<{ $show?: boolean }>`
-  flex-grow
+  grow
   shrink-0
   basis-0
   px-[10px]

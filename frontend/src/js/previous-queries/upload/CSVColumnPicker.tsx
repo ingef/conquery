@@ -271,7 +271,7 @@ const CSVColumnPicker: FC<PropsT> = ({
           />
         )}
       </Row>
-      <div className="overflow-hidden rounded py-3 px-2 border w-full">
+      <div className="overflow-hidden rounded-sm py-3 px-2 border w-full">
         <div className="overflow-x-auto">
           <table className="table-fixed [&_td]:px-1 [&_th]:px-1">
             <thead>

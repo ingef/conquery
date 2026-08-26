@@ -17,8 +17,7 @@ const Root = tw("div")<{ $success?: boolean }>`
   flex items-start
   max-w-[500px]
   rounded-lg
-  ${({ $success }) =>
-    $success ? "bg-primary-500 bg-opacity-90" : "bg-black bg-opacity-75"}
+  ${({ $success }) => ($success ? "bg-primary-500/90" : "bg-black/75")}
 `;
 
 const ClearZone = tw("div")`
