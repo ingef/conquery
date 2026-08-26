@@ -1,13 +1,13 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
-import { FC, ReactNode, createRef, useMemo } from "react";
-import ReactDatePicker from "react-datepicker";
+import { createRef, type FC, type ReactNode, useMemo } from "react";
+import type ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
 import {
-  DateStringMinMax,
+  type DateStringMinMax,
   formatDateFromState,
   getDateStringFromShortcut,
   parseDate,

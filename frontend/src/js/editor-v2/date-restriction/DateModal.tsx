@@ -5,9 +5,9 @@ import { useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 
-import { DateRangeT } from "../../api/types";
+import type { DateRangeT } from "../../api/types";
 import IconButton from "../../button/IconButton";
-import { DateStringMinMax } from "../../common/helpers/dateHelper";
+import type { DateStringMinMax } from "../../common/helpers/dateHelper";
 import { Icon } from "../../icon/FaIcon";
 import Modal from "../../modal/Modal";
 import InputCheckbox from "../../ui-components/InputCheckbox";

@@ -5,8 +5,8 @@ import type { TableWithFilterValueT } from "../standard-query-editor/types";
 
 import {
   filterIsEmpty,
-  filterValueDiffersFromDefault,
   filtersHaveValues,
+  filterValueDiffersFromDefault,
   resetFilters,
 } from "./filter";
 import type { NodeResetConfig } from "./node";
@@ -79,7 +79,7 @@ const tableWithDefaultDateColumn = (
   return {
     ...table,
     dateColumn:
-      !!table.dateColumn && table.dateColumn.options.length > 0
+      table.dateColumn && table.dateColumn.options.length > 0
         ? {
             ...table.dateColumn,
             value: table.dateColumn.options[0].value as string,

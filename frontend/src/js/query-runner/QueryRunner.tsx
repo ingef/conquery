@@ -58,13 +58,9 @@ const QueryRunner = ({
 
   const progress = queryRunner?.progress;
 
-  useHotkeys(
-    "shift+enter",
-    () => {
-      if (!disabled) btnAction();
-    },
-    [disabled, btnAction],
-  );
+  useHotkeys("shift+enter", () => {
+    if (!disabled) btnAction();
+  }, [disabled, btnAction]);
 
   return (
     <Root data-test-id="query-runner">

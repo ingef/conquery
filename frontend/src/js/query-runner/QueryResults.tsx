@@ -1,18 +1,17 @@
 import styled from "@emotion/styled";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
-import { FC } from "react";
+import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import type { ColumnDescription, ResultUrlWithLabel } from "../api/types";
-import { StateT } from "../app/reducers";
+import type { StateT } from "../app/reducers";
 import PreviewButton from "../button/PreviewButton";
 import { QueryResultHistoryButton } from "../button/QueryResultHistoryButton";
 import { isEmpty } from "../common/helpers/commonHelper";
+import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 import { canViewEntityPreview, canViewQueryPreview } from "../user/selectors";
-
-import { exists } from "../common/helpers/exists";
 import DownloadResultsDropdownButton from "./DownloadResultsDropdownButton";
 
 const Root = styled("div")`

@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faFolderMinus, faHome } from "@fortawesome/free-solid-svg-icons";
-import { FC, memo, useCallback, useRef } from "react";
+import { type FC, memo, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -11,7 +11,7 @@ import { useRootConceptIds } from "../concept-trees/useRootConceptIds";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import { closeAllConceptOpen, resetAllConceptOpen } from "./actions";
-import { ConceptTreesOpenStateT } from "./reducer";
+import type { ConceptTreesOpenStateT } from "./reducer";
 
 const Row = styled("div")`
   display: flex;

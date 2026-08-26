@@ -1,6 +1,6 @@
 import type { FilterWithValueType } from "../standard-query-editor/types";
 
-import TableFilter, { BaseTableFilterProps } from "./TableFilter";
+import TableFilter, { type BaseTableFilterProps } from "./TableFilter";
 
 interface PropsT extends BaseTableFilterProps {
   filters: FilterWithValueType[] | null;

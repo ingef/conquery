@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
-import { ReactElement, useMemo, useRef } from "react";
+import { type ReactElement, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Instance } from "tippy.js";
+import type { Instance } from "tippy.js";
 
 import IconButton from "../button/IconButton";
 

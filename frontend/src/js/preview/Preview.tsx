@@ -1,24 +1,22 @@
 import styled from "@emotion/styled";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
-import { StateT } from "../app/reducers";
-
-import { PreviewStatistics, SecondaryId } from "../api/types";
+import type { PreviewStatistics, SecondaryId } from "../api/types";
+import type { StateT } from "../app/reducers";
 import { TransparentButton } from "../button/TransparentButton";
 import FaIcon from "../icon/FaIcon";
-
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { closePreview } from "./actions";
 import Charts from "./Charts";
 import DiagramModal from "./DiagramModal";
 import HeadlineStats from "./HeadlineStats";
+import type { PreviewStateT } from "./reducer";
 import ScrollBox from "./ScrollBox";
 import SelectBox from "./SelectBox";
 import Table from "./Table";
-import { closePreview } from "./actions";
-import { PreviewStateT } from "./reducer";
 
 const FullScreen = styled("div")`
   height: 100%;

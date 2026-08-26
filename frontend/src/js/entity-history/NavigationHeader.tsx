@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
 import { faSliders } from "@fortawesome/free-solid-svg-icons";
-import { Dispatch, memo, SetStateAction, useState } from "react";
+import { type Dispatch, memo, type SetStateAction, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import { SelectOptionT } from "../api/types";
+import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import ProgressBar from "../common/components/ProgressBar";

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { SelectOptionT } from "../../api/types";
+import type { SelectOptionT } from "../../api/types";
 import { usePrevious } from "../../common/helpers/usePrevious";
 
 export const useResolvableSelect = ({

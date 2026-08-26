@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { nodeIsConceptQueryNode } from "../model/node";
-import { StandardQueryNodeT } from "../standard-query-editor/types";
+import type { StandardQueryNodeT } from "../standard-query-editor/types";
 
 interface AutoLabelProps {
   node: StandardQueryNodeT;

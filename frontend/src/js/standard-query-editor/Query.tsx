@@ -7,20 +7,13 @@ import type { QueryT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
-import { TreesT } from "../concept-trees/reducer";
+import type { TreesT } from "../concept-trees/reducer";
 import { useDatasetId } from "../dataset/selectors";
 import { useLoadQuery } from "../previous-queries/list/actions";
-import { PreviousQueryT } from "../previous-queries/list/reducer";
+import type { PreviousQueryT } from "../previous-queries/list/reducer";
 import QueryGroupModal from "../query-group-modal/QueryGroupModal";
 import QueryUploadConceptListModal from "../query-upload-concept-list-modal/QueryUploadConceptListModal";
 import { initUploadConceptListModal } from "../upload-concept-list-modal/actions";
-
-import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
-import QueryAndDropzone from "./QueryAndDropzone";
-import QueryEditorDropzone from "./QueryEditorDropzone";
-import QueryGroup from "./QueryGroup";
-import QueryHeader from "./QueryHeader";
-import SecondaryIdSelector from "./SecondaryIdSelector";
 import {
   deleteGroup,
   deleteNode,
@@ -31,7 +24,13 @@ import {
   toggleTimestamps,
   useExpandPreviousQuery,
 } from "./actions";
+import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
+import QueryAndDropzone from "./QueryAndDropzone";
+import QueryEditorDropzone from "./QueryEditorDropzone";
+import QueryGroup from "./QueryGroup";
+import QueryHeader from "./QueryHeader";
 import type { StandardQueryStateT } from "./queryReducer";
+import SecondaryIdSelector from "./SecondaryIdSelector";
 import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
 
 const useImport = () => {

@@ -1,6 +1,10 @@
 import styled from "@emotion/styled";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import { DetailedHTMLProps, forwardRef, TextareaHTMLAttributes } from "react";
+import {
+  type DetailedHTMLProps,
+  forwardRef,
+  type TextareaHTMLAttributes,
+} from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../../button/IconButton";

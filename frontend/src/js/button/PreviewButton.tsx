@@ -1,15 +1,14 @@
 import styled from "@emotion/styled";
-import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
-
 import {
   faMagnifyingGlass,
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import { useMemo, useState } from "react";
-import { StateT } from "../app/reducers";
+import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
+import type { StateT } from "../app/reducers";
 import { openPreview, useLoadPreviewData } from "../preview/actions";
-import IconButton, { IconButtonPropsT } from "./IconButton";
+import IconButton, { type IconButtonPropsT } from "./IconButton";
 
 const Button = styled(IconButton)`
   white-space: nowrap;

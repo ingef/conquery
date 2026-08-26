@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC, useCallback, useRef } from "react";
+import { type FC, useCallback, useRef } from "react";
 
 import { DNDType } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";

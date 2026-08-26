@@ -1,4 +1,4 @@
-import { Theme, css, useTheme } from "@emotion/react";
+import { css, type Theme, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { forwardRef } from "react";
 

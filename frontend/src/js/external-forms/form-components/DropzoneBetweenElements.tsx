@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import { DropTargetMonitor } from "react-dnd";
+import type { DropTargetMonitor } from "react-dnd";
 
 import Dropzone, {
-  PossibleDroppableObject,
+  type PossibleDroppableObject,
 } from "../../ui-components/Dropzone";
 
 const LINE_HEIGHT = 4;

@@ -3,7 +3,7 @@ import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { TransparentButton } from "../button/TransparentButton";
-import { NodeResetConfig } from "../model/node";
+import type { NodeResetConfig } from "../model/node";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import ResetAllSettingsButton from "./ResetAllSettingsButton";

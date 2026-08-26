@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { PreviewStatisticsResponse } from "../api/types";
+import type { PreviewStatisticsResponse } from "../api/types";
 import TooltipEntries from "../tooltip/TooltipEntries";
 
 const Root = styled("div")`

@@ -7,7 +7,7 @@ import type {
 import { exists } from "../common/helpers/exists";
 import type { FilterWithValueType } from "../standard-query-editor/types";
 
-import { NodeResetConfig } from "./node";
+import type { NodeResetConfig } from "./node";
 
 const resetFilter =
   (config: NodeResetConfig = {}) =>

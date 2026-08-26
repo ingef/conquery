@@ -1,7 +1,7 @@
-import { ActionType, getType } from "typesafe-actions";
+import { type ActionType, getType } from "typesafe-actions";
 
 import type { ConceptIdT, SelectOptionT } from "../api/types";
-import { Action } from "../app/actions";
+import type { Action } from "../app/actions";
 import { DNDType } from "../common/constants/dndTypes";
 import { exists } from "../common/helpers/exists";
 import {

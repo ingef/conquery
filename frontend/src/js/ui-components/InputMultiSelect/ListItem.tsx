@@ -1,4 +1,4 @@
-import { Ref, memo } from "react";
+import { memo, type Ref } from "react";
 
 import type { SelectOptionT } from "../../api/types";
 import { SxSelectListOption } from "../InputSelect/InputSelectComponents";

@@ -1,20 +1,21 @@
 import styled from "@emotion/styled";
-import { faThumbtack, IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import { ReactNode, useMemo } from "react";
+import {
+  faThumbtack,
+  type IconDefinition,
+} from "@fortawesome/free-solid-svg-icons";
+import { type ReactNode, useMemo } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
+import type { PluggableList } from "react-markdown/lib/react-markdown";
 import { useDispatch, useSelector } from "react-redux";
 import remarkFlexibleMarkers from "remark-flexible-markers";
 import remarkGfm from "remark-gfm";
-
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
-
-import { PluggableList } from "react-markdown/lib/react-markdown";
-import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import ActivateTooltip from "./ActivateTooltip";
+import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import type { AdditionalInfosType } from "./reducer";
 import TooltipEntries from "./TooltipEntries";
 import { TooltipHeader } from "./TooltipHeader";

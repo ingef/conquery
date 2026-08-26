@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
 import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import {
-  HTMLAttributes,
-  PropsWithChildren,
+  type HTMLAttributes,
+  type PropsWithChildren,
   useEffect,
   useRef,
   useState,

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC, memo, useCallback, useMemo } from "react";
+import { type FC, memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 

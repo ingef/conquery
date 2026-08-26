@@ -11,7 +11,7 @@ import type {
 } from "../api/types";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
 import {
-  NodeResetConfig,
+  type NodeResetConfig,
   nodeHasEmptySettings,
   nodeIsConceptQueryNode,
 } from "../model/node";

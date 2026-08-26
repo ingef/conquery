@@ -1,13 +1,13 @@
 import styled from "@emotion/styled";
 import {
   Table as ArrowTable,
-  AsyncRecordBatchStreamReader,
-  RecordBatch,
-  Vector,
+  type AsyncRecordBatchStreamReader,
+  type RecordBatch,
+  type Vector,
 } from "apache-arrow";
 import RcTable from "rc-table";
 import { memo, useMemo, useRef } from "react";
-import { GetQueryResponseDoneT, GetQueryResponseT } from "../api/types";
+import type { GetQueryResponseDoneT, GetQueryResponseT } from "../api/types";
 import { useCustomTableRenderers } from "./tableUtils";
 
 interface Props {

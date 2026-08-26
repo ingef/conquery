@@ -1,7 +1,6 @@
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import IconButton from "../../button/IconButton";
 import WithTooltip from "../../tooltip/WithTooltip";
 import { useTimelineSearch } from "./timelineSearchState";

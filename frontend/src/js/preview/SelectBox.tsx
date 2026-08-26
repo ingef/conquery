@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
-import { SetStateAction, useMemo, useRef, useState } from "react";
-
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
+import { type SetStateAction, useMemo, useRef, useState } from "react";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import FaIcon from "../icon/FaIcon";
 import { Input } from "../ui-components/InputSelect/InputSelectComponents";

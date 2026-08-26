@@ -9,11 +9,11 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import format from "date-fns/format";
 import { saveAs } from "file-saver";
-import { FC, useEffect, useState } from "react";
+import { type FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import tw from "tailwind-styled-components";
-import { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
+import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
 import IconButton from "../../button/IconButton";
 import PrimaryButton from "../../button/PrimaryButton";
 import { TransparentButton } from "../../button/TransparentButton";
@@ -206,7 +206,7 @@ const CSVColumnPicker: FC<PropsT> = ({
 
           setCSVHeader(initialCSVHeader);
         }
-      } catch (e) {
+      } catch {
         setCSVLoading(false);
       }
     }

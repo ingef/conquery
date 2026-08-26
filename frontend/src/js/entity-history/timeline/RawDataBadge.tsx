@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 
-import { ColumnDescription } from "../../api/types";
-import { EntityEvent } from "../reducer";
+import type { ColumnDescription } from "../../api/types";
+import type { EntityEvent } from "../reducer";
 
 const Badge = styled("div")`
   border-radius: ${({ theme }) => theme.borderRadius};

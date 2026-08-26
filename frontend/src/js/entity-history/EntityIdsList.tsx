@@ -4,10 +4,9 @@ import { useMemo } from "react";
 import ReactList from "react-list";
 
 import FaIcon from "../icon/FaIcon";
-
+import type { useUpdateHistorySession } from "./actions";
 import type { EntityIdsStatus } from "./History";
-import { useUpdateHistorySession } from "./actions";
-import { EntityId } from "./reducer";
+import type { EntityId } from "./reducer";
 
 const Row = styled("div")<{ active?: boolean }>`
   padding: 1px 3px;
@@ -48,7 +47,7 @@ const TheEntityId = styled("div")<{ active?: boolean }>`
   flex-shrink: 0;
 `;
 
-const Number = styled("div")`
+const NumberText = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme }) => theme.col.gray};
   flex-shrink: 0;
@@ -100,7 +99,7 @@ export const EntityIdsList = ({
         className="scrollable-list-item"
         onClick={() => updateHistorySession({ entityId, years: [] })}
       >
-        <Number style={{ width: numberWidth }}>#{index + 1}</Number>
+        <NumberText style={{ width: numberWidth }}>#{index + 1}</NumberText>
         <TheEntityId>
           <Blurred blurred={blurred}>{entityId.id}</Blurred>{" "}
           <Gray>({entityId.kind})</Gray>

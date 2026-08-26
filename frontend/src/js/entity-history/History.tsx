@@ -4,7 +4,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-
+import { Panel, PanelGroup } from "react-resizable-panels";
 import type {
   EntityInfo,
   ResultUrlWithLabel,
@@ -12,27 +12,25 @@ import type {
   TimeStratifiedInfo,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
+import { ResizeHandle } from "../common/ResizeHandle";
 import ErrorFallback from "../error-fallback/ErrorFallback";
 import DownloadResultsDropdownButton from "../query-runner/DownloadResultsDropdownButton";
-
-import { Panel, PanelGroup } from "react-resizable-panels";
-import { ResizeHandle } from "../common/ResizeHandle";
+import { useUpdateHistorySession } from "./actions";
 import ContentControl, { useContentControl } from "./ContentControl";
-import { DetailControl, DetailLevel } from "./DetailControl";
+import { DetailControl, type DetailLevel } from "./DetailControl";
 import { EntityHeader } from "./EntityHeader";
 import InteractionControl from "./InteractionControl";
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { Navigation } from "./Navigation";
+import type { EntityId } from "./reducer";
 import SourcesControl from "./SourcesControl";
 import { Timeline } from "./Timeline";
-import VisibilityControl from "./VisibilityControl";
-import { useUpdateHistorySession } from "./actions";
-import { EntityId } from "./reducer";
 import SearchControl from "./timeline-search/SearchControl";
 import { TimelineSearchProvider } from "./timeline-search/timelineSearchState";
 import { useEntityStatus } from "./useEntityStatus";
 import { useOpenCloseInteraction } from "./useOpenCloseInteraction";
 import { useSourcesControl } from "./useSourcesControl";
+import VisibilityControl from "./VisibilityControl";
 
 const FullScreen = styled("div")`
   position: fixed;

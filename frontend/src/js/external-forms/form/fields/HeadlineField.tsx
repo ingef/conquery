@@ -1,12 +1,12 @@
-import { ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import { exists } from "../../../common/helpers/exists";
-import { Headline } from "../../config-types";
+import type { Headline } from "../../config-types";
 import {
   getHeadlineFieldAs,
   Headline as HeadlineComponent,
   HeadlineIndex,
 } from "../../form-components/Headline";
-import Field from "../Field";
+import type Field from "../Field";
 
 export const HeadlineField = ({
   field,

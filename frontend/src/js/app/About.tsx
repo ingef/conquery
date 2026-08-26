@@ -1,21 +1,19 @@
 import { faCopy } from "@fortawesome/free-regular-svg-icons";
 import {
-  Fragment,
-  ReactNode,
   createContext,
+  Fragment,
   memo,
+  type ReactNode,
   useCallback,
   useContext,
   useState,
 } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useSelector } from "react-redux";
-
+import type { GetFrontendConfigResponseT } from "../api/types";
 import IconButton from "../button/IconButton";
 import Modal from "../modal/Modal";
-
-import { GetFrontendConfigResponseT } from "../api/types";
-import { StateT } from "./reducers";
+import type { StateT } from "./reducers";
 
 const initialState = {
   isOpen: false,

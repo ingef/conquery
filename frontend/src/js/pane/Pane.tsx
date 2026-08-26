@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 
 import PaneTabNavigation from "./PaneTabNavigation";
-import { TabNavigationTab } from "./TabNavigation";
+import type { TabNavigationTab } from "./TabNavigation";
 
 const Root = styled("div")`
   width: 100%;

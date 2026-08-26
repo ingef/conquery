@@ -8,9 +8,9 @@ import type {
   PostFilterSuggestionsResponseT,
   RangeFilterValueT,
 } from "../api/types";
-import { StateT } from "../app/reducers";
-import { FilterWithValueType } from "../standard-query-editor/types";
-import InputRange, { ModeT } from "../ui-components/InputRange";
+import type { StateT } from "../app/reducers";
+import type { FilterWithValueType } from "../standard-query-editor/types";
+import InputRange, { type ModeT } from "../ui-components/InputRange";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 
 import FilterListMultiSelect from "./FilterListMultiSelect";

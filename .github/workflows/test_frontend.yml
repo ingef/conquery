@@ -31,12 +31,9 @@ jobs:
       - name: setup env variables
         working-directory: ./frontend
         run: cp .env.example .env
-      - name: lint
+      - name: lint and check format
         working-directory: ./frontend
-        run: pnpm lint
-      - name: check format
-        working-directory: ./frontend
-        run: pnpm checkformat
+        run: pnpm biome ci
       - name: test
         working-directory: ./frontend
         run: pnpm test

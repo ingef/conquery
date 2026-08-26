@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { FC, FormEvent, useRef, useState } from "react";
+import { type FC, type FormEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../api/types";
