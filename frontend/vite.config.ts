@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import fs from "fs";
@@ -21,6 +22,10 @@ export default defineConfig({
       jsxImportSource: "@emotion/react",
     }),
   ],
+  test: {
+    environment: "node",
+    include: ["src/**/*.{test,spec}.{ts,tsx}"],
+  },
   server: {
     port: 8000,
     open: true,
