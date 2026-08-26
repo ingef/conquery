@@ -183,7 +183,7 @@ const TableFilter = ({
   })();
 
   return filterComponent ? (
-    <Container className={className} data-test-id={"table-filter-" + filter.id}>
+    <Container className={className} data-test-id={`table-filter-${filter.id}`}>
       {filterComponent}
     </Container>
   ) : null;

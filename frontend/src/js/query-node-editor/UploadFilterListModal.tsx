@@ -53,9 +53,7 @@ const selectResolvedItemsCount = (
 const selectUnresolvedItemsCount = (
   resolved: PostFilterResolveResponseT | null,
 ) => {
-  return resolved && resolved.unknownCodes && resolved.unknownCodes.length
-    ? resolved.unknownCodes.length
-    : 0;
+  return resolved?.unknownCodes?.length ? resolved.unknownCodes.length : 0;
 };
 
 const UploadFilterListModal = ({

@@ -63,7 +63,7 @@ const SxBasicButton = styled(BasicButton)<{
 
   border-radius: ${({ theme }) => theme.borderRadius};
   border: ${({ theme, frame }) =>
-    frame ? "1px solid " + theme.col.gray : "none"};
+    frame ? `1px solid ${theme.col.gray}` : "none"};
   display: inline-flex;
   align-items: center;
   gap: ${({ tight }) => (tight ? "5px" : "10px")};

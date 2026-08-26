@@ -86,7 +86,7 @@ export const useLoadHistory = ({
       }
 
       const loadedEntityStatusOptions: SelectOptionT[] = [
-        ...new Set(Object.values(loadedEntityStatus).flatMap((val) => val)),
+        ...new Set(Object.values(loadedEntityStatus).flat()),
       ];
 
       if (distinctEntityIds.size === 0) {

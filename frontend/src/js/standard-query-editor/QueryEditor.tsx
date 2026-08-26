@@ -22,6 +22,7 @@ export const QueryEditor = () => {
   const datasetId = useDatasetId();
   const onClose = useCallback(() => setEditedNode(null), []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: close the editor whenever the dataset changes
   useEffect(() => {
     onClose();
   }, [datasetId, onClose]);

@@ -24,7 +24,7 @@ export const StringField = ({
           ref={ref}
           inputType="text"
           label={field.label[locale] || ""}
-          placeholder={(field.placeholder && field.placeholder[locale]) || ""}
+          placeholder={field.placeholder?.[locale] || ""}
           fullWidth={field.style ? field.style.fullWidth : false}
           value={fieldProps.value as string}
           onChange={(value) => setValue(field.name, value, setValueConfig)}

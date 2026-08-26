@@ -353,7 +353,7 @@ export function TreeNode({
                         />
                         {i < items.length - 1 && (
                           <InvisibleDropzoneContainer
-                            key={item.id + "connector"}
+                            key={`${item.id}connector`}
                             acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
                             naked
                             bare

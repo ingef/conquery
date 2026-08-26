@@ -251,17 +251,16 @@ const Tooltip = () => {
           )}
         </Head>
         <Infos>
-          {infos &&
-            infos.map((info, i) => (
-              <PieceOfInfo key={info.key + i}>
-                <InfoHeadline>
-                  <HighlightedText words={words} text={info.key} />
-                </InfoHeadline>
-                <Markdown remarkPlugins={[remarkGfm, remarkFlexibleMarkers]}>
-                  {mark(info.value, highlightRegex)}
-                </Markdown>
-              </PieceOfInfo>
-            ))}
+          {infos?.map((info, i) => (
+            <PieceOfInfo key={info.key + i}>
+              <InfoHeadline>
+                <HighlightedText words={words} text={info.key} />
+              </InfoHeadline>
+              <Markdown remarkPlugins={[remarkGfm, remarkFlexibleMarkers]}>
+                {mark(info.value, highlightRegex)}
+              </Markdown>
+            </PieceOfInfo>
+          ))}
         </Infos>
       </Content>
     </Root>

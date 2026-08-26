@@ -101,24 +101,22 @@ const ConceptTreeNode = ({
         onTextClick={toggleOpen}
         search={search}
       />
-      {!!data.children && isOpen && (
-        <>
-          {data.children.map((childId) => {
-            const child = getConceptById(childId);
+      {!!data.children &&
+        isOpen &&
+        data.children.map((childId) => {
+          const child = getConceptById(childId);
 
-            return child ? (
-              <ConceptTreeNode
-                key={childId}
-                rootConceptId={rootConceptId}
-                conceptId={childId}
-                data={child}
-                depth={depth + 1}
-                search={search}
-              />
-            ) : null;
-          })}
-        </>
-      )}
+          return child ? (
+            <ConceptTreeNode
+              key={childId}
+              rootConceptId={rootConceptId}
+              conceptId={childId}
+              data={child}
+              depth={depth + 1}
+              search={search}
+            />
+          ) : null;
+        })}
     </Root>
   );
 };

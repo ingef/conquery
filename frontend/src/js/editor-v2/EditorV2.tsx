@@ -123,6 +123,7 @@ const useEditorState = () => {
 
 const useResetOnDatasetChange = (onReset: () => void) => {
   const datasetId = useDatasetId();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset whenever the dataset changes
   useEffect(() => {
     onReset();
   }, [datasetId, onReset]);
@@ -159,7 +160,7 @@ export function EditorV2({
   useResetOnDatasetChange(onReset);
 
   const onFlip = useCallback(() => {
-    if (!selectedNode || !selectedNode.children) return;
+    if (!selectedNode?.children) return;
 
     updateTreeNode(selectedNode.id, (node) => {
       if (!node.children) return;

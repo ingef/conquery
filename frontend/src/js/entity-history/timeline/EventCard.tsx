@@ -159,7 +159,7 @@ const EventCard = ({
                       thousandSeparator={currencyConfig.thousandSeparator}
                       decimalSeparator={currencyConfig.decimalSeparator}
                       decimalScale={currencyConfig.decimalScale}
-                      suffix={" " + currencyConfig.unit}
+                      suffix={` ${currencyConfig.unit}`}
                       displayType="text"
                       value={parseFloat(row[column.label] as string)}
                     />

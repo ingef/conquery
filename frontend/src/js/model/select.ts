@@ -10,14 +10,10 @@ import type { NodeResetConfig } from "./node";
 export function objectHasNonDefaultSelects(
   obj: ConceptQueryNodeType | TableWithFilterValueT,
 ) {
-  return (
-    obj &&
-    obj.selects &&
-    obj.selects.some(
-      (select) =>
-        (select.selected && !select.default) ||
-        (!select.selected && !!select.default),
-    )
+  return obj?.selects?.some(
+    (select) =>
+      (select.selected && !select.default) ||
+      (!select.selected && !!select.default),
   );
 }
 

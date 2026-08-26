@@ -117,10 +117,7 @@ const FormConceptCopyModal = ({
 
   function onToggleAllConcepts() {
     const allChecked = Object.fromEntries(
-      Object.entries(valuesChecked).map(([key]) => [
-        key,
-        allConceptsSelected ? false : true,
-      ]),
+      Object.entries(valuesChecked).map(([key]) => [key, !allConceptsSelected]),
     );
 
     setValuesChecked(allChecked);

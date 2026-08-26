@@ -255,7 +255,6 @@ const useQueryResult = (queryType: QueryTypeT) => {
               QUERY_AGAIN_TIMEOUT,
             );
             break;
-          case "NEW":
           default:
             break;
         }

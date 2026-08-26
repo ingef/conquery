@@ -35,7 +35,7 @@ const ConceptLabel = ({
 }) => {
   const label = concept
     ? `${concept.label}${
-        concept.description ? " – " + concept.description : ""
+        concept.description ? ` – ${concept.description}` : ""
       }`
     : conceptId;
 
@@ -63,10 +63,10 @@ const RootConceptLabel = ({
   return searchTerm && searchTerm.length > 0 ? (
     <Highlighter
       searchWords={searchTerm.split(" ")}
-      textToHighlight={rootConcept.label + " "}
+      textToHighlight={`${rootConcept.label} `}
     />
   ) : (
-    rootConcept.label + " "
+    `${rootConcept.label} `
   );
 };
 

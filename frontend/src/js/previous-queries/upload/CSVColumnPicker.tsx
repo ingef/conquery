@@ -161,9 +161,9 @@ const CSVColumnPicker: FC<PropsT> = ({
   ];
 
   const DELIMITER_OPTIONS = [
-    { label: t("csvColumnPicker.semicolon") + " ( ; )", value: ";" },
-    { label: t("csvColumnPicker.comma") + " ( , )", value: "," },
-    { label: t("csvColumnPicker.colon") + " ( : )", value: ":" },
+    { label: `${t("csvColumnPicker.semicolon")} ( ; )`, value: ";" },
+    { label: `${t("csvColumnPicker.comma")} ( , )`, value: "," },
+    { label: `${t("csvColumnPicker.colon")} ( : )`, value: ":" },
   ];
 
   useEffect(() => {
@@ -212,7 +212,7 @@ const CSVColumnPicker: FC<PropsT> = ({
     }
 
     parse();
-  }, [file, delimiter, config.ids]);
+  }, [file, delimiter]);
 
   function uploadQuery() {
     onUpload({

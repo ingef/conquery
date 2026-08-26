@@ -24,7 +24,7 @@ const getFormattedDate = (date: string | undefined, dateFormat: string) => {
 
   const d = new Date(date);
 
-  if (isNaN(d.getTime())) return null;
+  if (Number.isNaN(d.getTime())) return null;
 
   return formatDate(d, dateFormat);
 };

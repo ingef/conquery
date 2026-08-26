@@ -87,9 +87,7 @@ const MenuColumn: FC<PropsT> = ({
   const isEmpty =
     !nodeIsConceptQueryNode(node) ||
     (!showTables &&
-      (!rootConcept ||
-        !rootConcept.children ||
-        rootConcept.children.length === 0));
+      (!rootConcept?.children || rootConcept.children.length === 0));
 
   return (
     <FixedColumn className={className} isEmpty={isEmpty}>
@@ -126,8 +124,7 @@ const MenuColumn: FC<PropsT> = ({
         </>
       )}
       {nodeIsConceptQueryNode(node) &&
-        rootConcept &&
-        rootConcept.children &&
+        rootConcept?.children &&
         rootConcept.children.length > 0 && (
           <AdditionalConceptNodeChildren
             node={node}

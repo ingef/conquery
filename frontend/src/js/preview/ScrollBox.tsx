@@ -46,7 +46,7 @@ export default function ScrollBox({
       passive: true,
     });
     return () => scrollBox?.removeEventListener("scroll", scrollHandler);
-  }, [scrollBoxRef, threshold]);
+  }, [threshold]);
 
   return (
     <Root ref={scrollBoxRef} {...props}>

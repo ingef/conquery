@@ -16,7 +16,7 @@ const Root = styled("div")<{ depth: number }>`
   cursor: pointer;
   padding: 0 15px 0 15px;
   margin: 2px 0;
-  padding-left: ${({ depth }) => depth * 15 + "px"};
+  padding-left: ${({ depth }) => `${depth * 15}px`};
   display: flex;
 `;
 

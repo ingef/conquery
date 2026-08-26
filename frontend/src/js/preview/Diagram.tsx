@@ -218,7 +218,7 @@ export default function Diagram({
         <Bar
           options={options as ChartOptions<"bar">}
           data={data as ChartData<"bar">}
-          onClick={() => onClick && onClick()}
+          onClick={() => onClick?.()}
           height={height}
           width={width}
         />
@@ -226,7 +226,7 @@ export default function Diagram({
         <Line
           options={options as ChartOptions<"line">}
           data={data as ChartData<"line">}
-          onClick={() => onClick && onClick()}
+          onClick={() => onClick?.()}
           height={height}
           width={width}
         />
