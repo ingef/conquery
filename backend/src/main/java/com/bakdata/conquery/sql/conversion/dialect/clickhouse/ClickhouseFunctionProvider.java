@@ -102,6 +102,11 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
         return ColumnDateRange.of(getMinDateExpression(), getMaxDateExpression());
     }
 
+    @Override
+    public <T> Field<T> anyValue(Field<T> field) {
+        return DSL.anyValue(field);
+    }
+
     private ColumnDateRange toColumnDateRange(ValidityDate validityDate) {
 
         String tableName = validityDate.getConnector().resolveTableId().getTable();
