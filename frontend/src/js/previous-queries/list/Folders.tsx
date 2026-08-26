@@ -78,7 +78,7 @@ const SxDropzone = styled(Dropzone)`
 
   &:hover {
     background-color: ${({ theme }) => theme.col.grayVeryLight};
-    ${SxIconButton} {
+    .folder-delete-button {
       display: block;
     }
   }
@@ -291,6 +291,7 @@ const Folders: FC<Props> = ({ className }) => {
                   />
                   <WithTooltip text={t("common.delete")}>
                     <SxIconButton
+                      className="folder-delete-button"
                       icon={faTimes}
                       onClick={(e) => {
                         setFolderToDelete(folder);

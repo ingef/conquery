@@ -10,7 +10,7 @@ import { toggleDisplayTooltip } from "./actions";
 const Header = tw("h2")`
   bg-white
   h-[40px]
-  flex-shrink-0
+  shrink-0
   flex items-center
   px-5
   pt-1

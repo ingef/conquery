@@ -74,7 +74,9 @@ export const HoverNavigatable = ({
   });
   return (
     <Root
-      ref={drop}
+      ref={(el) => {
+        drop(el);
+      }}
       isOver={isOver}
       isDroppable={isDroppable}
       className={className}

@@ -23,7 +23,7 @@ const Headline = tw("h2")<{ $active: boolean }>`
   font-bold
   leading-[30px]
   uppercase
-  flex-shrink-0
+  shrink-0
   transition-colors
   cursor-pointer
   tracking-wider

@@ -1,5 +1,10 @@
 import styled from "@emotion/styled";
-import { type ForwardedRef, forwardRef, type ReactNode } from "react";
+import {
+  type ForwardedRef,
+  forwardRef,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import { type DropTargetMonitor, useDrop } from "react-dnd";
 
 import { DNDType } from "../common/constants/dndTypes";
@@ -169,4 +174,4 @@ export default forwardRef(Dropzone) as <
   props: DropzoneProps<DroppableObject> & {
     ref?: ForwardedRef<HTMLDivElement>;
   },
-) => JSX.Element;
+) => ReactElement;

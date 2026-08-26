@@ -1,13 +1,14 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { Panel, PanelGroup } from "react-resizable-panels";
+import { Group, Panel } from "react-resizable-panels";
 import type { DatasetT } from "../../api/types";
 import type { StateT } from "../../app/reducers";
 import { usePrevious } from "../../common/helpers/usePrevious";
 import { ResizeHandle } from "../../common/ResizeHandle";
+import { useCollapsiblePanel } from "../../common/useCollapsiblePanel";
 import { selectFormConfigs } from "../../external-forms/form-configs/selectors";
 import EmptyList from "../../list/EmptyList";
 import { canUploadResult } from "../../user/selectors";
@@ -105,10 +106,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
 
   const { items, loading } = useProjectItems({ datasetId });
 
-  const collapsedStyles = useMemo(
-    () => (areFoldersOpen ? {} : { display: "none" }),
-    [areFoldersOpen],
-  );
+  const foldersPanelRef = useCollapsiblePanel(!areFoldersOpen);
 
   return (
     <>
@@ -123,11 +121,21 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
         )}
       </Row>
       <FoldersAndQueries>
-        <PanelGroup direction="horizontal">
-          <Panel key="left" defaultSize={25} style={collapsedStyles}>
+        <Group orientation="horizontal">
+          <Panel
+            key="left"
+            panelRef={foldersPanelRef}
+            collapsible
+            collapsedSize={0}
+            minSize="10"
+            defaultSize={areFoldersOpen ? "25" : 0}
+          >
             <SxFolders />
           </Panel>
-          <ResizeHandle style={collapsedStyles} />
+          <ResizeHandle
+            disabled={!areFoldersOpen}
+            style={areFoldersOpen ? undefined : { display: "none" }}
+          />
           <Panel key="right">
             <Expand areFoldersOpen={areFoldersOpen}>
               <Filters>
@@ -144,7 +152,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
               <ProjectItems items={items} datasetId={datasetId} />
             </Expand>
           </Panel>
-        </PanelGroup>
+        </Group>
       </FoldersAndQueries>
     </>
   );

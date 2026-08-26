@@ -7,7 +7,7 @@ import {
   faTrash,
   faUpload,
 } from "@fortawesome/free-solid-svg-icons";
-import format from "date-fns/format";
+import { format } from "date-fns";
 import { saveAs } from "file-saver";
 import { type FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -271,7 +271,7 @@ const CSVColumnPicker: FC<PropsT> = ({
           />
         )}
       </Row>
-      <div className="overflow-hidden rounded py-3 px-2 border w-full">
+      <div className="overflow-hidden rounded-sm py-3 px-2 border w-full">
         <div className="overflow-x-auto">
           <table className="table-fixed [&_td]:px-1 [&_th]:px-1">
             <thead>

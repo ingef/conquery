@@ -1,6 +1,6 @@
 import { useKeycloak } from "@react-keycloak-fork/web";
 import { type ReactNode, useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { isIDPEnabled, isLoginDisabled } from "../environment";
 

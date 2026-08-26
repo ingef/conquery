@@ -4,7 +4,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-import { Panel, PanelGroup } from "react-resizable-panels";
+import { Group, Panel } from "react-resizable-panels";
 import type {
   EntityInfo,
   ResultUrlWithLabel,
@@ -179,7 +179,7 @@ export const History = () => {
   return (
     <TimelineSearchProvider>
       <FullScreen>
-        <PanelGroup units="pixels" direction="horizontal">
+        <Group orientation="horizontal">
           <Panel minSize={400} defaultSize={400} maxSize={800}>
             <SxNavigation
               blurred={blurred}
@@ -265,7 +265,7 @@ export const History = () => {
               </Main>
             </ErrorBoundary>
           </Panel>
-        </PanelGroup>
+        </Group>
       </FullScreen>
     </TimelineSearchProvider>
   );

@@ -95,7 +95,7 @@ const InputDate = forwardRef<ReactDatePicker, Props>(
         <ReactDatePicker
           ref={mergeRefs([datePickerRef, ref])}
           selected={value ? parseDate(value, dateFormat) : new Date()}
-          onChange={(val) => {
+          onChange={(val: Date | null) => {
             if (!val) {
               return;
             }
@@ -110,16 +110,6 @@ const InputDate = forwardRef<ReactDatePicker, Props>(
           customInput={createElement(HiddenInput)}
           calendarContainer={StyledCalendar}
           calendarStartDay={1}
-          popperProps={{
-            modifiers: [
-              {
-                name: "preventOverflow",
-                options: {
-                  mainAxis: false,
-                },
-              },
-            ],
-          }}
         />
       </Root>
     );

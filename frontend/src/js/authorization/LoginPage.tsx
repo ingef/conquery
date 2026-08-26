@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { type FormEvent, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { usePostLogin } from "../api/api";
 import PrimaryButton from "../button/PrimaryButton";
