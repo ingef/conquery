@@ -3,8 +3,10 @@
 minimumReleaseAge: 10080
 # Refuse versions whose publish provenance/trust is weaker than a previous release
 trustPolicy: no-downgrade
-# ...but older releases (>180 days) predate provenance/trusted publishing and are vetted by time
-trustPolicyIgnoreAfter: 259200
+# Old transitive releases that predate their package's provenance; revisit when they drop out of the tree
+trustPolicyExclude:
+  - "semver@6.3.1"
+  - "@swc/core@1.13.5"
 # Lifecycle scripts are blocked unless explicitly allowed here
 allowBuilds:
   esbuild: true
