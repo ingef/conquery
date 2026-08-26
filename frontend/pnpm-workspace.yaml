@@ -7,5 +7,6 @@ trustPolicy: no-downgrade
 trustPolicyIgnoreAfter: 259200
 # Lifecycle scripts are blocked unless explicitly allowed here
 allowBuilds:
-  "@swc/core": true
   esbuild: true
+  # optional peer of ts-node (via jest-config), unused: never run its postinstall
+  "@swc/core": false

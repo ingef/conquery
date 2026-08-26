@@ -6,7 +6,6 @@ import { defineConfig } from "vite";
 export default defineConfig({
   build: {
     sourcemap: true,
-    minify: "terser",
     assetsInlineLimit: 0,
   },
   envPrefix: "REACT_APP_",
