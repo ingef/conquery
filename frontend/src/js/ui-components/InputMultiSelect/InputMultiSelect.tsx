@@ -7,6 +7,7 @@ import {
 import { useCombobox, useMultipleSelection } from "downshift";
 import { Fragment, memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { mergeRefs } from "react-merge-refs";
 
 import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
@@ -302,18 +303,14 @@ const InputMultiSelect = ({
           })}
           <Input
             type="text"
-            value={inputValue}
             {...inputProps}
-            ref={(instance) => {
-              inputRef.current = instance;
-              inputPropsRef(instance);
-            }}
+            ref={mergeRefs([inputRef, inputPropsRef])}
             disabled={disabled}
             spellCheck={false}
             maxLength={maxInputLength}
             placeholder={
               selectedItems.length > 0
-                ? null
+                ? undefined
                 : placeholder
                   ? placeholder
                   : onResolve
@@ -344,13 +341,13 @@ const InputMultiSelect = ({
         <VerticalSeparator />
         <DropdownToggleButton
           disabled={disabled}
-          icon={faChevronDown}
           {...getToggleButtonProps()}
+          icon={faChevronDown}
         />
       </Control>
       {isOpen ? (
         <MenuContainer ref={menuContainerRef}>
-          <Menu {...menuProps} ref={(instance) => menuPropsRef(instance)}>
+          <Menu {...menuProps} ref={menuPropsRef}>
             <MenuActionBar
               total={total}
               optionsCount={filterOptionsCount}
@@ -443,7 +440,9 @@ const InputMultiSelect = ({
     <Labeled
       {...labelProps}
       className={className}
-      ref={clickOutsideRef}
+      ref={(el) => {
+        clickOutsideRef.current = el;
+      }}
       htmlFor="" // Important to override getLabelProps with this to avoid click events everywhere
       label={
         <>
