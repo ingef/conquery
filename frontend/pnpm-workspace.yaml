@@ -5,14 +5,19 @@ minimumReleaseAge: 10080
 trustPolicy: no-downgrade
 # Old transitive releases that predate their package's provenance; revisit when they drop out of the tree
 trustPolicyExclude:
+  # semver 6.x: pulled in by @babel/core's helper packages (which pin ^6); 6.3.1 (2023) predates
+  # the provenance the 7.x line has, so it reads as a downgrade
   - "semver@6.3.1"
-  # security backport on the 1.x line (cosmiconfig via emotion's babel-plugin-macros), 2.x had provenance first
+  # yaml 1.x: forced to 1.10.3 by the override below (cosmiconfig via emotion's babel-plugin-macros);
+  # it's a 2026 security backport on the old line, 2.x had provenance first
   - "yaml@1.10.3"
 # Lifecycle scripts are blocked unless explicitly allowed here
 allowBuilds:
   esbuild: true
-# Security fixes for transitive deps whose parents allow but don't pull in the patched version
-# (yaml 1.x via emotion's babel-plugin-macros, yaml 2.x as vite's optional dep; GHSA-48c2-rrv3-qjmp)
+# Transitive security fixes the parents allow but never re-resolve to (pnpm only re-resolves
+# transitives when their parent changes)
 overrides:
+  # GHSA-48c2-rrv3-qjmp: cosmiconfig@7 (emotion's babel-plugin-macros) declares yaml ^1.10.0 -> patched 1.10.3
   "yaml@1": "^1.10.3"
+  # GHSA-48c2-rrv3-qjmp: vite's optional yaml dependency, patched in 2.8.3
   "yaml@2": "^2.8.3"
