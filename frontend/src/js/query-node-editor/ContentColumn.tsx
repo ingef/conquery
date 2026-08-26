@@ -135,7 +135,9 @@ const ContentColumn: FC<PropsT> = ({
         return (
           <ContentCellGroup
             key={table.id}
-            ref={(instance) => (itemsRef.current[idx] = instance)}
+            ref={(instance) => {
+              itemsRef.current[idx] = instance;
+            }}
           >
             <SectionHeading>{table.label}</SectionHeading>
             <TableView

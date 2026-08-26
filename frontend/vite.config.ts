@@ -1,3 +1,4 @@
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import fs from "fs";
 import { defineConfig } from "vite";
@@ -6,16 +7,18 @@ import { defineConfig } from "vite";
 export default defineConfig({
   build: {
     sourcemap: true,
-    minify: "terser",
     assetsInlineLimit: 0,
   },
   envPrefix: "REACT_APP_",
+  legacy: {
+    // react-list and react-highlight-words are CJS with `exports.default`; vite 8 hands
+    // ESM importers module.exports instead. Drop once those two are replaced.
+    inconsistentCjsInterop: true,
+  },
   plugins: [
+    tailwindcss(),
     react({
       jsxImportSource: "@emotion/react",
-      babel: {
-        plugins: ["@emotion/babel-plugin"],
-      },
     }),
   ],
   server: {

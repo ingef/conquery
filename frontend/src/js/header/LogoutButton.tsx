@@ -2,7 +2,7 @@ import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { useKeycloak } from "@react-keycloak-fork/web";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { deleteStoredAuthToken } from "../authorization/helper";
 import IconButton from "../button/IconButton";

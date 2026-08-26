@@ -7,6 +7,7 @@ import {
 import { useCombobox, useMultipleSelection } from "downshift";
 import { Fragment, memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { mergeRefs } from "react-merge-refs";
 
 import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
@@ -146,10 +147,13 @@ const InputMultiSelect = ({
     getInputProps,
     getItemProps,
     highlightedIndex,
-    setHighlightedIndex,
     reset: resetComboboxState,
   } = useCombobox({
     inputValue,
+    // Keep this a plain option instead of calling setHighlightedIndex from onStateChange:
+    // downshift 9 runs onStateChange in an effect, so a setState there is a nested
+    // update on every keystroke and React bails with "maximum update depth" on long input.
+    defaultHighlightedIndex: 0,
     items: filteredOptions,
     stateReducer: (state, { type, changes }) => {
       // This modifies the action payload itself
@@ -202,11 +206,6 @@ const InputMultiSelect = ({
     onStateChange: (action) => {
       // This only modifies the behavior of some of the actions, after the state has been changed
       switch (action.type) {
-        case useCombobox.stateChangeTypes.InputChange:
-          if (action.highlightedIndex !== 0) {
-            setHighlightedIndex(0);
-          }
-          break;
         case useCombobox.stateChangeTypes.InputKeyDownEscape:
           if (action.isOpen) {
             // Sometimes closing the menu on esc didn't work, this fixes it
@@ -302,18 +301,14 @@ const InputMultiSelect = ({
           })}
           <Input
             type="text"
-            value={inputValue}
             {...inputProps}
-            ref={(instance) => {
-              inputRef.current = instance;
-              inputPropsRef(instance);
-            }}
+            ref={mergeRefs([inputRef, inputPropsRef])}
             disabled={disabled}
             spellCheck={false}
             maxLength={maxInputLength}
             placeholder={
               selectedItems.length > 0
-                ? null
+                ? undefined
                 : placeholder
                   ? placeholder
                   : onResolve
@@ -344,13 +339,13 @@ const InputMultiSelect = ({
         <VerticalSeparator />
         <DropdownToggleButton
           disabled={disabled}
-          icon={faChevronDown}
           {...getToggleButtonProps()}
+          icon={faChevronDown}
         />
       </Control>
       {isOpen ? (
         <MenuContainer ref={menuContainerRef}>
-          <Menu {...menuProps} ref={(instance) => menuPropsRef(instance)}>
+          <Menu {...menuProps} ref={menuPropsRef}>
             <MenuActionBar
               total={total}
               optionsCount={filterOptionsCount}
@@ -443,7 +438,9 @@ const InputMultiSelect = ({
     <Labeled
       {...labelProps}
       className={className}
-      ref={clickOutsideRef}
+      ref={(el) => {
+        clickOutsideRef.current = el;
+      }}
       htmlFor="" // Important to override getLabelProps with this to avoid click events everywhere
       label={
         <>

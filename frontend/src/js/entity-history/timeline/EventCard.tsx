@@ -6,7 +6,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
-import { NumericFormat } from "react-number-format";
+import { type InputAttributes, NumericFormat } from "react-number-format";
 import type {
   ColumnDescription,
   ConceptIdT,
@@ -155,8 +155,10 @@ const EventCard = ({
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
                   <code>
-                    <NumericFormat
-                      {...currencyConfig}
+                    <NumericFormat<InputAttributes>
+                      thousandSeparator={currencyConfig.thousandSeparator}
+                      decimalSeparator={currencyConfig.decimalSeparator}
+                      decimalScale={currencyConfig.decimalScale}
                       suffix={" " + currencyConfig.unit}
                       displayType="text"
                       value={parseFloat(row[column.label] as string)}

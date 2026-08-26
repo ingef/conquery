@@ -1,7 +1,6 @@
 // -----------
 // EXPRESS SETUP
 // -----------
-import bodyParser from "body-parser";
 import cors from "cors";
 import express from "express";
 
@@ -13,7 +12,7 @@ const app = express();
 app.use(cors());
 // body parser must be set up before routes are attached
 app.use(
-  bodyParser.json({
+  express.json({
     limit: "100mb",
   }),
 );

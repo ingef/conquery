@@ -68,7 +68,7 @@ export const About = memo(() => {
     setOpen(false);
   };
 
-  useHotkeys("shift+?", toggleOpen, [toggleOpen]);
+  useHotkeys("?", toggleOpen, { useKey: true }, [toggleOpen]);
 
   if (!isOpen) return null;
 

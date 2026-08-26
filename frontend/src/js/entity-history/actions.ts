@@ -1,5 +1,4 @@
-import startOfYear from "date-fns/startOfYear";
-import subYears from "date-fns/subYears";
+import { startOfYear, subYears } from "date-fns";
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -221,7 +220,7 @@ export function useUpdateHistorySession() {
   const getAuthorizedUrl = useGetAuthorizedUrl();
   const { t } = useTranslation();
 
-  const loadingIdTimeout = useRef<NodeJS.Timeout>();
+  const loadingIdTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const [loadingId, setLoadingId] = useState<string>();
 
   const defaultEntityHistoryParams = useSelector<

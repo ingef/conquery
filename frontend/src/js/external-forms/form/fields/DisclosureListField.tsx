@@ -60,7 +60,7 @@ const DisclosureField = ({
 
   return (
     <details
-      className="overflow-hidden rounded border border-gray-400"
+      className="overflow-hidden rounded-sm border border-gray-400"
       open={isOpen}
       onToggle={(e) => {
         if (
