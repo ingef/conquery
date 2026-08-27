@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC, useEffect, useRef } from "react";
+import { type FC, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
@@ -10,7 +10,7 @@ import type {
 } from "../api/types";
 import { Heading3 } from "../headings/Headings";
 import { nodeIsConceptQueryNode } from "../model/node";
-import {
+import type {
   ConceptQueryNodeType,
   FilterWithValueType,
   StandardQueryNodeT,
@@ -93,11 +93,7 @@ const ContentColumn: FC<PropsT> = ({
   const itemsRef = useRef<(HTMLDivElement | null)[]>(new Array(tables.length));
 
   useEffect(() => {
-    if (
-      selectedTableIdx !== null &&
-      itemsRef.current &&
-      itemsRef.current[selectedTableIdx]
-    ) {
+    if (selectedTableIdx && itemsRef.current?.[selectedTableIdx]) {
       itemsRef.current[selectedTableIdx]?.scrollIntoView({
         block: "start",
         inline: "start",
@@ -135,7 +131,9 @@ const ContentColumn: FC<PropsT> = ({
         return (
           <ContentCellGroup
             key={table.id}
-            ref={(instance) => (itemsRef.current[idx] = instance)}
+            ref={(instance) => {
+              itemsRef.current[idx] = instance;
+            }}
           >
             <SectionHeading>{table.label}</SectionHeading>
             <TableView

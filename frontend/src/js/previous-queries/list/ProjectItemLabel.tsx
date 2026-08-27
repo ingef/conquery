@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
-import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
+import { Highlighter } from "../../common/components/Highlighter";
 
 import EditableText from "../../ui-components/EditableText";
 
@@ -53,11 +53,7 @@ const ProjectItemLabel = ({
   ) : (
     <Text>
       {highlightedWords.length > 0 ? (
-        <Highlighter
-          searchWords={highlightedWords}
-          autoEscape
-          textToHighlight={label}
-        />
+        <Highlighter searchWords={highlightedWords} textToHighlight={label} />
       ) : (
         label
       )}

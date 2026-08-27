@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Fragment, ReactElement } from "react";
+import { Fragment, type ReactElement } from "react";
 import { useTranslation } from "react-i18next";
 
 import { KeyboardKey } from "../common/components/KeyboardKey";

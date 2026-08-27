@@ -5,7 +5,7 @@ import type {
   ResultUrlWithLabel,
   UserGroupIdT,
 } from "../../api/types";
-import { Action } from "../../app/actions";
+import type { Action } from "../../app/actions";
 
 import {
   addFolder,
@@ -169,7 +169,7 @@ const removeLocalFolder = (
   { folderName }: { folderName: string },
 ) => {
   const { localFolders } = state;
-  const idx = localFolders.findIndex((f) => f === folderName);
+  const idx = localFolders.indexOf(folderName);
 
   return idx === -1
     ? state

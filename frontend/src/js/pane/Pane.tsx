@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 
 import PaneTabNavigation from "./PaneTabNavigation";
-import { TabNavigationTab } from "./TabNavigation";
+import type { TabNavigationTab } from "./TabNavigation";
 
 const Root = styled("div")`
   width: 100%;
@@ -38,7 +38,7 @@ const Pane = ({ tabs, left, children, className, dataTestId }: Props) => {
           paneType={paneType}
           dataTestId={dataTestId}
         />
-        <Container data-test-id={dataTestId + "-container"}>
+        <Container data-test-id={`${dataTestId}-container`}>
           {children}
         </Container>
       </Container>

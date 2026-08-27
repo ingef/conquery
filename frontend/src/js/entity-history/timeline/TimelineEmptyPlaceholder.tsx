@@ -1,12 +1,11 @@
 import styled from "@emotion/styled";
 import { faListUl, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-
-import { useMemo } from "react";
-import { StateT } from "../../app/reducers";
+import type { StateT } from "../../app/reducers";
 import FaIcon from "../../icon/FaIcon";
-import { EntityHistoryStateT } from "../reducer";
+import type { EntityHistoryStateT } from "../reducer";
 
 const Root = styled("div")`
   display: flex;
@@ -85,6 +84,7 @@ export const TimelineEmptyPlaceholder = ({
         <div>
           <Headline>{t("history.emptyTimeline.headline")}</Headline>
           <Description>{t("history.emptyTimeline.description")}</Description>
+          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: message is our own i18n text */}
           <Message dangerouslySetInnerHTML={{ __html: message }} />
         </div>
       </Row>

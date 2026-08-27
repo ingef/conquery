@@ -1,5 +1,5 @@
 import { Provider } from "react-redux";
-import { Store } from "redux";
+import type { Store } from "redux";
 
 import AppRouter from "./app/AppRouter";
 import type { StateT } from "./app/reducers";

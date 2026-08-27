@@ -1,7 +1,7 @@
 // This file specifies
 // - response type provided by the backend API
 // - partial types that the reponses are built from
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import type { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../previous-queries/list/reducer";
@@ -419,6 +419,7 @@ export interface GetQueryResponseDoneT {
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
   requiredTime: number; // In ms, unused at the moment
   containsDates: boolean;
+  previewAvailable: boolean; // Whether /queries/{id}/statistics can be requested (not the case for most forms)
 }
 
 export interface GetQueryRunningResponseT {

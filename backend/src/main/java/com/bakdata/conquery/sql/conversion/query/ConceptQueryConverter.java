@@ -7,14 +7,12 @@ import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.*;
+import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
-import org.jooq.Field;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.Select;
-import org.jooq.TableLike;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -83,24 +81,38 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 	}
 
 	private Selects getFinalSelects(ConceptQuery conceptQuery, Selects preFinalSelects, SqlFunctionProvider functionProvider) {
+		Selects finalSelects = preFinalSelects;
 		if (conceptQuery.getDateAggregationMode() == DateAggregationMode.NONE) {
-			return preFinalSelects.blockValidityDate();
+			finalSelects = preFinalSelects.blockValidityDate();
 		}
-		// In case all final selects have no validity-date, we convert it to infinity.
+
+// In case all final selects have no validity-date, we convert it to infinity.
 		if (preFinalSelects.getValidityDate().isEmpty()) {
 			return preFinalSelects.toBuilder()
 					.validityDate(Optional.of(functionProvider.emptyColumnDateRange()))
 					.build();
 		}
-		return preFinalSelects;
+		return Selects.builder()
+				.ids(finalSelects.getIds())
+				.validityDate(finalSelects.getValidityDate())
+				.stratificationDate(finalSelects.getStratificationDate())
+				.sqlSelects(getFinalAggregatedSelects(finalSelects, functionProvider))
+				.build();
+	}
+
+	private List<? extends FieldWrapper<?>> getFinalAggregatedSelects(Selects finalSelects, SqlFunctionProvider functionProvider) {
+		return finalSelects.getSqlSelects().stream()
+				.flatMap(sqlSelect -> sqlSelect.aggregateForFinalQuery(functionProvider).stream())
+				.map(this::toFieldWrapper)
+				.toList();
+	}
+
+	private FieldWrapper<?> toFieldWrapper(Field<?> field) {
+		return new FieldWrapper<>(field);
 	}
 
 	private List<Field<?>> getFinalGroupBySelects(Selects preFinalSelects) {
-		List<Field<?>> groupBySelects = new ArrayList<>();
-		groupBySelects.addAll(preFinalSelects.getIds().toFields());
-		// TODO instead us any_value selects
-		groupBySelects.addAll(preFinalSelects.explicitSelects());
-		return groupBySelects;
+		return preFinalSelects.getIds().toFields();
 	}
 
 }

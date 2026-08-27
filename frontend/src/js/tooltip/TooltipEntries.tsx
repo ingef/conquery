@@ -5,9 +5,8 @@ import {
   faMicroscope,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
+import type { HTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
-
-import { HTMLAttributes } from "react";
 import type { DateRangeT } from "../api/types";
 import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 import { formatDate, parseDate } from "../common/helpers/dateHelper";
@@ -16,7 +15,7 @@ import FaIcon from "../icon/FaIcon";
 
 const Root = styled("div")``;
 
-const Date = styled("p")`
+const DateText = styled("p")`
   margin: 0;
   padding-right: 8px;
   font-weight: 700;
@@ -44,7 +43,7 @@ const Info = styled("div")`
   flex-shrink: 0;
 `;
 
-const Number = styled("p")<{ zero?: boolean }>`
+const NumberText = styled("p")<{ zero?: boolean }>`
   font-weight: 700;
   margin: 0;
   font-size: ${({ theme }) => theme.font.lg};
@@ -89,14 +88,16 @@ const TooltipEntries = (props: Props) => {
   const dateFormat = "yyyy-MM-dd";
   const displayDateFormat = t("inputDateRange.dateFormat");
 
-  const parsedFromDate =
-    dateRange && dateRange.min ? parseDate(dateRange.min, dateFormat) : null;
+  const parsedFromDate = dateRange?.min
+    ? parseDate(dateRange.min, dateFormat)
+    : null;
   const fromDate = parsedFromDate
     ? formatDate(parsedFromDate, displayDateFormat)
     : "- - - - - - -";
 
-  const parsedToDate =
-    dateRange && dateRange.max ? parseDate(dateRange.max, dateFormat) : null;
+  const parsedToDate = dateRange?.max
+    ? parseDate(dateRange.max, dateFormat)
+    : null;
   const toDate = parsedToDate
     ? formatDate(parsedToDate, displayDateFormat)
     : "- - - - - - -";
@@ -107,14 +108,14 @@ const TooltipEntries = (props: Props) => {
         <>
           <StyledFaIcon icon={faMicroscope} />
           <Info>
-            <Date>{idLabel}</Date>
+            <DateText>{idLabel}</DateText>
             <Text zero={isZero}>{t("queryEditor.secondaryId")}</Text>
           </Info>
         </>
       )}
       <StyledFaIcon icon={faHashtag} />
       <Info>
-        <Number zero={isZero}>
+        <NumberText zero={isZero}>
           {exists(matchingEntries) ? (
             numberToThreeDigitArray(matchingEntries).map((threeDigits, i) => (
               <Digits key={i}>{threeDigits}</Digits>
@@ -122,7 +123,7 @@ const TooltipEntries = (props: Props) => {
           ) : (
             <Digits>-</Digits>
           )}
-        </Number>
+        </NumberText>
         <Text zero={isZero}>
           {t(
             "tooltip.entriesFound",
@@ -132,7 +133,7 @@ const TooltipEntries = (props: Props) => {
       </Info>
       <StyledFaIcon icon={faUser} />
       <Info>
-        <Number zero={isZeroEntities}>
+        <NumberText zero={isZeroEntities}>
           {exists(matchingEntities) ? (
             numberToThreeDigitArray(matchingEntities).map((threeDigits, i) => (
               <Digits key={i}>{threeDigits}</Digits>
@@ -140,7 +141,7 @@ const TooltipEntries = (props: Props) => {
           ) : (
             <Digits>-</Digits>
           )}
-        </Number>
+        </NumberText>
         <Text zero={isZeroEntities}>
           {t(
             "tooltip.entitiesFound",
@@ -150,14 +151,14 @@ const TooltipEntries = (props: Props) => {
       </Info>
       <StyledFaIcon icon={faArrowsLeftRightToLine} />
       <Info>
-        <Date>
+        <DateText>
           {fromDate}
           <Suffix>{`${t("tooltip.date.from")}`}</Suffix>
-        </Date>
-        <Date>
+        </DateText>
+        <DateText>
           {toDate}
           <Suffix>{`${t("tooltip.date.to")}`}</Suffix>
-        </Date>
+        </DateText>
       </Info>
     </Root>
   );

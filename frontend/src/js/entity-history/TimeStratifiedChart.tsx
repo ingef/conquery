@@ -4,9 +4,9 @@ import {
   BarElement,
   CategoryScale,
   Chart as ChartJS,
-  ChartOptions,
-  LineElement,
+  type ChartOptions,
   LinearScale,
+  LineElement,
   PointElement,
   Title,
   Tooltip,
@@ -14,7 +14,7 @@ import {
 import { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
 
-import { TimeStratifiedInfo } from "../api/types";
+import type { TimeStratifiedInfo } from "../api/types";
 import { exists } from "../common/helpers/exists";
 
 import { formatCurrency } from "./timeline/util/util";
@@ -47,7 +47,7 @@ export function hexToRgbA(hex: string) {
     if (c.length === 3) {
       c = [c[0], c[0], c[1], c[1], c[2], c[2]];
     }
-    c = "0x" + c.join("");
+    c = `0x${c.join("")}`;
     // @ts-ignore TODO: clarify why this works / use a different / typed algorithm
     return [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(",");
   }
@@ -137,10 +137,10 @@ export const TimeStratifiedChart = ({
           ticks: {
             callback: (idx: string | number) => {
               return labels[idx as number].length > TRUNCATE_X_AXIS_LABELS_LEN
-                ? labels[idx as number].substring(
+                ? `${labels[idx as number].substring(
                     0,
                     TRUNCATE_X_AXIS_LABELS_LEN - 3,
-                  ) + "..."
+                  )}...`
                 : labels[idx as number];
             },
           },

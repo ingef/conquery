@@ -1,16 +1,14 @@
 import { useCallback, useContext, useEffect, useRef } from "react";
-
-import { EditorV2Query } from "../editor-v2/types";
-import { EntityId } from "../entity-history/reducer";
+import { AuthTokenContext } from "../authorization/AuthTokenProvider";
+import type { EditorV2Query } from "../editor-v2/types";
+import type { EntityId } from "../entity-history/reducer";
 import { apiUrl } from "../environment";
 import type {
   FormConfigT,
   PreviousQueryT,
 } from "../previous-queries/list/reducer";
 import type { QueryToUploadT } from "../previous-queries/upload/CSVColumnPicker";
-import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
-
-import { AuthTokenContext } from "../authorization/AuthTokenProvider";
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { transformQueryToApi } from "./apiHelper";
 import type {
   ConceptIdT,
@@ -277,7 +275,7 @@ export const useGetMe = () => {
 
 export const usePostLogin = () => {
   const api = useApiUnauthorized<PostLoginResponseT>({
-    url: apiUrl + "/auth",
+    url: `${apiUrl}/auth`,
     method: "POST",
   });
 
@@ -413,20 +411,17 @@ export const useGetResult = () => {
     },
     [authToken],
   );
-  return useCallback(
-    (queryId: string, limit: number) => {
-      const url =
-        `/result/arrow/${queryId}.arrs?` +
-        new URLSearchParams({ limit: limit.toString() });
-      const res = fetch(getProtectedUrl(url), {
-        headers: {
-          Authorization: `Bearer ${authTokenRef.current}`,
-        },
-      });
-      return res;
-    },
-    [authTokenRef],
-  );
+  return useCallback((queryId: string, limit: number) => {
+    const url =
+      `/result/arrow/${queryId}.arrs?` +
+      new URLSearchParams({ limit: limit.toString() });
+    const res = fetch(getProtectedUrl(url), {
+      headers: {
+        Authorization: `Bearer ${authTokenRef.current}`,
+      },
+    });
+    return res;
+  }, []);
 };
 
 export const usePreviewStatistics = () => {

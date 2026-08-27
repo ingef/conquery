@@ -1,4 +1,4 @@
-import { ActionType, createAction } from "typesafe-actions";
+import { type ActionType, createAction } from "typesafe-actions";
 
 export type PaneActions = ActionType<typeof clickPaneTab>;
 

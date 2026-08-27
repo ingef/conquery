@@ -1,6 +1,12 @@
 import styled from "@emotion/styled";
 import { faFile, faPaste } from "@fortawesome/free-solid-svg-icons";
-import { ChangeEvent, MouseEvent, useEffect, useRef, useState } from "react";
+import {
+  type ChangeEvent,
+  type MouseEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
@@ -10,7 +16,9 @@ import PrimaryButton from "../button/PrimaryButton";
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
 import Modal from "../modal/Modal";
 
-import DropzoneWithFileInput, { DragItemFile } from "./DropzoneWithFileInput";
+import DropzoneWithFileInput, {
+  type DragItemFile,
+} from "./DropzoneWithFileInput";
 
 const Content = styled("div")`
   display: flex;
@@ -155,6 +163,7 @@ export const ImportModal = ({
     >
       <Content>
         {description && (
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: description is our own i18n text
           <Subtitle dangerouslySetInnerHTML={{ __html: description }} />
         )}
         <DropzoneWithFileInput

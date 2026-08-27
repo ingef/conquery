@@ -3,7 +3,7 @@ import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 
 import { exists } from "../common/helpers/exists";
-import { DragItemConceptTreeNode } from "../standard-query-editor/types";
+import type { DragItemConceptTreeNode } from "../standard-query-editor/types";
 
 const Bold = styled("span")`
   font-weight: 400;
@@ -48,8 +48,7 @@ export const TreeNodeConcept = ({
 
   const filtersWithValues = node.tables.flatMap((t) =>
     t.filters.filter(
-      (f) =>
-        exists(f.value) && (!(f.value instanceof Array) || f.value.length > 0),
+      (f) => exists(f.value) && (!Array.isArray(f.value) || f.value.length > 0),
     ),
   );
 
@@ -74,7 +73,7 @@ export const TreeNodeConcept = ({
             <div>
               <SectionHeading>{t("editorV2.filtersSection")}</SectionHeading>
               {filtersWithValues.map((f) => (
-                <Description>
+                <Description key={f.label}>
                   <Bold>{f.label}:</Bold>
                   <Value value={f.value} />
                 </Description>
@@ -103,7 +102,7 @@ const Value = ({
     );
   } else if (typeof value === "boolean") {
     return <span>{value ? "✔" : "✗"}</span>;
-  } else if (value instanceof Array) {
+  } else if (Array.isArray(value)) {
     return (
       <>
         {value.slice(0, 10).map((v, idx) => (

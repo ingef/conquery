@@ -90,8 +90,8 @@ const InputRange = ({
 
   const inputProps = {
     step: stepSize || null,
-    min: (limits && limits.min) || null,
-    max: (limits && limits.max) || null,
+    min: limits?.min || null,
+    max: limits?.max || null,
     pattern: pattern,
   };
 
@@ -102,28 +102,23 @@ const InputRange = ({
     const nextValue = exists(newValue) ? newValue : null;
 
     if (type === "exact") {
-      if (nextValue === null) {
-        onChange(null);
-      } else {
-        onChange({ exact: nextValue });
-      }
-    } else if (type === "min" || type === "max") {
-      if (
-        nextValue === null &&
-        ((value && value.min === null && type === "max") ||
-          (value && value.max === null && type === "min"))
-      ) {
-        onChange(null);
-      } else {
-        onChange({
-          min: value ? value.min : null,
-          max: value ? value.max : null,
-          [type]: nextValue,
-        });
-      }
-    } else {
-      onChange(null);
+      onChange(nextValue === null ? null : { exact: nextValue });
+      return;
     }
+
+    // Clearing the one bound that was still set clears the whole range
+    const otherBoundIsEmpty =
+      !!value && (type === "max" ? value.min === null : value.max === null);
+    if (nextValue === null && otherBoundIsEmpty) {
+      onChange(null);
+      return;
+    }
+
+    onChange({
+      min: value ? value.min : null,
+      max: value ? value.max : null,
+      [type]: nextValue,
+    });
   };
 
   return (

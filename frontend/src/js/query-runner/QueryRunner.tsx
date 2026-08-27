@@ -58,13 +58,9 @@ const QueryRunner = ({
 
   const progress = queryRunner?.progress;
 
-  useHotkeys(
-    "shift+enter",
-    () => {
-      if (!disabled) btnAction();
-    },
-    [disabled, btnAction],
-  );
+  useHotkeys("shift+enter", () => {
+    if (!disabled) btnAction();
+  }, [disabled, btnAction]);
 
   return (
     <Root data-test-id="query-runner">
@@ -97,6 +93,7 @@ const QueryRunner = ({
               resultUrls={queryRunner.queryResult.resultUrls}
               resultColumns={queryRunner.queryResult.resultColumns}
               queryType={queryRunner.queryResult.queryType}
+              previewAvailable={queryRunner.queryResult.previewAvailable}
             />
           )}
       </Right>

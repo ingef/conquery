@@ -7,7 +7,7 @@ import { mergeRefs } from "react-merge-refs";
 
 import IconButton from "../../button/IconButton";
 import { formatDate, parseDate } from "../../common/helpers/dateHelper";
-import BaseInput, { Props as BaseInputProps } from "../BaseInput";
+import BaseInput, { type Props as BaseInputProps } from "../BaseInput";
 
 import { CustomHeader } from "./CustomHeader";
 
@@ -95,7 +95,7 @@ const InputDate = forwardRef<ReactDatePicker, Props>(
         <ReactDatePicker
           ref={mergeRefs([datePickerRef, ref])}
           selected={value ? parseDate(value, dateFormat) : new Date()}
-          onChange={(val) => {
+          onChange={(val: Date | null) => {
             if (!val) {
               return;
             }
@@ -110,16 +110,6 @@ const InputDate = forwardRef<ReactDatePicker, Props>(
           customInput={createElement(HiddenInput)}
           calendarContainer={StyledCalendar}
           calendarStartDay={1}
-          popperProps={{
-            modifiers: [
-              {
-                name: "preventOverflow",
-                options: {
-                  mainAxis: false,
-                },
-              },
-            ],
-          }}
         />
       </Root>
     );

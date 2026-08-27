@@ -1,11 +1,11 @@
 import styled from "@emotion/styled";
 import { memo } from "react";
-import { UseFormReturn } from "react-hook-form";
+import type { UseFormReturn } from "react-hook-form";
 
 import type { SelectOptionT } from "../../api/types";
 import { useActiveLang } from "../../localization/useActiveLang";
-import FormHeader from "../FormHeader";
 import type { Form as FormType } from "../config-types";
+import FormHeader from "../FormHeader";
 import { getFieldKey, getH1Index } from "../helper";
 
 import Field from "./Field";
@@ -29,7 +29,7 @@ const Form = memo(({ config, datasetOptions, methods }: Props) => {
 
   return (
     <div className="w-full flex flex-col gap-2">
-      {config.description && config.description[activeLang] && (
+      {config.description?.[activeLang] && (
         <SxFormHeader
           description={config.description[activeLang]!}
           manualUrl={config.manualUrl}

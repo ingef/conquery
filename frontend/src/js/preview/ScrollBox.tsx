@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
 import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import {
-  HTMLAttributes,
-  PropsWithChildren,
+  type HTMLAttributes,
+  type PropsWithChildren,
   useEffect,
   useRef,
   useState,
@@ -46,7 +46,7 @@ export default function ScrollBox({
       passive: true,
     });
     return () => scrollBox?.removeEventListener("scroll", scrollHandler);
-  }, [scrollBoxRef, threshold]);
+  }, [threshold]);
 
   return (
     <Root ref={scrollBoxRef} {...props}>

@@ -1,9 +1,12 @@
-import startOfYear from "date-fns/startOfYear";
-import subYears from "date-fns/subYears";
+import { startOfYear, subYears } from "date-fns";
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
+import {
+  type ActionType,
+  createAction,
+  createAsyncAction,
+} from "typesafe-actions";
 
 import {
   useGetEntityHistory,
@@ -19,7 +22,10 @@ import type {
 } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
-import { ErrorObject, errorPayload } from "../common/actions/genericActions";
+import {
+  type ErrorObject,
+  errorPayload,
+} from "../common/actions/genericActions";
 import {
   formatStdDate,
   getFirstAndLastDateOfRange,
@@ -29,7 +35,7 @@ import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
 import { setMessage } from "../snack-message/actions";
 
-import { EntityEvent, EntityId } from "./reducer";
+import type { EntityEvent, EntityId } from "./reducer";
 import { isDateColumn, isSourceColumn } from "./timeline/util/util";
 
 export type EntityHistoryActions = ActionType<
@@ -214,7 +220,7 @@ export function useUpdateHistorySession() {
   const getAuthorizedUrl = useGetAuthorizedUrl();
   const { t } = useTranslation();
 
-  const loadingIdTimeout = useRef<NodeJS.Timeout>();
+  const loadingIdTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const [loadingId, setLoadingId] = useState<string>();
 
   const defaultEntityHistoryParams = useSelector<

@@ -1,14 +1,14 @@
 import styled from "@emotion/styled";
-import { ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import { exists } from "../../../common/helpers/exists";
 import { nodeIsInvalid } from "../../../model/node";
 import ToggleButton from "../../../ui-components/ToggleButton";
-import { ConceptListField as ConceptListFieldT } from "../../config-types";
+import type { ConceptListField as ConceptListFieldT } from "../../config-types";
 import FormConceptGroup from "../../form-concept-group/FormConceptGroup";
-import { FormConceptGroupT } from "../../form-concept-group/formConceptGroupState";
+import type { FormConceptGroupT } from "../../form-concept-group/formConceptGroupState";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
-import Field from "../Field";
+import type Field from "../Field";
 
 const SxToggleButton = styled(ToggleButton)`
   margin-bottom: 5px;

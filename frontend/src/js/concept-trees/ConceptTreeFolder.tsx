@@ -123,12 +123,10 @@ const ConceptTreeFolder = ({
         search={search}
       />
       {isOpen &&
-        tree.children &&
-        tree.children.map((childId) => {
+        tree.children?.map((childId) => {
           const tree = trees[childId];
 
           const treeProps = {
-            key: childId,
             conceptId: childId as ConceptIdT,
             depth: depth + 1,
             search,
@@ -140,6 +138,7 @@ const ConceptTreeFolder = ({
 
             return (
               <ConceptTree
+                key={childId}
                 label={tree.label}
                 error={tree.error}
                 loading={tree.loading}
@@ -155,7 +154,13 @@ const ConceptTreeFolder = ({
               active: tree.active,
             };
 
-            return <ConceptTreeFolder {...treeFolderProps} {...treeProps} />;
+            return (
+              <ConceptTreeFolder
+                key={childId}
+                {...treeFolderProps}
+                {...treeProps}
+              />
+            );
           }
         })}
     </Root>

@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 
-import { DateRangeT } from "../../api/types";
+import type { DateRangeT } from "../../api/types";
 import { formatDate } from "../../common/helpers/dateHelper";
 
 const Root = styled("div")`
@@ -24,7 +24,7 @@ const getFormattedDate = (date: string | undefined, dateFormat: string) => {
 
   const d = new Date(date);
 
-  if (isNaN(d.getTime())) return null;
+  if (Number.isNaN(d.getTime())) return null;
 
   return formatDate(d, dateFormat);
 };

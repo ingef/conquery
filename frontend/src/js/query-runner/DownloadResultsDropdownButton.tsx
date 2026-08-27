@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { faCaretDown, faDownload } from "@fortawesome/free-solid-svg-icons";
 import { memo, useEffect, useMemo, useState } from "react";
 
-import { ResultUrlWithLabel } from "../api/types";
+import type { ResultUrlWithLabel } from "../api/types";
 import DownloadButton from "../button/DownloadButton";
 import IconButton from "../button/IconButton";
 import WithTooltip from "../tooltip/WithTooltip";

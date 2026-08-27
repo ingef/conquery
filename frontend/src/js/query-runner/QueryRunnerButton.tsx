@@ -42,7 +42,7 @@ const StyledBasicButton = styled(BasicButton)`
   flex-direction: row;
   align-items: center;
   &:hover {
-    ${Label} {
+    .query-runner-label {
       background-color: ${({ theme }) => theme.col.grayVeryLight};
     }
   }
@@ -80,7 +80,7 @@ const QueryRunnerButton = forwardRef<HTMLDivElement, Props>(
           <Left running={isQueryRunning}>
             <FaIcon white={!isQueryRunning} icon={icon} />
           </Left>
-          <Label>{label}</Label>
+          <Label className="query-runner-label">{label}</Label>
         </StyledBasicButton>
       </Root>
     );

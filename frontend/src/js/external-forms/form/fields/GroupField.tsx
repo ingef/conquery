@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
-import { ComponentProps } from "react";
-import { Group } from "../../config-types";
+import type { ComponentProps } from "react";
+import type { Group } from "../../config-types";
 import { Description } from "../../form-components/Description";
 import { Headline } from "../../form-components/Headline";
 import { getFieldKey } from "../../helper";
@@ -27,7 +27,7 @@ export const GroupField = ({
       )}
       <GroupContainer
         style={{
-          display: (field.style && field.style.display) || "flex",
+          display: field.style?.display || "flex",
           gap: field.style?.display === "grid" ? "7px 12px" : "7px 8px",
           gridTemplateColumns: `repeat(${field.style?.gridColumns || 1}, 1fr)`,
         }}

@@ -1,10 +1,15 @@
 import styled from "@emotion/styled";
-import { ForwardedRef, forwardRef, ReactNode } from "react";
-import { DropTargetMonitor, useDrop } from "react-dnd";
+import {
+  type ForwardedRef,
+  forwardRef,
+  type ReactElement,
+  type ReactNode,
+} from "react";
+import { type DropTargetMonitor, useDrop } from "react-dnd";
 
 import { DNDType } from "../common/constants/dndTypes";
 import { exists } from "../common/helpers/exists";
-import { DragItemFormConfig } from "../external-forms/types";
+import type { DragItemFormConfig } from "../external-forms/types";
 import type {
   DragItemConceptTreeNode,
   DragItemQuery,
@@ -153,12 +158,11 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>(
       transparent={transparent}
       bare={bare}
     >
-      {children &&
-        children({
-          isOver,
-          canDrop: canDropResult,
-          item: item as DroppableObject, // Casting because see comment above
-        })}
+      {children?.({
+        isOver,
+        canDrop: canDropResult,
+        item: item as DroppableObject, // Casting because see comment above
+      })}
     </Root>
   );
 };
@@ -169,4 +173,4 @@ export default forwardRef(Dropzone) as <
   props: DropzoneProps<DroppableObject> & {
     ref?: ForwardedRef<HTMLDivElement>;
   },
-) => JSX.Element;
+) => ReactElement;

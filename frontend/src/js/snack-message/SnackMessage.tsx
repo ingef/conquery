@@ -1,14 +1,12 @@
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { memo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
+import tw from "tailwind-styled-components";
 import type { StateT } from "../app/reducers";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import FaIcon from "../icon/FaIcon";
-
-import tw from "tailwind-styled-components";
 import { resetMessage as resetMessageAction } from "./actions";
-import { SnackMessageStateT } from "./reducer";
+import type { SnackMessageStateT } from "./reducer";
 
 const Root = tw("div")<{ $success?: boolean }>`
   fixed
@@ -19,8 +17,7 @@ const Root = tw("div")<{ $success?: boolean }>`
   flex items-start
   max-w-[500px]
   rounded-lg
-  ${({ $success }) =>
-    $success ? "bg-primary-500 bg-opacity-90" : "bg-black bg-opacity-75"}
+  ${({ $success }) => ($success ? "bg-primary-500/90" : "bg-black/75")}
 `;
 
 const ClearZone = tw("div")`
@@ -49,6 +46,7 @@ export const SnackMessage = memo(function SnackMessageComponent() {
       {message && (
         <Root $success={type === "success"}>
           <div className="relative py-3 pr-10 pl-5">
+            {/* biome-ignore lint/security/noDangerouslySetInnerHtml: messages are our own i18n text */}
             <div dangerouslySetInnerHTML={{ __html: message }} />
             <ClearZone onClick={resetMessage}>
               <FaIcon white large icon={faTimes} />

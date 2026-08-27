@@ -10,14 +10,10 @@ import type { NodeResetConfig } from "./node";
 export function objectHasNonDefaultSelects(
   obj: ConceptQueryNodeType | TableWithFilterValueT,
 ) {
-  return (
-    obj &&
-    obj.selects &&
-    obj.selects.some(
-      (select) =>
-        (select.selected && !select.default) ||
-        (!select.selected && !!select.default),
-    )
+  return obj?.selects?.some(
+    (select) =>
+      (select.selected && !select.default) ||
+      (!select.selected && !!select.default),
   );
 }
 
@@ -34,8 +30,8 @@ function selectTypesMatch(
   if (
     resultType1.type === "LIST" &&
     resultType2.type === "LIST" &&
-    !!resultType1.elementType &&
-    !!resultType2.elementType
+    resultType1.elementType &&
+    resultType2.elementType
   ) {
     return resultType1.elementType.type === resultType2.elementType.type;
   }

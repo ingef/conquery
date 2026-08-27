@@ -14,7 +14,7 @@ import type {
   SelectorT,
   TableT,
 } from "../api/types";
-import { DNDType } from "../common/constants/dndTypes";
+import type { DNDType } from "../common/constants/dndTypes";
 
 export type RangeFilterWithValueType = RangeFilterT;
 
@@ -95,7 +95,7 @@ export interface PreviousQueryQueryNodeType {
   canExpand?: boolean;
   secondaryId?: string | null;
   availableSecondaryIds?: string[];
-  files?: void;
+  files?: undefined;
 
   own?: boolean;
   shared?: boolean;

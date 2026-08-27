@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
@@ -9,7 +9,7 @@ import Modal from "../../modal/Modal";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 import DropzoneWithFileInput from "../../ui-components/DropzoneWithFileInput";
 
-import CSVColumnPicker, { QueryToUploadT } from "./CSVColumnPicker";
+import CSVColumnPicker, { type QueryToUploadT } from "./CSVColumnPicker";
 
 const Root = styled("div")``;
 

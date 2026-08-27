@@ -5,26 +5,24 @@ import {
   faInfo,
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
-import { NumericFormat } from "react-number-format";
-
+import { type InputAttributes, NumericFormat } from "react-number-format";
 import type {
   ColumnDescription,
   ConceptIdT,
   CurrencyConfigT,
 } from "../../api/types";
+import { Highlighter } from "../../common/components/Highlighter";
 import { exists } from "../../common/helpers/exists";
 import FaIcon from "../../icon/FaIcon";
 import WithTooltip from "../../tooltip/WithTooltip";
 import type { ContentFilterValue } from "../ContentControl";
 import { RowDates } from "../RowDates";
 import type { DateRow, EntityEvent } from "../reducer";
-
-import Highlighter from "react-highlight-words";
 import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 import GroupedContent from "./GroupedContent";
 import { RawDataBadge } from "./RawDataBadge";
 import { TinyLabel } from "./TinyLabel";
-import { ColumnBuckets } from "./util/useColumnInformation";
+import type { ColumnBuckets } from "./util/useColumnInformation";
 import { isDateColumn, isSourceColumn } from "./util/util";
 
 const Card = styled("div")`
@@ -157,9 +155,11 @@ const EventCard = ({
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
                   <code>
-                    <NumericFormat
-                      {...currencyConfig}
-                      suffix={" " + currencyConfig.unit}
+                    <NumericFormat<InputAttributes>
+                      thousandSeparator={currencyConfig.thousandSeparator}
+                      decimalSeparator={currencyConfig.decimalSeparator}
+                      decimalScale={currencyConfig.decimalScale}
+                      suffix={` ${currencyConfig.unit}`}
                       displayType="text"
                       value={parseFloat(row[column.label] as string)}
                     />

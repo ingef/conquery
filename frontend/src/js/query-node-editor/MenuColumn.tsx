@@ -1,11 +1,11 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ConceptIdT } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { Heading3 } from "../headings/Headings";
-import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
+import { type NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
 import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
@@ -87,9 +87,7 @@ const MenuColumn: FC<PropsT> = ({
   const isEmpty =
     !nodeIsConceptQueryNode(node) ||
     (!showTables &&
-      (!rootConcept ||
-        !rootConcept.children ||
-        rootConcept.children.length === 0));
+      (!rootConcept?.children || rootConcept.children.length === 0));
 
   return (
     <FixedColumn className={className} isEmpty={isEmpty}>
@@ -126,8 +124,7 @@ const MenuColumn: FC<PropsT> = ({
         </>
       )}
       {nodeIsConceptQueryNode(node) &&
-        rootConcept &&
-        rootConcept.children &&
+        rootConcept?.children &&
         rootConcept.children.length > 0 && (
           <AdditionalConceptNodeChildren
             node={node}

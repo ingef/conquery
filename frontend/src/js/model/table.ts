@@ -5,8 +5,8 @@ import type { TableWithFilterValueT } from "../standard-query-editor/types";
 
 import {
   filterIsEmpty,
-  filterValueDiffersFromDefault,
   filtersHaveValues,
+  filterValueDiffersFromDefault,
   resetFilters,
 } from "./filter";
 import type { NodeResetConfig } from "./node";
@@ -40,8 +40,7 @@ export const tablesHaveFilterValues = (tables: TableWithFilterValueT[]) =>
 export const tableHasNonDefaultSettings = (table: TableWithFilterValueT) => {
   const activeSelects = objectHasNonDefaultSelects(table);
   const activeDateColumn = tableHasNonDefaultDateColumn(table);
-  const activeFilters =
-    table.filters && table.filters.some(filterValueDiffersFromDefault);
+  const activeFilters = table.filters?.some(filterValueDiffersFromDefault);
 
   return activeSelects || activeDateColumn || activeFilters;
 };
@@ -79,7 +78,7 @@ const tableWithDefaultDateColumn = (
   return {
     ...table,
     dateColumn:
-      !!table.dateColumn && table.dateColumn.options.length > 0
+      table.dateColumn && table.dateColumn.options.length > 0
         ? {
             ...table.dateColumn,
             value: table.dateColumn.options[0].value as string,

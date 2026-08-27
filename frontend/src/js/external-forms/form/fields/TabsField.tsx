@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
-import { ComponentProps } from "react";
-import { Tabs } from "../../config-types";
+import type { ComponentProps } from "react";
+import type { Tabs } from "../../config-types";
 import FormTabNavigation from "../../form-tab-navigation/FormTabNavigation";
 import { getFieldKey } from "../../helper";
 import { ConnectedField, setValueConfig } from "../ConnectedField";

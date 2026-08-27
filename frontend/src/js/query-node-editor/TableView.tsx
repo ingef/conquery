@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC, memo, useCallback } from "react";
+import { type FC, memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";

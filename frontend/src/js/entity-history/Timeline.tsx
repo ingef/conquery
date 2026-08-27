@@ -2,19 +2,23 @@ import styled from "@emotion/styled";
 import { Fragment, memo } from "react";
 import { useSelector } from "react-redux";
 
-import { CurrencyConfigT, EntityInfo, TimeStratifiedInfo } from "../api/types";
+import type {
+  CurrencyConfigT,
+  EntityInfo,
+  TimeStratifiedInfo,
+} from "../api/types";
 import type { StateT } from "../app/reducers";
 
-import { ContentFilterValue } from "./ContentControl";
+import type { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
 import { EntityCard } from "./EntityCard";
 import type { EntityHistoryStateT } from "./reducer";
-import { TimelineSearch } from "./timeline-search/TimelineSearch";
-import { useTimelineSearch } from "./timeline-search/timelineSearchState";
 import { TimelineEmptyPlaceholder } from "./timeline/TimelineEmptyPlaceholder";
-import Year from "./timeline/Year";
 import { useColumnInformation } from "./timeline/util/useColumnInformation";
 import { useTimeBucketedSortedData } from "./timeline/util/useTimeBucketedSortedData";
+import Year from "./timeline/Year";
+import { TimelineSearch } from "./timeline-search/TimelineSearch";
+import { useTimelineSearch } from "./timeline-search/timelineSearchState";
 
 const Root = styled("div")<{ isEmpty?: boolean }>`
   overflow-y: auto;

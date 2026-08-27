@@ -5,10 +5,9 @@ import { useTranslation } from "react-i18next";
 import IconButton from "../../button/IconButton";
 import { ConfirmableTooltip } from "../../tooltip/ConfirmableTooltip";
 import WithTooltip from "../../tooltip/WithTooltip";
-
-import { ProjectItemT } from "./ProjectItem";
 import { useRemoveFormConfig, useRemoveQuery } from "./actions";
 import { isFormConfig } from "./helpers";
+import type { ProjectItemT } from "./ProjectItem";
 
 export const DeleteProjectItemButton = ({ item }: { item: ProjectItemT }) => {
   const { t } = useTranslation();

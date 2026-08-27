@@ -9,10 +9,10 @@ import {
   getConceptById,
   getConceptsByIdsWithTablesAndSelects,
 } from "../../concept-trees/globalTreeStoreHelper";
-import { TreesT } from "../../concept-trees/reducer";
+import type { TreesT } from "../../concept-trees/reducer";
 import { mergeFilterOptions } from "../../model/filter";
-import { NodeResetConfig } from "../../model/node";
-import { SelectConfig, resetSelects } from "../../model/select";
+import type { NodeResetConfig } from "../../model/node";
+import { resetSelects, type SelectConfig } from "../../model/select";
 import { resetTables, tableWithDefaults } from "../../model/table";
 import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type {
@@ -188,7 +188,7 @@ export const onToggleIncludeSubnodes = (
 
   const conceptData = getConceptById(concept.ids[0]);
 
-  if (!conceptData || !conceptData.children) return value;
+  if (!conceptData?.children) return value;
 
   const childIds: string[] = [];
   const elements: FormConceptGroupT[] = conceptData.children

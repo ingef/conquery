@@ -9,7 +9,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
-import { ConceptElementT, ConceptT } from "../api/types";
+import type { ConceptElementT, ConceptT } from "../api/types";
 import { DNDType } from "../common/constants/dndTypes";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import type {
@@ -17,9 +17,9 @@ import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-import { PossibleDroppableObject } from "../ui-components/Dropzone";
+import type { PossibleDroppableObject } from "../ui-components/Dropzone";
 
-import { SelectConfig, objectHasNonDefaultSelects } from "./select";
+import { objectHasNonDefaultSelects, type SelectConfig } from "./select";
 import {
   tablesHaveEmptySettings,
   tablesHaveFilterValues,

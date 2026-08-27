@@ -3,16 +3,14 @@ import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
-
-import IconButton from "../button/IconButton";
-
 import tw from "tailwind-styled-components";
+import IconButton from "../button/IconButton";
 import { toggleDisplayTooltip } from "./actions";
 
 const Header = tw("h2")`
   bg-white
   h-[40px]
-  flex-shrink-0
+  shrink-0
   flex items-center
   px-5
   pt-1

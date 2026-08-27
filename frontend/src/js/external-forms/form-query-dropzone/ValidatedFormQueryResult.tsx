@@ -37,7 +37,7 @@ const ValidatedFormQueryResult = ({
           try {
             await getQuery(queryResult.id);
             setLocalError(false);
-          } catch (e) {
+          } catch {
             setLocalError(true);
             onInvalid(t("previousQuery.loadError"));
           }

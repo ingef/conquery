@@ -1,6 +1,6 @@
 import type { ConceptIdT, ConceptT, GetConceptResponseT } from "../api/types";
 import { exists } from "../common/helpers/exists";
-import { NodeResetConfig, nodeIsElement } from "../model/node";
+import { type NodeResetConfig, nodeIsElement } from "../model/node";
 import { resetSelects } from "../model/select";
 import { resetTables } from "../model/table";
 import type {
@@ -188,16 +188,17 @@ export const globalSearch = async (trees: TreesT, query: string) => {
   const result = Object.keys(combinedTrees)
     .filter((key) => !combinedTrees[key].parent)
     .reduce<Record<ConceptIdT, number>>(
-      (all, key) => ({
-        ...all,
-        ...findConcepts(
-          combinedTrees,
-          key,
-          key,
-          combinedTrees[key][key],
-          lowerQuery,
+      (all, key) =>
+        Object.assign(
+          all,
+          findConcepts(
+            combinedTrees,
+            key,
+            key,
+            combinedTrees[key][key],
+            lowerQuery,
+          ),
         ),
-      }),
       {},
     );
 

@@ -1,20 +1,19 @@
 import styled from "@emotion/styled";
 import { memo } from "react";
 
-import {
+import type {
   ColumnDescription,
   ConceptIdT,
   CurrencyConfigT,
   TimeStratifiedInfo,
 } from "../../api/types";
-import { ContentFilterValue } from "../ContentControl";
-import { DetailLevel } from "../DetailControl";
-import { ColumnBuckets } from "./util/useColumnInformation";
-
+import type { ContentFilterValue } from "../ContentControl";
+import type { DetailLevel } from "../DetailControl";
 import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 import { Quarter } from "./Quarter";
+import type { EventsByQuarterWithGroups } from "./util/findEventGroups";
+import type { ColumnBuckets } from "./util/useColumnInformation";
 import YearHead from "./YearHead";
-import { EventsByQuarterWithGroups } from "./util/findEventGroups";
 
 const YearGroup = styled("div")`
   display: flex;

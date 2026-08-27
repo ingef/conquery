@@ -1,8 +1,8 @@
-import { ComponentProps } from "react";
+import type { ComponentProps } from "react";
 import { InputTextarea } from "../../../ui-components/InputTextarea/InputTextarea";
-import { TextareaField } from "../../config-types";
+import type { TextareaField } from "../../config-types";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
-import Field from "../Field";
+import type Field from "../Field";
 
 export const TextAreaField = ({
   field,
@@ -23,7 +23,7 @@ export const TextAreaField = ({
         <InputTextarea
           ref={ref}
           label={field.label[locale] || ""}
-          placeholder={(field.placeholder && field.placeholder[locale]) || ""}
+          placeholder={field.placeholder?.[locale] || ""}
           rows={field.style?.rows ?? 4}
           value={fieldProps.value as string}
           onChange={(value) => {

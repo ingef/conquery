@@ -10,14 +10,15 @@ import {
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import { parseISO } from "date-fns";
+import type { TFunction } from "i18next";
 import { forwardRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-
-import type { SecondaryId } from "../../api/types";
+import type { ResultUrlWithLabel, SecondaryId } from "../../api/types";
 import type { StateT } from "../../app/reducers";
 import DownloadButton from "../../button/DownloadButton";
 import IconButton from "../../button/IconButton";
+import { Highlighter } from "../../common/components/Highlighter";
 import { formatDate } from "../../common/helpers/dateHelper";
 import { exists } from "../../common/helpers/exists";
 import { useFormLabelByType } from "../../external-forms/stateSelectors";
@@ -25,12 +26,10 @@ import FaIcon from "../../icon/FaIcon";
 import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
 import WithTooltip from "../../tooltip/WithTooltip";
-
-import Highlighter from "react-highlight-words";
-import { DeleteProjectItemButton } from "./DeleteProjectItemButton";
-import ProjectItemLabel from "./ProjectItemLabel";
 import { useUpdateFormConfig, useUpdateQuery } from "./actions";
+import { DeleteProjectItemButton } from "./DeleteProjectItemButton";
 import { isFormConfig } from "./helpers";
+import ProjectItemLabel from "./ProjectItemLabel";
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 
 export type ProjectItemT = PreviousQueryT | FormConfigT;
@@ -142,6 +141,125 @@ const FoldersButton = styled(IconButton)`
   margin-right: 10px;
 `;
 
+const getTopLeftLabel = (
+  item: ProjectItemT,
+  formLabel: string | null | undefined,
+  t: TFunction,
+) => {
+  if (isFormConfig(item)) return formLabel!;
+  if (exists(item.numberOfResults)) {
+    return `${item.numberOfResults} ${t("previousQueries.results")}`;
+  }
+  return t("previousQuery.notExecuted");
+};
+
+const HighlightedText = ({
+  text,
+  highlightedWords,
+}: {
+  text: string;
+  highlightedWords: string[];
+}) =>
+  highlightedWords.length > 0 ? (
+    <Highlighter searchWords={highlightedWords} textToHighlight={text} />
+  ) : (
+    text
+  );
+
+const FoldersTooltip = ({ folders }: { folders: string[] }) => {
+  const { t } = useTranslation();
+  return (
+    <TooltipText>
+      {t("previousQuery.editFolders")}
+      {folders.length > 0 && (
+        <ActiveFolders>
+          {folders.map((f) => (
+            <li key={f}>{f}</li>
+          ))}
+        </ActiveFolders>
+      )}
+    </TooltipText>
+  );
+};
+
+const ShareButton = ({
+  isShared,
+  onClick,
+}: {
+  isShared: boolean;
+  onClick: () => void;
+}) => {
+  const { t } = useTranslation();
+  return (
+    <WithTooltip
+      html={
+        <TooltipText>
+          {isShared ? t("common.shared") : t("common.share")}
+        </TooltipText>
+      }
+    >
+      <IconButton
+        icon={isShared ? faUser : faUserRegular}
+        bare
+        title="share"
+        data-test-id="share"
+        onClick={onClick}
+      />
+    </WithTooltip>
+  );
+};
+
+const useRenameProjectItem = (item: ProjectItemT) => {
+  const { t } = useTranslation();
+  const { updateQuery } = useUpdateQuery();
+  const { updateFormConfig } = useUpdateFormConfig();
+
+  return (label: string) => {
+    if (isFormConfig(item)) {
+      updateFormConfig(item.id, { label }, t("formConfig.renameError"));
+    } else {
+      updateQuery(item.id, { label }, t("previousQuery.renameError"));
+    }
+  };
+};
+
+const ResultsLabel = ({
+  label,
+  resultUrl,
+}: {
+  label: string;
+  resultUrl: ResultUrlWithLabel | null;
+}) => {
+  const { t } = useTranslation();
+  if (!resultUrl) return <NonBreakingText>{label}</NonBreakingText>;
+  return (
+    <WithTooltip text={t("previousQuery.downloadResults")}>
+      <SxDownloadButton tight small bare simpleIcon resultUrl={resultUrl}>
+        {label}
+      </SxDownloadButton>
+    </WithTooltip>
+  );
+};
+
+const deriveFlags = (item: ProjectItemT, loadedSecondaryIds: SecondaryId[]) => {
+  const isForm = isFormConfig(item);
+  const isShared = item.shared || (item.groups && item.groups.length > 0);
+  const secondaryId =
+    !isForm && item.secondaryId && item.queryType === "SECONDARY_ID_QUERY"
+      ? loadedSecondaryIds.find((secId) => item.secondaryId === secId.id)
+      : null;
+
+  return {
+    isShared,
+    isSystem: !!item.system || (!item.own && !isShared),
+    mayEdit: item.own || isShared,
+    secondaryId,
+    resultUrl:
+      !isForm && item.resultUrls.length > 0 ? item.resultUrls[0] : null,
+    hasNoDates: !isForm && !item.containsDates,
+  };
+};
+
 const ProjectItem = forwardRef<
   HTMLDivElement,
   {
@@ -162,66 +280,31 @@ const ProjectItem = forwardRef<
     (state) => state.conceptTrees.secondaryIds,
   );
 
-  const { updateQuery } = useUpdateQuery();
-  const { updateFormConfig } = useUpdateFormConfig();
-
-  const formLabel = useFormLabelByType(
-    isFormConfig(item) ? item.formType : null,
-  );
-  const topLeftLabel = isFormConfig(item)
-    ? formLabel!
-    : exists(item.numberOfResults)
-      ? `${item.numberOfResults} ${t("previousQueries.results")}`
-      : t("previousQuery.notExecuted");
+  const isForm = isFormConfig(item);
+  const formLabel = useFormLabelByType(isForm ? item.formType : null);
+  const topLeftLabel = getTopLeftLabel(item, formLabel, t);
 
   const dateFormat = `${t("inputDateRange.dateFormat")} HH:mm`;
   const executedAtDate = parseISO(item.createdAt);
   const executedAt = formatDate(executedAtDate, dateFormat);
 
-  const isShared = item.shared || (item.groups && item.groups.length > 0);
   const label = item.label || item.id.toString();
-  const mayEdit = item.own || isShared;
-
-  const secondaryId =
-    !isFormConfig(item) && item.secondaryId
-      ? loadedSecondaryIds.find((secId) => item.secondaryId === secId.id)
-      : null;
+  const { isShared, isSystem, mayEdit, secondaryId, resultUrl, hasNoDates } =
+    deriveFlags(item, loadedSecondaryIds);
 
   const [isEditingLabel, setIsEditingLabel] = useState<boolean>(false);
 
   const folders = item.tags;
 
-  const onRenameLabel = (label: string) => {
-    if (isFormConfig(item)) {
-      updateFormConfig(item.id, { label }, t("formConfig.renameError"));
-    } else {
-      updateQuery(item.id, { label }, t("previousQuery.renameError"));
-    }
-  };
+  const onRenameLabel = useRenameProjectItem(item);
 
   return (
     <Root ref={ref}>
-      {isFormConfig(item) ? <SxFormSymbol /> : <SxQuerySymbol />}
-      <Content
-        own={!!item.own}
-        system={!!item.system || (!item.own && !isShared)}
-      >
+      {isForm ? <SxFormSymbol /> : <SxQuerySymbol />}
+      <Content own={!!item.own} system={isSystem}>
         <TopInfos>
           <TopLeft>
-            <WithTooltip
-              html={
-                <TooltipText>
-                  {t("previousQuery.editFolders")}
-                  {folders.length > 0 && (
-                    <ActiveFolders>
-                      {folders.map((f) => (
-                        <li key={f}>{f}</li>
-                      ))}
-                    </ActiveFolders>
-                  )}
-                </TooltipText>
-              }
-            >
+            <WithTooltip html={<FoldersTooltip folders={folders} />}>
               <FoldersButton
                 icon={folders.length === 0 ? faFolderRegular : faFolder}
                 tight
@@ -232,22 +315,8 @@ const ProjectItem = forwardRef<
               />
             </WithTooltip>
             <div className="flex items-center gap-2">
-              {!isFormConfig(item) && item.resultUrls.length > 0 ? (
-                <WithTooltip text={t("previousQuery.downloadResults")}>
-                  <SxDownloadButton
-                    tight
-                    small
-                    bare
-                    simpleIcon
-                    resultUrl={item.resultUrls[0]}
-                  >
-                    {topLeftLabel}
-                  </SxDownloadButton>
-                </WithTooltip>
-              ) : (
-                <NonBreakingText>{topLeftLabel}</NonBreakingText>
-              )}
-              {!isFormConfig(item) && !item.containsDates && (
+              <ResultsLabel label={topLeftLabel} resultUrl={resultUrl} />
+              {hasNoDates && (
                 <WithTooltip text={t("previousQuery.hasNoDates")}>
                   <SxFaIcon red icon={faCalendar} />
                 </WithTooltip>
@@ -256,31 +325,15 @@ const ProjectItem = forwardRef<
           </TopLeft>
           <TopRight>
             {executedAt}
-            {secondaryId &&
-              !isFormConfig(item) &&
-              item.queryType === "SECONDARY_ID_QUERY" && (
-                <WithTooltip
-                  text={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}
-                >
-                  <IconButton icon={faMicroscope} bare onClick={() => {}} />
-                </WithTooltip>
-              )}
-            {item.own && (
+            {secondaryId && (
               <WithTooltip
-                html={
-                  <TooltipText>
-                    {isShared ? t("common.shared") : t("common.share")}
-                  </TooltipText>
-                }
+                text={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}
               >
-                <IconButton
-                  icon={isShared ? faUser : faUserRegular}
-                  bare
-                  title="share"
-                  data-test-id="share"
-                  onClick={onIndicateShare}
-                />
+                <IconButton icon={faMicroscope} bare onClick={() => {}} />
               </WithTooltip>
+            )}
+            {item.own && (
+              <ShareButton isShared={!!isShared} onClick={onIndicateShare} />
             )}
             {item.own && <DeleteProjectItemButton item={item} />}
           </TopRight>
@@ -296,15 +349,10 @@ const ProjectItem = forwardRef<
             setIsEditing={setIsEditingLabel}
           />
           <OwnerName>
-            {highlightedWords.length > 0 ? (
-              <Highlighter
-                searchWords={highlightedWords}
-                autoEscape
-                textToHighlight={item.ownerName}
-              />
-            ) : (
-              item.ownerName
-            )}
+            <HighlightedText
+              text={item.ownerName}
+              highlightedWords={highlightedWords}
+            />
           </OwnerName>
         </LabelRow>
       </Content>

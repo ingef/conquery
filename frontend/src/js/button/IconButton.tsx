@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { forwardRef, memo, useMemo } from "react";
 
-import FaIcon, { FaIconPropsT, IconStyleProps } from "../icon/FaIcon";
+import FaIcon, { type FaIconPropsT, type IconStyleProps } from "../icon/FaIcon";
 
-import BasicButton, { BasicButtonProps } from "./BasicButton";
+import BasicButton, { type BasicButtonProps } from "./BasicButton";
 
 interface StyledFaIconProps extends FaIconPropsT {
   tight?: boolean;
@@ -63,7 +63,7 @@ const SxBasicButton = styled(BasicButton)<{
 
   border-radius: ${({ theme }) => theme.borderRadius};
   border: ${({ theme, frame }) =>
-    frame ? "1px solid " + theme.col.gray : "none"};
+    frame ? `1px solid ${theme.col.gray}` : "none"};
   display: inline-flex;
   align-items: center;
   gap: ${({ tight }) => (tight ? "5px" : "10px")};

@@ -1,25 +1,27 @@
+/// <reference types="vitest/config" />
+
+import fs from "node:fs";
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import fs from "fs";
 import { defineConfig } from "vite";
-import eslint from "vite-plugin-eslint";
 
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
     sourcemap: true,
-    minify: "terser",
     assetsInlineLimit: 0,
   },
   envPrefix: "REACT_APP_",
   plugins: [
-    eslint(),
+    tailwindcss(),
     react({
       jsxImportSource: "@emotion/react",
-      babel: {
-        plugins: ["@emotion/babel-plugin"],
-      },
     }),
   ],
+  test: {
+    environment: "node",
+    include: ["src/**/*.{test,spec}.{ts,tsx}"],
+  },
   server: {
     port: 8000,
     open: true,

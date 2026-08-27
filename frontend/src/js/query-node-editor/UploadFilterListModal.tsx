@@ -4,9 +4,8 @@ import {
   faExclamationCircle,
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
-import { useTranslation } from "react-i18next";
-
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { PostFilterResolveResponseT } from "../api/types";
 import PrimaryButton from "../button/PrimaryButton";
 import FaIcon from "../icon/FaIcon";
@@ -54,9 +53,7 @@ const selectResolvedItemsCount = (
 const selectUnresolvedItemsCount = (
   resolved: PostFilterResolveResponseT | null,
 ) => {
-  return resolved && resolved.unknownCodes && resolved.unknownCodes.length
-    ? resolved.unknownCodes.length
-    : 0;
+  return resolved?.unknownCodes?.length ? resolved.unknownCodes.length : 0;
 };
 
 const UploadFilterListModal = ({
@@ -107,6 +104,7 @@ const UploadFilterListModal = ({
             <Msg>
               <ErrorIcon icon={faExclamationCircle} />
               <span
+                // biome-ignore lint/security/noDangerouslySetInnerHtml: i18n text with markup
                 dangerouslySetInnerHTML={{
                   __html: t("uploadConceptListModal.unknownCodes", {
                     count: unresolvedItemsCount,

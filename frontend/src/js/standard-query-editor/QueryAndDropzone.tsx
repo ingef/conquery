@@ -6,7 +6,7 @@ import type { PreviousQueryT } from "../previous-queries/list/reducer";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryEditorDropzone from "./QueryEditorDropzone";
-import { DragItemConceptTreeNode, DragItemQuery } from "./types";
+import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
 
 const PaddedTop = styled("div")`
   padding-top: 70px;

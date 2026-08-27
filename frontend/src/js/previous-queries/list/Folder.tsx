@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
 import { faFolder as faFolderRegular } from "@fortawesome/free-regular-svg-icons";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
-import { FC } from "react";
-import Highlighter from "react-highlight-words";
+import type { FC } from "react";
+import { Highlighter } from "../../common/components/Highlighter";
 
 import { exists } from "../../common/helpers/exists";
 import FaIcon from "../../icon/FaIcon";
@@ -80,11 +80,7 @@ const Folder: FC<Props> = ({
       {exists(resultCount) && <ResultCount>{resultCount}</ResultCount>}
       <Text>
         {!empty && resultWords.length > 0 ? (
-          <Highlighter
-            autoEscape
-            searchWords={resultWords}
-            textToHighlight={folder}
-          />
+          <Highlighter searchWords={resultWords} textToHighlight={folder} />
         ) : (
           folder
         )}

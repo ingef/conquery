@@ -1,6 +1,6 @@
 import { memo } from "react";
 
-import { SelectOptionT } from "../api/types";
+import type { SelectOptionT } from "../api/types";
 import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
 
 interface Props {

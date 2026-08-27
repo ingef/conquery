@@ -1,5 +1,5 @@
 import { memo } from "react";
-import {
+import type {
   Control,
   UseFormRegister,
   UseFormSetValue,
@@ -59,6 +59,7 @@ const Field = ({
     case "DESCRIPTION":
       return (
         <Description
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: labels come from the form configs the backend serves
           dangerouslySetInnerHTML={{ __html: field.label[locale] || "" }}
         />
       );

@@ -4,7 +4,7 @@ import {
   addConcept,
   addValue,
   copyConcept,
-  FormConceptGroupT,
+  type FormConceptGroupT,
 } from "./formConceptGroupState";
 
 export const useCopyModal = ({

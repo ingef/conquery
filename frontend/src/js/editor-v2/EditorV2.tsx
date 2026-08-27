@@ -18,29 +18,28 @@ import IconButton from "../button/IconButton";
 import { useDatasetId } from "../dataset/selectors";
 import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { EmptyQueryEditorDropzone } from "../standard-query-editor/EmptyQueryEditorDropzone";
-import {
+import type {
   DragItemConceptTreeNode,
   DragItemQuery,
 } from "../standard-query-editor/types";
 import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
 import WithTooltip from "../tooltip/WithTooltip";
 import Dropzone from "../ui-components/Dropzone";
-
-import { Connector, Grid } from "./EditorLayout";
-import { EditorV2QueryRunner } from "./EditorV2QueryRunner";
-import { KeyboardShortcutTooltip } from "./KeyboardShortcutTooltip";
-import { TreeNode } from "./TreeNode";
 import { EDITOR_DROP_TYPES, HOTKEYS } from "./config";
 import { useConnectorEditing } from "./connector-update/useConnectorRotation";
 import { DateModal } from "./date-restriction/DateModal";
 import { useDateEditing } from "./date-restriction/useDateEditing";
+import { Connector, Grid } from "./EditorLayout";
+import { EditorV2QueryRunner } from "./EditorV2QueryRunner";
 import { useExpandQuery } from "./expand/useExpandQuery";
+import { KeyboardShortcutTooltip } from "./KeyboardShortcutTooltip";
 import { useNegationEditing } from "./negation/useNegationEditing";
 import { EditorV2QueryNodeEditor } from "./query-node-edit/EditorV2QueryNodeEditor";
 import { useQueryNodeEditing } from "./query-node-edit/useQueryNodeEditing";
+import { TreeNode } from "./TreeNode";
 import { TimeConnectionModal } from "./time-connection/TimeConnectionModal";
 import { useTimeConnectionEditing } from "./time-connection/useTimeConnectionEditing";
-import { Tree, TreeChildrenTime } from "./types";
+import type { Tree, TreeChildrenTime } from "./types";
 import { findNodeById, useGetTranslatedConnection } from "./util";
 
 const Root = styled("div")`
@@ -124,6 +123,7 @@ const useEditorState = () => {
 
 const useResetOnDatasetChange = (onReset: () => void) => {
   const datasetId = useDatasetId();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset whenever the dataset changes
   useEffect(() => {
     onReset();
   }, [datasetId, onReset]);
@@ -160,7 +160,7 @@ export function EditorV2({
   useResetOnDatasetChange(onReset);
 
   const onFlip = useCallback(() => {
-    if (!selectedNode || !selectedNode.children) return;
+    if (!selectedNode?.children) return;
 
     updateTreeNode(selectedNode.id, (node) => {
       if (!node.children) return;

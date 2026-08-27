@@ -7,12 +7,14 @@ COPY .git .
 RUN git describe --tags |  sed 's/^v//' > git_describe.txt
 
 # Builder
-FROM node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e AS builder
+FROM node:24-alpine@sha256:d32cdf619f63fe0471182d08996dd516c6275bb5fd31ae06e55a570bd9e1ad43 AS builder
 
 WORKDIR /app
-COPY ./frontend/package.json ./frontend/package-lock.json ./
+RUN npm install -g pnpm@11.24.0
 
-RUN npm ci
+COPY ./frontend/package.json ./frontend/pnpm-lock.yaml ./frontend/pnpm-workspace.yaml ./
+
+RUN pnpm install --frozen-lockfile
 
 COPY ./frontend .
 
@@ -20,7 +22,7 @@ COPY ./frontend .
 COPY --from=version-extractor /app/git_describe.txt .
 
 # Uses env variables from .env file (BUILD TIME)
-RUN PUBLIC_URL=/ npm run build
+RUN PUBLIC_URL=/ pnpm build
 
 # The final image is just an nginx with a webroot
 FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:8122337ed6c475bb486bc9340da453d4599f225e6b920ff0d92ca2267486b9b5

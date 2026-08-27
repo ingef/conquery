@@ -16,7 +16,7 @@ import { setMessage } from "../../snack-message/actions";
 import WithTooltip from "../../tooltip/WithTooltip";
 import { useLoadQueries } from "../list/actions";
 
-import { QueryToUploadT } from "./CSVColumnPicker";
+import type { QueryToUploadT } from "./CSVColumnPicker";
 import UploadQueryResultsModal from "./UploadQueryResultsModal";
 
 const SxIconButton = styled(IconButton)`

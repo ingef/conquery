@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import { type FC, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -8,7 +8,7 @@ import type { StateT } from "../../app/reducers";
 import IconButton from "../../button/IconButton";
 import { DNDType } from "../../common/constants/dndTypes";
 import { useResizeObserver } from "../../common/helpers/useResizeObserver";
-import { DragItemFormConfig } from "../../external-forms/types";
+import type { DragItemFormConfig } from "../../external-forms/types";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import WithTooltip from "../../tooltip/WithTooltip";
 import Dropzone from "../../ui-components/Dropzone";
@@ -19,14 +19,14 @@ import {
 } from "../folder-filter/actions";
 
 import AddFolderModal from "./AddFolderModal";
-import DeleteFolderModal from "./DeleteFolderModal";
-import Folder from "./Folder";
 import {
   addFolder,
   removeFolder,
   useUpdateFormConfig,
   useUpdateQuery,
 } from "./actions";
+import DeleteFolderModal from "./DeleteFolderModal";
+import Folder from "./Folder";
 import { useFolders } from "./selector";
 
 const DROP_TYPES = [
@@ -78,7 +78,7 @@ const SxDropzone = styled(Dropzone)`
 
   &:hover {
     background-color: ${({ theme }) => theme.col.grayVeryLight};
-    ${SxIconButton} {
+    .folder-delete-button {
       display: block;
     }
   }
@@ -245,7 +245,7 @@ const Folders: FC<Props> = ({ className }) => {
         folder={t("folders.allQueries")}
         active={folderFilter.length === 0 && !noFoldersActive}
         onClick={onResetFolderFilter}
-        resultCount={searchResult ? searchResult["__all__"] : null}
+        resultCount={searchResult ? searchResult.__all__ : null}
         resultWords={[]}
       />
       <SxPreviousQueriesFolder
@@ -254,7 +254,7 @@ const Folders: FC<Props> = ({ className }) => {
         folder={t("folders.noFolders")}
         active={noFoldersActive}
         onClick={onToggleNoFoldersActive}
-        resultCount={searchResult ? searchResult["__without_folder__"] : null}
+        resultCount={searchResult ? searchResult.__without_folder__ : null}
         resultWords={[]}
       />
       <ScrollContainer>
@@ -291,6 +291,7 @@ const Folders: FC<Props> = ({ className }) => {
                   />
                   <WithTooltip text={t("common.delete")}>
                     <SxIconButton
+                      className="folder-delete-button"
                       icon={faTimes}
                       onClick={(e) => {
                         setFolderToDelete(folder);

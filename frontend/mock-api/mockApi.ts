@@ -1,10 +1,13 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import Chance from "chance";
-import { Application } from "express";
-import path from "path";
-import { fileURLToPath } from "url";
-import packagejson from "../package.json" assert { type: "json" };
-import config from "./config.json" assert { type: "json" };
-import EXPORT_FORM_CONFIG from "./forms/export-form.json" assert { type: "json" };
+import type { Application } from "express";
+import packagejson from "../package.json" with { type: "json" };
+
+import config from "./config.json" with { type: "json" };
+
+import EXPORT_FORM_CONFIG from "./forms/export-form.json" with { type: "json" };
+
 import mockAuthMiddleware from "./mockAuthMiddleware.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -156,6 +159,7 @@ export default function mockApi(app: Application) {
               status: "DONE",
               label: "Test result",
               numberOfResults: 5,
+              previewAvailable: true,
               resultUrls:
                 dice > 0.85
                   ? [
@@ -411,7 +415,7 @@ export default function mockApi(app: Application) {
   /*
     VERSION
   */
-  app.get("/api/version", function (_, res) {
+  app.get("/api/version", (_, res) => {
     res.setHeader("Content-Type", "application/json");
 
     res.send({

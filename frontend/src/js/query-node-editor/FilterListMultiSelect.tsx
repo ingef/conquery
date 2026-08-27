@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 
 import { usePostFilterValuesResolve } from "../api/api";
 import type {
@@ -9,9 +9,8 @@ import type {
 } from "../api/types";
 import { exists } from "../common/helpers/exists";
 import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
-
-import UploadFilterListModal from "./UploadFilterListModal";
 import { filterSuggestionToSelectOption } from "./suggestionsHelper";
+import UploadFilterListModal from "./UploadFilterListModal";
 
 const PAGE_SIZE = 25;
 const MAX_AUTOCOMPLETE_TEXT_LENGTH = 500;
@@ -139,7 +138,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
       } else {
         onSubmitResolvedValues(r, { includeUnresolved: false });
       }
-    } catch (e) {
+    } catch {
       setError(true);
     }
 

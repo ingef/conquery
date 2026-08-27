@@ -1,0 +1,26 @@
+# Supply-chain hardening (see https://pnpm.io/settings)
+# Refuse versions published less than 7 days ago
+minimumReleaseAge: 10080
+# Refuse versions whose publish provenance/trust is weaker than a previous release
+trustPolicy: no-downgrade
+# Old transitive releases that predate their package's provenance; revisit when they drop out of the tree
+trustPolicyExclude:
+  # semver 6.x - comes from storybook: @storybook/react -> react-docgen -> @babel/core, whose helper
+  # packages pin semver ^6. 6.3.1 (2023) has no provenance while the 7.x line does, so pnpm reads it
+  # as a downgrade. Goes away if storybook stops using the babel-based react-docgen.
+  - "semver@6.3.1"
+  # yaml 1.x - comes from emotion: @emotion/react declares @emotion/babel-plugin as a runtime dependency
+  # -> babel-plugin-macros -> cosmiconfig@7 -> yaml ^1. The override below forces the 2026 security
+  # backport 1.10.3, which has no provenance while 2.x does. Goes away with emotion.
+  - "yaml@1.10.3"
+# Lifecycle scripts are blocked unless explicitly allowed here (this is not a trust exception, it only
+# lets a package run its install script)
+allowBuilds:
+  # esbuild's install script puts the platform binary in place; needed by vitest, tsx, @tailwindcss/vite,
+  # @vitejs/plugin-react and storybook (vite 8 itself no longer uses esbuild)
+  esbuild: true
+# Transitive security fixes the parents allow but never re-resolve to (pnpm only re-resolves
+# transitives when their parent changes)
+overrides:
+  # GHSA-48c2-rrv3-qjmp: cosmiconfig@7 (emotion's babel-plugin-macros) declares yaml ^1.10.0 -> patched 1.10.3
+  "yaml@1": "^1.10.3"

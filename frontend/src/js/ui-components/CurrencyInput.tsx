@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC, useEffect, useState } from "react";
+import { type FC, useEffect, useState } from "react";
 import { NumericFormat } from "react-number-format";
 
 import type { CurrencyConfigT } from "../api/types";
@@ -33,7 +33,7 @@ const CurrencyInput: FC<PropsT> = ({
   placeholder,
   large,
 }) => {
-  const factor = currencyConfig ? Math.pow(10, currencyConfig.decimalScale) : 1;
+  const factor = currencyConfig ? 10 ** currencyConfig.decimalScale : 1;
   // Super weird: In react-number-format,
   //   in order to properly display the placeholder, "-", the only way is to
   //   NOT supply isNumberString
@@ -51,13 +51,13 @@ const CurrencyInput: FC<PropsT> = ({
   return (
     <SxNumberFormat
       {...currencyConfig}
-      suffix={" " + currencyConfig?.unit}
+      suffix={` ${currencyConfig?.unit}`}
       placeholder={placeholder}
       type="text"
       value={numberFormatValue}
       large={large}
       onValueChange={(values) => {
-        if (exists(values.floatValue) && !isNaN(values.floatValue)) {
+        if (exists(values.floatValue) && !Number.isNaN(values.floatValue)) {
           setNumberFormatValue(values.floatValue);
           onChange(parseInt((values.floatValue * factor).toFixed(0), 10));
         } else {

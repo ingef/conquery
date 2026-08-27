@@ -2,9 +2,9 @@ import styled from "@emotion/styled";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ConceptBaseT, ConceptIdT } from "../api/types";
+import type { ConceptBaseT, ConceptIdT } from "../api/types";
 import { Heading4 } from "../headings/Headings";
-import { DragItemConceptTreeNode } from "../standard-query-editor/types";
+import type { DragItemConceptTreeNode } from "../standard-query-editor/types";
 
 import ConceptDropzone from "./ConceptDropzone";
 import ConceptEntry from "./ConceptEntry";

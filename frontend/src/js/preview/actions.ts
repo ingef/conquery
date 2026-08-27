@@ -1,13 +1,20 @@
-import { AsyncRecordBatchStreamReader, RecordBatch } from "apache-arrow";
+import { AsyncRecordBatchStreamReader, type RecordBatch } from "apache-arrow";
 import { t } from "i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
+import {
+  type ActionType,
+  createAction,
+  createAsyncAction,
+} from "typesafe-actions";
 import { useGetQuery, useGetResult, usePreviewStatistics } from "../api/api";
-import { GetQueryResponseT, PreviewStatisticsResponse } from "../api/types";
-import { StateT } from "../app/reducers";
-import { ErrorObject } from "../common/actions/genericActions";
+import type {
+  GetQueryResponseT,
+  PreviewStatisticsResponse,
+} from "../api/types";
+import type { StateT } from "../app/reducers";
+import type { ErrorObject } from "../common/actions/genericActions";
 import { setMessage } from "../snack-message/actions";
-import { PreviewStateT } from "./reducer";
+import type { PreviewStateT } from "./reducer";
 
 export type PreviewActions = ActionType<
   | typeof loadPreview
@@ -101,7 +108,7 @@ export function useLoadPreviewData() {
       };
       dispatch(loadPreview.success(payload));
       return payload;
-    } catch (err) {
+    } catch {
       dispatch(
         setMessage({
           message: t("preview.loadingError"),

@@ -1,20 +1,20 @@
 import styled from "@emotion/styled";
-import { faThumbtack, IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import { ReactNode, useMemo } from "react";
-import Highlighter from "react-highlight-words";
+import {
+  faThumbtack,
+  type IconDefinition,
+} from "@fortawesome/free-solid-svg-icons";
+import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
 import { useDispatch, useSelector } from "react-redux";
 import remarkFlexibleMarkers from "remark-flexible-markers";
 import remarkGfm from "remark-gfm";
-
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
+import { Highlighter } from "../common/components/Highlighter";
 import FaIcon from "../icon/FaIcon";
-
-import { PluggableList } from "react-markdown/lib/react-markdown";
-import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import ActivateTooltip from "./ActivateTooltip";
+import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import type { AdditionalInfosType } from "./reducer";
 import TooltipEntries from "./TooltipEntries";
 import { TooltipHeader } from "./TooltipHeader";
@@ -129,13 +129,7 @@ const HighlightedText = ({
   words: string[];
   text: string;
 }) => {
-  return (
-    <Highlighter
-      searchWords={words}
-      autoEscape={true}
-      textToHighlight={text || ""}
-    />
-  );
+  return <Highlighter searchWords={words} textToHighlight={text || ""} />;
 };
 
 const ConceptLabel = ({
@@ -251,22 +245,16 @@ const Tooltip = () => {
           )}
         </Head>
         <Infos>
-          {infos &&
-            infos.map((info, i) => (
-              <PieceOfInfo key={info.key + i}>
-                <InfoHeadline>
-                  <HighlightedText words={words} text={info.key} />
-                </InfoHeadline>
-                {/* Explicit cast to PluggableList here, see: https://github.com/orgs/rehypejs/discussions/63 */}
-                <Markdown
-                  remarkPlugins={
-                    [remarkGfm, remarkFlexibleMarkers] as PluggableList
-                  }
-                >
-                  {mark(info.value, highlightRegex)}
-                </Markdown>
-              </PieceOfInfo>
-            ))}
+          {infos?.map((info, i) => (
+            <PieceOfInfo key={info.key + i}>
+              <InfoHeadline>
+                <HighlightedText words={words} text={info.key} />
+              </InfoHeadline>
+              <Markdown remarkPlugins={[remarkGfm, remarkFlexibleMarkers]}>
+                {mark(info.value, highlightRegex)}
+              </Markdown>
+            </PieceOfInfo>
+          ))}
         </Infos>
       </Content>
     </Root>

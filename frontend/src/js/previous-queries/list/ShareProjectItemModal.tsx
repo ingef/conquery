@@ -10,8 +10,6 @@ import IconButton from "../../button/IconButton";
 import Modal from "../../modal/Modal";
 import WithTooltip from "../../tooltip/WithTooltip";
 import InputMultiSelect from "../../ui-components/InputMultiSelect/InputMultiSelect";
-
-import type { ProjectItemT } from "./ProjectItem";
 import {
   useLoadFormConfig,
   useLoadQuery,
@@ -19,6 +17,7 @@ import {
   useUpdateQuery,
 } from "./actions";
 import { isFormConfig } from "./helpers";
+import type { ProjectItemT } from "./ProjectItem";
 
 const Row = styled("div")`
   width: 100%;
@@ -35,7 +34,7 @@ const getInitialUserGroupsValue = (
   userGroups: UserGroupT[],
   projectItem?: ProjectItemT,
 ) => {
-  return projectItem && projectItem.groups
+  return projectItem?.groups
     ? userGroups
         .filter((group) => projectItem.groups?.includes(group.id))
         .map((group) => ({

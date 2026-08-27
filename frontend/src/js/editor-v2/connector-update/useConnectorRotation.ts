@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
-import { ConnectionKind, Tree, TreeChildren } from "../types";
+import type { ConnectionKind, Tree, TreeChildren } from "../types";
 
 const CONNECTIONS = ["and", "or", "time"] as ConnectionKind[];
 
@@ -49,7 +49,7 @@ export const useConnectorEditing = ({
   updateTreeNode: (id: string, update: (node: Tree) => void) => void;
 }) => {
   const onRotateConnector = useCallback(() => {
-    if (!enabled || !selectedNode || !selectedNode.children) return;
+    if (!enabled || !selectedNode?.children) return;
 
     updateTreeNode(selectedNode.id, (node) => {
       if (!node.children) return;

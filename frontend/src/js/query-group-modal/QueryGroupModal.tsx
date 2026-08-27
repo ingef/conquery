@@ -6,11 +6,11 @@ import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
-import { DateStringMinMax } from "../common/helpers/dateHelper";
+import type { DateStringMinMax } from "../common/helpers/dateHelper";
 import Modal from "../modal/Modal";
 import { nodeIsConceptQueryNode } from "../model/node";
-import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
-import { QueryGroupType } from "../standard-query-editor/types";
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
+import type { QueryGroupType } from "../standard-query-editor/types";
 import InputDateRange from "../ui-components/InputDateRange";
 
 import {
@@ -111,13 +111,13 @@ const QueryGroupModal = ({
           {t("queryGroupModal.headlineStart")}
         </HeadlinePart>
         {group.elements.map((node, i) => (
-          <Fragment key={i + "-headline"}>
+          <Fragment key={`${i}-headline`}>
             <HeadlinePart>
               {node.label ||
                 (nodeIsConceptQueryNode(node) ? node.ids[0] : node.id)}
             </HeadlinePart>
             {i !== group.elements.length - 1 && (
-              <span key={i + "-comma"}>, </span>
+              <span key={`${i}-comma`}>, </span>
             )}
           </Fragment>
         ))}

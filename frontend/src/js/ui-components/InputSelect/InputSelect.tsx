@@ -2,6 +2,7 @@ import { faChevronDown, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useCombobox } from "downshift";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { mergeRefs } from "react-merge-refs";
 
 import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
@@ -164,7 +165,7 @@ const InputSelect = ({
   const labelProps = getLabelProps();
 
   const handleBlur = useCallback(() => {
-    if (!!selectedItem && inputValue !== selectedItem.label) {
+    if (selectedItem && inputValue !== selectedItem.label) {
       setInputValue(selectedItem.label);
     }
   }, [inputValue, setInputValue, selectedItem]);
@@ -246,12 +247,9 @@ const InputSelect = ({
             {...inputProps}
             onBlur={(e) => {
               handleBlur(); // Because sometimes inputProps.onBlur doesn't trigger InputBlur action
-              inputProps.onBlur(e);
+              inputProps.onBlur?.(e);
             }}
-            ref={(instance) => {
-              inputPropsRef(instance);
-              inputRef.current = instance;
-            }}
+            ref={mergeRefs([inputPropsRef, inputRef])}
             type="text"
             spellCheck={false}
             disabled={disabled}
@@ -284,9 +282,9 @@ const InputSelect = ({
         <VerticalSeparator />
         <DropdownToggleButton
           disabled={disabled}
-          icon={faChevronDown}
           data-test-id="selection-dropdown"
           {...getToggleButtonProps()}
+          icon={faChevronDown}
         />
       </Control>
       {isOpen ? (
@@ -299,7 +297,7 @@ const InputSelect = ({
               // leading to a wrong click behavior when filtered
               e.stopPropagation();
             }}
-            ref={(instance) => menuPropsRef(instance)}
+            ref={menuPropsRef}
           >
             <List small={smallMenu} data-test-id="select-options">
               {filteredOptions.length === 0 && <SelectEmptyPlaceholder />}
@@ -318,9 +316,7 @@ const InputSelect = ({
                       selectedItem?.value === option.value
                     }
                     {...itemProps}
-                    ref={(instance) => {
-                      itemPropsRef(instance);
-                    }}
+                    ref={itemPropsRef}
                   />
                 );
               })}

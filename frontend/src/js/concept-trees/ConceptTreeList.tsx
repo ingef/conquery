@@ -1,15 +1,13 @@
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
-
+import tw from "tailwind-styled-components";
 import type { DatasetT } from "../api/types";
 import type { StateT } from "../app/reducers";
-
-import tw from "tailwind-styled-components";
+import { useLoadTree } from "./actions";
+import ConceptsProgressBar from "./ConceptsProgressBar";
 import ConceptTreeListItem from "./ConceptTreeListItem";
 import ConceptTreesLoading from "./ConceptTreesLoading";
-import ConceptsProgressBar from "./ConceptsProgressBar";
 import EmptyConceptTreeList from "./EmptyConceptTreeList";
-import { useLoadTree } from "./actions";
 import type { SearchT, TreesT } from "./reducer";
 import { useAreTreesAvailable } from "./selectors";
 import { useRootConceptIds } from "./useRootConceptIds";
@@ -19,7 +17,7 @@ import { useRootConceptIds } from "./useRootConceptIds";
   instead of mounting / unmounting it. Maybe we can remove this in the future.
 */
 const Root = tw("div")<{ $show?: boolean }>`
-  flex-grow
+  grow
   shrink-0
   basis-0
   px-[10px]

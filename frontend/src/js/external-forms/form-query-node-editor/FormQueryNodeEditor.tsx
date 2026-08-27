@@ -1,5 +1,5 @@
 import type { PostPrefixForSuggestionsParams } from "../../api/api";
-import {
+import type {
   ConceptIdT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,

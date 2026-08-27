@@ -15,7 +15,7 @@ export const useLoadMoreInitially = ({
 
   useEffect(
     function loadInitialOptionsWithEmptySearch() {
-      if (!!onLoadMore && optionsLength === 0 && !wasOpen && isOpen) {
+      if (onLoadMore && optionsLength === 0 && !wasOpen && isOpen) {
         onLoadMore("", { shouldReset: true });
       }
     },

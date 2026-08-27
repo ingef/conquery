@@ -1,13 +1,13 @@
 import { useCallback } from "react";
 
 import {
-  PostPrefixForSuggestionsParams,
+  type PostPrefixForSuggestionsParams,
   usePostPrefixForSuggestions,
 } from "../../api/api";
-import { SelectOptionT } from "../../api/types";
+import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import { mergeFilterOptions } from "../../model/filter";
-import { NodeResetConfig } from "../../model/node";
+import type { NodeResetConfig } from "../../model/node";
 import { resetSelects } from "../../model/select";
 import {
   resetTables,
@@ -16,8 +16,8 @@ import {
 } from "../../model/table";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
 import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
-import { DragItemConceptTreeNode } from "../../standard-query-editor/types";
-import { ModeT } from "../../ui-components/InputRange";
+import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
+import type { ModeT } from "../../ui-components/InputRange";
 
 export const EditorV2QueryNodeEditor = ({
   node,

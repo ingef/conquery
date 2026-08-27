@@ -3,10 +3,10 @@ import styled from "@emotion/styled";
 import {
   faCaretDown,
   faCaretRight,
-  IconDefinition,
+  type IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import { forwardRef } from "react";
-import Highlighter from "react-highlight-words";
+import { Highlighter } from "../common/components/Highlighter";
 
 import FaIcon from "../icon/FaIcon";
 
@@ -16,7 +16,7 @@ const Root = styled("div")<{ depth: number }>`
   cursor: pointer;
   padding: 0 15px 0 15px;
   margin: 2px 0;
-  padding-left: ${({ depth }) => depth * 15 + "px"};
+  padding-left: ${({ depth }) => `${depth * 15}px`};
   display: flex;
 `;
 
@@ -155,11 +155,7 @@ const ConceptTreeNodeText = forwardRef<
           {resultCount && <ResultsNumber>{resultCount}</ResultsNumber>}
           <span>
             {searchWords ? (
-              <Highlighter
-                searchWords={searchWords}
-                autoEscape={true}
-                textToHighlight={label}
-              />
+              <Highlighter searchWords={searchWords} textToHighlight={label} />
             ) : (
               label
             )}
@@ -169,7 +165,6 @@ const ConceptTreeNodeText = forwardRef<
               {searchWords ? (
                 <Highlighter
                   searchWords={searchWords}
-                  autoEscape={true}
                   textToHighlight={description}
                 />
               ) : (

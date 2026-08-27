@@ -1,8 +1,9 @@
 import styled from "@emotion/styled";
 import { faBan } from "@fortawesome/free-solid-svg-icons";
+import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
+import type {
   ColumnDescriptionSemanticConceptColumn,
   TimeStratifiedInfo,
 } from "../api/types";
@@ -75,14 +76,12 @@ export const TimeStratifiedConceptChart = ({
 
   const allValues = [
     ...new Set(
-      valuesPerYear
-        .flatMap((v) => v)
-        .sort((a, b) => {
-          const nA = Number(a?.label);
-          const nB = Number(b?.label);
-          if (!isNaN(nA) && !isNaN(nB)) return nA - nB;
-          return a?.label.localeCompare(b?.label);
-        }),
+      valuesPerYear.flat().sort((a, b) => {
+        const nA = Number(a?.label);
+        const nB = Number(b?.label);
+        if (!Number.isNaN(nA) && !Number.isNaN(nB)) return nA - nB;
+        return a?.label.localeCompare(b?.label);
+      }),
     ),
   ];
 
@@ -109,12 +108,16 @@ export const TimeStratifiedConceptChart = ({
         </WithTooltip>
       ))}
       {years.map((year, i) => (
-        <>
+        <Fragment key={year}>
           <Year>{year}</Year>
           {allValues.map((val) =>
-            valuesPerYear[i].includes(val) ? <BubbleYes /> : <BubbleNo />,
+            valuesPerYear[i].includes(val) ? (
+              <BubbleYes key={val.label} />
+            ) : (
+              <BubbleNo key={val.label} />
+            ),
           )}
-        </>
+        </Fragment>
       ))}
     </Container>
   );
