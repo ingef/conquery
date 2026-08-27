@@ -25,20 +25,18 @@ import org.apache.parquet.io.PositionOutputStream;
 public class ParquetRenderer {
 
 	public static void writeToStream(
-			OutputStream outputStream,
-			List<ResultInfo> idHeaders,
-			List<ResultInfo> resultInfo,
-			PrintSettings printSettings,
-			Stream<EntityResult> results) throws IOException {
+		OutputStream outputStream,
+		List<ResultInfo> idHeaders,
+		List<ResultInfo> resultInfo,
+		PrintSettings printSettings,
+		Stream<EntityResult> results) throws IOException {
 
 		// Wrap the request output stream in an output file, so the parquet writer can consume it
-		final OutputFile outputFile = new StreamOutputFile(new PositionTrackingOutputStream(new CountingOutputStream(outputStream)));
+		final OutputFile outputFile = new StreamOutputFile(
+			new PositionTrackingOutputStream(new CountingOutputStream(outputStream)));
 
-		final ConqueryParquetWriterBuilder conqueryParquetWriterBuilder =
-				new ConqueryParquetWriterBuilder(outputFile)
-						.setIdHeaders(idHeaders)
-						.setResultInfo(resultInfo)
-						.setPrintSettings(printSettings);
+		final ConqueryParquetWriterBuilder conqueryParquetWriterBuilder = new ConqueryParquetWriterBuilder(
+			outputFile).setIdHeaders(idHeaders).setResultInfo(resultInfo).setPrintSettings(printSettings);
 
 		try (final ParquetWriter<EntityResult> parquetWriter = conqueryParquetWriterBuilder.build()) {
 
@@ -46,7 +44,8 @@ public class ParquetRenderer {
 			 WORKAROUND: We need the conversion to SinglelineEntityResult here because a RecordConsumer only produces one line/record
 			 even if multiple messages are started.
 			 */
-			Iterator<SinglelineEntityResult> resultIterator = results.flatMap(ParquetRenderer::convertToSingleLine).iterator();
+			Iterator<SinglelineEntityResult> resultIterator = results.flatMap(
+				ParquetRenderer::convertToSingleLine).iterator();
 			while (resultIterator.hasNext()) {
 				final EntityResult entityResult = resultIterator.next();
 

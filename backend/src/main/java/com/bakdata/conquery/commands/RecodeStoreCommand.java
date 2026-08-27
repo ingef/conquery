@@ -28,27 +28,17 @@ public class RecodeStoreCommand extends Command {
 
 	@Override
 	public void configure(Subparser subparser) {
-		subparser
-				.addArgument("--in")
-				.help("Input store.")
-				.required(true)
-				.type(Arguments.fileType().verifyIsDirectory().verifyCanRead());
+		subparser.addArgument("--in")
+			.help("Input store.")
+			.required(true)
+			.type(
+				Arguments.fileType().verifyIsDirectory().verifyCanRead());
 
-		subparser
-				.addArgument("--out")
-				.help("Output store.")
-				.required(true)
-				.type(Arguments.fileType());
+		subparser.addArgument("--out").help("Output store.").required(true).type(Arguments.fileType());
 
-		subparser
-				.addArgument("--in_logsize")
-				.help("Logsize of incoming store.")
-				.required(true);
+		subparser.addArgument("--in_logsize").help("Logsize of incoming store.").required(true);
 
-		subparser
-				.addArgument("--out_logsize")
-				.help("Logsize of outgoing store.")
-				.required(true);
+		subparser.addArgument("--out_logsize").help("Logsize of outgoing store.").required(true);
 
 	}
 
@@ -61,40 +51,42 @@ public class RecodeStoreCommand extends Command {
 		final File outStoreDirectory = namespace.get("out");
 		final long outLogSize = DataSize.parse(namespace.get("out_logsize")).toKilobytes();
 
-		log.info("Recoding Storage at `{} ({})` to `{} ({})`", inStoreDirectory, inLogSize, outStoreDirectory, outLogSize);
+		log.info(
+			"Recoding Storage at `{} ({})` to `{} ({})`",
+			inStoreDirectory,
+			inLogSize,
+			outStoreDirectory,
+			outLogSize);
 
 		final File[] environments = inStoreDirectory.listFiles(File::isDirectory);
 
-		if(environments == null){
+		if (environments == null) {
 			log.error("In Store is empty");
 			return;
 		}
 
-		Arrays.stream(environments)
-			  .parallel()
-			  .forEach(environment ->
-					   {
-						   final File environmentDirectory = new File(outStoreDirectory, environment.getName());
-						   environmentDirectory.mkdirs();
-						   processEnvironment(environment, inLogSize, environmentDirectory, outLogSize);
-					   });
+		Arrays.stream(environments).parallel().forEach(environment -> {
+			final File environmentDirectory = new File(outStoreDirectory, environment.getName());
+			environmentDirectory.mkdirs();
+			processEnvironment(environment, inLogSize, environmentDirectory, outLogSize);
+		});
 	}
 
 	private void processEnvironment(File inStoreDirectory, long inLogSize, File outStoreDirectory, long outLogSize) {
 		final jetbrains.exodus.env.Environment inEnvironment = Environments.newInstance(
-				inStoreDirectory,
-				new EnvironmentConfig().setLogFileSize(inLogSize)
-									   .setEnvIsReadonly(true)
-									   .setEnvCompactOnOpen(false)
-									   .setEnvCloseForcedly(true)
-									   .setGcEnabled(false)
+			inStoreDirectory,
+			new EnvironmentConfig().setLogFileSize(inLogSize)
+				.setEnvIsReadonly(true)
+				.setEnvCompactOnOpen(
+					false)
+				.setEnvCloseForcedly(true)
+				.setGcEnabled(false)
 		);
 
 		// we dump first, then enable GC.
 		final jetbrains.exodus.env.Environment outEnvironment = Environments.newInstance(
-				outStoreDirectory,
-				new EnvironmentConfig().setLogFileSize(outLogSize)
-																		   .setGcEnabled(false)
+			outStoreDirectory,
+			new EnvironmentConfig().setLogFileSize(outLogSize).setGcEnabled(false)
 		);
 
 
@@ -105,16 +97,16 @@ public class RecodeStoreCommand extends Command {
 		outEnvironment.clear();
 
 		for (String store : stores) {
-			final Store inStore =
-					inEnvironment.computeInExclusiveTransaction(tx -> inEnvironment.openStore(store, StoreConfig.USE_EXISTING, tx, false));
+			final Store inStore = inEnvironment.computeInExclusiveTransaction(
+				tx -> inEnvironment.openStore(store, StoreConfig.USE_EXISTING, tx, false));
 
 			if (inStore == null) {
 				log.error("{} does not exist, aborting.", store);
 				continue;
 			}
 
-			final Store outStore =
-					outEnvironment.computeInExclusiveTransaction(tx -> outEnvironment.openStore(store, StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, tx, true));
+			final Store outStore = outEnvironment.computeInExclusiveTransaction(
+				tx -> outEnvironment.openStore(store, StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, tx, true));
 
 			if (outEnvironment.computeInReadonlyTransaction(outStore::count) > 0) {
 				log.warn("Store is not empty, aborting.");
@@ -137,7 +129,11 @@ public class RecodeStoreCommand extends Command {
 		inEnvironment.close();
 	}
 
-	private void doRecode(jetbrains.exodus.env.Environment inEnvironment, Store inStore, jetbrains.exodus.env.Environment outEnvironment, Store outStore) {
+	private void doRecode(
+		jetbrains.exodus.env.Environment inEnvironment,
+		Store inStore,
+		jetbrains.exodus.env.Environment outEnvironment,
+		Store outStore) {
 
 
 		final Transaction readTx = inEnvironment.beginReadonlyTransaction();
@@ -148,22 +144,25 @@ public class RecodeStoreCommand extends Command {
 
 		log.info("Contains {} Entries", count);
 
-		try(final Cursor cursor = inStore.openCursor(readTx)) {
+		try (final Cursor cursor = inStore.openCursor(readTx)) {
 
 			while (cursor.getNext()) {
 				outStore.putRight(writeTx, cursor.getKey(), cursor.getValue());
 				if (++processed % (1 + (count / 10)) == 0) {
-					log.info("Processed {} / {} ({}%)", processed, count, Math.round(100f * (float) processed / (float) count));
+					log.info(
+						"Processed {} / {} ({}%)",
+						processed,
+						count,
+						Math.round(100f * (float) processed / (float) count));
 				}
 			}
-		}
-		finally {
+		} finally {
 			readTx.abort();
 		}
 
 		log.info("Processed {} / {} ({}%)", processed, count, 100);
 
-		if(!writeTx.commit()){
+		if (!writeTx.commit()) {
 			log.error("Failed to commit Tx for {}", outEnvironment);
 		}
 	}

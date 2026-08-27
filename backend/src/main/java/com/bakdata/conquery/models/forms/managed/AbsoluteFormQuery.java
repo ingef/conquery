@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
@@ -58,7 +58,11 @@ public class AbsoluteFormQuery extends Query {
 	@NotNull
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
-	public AbsoluteFormQuery(Query query, Range<LocalDate> dateRange, ArrayConceptQuery features, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap) {
+	public AbsoluteFormQuery(
+		Query query,
+		Range<LocalDate> dateRange,
+		ArrayConceptQuery features,
+		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap) {
 		this.query = query;
 		this.dateRange = dateRange;
 		this.features = features;
@@ -76,13 +80,13 @@ public class AbsoluteFormQuery extends Query {
 		return new AbsoluteFormQueryPlan(
 			query.createQueryPlan(context),
 			new FormQueryPlan(
-					DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutionsAndAlignmentMap),
-					features.createQueryPlan(context),
-					false
+				DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutionsAndAlignmentMap),
+				features.createQueryPlan(context),
+				false
 			)
 		);
 	}
-	
+
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		final List<ResultInfo> resultInfos = new ArrayList<>();

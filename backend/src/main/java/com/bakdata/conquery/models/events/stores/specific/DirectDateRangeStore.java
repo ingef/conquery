@@ -59,15 +59,13 @@ public class DirectDateRangeStore implements DateRangeStore {
 	public void setDateRange(int event, CDateRange raw) {
 		if (raw.hasLowerBound()) {
 			minStore.setDate(event, raw.getMinValue());
-		}
-		else {
+		} else {
 			minStore.setNull(event);
 		}
 
 		if (raw.hasUpperBound()) {
 			maxStore.setDate(event, raw.getMaxValue());
-		}
-		else {
+		} else {
 			maxStore.setNull(event);
 		}
 	}

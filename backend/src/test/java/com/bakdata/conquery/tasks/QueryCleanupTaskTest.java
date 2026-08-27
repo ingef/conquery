@@ -44,7 +44,9 @@ class QueryCleanupTaskTest {
 
 		createManagedQuery();
 
-		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(QueryCleanupTask.EXPIRATION_PARAM, List.of("PT719H")), null);
+		new QueryCleanupTask(STORAGE, queryExpiration).execute(
+			Map.of(QueryCleanupTask.EXPIRATION_PARAM, List.of("PT719H")),
+			null);
 
 		assertThat(STORAGE.getAllExecutions()).isEmpty();
 	}
@@ -55,7 +57,13 @@ class QueryCleanupTaskTest {
 
 		ConceptQuery query = new ConceptQuery(root);
 
-		final ManagedQuery managedQuery = new ManagedQuery(query, new UserId("test"), new DatasetId("test"), STORAGE, null, null);
+		final ManagedQuery managedQuery = new ManagedQuery(
+			query,
+			new UserId("test"),
+			new DatasetId("test"),
+			STORAGE,
+			null,
+			null);
 
 		managedQuery.setCreationTime(LocalDateTime.now().minus(queryExpiration).minusDays(1));
 
@@ -120,8 +128,7 @@ class QueryCleanupTaskTest {
 
 		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 
-		assertThat(STORAGE.getAllExecutions())
-				.containsExactlyInAnyOrder(managedQuery, managedQueryReused);
+		assertThat(STORAGE.getAllExecutions()).containsExactlyInAnyOrder(managedQuery, managedQueryReused);
 	}
 
 	@Test
@@ -163,7 +170,7 @@ class QueryCleanupTaskTest {
 		final ManagedQuery managedQuery = createManagedQuery();
 
 		final ManagedQuery managedQueryReused = createManagedQuery();
-		managedQueryReused.setTags(new String[] { "tag" });
+		managedQueryReused.setTags(new String[]{"tag"});
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 

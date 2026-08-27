@@ -9,16 +9,16 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor(onConstructor_=@JsonCreator)
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @JsonSerialize(as = Void.class)
-public class ImmutableProgressReporter implements ProgressReporter{
+public class ImmutableProgressReporter implements ProgressReporter {
 	private final long absoluteProgress;
 	private final long max;
 	private final boolean done;
 	private final boolean started;
 	private final long creationTimeMillis; //millis
 	private final long startTimeMillis; //millis
-	
+
 	public ImmutableProgressReporter(ProgressReporter pr) {
 		absoluteProgress = pr.getAbsoluteProgress();
 		startTimeMillis = pr.getStartTimeMillis();
@@ -34,15 +34,15 @@ public class ImmutableProgressReporter implements ProgressReporter{
 		long waitedMillis = System.currentTimeMillis() - creationTimeMillis;
 		return ProgressReporterUtil.buildProgressReportString(done, absoluteProgress, max, elapsedMillis, waitedMillis);
 	}
-	
+
 	@JsonIgnore
 	public long getWaitedSeconds() {
-		if(started) {
+		if (started) {
 			return TimeUnit.MILLISECONDS.toSeconds(startTimeMillis - creationTimeMillis);
 		}
 		return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - creationTimeMillis);
 	}
-	
+
 	@Override
 	public void start() {
 		throw new UnsupportedOperationException();
@@ -70,9 +70,9 @@ public class ImmutableProgressReporter implements ProgressReporter{
 
 	@Override
 	public double getProgress() {
-		if(max <= 0) {
+		if (max <= 0) {
 			return 0;
 		}
-		return ((double)absoluteProgress)/max;
+		return ((double) absoluteProgress) / max;
 	}
 }

@@ -34,14 +34,16 @@ public class AbsoluteFormQueryConverter implements NodeConverter<AbsoluteFormQue
 
 		QueryStep convertedPrerequisite = convertPrerequisite(form, context);
 		StratificationTableFactory tableFactory = new StratificationTableFactory(convertedPrerequisite, context);
-		QueryStep stratificationTable = tableFactory.createAbsoluteStratificationTable(form.getResolutionsAndAlignmentMap(), context);
+		QueryStep stratificationTable = tableFactory.createAbsoluteStratificationTable(
+			form.getResolutionsAndAlignmentMap(),
+			context);
 
 		return formHelper.convertForm(
-				FormType.ABSOLUTE,
-				stratificationTable,
-				form.getFeatures(),
-				form.getResultInfos(),
-				context
+			FormType.ABSOLUTE,
+			stratificationTable,
+			form.getFeatures(),
+			form.getResultInfos(),
+			context
 		);
 	}
 
@@ -51,28 +53,38 @@ public class AbsoluteFormQueryConverter implements NodeConverter<AbsoluteFormQue
 	 */
 	private static QueryStep convertPrerequisite(AbsoluteFormQuery absoluteForm, ConversionContext context) {
 
-		ConversionContext withConvertedPrerequisite = context.getNodeConversions().convert(absoluteForm.getQuery(), context);
-		Preconditions.checkArgument(withConvertedPrerequisite.getQuerySteps().size() == 1, "Base query conversion should produce exactly 1 QueryStep");
+		ConversionContext withConvertedPrerequisite = context.getNodeConversions()
+			.convert(
+				absoluteForm.getQuery(),
+				context);
+		Preconditions.checkArgument(
+			withConvertedPrerequisite.getQuerySteps().size() == 1,
+			"Base query conversion should produce exactly 1 QueryStep");
 		QueryStep convertedPrerequisite = withConvertedPrerequisite.getLastConvertedStep();
 
 		ColumnDateRange bounds = context.getDialectBundle()
-										.getFunctionProvider()
-										.forCDateRange(CDateRange.of(absoluteForm.getDateRange())).as(SharedAliases.STRATIFICATION_BOUNDS.getAlias());
+			.getFunctionProvider()
+			.forCDateRange(
+				CDateRange.of(absoluteForm.getDateRange()))
+			.as(SharedAliases.STRATIFICATION_BOUNDS.getAlias());
 
 		Selects prerequisiteSelects = convertedPrerequisite.getQualifiedSelects();
 		// we only keep the primary column for the upcoming form
 		Selects selects = Selects.builder()
-								 .ids(new SqlIdColumns(prerequisiteSelects.getIds().getPrimaryColumn()))
-								 .stratificationDate(Optional.of(bounds))
-								 .build();
+			.ids(
+				new SqlIdColumns(prerequisiteSelects.getIds().getPrimaryColumn()))
+			.stratificationDate(
+				Optional.of(bounds))
+			.build();
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.EXTRACT_IDS.getSuffix())
-						.selects(selects)
-						.fromTable(QueryStep.toTableLike(convertedPrerequisite.getCteName()))
-						.groupBy(selects.getIds().toFields()) // group by primary column to ensure max. 1 entry per subject
-						.predecessors(List.of(convertedPrerequisite))
-						.build();
+			.cteName(FormCteStep.EXTRACT_IDS.getSuffix())
+			.selects(selects)
+			.fromTable(
+				QueryStep.toTableLike(convertedPrerequisite.getCteName()))
+			.groupBy(selects.getIds().toFields()) // group by primary column to ensure max. 1 entry per subject
+			.predecessors(List.of(convertedPrerequisite))
+			.build();
 	}
 
 }

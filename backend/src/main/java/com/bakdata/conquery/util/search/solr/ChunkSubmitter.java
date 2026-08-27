@@ -74,24 +74,28 @@ public class ChunkSubmitter {
 	}
 
 	private synchronized CompletableFuture<Void> submitChunk() {
-		submitter =  submitter.thenRunAsync(
-				() -> {
-					if (openChunksQueue.isEmpty()) {
-						return;
-					}
+		submitter = submitter.thenRunAsync(
+			() -> {
+				if (openChunksQueue.isEmpty()) {
+					return;
+				}
 
-					// We chunk here for performance.
-					// Too many small document request cause a lot of overhead.
-					// A too large chunk slows request submission and solr.
-					do  {
-						int chunksCount = openChunksQueue.size();
+				// We chunk here for performance.
+				// Too many small document request cause a lot of overhead.
+				// A too large chunk slows request submission and solr.
+				do {
+					int chunksCount = openChunksQueue.size();
 
-						Collection<SolrFrontendValue> chunk = openChunksQueue.poll();
-						log.debug("Adding {} (of currently ca. {}) documents for {}", chunk.size(), chunksCount*updateChunkSize, searchable);
-						registerValues(chunk);
-					} while (!openChunksQueue.isEmpty());
-				},
-				executor
+					Collection<SolrFrontendValue> chunk = openChunksQueue.poll();
+					log.debug(
+						"Adding {} (of currently ca. {}) documents for {}",
+						chunk.size(),
+						chunksCount * updateChunkSize,
+						searchable);
+					registerValues(chunk);
+				} while (!openChunksQueue.isEmpty());
+			},
+			executor
 		);
 
 		return submitter;
@@ -111,12 +115,20 @@ public class ChunkSubmitter {
 
 		try {
 			Stopwatch stopwatch = Stopwatch.createStarted();
-			log.trace("BEGIN registering {} values to {} for {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable);
+			log.trace(
+				"BEGIN registering {} values to {} for {}",
+				solrFrontendValues.size(),
+				solrClient.getDefaultCollection(),
+				searchable);
 			solrClient.addBeans(solrFrontendValues); // do not commit yet
-			log.trace("DONE registering {} values to {} for {} in {}", solrFrontendValues.size(), solrClient.getDefaultCollection(), searchable, stopwatch);
+			log.trace(
+				"DONE registering {} values to {} for {} in {}",
+				solrFrontendValues.size(),
+				solrClient.getDefaultCollection(),
+				searchable,
+				stopwatch);
 
-		}
-		catch (SolrServerException | IOException e) {
+		} catch (SolrServerException | IOException e) {
 			clientError = e;
 			try {
 				solrClient.close();

@@ -1,10 +1,10 @@
 package com.bakdata.conquery.apiv1.frontend;
 
+import jakarta.validation.Valid;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import jakarta.validation.Valid;
 
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import lombok.Getter;

@@ -40,7 +40,8 @@ public final class IdUtil {
 		try {
 			Class<?> returnType = MethodUtils.getAccessibleMethod(cl, methodName).getReturnType();
 			if (!Id.class.isAssignableFrom(returnType) || Id.class.equals(returnType)) {
-				throw new IllegalStateException("The type `" + returnType + "` of `" + cl + "#" + methodName + "` is not a specific subtype of Id");
+				throw new IllegalStateException(
+					"The type `" + returnType + "` of `" + cl + "#" + methodName + "` is not a specific subtype of Id");
 			}
 
 			if (NamespacedIdentifiable.class.isAssignableFrom(cl) != NamespacedId.class.isAssignableFrom(returnType)) {
@@ -51,8 +52,7 @@ public final class IdUtil {
 			CLASS_TO_ID_MAP.put(cl, result);
 
 			return (Class<T>) Objects.requireNonNull(result);
-		}
-		catch (SecurityException e1) {
+		} catch (SecurityException e1) {
 			throw new IllegalStateException("The type " + cl + " has no " + methodName + " method", e1);
 		}
 	}
@@ -95,13 +95,13 @@ public final class IdUtil {
 		default ID checkNoRemaining(ID id, IdIterator remaining, List<String> allParts) {
 			if (remaining.remaining() > 0) {
 				throw new IllegalStateException(
-						String.format(
-								"After parsing '%s' as id '%s' of type %s there are parts remaining: '%s'",
-								IdUtil.JOINER.join(allParts),
-								id,
-								id.getClass().getSimpleName(),
-								IdUtil.JOINER.join(remaining.getRemaining())
-						)
+					String.format(
+						"After parsing '%s' as id '%s' of type %s there are parts remaining: '%s'",
+						IdUtil.JOINER.join(allParts),
+						id,
+						id.getClass().getSimpleName(),
+						IdUtil.JOINER.join(remaining.getRemaining())
+					)
 				);
 			}
 			return id;
@@ -133,8 +133,7 @@ public final class IdUtil {
 			if (split.length > 0 && split[0].equals(dataset)) {
 				//if already prefixed
 				result = split;
-			}
-			else {
+			} else {
 				result = new String[split.length + 1];
 				result[0] = dataset;
 				System.arraycopy(split, 0, result, 1, split.length);

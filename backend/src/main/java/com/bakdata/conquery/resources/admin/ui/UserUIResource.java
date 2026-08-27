@@ -30,20 +30,25 @@ public class UserUIResource {
 
 	@GET
 	public View getUsers() {
-		return new UIView<>("users.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getAdminProcessor()
-																																			.getAllUsers()
+		return new UIView<>(
+			"users.html.ftl",
+			uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
+			uiProcessor.getAdminProcessor().getAllUsers()
 		);
 	}
 
 	/**
 	 * End point for retrieving information about a specific user.
-	 * 
+	 *
 	 * @param user Unique id of the user.
 	 * @return A view holding the information about the user.
 	 */
 	@Path("{" + USER_ID + "}")
 	@GET
 	public View getUser(@PathParam(USER_ID) UserId user) {
-		return new UIView<>("user.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getUserContent(user));
+		return new UIView<>(
+			"user.html.ftl",
+			uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
+			uiProcessor.getUserContent(user));
 	}
 }

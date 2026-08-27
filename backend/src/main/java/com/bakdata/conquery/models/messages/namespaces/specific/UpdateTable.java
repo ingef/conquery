@@ -12,8 +12,12 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id="UPDATE_TABLE", base=NamespacedMessage.class) @Slf4j
-@AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString(callSuper=true)
+@CPSType(id = "UPDATE_TABLE", base = NamespacedMessage.class)
+@Slf4j
+@AllArgsConstructor(onConstructor_ = @JsonCreator)
+@Getter
+@Setter
+@ToString(callSuper = true)
 public class UpdateTable extends WorkerMessage {
 
 	private Table table;

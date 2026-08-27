@@ -12,12 +12,12 @@ import org.jetbrains.annotations.TestOnly;
  */
 @CPSType(id = "FORM_TYPE", base = StringPermissionBuilder.class)
 public class FormPermission extends StringPermissionBuilder {
-	
+
 	public static final String DOMAIN = "forms";
 
 	private static final Set<Ability> ALLOWED_ABILITIES = Set.of(
 		Ability.CREATE);
-	
+
 	public final static FormPermission INSTANCE = new FormPermission();
 
 	@Override

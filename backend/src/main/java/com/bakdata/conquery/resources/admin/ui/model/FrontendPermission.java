@@ -27,11 +27,11 @@ public class FrontendPermission implements Comparable<FrontendPermission> {
 
 	public static FrontendPermission from(ConqueryPermission cPermission) {
 		return new FrontendPermission(
-				cPermission.getDomains(),
-				cPermission.getAbilities(),
-				cPermission.getInstances(),
-				LocalDateTime.ofInstant(cPermission.getCreationTime(), TIMEZONE).format(DateTimeFormatter.ISO_DATE_TIME),
-				cPermission.toString()
+			cPermission.getDomains(),
+			cPermission.getAbilities(),
+			cPermission.getInstances(),
+			LocalDateTime.ofInstant(cPermission.getCreationTime(), TIMEZONE).format(DateTimeFormatter.ISO_DATE_TIME),
+			cPermission.toString()
 		);
 	}
 

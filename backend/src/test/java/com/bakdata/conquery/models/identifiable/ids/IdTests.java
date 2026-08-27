@@ -34,48 +34,49 @@ public class IdTests {
 	public static final NamespacedStorageProvider STORAGE = new TestNamespacedStorageProvider();
 
 	public static Stream<Arguments> reflectionTest() {
-		return CPSTypeIdResolver
-				.SCAN_RESULT
-				.getClassesImplementing(Identifiable.class.getName()).loadClasses()
-				.stream()
-				.filter(cl -> !cl.isInterface())
-				.filter(cl -> !Modifier.isAbstract(cl.getModifiers()))
-				//filter test classes
-				.filter(cl -> !cl.toString().toLowerCase().contains("test"))
-				.map(cl -> {
+		return CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(
+			Identifiable.class.getName())
+			.loadClasses()
+			.stream()
+			.filter(cl -> !cl.isInterface())
+			.filter(
+				cl -> !Modifier.isAbstract(cl.getModifiers()))
+			//filter test classes
+			.filter(cl -> !cl.toString().toLowerCase().contains("test"))
+			.map(cl -> {
 
-					Class<?> idClazz = null;
-					// Try to get the specific Id
+				Class<?> idClazz = null;
+				// Try to get the specific Id
+				try {
+					idClazz = cl.getMethod("getId").getReturnType();
+
+				} catch (NoSuchMethodException e) {
+					return fail(cl.getName() + " does not implement the method 'getId()'");
+				}
+
+				if (Modifier.isAbstract(idClazz.getModifiers())) {
 					try {
-						idClazz = cl.getMethod("getId").getReturnType();
+						idClazz = cl.getMethod("createId").getReturnType();
 
+					} catch (NoSuchMethodException e) {
+						return fail(
+							cl.getName() + " does not implement the method 'createId()' unable to retrieve specific id class");
 					}
-					catch (NoSuchMethodException e) {
-						return fail(cl.getName() + " does not implement the method 'getId()'");
-					}
+				}
 
-					if (Modifier.isAbstract(idClazz.getModifiers())) {
-						try {
-							idClazz = cl.getMethod("createId").getReturnType();
+				String packageString = "com.bakdata.conquery.models.identifiable.ids.specific.";
+				if (!idClazz.getName().startsWith(packageString)) {
+					return fail(
+						"The id class " + idClazz + " is not located in the package " + packageString + ". Please clean that up.");
+				}
 
-						}
-						catch (NoSuchMethodException e) {
-							return fail(cl.getName() + " does not implement the method 'createId()' unable to retrieve specific id class");
-						}
-					}
-
-					String packageString = "com.bakdata.conquery.models.identifiable.ids.specific.";
-					if (!idClazz.getName().startsWith(packageString)) {
-						return fail("The id class " + idClazz + " is not located in the package " + packageString + ". Please clean that up.");
-					}
-
-					return Arguments.of(
-							cl,
-							idClazz
-					);
-				});
+				return Arguments.of(
+					cl,
+					idClazz
+				);
+			});
 	}
-	
+
 	@Test
 	public void testEquals() {
 		ConceptTreeChildId idA = new ConceptTreeChildId(
@@ -104,7 +105,7 @@ public class IdTests {
 		assertThat(idA).hasSameHashCodeAs(idB);
 		assertThat(idA.toString()).isEqualTo(idB.toString());
 	}
-	
+
 	@Test
 	public void testStringSerialization() {
 		ConceptTreeChildId id = new ConceptTreeChildId(
@@ -124,7 +125,7 @@ public class IdTests {
 		assertThat(copy).hasSameHashCodeAs(id);
 		assertThat(copy.toString()).isEqualTo(id.toString());
 	}
-	
+
 	@Test
 	public void testJacksonSerialization() throws IOException {
 		ConceptTreeChildId id = new ConceptTreeChildId(
@@ -147,13 +148,18 @@ public class IdTests {
 		assertThat(copy).hasSameHashCodeAs(id);
 		assertThat(copy.toString()).isEqualTo(id.toString());
 	}
-	
+
 	@Test
 	public void testInterning() throws IOException {
 
-		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(new ConqueryConfig(), Validators.newValidator());
+		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(
+			new ConqueryConfig(),
+			Validators.newValidator());
 		ObjectMapper objectMapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
-		internalMapperFactory.customizeApiObjectMapper(objectMapper, mock(DatasetRegistry.class), new NonPersistentStoreFactory().createMetaStorage());
+		internalMapperFactory.customizeApiObjectMapper(
+			objectMapper,
+			mock(DatasetRegistry.class),
+			new NonPersistentStoreFactory().createMetaStorage());
 
 		STORAGE.injectInto(objectMapper); // DatasetRegistry-mock doesn't properly inject itself
 
@@ -170,7 +176,7 @@ public class IdTests {
 		assertThat(id1.findConcept()).isSameAs(id2.findConcept());
 		assertThat(id1.findConcept().getDataset()).isSameAs(id2.findConcept().getDataset());
 	}
-	
+
 	@Test
 	public void testJacksonBinarySerialization() throws IOException {
 		ConceptTreeChildId id = new ConceptTreeChildId(

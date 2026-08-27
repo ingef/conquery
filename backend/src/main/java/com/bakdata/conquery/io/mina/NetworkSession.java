@@ -44,16 +44,20 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 			while (!queuedMessages.offer(message, 2, TimeUnit.MINUTES)) {
 				logWaitingMessages(message);
 			}
-		}
-		catch (InterruptedException e) {
+		} catch (InterruptedException e) {
 			log.error("Unexpected interruption, while trying to queue: {}", message, e);
 			return DefaultWriteFuture.newNotWrittenFuture(session, e);
 		}
 		WriteFuture future = session.write(message);
-    
+
 		future.addListener(f -> {
 			if (f instanceof WriteFuture writeFuture && !writeFuture.isWritten()) {
-				log.error("Could not write message: {} ({} -> {})", message, session.getLocalAddress(), session.getRemoteAddress(), writeFuture.getException());
+				log.error(
+					"Could not write message: {} ({} -> {})",
+					message,
+					session.getLocalAddress(),
+					session.getRemoteAddress(),
+					writeFuture.getException());
 			}
 		});
 		future.addListener(f -> queuedMessages.remove(message));
@@ -65,11 +69,11 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 		final String waiting;
 		if (log.isTraceEnabled()) {
 			waiting = new ArrayList<>(queuedMessages).stream()
-													 .map(Objects::toString)
-													 .map(NetworkSession::shorten)
-													 .collect(Collectors.joining("\n\t\t- "));
-		}
-		else {
+				.map(Objects::toString)
+				.map(
+					NetworkSession::shorten)
+				.collect(Collectors.joining("\n\t\t- "));
+		} else {
 			waiting = "%s messages".formatted(queuedMessages.size());
 		}
 

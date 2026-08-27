@@ -1,7 +1,5 @@
 package com.bakdata.conquery.resources.hierarchies;
 
-import java.lang.reflect.Method;
-
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HEAD;
@@ -10,6 +8,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.UriBuilder;
+import java.lang.reflect.Method;
 
 import lombok.experimental.UtilityClass;
 
@@ -51,7 +50,7 @@ public final class HierarchyHelper {
 			throw new IllegalArgumentException(
 				String.format("Method %s not found or is not annotated as HttpMethod in class %s", methodName, clazz));
 		}
-		
+
 		boolean foundPath = false;
 
 		if (clazz.isAnnotationPresent(Path.class)) {
@@ -63,20 +62,19 @@ public final class HierarchyHelper {
 			uri.path(clazz, methodName);
 			foundPath = true;
 		}
-		
+
 		if (!foundPath) {
-			throw new IllegalArgumentException("The javax.ws.rs.Path annotation was present neither on the class '"+ clazz.getName() + "' nor on the method " + methodName + "'.");
+			throw new IllegalArgumentException(
+				"The javax.ws.rs.Path annotation was present neither on the class '" + clazz
+					.getName() + "' nor on the method " + methodName + "'.");
 		}
-		
+
 		return uri;
 	}
 
 	private static boolean isEndpoint(Method method) {
-		return method.isAnnotationPresent(GET.class)
-			|| method.isAnnotationPresent(DELETE.class)
-			|| method.isAnnotationPresent(HEAD.class)
-			|| method.isAnnotationPresent(OPTIONS.class)
-			|| method.isAnnotationPresent(POST.class)
-			|| method.isAnnotationPresent(PUT.class);
+		return method.isAnnotationPresent(GET.class) || method.isAnnotationPresent(
+			DELETE.class) || method.isAnnotationPresent(HEAD.class) || method.isAnnotationPresent(
+				OPTIONS.class) || method.isAnnotationPresent(POST.class) || method.isAnnotationPresent(PUT.class);
 	}
 }

@@ -9,7 +9,9 @@ import lombok.Setter;
 public abstract class MessageToManagerNode extends NetworkMessage<NetworkMessageContext.ManagerNodeNetworkContext> {
 
 	public static abstract class Slow extends MessageToManagerNode implements SlowMessage {
-		@JsonIgnore @Getter @Setter
+		@JsonIgnore
+		@Getter
+		@Setter
 		private ProgressReporter progressReporter;
 	}
 }

@@ -22,18 +22,20 @@ class MergeCte extends DateAggregationCte {
 		List<QueryStep> noOverlapSteps = aggregationAction.getNoOverlapSelects(context);
 		QueryStep overlapStep = aggregationAction.getOverlapStep(context);
 
-		List<QueryStep> unionSteps = noOverlapSteps.stream().map(MergeCte::createUnionStep).collect(Collectors.toList());
+		List<QueryStep> unionSteps = noOverlapSteps.stream()
+			.map(MergeCte::createUnionStep)
+			.collect(
+				Collectors.toList());
 
-		return QueryStep.builder()
-						.selects(overlapStep.getQualifiedSelects())
-						.union(unionSteps);
+		return QueryStep.builder().selects(overlapStep.getQualifiedSelects()).union(unionSteps);
 	}
 
 	private static QueryStep createUnionStep(QueryStep noOverlapStep) {
 		return QueryStep.builder()
-						.selects(noOverlapStep.getQualifiedSelects())
-						.fromTable(QueryStep.toTableLike(noOverlapStep.getCteName()))
-						.build();
+			.selects(noOverlapStep.getQualifiedSelects())
+			.fromTable(
+				QueryStep.toTableLike(noOverlapStep.getCteName()))
+			.build();
 	}
 
 }

@@ -15,26 +15,34 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PasswordHelper {
 
-	private final static Map<Class<? extends HashingFunction>, Function<String, HashingFunction>> HASH_FUNCTION_GENERATORS = Map.of(
-			Argon2Function.class, Argon2Function::getInstanceFromHash,
-			ScryptFunction.class, ScryptFunction::getInstanceFromHash,
-			BcryptFunction.class, BcryptFunction::getInstanceFromHash,
-			CompressedPBKDF2Function.class, CompressedPBKDF2Function::getInstanceFromHash
-	);
+	private final static Map<Class<? extends HashingFunction>, Function<String, HashingFunction>> HASH_FUNCTION_GENERATORS = Map
+		.of(
+			Argon2Function.class,
+			Argon2Function::getInstanceFromHash,
+			ScryptFunction.class,
+			ScryptFunction::getInstanceFromHash,
+			BcryptFunction.class,
+			BcryptFunction::getInstanceFromHash,
+			CompressedPBKDF2Function.class,
+			CompressedPBKDF2Function::getInstanceFromHash
+		);
 
 	/**
 	 * Determines the function used to create the provided hash.
 	 * The function can be used to hash a plain credential in order to check the hashes for equality.
 	 */
 	public HashingFunction getHashingFunction(String hash) {
-		for (Map.Entry<Class<? extends HashingFunction>, Function<String, HashingFunction>> hashFunctionGenerator : HASH_FUNCTION_GENERATORS.entrySet()) {
+		for (Map.Entry<Class<? extends HashingFunction>, Function<String, HashingFunction>> hashFunctionGenerator : HASH_FUNCTION_GENERATORS
+			.entrySet()) {
 			try {
 				return hashFunctionGenerator.getValue().apply(hash);
-			}
-			catch (Exception e) {
-				log.trace("Could not create hash function instance from hash using '{}'", hashFunctionGenerator.getKey());
+			} catch (Exception e) {
+				log.trace(
+					"Could not create hash function instance from hash using '{}'",
+					hashFunctionGenerator.getKey());
 			}
 		}
-		throw new IllegalArgumentException("No supported hash function recognized hash. Supported functions: " + HASH_FUNCTION_GENERATORS.keySet());
+		throw new IllegalArgumentException(
+			"No supported hash function recognized hash. Supported functions: " + HASH_FUNCTION_GENERATORS.keySet());
 	}
 }

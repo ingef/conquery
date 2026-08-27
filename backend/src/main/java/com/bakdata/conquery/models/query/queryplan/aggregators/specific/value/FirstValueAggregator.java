@@ -60,9 +60,10 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 			if (selectedBucket == null) {
 				selectedBucket = bucket;
 				selectedEvent = event;
-			}
-			else {
-				log.trace("There is more than one value for the {}. Choosing the very first one encountered", getClass().getSimpleName());
+			} else {
+				log.trace(
+					"There is more than one value for the {}. Choosing the very first one encountered",
+					getClass().getSimpleName());
 			}
 			return;
 		}
@@ -79,9 +80,10 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 			date = next;
 			selectedEvent = event;
 			selectedBucket = bucket;
-		}
-		else if (next == date) {
-			log.trace("There is more than one value for the {}. Choosing the very first one encountered", getClass().getSimpleName());
+		} else if (next == date) {
+			log.trace(
+				"There is more than one value for the {}. Choosing the very first one encountered",
+				getClass().getSimpleName());
 		}
 	}
 

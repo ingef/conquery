@@ -1,12 +1,5 @@
 package com.bakdata.conquery;
 
-import java.net.InetAddress;
-import java.nio.charset.Charset;
-import java.time.ZonedDateTime;
-import java.util.Currency;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -15,6 +8,13 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+import java.net.InetAddress;
+import java.nio.charset.Charset;
+import java.time.ZonedDateTime;
+import java.util.Currency;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.IdLabel;
@@ -86,94 +86,196 @@ import io.dropwizard.util.DataSize;
 import io.dropwizard.util.Duration;
 
 public class Constants {
-	public static final Group[] GROUPS = {
-			Group.builder().name("Concept JSONs")
-				 .description("Each `*.concept.json` has to contain exactly one [Concept](#Base-Concept).")
-				 .base(new Base(Concept.class, "A concept is a collection of filters and selects and their connection to tables."))
-				 .base(new Base(CTCondition.class, "These represent guard conditions. A value matches a [ConceptElement](#ConceptElement) if it matches its condition and its parent"))
-				 .base(new Base(Filter.class, "These are used to define filters, than can be used to reduce the result set."))
-				 .base(new Base(Select.class, "These are used to define selects, that can be used to create additional CSV columns."))
-				 .otherClass(Connector.class)
-				 .otherClass(KeyValue.class)
-				 .otherClass(ConceptTreeChild.class)
-				 .otherClass(FilterTemplate.class)
-				 .otherClass(ValidityDate.class)
-				 .markerInterface(UniversalSelect.class)
-					.build(),
-			Group.builder().name("Import JSONs")
-				 .description("Each `*.import.json` has to contain exactly one [ImportDescriptor](#Type-ImportDescriptor).")
-				 .base(new Base(OutputDescription.class, ""))
-				 .otherClass(TableImportDescriptor.class)
-				 .otherClass(TableInputDescriptor.class)
-					.build(),
-			Group.builder().name("Table JSONs")
-				 .description("Each `*.table.json` has to contain exactly one [Tabel](#Type-Tabel).")
-				 .otherClass(Table.class)
-				 .otherClass(Column.class)
-					.build(),
-			Group.builder().name("Config JSON")
-				 .description("The `config.json` is required for every type of execution. Its root element is a [ConqueryConfig](#Type-ConqueryConfig) object.")
-				 .base(new Base(AuthorizationConfig.class, "An `AuthorizationConfig` defines the initial users that are created on application startup and other permission related options."))
-				 .base(new Base(AuthenticationRealmFactory.class, "An `AuthenticationConfig` is used to define how specific realms for authentication are configured."))
-				 .base(new Base(PluginConfig.class, "A `PluginConfig` is used to define settings for Conquery plugins."))
-				 .otherClass(APIConfig.class)
-				 .otherClass(ConqueryConfig.class)
-				 .otherClass(ClusterConfig.class)
-				 .otherClass(CSVConfig.class)
-				 .otherClass(FrontendConfig.class)
-				 .otherClass(LocaleConfig.class)
-				 .otherClass(PreprocessingConfig.class)
-				 .otherClass(QueryConfig.class)
-				 .otherClass(StandaloneConfig.class)
-				 .otherClass(XodusStoreFactory.class)
-				 .otherClass(MinaConfig.class)
-				 .otherClass(FrontendConfig.CurrencyConfig.class)
-				 .otherClass(XodusConfig.class)
-				 .otherClasses(List.of(SqlConnectorConfig.class, DatabaseConnectionConfig.class, Dialect.class))
-				 .hide(Charset.class)
-				 .hide(Currency.class)
-				 .hide(InetAddress.class)
-				 .hide(Locale.class)
-				 .hide(Duration.class)
-				 .hide(DataSize.class)
-					.build(),
-			Group.builder().name("REST API JSONs")
-				 .resource(ConfigResource.class)
-				 .resource(DatasetsResource.class)
-				 .resource(DatasetResource.class)
-				 .resource(ConceptResource.class)
-				 .resource(FilterResource.class)
-				 .resource(QueryResource.class)
-				 .resource(ResultCsvResource.class)
-				 .base(new Base(QueryDescription.class, ""))
-				 .base(new Base(CQElement.class, ""))
-				 .base(new Base(FilterValue.class, ""))
-				 .base(new Base(SemanticType.class, ""))
+	public static final Group[] GROUPS = {Group.builder()
+		.name("Concept JSONs")
+		.description(
+			"Each `*.concept.json` has to contain exactly one [Concept](#Base-Concept).")
+		.base(
+			new Base(
+				Concept.class,
+				"A concept is a collection of filters and selects and their connection to tables."))
+		.base(
+			new Base(
+				CTCondition.class,
+				"These represent guard conditions. A value matches a [ConceptElement](#ConceptElement) if it matches its condition and its parent"))
+		.base(
+			new Base(
+				Filter.class,
+				"These are used to define filters, than can be used to reduce the result set."))
+		.base(
+			new Base(
+				Select.class,
+				"These are used to define selects, that can be used to create additional CSV columns."))
+		.otherClass(
+			Connector.class)
+		.otherClass(KeyValue.class)
+		.otherClass(
+			ConceptTreeChild.class)
+		.otherClass(FilterTemplate.class)
+		.otherClass(
+			ValidityDate.class)
+		.markerInterface(
+			UniversalSelect.class)
+		.build(), Group.builder()
+			.name(
+				"Import JSONs")
+			.description(
+				"Each `*.import.json` has to contain exactly one [ImportDescriptor](#Type-ImportDescriptor).")
+			.base(
+				new Base(OutputDescription.class, ""))
+			.otherClass(
+				TableImportDescriptor.class)
+			.otherClass(
+				TableInputDescriptor.class)
+			.build(), Group.builder()
+				.name(
+					"Table JSONs")
+				.description(
+					"Each `*.table.json` has to contain exactly one [Tabel](#Type-Tabel).")
+				.otherClass(
+					Table.class)
+				.otherClass(
+					Column.class)
+				.build(), Group.builder()
+					.name(
+						"Config JSON")
+					.description(
+						"The `config.json` is required for every type of execution. Its root element is a [ConqueryConfig](#Type-ConqueryConfig) object.")
+					.base(
+						new Base(
+							AuthorizationConfig.class,
+							"An `AuthorizationConfig` defines the initial users that are created on application startup and other permission related options."))
+					.base(
+						new Base(
+							AuthenticationRealmFactory.class,
+							"An `AuthenticationConfig` is used to define how specific realms for authentication are configured."))
+					.base(
+						new Base(
+							PluginConfig.class,
+							"A `PluginConfig` is used to define settings for Conquery plugins."))
+					.otherClass(
+						APIConfig.class)
+					.otherClass(
+						ConqueryConfig.class)
+					.otherClass(
+						ClusterConfig.class)
+					.otherClass(
+						CSVConfig.class)
+					.otherClass(
+						FrontendConfig.class)
+					.otherClass(
+						LocaleConfig.class)
+					.otherClass(
+						PreprocessingConfig.class)
+					.otherClass(
+						QueryConfig.class)
+					.otherClass(
+						StandaloneConfig.class)
+					.otherClass(
+						XodusStoreFactory.class)
+					.otherClass(
+						MinaConfig.class)
+					.otherClass(
+						FrontendConfig.CurrencyConfig.class)
+					.otherClass(
+						XodusConfig.class)
+					.otherClasses(
+						List.of(
+							SqlConnectorConfig.class,
+							DatabaseConnectionConfig.class,
+							Dialect.class))
+					.hide(
+						Charset.class)
+					.hide(
+						Currency.class)
+					.hide(
+						InetAddress.class)
+					.hide(
+						Locale.class)
+					.hide(
+						Duration.class)
+					.hide(
+						DataSize.class)
+					.build(), Group.builder()
+						.name(
+							"REST API JSONs")
+						.resource(
+							ConfigResource.class)
+						.resource(
+							DatasetsResource.class)
+						.resource(
+							DatasetResource.class)
+						.resource(
+							ConceptResource.class)
+						.resource(
+							FilterResource.class)
+						.resource(
+							QueryResource.class)
+						.resource(
+							ResultCsvResource.class)
+						.base(
+							new Base(
+								QueryDescription.class,
+								""))
+						.base(
+							new Base(
+								CQElement.class,
+								""))
+						.base(
+							new Base(
+								FilterValue.class,
+								""))
+						.base(
+							new Base(
+								SemanticType.class,
+								""))
 
-				 .hide(Response.class)
-				 .hide(ZonedDateTime.class)
-				 .hide(Range.class)
+						.hide(
+							Response.class)
+						.hide(
+							ZonedDateTime.class)
+						.hide(
+							Range.class)
 
-				 .otherClass(FullExecutionStatus.class)
-				 .otherClass(OverviewExecutionStatus.class)
-				 .otherClass(IdLabel.class)
-				 .otherClass(FrontendConfig.class)
-				 .otherClass(FrontendRoot.class)
-				 .otherClass(FrontendValue.class)
-				 .otherClass(FilterResource.FilterValues.class)
-				 .otherClass(MetaDataPatch.class)
-				 .otherClass(FrontendConfig.CurrencyConfig.class)
-				 .otherClass(ConceptsProcessor.ResolvedFilterResult.class)
-				 .otherClass(FilterResource.AutocompleteRequest.class)
-				 .otherClass(ExecutionStatus.class)
-				 .otherClass(ConceptsProcessor.ResolvedConceptsResult.class)
-				 .otherClass(ConceptResource.ConceptCodeList.class)
-				 .otherClass(CQTable.class)
-				 .otherClass(ValidityDateContainer.class)
-				 .otherClass(FormConfig.class)
-				 .otherClass(FormConfigOverviewRepresentation.class)
-				 .otherClass(FormConfigFullRepresentation.class)
-					.build()
+						.otherClass(
+							FullExecutionStatus.class)
+						.otherClass(
+							OverviewExecutionStatus.class)
+						.otherClass(
+							IdLabel.class)
+						.otherClass(
+							FrontendConfig.class)
+						.otherClass(
+							FrontendRoot.class)
+						.otherClass(
+							FrontendValue.class)
+						.otherClass(
+							FilterResource.FilterValues.class)
+						.otherClass(
+							MetaDataPatch.class)
+						.otherClass(
+							FrontendConfig.CurrencyConfig.class)
+						.otherClass(
+							ConceptsProcessor.ResolvedFilterResult.class)
+						.otherClass(
+							FilterResource.AutocompleteRequest.class)
+						.otherClass(
+							ExecutionStatus.class)
+						.otherClass(
+							ConceptsProcessor.ResolvedConceptsResult.class)
+						.otherClass(
+							ConceptResource.ConceptCodeList.class)
+						.otherClass(
+							CQTable.class)
+						.otherClass(
+							ValidityDateContainer.class)
+						.otherClass(
+							FormConfig.class)
+						.otherClass(
+							FormConfigOverviewRepresentation.class)
+						.otherClass(
+							FormConfigFullRepresentation.class)
+						.build()
 	};
 
 	public static final String JSON_CREATOR = JsonCreator.class.getName();

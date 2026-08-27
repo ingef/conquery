@@ -24,7 +24,10 @@ public class AuthOverviewUIResource {
 
 	@GET
 	public View getOverview(@Context ContainerRequestContext request) {
-		return new UIView<>("authOverview.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(request)), uiProcessor.getAuthOverview());
+		return new UIView<>(
+			"authOverview.html.ftl",
+			uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(request)),
+			uiProcessor.getAuthOverview());
 	}
 
 }

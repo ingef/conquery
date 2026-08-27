@@ -17,11 +17,11 @@ import com.bakdata.conquery.models.config.IdColumnConfig;
  * @param contactEmail        typical a mailto-url
  */
 public record FrontendConfiguration(
-		List<VersionContainer> versions,
-		FrontendConfig.CurrencyConfig currency,
-		IdColumnConfig queryUpload,
-		URL manualUrl,
-		String contactEmail,
-		LocalDate observationPeriodStart
+	List<VersionContainer> versions,
+	FrontendConfig.CurrencyConfig currency,
+	IdColumnConfig queryUpload,
+	URL manualUrl,
+	String contactEmail,
+	LocalDate observationPeriodStart
 ) {
 }

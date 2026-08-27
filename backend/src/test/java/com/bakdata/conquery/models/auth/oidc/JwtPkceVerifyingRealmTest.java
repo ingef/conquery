@@ -60,13 +60,21 @@ class JwtPkceVerifyingRealmTest {
 
 		// Create the realm
 		REALM = new JwtPkceVerifyingRealm(
-				() -> Optional.of(new JwtPkceVerifyingRealmFactory.IdpConfiguration(Map.of(KEY_ID, PUBLIC_KEY), URI.create("auth"), URI.create("token"), URI.create("logout"), HTTP_REALM_URL)),
-				AUDIENCE,
-				List.of(JwtPkceVerifyingRealmFactory.ScriptedTokenChecker.create("t.getOtherClaims().get(\"groups\").equals(\"conquery\")")),
-				List.of(ALTERNATIVE_ID_CLAIM),
-				STORAGE,
-				TOKEN_LEEWAY,
-				BaseValidator.newValidator()
+			() -> Optional.of(
+				new JwtPkceVerifyingRealmFactory.IdpConfiguration(
+					Map.of(KEY_ID, PUBLIC_KEY),
+					URI.create("auth"),
+					URI.create("token"),
+					URI.create("logout"),
+					HTTP_REALM_URL)),
+			AUDIENCE,
+			List.of(
+				JwtPkceVerifyingRealmFactory.ScriptedTokenChecker.create(
+					"t.getOtherClaims().get(\"groups\").equals(\"conquery\")")),
+			List.of(ALTERNATIVE_ID_CLAIM),
+			STORAGE,
+			TOKEN_LEEWAY,
+			BaseValidator.newValidator()
 		);
 	}
 
@@ -86,20 +94,25 @@ class JwtPkceVerifyingRealmTest {
 		Date issueDate = new Date();
 		Date expDate = DateUtils.addMinutes(issueDate, 1);
 		String token = JWT.create()
-						  .withIssuer(HTTP_REALM_URL)
-						  .withAudience(AUDIENCE)
-						  .withSubject(expected.getName())
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withClaim("groups", "conquery")
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withKeyId(KEY_ID)
-						  .withJWTId(UUID.randomUUID().toString())
-						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+			.withIssuer(HTTP_REALM_URL)
+			.withAudience(AUDIENCE)
+			.withSubject(
+				expected.getName())
+			.withIssuedAt(issueDate)
+			.withExpiresAt(expDate)
+			.withClaim(
+				"groups",
+				"conquery")
+			.withIssuedAt(issueDate)
+			.withExpiresAt(expDate)
+			.withKeyId(KEY_ID)
+			.withJWTId(
+				UUID.randomUUID().toString())
+			.sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
-		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
+		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(
+			expected);
 	}
 
 	@Test
@@ -115,22 +128,27 @@ class JwtPkceVerifyingRealmTest {
 		Date issueDate = new Date();
 		Date expDate = DateUtils.addMinutes(issueDate, 1);
 		String token = JWT.create()
-						  .withIssuer(HTTP_REALM_URL)
-						  .withAudience(AUDIENCE)
-						  .withSubject(expected.getName())
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withClaim("groups", "conquery")
-						  .withClaim("resource_access", Map.of(AUDIENCE, Map.of("roles", List.of("admin", "unknown")))) // See structure of AccessToken.Access
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withKeyId(KEY_ID)
-						  .withJWTId(UUID.randomUUID().toString())
-						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+			.withIssuer(HTTP_REALM_URL)
+			.withAudience(AUDIENCE)
+			.withSubject(
+				expected.getName())
+			.withIssuedAt(issueDate)
+			.withExpiresAt(expDate)
+			.withClaim(
+				"groups",
+				"conquery")
+			.withClaim("resource_access", Map.of(AUDIENCE, Map.of("roles", List.of("admin", "unknown")))) // See structure of AccessToken.Access
+			.withIssuedAt(issueDate)
+			.withExpiresAt(expDate)
+			.withKeyId(KEY_ID)
+			.withJWTId(
+				UUID.randomUUID().toString())
+			.sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 
 		BearerToken accessToken = new BearerToken(token);
 
-		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
+		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(
+			expected);
 		assertThat(expected.getRoles()).contains(role.getId());
 	}
 
@@ -146,23 +164,28 @@ class JwtPkceVerifyingRealmTest {
 		Date issueDate = new Date();
 		Date expDate = DateUtils.addMinutes(issueDate, 1);
 		String token = JWT.create()
-						  .withClaim(IDToken.NAME, "New User")
-						  .withIssuer(HTTP_REALM_URL)
-						  .withAudience(AUDIENCE)
-						  .withSubject(expected.getName())
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withClaim("groups", "conquery")
-						  .withClaim("resource_access", Map.of(AUDIENCE, Map.of("roles", List.of("admin", "unknown")))) // See structure of AccessToken.Access
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withKeyId(KEY_ID)
-						  .withJWTId(UUID.randomUUID().toString())
-						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+			.withClaim(IDToken.NAME, "New User")
+			.withIssuer(HTTP_REALM_URL)
+			.withAudience(
+				AUDIENCE)
+			.withSubject(expected.getName())
+			.withIssuedAt(issueDate)
+			.withExpiresAt(expDate)
+			.withClaim(
+				"groups",
+				"conquery")
+			.withClaim("resource_access", Map.of(AUDIENCE, Map.of("roles", List.of("admin", "unknown")))) // See structure of AccessToken.Access
+			.withIssuedAt(issueDate)
+			.withExpiresAt(expDate)
+			.withKeyId(KEY_ID)
+			.withJWTId(
+				UUID.randomUUID().toString())
+			.sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 
 		BearerToken accessToken = new BearerToken(token);
 
-		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal().getId()).isEqualTo(expected.getId());
+		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal().getId()).isEqualTo(
+			expected.getId());
 		assertThat(STORAGE.getUser(expected.getId()).getRoles()).contains(role.getId());
 		assertThat(STORAGE.getUser(expected.getId()).getLabel()).isEqualTo(expected.getLabel());
 	}
@@ -180,20 +203,25 @@ class JwtPkceVerifyingRealmTest {
 		Date expDate = DateUtils.addSeconds(issueDate, -TOKEN_LEEWAY / 2);
 
 		String token = JWT.create()
-						  .withIssuer(HTTP_REALM_URL)
-						  .withAudience(AUDIENCE)
-						  .withSubject(expected.getName())
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withClaim("groups", "conquery")
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withKeyId(KEY_ID)
-						  .withJWTId(UUID.randomUUID().toString())
-						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+			.withIssuer(HTTP_REALM_URL)
+			.withAudience(AUDIENCE)
+			.withSubject(
+				expected.getName())
+			.withIssuedAt(issueDate)
+			.withExpiresAt(expDate)
+			.withClaim(
+				"groups",
+				"conquery")
+			.withIssuedAt(issueDate)
+			.withExpiresAt(expDate)
+			.withKeyId(KEY_ID)
+			.withJWTId(
+				UUID.randomUUID().toString())
+			.sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
-		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
+		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(
+			expected);
 	}
 
 
@@ -208,20 +236,26 @@ class JwtPkceVerifyingRealmTest {
 		Date expDate = DateUtils.addMinutes(issueDate, 1);
 		final String primId = UUID.randomUUID().toString();
 		String token = JWT.create()
-						  .withIssuer(HTTP_REALM_URL)
-						  .withAudience(AUDIENCE)
-						  .withSubject(primId)
-						  .withClaim("groups", "conquery")
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withClaim(ALTERNATIVE_ID_CLAIM, expected.getName())
-						  .withKeyId(KEY_ID)
-						  .withJWTId(UUID.randomUUID().toString())
-						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+			.withIssuer(HTTP_REALM_URL)
+			.withAudience(AUDIENCE)
+			.withSubject(primId)
+			.withClaim(
+				"groups",
+				"conquery")
+			.withIssuedAt(issueDate)
+			.withExpiresAt(expDate)
+			.withClaim(
+				ALTERNATIVE_ID_CLAIM,
+				expected.getName())
+			.withKeyId(KEY_ID)
+			.withJWTId(UUID.randomUUID().toString())
+			.sign(
+				Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 
 		BearerToken accessToken = new BearerToken(token);
 
-		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
+		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(
+			expected);
 	}
 
 
@@ -234,16 +268,19 @@ class JwtPkceVerifyingRealmTest {
 		Date issueDate = new Date();
 		Date expDate = DateUtils.addMinutes(issueDate, 1);
 		String token = JWT.create()
-						  .withIssuer(HTTP_REALM_URL)
-						  .withAudience(AUDIENCE)
-						  .withSubject(expected.getName())
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withKeyId(KEY_ID)
-						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+			.withIssuer(HTTP_REALM_URL)
+			.withAudience(AUDIENCE)
+			.withSubject(
+				expected.getName())
+			.withIssuedAt(issueDate)
+			.withExpiresAt(expDate)
+			.withKeyId(KEY_ID)
+			.sign(
+				Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
-		assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);
+		assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).hasCauseInstanceOf(
+			VerificationException.class);
 	}
 
 	@Test
@@ -255,18 +292,22 @@ class JwtPkceVerifyingRealmTest {
 		Date issueDate = new Date();
 		Date expDate = DateUtils.addMinutes(issueDate, 1);
 		String token = JWT.create()
-						  .withIssuer(HTTP_REALM_URL)
-						  .withAudience("wrong_aud")
-						  .withSubject(expected.getName())
-						  .withClaim("groups", "conquery")
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withKeyId(KEY_ID)
-						  .withJWTId(UUID.randomUUID().toString())
-						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+			.withIssuer(HTTP_REALM_URL)
+			.withAudience("wrong_aud")
+			.withSubject(
+				expected.getName())
+			.withClaim("groups", "conquery")
+			.withIssuedAt(issueDate)
+			.withExpiresAt(
+				expDate)
+			.withKeyId(KEY_ID)
+			.withJWTId(UUID.randomUUID().toString())
+			.sign(
+				Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
-		assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);
+		assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).hasCauseInstanceOf(
+			VerificationException.class);
 	}
 
 	@Test
@@ -277,17 +318,21 @@ class JwtPkceVerifyingRealmTest {
 		Date issueDate = new Date();
 		Date expDate = DateUtils.addMinutes(issueDate, -2);
 		String token = JWT.create()
-						  .withIssuer(HTTP_REALM_URL)
-						  .withSubject(expected.getName())
-						  .withClaim("groups", "conquery")
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withKeyId(KEY_ID)
-						  .withJWTId(UUID.randomUUID().toString())
-						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+			.withIssuer(HTTP_REALM_URL)
+			.withSubject(expected.getName())
+			.withClaim(
+				"groups",
+				"conquery")
+			.withIssuedAt(issueDate)
+			.withExpiresAt(expDate)
+			.withKeyId(KEY_ID)
+			.withJWTId(
+				UUID.randomUUID().toString())
+			.sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
-		assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);
+		assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).hasCauseInstanceOf(
+			VerificationException.class);
 	}
 
 	@Test
@@ -299,20 +344,25 @@ class JwtPkceVerifyingRealmTest {
 		Date issueDate = new Date();
 		Date expDate = DateUtils.addMinutes(issueDate, 1);
 		String token = JWT.create()
-						  .withIssuer("wrong_iss")
-						  .withAudience(AUDIENCE)
-						  .withSubject(expected.getName())
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withClaim("groups", "conquery")
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withKeyId(KEY_ID)
-						  .withJWTId(UUID.randomUUID().toString())
-						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+			.withIssuer("wrong_iss")
+			.withAudience(AUDIENCE)
+			.withSubject(
+				expected.getName())
+			.withIssuedAt(issueDate)
+			.withExpiresAt(expDate)
+			.withClaim(
+				"groups",
+				"conquery")
+			.withIssuedAt(issueDate)
+			.withExpiresAt(expDate)
+			.withKeyId(KEY_ID)
+			.withJWTId(
+				UUID.randomUUID().toString())
+			.sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
-		assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);
+		assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).hasCauseInstanceOf(
+			VerificationException.class);
 	}
 
 	@Test
@@ -325,17 +375,21 @@ class JwtPkceVerifyingRealmTest {
 		Date issueDate = new Date();
 		Date expDate = DateUtils.addMinutes(issueDate, 1);
 		String token = JWT.create()
-						  .withIssuer(HTTP_REALM_URL)
-						  .withAudience(AUDIENCE)
-						  .withSubject(expected.getName())
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withClaim("groups", "conquery")
-						  .withIssuedAt(issueDate)
-						  .withExpiresAt(expDate)
-						  .withKeyId("unknown_key_id")
-						  .withJWTId(UUID.randomUUID().toString())
-						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+			.withIssuer(HTTP_REALM_URL)
+			.withAudience(AUDIENCE)
+			.withSubject(
+				expected.getName())
+			.withIssuedAt(issueDate)
+			.withExpiresAt(expDate)
+			.withClaim(
+				"groups",
+				"conquery")
+			.withIssuedAt(issueDate)
+			.withExpiresAt(expDate)
+			.withKeyId("unknown_key_id")
+			.withJWTId(
+				UUID.randomUUID().toString())
+			.sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
 		assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).isInstanceOf(UnsupportedTokenException.class);

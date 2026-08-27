@@ -3,6 +3,7 @@ package com.bakdata.conquery.models;
 import static com.bakdata.conquery.util.SerialisationObjectsUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.validation.Validator;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -15,7 +16,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Stream;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;
@@ -112,25 +112,25 @@ public class SerializationTests extends AbstractSerializationTest {
 	public static Stream<Range<Integer>> rangeData() {
 		final int SEED = 7;
 		Random random = new Random(SEED);
-		return Stream
-				.generate(() -> {
-					int first = random.nextInt();
-					int second = random.nextInt();
+		return Stream.generate(() -> {
+			int first = random.nextInt();
+			int second = random.nextInt();
 
-					if (first < second) {
-						return Range.of(first, second);
-					}
-					return Range.of(second, first);
-				})
-				.filter(Range::isOrdered)
-				.flatMap(range -> Stream.of(
-						range,
-						Range.exactly(range.getMin()),
-						Range.atMost(range.getMin()),
-						Range.atLeast(range.getMin())
+			if (first < second) {
+				return Range.of(first, second);
+			}
+			return Range.of(second, first);
+		})
+			.filter(Range::isOrdered)
+			.flatMap(
+				range -> Stream.of(
+					range,
+					Range.exactly(range.getMin()),
+					Range.atMost(range.getMin()),
+					Range.atLeast(range.getMin())
 				))
-				.filter(Range::isOrdered)
-				.limit(100);
+			.filter(Range::isOrdered)
+			.limit(100);
 	}
 
 	@Test
@@ -140,31 +140,33 @@ public class SerializationTests extends AbstractSerializationTest {
 		dataset.setLabel("Dataset");
 		dataset.setStorageProvider(getDatasetRegistry());
 
-		SerializationTestUtil
-				.forType(Dataset.class)
-				.objectMappers(getManagerInternalMapper(), getInternalCommunicationMapper())
-				.customizingAssertion(assertion -> assertion.ignoringFields("storageProvider"))
-				.test(dataset);
+		SerializationTestUtil.forType(Dataset.class)
+			.objectMappers(
+				getManagerInternalMapper(),
+				getInternalCommunicationMapper())
+			.customizingAssertion(
+				assertion -> assertion.ignoringFields("storageProvider"))
+			.test(dataset);
 	}
 
 	@Test
 	public void passwordCredential() throws IOException, JSONException {
 		PasswordCredential credential = new PasswordCredential("testPassword");
 
-		SerializationTestUtil
-				.forType(PasswordCredential.class)
-				.objectMappers(getManagerInternalMapper())
-				.test(credential);
+		SerializationTestUtil.forType(PasswordCredential.class)
+			.objectMappers(getManagerInternalMapper())
+			.test(
+				credential);
 	}
 
 	@Test
 	public void role() throws IOException, JSONException {
 		Role mandator = new Role("company", "company", getMetaStorage());
 
-		SerializationTestUtil
-				.forType(Role.class)
-				.objectMappers(getManagerInternalMapper(), getApiMapper())
-				.test(mandator);
+		SerializationTestUtil.forType(Role.class)
+			.objectMappers(getManagerInternalMapper(), getApiMapper())
+			.test(
+				mandator);
 	}
 
 	/*
@@ -175,25 +177,31 @@ public class SerializationTests extends AbstractSerializationTest {
 		User user = new User("user", "user", getMetaStorage());
 		user.setMetaStorage(getMetaStorage());
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
-		user.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+		user.addPermission(
+			ExecutionPermission.onInstance(
+				Ability.READ,
+				new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		Role role = new Role("company", "company", getMetaStorage());
 
 		getMetaStorage().addRole(role);
 
 		user.addRole(role.getId());
 
-		SerializationTestUtil
-				.forType(User.class)
-				.objectMappers(getManagerInternalMapper(), getApiMapper())
-				.injectables(getMetaStorage())
-				.test(user);
+		SerializationTestUtil.forType(User.class)
+			.objectMappers(getManagerInternalMapper(), getApiMapper())
+			.injectables(
+				getMetaStorage())
+			.test(user);
 	}
 
 	@Test
 	public void group() throws IOException, JSONException {
 		Group group = new Group("group", "group", getMetaStorage());
 		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
-		group.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+		group.addPermission(
+			ExecutionPermission.onInstance(
+				Ability.READ,
+				new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 
 		Role role = new Role("company", "company", getMetaStorage());
 		RoleId roleId = role.getId();
@@ -208,10 +216,10 @@ public class SerializationTests extends AbstractSerializationTest {
 		metaStorage.addRole(role);
 		metaStorage.addUser(user);
 
-		SerializationTestUtil
-				.forType(Group.class)
-				.objectMappers(getManagerInternalMapper(), getApiMapper())
-				.test(group);
+		SerializationTestUtil.forType(Group.class)
+			.objectMappers(getManagerInternalMapper(), getApiMapper())
+			.test(
+				group);
 	}
 
 	@Test
@@ -248,15 +256,22 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		Import imp = new Import("importTest", table.getId());
 
-		CompoundDateRangeStore compoundStore =
-				new CompoundDateRangeStore(startCol.getName(), endCol.getName(), new BitSetStore(BitSet.valueOf(new byte[]{0b1000}), new BitSet(), 4));
+		CompoundDateRangeStore compoundStore = new CompoundDateRangeStore(
+			startCol.getName(),
+			endCol.getName(),
+			new BitSetStore(BitSet.valueOf(new byte[]{0b1000}), new BitSet(), 4));
 		//0b1000 is a binary representation of 8 so that the 4th is set to make sure that BitSet length is 4.
 
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
 
-		Bucket bucket =
-				new Bucket(0, Object2IntMaps.singleton("0", 0), Object2IntMaps.singleton("0", 4), 4, imp.getId(), new ColumnStore[]{startStore, endStore, compoundStore});
+		Bucket bucket = new Bucket(
+			0,
+			Object2IntMaps.singleton("0", 0),
+			Object2IntMaps.singleton("0", 4),
+			4,
+			imp.getId(),
+			new ColumnStore[]{startStore, endStore, compoundStore});
 
 		compoundStore.setParent(bucket);
 
@@ -267,12 +282,14 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		final Validator validator = Validators.newValidator();
 
-		SerializationTestUtil
-				.forType(Bucket.class)
-				.objectMappers(getInternalCommunicationMapper())
-				.injectables(values -> values.add(Validator.class, validator)
-											 .add(NamespacedStorageProvider.class, getShardNamespacedStorageProvider()))
-				.test(bucket);
+		SerializationTestUtil.forType(Bucket.class)
+			.objectMappers(getInternalCommunicationMapper())
+			.injectables(
+				values -> values.add(Validator.class, validator)
+					.add(
+						NamespacedStorageProvider.class,
+						getShardNamespacedStorageProvider()))
+			.test(bucket);
 
 	}
 
@@ -284,10 +301,12 @@ public class SerializationTests extends AbstractSerializationTest {
 
 			Table table = getTable(getNamespaceStorage());
 
-			SerializationTestUtil
-					.forType(Table.class)
-					.objectMappers(getNamespacePersistenceMapper(), getApiMapper(), getInternalCommunicationMapper())
-					.test(table);
+			SerializationTestUtil.forType(Table.class)
+				.objectMappers(
+					getNamespacePersistenceMapper(),
+					getApiMapper(),
+					getInternalCommunicationMapper())
+				.test(table);
 		}
 
 		{
@@ -298,10 +317,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 			getWorkerStorage().addTable(table);
 
-			SerializationTestUtil
-					.forType(Table.class)
-					.objectMappers(getWorkerPersistenceMapper())
-					.test(table);
+			SerializationTestUtil.forType(Table.class).objectMappers(getWorkerPersistenceMapper()).test(table);
 		}
 	}
 
@@ -325,15 +341,17 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void filterValueMoneyRange() throws JSONException, IOException {
-		FilterValue.CQMoneyRangeFilter filterValue =
-				new FilterValue.CQMoneyRangeFilter(FilterId.Parser.INSTANCE.parse("dataset.concept.connector.filter"), new Range.LongRange(2000L, 30000L));
+		FilterValue.CQMoneyRangeFilter filterValue = new FilterValue.CQMoneyRangeFilter(
+			FilterId.Parser.INSTANCE.parse("dataset.concept.connector.filter"),
+			new Range.LongRange(2000L, 30000L));
 
 		filterValue.setConfig(getConfig());
 
-		SerializationTestUtil
-				.forType(FilterValue.class)
-				.objectMappers(getNamespacePersistenceMapper(), getApiMapper())
-				.test(filterValue);
+		SerializationTestUtil.forType(FilterValue.class)
+			.objectMappers(
+				getNamespacePersistenceMapper(),
+				getApiMapper())
+			.test(filterValue);
 	}
 
 	@Test
@@ -343,11 +361,12 @@ public class SerializationTests extends AbstractSerializationTest {
 			final Dataset dataset = createDataset(getNamespaceStorage(), getDatasetRegistry());
 			TreeConcept concept = createConcept(dataset, getNamespaceStorage());
 
-			SerializationTestUtil
-					.forType(Concept.class)
-					.objectMappers(getNamespacePersistenceMapper(), getApiMapper())
-					.injectables(dataset, getDatasetRegistry())
-					.test(concept);
+			SerializationTestUtil.forType(Concept.class)
+				.objectMappers(
+					getNamespacePersistenceMapper(),
+					getApiMapper())
+				.injectables(dataset, getDatasetRegistry())
+				.test(concept);
 		}
 
 		{
@@ -355,10 +374,7 @@ public class SerializationTests extends AbstractSerializationTest {
 			final Dataset dataset = createDataset(getWorkerStorage(), getShardNamespacedStorageProvider());
 			TreeConcept concept = createConcept(dataset, getWorkerStorage());
 
-			SerializationTestUtil
-					.forType(Concept.class)
-					.objectMappers(getInternalCommunicationMapper())
-					.test(concept);
+			SerializationTestUtil.forType(Concept.class).objectMappers(getInternalCommunicationMapper()).test(concept);
 
 		}
 	}
@@ -368,8 +384,10 @@ public class SerializationTests extends AbstractSerializationTest {
 		EntityIdMap persistentMap = IdMapSerialisationTest.createTestPersistentMap(getNamespaceStorage());
 
 		SerializationTestUtil.forType(EntityIdMap.class)
-							 .objectMappers(getNamespacePersistenceMapper(), getApiMapper())
-							 .test(persistentMap);
+			.objectMappers(
+				getNamespacePersistenceMapper(),
+				getApiMapper())
+			.test(persistentMap);
 
 	}
 
@@ -388,10 +406,10 @@ public class SerializationTests extends AbstractSerializationTest {
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
 		formConfig.setDataset(dataset.getId());
 
-		SerializationTestUtil
-				.forType(FormConfig.class)
-				.objectMappers(getManagerInternalMapper(), getApiMapper())
-				.test(formConfig);
+		SerializationTestUtil.forType(FormConfig.class)
+			.objectMappers(getManagerInternalMapper(), getApiMapper())
+			.test(
+				formConfig);
 	}
 
 	@Test
@@ -404,16 +422,24 @@ public class SerializationTests extends AbstractSerializationTest {
 		getNamespaceStorage().updateDataset(dataset);
 		getMetaStorage().updateUser(user);
 
-		ManagedQuery execution = new ManagedQuery(null, user.getId(), dataset.getId(), getMetaStorage(), getDatasetRegistry(), getConfig());
+		ManagedQuery execution = new ManagedQuery(
+			null,
+			user.getId(),
+			dataset.getId(),
+			getMetaStorage(),
+			getDatasetRegistry(),
+			getConfig());
 		execution.setTags(new String[]{"test-tag"});
 
 		// Trigger UUID creation
 		execution.getId();
 
 		SerializationTestUtil.forType(ManagedExecution.class)
-							 .objectMappers(getManagerInternalMapper(), getApiMapper())
-							 .injectables(getMetaStorage())
-							 .test(execution);
+			.objectMappers(
+				getManagerInternalMapper(),
+				getApiMapper())
+			.injectables(getMetaStorage())
+			.test(execution);
 	}
 
 	@Test
@@ -424,9 +450,11 @@ public class SerializationTests extends AbstractSerializationTest {
 		final ExportForm exportForm = createExportForm(dataset, getNamespaceStorage());
 
 		SerializationTestUtil.forType(QueryDescription.class)
-							 .objectMappers(getManagerInternalMapper(), getApiMapper())
-							 .checkHashCode()
-							 .test(exportForm);
+			.objectMappers(
+				getManagerInternalMapper(),
+				getApiMapper())
+			.checkHashCode()
+			.test(exportForm);
 	}
 
 	@Test
@@ -437,17 +465,24 @@ public class SerializationTests extends AbstractSerializationTest {
 		final User user = createUser(getMetaStorage());
 		final ExportForm exportForm = createExportForm(dataset, getNamespaceStorage());
 
-		ManagedInternalForm<ExportForm> execution =
-				new ManagedInternalForm<>(exportForm, user.getId(), dataset.getId(), getMetaStorage(), getDatasetRegistry(), getConfig());
+		ManagedInternalForm<ExportForm> execution = new ManagedInternalForm<>(
+			exportForm,
+			user.getId(),
+			dataset.getId(),
+			getMetaStorage(),
+			getDatasetRegistry(),
+			getConfig());
 		execution.setTags(new String[]{"test-tag"});
 
 		// Trigger UUID creation
 		execution.getId();
 
 		SerializationTestUtil.forType(ManagedExecution.class)
-							 .objectMappers(getManagerInternalMapper(), getApiMapper())
-							 .injectables(getDatasetRegistry())
-							 .test(execution);
+			.objectMappers(
+				getManagerInternalMapper(),
+				getApiMapper())
+			.injectables(getDatasetRegistry())
+			.test(execution);
 	}
 
 	@Test
@@ -455,25 +490,34 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		final String subType = "test-type";
 		JsonNodeFactory factory = new JsonNodeFactory(false);
-		ObjectNode node = new ObjectNode(factory,
-										 Map.of(
-												 "some-other-member", new TextNode("some-other-value")
-										 )
+		ObjectNode node = new ObjectNode(
+			factory,
+			Map.of(
+				"some-other-member",
+				new TextNode("some-other-value")
+			)
 		);
 
 		ExternalForm form = new ExternalForm(node, subType);
 		final Dataset dataset = createDataset(getNamespaceStorage(), getDatasetRegistry());
 		final User user = createUser(getMetaStorage());
 
-		final ExternalExecution execution = new ExternalExecution(form, user.getId(), dataset.getId(), getMetaStorage(), getDatasetRegistry(), getConfig());
+		final ExternalExecution execution = new ExternalExecution(
+			form,
+			user.getId(),
+			dataset.getId(),
+			getMetaStorage(),
+			getDatasetRegistry(),
+			getConfig());
 
 		// Trigger UUID creation
 		execution.getId();
 
 		SerializationTestUtil.forType(ManagedExecution.class)
-							 .objectMappers(getManagerInternalMapper())
-							 .injectables(getDatasetRegistry())
-							 .test(execution);
+			.objectMappers(getManagerInternalMapper())
+			.injectables(
+				getDatasetRegistry())
+			.test(execution);
 
 	}
 
@@ -483,25 +527,28 @@ public class SerializationTests extends AbstractSerializationTest {
 			// Manager
 			final CQConcept cqConcept = createCqConcept(getNamespaceStorage(), getDatasetRegistry());
 
-			SerializationTestUtil
-					.forType(CQConcept.class)
-					.objectMappers(getManagerInternalMapper(), getApiMapper())
-					.test(cqConcept);
+			SerializationTestUtil.forType(CQConcept.class)
+				.objectMappers(
+					getManagerInternalMapper(),
+					getApiMapper())
+				.test(cqConcept);
 		}
 
 		{
 			// Shard
 			final CQConcept cqConcept = createCqConcept(getWorkerStorage(), getShardNamespacedStorageProvider());
 
-			SerializationTestUtil
-					.forType(CQConcept.class)
-					.objectMappers(getInternalCommunicationMapper())
-					.test(cqConcept);
+			SerializationTestUtil.forType(CQConcept.class)
+				.objectMappers(getInternalCommunicationMapper())
+				.test(
+					cqConcept);
 		}
 	}
 
 	@NotNull
-	private static CQConcept createCqConcept(NamespacedStorage namespaceStorage, NamespacedStorageProvider storageProvider) throws Exception {
+	private static CQConcept createCqConcept(
+		NamespacedStorage namespaceStorage,
+		NamespacedStorageProvider storageProvider) throws Exception {
 		Dataset dataset = createDataset(namespaceStorage, storageProvider);
 
 		final TreeConcept concept = new TreeConcept();
@@ -536,31 +583,39 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		ConqueryError error = new ConqueryError.ExecutionProcessingError();
 
-		SerializationTestUtil
-				.forType(ConqueryError.class)
-				.objectMappers(getManagerInternalMapper(), getInternalCommunicationMapper(), getApiMapper())
-				.test(error);
+		SerializationTestUtil.forType(ConqueryError.class)
+			.objectMappers(
+				getManagerInternalMapper(),
+				getInternalCommunicationMapper(),
+				getApiMapper())
+			.test(error);
 	}
 
 	@Test
 	public void executionCreationResolveError() throws JSONException, IOException {
 		ConqueryError error = new ConqueryError.ExecutionCreationResolveError(new DatasetId("test"));
 
-		SerializationTestUtil
-				.forType(ConqueryError.class)
-				.objectMappers(getManagerInternalMapper(), getInternalCommunicationMapper(), getApiMapper())
-				.test(error);
+		SerializationTestUtil.forType(ConqueryError.class)
+			.objectMappers(
+				getManagerInternalMapper(),
+				getInternalCommunicationMapper(),
+				getApiMapper())
+			.test(error);
 	}
 
 	@Test
 	public void executionQueryJobError() throws JSONException, IOException {
 		log.info("Beware, this test will print an ERROR message.");
-		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(new Entity("5"), new ConqueryError.UnknownError(null));
+		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(
+			new Entity("5"),
+			new ConqueryError.UnknownError(null));
 
-		SerializationTestUtil
-				.forType(ConqueryError.class)
-				.objectMappers(getManagerInternalMapper(), getInternalCommunicationMapper(), getApiMapper())
-				.test(error);
+		SerializationTestUtil.forType(ConqueryError.class)
+			.objectMappers(
+				getManagerInternalMapper(),
+				getInternalCommunicationMapper(),
+				getApiMapper())
+			.test(error);
 	}
 
 	@Test
@@ -568,18 +623,21 @@ public class SerializationTests extends AbstractSerializationTest {
 		User user = new User("name", "labe", getMetaStorage());
 
 		MeProcessor.FrontendMeInformation info = MeProcessor.FrontendMeInformation.builder()
-																				  .userName(user.getLabel())
-																				  .hideLogoutButton(false)
-																				  .groups(List.of(new IdLabel<>(new GroupId("test_group"), "test_group_label")))
-																				  .datasetAbilities(Map.of(new DatasetId("testdataset"),
-																										   new MeProcessor.FrontendDatasetAbility(true, true, true)
-																				  ))
-																				  .build();
+			.userName(
+				user.getLabel())
+			.hideLogoutButton(false)
+			.groups(
+				List.of(new IdLabel<>(new GroupId("test_group"), "test_group_label")))
+			.datasetAbilities(
+				Map.of(new DatasetId("testdataset"), new MeProcessor.FrontendDatasetAbility(true, true, true)
+				))
+			.build();
 
-		SerializationTestUtil
-				.forType(MeProcessor.FrontendMeInformation.class)
-				.objectMappers(getManagerInternalMapper(), getApiMapper())
-				.test(info);
+		SerializationTestUtil.forType(MeProcessor.FrontendMeInformation.class)
+			.objectMappers(
+				getManagerInternalMapper(),
+				getApiMapper())
+			.test(info);
 	}
 
 	@Test
@@ -619,13 +677,13 @@ public class SerializationTests extends AbstractSerializationTest {
 		features.setChildren(Collections.singletonList(concept));
 
 		AbsoluteFormQuery query = new AbsoluteFormQuery(
-				subQuery,
-				CDateRange.exactly(LocalDate.now()).toSimpleRange(),
-				ArrayConceptQuery.createFromFeatures(Collections.singletonList(features)),
-				List.of(
-						ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN),
-						ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER)
-				)
+			subQuery,
+			CDateRange.exactly(LocalDate.now()).toSimpleRange(),
+			ArrayConceptQuery.createFromFeatures(Collections.singletonList(features)),
+			List.of(
+				ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN),
+				ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER)
+			)
 		);
 
 		getNamespaceStorage().updateDataset(dataset);
@@ -635,10 +693,13 @@ public class SerializationTests extends AbstractSerializationTest {
 		workerStorage.updateDataset(dataset);
 		workerStorage.updateConcept(testConcept);
 
-		SerializationTestUtil
-				.forType(AbsoluteFormQuery.class)
-				.objectMappers(getManagerInternalMapper(), getInternalCommunicationMapper(), getApiMapper(), getWorkerPersistenceMapper())
-				.test(query);
+		SerializationTestUtil.forType(AbsoluteFormQuery.class)
+			.objectMappers(
+				getManagerInternalMapper(),
+				getInternalCommunicationMapper(),
+				getApiMapper(),
+				getWorkerPersistenceMapper())
+			.test(query);
 	}
 
 	@Test
@@ -670,15 +731,24 @@ public class SerializationTests extends AbstractSerializationTest {
 		getWorkerStorage().updateConcept(concept);
 		getWorkerStorage().addImport(imp);
 
-		final Bucket bucket = new Bucket(0, Object2IntMaps.emptyMap(), Object2IntMaps.emptyMap(), 0, imp.getId(), new ColumnStore[0]);
+		final Bucket bucket = new Bucket(
+			0,
+			Object2IntMaps.emptyMap(),
+			Object2IntMaps.emptyMap(),
+			0,
+			imp.getId(),
+			new ColumnStore[0]);
 
 		getWorkerStorage().addBucket(bucket);
 
-		final CBlock cBlock = new CBlock(bucket.getId(), connector.getId(), Collections.emptyMap(), Collections.emptyMap(), new int[0][]);
+		final CBlock cBlock = new CBlock(
+			bucket.getId(),
+			connector.getId(),
+			Collections.emptyMap(),
+			Collections.emptyMap(),
+			new int[0][]);
 
-		SerializationTestUtil.forType(CBlock.class)
-							 .objectMappers(getWorkerPersistenceMapper())
-							 .test(cBlock);
+		SerializationTestUtil.forType(CBlock.class).objectMappers(getWorkerPersistenceMapper()).test(cBlock);
 	}
 
 	@Test
@@ -686,64 +756,78 @@ public class SerializationTests extends AbstractSerializationTest {
 		BiMap<String, String> map = HashBiMap.create();
 		map.put("a", "1");
 		map.put("b", "2");
-		SerializationTestUtil
-				.forType(new TypeReference<BiMap<String, String>>() {
-				})
-				.objectMappers(getApiMapper(), getManagerInternalMapper())
-				.test(map);
+		SerializationTestUtil.forType(new TypeReference<BiMap<String, String>>() {
+		}).objectMappers(getApiMapper(), getManagerInternalMapper()).test(map);
 	}
 
 	@Test
 	public void testNonStrictNumbers() throws JSONException, IOException {
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.NaN, null);
+			.objectMappers(getApiMapper(), getManagerInternalMapper())
+			.test(
+				Double.NaN,
+				null);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.NEGATIVE_INFINITY, null);
+			.objectMappers(getApiMapper(), getManagerInternalMapper())
+			.test(
+				Double.NEGATIVE_INFINITY,
+				null);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.POSITIVE_INFINITY, null);
+			.objectMappers(getApiMapper(), getManagerInternalMapper())
+			.test(
+				Double.POSITIVE_INFINITY,
+				null);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.MAX_VALUE);
+			.objectMappers(getApiMapper(), getManagerInternalMapper())
+			.test(
+				Double.MAX_VALUE);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.MIN_VALUE);
-		SerializationTestUtil
-				.forType(EntityResult.class)
-				.objectMappers(getApiMapper(), getManagerInternalMapper())
-				.test(
-						new MultilineEntityResult("4", List.of(
-								new Object[]{0, 1, 2},
-								new Object[]{Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}
-						)
-						),
-						new MultilineEntityResult("4", List.of(
-								new Object[]{0, 1, 2},
-								new Object[]{null, null, null}
-						)
-						)
-				);
+			.objectMappers(getApiMapper(), getManagerInternalMapper())
+			.test(
+				Double.MIN_VALUE);
+		SerializationTestUtil.forType(EntityResult.class)
+			.objectMappers(
+				getApiMapper(),
+				getManagerInternalMapper())
+			.test(
+				new MultilineEntityResult(
+					"4",
+					List.of(
+						new Object[]{0, 1, 2},
+						new Object[]{Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}
+					)
+				),
+				new MultilineEntityResult(
+					"4",
+					List.of(
+						new Object[]{0, 1, 2},
+						new Object[]{null, null, null}
+					)
+				)
+			);
 	}
 
 	@ParameterizedTest
 	@MethodSource("rangeData")
 	public void test(Range<Integer> range) throws IOException, JSONException {
-		SerializationTestUtil
-				.forType(new TypeReference<Range<Integer>>() {
-				})
-				.objectMappers(getApiMapper(), getManagerInternalMapper(), getInternalCommunicationMapper())
-				.test(range);
+		SerializationTestUtil.forType(new TypeReference<Range<Integer>>() {
+		}).objectMappers(getApiMapper(), getManagerInternalMapper(), getInternalCommunicationMapper()).test(range);
 	}
 
 	@Test
 	public void locale() throws JSONException, IOException {
 		SerializationTestUtil.forType(Locale.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper())
-							 .test(Locale.GERMANY);
+			.objectMappers(getApiMapper(), getManagerInternalMapper())
+			.test(
+				Locale.GERMANY);
 	}
 
 	@Test
 	public void localeArray() throws JSONException, IOException {
 		SerializationTestUtil.forType(Locale[].class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper())
-							 .test(new Locale[]{Locale.GERMANY, Locale.ROOT, Locale.ENGLISH, Locale.US, Locale.UK});
+			.objectMappers(getApiMapper(), getManagerInternalMapper())
+			.test(
+				new Locale[]{Locale.GERMANY, Locale.ROOT, Locale.ENGLISH, Locale.US, Locale.UK});
 	}
 
 	/**
@@ -765,8 +849,10 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		ExternalForm externalForm = getApiMapper().readerFor(QueryDescription.class).readValue(externalFormString);
 		SerializationTestUtil.forType(QueryDescription.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper())
-							 .test(externalForm);
+			.objectMappers(
+				getApiMapper(),
+				getManagerInternalMapper())
+			.test(externalForm);
 	}
 
 	/**
@@ -800,8 +886,10 @@ public class SerializationTests extends AbstractSerializationTest {
 		ExternalForm externalForm = getApiMapper().readerFor(QueryDescription.class).readValue(externalFormString);
 		ExternalForm externalForm2 = getApiMapper().readerFor(QueryDescription.class).readValue(externalFormString2);
 		SerializationTestUtil.forType(QueryDescription[].class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper())
-							 .test(new QueryDescription[]{externalForm, externalForm2});
+			.objectMappers(
+				getApiMapper(),
+				getManagerInternalMapper())
+			.test(new QueryDescription[]{externalForm, externalForm2});
 	}
 
 
@@ -846,10 +934,14 @@ public class SerializationTests extends AbstractSerializationTest {
 		Object2IntMap<String> empty = Object2IntMaps.emptyMap();
 
 		SerializationTestUtil.forType(new TypeReference<Object2IntMap<String>>() {
-							 })
-							 .objectMappers(getApiMapper(), getInternalCommunicationMapper(), getManagerInternalMapper())
-							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
-							 .test(empty);
+		})
+			.objectMappers(
+				getApiMapper(),
+				getInternalCommunicationMapper(),
+				getManagerInternalMapper())
+			.customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
+			.test(
+				empty);
 
 	}
 
@@ -862,44 +954,60 @@ public class SerializationTests extends AbstractSerializationTest {
 		map.put("one", 1);
 		map.put("two", 2);
 		SerializationTestUtil.forType(new TypeReference<Object2IntMap<String>>() {
-							 })
-							 .objectMappers(getApiMapper(), getInternalCommunicationMapper(), getManagerInternalMapper())
-							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
-							 .test(map);
+		})
+			.objectMappers(
+				getApiMapper(),
+				getInternalCommunicationMapper(),
+				getManagerInternalMapper())
+			.customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
+			.test(
+				map);
 
 	}
 
 	@Test
 	@Tag("OBJECT_2_INT_MAP")
 	public void arrayObject2Int() throws JSONException, IOException {
-		Object2IntMap<String>[] map = new Object2IntOpenHashMap[]{
-				new Object2IntOpenHashMap<>() {{
-					put("zero", 0);
-				}},
-				new Object2IntOpenHashMap<>() {{
-					put("zero", 0);
-					put("one", 1);
-				}},
-				new Object2IntOpenHashMap<>() {{
-					put("zero", 0);
-					put("one", 1);
-					put("two", 2);
-				}}
+		Object2IntMap<String>[] map = new Object2IntOpenHashMap[]{new Object2IntOpenHashMap<>() {
+			{
+				put("zero", 0);
+			}
+		}, new Object2IntOpenHashMap<>() {
+			{
+				put("zero", 0);
+				put("one", 1);
+			}
+		}, new Object2IntOpenHashMap<>() {
+			{
+				put("zero", 0);
+				put("one", 1);
+				put("two", 2);
+			}
+		}
 		};
 		SerializationTestUtil.forArrayType(new TypeReference<Object2IntMap<String>>() {
-							 }).objectMappers(getApiMapper(), getInternalCommunicationMapper(), getManagerInternalMapper())
-							 .customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
-							 .test(map);
+		})
+			.objectMappers(
+				getApiMapper(),
+				getInternalCommunicationMapper(),
+				getManagerInternalMapper())
+			.customizingAssertion(RecursiveComparisonAssert::ignoringCollectionOrder)
+			.test(
+				map);
 
 	}
 
 	@Test
 	public void formBackendVersion() throws JSONException, IOException {
-		final FormBackendVersion version = new FormBackendVersion("3.45.45-g85ut85u43t8", ZonedDateTime.parse("2007-12-03T10:15:30+00:00"));
+		final FormBackendVersion version = new FormBackendVersion(
+			"3.45.45-g85ut85u43t8",
+			ZonedDateTime.parse("2007-12-03T10:15:30+00:00"));
 
 		SerializationTestUtil.forType(FormBackendVersion.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper())
-							 .test(version);
+			.objectMappers(
+				getApiMapper(),
+				getManagerInternalMapper())
+			.test(version);
 	}
 
 }

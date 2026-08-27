@@ -25,7 +25,8 @@ import lombok.extern.slf4j.Slf4j;
  * @implSpec The Columns and their order must directly match the layout in the data.
  */
 @Data
-@Getter @Setter
+@Getter
+@Setter
 @RequiredArgsConstructor
 @Slf4j
 public class PreprocessedHeader {
@@ -69,7 +70,11 @@ public class PreprocessedHeader {
 		for (int i = 0; i < columns.length; i++) {
 			final ColumnStore store = stores.get(columns[i].getName());
 
-			final ImportColumn col = new ImportColumn(imp, store.createDescription(), store.getLines(), numberOfBuckets * store.estimateMemoryConsumptionBytes());
+			final ImportColumn col = new ImportColumn(
+				imp,
+				store.createDescription(),
+				store.getLines(),
+				numberOfBuckets * store.estimateMemoryConsumptionBytes());
 
 			col.setName(columns[i].getName());
 
@@ -89,10 +94,15 @@ public class PreprocessedHeader {
 		final List<String> errors = new ArrayList<>();
 
 		if (table.getColumns().length != getColumns().length) {
-			errors.add("Import column count=`%d` does not match table column count=`%d`".formatted(getColumns().length, table.getColumns().length));
+			errors.add(
+				"Import column count=`%d` does not match table column count=`%d`".formatted(
+					getColumns().length,
+					table.getColumns().length));
 		}
 
-		final Map<String, MajorTypeId> typesByName = Arrays.stream(getColumns()).collect(Collectors.toMap(PPColumn::getName, PPColumn::getType));
+		final Map<String, MajorTypeId> typesByName = Arrays.stream(getColumns())
+			.collect(
+				Collectors.toMap(PPColumn::getName, PPColumn::getType));
 
 		for (int i = 0; i < Math.min(table.getColumns().length, getColumns().length); i++) {
 			final Column column = table.getColumns()[i];
@@ -103,7 +113,11 @@ public class PreprocessedHeader {
 			}
 
 			if (!typesByName.get(column.getName()).equals(column.getType())) {
-				errors.add("Column[%s] Types do not match %s != %s".formatted(column.getName(), typesByName.get(column.getName()), column.getType()));
+				errors.add(
+					"Column[%s] Types do not match %s != %s".formatted(
+						column.getName(),
+						typesByName.get(column.getName()),
+						column.getType()));
 			}
 		}
 

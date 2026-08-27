@@ -21,7 +21,10 @@ public class JsonResultPrinters extends JavaResultPrinters {
 
 	@Override
 	public Printer<List<Integer>> getDateRangePrinter(PrintSettings printSettings) {
-		return new DateRangeStringPrinter(printSettings, StringResultPrinters.NEGATIVE_INF_DEFAULT, StringResultPrinters.POSITIVE_INF_DEFAULT);
+		return new DateRangeStringPrinter(
+			printSettings,
+			StringResultPrinters.NEGATIVE_INF_DEFAULT,
+			StringResultPrinters.POSITIVE_INF_DEFAULT);
 	}
 
 

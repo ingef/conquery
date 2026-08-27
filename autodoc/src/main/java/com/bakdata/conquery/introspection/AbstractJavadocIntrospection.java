@@ -40,21 +40,22 @@ public class AbstractJavadocIntrospection<VALUE extends NodeWithJavadoc<?> & Nod
 		}
 		var javadoc = value.getJavadoc().get();
 		return javadoc.getBlockTags()
-					  .stream()
-					  .filter(b -> b.getTagName().equals("jsonExample"))
-					  .findAny()
-					  .map(JavadocBlockTag::getContent)
-					  .map(JavadocDescription::toText)
-					  .orElse("");
+			.stream()
+			.filter(b -> b.getTagName().equals("jsonExample"))
+			.findAny()
+			.map(
+				JavadocBlockTag::getContent)
+			.map(JavadocDescription::toText)
+			.orElse("");
 	}
 
 	@Override
 	public String getLine() {
 		if (value.getJavadocComment().isPresent()) {
-			return "L"
-				   + value.getJavadocComment().get().getBegin().get().line
-				   + "-L"
-				   + value.getJavadocComment().get().getEnd().get().line;
+			return "L" + value.getJavadocComment().get().getBegin().get().line + "-L" + value.getJavadocComment()
+				.get()
+				.getEnd()
+				.get().line;
 		}
 		return "L" + value.getBegin().get().line;
 	}

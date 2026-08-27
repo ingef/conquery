@@ -40,7 +40,12 @@ public abstract class Query implements QueryDescription {
 	public abstract List<ResultInfo> getResultInfos();
 
 	@Override
-	public ManagedQuery toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+	public ManagedQuery toManagedExecution(
+		UserId user,
+		DatasetId submittedDataset,
+		MetaStorage storage,
+		DatasetRegistry<?> datasetRegistry,
+		ConqueryConfig config) {
 		return new ManagedQuery(this, user, submittedDataset, storage, datasetRegistry, config);
 	}
 
@@ -59,8 +64,6 @@ public abstract class Query implements QueryDescription {
 	 * @return the number of results in the result List.
 	 */
 	public long countResults(Stream<EntityResult> results) {
-		return results.map(EntityResult::listResultLines)
-					  .mapToLong(List::size)
-					  .sum();
+		return results.map(EntityResult::listResultLines).mapToLong(List::size).sum();
 	}
 }

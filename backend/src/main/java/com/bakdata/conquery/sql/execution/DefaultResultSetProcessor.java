@@ -24,7 +24,11 @@ public class DefaultResultSetProcessor implements ResultSetProcessor {
 	 * <p>
 	 * For example, calling a primitives' ResultSet getter like getDouble, getInt etc. straightaway will never return null.
 	 */
-	private static <T> T checkForNullElseGet(ResultSet resultSet, int columnIndex, Getter getter, Class<T> resultType) throws SQLException {
+	private static <T> T checkForNullElseGet(
+		ResultSet resultSet,
+		int columnIndex,
+		Getter getter,
+		Class<T> resultType) throws SQLException {
 
 		if (resultSet.getObject(columnIndex) == null) {
 			return null;
@@ -104,10 +108,9 @@ public class DefaultResultSetProcessor implements ResultSetProcessor {
 	@Override
 	public List<BigDecimal> getMoneyList(ResultSet resultSet, int columnIndex) throws SQLException {
 		return list(
-				resultSet,
-				columnIndex,
-				(string) -> BigDecimal.valueOf(Double.parseDouble(string))
-									  .setScale(2, RoundingMode.HALF_EVEN)
+			resultSet,
+			columnIndex,
+			(string) -> BigDecimal.valueOf(Double.parseDouble(string)).setScale(2, RoundingMode.HALF_EVEN)
 		);
 	}
 
@@ -120,16 +123,20 @@ public class DefaultResultSetProcessor implements ResultSetProcessor {
 		return config.getLocale().getDateReader().parseToLocalDate(string).toEpochDay();
 	}
 
-	private <T> List<T> list(ResultSet resultSet, int columnIndex, Function<String, T> parseFunction) throws SQLException {
+	private <T> List<T> list(
+		ResultSet resultSet,
+		int columnIndex,
+		Function<String, T> parseFunction) throws SQLException {
 		String arrayExpression = resultSet.getString(columnIndex);
 		if (arrayExpression == null) {
 			return null;
 		}
 
 		List<T> result = Arrays.stream(arrayExpression.split(String.valueOf(UNIT_SEPARATOR)))
-							   .filter(Strings::isNotBlank)
-							   .map(parseFunction)
-							   .toList();
+			.filter(
+				Strings::isNotBlank)
+			.map(parseFunction)
+			.toList();
 		return result.isEmpty() ? null : result;
 	}
 

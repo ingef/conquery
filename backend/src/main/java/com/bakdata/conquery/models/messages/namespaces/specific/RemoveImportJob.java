@@ -11,8 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id="REMOVE_IMPORT", base= NamespacedMessage.class)
-@RequiredArgsConstructor(onConstructor_=@JsonCreator)
+@CPSType(id = "REMOVE_IMPORT", base = NamespacedMessage.class)
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @ToString
 @Slf4j
 @Getter // Needed by SmileParser

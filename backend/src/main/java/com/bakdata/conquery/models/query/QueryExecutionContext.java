@@ -2,13 +2,9 @@ package com.bakdata.conquery.models.query;
 
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.temporal.TemporalField;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.CQTemporal;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -59,7 +55,6 @@ public class QueryExecutionContext {
 	 * Only set when in {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, to the selected {@link SecondaryIdDescriptionId}.
 	 */
 	private SecondaryIdDescription activeSecondaryId = null;
-
 
 
 	public Set<BucketId> getEntityBucketsForTable(Entity entity, TableId table) {

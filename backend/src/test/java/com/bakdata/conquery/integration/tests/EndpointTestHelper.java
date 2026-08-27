@@ -24,8 +24,8 @@ import org.glassfish.jersey.server.model.ResourceMethod;
 @Slf4j
 public class EndpointTestHelper {
 
-	public static final ObjectReader READER = Jackson.MAPPER
-		.readerFor(Jackson.MAPPER.getTypeFactory().constructCollectionLikeType(List.class, EndPoint.class));
+	public static final ObjectReader READER = Jackson.MAPPER.readerFor(
+		Jackson.MAPPER.getTypeFactory().constructCollectionLikeType(List.class, EndPoint.class));
 
 	private static final TypeResolver TYPE_RESOLVER = new TypeResolver();
 
@@ -37,7 +37,12 @@ public class EndpointTestHelper {
 		populate(basePath, klass, isLocator, Resource.from(klass), endpointLogLines);
 	}
 
-	private static void populate(String basePath, Class<?> klass, boolean isLocator, Resource resource, List<EndPoint> endpointLogLines) {
+	private static void populate(
+		String basePath,
+		Class<?> klass,
+		boolean isLocator,
+		Resource resource,
+		List<EndPoint> endpointLogLines) {
 		if (!isLocator) {
 			basePath = normalizePath(basePath, resource.getPath());
 		}
@@ -51,17 +56,17 @@ public class EndpointTestHelper {
 				if (method.getType() == ResourceMethod.JaxrsType.RESOURCE_METHOD) {
 					final String path = normalizePath(basePath, childResource.getPath());
 					endpointLogLines.add(new EndPoint(method.getHttpMethod(), path, klass.getSimpleName()));
-				}
-				else if (method.getType() == ResourceMethod.JaxrsType.SUB_RESOURCE_LOCATOR) {
+				} else if (method.getType() == ResourceMethod.JaxrsType.SUB_RESOURCE_LOCATOR) {
 					final String path = normalizePath(basePath, childResource.getPath());
 					final ResolvedType responseType = TYPE_RESOLVER.resolve(method.getInvocable().getResponseType());
-					final Class<?> erasedType = !responseType.getTypeBindings().isEmpty()
-						? responseType.getTypeBindings().getBoundType(0).getErasedType()
-						: responseType.getErasedType();
+					final Class<?> erasedType = !responseType.getTypeBindings().isEmpty() ? responseType
+						.getTypeBindings()
+						.getBoundType(
+							0)
+						.getErasedType() : responseType.getErasedType();
 					if (Resource.from(erasedType) == null) {
 						endpointLogLines.add(new EndPoint(method.getHttpMethod(), path, erasedType.getSimpleName()));
-					}
-					else {
+					} else {
 						populate(path, erasedType, true, endpointLogLines);
 					}
 				}
@@ -92,11 +97,17 @@ public class EndpointTestHelper {
 		for (Class<?> clazz : classes) {
 			// We filter openapi specs because they are contract first
 			List<String> openApiInterfaces = Arrays.stream(clazz.getInterfaces())
-												   .filter(interfaceClazz -> interfaceClazz.getPackageName().startsWith("com.bakdata.conquery.models.api.openapi"))
-												   .map(Class::getName)
-												   .toList();
+				.filter(
+					interfaceClazz -> interfaceClazz.getPackageName()
+						.startsWith(
+							"com.bakdata.conquery.models.api.openapi"))
+				.map(Class::getName)
+				.toList();
 			if (!openApiInterfaces.isEmpty()) {
-				log.info("Skipping resource {}, because it is implementing these OpenAPI interfaces: {}", clazz, openApiInterfaces);
+				log.info(
+					"Skipping resource {}, because it is implementing these OpenAPI interfaces: {}",
+					clazz,
+					openApiInterfaces);
 				continue;
 			}
 

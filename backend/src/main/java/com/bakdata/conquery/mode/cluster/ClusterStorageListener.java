@@ -22,16 +22,24 @@ import com.bakdata.conquery.models.worker.WorkerHandler;
 /**
  * Propagates changes of stored entities to relevant ConQuery shards in the cluster.
  */
-public record ClusterStorageListener(JobManager jobManager, DatasetRegistry<DistributedNamespace> datasetRegistry) implements StorageListener {
+public record ClusterStorageListener(
+	JobManager jobManager,
+	DatasetRegistry<DistributedNamespace> datasetRegistry) implements StorageListener {
 
 	@Override
 	public void onAddSecondaryId(SecondaryIdDescription secondaryId) {
-		datasetRegistry().get(secondaryId.getDataset()).getWorkerHandler().sendToAll(new UpdateSecondaryId(secondaryId));
+		datasetRegistry().get(secondaryId.getDataset())
+			.getWorkerHandler()
+			.sendToAll(
+				new UpdateSecondaryId(secondaryId));
 	}
 
 	@Override
 	public void onDeleteSecondaryId(SecondaryIdDescriptionId secondaryId) {
-		datasetRegistry().get(secondaryId.getDataset()).getWorkerHandler().sendToAll(new RemoveSecondaryId(secondaryId));
+		datasetRegistry().get(secondaryId.getDataset())
+			.getWorkerHandler()
+			.sendToAll(
+				new RemoveSecondaryId(secondaryId));
 	}
 
 	@Override
@@ -47,14 +55,18 @@ public record ClusterStorageListener(JobManager jobManager, DatasetRegistry<Dist
 	@Override
 	public void onAddConcept(Concept<?> concept) {
 		WorkerHandler handler = datasetRegistry().get(concept.getDataset()).getWorkerHandler();
-		SimpleJob simpleJob = new SimpleJob(String.format("sendToAll : Add %s ", concept.getId()), () -> handler.sendToAll(new UpdateConcept(concept)));
+		SimpleJob simpleJob = new SimpleJob(
+			String.format("sendToAll : Add %s ", concept.getId()),
+			() -> handler.sendToAll(new UpdateConcept(concept)));
 		jobManager().addSlowJob(simpleJob);
 	}
 
 	@Override
 	public void onDeleteConcept(ConceptId concept) {
 		WorkerHandler handler = datasetRegistry().get(concept.getDataset()).getWorkerHandler();
-		SimpleJob simpleJob = new SimpleJob("sendToAll: remove " + concept, () -> handler.sendToAll(new RemoveConcept(concept)));
+		SimpleJob simpleJob = new SimpleJob(
+			"sendToAll: remove " + concept,
+			() -> handler.sendToAll(new RemoveConcept(concept)));
 		jobManager().addSlowJob(simpleJob);
 	}
 }

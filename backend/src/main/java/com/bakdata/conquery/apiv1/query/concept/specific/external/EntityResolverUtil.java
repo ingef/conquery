@@ -31,9 +31,9 @@ public class EntityResolverUtil {
 		final CDateSet[] out = new CDateSet[values.length];
 
 		final List<DateFormat> dateFormats = format.stream()
-												   .map(EntityResolverUtil::resolveDateFormat)
-												   // Don't use Stream#toList to preserve null-values
-												   .collect(Collectors.toList());
+			.map(EntityResolverUtil::resolveDateFormat)
+			// Don't use Stream#toList to preserve null-values
+			.collect(Collectors.toList());
 
 		/*
 		 If no format is provided, put empty dates into output.
@@ -63,7 +63,7 @@ public class EntityResolverUtil {
 					String value = values[row][col];
 
 					if (StringUtils.isBlank(value)) {
-						log.trace("Found blank/null value in {}/{} (row/col)", row,col);
+						log.trace("Found blank/null value in {}/{} (row/col)", row, col);
 						continue;
 					}
 
@@ -81,8 +81,7 @@ public class EntityResolverUtil {
 				}
 
 				out[row].addAll(dates);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// If a value is not parsable, it is included in the exceptions cause message  (see DateReader)
 				log.trace("Failed to parse Date in row {}", row, e);
 				// This catch causes `out[row]` to remain `null` which later flags this line as: unresolvedDate
@@ -92,25 +91,35 @@ public class EntityResolverUtil {
 		return out;
 	}
 
-	public static void collectExtraData(Map<String, String>[] extraDataByRow, int rowNum, Map<String, Map<String, List<String>>> extraDataByEntity, String resolvedId) {
+	public static void collectExtraData(
+		Map<String, String>[] extraDataByRow,
+		int rowNum,
+		Map<String, Map<String, List<String>>> extraDataByEntity,
+		String resolvedId) {
 		if (extraDataByRow[rowNum] != null) {
 			for (Map.Entry<String, String> entry : extraDataByRow[rowNum].entrySet()) {
 				extraDataByEntity.computeIfAbsent(resolvedId, (ignored) -> new HashMap<>())
-								 .computeIfAbsent(entry.getKey(), (ignored) -> new ArrayList<>())
-								 .add(entry.getValue());
+					.computeIfAbsent(
+						entry.getKey(),
+						(ignored) -> new ArrayList<>())
+					.add(entry.getValue());
 			}
 		}
 	}
 
-	public static void verifyOnlySingles(boolean onlySingles, Map<String, Map<String, List<String>>> extraDataByEntity) {
+	public static void verifyOnlySingles(
+		boolean onlySingles,
+		Map<String, Map<String, List<String>>> extraDataByEntity) {
 		if (!onlySingles) {
 			return;
 		}
 		// Check that there is at most one value per entity and per column
-		final boolean alright = extraDataByEntity.values().stream()
-												 .map(Map::values)
-												 .flatMap(Collection::stream)
-												 .allMatch(l -> l.size() <= 1);
+		final boolean alright = extraDataByEntity.values()
+			.stream()
+			.map(Map::values)
+			.flatMap(
+				Collection::stream)
+			.allMatch(l -> l.size() <= 1);
 		if (!alright) {
 			throw new ConqueryError.ExternalResolveOnePerRowError();
 		}
@@ -154,8 +163,7 @@ public class EntityResolverUtil {
 	 */
 	public static Map<String, String>[] readExtras(String[][] values, List<String> format) {
 		final String[] names = values[0];
-		@SuppressWarnings("unchecked")
-		final Map<String, String>[] extrasByRow = new Map[values.length];
+		@SuppressWarnings("unchecked") final Map<String, String>[] extrasByRow = new Map[values.length];
 
 
 		for (int line = 1; line < values.length; line++) {
@@ -183,8 +191,7 @@ public class EntityResolverUtil {
 	private static DateFormat resolveDateFormat(String name) {
 		try {
 			return DateFormat.valueOf(name);
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			return null; // Does not exist
 		}
 	}

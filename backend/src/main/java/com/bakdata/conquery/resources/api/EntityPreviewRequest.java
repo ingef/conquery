@@ -1,8 +1,8 @@
 package com.bakdata.conquery.resources.api;
 
+import jakarta.validation.constraints.NotEmpty;
 import java.time.LocalDate;
 import java.util.List;
-import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;

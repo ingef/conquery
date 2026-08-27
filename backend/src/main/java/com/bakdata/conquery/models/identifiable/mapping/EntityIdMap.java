@@ -58,7 +58,10 @@ public class EntityIdMap {
 	/**
 	 * Read incoming CSV-file extracting Id-Mappings for {@link ExternalId} and {@link EntityPrintId}.
 	 */
-	public static EntityIdMap generateIdMapping(CsvParser parser, List<ColumnConfig> mappers, NamespaceStorage namespaceStorage) {
+	public static EntityIdMap generateIdMapping(
+		CsvParser parser,
+		List<ColumnConfig> mappers,
+		NamespaceStorage namespaceStorage) {
 
 		EntityIdMap mapping = new EntityIdMap(namespaceStorage);
 

@@ -1,5 +1,9 @@
 package com.bakdata.conquery.mode.cluster;
 
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -7,10 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.mode.ImportHandler;
 import com.bakdata.conquery.models.datasets.Import;
@@ -64,7 +64,7 @@ public class ClusterImportHandler implements ImportHandler {
 
 			readAndDistributeImport(((DistributedNamespace) namespace), table, header, parser);
 
-			try(Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts()) {
+			try (Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts()) {
 				clearDependentConcepts(allConcepts, table.getId());
 			}
 		}
@@ -90,7 +90,8 @@ public class ClusterImportHandler implements ImportHandler {
 			final String errorsMessage = String.join("\n - ", errors);
 
 			log.error("Problems concerning Import `{}`:\n{}", importId, errorsMessage);
-			throw new BadRequestException("Headers[%s] do not match Table[%s]:\n%s".formatted(importId, tableId, errorsMessage));
+			throw new BadRequestException(
+				"Headers[%s] do not match Table[%s]:\n%s".formatted(importId, tableId, errorsMessage));
 		}
 
 		final Import processedImport = namespace.getStorage().getImport(importId);
@@ -103,15 +104,20 @@ public class ClusterImportHandler implements ImportHandler {
 			// before updating the import, make sure that all workers removed the prior import
 			namespace.getWorkerHandler().sendToAll(new RemoveImportJob(importId));
 			namespace.getStorage().removeImport(importId);
-		}
-		else if (processedImport != null) {
-			throw new WebApplicationException("Import[%s] is already present.".formatted(importId), Response.Status.CONFLICT);
+		} else if (processedImport != null) {
+			throw new WebApplicationException(
+				"Import[%s] is already present.".formatted(importId),
+				Response.Status.CONFLICT);
 		}
 
 		return table;
 	}
 
-	private static void readAndDistributeImport(DistributedNamespace namespace, Table table, PreprocessedHeader header, PreprocessedReader reader) {
+	private static void readAndDistributeImport(
+		DistributedNamespace namespace,
+		Table table,
+		PreprocessedHeader header,
+		PreprocessedReader reader) {
 		final TableId tableId = table.getId();
 
 		log.info("BEGIN importing {} into {}", header.getName(), table);
@@ -138,8 +144,8 @@ public class ClusterImportHandler implements ImportHandler {
 
 			final WorkerInformation responsibleWorker = namespace.getWorkerHandler().assignResponsibleWorker(bucketId);
 
-			sendBucket(bucket, responsibleWorker).addListener((f) ->  {
-				if(((WriteFuture)f).isWritten()) {
+			sendBucket(bucket, responsibleWorker).addListener((f) -> {
+				if (((WriteFuture) f).isWritten()) {
 					log.trace("Sent Bucket {}", bucketId);
 					return;
 				}
@@ -157,7 +163,11 @@ public class ClusterImportHandler implements ImportHandler {
 
 		namespace.getJobManager().addSlowJob(new RegisterImportEntities(collectedEntities, namespace, imp.getId()));
 
-		log.debug("Successfully read {} Buckets, containing {} entities for `{}`", header.getNumberOfBuckets(), header.getNumberOfEntities(), imp.getId());
+		log.debug(
+			"Successfully read {} Buckets, containing {} entities for `{}`",
+			header.getNumberOfBuckets(),
+			header.getNumberOfEntities(),
+			imp.getId());
 
 		namespace.getWorkerHandler().sendUpdatedWorkerInformation();
 
@@ -165,10 +175,11 @@ public class ClusterImportHandler implements ImportHandler {
 
 	private static void clearDependentConcepts(Stream<Concept<?>> allConcepts, TableId table) {
 		allConcepts.map(Concept::getConnectors)
-				   .flatMap(List::stream)
-				   .filter(con -> con.resolveTableId().equals(table))
-				   .map(Connector::getConcept)
-				   .forEach(Concept::clearMatchingStats);
+			.flatMap(List::stream)
+			.filter(
+				con -> con.resolveTableId().equals(table))
+			.map(Connector::getConcept)
+			.forEach(Concept::clearMatchingStats);
 	}
 
 	/**
@@ -192,7 +203,7 @@ public class ClusterImportHandler implements ImportHandler {
 		final DatasetId id = imp.getTable().getDataset();
 		final DistributedNamespace namespace = datasetRegistry.get(id);
 
-		try(Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts()) {
+		try (Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts()) {
 			clearDependentConcepts(allConcepts, imp.getTable());
 		}
 

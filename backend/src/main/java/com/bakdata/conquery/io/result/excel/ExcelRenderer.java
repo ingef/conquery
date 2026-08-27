@@ -62,8 +62,12 @@ public class ExcelRenderer {
 	}
 
 	public <E extends ManagedExecution & SingleTableResult> void renderToStream(
-			List<ResultInfo> idHeaders, E exec, OutputStream outputStream, OptionalLong limit, PrintSettings printSettings, MetaStorage storage)
-			throws IOException {
+		List<ResultInfo> idHeaders,
+		E exec,
+		OutputStream outputStream,
+		OptionalLong limit,
+		PrintSettings printSettings,
+		MetaStorage storage) throws IOException {
 		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 
 		setMetaData(exec, storage);
@@ -77,13 +81,16 @@ public class ExcelRenderer {
 
 			writeHeader(sheet, idHeaders, resultInfosExec, table, printSettings);
 
-			final int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults(OptionalLong.of(limit.orElse(MAX_LINES))), new ExcelResultPrinters());
+			final int writtenLines = writeBody(
+				sheet,
+				resultInfosExec,
+				exec.streamResults(OptionalLong.of(limit.orElse(MAX_LINES))),
+				new ExcelResultPrinters());
 
 			postProcessTable(sheet, table, writtenLines, idHeaders.size());
 
 			workbook.write(outputStream);
-		}
-		finally {
+		} finally {
 			workbook.dispose();
 		}
 
@@ -93,7 +100,9 @@ public class ExcelRenderer {
 	 * Include meta data in the xlsx such as the title, owner/author, tag and the name of this instance.
 	 */
 	private <E extends ManagedExecution & SingleTableResult> void setMetaData(E exec, MetaStorage metaStorage) {
-		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
+		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook()
+			.getProperties()
+			.getCoreProperties();
 		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
 
 		String creator = config.getApplicationName();
@@ -108,7 +117,9 @@ public class ExcelRenderer {
 
 		coreProperties.setCreator(creator);
 		coreProperties.setKeywords(String.join(" ", exec.getTags()));
-		final POIXMLProperties.ExtendedProperties extendedProperties = workbook.getXSSFWorkbook().getProperties().getExtendedProperties();
+		final POIXMLProperties.ExtendedProperties extendedProperties = workbook.getXSSFWorkbook()
+			.getProperties()
+			.getExtendedProperties();
 		extendedProperties.setApplication(config.getApplicationName());
 	}
 
@@ -136,10 +147,11 @@ public class ExcelRenderer {
 	 * Also autosize the columns according to the header width.
 	 */
 	private void writeHeader(
-			SXSSFSheet sheet,
-			List<ResultInfo> idHeaders,
-			List<ResultInfo> infos,
-			XSSFTable table, PrintSettings printSettings) {
+		SXSSFSheet sheet,
+		List<ResultInfo> idHeaders,
+		List<ResultInfo> infos,
+		XSSFTable table,
+		PrintSettings printSettings) {
 
 		final CTTableColumns columns = table.getCTTable().addNewTableColumns();
 		columns.setCount(idHeaders.size() + infos.size());
@@ -183,18 +195,23 @@ public class ExcelRenderer {
 	}
 
 	private int writeBody(
-			SXSSFSheet sheet,
-			List<ResultInfo> infos,
-			Stream<EntityResult> resultLines, PrinterFactory printerFactory) {
+		SXSSFSheet sheet,
+		List<ResultInfo> infos,
+		Stream<EntityResult> resultLines,
+		PrinterFactory printerFactory) {
 
 		// Row 0 is the Header the data starts at 1
 		final AtomicInteger currentRow = new AtomicInteger(1);
 
-		final TypeWriter[] writers =
-				infos.stream().map(info -> writer(info.getType(), info.createPrinter(printerFactory, settings), settings)).toArray(TypeWriter[]::new);
+		final TypeWriter[] writers = infos.stream()
+			.map(
+				info -> writer(info.getType(), info.createPrinter(printerFactory, settings), settings))
+			.toArray(
+				TypeWriter[]::new);
 		final PrintIdMapper idMapper = settings.getIdMapper();
 
-		final int writtenLines = resultLines.mapToInt(l -> writeRowsForEntity(infos, l, currentRow, sheet, writers, idMapper)).sum();
+		final int writtenLines = resultLines.mapToInt(
+			l -> writeRowsForEntity(infos, l, currentRow, sheet, writers, idMapper)).sum();
 
 		// The result was shorter than the number of rows to track, so we auto size here explicitly
 		if (writtenLines < config.getLastRowToAutosize()) {
@@ -246,12 +263,12 @@ public class ExcelRenderer {
 	 * Writes the result lines for each entity.
 	 */
 	private int writeRowsForEntity(
-			List<ResultInfo> infos,
-			EntityResult internalRow,
-			final AtomicInteger currentRow,
-			SXSSFSheet sheet,
-			TypeWriter[] writers,
-			PrintIdMapper idMapper) {
+		List<ResultInfo> infos,
+		EntityResult internalRow,
+		final AtomicInteger currentRow,
+		SXSSFSheet sheet,
+		TypeWriter[] writers,
+		PrintIdMapper idMapper) {
 
 		final String[] ids = idMapper.map(internalRow).getExternalId();
 
@@ -337,11 +354,17 @@ public class ExcelRenderer {
 		cell.setCellStyle(styles.get(ExcelConfig.INTEGER_STYLE));
 	}
 
-	public static void writeMoneyCell(Object valueRaw, Cell cell, Printer printer, PrintSettings settings, Map<String, CellStyle> styles) {
+	public static void writeMoneyCell(
+		Object valueRaw,
+		Cell cell,
+		Printer printer,
+		PrintSettings settings,
+		Map<String, CellStyle> styles) {
 
 		final BigDecimal value = (BigDecimal) printer.apply(valueRaw);
 
-		final CellStyle currencyStyle = styles.get(ExcelConfig.CURRENCY_STYLE_PREFIX + settings.getCurrency().getCurrencyCode());
+		final CellStyle currencyStyle = styles.get(
+			ExcelConfig.CURRENCY_STYLE_PREFIX + settings.getCurrency().getCurrencyCode());
 		if (currencyStyle == null) {
 			// Print as cents or whatever the minor currency unit is
 			cell.setCellValue(value.movePointRight(settings.getCurrency().getDefaultFractionDigits()).intValue());

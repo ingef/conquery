@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -10,8 +13,6 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
-import jakarta.validation.Validator;
-import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +20,11 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id="UPDATE_CONCEPT", base=NamespacedMessage.class)
-@RequiredArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString
+@CPSType(id = "UPDATE_CONCEPT", base = NamespacedMessage.class)
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+@Getter
+@Setter
+@ToString
 @Slf4j
 public class UpdateConcept extends WorkerMessage {
 
@@ -31,7 +35,7 @@ public class UpdateConcept extends WorkerMessage {
 	@JsonIgnore
 	@NotNull
 	private Validator validator;
-	
+
 	@Override
 	public void react(Worker context) throws Exception {
 		ValidatorHelper.failOnError(log, validator.validate(concept));

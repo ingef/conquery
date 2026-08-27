@@ -9,7 +9,7 @@ import org.jooq.Field;
 abstract class RangeCondition<T extends Comparable<?>> implements WhereCondition {
 
 	private final Field<T> column;
-	private final IRange<T,?> range;
+	private final IRange<T, ?> range;
 
 	@Override
 	public Condition condition() {

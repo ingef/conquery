@@ -3,9 +3,9 @@ package com.bakdata.conquery.integration.tests;
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.ws.rs.core.Response;
 import java.io.File;
 import java.util.List;
-import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -83,12 +83,9 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			log.info("Checking state before update");
 			assertThat(namespace.getStorage().getAllImports()).hasSize(1);
 			// Must contain the import.
-			assertThat(namespace.getStorage().getAllImports())
-					.filteredOn(imp -> imp.equals(importId1))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().getAllImports()).filteredOn(imp -> imp.equals(importId1)).isNotEmpty();
 
-			assertThat(namespace.getStorage().getImport(importId1))
-					.isNotNull();
+			assertThat(namespace.getStorage().getImport(importId1)).isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
@@ -98,19 +95,22 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 					final ModificationShieldedWorkerStorage workerStorage = worker.getStorage();
 
-					assertThat(workerStorage.getAllCBlocks())
-							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-							.filteredOn(block -> block.getBucket().getDataset().equals(dataset))
-							.isNotEmpty();
+					assertThat(workerStorage.getAllCBlocks()).describedAs(
+						"CBlocks for Worker %s",
+						worker.getInfo().getId())
+						.filteredOn(
+							block -> block.getBucket().getDataset().equals(dataset))
+						.isNotEmpty();
 
-					assertThat(IntegrationUtils.getAllBuckets(workerStorage))
-							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
-							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
-							.isNotEmpty();
+					assertThat(IntegrationUtils.getAllBuckets(workerStorage)).filteredOn(
+						bucket -> bucket.getId().getDataset().equals(dataset))
+						.describedAs(
+							"Buckets for Worker %s",
+							worker.getInfo().getId())
+						.isNotEmpty();
 
 					// Must contain the import.
-					assertThat(workerStorage.getImport(importId1))
-							.isNotNull();
+					assertThat(workerStorage.getImport(importId1)).isNotNull();
 				}
 			}
 			assertThat(namespace.getNumberOfEntities()).isEqualTo(4);
@@ -128,21 +128,30 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Manually loading new data for import");
 
-			final RequiredTable importTable = test.getContent().getTables().stream()
-												  .filter(table -> table.getName().equalsIgnoreCase(importId1.getTable().getTable()))
-												  .findFirst()
-												  .orElseThrow();
+			final RequiredTable importTable = test.getContent()
+				.getTables()
+				.stream()
+				.filter(
+					table -> table.getName().equalsIgnoreCase(importId1.getTable().getTable()))
+				.findFirst()
+				.orElseThrow();
 
 			final String csvName = importTable.getCsv().getName();
 			final String path = importTable.getCsv().getPath();
 
 			//copy new content of the importTable into the csv-File used by the preprocessor to avoid creating multiple files withe same names
-			FileUtils.copyInputStreamToFile(LoadingUtil.openResource(path.substring(0, path.lastIndexOf('/')) + "/" + csvName.replace(".csv", ".update.csv"))
-					, new File(conquery.getTmpDir(), csvName)
+			FileUtils.copyInputStreamToFile(
+				LoadingUtil.openResource(
+					path.substring(0, path.lastIndexOf('/')) + "/" + csvName.replace(".csv", ".update.csv")),
+				new File(conquery.getTmpDir(), csvName)
 			);
 
-			File descriptionFile = new File(conquery.getTmpDir(), importTable.getName() + ConqueryConstants.EXTENSION_DESCRIPTION);
-			File newPreprocessedFile = new File(conquery.getTmpDir(), importTable.getName() + ConqueryConstants.EXTENSION_PREPROCESSED);
+			File descriptionFile = new File(
+				conquery.getTmpDir(),
+				importTable.getName() + ConqueryConstants.EXTENSION_DESCRIPTION);
+			File newPreprocessedFile = new File(
+				conquery.getTmpDir(),
+				importTable.getName() + ConqueryConstants.EXTENSION_PREPROCESSED);
 
 			//create import descriptor
 			{
@@ -176,12 +185,9 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			log.info("Checking state after update");
 			assertThat(namespace.getStorage().getAllImports()).hasSize(1);
 			// Must contain the import.
-			assertThat(namespace.getStorage().getAllImports())
-					.filteredOn(imp -> imp.equals(importId1))
-					.isNotEmpty();
+			assertThat(namespace.getStorage().getAllImports()).filteredOn(imp -> imp.equals(importId1)).isNotEmpty();
 
-			assertThat(namespace.getStorage().getImport(importId1))
-					.isNotNull();
+			assertThat(namespace.getStorage().getImport(importId1)).isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker worker : node.getWorkers().getWorkers().values()) {
@@ -191,15 +197,19 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 					final ModificationShieldedWorkerStorage workerStorage = worker.getStorage();
 
-					assertThat(workerStorage.getAllCBlocks())
-							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-							.filteredOn(block -> block.getBucket().getDataset().equals(dataset))
-							.isNotEmpty();
+					assertThat(workerStorage.getAllCBlocks()).describedAs(
+						"CBlocks for Worker %s",
+						worker.getInfo().getId())
+						.filteredOn(
+							block -> block.getBucket().getDataset().equals(dataset))
+						.isNotEmpty();
 
-					assertThat(IntegrationUtils.getAllBuckets(workerStorage))
-							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
-							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
-							.isNotEmpty();
+					assertThat(IntegrationUtils.getAllBuckets(workerStorage)).filteredOn(
+						bucket -> bucket.getId().getDataset().equals(dataset))
+						.describedAs(
+							"Buckets for Worker %s",
+							worker.getInfo().getId())
+						.isNotEmpty();
 
 					// Must contain the import.
 					assertThat(workerStorage.getImport(importId1)).isNotNull();

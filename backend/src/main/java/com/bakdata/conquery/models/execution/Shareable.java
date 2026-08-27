@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
  * Interface for classes that are able to be patched with an {@link MetaDataPatch}.
  * Allows sharing of implementations among groups of a given user.
  */
-public interface  Shareable extends Authorized {
+public interface Shareable extends Authorized {
 	Logger log = LoggerFactory.getLogger(Shareable.class);
 
 	/**
@@ -32,8 +32,8 @@ public interface  Shareable extends Authorized {
 	void setShared(boolean shared);
 
 	default <ID extends Id<?, ?>, S extends Identifiable<? extends ID, ?> & Shareable & Authorized> Consumer<ShareInformation> sharer(
-			MetaStorage storage,
-			Subject subject) {
+		MetaStorage storage,
+		Subject subject) {
 		if (!(this instanceof Identifiable<?, ?>)) {
 			log.warn("Cannot share {} ({}) because it does not implement Identifiable", getClass(), this);
 			return QueryUtils.getNoOpEntryPoint();
@@ -51,7 +51,12 @@ public interface  Shareable extends Authorized {
 					continue;
 				}
 
-				log.trace("User {} unshares instance {} ({}) from owner {}.", subject, shareable.getClass().getSimpleName(), shareable.getId(), group);
+				log.trace(
+					"User {} unshares instance {} ({}) from owner {}.",
+					subject,
+					shareable.getClass().getSimpleName(),
+					shareable.getId(),
+					group);
 
 				group.removePermission(shareable.createPermission(AbilitySets.SHAREHOLDER));
 			}
@@ -60,16 +65,22 @@ public interface  Shareable extends Authorized {
 			// Resolve the provided groups
 			final Set<Group> groups = patch.getGroups().stream().map(storage::getGroup).collect(Collectors.toSet());
 
-			for(Group group : groups) {
+			for (Group group : groups) {
 				final ConqueryPermission sharePermission = shareable.createPermission(AbilitySets.SHAREHOLDER);
 				group.addPermission(sharePermission);
 
-				log.trace("User {} shares instance {} ({}). Adding permission {} to owner {}.", subject, shareable.getClass().getSimpleName(), shareable.getId(), sharePermission, group);
+				log.trace(
+					"User {} shares instance {} ({}). Adding permission {} to owner {}.",
+					subject,
+					shareable.getClass().getSimpleName(),
+					shareable.getId(),
+					sharePermission,
+					group);
 			}
 
 			setShared(!patch.getGroups().isEmpty());
 		};
-		
+
 	}
 
 	interface ShareInformation {

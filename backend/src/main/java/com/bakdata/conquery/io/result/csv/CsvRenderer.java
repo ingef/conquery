@@ -26,10 +26,18 @@ public class CsvRenderer {
 	private final CsvWriter writer;
 	private final PrintSettings cfg;
 
-	public void toCSV(List<ResultInfo> idHeaders, List<ResultInfo> infos, Stream<EntityResult> resultStream, PrintSettings printSettings, Charset charset) {
+	public void toCSV(
+		List<ResultInfo> idHeaders,
+		List<ResultInfo> infos,
+		Stream<EntityResult> resultStream,
+		PrintSettings printSettings,
+		Charset charset) {
 
 		UniqueNamer uniqNamer = new UniqueNamer(cfg);
-		final String[] headers = Stream.concat(idHeaders.stream(), infos.stream()).map(info -> uniqNamer.getUniqueName(info, printSettings)).toArray(String[]::new);
+		final String[] headers = Stream.concat(idHeaders.stream(), infos.stream())
+			.map(
+				info -> uniqNamer.getUniqueName(info, printSettings))
+			.toArray(String[]::new);
 
 		writer.writeHeaders(headers);
 
@@ -37,16 +45,21 @@ public class CsvRenderer {
 	}
 
 	private void createCSVBody(
-			PrintSettings cfg, List<ResultInfo> infos, Stream<EntityResult> results, PrintSettings printSettings,
-			PrinterFactory printerFactory) {
-		final Printer[] printers = infos.stream().map(info -> info.createPrinter(printerFactory, printSettings)).toArray(Printer[]::new);
+		PrintSettings cfg,
+		List<ResultInfo> infos,
+		Stream<EntityResult> results,
+		PrintSettings printSettings,
+		PrinterFactory printerFactory) {
+		final Printer[] printers = infos.stream()
+			.map(
+				info -> info.createPrinter(printerFactory, printSettings))
+			.toArray(Printer[]::new);
 
 		results.map(result -> Pair.of(cfg.getIdMapper().map(result), result))
-			   .sorted(Map.Entry.comparingByKey())
-			   .forEach(res -> res
-					   .getValue()
-					   .streamValues()
-					   .forEach(result -> printLine(res.getKey(), printers, result)));
+			.sorted(
+				Map.Entry.comparingByKey())
+			.forEach(
+				res -> res.getValue().streamValues().forEach(result -> printLine(res.getKey(), printers, result)));
 	}
 
 
@@ -62,9 +75,10 @@ public class CsvRenderer {
 			}
 			try {
 				writer.addValue(printers[i].apply(value));
-			}
-			catch (Exception e) {
-				throw new IllegalStateException("Failed to print column %s of line %s".formatted(i, Arrays.deepToString(values)), e);
+			} catch (Exception e) {
+				throw new IllegalStateException(
+					"Failed to print column %s of line %s".formatted(i, Arrays.deepToString(values)),
+					e);
 			}
 		}
 

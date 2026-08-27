@@ -20,7 +20,7 @@ public enum DateFormat {
 		public void readDates(String value, DateReader dateReader, CDateSet out) {
 			final CDateRange parsed = CDateRange.atMost(dateReader.parseToLocalDate(value));
 
-			if(out.isEmpty()){
+			if (out.isEmpty()) {
 				out.add(parsed);
 				return;
 			}
@@ -37,7 +37,7 @@ public enum DateFormat {
 		public void readDates(String value, DateReader dateReader, CDateSet out) {
 			final CDateRange parsed = CDateRange.atLeast(dateReader.parseToLocalDate(value));
 
-			if(out.isEmpty()){
+			if (out.isEmpty()) {
 				out.add(parsed);
 				return;
 			}
@@ -59,7 +59,7 @@ public enum DateFormat {
 		@Override
 		public void readDates(String value, DateReader dateReader, CDateSet out) {
 			CDateSet parsed = dateReader.parseToCDateSet(value);
-			if (parsed == null ) {
+			if (parsed == null) {
 				return;
 			}
 			out.addAll(parsed);
@@ -77,6 +77,9 @@ public enum DateFormat {
 	 */
 	public abstract void readDates(String value, DateReader dateReader, CDateSet out);
 
-	public static final Set<String> NAMES = Arrays.stream(DateFormat.values()).map(Enum::name).collect(Collectors.toSet());
+	public static final Set<String> NAMES = Arrays.stream(DateFormat.values())
+		.map(Enum::name)
+		.collect(
+			Collectors.toSet());
 
 }

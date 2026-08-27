@@ -12,16 +12,18 @@ import lombok.SneakyThrows;
 
 public class CDateRangeDeserializer extends StdDeserializer<CDateRange> {
 
-    private final DateReader dateReader;
+	private final DateReader dateReader;
 
-    protected CDateRangeDeserializer(DateReader dateReader) {
-        super(CDateRange.class);
-        this.dateReader = dateReader;
-    }
+	protected CDateRangeDeserializer(DateReader dateReader) {
+		super(CDateRange.class);
+		this.dateReader = dateReader;
+	}
 
-    @SneakyThrows
-    @Override
-    public CDateRange deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        return dateReader.parseToCDateRange(p.getText());
-    }
+	@SneakyThrows
+	@Override
+	public CDateRange deserialize(
+		JsonParser p,
+		DeserializationContext ctxt) throws IOException, JsonProcessingException {
+		return dateReader.parseToCDateRange(p.getText());
+	}
 }

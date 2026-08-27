@@ -49,7 +49,7 @@ public class Yes extends QPNode {
 	public boolean isOfInterest(Bucket bucket) {
 		return true;
 	}
-	
+
 	@Override
 	public boolean isOfInterest(Entity entity) {
 		return true;

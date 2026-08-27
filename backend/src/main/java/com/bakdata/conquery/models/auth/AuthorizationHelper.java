@@ -33,12 +33,12 @@ import lombok.extern.slf4j.Slf4j;
 @UtilityClass
 public class AuthorizationHelper {
 
-	public static List<Group> getGroupsOf(@NonNull Subject subject, @NonNull MetaStorage storage){
-		try(Stream<Group> allGroups = storage.getAllGroups()) {
-			return allGroups
-					.filter(g -> g.getMembers().contains(subject.getId()))
-					.sorted()
-					.collect(Collectors.toList());
+	public static List<Group> getGroupsOf(@NonNull Subject subject, @NonNull MetaStorage storage) {
+		try (Stream<Group> allGroups = storage.getAllGroups()) {
+			return allGroups.filter(g -> g.getMembers().contains(subject.getId()))
+				.sorted()
+				.collect(
+					Collectors.toList());
 		}
 	}
 
@@ -48,7 +48,7 @@ public class AuthorizationHelper {
 	 */
 	public static Optional<Group> getPrimaryGroup(@NonNull Subject subject, @NonNull MetaStorage storage) {
 		List<Group> groups = getGroupsOf(subject, storage);
-		if(groups.isEmpty()) {
+		if (groups.isEmpty()) {
 			return Optional.empty();
 		}
 		// TODO: 17.02.2020 implement primary flag for group
@@ -60,13 +60,16 @@ public class AuthorizationHelper {
 	 * the permission of the roles it inherits. The query can be filtered by the Permission domain.
 	 * @return Owned and inherited permissions.
 	 */
-	public static Multimap<String, ConqueryPermission> getEffectiveUserPermissions(User user, List<String> domainSpecifier, MetaStorage storage) {
+	public static Multimap<String, ConqueryPermission> getEffectiveUserPermissions(
+		User user,
+		List<String> domainSpecifier,
+		MetaStorage storage) {
 		Set<ConqueryPermission> permissions = user.getEffectivePermissions();
 		Multimap<String, ConqueryPermission> mappedPerms = ArrayListMultimap.create();
-		for(ConqueryPermission perm : permissions) {
+		for (ConqueryPermission perm : permissions) {
 			Set<String> domains = perm.getDomains();
-			if(!Collections.disjoint(domainSpecifier, perm.getDomains())) {
-				for(String domain : domains) {
+			if (!Collections.disjoint(domainSpecifier, perm.getDomains())) {
+				for (String domain : domains) {
 					mappedPerms.put(domain, perm);
 				}
 			}
@@ -90,18 +93,22 @@ public class AuthorizationHelper {
 		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 		visitable.visit(collector);
 
-		Set<DatasetId> datasets =
-				collector.getIdentifiables()
-						 .stream()
-						 .map(NamespacedIdentifiable::getDataset)
-						 .collect(Collectors.toSet());
+		Set<DatasetId> datasets = collector.getIdentifiables()
+			.stream()
+			.map(NamespacedIdentifiable::getDataset)
+			.collect(
+				Collectors.toSet());
 
 		subject.authorize(datasets, Ability.DOWNLOAD);
 	}
 
 
-	public static boolean registerForAuthentication(UserManageable userManager, User user, CredentialType credentials, boolean override) {
-		if(override) {
+	public static boolean registerForAuthentication(
+		UserManageable userManager,
+		User user,
+		CredentialType credentials,
+		boolean override) {
+		if (override) {
 			return userManager.updateUser(user.getId(), credentials);
 		}
 		return userManager.addUser(user.getId(), credentials);

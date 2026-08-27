@@ -1,11 +1,10 @@
 package com.bakdata.conquery.models.auth.oidc.keycloak;
 
-import java.net.URI;
-import java.util.Set;
-
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.GenericType;
+import java.net.URI;
+import java.util.Set;
 
 import com.bakdata.conquery.models.config.auth.IntrospectionDelegatingRealmFactory;
 import com.bakdata.conquery.util.ResourceUtil;
@@ -25,7 +24,11 @@ public class KeycloakApi {
 
 	public KeycloakApi(IntrospectionDelegatingRealmFactory config, Client client) {
 
-		client.register(new ClientCredentialsGrantRequestFilter(config.getClientId(), config.getClientSecret(), URI.create(config.getTokenEndpoint())));
+		client.register(
+			new ClientCredentialsGrantRequestFilter(
+				config.getClientId(),
+				config.getClientSecret(),
+				URI.create(config.getTokenEndpoint())));
 
 		final WebTarget base = client.target(config.getAuthServerUrl());
 
@@ -40,8 +43,11 @@ public class KeycloakApi {
 
 	public Set<KeycloakGroup> getUserGroups(String userId) {
 		Preconditions.checkNotNull(userId);
-		return userGroups.resolveTemplate(USER_ID_TEMPLATE, userId).request().get(new GenericType<Set<KeycloakGroup>>() {
-		});
+		return userGroups.resolveTemplate(USER_ID_TEMPLATE, userId)
+			.request()
+			.get(
+				new GenericType<Set<KeycloakGroup>>() {
+				});
 	}
 
 

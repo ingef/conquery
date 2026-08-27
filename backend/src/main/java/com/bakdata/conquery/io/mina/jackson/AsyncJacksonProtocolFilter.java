@@ -52,7 +52,10 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 	private static final DataSize PIPED_IO_BUFFER_SIZE = DataSize.kibibytes(2 * 64);
 
 
-	private static final Thread.Builder THREAD_BUILDER = Thread.ofVirtual().name("%s#reader".formatted(AsyncJacksonProtocolFilter.class.getSimpleName()), 0);
+	private static final Thread.Builder THREAD_BUILDER = Thread.ofVirtual()
+		.name(
+			"%s#reader".formatted(AsyncJacksonProtocolFilter.class.getSimpleName()),
+			0);
 
 	private static final AttributeKey READER = new AttributeKey(AsyncJacksonProtocolFilter.class, "reader");
 	private static final AttributeKey SPILL_BUFFER = new AttributeKey(AsyncJacksonProtocolFilter.class, "spill");
@@ -146,7 +149,10 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 	}
 
 	@Nullable
-	private AsyncReader getOrCreateAsyncReader(NextFilter nextFilter, IoSession session, IoBuffer buffer) throws IOException {
+	private AsyncReader getOrCreateAsyncReader(
+		NextFilter nextFilter,
+		IoSession session,
+		IoBuffer buffer) throws IOException {
 		final AsyncReader asyncReader = getSessionReader(session);
 
 		if (asyncReader != null) {
@@ -163,8 +169,7 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 
 		if (sessionHasSpillBuffer(session)) {
 			bufferLength = lengthWithSpillBuffer(session, buffer);
-		}
-		else {
+		} else {
 			// It's simply the prefix
 			bufferLength = buffer.getInt();
 		}
@@ -223,9 +228,15 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 	private static int lengthWithSpillBuffer(IoSession session, IoBuffer buffer) throws IOException {
 		final IoBuffer spillBuffer = setSessionSpillBuffer(session, null);
 
-		log.trace("Found existing spill-buffer {}, incoming {}", DataSize.bytes(spillBuffer.position()), DataSize.bytes(buffer.limit()));
+		log.trace(
+			"Found existing spill-buffer {}, incoming {}",
+			DataSize.bytes(spillBuffer.position()),
+			DataSize.bytes(buffer.limit()));
 
-		buffer.getSlice(Integer.BYTES - spillBuffer.position()).asInputStream().transferTo(spillBuffer.asOutputStream());
+		buffer.getSlice(Integer.BYTES - spillBuffer.position())
+			.asInputStream()
+			.transferTo(
+				spillBuffer.asOutputStream());
 
 		spillBuffer.flip();
 
@@ -273,7 +284,11 @@ public class AsyncJacksonProtocolFilter extends IoFilterAdapter {
 			mapper.writerFor(NetworkMessage.class).writeValue(outputStream, message);
 		}
 
-		log.trace("FINISHED Encoding message in {}. Buffer size: {}. Message: {}", stopwatch, DataSize.bytes(buf.remaining()), message);
+		log.trace(
+			"FINISHED Encoding message in {}. Buffer size: {}. Message: {}",
+			stopwatch,
+			DataSize.bytes(buf.remaining()),
+			message);
 
 		buf.putInt(initialPosition, buf.position() - initialPosition - Integer.BYTES);
 		buf.flip();

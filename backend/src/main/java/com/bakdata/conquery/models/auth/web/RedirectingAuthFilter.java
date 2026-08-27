@@ -1,10 +1,5 @@
 package com.bakdata.conquery.models.auth.web;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -16,6 +11,11 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.Response;
+import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
@@ -64,25 +64,27 @@ public class RedirectingAuthFilter extends io.dropwizard.auth.AuthFilter<Authent
 	 */
 	private final AuthFilter delegate;
 
-	public static void registerLoginInitiator(ResourceConfig resourceConfig, LoginInitiator initiator, final String name) {
+	public static void registerLoginInitiator(
+		ResourceConfig resourceConfig,
+		LoginInitiator initiator,
+		final String name) {
 		resourceConfig.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
-				bind(initiator)
-						.named(name)
-						.to(LoginInitiator.class);
+				bind(initiator).named(name).to(LoginInitiator.class);
 			}
 		});
 	}
 
-	public static void registerAuthAttemptChecker(ResourceConfig resourceConfig, AuthAttemptChecker checker, final String name) {
+	public static void registerAuthAttemptChecker(
+		ResourceConfig resourceConfig,
+		AuthAttemptChecker checker,
+		final String name) {
 		//TODO These bindings dont work yet, we need to use concrete classes instead of lambdas
 		resourceConfig.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
-				bind(checker)
-						.named(name)
-						.to(AuthAttemptChecker.class);
+				bind(checker).named(name).to(AuthAttemptChecker.class);
 			}
 		});
 	}
@@ -110,10 +112,10 @@ public class RedirectingAuthFilter extends io.dropwizard.auth.AuthFilter<Authent
 			if (authenticatedRedirects.size() == 1) {
 				// The request qualified as a multistep authentication, so the user is redirected to proceed the authentication.
 				throw new RedirectionException(authenticatedRedirects.getFirst());
-			}
-			else if (authenticatedRedirects.size() > 1) {
+			} else if (authenticatedRedirects.size() > 1) {
 				log.error("Multiple authenticated redirects generated. Only one should be possible");
-				throw new BadRequestException("The request triggered more than one multistep authentication schema, which is not allowed.");
+				throw new BadRequestException(
+					"The request triggered more than one multistep authentication schema, which is not allowed.");
 			}
 
 			// The request was not authenticated, nor was it a step towards an authentication, so we redirect the user to a login.
@@ -143,7 +145,8 @@ public class RedirectingAuthFilter extends io.dropwizard.auth.AuthFilter<Authent
 			}
 
 			// Give the user a choice to choose between them.
-			throw new WebApplicationException(Response.ok(new UIView<>("logins.html.ftl", null, loginRedirects)).build());
+			throw new WebApplicationException(
+				Response.ok(new UIView<>("logins.html.ftl", null, loginRedirects)).build());
 		}
 	}
 

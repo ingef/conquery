@@ -29,7 +29,11 @@ public class XodusStore implements com.bakdata.conquery.io.storage.Store<ByteIte
 	@Getter
 	private final String name;
 
-	public XodusStore(Environment env, String name, Consumer<XodusStore> storeCloseHook, Consumer<XodusStore> storeRemoveHook) {
+	public XodusStore(
+		Environment env,
+		String name,
+		Consumer<XodusStore> storeCloseHook,
+		Consumer<XodusStore> storeRemoveHook) {
 		// Arbitrary duration that is strictly shorter than the timeout to not get interrupted by StuckTxMonitor
 		this.timeoutHalfMillis = env.getEnvironmentConfig().getEnvMonitorTxnsTimeout() / 2;
 		this.name = name;
@@ -37,7 +41,7 @@ public class XodusStore implements com.bakdata.conquery.io.storage.Store<ByteIte
 		this.storeCloseHook = storeCloseHook;
 		this.storeRemoveHook = storeRemoveHook;
 		this.store = env.computeInTransaction(
-				t -> env.openStore(this.name, StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t)
+			t -> env.openStore(this.name, StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t)
 		);
 	}
 
@@ -208,8 +212,7 @@ public class XodusStore implements com.bakdata.conquery.io.storage.Store<ByteIte
 				lastKey.set(key);
 				action.accept(key);
 				return true;
-			}
-			else {
+			} else {
 				cursor.close();
 				onClose();
 				return false;

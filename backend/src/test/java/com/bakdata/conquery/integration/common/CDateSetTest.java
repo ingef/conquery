@@ -19,142 +19,133 @@ public class CDateSetTest {
 	private static ConqueryConfig config = new ConqueryConfig();
 
 	public static Stream<Arguments> arguments() {
-		return Stream
-				.of(
-						Arguments.of(
-								"{2000-01-01/2000-01-01}",
-								new CDateRange[]{
-										CDateRange.of(
-												LocalDate.of(2000, 1, 1),
-												LocalDate.of(2000, 1, 1)
-										)
-								}
-						),
-						Arguments.of(
-								"{2000-01-01/2000-01-01, 2001-01-01/2001-01-02}",
-								new CDateRange[]{
-										CDateRange.of(
-												LocalDate.of(2000, 1, 1),
-												LocalDate.of(2000, 1, 1)
-										), CDateRange.of(
-										LocalDate.of(2001, 1, 1),
-										LocalDate.of(2001, 1, 2)
-								)
-								}
-						),
-						Arguments.of(
-								"{2000-01-01/2004-01-01}",
-								new CDateRange[]{
-										CDateRange.of(
-												LocalDate.of(2000, 1, 1),
-												LocalDate.of(2004, 1, 1)
-										), CDateRange.of(
-										LocalDate.of(2002, 1, 1),
-										LocalDate.of(2002, 1, 2)
-								)
-								}
-						),
-						Arguments.of(
-								"{2000-01-01/2000-01-07}",
-								new CDateRange[]{
-										CDateRange.of(
-												LocalDate.of(2000, 1, 1),
-												LocalDate.of(2000, 1, 4)
-										), CDateRange.of(
-										LocalDate.of(2000, 1, 4),
-										LocalDate.of(2000, 1, 7)
-								)
-								}
-						),
-						Arguments.of(
-								"{2000-01-01/2000-01-07}",
-								new CDateRange[]{
-										CDateRange.of(
-												LocalDate.of(2000, 1, 1),
-												LocalDate.of(2000, 1, 3)
-										), CDateRange.of(
-										LocalDate.of(2000, 1, 4),
-										LocalDate.of(2000, 1, 7)
-								)
-								}
-						),
-						Arguments.of(
-								"{2000-01-01/2000-01-02, 2000-01-04/2000-01-07}",
-								new CDateRange[]{
-										CDateRange.of(
-												LocalDate.of(2000, 1, 1),
-												LocalDate.of(2000, 1, 2)
-										), CDateRange.of(
-										LocalDate.of(2000, 1, 4),
-										LocalDate.of(2000, 1, 7)
-								)
-								}
-						),
-						Arguments.of(
-								"{2012-01-01/2012-01-02}",
-								new CDateRange[]{
-										CDateRange.of(
-												LocalDate.of(2012, 1, 2),
-												LocalDate.of(2012, 1, 2)
-										), CDateRange.of(
-										LocalDate.of(2012, 1, 1),
-										LocalDate.of(2012, 1, 1)
-								)
-								}
-						)
-				);
+		return Stream.of(
+			Arguments.of(
+				"{2000-01-01/2000-01-01}",
+				new CDateRange[]{CDateRange.of(
+					LocalDate.of(2000, 1, 1),
+					LocalDate.of(2000, 1, 1)
+				)
+				}
+			),
+			Arguments.of(
+				"{2000-01-01/2000-01-01, 2001-01-01/2001-01-02}",
+				new CDateRange[]{CDateRange.of(
+					LocalDate.of(2000, 1, 1),
+					LocalDate.of(2000, 1, 1)
+				), CDateRange.of(
+					LocalDate.of(2001, 1, 1),
+					LocalDate.of(2001, 1, 2)
+				)
+				}
+			),
+			Arguments.of(
+				"{2000-01-01/2004-01-01}",
+				new CDateRange[]{CDateRange.of(
+					LocalDate.of(2000, 1, 1),
+					LocalDate.of(2004, 1, 1)
+				), CDateRange.of(
+					LocalDate.of(2002, 1, 1),
+					LocalDate.of(2002, 1, 2)
+				)
+				}
+			),
+			Arguments.of(
+				"{2000-01-01/2000-01-07}",
+				new CDateRange[]{CDateRange.of(
+					LocalDate.of(2000, 1, 1),
+					LocalDate.of(2000, 1, 4)
+				), CDateRange.of(
+					LocalDate.of(2000, 1, 4),
+					LocalDate.of(2000, 1, 7)
+				)
+				}
+			),
+			Arguments.of(
+				"{2000-01-01/2000-01-07}",
+				new CDateRange[]{CDateRange.of(
+					LocalDate.of(2000, 1, 1),
+					LocalDate.of(2000, 1, 3)
+				), CDateRange.of(
+					LocalDate.of(2000, 1, 4),
+					LocalDate.of(2000, 1, 7)
+				)
+				}
+			),
+			Arguments.of(
+				"{2000-01-01/2000-01-02, 2000-01-04/2000-01-07}",
+				new CDateRange[]{CDateRange.of(
+					LocalDate.of(2000, 1, 1),
+					LocalDate.of(2000, 1, 2)
+				), CDateRange.of(
+					LocalDate.of(2000, 1, 4),
+					LocalDate.of(2000, 1, 7)
+				)
+				}
+			),
+			Arguments.of(
+				"{2012-01-01/2012-01-02}",
+				new CDateRange[]{CDateRange.of(
+					LocalDate.of(2012, 1, 2),
+					LocalDate.of(2012, 1, 2)
+				), CDateRange.of(
+					LocalDate.of(2012, 1, 1),
+					LocalDate.of(2012, 1, 1)
+				)
+				}
+			)
+		);
 	}
 
 	public static Stream<Arguments> argumentsParsing() {
-		return Stream
-				.of(
-						Arguments.of(
-								"{2000-01-01/2000-01-01}",
-								CDateSet.create(CDateRange.of(LocalDate.of(2000, 01, 01), LocalDate.of(2000, 01, 01)))
-						),
-						Arguments.of(
-								"01.01.2000 - 01.01.2000",
-								CDateSet.create(CDateRange.of(LocalDate.of(2000, 01, 01), LocalDate.of(2000, 01, 01)))
-						),
-						Arguments.of(
-								"{2000-01-01/2000-01-01, 2001-01-01/2001-01-01}",
-								CDateSet.create(
-										List.of(
-												CDateRange.of(LocalDate.of(2000, 01, 01), LocalDate.of(2000, 01, 01)),
-												CDateRange.of(LocalDate.of(2001, 01, 01), LocalDate.of(2001, 01, 01))
-										)
-								)
-						),
-						Arguments.of(
-								"01.01.2000 - 01.01.2000, 01.01.2001 - 01.01.2001",
-								CDateSet.create(
-										List.of(
-												CDateRange.of(LocalDate.of(2000, 01, 01), LocalDate.of(2000, 01, 01)),
-												CDateRange.of(LocalDate.of(2001, 01, 01), LocalDate.of(2001, 01, 01))
-										)
-								)
-						),
-						Arguments.of(
-								"{2000-05-01, 2000-01-01/2000-01-01, 2001-01-01/2001-01-01}",
-								CDateSet.create(
-										List.of(
-												CDateRange.exactly(LocalDate.of(2000, 05, 01)),
-												CDateRange.of(LocalDate.of(2000, 01, 01), LocalDate.of(2000, 01, 01)),
-												CDateRange.of(LocalDate.of(2001, 01, 01), LocalDate.of(2001, 01, 01))
-										)
-								)
-						),
-						Arguments.of(
-								"01.05.2000, 01.01.2000 - 01.01.2000, 01.01.2001 - 01.01.2001",
-								CDateSet.create(
-										List.of(
-												CDateRange.exactly(LocalDate.of(2000, 05, 01)),
-												CDateRange.of(LocalDate.of(2000, 01, 01), LocalDate.of(2000, 01, 01)),
-												CDateRange.of(LocalDate.of(2001, 01, 01), LocalDate.of(2001, 01, 01))
-										)
-								)
-						)
-				);
+		return Stream.of(
+			Arguments.of(
+				"{2000-01-01/2000-01-01}",
+				CDateSet.create(CDateRange.of(LocalDate.of(2000, 01, 01), LocalDate.of(2000, 01, 01)))
+			),
+			Arguments.of(
+				"01.01.2000 - 01.01.2000",
+				CDateSet.create(CDateRange.of(LocalDate.of(2000, 01, 01), LocalDate.of(2000, 01, 01)))
+			),
+			Arguments.of(
+				"{2000-01-01/2000-01-01, 2001-01-01/2001-01-01}",
+				CDateSet.create(
+					List.of(
+						CDateRange.of(LocalDate.of(2000, 01, 01), LocalDate.of(2000, 01, 01)),
+						CDateRange.of(LocalDate.of(2001, 01, 01), LocalDate.of(2001, 01, 01))
+					)
+				)
+			),
+			Arguments.of(
+				"01.01.2000 - 01.01.2000, 01.01.2001 - 01.01.2001",
+				CDateSet.create(
+					List.of(
+						CDateRange.of(LocalDate.of(2000, 01, 01), LocalDate.of(2000, 01, 01)),
+						CDateRange.of(LocalDate.of(2001, 01, 01), LocalDate.of(2001, 01, 01))
+					)
+				)
+			),
+			Arguments.of(
+				"{2000-05-01, 2000-01-01/2000-01-01, 2001-01-01/2001-01-01}",
+				CDateSet.create(
+					List.of(
+						CDateRange.exactly(LocalDate.of(2000, 05, 01)),
+						CDateRange.of(LocalDate.of(2000, 01, 01), LocalDate.of(2000, 01, 01)),
+						CDateRange.of(LocalDate.of(2001, 01, 01), LocalDate.of(2001, 01, 01))
+					)
+				)
+			),
+			Arguments.of(
+				"01.05.2000, 01.01.2000 - 01.01.2000, 01.01.2001 - 01.01.2001",
+				CDateSet.create(
+					List.of(
+						CDateRange.exactly(LocalDate.of(2000, 05, 01)),
+						CDateRange.of(LocalDate.of(2000, 01, 01), LocalDate.of(2000, 01, 01)),
+						CDateRange.of(LocalDate.of(2001, 01, 01), LocalDate.of(2001, 01, 01))
+					)
+				)
+			)
+		);
 	}
 
 	@ParameterizedTest(name = "{0}")
@@ -170,29 +161,33 @@ public class CDateSetTest {
 	@Test
 	public void testRemove() {
 		CDateSet set = CDateSet.createEmpty();
-		set.add(CDateRange.of(
+		set.add(
+			CDateRange.of(
 				LocalDate.of(2000, 1, 1),
 				LocalDate.of(2000, 12, 31)
-		));
-		set.remove(CDateRange.of(
+			));
+		set.remove(
+			CDateRange.of(
 				LocalDate.of(2000, 6, 1),
 				LocalDate.of(2000, 6, 20)
-		));
+			));
 		assertThat(set).hasToString("{2000-01-01/2000-05-31, 2000-06-21/2000-12-31}");
 	}
 
 	@Test
 	public void testRetain() {
 		CDateSet set = CDateSet.createEmpty();
-		set.add(CDateRange.of(
+		set.add(
+			CDateRange.of(
 				LocalDate.of(2000, 1, 1),
 				LocalDate.of(2000, 12, 31)
-		));
+			));
 		CDateSet retain = CDateSet.createEmpty();
-		retain.add(CDateRange.of(
+		retain.add(
+			CDateRange.of(
 				LocalDate.of(2000, 6, 1),
 				LocalDate.of(2000, 6, 20)
-		));
+			));
 		retain.add(CDateRange.atLeast(LocalDate.of(2000, 12, 1)));
 		set.retainAll(retain);
 		assertThat(set).hasToString("{2000-06-01/2000-06-20, 2000-12-01/2000-12-31}");

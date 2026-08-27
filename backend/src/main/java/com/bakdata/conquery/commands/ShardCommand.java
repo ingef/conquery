@@ -20,7 +20,10 @@ public class ShardCommand extends ServerCommand<ConqueryConfig> {
 	}
 
 	@Override
-	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
+	protected void run(
+		Bootstrap<ConqueryConfig> bootstrap,
+		Namespace namespace,
+		ConqueryConfig configuration) throws Exception {
 		bootstrap.addBundle(new ShardNode());
 
 		super.run(bootstrap, namespace, configuration);
@@ -32,7 +35,7 @@ public class ShardCommand extends ServerCommand<ConqueryConfig> {
 		 Clear application connectors for a shard, before building the server,
 		 as we only expose the metrics through the admin connector.
 		 */
-		((DefaultServerFactory)configuration.getServerFactory()).setApplicationConnectors(Collections.emptyList());
+		((DefaultServerFactory) configuration.getServerFactory()).setApplicationConnectors(Collections.emptyList());
 
 		super.run(environment, namespace, configuration);
 	}

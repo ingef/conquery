@@ -98,9 +98,9 @@ public class AutoConceptUtil {
 		distinct.setColumn(column.getId());
 
 		return List.of(
-				last,
-				first,
-				distinct
+			last,
+			first,
+			distinct
 		);
 	}
 }

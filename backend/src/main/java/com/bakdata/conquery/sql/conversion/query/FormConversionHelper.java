@@ -1,5 +1,12 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import static org.jooq.impl.DSL.*;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -18,13 +25,6 @@ import lombok.RequiredArgsConstructor;
 import org.jooq.*;
 import org.jooq.Record;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.jooq.impl.DSL.*;
-
 @RequiredArgsConstructor
 public class FormConversionHelper {
 
@@ -35,9 +35,9 @@ public class FormConversionHelper {
 	 * For {@link FormType#RELATIVE}, the {@link FeatureGroup} will be set too.
 	 */
 	private static Selects getFinalSelects(
-			FormType formType,
-			QueryStep stratificationTable,
-			QueryStep convertedFeatures
+		FormType formType,
+		QueryStep stratificationTable,
+		QueryStep convertedFeatures
 	) {
 		Selects preFinalSelects = convertedFeatures.getQualifiedSelects();
 		Selects stratificationSelects = stratificationTable.getQualifiedSelects();
@@ -45,16 +45,21 @@ public class FormConversionHelper {
 		SqlIdColumns ids = stratificationSelects.getIds().forFinalSelect();
 
 		Selects.SelectsBuilder selects = Selects.builder()
-				.ids(ids)
-				.validityDate(preFinalSelects.getValidityDate())
-				.stratificationDate(stratificationSelects.getStratificationDate());
+			.ids(ids)
+			.validityDate(
+				preFinalSelects.getValidityDate())
+			.stratificationDate(stratificationSelects.getStratificationDate());
 
 		// relative forms have FeatureGroup information after the stratification date and before all other selects
 		if (formType.equals(FormType.RELATIVE)) {
-			Field<Integer> indexField = field(name(stratificationTable.getCteName(), SharedAliases.INDEX.getAlias()), Integer.class);
-			Field<String> scope = when(indexField.isNull().or(indexField.lessThan(0)), inline(FeatureGroup.FEATURE.toString()))
-					.otherwise(inline(FeatureGroup.OUTCOME.toString()))
-					.as(SharedAliases.OBSERVATION_SCOPE.getAlias());
+			Field<Integer> indexField = field(
+				name(stratificationTable.getCteName(), SharedAliases.INDEX.getAlias()),
+				Integer.class);
+			Field<String> scope = when(
+				indexField.isNull().or(indexField.lessThan(0)),
+				inline(FeatureGroup.FEATURE.toString())).otherwise(inline(FeatureGroup.OUTCOME.toString()))
+					.as(
+						SharedAliases.OBSERVATION_SCOPE.getAlias());
 
 			selects = selects.sqlSelect(new FieldWrapper<>(scope));
 		}
@@ -69,22 +74,25 @@ public class FormConversionHelper {
 	public QueryStep convertPrerequisite(Query query, ConversionContext context) {
 
 		ConversionContext withConvertedPrerequisite = context.getNodeConversions().convert(query, context);
-		Preconditions.checkArgument(withConvertedPrerequisite.getQuerySteps().size() == 1, "Base query conversion should produce exactly 1 QueryStep");
+		Preconditions.checkArgument(
+			withConvertedPrerequisite.getQuerySteps().size() == 1,
+			"Base query conversion should produce exactly 1 QueryStep");
 		QueryStep convertedPrerequisite = withConvertedPrerequisite.getLastConvertedStep();
 
 		Selects prerequisiteSelects = convertedPrerequisite.getQualifiedSelects();
 		// we keep the primary column and the validity date
 		Selects selects = Selects.builder()
-				.ids(new SqlIdColumns(prerequisiteSelects.getIds().getPrimaryColumn()))
-				.validityDate(prerequisiteSelects.getValidityDate())
-				.build();
+			.ids(
+				new SqlIdColumns(prerequisiteSelects.getIds().getPrimaryColumn()))
+			.validityDate(
+				prerequisiteSelects.getValidityDate())
+			.build();
 
 		// we want to keep each primary column and the corresponding distinct validity date ranges
 		List<Field<?>> groupByFields = Stream.concat(
-						Stream.of(prerequisiteSelects.getIds().getPrimaryColumn()),
-						prerequisiteSelects.getValidityDate().stream().flatMap(validityDate -> validityDate.toFields().stream())
-				)
-				.collect(Collectors.toList());
+			Stream.of(prerequisiteSelects.getIds().getPrimaryColumn()),
+			prerequisiteSelects.getValidityDate().stream().flatMap(validityDate -> validityDate.toFields().stream())
+		).collect(Collectors.toList());
 
 		// filter out entries with a null validity date
 		Optional<ColumnDateRange> columnDateRange = prerequisiteSelects.getValidityDate();
@@ -97,21 +105,24 @@ public class FormConversionHelper {
 		}
 
 		return QueryStep.builder()
-				.cteName(FormCteStep.EXTRACT_IDS.getSuffix())
-				.selects(selects)
-				.fromTable(QueryStep.toTableLike(convertedPrerequisite.getCteName()))
-				.conditions(List.of(dateNotNullCondition))
-				.groupBy(groupByFields)
-				.predecessors(List.of(convertedPrerequisite))
-				.build();
+			.cteName(FormCteStep.EXTRACT_IDS.getSuffix())
+			.selects(selects)
+			.fromTable(
+				QueryStep.toTableLike(convertedPrerequisite.getCteName()))
+			.conditions(
+				List.of(dateNotNullCondition))
+			.groupBy(groupByFields)
+			.predecessors(
+				List.of(convertedPrerequisite))
+			.build();
 	}
 
 	public ConversionContext convertForm(
-			FormType formType,
-			QueryStep stratificationTable,
-			ArrayConceptQuery features,
-			List<ResultInfo> resultInfos,
-			ConversionContext context
+		FormType formType,
+		QueryStep stratificationTable,
+		ArrayConceptQuery features,
+		List<ResultInfo> resultInfos,
+		ConversionContext context
 	) {
 		// feature conversion
 		ConversionContext childContext = context.createChildContext().withStratificationTable(stratificationTable);
@@ -121,7 +132,11 @@ public class FormConversionHelper {
 
 		// child context contains the converted feature's QuerySteps
 		List<QueryStep> queriesToJoin = childContext.getQuerySteps();
-		QueryStep joinedFeatures = QueryStepJoiner.joinSteps(queriesToJoin, ConqueryJoinType.OUTER_JOIN, DateAggregationAction.BLOCK, context);
+		QueryStep joinedFeatures = QueryStepJoiner.joinSteps(
+			queriesToJoin,
+			ConqueryJoinType.OUTER_JOIN,
+			DateAggregationAction.BLOCK,
+			context);
 		return createFinalSelect(formType, stratificationTable, joinedFeatures, resultInfos, context);
 	}
 
@@ -133,27 +148,33 @@ public class FormConversionHelper {
 	 * features with the full stratification table again.
 	 */
 	private ConversionContext createFinalSelect(
-			FormType formType,
-			QueryStep stratificationTable,
-			QueryStep convertedFeatures,
-			List<ResultInfo> resultInfos,
-			ConversionContext context
+		FormType formType,
+		QueryStep stratificationTable,
+		QueryStep convertedFeatures,
+		List<ResultInfo> resultInfos,
+		ConversionContext context
 	) {
 		Preconditions.checkArgument(
-				stratificationTable.getSelects().getStratificationDate().isPresent() && convertedFeatures.getSelects().getStratificationDate().isPresent(),
-				"Expecting stratification table and converted features table to contain a stratification date"
+			stratificationTable.getSelects().getStratificationDate().isPresent() && convertedFeatures.getSelects()
+				.getStratificationDate()
+				.isPresent(),
+			"Expecting stratification table and converted features table to contain a stratification date"
 		);
 
 		List<QueryStep> queriesToJoin = List.of(stratificationTable, convertedFeatures);
-		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.LEFT_JOIN, context);
+		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(
+			queriesToJoin,
+			ConqueryJoinType.LEFT_JOIN,
+			context);
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 
 		QueryStep finalStep = QueryStep.builder()
-				.cteName(null)  // the final QueryStep won't be converted to a CTE
-				.selects(getFinalSelects(formType, stratificationTable, convertedFeatures))
-				.fromTable(joinedTable)
-				.predecessors(queriesToJoin)
-				.build();
+			.cteName(null)  // the final QueryStep won't be converted to a CTE
+			.selects(getFinalSelects(formType, stratificationTable, convertedFeatures))
+			.fromTable(
+				joinedTable)
+			.predecessors(queriesToJoin)
+			.build();
 
 		Select<Record> selectQuery = queryStepTransformer.toSelectQuery(finalStep, functionProvider);
 		return context.withFinalQuery(new SqlQuery(selectQuery, resultInfos));

@@ -33,21 +33,30 @@ public class LocalManagerProvider implements ManagerProvider {
 		final JobManager jobManager = ManagerProvider.newJobManager(config);
 
 		final MetaStorage storage = new MetaStorage(config.getStorage());
-		final InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, environment.getValidator());
-		final NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, internalMapperFactory, connectionManager, clock);
-		final DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, internalMapperFactory);
+		final InternalMapperFactory internalMapperFactory = new InternalMapperFactory(
+			config,
+			environment.getValidator());
+		final NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(
+			config,
+			internalMapperFactory,
+			connectionManager,
+			clock);
+		final DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(
+			namespaceHandler,
+			config,
+			internalMapperFactory);
 
 		return new DelegateManager<>(
-				config,
-				environment,
-				datasetRegistry,
-				storage,
-				new FailingImportHandler(),
-				new LocalStorageListener(jobManager, datasetRegistry),
-				EMPTY_NODE_PROVIDER,
-				List.of(),
-				internalMapperFactory,
-				ManagerProvider.newJobManager(config)
+			config,
+			environment,
+			datasetRegistry,
+			storage,
+			new FailingImportHandler(),
+			new LocalStorageListener(jobManager, datasetRegistry),
+			EMPTY_NODE_PROVIDER,
+			List.of(),
+			internalMapperFactory,
+			ManagerProvider.newJobManager(config)
 		);
 	}
 

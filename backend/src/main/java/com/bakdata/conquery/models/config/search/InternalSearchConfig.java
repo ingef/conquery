@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.config.search;
 
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.LabelMap;
@@ -53,25 +53,34 @@ public class InternalSearchConfig implements SearchConfig {
 
 	@VisibleForTesting
 	public TrieSearch<FrontendValue> createSearch(Searchable searchable) {
-		return switch(searchable) {
+		return switch (searchable) {
 			case FilterTemplate temp -> getFilterTemplateSearch(temp);
 			case LabelMap labelMap -> getLabelMapSearch(labelMap);
-			default -> new TrieSearch<>(searchable.isGenerateSuffixes() ? getNgramLength() : Integer.MAX_VALUE, getSearchSplitChars());
+			default -> new TrieSearch<>(
+				searchable.isGenerateSuffixes() ? getNgramLength() : Integer.MAX_VALUE,
+				getSearchSplitChars());
 		};
 	}
 
 	private TrieSearch<FrontendValue> getLabelMapSearch(LabelMap labelMap) {
-		TrieSearch<FrontendValue> search = new TrieSearch<>(labelMap.isGenerateSuffixes() ? getNgramLength() : Integer.MAX_VALUE, getSearchSplitChars());
+		TrieSearch<FrontendValue> search = new TrieSearch<>(
+			labelMap.isGenerateSuffixes() ? getNgramLength() : Integer.MAX_VALUE,
+			getSearchSplitChars());
 
 		BiMap<String, String> delegate = labelMap.getDelegate();
 		FilterId id = labelMap.getId();
 
-		final List<FrontendValue> collected = delegate.entrySet().stream()
-													  .map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
-													  .toList();
+		final List<FrontendValue> collected = delegate.entrySet()
+			.stream()
+			.map(
+				entry -> new FrontendValue(entry.getKey(), entry.getValue()))
+			.toList();
 
 		if (log.isTraceEnabled()) {
-			log.trace("Labels for {}: `{}`", id, collected.stream().map(FrontendValue::toString).collect(Collectors.toList()));
+			log.trace(
+				"Labels for {}: `{}`",
+				id,
+				collected.stream().map(FrontendValue::toString).collect(Collectors.toList()));
 		}
 
 		StopWatch timer = StopWatch.createStarted();
@@ -97,18 +106,19 @@ public class InternalSearchConfig implements SearchConfig {
 
 		final FrontendValueIndex search;
 		try {
-			search = temp.getIndexService().getIndex(new FrontendValueIndexKey(
-					resolvedURI,
-					temp.getColumnValue(),
-					temp.getValue(),
-					temp.getOptionValue(),
-					() -> new TrieSearch<>(
+			search = temp.getIndexService()
+				.getIndex(
+					new FrontendValueIndexKey(
+						resolvedURI,
+						temp.getColumnValue(),
+						temp.getValue(),
+						temp.getOptionValue(),
+						() -> new TrieSearch<>(
 							temp.isGenerateSuffixes() ? temp.getMinSuffixLength() : Integer.MAX_VALUE,
 							getSearchSplitChars()
-					)
-			));
-		}
-		catch (IndexCreationException e) {
+						)
+					));
+		} catch (IndexCreationException e) {
 			throw new RuntimeException(e);
 		}
 

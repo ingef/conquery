@@ -57,13 +57,17 @@ public class QueryExecutor implements Closeable {
 		return cancelledQueries.contains(query);
 	}
 
-	public boolean execute(Query query, QueryExecutionContext executionContext, ShardResult result, Set<Entity> entities) {
+	public boolean execute(
+		Query query,
+		QueryExecutionContext executionContext,
+		ShardResult result,
+		Set<Entity> entities) {
 
 		log.info("Received query: {}", query);
 
 		Stopwatch stopwatch = Stopwatch.createStarted();
-		final ThreadLocal<QueryPlan<?>> plan =
-				ThreadLocal.withInitial(() -> query.createQueryPlan(new QueryPlanContext(executionContext.getStorage(), secondaryIdSubPlanLimit)));
+		final ThreadLocal<QueryPlan<?>> plan = ThreadLocal.withInitial(
+			() -> query.createQueryPlan(new QueryPlanContext(executionContext.getStorage(), secondaryIdSubPlanLimit)));
 		log.trace("Created query plan in {}", stopwatch);
 
 		if (entities.isEmpty()) {
@@ -77,8 +81,12 @@ public class QueryExecutor implements Closeable {
 				log.debug("QueryPlan for Query[{}] = `{}`", result.getExecutionId(), plan.get());
 			}
 
-			final List<CompletableFuture<Optional<EntityResult>>> futures =
-					entities.stream().map(entity -> new QueryJob(executionContext, plan, entity)).map(job -> CompletableFuture.supplyAsync(job, executor)).toList();
+			final List<CompletableFuture<Optional<EntityResult>>> futures = entities.stream()
+				.map(
+					entity -> new QueryJob(executionContext, plan, entity))
+				.map(
+					job -> CompletableFuture.supplyAsync(job, executor))
+				.toList();
 
 			final CompletableFuture<Void> allDone = CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
 
@@ -87,7 +95,12 @@ public class QueryExecutor implements Closeable {
 			allDone.join();
 
 			// We are in the clear here, all futures/entities completed successfully
-			List<EntityResult> entityResults = futures.stream().map(CompletableFuture::join).filter(Optional::isPresent).map(Optional::get).toList();
+			List<EntityResult> entityResults = futures.stream()
+				.map(CompletableFuture::join)
+				.filter(
+					Optional::isPresent)
+				.map(Optional::get)
+				.toList();
 
 			// Prepare message to manager
 			result.finish(entityResults, worker);
@@ -95,10 +108,9 @@ public class QueryExecutor implements Closeable {
 			sendResultToManagerNode(result);
 
 			return true;
-		}
-		catch (Throwable e) {
+		} catch (Throwable e) {
 			log.warn("Error while executing {}", executionContext.getExecutionId(), e);
-			sendFailureToManagerNode(asConqueryError(e),executionContext.getExecutionId());
+			sendFailureToManagerNode(asConqueryError(e), executionContext.getExecutionId());
 			return false;
 		}
 	}
@@ -126,8 +138,7 @@ public class QueryExecutor implements Closeable {
 
 				sendFailureToManagerNode(exception, result.getExecutionId());
 			});
-		}
-		catch (OutOfMemoryError oome) {
+		} catch (OutOfMemoryError oome) {
 			// Result was too large for serialization
 			throw new ConqueryError.ExecutionProcessingResultSizeError();
 		}
@@ -149,9 +160,10 @@ public class QueryExecutor implements Closeable {
 				log.info("Successfully informed manager about failed shard result for execution {}", executionId);
 				return;
 			}
-			log.error("Could not notify manager about shard result submission failure for execution {}. "
-					  + "Manager probably has this execution in a dangling {} state",
-					  executionId, ExecutionState.RUNNING
+			log.error(
+				"Could not notify manager about shard result submission failure for execution {}. " + "Manager probably has this execution in a dangling {} state",
+				executionId,
+				ExecutionState.RUNNING
 			);
 		};
 	}

@@ -17,9 +17,14 @@ public class EnumIntrospection extends AbstractNodeWithMemberIntrospection<EnumD
 	protected String extractDescription() {
 		String description = super.extractDescription();
 
-		String values = value.getEntries().stream()
-							 .map(e -> "`%s`: %s".formatted(e.getNameAsString(), e.getJavadoc().map(Javadoc::toText).orElse("No description available")))
-							 .collect(Collectors.joining("\n- ", "\nValues:\n- ", ""));
+		String values = value.getEntries()
+			.stream()
+			.map(
+				e -> "`%s`: %s".formatted(
+					e.getNameAsString(),
+					e.getJavadoc().map(Javadoc::toText).orElse("No description available")))
+			.collect(
+				Collectors.joining("\n- ", "\nValues:\n- ", ""));
 		description += values;
 		return description;
 	}

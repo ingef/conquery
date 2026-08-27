@@ -61,9 +61,8 @@ public abstract class Namespace implements Injectable {
 	public void close() {
 		try {
 			filterSearch.stop();
-		}
-		catch (Exception e) {
-			log.error("Unable to close filter serach of {}",this, e);
+		} catch (Exception e) {
+			log.error("Unable to close filter serach of {}", this, e);
 		}
 
 		try {
@@ -100,20 +99,25 @@ public abstract class Namespace implements Injectable {
 	}
 
 	public void updateInternToExternMappings() {
-		try(Stream<Concept<?>> allConcepts = storage.getAllConcepts()) {
-			allConcepts
-					.flatMap(c -> c.getConnectors().stream())
-					.flatMap(con -> con.getSelects().stream())
-					.filter(MappableSingleColumnSelect.class::isInstance)
-					.map(MappableSingleColumnSelect.class::cast)
-					.forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
+		try (Stream<Concept<?>> allConcepts = storage.getAllConcepts()) {
+			allConcepts.flatMap(c -> c.getConnectors().stream())
+				.flatMap(con -> con.getSelects().stream())
+				.filter(
+					MappableSingleColumnSelect.class::isInstance)
+				.map(MappableSingleColumnSelect.class::cast)
+				.forEach(
+					(s) -> jobManager.addSlowJob(
+						new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
 
 		}
 
-		try(Stream<SecondaryIdDescription> secondaryIds = storage.getSecondaryIds()) {
-			secondaryIds
-					.filter(desc -> desc.getMapping() != null)
-					.forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping().resolve()::init)));
+		try (Stream<SecondaryIdDescription> secondaryIds = storage.getSecondaryIds()) {
+			secondaryIds.filter(desc -> desc.getMapping() != null)
+				.forEach(
+					(s) -> jobManager.addSlowJob(
+						new SimpleJob(
+							"Update internToExtern Mappings [" + s.getId() + "]",
+							s.getMapping().resolve()::init)));
 		}
 	}
 
@@ -121,7 +125,8 @@ public abstract class Namespace implements Injectable {
 	 * Issues a job that initializes the search that is used by the frontend for recommendations in the filter interface of a concept.
 	 */
 	final void updateFilterSearch() {
-		getJobManager().addSlowJob(filterSearch.createUpdateFilterSearchJob(storage, this::registerColumnValuesInSearch));
+		getJobManager().addSlowJob(
+			filterSearch.createUpdateFilterSearchJob(storage, this::registerColumnValuesInSearch));
 	}
 
 	/**
@@ -144,14 +149,15 @@ public abstract class Namespace implements Injectable {
 	 */
 	public void postprocessData() {
 
-		getJobManager().addSlowJob(new SimpleJob(
+		getJobManager().addSlowJob(
+			new SimpleJob(
 				"Initiate Update Matching Stats and InternalFilterSearch",
 				() -> {
 					updateInternToExternMappings();
 					updateMatchingStats();
 					updateFilterSearch();
 				}
-		));
+			));
 
 	}
 }

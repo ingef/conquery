@@ -1,7 +1,5 @@
 package com.bakdata.conquery.sql.conversion.model.filter;
 
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.IRange;
 import lombok.experimental.UtilityClass;
@@ -15,11 +13,11 @@ public class ConditionUtil {
 	public <T extends Comparable<?>> Condition rangeCondition(final Field<T> column, final IRange<T, ?> range) {
 		Condition condition = DSL.noCondition();
 
-		if (range.hasLowerBound()){
+		if (range.hasLowerBound()) {
 			condition = condition.and(column.greaterOrEqual(DSL.inline(range.getMin())));
 		}
 
-		if (range.hasUpperBound()){
+		if (range.hasUpperBound()) {
 			condition = condition.and(column.lessOrEqual(DSL.inline(range.getMax())));
 		}
 

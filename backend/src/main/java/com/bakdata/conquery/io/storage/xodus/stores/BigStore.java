@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.NotEmpty;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -15,8 +17,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import jakarta.validation.Validator;
-import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
@@ -48,17 +48,20 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	private final XodusStore dataXodusStore;
 	private final StoreInfo<KEY, VALUE> storeInfo;
 	private final ObjectReader valueReader;
-	@Getter @Setter
+	@Getter
+	@Setter
 	private int chunkByteSize;
 
 
-	public BigStore(XodusStoreFactory config,
-					Validator validator,
-					Environment env,
-					StoreInfo<KEY, VALUE> storeInfo,
-					Consumer<XodusStore> storeCloseHook,
-					Consumer<XodusStore> storeRemoveHook,
-					ObjectMapper mapper, ExecutorService executorService) {
+	public BigStore(
+		XodusStoreFactory config,
+		Validator validator,
+		Environment env,
+		StoreInfo<KEY, VALUE> storeInfo,
+		Consumer<XodusStore> storeCloseHook,
+		Consumer<XodusStore> storeRemoveHook,
+		ObjectMapper mapper,
+		ExecutorService executorService) {
 		this.storeInfo = storeInfo;
 
 		// Recommendation by the author of Xodus is to have logFileSize at least be 4 times the biggest file size.
@@ -66,29 +69,30 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 		metaXodusStore = new XodusStore(env, storeInfo.getName() + "_META", storeCloseHook, storeRemoveHook);
 		metaStore = new SerializingStore<>(
-				metaXodusStore,
-				validator,
-				mapper,
-				storeInfo.getKeyType(),
-				BigStoreMetaKeys.class,
-				config.isValidateOnWrite(),
-				config.isRemoveUnreadableFromStore(),
-				config.getUnreadableDataDumpDirectory(), executorService
+			metaXodusStore,
+			validator,
+			mapper,
+			storeInfo.getKeyType(),
+			BigStoreMetaKeys.class,
+			config.isValidateOnWrite(),
+			config.isRemoveUnreadableFromStore(),
+			config.getUnreadableDataDumpDirectory(),
+			executorService
 
 		);
 
 		dataXodusStore = new XodusStore(env, storeInfo.getName() + "_DATA", storeCloseHook, storeRemoveHook);
 		dataStore = new SerializingStore<>(
-				dataXodusStore,
-				validator,
-				mapper,
-				UUID.class,
-				byte[].class,
-				config.isValidateOnWrite(),
-				config.isRemoveUnreadableFromStore(),
-				config.getUnreadableDataDumpDirectory(), executorService
+			dataXodusStore,
+			validator,
+			mapper,
+			UUID.class,
+			byte[].class,
+			config.isValidateOnWrite(),
+			config.isRemoveUnreadableFromStore(),
+			config.getUnreadableDataDumpDirectory(),
+			executorService
 		);
-
 
 
 		this.valueWriter = mapper.writerFor(storeInfo.getValueType());
@@ -105,9 +109,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	}
 
 	private VALUE createValue(KEY key, BigStoreMetaKeys meta) {
-		Iterator<ByteArrayInputStream> it = meta.loadData(dataStore)
-												.map(ByteArrayInputStream::new)
-												.iterator();
+		Iterator<ByteArrayInputStream> it = meta.loadData(dataStore).map(ByteArrayInputStream::new).iterator();
 
 		try (InputStream in = new BufferedInputStream(new SequenceInputStream(IteratorUtils.asEnumeration(it)))) {
 			return valueReader.readValue(in);
@@ -161,25 +163,24 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 			List<UUID> uuids = new ArrayList<>();
 
 			ChunkingOutputStream cos = new ChunkingOutputStream(
-					chunkByteSize,
-					chunk -> {
-						try {
-							// Write chunks and accumulate their size.
-							UUID id = UUID.randomUUID();
-							uuids.add(id);
-							dataStore.add(id, chunk);
-							size.addAndGet(chunk.length);
-						}
-						catch (Exception e) {
-							throw new RuntimeException("Failed to write chunk", e);
-						}
+				chunkByteSize,
+				chunk -> {
+					try {
+						// Write chunks and accumulate their size.
+						UUID id = UUID.randomUUID();
+						uuids.add(id);
+						dataStore.add(id, chunk);
+						size.addAndGet(chunk.length);
+					} catch (Exception e) {
+						throw new RuntimeException("Failed to write chunk", e);
 					}
+				}
 			);
 
 			try (cos) {
 				valueWriter.writeValue(
-						cos,
-						value
+					cos,
+					value
 				);
 			}
 			return new BigStoreMetaKeys(uuids.toArray(new UUID[0]), size.get());

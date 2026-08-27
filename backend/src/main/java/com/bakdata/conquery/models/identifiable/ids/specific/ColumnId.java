@@ -27,9 +27,7 @@ public class ColumnId extends NamespacedId<Column> {
 
 	@Override
 	public Column get() {
-		return getDomain().getStorage(getDataset())
-						  .getTable(getTable())
-						  .getColumnByName(getColumn());
+		return getDomain().getStorage(getDataset()).getTable(getTable()).getColumnByName(getColumn());
 	}
 
 	@Override

@@ -58,7 +58,13 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 	private UUID externalTaskId;
 
-	public ExternalExecution(ExternalForm form, UserId user, DatasetId dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+	public ExternalExecution(
+		ExternalForm form,
+		UserId user,
+		DatasetId dataset,
+		MetaStorage metaStorage,
+		DatasetRegistry<?> datasetRegistry,
+		ConqueryConfig config) {
 		super(form, user, dataset, metaStorage, datasetRegistry, config);
 	}
 
@@ -79,8 +85,10 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 
 			// Check after possible sync
 			final boolean isRunning = getExecutionManager().tryGetExecutionInfo(getId())
-														   .map(ExecutionManager.ExecutionInfo::getExecutionState)
-														   .map(ExecutionState.RUNNING::equals).orElse(false);
+				.map(
+					ExecutionManager.ExecutionInfo::getExecutionState)
+				.map(ExecutionState.RUNNING::equals)
+				.orElse(false);
 			if (isRunning) {
 				throw new ConqueryError.ExecutionProcessingError();
 			}
@@ -90,16 +98,23 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 			final Dataset dataset = getNamespace().getDataset();
 			final User originalUser = getOwner().resolve();
 			final FormBackendConfig formBackendConfig = getConfig().getPluginConfigs(FormBackendConfig.class)
-																   .filter(c -> c.supportsFormType(getSubmittedForm().getFormType()))
-																   .collect(MoreCollectors.onlyElement());
+				.filter(
+					c -> c.supportsFormType(getSubmittedForm().getFormType()))
+				.collect(MoreCollectors.onlyElement());
 			final User serviceUser = formBackendConfig.createServiceUser(originalUser, dataset);
 			final ExternalFormBackendApi api = formBackendConfig.createApi();
 
 			super.start();
 
-			getExecutionManager().addState(getId(), new ExternalExecutionInfoImpl(ExecutionState.RUNNING, new CountDownLatch(0), api, serviceUser));
+			getExecutionManager().addState(
+				getId(),
+				new ExternalExecutionInfoImpl(ExecutionState.RUNNING, new CountDownLatch(0), api, serviceUser));
 
-			final ExternalTaskState externalTaskState = api.postForm(getSubmitted(), originalUser, serviceUser, dataset);
+			final ExternalTaskState externalTaskState = api.postForm(
+				getSubmitted(),
+				originalUser,
+				serviceUser,
+				dataset);
 			externalTaskId = externalTaskState.getId();
 		}
 	}
@@ -120,7 +135,8 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 			case RUNNING -> setProgress(formState.getProgress().floatValue());
 			case FAILURE -> fail(formState.getError());
 			case SUCCESS -> {
-				final List<Pair<ResultAsset, ExternalExecutionInfo.AssetBuilder>> resultsAssetMap = registerResultAssets(formState);
+				final List<Pair<ResultAsset, ExternalExecutionInfo.AssetBuilder>> resultsAssetMap = registerResultAssets(
+					formState);
 				final ExternalExecutionInfo state = getExecutionManager().getExecutionInfo(getId());
 				state.setResultsAssetMap(resultsAssetMap);
 				finish(ExecutionState.DONE);
@@ -129,7 +145,8 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 		}
 	}
 
-	private List<Pair<ResultAsset, ExternalExecutionInfo.AssetBuilder>> registerResultAssets(ExternalTaskState response) {
+	private List<Pair<ResultAsset, ExternalExecutionInfo.AssetBuilder>> registerResultAssets(
+		ExternalTaskState response) {
 		final List<Pair<ResultAsset, ExternalExecutionInfo.AssetBuilder>> assetMap = new ArrayList<>();
 		response.getResults().forEach(asset -> assetMap.add(Pair.of(asset, createResultAssetBuilder(asset))));
 		return assetMap;
@@ -156,10 +173,12 @@ public class ExternalExecution extends ManagedForm<ExternalForm> {
 	private ExternalExecutionInfo.AssetBuilder createResultAssetBuilder(ResultAsset asset) {
 		return (uriBuilder) -> {
 			try {
-				final URI externalDownloadURL = ResultExternalResource.getDownloadURL(uriBuilder.clone(), this, asset.getAssetId());
+				final URI externalDownloadURL = ResultExternalResource.getDownloadURL(
+					uriBuilder.clone(),
+					this,
+					asset.getAssetId());
 				return new ResultAsset(asset.label(), externalDownloadURL);
-			}
-			catch (URISyntaxException e) {
+			} catch (URISyntaxException e) {
 				throw new RuntimeException(e);
 			}
 		};

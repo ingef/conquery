@@ -29,12 +29,15 @@ public class ConqueryJsonExceptionMapper extends LoggingExceptionMapper<JsonProc
 		log.warn("Unable to process JSON in request '{}'", request.getRequestURL(), exception);
 
 		final String message = exception.getOriginalMessage();
-		final ErrorMessage errorMessage = new ErrorMessage(Response.Status.BAD_REQUEST.getStatusCode(),
-														   "Unable to process JSON", message
+		final ErrorMessage errorMessage = new ErrorMessage(
+			Response.Status.BAD_REQUEST.getStatusCode(),
+			"Unable to process JSON",
+			message
 		);
 		return Response.status(Response.Status.BAD_REQUEST)
-					   .type(MediaType.APPLICATION_JSON_TYPE)
-					   .entity(errorMessage)
-					   .build();
+			.type(MediaType.APPLICATION_JSON_TYPE)
+			.entity(
+				errorMessage)
+			.build();
 	}
 }

@@ -16,8 +16,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public class RandomValueSelect extends MappableSingleColumnSelect {
 	@JsonCreator
 	public RandomValueSelect(
-			ColumnId column,
-			InternToExternMapperId mapping, Range.IntegerRange substring
+		ColumnId column,
+		InternToExternMapperId mapping,
+		Range.IntegerRange substring
 	) {
 		super(column, mapping, substring);
 	}

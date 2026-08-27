@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.preproc;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -14,9 +17,6 @@ import groovy.lang.GroovyShell;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -36,8 +36,8 @@ public class TableInputDescriptor {
 
 	private static final long serialVersionUID = 1L;
 	private static final String[] AUTO_IMPORTS = Stream.of(
-			LocalDate.class,
-			Range.class
+		LocalDate.class,
+		Range.class
 	).map(Class::getName).toArray(String[]::new);
 
 	@NotNull
@@ -66,9 +66,7 @@ public class TableInputDescriptor {
 	@JsonIgnore
 	@ValidationMethod(message = "One or more columns are duplicated")
 	public boolean allColumnsDistinct() {
-		return Arrays.stream(getOutput()).map(OutputDescription::getName)
-					 .distinct()
-					 .count() == getOutput().length;
+		return Arrays.stream(getOutput()).map(OutputDescription::getName).distinct().count() == getOutput().length;
 	}
 
 
@@ -77,8 +75,7 @@ public class TableInputDescriptor {
 	public boolean isValidGroovyScript() {
 		try {
 			createFilter(FAKE_HEADERS);
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			log.error("Groovy script is not valid", ex);
 			return false;
 		}
@@ -127,8 +124,7 @@ public class TableInputDescriptor {
 			}
 
 			return (GroovyPredicate) groovy.parse(filter);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException("Failed to compile filter `" + filter + "`", e);
 		}
 	}

@@ -32,7 +32,6 @@ public abstract class ConqueryTestSpec {
 	private static final ObjectReader TEST_SPEC_READER = Jackson.MAPPER.readerFor(ConqueryTestSpec.class);
 
 
-
 	@Nullable
 	SqlSpec sqlSpec;
 	private String label;
@@ -50,8 +49,7 @@ public abstract class ConqueryTestSpec {
 			ConqueryTestSpec spec = TEST_SPEC_READER.readValue(IOUtils.resourceToURL(resource).openStream());
 			spec.setSource(resource);
 			return spec;
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -61,8 +59,7 @@ public abstract class ConqueryTestSpec {
 			ConqueryTestSpec spec = TEST_SPEC_READER.readValue(resource.open());
 			spec.setSource(resource.getURI().toString());
 			return spec;
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -71,11 +68,14 @@ public abstract class ConqueryTestSpec {
 		return readJson(dataset, json, TEST_SPEC_READER);
 	}
 
-	private static <T extends ConqueryTestSpec> T readJson(DatasetId dataset, String json, ObjectReader jsonReader) throws IOException {
+	private static <T extends ConqueryTestSpec> T readJson(
+		DatasetId dataset,
+		String json,
+		ObjectReader jsonReader) throws IOException {
 		json = StringUtils.replace(
-				json,
-				"${dataset}",
-				dataset.toString()
+			json,
+			"${dataset}",
+			dataset.toString()
 		);
 
 		T spec = jsonReader.readValue(json);
@@ -96,8 +96,7 @@ public abstract class ConqueryTestSpec {
 		}
 
 		final IdColumnConfig idColumnConfig = idColumns != null ? idColumns : config.getIdColumns();
-		return config.withIdColumns(idColumnConfig)
-					 .withStorage(new NonPersistentStoreFactory());
+		return config.withIdColumns(idColumnConfig).withStorage(new NonPersistentStoreFactory());
 	}
 
 	public abstract void executeTest(StandaloneSupport support) throws Exception;

@@ -9,17 +9,13 @@ public class ExistsSelectConverter implements SelectConverter<ExistsSelect> {
 	@Override
 	public ConnectorSqlSelects connectorSelect(ExistsSelect select, SelectContext<ConnectorSqlTables> selectContext) {
 		ExistsSqlSelect existsSqlSelect = createExistsSelect(select, selectContext);
-		return ConnectorSqlSelects.builder()
-								  .finalSelect(existsSqlSelect)
-								  .build();
+		return ConnectorSqlSelects.builder().finalSelect(existsSqlSelect).build();
 	}
 
 	@Override
 	public ConceptSqlSelects conceptSelect(ExistsSelect select, SelectContext<ConceptSqlTables> selectContext) {
 		ExistsSqlSelect existsSqlSelect = createExistsSelect(select, selectContext);
-		return ConceptSqlSelects.builder()
-								.finalSelect(existsSqlSelect)
-								.build();
+		return ConceptSqlSelects.builder().finalSelect(existsSqlSelect).build();
 	}
 
 	private static ExistsSqlSelect createExistsSelect(ExistsSelect select, SelectContext<?> selectContext) {

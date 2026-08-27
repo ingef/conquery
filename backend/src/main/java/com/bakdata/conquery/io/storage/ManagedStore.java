@@ -7,9 +7,11 @@ import java.io.IOException;
  */
 public interface ManagedStore {
 	void loadData();
+
 	void close() throws IOException;
 
 	void clear();
+
 	void removeStore();
 
 	void invalidateCache();

@@ -2,10 +2,10 @@ package com.bakdata.conquery.resources.admin;
 
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import jakarta.servlet.ServletRegistration;
 import jakarta.validation.Validator;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.freemarker.Freemarker;
@@ -78,102 +78,117 @@ public class AdminServlet {
 
 		final AdminEnvironment admin = manager.getEnvironment().admin();
 
-		ServletRegistration.Dynamic adminServlet = admin.addServlet(ADMIN_SERVLET_PATH, new ServletContainer(jerseyConfig));
+		ServletRegistration.Dynamic adminServlet = admin.addServlet(
+			ADMIN_SERVLET_PATH,
+			new ServletContainer(jerseyConfig));
 		adminServlet.addMapping("/" + ADMIN_SERVLET_PATH + "/*");
-		admin.addServlet(ADMIN_UI_SERVLET_PATH, new ServletContainer(jerseyConfigUI)).addMapping("/" + ADMIN_UI_SERVLET_PATH + "/*");
+		admin.addServlet(ADMIN_UI_SERVLET_PATH, new ServletContainer(jerseyConfigUI))
+			.addMapping(
+				"/" + ADMIN_UI_SERVLET_PATH + "/*");
 		// Register static asset servlet for admin end
-		admin.addServlet(ADMIN_ASSETS_PATH, new AssetServlet(ADMIN_ASSETS_PATH, "/" + ADMIN_ASSETS_PATH, null, StandardCharsets.UTF_8))
-			 .addMapping("/" + ADMIN_ASSETS_PATH + "/*");
+		admin.addServlet(
+			ADMIN_ASSETS_PATH,
+			new AssetServlet(ADMIN_ASSETS_PATH, "/" + ADMIN_ASSETS_PATH, null, StandardCharsets.UTF_8))
+			.addMapping(
+				"/" + ADMIN_ASSETS_PATH + "/*");
 
 		jerseyConfig.register(new JacksonMessageBodyProvider(manager.getEnvironment().getObjectMapper()));
 
 		adminProcessor = new AdminProcessor(
-				manager,
-				manager.getConfig(),
-				manager.getMetaStorage(),
-				manager.getDatasetRegistry(),
-				manager.getJobManager(),
-				manager.getMaintenanceService(),
-				manager.getValidator(),
-				manager.getNodeProvider()
+			manager,
+			manager.getConfig(),
+			manager.getMetaStorage(),
+			manager.getDatasetRegistry(),
+			manager.getJobManager(),
+			manager.getMaintenanceService(),
+			manager.getValidator(),
+			manager.getNodeProvider()
 		);
 
 		adminDatasetProcessor = new AdminDatasetProcessor(
-				manager.getConfig(),
-				manager.getDatasetRegistry(),
-				manager.getMetaStorage(),
-				manager.getJobManager(),
-				manager.getImportHandler(),
-				manager.getStorageListener(),
-				manager.getEnvironment()
+			manager.getConfig(),
+			manager.getDatasetRegistry(),
+			manager.getMetaStorage(),
+			manager.getJobManager(),
+			manager.getImportHandler(),
+			manager.getStorageListener(),
+			manager.getEnvironment()
 		);
 
 		jerseyConfig.register(new AbstractBinder() {
-						@Override
-						protected void configure() {
-							bind(manager).to(ManagerNode.class);
-							bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
-							bind(manager.getMetaStorage()).to(MetaStorage.class);
-							bind(manager.getValidator()).to(Validator.class);
-							bind(manager.getJobManager()).to(JobManager.class);
-							bind(manager.getConfig()).to(ConqueryConfig.class);
-							bind(adminProcessor).to(AdminProcessor.class);
-							bind(adminDatasetProcessor).to(AdminDatasetProcessor.class);
-						}
-					})
-					.register(AdminPermissionFilter.class)
-					.register(IdPathParamConverterProvider.class)
-					.register(AuthCookieFilter.class)
-					.register(CsrfTokenCheckFilter.class)
-					.register(DatasetParamInjector.class);
+			@Override
+			protected void configure() {
+				bind(manager).to(ManagerNode.class);
+				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
+				bind(manager.getMetaStorage()).to(MetaStorage.class);
+				bind(manager.getValidator()).to(Validator.class);
+				bind(manager.getJobManager()).to(JobManager.class);
+				bind(manager.getConfig()).to(ConqueryConfig.class);
+				bind(adminProcessor).to(AdminProcessor.class);
+				bind(adminDatasetProcessor).to(AdminDatasetProcessor.class);
+			}
+		})
+			.register(AdminPermissionFilter.class)
+			.register(IdPathParamConverterProvider.class)
+			.register(
+				AuthCookieFilter.class)
+			.register(CsrfTokenCheckFilter.class)
+			.register(DatasetParamInjector.class);
 
 
-		jerseyConfigUI.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)))
-					  .register(new AbstractBinder() {
-						  @Override
-						  protected void configure() {
-							  bind(adminProcessor).to(AdminProcessor.class);
-							  bindAsContract(UIProcessor.class);
-							  bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
-							  bind(manager.getMetaStorage()).to(MetaStorage.class);
-							  bind(manager.getConfig()).to(ConqueryConfig.class);
-						  }
-					  })
-					  .register(IdPathParamConverterProvider.class)
-					  .register(AdminPermissionFilter.class)
-					  .register(AuthCookieFilter.class)
-					  .register(CsrfTokenSetFilter.class)
-					  .register(DatasetParamInjector.class);
+		jerseyConfigUI.register(
+			new ViewMessageBodyWriter(
+				manager.getEnvironment().metrics(),
+				Collections.singleton(Freemarker.HTML_RENDERER))).register(new AbstractBinder() {
+					@Override
+					protected void configure() {
+						bind(adminProcessor).to(AdminProcessor.class);
+						bindAsContract(UIProcessor.class);
+						bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
+						bind(manager.getMetaStorage()).to(MetaStorage.class);
+						bind(manager.getConfig()).to(ConqueryConfig.class);
+					}
+				})
+			.register(IdPathParamConverterProvider.class)
+			.register(AdminPermissionFilter.class)
+			.register(
+				AuthCookieFilter.class)
+			.register(CsrfTokenSetFilter.class)
+			.register(DatasetParamInjector.class);
 
 	}
 
 	public void register() {
 
 		// register root resources
-		jerseyConfig
-				.register(AdminDatasetResource.class)
-				.register(AdminDatasetsResource.class)
-				.register(AdminConceptsResource.class)
-				.register(AdminTablesResource.class)
-				.register(RoleResource.class)
-				.register(UserResource.class)
-				.register(GroupResource.class)
-				.register(PermissionResource.class)
-				.register(AuthOverviewResource.class)
-				.register(AdminResource.class)
-				.register(ConfigApiResource.class);
+		jerseyConfig.register(AdminDatasetResource.class)
+			.register(AdminDatasetsResource.class)
+			.register(
+				AdminConceptsResource.class)
+			.register(AdminTablesResource.class)
+			.register(RoleResource.class)
+			.register(
+				UserResource.class)
+			.register(GroupResource.class)
+			.register(PermissionResource.class)
+			.register(
+				AuthOverviewResource.class)
+			.register(AdminResource.class)
+			.register(ConfigApiResource.class);
 
-		jerseyConfigUI
-				.register(AdminUIResource.class)
-				.register(RoleUIResource.class)
-				.register(UserUIResource.class)
-				.register(GroupUIResource.class)
-				.register(DatasetsUIResource.class)
-				.register(TablesUIResource.class)
-				.register(ConceptsUIResource.class)
-				.register(ConnectorUIResource.class)
-				.register(AuthOverviewUIResource.class)
-				.register(IndexServiceUIResource.class);
+		jerseyConfigUI.register(AdminUIResource.class)
+			.register(RoleUIResource.class)
+			.register(
+				UserUIResource.class)
+			.register(GroupUIResource.class)
+			.register(DatasetsUIResource.class)
+			.register(
+				TablesUIResource.class)
+			.register(ConceptsUIResource.class)
+			.register(ConnectorUIResource.class)
+			.register(
+				AuthOverviewUIResource.class)
+			.register(IndexServiceUIResource.class);
 
 	}
 }

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.commands;
 
+import jakarta.validation.Validator;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,7 +11,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jersey.RESTServer;
@@ -92,9 +92,7 @@ public class ManagerNode implements Managed {
 
 		configureApiServlet(config, environment);
 
-		maintenanceService = environment.lifecycle()
-										.scheduledExecutorService("Maintenance Service")
-										.build();
+		maintenanceService = environment.lifecycle().scheduledExecutorService("Maintenance Service").build();
 
 		environment.lifecycle().manage(this);
 
@@ -108,13 +106,13 @@ public class ManagerNode implements Managed {
 		admin.register();
 
 		log.info("Registering ResourcesProvider");
-		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
+		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(
+			ResourcesProvider.class)) {
 			try {
 				ResourcesProvider provider = resourceProvider.getConstructor().newInstance();
 				provider.registerResources(this);
 				providers.add(provider);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error("Failed to register Resource {}", resourceProvider, e);
 			}
 		}
@@ -135,7 +133,10 @@ public class ManagerNode implements Managed {
 			}
 		});
 
-		getInternalMapperFactory().customizeApiObjectMapper(environment.getObjectMapper(), getDatasetRegistry(), getMetaStorage());
+		getInternalMapperFactory().customizeApiObjectMapper(
+			environment.getObjectMapper(),
+			getDatasetRegistry(),
+			getMetaStorage());
 
 	}
 
@@ -147,25 +148,28 @@ public class ManagerNode implements Managed {
 	}
 
 	static void loadNamespaces(
-			Collection<NamespaceStorage> namespaceStorages,
-			DatasetRegistry<? extends Namespace> registry,
-			MetaStorage metaStorage,
-			Environment environment) throws InterruptedException {
+		Collection<NamespaceStorage> namespaceStorages,
+		DatasetRegistry<? extends Namespace> registry,
+		MetaStorage metaStorage,
+		Environment environment) throws InterruptedException {
 
-		try(ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())) {
+		try (ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())) {
 			final List<NamespaceLoadTask> loadTasks = new ArrayList<>(namespaceStorages.size());
 
 			// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
 			for (NamespaceStorage namespaceStorage : namespaceStorages) {
-				Future<?> future = loaders.submit(() -> registry.createNamespace(namespaceStorage, metaStorage, environment));
+				Future<?> future = loaders.submit(
+					() -> registry.createNamespace(namespaceStorage, metaStorage, environment));
 				loadTasks.add(new NamespaceLoadTask(namespaceStorage, future));
 			}
 
 			loaders.shutdown();
 			while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
 				final int countLoaded = registry.getNamespaces().size();
-				log.debug("Waiting for dataset namespaces to load. {} are already finished. {} pending.", countLoaded, namespaceStorages.size()
-																							  - countLoaded);
+				log.debug(
+					"Waiting for dataset namespaces to load. {} are already finished. {} pending.",
+					countLoaded,
+					namespaceStorages.size() - countLoaded);
 			}
 
 			// Check for failed storages
@@ -173,14 +177,13 @@ public class ManagerNode implements Managed {
 			for (NamespaceLoadTask loadTask : loadTasks) {
 				try {
 					loadTask.future().get();
-				}
-				catch (ExecutionException exception) {
+				} catch (ExecutionException exception) {
 					final Throwable cause = exception.getCause();
 					final String storagePath = loadTask.storage().getPathName();
 					log.error(
-							"Failed to load persisted dataset namespace [storage={}]. The dataset is unavailable; application startup will be aborted.",
-							storagePath,
-							cause
+						"Failed to load persisted dataset namespace [storage={}]. The dataset is unavailable; application startup will be aborted.",
+						storagePath,
+						cause
 					);
 					failures.add(new NamespaceLoadFailure(storagePath, cause));
 				}
@@ -193,12 +196,16 @@ public class ManagerNode implements Managed {
 		}
 	}
 
-	private static IllegalStateException createNamespaceLoadingException(int namespaceCount, List<NamespaceLoadFailure> failures) {
+	private static IllegalStateException createNamespaceLoadingException(
+		int namespaceCount,
+		List<NamespaceLoadFailure> failures) {
 		final List<String> failedStoragePaths = failures.stream().map(NamespaceLoadFailure::storagePath).toList();
 		final IllegalStateException exception = new IllegalStateException(
-				"Failed to load %d of %d persisted dataset namespaces: %s"
-						.formatted(failures.size(), namespaceCount, failedStoragePaths),
-				failures.getFirst().cause()
+			"Failed to load %d of %d persisted dataset namespaces: %s".formatted(
+				failures.size(),
+				namespaceCount,
+				failedStoragePaths),
+			failures.getFirst().cause()
 		);
 
 		failures.stream().skip(1).map(NamespaceLoadFailure::cause).forEach(exception::addSuppressed);
@@ -213,7 +220,8 @@ public class ManagerNode implements Managed {
 
 	private void loadMetaStorage() {
 		log.info("Opening MetaStorage");
-		getMetaStorage().openStores(getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()));
+		getMetaStorage().openStores(
+			getInternalMapperFactory().createManagerPersistenceMapper(getDatasetRegistry(), getMetaStorage()));
 
 		getMetaStorage().loadKeys();
 
@@ -226,11 +234,14 @@ public class ManagerNode implements Managed {
 
 	private void registerTasks(Manager manager, Environment environment, ConqueryConfig config) {
 		environment.admin().addTask(formScanner);
-		environment.admin().addTask(
-				new QueryCleanupTask(getMetaStorage(), Duration.of(
+		environment.admin()
+			.addTask(
+				new QueryCleanupTask(
+					getMetaStorage(),
+					Duration.of(
 						config.getQueries().getOldQueriesTime().getQuantity(),
 						config.getQueries().getOldQueriesTime().getUnit().toChronoUnit()
-				)));
+					)));
 
 		environment.admin().addTask(new PermissionCleanupTask(getMetaStorage()));
 		manager.getAdminTasks().forEach(environment.admin()::addTask);
@@ -255,16 +266,14 @@ public class ManagerNode implements Managed {
 		for (ResourcesProvider provider : providers) {
 			try {
 				provider.close();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error("{} could not be closed", provider, e);
 			}
 		}
 
 		try {
 			getMetaStorage().close();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error("{} could not be closed", getMetaStorage(), e);
 		}
 

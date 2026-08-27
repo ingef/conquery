@@ -16,12 +16,15 @@ public class SecondaryIdQueryConverter implements NodeConverter<SecondaryIdQuery
 	@Override
 	public ConversionContext convert(SecondaryIdQuery query, ConversionContext context) {
 
-		ConversionContext withConvertedQuery = context.getNodeConversions().convert(
+		ConversionContext withConvertedQuery = context.getNodeConversions()
+			.convert(
 				query.getQuery(),
 				context.withSecondaryIdDescription(query.getSecondaryId().resolve())
-		);
+			);
 
-		Preconditions.checkArgument(withConvertedQuery.getFinalQuery() != null, "The SecondaryIdQuery's query should be converted by now.");
+		Preconditions.checkArgument(
+			withConvertedQuery.getFinalQuery() != null,
+			"The SecondaryIdQuery's query should be converted by now.");
 		SqlQuery secondaryIdSqlQuery = withConvertedQuery.getFinalQuery().overwriteResultInfos(query.getResultInfos());
 
 		return withConvertedQuery.withFinalQuery(secondaryIdSqlQuery);

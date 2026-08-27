@@ -65,12 +65,20 @@ public interface CTCondition {
 				return this;
 			}
 
-			Set<Name> fields = Stream.of(other.conditions.keySet(), conditions.keySet()).flatMap(Collection::stream)
-									 .map(Field::getUnqualifiedName)
-									 .collect(Collectors.toSet());
+			Set<Name> fields = Stream.of(other.conditions.keySet(), conditions.keySet())
+				.flatMap(
+					Collection::stream)
+				.map(Field::getUnqualifiedName)
+				.collect(Collectors.toSet());
 
-			Map<Name, Field<?>> rByName = other.conditions.keySet().stream().collect(Collectors.toMap(Field::getUnqualifiedName, Function.identity()));
-			Map<Name, Field<?>> lByName = conditions.keySet().stream().collect(Collectors.toMap(Field::getUnqualifiedName, Function.identity()));
+			Map<Name, Field<?>> rByName = other.conditions.keySet()
+				.stream()
+				.collect(
+					Collectors.toMap(Field::getUnqualifiedName, Function.identity()));
+			Map<Name, Field<?>> lByName = conditions.keySet()
+				.stream()
+				.collect(
+					Collectors.toMap(Field::getUnqualifiedName, Function.identity()));
 
 			Map<Field<?>, FieldCondition> combined = new HashMap<>();
 
@@ -93,15 +101,18 @@ public interface CTCondition {
 				FieldCondition otherCond = other.conditions.get(rField);
 				FieldCondition myCond = conditions.get(lField);
 
-				FieldCondition condition = new FieldCondition(myCond.extractor, Sets.intersection(otherCond.params, myCond.params));
+				FieldCondition condition = new FieldCondition(
+					myCond.extractor,
+					Sets.intersection(otherCond.params, myCond.params));
 
 				// Recompute string field to fit in all values.
 				// Otherwise, assume both fields are the same type
 				Field<?> outField;
 				if (lField.getDataType().isString()) {
-					outField = field(lField.getUnqualifiedName(), VARCHAR(Math.max(lField.getDataType().length(), rField.getDataType().length())));
-				}
-				else {
+					outField = field(
+						lField.getUnqualifiedName(),
+						VARCHAR(Math.max(lField.getDataType().length(), rField.getDataType().length())));
+				} else {
 					assert lField.getDataType().equals(rField.getDataType());
 					outField = lField;
 				}

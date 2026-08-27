@@ -36,28 +36,31 @@ public class ManagedConnection implements Managed {
 			if (dataSource.getConnection().isValid(1000)) {
 				log.info("SUCCESS connecting to {}", connection.getJdbcConnectionUrl());
 			} else {
-				log.error("FAILED connecting to {}. Connection did not become valid.", connection.getJdbcConnectionUrl());
+				log.error(
+					"FAILED connecting to {}. Connection did not become valid.",
+					connection.getJdbcConnectionUrl());
 			}
 		} catch (SQLException exception) {
-			throw new RuntimeException("FAILED connecting to %s".formatted(connection.getJdbcConnectionUrl()), exception);
+			throw new RuntimeException(
+				"FAILED connecting to %s".formatted(connection.getJdbcConnectionUrl()),
+				exception);
 		}
 	}
 
 	public DSLContext connect() {
 		Preconditions.checkNotNull(this.dataSource, "dataSource has not been initialized yet.");
 
-		Settings settings = new Settings()
-				.withRenderFormatted(config.isWithPrettyPrinting())
-				// enforces all identifiers to be quoted if not explicitly unquoted via DSL.unquotedName()
-				// to prevent any lowercase/uppercase SQL dialect specific identifier naming issues
-				.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
-				// always render "as" keyword for field aliases
-				.withRenderOptionalAsKeywordForFieldAliases(RenderOptionalKeyword.ON);
+		Settings settings = new Settings().withRenderFormatted(config.isWithPrettyPrinting())
+			// enforces all identifiers to be quoted if not explicitly unquoted via DSL.unquotedName()
+			// to prevent any lowercase/uppercase SQL dialect specific identifier naming issues
+			.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
+			// always render "as" keyword for field aliases
+			.withRenderOptionalAsKeywordForFieldAliases(RenderOptionalKeyword.ON);
 
 		return DSL.using(
-				this.dataSource,
-				connection.getDialect().getDialectBundle().getJooqDialect(),
-				settings
+			this.dataSource,
+			connection.getDialect().getDialectBundle().getJooqDialect(),
+			settings
 		);
 	}
 

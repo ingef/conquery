@@ -64,8 +64,14 @@ public abstract class ExecutionManager {
 		this.datasetRegistry = datasetRegistry;
 		this.config = config;
 
-		executionInfosL2 = Caffeine.from(config.getQueries().getL2CacheSpec()).removalListener(this::evictionL2).build();
-		executionInfosL1 = Caffeine.from(config.getQueries().getL1CacheSpec()).removalListener(this::evictionL1).build();
+		executionInfosL2 = Caffeine.from(config.getQueries().getL2CacheSpec())
+			.removalListener(
+				this::evictionL2)
+			.build();
+		executionInfosL1 = Caffeine.from(config.getQueries().getL1CacheSpec())
+			.removalListener(
+				this::evictionL1)
+			.build();
 	}
 
 	/**
@@ -151,7 +157,11 @@ public abstract class ExecutionManager {
 	}
 
 	// Visible for testing
-	public final ManagedExecution createExecution(QueryDescription query, UserId user, Namespace namespace, boolean system) {
+	public final ManagedExecution createExecution(
+		QueryDescription query,
+		UserId user,
+		Namespace namespace,
+		boolean system) {
 		return createExecution(query, UUID.randomUUID(), user, namespace, system);
 	}
 
@@ -161,13 +171,11 @@ public abstract class ExecutionManager {
 
 		try {
 			execution.initExecutable();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// ConqueryErrors are usually user input errors so no need to log them at level=ERROR
 			if (e instanceof ConqueryError) {
 				log.warn("Failed to initialize Query[{}]", execution.getId(), e);
-			}
-			else {
+			} else {
 				log.error("Failed to initialize Query[{}]", execution.getId(), e);
 			}
 
@@ -180,23 +188,34 @@ public abstract class ExecutionManager {
 
 			execution.start();
 
-			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner().resolve(), storage).map(Group::getName).orElse("none");
+			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(
+				execution.getOwner().resolve(),
+				storage).map(Group::getName).orElse("none");
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
 			if (execution instanceof InternalExecution internalExecution) {
 				doExecute((ManagedExecution & InternalExecution) internalExecution);
 			}
 
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.warn("Failed to execute '{}'", execution.getId());
 			execution.fail(ConqueryError.asConqueryError(e));
 		}
 	}
 
-	public final ManagedExecution createExecution(QueryDescription query, UUID queryId, UserId user, Namespace namespace, boolean system) {
+	public final ManagedExecution createExecution(
+		QueryDescription query,
+		UUID queryId,
+		UserId user,
+		Namespace namespace,
+		boolean system) {
 		// Transform the submitted query into an initialized execution
-		ManagedExecution managed = query.toManagedExecution(user, namespace.getDataset().getId(), storage, datasetRegistry, getConfig());
+		ManagedExecution managed = query.toManagedExecution(
+			user,
+			namespace.getDataset().getId(),
+			storage,
+			datasetRegistry,
+			getConfig());
 		managed.setSystem(system);
 		managed.setQueryId(queryId);
 
@@ -225,8 +244,12 @@ public abstract class ExecutionManager {
 	public void updateState(ManagedExecutionId id, ExecutionState execState) {
 		Optional<ExecutionInfo> executionInfo = tryGetExecutionInfo(id);
 
-		executionInfo.ifPresentOrElse(info -> info.setExecutionState(execState),
-									  () -> log.warn("Could not update execution executionInfo of {} to {}, because it had no executionInfo.", id, execState)
+		executionInfo.ifPresentOrElse(
+			info -> info.setExecutionState(execState),
+			() -> log.warn(
+				"Could not update execution executionInfo of {} to {}, because it had no executionInfo.",
+				id,
+				execState)
 		);
 	}
 
@@ -280,11 +303,21 @@ public abstract class ExecutionManager {
 	}
 
 	public boolean hasRunningQueries() {
-		if (executionInfosL2.asMap().values().stream().map(ExecutionInfo::getExecutionState).anyMatch(RUNNING::equals)) {
+		if (executionInfosL2.asMap()
+			.values()
+			.stream()
+			.map(ExecutionInfo::getExecutionState)
+			.anyMatch(
+				RUNNING::equals)) {
 			return true;
 		}
 
-		return executionInfosL1.asMap().values().stream().map(ExecutionInfo::getExecutionState).anyMatch(RUNNING::equals);
+		return executionInfosL1.asMap()
+			.values()
+			.stream()
+			.map(ExecutionInfo::getExecutionState)
+			.anyMatch(
+				RUNNING::equals);
 	}
 
 	/**
@@ -295,7 +328,8 @@ public abstract class ExecutionManager {
 		/**
 		 * The current {@link ExecutionState} of the execution.
 		 */
-		@NotNull ExecutionState getExecutionState();
+		@NotNull
+		ExecutionState getExecutionState();
 
 		void setExecutionState(ExecutionState state);
 
@@ -309,7 +343,9 @@ public abstract class ExecutionManager {
 
 	public interface InternalExecutionInfo extends ExecutionInfo {
 		Stream<EntityResult> streamQueryResults();
+
 		List<ResultInfo> getResultInfos();
+
 		long getResultCount();
 	}
 

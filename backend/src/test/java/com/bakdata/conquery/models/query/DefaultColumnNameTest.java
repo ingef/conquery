@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.validation.Validator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -12,7 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -46,111 +46,114 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 @Slf4j
 public class DefaultColumnNameTest {
-    private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, new ConqueryConfig(), null, null);
+	private static final PrintSettings SETTINGS = new PrintSettings(
+		false,
+		Locale.ENGLISH,
+		new ConqueryConfig(),
+		null,
+		null);
 	private static final Validator VALIDATOR = Validators.newValidator();
 
 
-	private static final BiFunction<TestConcept, CQConcept, Select> CONCEPT_SELECT_SELECTOR =
-			(concept, cq) -> {
-				final UniversalSelect select = concept.getSelects().getFirst();
-				cq.setSelects(List.of(select.getId()));
-				return select;
-			};
+	private static final BiFunction<TestConcept, CQConcept, Select> CONCEPT_SELECT_SELECTOR = (concept, cq) -> {
+		final UniversalSelect select = concept.getSelects().getFirst();
+		cq.setSelects(List.of(select.getId()));
+		return select;
+	};
 
-	private static final BiFunction<TestConcept, CQConcept, Select> CONNECTOR_SELECT_SELECTOR =
-			(concept, cq) -> {
-				final Select select = concept.getConnectors().getFirst().getSelects().getFirst();
-				cq.getTables().getFirst().setSelects(List.of((ConnectorSelectId) select.getId()));
-				return select;
-			};
+	private static final BiFunction<TestConcept, CQConcept, Select> CONNECTOR_SELECT_SELECTOR = (concept, cq) -> {
+		final Select select = concept.getConnectors().getFirst().getSelects().getFirst();
+		cq.getTables().getFirst().setSelects(List.of((ConnectorSelectId) select.getId()));
+		return select;
+	};
 
 	private static Stream<Arguments> provideCombinations() {
 		return Stream.of(
-				// ConceptSelect, without CQLabel, one Id
-				Arguments.of(
-						TestConcept.create(1, CONCEPT_SELECT_SELECTOR, 1, null),
-						false,
-						"TestConceptLabel ID_0 TestSelectLabel"
-				),
-				// ConceptSelect without CQLabel, multiple Ids
-				Arguments.of(
-						TestConcept.create(1, CONCEPT_SELECT_SELECTOR, 3, null),
-						false,
-						"TestConceptLabel ID_0+ID_1+ID_2 TestSelectLabel"
-				),
-				// ConceptSelect with CQLabel, one Id
-				Arguments.of(
-						TestConcept.create(1, CONCEPT_SELECT_SELECTOR, 1, null),
-						true,
-						"TestCQLabel TestSelectLabel"
-				),
-				// ConceptSelect with CQLabel, multiple Ids
-				Arguments.of(
-						TestConcept.create(1, CONCEPT_SELECT_SELECTOR, 3, null),
-						true,
-						"TestCQLabel TestSelectLabel"
-				),
+			// ConceptSelect, without CQLabel, one Id
+			Arguments.of(
+				TestConcept.create(1, CONCEPT_SELECT_SELECTOR, 1, null),
+				false,
+				"TestConceptLabel ID_0 TestSelectLabel"
+			),
+			// ConceptSelect without CQLabel, multiple Ids
+			Arguments.of(
+				TestConcept.create(1, CONCEPT_SELECT_SELECTOR, 3, null),
+				false,
+				"TestConceptLabel ID_0+ID_1+ID_2 TestSelectLabel"
+			),
+			// ConceptSelect with CQLabel, one Id
+			Arguments.of(
+				TestConcept.create(1, CONCEPT_SELECT_SELECTOR, 1, null),
+				true,
+				"TestCQLabel TestSelectLabel"
+			),
+			// ConceptSelect with CQLabel, multiple Ids
+			Arguments.of(
+				TestConcept.create(1, CONCEPT_SELECT_SELECTOR, 3, null),
+				true,
+				"TestCQLabel TestSelectLabel"
+			),
 
-				// ConnectorSelect, without CQLabel, one Id, one Connector
-				Arguments.of(
-						TestConcept.create(1, CONNECTOR_SELECT_SELECTOR, 1, null),
-						false,
-						"TestConceptLabel ID_0 TestSelectLabel"
-				),
-				// ConnectorSelect without CQLabel, multiple Ids, one Connector
-				Arguments.of(
-						TestConcept.create(1, CONNECTOR_SELECT_SELECTOR, 3, null),
-						false,
-						"TestConceptLabel ID_0+ID_1+ID_2 TestSelectLabel"
-				),
-				// ConnectorSelect with CQLabel, one Id, one Connector
-				Arguments.of(
-						TestConcept.create(1, CONNECTOR_SELECT_SELECTOR, 1, null),
-						true,
-						"TestCQLabel TestSelectLabel"
-				),
-				// ConnectorSelect with CQLabel, multiple Ids, one Connector
-				Arguments.of(
-						TestConcept.create(1, CONNECTOR_SELECT_SELECTOR, 3, null),
-						true,
-						"TestCQLabel TestSelectLabel"
-				),
+			// ConnectorSelect, without CQLabel, one Id, one Connector
+			Arguments.of(
+				TestConcept.create(1, CONNECTOR_SELECT_SELECTOR, 1, null),
+				false,
+				"TestConceptLabel ID_0 TestSelectLabel"
+			),
+			// ConnectorSelect without CQLabel, multiple Ids, one Connector
+			Arguments.of(
+				TestConcept.create(1, CONNECTOR_SELECT_SELECTOR, 3, null),
+				false,
+				"TestConceptLabel ID_0+ID_1+ID_2 TestSelectLabel"
+			),
+			// ConnectorSelect with CQLabel, one Id, one Connector
+			Arguments.of(
+				TestConcept.create(1, CONNECTOR_SELECT_SELECTOR, 1, null),
+				true,
+				"TestCQLabel TestSelectLabel"
+			),
+			// ConnectorSelect with CQLabel, multiple Ids, one Connector
+			Arguments.of(
+				TestConcept.create(1, CONNECTOR_SELECT_SELECTOR, 3, null),
+				true,
+				"TestCQLabel TestSelectLabel"
+			),
 
-				// ConnectorSelect, without CQLabel, one Id, multiple Connectors
-				Arguments.of(
-						TestConcept.create(3, CONNECTOR_SELECT_SELECTOR, 1, null),
-						false,
-						"TestConceptLabel ID_0 TestConnectorLabel_0 TestSelectLabel"
-				),
-				// ConnectorSelect without CQLabel, multiple Ids, multiple Connectors
-				Arguments.of(
-						TestConcept.create(3, CONNECTOR_SELECT_SELECTOR, 3, null),
-						false,
-						"TestConceptLabel ID_0+ID_1+ID_2 TestConnectorLabel_0 TestSelectLabel"
-				),
-				// ConnectorSelect with CQLabel, one Id, multiple Connectors
-				Arguments.of(
-						TestConcept.create(3, CONNECTOR_SELECT_SELECTOR, 1, null),
-						true,
-						"TestCQLabel TestConnectorLabel_0 TestSelectLabel"
-				),
-				// ConnectorSelect with CQLabel, multiple Ids, multiple Connectors
-				Arguments.of(
-						TestConcept.create(3, CONNECTOR_SELECT_SELECTOR, 3, null),
-						true,
-						"TestCQLabel TestConnectorLabel_0 TestSelectLabel"
-				),
-				// ConnectorSelect without CQLabel, only root Id, one Connector -> Connector label should be suppressed
-				Arguments.of(
-						TestConcept.create(1, CONNECTOR_SELECT_SELECTOR, 0, "Test-Label"),
-						false,
-						"Test-Label TestSelectLabel"
-				),
-				Arguments.of(
-						TestConcept.create(1, CONCEPT_SELECT_SELECTOR, 0, "TestSelectLabel"),
-						false,
-						"TestSelectLabel"
-				)
+			// ConnectorSelect, without CQLabel, one Id, multiple Connectors
+			Arguments.of(
+				TestConcept.create(3, CONNECTOR_SELECT_SELECTOR, 1, null),
+				false,
+				"TestConceptLabel ID_0 TestConnectorLabel_0 TestSelectLabel"
+			),
+			// ConnectorSelect without CQLabel, multiple Ids, multiple Connectors
+			Arguments.of(
+				TestConcept.create(3, CONNECTOR_SELECT_SELECTOR, 3, null),
+				false,
+				"TestConceptLabel ID_0+ID_1+ID_2 TestConnectorLabel_0 TestSelectLabel"
+			),
+			// ConnectorSelect with CQLabel, one Id, multiple Connectors
+			Arguments.of(
+				TestConcept.create(3, CONNECTOR_SELECT_SELECTOR, 1, null),
+				true,
+				"TestCQLabel TestConnectorLabel_0 TestSelectLabel"
+			),
+			// ConnectorSelect with CQLabel, multiple Ids, multiple Connectors
+			Arguments.of(
+				TestConcept.create(3, CONNECTOR_SELECT_SELECTOR, 3, null),
+				true,
+				"TestCQLabel TestConnectorLabel_0 TestSelectLabel"
+			),
+			// ConnectorSelect without CQLabel, only root Id, one Connector -> Connector label should be suppressed
+			Arguments.of(
+				TestConcept.create(1, CONNECTOR_SELECT_SELECTOR, 0, "Test-Label"),
+				false,
+				"Test-Label TestSelectLabel"
+			),
+			Arguments.of(
+				TestConcept.create(1, CONCEPT_SELECT_SELECTOR, 0, "TestSelectLabel"),
+				false,
+				"TestSelectLabel"
+			)
 
 		);
 	}
@@ -161,7 +164,10 @@ public class DefaultColumnNameTest {
 		final CQConcept cqConcept = concept.createCQConcept(hasCQConceptLabel);
 
 		final UniqueNamer uniqNamer = new UniqueNamer(SETTINGS);
-		SelectResultInfo info = new SelectResultInfo(concept.extractSelect(cqConcept), cqConcept, Collections.emptySet());
+		SelectResultInfo info = new SelectResultInfo(
+			concept.extractSelect(cqConcept),
+			cqConcept,
+			Collections.emptySet());
 
 		assertThat(uniqNamer.getUniqueName(info, SETTINGS)).isEqualTo(expectedColumnName);
 	}
@@ -175,24 +181,27 @@ public class DefaultColumnNameTest {
 			}
 
 
-			List<ConceptElement<?>> elements = concept.getChildren().stream()
-													  .sorted(Comparator.comparing(ctc -> ctc.getId().toString()))
-													  .collect(Collectors.toList());
+			List<ConceptElement<?>> elements = concept.getChildren()
+				.stream()
+				.sorted(
+					Comparator.comparing(ctc -> ctc.getId().toString()))
+				.collect(Collectors.toList());
 
 			if (elements.isEmpty()) {
 				elements = List.of(concept);
 			}
-			final List<ConceptElementId<?>> list = elements.stream().<ConceptElementId<?>>map(ConceptElement::getId).toList();
+			final List<ConceptElementId<?>> list = elements.stream()
+				.<ConceptElementId<?>>map(
+					ConceptElement::getId)
+				.toList();
 			cqConcept.setElements(list);
 
-			List<CQTable> tables = concept.getConnectors().stream()
-										  .map(con -> {
-											  CQTable table = new CQTable();
-											  table.setConnector(con.getId());
-											  table.setConcept(cqConcept);
-											  return table;
-										  })
-										  .collect(Collectors.toList());
+			List<CQTable> tables = concept.getConnectors().stream().map(con -> {
+				CQTable table = new CQTable();
+				table.setConnector(con.getId());
+				table.setConcept(cqConcept);
+				return table;
+			}).collect(Collectors.toList());
 			cqConcept.setTables(tables);
 
 			concept.extractSelect(cqConcept);
@@ -233,7 +242,11 @@ public class DefaultColumnNameTest {
 		}
 
 		@SneakyThrows
-		public static TestConcept create(int countConnectors, BiFunction<TestConcept, CQConcept, Select> selectExtractor, int countIds, String overwriteLabel) {
+		public static TestConcept create(
+			int countConnectors,
+			BiFunction<TestConcept, CQConcept, Select> selectExtractor,
+			int countIds,
+			String overwriteLabel) {
 			TestConcept concept = new TestConcept(selectExtractor);
 			if (overwriteLabel != null) {
 				concept.setLabel(overwriteLabel);

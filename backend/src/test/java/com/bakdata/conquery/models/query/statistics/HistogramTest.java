@@ -19,8 +19,14 @@ class HistogramTest {
 	@Test
 	void recon() {
 
-		final Histogram histogram = Histogram.zeroAligned(0.0021445979668993976d, 0.9999775467040908d, 0.0021445979668993976, 0.9999775467040908d, 10, false,
-														  false
+		final Histogram histogram = Histogram.zeroAligned(
+			0.0021445979668993976d,
+			0.9999775467040908d,
+			0.0021445979668993976,
+			0.9999775467040908d,
+			10,
+			false,
+			false
 		);
 
 		histogram.add(0.9999775467040908d);

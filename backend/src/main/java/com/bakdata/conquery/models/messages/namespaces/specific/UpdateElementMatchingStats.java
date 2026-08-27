@@ -45,7 +45,9 @@ public class UpdateElementMatchingStats extends NamespaceMessage {
 
 				// mapping function cannot use Id::resolve here yet, somehow the nsIdResolver is not set because it
 				// stems from a map key. Jackson seems to use a different serializer.
-				Concept<?> concept = conceptsToUpdate.computeIfAbsent(conceptId, id -> context.getStorage().getConcept(id));
+				Concept<?> concept = conceptsToUpdate.computeIfAbsent(
+					conceptId,
+					id -> context.getStorage().getConcept(id));
 
 				final ConceptElement<?> target = concept.findById(element);
 
@@ -60,7 +62,10 @@ public class UpdateElementMatchingStats extends NamespaceMessage {
 				}
 				matchingStats.putEntry(sourceString, value);
 			} catch (Exception e) {
-				log.error("Failed to set matching stats for '{}' (enable TRACE for exception)", entry.getKey(), (Exception) (log.isTraceEnabled() ? e : null));
+				log.error(
+					"Failed to set matching stats for '{}' (enable TRACE for exception)",
+					entry.getKey(),
+					(Exception) (log.isTraceEnabled() ? e : null));
 			}
 		}
 

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept.specific;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -46,6 +44,12 @@ public class ExistsSelect extends UniversalSelect {
 	}
 
 	private Set<Table> collectRequiredTables() {
-		return this.getHolder().findConcept().getConnectors().stream().map(Connector::getResolvedTable).collect(Collectors.toSet());
+		return this.getHolder()
+			.findConcept()
+			.getConnectors()
+			.stream()
+			.map(Connector::getResolvedTable)
+			.collect(
+				Collectors.toSet());
 	}
 }

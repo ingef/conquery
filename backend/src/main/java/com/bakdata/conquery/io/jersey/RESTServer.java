@@ -39,10 +39,11 @@ public class RESTServer {
 		// default Dropwizard's exception mappers
 		jersey.register(new ConqueryErrorExceptionMapper());
 		jersey.register(ConqueryJsonExceptionMapper.class);
-		jersey.register(new LoggingExceptionMapper<Throwable>() {});
+		jersey.register(new LoggingExceptionMapper<Throwable>() {
+		});
 		jersey.register(new EarlyEofExceptionMapper());
 		//allow cross origin
-		if(config.getApi().isAllowCORSRequests()) {
+		if (config.getApi().isAllowCORSRequests()) {
 			jersey.register(CORSResponseFilter.class);
 			jersey.register(new CORSPreflightRequestFilter());
 		}

@@ -24,7 +24,8 @@ public interface View {
 	 * @see View.ApiManagerPersistence for classes that is propagated form the api unto the shards,
 	 * but have fields that should not be sent to the shards.
 	 */
-	interface Api extends View {}
+	interface Api extends View {
+	}
 
 	/**
 	 * View class for fields that should be written to a storage.
@@ -32,9 +33,11 @@ public interface View {
 	 * @see View.Internal for fields that are shared between manager and shards and should be persisted.
 	 */
 	interface Persistence extends View {
-		interface Manager extends Persistence {}
+		interface Manager extends Persistence {
+		}
 
-		interface Shard extends Persistence {}
+		interface Shard extends Persistence {
+		}
 	}
 
 	/**
@@ -42,7 +45,8 @@ public interface View {
 	 *
 	 * @see View.Internal for fields that are shared between manager and shards and should be persisted.
 	 */
-	interface InternalCommunication extends View {}
+	interface InternalCommunication extends View {
+	}
 
 	/**
 	 * Meta annotation for fields that are internally created, used, persisted and shared between manager node and shard nodes,
@@ -51,7 +55,8 @@ public interface View {
 	@Retention(RetentionPolicy.RUNTIME)
 	@JacksonAnnotationsInside
 	@JsonView({View.InternalCommunication.class, View.Persistence.class})
-	@interface Internal {}
+	@interface Internal {
+	}
 
 	/**
 	 * Meta annotation for fields that are written or read through the REST api and stored on the manager, but never touch a shard node.
@@ -59,5 +64,6 @@ public interface View {
 	@Retention(RetentionPolicy.RUNTIME)
 	@JacksonAnnotationsInside
 	@JsonView({View.Api.class, View.Persistence.Manager.class})
-	@interface ApiManagerPersistence {}
+	@interface ApiManagerPersistence {
+	}
 }

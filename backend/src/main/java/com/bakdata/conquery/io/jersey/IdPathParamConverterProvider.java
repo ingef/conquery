@@ -1,11 +1,11 @@
 package com.bakdata.conquery.io.jersey;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.Objects;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ext.ParamConverter;
 import jakarta.ws.rs.ext.ParamConverterProvider;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Objects;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
@@ -42,7 +42,9 @@ public final class IdPathParamConverterProvider implements ParamConverterProvide
 		}
 
 		if (NamespacedId.class.isAssignableFrom(rawType)) {
-			return new IdPathParamConverter(IdUtil.createParser((Class<? extends NamespacedId<?>>) rawType), namespacedStorageProvider());
+			return new IdPathParamConverter(
+				IdUtil.createParser((Class<? extends NamespacedId<?>>) rawType),
+				namespacedStorageProvider());
 		}
 
 		throw new IllegalStateException("Unsupported Id-type %s".formatted(rawType));
@@ -67,8 +69,9 @@ public final class IdPathParamConverterProvider implements ParamConverterProvide
 			return false;
 		}
 		var that = (IdPathParamConverterProvider) obj;
-		return Objects.equals(this.metaStorage, that.metaStorage) &&
-			   Objects.equals(this.namespacedStorageProvider, that.namespacedStorageProvider);
+		return Objects.equals(this.metaStorage, that.metaStorage) && Objects.equals(
+			this.namespacedStorageProvider,
+			that.namespacedStorageProvider);
 	}
 
 	@Override
@@ -78,13 +81,13 @@ public final class IdPathParamConverterProvider implements ParamConverterProvide
 
 	@Override
 	public String toString() {
-		return "IdPathParamConverterProvider[" +
-			   "metaStorage=" + metaStorage + ", " +
-			   "namespacedStorageProvider=" + namespacedStorageProvider + ']';
+		return "IdPathParamConverterProvider[" + "metaStorage=" + metaStorage + ", " + "namespacedStorageProvider=" + namespacedStorageProvider + ']';
 	}
 
 
-	public record IdPathParamConverter<T extends Id<?, STORAGE>, STORAGE>(IdUtil.Parser<T> parser, STORAGE storage) implements ParamConverter<T> {
+	public record IdPathParamConverter<T extends Id<?, STORAGE>, STORAGE>(
+		IdUtil.Parser<T> parser,
+		STORAGE storage) implements ParamConverter<T> {
 
 		@Override
 		public T fromString(String value) {

@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.query;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -55,7 +55,13 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@NotNull
 	private Query query;
 
-	public ManagedQuery(Query query, UserId owner, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+	public ManagedQuery(
+		Query query,
+		UserId owner,
+		DatasetId submittedDataset,
+		MetaStorage storage,
+		DatasetRegistry<?> datasetRegistry,
+		ConqueryConfig config) {
 		super(owner, submittedDataset, storage, datasetRegistry, config);
 		this.query = query;
 	}
@@ -74,7 +80,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
 		final Stream<EntityResult> results = getNamespace().getExecutionManager().streamQueryResults(this);
 
-		if(maybeLimit.isEmpty()){
+		if (maybeLimit.isEmpty()) {
 			return results;
 		}
 
@@ -89,10 +95,10 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		ExecutionManager executionManager = getExecutionManager();
 		Optional<ExecutionManager.InternalExecutionInfo> executionInfo = executionManager.tryGetExecutionInfo(getId());
 
-		return executionInfo
-					 .map(ExecutionManager.InternalExecutionInfo::getResultCount)
-					 .map(OptionalLong::of)
-					 .orElse(OptionalLong.empty());
+		return executionInfo.map(ExecutionManager.InternalExecutionInfo::getResultCount)
+			.map(OptionalLong::of)
+			.orElse(
+				OptionalLong.empty());
 	}
 
 	@Override
@@ -128,7 +134,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@Override
 	@JsonIgnore
 	public List<ResultInfo> getResultInfos() {
-		ExecutionManager.InternalExecutionInfo executionInfo = getNamespace().getExecutionManager().getExecutionInfo(getId());
+		ExecutionManager.InternalExecutionInfo executionInfo = getNamespace().getExecutionManager()
+			.getExecutionInfo(
+				getId());
 		return executionInfo.getResultInfos();
 	}
 

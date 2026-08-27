@@ -34,8 +34,9 @@ public class UniqueNamer {
 	@NonNull
 	@JsonIgnore
 	public final String getUniqueName(ResultInfo info, PrintSettings printSettings) {
-		@NonNull
-		String label = Objects.requireNonNullElse(info.userColumnName(printSettings), info.defaultColumnName(printSettings));
+		@NonNull String label = Objects.requireNonNullElse(
+			info.userColumnName(printSettings),
+			info.defaultColumnName(printSettings));
 		// lookup if prefix is needed and computed it if necessary
 		String uniqueName = label;
 		synchronized (ocurrenceCounter) {

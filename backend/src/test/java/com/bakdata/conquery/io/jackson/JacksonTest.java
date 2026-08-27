@@ -20,27 +20,32 @@ public class JacksonTest {
 
 	@Test
 	public void testSingleElementArraySerialization() throws JsonProcessingException {
-		String[] arr = new String[] {"singular"};
-		assertThat(Jackson.MAPPER.writeValueAsString(arr))
-			.isEqualTo("[\"singular\"]");
+		String[] arr = new String[]{"singular"};
+		assertThat(Jackson.MAPPER.writeValueAsString(arr)).isEqualTo("[\"singular\"]");
 	}
-	
+
 	@Test
 	public void testSingleElementListSerialization() throws JsonProcessingException {
 		List<String> list = Arrays.asList("singular");
-		assertThat(Jackson.MAPPER.writeValueAsString(list))
-			.isEqualTo("[\"singular\"]");
+		assertThat(Jackson.MAPPER.writeValueAsString(list)).isEqualTo("[\"singular\"]");
 	}
 
 	public static Stream<Arguments> arguments() {
-		return Stream
-				.of(
-						Arguments.of(null, "{\"external\":0,\"apiPersistent\":1,\"internalOnly\":2,\"internalCommunication\":3,\"persistentManager\":5,\"persistentShard\":6,\"persistent\":7,\"api\":8}"),
-						Arguments.of(View.InternalCommunication.class, "{\"external\":0,\"internalOnly\":2,\"internalCommunication\":3}"),
-						Arguments.of(View.Persistence.Manager.class, "{\"external\":0,\"apiPersistent\":1,\"internalOnly\":2,\"persistentManager\":5,\"persistent\":7}"),
-						Arguments.of(View.Persistence.Shard.class, "{\"external\":0,\"internalOnly\":2,\"persistentShard\":6,\"persistent\":7}"),
-						Arguments.of(View.Api.class, "{\"external\":0,\"apiPersistent\":1,\"api\":8}")
-				);
+		return Stream.of(
+			Arguments.of(
+				null,
+				"{\"external\":0,\"apiPersistent\":1,\"internalOnly\":2,\"internalCommunication\":3,\"persistentManager\":5,\"persistentShard\":6,\"persistent\":7,\"api\":8}"),
+			Arguments.of(
+				View.InternalCommunication.class,
+				"{\"external\":0,\"internalOnly\":2,\"internalCommunication\":3}"),
+			Arguments.of(
+				View.Persistence.Manager.class,
+				"{\"external\":0,\"apiPersistent\":1,\"internalOnly\":2,\"persistentManager\":5,\"persistent\":7}"),
+			Arguments.of(
+				View.Persistence.Shard.class,
+				"{\"external\":0,\"internalOnly\":2,\"persistentShard\":6,\"persistent\":7}"),
+			Arguments.of(View.Api.class, "{\"external\":0,\"apiPersistent\":1,\"api\":8}")
+		);
 	}
 
 	@ParameterizedTest
@@ -51,10 +56,9 @@ public class JacksonTest {
 		if (viewClass != null) {
 			writer = writer.withView(viewClass);
 		}
-		assertThat(writer.writeValueAsString(test))
-				.isEqualTo(expected);
+		assertThat(writer.writeValueAsString(test)).isEqualTo(expected);
 	}
-	
+
 	@Data
 	public static class InternalTestClass {
 
@@ -81,6 +85,7 @@ public class JacksonTest {
 		@JsonView(View.Api.class)
 		private int api = 8;
 	}
-	
-	public static class Marker {}
+
+	public static class Marker {
+	}
 }

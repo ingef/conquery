@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import jakarta.validation.Validator;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
@@ -13,9 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.commands.ShardNode;
@@ -39,7 +39,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.util.io.Cloner;
-import com.google.common.base.Stopwatch;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.core.cli.Command;
 import io.dropwizard.testing.DropwizardTestSupport;
@@ -78,24 +77,20 @@ public class TestConquery {
 	public static void waitUntil(Supplier<Boolean> condition) {
 		final AtomicLong done = new AtomicLong();
 
-		await().atMost(10, TimeUnit.SECONDS)
-			   .pollInterval(2, TimeUnit.MILLISECONDS)
-			   .until(() -> {
-				   if (!condition.get()) {
-					   return false;
-				   }
-				   else {
-					   return done.getAndIncrement() > 5;
-				   }
-			   });
+		await().atMost(10, TimeUnit.SECONDS).pollInterval(2, TimeUnit.MILLISECONDS).until(() -> {
+			if (!condition.get()) {
+				return false;
+			} else {
+				return done.getAndIncrement() > 5;
+			}
+		});
 	}
 
 	public synchronized StandaloneSupport openDataset(DatasetId datasetId) {
 		try {
 			log.info("loading dataset");
 			return createSupport(datasetId, datasetId.getName());
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return fail("Failed to open dataset " + datasetId, e);
 		}
 	}
@@ -120,24 +115,24 @@ public class TestConquery {
 			if (!localTmpDir.mkdir()) {
 				throw new IllegalStateException("Could not create directory for Support:" + localTmpDir);
 			}
-		}
-		else {
+		} else {
 			log.info("Reusing existing folder {} for Support", localTmpDir.getPath());
 		}
 
-		ConqueryConfig
-				localCfg =
-				Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManagerNode().getEnvironment().getValidator()), IntegrationTests.MAPPER);
+		ConqueryConfig localCfg = Cloner.clone(
+			config,
+			Map.of(Validator.class, standaloneCommand.getManagerNode().getEnvironment().getValidator()),
+			IntegrationTests.MAPPER);
 
 		StandaloneSupport support = new StandaloneSupport(
-				mode,
-				this,
-				ns,
-				ns.getStorage().getDataset().getId(),
-				localTmpDir,
-				localCfg,
-				// Getting the User from AuthorizationConfig
-				testDataImporter
+			mode,
+			this,
+			ns,
+			ns.getStorage().getDataset().getId(),
+			localTmpDir,
+			localCfg,
+			// Getting the User from AuthorizationConfig
+			testDataImporter
 		);
 
 		openSupports.add(support);
@@ -150,7 +145,12 @@ public class TestConquery {
 		ClusterState clusterState = manager.getConnectionManager().getClusterState();
 		assertThat(clusterState.getShardNodes()).hasSize(2);
 
-		waitUntil(() -> clusterState.getWorkerHandlers().get(datasetId).getWorkers().size() == clusterState.getShardNodes().size());
+		waitUntil(
+			() -> clusterState.getWorkerHandlers()
+				.get(
+					datasetId)
+				.getWorkers()
+				.size() == clusterState.getShardNodes().size());
 
 		return buildSupport(datasetId, name, StandaloneSupport.Mode.WORKER);
 	}
@@ -170,8 +170,7 @@ public class TestConquery {
 			DatasetId datasetId = getDatasetRegistry().get(new DatasetId(name)).getDataset().getId();
 
 			return createSupport(datasetId, name);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return fail("Failed to create a support for " + name, e);
 		}
 	}
@@ -181,10 +180,7 @@ public class TestConquery {
 	}
 
 	public UriBuilder defaultAdminURIBuilder() {
-		return UriBuilder.fromPath("admin")
-						 .host("localhost")
-						 .scheme("http")
-						 .port(dropwizard.getAdminPort());
+		return UriBuilder.fromPath("admin").host("localhost").scheme("http").port(dropwizard.getAdminPort());
 	}
 
 	@SneakyThrows
@@ -197,9 +193,13 @@ public class TestConquery {
 		boolean busy;
 		busy = standaloneCommand.getManagerNode().getJobManager().isSlowWorkerBusy();
 
-		busy |= standaloneCommand.getManager().getDatasetRegistry().getNamespaces().stream()
-								 .map(Namespace::getExecutionManager)
-								 .anyMatch(ExecutionManager::hasRunningQueries);
+		busy |= standaloneCommand.getManager()
+			.getDatasetRegistry()
+			.getNamespaces()
+			.stream()
+			.map(
+				Namespace::getExecutionManager)
+			.anyMatch(ExecutionManager::hasRunningQueries);
 
 		for (Namespace namespace : standaloneCommand.getManagerNode().getDatasetRegistry().getNamespaces()) {
 			busy |= namespace.getJobManager().isSlowWorkerBusy();
@@ -229,8 +229,7 @@ public class TestConquery {
 		dropwizard = new DropwizardTestSupport<>(TestBootstrappingConquery.class, config, app -> {
 			if (config.getSqlConnectorConfig().isEnabled()) {
 				standaloneCommand = new SqlStandaloneCommand();
-			}
-			else {
+			} else {
 				standaloneCommand = new DistributedStandaloneCommand();
 			}
 			standaloneCommand.setClock(MockClock.get());
@@ -241,16 +240,17 @@ public class TestConquery {
 		dropwizard.before();
 
 		// create HTTP client for api tests
-		client = new JerseyClientBuilder(getDropwizard().getEnvironment())
-				.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
-				.withProperty(ClientProperties.READ_TIMEOUT, 10000)
-				.build("test client");
+		client = new JerseyClientBuilder(getDropwizard().getEnvironment()).withProperty(
+			ClientProperties.CONNECT_TIMEOUT,
+			10000).withProperty(ClientProperties.READ_TIMEOUT, 10000).build("test client");
 
 
 		// The test user is recreated after each test, in the storage, but its id stays the same.
 		// Here we register the client filter once for that test user id.
 		UserId testUserId = config.getAuthorizationRealms().getInitialUsers().getFirst().createId();
-		client.register(new ConqueryAuthenticationFilter(() -> getAuthorizationController().getConqueryTokenRealm().createTokenForUser(testUserId)));
+		client.register(
+			new ConqueryAuthenticationFilter(
+				() -> getAuthorizationController().getConqueryTokenRealm().createTokenForUser(testUserId)));
 
 		testUser = getMetaStorage().getUser(testUserId);
 	}
@@ -299,7 +299,13 @@ public class TestConquery {
 
 		// MetaStorage is cleared after each test, so we need to add the test user again
 		final MetaStorage storage = standaloneCommand.getManagerNode().getMetaStorage();
-		testUser = standaloneCommand.getManagerNode().getConfig().getAuthorizationRealms().getInitialUsers().getFirst().createOrOverwriteUser(storage);
+		testUser = standaloneCommand.getManagerNode()
+			.getConfig()
+			.getAuthorizationRealms()
+			.getInitialUsers()
+			.getFirst()
+			.createOrOverwriteUser(
+				storage);
 	}
 
 	public Validator getValidator() {
@@ -319,9 +325,6 @@ public class TestConquery {
 	}
 
 	public UriBuilder defaultApiURIBuilder() {
-		return UriBuilder.fromPath("api")
-						 .host("localhost")
-						 .scheme("http")
-						 .port(dropwizard.getLocalPort());
+		return UriBuilder.fromPath("api").host("localhost").scheme("http").port(dropwizard.getLocalPort());
 	}
 }

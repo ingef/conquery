@@ -79,7 +79,11 @@ public final class AuthorizationController implements Managed {
 	@Getter
 	private DropwizardResourceConfig unprotectedAuthAdmin;
 
-	public AuthorizationController(@NotNull MetaStorage storage, @NotNull ConqueryConfig config, @NotNull Environment environment, AdminServlet adminServlet) {
+	public AuthorizationController(
+		@NotNull MetaStorage storage,
+		@NotNull ConqueryConfig config,
+		@NotNull Environment environment,
+		AdminServlet adminServlet) {
 		this.storage = storage;
 		this.config = config;
 		this.environment = environment;
@@ -100,8 +104,16 @@ public final class AuthorizationController implements Managed {
 			AuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, adminServlet.getJerseyConfigUI());
 		}
 
-		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
-		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
+		unprotectedAuthAdmin = AuthServlet.generalSetup(
+			environment.metrics(),
+			config,
+			environment.admin(),
+			environment.getObjectMapper());
+		unprotectedAuthApi = AuthServlet.generalSetup(
+			environment.metrics(),
+			config,
+			environment.servlets(),
+			environment.getObjectMapper());
 
 
 		// Add the user token realm
@@ -155,7 +167,9 @@ public final class AuthorizationController implements Managed {
 		}
 
 		// Register all realms in Shiro
-		log.info("Registering the following realms to Shiro:\n\t{}", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
+		log.info(
+			"Registering the following realms to Shiro:\n\t{}",
+			realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
 		securityManager.setRealms(realms);
 	}
 
@@ -165,7 +179,10 @@ public final class AuthorizationController implements Managed {
 	 *
 	 * @param storage A storage, where the handler might add a new users.
 	 */
-	private static void initializeAuthConstellation(@NonNull AuthorizationConfig config, @NonNull List<Realm> realms, @NonNull MetaStorage storage) {
+	private static void initializeAuthConstellation(
+		@NonNull AuthorizationConfig config,
+		@NonNull List<Realm> realms,
+		@NonNull MetaStorage storage) {
 		for (ProtoRole pRole : config.getInitialRoles()) {
 			pRole.createOrOverwriteRole(storage);
 		}
@@ -176,7 +193,11 @@ public final class AuthorizationController implements Managed {
 
 			for (Realm realm : realms) {
 				if (realm instanceof UserManageable) {
-					AuthorizationHelper.registerForAuthentication((UserManageable) realm, user, pUser.getCredential(), true);
+					AuthorizationHelper.registerForAuthentication(
+						(UserManageable) realm,
+						user,
+						pUser.getCredential(),
+						true);
 				}
 			}
 		}
@@ -226,18 +247,20 @@ public final class AuthorizationController implements Managed {
 
 		// Give read permission to all executions the original user owned
 		copiedPermission.addAll(
-				storage.getAllExecutions()
-					   .filter(originUser::isOwner)
-					   .map(exc -> exc.createPermission(Ability.READ.asSet()))
-					   .collect(Collectors.toSet())
+			storage.getAllExecutions()
+				.filter(originUser::isOwner)
+				.map(
+					exc -> exc.createPermission(Ability.READ.asSet()))
+				.collect(Collectors.toSet())
 		);
 
 		// Give read permission to all form configs the original user owned
 		copiedPermission.addAll(
-				storage.getAllFormConfigs()
-					   .filter(originUser::isOwner)
-					   .map(conf -> conf.createPermission(Ability.READ.asSet()))
-					   .collect(Collectors.toSet())
+			storage.getAllFormConfigs()
+				.filter(originUser::isOwner)
+				.map(
+					conf -> conf.createPermission(Ability.READ.asSet()))
+				.collect(Collectors.toSet())
 		);
 
 		// Create copied user

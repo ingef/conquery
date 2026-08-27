@@ -1,8 +1,7 @@
 package com.bakdata.conquery.integration.json;
 
-import java.io.File;
-
 import jakarta.validation.Validator;
+import java.io.File;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.models.config.ConqueryConfig;

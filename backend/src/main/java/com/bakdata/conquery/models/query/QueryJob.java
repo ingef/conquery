@@ -28,12 +28,10 @@ public class QueryJob implements Supplier<Optional<EntityResult>> {
 			queryPlan.init(ctx, entity);
 
 			return queryPlan.execute(ctx, entity);
-		}
-		catch (ConqueryError e) {
+		} catch (ConqueryError e) {
 			// Catch errors, propagate them with their id.
 			throw new ConqueryError.ExecutionJobErrorWrapper(entity, e);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new ConqueryError.ExecutionJobErrorWrapper(entity, new ConqueryError.UnknownError(e));
 		}
 	}

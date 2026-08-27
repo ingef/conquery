@@ -14,7 +14,6 @@ public class MapIndexKey implements IndexKey {
 	private final boolean allowMultiple;
 
 
-
 	@Override
 	public List<String> getExternalTemplates() {
 		return List.of(externalTemplate);
@@ -22,7 +21,7 @@ public class MapIndexKey implements IndexKey {
 
 	@Override
 	public Index<String> createIndex() {
-		if (allowMultiple){
+		if (allowMultiple) {
 			return new MapMultiIndex(externalTemplate);
 		}
 		return new MapIndex(externalTemplate);

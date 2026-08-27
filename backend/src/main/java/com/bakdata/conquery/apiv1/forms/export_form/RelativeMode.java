@@ -1,5 +1,7 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
@@ -14,13 +16,12 @@ import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.fasterxml.jackson.annotation.JsonView;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 @CPSType(id = "RELATIVE", base = Mode.class)
 @EqualsAndHashCode(callSuper = true)
 public class RelativeMode extends Mode {

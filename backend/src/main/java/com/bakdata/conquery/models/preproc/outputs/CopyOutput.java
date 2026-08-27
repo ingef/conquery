@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
+import jakarta.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -7,7 +9,6 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -33,11 +34,7 @@ public class CopyOutput extends OutputDescription {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder()
-				.append(super.hashCode())
-				.append(inputColumn)
-				.append(inputType.name())
-				.toHashCode();
+		return new HashCodeBuilder().append(super.hashCode()).append(inputColumn).append(inputType.name()).toHashCode();
 	}
 
 	@NotNull
@@ -55,7 +52,11 @@ public class CopyOutput extends OutputDescription {
 		return new Output() {
 			@Override
 			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
-				log.trace("Registering `{}` in line {} for Output[{}]", row[column], sourceLine, this.getDescription().getName());
+				log.trace(
+					"Registering `{}` in line {} for Output[{}]",
+					row[column],
+					sourceLine,
+					this.getDescription().getName());
 
 				if (row[column] == null) {
 					return null;

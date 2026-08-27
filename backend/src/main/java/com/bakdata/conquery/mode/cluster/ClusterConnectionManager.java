@@ -70,28 +70,28 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 		if (shardNodeInformation == null) {
 			// In case the shard is not yet registered, we won't have a shardNodeInformation to pull the session from
 			nwSession = new NetworkSession(session, config.getCluster().getNetworkSessionMaxQueueLength());
-		}
-		else {
+		} else {
 			nwSession = shardNodeInformation.getSession();
 		}
 
 		log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
 
-		final Job job = new ReactingJob<>(toManagerNode, new NetworkMessageContext.ManagerNodeNetworkContext(nwSession, datasetRegistry, clusterState));
+		final Job job = new ReactingJob<>(
+			toManagerNode,
+			new NetworkMessageContext.ManagerNodeNetworkContext(nwSession, datasetRegistry, clusterState));
 
 		if (toManagerNode instanceof ForwardToNamespace nsMesg) {
 			DatasetId datasetId = nsMesg.getDatasetId();
 			DistributedNamespace namespace = datasetRegistry.get(datasetId);
 			if (namespace == null) {
-				throw new NoSuchElementException("Unable to find namespace with id %s for message: %s".formatted(datasetId, message) );
+				throw new NoSuchElementException(
+					"Unable to find namespace with id %s for message: %s".formatted(datasetId, message));
 			}
 			namespace.getJobManager().addSlowJob(job);
-		}
-		else if (toManagerNode instanceof SlowMessage slowMessage) {
+		} else if (toManagerNode instanceof SlowMessage slowMessage) {
 			slowMessage.setProgressReporter(job.getProgressReporter());
 			jobManager.addSlowJob(job);
-		}
-		else {
+		} else {
 			jobManager.addFastJob(job);
 		}
 	}
@@ -107,8 +107,7 @@ public class ClusterConnectionManager extends IoHandlerAdapter {
 	public void stop() {
 		try {
 			acceptor.dispose();
-		}
-		catch (RuntimeException e) {
+		} catch (RuntimeException e) {
 			log.error("{} could not be closed", acceptor, e);
 		}
 

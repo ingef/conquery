@@ -29,8 +29,7 @@ public class BooleanColumnStatsCollector extends ColumnStatsCollector {
 
 		if (((Boolean) value)) {
 			trues++;
-		}
-		else {
+		} else {
 			falses++;
 		}
 	}
@@ -40,15 +39,17 @@ public class BooleanColumnStatsCollector extends ColumnStatsCollector {
 		final Results results = C10nCache.getLocalized(Results.class, getPrintSettings().getLocale());
 
 		return new HistogramColumnDescription(
-				getName(), getLabel(), getDescription(),
-				List.of(
-						new HistogramColumnDescription.Entry(results.True(), trues),
-						new HistogramColumnDescription.Entry(results.False(), falses)
-				),
-				Map.of(
-						C10N.get(StatisticsLabels.class, getPrintSettings().getLocale()).missing(),
-						getPrintSettings().getIntegerFormat().format(getMissing())
-				)
+			getName(),
+			getLabel(),
+			getDescription(),
+			List.of(
+				new HistogramColumnDescription.Entry(results.True(), trues),
+				new HistogramColumnDescription.Entry(results.False(), falses)
+			),
+			Map.of(
+				C10N.get(StatisticsLabels.class, getPrintSettings().getLocale()).missing(),
+				getPrintSettings().getIntegerFormat().format(getMissing())
+			)
 		);
 	}
 

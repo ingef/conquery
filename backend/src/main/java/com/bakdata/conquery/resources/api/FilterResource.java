@@ -2,9 +2,6 @@ package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.resources.ResourceConstants.FILTER;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalInt;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -17,6 +14,9 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -57,19 +57,25 @@ public class FilterResource extends HAuthorized {
 	//TODO migrate from filter to searchable
 	@POST
 	@Path("autocomplete")
-	public ConceptsProcessor.AutoCompleteResult autocompleteTextFilter(@Valid FilterResource.AutocompleteRequest request) {
+	public ConceptsProcessor.AutoCompleteResult autocompleteTextFilter(
+		@Valid FilterResource.AutocompleteRequest request) {
 		subject.isPermitted(filter.getDataset(), Ability.READ);
 		subject.isPermitted(filter.getConnector().getConcept(), Ability.READ);
 
 		if (!(filter.resolve() instanceof SelectFilter)) {
-			throw new WebApplicationException(filter + " is not a SELECT filter, but " + filter.getClass().getSimpleName() + ".", Status.BAD_REQUEST);
+			throw new WebApplicationException(
+				filter + " is not a SELECT filter, but " + filter.getClass().getSimpleName() + ".",
+				Status.BAD_REQUEST);
 		}
 
 
 		try {
-			return processor.autocompleteTextFilter(filter, request.text().orElse(null), request.page(), request.pageSize());
-		}
-		catch (IllegalArgumentException e) {
+			return processor.autocompleteTextFilter(
+				filter,
+				request.text().orElse(null),
+				request.page(),
+				request.pageSize());
+		} catch (IllegalArgumentException e) {
 			throw new BadRequestException(e);
 		}
 	}
@@ -78,9 +84,9 @@ public class FilterResource extends HAuthorized {
 	}
 
 	public record AutocompleteRequest(
-			@NonNull Optional<@Size(max = MAX_AUTOCOMPLETE_TEXT_LENGTH) String> text,
-			@NonNull OptionalInt page,
-			@NonNull @Max(MAX_AUTOCOMPLETE_PAGE_SIZE) OptionalInt pageSize
+		@NonNull Optional<@Size(max = MAX_AUTOCOMPLETE_TEXT_LENGTH) String> text,
+		@NonNull OptionalInt page,
+		@NonNull @Max(MAX_AUTOCOMPLETE_PAGE_SIZE) OptionalInt pageSize
 	) {
 	}
 }

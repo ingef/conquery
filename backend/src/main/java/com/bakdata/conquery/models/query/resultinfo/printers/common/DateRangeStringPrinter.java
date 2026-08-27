@@ -11,8 +11,10 @@ import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 public record DateRangeStringPrinter(
-		String negativeInf, String positiveInf,
-		DateStringPrinter datePrinter, PrintSettings cfg) implements Printer<List<Integer>> {
+	String negativeInf,
+	String positiveInf,
+	DateStringPrinter datePrinter,
+	PrintSettings cfg) implements Printer<List<Integer>> {
 
 	public DateRangeStringPrinter(PrintSettings printSettings, String negativeInf, String positiveInf) {
 		this(negativeInf, positiveInf, new DateStringPrinter(printSettings), printSettings);
@@ -24,19 +26,24 @@ public record DateRangeStringPrinter(
 			return null;
 		}
 
-		Preconditions.checkArgument(f.size() == 2, "Expected a list with 2 elements, one min, one max. The list was: %s ", f);
+		Preconditions.checkArgument(
+			f.size() == 2,
+			"Expected a list with 2 elements, one min, one max. The list was: %s ",
+			f);
 
 		final Integer min = f.get(0);
 		final Integer max = f.get(1);
 
 		// Compute minString first because we need it either way
-		final String minString = min == null || min == CDateRange.NEGATIVE_INFINITY ? negativeInf : datePrinter.apply(min);
+		final String minString = min == null || min == CDateRange.NEGATIVE_INFINITY ? negativeInf : datePrinter.apply(
+			min);
 
 		if (cfg.isPrettyPrint() && min != null && min.equals(max)) {
 			// If the min and max are the same we print it like a singe date, not a range (only in pretty printing)
 			return minString;
 		}
-		final String maxString = max == null || max == CDateRange.POSITIVE_INFINITY ? positiveInf : datePrinter.apply(max);
+		final String maxString = max == null || max == CDateRange.POSITIVE_INFINITY ? positiveInf : datePrinter.apply(
+			max);
 
 		return minString + cfg.getDateRangeSeparator() + maxString;
 	}

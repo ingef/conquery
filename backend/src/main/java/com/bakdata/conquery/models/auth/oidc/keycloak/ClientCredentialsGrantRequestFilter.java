@@ -1,10 +1,5 @@
 package com.bakdata.conquery.models.auth.oidc.keycloak;
 
-import java.io.IOException;
-import java.net.URI;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.ClientRequestContext;
@@ -13,6 +8,11 @@ import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.net.URI;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -35,8 +35,9 @@ public class ClientCredentialsGrantRequestFilter implements ClientRequestFilter 
 		Client client = ClientBuilder.newClient();
 
 		tokenInvocation = client.target(tokenEndpoint)
-								.request(MediaType.APPLICATION_JSON_TYPE).buildPost(Entity.form(ClientCredentials.create(clientId
-						, clientSecret)));
+			.request(MediaType.APPLICATION_JSON_TYPE)
+			.buildPost(
+				Entity.form(ClientCredentials.create(clientId, clientSecret)));
 	}
 
 	@Override
@@ -44,7 +45,10 @@ public class ClientCredentialsGrantRequestFilter implements ClientRequestFilter 
 		AccessTokenResponse response = getActiveAccessToken();
 
 		log.trace("Adding access token to request");
-		requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, String.join(" ", response.token_type(), response.access_token()));
+		requestContext.getHeaders()
+			.add(
+				HttpHeaders.AUTHORIZATION,
+				String.join(" ", response.token_type(), response.access_token()));
 
 	}
 

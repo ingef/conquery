@@ -36,9 +36,7 @@ public abstract class KeyIncludingStore<KEY, VALUE> implements Closeable, Manage
 	}
 
 	public Stream<VALUE> getAll() {
-		return store.getAllKeys()
-					.map(this::getIgnoringExceptions)
-					.filter(Objects::nonNull);
+		return store.getAllKeys().map(this::getIgnoringExceptions).filter(Objects::nonNull);
 	}
 
 	/**
@@ -48,8 +46,7 @@ public abstract class KeyIncludingStore<KEY, VALUE> implements Closeable, Manage
 	private VALUE getIgnoringExceptions(KEY key) {
 		try {
 			return get(key);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.trace("Unable to load value for key {}", key, e);
 			return null;
 		}

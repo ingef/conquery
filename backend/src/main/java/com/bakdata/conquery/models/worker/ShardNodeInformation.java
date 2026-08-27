@@ -32,10 +32,11 @@ public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNod
 		super(session);
 
 		// This metric tracks when the last message from the corresponding shard was received.
-		SharedMetricRegistries.getDefault().gauge(
+		SharedMetricRegistries.getDefault()
+			.gauge(
 				getLatenessMetricName(),
 				() -> this::getMillisSinceLastStatus
-		);
+			);
 	}
 
 	private String getLatenessMetricName() {

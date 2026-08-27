@@ -20,13 +20,21 @@ import io.dropwizard.servlets.tasks.Task;
  */
 public interface Manager extends Managed {
 	ConqueryConfig getConfig();
+
 	Environment getEnvironment();
+
 	DatasetRegistry<? extends Namespace> getDatasetRegistry();
+
 	ImportHandler getImportHandler();
+
 	StorageListener getStorageListener();
+
 	Supplier<Collection<ShardNodeInformation>> getNodeProvider();
+
 	List<Task> getAdminTasks();
+
 	InternalMapperFactory getInternalMapperFactory();
+
 	JobManager getJobManager();
 
 	MetaStorage getMetaStorage();

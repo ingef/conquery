@@ -167,8 +167,9 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 		}
 
 		public static IntegerRange fromNumberRange(IRange<? extends Number, ?> orig) {
-			return new Range.IntegerRange(Optional.ofNullable(orig.getMin()).map(Number::intValue).orElse(null),
-										  Optional.ofNullable(orig.getMax()).map(Number::intValue).orElse(null)
+			return new Range.IntegerRange(
+				Optional.ofNullable(orig.getMin()).map(Number::intValue).orElse(null),
+				Optional.ofNullable(orig.getMax()).map(Number::intValue).orElse(null)
 			);
 		}
 
@@ -198,8 +199,9 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 		}
 
 		public static LongRange fromNumberRange(IRange<? extends Number, ?> orig) {
-			return new Range.LongRange(Optional.ofNullable(orig.getMin()).map(Number::longValue).orElse(null),
-									   Optional.ofNullable(orig.getMax()).map(Number::longValue).orElse(null)
+			return new Range.LongRange(
+				Optional.ofNullable(orig.getMin()).map(Number::longValue).orElse(null),
+				Optional.ofNullable(orig.getMax()).map(Number::longValue).orElse(null)
 			);
 		}
 
@@ -229,8 +231,9 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 		}
 
 		public static FloatRange fromNumberRange(IRange<? extends Number, ?> orig) {
-			return new Range.FloatRange(Optional.ofNullable(orig.getMin()).map(Number::floatValue).orElse(null),
-										Optional.ofNullable(orig.getMax()).map(Number::floatValue).orElse(null)
+			return new Range.FloatRange(
+				Optional.ofNullable(orig.getMin()).map(Number::floatValue).orElse(null),
+				Optional.ofNullable(orig.getMax()).map(Number::floatValue).orElse(null)
 			);
 		}
 
@@ -263,8 +266,9 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 		}
 
 		public static DoubleRange fromNumberRange(IRange<? extends Number, ?> orig) {
-			return new Range.DoubleRange(Optional.ofNullable(orig.getMin()).map(Number::doubleValue).orElse(null),
-										 Optional.ofNullable(orig.getMax()).map(Number::doubleValue).orElse(null)
+			return new Range.DoubleRange(
+				Optional.ofNullable(orig.getMin()).map(Number::doubleValue).orElse(null),
+				Optional.ofNullable(orig.getMax()).map(Number::doubleValue).orElse(null)
 			);
 		}
 
@@ -296,14 +300,18 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 			super(min, max);
 		}
 
-		public static MoneyRange fromNumberRange(IRange<? extends Number, ?> orig, FrontendConfig.CurrencyConfig currency) {
+		public static MoneyRange fromNumberRange(
+			IRange<? extends Number, ?> orig,
+			FrontendConfig.CurrencyConfig currency) {
 			BigDecimal mappedMin = Optional.ofNullable(orig.getMin())
-										   .map(val -> new BigDecimal(val.longValue()).movePointLeft(currency.getDecimalScale()))
-										   .orElse(null);
+				.map(
+					val -> new BigDecimal(val.longValue()).movePointLeft(currency.getDecimalScale()))
+				.orElse(null);
 
 			BigDecimal mappedMax = Optional.ofNullable(orig.getMax())
-										   .map(val -> new BigDecimal(val.longValue()).movePointLeft(currency.getDecimalScale()))
-										   .orElse(null);
+				.map(
+					val -> new BigDecimal(val.longValue()).movePointLeft(currency.getDecimalScale()))
+				.orElse(null);
 
 			return new Range.MoneyRange(mappedMin, mappedMax);
 		}

@@ -26,7 +26,7 @@ public class MockServerExtension implements BeforeAllCallback, AfterAllCallback 
 		server.stop();
 	}
 
-	public String baseUrl(){
+	public String baseUrl() {
 		return "http://localhost:%d".formatted(server.getPort());
 	}
 }

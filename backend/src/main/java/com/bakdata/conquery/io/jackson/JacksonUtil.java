@@ -12,7 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.translate.JavaUnicodeEscaper;
 import org.apache.mina.core.buffer.IoBuffer;
 
-@Slf4j @UtilityClass
+@Slf4j
+@UtilityClass
 public class JacksonUtil {
 
 	/**
@@ -55,9 +56,7 @@ public class JacksonUtil {
 					case VALUE_STRING:
 						String value = StringUtils.abbreviate(parser.getText(), 50);
 
-						value = JavaUnicodeEscaper
-										.outsideOf(32, 0x7e)
-										.translate(value);
+						value = JavaUnicodeEscaper.outsideOf(32, 0x7e).translate(value);
 						sb.append('"').append(value).append("\",");
 						break;
 					default:
@@ -67,19 +66,16 @@ public class JacksonUtil {
 				}
 			}
 			return sb.toString();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.warn("Failed to create the debug json", e);
 			if (!sb.isEmpty()) {
 				sb.append("DEBUG_JSON_ERROR");
 
-			}
-			else {
+			} else {
 				try {
 					is.reset();
 					sb.append(logHex(is));
-				}
-				catch (Exception hexException) {
+				} catch (Exception hexException) {
 					log.error("Unable to generate hex dump of input stream", e);
 					sb.append("HEX_DUMP_ERROR");
 				}

@@ -11,8 +11,11 @@ import lombok.Setter;
  * WorkerMessages are always slow to ensure that they are processed in order and that there are no conflict
  * when ids are resolved.
  */
-@Getter @Setter
-public abstract class WorkerMessage extends NamespacedMessage<Worker>  implements SlowMessage {
-	@JsonIgnore @Getter @Setter
+@Getter
+@Setter
+public abstract class WorkerMessage extends NamespacedMessage<Worker> implements SlowMessage {
+	@JsonIgnore
+	@Getter
+	@Setter
 	private ProgressReporter progressReporter;
 }

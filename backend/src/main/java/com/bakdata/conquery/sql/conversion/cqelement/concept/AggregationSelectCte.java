@@ -16,28 +16,28 @@ class AggregationSelectCte extends ConnectorCte {
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
 
-		List<SqlSelect> requiredInAggregationFilterStep = tableContext.allSqlSelects().stream()
-																	  .flatMap(sqlSelects -> sqlSelects.getAggregationSelects().stream())
-																	  .toList();
+		List<SqlSelect> requiredInAggregationFilterStep = tableContext.allSqlSelects()
+			.stream()
+			.flatMap(
+				sqlSelects -> sqlSelects.getAggregationSelects().stream())
+			.toList();
 
 		Selects predecessorSelects = tableContext.getPrevious().getQualifiedSelects();
 		SqlIdColumns ids = predecessorSelects.getIds();
 		Optional<ColumnDateRange> stratificationDate = predecessorSelects.getStratificationDate();
 		Selects aggregationSelectSelects = Selects.builder()
-												  .ids(ids)
-												  .stratificationDate(stratificationDate)
-												  .sqlSelects(requiredInAggregationFilterStep)
-												  .build();
+			.ids(ids)
+			.stratificationDate(stratificationDate)
+			.sqlSelects(
+				requiredInAggregationFilterStep)
+			.build();
 
 		List<Field<?>> groupByFields = Stream.concat(
-													 ids.toFields().stream(),
-													 stratificationDate.stream().flatMap(range -> range.toFields().stream())
-											 )
-											 .toList();
+			ids.toFields().stream(),
+			stratificationDate.stream().flatMap(range -> range.toFields().stream())
+		).toList();
 
-		return QueryStep.builder()
-						.selects(aggregationSelectSelects)
-						.groupBy(groupByFields);
+		return QueryStep.builder().selects(aggregationSelectSelects).groupBy(groupByFields);
 	}
 
 	@Override

@@ -5,8 +5,8 @@ import java.time.ZonedDateTime;
 import lombok.NonNull;
 
 public record VersionContainer(
-		@NonNull String name,
-		String version,
-		ZonedDateTime buildTime
+	@NonNull String name,
+	String version,
+	ZonedDateTime buildTime
 ) {
 }

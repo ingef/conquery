@@ -4,16 +4,16 @@ import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
 
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.util.List;
 import java.util.Locale;
 import java.util.OptionalLong;
 import java.util.function.Function;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -58,30 +58,33 @@ public class ResultArrowProcessor {
 
 	public Response createResultFile(Subject subject, ManagedExecutionId exec, boolean pretty, OptionalLong limit) {
 		return getArrowResult(
-				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
-				subject,
-				(ManagedExecution & SingleTableResult) exec.resolve(),
-				datasetRegistry,
-				pretty,
-				FILE_EXTENTION_ARROW_FILE,
-				FILE_MEDIA_TYPE,
-				conqueryConfig,
-				arrowConfig,
-				limit
+			(output) -> (root) -> new ArrowFileWriter(
+				root,
+				new DictionaryProvider.MapDictionaryProvider(),
+				Channels.newChannel(output)),
+			subject,
+			(ManagedExecution & SingleTableResult) exec.resolve(),
+			datasetRegistry,
+			pretty,
+			FILE_EXTENTION_ARROW_FILE,
+			FILE_MEDIA_TYPE,
+			conqueryConfig,
+			arrowConfig,
+			limit
 		);
 	}
 
 	public static <E extends ManagedExecution & SingleTableResult> Response getArrowResult(
-			Function<OutputStream, Function<VectorSchemaRoot, ArrowWriter>> writerProducer,
-			Subject subject,
-			E exec,
-			DatasetRegistry<?> datasetRegistry,
-			boolean pretty,
-			String fileExtension,
-			MediaType mediaType,
-			ConqueryConfig config,
-			ArrowConfig arrowConfig,
-			OptionalLong limit
+		Function<OutputStream, Function<VectorSchemaRoot, ArrowWriter>> writerProducer,
+		Subject subject,
+		E exec,
+		DatasetRegistry<?> datasetRegistry,
+		boolean pretty,
+		String fileExtension,
+		MediaType mediaType,
+		ConqueryConfig config,
+		ArrowConfig arrowConfig,
+		OptionalLong limit
 	) {
 
 		ConqueryMDC.setLocation(subject.getName());
@@ -109,43 +112,50 @@ public class ResultArrowProcessor {
 			CountingOutputStream countingOutputStream = new CountingOutputStream(output);
 			try {
 				ArrowRenderer.renderToStream(
-						writerProducer.apply(countingOutputStream),
-						settings,
-						arrowConfig,
-						resultInfosId,
-						resultInfosExec,
-						exec.streamResults(limit),
-						new ArrowResultPrinters()
+					writerProducer.apply(countingOutputStream),
+					settings,
+					arrowConfig,
+					resultInfosId,
+					resultInfosExec,
+					exec.streamResults(limit),
+					new ArrowResultPrinters()
 				);
-			}
-			catch (Exception e) {
-				throw new IllegalStateException("Failed streaming the result for execution %s requested by %s after %s".formatted(exec.getId(),
-																																  subject.getId(),
-																																  DataSize.bytes(countingOutputStream.getCount())
-				),
-												e
+			} catch (Exception e) {
+				throw new IllegalStateException(
+					"Failed streaming the result for execution %s requested by %s after %s".formatted(
+						exec.getId(),
+						subject.getId(),
+						DataSize.bytes(countingOutputStream.getCount())
+					),
+					e
 				);
-			}
-			finally {
-				log.trace("DONE downloading data for `{}` ({})", exec.getId(), DataSize.bytes(countingOutputStream.getCount()));
+			} finally {
+				log.trace(
+					"DONE downloading data for `{}` ({})",
+					exec.getId(),
+					DataSize.bytes(countingOutputStream.getCount()));
 			}
 		};
 
-		return makeResponseWithFileName(Response.ok(out), String.join(".", exec.getLabelWithoutAutoLabelSuffix(), fileExtension), mediaType, ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(
+			Response.ok(out),
+			String.join(".", exec.getLabelWithoutAutoLabelSuffix(), fileExtension),
+			mediaType,
+			ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 
 	public Response createResultStream(Subject subject, ManagedExecutionId exec, boolean pretty, OptionalLong limit) {
 		return getArrowResult(
-				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
-				subject,
-				((ManagedExecution & SingleTableResult) exec.resolve()),
-				datasetRegistry,
-				pretty,
-				FILE_EXTENTION_ARROW_STREAM,
-				STREAM_MEDIA_TYPE,
-				conqueryConfig,
-				arrowConfig,
-				limit
+			(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
+			subject,
+			((ManagedExecution & SingleTableResult) exec.resolve()),
+			datasetRegistry,
+			pretty,
+			FILE_EXTENTION_ARROW_STREAM,
+			STREAM_MEDIA_TYPE,
+			conqueryConfig,
+			arrowConfig,
+			limit
 		);
 	}
 

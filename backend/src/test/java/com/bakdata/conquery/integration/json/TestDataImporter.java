@@ -1,11 +1,10 @@
 package com.bakdata.conquery.integration.json;
 
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
@@ -39,7 +38,10 @@ public interface TestDataImporter {
 		waitUntilDone(support, () -> LoadingUtil.importSecondaryIds(support, secondaryIds));
 	}
 
-	default void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
+	default void importTables(
+		StandaloneSupport support,
+		List<RequiredTable> tables,
+		boolean autoConcept) throws JSONException {
 		waitUntilDone(support, () -> LoadingUtil.importTables(support, tables, autoConcept));
 	}
 
@@ -65,8 +67,7 @@ public interface TestDataImporter {
 		default void run() throws RuntimeException {
 			try {
 				runThrows();
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				throw new RuntimeException(ex);
 			}
 		}

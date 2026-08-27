@@ -23,7 +23,7 @@ public class ResultHeaders {
 
 		final ResultType.ListT<Object> type = new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE);
 
-		return new FixedLabelResultInfo(type, Set.of(new SemanticType.EventDateT())){
+		return new FixedLabelResultInfo(type, Set.of(new SemanticType.EventDateT())) {
 			@Override
 			public String userColumnName(PrintSettings printSettings) {
 				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).dates();
@@ -54,7 +54,9 @@ public class ResultHeaders {
 	}
 
 	public static ResultInfo sourceInfo() {
-		return new FixedLabelResultInfo(ResultType.Primitive.STRING, Set.of(new SemanticType.SourcesT(), new SemanticType.CategoricalT(), new SemanticType.GroupT())) {
+		return new FixedLabelResultInfo(
+			ResultType.Primitive.STRING,
+			Set.of(new SemanticType.SourcesT(), new SemanticType.CategoricalT(), new SemanticType.GroupT())) {
 			@Override
 			public String userColumnName(PrintSettings printSettings) {
 				return C10nCache.getLocalized(ResultHeadersC10n.class, printSettings.getLocale()).source();

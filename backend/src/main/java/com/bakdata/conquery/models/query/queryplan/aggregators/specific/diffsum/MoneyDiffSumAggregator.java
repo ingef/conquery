@@ -56,9 +56,13 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 
 		hit = true;
 
-		final BigDecimal addend = bucket.has(event, getAddendColumn()) ? bucket.getMoney(event, getAddendColumn()) : BigDecimal.ZERO;
+		final BigDecimal addend = bucket.has(event, getAddendColumn()) ? bucket.getMoney(
+			event,
+			getAddendColumn()) : BigDecimal.ZERO;
 
-		final BigDecimal subtrahend = bucket.has(event, getSubtrahendColumn()) ? bucket.getMoney(event, getSubtrahendColumn()) : BigDecimal.ZERO;
+		final BigDecimal subtrahend = bucket.has(event, getSubtrahendColumn()) ? bucket.getMoney(
+			event,
+			getSubtrahendColumn()) : BigDecimal.ZERO;
 
 		sum = sum.add(addend).subtract(subtrahend);
 	}

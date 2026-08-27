@@ -41,8 +41,10 @@ public class LoadStorageTask extends Task {
 		if (metaStorage != null) {
 			storages.put("metaStorage", metaStorage);
 		}
-		Map<String, ConqueryStorage> namespacedStorages = namespacedStorageProvider.getAllDatasetIds().stream()
-																				   .collect(Collectors.toMap(DatasetId::getName, namespacedStorageProvider::getStorage));
+		Map<String, ConqueryStorage> namespacedStorages = namespacedStorageProvider.getAllDatasetIds()
+			.stream()
+			.collect(
+				Collectors.toMap(DatasetId::getName, namespacedStorageProvider::getStorage));
 
 		storages.putAll(namespacedStorages);
 
@@ -53,16 +55,16 @@ public class LoadStorageTask extends Task {
 		if (actions.contains(Action.LIST)) {
 			// Just print out all the storages we have and return
 			storages.keySet().forEach(output::println);
-			if (actions.size() > 1 ) {
+			if (actions.size() > 1) {
 				log.debug("Encountered action {}. Ignoring other actions: {}", Action.LIST, actions);
 			}
 			return;
 		}
 
 		// Extract the requested storages
-		Map<String, ConqueryStorage> requestedStorages = parameters.getOrDefault("storage", Collections.emptyList())
-																   .stream()
-																   .collect(Collectors.toMap(Function.identity(), storages::get));
+		Map<String, ConqueryStorage> requestedStorages = parameters.getOrDefault(
+			"storage",
+			Collections.emptyList()).stream().collect(Collectors.toMap(Function.identity(), storages::get));
 
 		if (requestedStorages.isEmpty()) {
 			// load all if request was empty
@@ -109,8 +111,6 @@ public class LoadStorageTask extends Task {
 	}
 
 	enum Action {
-		LOAD,
-		INVALIDATE_CACHE,
-		LIST
+		LOAD, INVALIDATE_CACHE, LIST
 	}
 }

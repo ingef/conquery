@@ -32,14 +32,17 @@ class AbsoluteStratification {
 	private final QueryStep baseStep;
 	private final StratificationFunctions stratificationFunctions;
 
-	public QueryStep createStratificationTable(List<ExportForm.ResolutionAndAlignment> resolutionAndAlignments, ConversionContext context) {
+	public QueryStep createStratificationTable(
+		List<ExportForm.ResolutionAndAlignment> resolutionAndAlignments,
+		ConversionContext context) {
 
 		QueryStep intSeriesStep = createIntSeriesStep();
 		QueryStep indexStartStep = createIndexStartStep();
 
 		List<QueryStep> resolutionTables = resolutionAndAlignments.stream()
-														.map(resolutionAndAlignment -> createResolutionTable(indexStartStep, resolutionAndAlignment))
-														.toList();
+			.map(
+				resolutionAndAlignment -> createResolutionTable(indexStartStep, resolutionAndAlignment))
+			.toList();
 
 		List<QueryStep> predecessors = List.of(baseStep, intSeriesStep, indexStartStep);
 		return StratificationTableFactory.unionResolutionTables(resolutionTables, predecessors, context);
@@ -53,58 +56,72 @@ class AbsoluteStratification {
 
 		FieldWrapper<Integer> seriesIndex = new FieldWrapper<>(stratificationFunctions.intSeriesField());
 
-		Selects selects = Selects.builder()
-								 .ids(ids)
-								 .sqlSelect(seriesIndex)
-								 .build();
+		Selects selects = Selects.builder().ids(ids).sqlSelect(seriesIndex).build();
 
-		Table<Record> seriesTable = stratificationFunctions.generateIntSeries(INDEX_START, INDEX_END).asTable(SharedAliases.INDEX.getAlias());
+		Table<Record> seriesTable = stratificationFunctions.generateIntSeries(INDEX_START, INDEX_END)
+			.asTable(
+				SharedAliases.INDEX.getAlias());
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.INT_SERIES.getSuffix())
-						.selects(selects)
-						.fromTable(seriesTable)
-						.build();
+			.cteName(FormCteStep.INT_SERIES.getSuffix())
+			.selects(selects)
+			.fromTable(
+				seriesTable)
+			.build();
 	}
 
 	private QueryStep createIndexStartStep() {
 
 		Selects baseStepSelects = baseStep.getQualifiedSelects();
-		Preconditions.checkArgument(baseStepSelects.getStratificationDate().isPresent(), "The base step must have a stratification date set");
+		Preconditions.checkArgument(
+			baseStepSelects.getStratificationDate().isPresent(),
+			"The base step must have a stratification date set");
 		ColumnDateRange bounds = baseStepSelects.getStratificationDate().get();
 
-		Field<Date> indexStart = stratificationFunctions.absoluteIndexStartDate(bounds).as(SharedAliases.INDEX_START.getAlias());
-		Field<Date> yearStart = stratificationFunctions.lowerBoundYearStart(bounds).as(SharedAliases.YEAR_START.getAlias());
+		Field<Date> indexStart = stratificationFunctions.absoluteIndexStartDate(bounds)
+			.as(
+				SharedAliases.INDEX_START.getAlias());
+		Field<Date> yearStart = stratificationFunctions.lowerBoundYearStart(bounds)
+			.as(
+				SharedAliases.YEAR_START.getAlias());
 		Field<Date> yearEnd = stratificationFunctions.upperBoundYearEnd(bounds).as(SharedAliases.YEAR_END.getAlias());
-		Field<Date> yearEndQuarterAligned = stratificationFunctions.upperBoundYearEndQuarterAligned(bounds).as(SharedAliases.YEAR_END_QUARTER_ALIGNED.getAlias());
-		Field<Date> quarterStart = stratificationFunctions.lowerBoundQuarterStart(bounds).as(SharedAliases.QUARTER_START.getAlias());
-		Field<Date> quarterEnd = stratificationFunctions.upperBoundQuarterEnd(bounds).as(SharedAliases.QUARTER_END.getAlias());
+		Field<Date> yearEndQuarterAligned = stratificationFunctions.upperBoundYearEndQuarterAligned(bounds)
+			.as(
+				SharedAliases.YEAR_END_QUARTER_ALIGNED.getAlias());
+		Field<Date> quarterStart = stratificationFunctions.lowerBoundQuarterStart(bounds)
+			.as(
+				SharedAliases.QUARTER_START.getAlias());
+		Field<Date> quarterEnd = stratificationFunctions.upperBoundQuarterEnd(bounds)
+			.as(
+				SharedAliases.QUARTER_END.getAlias());
 
 		List<FieldWrapper<Date>> startDates = Stream.of(
-															indexStart,
-															yearStart,
-															yearEnd,
-															yearEndQuarterAligned,
-															quarterStart,
-															quarterEnd
-													)
-													.map(FieldWrapper::new)
-													.toList();
+			indexStart,
+			yearStart,
+			yearEnd,
+			yearEndQuarterAligned,
+			quarterStart,
+			quarterEnd
+		).map(FieldWrapper::new).toList();
 
 		Selects selects = Selects.builder()
-								 .ids(baseStepSelects.getIds())
-								 .stratificationDate(Optional.of(bounds))
-								 .sqlSelects(startDates)
-								 .build();
+			.ids(baseStepSelects.getIds())
+			.stratificationDate(
+				Optional.of(bounds))
+			.sqlSelects(startDates)
+			.build();
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.INDEX_START.getSuffix())
-						.selects(selects)
-						.fromTable(QueryStep.toTableLike(baseStep.getCteName()))
-						.build();
+			.cteName(FormCteStep.INDEX_START.getSuffix())
+			.selects(selects)
+			.fromTable(
+				QueryStep.toTableLike(baseStep.getCteName()))
+			.build();
 	}
 
-	private QueryStep createResolutionTable(QueryStep indexStartStep, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+	private QueryStep createResolutionTable(
+		QueryStep indexStartStep,
+		ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
 		return switch (resolutionAndAlignment.getResolution()) {
 			case COMPLETE -> createCompleteTable();
 			case YEARS, QUARTERS, DAYS -> createIntervalTable(indexStartStep, resolutionAndAlignment);
@@ -122,68 +139,85 @@ class AbsoluteStratification {
 
 		ColumnDateRange completeRange = baseStepSelects.getStratificationDate().get();
 
-		Selects selects = Selects.builder()
-								 .ids(ids)
-								 .stratificationDate(Optional.of(completeRange))
-								 .build();
+		Selects selects = Selects.builder().ids(ids).stratificationDate(Optional.of(completeRange)).build();
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.COMPLETE.getSuffix())
-						.selects(selects)
-						.fromTable(QueryStep.toTableLike(baseStep.getCteName()))
-						.build();
+			.cteName(FormCteStep.COMPLETE.getSuffix())
+			.selects(selects)
+			.fromTable(
+				QueryStep.toTableLike(baseStep.getCteName()))
+			.build();
 	}
 
-	private QueryStep createIntervalTable(QueryStep indexStartStep, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+	private QueryStep createIntervalTable(
+		QueryStep indexStartStep,
+		ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
 
 		QueryStep countsCte = createCountsCte(indexStartStep, resolutionAndAlignment);
-		Preconditions.checkArgument(countsCte.getSelects().getStratificationDate().isPresent(), "The countsCte must have a stratification date set");
+		Preconditions.checkArgument(
+			countsCte.getSelects().getStratificationDate().isPresent(),
+			"The countsCte must have a stratification date set");
 		Selects countsCteSelects = countsCte.getQualifiedSelects();
 
 		ColumnDateRange stratificationRange = stratificationFunctions.createStratificationRange(
-				resolutionAndAlignment,
-				countsCteSelects.getStratificationDate().get()
+			resolutionAndAlignment,
+			countsCteSelects.getStratificationDate().get()
 		);
 
-		Field<Integer> index = stratificationFunctions.index(countsCteSelects.getIds(), countsCte.getQualifiedSelects().getStratificationDate());
-		SqlIdColumns ids = countsCteSelects.getIds().withAbsoluteStratification(resolutionAndAlignment.getResolution(), index);
+		Field<Integer> index = stratificationFunctions.index(
+			countsCteSelects.getIds(),
+			countsCte.getQualifiedSelects().getStratificationDate());
+		SqlIdColumns ids = countsCteSelects.getIds()
+			.withAbsoluteStratification(
+				resolutionAndAlignment.getResolution(),
+				index);
 
 		Selects selects = Selects.builder()
-								 .ids(ids)
-								 .stratificationDate(Optional.ofNullable(stratificationRange))
-								 .build();
+			.ids(ids)
+			.stratificationDate(
+				Optional.ofNullable(stratificationRange))
+			.build();
 
-		Condition stopOnMaxResolutionWindowCount = stratificationFunctions.stopOnMaxResolutionWindowCount(resolutionAndAlignment);
+		Condition stopOnMaxResolutionWindowCount = stratificationFunctions.stopOnMaxResolutionWindowCount(
+			resolutionAndAlignment);
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.stratificationCte(resolutionAndAlignment.getResolution()).getSuffix())
-						.selects(selects)
-						.fromTable(QueryStep.toTableLike(countsCte.getCteName()))
-						.fromTable(QueryStep.toTableLike(FormCteStep.INT_SERIES.getSuffix()))
-						.conditions(List.of(stopOnMaxResolutionWindowCount))
-						.predecessor(countsCte)
-						.build();
+			.cteName(
+				FormCteStep.stratificationCte(resolutionAndAlignment.getResolution()).getSuffix())
+			.selects(
+				selects)
+			.fromTable(QueryStep.toTableLike(countsCte.getCteName()))
+			.fromTable(
+				QueryStep.toTableLike(FormCteStep.INT_SERIES.getSuffix()))
+			.conditions(
+				List.of(stopOnMaxResolutionWindowCount))
+			.predecessor(countsCte)
+			.build();
 	}
 
-	private QueryStep createCountsCte(QueryStep indexStartStep, ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+	private QueryStep createCountsCte(
+		QueryStep indexStartStep,
+		ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
 
 		Selects indexStartSelects = indexStartStep.getQualifiedSelects();
-		Preconditions.checkArgument(indexStartSelects.getStratificationDate().isPresent(), "The indexStartStep must have a stratification date set");
+		Preconditions.checkArgument(
+			indexStartSelects.getStratificationDate().isPresent(),
+			"The indexStartStep must have a stratification date set");
 
 		Field<Integer> resolutionWindowCount = stratificationFunctions.calculateResolutionWindowCount(
-				resolutionAndAlignment,
-				indexStartSelects.getStratificationDate().get()
+			resolutionAndAlignment,
+			indexStartSelects.getStratificationDate().get()
 		);
 
-		Selects selects = indexStartSelects.toBuilder()
-										   .sqlSelect(new FieldWrapper<>(resolutionWindowCount))
-										   .build();
+		Selects selects = indexStartSelects.toBuilder().sqlSelect(new FieldWrapper<>(resolutionWindowCount)).build();
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.countsCte(resolutionAndAlignment.getResolution()).getSuffix())
-						.selects(selects)
-						.fromTable(QueryStep.toTableLike(indexStartStep.getCteName()))
-						.build();
+			.cteName(
+				FormCteStep.countsCte(resolutionAndAlignment.getResolution()).getSuffix())
+			.selects(selects)
+			.fromTable(
+				QueryStep.toTableLike(indexStartStep.getCteName()))
+			.build();
 	}
 
 }

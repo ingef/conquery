@@ -20,21 +20,26 @@ public interface CteStep {
 	 * but values might be null.
 	 */
 	static Map<CteStep, CteStep> getDefaultPredecessorMap(Set<? extends CteStep> requiredSteps) {
-		return requiredSteps.stream().collect(
+		return requiredSteps.stream()
+			.collect(
 				HashMap::new,
 				(map, cteStep) -> map.put(cteStep, cteStep.getPredecessor()), // value might be null
 				Map::putAll
-		);
+			);
 	}
 
 	/**
 	 * Generates a CTE name for each of the given required steps. Combines the given label with the CTE step suffix (@link CteStep#getSuffix()).
 	 */
-	static Map<CteStep, String> createCteNameMap(Set<? extends CteStep> requiredSteps, String label, NameGenerator nameGenerator) {
-		return requiredSteps.stream().collect(
+	static Map<CteStep, String> createCteNameMap(
+		Set<? extends CteStep> requiredSteps,
+		String label,
+		NameGenerator nameGenerator) {
+		return requiredSteps.stream()
+			.collect(
 				Collectors.toMap(
-						Function.identity(),
-						step -> nameGenerator.cteStepName(step, label)
+					Function.identity(),
+					step -> nameGenerator.cteStepName(step, label)
 				));
 	}
 

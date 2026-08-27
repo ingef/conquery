@@ -4,7 +4,7 @@ import java.time.ZonedDateTime;
 
 
 public record FormBackendVersion(
-		String version,
-		ZonedDateTime buildTime
+	String version,
+	ZonedDateTime buildTime
 ) {
 }

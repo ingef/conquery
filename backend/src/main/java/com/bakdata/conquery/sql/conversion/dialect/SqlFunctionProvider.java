@@ -43,16 +43,15 @@ public interface SqlFunctionProvider {
 	 * Create database specific representation of the input list, such that it can be read by the respective {@link ResultSetProcessor}.
 	 */
 	default Field<?> asArrayRepr(List<String> value) {
-		return field(value.stream()
-				.map(DSL::inline)
-				.map(Field::toString)
-				.collect(Collectors.joining(SQL_UNIT_SEPARATOR)), Object.class
+		return field(
+			value.stream().map(DSL::inline).map(Field::toString).collect(Collectors.joining(SQL_UNIT_SEPARATOR)),
+			Object.class
 		);
 	}
 
 	Collection<? extends OrderField<?>> orderByValidityDates(
-			Function<Field<?>, ? extends SortField<?>> ordering,
-			List<Field<?>> validityDateFields);
+		Function<Field<?>, ? extends SortField<?>> ordering,
+		List<Field<?>> validityDateFields);
 
 	/**
 	 * Return date-Field for the lowest representable date. This is specific per Database engine.
@@ -101,16 +100,18 @@ public interface SqlFunctionProvider {
 	 * Creates a list of {@link ColumnDateRange}s for each {@link CDateRange} of the given {@link CDateSet}. Each {@link ColumnDateRange} will be aliased with
 	 * the same given {@link SharedAliases}.
 	 */
-	default List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias){
+	default List<ColumnDateRange> forCDateSet(CDateSet dateset, SharedAliases alias) {
 		if (dateset.isEmpty()) {
 			// Need to explicitly provide an empty result
 			return List.of(emptyColumnDateRange().as(alias.getAlias()));
 		}
 
-		return dateset.asRanges().stream()
-				.map(this::forCDateRange)
-				.map(dateRange -> dateRange.as(alias.getAlias()))
-				.toList();
+		return dateset.asRanges()
+			.stream()
+			.map(this::forCDateRange)
+			.map(
+				dateRange -> dateRange.as(alias.getAlias()))
+			.toList();
 	}
 
 	/**
@@ -220,14 +221,17 @@ public interface SqlFunctionProvider {
 	 */
 	Field<String> yearQuarter(Field<Date> dateField);
 
-	default Field<String> stringAggregation(Field<String> stringField, Field<String> delimiter, List<Field<?>> orderByFields) {
+	default Field<String> stringAggregation(
+		Field<String> stringField,
+		Field<String> delimiter,
+		List<Field<?>> orderByFields) {
 		return field(
-				"{0}({1}, {2} {3})",
-				String.class,
-				keyword("string_agg"),
-				stringField,
-				delimiter,
-				orderBy(orderByFields)
+			"{0}({1}, {2} {3})",
+			String.class,
+			keyword("string_agg"),
+			stringField,
+			delimiter,
+			orderBy(orderByFields)
 		);
 	}
 
@@ -237,12 +241,11 @@ public interface SqlFunctionProvider {
 	 * Render an array for Conquery processing.
 	 */
 	default Field<?> arrayOut(List<Field<String>> fields) {
-		String concatenated =
-				fields.stream()
-						// if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
-						// thus concat an empty string
-						.map(Field::toString)
-						.collect(Collectors.joining(SQL_UNIT_SEPARATOR));
+		String concatenated = fields.stream()
+			// if a field is null, the whole concatenation would be null - but we just want to skip this field in this case,
+			// thus concat an empty string
+			.map(Field::toString)
+			.collect(Collectors.joining(SQL_UNIT_SEPARATOR));
 		return field(concatenated, String.class);
 	}
 
@@ -268,15 +271,24 @@ public interface SqlFunctionProvider {
 		return column.in(values);
 	}
 
-	default TableOnConditionStep<Record> innerJoin(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions) {
+	default TableOnConditionStep<Record> innerJoin(
+		Table<?> leftPart,
+		Table<?> rightPart,
+		List<Condition> joinConditions) {
 		return leftPart.innerJoin(rightPart).on(joinConditions.toArray(Condition[]::new));
 	}
 
-	default TableOnConditionStep<Record> fullOuterJoin(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions) {
+	default TableOnConditionStep<Record> fullOuterJoin(
+		Table<?> leftPart,
+		Table<?> rightPart,
+		List<Condition> joinConditions) {
 		return leftPart.fullOuterJoin(rightPart).on(joinConditions.toArray(Condition[]::new));
 	}
 
-	default TableOnConditionStep<Record> leftJoin(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions) {
+	default TableOnConditionStep<Record> leftJoin(
+		Table<?> leftPart,
+		Table<?> rightPart,
+		List<Condition> joinConditions) {
 		return leftPart.leftJoin(rightPart).on(joinConditions.toArray(Condition[]::new));
 	}
 
@@ -311,11 +323,11 @@ public interface SqlFunctionProvider {
 	 * Any condition that is acceptable for the specific database on a join.
 	 * (e.g. Hana does not like `true`)
 	 */
-	default Condition unconditionalJoinCondition(){
+	default Condition unconditionalJoinCondition() {
 		return noCondition();
 	}
 
-	default Field<Boolean> isNull(Field<?> field){
+	default Field<Boolean> isNull(Field<?> field) {
 		return field.isNull();
 	}
 }

@@ -44,17 +44,17 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 	 * @param <INST>   Type of the instance that is patched
 	 */
 	public <INST extends Taggable & Shareable & Labelable & Identifiable<? extends Id<?, ?>, ?> & Owned & Authorized> void applyTo(
-			INST instance,
-			MetaStorage storage,
-			Subject subject) {
+		INST instance,
+		MetaStorage storage,
+		Subject subject) {
 		buildChain(QueryUtils.getNoOpEntryPoint(), storage, subject, instance).accept(this);
 	}
 
 	protected <T extends MetaDataPatch, INST extends Taggable & Shareable & Labelable & Identifiable<? extends Id<?, ?>, ?> & Owned & Authorized> Consumer<T> buildChain(
-			Consumer<T> patchConsumerChain,
-			MetaStorage storage,
-			Subject subject,
-			INST instance) {
+		Consumer<T> patchConsumerChain,
+		MetaStorage storage,
+		Subject subject,
+		INST instance) {
 		if (getTags() != null && subject.isPermitted(instance, Ability.TAG)) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.tagger());
 		}

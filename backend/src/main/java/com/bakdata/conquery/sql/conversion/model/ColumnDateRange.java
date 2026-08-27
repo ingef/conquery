@@ -12,7 +12,7 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-//TODO split this class up into Dialect specific versions.
+// TODO split this class up into Dialect specific versions.
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 public class ColumnDateRange implements SqlSelect {
@@ -48,39 +48,35 @@ public class ColumnDateRange implements SqlSelect {
 
 	@Override
 	public List<Field<?>> toFields() {
-		return Stream.of(start, end)
-					 .collect(Collectors.toList());
+		return Stream.of(start, end).collect(Collectors.toList());
 	}
 
 	@Override
 	public ColumnDateRange qualify(String qualifier) {
 		return new ColumnDateRange(
-				QualifyingUtil.qualify(getStart(), qualifier),
-				QualifyingUtil.qualify(getEnd(), qualifier),
-				getAlias()
+			QualifyingUtil.qualify(getStart(), qualifier),
+			QualifyingUtil.qualify(getEnd(), qualifier),
+			getAlias()
 		);
 	}
 
 	@Override
 	public List<String> requiredColumns() {
-		return toFields().stream()
-				.map(Field::getName)
-				.distinct()
-				.toList();
+		return toFields().stream().map(Field::getName).distinct().toList();
 	}
 
 	public ColumnDateRange as(String alias) {
 		return new ColumnDateRange(
-				start.as(alias + START_SUFFIX),
-				end.as(alias + END_SUFFIX),
-				alias
+			start.as(alias + START_SUFFIX),
+			end.as(alias + END_SUFFIX),
+			alias
 		);
 	}
 
 	public ColumnDateRange coalesce(ColumnDateRange right) {
 		return ColumnDateRange.of(
-				DSL.coalesce(start, right.getStart()),
-				DSL.coalesce(end, right.getEnd())
+			DSL.coalesce(start, right.getStart()),
+			DSL.coalesce(end, right.getEnd())
 		).as(alias);
 	}
 

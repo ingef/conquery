@@ -38,8 +38,9 @@ public class DefaultLabelTest {
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
 	private final static MetaStorage META_STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 	private final static NamespaceStorage NAMESPACE_STORAGE = new NonPersistentStoreFactory().createNamespaceStorage();
-	public static final NamespacedStorageProvider STORAGE_PROVIDER = new TestNamespacedStorageProvider(NAMESPACE_STORAGE);
-    private static final Dataset DATASET = new Dataset("dataset");
+	public static final NamespacedStorageProvider STORAGE_PROVIDER = new TestNamespacedStorageProvider(
+		NAMESPACE_STORAGE);
+	private static final Dataset DATASET = new Dataset("dataset");
 	private static final User user = new User("user", "user", META_STORAGE);
 	private static final TreeConcept CONCEPT = new TreeConcept();
 
@@ -65,9 +66,7 @@ public class DefaultLabelTest {
 	}
 
 	@ParameterizedTest
-	@CsvSource({
-			"de,Concept",
-			"en,Concept"
+	@CsvSource({"de,Concept", "en,Concept"
 	})
 	void autoLabelConceptQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
@@ -96,9 +95,7 @@ public class DefaultLabelTest {
 	}
 
 	@ParameterizedTest
-	@CsvSource({
-			"de,Default-Concept",
-			"en,Default-Concept"
+	@CsvSource({"de,Default-Concept", "en,Default-Concept"
 	})
 	void autoLabelConceptQueryFallback(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
@@ -120,14 +117,18 @@ public class DefaultLabelTest {
 
 
 	@ParameterizedTest
-	@CsvSource({
-			"de,Anfrage",
-			"en,Query"
+	@CsvSource({"de,Anfrage", "en,Query"
 	})
 	void autoLabelReusedQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, new UserId("test"), DATASET.getId(), META_STORAGE, null, CONFIG);
+		final ManagedQuery managedQuery = new ManagedQuery(
+			null,
+			new UserId("test"),
+			DATASET.getId(),
+			META_STORAGE,
+			null,
+			CONFIG);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		CQReusedQuery reused = new CQReusedQuery(managedQuery.getId());
@@ -142,9 +143,7 @@ public class DefaultLabelTest {
 
 
 	@ParameterizedTest
-	@CsvSource({
-			"de,Hochgeladene-Liste",
-			"en,Uploaded-List"
+	@CsvSource({"de,Hochgeladene-Liste", "en,Uploaded-List"
 	})
 	void autoLabelUploadQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
@@ -160,14 +159,18 @@ public class DefaultLabelTest {
 	}
 
 	@ParameterizedTest
-	@CsvSource({
-			"de,Hochgeladene-Liste Anfrage Concept1 Concept2 und weitere",
-			"en,Uploaded-List Query Concept1 Concept2 and further"
+	@CsvSource({"de,Hochgeladene-Liste Anfrage Concept1 Concept2 und weitere", "en,Uploaded-List Query Concept1 Concept2 and further"
 	})
 	void autoLabelComplexQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, new UserId("test"), DATASET.getId(), META_STORAGE, null, CONFIG);
+		final ManagedQuery managedQuery = new ManagedQuery(
+			null,
+			new UserId("test"),
+			DATASET.getId(),
+			META_STORAGE,
+			null,
+			CONFIG);
 		managedQuery.setMetaStorage(META_STORAGE);
 
 		managedQuery.setQueryId(UUID.randomUUID());
@@ -175,15 +178,17 @@ public class DefaultLabelTest {
 		CQAnd and = new CQAnd();
 		CQConcept concept1 = makeCQConceptWithLabel("Concept1");
 		CQConcept concept2 = makeCQConceptWithLabel("Concept2");
-		CQConcept concept3 = makeCQConceptWithLabel("Concept3veryveryveryveryveryveryveryverylooooooooooooooooooooonglabel");
+		CQConcept concept3 = makeCQConceptWithLabel(
+			"Concept3veryveryveryveryveryveryveryverylooooooooooooooooooooonglabel");
 
-		and.setChildren(List.of(
+		and.setChildren(
+			List.of(
 				new CQExternal(List.of(), new String[0][0], false),
 				new CQReusedQuery(managedQuery.getId()),
 				concept1,
 				concept2,
 				concept3
-		));
+			));
 		ConceptQuery cq = new ConceptQuery(and);
 		ManagedQuery mQuery = cq.toManagedExecution(user.getId(), DATASET.getId(), META_STORAGE, null, CONFIG);
 
@@ -195,14 +200,18 @@ public class DefaultLabelTest {
 
 
 	@ParameterizedTest
-	@CsvSource({
-			"de,Hochgeladene-Liste Anfrage Default-Concept Concept2 Concept3",
-			"en,Uploaded-List Query Default-Concept Concept2 Concept3"
+	@CsvSource({"de,Hochgeladene-Liste Anfrage Default-Concept Concept2 Concept3", "en,Uploaded-List Query Default-Concept Concept2 Concept3"
 	})
 	void autoLabelComplexQueryNullLabels(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, new UserId("test"), DATASET.getId(), META_STORAGE, null, CONFIG);
+		final ManagedQuery managedQuery = new ManagedQuery(
+			null,
+			new UserId("test"),
+			DATASET.getId(),
+			META_STORAGE,
+			null,
+			CONFIG);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		CQAnd and = new CQAnd();
@@ -211,13 +220,14 @@ public class DefaultLabelTest {
 		concept1.setElements(List.of(CONCEPT.getId()));
 		CQConcept concept2 = makeCQConceptWithLabel("Concept2");
 		CQConcept concept3 = makeCQConceptWithLabel("Concept3");
-		and.setChildren(List.of(
+		and.setChildren(
+			List.of(
 				new CQExternal(List.of(), new String[0][0], false),
 				new CQReusedQuery(managedQuery.getId()),
 				concept1,
 				concept2,
 				concept3
-		));
+			));
 		ConceptQuery cq = new ConceptQuery(and);
 		ManagedQuery mQuery = cq.toManagedExecution(user.getId(), DATASET.getId(), META_STORAGE, null, CONFIG);
 
@@ -228,10 +238,10 @@ public class DefaultLabelTest {
 	}
 
 	@ParameterizedTest
-	@CsvSource(value = {
-			"de;Datenexport",
-			"en;Data Export"
-	}, delimiter = ';')
+	@CsvSource(
+		value = {"de;Datenexport", "en;Data Export"
+		},
+		delimiter = ';')
 	void autoLabelExportForm(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 

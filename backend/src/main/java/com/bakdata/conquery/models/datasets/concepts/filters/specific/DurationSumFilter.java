@@ -1,23 +1,18 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonAlias;
-import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.common.ColumnUtils;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.AggregationFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
@@ -28,8 +23,8 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.TwoColum
 import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.DurationSumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
@@ -70,7 +65,9 @@ public class DurationSumFilter extends AggregationFilter<Range.LongRange> implem
 	}
 
 	@Override
-	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
+	public void configureFrontend(
+		FrontendFilterConfiguration.Top f,
+		ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
 		f.setType(FrontendFilterType.Fields.INTEGER_RANGE);
 		f.setMin(0);
 	}
@@ -82,11 +79,13 @@ public class DurationSumFilter extends AggregationFilter<Range.LongRange> implem
 
 	@Override
 	public AggregationFilterNode<?, ?> createFilterNode(Range.LongRange value) {
-		ColumnAggregator<?> aggregator = isSingleColumnDaterange() ? new DurationSumAggregator(getColumn().resolve())
-				: new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
+		ColumnAggregator<?> aggregator = isSingleColumnDaterange() ? new DurationSumAggregator(
+			getColumn().resolve()) : new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
 
 		if (hasDistinct()) {
-			aggregator = new DistinctValuesWrapperAggregator<>(aggregator, distinctBy.stream().map(ColumnId::resolve).toList());
+			aggregator = new DistinctValuesWrapperAggregator<>(
+				aggregator,
+				distinctBy.stream().map(ColumnId::resolve).toList());
 		}
 
 		return new RangeFilterNode(value, aggregator);

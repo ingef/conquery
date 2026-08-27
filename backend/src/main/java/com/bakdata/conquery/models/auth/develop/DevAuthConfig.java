@@ -15,14 +15,21 @@ import io.dropwizard.core.setup.Environment;
  */
 @CPSType(base = AuthenticationRealmFactory.class, id = "DEVELOPMENT")
 public class DevAuthConfig implements AuthenticationRealmFactory {
-		
+
 	@Override
-	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
+	public ConqueryAuthenticationRealm createRealm(
+		Environment environment,
+		ConqueryConfig config,
+		AuthorizationController authorizationController) {
 
 		AuthFilter.registerTokenExtractor(UserIdTokenExtractor.class, environment.jersey().getResourceConfig());
 		if (authorizationController.getAdminServlet() != null) {
-			AuthFilter.registerTokenExtractor(UserIdTokenExtractor.class, authorizationController.getAdminServlet().getJerseyConfig());
-			AuthFilter.registerTokenExtractor(UserIdTokenExtractor.class, authorizationController.getAdminServlet().getJerseyConfigUI());
+			AuthFilter.registerTokenExtractor(
+				UserIdTokenExtractor.class,
+				authorizationController.getAdminServlet().getJerseyConfig());
+			AuthFilter.registerTokenExtractor(
+				UserIdTokenExtractor.class,
+				authorizationController.getAdminServlet().getJerseyConfigUI());
 		}
 
 		// Use the first defined user als the default user. This is usually the superuser if the DevelopmentAuthorizationConfig is set

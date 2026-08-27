@@ -1,10 +1,10 @@
 package com.bakdata.conquery.io.result;
 
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.io.external.form.ExternalFormBackendApi;

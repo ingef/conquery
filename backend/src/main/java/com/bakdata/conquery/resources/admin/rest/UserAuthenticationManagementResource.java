@@ -38,8 +38,8 @@ public class UserAuthenticationManagementResource extends HAuthorized {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response updateUser(ProtoUser pUser) {
-		
-		if(processor.updateUser(pUser)) {			
+
+		if (processor.updateUser(pUser)) {
 			return Response.status(Status.CREATED).build();
 		}
 		return Response.serverError().status(Status.CONFLICT).build();

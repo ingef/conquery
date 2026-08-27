@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.forms.frontendconfiguration;
 
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
-import jakarta.inject.Inject;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
@@ -47,9 +47,10 @@ import org.jetbrains.annotations.TestOnly;
 public class FormConfigProcessor {
 
 	@Getter(onMethod = @__({@TestOnly}))
-	private static final ObjectMapper
-			MAPPER =
-			Jackson.MAPPER.copy().disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);
+	private static final ObjectMapper MAPPER = Jackson.MAPPER.copy()
+		.disable(
+			SerializationFeature.WRITE_EMPTY_JSON_ARRAYS,
+			SerializationFeature.WRITE_NULL_MAP_VALUES);
 	@Inject
 	private Validator validator;
 	@Inject
@@ -65,7 +66,10 @@ public class FormConfigProcessor {
 	 * @param dataset
 	 * @param requestedFormType Optional form type to filter the overview to that specific type.
 	 **/
-	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull Subject subject, DatasetId dataset, @NonNull Set<String> requestedFormType) {
+	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(
+		@NonNull Subject subject,
+		DatasetId dataset,
+		@NonNull Set<String> requestedFormType) {
 
 		if (requestedFormType.isEmpty()) {
 			// If no specific form type is provided, show all types the subject is permitted to create.
@@ -86,9 +90,11 @@ public class FormConfigProcessor {
 		final Set<String> formTypesFinal = requestedFormType;
 
 		final Stream<FormConfig> stream = storage.getAllFormConfigs()
-												 .filter(c -> dataset.equals(c.getDataset()))
-												 .filter(c -> formTypesFinal.contains(c.getFormType()))
-												 .filter(c -> subject.isPermitted(c, Ability.READ));
+			.filter(
+				c -> dataset.equals(c.getDataset()))
+			.filter(c -> formTypesFinal.contains(c.getFormType()))
+			.filter(
+				c -> subject.isPermitted(c, Ability.READ));
 
 
 		return stream.map(c -> c.overview(subject));
@@ -170,8 +176,9 @@ public class FormConfigProcessor {
 				// Create new permission if it was a composite permission
 				final Set<String> instancesCleared = new HashSet<>(wpermission.getInstances());
 				instancesCleared.remove(configId.toString());
-				final WildcardPermission clearedPermission =
-						new WildcardPermission(List.of(wpermission.getDomains(), wpermission.getAbilities(), instancesCleared), Instant.now());
+				final WildcardPermission clearedPermission = new WildcardPermission(
+					List.of(wpermission.getDomains(), wpermission.getAbilities(), instancesCleared),
+					Instant.now());
 				user.addPermission(clearedPermission);
 			}
 

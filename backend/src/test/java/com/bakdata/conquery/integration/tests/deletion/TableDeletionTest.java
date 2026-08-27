@@ -3,11 +3,11 @@ package com.bakdata.conquery.integration.tests.deletion;
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.ws.rs.core.Response;
 import java.net.URI;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
@@ -46,7 +46,8 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final String testJson = LoadingUtil.readResource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json");
+		final String testJson = LoadingUtil.readResource(
+			"/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json");
 
 		final DatasetId dataset = conquery.getDataset();
 		final Namespace namespace = conquery.getNamespace();
@@ -77,7 +78,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 		final long nImports;
 		try (Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
-			 nImports = allImports.count();
+			nImports = allImports.count();
 		}
 
 
@@ -85,8 +86,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Checking state before deletion");
 			// Must contain the import.
-			assertThat(namespace.getStorage().getTable(tableId))
-					.isNotNull();
+			assertThat(namespace.getStorage().getTable(tableId)).isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
@@ -96,12 +96,12 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-					assertThat(workerStorage.getAllCBlocks())
-							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-							.isNotEmpty();
-					assertThat(IntegrationUtils.getAllBuckets(workerStorage))
-							.describedAs("Buckets for Worker %s", value.getInfo().getId())
-							.isNotEmpty();
+					assertThat(workerStorage.getAllCBlocks()).describedAs(
+						"CBlocks for Worker %s",
+						value.getInfo().getId()).isNotEmpty();
+					assertThat(IntegrationUtils.getAllBuckets(workerStorage)).describedAs(
+						"Buckets for Worker %s",
+						value.getInfo().getId()).isNotEmpty();
 				}
 			}
 
@@ -117,21 +117,23 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			// Delete the import via API.
 			// But, we do not allow deletion of tables with associated connectors, so this should throw!
 
-			final URI deleteTable =
-					HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminTablesResource.class, "remove")
-								   .buildFromMap(Map.of(
-										   ResourceConstants.DATASET, conquery.getDataset().getName(),
-										   ResourceConstants.TABLE, tableId.toString()
-								   ));
+			final URI deleteTable = HierarchyHelper.hierarchicalPath(
+				conquery.defaultAdminURIBuilder(),
+				AdminTablesResource.class,
+				"remove")
+				.buildFromMap(
+					Map.of(
+						ResourceConstants.DATASET,
+						conquery.getDataset().getName(),
+						ResourceConstants.TABLE,
+						tableId.toString()
+					));
 
-			final Response failed = conquery.getClient()
-											.target(deleteTable)
-											.request()
-											.delete();
+			final Response failed = conquery.getClient().target(deleteTable).request().delete();
 
 			assertThat(failed.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.CLIENT_ERROR);
 
-			try(Stream<Concept<?>> allConcepts = conquery.getNamespace().getStorage().getAllConcepts()) {
+			try (Stream<Concept<?>> allConcepts = conquery.getNamespace().getStorage().getAllConcepts()) {
 				conquery.getAdminDatasetsProcessor().deleteConcept(allConcepts.iterator().next().getId());
 
 			}
@@ -160,9 +162,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			// The deleted import should not be found.
 			try (Stream<ImportId> allImports = namespace.getStorage().getAllImports()) {
-				assertThat(allImports)
-						.filteredOn(imp -> imp.getTable().equals(tableId))
-						.isEmpty();
+				assertThat(allImports).filteredOn(imp -> imp.getTable().equals(tableId)).isEmpty();
 			}
 
 			for (ShardNode node : conquery.getShardNodes()) {
@@ -176,18 +176,18 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					// No bucket should be found referencing the import.
 					try (Stream<Bucket> allBuckets = IntegrationUtils.getAllBuckets(workerStorage)) {
 
-						assertThat(allBuckets)
-								.describedAs("Buckets for Worker %s", value.getInfo().getId())
-								.filteredOn(bucket -> bucket.getImp().getTable().equals(tableId))
-								.isEmpty();
+						assertThat(allBuckets).describedAs("Buckets for Worker %s", value.getInfo().getId())
+							.filteredOn(
+								bucket -> bucket.getImp().getTable().equals(tableId))
+							.isEmpty();
 					}
 
 					// No CBlock associated with import may exist
-					try(Stream<CBlock> allCBlocks = workerStorage.getAllCBlocks()) {
-						assertThat(allCBlocks)
-								.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-								.filteredOn(cBlock -> cBlock.getBucket().getImp().getTable().equals(tableId))
-								.isEmpty();
+					try (Stream<CBlock> allCBlocks = workerStorage.getAllCBlocks()) {
+						assertThat(allCBlocks).describedAs("CBlocks for Worker %s", value.getInfo().getId())
+							.filteredOn(
+								cBlock -> cBlock.getBucket().getImp().getTable().equals(tableId))
+							.isEmpty();
 					}
 
 				}
@@ -203,23 +203,30 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		// Load the same import into the same table, with only the deleted import/table
 		{
 			// only import the deleted import/table
-			LoadingUtil.importTables(conquery, content.getTables().stream()
-													  .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
-													  .collect(Collectors.toList()), content.isAutoConcept());
+			LoadingUtil.importTables(
+				conquery,
+				content.getTables()
+					.stream()
+					.filter(
+						table -> table.getName().equalsIgnoreCase(tableId.getTable()))
+					.collect(Collectors.toList()),
+				content.isAutoConcept());
 
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTableContents(conquery, content.getTables().stream()
-															 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
-															 .collect(Collectors.toList()));
+			LoadingUtil.importTableContents(
+				conquery,
+				content.getTables()
+					.stream()
+					.filter(
+						table -> table.getName().equalsIgnoreCase(tableId.getTable()))
+					.collect(Collectors.toList()));
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			assertThat(namespace.getStorage().getTable(tableId))
-					.describedAs("Table after re-import.")
-					.isNotNull();
+			assertThat(namespace.getStorage().getTable(tableId)).describedAs("Table after re-import.").isNotNull();
 
 			for (ShardNode node : conquery.getShardNodes()) {
 				for (Worker value : node.getWorkers().getWorkers().values()) {
@@ -227,9 +234,8 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 						continue;
 					}
 
-					assertThat(value.getStorage().getTable(tableId))
-							.describedAs("Table in worker storage.")
-							.isNotNull();
+					assertThat(value.getStorage().getTable(tableId)).describedAs(
+						"Table in worker storage.").isNotNull();
 				}
 			}
 		}
@@ -250,9 +256,9 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
 					try (Stream<Bucket> allBuckets = IntegrationUtils.getAllBuckets(workerStorage)) {
-						assertThat(allBuckets.filter(bucket -> bucket.getImp().getTable().equals(tableId)))
-								.describedAs("Buckets for Worker %s", value.getInfo().getId())
-								.isNotEmpty();
+						assertThat(allBuckets.filter(bucket -> bucket.getImp().getTable().equals(tableId))).describedAs(
+							"Buckets for Worker %s",
+							value.getInfo().getId()).isNotEmpty();
 					}
 				}
 			}
@@ -289,9 +295,10 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 						final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
 						try (Stream<Bucket> allBuckets = IntegrationUtils.getAllBuckets(workerStorage)) {
-							assertThat(allBuckets.filter(bucket -> bucket.getImp().getTable().equals(tableId)))
-									.describedAs("Buckets for Worker %s", value.getInfo().getId())
-									.isNotEmpty();
+							assertThat(
+								allBuckets.filter(bucket -> bucket.getImp().getTable().equals(tableId))).describedAs(
+									"Buckets for Worker %s",
+									value.getInfo().getId()).isNotEmpty();
 						}
 
 					}
@@ -300,7 +307,13 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 				log.info("Executing query after re-import and restart");
 
 				// Issue a query and assert that it has the same content as the first time around.
-				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+				IntegrationUtils.assertQueryResult(
+					conquery2,
+					query,
+					2L,
+					ExecutionState.DONE,
+					conquery.getTestUser(),
+					201);
 			}
 		}
 	}

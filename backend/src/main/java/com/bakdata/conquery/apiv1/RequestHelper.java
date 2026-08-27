@@ -1,10 +1,10 @@
 package com.bakdata.conquery.apiv1;
 
-import java.net.URI;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.MultivaluedMap;
+import java.net.URI;
+
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -23,12 +23,8 @@ public class RequestHelper {
 
 				log.trace("Proto=`{}` Fwd-Host=`{}`", protocol, host);
 
-				return new URIBuilder()
-						.setHost(host)
-						.setScheme(protocol)
-						.toString();
-			}
-			catch (Exception e) {
+				return new URIBuilder().setHost(host).setScheme(protocol).toString();
+			} catch (Exception e) {
 				log.warn("Failed to build response URL from X-Forward headers", e);
 			}
 		}
@@ -51,12 +47,8 @@ public class RequestHelper {
 
 				log.trace("Proto=`{}` Fwd-Host=`{}`", protocol, host);
 
-				return new URIBuilder()
-						.setHost(host)
-						.setScheme(protocol)
-						.build();
-			}
-			catch (Exception e) {
+				return new URIBuilder().setHost(host).setScheme(protocol).build();
+			} catch (Exception e) {
 				log.warn("Failed to build response URL from X-Forward headers", e);
 			}
 		}

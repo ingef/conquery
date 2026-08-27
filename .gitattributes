@@ -1,0 +1,2 @@
+# Keep Spotless formatting stable across operating systems.
+*.java text eol=lf

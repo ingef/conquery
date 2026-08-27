@@ -15,27 +15,32 @@ public interface ProgressReporter {
 	public static ProgressReporter createWaiting() {
 		return new ProgressReporterImpl();
 	}
-	
+
 	public void start();
-	
+
 	long getStartTimeMillis();
+
 	boolean isStarted();
 
 
 	@JsonIgnore
 	double getProgress();
+
 	long getAbsoluteProgress();
 
 	ProgressReporter subJob(long steps);
+
 	@JsonIgnore
 	String getEstimate();
 
 	void report(int steps);
 
 	void setMax(long max);
+
 	long getMax();
 
 	void done();
+
 	boolean isDone();
 
 	long getCreationTimeMillis();

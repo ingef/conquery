@@ -3,10 +3,10 @@ package com.bakdata.conquery.io.storage.xodus.stores;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import jakarta.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Executors;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -42,7 +42,13 @@ public class SerializingStoreDumpTest {
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 	private static final NamespacedStorageProvider NAMESPACED_STORAGE_PROVIDER = new TestNamespacedStorageProvider();
 	// Test data
-	private final ManagedQuery managedQuery = new ManagedQuery(mock(Query.class), new UserId("test"), new DatasetId("dataset"), STORAGE, null, null);
+	private final ManagedQuery managedQuery = new ManagedQuery(
+		mock(Query.class),
+		new UserId("test"),
+		new DatasetId("dataset"),
+		STORAGE,
+		null,
+		null);
 	private final ConceptQuery cQuery = new ConceptQuery(new CQReusedQuery(managedQuery.getId()));
 
 	private final User user = new User("username", "userlabel", STORAGE);
@@ -93,10 +99,10 @@ public class SerializingStoreDumpTest {
 			// Open that store again, with a different config to insert a corrupt entry
 			// (UserId & ManagedQuery)
 			SerializingStore<UserId, QueryDescription> store = createSerializedStore(
-					config,
-					env,
-					Validators.newValidator(),
-					new StoreInfo<>(info.getName(), UserId.class, QueryDescription.class)
+				config,
+				env,
+				Validators.newValidator(),
+				new StoreInfo<>(info.getName(), UserId.class, QueryDescription.class)
 			);
 			store.add(invalidId, cQuery);
 		}
@@ -116,43 +122,48 @@ public class SerializingStoreDumpTest {
 			assertThat(result).isEqualTo(expectedResult);
 		}
 
-		final File[] dumpFiles = SerializingStore.makeDumpFileName(invalidId.toString(), tmpDir, info.getName()).getParentFile()
-												 .listFiles(file -> file.getName().endsWith(SerializingStore.DUMP_FILE_EXTENSION));
+		final File[] dumpFiles = SerializingStore.makeDumpFileName(
+			invalidId.toString(),
+			tmpDir,
+			info.getName())
+			.getParentFile()
+			.listFiles(
+				file -> file.getName().endsWith(SerializingStore.DUMP_FILE_EXTENSION));
 
-		final File[] exceptionFiles = SerializingStore.makeDumpFileName(invalidId.toString(), tmpDir, info.getName()).getParentFile()
-													  .listFiles(file -> file.getName().endsWith(SerializingStore.EXCEPTION_FILE_EXTENSION));
+		final File[] exceptionFiles = SerializingStore.makeDumpFileName(
+			invalidId.toString(),
+			tmpDir,
+			info.getName())
+			.getParentFile()
+			.listFiles(
+				file -> file.getName().endsWith(SerializingStore.EXCEPTION_FILE_EXTENSION));
 
-		assertThat(dumpFiles)
-				.isNotNull()
-				.hasSize(1);
+		assertThat(dumpFiles).isNotNull().hasSize(1);
 
-		assertThat(exceptionFiles)
-				.isNotNull()
-				.hasSize(1);
+		assertThat(exceptionFiles).isNotNull().hasSize(1);
 
 
 		assertThat(stringMapper.readValue(dumpFiles[0], QueryDescription.class)).isEqualTo(cQuery);
 	}
 
 	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(
-			XodusStoreFactory config,
-			Environment environment,
-			Validator validator,
-			StoreInfo<KEY, VALUE> storeId) {
+		XodusStoreFactory config,
+		Environment environment,
+		Validator validator,
+		StoreInfo<KEY, VALUE> storeId) {
 		return new SerializingStore<>(
-				new XodusStore(environment, storeId.getName(),
-							   (e) -> {
-							   },
-							   (e) -> {
-							   }
-				),
-				validator,
-				binaryMapper,
-				storeId.getKeyType(),
-				storeId.getValueType(),
-				config.isValidateOnWrite(),
-				config.isRemoveUnreadableFromStore(),
-				config.getUnreadableDataDumpDirectory(), Executors.newSingleThreadExecutor()
+			new XodusStore(environment, storeId.getName(), (e) -> {
+			}, (e) -> {
+			}
+			),
+			validator,
+			binaryMapper,
+			storeId.getKeyType(),
+			storeId.getValueType(),
+			config.isValidateOnWrite(),
+			config.isRemoveUnreadableFromStore(),
+			config.getUnreadableDataDumpDirectory(),
+			Executors.newSingleThreadExecutor()
 		);
 	}
 
@@ -176,10 +187,10 @@ public class SerializingStoreDumpTest {
 			// Open that store again, with a different config to insert a corrupt entry
 			// (String & ManagedQuery)
 			SerializingStore<String, QueryDescription> store = createSerializedStore(
-					config,
-					env,
-					Validators.newValidator(),
-					new StoreInfo<>(info.getName(), String.class, QueryDescription.class)
+				config,
+				env,
+				Validators.newValidator(),
+				new StoreInfo<>(info.getName(), String.class, QueryDescription.class)
 			);
 			store.add(invalidId, cQuery);
 		}
@@ -201,19 +212,25 @@ public class SerializingStoreDumpTest {
 
 		// Test if the correct number of dumpfiles was generated
 		// The file name is bogus since the id wasn't read properly
-		final File[] dumpFiles = SerializingStore.makeDumpFileName(invalidId, tmpDir, info.getName()).getParentFile()
-												 .listFiles(file -> file.getName().endsWith(SerializingStore.DUMP_FILE_EXTENSION));
+		final File[] dumpFiles = SerializingStore.makeDumpFileName(
+			invalidId,
+			tmpDir,
+			info.getName())
+			.getParentFile()
+			.listFiles(
+				file -> file.getName().endsWith(SerializingStore.DUMP_FILE_EXTENSION));
 
-		final File[] exceptionFiles = SerializingStore.makeDumpFileName(invalidId, tmpDir, info.getName()).getParentFile()
-													  .listFiles(file -> file.getName().endsWith(SerializingStore.EXCEPTION_FILE_EXTENSION));
+		final File[] exceptionFiles = SerializingStore.makeDumpFileName(
+			invalidId,
+			tmpDir,
+			info.getName())
+			.getParentFile()
+			.listFiles(
+				file -> file.getName().endsWith(SerializingStore.EXCEPTION_FILE_EXTENSION));
 
-		assertThat(dumpFiles)
-				.isNotNull()
-				.hasSize(1);
+		assertThat(dumpFiles).isNotNull().hasSize(1);
 
-		assertThat(exceptionFiles)
-				.isNotNull()
-				.hasSize(1);
+		assertThat(exceptionFiles).isNotNull().hasSize(1);
 
 
 		assertThat(stringMapper.readValue(dumpFiles[0], QueryDescription.class)).isEqualTo(cQuery);
@@ -231,7 +248,11 @@ public class SerializingStoreDumpTest {
 
 		{
 			// Open a store and insert a valid key-value pair (UserId & User)
-			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), USER_STORE_ID);
+			SerializingStore<UserId, User> store = createSerializedStore(
+				config,
+				env,
+				Validators.newValidator(),
+				USER_STORE_ID);
 			store.add(new UserId("testU1"), user);
 		}
 
@@ -239,20 +260,20 @@ public class SerializingStoreDumpTest {
 			// corrupt value
 			{
 				SerializingStore<String, QueryDescription> store = createSerializedStore(
-						config,
-						env,
-						Validators.newValidator(),
-						new StoreInfo<>(USER_STORE_ID.getName(), String.class, QueryDescription.class)
+					config,
+					env,
+					Validators.newValidator(),
+					new StoreInfo<>(USER_STORE_ID.getName(), String.class, QueryDescription.class)
 				);
 				store.add("not a valid conquery Id", cQuery);
 			}
 
 			{
 				SerializingStore<UserId, QueryDescription> store = createSerializedStore(
-						config,
-						env,
-						Validators.newValidator(),
-						new StoreInfo<>(USER_STORE_ID.getName(), UserId.class, QueryDescription.class)
+					config,
+					env,
+					Validators.newValidator(),
+					new StoreInfo<>(USER_STORE_ID.getName(), UserId.class, QueryDescription.class)
 				);
 				store.add(new UserId("testU2"), cQuery);
 			}
@@ -261,7 +282,11 @@ public class SerializingStoreDumpTest {
 		{
 			// Reopen the store with correct configuration and try to iterate over all
 			// entries (this triggers the dump or removal of invalid entries)
-			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), USER_STORE_ID);
+			SerializingStore<UserId, User> store = createSerializedStore(
+				config,
+				env,
+				Validators.newValidator(),
+				USER_STORE_ID);
 			IterationStatistic expectedResult = new IterationStatistic();
 			expectedResult.setTotalProcessed(3);
 			expectedResult.setFailedKeys(1);
@@ -275,7 +300,11 @@ public class SerializingStoreDumpTest {
 
 		{
 			// Reopen again to check that the corrupted values have been removed previously
-			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), USER_STORE_ID);
+			SerializingStore<UserId, User> store = createSerializedStore(
+				config,
+				env,
+				Validators.newValidator(),
+				USER_STORE_ID);
 			IterationStatistic expectedResult = new IterationStatistic();
 			expectedResult.setTotalProcessed(1);
 			expectedResult.setFailedKeys(0);

@@ -12,12 +12,14 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
+@Getter
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public final class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> {
 
 	private final ConceptElementId<?> parent;
 	private final String name;
-	
+
 	@Override
 	public DatasetId getDataset() {
 		return parent.getDataset();
@@ -25,8 +27,7 @@ public final class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild>
 
 	@Override
 	public ConceptTreeChild get() {
-		Concept<?> concept = getDomain().getStorage(getDataset())
-										.getConcept(findConcept());
+		Concept<?> concept = getDomain().getStorage(getDataset()).getConcept(findConcept());
 		if (concept == null) {
 			return null;
 		}

@@ -44,30 +44,41 @@ public class Object2IntMapMixIn {
 		}
 
 		@Override
-		public Object2IntMap<K> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+		public Object2IntMap<K> deserialize(
+			JsonParser p,
+			DeserializationContext ctxt) throws IOException, JacksonException {
 			final Object2IntOpenHashMap<K> map = new Object2IntOpenHashMap<>();
 			Object2IntOpenHashMap map1 = map;
 			return (Object2IntMap) mapDeserializer.deserialize(p, ctxt, (Map<Object, Object>) map1);
 		}
 
 		@Override
-		public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
+		public JsonDeserializer<?> createContextual(
+			DeserializationContext ctxt,
+			BeanProperty property) throws JsonMappingException {
 
 			final JavaType mapType = ctxt.constructType(Object2IntMap.class);
 			KeyDeserializer keyDeserializer;
 			final JavaType keyType = ctxt.getContextualType().getKeyType();
 			try {
 				keyDeserializer = ctxt.findKeyDeserializer(keyType, property);
-			}
-			catch (InvalidDefinitionException e) {
+			} catch (InvalidDefinitionException e) {
 				log.trace("Falling back to delegating key deserializer for type: {} ", keyType);
-				final JsonDeserializer<Object> contextualKeyDeserializer = ctxt.findContextualValueDeserializer(keyType, property);
-				keyDeserializer = StdKeyDeserializers.constructDelegatingKeyDeserializer(ctxt.getConfig(), keyType, contextualKeyDeserializer);
+				final JsonDeserializer<Object> contextualKeyDeserializer = ctxt.findContextualValueDeserializer(
+					keyType,
+					property);
+				keyDeserializer = StdKeyDeserializers.constructDelegatingKeyDeserializer(
+					ctxt.getConfig(),
+					keyType,
+					contextualKeyDeserializer);
 			}
 			final JavaType valueType = ctxt.getContextualType().getContentType();
-			final JsonDeserializer<Object> valueDeserializer = ctxt.findContextualValueDeserializer(valueType, property);
+			final JsonDeserializer<Object> valueDeserializer = ctxt.findContextualValueDeserializer(
+				valueType,
+				property);
 			final StdValueInstantiator valueInstantiator = new StdValueInstantiator(ctxt.getConfig(), valueType);
-			return new Deserializer<>(new MapDeserializer(mapType, valueInstantiator, keyDeserializer, valueDeserializer, null));
+			return new Deserializer<>(
+				new MapDeserializer(mapType, valueInstantiator, keyDeserializer, valueDeserializer, null));
 		}
 	}
 }

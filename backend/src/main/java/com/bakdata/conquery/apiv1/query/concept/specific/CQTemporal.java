@@ -122,14 +122,15 @@ public class CQTemporal extends CQElement {
 		final List<ConstantValueAggregator<List<Object>>> shimAggregators = createShimAggregators(nShimAggregators);
 
 		ConceptQueryPlan indexPlan = createIndexPlan(context);
-		TemporalQueryNode queryNode = new TemporalQueryNode(context.getStorage().getDataset().getAllIdsTable(),
-															indexPlan,
-															getIndexSelector(),
-															getMode(),
-															createCompareQueryPlan(context, true),
-															createCompareQueryPlan(context, false),
-															getCompareSelector(),
-															shimAggregators
+		TemporalQueryNode queryNode = new TemporalQueryNode(
+			context.getStorage().getDataset().getAllIdsTable(),
+			indexPlan,
+			getIndexSelector(),
+			getMode(),
+			createCompareQueryPlan(context, true),
+			createCompareQueryPlan(context, false),
+			getCompareSelector(),
+			shimAggregators
 		);
 
 		indexPlan.getAggregators().stream().skip(1).forEach(plan::registerAggregator);
@@ -144,8 +145,9 @@ public class CQTemporal extends CQElement {
 
 	private static List<ConstantValueAggregator<List<Object>>> createShimAggregators(int nShimAggregators) {
 		return IntStream.range(0, nShimAggregators)
-						.mapToObj(ignored -> new ConstantValueAggregator<List<Object>>(new ArrayList<>()))
-						.toList();
+			.mapToObj(
+				ignored -> new ConstantValueAggregator<List<Object>>(new ArrayList<>()))
+			.toList();
 	}
 
 	private ConceptQueryPlan createIndexPlan(QueryPlanContext context) {
@@ -153,7 +155,8 @@ public class CQTemporal extends CQElement {
 	}
 
 	private ConceptQueryPlan createCompareQueryPlan(QueryPlanContext context, boolean withAggregation) {
-		return new ConceptQuery(compare).createQueryPlan(context.withDisableAggregationFilters(withAggregation).withDisableAggregationFilters(withAggregation));
+		return new ConceptQuery(compare).createQueryPlan(
+			context.withDisableAggregationFilters(withAggregation).withDisableAggregationFilters(withAggregation));
 	}
 
 	@Override
@@ -184,17 +187,22 @@ public class CQTemporal extends CQElement {
 		resultInfos.addAll(index.getResultInfos());
 
 		if (showCompareDate) {
-			resultInfos.add(new FixedLabelResultInfo(new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE), Collections.emptySet()) {
-				@Override
-				public String userColumnName(PrintSettings printSettings) {
-					return C10N.get(ResultHeadersC10n.class, printSettings.getLocale()).temporalCompareLabel(compare.userLabel(printSettings.getLocale()));
-				}
+			resultInfos.add(
+				new FixedLabelResultInfo(
+					new ResultType.ListT<>(ResultType.Primitive.DATE_RANGE),
+					Collections.emptySet()) {
+					@Override
+					public String userColumnName(PrintSettings printSettings) {
+						return C10N.get(ResultHeadersC10n.class, printSettings.getLocale())
+							.temporalCompareLabel(
+								compare.userLabel(printSettings.getLocale()));
+					}
 
-				@Override
-				public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
-					return resultSetProcessor::getDateRangeList;
-				}
-			});
+					@Override
+					public ResultSetProcessor.Reader<?> createReader(ResultSetProcessor resultSetProcessor) {
+						return resultSetProcessor::getDateRangeList;
+					}
+				});
 		}
 
 		for (ResultInfo resultInfo : compare.getResultInfos()) {
@@ -207,8 +215,7 @@ public class CQTemporal extends CQElement {
 
 	@Override
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
-		return index.collectRequiredEntities(context)
-					.intersect(compare.collectRequiredEntities(context));
+		return index.collectRequiredEntities(context).intersect(compare.collectRequiredEntities(context));
 	}
 
 }

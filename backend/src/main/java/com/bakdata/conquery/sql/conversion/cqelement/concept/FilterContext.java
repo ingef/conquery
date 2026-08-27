@@ -31,7 +31,11 @@ public class FilterContext<V> implements Context {
 	@Nullable
 	ConnectorSqlTables tables;
 
-	public static <V> FilterContext<V> forConceptConversion(SqlIdColumns ids, V value, ConversionContext conversionContext, ConnectorSqlTables tables) {
+	public static <V> FilterContext<V> forConceptConversion(
+		SqlIdColumns ids,
+		V value,
+		ConversionContext conversionContext,
+		ConnectorSqlTables tables) {
 		return new FilterContext<>(ids, value, conversionContext, tables);
 	}
 

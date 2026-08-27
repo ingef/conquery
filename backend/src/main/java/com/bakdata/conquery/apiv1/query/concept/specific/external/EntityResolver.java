@@ -1,5 +1,7 @@
 package com.bakdata.conquery.apiv1.query.concept.specific.external;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -9,8 +11,6 @@ import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 public interface EntityResolver {
@@ -19,12 +19,12 @@ public interface EntityResolver {
 	 * Helper method to try and resolve entities in values using the specified format.
 	 */
 	ResolveStatistic resolveEntities(
-			@NotEmpty String[][] values,
-			@NotEmpty List<String> format,
-			EntityIdMap mapping,
-			IdColumnConfig idColumnConfig,
-			@NotNull DateReader dateReader,
-			boolean onlySingles
+		@NotEmpty String[][] values,
+		@NotEmpty List<String> format,
+		EntityIdMap mapping,
+		IdColumnConfig idColumnConfig,
+		@NotNull DateReader dateReader,
+		boolean onlySingles
 	);
 
 	@Data
@@ -43,7 +43,11 @@ public interface EntityResolver {
 		private final List<String[]> unresolvedId;
 
 		public static ResolveStatistic forEmptyReaders(String[][] values) {
-			return new ResolveStatistic(Collections.emptyMap(), Collections.emptyMap(), Collections.emptyList(), List.of(values));
+			return new ResolveStatistic(
+				Collections.emptyMap(),
+				Collections.emptyMap(),
+				Collections.emptyList(),
+				List.of(values));
 		}
 
 	}

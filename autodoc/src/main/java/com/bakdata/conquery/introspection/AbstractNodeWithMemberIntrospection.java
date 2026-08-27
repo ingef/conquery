@@ -30,17 +30,18 @@ public class AbstractNodeWithMemberIntrospection<VALUE extends NodeWithJavadoc<?
 	@Override
 	public Introspection findMethod(MethodInfo method) {
 		var types = Arrays.stream(method.getParameterInfo())
-						  .map(MethodParameterInfo::getTypeSignatureOrTypeDescriptor)
-						  .map(this::toClass)
-						  .toArray(Class[]::new);
+			.map(
+				MethodParameterInfo::getTypeSignatureOrTypeDescriptor)
+			.map(this::toClass)
+			.toArray(Class[]::new);
 
 		return new AbstractJavadocIntrospection<>(
-				file,
-				value
-						.getMethodsByParameterTypes(types)
-						.stream()
-						.filter(md -> md.getNameAsString().equals(method.getName()))
-						.collect(MoreCollectors.onlyElement())
+			file,
+			value.getMethodsByParameterTypes(types)
+				.stream()
+				.filter(
+					md -> md.getNameAsString().equals(method.getName()))
+				.collect(MoreCollectors.onlyElement())
 		);
 
 	}
@@ -63,8 +64,7 @@ public class AbstractNodeWithMemberIntrospection<VALUE extends NodeWithJavadoc<?
 				if (!node.getNameAsString().equals(simpleName)) {
 					continue;
 				}
-			}
-			else {
+			} else {
 				continue;
 			}
 			if (decl instanceof EnumDeclaration enumDeclaration) {
@@ -80,11 +80,9 @@ public class AbstractNodeWithMemberIntrospection<VALUE extends NodeWithJavadoc<?
 	private Class<?> toClass(TypeSignature sig) {
 		if (sig instanceof BaseTypeSignature) {
 			return ((BaseTypeSignature) sig).getType();
-		}
-		else if (sig instanceof ArrayTypeSignature) {
+		} else if (sig instanceof ArrayTypeSignature) {
 			return ((ArrayTypeSignature) sig).loadClass();
-		}
-		else if (sig instanceof ClassRefTypeSignature) {
+		} else if (sig instanceof ClassRefTypeSignature) {
 			return ((ClassRefTypeSignature) sig).loadClass();
 		}
 		throw new IllegalStateException("Can't find class for signature " + sig);

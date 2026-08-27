@@ -2,9 +2,9 @@ package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.validation.Validator;
 import java.util.List;
 import java.util.stream.Stream;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.commands.ManagerNode;
@@ -57,15 +57,23 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		DatasetId dataset = conquery.getDataset();
 
 		log.info("Setup tests");
-		ConqueryTestSpec test1 = setupTestQuery(dataset, validator, conquery, "/tests/query/RESTART_TEST_DATA/SIMPLE_FRONTEND_Query.json");
-		ConqueryTestSpec test2 = setupTestQuery(dataset, validator, conquery, "/tests/query/MULTI_CONCEPT_SINGLE_TABLE/query.test.json");
+		ConqueryTestSpec test1 = setupTestQuery(
+			dataset,
+			validator,
+			conquery,
+			"/tests/query/RESTART_TEST_DATA/SIMPLE_FRONTEND_Query.json");
+		ConqueryTestSpec test2 = setupTestQuery(
+			dataset,
+			validator,
+			conquery,
+			"/tests/query/MULTI_CONCEPT_SINGLE_TABLE/query.test.json");
 
 		log.info("Execute tests");
 		test1.executeTest(conquery);
 		test2.executeTest(conquery);
 
 		long numberOfExecutions;
-		try(Stream<ManagedExecution> allExecutions = conquery.getMetaStorage().getAllExecutions()) {
+		try (Stream<ManagedExecution> allExecutions = conquery.getMetaStorage().getAllExecutions()) {
 			numberOfExecutions = allExecutions.count();
 			assertThat(numberOfExecutions).isEqualTo(2);
 		}
@@ -151,7 +159,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		DatasetRegistry<?> datasetRegistry = support.getDatasetRegistry();
 
-		try(Stream<ManagedExecution> allExecutions = support.getMetaStorage().getAllExecutions()) {
+		try (Stream<ManagedExecution> allExecutions = support.getMetaStorage().getAllExecutions()) {
 			assertThat(allExecutions.count()).as("Executions after restart").isEqualTo(numberOfExecutions);
 		}
 
@@ -174,27 +182,41 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			assertThat(storage.getRole(roleToDelete.getId())).as("deleted role should stay deleted").isNull();
 			assertThat(storage.getGroup(groupToDelete.getId())).as("deleted group should stay deleted").isNull();
 
-			assertThat(userStored.isPermitted(datasetRegistry.get(TEST_DATASET_1.getId()).getDataset(), Ability.READ)).isTrue();
-			assertThat(userStored.isPermitted(datasetRegistry
-													 .get(TEST_DATASET_2.getId())
-													 .getDataset(), Ability.READ)).isFalse(); // Was never permitted
-			assertThat(userStored.isPermitted(datasetRegistry.get(TEST_DATASET_3.getId()).getDataset(), Ability.READ)).isTrue();
-			assertThat(userStored.isPermitted(datasetRegistry
-													 .get(TEST_DATASET_4.getId())
-													 .getDataset(), Ability.READ)).isFalse(); // Was permitted by deleted role
-			assertThat(userStored.isPermitted(datasetRegistry.get(TEST_DATASET_5.getId()).getDataset(), Ability.READ)).isTrue();
-			assertThat(userStored.isPermitted(datasetRegistry
-													 .get(TEST_DATASET_6.getId())
-													 .getDataset(), Ability.READ)).isFalse(); // Was permitted by deleted group
+			assertThat(
+				userStored.isPermitted(
+					datasetRegistry.get(TEST_DATASET_1.getId()).getDataset(),
+					Ability.READ)).isTrue();
+			assertThat(
+				userStored.isPermitted(
+					datasetRegistry.get(TEST_DATASET_2.getId()).getDataset(),
+					Ability.READ)).isFalse(); // Was never permitted
+			assertThat(
+				userStored.isPermitted(
+					datasetRegistry.get(TEST_DATASET_3.getId()).getDataset(),
+					Ability.READ)).isTrue();
+			assertThat(
+				userStored.isPermitted(
+					datasetRegistry.get(TEST_DATASET_4.getId()).getDataset(),
+					Ability.READ)).isFalse(); // Was permitted by deleted role
+			assertThat(
+				userStored.isPermitted(
+					datasetRegistry.get(TEST_DATASET_5.getId()).getDataset(),
+					Ability.READ)).isTrue();
+			assertThat(
+				userStored.isPermitted(
+					datasetRegistry.get(TEST_DATASET_6.getId()).getDataset(),
+					Ability.READ)).isFalse(); // Was permitted by deleted group
 
 		}
 
-		EntityIdMap entityIdMapAfterRestart = conquery.getNamespaceStorage()
-													  .getIdMapping();
+		EntityIdMap entityIdMapAfterRestart = conquery.getNamespaceStorage().getIdMapping();
 		assertThat(entityIdMapAfterRestart).isEqualTo(entityIdMap);
 
 		// We need to reassign the dataset processor because the instance prio to the restart became invalid
-		adminDatasetProcessor = testConquery.getStandaloneCommand().getManagerNode().getAdmin().getAdminDatasetProcessor();
+		adminDatasetProcessor = testConquery.getStandaloneCommand()
+			.getManagerNode()
+			.getAdmin()
+			.getAdminDatasetProcessor();
 		// Cleanup
 		adminDatasetProcessor.deleteDataset(dataset1.getId());
 		adminDatasetProcessor.deleteDataset(dataset2.getId());
@@ -204,7 +226,11 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		adminDatasetProcessor.deleteDataset(dataset6.getId());
 	}
 
-	private static @NotNull ConqueryTestSpec setupTestQuery(DatasetId dataset, Validator validator, StandaloneSupport conquery, String testPath) throws Exception {
+	private static @NotNull ConqueryTestSpec setupTestQuery(
+		DatasetId dataset,
+		Validator validator,
+		StandaloneSupport conquery,
+		String testPath) throws Exception {
 		//read test specification
 		String testJson = LoadingUtil.readResource(testPath);
 		ConqueryTestSpec test = ConqueryTestSpec.readJson(dataset, testJson);

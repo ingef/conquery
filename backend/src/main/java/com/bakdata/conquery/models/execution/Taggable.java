@@ -11,6 +11,7 @@ import com.bakdata.conquery.apiv1.MetaDataPatch;
  */
 public interface Taggable {
 	String[] getTags();
+
 	void setTags(String[] tags);
 
 	default Consumer<Taggable> tagger() {

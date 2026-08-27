@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import java.util.Optional;
-
 import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.models.common.CDateSet;
@@ -49,7 +48,7 @@ public class EventDurationSumAggregator extends Aggregator<Long> {
 
 		final CDateRange value = validityDateColumn.getValidityDate(event, bucket);
 
-		if (value == null){
+		if (value == null) {
 			return;
 		}
 
@@ -60,11 +59,10 @@ public class EventDurationSumAggregator extends Aggregator<Long> {
 	@Override
 	public Long createAggregationResult() {
 
-		queryDateAggregator
-				.map(Aggregator::createAggregationResult)
-				.ifPresent(
-						set::retainAll
-				);
+		queryDateAggregator.map(Aggregator::createAggregationResult)
+			.ifPresent(
+				set::retainAll
+			);
 
 		return set.countDays();
 	}

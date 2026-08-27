@@ -33,7 +33,7 @@ public class PermissionGroupHandlingTest extends IntegrationTest.Simple implemen
 		Role role1 = new Role("role", "role", storage);
 		TestUser user1 = new TestUser(storage);
 		Group group1 = new Group("company", "company", storage);
-		
+
 		try {
 
 			storage.addRole(role1);
@@ -51,7 +51,7 @@ public class PermissionGroupHandlingTest extends IntegrationTest.Simple implemen
 			assertThat(user1.isPermitted(ExecutionPermission.onInstance(Ability.READ, query1))).isTrue();
 			assertThat(user1.isPermitted(ExecutionPermission.onInstance(Ability.DELETE, query1))).isTrue();
 			assertThat(user1.isPermitted(ExecutionPermission.onInstance(Ability.SHARE, query1))).isTrue();
-			
+
 			// remove user from group
 			group1.removeMember(user1.getId());
 
@@ -59,8 +59,7 @@ public class PermissionGroupHandlingTest extends IntegrationTest.Simple implemen
 			assertThat(user1.isPermitted(ExecutionPermission.onInstance(Ability.DELETE, query1))).isTrue();
 			assertThat(user1.isPermitted(ExecutionPermission.onInstance(Ability.SHARE, query1))).isFalse();
 
-		}
-		finally {
+		} finally {
 			storage.removeGroup(group1.getId());
 			storage.removeUser(user1.getId());
 			storage.removeRole(role1.getId());

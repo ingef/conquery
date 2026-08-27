@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import jakarta.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,7 +14,6 @@ import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import jakarta.inject.Inject;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -80,17 +80,28 @@ public class UIProcessor {
 		Collection<FrontendAuthOverview.OverviewRow> overview = new TreeSet<>();
 		for (User user : getStorage().getAllUsers().toList()) {
 			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, getStorage());
-			Set<Role> effectiveRoles = user.getRoles().stream()
-										   .map(getStorage()::getRole)
-										   // Filter role_ids that might not map TODO how do we handle those
-										   .filter(Predicate.not(Objects::isNull))
-										   .collect(Collectors.toCollection(HashSet::new));
-			userGroups.forEach(g -> effectiveRoles.addAll(g.getRoles().stream()
-														   .map(getStorage()::getRole)
-														   // Filter role_ids that might not map TODO how do we handle those
-														   .filter(Predicate.not(Objects::isNull))
-														   .sorted().toList()));
-			overview.add(FrontendAuthOverview.OverviewRow.builder().user(user).groups(userGroups).effectiveRoles(effectiveRoles).build());
+			Set<Role> effectiveRoles = user.getRoles()
+				.stream()
+				.map(getStorage()::getRole)
+				// Filter role_ids that might not map TODO how do we handle those
+				.filter(Predicate.not(Objects::isNull))
+				.collect(Collectors.toCollection(HashSet::new));
+			userGroups.forEach(
+				g -> effectiveRoles.addAll(
+					g.getRoles()
+						.stream()
+						.map(getStorage()::getRole)
+						// Filter role_ids that might not map TODO how do we handle those
+						.filter(Predicate.not(Objects::isNull))
+						.sorted()
+						.toList()));
+			overview.add(
+				FrontendAuthOverview.OverviewRow.builder()
+					.user(user)
+					.groups(userGroups)
+					.effectiveRoles(
+						effectiveRoles)
+					.build());
 		}
 		return FrontendAuthOverview.builder().overview(overview).build();
 	}
@@ -105,32 +116,31 @@ public class UIProcessor {
 		ArrayList<User> availableMembers = new ArrayList<>(getStorage().getAllUsers().toList());
 		availableMembers.removeIf(u -> membersIds.contains(u.getId()));
 
-		List<FrontendUserContent> members = membersIds.stream()
-													  .map(id -> {
-														  User user = id.get();
-														  if (user != null) {
-															  return getUserContent(user);
-														  }
-														  return FrontendUserContent.builder().id(id).build();
-													  })
-													  .toList();
+		List<FrontendUserContent> members = membersIds.stream().map(id -> {
+			User user = id.get();
+			if (user != null) {
+				return getUserContent(user);
+			}
+			return FrontendUserContent.builder().id(id).build();
+		}).toList();
 
-		List<FrontendRoleContent> roles = group.getRoles().stream()
-											   .map(this::getFrontendRoleContent)
-											   .toList();
+		List<FrontendRoleContent> roles = group.getRoles().stream().map(this::getFrontendRoleContent).toList();
 
-		return FrontendGroupContent
-				.builder()
-				.resolvable(true)
-				.label(group.getLabel())
-				.id(group.getId())
-				.members(members)
-				.availableMembers(availableMembers)
-				.roles(roles)
-				.availableRoles(getStorage().getAllRoles().toList())
-				.permissions(wrapInFEPermission(group.getPermissions()))
-				.permissionTemplateMap(preparePermissionTemplate())
-				.build();
+		return FrontendGroupContent.builder()
+			.resolvable(true)
+			.label(group.getLabel())
+			.id(group.getId())
+			.members(
+				members)
+			.availableMembers(availableMembers)
+			.roles(roles)
+			.availableRoles(
+				getStorage().getAllRoles().toList())
+			.permissions(
+				wrapInFEPermission(group.getPermissions()))
+			.permissionTemplateMap(
+				preparePermissionTemplate())
+			.build();
 	}
 
 	private FrontendRoleContent getFrontendRoleContent(RoleId id) {
@@ -154,32 +164,38 @@ public class UIProcessor {
 		final Collection<Group> availableGroups = new ArrayList<>(getStorage().getAllGroups().toList());
 		availableGroups.removeIf(g -> g.containsUser(user.getId()));
 
-		return FrontendUserContent
-				.builder()
-				.resolvable(true)
-				.label(user.getLabel())
-				.id(user.getId())
-				.groups(AuthorizationHelper.getGroupsOf(user, getStorage()))
-				.availableGroups(availableGroups)
-				.roles(user.getRoles().stream().map(this::getFrontendRoleContent).collect(Collectors.toList()))
-				.availableRoles(getStorage().getAllRoles().toList())
-				.permissions(wrapInFEPermission(user.getPermissions()))
-				.permissionTemplateMap(preparePermissionTemplate())
-				.build();
+		return FrontendUserContent.builder()
+			.resolvable(true)
+			.label(user.getLabel())
+			.id(user.getId())
+			.groups(
+				AuthorizationHelper.getGroupsOf(user, getStorage()))
+			.availableGroups(availableGroups)
+			.roles(
+				user.getRoles().stream().map(this::getFrontendRoleContent).collect(Collectors.toList()))
+			.availableRoles(
+				getStorage().getAllRoles().toList())
+			.permissions(
+				wrapInFEPermission(user.getPermissions()))
+			.permissionTemplateMap(
+				preparePermissionTemplate())
+			.build();
 	}
 
 	public FrontendRoleContent getRoleContent(RoleId roleId) {
 
 		final Role role = getStorage().getRole(roleId);
 		return FrontendRoleContent.builder()
-								  .resolvable(true)
-								  .permissions(wrapInFEPermission(role.getPermissions()))
-								  .permissionTemplateMap(preparePermissionTemplate())
-								  .users(getUsers(role))
-								  .groups(getGroups(role))
-								  .id(role.getId())
-								  .label(role.getLabel())
-								  .build();
+			.resolvable(true)
+			.permissions(
+				wrapInFEPermission(role.getPermissions()))
+			.permissionTemplateMap(preparePermissionTemplate())
+			.users(
+				getUsers(role))
+			.groups(getGroups(role))
+			.id(role.getId())
+			.label(role.getLabel())
+			.build();
 	}
 
 	private SortedSet<FrontendPermission> wrapInFEPermission(Collection<ConqueryPermission> permissions) {
@@ -195,16 +211,17 @@ public class UIProcessor {
 		Map<String, Pair<Set<Ability>, List<Object>>> permissionTemplateMap = new HashMap<>();
 
 		// Grab all possible permission types for the "Create Permission" section
-		Set<Class<? extends StringPermissionBuilder>> permissionTypes = CPSTypeIdResolver
-				.listImplementations(StringPermissionBuilder.class);
+		Set<Class<? extends StringPermissionBuilder>> permissionTypes = CPSTypeIdResolver.listImplementations(
+			StringPermissionBuilder.class);
 		for (Class<? extends StringPermissionBuilder> permissionType : permissionTypes) {
 			try {
-				StringPermissionBuilder instance = (StringPermissionBuilder) permissionType.getField("INSTANCE").get(null);
+				StringPermissionBuilder instance = (StringPermissionBuilder) permissionType.getField("INSTANCE")
+					.get(
+						null);
 				// Right argument is for possible targets of a specific permission type, but it
 				// is left empty for now.
 				permissionTemplateMap.put(instance.getDomain(), Pair.of(instance.getAllowedAbilities(), List.of()));
-			}
-			catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+			} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
 				log.error("Could not access allowed abilities for permission type: {}", permissionType, e);
 			}
 
@@ -213,14 +230,19 @@ public class UIProcessor {
 	}
 
 	public List<User> getUsers(Role role) {
-		return getStorage().getAllUsers().filter(u -> u.getRoles().contains(role.getId())).sorted().collect(Collectors.toList());
+		return getStorage().getAllUsers()
+			.filter(u -> u.getRoles().contains(role.getId()))
+			.sorted()
+			.collect(
+				Collectors.toList());
 	}
 
 	private List<Group> getGroups(Role role) {
 		return getStorage().getAllGroups()
-						   .filter(g -> g.getRoles().contains(role.getId()))
-						   .sorted()
-						   .collect(Collectors.toList());
+			.filter(g -> g.getRoles().contains(role.getId()))
+			.sorted()
+			.collect(
+				Collectors.toList());
 	}
 
 	public TableStatistics getTableStatistics(TableId tableId) {
@@ -231,22 +253,20 @@ public class UIProcessor {
 		final long entries = imports.stream().mapToLong(Import::getNumberOfEntries).sum();
 
 		return new TableStatistics(
-				table,
-				entries,
-				//total size of entries
-				imports.stream()
-					   .mapToLong(Import::estimateMemoryConsumption)
-					   .sum(),
-				// Total size of CBlocks
-				imports.stream()
-					   .mapToLong(imp -> calculateCBlocksSizeBytes(imp, storage.getAllConcepts()))
-					   .sum(),
-				imports,
-				storage.getAllConcepts()
-					   .map(Concept::getConnectors)
-					   .flatMap(Collection::stream)
-					   .filter(conn -> conn.resolveTableId().equals(tableId))
-					   .map(Connector::getConcept).collect(Collectors.toSet())
+			table,
+			entries,
+			//total size of entries
+			imports.stream().mapToLong(Import::estimateMemoryConsumption).sum(),
+			// Total size of CBlocks
+			imports.stream().mapToLong(imp -> calculateCBlocksSizeBytes(imp, storage.getAllConcepts())).sum(),
+			imports,
+			storage.getAllConcepts()
+				.map(Concept::getConnectors)
+				.flatMap(Collection::stream)
+				.filter(
+					conn -> conn.resolveTableId().equals(tableId))
+				.map(Connector::getConcept)
+				.collect(Collectors.toSet())
 
 		);
 	}
@@ -259,21 +279,23 @@ public class UIProcessor {
 
 		// CBlocks are created per (per Bucket) Import per Connector targeting this table
 		// Since the overhead of a single CBlock is minor, we gloss over the fact, that there are multiple and assume it is only a single very large one.
-		return concepts
-				.filter(TreeConcept.class::isInstance)
-				.flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
-				.filter(con -> con.resolveTableId().equals(imp.getTable()))
-				.mapToLong(con -> {
-					// Per event an int array is stored marking the path to the concept child.
-					final double avgDepth = con.getConcept()
-											   .getAllChildren()
-											   .mapToInt(ConceptTreeChild::getDepth)
-											   .average()
-											   .orElse(1d);
+		return concepts.filter(TreeConcept.class::isInstance)
+			.flatMap(
+				concept -> ((TreeConcept) concept).getConnectors().stream())
+			.filter(
+				con -> con.resolveTableId().equals(imp.getTable()))
+			.mapToLong(con -> {
+				// Per event an int array is stored marking the path to the concept child.
+				final double avgDepth = con.getConcept()
+					.getAllChildren()
+					.mapToInt(
+						ConceptTreeChild::getDepth)
+					.average()
+					.orElse(1d);
 
-					return CBlock.estimateMemoryBytes(imp.getNumberOfEntities(), imp.getNumberOfEntries(), avgDepth);
-				})
-				.sum();
+				return CBlock.estimateMemoryBytes(imp.getNumberOfEntities(), imp.getNumberOfEntries(), avgDepth);
+			})
+			.sum();
 	}
 
 	public ImportStatistics getImportStatistics(ImportId importId) {

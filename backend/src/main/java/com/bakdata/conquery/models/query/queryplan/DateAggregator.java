@@ -21,52 +21,53 @@ import lombok.ToString;
 @ToString(of = "action")
 public class DateAggregator extends Aggregator<CDateSet> {
 
-    private final DateAggregationAction action;
+	private final DateAggregationAction action;
 
-    private final Set<Aggregator<CDateSet>> children = new HashSet<>();
+	private final Set<Aggregator<CDateSet>> children = new HashSet<>();
 
-    /**
-     * Register {@Aggregator<CDateSet>}s from lower levels for the final result generation.
-     */
-    public void register(Aggregator<CDateSet> child) {
+	/**
+	 * Register {@Aggregator<CDateSet>}s from lower levels for the final result generation.
+	 */
+	public void register(Aggregator<CDateSet> child) {
 		children.add(child);
-    }
+	}
 
 
-    /**
-     * Register {@Aggregator<CDateSet>}s from lower levels for the final result generation.
-     */
-    public void registerAll(Collection<Aggregator<CDateSet>> children) {
-        this.children.addAll(children);
-    }
+	/**
+	 * Register {@Aggregator<CDateSet>}s from lower levels for the final result generation.
+	 */
+	public void registerAll(Collection<Aggregator<CDateSet>> children) {
+		this.children.addAll(children);
+	}
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
-    	//TODO don't think this is needed?
+		//TODO don't think this is needed?
 		children.forEach(child -> child.init(entity, context));
 	}
 
 	@Override
-    public void consumeEvent(Bucket bucket, int event) {
-        throw new UnsupportedOperationException("This Aggregator uses the result of its siblings and does not accept events");
-    }
+	public void consumeEvent(Bucket bucket, int event) {
+		throw new UnsupportedOperationException(
+			"This Aggregator uses the result of its siblings and does not accept events");
+	}
 
-    @Override
-    public CDateSet createAggregationResult() {
-        final Set<CDateSet> all = new HashSet<>();
-        children.forEach(s -> {
-            CDateSet result = s.createAggregationResult();
-            if(result != null) {
-                all.add(result);
-            }
-        });
+	@Override
+	public CDateSet createAggregationResult() {
+		final Set<CDateSet> all = new HashSet<>();
+		children.forEach(s -> {
+			CDateSet result = s.createAggregationResult();
+			if (result != null) {
+				all.add(result);
+			}
+		});
 
-        // Repackage to get the results sorted. Might need some optimization.
-        return action.aggregate(all);
-    }
+		// Repackage to get the results sorted. Might need some optimization.
+		return action.aggregate(all);
+	}
 
 	public boolean hasChildren() {
-        return !children.isEmpty();
-    }
+		return !children.isEmpty();
+	}
 
 }

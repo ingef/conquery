@@ -31,10 +31,14 @@ public class AuthServlet {
 	/**
 	 * Prepares the general configuration with resources and settings that are valid
 	 * for both, api and admin, endpoints.
-	 * 
+	 *
 	 * @return
 	 */
-	public static DropwizardResourceConfig generalSetup(MetricRegistry metrics, ConqueryConfig config, ServletEnvironment servletEnvironment, ObjectMapper objectMapper) {
+	public static DropwizardResourceConfig generalSetup(
+		MetricRegistry metrics,
+		ConqueryConfig config,
+		ServletEnvironment servletEnvironment,
+		ObjectMapper objectMapper) {
 		DropwizardResourceConfig jerseyConfig = new DropwizardResourceConfig(metrics);
 		jerseyConfig.setUrlPattern("/auth");
 
@@ -46,7 +50,7 @@ public class AuthServlet {
 
 		jerseyConfig.register(CORSPreflightRequestFilter.class);
 		jerseyConfig.register(CORSResponseFilter.class);
-		
+
 		jerseyConfig.register(new JacksonMessageBodyProvider(objectMapper));
 		// freemarker support
 		jerseyConfig.register(new ViewMessageBodyWriter(metrics, Collections.singleton(Freemarker.HTML_RENDERER)));

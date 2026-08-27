@@ -70,11 +70,11 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 
 		// They need to be aligned if they are non-empty.
 
-		if(!minParser.isEmpty()) {
+		if (!minParser.isEmpty()) {
 			minParser.setLines(getLines());
 		}
 
-		if(!maxParser.isEmpty()){
+		if (!maxParser.isEmpty()) {
 			maxParser.setLines(getLines());
 		}
 

@@ -40,7 +40,7 @@ public class MoneyIntStore implements MoneyStore, Initializing {
 	private int decimalShift = Integer.MIN_VALUE;
 
 
-	public MoneyIntStore(IntegerStore store, int decimalShift){
+	public MoneyIntStore(IntegerStore store, int decimalShift) {
 		this();
 		this.numberType = store;
 		this.decimalShift = decimalShift;
@@ -92,13 +92,14 @@ public class MoneyIntStore implements MoneyStore, Initializing {
 
 	@Override
 	public void init() {
-		if (decimalShift != Integer.MIN_VALUE){
+		if (decimalShift != Integer.MIN_VALUE) {
 			return;
 		}
 
 		decimalShift = config.getFrontend().getCurrency().getDecimalScale();
 	}
 
-	public static class MoneyIntStoreInitializer extends Initializing.Converter<MoneyIntStore> {}
+	public static class MoneyIntStoreInitializer extends Initializing.Converter<MoneyIntStore> {
+	}
 
 }

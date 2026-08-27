@@ -3,8 +3,6 @@ package com.bakdata.conquery.resources.admin.ui;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.admin.rest.UIProcessor.calculateCBlocksSizeBytes;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -13,6 +11,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -59,9 +59,9 @@ public class DatasetsUIResource {
 	@Produces(MediaType.TEXT_HTML)
 	public View listDatasetsUI() {
 		return new UIView<>(
-				"datasets.html.ftl",
-				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
-				uiProcessor.getDatasetRegistry().getAllDatasets().map(DatasetId::resolve).toList()
+			"datasets.html.ftl",
+			uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
+			uiProcessor.getDatasetRegistry().getAllDatasets().map(DatasetId::resolve).toList()
 		);
 	}
 
@@ -71,37 +71,51 @@ public class DatasetsUIResource {
 	public View getDataset(@PathParam(DATASET) DatasetId dataset) {
 		final Namespace namespace = uiProcessor.getDatasetRegistry().get(dataset);
 		return new UIView<>(
-				"dataset.html.ftl",
-				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
-				new DatasetInfos(
-						namespace.getDataset(),
-						namespace.getStorage().getSecondaryIds().toList(),
-						namespace.getStorage().getInternToExternMappers().toList(),
-						namespace.getStorage().getSearchIndices().toList(),
-						namespace.getStorage().getTables()
-								 .map(table -> new TableInfos(
-										 table.getId(),
-										 table.getName(),
-										 table.getLabel(),
-										 StringUtils.abbreviate(table.findImports(namespace.getStorage())
-																	 .map(Import::getName)
-																	 .sorted()
-																	 .collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH),
-										 table.findImports(namespace.getStorage()).mapToLong(Import::getNumberOfEntries).sum()
-								 ))
-								 .collect(Collectors.toList()),
-						namespace.getStorage().getAllConcepts().toList(),
-						// Total size of CBlocks
-						namespace
-								.getStorage().getTables()
-								.flatMap(table -> table.findImports(namespace.getStorage()))
-								.mapToLong(imp -> calculateCBlocksSizeBytes(
-										imp, namespace.getStorage().getAllConcepts()
-								))
-								.sum(),
-						// total size of entries
-						namespace.getStorage().getAllImports().map(Id::resolve).mapToLong(Import::estimateMemoryConsumption).sum()
-				)
+			"dataset.html.ftl",
+			uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
+			new DatasetInfos(
+				namespace.getDataset(),
+				namespace.getStorage().getSecondaryIds().toList(),
+				namespace.getStorage().getInternToExternMappers().toList(),
+				namespace.getStorage().getSearchIndices().toList(),
+				namespace.getStorage()
+					.getTables()
+					.map(
+						table -> new TableInfos(
+							table.getId(),
+							table.getName(),
+							table.getLabel(),
+							StringUtils.abbreviate(
+								table.findImports(namespace.getStorage())
+									.map(Import::getName)
+									.sorted()
+									.collect(
+										Collectors.joining(", ")),
+								ABBREVIATION_MARKER,
+								MAX_IMPORTS_TEXT_LENGTH),
+							table.findImports(namespace.getStorage()).mapToLong(Import::getNumberOfEntries).sum()
+						))
+					.collect(Collectors.toList()),
+				namespace.getStorage().getAllConcepts().toList(),
+				// Total size of CBlocks
+				namespace.getStorage()
+					.getTables()
+					.flatMap(
+						table -> table.findImports(namespace.getStorage()))
+					.mapToLong(
+						imp -> calculateCBlocksSizeBytes(
+							imp,
+							namespace.getStorage().getAllConcepts()
+						))
+					.sum(),
+				// total size of entries
+				namespace.getStorage()
+					.getAllImports()
+					.map(Id::resolve)
+					.mapToLong(
+						Import::estimateMemoryConsumption)
+					.sum()
+			)
 		);
 	}
 

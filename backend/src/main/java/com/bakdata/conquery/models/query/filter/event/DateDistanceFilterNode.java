@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.filter.event;
 
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
@@ -11,7 +12,6 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -40,8 +40,7 @@ public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		if (CDate.isPositiveInfinity(ctx.getDateRestriction().getMaxValue()) || ctx.getDateRestriction().isEmpty()) {
 			reference = LocalDate.now();
-		}
-		else {
+		} else {
 			reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
 		}
 	}

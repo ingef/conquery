@@ -56,7 +56,7 @@ public class ValidityDate extends LabeledNamespaceIdentifiable<ValidityDateId> i
 
 	@CheckForNull
 	public CDateRange getValidityDate(int event, Bucket bucket) {
-		if (extractor == null){
+		if (extractor == null) {
 			//TODO this is just a workaround: We should actually be using Initializing, which sadly gives us issues with LoadingUtil
 			init();
 		}
@@ -72,9 +72,11 @@ public class ValidityDate extends LabeledNamespaceIdentifiable<ValidityDateId> i
 	@ValidationMethod(message = "ValidityDate is not for Connectors' Table.")
 	public boolean isForConnectorsTable() {
 
-		final boolean anyColumnNotForConnector =
-				(startColumn != null && !startColumn.getTable().equals(connector.resolveTableId()))
-				|| (endColumn != null && !endColumn.getTable().equals(connector.resolveTableId()));
+		final boolean anyColumnNotForConnector = (startColumn != null && !startColumn.getTable()
+			.equals(
+				connector.resolveTableId())) || (endColumn != null && !endColumn.getTable()
+					.equals(
+						connector.resolveTableId()));
 
 		final boolean columnNotForConnector = column != null && !column.getTable().equals(connector.resolveTableId());
 

@@ -12,15 +12,14 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 public class ResourceFile {
-	@Getter(onMethod_=@JsonValue)
+	@Getter(onMethod_ = @JsonValue)
 	private final String path;
-	
+
 	@JsonCreator
 	public ResourceFile(String path) {
 		this.path = StringUtils.prependIfMissing(path, "/");
-		assertThat(ResourceFile.class.getResource(this.path))
-			.as("Resource "+this.path+" does not exist")
-			.isNotNull();
+		assertThat(ResourceFile.class.getResource(this.path)).as(
+			"Resource " + this.path + " does not exist").isNotNull();
 	}
 
 	public String getName() {

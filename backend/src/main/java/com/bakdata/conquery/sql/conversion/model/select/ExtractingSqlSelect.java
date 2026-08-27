@@ -39,9 +39,9 @@ public class ExtractingSqlSelect<T> implements SingleColumnSqlSelect {
 	public ExtractingSqlSelect<T> qualify(String qualifier) {
 		Field<T> aliased = aliased();
 		return new ExtractingSqlSelect<>(
-				qualifier,
-				aliased.getName(),
-				aliased.getType()
+			qualifier,
+			aliased.getName(),
+			aliased.getType()
 		);
 	}
 

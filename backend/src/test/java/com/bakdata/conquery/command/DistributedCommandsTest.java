@@ -3,11 +3,11 @@ package com.bakdata.conquery.command;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.Response;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.ShardCommand;
@@ -33,26 +33,30 @@ public class DistributedCommandsTest {
 
 	public static final Duration CONNECT_RETRY_TIMEOUT = Duration.seconds(1);
 
-	private static final ConqueryConfig CONQUERY_CONFIG_MANAGER = new ConqueryConfig() {{
-		ConfigOverride.configureRandomPorts(this);
-		this.setStorage(new NonPersistentStoreFactory());
-	}};
+	private static final ConqueryConfig CONQUERY_CONFIG_MANAGER = new ConqueryConfig() {
+		{
+			ConfigOverride.configureRandomPorts(this);
+			this.setStorage(new NonPersistentStoreFactory());
+		}
+	};
 
-	private static final ConqueryConfig CONQUERY_CONFIG_SHARD = new ConqueryConfig() {{
-		ConfigOverride.configureRandomPorts(this);
-		this.getCluster().setPort(CONQUERY_CONFIG_MANAGER.getCluster().getPort());
-		this.getCluster().setConnectRetryTimeout(CONNECT_RETRY_TIMEOUT);
-		this.setStorage(new NonPersistentStoreFactory());
-	}};
+	private static final ConqueryConfig CONQUERY_CONFIG_SHARD = new ConqueryConfig() {
+		{
+			ConfigOverride.configureRandomPorts(this);
+			this.getCluster().setPort(CONQUERY_CONFIG_MANAGER.getCluster().getPort());
+			this.getCluster().setConnectRetryTimeout(CONNECT_RETRY_TIMEOUT);
+			this.setStorage(new NonPersistentStoreFactory());
+		}
+	};
 	private static final DropwizardAppExtension<ConqueryConfig> SHARD = new DropwizardAppExtension<>(
-			Conquery.class,
-			CONQUERY_CONFIG_SHARD,
-			application -> new ShardCommand()
+		Conquery.class,
+		CONQUERY_CONFIG_SHARD,
+		application -> new ShardCommand()
 	);
 	private static final DropwizardAppExtension<ConqueryConfig> MANAGER = new DropwizardAppExtension<>(
-			Conquery.class,
-			CONQUERY_CONFIG_MANAGER,
-			ServerCommand::new
+		Conquery.class,
+		CONQUERY_CONFIG_MANAGER,
+		ServerCommand::new
 	);
 
 	@Test
@@ -61,9 +65,7 @@ public class DistributedCommandsTest {
 		Client client = SHARD.client();
 
 		Response response = client.target(
-										  String.format("http://localhost:%d/ping", SHARD.getAdminPort()))
-				.request()
-				.get();
+			String.format("http://localhost:%d/ping", SHARD.getAdminPort())).request().get();
 
 		assertThat(response.getStatus()).isEqualTo(200);
 	}
@@ -74,9 +76,7 @@ public class DistributedCommandsTest {
 		Client client = MANAGER.client();
 
 		Response response = client.target(
-										  String.format("http://localhost:%d/ping", MANAGER.getAdminPort()))
-								  .request()
-								  .get();
+			String.format("http://localhost:%d/ping", MANAGER.getAdminPort())).request().get();
 
 		assertThat(response.getStatus()).isEqualTo(200);
 	}
@@ -89,10 +89,7 @@ public class DistributedCommandsTest {
 		// Wait for Shard to be connected
 		await().atMost(5, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS).untilAsserted(() -> {
 			Response response = client.target(
-											  String.format("http://localhost:%d/healthcheck", MANAGER.getAdminPort()))
-									  .request()
-									  .get();
-
+				String.format("http://localhost:%d/healthcheck", MANAGER.getAdminPort())).request().get();
 
 
 			assertThat(response.getStatus()).isEqualTo(200);
@@ -102,7 +99,8 @@ public class DistributedCommandsTest {
 
 			assertThat(healthCheck).containsKey("cluster");
 			assertThat(healthCheck.get("cluster").healthy).isTrue();
-			assertThat(healthCheck.get("cluster").getMessage()).isEqualTo(String.format(ClusterHealthCheck.HEALTHY_MESSAGE_FMT, 1));
+			assertThat(healthCheck.get("cluster").getMessage()).isEqualTo(
+				String.format(ClusterHealthCheck.HEALTHY_MESSAGE_FMT, 1));
 		});
 
 	}

@@ -1,5 +1,10 @@
 package com.bakdata.conquery.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+import java.util.Map;
+
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.config.search.InternalSearchConfig;
 import com.bakdata.conquery.models.datasets.Column;
@@ -17,17 +22,13 @@ import com.google.common.collect.ImmutableBiMap;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class InternalFilterSearchTest {
 
 	@RegisterExtension
 	private static final NamespaceStorageExtension NAMESPACE_STORAGE_EXTENSION = new NamespaceStorageExtension();
 	private static final NamespacedStorage NAMESPACED_STORAGE = NAMESPACE_STORAGE_EXTENSION.getStorage();
-	public static final NamespacedStorageProvider STORAGE_PROVIDER = new TestNamespacedStorageProvider(NAMESPACED_STORAGE);
+	public static final NamespacedStorageProvider STORAGE_PROVIDER = new TestNamespacedStorageProvider(
+		NAMESPACED_STORAGE);
 
 	@Test
 	public void totals() throws Exception {
@@ -64,22 +65,27 @@ public class InternalFilterSearchTest {
 
 
 		// Map Searchable
-		filter.setLabels(ImmutableBiMap.of(
-				"mm", "MM",
-				"nn", "NN"
-		));
+		filter.setLabels(
+			ImmutableBiMap.of(
+				"mm",
+				"MM",
+				"nn",
+				"NN"
+			));
 
 		// Register
 		filter.getSearchReferences().forEach(searchable -> {
 			search.addSearches(Map.of(searchable, searchConfig.createSearch(searchable)));
 		});
 
-		search.registerValues(column, List.of(
+		search.registerValues(
+			column,
+			List.of(
 				"a",
 				"bb",
 				"cc",
 				"mm"
-		));
+			));
 		search.finalizeSearch(column);
 
 		assertThat(search.getTotal(filter)).isEqualTo(5);

@@ -56,18 +56,17 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 
 		InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, environment.getValidator());
 		workers = new ShardWorkers(
-				config.getQueries().getExecutionPool(),
-				internalMapperFactory,
-				config.getQueries().getSecondaryIdSubPlanRetention(),
-				clock
+			config.getQueries().getExecutionPool(),
+			internalMapperFactory,
+			config.getQueries().getSecondaryIdSubPlanRetention(),
+			clock
 		);
 
 		lifecycle.manage(workers);
 
 		environment.admin().addTask(new LoadStorageTask(getName(), null, workers));
 
-		clusterConnection =
-				new ClusterConnectionShard(config, environment, workers, internalMapperFactory);
+		clusterConnection = new ClusterConnectionShard(config, environment, workers, internalMapperFactory);
 
 		lifecycle.manage(clusterConnection);
 
@@ -80,12 +79,14 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
 				try {
-					workersDone.add(workers.openWorker(workerStorage, config.isFailOnError(), config.getStorage().isLoadStoresOnStart()));
-				}
-				catch (Exception e) {
+					workersDone.add(
+						workers.openWorker(
+							workerStorage,
+							config.isFailOnError(),
+							config.getStorage().isLoadStoresOnStart()));
+				} catch (Exception e) {
 					log.error("Failed reading Storage", e);
-				}
-				finally {
+				} finally {
 					log.debug("DONE reading Storage {}", workerStorage);
 					ConqueryMDC.clearLocation();
 				}
@@ -95,13 +96,14 @@ public class ShardNode implements ConfiguredBundle<ConqueryConfig> {
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
 
-			log.debug("Waiting for Worker workers to load. {} are already finished. {} pending", workersDone.size(), workerStorages.size()
-																													 - workersDone.size());
+			log.debug(
+				"Waiting for Worker workers to load. {} are already finished. {} pending",
+				workersDone.size(),
+				workerStorages.size() - workersDone.size());
 		}
 
 		log.info("All Worker loaded: {}", workers.getWorkers().size());
 	}
-
 
 
 	public boolean isBusy() {

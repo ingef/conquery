@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 
 @Getter
 @Setter
@@ -29,10 +30,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
-	private static final Meter INTERESTING_ENTITY = SharedMetricRegistries.getDefault().meter("queries.interest.entity.true");
-	private static final Meter INTERESTING_BUCKET = SharedMetricRegistries.getDefault().meter("queries.interest.bucket.true");
-	private static final Meter NOT_INTERESTING_ENTITY = SharedMetricRegistries.getDefault().meter("queries.interest.entity.false");
-	private static final Meter NOT_INTERESTING_BUCKET = SharedMetricRegistries.getDefault().meter("queries.interest.bucket.false");
+	private static final Meter INTERESTING_ENTITY = SharedMetricRegistries.getDefault()
+		.meter(
+			"queries.interest.entity.true");
+	private static final Meter INTERESTING_BUCKET = SharedMetricRegistries.getDefault()
+		.meter(
+			"queries.interest.bucket.true");
+	private static final Meter NOT_INTERESTING_ENTITY = SharedMetricRegistries.getDefault()
+		.meter(
+			"queries.interest.entity.false");
+	private static final Meter NOT_INTERESTING_BUCKET = SharedMetricRegistries.getDefault()
+		.meter(
+			"queries.interest.bucket.false");
 
 
 	public static final int VALIDITY_DATE_POSITION = 0;
@@ -166,14 +175,13 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 		if (interesting) {
 			INTERESTING_ENTITY.mark();
-		}
-		else {
+		} else {
 			NOT_INTERESTING_ENTITY.mark();
 		}
 	}
 
 	@Override
-	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
+	public @NonNull Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
 		if (!isAggregateValidityDates()) {
 			// The date aggregator was not added to the plan, so we don't collect a validity date
 			return Optional.empty();
@@ -201,8 +209,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 		if (interesting) {
 			INTERESTING_BUCKET.mark();
-		}
-		else {
+		} else {
 			NOT_INTERESTING_BUCKET.mark();
 		}
 	}

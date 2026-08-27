@@ -52,7 +52,9 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 	public N createNamespace(Dataset dataset, MetaStorage metaStorage, Environment environment) throws IOException {
 		// Prepare empty storage
 		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName());
-		final ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(datasetStorage, this);
+		final ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(
+			datasetStorage,
+			this);
 		dataset.setStorageProvider(this);
 
 		// Each store injects its own IdResolveCtx so each needs its own mapper
@@ -66,13 +68,13 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 			datasetStorage.close();
 
 			return createNamespace(datasetStorage, metaStorage, environment);
-		}catch (Exception e) {
+		} catch (Exception e) {
 			log.error("Error while creating namespace for dataset {}. Deleting.", dataset.getId(), e);
 
 			datasetStorage.openStores(Jackson.copyMapperAndInjectables(persistenceMapper));
 			datasetStorage.removeStorage();
 
-			throw  e;
+			throw e;
 		}
 	}
 
@@ -100,9 +102,11 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 	}
 
 	public Stream<DatasetId> getAllDatasets() {
-		return datasets.values().stream()
-					   .map(Namespace::getStorage)
-					   .map(namespaceStorage -> namespaceStorage.getDataset().getId());
+		return datasets.values()
+			.stream()
+			.map(Namespace::getStorage)
+			.map(
+				namespaceStorage -> namespaceStorage.getDataset().getId());
 	}
 
 	public Collection<N> getNamespaces() {
@@ -122,8 +126,7 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 		for (Namespace namespace : datasets.values()) {
 			try {
 				namespace.close();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error("Unable to close namespace {}", namespace, e);
 			}
 		}
@@ -133,8 +136,7 @@ public class DatasetRegistry<N extends Namespace> implements Closeable, Namespac
 	public MutableInjectableValues inject(MutableInjectableValues values) {
 		indexService.inject(values);
 		// Make this class also available under DatasetRegistry
-		return values.add(NamespacedStorageProvider.class, this)
-					 .add(DatasetRegistry.class, this);
+		return values.add(NamespacedStorageProvider.class, this).add(DatasetRegistry.class, this);
 	}
 
 	public void resetIndexService() {

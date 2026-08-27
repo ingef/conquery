@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.config;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -7,8 +9,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -63,11 +63,11 @@ public class ConqueryConfig extends Configuration implements Injectable {
 	@Valid
 	@NotNull
 	private List<ResultRendererProvider> resultProviders = List.of(
-			new ExcelResultProvider(),
-			new CsvResultProvider(),
-			new ArrowResultProvider(),
-			new ParquetResultProvider(),
-			new ExternalResultProvider()
+		new ExcelResultProvider(),
+		new CsvResultProvider(),
+		new ArrowResultProvider(),
+		new ParquetResultProvider(),
+		new ExternalResultProvider()
 	);
 	@Valid
 	@NotNull
@@ -137,7 +137,9 @@ public class ConqueryConfig extends Configuration implements Injectable {
 		// Normal plugins only exist once per class
 		Set<Class<? extends PluginConfig>> singleInstanceClasses = new HashSet<>();
 		// MultiInstance plugins have a distinct id among their class
-		Multimap<Class<? extends MultiInstancePlugin>, String> multiInstanceClasses = MultimapBuilder.hashKeys().hashSetValues().build();
+		Multimap<Class<? extends MultiInstancePlugin>, String> multiInstanceClasses = MultimapBuilder.hashKeys()
+			.hashSetValues()
+			.build();
 
 		for (PluginConfig plugin : plugins) {
 			if (plugin instanceof MultiInstancePlugin mu) {
@@ -156,16 +158,18 @@ public class ConqueryConfig extends Configuration implements Injectable {
 
 	public <T extends PluginConfig> Optional<T> getPluginConfig(Class<T> type) {
 		return plugins.stream()
-					  .filter(c -> type.isAssignableFrom(c.getClass()))
-					  .map(type::cast)
-					  .collect(MoreCollectors.toOptional());
+			.filter(c -> type.isAssignableFrom(c.getClass()))
+			.map(type::cast)
+			.collect(
+				MoreCollectors.toOptional());
 	}
 
 	public <T extends PluginConfig> Stream<T> getPluginConfigs(Class<T> type) {
 		return plugins.stream()
-					  .filter(c -> type.isAssignableFrom(c.getClass()))
-					  .filter(c -> MultiInstancePlugin.class.isAssignableFrom(c.getClass()))
-					  .map(type::cast);
+			.filter(c -> type.isAssignableFrom(c.getClass()))
+			.filter(
+				c -> MultiInstancePlugin.class.isAssignableFrom(c.getClass()))
+			.map(type::cast);
 	}
 
 	public ObjectMapper configureObjectMapper(ObjectMapper objectMapper) {

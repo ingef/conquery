@@ -1,10 +1,10 @@
 package com.bakdata.conquery.models.query;
 
+import jakarta.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Stream;
-import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.io.external.form.ExternalFormBackendApi;
@@ -54,8 +54,10 @@ public class ExternalExecutionInfoImpl implements ExternalExecutionInfo {
 	@Override
 	public Response fetchExternalResult(String assetId) {
 		final ResultAsset resultRef = resultsAssetMap.stream()
-													 .map(Pair::key).filter(a -> a.getAssetId().equals(assetId))
-													 .collect(MoreCollectors.onlyElement());
+			.map(Pair::key)
+			.filter(
+				a -> a.getAssetId().equals(assetId))
+			.collect(MoreCollectors.onlyElement());
 		return api.getResult(resultRef.url());
 	}
 }

@@ -1,5 +1,11 @@
 package com.bakdata.conquery.sql.conquery;
 
+import static org.jooq.impl.DSL.*;
+
+import jakarta.validation.constraints.NotBlank;
+import java.sql.Date;
+import java.util.*;
+
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -18,18 +24,12 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
-
-import java.sql.Date;
-import java.util.*;
-
-import static org.jooq.impl.DSL.*;
 
 @Slf4j
 @Data
@@ -53,12 +53,15 @@ public class SqlMatchingStats {
 	private final int matchingStatsWorkers;
 	private final int matchingStatsRetries;
 
-	private static void assignStatsToPath(ConceptElement<?> element, Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats, String entity, CDateRange span) {
+	private static void assignStatsToPath(
+		ConceptElement<?> element,
+		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats,
+		String entity,
+		CDateRange span) {
 		while (element != null) {
 			ConceptElementId<?> id = element.getId();
 
-			matchingStats.computeIfAbsent(id, (ignored) -> new MatchingStats.Entry())
-					.addEvents(entity, 1, span);
+			matchingStats.computeIfAbsent(id, (ignored) -> new MatchingStats.Entry()).addEvents(entity, 1, span);
 			element = element.getParent();
 		}
 	}
@@ -67,7 +70,11 @@ public class SqlMatchingStats {
 	 * collect unique fields used/defined in the expressions.
 	 */
 	private static List<Field<?>> collectReferencedFields(List<CTCondition.ConceptConditions> conceptConditions) {
-		List<Field<?>> fields = conceptConditions.stream().flatMap(e -> e.conditions().keySet().stream()).distinct().toList();
+		List<Field<?>> fields = conceptConditions.stream()
+			.flatMap(
+				e -> e.conditions().keySet().stream())
+			.distinct()
+			.toList();
 		return fields;
 	}
 
@@ -150,7 +157,9 @@ public class SqlMatchingStats {
 	}
 
 	@NotNull
-	private Map<ConceptElementId<?>, MatchingStats.Entry> readStats(TreeConcept concept, SelectJoinStep<? extends Record> selectJoinStep) {
+	private Map<ConceptElementId<?>, MatchingStats.Entry> readStats(
+		TreeConcept concept,
+		SelectJoinStep<? extends Record> selectJoinStep) {
 		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = new HashMap<>();
 
 		Stopwatch stopwatch = Stopwatch.createStarted();
@@ -174,7 +183,9 @@ public class SqlMatchingStats {
 				Date min = record.get(LB_FIELD);
 				Date max = record.get(UB_FIELD);
 
-				CDateRange span = CDateRange.of(min != null ? min.toLocalDate() : null, max != null ? max.toLocalDate() : null);
+				CDateRange span = CDateRange.of(
+					min != null ? min.toLocalDate() : null,
+					max != null ? max.toLocalDate() : null);
 
 				assignStatsToPath(resolvedId, matchingStats, entity, span);
 			}
@@ -221,25 +232,31 @@ public class SqlMatchingStats {
 
 		//TODO Option to create primaryKeys and indices here, but Hana is a bit flaky with it, would need to differentiate the impls.
 
-		CreateTableElementListStep createTable =
-				dslContext.createTable(tableName)
-						.columns(fields);
+		CreateTableElementListStep createTable = dslContext.createTable(tableName).columns(fields);
 
 		createTable.execute();
 
 		return fields;
 	}
 
-	public ListenableFuture<?> collectMatchingStatsForConcept(TreeConcept concept, ListeningExecutorService executorService, int tries) {
+	public ListenableFuture<?> collectMatchingStatsForConcept(
+		TreeConcept concept,
+		ListeningExecutorService executorService,
+		int tries) {
 		return executorService.submit(() -> {
 			dslContext.connection(cfg -> {
 				try {
 					SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
-					Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = readStats(concept, matchingStatsStatement);
+					Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = readStats(
+						concept,
+						matchingStatsStatement);
 					assignStats(matchingStats);
 
 				} catch (DataAccessException e) {
-					log.debug("Failed to connect to database for concept {}. Retrying.", concept.getId(), (Exception) (log.isTraceEnabled() || tries == 0 ? e : null));
+					log.debug(
+						"Failed to connect to database for concept {}. Retrying.",
+						concept.getId(),
+						(Exception) (log.isTraceEnabled() || tries == 0 ? e : null));
 
 					if (tries > 0) {
 						collectMatchingStatsForConcept(concept, executorService, tries - 1);
@@ -263,18 +280,24 @@ public class SqlMatchingStats {
 
 			Field<Date>[] validityDates = collectValidityDateFields(connector);
 
-			SelectConditionStep<? extends Record> connectorTable =
-					dslContext.select(
-									TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), defaultPrimaryColumn).as(PID_FIELD),
-									// The infinities are intentionally swapped
-									least(positiveInfinity, validityDates).as(LB_FIELD),
-									greatest(negativeInfinity, validityDates).as(UB_FIELD),
-									CONCEPT_ID_FIELD)
-							.from(table(name(connector.getResolvedTable().getName())))
-							.leftJoin(idsTableName(concept.getName()))
-							// join onto the concept-ids table to assign the most specific id.
-							.on(getJoinConditions(concept, context))
-							.where(connector.getCondition() != null ? connector.getCondition().convertToSqlCondition(context).condition() : noCondition());
+			SelectConditionStep<? extends Record> connectorTable = dslContext.select(
+				TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), defaultPrimaryColumn)
+					.as(
+						PID_FIELD),
+				// The infinities are intentionally swapped
+				least(positiveInfinity, validityDates).as(LB_FIELD),
+				greatest(negativeInfinity, validityDates).as(UB_FIELD),
+				CONCEPT_ID_FIELD)
+				.from(table(name(connector.getResolvedTable().getName())))
+				.leftJoin(
+					idsTableName(concept.getName()))
+				// join onto the concept-ids table to assign the most specific id.
+				.on(getJoinConditions(concept, context))
+				.where(
+					connector.getCondition() != null ? connector.getCondition()
+						.convertToSqlCondition(
+							context)
+						.condition() : noCondition());
 
 			connectorTables.add(connectorTable);
 		}
@@ -282,9 +305,14 @@ public class SqlMatchingStats {
 		Name ct_name = name("connector_tables");
 		CommonTableExpression<?> unioned = ct_name.as(unionSelects(connectorTables));
 
-		SelectJoinStep<Record4<Integer, String, Date, Date>> records = dslContext.with(unioned).select(unioned.field(CONCEPT_ID_FIELD), PID_FIELD,
+		SelectJoinStep<Record4<Integer, String, Date, Date>> records = dslContext.with(unioned)
+			.select(
+				unioned.field(CONCEPT_ID_FIELD),
+				PID_FIELD,
 				// The infinities are intentionally swapped
-				nullif(unioned.field(LB_FIELD), positiveInfinity).as(LB_FIELD), nullif(unioned.field(UB_FIELD), negativeInfinity).as(UB_FIELD)).from(ct_name);
+				nullif(unioned.field(LB_FIELD), positiveInfinity).as(LB_FIELD),
+				nullif(unioned.field(UB_FIELD), negativeInfinity).as(UB_FIELD))
+			.from(ct_name);
 
 		return records;
 	}
@@ -329,7 +357,9 @@ public class SqlMatchingStats {
 		return reduced;
 	}
 
-	private List<RowN> expressionsToRows(List<CTCondition.ConceptConditions> conceptConditions, List<Field<?>> allFields) {
+	private List<RowN> expressionsToRows(
+		List<CTCondition.ConceptConditions> conceptConditions,
+		List<Field<?>> allFields) {
 		Map<List<Param<?>>, ConceptElement<?>> byDepth = new HashMap<>();
 
 		for (CTCondition.ConceptConditions conceptCondition : conceptConditions) {
@@ -354,7 +384,11 @@ public class SqlMatchingStats {
 						return elt;
 					}
 					if (prior.getDepth() == elt.getDepth() && !prior.equals(elt)) {
-						log.warn("Nodes {} and {} are mapped by the same params {}", prior.getId(), elt.getId(), params);
+						log.warn(
+							"Nodes {} and {} are mapped by the same params {}",
+							prior.getId(),
+							elt.getId(),
+							params);
 					}
 					return prior;
 				});
@@ -378,13 +412,16 @@ public class SqlMatchingStats {
 	 * Collect all mappings from values to conceptElement for the entire concept. This means the column-value and the auxiliary columns.
 	 * We use them to construct a table building an injective mapping from values to concept element that can be used for performant joins instead of resolving the concept every time.
 	 */
-	private List<CTCondition.ConceptConditions> collectAllExpressions(ConceptElement<?> current, CTCondition.ConceptConditions parentConceptCondition, CTConditionContext context) {
+	private List<CTCondition.ConceptConditions> collectAllExpressions(
+		ConceptElement<?> current,
+		CTCondition.ConceptConditions parentConceptCondition,
+		CTConditionContext context) {
 
 		final CTCondition.ConceptConditions forCurrent = switch (current) {
 			case TreeConcept concept -> new CTCondition.ConceptConditions(concept, Collections.emptyMap());
 			// concept elements implicitly inherit the conditions of its parents
 			case ConceptTreeChild child ->
-					child.getCondition().buildExpression(context, current).and(parentConceptCondition);
+				child.getCondition().buildExpression(context, current).and(parentConceptCondition);
 			case null, default -> throw new IllegalStateException();
 		};
 
@@ -405,14 +442,21 @@ public class SqlMatchingStats {
 	 * @param current
 	 * @param context TODO use this to implement joining in queries
 	 */
-	private CTCondition.ConceptConditions collectExpressionsForSingleNode(ConceptElement<?> current, CTConditionContext context) {
+	private CTCondition.ConceptConditions collectExpressionsForSingleNode(
+		ConceptElement<?> current,
+		CTConditionContext context) {
 
 		if (current instanceof TreeConcept concept) {
 			return new CTCondition.ConceptConditions(concept, Collections.emptyMap());
 		}
 
-		CTCondition.ConceptConditions parentConceptCondition = collectExpressionsForSingleNode(current.getParent(), context);
-		CTCondition.ConceptConditions currentConceptCondition = ((ConceptTreeChild) current).getCondition().buildExpression(context, current);
+		CTCondition.ConceptConditions parentConceptCondition = collectExpressionsForSingleNode(
+			current.getParent(),
+			context);
+		CTCondition.ConceptConditions currentConceptCondition = ((ConceptTreeChild) current).getCondition()
+			.buildExpression(
+				context,
+				current);
 
 		return currentConceptCondition.and(parentConceptCondition);
 	}

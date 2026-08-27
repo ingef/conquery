@@ -1,5 +1,7 @@
 package com.bakdata.conquery.mode.local;
 
+import java.time.Clock;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.mode.NamespaceHandler;
@@ -21,8 +23,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 
-import java.time.Clock;
-
 @RequiredArgsConstructor
 @Slf4j
 public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
@@ -34,12 +34,17 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 
 	@Override
 	public LocalNamespace createNamespace(
-			NamespaceStorage namespaceStorage,
-			MetaStorage metaStorage,
-			DatasetRegistry<LocalNamespace> datasetRegistry,
-			Environment environment) {
+		NamespaceStorage namespaceStorage,
+		MetaStorage metaStorage,
+		DatasetRegistry<LocalNamespace> datasetRegistry,
+		Environment environment) {
 
-		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, internalMapperFactory, datasetRegistry, environment);
+		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(
+			namespaceStorage,
+			config,
+			internalMapperFactory,
+			datasetRegistry,
+			environment);
 
 		ManagedConnection connection = connectionManager.getConnection(namespaceStorage.getDataset());
 		try {
@@ -49,22 +54,38 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 			ResultSetProcessor resultSetProcessor = dialectBundle.getResultSetProcessor(config);
 			SqlExecutionService sqlExecutionService = new SqlExecutionService(dslContext, resultSetProcessor);
 
-			NodeConversions nodeConversions = new NodeConversions(config.getIdColumns(), dialectBundle, dslContext, sqlExecutionService, clock, connection.getConnection().getPrimaryColumn());
+			NodeConversions nodeConversions = new NodeConversions(
+				config.getIdColumns(),
+				dialectBundle,
+				dslContext,
+				sqlExecutionService,
+				clock,
+				connection.getConnection().getPrimaryColumn());
 			SqlConverter sqlConverter = new SqlConverter(nodeConversions, config);
-			ExecutionManager executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage, datasetRegistry, config);
+			ExecutionManager executionManager = new SqlExecutionManager(
+				sqlConverter,
+				sqlExecutionService,
+				metaStorage,
+				datasetRegistry,
+				config);
 			SqlStorageHandler sqlStorageHandler = new SqlStorageHandler(sqlExecutionService);
-			SqlEntityResolver sqlEntityResolver = new SqlEntityResolver(config.getIdColumns(), dslContext, dialectBundle, sqlExecutionService);
+			SqlEntityResolver sqlEntityResolver = new SqlEntityResolver(
+				config.getIdColumns(),
+				dslContext,
+				dialectBundle,
+				sqlExecutionService);
 
 			return new LocalNamespace(
-					dialectBundle,
-					namespaceData.preprocessMapper(),
-					namespaceStorage,
-					executionManager,
-					dslContext, sqlStorageHandler,
-					namespaceData.jobManager(),
-					namespaceData.filterSearch(),
-					sqlEntityResolver,
-					connection.getConnection()
+				dialectBundle,
+				namespaceData.preprocessMapper(),
+				namespaceStorage,
+				executionManager,
+				dslContext,
+				sqlStorageHandler,
+				namespaceData.jobManager(),
+				namespaceData.filterSearch(),
+				sqlEntityResolver,
+				connection.getConnection()
 			);
 		} catch (Exception e) {
 			log.error("Failed to load namespaceStorage for {}", namespaceStorage.getPathName(), e);

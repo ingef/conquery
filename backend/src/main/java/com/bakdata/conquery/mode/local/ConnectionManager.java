@@ -24,7 +24,11 @@ public class ConnectionManager {
 	}
 
 	public ManagedConnection getConnection(Dataset dataset) {
-		return Objects.requireNonNull(connections.get(dataset.getDataSource()), () -> "No connection available for datset=%s, dataSource=%s".formatted(dataset.getName(), dataset.getDataSource()));
+		return Objects.requireNonNull(
+			connections.get(dataset.getDataSource()),
+			() -> "No connection available for datset=%s, dataSource=%s".formatted(
+				dataset.getName(),
+				dataset.getDataSource()));
 	}
 
 }

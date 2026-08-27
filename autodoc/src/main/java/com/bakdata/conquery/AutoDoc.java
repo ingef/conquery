@@ -34,17 +34,16 @@ public class AutoDoc {
 	private final ScanResult scan;
 
 	public AutoDoc() {
-		scan = new ClassGraph()
-				.enableAllInfo()
-				//reject some packages that contain large libraries
-				.rejectPackages(
-						"groovy",
-						"org.codehaus.groovy",
-						"org.apache",
-						"org.eclipse",
-						"com.google"
-				)
-				.scan();
+		scan = new ClassGraph().enableAllInfo()
+			//reject some packages that contain large libraries
+			.rejectPackages(
+				"groovy",
+				"org.codehaus.groovy",
+				"org.apache",
+				"org.eclipse",
+				"com.google"
+			)
+			.scan();
 	}
 
 	public void start(File docs) throws IOException {
@@ -52,7 +51,7 @@ public class AutoDoc {
 		for (Group group : GROUPS) {
 			File target = new File(docs, group.getName().replace(' ', '-') + ".md");
 			try (var out = new SimpleWriter(
-					new OutputStreamWriter(new FileOutputStream(target), StandardCharsets.UTF_8)
+				new OutputStreamWriter(new FileOutputStream(target), StandardCharsets.UTF_8)
 			)) {
 				new GroupHandler(scan, group, out, docs.getCanonicalFile().getParentFile()).handle();
 			}

@@ -18,8 +18,7 @@ class BooleanStoreTest {
 
 		final BitSetStore booleanStore = new BitSetStore(values, new BitSet(10), 10);
 
-		assertThat(booleanStore.select(new int[]{0}, new int[]{10}).getValues())
-				.isEqualTo(values);
+		assertThat(booleanStore.select(new int[]{0}, new int[]{10}).getValues()).isEqualTo(values);
 
 		{
 			final BitSet expected = new BitSet();
@@ -27,16 +26,14 @@ class BooleanStoreTest {
 			expected.set(1);
 			expected.set(2, false);
 
-			assertThat(booleanStore.select(new int[]{0, 6}, new int[]{1, 2}).getValues())
-					.isEqualTo(expected);
+			assertThat(booleanStore.select(new int[]{0, 6}, new int[]{1, 2}).getValues()).isEqualTo(expected);
 		}
 
 		{
 			final BitSet expected = new BitSet();
 			expected.set(0);
 
-			assertThat(booleanStore.select(new int[]{0}, new int[]{1}).getValues())
-					.isEqualTo(expected);
+			assertThat(booleanStore.select(new int[]{0}, new int[]{1}).getValues()).isEqualTo(expected);
 		}
 
 	}
@@ -51,7 +48,9 @@ class BooleanStoreTest {
 
 		final BitSetStore booleanStore = new BitSetStore(bitSet, new BitSet(128), 128);
 
-		final BitSetStore booleanStore1 = Jackson.MAPPER.readValue(Jackson.MAPPER.writeValueAsString(booleanStore), BitSetStore.class);
+		final BitSetStore booleanStore1 = Jackson.MAPPER.readValue(
+			Jackson.MAPPER.writeValueAsString(booleanStore),
+			BitSetStore.class);
 
 		assertThat(booleanStore1.getValues().get(128)).isEqualTo(false);
 

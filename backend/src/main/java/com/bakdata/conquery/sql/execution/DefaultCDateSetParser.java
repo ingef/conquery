@@ -49,10 +49,14 @@ public class DefaultCDateSetParser implements SqlCDateSetParser {
 		StringReader reader = new StringReader(multiDateRange);
 
 		Scanner scanner = new Scanner(reader)
-				// ) and ] are handled manually to determine real end-date
-				.useDelimiter(Pattern.compile("[%s]+".formatted(Stream.of(dateSetSep, dateRangeSep, dateSetStart, dateSetEnd, dateRangeBeginInclusive)
-																	  .map(Pattern::quote)
-																	  .collect(Collectors.joining()))));
+			// ) and ] are handled manually to determine real end-date
+			.useDelimiter(
+				Pattern.compile(
+					"[%s]+".formatted(
+						Stream.of(dateSetSep, dateRangeSep, dateSetStart, dateSetEnd, dateRangeBeginInclusive)
+							.map(
+								Pattern::quote)
+							.collect(Collectors.joining()))));
 
 
 		ArrayList<List<Integer>> out = new ArrayList<>();
@@ -87,8 +91,7 @@ public class DefaultCDateSetParser implements SqlCDateSetParser {
 
 		if (begin.equals(dateRangeMinValue)) {
 			startDate = CDateRange.NEGATIVE_INFINITY;
-		}
-		else {
+		} else {
 			startDate = CDate.ofLocalDate(dateReader.parseToLocalDate(begin));
 		}
 
@@ -97,8 +100,7 @@ public class DefaultCDateSetParser implements SqlCDateSetParser {
 
 		if (endDateExpression.equals(dateRangeMaxValue)) {
 			endDate = CDateRange.POSITIVE_INFINITY;
-		}
-		else {
+		} else {
 			LocalDate dateValue = dateReader.parseToLocalDate(endDateExpression);
 			endDate = CDate.ofLocalDate(dateValue);
 			if (end.endsWith(dateRangeEndExclusive)) {

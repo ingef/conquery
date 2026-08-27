@@ -52,7 +52,9 @@ public class ColumnStoreSerializationTests {
 	 */
 	private static final Set<Class<? extends ColumnStore>> EXCLUDING = Set.of(CompoundDateRangeStore.class);
 
-	private static final NamespaceStorage STORAGE = new NamespaceStorage(new NonPersistentStoreFactory(), "ColumnStoreSerializationTests");
+	private static final NamespaceStorage STORAGE = new NamespaceStorage(
+		new NonPersistentStoreFactory(),
+		"ColumnStoreSerializationTests");
 
 	private static ObjectMapper shardInternalMapper;
 	private static ConqueryConfig config;
@@ -73,40 +75,35 @@ public class ColumnStoreSerializationTests {
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	public void testAllTypesCovered() {
 		assertThat(
-				createCTypes()
-						.stream()
-						.map(Object::getClass)
-						.collect(Collectors.toSet())
+			createCTypes().stream().map(Object::getClass).collect(Collectors.toSet())
 
-		)
-				.containsAll(
-						Sets.difference(
-								(Set) CPSTypeIdResolver.listImplementations(ColumnStore.class),
-								EXCLUDING
-						)
-				)
-				.doesNotContainAnyElementsOf(EXCLUDING);
+		).containsAll(
+			Sets.difference(
+				(Set) CPSTypeIdResolver.listImplementations(ColumnStore.class),
+				EXCLUDING
+			)
+		).doesNotContainAnyElementsOf(EXCLUDING);
 	}
 
 	public static List<ColumnStore> createCTypes() {
 
 		return Arrays.asList(
-				new ScaledDecimalStore(13, IntArrayStore.create(10)),
-				new MoneyIntStore(IntArrayStore.create(10), 2).config(config),
-				new DirectDateRangeStore(IntegerDateStore.create(10), IntegerDateStore.create(10)),
-				new QuarterDateRangeStore(LongArrayStore.create(10)),
-				new IntegerDateStore(LongArrayStore.create(10)),
-				StringStoreString.withInternedStrings(new String[]{"a", "b", "c"}),
-				DecimalArrayStore.create(10),
-				LongArrayStore.create(10),
-				IntArrayStore.create(10),
-				ByteArrayStore.create(10),
-				ShortArrayStore.create(10),
-				FloatArrayStore.create(10),
-				DoubleArrayStore.create(10),
-				BitSetStore.create(10),
-				EmptyStore.INSTANCE,
-				new RebasingIntegerStore(10, 10, IntArrayStore.create(10))
+			new ScaledDecimalStore(13, IntArrayStore.create(10)),
+			new MoneyIntStore(IntArrayStore.create(10), 2).config(config),
+			new DirectDateRangeStore(IntegerDateStore.create(10), IntegerDateStore.create(10)),
+			new QuarterDateRangeStore(LongArrayStore.create(10)),
+			new IntegerDateStore(LongArrayStore.create(10)),
+			StringStoreString.withInternedStrings(new String[]{"a", "b", "c"}),
+			DecimalArrayStore.create(10),
+			LongArrayStore.create(10),
+			IntArrayStore.create(10),
+			ByteArrayStore.create(10),
+			ShortArrayStore.create(10),
+			FloatArrayStore.create(10),
+			DoubleArrayStore.create(10),
+			BitSetStore.create(10),
+			EmptyStore.INSTANCE,
+			new RebasingIntegerStore(10, 10, IntArrayStore.create(10))
 		);
 	}
 
@@ -114,9 +111,6 @@ public class ColumnStoreSerializationTests {
 	@MethodSource("createCTypes")
 	public void testSerialization(ColumnStore type) throws IOException, JSONException {
 
-		SerializationTestUtil
-				.forType(ColumnStore.class)
-				.objectMappers(shardInternalMapper)
-				.test(type);
+		SerializationTestUtil.forType(ColumnStore.class).objectMappers(shardInternalMapper).test(type);
 	}
 }

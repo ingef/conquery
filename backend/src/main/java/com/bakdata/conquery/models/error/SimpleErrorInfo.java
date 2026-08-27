@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.error;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /**

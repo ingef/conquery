@@ -16,29 +16,38 @@ public class ClickhouseDistinctSelectConverter implements SelectConverter<Distin
 
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(DistinctSelect distinctSelect, SelectContext<ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(
+		DistinctSelect distinctSelect,
+		SelectContext<ConnectorSqlTables> selectContext) {
 
 		String alias = selectContext.getNameGenerator().selectName(distinctSelect);
 
 		ConnectorSqlTables tables = selectContext.getTables();
-		SingleColumnSqlSelect preprocessingSelect =
-				MappableSingleColumnSelect.getSubstringSelect(distinctSelect.getColumn().get(), distinctSelect.getSubstringRange(), selectContext, alias);
+		SingleColumnSqlSelect preprocessingSelect = MappableSingleColumnSelect.getSubstringSelect(
+			distinctSelect.getColumn().get(),
+			distinctSelect.getSubstringRange(),
+			selectContext,
+			alias);
 
 		String preprocessingTable = selectContext.getTables().cteName(ConceptCteStep.PREPROCESSING);
 		SingleColumnSqlSelect qualified = preprocessingSelect.qualify(preprocessingTable);
 
-		FieldWrapper<?> grouped =
-				new FieldWrapper<>(field("arrayFilter(x -> x <> '' and x is not null, groupUniqArray({0}))", Object.class, qualified.select()).as(alias),
-								   qualified.select().getName()
-				);
+		FieldWrapper<?> grouped = new FieldWrapper<>(
+			field(
+				"arrayFilter(x -> x <> '' and x is not null, groupUniqArray({0}))",
+				Object.class,
+				qualified.select()).as(alias),
+			qualified.select().getName()
+		);
 
 		SingleColumnSqlSelect finalSelect = grouped.qualify(tables.cteName(ConceptCteStep.AGGREGATION_SELECT));
 
 		return ConnectorSqlSelects.builder()
-								  .preprocessingSelect(preprocessingSelect)
-								  .aggregationSelect(grouped)
-								  .finalSelect(finalSelect)
-								  .build();
+			.preprocessingSelect(preprocessingSelect)
+			.aggregationSelect(
+				grouped)
+			.finalSelect(finalSelect)
+			.build();
 	}
 
 

@@ -2,8 +2,6 @@ package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
-import java.util.Set;
-import java.util.stream.Stream;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -15,6 +13,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
@@ -44,11 +44,16 @@ public class DatasetFormConfigResource extends HAuthorized {
 	public Response postConfig(@Auth Subject subject, @Valid FormConfigAPI config) {
 		subject.authorize(dataset, Ability.READ);
 
-		return Response.ok(new PostResponse(processor.addConfig(subject, dataset, config).getId())).status(Status.CREATED).build();
+		return Response.ok(new PostResponse(processor.addConfig(subject, dataset, config).getId()))
+			.status(
+				Status.CREATED)
+			.build();
 	}
 
 	@GET
-	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@Auth Subject subject, @QueryParam("formType") Set<String> formType) {
+	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(
+		@Auth Subject subject,
+		@QueryParam("formType") Set<String> formType) {
 		subject.authorize(dataset, Ability.READ);
 
 		return processor.getConfigsByFormType(subject, dataset, formType);

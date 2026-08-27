@@ -1,5 +1,7 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -7,8 +9,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
@@ -160,7 +160,11 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 	public String defaultLabel(Locale locale) {
 		// This forces the default label on children even if there was a user label
 		CQElementC10n localized = C10nCache.getLocalized(CQElementC10n.class, locale);
-		return QueryUtils.createDefaultMultiLabel(children, " " + localized.or() + " ", " " + localized.exists(), locale);
+		return QueryUtils.createDefaultMultiLabel(
+			children,
+			" " + localized.or() + " ",
+			" " + localized.exists(),
+			locale);
 	}
 
 	@Override
@@ -181,8 +185,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 
 			if (current == null) {
 				current = next;
-			}
-			else {
+			} else {
 				current = current.union(next);
 			}
 		}

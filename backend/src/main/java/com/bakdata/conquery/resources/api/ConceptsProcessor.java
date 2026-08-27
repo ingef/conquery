@@ -1,5 +1,7 @@
 package com.bakdata.conquery.resources.api;
 
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,8 +13,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import jakarta.inject.Inject;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.frontend.FrontendList;
@@ -62,13 +62,17 @@ public class ConceptsProcessor {
 	@Getter(lazy = true)
 	private final FrontEndConceptBuilder frontEndConceptBuilder = new FrontEndConceptBuilder(getConfig());
 
-	private final LoadingCache<Concept<?>, FrontendList> nodeCache =
-			CacheBuilder.newBuilder().softValues().expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
-				@Override
-				public FrontendList load(Concept<?> concept) {
-					return getFrontEndConceptBuilder().createTreeMap(concept);
-				}
-			});
+	private final LoadingCache<Concept<?>, FrontendList> nodeCache = CacheBuilder.newBuilder()
+		.softValues()
+		.expireAfterWrite(
+			10,
+			TimeUnit.MINUTES)
+		.build(new CacheLoader<>() {
+			@Override
+			public FrontendList load(Concept<?> concept) {
+				return getFrontEndConceptBuilder().createTreeMap(concept);
+			}
+		});
 
 
 	public FrontendRoot getRoot(NamespaceStorage storage, Subject subject, boolean showHidden) {
@@ -84,18 +88,19 @@ public class ConceptsProcessor {
 	public FrontendList getNode(Concept<?> concept) {
 		try {
 			return nodeCache.get(concept);
-		}
-		catch (ExecutionException e) {
+		} catch (ExecutionException e) {
 			throw new RuntimeException("failed to create frontend node for " + concept, e);
 		}
 	}
 
 	public Stream<IdLabel<DatasetId>> getDatasets(Subject subject) {
 		return namespaces.getAllDatasets()
-						 .filter(d -> subject.isPermitted(d, Ability.READ))
-						 .map(DatasetId::resolve)
-						 .sorted(Comparator.comparing(Dataset::getWeight).thenComparing(Dataset::getLabel))
-						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()));
+			.filter(d -> subject.isPermitted(d, Ability.READ))
+			.map(
+				DatasetId::resolve)
+			.sorted(Comparator.comparing(Dataset::getWeight).thenComparing(Dataset::getLabel))
+			.map(
+				d -> new IdLabel<>(d.getId(), d.getLabel()));
 	}
 
 	public FrontendPreviewConfig getEntityPreviewFrontendConfig(DatasetId dataset) {
@@ -107,18 +112,24 @@ public class ConceptsProcessor {
 		ConnectorId searchConnector = previewConfig.resolveSearchConnector();
 
 		return new FrontendPreviewConfig(
-				previewConfig.getAllConnectors()
-							 .stream()
-							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), id.resolve().getResolvedTable().getLabel()))
-							 .collect(Collectors.toSet()),
+			previewConfig.getAllConnectors()
+				.stream()
+				.map(
+					id -> new FrontendPreviewConfig.Labelled(
+						id.toString(),
+						id.resolve().getResolvedTable().getLabel()))
+				.collect(Collectors.toSet()),
 
-				previewConfig.getDefaultConnectors()
-							 .stream()
-							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), id.resolve().getResolvedTable().getLabel()))
-							 .collect(Collectors.toSet()),
-				previewConfig.getSearchFilters(),
-				searchConnector.getConcept(),
-				searchConnector
+			previewConfig.getDefaultConnectors()
+				.stream()
+				.map(
+					id -> new FrontendPreviewConfig.Labelled(
+						id.toString(),
+						id.resolve().getResolvedTable().getLabel()))
+				.collect(Collectors.toSet()),
+			previewConfig.getSearchFilters(),
+			searchConnector.getConcept(),
+			searchConnector
 		);
 	}
 
@@ -132,14 +143,16 @@ public class ConceptsProcessor {
 
 		final ExactFilterValueResult exactResult = namespace.getFilterSearch().findExact(filter, searchTerms);
 
-		return new ResolvedFilterValues(new ResolvedFilterResult(filterId.getConnector(), filter.getId().toString(), exactResult.resolved), exactResult.unresolved);
+		return new ResolvedFilterValues(
+			new ResolvedFilterResult(filterId.getConnector(), filter.getId().toString(), exactResult.resolved),
+			exactResult.unresolved);
 	}
 
 	public AutoCompleteResult autocompleteTextFilter(
-			FilterId filterId,
-			String maybeText,
-			OptionalInt pageNumberOpt,
-			OptionalInt itemsPerPageOpt
+		FilterId filterId,
+		String maybeText,
+		OptionalInt pageNumberOpt,
+		OptionalInt itemsPerPageOpt
 	) {
 		final int pageNumber = pageNumberOpt.orElse(0);
 		final int itemsPerPage = itemsPerPageOpt.orElse(50);
@@ -149,7 +162,12 @@ public class ConceptsProcessor {
 
 		final SelectFilter<?> filter = (SelectFilter<?>) filterId.resolve();
 
-		log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, filterId, pageNumber, itemsPerPage);
+		log.trace(
+			"Searching for for  `{}` in `{}`. (Page = {}, Items = {})",
+			maybeText,
+			filterId,
+			pageNumber,
+			itemsPerPage);
 
 		return namespaces.get(filter.getDataset()).getFilterSearch().query(filter, maybeText, itemsPerPage, pageNumber);
 	}
@@ -161,16 +179,16 @@ public class ConceptsProcessor {
 
 		for (String conceptCode : conceptCodes) {
 			try {
-				final ConceptElement<?> child = concept.findMostSpecificChild(conceptCode, new CalculatedValue<>(Collections::emptyMap));
+				final ConceptElement<?> child = concept.findMostSpecificChild(
+					conceptCode,
+					new CalculatedValue<>(Collections::emptyMap));
 
 				if (child != null) {
 					resolvedCodes.add(child.getId());
-				}
-				else {
+				} else {
 					unknownCodes.add(conceptCode);
 				}
-			}
-			catch (ConceptConfigurationException e) {
+			} catch (ConceptConfigurationException e) {
 				log.error("Error while trying to resolve `{}`", conceptCode, e);
 			}
 		}

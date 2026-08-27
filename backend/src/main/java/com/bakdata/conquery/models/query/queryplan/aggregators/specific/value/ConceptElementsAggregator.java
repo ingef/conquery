@@ -35,9 +35,11 @@ public class ConceptElementsAggregator extends Aggregator<Set<Integer>> {
 
 	public ConceptElementsAggregator(TreeConcept concept) {
 		super();
-		tableConnectors = concept.getConnectors().stream()
-								 .filter(conn -> conn.getColumn() != null)
-								 .collect(Collectors.toMap(Connector::getResolvedTable, Functions.identity()));
+		tableConnectors = concept.getConnectors()
+			.stream()
+			.filter(conn -> conn.getColumn() != null)
+			.collect(
+				Collectors.toMap(Connector::getResolvedTable, Functions.identity()));
 	}
 
 	@Override

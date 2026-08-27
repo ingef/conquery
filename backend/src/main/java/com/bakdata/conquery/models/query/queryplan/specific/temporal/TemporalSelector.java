@@ -18,7 +18,8 @@ public enum TemporalSelector {
 		public boolean satisfies(boolean[] results) {
 			return results.length > 0 && BooleanUtils.or(results);
 		}
-	}, ALL {
+	},
+	ALL {
 		@Override
 		public CDateRange[] sample(CDateSet result) {
 			return result.asRanges().toArray(CDateRange[]::new);
@@ -28,7 +29,8 @@ public enum TemporalSelector {
 		public boolean satisfies(boolean[] results) {
 			return results.length > 0 && BooleanUtils.and(results);
 		}
-	}, EARLIEST {
+	},
+	EARLIEST {
 		@Override
 		public CDateRange[] sample(CDateSet result) {
 			return new CDateRange[]{result.asRanges().iterator().next()};
@@ -39,7 +41,8 @@ public enum TemporalSelector {
 			return results.length == 1 && results[0];
 
 		}
-	}, LATEST {
+	},
+	LATEST {
 		@Override
 		public CDateRange[] sample(CDateSet result) {
 

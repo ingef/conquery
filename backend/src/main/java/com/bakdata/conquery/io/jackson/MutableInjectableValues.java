@@ -22,18 +22,22 @@ public class MutableInjectableValues extends InjectableValues {
 	}
 
 	@Override
-	public Object findInjectableValue(Object valueId, DeserializationContext ctxt, BeanProperty forProperty, Object beanInstance) throws JsonMappingException {
+	public Object findInjectableValue(
+		Object valueId,
+		DeserializationContext ctxt,
+		BeanProperty forProperty,
+		Object beanInstance) throws JsonMappingException {
 		if (valueId instanceof Class<?> clazz) {
 			return findInjectableValue(clazz.getName(), ctxt, forProperty, beanInstance);
-		}
-		else if (valueId instanceof String key) {
+		} else if (valueId instanceof String key) {
 			return values.get(key);
 		}
-		ctxt.reportBadDefinition(ClassUtil.classOf(valueId),
-								 String.format(
-										 "Unrecognized inject value id type (%s), expecting String or Class",
-										 ClassUtil.classNameOf(valueId)
-								 )
+		ctxt.reportBadDefinition(
+			ClassUtil.classOf(valueId),
+			String.format(
+				"Unrecognized inject value id type (%s), expecting String or Class",
+				ClassUtil.classNameOf(valueId)
+			)
 		);
 
 		return null; // Not reached

@@ -41,9 +41,11 @@ public class ConceptTreeCache {
 	/**
 	 * If id is already in cache, use that. If not calculate it by querying treeConcept. If rowMap was not used to query, cache the response.
 	 */
-	public ConceptTreeChild findMostSpecificChild(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
+	public ConceptTreeChild findMostSpecificChild(
+		String value,
+		CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 
-		if(cached.containsKey(value)) {
+		if (cached.containsKey(value)) {
 			hits++;
 			return cached.get(value).orElse(null);
 		}
@@ -52,7 +54,7 @@ public class ConceptTreeCache {
 
 		final ConceptTreeChild child = treeConcept.findMostSpecificChild(value, rowMap);
 
-		if(!rowMap.isCalculated()) {
+		if (!rowMap.isCalculated()) {
 			cached.put(value, Optional.ofNullable(child));
 		}
 

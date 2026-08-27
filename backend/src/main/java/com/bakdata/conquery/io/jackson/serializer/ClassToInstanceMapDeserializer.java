@@ -18,18 +18,20 @@ public class ClassToInstanceMapDeserializer extends StdDeserializer<ClassToInsta
 	}
 
 	@Override
-	public ClassToInstanceMap<?> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+	public ClassToInstanceMap<?> deserialize(
+		JsonParser p,
+		DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		ClassToInstanceMap map = MutableClassToInstanceMap.create();
-		if(p.currentToken()==JsonToken.START_OBJECT) {
+		if (p.currentToken() == JsonToken.START_OBJECT) {
 			p.nextToken();
 		}
-		while(true) {
-			if(p.currentToken()==JsonToken.END_OBJECT) {
+		while (true) {
+			if (p.currentToken() == JsonToken.END_OBJECT) {
 				return map;
 			}
 			String typeName = p.getCurrentName();
-			if(typeName == null) {
-				return (ClassToInstanceMap<?>)ctxt.handleUnexpectedToken(ClassToInstanceMap.class, p);
+			if (typeName == null) {
+				return (ClassToInstanceMap<?>) ctxt.handleUnexpectedToken(ClassToInstanceMap.class, p);
 			}
 			try {
 				Class<?> type = Class.forName(typeName);
@@ -37,9 +39,8 @@ public class ClassToInstanceMapDeserializer extends StdDeserializer<ClassToInsta
 				Object value = ctxt.readValue(p, type);
 				p.nextToken();
 				map.putInstance(type, value);
-			}
-			catch (ClassNotFoundException e) {
-				throw new RuntimeException("Could not resolve class "+typeName, e);
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException("Could not resolve class " + typeName, e);
 			}
 		}
 	}

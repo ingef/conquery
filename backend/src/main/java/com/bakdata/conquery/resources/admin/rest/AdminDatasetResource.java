@@ -2,12 +2,6 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -25,6 +19,12 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -174,11 +174,14 @@ public class AdminDatasetResource {
 
 	@DELETE
 	@Path("searchIndex/{" + SEARCH_INDEX_ID + "}")
-	public List<ConceptId> deleteSearchIndex(@PathParam(SEARCH_INDEX_ID) SearchIndexId searchIndex, @QueryParam("force") @DefaultValue("false") boolean force) {
+	public List<ConceptId> deleteSearchIndex(
+		@PathParam(SEARCH_INDEX_ID) SearchIndexId searchIndex,
+		@QueryParam("force") @DefaultValue("false") boolean force) {
 
 		final List<ConceptId> conceptIds = processor.deleteSearchIndex(searchIndex, force);
 		if (!conceptIds.isEmpty() && !force) {
-			throw new BadRequestException(String.format("Cannot delete search index because it is used by these concepts: %s", conceptIds));
+			throw new BadRequestException(
+				String.format("Cannot delete search index because it is used by these concepts: %s", conceptIds));
 		}
 		return conceptIds;
 	}
@@ -186,8 +189,8 @@ public class AdminDatasetResource {
 	@DELETE
 	@Path("internToExtern/{" + INTERN_TO_EXTERN_ID + "}")
 	public List<ConceptId> deleteInternToExternMapping(
-			@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapperId internToExternMapper,
-			@QueryParam("force") @DefaultValue("false") boolean force) {
+		@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapperId internToExternMapper,
+		@QueryParam("force") @DefaultValue("false") boolean force) {
 		return processor.deleteInternToExternMapping(internToExternMapper, force);
 	}
 
@@ -212,10 +215,7 @@ public class AdminDatasetResource {
 	@GET
 	@Path("concepts")
 	public List<ConceptId> listConcepts() {
-		return namespace.getStorage()
-						.getAllConcepts()
-						.map(Concept::getId)
-						.collect(Collectors.toList());
+		return namespace.getStorage().getAllConcepts().map(Concept::getId).collect(Collectors.toList());
 	}
 
 	@DELETE

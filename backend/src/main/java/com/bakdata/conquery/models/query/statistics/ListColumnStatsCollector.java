@@ -21,7 +21,7 @@ public class ListColumnStatsCollector extends ColumnStatsCollector {
 
 	@Override
 	public void consume(@Nullable Object values) {
-		if(values == null){
+		if (values == null) {
 			return;
 		}
 

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -10,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
@@ -71,69 +71,84 @@ public class CollectColumnValuesMessage extends WorkerMessage implements ActionR
 		public void execute() throws Exception {
 			final Map<TableId, List<BucketId>> table2Buckets;
 			try (Stream<BucketId> allBuckets = context.getStorage().getAllBucketIds()) {
-				table2Buckets = allBuckets
-						.collect(Collectors.groupingBy(bucketId -> bucketId.getImp().getTable()));
+				table2Buckets = allBuckets.collect(Collectors.groupingBy(bucketId -> bucketId.getImp().getTable()));
 			}
 
-			final BasicThreadFactory threadFactory =
-					new BasicThreadFactory.Builder()
-							.namingPattern(getClass().getSimpleName() + "-%s".formatted(context.getInfo().getName()) + "-Worker-%d").build();
+			final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern(
+				getClass().getSimpleName() + "-%s".formatted(context.getInfo().getName()) + "-Worker-%d").build();
 
-			final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(MAX_THREADS, threadFactory));
+			final ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(
+				Executors.newFixedThreadPool(MAX_THREADS, threadFactory));
 
 			final AtomicInteger done = new AtomicInteger();
 
-			getProgressReporter().setMax(columns.stream()
-					.filter(column -> table2Buckets.get(column.getTable()) != null).count());
+			getProgressReporter().setMax(
+				columns.stream().filter(column -> table2Buckets.get(column.getTable()) != null).count());
 
 
 			log.info("BEGIN collecting values from {}", Arrays.toString(columns.toArray()));
 
-			final List<? extends ListenableFuture<?>> futures =
-					columns.stream()
-							.filter(column -> table2Buckets.get(column.getTable()) != null)
-							.map(ColumnId::resolve)
-							.map(column -> jobsExecutorService.submit(() -> {
-										final List<BucketId> buckets = table2Buckets.get(column.getTable().getId());
+			final List<? extends ListenableFuture<?>> futures = columns.stream()
+				.filter(
+					column -> table2Buckets.get(column.getTable()) != null)
+				.map(ColumnId::resolve)
+				.map(
+					column -> jobsExecutorService.submit(() -> {
+						final List<BucketId> buckets = table2Buckets.get(column.getTable().getId());
 
-										// Keep track of the values we have already seen
-										HashSet<String> seenValues = new HashSet<>();
+						// Keep track of the values we have already seen
+						HashSet<String> seenValues = new HashSet<>();
 
-										final Stream<String> values = buckets.stream()
-												.map(BucketId::resolve)
-												.flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
-												.filter(seenValues::add);
+						final Stream<String> values = buckets.stream()
+							.map(BucketId::resolve)
+							.flatMap(
+								bucket -> ((StringStore) bucket.getStore(column)).streamValues())
+							.filter(seenValues::add);
 
-										// Chunk values, to produce smaller messages
-										final Iterable<List<String>> partition = Iterables.partition(values::iterator, columValueChunkSize);
+						// Chunk values, to produce smaller messages
+						final Iterable<List<String>> partition = Iterables.partition(
+							values::iterator,
+							columValueChunkSize);
 
-										log.trace("BEGIN Sending column values for {} in {} sized batches",
-												column.getId(), columValueChunkSize
-										);
+						log.trace(
+							"BEGIN Sending column values for {} in {} sized batches",
+							column.getId(),
+							columValueChunkSize
+						);
 
-										int i = 0;
-										for (List<String> chunk : partition) {
-											// Send values to manager
-											final RegisterColumnValues message =
-													new RegisterColumnValues(getMessageId(), context.getInfo().getId(), column.getId(), chunk);
+						int i = 0;
+						for (List<String> chunk : partition) {
+							// Send values to manager
+							final RegisterColumnValues message = new RegisterColumnValues(
+								getMessageId(),
+								context.getInfo().getId(),
+								column.getId(),
+								chunk);
 
-											context.send(message);
+							context.send(message);
 
-											log.trace("Finished sending chunk {} for column '{}'", i++, column.getId());
-										}
+							log.trace("Finished sending chunk {} for column '{}'", i++, column.getId());
+						}
 
-										getProgressReporter().report(1);
-										log.trace("FINISH collections values for column {} as number {}", column.getId(), done.incrementAndGet());
-									})
-							)
-							.toList();
+						getProgressReporter().report(1);
+						log.trace(
+							"FINISH collections values for column {} as number {}",
+							column.getId(),
+							done.incrementAndGet());
+					})
+				)
+				.toList();
 
 
 			// We may do this, because we own this specific ExecutorService.
 			jobsExecutorService.shutdown();
 
 			while (!jobsExecutorService.awaitTermination(30, TimeUnit.SECONDS)) {
-				log.debug("Still waiting for jobs on '{}': {} of {} done", context.getInfo().getName(), done.get(), futures.size());
+				log.debug(
+					"Still waiting for jobs on '{}': {} of {} done",
+					context.getInfo().getName(),
+					done.get(),
+					futures.size());
 			}
 
 			log.info("FINISH collecting values from {}", Arrays.toString(columns.toArray()));
@@ -150,7 +165,9 @@ public class CollectColumnValuesMessage extends WorkerMessage implements ActionR
 	@Override
 	public void afterAllReaction() {
 
-		namespace.getJobManager().addSlowJob(namespace.getFilterSearch().createFinalizeFilterSearchJob(namespace, columns));
+		namespace.getJobManager()
+			.addSlowJob(
+				namespace.getFilterSearch().createFinalizeFilterSearchJob(namespace, columns));
 	}
 
 }

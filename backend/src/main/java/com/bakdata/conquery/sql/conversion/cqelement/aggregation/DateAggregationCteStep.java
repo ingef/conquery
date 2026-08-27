@@ -17,31 +17,33 @@ import lombok.RequiredArgsConstructor;
 enum DateAggregationCteStep implements CteStep {
 
 	// merge or intersect
-	OVERLAP("overlap", OverlapCte::new, null),
-	INTERMEDIATE_TABLE("no_overlap", IntermediateTableCte::new, null),
-	NODE_NO_OVERLAP("node_no_overlap", NodeNoOverlapCte::new, INTERMEDIATE_TABLE),
-	MERGE("merge", MergeCte::new, OVERLAP),
+	OVERLAP("overlap", OverlapCte::new, null), INTERMEDIATE_TABLE(
+		"no_overlap",
+		IntermediateTableCte::new,
+		null), NODE_NO_OVERLAP("node_no_overlap", NodeNoOverlapCte::new, INTERMEDIATE_TABLE), MERGE(
+			"merge",
+			MergeCte::new,
+			OVERLAP),
 
 	// invert
-	ROW_NUMBER("row_numbers", RowNumberCte::new, null),
-	INVERT("inverted_dates", InvertCte::new, ROW_NUMBER);
+	ROW_NUMBER("row_numbers", RowNumberCte::new, null), INVERT("inverted_dates", InvertCte::new, ROW_NUMBER);
 
 	private static final List<DateAggregationCteStep> MERGE_STEPS = List.of(
-			OVERLAP,
-			INTERMEDIATE_TABLE,
-			NODE_NO_OVERLAP,
-			MERGE
+		OVERLAP,
+		INTERMEDIATE_TABLE,
+		NODE_NO_OVERLAP,
+		MERGE
 	);
 
 	private static final List<DateAggregationCteStep> INTERSECT_STEPS = List.of(
-			OVERLAP,
-			INTERMEDIATE_TABLE,
-			MERGE
+		OVERLAP,
+		INTERMEDIATE_TABLE,
+		MERGE
 	);
 
 	private static final List<DateAggregationCteStep> INVERT_STEPS = List.of(
-			ROW_NUMBER,
-			INVERT
+		ROW_NUMBER,
+		INVERT
 	);
 
 	private final String suffix;
@@ -73,12 +75,13 @@ enum DateAggregationCteStep implements CteStep {
 	}
 
 	private static List<DateAggregationCte> createCtes(List<DateAggregationCteStep> requiredSteps) {
-		return requiredSteps.stream()
-							.map(cteStep -> cteStep.getStepConstructor().create(cteStep))
-							.toList();
+		return requiredSteps.stream().map(cteStep -> cteStep.getStepConstructor().create(cteStep)).toList();
 	}
 
-	private static SqlTables createTables(List<? extends CteStep> requiredSteps, QueryStep joinedTable, NameGenerator nameGenerator) {
+	private static SqlTables createTables(
+		List<? extends CteStep> requiredSteps,
+		QueryStep joinedTable,
+		NameGenerator nameGenerator) {
 		Set<? extends CteStep> asSet = new HashSet<>(requiredSteps);
 		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(asSet, joinedTable.getCteName(), nameGenerator);
 		Map<CteStep, CteStep> predecessorMap = CteStep.getDefaultPredecessorMap(asSet);

@@ -1,9 +1,9 @@
 package com.bakdata.conquery.apiv1.frontend;
 
-import java.time.LocalDate;
-import java.util.List;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.util.List;
 
 import com.bakdata.conquery.apiv1.KeyValue;
 import com.bakdata.conquery.models.common.Range;

@@ -48,34 +48,59 @@ public class Jackson {
 	public static <T extends ObjectMapper> T configure(T objectMapper) {
 
 		objectMapper.enable(MapperFeature.PROPAGATE_TRANSIENT_MARKER)
-					.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-					.enable(Feature.ALLOW_UNQUOTED_FIELD_NAMES)
-					.enable(Feature.ALLOW_COMMENTS)
-					.enable(Feature.ALLOW_UNQUOTED_CONTROL_CHARS)
-					.enable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE)
-					.enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
-					.enable(DeserializationFeature.FAIL_ON_NUMBERS_FOR_ENUMS)
-					.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY)
-					.enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-					.enable(DeserializationFeature.FAIL_ON_UNRESOLVED_OBJECT_IDS)
-					.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
-					.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-					.setLocale(Locale.ROOT)
-					.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-					.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS)
-					.enable(SerializationFeature.WRITE_NULL_MAP_VALUES)
-					.registerModule(new JavaTimeModule())
-					.registerModule(new ParameterNamesModule())
-					.registerModule(new GuavaModule())
-					.registerModule(new BlackbirdModule())
-					.registerModule(ConquerySerializersModule.INSTANCE)
-					.setSerializationInclusion(Include.ALWAYS)
-					.setDefaultPropertyInclusion(Include.ALWAYS)
-					//.setAnnotationIntrospector(new RestrictingAnnotationIntrospector())
-					.setInjectableValues(new MutableInjectableValues())
-					.addMixIn(Permission.class, ConqueryPermission.class)
-					.addMixIn(Object2IntMap.class, Object2IntMapMixIn.class)
-					.addMixIn(DefaultSocketSessionConfig.class, DefaultSocketSessionConfigMixIn.class);
+			.enable(
+				DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+			.enable(Feature.ALLOW_UNQUOTED_FIELD_NAMES)
+			.enable(
+				Feature.ALLOW_COMMENTS)
+			.enable(Feature.ALLOW_UNQUOTED_CONTROL_CHARS)
+			.enable(
+				DeserializationFeature.FAIL_ON_INVALID_SUBTYPE)
+			.enable(
+				DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+			.enable(
+				DeserializationFeature.FAIL_ON_NUMBERS_FOR_ENUMS)
+			.enable(
+				DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY)
+			.enable(
+				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+			.enable(
+				DeserializationFeature.FAIL_ON_UNRESOLVED_OBJECT_IDS)
+			.enable(
+				DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+			.disable(
+				SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+			.setLocale(
+				Locale.ROOT)
+			.disable(
+				JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+			.enable(
+				SerializationFeature.WRITE_EMPTY_JSON_ARRAYS)
+			.enable(
+				SerializationFeature.WRITE_NULL_MAP_VALUES)
+			.registerModule(
+				new JavaTimeModule())
+			.registerModule(
+				new ParameterNamesModule())
+			.registerModule(
+				new GuavaModule())
+			.registerModule(
+				new BlackbirdModule())
+			.registerModule(
+				ConquerySerializersModule.INSTANCE)
+			.setSerializationInclusion(
+				Include.ALWAYS)
+			.setDefaultPropertyInclusion(
+				Include.ALWAYS)
+			//.setAnnotationIntrospector(new RestrictingAnnotationIntrospector())
+			.setInjectableValues(new MutableInjectableValues())
+			.addMixIn(
+				Permission.class,
+				ConqueryPermission.class)
+			.addMixIn(Object2IntMap.class, Object2IntMapMixIn.class)
+			.addMixIn(
+				DefaultSocketSessionConfig.class,
+				DefaultSocketSessionConfigMixIn.class);
 
 		return objectMapper;
 	}

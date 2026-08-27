@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.config.auth;
 
-import java.io.File;
-import java.net.URI;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.UriBuilder;
+import java.io.File;
+import java.net.URI;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import com.bakdata.conquery.apiv1.RequestHelper;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -54,14 +54,14 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 
 	@MinDuration(value = 1, unit = TimeUnit.MINUTES)
 	private Duration jwtDuration = Duration.hours(12);
-	
+
 	/**
 	 * The name of the folder the store lives in.
 	 */
 	@NotEmpty
 	private String storeName = "authenticationStore";
 
-	
+
 	@NotNull
 	private File directory = new File("storage");
 
@@ -81,33 +81,45 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 		// and system property
 		return System.getProperty("exodus.cipherId") != null;
 	}
-	
-	@Override
-	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
-		// Token extractor is not needed because this realm depends on the ConqueryTokenRealm
-		AuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, environment.jersey().getResourceConfig());
 
-		log.info("Performing benchmark for default hash function (bcrypt) with max_milliseconds={}", BCRYPT_MAX_MILLISECONDS);
+	@Override
+	public ConqueryAuthenticationRealm createRealm(
+		Environment environment,
+		ConqueryConfig config,
+		AuthorizationController authorizationController) {
+		// Token extractor is not needed because this realm depends on the ConqueryTokenRealm
+		AuthFilter.registerTokenExtractor(
+			JWTokenHandler.JWTokenExtractor.class,
+			environment.jersey().getResourceConfig());
+
+		log.info(
+			"Performing benchmark for default hash function (bcrypt) with max_milliseconds={}",
+			BCRYPT_MAX_MILLISECONDS);
 		final BenchmarkResult<BcryptFunction> result = SystemChecker.benchmarkBcrypt(BCRYPT_MAX_MILLISECONDS);
 
 		final BcryptFunction prototype = result.getPrototype();
 
 
-		log.info("Using bcrypt with {} logarithmic rounds. Elapsed time={}", prototype.getLogarithmicRounds(), result.getElapsed());
+		log.info(
+			"Using bcrypt with {} logarithmic rounds. Elapsed time={}",
+			prototype.getLogarithmicRounds(),
+			result.getElapsed());
 
 		LocalAuthenticationRealm realm = new LocalAuthenticationRealm(
-				environment.getValidator(),
-				Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER),
-				authorizationController.getConqueryTokenRealm(),
-				storeName,
-				directory,
-				passwordStoreConfig,
-				jwtDuration,
-				prototype,
-				CaffeineSpec.parse(caffeineSpec),
-				environment.metrics()
+			environment.getValidator(),
+			Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER),
+			authorizationController.getConqueryTokenRealm(),
+			storeName,
+			directory,
+			passwordStoreConfig,
+			jwtDuration,
+			prototype,
+			CaffeineSpec.parse(caffeineSpec),
+			environment.metrics()
 		);
-		UserAuthenticationManagementProcessor processor = new UserAuthenticationManagementProcessor(realm, authorizationController.getStorage());
+		UserAuthenticationManagementProcessor processor = new UserAuthenticationManagementProcessor(
+			realm,
+			authorizationController.getStorage());
 
 		// Register resources for users to exchange username and password for an access token
 		registerAdminUnprotectedAuthenticationResources(authorizationController.getUnprotectedAuthAdmin(), realm);
@@ -121,30 +133,36 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 		return realm;
 	}
 
-	//////////////////// RESOURCE REGISTRATION ////////////////////
-	public void registerAdminUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig, LocalAuthenticationRealm realm) {
+	//////////////////// RESOURCE REGISTRATION
+	public void registerAdminUnprotectedAuthenticationResources(
+		DropwizardResourceConfig jerseyConfig,
+		LocalAuthenticationRealm realm) {
 		jerseyConfig.register(new TokenResource(realm));
 		jerseyConfig.register(LoginResource.class);
 	}
 
-	public void registerApiUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig, LocalAuthenticationRealm realm) {
+	public void registerApiUnprotectedAuthenticationResources(
+		DropwizardResourceConfig jerseyConfig,
+		LocalAuthenticationRealm realm) {
 		jerseyConfig.register(new TokenResource(realm));
 	}
 
-	public void registerAuthenticationAdminResources(DropwizardResourceConfig jerseyConfig, UserAuthenticationManagementProcessor userProcessor) {
+	public void registerAuthenticationAdminResources(
+		DropwizardResourceConfig jerseyConfig,
+		UserAuthenticationManagementProcessor userProcessor) {
 		jerseyConfig.register(userProcessor);
 
 		jerseyConfig.register(UserAuthenticationManagementResource.class);
 	}
 
-	private Function<ContainerRequestContext,URI> loginProvider(DropwizardResourceConfig unprotectedAuthAdmin) {
+	private Function<ContainerRequestContext, URI> loginProvider(DropwizardResourceConfig unprotectedAuthAdmin) {
 		return (ContainerRequestContext request) -> {
 			return UriBuilder.fromPath(unprotectedAuthAdmin.getUrlPattern())
-							 .path(LoginResource.class)
-							 .queryParam(RedirectingAuthFilter.REDIRECT_URI, UriBuilder.fromUri(RequestHelper.getRequestURL(request))
-																					   .path(AdminServlet.ADMIN_UI)
-																					   .build())
-							 .build();
+				.path(LoginResource.class)
+				.queryParam(
+					RedirectingAuthFilter.REDIRECT_URI,
+					UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build())
+				.build();
 		};
 
 	}

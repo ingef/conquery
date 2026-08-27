@@ -1,5 +1,6 @@
 package com.bakdata.conquery.util.search.internal;
 
+import jakarta.validation.constraints.Min;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,7 +18,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import jakarta.validation.constraints.Min;
 
 import com.bakdata.conquery.util.search.Search;
 import com.google.common.base.Strings;
@@ -96,11 +96,13 @@ public class TrieSearch<T extends Comparable<T>> extends Search<T> {
 		// Sort items according to their weight, then limit.
 		// Note that sorting is in descending order, meaning higher-scores are better.
 		return itemWeights.object2LongEntrySet()
-						  .stream()
-						  .sorted(Comparator.comparing(Object2LongMap.Entry::getLongValue, Comparator.reverseOrder()))
-						  .limit(limit)
-						  .map(Map.Entry::getKey)
-						  .collect(Collectors.toList());
+			.stream()
+			.sorted(
+				Comparator.comparing(Object2LongMap.Entry::getLongValue, Comparator.reverseOrder()))
+			.limit(limit)
+			.map(
+				Map.Entry::getKey)
+			.collect(Collectors.toList());
 	}
 
 	public Object2LongMap<T> collectWeights(Collection<String> queries) {
@@ -128,11 +130,11 @@ public class TrieSearch<T extends Comparable<T>> extends Search<T> {
 			}
 
 			// Collectors::toMap throws IllegalStateException if there are duplicate keys
-			final Map<String, List<T>> ngramHits = ngramSplit(query)
-					.distinct()
-					.collect(Collectors.toMap(
-							Function.identity(),
-							ng -> ngrams.getOrDefault(ng, Collections.emptyList())
+			final Map<String, List<T>> ngramHits = ngramSplit(query).distinct()
+				.collect(
+					Collectors.toMap(
+						Function.identity(),
+						ng -> ngrams.getOrDefault(ng, Collections.emptyList())
 					));
 
 			updateWeights(query, ngramHits, itemWeights, false);
@@ -152,15 +154,20 @@ public class TrieSearch<T extends Comparable<T>> extends Search<T> {
 		}
 
 		return splitPattern.splitAsStream(keyword.trim())
-						   .map(String::trim)
-						   .filter(StringUtils::isNotBlank)
-						   .map(String::toLowerCase);
+			.map(String::trim)
+			.filter(StringUtils::isNotBlank)
+			.map(
+				String::toLowerCase);
 	}
 
 	/**
 	 * Calculate and update weights for all queried items
 	 */
-	private void updateWeights(String query, final Map<String, List<T>> items, Object2LongMap<T> itemWeights, boolean original) {
+	private void updateWeights(
+		String query,
+		final Map<String, List<T>> items,
+		Object2LongMap<T> itemWeights,
+		boolean original) {
 		if (items == null) {
 			return;
 		}
@@ -192,7 +199,8 @@ public class TrieSearch<T extends Comparable<T>> extends Search<T> {
 		}
 
 		return IntStream.range(0, word.length() - ngramLength + 1)
-						.mapToObj(start -> word.substring(start, start + ngramLength));
+			.mapToObj(
+				start -> word.substring(start, start + ngramLength));
 	}
 
 	/**
@@ -205,8 +213,7 @@ public class TrieSearch<T extends Comparable<T>> extends Search<T> {
 		// We prefer same length words.
 		if (query.length() == itemWord.length()) {
 			weight = EXACT_MATCH_WEIGHT;
-		}
-		else {
+		} else {
 			weight = BASE_WEIGHT;
 		}
 
@@ -220,13 +227,14 @@ public class TrieSearch<T extends Comparable<T>> extends Search<T> {
 
 	public List<T> findExact(String searchTerm, int limit) {
 		return Stream.of(searchTerm)
-					   .flatMap(this::split)
-					   .map(whole::get)
-					   .filter(Objects::nonNull)
-					   .flatMap(List::stream)
-					   .distinct()
-					   .limit(limit)
-					   .collect(Collectors.toList());
+			.flatMap(this::split)
+			.map(whole::get)
+			.filter(Objects::nonNull)
+			.flatMap(
+				List::stream)
+			.distinct()
+			.limit(limit)
+			.collect(Collectors.toList());
 	}
 
 	public void addItem(T item, List<String> keywords) {
@@ -237,9 +245,10 @@ public class TrieSearch<T extends Comparable<T>> extends Search<T> {
 
 		// Associate item with all extracted keywords
 		keywords.stream()
-				.filter(Predicate.not(Strings::isNullOrEmpty))
-				.flatMap(this::split)
-				.forEach(word -> doPut(word, item, barrier));
+			.filter(Predicate.not(Strings::isNullOrEmpty))
+			.flatMap(this::split)
+			.forEach(
+				word -> doPut(word, item, barrier));
 	}
 
 	private void ensureWriteable() {
@@ -252,9 +261,9 @@ public class TrieSearch<T extends Comparable<T>> extends Search<T> {
 	private void doPut(String word, T item, Set<String> barrier) {
 		whole.computeIfAbsent(word, (ignored) -> new ArrayList<>()).add(item);
 
-		ngramSplit(word)
-				.filter(barrier::add)
-				.forEach(key -> ngrams.computeIfAbsent(key, (ignored) -> new ArrayList<>()).add(item));
+		ngramSplit(word).filter(barrier::add)
+			.forEach(
+				key -> ngrams.computeIfAbsent(key, (ignored) -> new ArrayList<>()).add(item));
 	}
 
 	public boolean isWriteable() {
@@ -293,9 +302,7 @@ public class TrieSearch<T extends Comparable<T>> extends Search<T> {
 	}
 
 	public Stream<T> stream() {
-		return whole.values().stream()
-					.flatMap(Collection::stream)
-					.distinct();
+		return whole.values().stream().flatMap(Collection::stream).distinct();
 	}
 
 	public Iterator<T> iterator() {
@@ -303,8 +310,8 @@ public class TrieSearch<T extends Comparable<T>> extends Search<T> {
 		final Set<T> seen = new HashSet<>();
 
 		return Iterators.filter(
-				Iterators.concat(Iterators.transform(whole.values().iterator(), Collection::iterator)),
-				seen::add
+			Iterators.concat(Iterators.transform(whole.values().iterator(), Collection::iterator)),
+			seen::add
 		);
 	}
 

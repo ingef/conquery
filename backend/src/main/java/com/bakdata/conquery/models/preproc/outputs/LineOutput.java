@@ -17,7 +17,7 @@ import lombok.ToString;
  */
 @NoArgsConstructor(onConstructor_ = @JsonCreator)
 @ToString
-@CPSType(id="LINE", base= OutputDescription.class)
+@CPSType(id = "LINE", base = OutputDescription.class)
 public class LineOutput extends OutputDescription {
 
 
@@ -45,6 +45,7 @@ public class LineOutput extends OutputDescription {
 	public MajorTypeId getResultType() {
 		return MajorTypeId.INTEGER;
 	}
+
 	@Override
 	public Parser<?, ?> createParser(ConqueryConfig config) {
 

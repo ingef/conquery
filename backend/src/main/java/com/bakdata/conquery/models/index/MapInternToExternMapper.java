@@ -2,13 +2,13 @@ package com.bakdata.conquery.models.index;
 
 import static com.bakdata.conquery.util.io.LogUtil.passExceptionOnTrace;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Initializing;
@@ -76,7 +76,12 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 	@EqualsAndHashCode.Exclude
 	private CompletableFuture<Index<String>> int2ext;
 
-	public MapInternToExternMapper(@NotEmpty String name, @NotNull URI csv, @NotEmpty String internalColumn, @NotEmpty String externalTemplate, boolean allowMultiple) {
+	public MapInternToExternMapper(
+		@NotEmpty String name,
+		@NotNull URI csv,
+		@NotEmpty String internalColumn,
+		@NotEmpty String externalTemplate,
+		boolean allowMultiple) {
 		this.name = name;
 		this.csv = csv;
 		this.internalColumn = internalColumn;
@@ -101,13 +106,12 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 		int2ext = CompletableFuture.supplyAsync(() -> {
 			try {
 				return mapIndex.<Index<String>>getIndex(key);
-			}
-			catch (IndexCreationException e) {
+			} catch (IndexCreationException e) {
 				throw new IllegalStateException(e);
 			}
 		}).whenComplete((m, e) -> {
 			if (e != null) {
-				log.warn("Unable to get index: {} (enable TRACE for exception)", key, passExceptionOnTrace(log,e));
+				log.warn("Unable to get index: {} (enable TRACE for exception)", key, passExceptionOnTrace(log, e));
 			}
 		});
 	}
@@ -123,10 +127,12 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 				}
 
 				return mapped;
-			}
-			catch (InterruptedException | ExecutionException e) {
+			} catch (InterruptedException | ExecutionException e) {
 				// Should never be reached
-				log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, passExceptionOnTrace(log,e));
+				log.warn(
+					"Unable to resolve mapping for internal value {} (enable TRACE for exception)",
+					internalValue,
+					passExceptionOnTrace(log, e));
 			}
 		}
 
@@ -156,10 +162,12 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 		if (indexAvailable()) {
 			try {
 				return int2ext.get().external(internalValue);
-			}
-			catch (InterruptedException | ExecutionException e) {
+			} catch (InterruptedException | ExecutionException e) {
 				// Should never be reached
-				log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, passExceptionOnTrace(log,e));
+				log.warn(
+					"Unable to resolve mapping for internal value {} (enable TRACE for exception)",
+					internalValue,
+					passExceptionOnTrace(log, e));
 			}
 		}
 

@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.config.search.solr;
 
-import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.search.SearchConfig;
@@ -48,23 +48,26 @@ public class SolrConfig implements SearchConfig {
 	@Min(1)
 	private int indexerClientQueueSize = 10;
 
-    /**
-     * Prefer http/1.1.
-     * This might help with network problems (e.g. reverse proxy).
-     * If unset, solr client tests a property see {@link HttpJdkSolrClient.Builder#useHttp1_1(boolean)}.
-     */
-    @Nullable
-    private Boolean useHttp1_1;
+	/**
+	 * Prefer http/1.1.
+	 * This might help with network problems (e.g. reverse proxy).
+	 * If unset, solr client tests a property see {@link HttpJdkSolrClient.Builder#useHttp1_1(boolean)}.
+	 */
+	@Nullable
+	private Boolean useHttp1_1;
 
-    @Override
+	@Override
 	public SolrProcessor createSearchProcessor(Environment environment, DatasetId datasetId) {
-		SolrProcessor solrProcessor = new SolrProcessor(() -> createSearchClient(datasetId.getName()),() -> createIndexClient(datasetId.getName()), commitWithin, filterValue);
+		SolrProcessor solrProcessor = new SolrProcessor(
+			() -> createSearchClient(datasetId.getName()),
+			() -> createIndexClient(datasetId.getName()),
+			commitWithin,
+			filterValue);
 
 		try {
 			solrProcessor.start();
 			return solrProcessor;
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -72,9 +75,9 @@ public class SolrConfig implements SearchConfig {
 	public SolrClient createSearchClient(@Nullable String collection) {
 		log.info("Creating solr search client. Base url: {}, Collection: {})", baseSolrUrl, collection);
 
-		HttpJdkSolrClient.Builder builder = new HttpJdkSolrClient.Builder(baseSolrUrl)
-				.withConnectionTimeout(connectionTimeout.toSeconds(), TimeUnit.SECONDS)
-				.withRequestTimeout(requestTimeout.toSeconds(), TimeUnit.SECONDS);
+		HttpJdkSolrClient.Builder builder = new HttpJdkSolrClient.Builder(baseSolrUrl).withConnectionTimeout(
+			connectionTimeout.toSeconds(),
+			TimeUnit.SECONDS).withRequestTimeout(requestTimeout.toSeconds(), TimeUnit.SECONDS);
 
 		if (collection != null) {
 			builder.withDefaultCollection(collection);
@@ -84,35 +87,37 @@ public class SolrConfig implements SearchConfig {
 			builder.withBasicAuthCredentials(username, password);
 		}
 
-        if (useHttp1_1 != null) {
-            builder.useHttp1_1(useHttp1_1);
-        }
+		if (useHttp1_1 != null) {
+			builder.useHttp1_1(useHttp1_1);
+		}
 
 
-        return builder.build();
+		return builder.build();
 	}
 
 	public SolrClient createIndexClient(@Nullable String collection) {
 		log.info("Creating solr index client. Base url: {}, Collection: {})", baseSolrUrl, collection);
 
-		Http2SolrClient.Builder http2Builder = new Http2SolrClient.Builder(baseSolrUrl)
-				.withConnectionTimeout(connectionTimeout.toSeconds(), TimeUnit.SECONDS)
-				.withRequestTimeout(requestTimeout.toSeconds(), TimeUnit.SECONDS);
+		Http2SolrClient.Builder http2Builder = new Http2SolrClient.Builder(baseSolrUrl).withConnectionTimeout(
+			connectionTimeout.toSeconds(),
+			TimeUnit.SECONDS).withRequestTimeout(requestTimeout.toSeconds(), TimeUnit.SECONDS);
 
 		if (username != null) {
 			http2Builder.withBasicAuthCredentials(username, password);
 		}
 
-        if (useHttp1_1 != null) {
-            http2Builder.useHttp1_1(useHttp1_1);
-        }
+		if (useHttp1_1 != null) {
+			http2Builder.useHttp1_1(useHttp1_1);
+		}
 
 		Http2SolrClient http2Client = http2Builder.build();
 
-		ConcurrentUpdateHttp2SolrClient.Builder concurrentClientBuilder = new ConcurrentUpdateHttp2SolrClient.Builder(baseSolrUrl, http2Client)
-				.withDefaultCollection(collection)
+		ConcurrentUpdateHttp2SolrClient.Builder concurrentClientBuilder = new ConcurrentUpdateHttp2SolrClient.Builder(
+			baseSolrUrl,
+			http2Client).withDefaultCollection(collection)
 				.withQueueSize(indexerClientQueueSize)
-				.withThreadCount(indexerClientThreads);
+				.withThreadCount(
+					indexerClientThreads);
 
 
 		return concurrentClientBuilder.build();
@@ -126,8 +131,7 @@ public class SolrConfig implements SearchConfig {
 				String status = (String) response.get("status");
 				if ("healthy".equalsIgnoreCase(status) || "ok".equalsIgnoreCase(status)) {
 					return Result.builder().healthy().build();
-				}
-				else {
+				} else {
 					return Result.unhealthy(status);
 				}
 			}

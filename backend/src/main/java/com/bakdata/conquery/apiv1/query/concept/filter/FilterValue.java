@@ -1,9 +1,9 @@
 package com.bakdata.conquery.apiv1.query.concept.filter;
 
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -85,8 +85,7 @@ public abstract class FilterValue<VALUE> {
 
 			if (size > 20) {
 				valueString = size + " values";
-			}
-			else {
+			} else {
 				valueString = readValue().toString();
 			}
 
@@ -110,8 +109,7 @@ public abstract class FilterValue<VALUE> {
 
 			if (size > 20) {
 				valueString = size + " values";
-			}
-			else {
+			} else {
 				valueString = readValue().toString();
 			}
 

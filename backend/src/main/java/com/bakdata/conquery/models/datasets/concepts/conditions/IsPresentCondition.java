@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import static org.jooq.impl.DSL.*;
 import static org.jooq.impl.SQLDataType.BOOLEAN;
-import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +16,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.jooq.Condition;
-import org.jooq.impl.DSL;
 
 /**
  * This condition requires that the selected Column has a value.
@@ -44,7 +42,9 @@ public class IsPresentCondition implements CTCondition {
 	@Override
 	public ConceptConditions buildExpression(CTConditionContext context, ConceptElement<?> id) {
 
-		FieldCondition condition = new FieldCondition(context.getFunctionProvider().isNull(field(name(column))), Set.of(inline(false)));
+		FieldCondition condition = new FieldCondition(
+			context.getFunctionProvider().isNull(field(name(column))),
+			Set.of(inline(false)));
 		return new ConceptConditions(id, Map.of(field(name("%s_is_empty".formatted(column)), BOOLEAN), condition));
 	}
 }

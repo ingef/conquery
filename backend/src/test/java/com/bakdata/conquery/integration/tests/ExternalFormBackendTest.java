@@ -4,13 +4,6 @@ import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 
-import java.io.File;
-import java.net.URI;
-import java.nio.file.Path;
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
@@ -18,6 +11,13 @@ import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
+import java.io.File;
+import java.net.URI;
+import java.nio.file.Path;
+import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
@@ -65,13 +65,14 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 			final StandaloneSupport support = testConquery.getSupport(name);
 
 			log.info("Test health");
-			assertThat(testConquery.getStandaloneCommand()
-								   .getManagerNode()
-								   .getEnvironment()
-								   .healthChecks()
-								   .runHealthCheck(FORM_BACKEND_ID)
-								   .isHealthy())
-					.describedAs("Checking health of form backend").isTrue();
+			assertThat(
+				testConquery.getStandaloneCommand()
+					.getManagerNode()
+					.getEnvironment()
+					.healthChecks()
+					.runHealthCheck(
+						FORM_BACKEND_ID)
+					.isHealthy()).describedAs("Checking health of form backend").isTrue();
 
 			log.info("Get external form configs");
 			final FormScanner formScanner = testConquery.getStandaloneCommand().getManagerNode().getFormScanner();
@@ -82,60 +83,71 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 
 			log.info("Get version info");
 			final UriBuilder apiUriBuilder = testConquery.getSupport(name).defaultApiURIBuilder();
-			final URI frontendConfigURI = HierarchyHelper.hierarchicalPath(apiUriBuilder.clone(), ConfigResource.class, "getFrontendConfig")
-														 .build();
+			final URI frontendConfigURI = HierarchyHelper.hierarchicalPath(
+				apiUriBuilder.clone(),
+				ConfigResource.class,
+				"getFrontendConfig").build();
 			Client client = support.getClient();
-			final FrontendConfiguration
-					frontendConfiguration =
-					client.target(frontendConfigURI).request(MediaType.APPLICATION_JSON_TYPE).get().readEntity(FrontendConfiguration.class);
+			final FrontendConfiguration frontendConfiguration = client.target(frontendConfigURI)
+				.request(
+					MediaType.APPLICATION_JSON_TYPE)
+				.get()
+				.readEntity(FrontendConfiguration.class);
 
-			assertThat(frontendConfiguration.versions())
-					.describedAs("Checking health of form backend")
-					.contains(new VersionContainer(FORM_BACKEND_ID,
-												   "3.2.1-ge966c285",
-												   ZonedDateTime.parse("2007-08-31T16:47:00+00:00")
+			assertThat(frontendConfiguration.versions()).describedAs("Checking health of form backend")
+				.contains(
+					new VersionContainer(
+						FORM_BACKEND_ID,
+						"3.2.1-ge966c285",
+						ZonedDateTime.parse("2007-08-31T16:47:00+00:00")
 					)); // example value from OpenAPI Spec
 
 			log.info("Send an external form");
 			final User testUser = support.getTestUser();
-			final ManagedExecutionId
-					managedExecutionId =
-					IntegrationUtils.assertQueryResult(support,
-													   String.format("{\"type\": \"%s\", \"testProp\": \"testVal\"}", externalFormId),
-													   -1,
-													   ExecutionState.DONE,
-													   testUser,
-													   201
-					);
+			final ManagedExecutionId managedExecutionId = IntegrationUtils.assertQueryResult(
+				support,
+				String.format("{\"type\": \"%s\", \"testProp\": \"testVal\"}", externalFormId),
+				-1,
+				ExecutionState.DONE,
+				testUser,
+				201
+			);
 
 			log.info("Request state");
 			assert managedExecutionId != null;
-			final FullExecutionStatus executionStatus = IntegrationUtils.getExecutionStatus(support, managedExecutionId, testUser, 200);
+			final FullExecutionStatus executionStatus = IntegrationUtils.getExecutionStatus(
+				support,
+				managedExecutionId,
+				testUser,
+				200);
 
 			assertThat(executionStatus.getStatus()).isEqualTo(ExecutionState.DONE);
 
 			// Generate asset urls and check them in the status
-			final ManagedExecution storedExecution = testConquery.getSupport(name).getMetaStorage().getExecution(managedExecutionId);
-			final URI
-					downloadUrlAsset1 =
-					ResultExternalResource.getDownloadURL(apiUriBuilder.clone(), (ExternalExecution) storedExecution, executionStatus.getResultUrls()
-																																	 .get(0)
-																																	 .getAssetId());
-			final URI
-					downloadUrlAsset2 =
-					ResultExternalResource.getDownloadURL(apiUriBuilder.clone(), (ExternalExecution) storedExecution, executionStatus.getResultUrls()
-																																	 .get(1)
-																																	 .getAssetId());
+			final ManagedExecution storedExecution = testConquery.getSupport(name)
+				.getMetaStorage()
+				.getExecution(
+					managedExecutionId);
+			final URI downloadUrlAsset1 = ResultExternalResource.getDownloadURL(
+				apiUriBuilder.clone(),
+				(ExternalExecution) storedExecution,
+				executionStatus.getResultUrls().get(0).getAssetId());
+			final URI downloadUrlAsset2 = ResultExternalResource.getDownloadURL(
+				apiUriBuilder.clone(),
+				(ExternalExecution) storedExecution,
+				executionStatus.getResultUrls().get(1).getAssetId());
 
 
-			assertThat(executionStatus.getResultUrls()).containsExactly(new ResultAsset("Result", downloadUrlAsset1),
-																		new ResultAsset("Another Result", downloadUrlAsset2)
+			assertThat(executionStatus.getResultUrls()).containsExactly(
+				new ResultAsset("Result", downloadUrlAsset1),
+				new ResultAsset("Another Result", downloadUrlAsset2)
 			);
 
 			log.info("Download Result");
-			final String
-					response =
-					client.target(executionStatus.getResultUrls().get(0).url()).request(TEXT_PLAIN_TYPE).get(String.class);
+			final String response = client.target(executionStatus.getResultUrls().get(0).url())
+				.request(
+					TEXT_PLAIN_TYPE)
+				.get(String.class);
 
 			assertThat(response).isEqualTo("Hello");
 
@@ -151,39 +163,53 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 
 
 				// DELETE provider
-				Invocation.Builder unregisterFormBackend = client.target(HierarchyHelper.hierarchicalPath(adminUrlBuilder.clone(), ConfigApi.class, "deleteFormBackend").buildFromMap(
-																		 Map.of("configId", FORM_BACKEND_ID)))
-																 .request(MediaType.APPLICATION_JSON);
+				Invocation.Builder unregisterFormBackend = client.target(
+					HierarchyHelper.hierarchicalPath(
+						adminUrlBuilder.clone(),
+						ConfigApi.class,
+						"deleteFormBackend")
+						.buildFromMap(
+							Map.of("configId", FORM_BACKEND_ID))).request(MediaType.APPLICATION_JSON);
 				try (Response response1 = unregisterFormBackend.delete()) {
 					assertThat(response1.readEntity(String.class)).isEqualTo(FORM_BACKEND_ID);
 				}
 
 				// List providers
-				Invocation.Builder listFormBackend = client.target(HierarchyHelper.hierarchicalPath(adminUrlBuilder.clone(), ConfigApi.class, "listFormBackends"))
-														   .request(MediaType.APPLICATION_JSON);
+				Invocation.Builder listFormBackend = client.target(
+					HierarchyHelper.hierarchicalPath(
+						adminUrlBuilder.clone(),
+						ConfigApi.class,
+						"listFormBackends")).request(MediaType.APPLICATION_JSON);
 				try (Response response1 = listFormBackend.get()) {
-					assertThat(response1.readEntity(new GenericType<List<String>>(){})).containsExactly("internal");
+					assertThat(response1.readEntity(new GenericType<List<String>>() {
+					})).containsExactly("internal");
 				}
 
 				// POST config
-				Invocation.Builder registerFormBackend = client.target(HierarchyHelper.hierarchicalPath(adminUrlBuilder.clone(), ConfigApi.class, "registerFormBackend"))
-															   .request(MediaType.APPLICATION_JSON);
+				Invocation.Builder registerFormBackend = client.target(
+					HierarchyHelper.hierarchicalPath(
+						adminUrlBuilder.clone(),
+						ConfigApi.class,
+						"registerFormBackend")).request(MediaType.APPLICATION_JSON);
 				try (Response response1 = registerFormBackend.post(Entity.json(externalConf))) {
 					assertThat(response1.readEntity(String.class)).isEqualTo(FORM_BACKEND_ID);
 				}
 
 				// List providers after deletion
-				listFormBackend = client.target(HierarchyHelper.hierarchicalPath(adminUrlBuilder.clone(), ConfigApi.class, "listFormBackends"))
-														   .request(MediaType.APPLICATION_JSON);
+				listFormBackend = client.target(
+					HierarchyHelper.hierarchicalPath(
+						adminUrlBuilder.clone(),
+						ConfigApi.class,
+						"listFormBackends")).request(MediaType.APPLICATION_JSON);
 				try (Response response1 = listFormBackend.get()) {
-					assertThat(response1.readEntity(new GenericType<List<String>>(){})).containsExactlyInAnyOrder("internal", FORM_BACKEND_ID);
+					assertThat(response1.readEntity(new GenericType<List<String>>() {
+					})).containsExactlyInAnyOrder("internal", FORM_BACKEND_ID);
 				}
 
 			}
 
 			log.info("Stopping mock form backend server");
-		}
-		finally {
+		} finally {
 			formBackend.stop();
 		}
 	}
@@ -208,7 +234,9 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 
 		// Create new storage path to prevent xodus lock conflicts
 		XodusStoreFactory storageConfig = (XodusStoreFactory) conf.getStorage();
-		final Path storageDir = workdir.toPath().resolve(storageConfig.getDirectory().resolve(getClass().getSimpleName()));
+		final Path storageDir = workdir.toPath()
+			.resolve(
+				storageConfig.getDirectory().resolve(getClass().getSimpleName()));
 
 		return conf.withStorage(storageConfig.withDirectory(storageDir));
 	}
@@ -221,7 +249,8 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 
 		final URI baseURI = URI.create(String.format("http://127.0.0.1:%d", formBackend.getPort()));
 
-		Expectation[] expectations = formBackend.upsert(OpenAPIExpectation.openAPIExpectation("/com/bakdata/conquery/external/openapi-form-backend.yaml"));
+		Expectation[] expectations = formBackend.upsert(
+			OpenAPIExpectation.openAPIExpectation("/com/bakdata/conquery/external/openapi-form-backend.yaml"));
 
 
 		// Result request matcher
@@ -230,7 +259,12 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 
 		// Trap: Log failed request
 		formBackend.when(request()).respond(httpRequest -> {
-			log.error("{} on {}\n\t Headers: {}\n\tBody {}", httpRequest.getMethod(), httpRequest.getPath(), httpRequest.getHeaderList(), httpRequest.getBodyAsString());
+			log.error(
+				"{} on {}\n\t Headers: {}\n\tBody {}",
+				httpRequest.getMethod(),
+				httpRequest.getPath(),
+				httpRequest.getHeaderList(),
+				httpRequest.getBodyAsString());
 			return HttpResponse.notFoundResponse();
 		});
 		return baseURI;

@@ -1,5 +1,11 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -28,17 +34,11 @@ import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.*;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -77,13 +77,11 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 		switch (selectId) {
 			case ConceptSelectId conceptSelectId -> {
-				cqConcept.setTables(conceptSelectId.getConcept().resolve()
-						.getConnectors().stream()
-						.map(conn -> {
-							final CQTable table = new CQTable();
-							table.setConnector(conn.getId());
-							return table;
-						}).toList());
+				cqConcept.setTables(conceptSelectId.getConcept().resolve().getConnectors().stream().map(conn -> {
+					final CQTable table = new CQTable();
+					table.setConnector(conn.getId());
+					return table;
+				}).toList());
 
 				cqConcept.setSelects(List.of(conceptSelectId));
 			}
@@ -120,10 +118,11 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	private static List<Aggregator<?>> createAggregators(ConceptQueryPlan plan, List<? extends SelectId> selects) {
 
 		return selects.stream()
-				.map(SelectId::resolve)
-				.map(Select::createAggregator)
-				.peek(plan::registerAggregator)
-				.collect(Collectors.toList());
+			.map(SelectId::resolve)
+			.map(Select::createAggregator)
+			.peek(
+				plan::registerAggregator)
+			.collect(Collectors.toList());
 	}
 
 	private static List<FilterNode<?>> createFilters(CQTable table, boolean disableAggregationFilters) {
@@ -183,7 +182,8 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		aggregateEventDates = !(excludeFromTimeAggregation || DateAggregationMode.NONE.equals(context.getDateAggregationMode()));
+		aggregateEventDates = !(excludeFromTimeAggregation || DateAggregationMode.NONE.equals(
+			context.getDateAggregationMode()));
 		tables.forEach(t -> t.resolve(context));
 	}
 
@@ -216,28 +216,29 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 			// Exists aggregators hold a reference to their parent FiltersNode, so they need to be treated separately.
 			// They also don't need aggregation as they simply imitate their reference.
-			final List<ExistsAggregator> existsAggregators =
-					connectorAggregators.stream()
-							.filter(ExistsAggregator.class::isInstance)
-							.map(ExistsAggregator.class::cast)
-							.toList();
+			final List<ExistsAggregator> existsAggregators = connectorAggregators.stream()
+				.filter(
+					ExistsAggregator.class::isInstance)
+				.map(ExistsAggregator.class::cast)
+				.toList();
 
 			aggregators.addAll(connectorAggregators);
 
 			aggregators.removeIf(ExistsAggregator.class::isInstance);
 
 
-			final EventDateUnionAggregator eventDateUnionAggregator =
-					aggregateEventDates ? new EventDateUnionAggregator()
-							: null;
+			final EventDateUnionAggregator eventDateUnionAggregator = aggregateEventDates ? new EventDateUnionAggregator() : null;
 
 			if (aggregateEventDates) {
 				aggregators.add(eventDateUnionAggregator);
 			}
 
-			final QPNode
-					conceptSpecificNode =
-					getConcept().createConceptQuery(context, filters, aggregators, eventDateUnionAggregator, selectValidityDate(table));
+			final QPNode conceptSpecificNode = getConcept().createConceptQuery(
+				context,
+				filters,
+				aggregators,
+				eventDateUnionAggregator,
+				selectValidityDate(table));
 
 			if (eventDateUnionAggregator != null) {
 				eventDateUnionAggregator.setOwner(conceptSpecificNode);
@@ -247,26 +248,31 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			existsAggregators.forEach(agg -> agg.setReference(conceptSpecificNode));
 
 			// Select if matching secondaryId available
-			final boolean hasSelectedSecondaryId = context.getSelectedSecondaryId() != null && table.hasSelectedSecondaryId(context.getSelectedSecondaryId().getId());
+			final boolean hasSelectedSecondaryId = context.getSelectedSecondaryId() != null && table
+				.hasSelectedSecondaryId(
+					context.getSelectedSecondaryId().getId());
 
 			final ConceptNode node = new ConceptNode(
-					conceptSpecificNode,
-					elements.stream().<ConceptElement<?>>map(ConceptElementId::resolve).toList(),
-					table,
-					// if the node is excluded, don't pass it into the Node.
-					!excludeFromSecondaryId && hasSelectedSecondaryId ? context.getSelectedSecondaryId() : null
+				conceptSpecificNode,
+				elements.stream().<ConceptElement<?>>map(ConceptElementId::resolve).toList(),
+				table,
+				// if the node is excluded, don't pass it into the Node.
+				!excludeFromSecondaryId && hasSelectedSecondaryId ? context.getSelectedSecondaryId() : null
 			);
 
 			tableNodes.add(node);
 		}
 
 		// We always merge on concept level
-		final QPNode outNode = OrNode.of(tableNodes, aggregateEventDates ? DateAggregationAction.MERGE : DateAggregationAction.BLOCK);
+		final QPNode outNode = OrNode.of(
+			tableNodes,
+			aggregateEventDates ? DateAggregationAction.MERGE : DateAggregationAction.BLOCK);
 
 		// Link concept-level Exists-select to outer node.
 		conceptAggregators.stream()
-				.filter(aggregator -> aggregator instanceof ExistsAggregator)
-				.forEach(aggregator -> ((ExistsAggregator) aggregator).setReference(outNode));
+			.filter(aggregator -> aggregator instanceof ExistsAggregator)
+			.forEach(
+				aggregator -> ((ExistsAggregator) aggregator).setReference(outNode));
 
 		return outNode;
 	}
@@ -313,9 +319,12 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
 		final Set<ConnectorId> connectors = getTables().stream().map(CQTable::getConnector).collect(Collectors.toSet());
 
-		return new RequiredEntities(context.getBucketManager()
-				.getEntitiesWithConcepts(getElements(),
-						connectors, context.getDateRestriction()
+		return new RequiredEntities(
+			context.getBucketManager()
+				.getEntitiesWithConcepts(
+					getElements(),
+					connectors,
+					context.getDateRestriction()
 				));
 	}
 
@@ -363,9 +372,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	@Override
 	public void setDefaultSelects() {
-		final boolean allTablesEmpty = getTables().stream()
-				.map(CQTable::getSelects)
-				.allMatch(List::isEmpty);
+		final boolean allTablesEmpty = getTables().stream().map(CQTable::getSelects).allMatch(List::isEmpty);
 
 		if (!(getSelects().isEmpty() && (tables.isEmpty() || allTablesEmpty))) {
 			// Don't fill if there are any selects on concept level or on any table level
@@ -379,10 +386,14 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 		for (CQTable t : getTables()) {
 			final List<ConnectorSelectId> conSelects = new ArrayList<>(t.getSelects());
-			conSelects.addAll(t.getConnector().resolve()
-					.getDefaultSelects().stream()
+			conSelects.addAll(
+				t.getConnector()
+					.resolve()
+					.getDefaultSelects()
+					.stream()
 					.map(Select::getId)
-					.map(ConnectorSelectId.class::cast)
+					.map(
+						ConnectorSelectId.class::cast)
 					.toList());
 
 			t.setSelects(conSelects);

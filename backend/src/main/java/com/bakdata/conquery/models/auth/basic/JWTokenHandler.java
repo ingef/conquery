@@ -1,9 +1,10 @@
 package com.bakdata.conquery.models.auth.basic;
 
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.HttpHeaders;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Random;
-
 import javax.annotation.Nullable;
 
 import com.auth0.jwt.JWT;
@@ -12,8 +13,6 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.bakdata.conquery.models.auth.web.AuthFilter;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import io.dropwizard.util.Duration;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.HttpHeaders;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -38,7 +37,13 @@ public class JWTokenHandler {
 	public String createToken(String username, Duration duration, String issuer, Algorithm algorithm) {
 		Date issueDate = new Date();
 		Date expDate = DateUtils.addMinutes(issueDate, Long.valueOf(duration.toMinutes()).intValue());
-		String token = JWT.create().withIssuer(issuer).withSubject(username).withIssuedAt(issueDate).withExpiresAt(expDate).sign(algorithm);
+		String token = JWT.create()
+			.withIssuer(issuer)
+			.withSubject(username)
+			.withIssuedAt(issueDate)
+			.withExpiresAt(
+				expDate)
+			.sign(algorithm);
 		return token;
 	}
 
@@ -108,16 +113,14 @@ public class JWTokenHandler {
 			if (tokenHeader == null && tokenQuery == null) {
 				// No token could be parsed
 				return null;
-			}
-			else if (tokenHeader != null && tokenQuery != null) {
-				log.warn("There were tokens in the request header and query string provided, which is forbidden. See: https://tools.ietf.org/html/rfc6750#section-2");
+			} else if (tokenHeader != null && tokenQuery != null) {
+				log.warn(
+					"There were tokens in the request header and query string provided, which is forbidden. See: https://tools.ietf.org/html/rfc6750#section-2");
 				return null;
-			}
-			else if (tokenHeader != null) {
+			} else if (tokenHeader != null) {
 				log.trace("Extracted the request header token");
 				token = tokenHeader;
-			}
-			else {
+			} else {
 				log.trace("Extracted the query string token");
 				token = tokenQuery;
 			}
@@ -126,8 +129,7 @@ public class JWTokenHandler {
 				JWT.decode(token);
 				return new BearerToken(token);
 
-			}
-			catch (JWTDecodeException e) {
+			} catch (JWTDecodeException e) {
 				return null;
 			}
 		}

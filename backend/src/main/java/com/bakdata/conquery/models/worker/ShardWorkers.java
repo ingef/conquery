@@ -53,9 +53,10 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 
 
 	public ShardWorkers(
-			ThreadPoolDefinition queryThreadPoolDefinition,
-			InternalMapperFactory internalMapperFactory,
-			int secondaryIdSubPlanRetention, Clock clock) {
+		ThreadPoolDefinition queryThreadPoolDefinition,
+		InternalMapperFactory internalMapperFactory,
+		int secondaryIdSubPlanRetention,
+		Clock clock) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
 
 		// TODO This shouldn't be coupled to the query thread pool definition
@@ -69,14 +70,16 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 	}
 
 	public Worker openWorker(WorkerStorage storage, boolean failOnError, boolean loadStorage) {
-		return Worker.create(storage,
-							 this,
-							 queryThreadPoolDefinition,
-							 jobsThreadPool,
-							 clock, failOnError,
-							 secondaryIdSubPlanRetention,
-							 internalMapperFactory.createWorkerPersistenceMapper(storage),
-							 loadStorage
+		return Worker.create(
+			storage,
+			this,
+			queryThreadPoolDefinition,
+			jobsThreadPool,
+			clock,
+			failOnError,
+			secondaryIdSubPlanRetention,
+			internalMapperFactory.createWorkerPersistenceMapper(storage),
+			loadStorage
 		);
 	}
 
@@ -87,7 +90,12 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 	}
 
 	@SneakyThrows
-	public Worker newWorker(Dataset dataset, @NonNull String name, @NonNull NetworkSession session, StoreFactory storageConfig, boolean failOnError) {
+	public Worker newWorker(
+		Dataset dataset,
+		@NonNull String name,
+		@NonNull NetworkSession session,
+		StoreFactory storageConfig,
+		boolean failOnError) {
 
 		// Create a new worker storage with minimal information and close it immediately so we can pass it to the normal method, that is used to instantiate existing workers
 		try (final WorkerStorage workerStorage = new WorkerStorageImpl(storageConfig, name)) {
@@ -106,14 +114,16 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 		//
 		WorkerStorageImpl workerStorage = new WorkerStorageImpl(storageConfig, name);
 		final ObjectMapper persistenceMapper = internalMapperFactory.createWorkerPersistenceMapper(workerStorage);
-		final Worker worker = Worker.create(workerStorage,
-											this,
-											queryThreadPoolDefinition,
-											jobsThreadPool,
-											clock, failOnError,
-											secondaryIdSubPlanRetention,
-											persistenceMapper,
-											true
+		final Worker worker = Worker.create(
+			workerStorage,
+			this,
+			queryThreadPoolDefinition,
+			jobsThreadPool,
+			clock,
+			failOnError,
+			secondaryIdSubPlanRetention,
+			persistenceMapper,
+			true
 		);
 		worker.setSession(session);
 
@@ -142,8 +152,7 @@ public class ShardWorkers implements NamespacedStorageProvider, Managed {
 		workers.remove(removed.getInfo().getId());
 		try {
 			removed.remove();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error("Failed to remove storage {}", removed, e);
 		}
 	}

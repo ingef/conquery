@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import jakarta.validation.Validator;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,7 +13,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -132,8 +132,7 @@ public class AdminProcessor {
 		for (User user : users) {
 			try {
 				addUser(user);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error("Failed to add User: {}", user, e);
 			}
 		}
@@ -152,8 +151,7 @@ public class AdminProcessor {
 		for (Group group : groups) {
 			try {
 				addGroup(group);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error("Failed to add Group: {}", group, e);
 			}
 		}
@@ -218,14 +216,11 @@ public class AdminProcessor {
 	public String getPermissionOverviewAsCSV(Stream<User> users) {
 		final StringWriter sWriter = new StringWriter();
 		final CsvWriter writer = config.getCsv().createWriter(sWriter);
-		final List<String> scope = config
-				.getAuthorizationRealms()
-				.getOverviewScope();
+		final List<String> scope = config.getAuthorizationRealms().getOverviewScope();
 		// Header
 		writeAuthOverviewHeader(writer, scope);
 		// Body
-		users.forEach(user ->
-							  writeAuthOverviewUser(writer, scope, user, storage, config)
+		users.forEach(user -> writeAuthOverviewUser(writer, scope, user, storage, config)
 		);
 		return sWriter.toString();
 	}
@@ -243,16 +238,27 @@ public class AdminProcessor {
 	/**
 	 * Writes the given {@link User}s (one per line) with their effective permission to the specified CSV writer.
 	 */
-	private static void writeAuthOverviewUser(CsvWriter writer, List<String> scope, User user, MetaStorage storage, ConqueryConfig config) {
+	private static void writeAuthOverviewUser(
+		CsvWriter writer,
+		List<String> scope,
+		User user,
+		MetaStorage storage,
+		ConqueryConfig config) {
 		// Print the user in the first column
 		writer.addValue(String.format("%s %s", user.getLabel(), ConqueryEscape.unescape(user.getName())));
 
 		// Print the permission per domain in the remaining columns
-		final Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user, scope, storage);
+		final Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(
+			user,
+			scope,
+			storage);
 		for (String domain : scope) {
-			writer.addValue(permissions.get(domain).stream()
-									   .map(Object::toString)
-									   .collect(Collectors.joining(config.getCsv().getLineSeparator())));
+			writer.addValue(
+				permissions.get(domain)
+					.stream()
+					.map(Object::toString)
+					.collect(
+						Collectors.joining(config.getCsv().getLineSeparator())));
 		}
 		writer.writeValuesToRow();
 	}
@@ -267,26 +273,23 @@ public class AdminProcessor {
 
 	public boolean isBusy() {
 		//Note that this does not and cannot check for fast jobs!
-		return getJobs().stream()
-						.map(JobManagerStatus::getJobs)
-						.anyMatch(Predicate.not(Collection::isEmpty));
+		return getJobs().stream().map(JobManagerStatus::getJobs).anyMatch(Predicate.not(Collection::isEmpty));
 	}
 
 	public Collection<JobManagerStatus> getJobs() {
 		final List<JobManagerStatus> out = new ArrayList<>();
 
 
-		out.add(JobManagerStatus.builder()
-								.origin("Manager")
-								.jobs(getJobManager().getJobStatus())
-								.build());
+		out.add(JobManagerStatus.builder().origin("Manager").jobs(getJobManager().getJobStatus()).build());
 
 		for (Namespace namespace : getDatasetRegistry().getNamespaces()) {
-			out.add(JobManagerStatus.builder()
-									.origin("Manager")
-									.dataset(namespace.getDataset().getId())
-									.jobs(namespace.getJobManager().getJobStatus())
-									.build());
+			out.add(
+				JobManagerStatus.builder()
+					.origin("Manager")
+					.dataset(namespace.getDataset().getId())
+					.jobs(
+						namespace.getJobManager().getJobStatus())
+					.build());
 		}
 
 		for (ShardNodeInformation si : nodeProvider.get()) {
@@ -309,8 +312,7 @@ public class AdminProcessor {
 
 		try {
 			return groovy.evaluate(script);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return ExceptionUtils.getStackTrace(e);
 		}
 	}

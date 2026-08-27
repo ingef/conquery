@@ -17,6 +17,7 @@ public interface StandaloneCommand {
 	Environment getEnvironment();
 
 	void setClock(Clock clock);
+
 	Clock getClock();
 
 }

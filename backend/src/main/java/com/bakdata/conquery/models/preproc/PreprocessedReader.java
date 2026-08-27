@@ -24,12 +24,10 @@ public class PreprocessedReader implements AutoCloseable, Iterator<PreprocessedD
 	@Getter
 	private LastRead lastRead = LastRead.BEGIN;
 	private int bucketsRemaining;
+
 	public PreprocessedReader(InputStream inputStream, ObjectMapper objectMapper) throws IOException {
 
-		parser = objectMapper
-				.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-				.getFactory()
-				.createParser(inputStream);
+		parser = objectMapper.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET).getFactory().createParser(inputStream);
 	}
 
 	@Override

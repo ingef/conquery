@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Set;
+
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -17,15 +23,9 @@ import com.bakdata.conquery.sql.conversion.model.aggregator.DateDistanceSqlAggre
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Set;
 
 /**
  * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
@@ -55,10 +55,14 @@ public class DateDistanceFilter extends EventFilter<Range.LongRange> {
 	}
 
 	@Override
-	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
+	public void configureFrontend(
+		FrontendFilterConfiguration.Top f,
+		ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
 		MajorTypeId type = getColumn().resolve().getType();
 		if (type != MajorTypeId.DATE) {
-			throw new ConceptConfigurationException(getConnector(), "DATE_DISTANCE filter is incompatible with columns of type " + type);
+			throw new ConceptConfigurationException(
+				getConnector(),
+				"DATE_DISTANCE filter is incompatible with columns of type " + type);
 		}
 
 		f.setType(FrontendFilterType.Fields.INTEGER_RANGE);

@@ -74,10 +74,15 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 	 * We only hold validated Tokens for some minutes to re-setup users and reduce fan-out.
 	 */
 	private LoadingCache<String, JWTClaimsSet> tokenCache = CacheBuilder.newBuilder()
-																		.expireAfterWrite(5, TimeUnit.MINUTES)
-																		.build(new UserClaimsSetupService());
+		.expireAfterWrite(
+			5,
+			TimeUnit.MINUTES)
+		.build(new UserClaimsSetupService());
 
-	public IntrospectionDelegatingRealm(MetaStorage storage, IntrospectionDelegatingRealmFactory authProviderConf, KeycloakApi keycloakApi) {
+	public IntrospectionDelegatingRealm(
+		MetaStorage storage,
+		IntrospectionDelegatingRealmFactory authProviderConf,
+		KeycloakApi keycloakApi) {
 		this.storage = storage;
 		this.authProviderConf = authProviderConf;
 		this.keycloakApi = keycloakApi;
@@ -91,8 +96,7 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 				throw new UnsupportedTokenException("Claim 'name' was empty");
 			}
 			return name;
-		}
-		catch (java.text.ParseException e) {
+		} catch (java.text.ParseException e) {
 			throw new IncorrectCredentialsException("Unable to extract username from token", e);
 		}
 	}
@@ -106,7 +110,8 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 
 	@Override
 	@SneakyThrows
-	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+	public ConqueryAuthenticationInfo doGetAuthenticationInfo(
+		AuthenticationToken token) throws AuthenticationException {
 		if (!(TOKEN_CLASS.isAssignableFrom(token.getClass()))) {
 			log.trace("Incompatible token. Expected {}, got {}", TOKEN_CLASS, token.getClass());
 			return null;
@@ -123,8 +128,7 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 		// This might fail if the tokes does not have the required audience set.
 		try {
 			claimsSet = tokenCache.get(bearertoken.getToken());
-		}
-		catch (UncheckedExecutionException e) {
+		} catch (UncheckedExecutionException e) {
 			final Throwable cause = e.getCause();
 			if (cause instanceof AuthenticationException) {
 				throw cause;
@@ -145,9 +149,10 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 	 */
 	private void validateToken(AuthenticationToken token) throws ParseException, IOException {
 		// Build introspection request
-		TokenIntrospectionRequest
-				request =
-				new TokenIntrospectionRequest(URI.create(authProviderConf.getIntrospectionEndpoint()), authProviderConf.getClientAuthentication(), new TypelessAccessToken((String) token.getCredentials()));
+		TokenIntrospectionRequest request = new TokenIntrospectionRequest(
+			URI.create(authProviderConf.getIntrospectionEndpoint()),
+			authProviderConf.getClientAuthentication(),
+			new TypelessAccessToken((String) token.getCredentials()));
 
 		// Send introspection request
 		TokenIntrospectionResponse response = TokenIntrospectionResponse.parse(request.toHTTPRequest().send());
@@ -155,10 +160,13 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 		log.trace("Retrieved token introspection response.");
 		if (!response.indicatesSuccess()) {
 			HTTPResponse httpResponse = response.toHTTPResponse();
-			log.error("Received the following error from the auth server while validating a token: {} {} {}", httpResponse.getStatusCode(), httpResponse.getStatusMessage(), httpResponse.getContent());
+			log.error(
+				"Received the following error from the auth server while validating a token: {} {} {}",
+				httpResponse.getStatusCode(),
+				httpResponse.getStatusMessage(),
+				httpResponse.getContent());
 			throw new AuthenticationException("Unable to retrieve access token from auth server.");
-		}
-		else if (!(response instanceof TokenIntrospectionSuccessResponse)) {
+		} else if (!(response instanceof TokenIntrospectionSuccessResponse)) {
 			log.error("Unknown token response {}.", response.getClass().getName());
 			throw new AuthenticationException("Unknown token response. See log.");
 		}
@@ -172,7 +180,9 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 			throw new ExpiredCredentialsException();
 		}
 
-		log.trace("Got an successful token introspection response: {}", log.isTraceEnabled() ? successResponse.toJSONObject().toString() : "");
+		log.trace(
+			"Got an successful token introspection response: {}",
+			log.isTraceEnabled() ? successResponse.toJSONObject().toString() : "");
 
 	}
 
@@ -193,11 +203,9 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 		}
 
 		if (!providedAudiences.contains(expectedAudience)) {
-			throw new IncorrectCredentialsException("Audience does not match. Expected: '"
-													+ expectedAudience.getValue()
-													+ "' (was: '"
-													+ claims.getAudience()
-													+ "')");
+			throw new IncorrectCredentialsException(
+				"Audience does not match. Expected: '" + expectedAudience.getValue() + "' (was: '" + claims
+					.getAudience() + "')");
 		}
 	}
 
@@ -239,7 +247,11 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 				log.trace("Found existing user: {}", user);
 				// Update display name if necessary
 				if (!user.getLabel().equals(displayName)) {
-					log.info("Updating display name of user [{}]: '{}' -> '{}'", user.getName(), user.getLabel(), displayName);
+					log.info(
+						"Updating display name of user [{}]: '{}' -> '{}'",
+						user.getName(),
+						user.getLabel(),
+						displayName);
 					user.setLabel(displayName);
 					user.updateStorage();
 				}
@@ -264,10 +276,7 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 			Set<KeycloakGroup> allMemberships = GroupUtil.getAllUserGroups(userGroups, groupHierarchy);
 
 			// Extract eva-group-id from attributes
-			return allMemberships.stream()
-								 .map(this::tryGetGroup)
-								 .flatMap(Optional::stream)
-								 .collect(Collectors.toSet());
+			return allMemberships.stream().map(this::tryGetGroup).flatMap(Optional::stream).collect(Collectors.toSet());
 		}
 
 		private void syncGroupMappings(UserId userId, Set<Group> mappedGroupsToDo) {
@@ -280,12 +289,11 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 				if (mappedGroupsToDo.contains(group)) {
 					// Mapping is still valid, remove from todo-list
 					mappedGroupsToDo.remove(group);
-				}
-				else {
+				} else {
 					// Mapping is not valid any more remove user from group
 					group.removeMember(userId);
-											   }
-										   }
+				}
+			}
 			);
 
 			for (Group group : mappedGroupsToDo) {
@@ -304,7 +312,10 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 			// Extract group id
 			final String groupIdString = attributes.get(authProviderConf.getGroupIdAttribute());
 			if (groupIdString == null) {
-				log.trace("Not mapping keycloak group because it has no attribute '{}': {}", authProviderConf.getGroupIdAttribute(), keycloakGroup);
+				log.trace(
+					"Not mapping keycloak group because it has no attribute '{}': {}",
+					authProviderConf.getGroupIdAttribute(),
+					keycloakGroup);
 				return Optional.empty();
 			}
 			if (Strings.isBlank(groupIdString)) {
@@ -316,8 +327,7 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 			GroupId groupId;
 			try {
 				groupId = GroupId.Parser.INSTANCE.parse(groupIdString);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error("Cannot parse '{}' as a GroupId. Skipping", groupIdString);
 				return Optional.empty();
 			}

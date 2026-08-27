@@ -22,16 +22,16 @@ public interface ManagerProvider {
 	}
 
 	static <N extends Namespace> DatasetRegistry<N> createDatasetRegistry(
-			NamespaceHandler<N> namespaceHandler,
-			ConqueryConfig config,
-			InternalMapperFactory internalMapperFactory
+		NamespaceHandler<N> namespaceHandler,
+		ConqueryConfig config,
+		InternalMapperFactory internalMapperFactory
 	) {
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings());
 		return new DatasetRegistry<>(
-				config,
-				internalMapperFactory,
-				namespaceHandler,
-				indexService
+			config,
+			internalMapperFactory,
+			namespaceHandler,
+			indexService
 		);
 	}
 

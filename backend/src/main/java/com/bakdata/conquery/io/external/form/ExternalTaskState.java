@@ -1,13 +1,12 @@
 package com.bakdata.conquery.io.external.form;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.UUID;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.models.error.SimpleErrorInfo;

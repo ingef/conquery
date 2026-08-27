@@ -15,6 +15,7 @@ public class GroupExtension implements BeforeAllCallback {
 		group = new Group(name, name, metaStorage);
 
 	}
+
 	@Override
 	public void beforeAll(ExtensionContext context) throws Exception {
 		group.updateStorage();

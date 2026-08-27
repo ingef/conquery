@@ -21,38 +21,42 @@ class AggregationFilterCte extends ConnectorCte {
 
 		Selects aggregationFilterSelects = collectSelects(tableContext);
 
-		List<Condition> aggregationFilterConditions = tableContext.getSqlFilters().stream()
-																  .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getGroupFilters().stream())
-																  .map(WhereCondition::condition)
-																  .toList();
+		List<Condition> aggregationFilterConditions = tableContext.getSqlFilters()
+			.stream()
+			.flatMap(
+				conceptFilter -> conceptFilter.getWhereClauses().getGroupFilters().stream())
+			.map(
+				WhereCondition::condition)
+			.toList();
 
-		return QueryStep.builder()
-						.selects(aggregationFilterSelects)
-						.conditions(aggregationFilterConditions);
+		return QueryStep.builder().selects(aggregationFilterSelects).conditions(aggregationFilterConditions);
 	}
 
 	private Selects collectSelects(CQTableContext tableContext) {
 
 		QueryStep previous = tableContext.getPrevious();
 		Selects previousSelects = previous.getQualifiedSelects();
-		List<SqlSelect> forAggregationFilterStep =
-				tableContext.allSqlSelects().stream()
-							.flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
-							.map(sqlSelect -> {
-								// universal selects like an ExistsSelect have no predecessor in preceding CTE
-								if (sqlSelect.isUniversal()) {
-									return sqlSelect;
-								}
-								return sqlSelect.qualify(previous.getCteName());
-							})
-							.collect(Collectors.toList());
+		List<SqlSelect> forAggregationFilterStep = tableContext.allSqlSelects()
+			.stream()
+			.flatMap(
+				sqlSelects -> sqlSelects.getFinalSelects().stream())
+			.map(sqlSelect -> {
+				// universal selects like an ExistsSelect have no predecessor in preceding CTE
+				if (sqlSelect.isUniversal()) {
+					return sqlSelect;
+				}
+				return sqlSelect.qualify(previous.getCteName());
+			})
+			.collect(Collectors.toList());
 
 		return Selects.builder()
-					  .ids(previousSelects.getIds())
-					  .stratificationDate(previousSelects.getStratificationDate())
-					  .validityDate(previousSelects.getValidityDate())
-					  .sqlSelects(forAggregationFilterStep)
-					  .build();
+			.ids(previousSelects.getIds())
+			.stratificationDate(
+				previousSelects.getStratificationDate())
+			.validityDate(previousSelects.getValidityDate())
+			.sqlSelects(
+				forAggregationFilterStep)
+			.build();
 
 	}
 

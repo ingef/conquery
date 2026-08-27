@@ -16,7 +16,7 @@ public class ResultModifier {
 
 	/**
 	 * Modifies the given result lines with the given function.
-	 * 
+	 *
 	 * If the result is not contained this method creates a default result row
 	 * anyways.
 	 */
@@ -27,11 +27,16 @@ public class ResultModifier {
 		return inResult;
 	}
 
-	public static ChainableUnaryOperator<Object[]> existAggValuesSetterFor(List<Aggregator<?>> aggregators, OptionalInt firstAggPos) {
+	public static ChainableUnaryOperator<Object[]> existAggValuesSetterFor(
+		List<Aggregator<?>> aggregators,
+		OptionalInt firstAggPos) {
 		return (result) -> setExistAggValues(aggregators, result, firstAggPos);
 	}
 
-	private static Object[] setExistAggValues(List<Aggregator<?>> aggregators, Object[] result, OptionalInt firstAggPos) {
+	private static Object[] setExistAggValues(
+		List<Aggregator<?>> aggregators,
+		Object[] result,
+		OptionalInt firstAggPos) {
 		int aggIdx = firstAggPos.orElse(0);
 		/*
 		 * Special handling here, because a subquery might not be contained but has an

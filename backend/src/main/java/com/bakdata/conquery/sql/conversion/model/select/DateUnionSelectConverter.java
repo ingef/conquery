@@ -6,11 +6,14 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 public class DateUnionSelectConverter implements SelectConverter<DateUnionSelect> {
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(DateUnionSelect select, SelectContext<ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(
+		DateUnionSelect select,
+		SelectContext<ConnectorSqlTables> selectContext) {
 		return DaterangeSelectUtil.createForSelect(
-				select,
-				(daterange, alias, functionProvider) -> new FieldWrapper<>(functionProvider.dateRangeAggregation(daterange).as(alias)),
-				selectContext
+			select,
+			(daterange, alias, functionProvider) -> new FieldWrapper<>(
+				functionProvider.dateRangeAggregation(daterange).as(alias)),
+			selectContext
 		);
 	}
 

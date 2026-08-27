@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Stream;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.KeyValue;
 import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
@@ -19,7 +19,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter @Setter @ToString(callSuper=true,of={"children"})
+@Getter
+@Setter
+@ToString(callSuper = true, of = {"children"})
 public class StructureNode extends LabeledNamespaceIdentifiable<StructureNodeId> {
 
 	public static final String MANAGED_STRUCTURE_STRUCTURE = "structure_structure";
@@ -28,7 +30,8 @@ public class StructureNode extends LabeledNamespaceIdentifiable<StructureNodeId>
 	@NotNull
 	private DatasetId dataset;
 	private String description;
-	@Valid @JsonManagedReference(MANAGED_STRUCTURE_STRUCTURE)
+	@Valid
+	@JsonManagedReference(MANAGED_STRUCTURE_STRUCTURE)
 	private List<StructureNode> children = Collections.emptyList();
 	@JsonBackReference(MANAGED_STRUCTURE_STRUCTURE)
 	@EqualsAndHashCode.Exclude

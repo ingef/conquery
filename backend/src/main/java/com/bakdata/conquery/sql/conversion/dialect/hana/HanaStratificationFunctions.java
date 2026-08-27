@@ -52,8 +52,8 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 	@Override
 	protected ColumnDateRange calcRange(Field<Date> start, Interval interval) {
 		return ColumnDateRange.of(
-				calcStartDate(start, interval),
-				calcEndDate(start, interval)
+			calcStartDate(start, interval),
+			calcEndDate(start, interval)
 		);
 	}
 
@@ -70,11 +70,11 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 	@Override
 	public Field<Date> upperBoundYearEnd(ColumnDateRange dateRange) {
 		return DSL.field(
-				"SERIES_ROUND({0}, {1}, {2})",
-				Date.class,
-				dateRange.getEnd(),
-				DSL.inline("INTERVAL 1 YEAR"),
-				DSL.keyword("ROUND_UP")
+			"SERIES_ROUND({0}, {1}, {2})",
+			Date.class,
+			dateRange.getEnd(),
+			DSL.inline("INTERVAL 1 YEAR"),
+			DSL.keyword("ROUND_UP")
 		);
 	}
 
@@ -85,10 +85,9 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 		Field<Date> yearEndQuarterAligned = addMonths(yearStartOfUpperBound, quartersInMonths);
 		// we add +1 year to the quarter aligned end if it is less than the upper bound we want to align
 		return DSL.when(
-						  yearEndQuarterAligned.lessThan(dateRange.getEnd()),
-						  shiftByInterval(yearEndQuarterAligned, Interval.ONE_YEAR_INTERVAL, DSL.inline(1), Offset.NONE)
-				  )
-				  .otherwise(yearEndQuarterAligned);
+			yearEndQuarterAligned.lessThan(dateRange.getEnd()),
+			shiftByInterval(yearEndQuarterAligned, Interval.ONE_YEAR_INTERVAL, DSL.inline(1), Offset.NONE)
+		).otherwise(yearEndQuarterAligned);
 	}
 
 	@Override
@@ -135,7 +134,10 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 			case LATEST -> DSL.max(inclusiveUpper(validityDate));
 			case RANDOM -> {
 				// we calculate a random int which is in range of the date distance between upper and lower bound
-				Field<Integer> dateDistanceInDays = functionProvider.dateDistance(ChronoUnit.DAYS, validityDate.getStart(), validityDate.getEnd());
+				Field<Integer> dateDistanceInDays = functionProvider.dateDistance(
+					ChronoUnit.DAYS,
+					validityDate.getStart(),
+					validityDate.getEnd());
 				Field<Double> randomAmountOfDays = DSL.function("RAND", Double.class).times(dateDistanceInDays);
 				Field<Integer> flooredAsInt = functionProvider.cast(DSL.floor(randomAmountOfDays), SQLDataType.INTEGER);
 				// then we add this random amount (of days) to the start date
@@ -150,10 +152,17 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 	public Field<Date> shiftByInterval(Field<Date> startDate, Interval interval, Field<Integer> amount, Offset offset) {
 		Field<Integer> multiplier = amount.plus(offset.getOffset());
 		return switch (interval) {
-			case ONE_YEAR_INTERVAL -> DSL.function("ADD_YEARS", Date.class, startDate, multiplier.times(Interval.ONE_YEAR_INTERVAL.getAmount()));
-			case YEAR_AS_DAYS_INTERVAL -> addDays(startDate, multiplier.times(Interval.YEAR_AS_DAYS_INTERVAL.getAmount()));
+			case ONE_YEAR_INTERVAL ->
+				DSL.function(
+					"ADD_YEARS",
+					Date.class,
+					startDate,
+					multiplier.times(Interval.ONE_YEAR_INTERVAL.getAmount()));
+			case YEAR_AS_DAYS_INTERVAL ->
+				addDays(startDate, multiplier.times(Interval.YEAR_AS_DAYS_INTERVAL.getAmount()));
 			case QUARTER_INTERVAL -> addMonths(startDate, multiplier.times(Interval.QUARTER_INTERVAL.getAmount()));
-			case NINETY_DAYS_INTERVAL -> addDays(startDate, multiplier.times(Interval.NINETY_DAYS_INTERVAL.getAmount()));
+			case NINETY_DAYS_INTERVAL ->
+				addDays(startDate, multiplier.times(Interval.NINETY_DAYS_INTERVAL.getAmount()));
 			case ONE_DAY_INTERVAL -> addDays(startDate, multiplier.times(Interval.ONE_DAY_INTERVAL.getAmount()));
 		};
 	}
@@ -180,11 +189,11 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 
 	private static Field<Date> jumpToYearStart(Field<Date> date) {
 		return DSL.field(
-				"SERIES_ROUND({0}, {1}, {2})",
-				Date.class,
-				date,
-				DSL.inline("INTERVAL 1 YEAR"),
-				DSL.keyword("ROUND_DOWN")
+			"SERIES_ROUND({0}, {1}, {2})",
+			Date.class,
+			date,
+			DSL.inline("INTERVAL 1 YEAR"),
+			DSL.keyword("ROUND_DOWN")
 		);
 	}
 
@@ -192,7 +201,8 @@ public class HanaStratificationFunctions extends StratificationFunctions {
 		Field<String> quarterExpression = functionProvider.yearQuarter(date);
 		Field<String> rightMostCharacter = DSL.function("RIGHT", String.class, quarterExpression, DSL.inline(1));
 		Field<Integer> amountOfQuarters = functionProvider.cast(rightMostCharacter, SQLDataType.INTEGER)
-														  .plus(offset.getOffset());
+			.plus(
+				offset.getOffset());
 		return amountOfQuarters.times(MONTHS_PER_QUARTER);
 	}
 

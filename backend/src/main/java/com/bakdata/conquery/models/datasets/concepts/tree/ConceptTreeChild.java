@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.tree;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
@@ -107,7 +107,9 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> {
 
 		for (ConceptTreeChild child : children) {
 			if (parts.get(0).equals(child.getName())) {
-				final List<Object> subList = parts.size() > 1 ? parts.subList(1, parts.size()) : Collections.emptyList();
+				final List<Object> subList = parts.size() > 1 ? parts.subList(
+					1,
+					parts.size()) : Collections.emptyList();
 				return child.findByParts(subList);
 			}
 		}

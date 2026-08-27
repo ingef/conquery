@@ -32,66 +32,77 @@ public class EntityDateQueryConverter implements NodeConverter<EntityDateQuery> 
 
 		QueryStep prerequisite = formHelper.convertPrerequisite(entityDateQuery.getQuery(), context);
 		QueryStep withOverwrittenValidityDateBounds = overwriteBounds(prerequisite, entityDateQuery, context);
-		StratificationTableFactory tableFactory = new StratificationTableFactory(withOverwrittenValidityDateBounds, context);
-		QueryStep stratificationTable = tableFactory.createAbsoluteStratificationTable(entityDateQuery.getResolutionsAndAlignments(), context);
+		StratificationTableFactory tableFactory = new StratificationTableFactory(
+			withOverwrittenValidityDateBounds,
+			context);
+		QueryStep stratificationTable = tableFactory.createAbsoluteStratificationTable(
+			entityDateQuery.getResolutionsAndAlignments(),
+			context);
 
 		return formHelper.convertForm(
-				FormType.ENTITY_DATE,
-				stratificationTable,
-				entityDateQuery.getFeatures(),
-				entityDateQuery.getResultInfos(),
-				context
+			FormType.ENTITY_DATE,
+			stratificationTable,
+			entityDateQuery.getFeatures(),
+			entityDateQuery.getResultInfos(),
+			context
 		);
 	}
 
 	/**
 	 * Computes the intersection of the entity date and the entity date query's daterange.
 	 */
-	private static QueryStep overwriteBounds(QueryStep prerequisite, EntityDateQuery entityDateQuery, ConversionContext context) {
+	private static QueryStep overwriteBounds(
+		QueryStep prerequisite,
+		EntityDateQuery entityDateQuery,
+		ConversionContext context) {
 
 		Preconditions.checkArgument(
-				prerequisite.getQualifiedSelects().getValidityDate().isPresent(),
-				"Expecting the prerequisite step's Selects to contain a validity date"
+			prerequisite.getQualifiedSelects().getValidityDate().isPresent(),
+			"Expecting the prerequisite step's Selects to contain a validity date"
 		);
 
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		// we want to create a stratification for each distinct validity date range of an entity,
 		// so we first need to unnest the validity date in case it is a multirange
 		String unnestCteName = FormCteStep.UNNEST_ENTITY_DATE_CTE.getSuffix();
-		QueryStep unnestedEntityDate = functionProvider.unnestDaterange(prerequisite.getSelects().getValidityDate().get(), prerequisite, unnestCteName);
+		QueryStep unnestedEntityDate = functionProvider.unnestDaterange(
+			prerequisite.getSelects().getValidityDate().get(),
+			prerequisite,
+			unnestCteName);
 		Selects unnestedSelects = unnestedEntityDate.getQualifiedSelects();
 
 		ColumnDateRange withOverwrittenBounds;
 		if (entityDateQuery.getDateRange() == null) {
 			withOverwrittenBounds = unnestedSelects.getValidityDate().get();
-		}
-		else {
+		} else {
 			ColumnDateRange formDateRange = functionProvider.forCDateRange(entityDateQuery.getDateRange());
 			ColumnDateRange entityDate = unnestedSelects.getValidityDate().get();
 			withOverwrittenBounds = functionProvider.intersection(formDateRange, entityDate)
-													.as(SharedAliases.STRATIFICATION_BOUNDS.getAlias());
+				.as(
+					SharedAliases.STRATIFICATION_BOUNDS.getAlias());
 		}
 
 		Selects selects = Selects.builder()
-								 .ids(unnestedSelects.getIds())
-								 .stratificationDate(Optional.of(withOverwrittenBounds))
-								 .build();
+			.ids(unnestedSelects.getIds())
+			.stratificationDate(
+				Optional.of(withOverwrittenBounds))
+			.build();
 
 		List<QueryStep> predecessors;
 		// unnest step is optional depending on the dialect
 		if (unnestedEntityDate == prerequisite) {
 			predecessors = List.of(prerequisite);
-		}
-		else {
+		} else {
 			predecessors = List.of(prerequisite, unnestedEntityDate);
 		}
 
 		return QueryStep.builder()
-						.cteName(FormCteStep.OVERWRITE_BOUNDS.getSuffix())
-						.selects(selects)
-						.fromTable(QueryStep.toTableLike(unnestedEntityDate.getCteName()))
-						.predecessors(predecessors)
-						.build();
+			.cteName(FormCteStep.OVERWRITE_BOUNDS.getSuffix())
+			.selects(selects)
+			.fromTable(
+				QueryStep.toTableLike(unnestedEntityDate.getCteName()))
+			.predecessors(predecessors)
+			.build();
 	}
 
 }

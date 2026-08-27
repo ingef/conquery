@@ -28,18 +28,22 @@ public class AuthOverviewResource {
 	@GET
 	@Path("csv")
 	public Response getPermissionOverviewAsCSV() {
-		return Response
-				.ok(processor.getPermissionOverviewAsCSV())
-				.header("Content-Disposition", "attachment; filename=\"authOverview.csv\"")
-				.build();
+		return Response.ok(processor.getPermissionOverviewAsCSV())
+			.header(
+				"Content-Disposition",
+				"attachment; filename=\"authOverview.csv\"")
+			.build();
 	}
 
 	@GET
 	@Path("csv/group/{" + GROUP_ID + "}")
 	public Response getPermissionOverviewAsCSV(@PathParam(GROUP_ID) GroupId group) {
-		return Response
-				.ok(processor.getPermissionOverviewAsCSV(group))
-				.header("Content-Disposition", String.format("attachment; filename=\"authOverview_%s.csv\"", FileUtil.makeSafeFileName(group.getGroup())))
-				.build();
+		return Response.ok(processor.getPermissionOverviewAsCSV(group))
+			.header(
+				"Content-Disposition",
+				String.format(
+					"attachment; filename=\"authOverview_%s.csv\"",
+					FileUtil.makeSafeFileName(group.getGroup())))
+			.build();
 	}
 }

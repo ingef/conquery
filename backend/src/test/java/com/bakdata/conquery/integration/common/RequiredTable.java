@@ -1,11 +1,11 @@
 package com.bakdata.conquery.integration.common;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Objects;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Objects;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -41,11 +41,11 @@ public class RequiredTable {
 	@JsonCreator
 	public static RequiredTable fromFile(String fileResource) throws IOException {
 		return Jackson.MAPPER.readValue(
-				Objects.requireNonNull(
-						IntegrationTest.class.getResourceAsStream(fileResource),
-						fileResource + " not found"
-				),
-				RequiredTable.class
+			Objects.requireNonNull(
+				IntegrationTest.class.getResourceAsStream(fileResource),
+				fileResource + " not found"
+			),
+			RequiredTable.class
 		);
 	}
 
@@ -57,8 +57,7 @@ public class RequiredTable {
 
 		table.init();
 
-		table.setColumns(Arrays.stream(columns)
-							   .map(col -> col.toColumn(table, idResolver)).toArray(Column[]::new));
+		table.setColumns(Arrays.stream(columns).map(col -> col.toColumn(table, idResolver)).toArray(Column[]::new));
 
 		return table;
 	}

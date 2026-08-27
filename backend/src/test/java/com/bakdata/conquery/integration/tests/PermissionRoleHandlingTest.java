@@ -12,7 +12,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 public class PermissionRoleHandlingTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 
-
 	/**
 	 * This is a longer test that plays through different scenarios of permission
 	 * and role adding/deleting. Creating many objects here to avoid side effects.
@@ -75,8 +74,7 @@ public class PermissionRoleHandlingTest extends IntegrationTest.Simple implement
 
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isFalse();
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isFalse();
-		}
-		finally {
+		} finally {
 			storage.removeUser(user1.getId());
 			storage.removeRole(mandator1.getId());
 		}

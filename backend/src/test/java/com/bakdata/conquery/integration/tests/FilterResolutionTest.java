@@ -3,6 +3,9 @@ package com.bakdata.conquery.integration.tests;
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,9 +13,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
@@ -37,20 +37,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FilterResolutionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
-	private final String[] lines = new String[]{
-			"HEADER",
-			"a",
-			"aab",
-			"aaa",
-			"b"
+	private final String[] lines = new String[]{"HEADER", "a", "aab", "aaa", "b"
 	};
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		//read test sepcification
-		final String
-				testJson =
-				LoadingUtil.readResource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json");
+		final String testJson = LoadingUtil.readResource(
+			"/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json");
 
 		final DatasetId dataset = conquery.getDataset();
 
@@ -75,16 +69,26 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 
 		// Copy search csv from resources to tmp folder.
 		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
-		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines)
-								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE
+		Files.write(
+			tmpCSv,
+			String.join(csvConf.getLineSeparator(), lines).getBytes(),
+			StandardOpenOption.TRUNCATE_EXISTING,
+			StandardOpenOption.CREATE,
+			StandardOpenOption.WRITE
 		);
 
 
 		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings());
 
-		final FilterTemplate
-				filterTemplate =
-				new FilterTemplate(tmpCSv.toUri(), "HEADER", "", "", 2, true, indexService, conquery.getConfig());
+		final FilterTemplate filterTemplate = new FilterTemplate(
+			tmpCSv.toUri(),
+			"HEADER",
+			"",
+			"",
+			2,
+			true,
+			indexService,
+			conquery.getConfig());
 		filterTemplate.setDataset(conquery.getDataset());
 		filterTemplate.setName("test");
 
@@ -94,53 +98,73 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		namespaceStorage.addSearchIndex(filterTemplate);
 		namespaceStorage.updateConcept(concept);
 
-		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "postprocessNamespace"
-													)
-													.buildFromMap(Map.of(DATASET, conquery.getDataset()));
+		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(
+			conquery.defaultAdminURIBuilder(),
+			AdminDatasetResource.class,
+			"postprocessNamespace"
+		).buildFromMap(Map.of(DATASET, conquery.getDataset()));
 
-		final Response post = conquery.getClient().target(matchingStatsUri)
-									  .request(MediaType.APPLICATION_JSON_TYPE)
-									  .post(null);
+		final Response post = conquery.getClient()
+			.target(matchingStatsUri)
+			.request(
+				MediaType.APPLICATION_JSON_TYPE)
+			.post(null);
 		post.close();
 
 		conquery.waitUntilWorkDone();
 
-		final URI resolveUri =
-				HierarchyHelper.hierarchicalPath(
-									   conquery.defaultApiURIBuilder(),
-									   FilterResource.class, "resolveFilterValues"
-							   )
-							   .buildFromMap(
-									   Map.of(
-											   DATASET, conquery.getDataset(),
-											   CONCEPT, concept.getId(),
-											   TABLE, filter.getConnector().getResolvedTable().getId(),
-											   FILTER, filter.getId()
-									   )
-							   );
+		final URI resolveUri = HierarchyHelper.hierarchicalPath(
+			conquery.defaultApiURIBuilder(),
+			FilterResource.class,
+			"resolveFilterValues"
+		)
+			.buildFromMap(
+				Map.of(
+					DATASET,
+					conquery.getDataset(),
+					CONCEPT,
+					concept.getId(),
+					TABLE,
+					filter.getConnector().getResolvedTable().getId(),
+					FILTER,
+					filter.getId()
+				)
+			);
 
 		// from csv
-		try (final Response fromCsvResponse = conquery.getClient().target(resolveUri)
-													  .request(MediaType.APPLICATION_JSON_TYPE)
-													  .post(Entity.entity(new FilterResource.FilterValues(List.of("a", "aaa", "unknown")),
-																		  MediaType.APPLICATION_JSON_TYPE
-													  ))) {
+		try (final Response fromCsvResponse = conquery.getClient()
+			.target(resolveUri)
+			.request(
+				MediaType.APPLICATION_JSON_TYPE)
+			.post(
+				Entity.entity(
+					new FilterResource.FilterValues(List.of("a", "aaa", "unknown")),
+					MediaType.APPLICATION_JSON_TYPE
+				))) {
 
-			final ConceptsProcessor.ResolvedFilterValues resolved = fromCsvResponse.readEntity(ConceptsProcessor.ResolvedFilterValues.class);
+			final ConceptsProcessor.ResolvedFilterValues resolved = fromCsvResponse.readEntity(
+				ConceptsProcessor.ResolvedFilterValues.class);
 
 			//check the resolved values
 			// "aaa" is hit by "a" and "aaa" therefore should be first
-			assertThat(resolved.resolvedFilter().value().stream().map(FrontendValue::getValue)).containsExactly("aaa", "a");
+			assertThat(resolved.resolvedFilter().value().stream().map(FrontendValue::getValue)).containsExactly(
+				"aaa",
+				"a");
 			assertThat(resolved.unknownCodes()).containsExactly("unknown");
 		}
 
 		// from column values
-		try (final Response fromCsvResponse = conquery.getClient().target(resolveUri)
-													  .request(MediaType.APPLICATION_JSON_TYPE)
-													  .post(Entity.entity(new FilterResource.FilterValues(List.of("f", "unknown")), MediaType.APPLICATION_JSON_TYPE))) {
+		try (final Response fromCsvResponse = conquery.getClient()
+			.target(resolveUri)
+			.request(
+				MediaType.APPLICATION_JSON_TYPE)
+			.post(
+				Entity.entity(
+					new FilterResource.FilterValues(List.of("f", "unknown")),
+					MediaType.APPLICATION_JSON_TYPE))) {
 
-			final ConceptsProcessor.ResolvedFilterValues resolved = fromCsvResponse.readEntity(ConceptsProcessor.ResolvedFilterValues.class);
+			final ConceptsProcessor.ResolvedFilterValues resolved = fromCsvResponse.readEntity(
+				ConceptsProcessor.ResolvedFilterValues.class);
 
 			//check the resolved values
 			assertThat(resolved.resolvedFilter().value().stream().map(FrontendValue::getValue)).contains("f");

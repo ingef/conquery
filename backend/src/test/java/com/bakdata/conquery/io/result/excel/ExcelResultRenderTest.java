@@ -52,10 +52,12 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 public class ExcelResultRenderTest {
 
-	public static final ConqueryConfig CONFIG = new ConqueryConfig() {{
-		// Suppress java.lang.NoClassDefFoundError: com/bakdata/conquery/io/jackson/serializer/CurrencyUnitDeserializer
-		setStorage(new NonPersistentStoreFactory());
-	}};
+	public static final ConqueryConfig CONFIG = new ConqueryConfig() {
+		{
+			// Suppress java.lang.NoClassDefFoundError: com/bakdata/conquery/io/jackson/serializer/CurrencyUnitDeserializer
+			setStorage(new NonPersistentStoreFactory());
+		}
+	};
 	private static final List<String> printIdFields = List.of("id1", "id2");
 
 	static {
@@ -65,11 +67,12 @@ public class ExcelResultRenderTest {
 	@Test
 	void writeAndRead() throws IOException {
 		// Prepare every input data
-		final PrintSettings printSettings = new PrintSettings(true,
-															  Locale.GERMAN,
-                CONFIG,
-															  (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
-															  (selectInfo) -> selectInfo.getSelect().getLabel()
+		final PrintSettings printSettings = new PrintSettings(
+			true,
+			Locale.GERMAN,
+			CONFIG,
+			(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
+			(selectInfo) -> selectInfo.getSelect().getLabel()
 		);
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		final List<EntityResult> results = getTestEntityResults();
@@ -84,7 +87,13 @@ public class ExcelResultRenderTest {
 
 		final ExcelRenderer renderer = new ExcelRenderer(new ExcelConfig(), printSettings);
 
-		renderer.renderToStream(ResultTestUtil.getIdFields(), mquery, output, OptionalLong.empty(), printSettings, metaStorage);
+		renderer.renderToStream(
+			ResultTestUtil.getIdFields(),
+			mquery,
+			output,
+			OptionalLong.empty(),
+			printSettings,
+			metaStorage);
 
 		final InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 
@@ -92,17 +101,19 @@ public class ExcelResultRenderTest {
 		final List<String> computed = readComputed(inputStream, printSettings);
 
 		// We have to do some magic here to emulate the excel printed results.
-		PrintSettings tsvPrintSettings = new PrintSettings(true,
-														   Locale.GERMAN,
-                CONFIG,
-														   (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
-														   (selectInfo) -> selectInfo.getSelect().getLabel()
+		PrintSettings tsvPrintSettings = new PrintSettings(
+			true,
+			Locale.GERMAN,
+			CONFIG,
+			(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
+			(selectInfo) -> selectInfo.getSelect().getLabel()
 		);
 
-		final List<String> expected = generateExpectedTSV(results,
-														  mquery.getResultInfos(),
-														  tsvPrintSettings,
-														  new StringResultPrinters(ExcelResultPrinters.NEGATIVE_INF, ExcelResultPrinters.POSITIVE_INF)
+		final List<String> expected = generateExpectedTSV(
+			results,
+			mquery.getResultInfos(),
+			tsvPrintSettings,
+			new StringResultPrinters(ExcelResultPrinters.NEGATIVE_INF, ExcelResultPrinters.POSITIVE_INF)
 		);
 
 		log.info("Wrote and than read this excel data: {}", computed);
@@ -116,7 +127,13 @@ public class ExcelResultRenderTest {
 		User user = new User("test", "test", metaStorage);
 		user.updateStorage();
 
-		return new ManagedQuery(mock(Query.class), user.getId(), new DatasetId(ExcelResultRenderTest.class.getSimpleName()), metaStorage, null, CONFIG) {
+		return new ManagedQuery(
+			mock(Query.class),
+			user.getId(),
+			new DatasetId(ExcelResultRenderTest.class.getSimpleName()),
+			metaStorage,
+			null,
+			CONFIG) {
 			@Override
 			public Stream<EntityResult> streamResults(OptionalLong maybeLimit) {
 				return results.stream();
@@ -125,9 +142,11 @@ public class ExcelResultRenderTest {
 			@Override
 			public List<ResultInfo> getResultInfos() {
 				return getResultTypes().stream()
-									   .map(ResultTestUtil.TypedSelectDummy::new)
-									   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet()))
-									   .collect(Collectors.toList());
+					.map(ResultTestUtil.TypedSelectDummy::new)
+					.map(
+						select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet()))
+					.collect(
+						Collectors.toList());
 			}
 		};
 	}
@@ -159,9 +178,16 @@ public class ExcelResultRenderTest {
 
 
 	private List<String> generateExpectedTSV(
-			List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings printSettings, PrinterFactory printerFactory) {
+		List<EntityResult> results,
+		List<ResultInfo> resultInfos,
+		PrintSettings printSettings,
+		PrinterFactory printerFactory) {
 		final List<String> expected = new ArrayList<>();
-		expected.add(String.join("\t", printIdFields) + "\t" + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")));
+		expected.add(
+			String.join("\t", printIdFields) + "\t" + getResultTypes().stream()
+				.map(ResultType::typeInfo)
+				.collect(
+					Collectors.joining("\t")));
 
 		for (EntityResult res : results) {
 			for (Object[] line : res.listResultLines()) {

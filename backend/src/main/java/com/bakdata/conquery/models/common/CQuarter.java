@@ -10,7 +10,7 @@ public final class CQuarter {
 	public CDateRange toRange(int value) {
 		return CDateRange.of(value, getLastDay(value));
 	}
-	
+
 	public int getLastDay(int firstEpoch) {
 		return Ints.checkedCast(QuarterUtils.getLastDayOfQuarter(firstEpoch).toEpochDay());
 	}

@@ -19,8 +19,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 public class RoleHandlingOnGroupTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 
-	
-
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		Dataset dataset1 = new Dataset();
@@ -39,21 +37,26 @@ public class RoleHandlingOnGroupTest extends IntegrationTest.Simple implements P
 
 			//// Add user to group
 			group1.addMember(user1.getId());
-			assertThat(user1.isPermitted(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")))).isFalse();
-			
+			assertThat(
+				user1.isPermitted(
+					new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")))).isFalse();
+
 			//// Add role to group
 			group1.addRole(role.getId());
 			assertThat(group1.getRoles()).containsExactlyInAnyOrder(role.getId());
-			assertThat(user1.isPermitted(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")))).isTrue();
+			assertThat(
+				user1.isPermitted(
+					new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")))).isTrue();
 
-			
+
 			//// Remove role from group
 			group1.removeRole(role.getId());
 			assertThat(group1.getRoles()).isEmpty();
-			assertThat(user1.isPermitted(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")))).isFalse();
+			assertThat(
+				user1.isPermitted(
+					new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")))).isFalse();
 
-		}
-		finally {
+		} finally {
 			storage.removeGroup(group1.getId());
 			storage.removeUser(user1.getId());
 			storage.removeRole(role.getId());

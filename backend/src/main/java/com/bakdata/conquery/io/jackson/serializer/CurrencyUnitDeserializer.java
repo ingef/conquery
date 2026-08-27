@@ -15,7 +15,7 @@ public class CurrencyUnitDeserializer extends StdScalarDeserializer<Currency> {
 	public CurrencyUnitDeserializer() {
 		super(String.class);
 	}
-	
+
 	@Override
 	public Currency deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		if (p.currentTokenId() != JsonTokenId.ID_STRING) {
@@ -26,6 +26,5 @@ public class CurrencyUnitDeserializer extends StdScalarDeserializer<Currency> {
 		return Currency.getInstance(text);
 	}
 
-	
 
 }

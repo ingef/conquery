@@ -1,9 +1,9 @@
 package com.bakdata.conquery.util.validation;
 
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import jakarta.validation.ConstraintValidatorContext;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
@@ -35,17 +35,15 @@ public class SqlTableValidator implements HibernateConstraintValidator<ValidSqlT
 		final Result<Record> result;
 		try {
 			// We don't use DSL.meta here because that can be excessively slow.
-			result = dslContext.select(DSL.asterisk())
-							   .from(DSL.name(value.getName()))
-							   .limit(0)
-							   .fetch();
-		}
-		catch (DataAccessException e) {
+			result = dslContext.select(DSL.asterisk()).from(DSL.name(value.getName())).limit(0).fetch();
+		} catch (DataAccessException e) {
 			log.trace("Failed to test for table {}", value.getName(), e);
 
-			context.buildConstraintViolationWithTemplate("SQL table %s does not exist".formatted(value.getName()))
-				   .addPropertyNode("name")
-				   .addConstraintViolation();
+			context.buildConstraintViolationWithTemplate(
+				"SQL table %s does not exist".formatted(value.getName()))
+				.addPropertyNode(
+					"name")
+				.addConstraintViolation();
 			return false;
 		}
 
@@ -66,22 +64,21 @@ public class SqlTableValidator implements HibernateConstraintValidator<ValidSqlT
 
 			if (field == null) {
 				// NOTE: The Path to the property is not factually correct, but the error messages are much more readable that way.
-				context.buildConstraintViolationWithTemplate("SQL Column `%s.%s` does not exist".formatted(value.getName(), column.getName()))
-					   .addPropertyNode("columns")
-					   .addPropertyNode(column.getName())
-					   .addConstraintViolation();
+				context.buildConstraintViolationWithTemplate(
+					"SQL Column `%s.%s` does not exist".formatted(value.getName(), column.getName()))
+					.addPropertyNode(
+						"columns")
+					.addPropertyNode(column.getName())
+					.addConstraintViolation();
 				valid = false;
-			}
-			else if (!dialect.isTypeCompatible(field, column.getType())) {
-				context.buildConstraintViolationWithTemplate("SQL Column `%s %s.%s` does not match required type %s".formatted(
-							   field.getDataType(),
-							   value.getName(),
-							   column.getName(),
-							   column.getType().name()
-					   ))
-					   .addPropertyNode("columns")
-					   .addPropertyNode(column.getName())
-					   .addConstraintViolation();
+			} else if (!dialect.isTypeCompatible(field, column.getType())) {
+				context.buildConstraintViolationWithTemplate(
+					"SQL Column `%s %s.%s` does not match required type %s".formatted(
+						field.getDataType(),
+						value.getName(),
+						column.getName(),
+						column.getType().name()
+					)).addPropertyNode("columns").addPropertyNode(column.getName()).addConstraintViolation();
 				valid = false;
 			}
 		}

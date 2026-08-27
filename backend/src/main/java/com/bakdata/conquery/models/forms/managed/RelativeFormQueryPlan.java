@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 
 @Slf4j
 @Getter
@@ -82,7 +83,10 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		int size = calculateCompleteLength();
 		EntityResult contained = preResult.get();
 		// Gather all validity dates from prerequisite
-		CDateSet dateSet = query.getValidityDateAggregator().map(Aggregator::createAggregationResult).orElseGet(CDateSet::createEmpty);
+		CDateSet dateSet = query.getValidityDateAggregator()
+			.map(Aggregator::createAggregationResult)
+			.orElseGet(
+				CDateSet::createEmpty);
 
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 
@@ -92,14 +96,22 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			List<Object[]> results = new ArrayList<>();
 			results.add(new Object[size]);
 			return Optional.of(
-					ResultModifier.modify(new MultilineEntityResult(entity.getId(), results), ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt
-							.of(getFirstAggregatorPosition())))
+				ResultModifier.modify(
+					new MultilineEntityResult(entity.getId(), results),
+					ResultModifier.existAggValuesSetterFor(
+						getAggregators(),
+						OptionalInt.of(getFirstAggregatorPosition())))
 			);
 		}
 
 		int sample = sampled.getAsInt();
-		List<DateContext> contexts =
-				DateContext.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutionsAndAlignmentMap);
+		List<DateContext> contexts = DateContext.generateRelativeContexts(
+			sample,
+			indexPlacement,
+			timeCountBefore,
+			timeCountAfter,
+			timeUnit,
+			resolutionsAndAlignmentMap);
 
 		// create feature and outcome plans
 		featureSubquery = createSubQuery(featurePlan, contexts, FeatureGroup.FEATURE);
@@ -147,11 +159,18 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			return;
 		}
 
-		throw new IllegalStateException(String.format("Aggregator number (%d) and result number (%d) are not the same", resultWidth, resultColumnCount));
+		throw new IllegalStateException(
+			String.format(
+				"Aggregator number (%d) and result number (%d) are not the same",
+				resultWidth,
+				resultColumnCount));
 	}
 
 
-	private static FormQueryPlan createSubQuery(ArrayConceptQueryPlan subPlan, List<DateContext> contexts, FeatureGroup featureGroup) {
+	private static FormQueryPlan createSubQuery(
+		ArrayConceptQueryPlan subPlan,
+		List<DateContext> contexts,
+		FeatureGroup featureGroup) {
 		List<DateContext> list = new ArrayList<>(contexts);
 		list.removeIf(dctx -> dctx.getFeatureGroup() != featureGroup);
 
@@ -168,7 +187,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	@Override
-	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
+	public @NonNull Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
 		DateAggregator agg = new DateAggregator(DateAggregationAction.MERGE);
 
 		featureSubquery.getValidityDateAggregator().ifPresent(agg::register);

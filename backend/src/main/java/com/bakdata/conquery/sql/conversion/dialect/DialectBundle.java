@@ -32,7 +32,6 @@ import com.bakdata.conquery.sql.conversion.query.RelativFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.SecondaryIdQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.TableExportQueryConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
-import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
@@ -42,16 +41,18 @@ public interface DialectBundle {
 	private static <R, C extends Converter<?, R, ?>> List<C> customize(List<C> defaults, List<C> substitutes) {
 		Map<Class<?>, C> substituteMap = getSubstituteMap(substitutes);
 		return defaults.stream()
-					   .map(converter -> substituteMap.getOrDefault(converter.getConversionClass(), converter))
-					   .toList();
+			.map(
+				converter -> substituteMap.getOrDefault(converter.getConversionClass(), converter))
+			.toList();
 	}
 
 	private static <R, C extends Converter<?, R, ?>> Map<Class<?>, C> getSubstituteMap(List<C> substitutes) {
 		return substitutes.stream()
-						  .collect(Collectors.toMap(
-								  Converter::getConversionClass,
-								  Function.identity()
-						  ));
+			.collect(
+				Collectors.toMap(
+					Converter::getConversionClass,
+					Function.identity()
+				));
 	}
 
 	ResultSetProcessor getResultSetProcessor(ConqueryConfig config);
@@ -87,31 +88,32 @@ public interface DialectBundle {
 		FormConversionHelper formConversionUtil = new FormConversionHelper(queryStepTransformer);
 
 		return List.of(
-				new CQDateRestrictionConverter(),
-				new CQAndConverter(),
-				new CQOrConverter(),
-				new CQNegationConverter(),
-				new CQYesConverter(),
-				new CQConceptConverter(),
-				new CQExternalConverter(),
-				new CQReusedQueryConverter(),
-				new ConceptQueryConverter(queryStepTransformer),
-				new SecondaryIdQueryConverter(),
-				new AbsoluteFormQueryConverter(formConversionUtil),
-				new EntityDateQueryConverter(formConversionUtil),
-				new RelativFormQueryConverter(formConversionUtil),
-				new TableExportQueryConverter(queryStepTransformer)
+			new CQDateRestrictionConverter(),
+			new CQAndConverter(),
+			new CQOrConverter(),
+			new CQNegationConverter(),
+			new CQYesConverter(),
+			new CQConceptConverter(),
+			new CQExternalConverter(),
+			new CQReusedQueryConverter(),
+			new ConceptQueryConverter(queryStepTransformer),
+			new SecondaryIdQueryConverter(),
+			new AbsoluteFormQueryConverter(formConversionUtil),
+			new EntityDateQueryConverter(formConversionUtil),
+			new RelativFormQueryConverter(formConversionUtil),
+			new TableExportQueryConverter(queryStepTransformer)
 		);
 	}
 
-	default Map<Class<? extends Select>, ? extends SelectConverter<? extends Select>> getSelectConverterOverrides(){
+	default Map<Class<? extends Select>, ? extends SelectConverter<? extends Select>> getSelectConverterOverrides() {
 		return Collections.emptyMap();
 	}
 
-	default SelectConverter<Select> getSelectConverter(Select select){
-		SelectConverter<Select> maybeOverride = (SelectConverter<Select>) getSelectConverterOverrides().get(select.getClass());
+	default SelectConverter<Select> getSelectConverter(Select select) {
+		SelectConverter<Select> maybeOverride = (SelectConverter<Select>) getSelectConverterOverrides().get(
+			select.getClass());
 
-		if (maybeOverride != null){
+		if (maybeOverride != null) {
 			return maybeOverride;
 		}
 

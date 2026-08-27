@@ -1,10 +1,11 @@
 package com.bakdata.conquery.models.config.auth;
 
-import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
-import io.dropwizard.util.Duration;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.NewCookie;
+
+import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
+import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,28 +20,28 @@ public class AuthenticationConfig {
 
 	public NewCookie createAuthCookie(ContainerRequestContext request, String token) {
 		return new NewCookie(
-				AuthCookieFilter.ACCESS_TOKEN,
-				token,
-				"/",
-				null,
-				0,
-				null,
-				Long.valueOf(adminEndCookieDuration.toSeconds()).intValue(),
-				null,
-				request.getSecurityContext().isSecure(),
-				true
+			AuthCookieFilter.ACCESS_TOKEN,
+			token,
+			"/",
+			null,
+			0,
+			null,
+			Long.valueOf(adminEndCookieDuration.toSeconds()).intValue(),
+			null,
+			request.getSecurityContext().isSecure(),
+			true
 		);
 	}
 
 	public static NewCookie expireCookie(String cookieName) {
 		return new NewCookie(
-				cookieName,
-				null,
-				"/",
-				null,
-				null,
-				0,
-				false
+			cookieName,
+			null,
+			"/",
+			null,
+			null,
+			0,
+			false
 		);
 	}
 

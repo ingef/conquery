@@ -25,25 +25,47 @@ public class ClusterManagerProvider implements ManagerProvider {
 	public ClusterManager provideManager(ConqueryConfig config, Environment environment) {
 		final JobManager jobManager = ManagerProvider.newJobManager(config);
 		final MetaStorage storage = new MetaStorage(config.getStorage());
-		final InternalMapperFactory internalMapperFactory = new InternalMapperFactory(config, environment.getValidator());
+		final InternalMapperFactory internalMapperFactory = new InternalMapperFactory(
+			config,
+			environment.getValidator());
 		final ClusterState clusterState = new ClusterState();
-		final NamespaceHandler<DistributedNamespace> namespaceHandler = new ClusterNamespaceHandler(clusterState, config, internalMapperFactory);
-		final DatasetRegistry<DistributedNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, internalMapperFactory);
+		final NamespaceHandler<DistributedNamespace> namespaceHandler = new ClusterNamespaceHandler(
+			clusterState,
+			config,
+			internalMapperFactory);
+		final DatasetRegistry<DistributedNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(
+			namespaceHandler,
+			config,
+			internalMapperFactory);
 
-		final ClusterConnectionManager connectionManager =
-				new ClusterConnectionManager(datasetRegistry, jobManager, config, internalMapperFactory, clusterState);
+		final ClusterConnectionManager connectionManager = new ClusterConnectionManager(
+			datasetRegistry,
+			jobManager,
+			config,
+			internalMapperFactory,
+			clusterState);
 
 		final ImportHandler importHandler = new ClusterImportHandler(datasetRegistry);
 		final StorageListener extension = new ClusterStorageListener(jobManager, datasetRegistry);
 		final Supplier<Collection<ShardNodeInformation>> nodeProvider = () -> clusterState.getShardNodes().values();
 		final List<Task> adminTasks = List.of(new ReportConsistencyTask(clusterState));
 
-		final DelegateManager<DistributedNamespace>
-				delegate =
-				new DelegateManager<>(config, environment, datasetRegistry, storage, importHandler, extension, nodeProvider, adminTasks, internalMapperFactory, jobManager);
+		final DelegateManager<DistributedNamespace> delegate = new DelegateManager<>(
+			config,
+			environment,
+			datasetRegistry,
+			storage,
+			importHandler,
+			extension,
+			nodeProvider,
+			adminTasks,
+			internalMapperFactory,
+			jobManager);
 
 		environment.healthChecks()
-				   .register("cluster", new ClusterHealthCheck(clusterState, config.getCluster().getHeartbeatTimeout().toJavaDuration()));
+			.register(
+				"cluster",
+				new ClusterHealthCheck(clusterState, config.getCluster().getHeartbeatTimeout().toJavaDuration()));
 
 		return new ClusterManager(delegate, connectionManager);
 	}

@@ -1,8 +1,5 @@
 package com.bakdata.conquery.models.auth.web;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotAuthorizedException;
@@ -10,6 +7,9 @@ import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.SecurityContext;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticator;
@@ -78,8 +78,7 @@ public class AuthFilter extends io.dropwizard.auth.AuthFilter<AuthenticationToke
 				// Success an extracted token could be authenticated
 				log.trace("Authentication was successful for token type {}", token.getClass().getName());
 				return;
-			}
-			catch (AuthenticationException e) {
+			} catch (AuthenticationException e) {
 				// This is the shiro way to indicate that authentication failed
 				failedTokens++;
 				log.trace("Token authentication failed:", e);

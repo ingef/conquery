@@ -31,7 +31,7 @@ public class XodusEnvironmentExtension implements Environment, BeforeAllCallback
 	@Override
 	public void afterAll(ExtensionContext context) throws Exception {
 		environment.close();
-		if(!envPath.delete()) {
+		if (!envPath.delete()) {
 			log.warn("Could not delete test directory: {}", envPath);
 		}
 	}

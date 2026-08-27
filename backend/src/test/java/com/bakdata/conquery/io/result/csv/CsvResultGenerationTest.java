@@ -34,10 +34,12 @@ import org.junit.jupiter.params.provider.ValueSource;
 @Slf4j
 public class CsvResultGenerationTest {
 
-	public static final ConqueryConfig CONFIG = new ConqueryConfig() {{
-		// Suppress java.lang.NoClassDefFoundError: com/bakdata/conquery/io/jackson/serializer/CurrencyUnitDeserializer
-		setStorage(new NonPersistentStoreFactory());
-	}};
+	public static final ConqueryConfig CONFIG = new ConqueryConfig() {
+		{
+			// Suppress java.lang.NoClassDefFoundError: com/bakdata/conquery/io/jackson/serializer/CurrencyUnitDeserializer
+			setStorage(new NonPersistentStoreFactory());
+		}
+	};
 
 	static {
 		I18n.init();
@@ -49,11 +51,12 @@ public class CsvResultGenerationTest {
 		final Charset charset = Charset.forName(charsetName);
 
 		// Prepare every input data
-		final PrintSettings printSettings = new PrintSettings(true,
-															  Locale.GERMANY,
-                CONFIG,
-															  (cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
-															  (selectInfo) -> selectInfo.getSelect().getLabel()
+		final PrintSettings printSettings = new PrintSettings(
+			true,
+			Locale.GERMANY,
+			CONFIG,
+			(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
+			(selectInfo) -> selectInfo.getSelect().getLabel()
 		);
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		final List<EntityResult> results = getTestEntityResults();
@@ -66,7 +69,12 @@ public class CsvResultGenerationTest {
 		try (Writer writer = new BufferedWriter(new OutputStreamWriter(bufferOut, charset))) {
 
 			final CsvRenderer renderer = new CsvRenderer(CONFIG.getCsv().createWriter(writer), printSettings);
-			renderer.toCSV(getIdFields(), mquery.collectResultInfos(), mquery.streamResults(OptionalLong.empty()), printSettings, charset);
+			renderer.toCSV(
+				getIdFields(),
+				mquery.collectResultInfos(),
+				mquery.streamResults(OptionalLong.empty()),
+				printSettings,
+				charset);
 		}
 
 		final String computed = bufferOut.toString(charset);
@@ -81,43 +89,48 @@ public class CsvResultGenerationTest {
 
 	}
 
-	private String generateExpectedCSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings printSettings, PrinterFactory printerFactory) {
+	private String generateExpectedCSV(
+		List<EntityResult> results,
+		List<ResultInfo> resultInfos,
+		PrintSettings printSettings,
+		PrinterFactory printerFactory) {
 		final List<String> expected = new ArrayList<>();
-		expected.add(getIdFields().stream().map(info -> info.defaultColumnName(printSettings)).collect(Collectors.joining(","))
-					 + ","
-					 + getResultTypes().stream()
-									   .map(ResultType::typeInfo)
-									   .collect(Collectors.joining(","))
-					 + "\n");
+		expected.add(
+			getIdFields().stream()
+				.map(info -> info.defaultColumnName(printSettings))
+				.collect(
+					Collectors.joining(",")) + "," + getResultTypes().stream()
+						.map(ResultType::typeInfo)
+						.collect(
+							Collectors.joining(",")) + "\n");
 
 		final String delimiter = String.valueOf(CONFIG.getCsv().getDelimeter());
 
-		results
-			   .forEach(res -> {
+		results.forEach(res -> {
 
-				   for (Object[] line : res.listResultLines()) {
-					   final StringJoiner valueJoiner = new StringJoiner(",");
+			for (Object[] line : res.listResultLines()) {
+				final StringJoiner valueJoiner = new StringJoiner(",");
 
-					   valueJoiner.add(String.valueOf(res.getEntityId()));
-					   valueJoiner.add(String.valueOf(res.getEntityId()));
+				valueJoiner.add(String.valueOf(res.getEntityId()));
+				valueJoiner.add(String.valueOf(res.getEntityId()));
 
-					   for (int lIdx = 0; lIdx < line.length; lIdx++) {
-						   final Object val = line[lIdx];
+				for (int lIdx = 0; lIdx < line.length; lIdx++) {
+					final Object val = line[lIdx];
 
-						   if (val == null) {
-							   valueJoiner.add("");
-							   continue;
-						   }
+					if (val == null) {
+						valueJoiner.add("");
+						continue;
+					}
 
-						   final ResultInfo info = resultInfos.get(lIdx);
-						   final String printVal = (String) info.createPrinter(printerFactory, printSettings).apply(val);
+					final ResultInfo info = resultInfos.get(lIdx);
+					final String printVal = (String) info.createPrinter(printerFactory, printSettings).apply(val);
 
-						   valueJoiner.add(printVal.contains(delimiter) ? "\"" + printVal + "\"" : printVal);
-					   }
+					valueJoiner.add(printVal.contains(delimiter) ? "\"" + printVal + "\"" : printVal);
+				}
 
-					   expected.add(valueJoiner + "\n");
-				   }
-			   });
+				expected.add(valueJoiner + "\n");
+			}
+		});
 
 		return String.join("", expected);
 	}

@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.config;
 
+import jakarta.validation.constraints.Min;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.dropwizard.util.Duration;
-import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -24,12 +24,12 @@ public class ThreadPoolDefinition {
 
 	public ThreadPoolExecutor createService(String nameFormat) {
 		final ThreadPoolExecutor executor = new ThreadPoolExecutor(
-				minThreads,
-				maxThreads,
-				keepAliveTime.getQuantity(),
-				keepAliveTime.getUnit(),
-				new LinkedBlockingQueue<>(),
-				new ThreadFactoryBuilder().setNameFormat(nameFormat).build()
+			minThreads,
+			maxThreads,
+			keepAliveTime.getQuantity(),
+			keepAliveTime.getUnit(),
+			new LinkedBlockingQueue<>(),
+			new ThreadFactoryBuilder().setNameFormat(nameFormat).build()
 		);
 		executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
 		return executor;

@@ -8,8 +8,13 @@ public class CQDateRestrictionConverter implements NodeConverter<CQDateRestricti
 
 	@Override
 	public ConversionContext convert(CQDateRestriction dateRestrictionNode, ConversionContext context) {
-		ConversionContext childContext = context.withDateRestrictionRange(CDateRange.of(dateRestrictionNode.getDateRange()));
-		return context.getNodeConversions().convert(dateRestrictionNode.getChild(), childContext).withDateRestrictionRange(null);
+		ConversionContext childContext = context.withDateRestrictionRange(
+			CDateRange.of(dateRestrictionNode.getDateRange()));
+		return context.getNodeConversions()
+			.convert(
+				dateRestrictionNode.getChild(),
+				childContext)
+			.withDateRestrictionRange(null);
 	}
 
 	@Override

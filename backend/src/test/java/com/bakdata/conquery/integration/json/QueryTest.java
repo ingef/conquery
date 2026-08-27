@@ -1,5 +1,7 @@
 package com.bakdata.conquery.integration.json;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.query.Query;
@@ -14,8 +16,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +45,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 	@JsonIgnore
 	private Query query;
+
 	@Override
 	public Query getQuery() {
 		return query;

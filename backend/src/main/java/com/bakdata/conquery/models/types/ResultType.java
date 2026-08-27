@@ -28,79 +28,133 @@ public sealed interface ResultType permits ResultType.Primitive, ResultType.List
 
 	String typeInfo();
 
-	<T> T getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException;
+	<T> T getFromResultSet(
+		ResultSet resultSet,
+		int columnIndex,
+		ResultSetProcessor resultSetProcessor) throws SQLException;
 
-	<T> List<T> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException;
+	<T> List<T> getFromResultSetAsList(
+		ResultSet resultSet,
+		int columnIndex,
+		ResultSetProcessor resultSetProcessor) throws SQLException;
 
 	enum Primitive implements ResultType {
 		BOOLEAN {
 			@Override
-			public Boolean getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			public Boolean getFromResultSet(
+				ResultSet resultSet,
+				int columnIndex,
+				ResultSetProcessor resultSetProcessor) throws SQLException {
 				return resultSetProcessor.getBoolean(resultSet, columnIndex);
 			}
 
 			@Override
-			public List<Boolean> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			public List<Boolean> getFromResultSetAsList(
+				ResultSet resultSet,
+				int columnIndex,
+				ResultSetProcessor resultSetProcessor) throws SQLException {
 				return resultSetProcessor.getBooleanList(resultSet, columnIndex);
 			}
-		}, INTEGER {
+		},
+		INTEGER {
 			@Override
-			public Integer getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			public Integer getFromResultSet(
+				ResultSet resultSet,
+				int columnIndex,
+				ResultSetProcessor resultSetProcessor) throws SQLException {
 				return resultSetProcessor.getInteger(resultSet, columnIndex);
 			}
 
 			@Override
-			public List<Integer> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			public List<Integer> getFromResultSetAsList(
+				ResultSet resultSet,
+				int columnIndex,
+				ResultSetProcessor resultSetProcessor) throws SQLException {
 				return resultSetProcessor.getIntegerList(resultSet, columnIndex);
 			}
-		}, NUMERIC {
+		},
+		NUMERIC {
 			@Override
-			public Double getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			public Double getFromResultSet(
+				ResultSet resultSet,
+				int columnIndex,
+				ResultSetProcessor resultSetProcessor) throws SQLException {
 				return resultSetProcessor.getDouble(resultSet, columnIndex);
 			}
 
 			@Override
-			public List<Double> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			public List<Double> getFromResultSetAsList(
+				ResultSet resultSet,
+				int columnIndex,
+				ResultSetProcessor resultSetProcessor) throws SQLException {
 				return resultSetProcessor.getDoubleList(resultSet, columnIndex);
 			}
-		}, DATE {
+		},
+		DATE {
 			@Override
-			public Number getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			public Number getFromResultSet(
+				ResultSet resultSet,
+				int columnIndex,
+				ResultSetProcessor resultSetProcessor) throws SQLException {
 				return resultSetProcessor.getDate(resultSet, columnIndex);
 			}
 
 			@Override
-			public List<Number> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			public List<Number> getFromResultSetAsList(
+				ResultSet resultSet,
+				int columnIndex,
+				ResultSetProcessor resultSetProcessor) throws SQLException {
 				return resultSetProcessor.getDateList(resultSet, columnIndex);
 			}
-		}, DATE_RANGE {
+		},
+		DATE_RANGE {
 			@Override
-			public List<Integer> getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			public List<Integer> getFromResultSet(
+				ResultSet resultSet,
+				int columnIndex,
+				ResultSetProcessor resultSetProcessor) throws SQLException {
 				return resultSetProcessor.getDateRange(resultSet, columnIndex);
 			}
 
 			@Override
-			public List<List<Integer>> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			public List<List<Integer>> getFromResultSetAsList(
+				ResultSet resultSet,
+				int columnIndex,
+				ResultSetProcessor resultSetProcessor) throws SQLException {
 				return resultSetProcessor.getDateRangeList(resultSet, columnIndex);
 			}
-		}, STRING {
+		},
+		STRING {
 			@Override
-			public String getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			public String getFromResultSet(
+				ResultSet resultSet,
+				int columnIndex,
+				ResultSetProcessor resultSetProcessor) throws SQLException {
 				return resultSetProcessor.getString(resultSet, columnIndex);
 			}
 
 			@Override
-			public List<String> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			public List<String> getFromResultSetAsList(
+				ResultSet resultSet,
+				int columnIndex,
+				ResultSetProcessor resultSetProcessor) throws SQLException {
 				return resultSetProcessor.getStringList(resultSet, columnIndex);
 			}
-		}, MONEY {
+		},
+		MONEY {
 			@Override
-			public BigDecimal getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			public BigDecimal getFromResultSet(
+				ResultSet resultSet,
+				int columnIndex,
+				ResultSetProcessor resultSetProcessor) throws SQLException {
 				return resultSetProcessor.getMoney(resultSet, columnIndex);
 			}
 
 			@Override
-			public List<BigDecimal> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			public List<BigDecimal> getFromResultSetAsList(
+				ResultSet resultSet,
+				int columnIndex,
+				ResultSetProcessor resultSetProcessor) throws SQLException {
 				return resultSetProcessor.getMoneyList(resultSet, columnIndex);
 			}
 		};
@@ -131,12 +185,18 @@ public sealed interface ResultType permits ResultType.Primitive, ResultType.List
 		}
 
 		@Override
-		public List<T> getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+		public List<T> getFromResultSet(
+			ResultSet resultSet,
+			int columnIndex,
+			ResultSetProcessor resultSetProcessor) throws SQLException {
 			return elementType.getFromResultSetAsList(resultSet, columnIndex, resultSetProcessor);
 		}
 
 		@Override
-		public List<List<T>> getFromResultSetAsList(final ResultSet resultSet, final int columnIndex, final ResultSetProcessor resultSetProcessor) {
+		public List<List<T>> getFromResultSetAsList(
+			final ResultSet resultSet,
+			final int columnIndex,
+			final ResultSetProcessor resultSetProcessor) {
 			throw new UnsupportedOperationException("Nested lists not supported in SQL mode");
 		}
 

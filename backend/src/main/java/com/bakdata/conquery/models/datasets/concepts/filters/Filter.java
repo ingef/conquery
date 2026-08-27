@@ -56,21 +56,26 @@ public abstract sealed class Filter<FILTER_VALUE> extends LabeledNamespaceIdenti
 		return getConnector().getDataset();
 	}
 
-	public FrontendFilterConfiguration.Top createFrontendConfig(ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
+	public FrontendFilterConfiguration.Top createFrontendConfig(
+		ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
 		final FrontendFilterConfiguration.Top f = FrontendFilterConfiguration.Top.builder()
-																				 .id(getId())
-																				 .label(getLabel())
-																				 .tooltip(getTooltip())
-																				 .unit(getUnit())
-																				 .allowDropFile(getAllowDropFile())
-																				 .pattern(getPattern())
-																				 .defaultValue(getDefaultValue())
-																				 .build();
+			.id(getId())
+			.label(
+				getLabel())
+			.tooltip(getTooltip())
+			.unit(getUnit())
+			.allowDropFile(getAllowDropFile())
+			.pattern(
+				getPattern())
+			.defaultValue(getDefaultValue())
+			.build();
 		configureFrontend(f, conqueryConfig);
 		return f;
 	}
 
-	protected abstract void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException;
+	protected abstract void configureFrontend(
+		FrontendFilterConfiguration.Top f,
+		ConqueryConfig conqueryConfig) throws ConceptConfigurationException;
 
 	public abstract FilterNode<?> createFilterNode(FILTER_VALUE filterValue);
 
@@ -85,7 +90,12 @@ public abstract sealed class Filter<FILTER_VALUE> extends LabeledNamespaceIdenti
 				continue;
 			}
 
-			log.error("Filter[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable(), connector.getId(), tableId);
+			log.error(
+				"Filter[{}] of Table[{}] is not of Connector[{}]#Table[{}]",
+				getId(),
+				column.getTable(),
+				connector.getId(),
+				tableId);
 
 			valid = false;
 		}

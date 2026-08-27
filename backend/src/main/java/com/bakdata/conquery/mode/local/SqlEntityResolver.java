@@ -3,13 +3,13 @@ package com.bakdata.conquery.mode.local;
 import static com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil.*;
 import static org.jooq.impl.DSL.*;
 
+import jakarta.validation.constraints.NotEmpty;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil;
@@ -33,7 +33,6 @@ import org.jooq.Record3;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
 import org.jooq.Table;
-import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 public class SqlEntityResolver implements EntityResolver {
@@ -48,12 +47,12 @@ public class SqlEntityResolver implements EntityResolver {
 
 	@Override
 	public ResolveStatistic resolveEntities(
-			@NotEmpty String[][] values,
-			List<String> format,
-			EntityIdMap mapping,
-			IdColumnConfig idColumnConfig,
-			DateReader dateReader,
-			boolean onlySingles
+		@NotEmpty String[][] values,
+		List<String> format,
+		EntityIdMap mapping,
+		IdColumnConfig idColumnConfig,
+		DateReader dateReader,
+		boolean onlySingles
 	) {
 		final Map<String, CDateSet> resolved = new HashMap<>();
 		final List<String[]> unresolvedDate = new ArrayList<>();
@@ -66,7 +65,9 @@ public class SqlEntityResolver implements EntityResolver {
 		// Row -> Column -> Value
 		final Map<String, String>[] extraDataByRow = EntityResolverUtil.readExtras(values, format);
 
-		final List<Function<String[], ExternalId>> readers = IdColumnUtil.getIdReaders(format, idColumnConfig.getIdMappers());
+		final List<Function<String[], ExternalId>> readers = IdColumnUtil.getIdReaders(
+			format,
+			idColumnConfig.getIdMappers());
 
 		// We will not be able to resolve anything...
 		if (readers.isEmpty()) {
@@ -146,24 +147,38 @@ public class SqlEntityResolver implements EntityResolver {
 		Field<String> externalPrimaryColumn = field(name(SharedAliases.PRIMARY_COLUMN.getAlias()), String.class);
 		Field<String> innerPrimaryColumn = field(name(idColumns.findPrimaryIdColumn().getField()), String.class);
 		// Would prefer this to be `is not null`, but hana does not support that for fields
-		Field<Boolean> isResolved = case_().when(innerPrimaryColumn.isNull(), inline(false)).otherwise(inline(true)).as(IS_RESOLVED_ALIAS);
+		Field<Boolean> isResolved = case_().when(innerPrimaryColumn.isNull(), inline(false))
+			.otherwise(inline(true))
+			.as(
+				IS_RESOLVED_ALIAS);
 
 		Table<Record> allIdsTable = table(name(idColumns.getTable()));
 
-		SelectConditionStep<Record3<Integer, String, Boolean>> resolveIdsQuery =
-				context.with(unresolvedCte)
-					   .select(rowIndex, externalPrimaryColumn, isResolved)
-					   .from(dialect.getFunctionProvider().innerJoin(allIdsTable, unresolvedCte, List.of(externalPrimaryColumn.eq(innerPrimaryColumn))))
-					   .where(externalPrimaryColumn.eq(innerPrimaryColumn));
+		SelectConditionStep<Record3<Integer, String, Boolean>> resolveIdsQuery = context.with(unresolvedCte)
+			.select(
+				rowIndex,
+				externalPrimaryColumn,
+				isResolved)
+			.from(
+				dialect.getFunctionProvider()
+					.innerJoin(
+						allIdsTable,
+						unresolvedCte,
+						List.of(externalPrimaryColumn.eq(innerPrimaryColumn))))
+			.where(
+				externalPrimaryColumn.eq(innerPrimaryColumn));
 
 		return executionService.fetchStream(resolveIdsQuery)
-							   .collect(Collectors.toMap(
-									   record -> record.get(rowIndex),
-									   record -> new IdResolveInfo(record.get(externalPrimaryColumn), record.get(isResolved))
-							   ));
+			.collect(
+				Collectors.toMap(
+					record -> record.get(rowIndex),
+					record -> new IdResolveInfo(record.get(externalPrimaryColumn), record.get(isResolved))
+				));
 	}
 
-	private CommonTableExpression<?> createUnresolvedCte(String[][] values, List<Function<String[], ExternalId>> readers) {
+	private CommonTableExpression<?> createUnresolvedCte(
+		String[][] values,
+		List<Function<String[], ExternalId>> readers) {
 
 		List<Select<Record2<Integer, String>>> selects = new ArrayList<>(values.length);
 		for (int i = 1; i < values.length; i++) {
@@ -184,8 +199,8 @@ public class SqlEntityResolver implements EntityResolver {
 			Field<Integer> rowIndex = inline(i).as(ROW_INDEX);
 			Field<String> externalPrimaryColumn = inline(resolvedId).as(SharedAliases.PRIMARY_COLUMN.getAlias());
 			Select<Record2<Integer, String>> externalIdSelect = context.select(rowIndex, externalPrimaryColumn)
-																	   // some dialects can't just select static values without FROM clause
-																	   .from(dialect.getFunctionProvider().getNoOpTable());
+				// some dialects can't just select static values without FROM clause
+				.from(dialect.getFunctionProvider().getNoOpTable());
 
 			selects.add(externalIdSelect);
 		}

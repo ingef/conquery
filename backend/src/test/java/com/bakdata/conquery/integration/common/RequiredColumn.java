@@ -1,8 +1,8 @@
 package com.bakdata.conquery.integration.common;
 
-import javax.annotation.Nullable;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -58,7 +58,9 @@ public class RequiredColumn {
 		col.setDescription(description);
 
 		if (!Strings.isNullOrEmpty(secondaryId)) {
-			SecondaryIdDescriptionId secondaryIdDescriptionId = new SecondaryIdDescriptionId(table.getDataset(), secondaryId);
+			SecondaryIdDescriptionId secondaryIdDescriptionId = new SecondaryIdDescriptionId(
+				table.getDataset(),
+				secondaryId);
 			secondaryIdDescriptionId.setDomain(idResolver);
 			final SecondaryIdDescription description = secondaryIdDescriptionId.resolve();
 

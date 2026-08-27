@@ -22,7 +22,12 @@ public class StringColumnStatsCollector extends ColumnStatsCollector {
 	private int nulls = 0;
 
 
-	public StringColumnStatsCollector(String name, String label, String description, PrintSettings printSettings, long limit) {
+	public StringColumnStatsCollector(
+		String name,
+		String label,
+		String description,
+		PrintSettings printSettings,
+		long limit) {
 		super(name, label, description, printSettings);
 		this.limit = limit;
 	}
@@ -41,10 +46,9 @@ public class StringColumnStatsCollector extends ColumnStatsCollector {
 
 	@Override
 	public ResultColumnStatistics describe() {
-		final List<Map.Entry<Comparable<?>, Long>> entriesSorted =
-				StreamSupport.stream(((Iterable<Map.Entry<Comparable<?>, Long>>) frequencies::entrySetIterator).spliterator(), false)
-							 .sorted(Map.Entry.<Comparable<?>, Long>comparingByValue().reversed())
-							 .toList();
+		final List<Map.Entry<Comparable<?>, Long>> entriesSorted = StreamSupport.stream(
+			((Iterable<Map.Entry<Comparable<?>, Long>>) frequencies::entrySetIterator).spliterator(),
+			false).sorted(Map.Entry.<Comparable<?>, Long>comparingByValue().reversed()).toList();
 
 		final long end = Math.min(limit, entriesSorted.size());
 
@@ -54,7 +58,9 @@ public class StringColumnStatsCollector extends ColumnStatsCollector {
 		for (int i = 0; i < end; i++) {
 			final Map.Entry<Comparable<?>, Long> counts = entriesSorted.get(i);
 
-			final HistogramColumnDescription.Entry entry = new HistogramColumnDescription.Entry(((String) counts.getKey()), counts.getValue());
+			final HistogramColumnDescription.Entry entry = new HistogramColumnDescription.Entry(
+				((String) counts.getKey()),
+				counts.getValue());
 			head.add(entry);
 
 			shownTotal += counts.getValue();
@@ -67,8 +73,8 @@ public class StringColumnStatsCollector extends ColumnStatsCollector {
 
 		if (entriesSorted.size() > limit) {
 			extras.put(
-					statisticsLabels.remainingValues(entriesSorted.size() - limit),
-					statisticsLabels.remainingEntries(frequencies.getSumFreq() - shownTotal)
+				statisticsLabels.remainingValues(entriesSorted.size() - limit),
+				statisticsLabels.remainingEntries(frequencies.getSumFreq() - shownTotal)
 			);
 		}
 

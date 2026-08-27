@@ -55,8 +55,7 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 		try {
 			// avoids overflows.
 			span = Math.subtractExact(maxValue, minValue);
-		}
-		catch (ArithmeticException exception) {
+		} catch (ArithmeticException exception) {
 			return LongArrayStore.create(getLines());
 		}
 

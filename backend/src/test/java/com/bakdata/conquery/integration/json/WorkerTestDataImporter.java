@@ -2,11 +2,11 @@ package com.bakdata.conquery.integration.json;
 
 import static com.bakdata.conquery.integration.common.LoadingUtil.*;
 
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.core.UriBuilder;
 import java.util.List;
 
 import com.bakdata.conquery.integration.common.LoadingUtil;
@@ -60,16 +60,17 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		importTables(support, content.getTables(), content.isAutoConcept());
 
 
-		test.setConnector(LoadingUtil.parseSubTree(
-								  support,
-								  test.getRawConnector(),
-								  ConceptTreeConnector.class,
-								  conn -> {
-									  conn.setTable(new TableId(support.getDataset().getDataset(), FilterTest.TABLE_NAME));
-									  conn.setConcept(test.getConcept());
-								  },
-								  false
-						  )
+		test.setConnector(
+			LoadingUtil.parseSubTree(
+				support,
+				test.getRawConnector(),
+				ConceptTreeConnector.class,
+				conn -> {
+					conn.setTable(new TableId(support.getDataset().getDataset(), FilterTest.TABLE_NAME));
+					conn.setConcept(test.getConcept());
+				},
+				false
+			)
 		);
 		test.getConcept().setConnectors(Collections.singletonList((ConceptTreeConnector) test.getConnector()));
 
@@ -90,7 +91,6 @@ public class WorkerTestDataImporter implements TestDataImporter {
 		Dataset dataset = new Dataset(name);
 		LoadingUtil.importDataset(client, adminUriBuilder, dataset);
 	}
-
 
 
 }

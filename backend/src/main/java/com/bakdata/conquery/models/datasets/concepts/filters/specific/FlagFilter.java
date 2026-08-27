@@ -41,7 +41,9 @@ public class FlagFilter extends EventFilter<Set<String>> {
 	private final Map<String, ColumnId> flags;
 
 	@Override
-	protected void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
+	protected void configureFrontend(
+		FrontendFilterConfiguration.Top f,
+		ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
 		f.setType(FrontendFilterType.Fields.MULTI_SELECT);
 
 		f.setOptions(flags.keySet().stream().map(key -> new FrontendValue(key, key)).toList());

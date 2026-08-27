@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.config;
 
-import java.util.Map;
 import jakarta.validation.Valid;
+import java.util.Map;
 
 import com.bakdata.conquery.mode.local.ConnectionManager;
 import com.bakdata.conquery.mode.local.ManagedConnection;
@@ -48,7 +48,11 @@ public class SqlConnectorConfig {
 		ConnectionManager connectionManager = new ConnectionManager();
 
 		for (Map.Entry<String, DatabaseConnectionConfig> configEntry : getDatabaseConfigs().entrySet()) {
-			ManagedConnection managedConnection = new ManagedConnection(configEntry.getKey(), this, configEntry.getValue(), environment.healthChecks());
+			ManagedConnection managedConnection = new ManagedConnection(
+				configEntry.getKey(),
+				this,
+				configEntry.getValue(),
+				environment.healthChecks());
 
 			environment.lifecycle().manage(managedConnection);
 			connectionManager.addConnection(configEntry.getKey(), managedConnection);

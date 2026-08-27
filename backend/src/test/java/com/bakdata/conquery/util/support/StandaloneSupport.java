@@ -1,10 +1,10 @@
 package com.bakdata.conquery.util.support;
 
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.integration.json.TestDataImporter;
@@ -42,24 +42,32 @@ public class StandaloneSupport implements TestSupport {
 	public void preprocessTmp(File tmpDir, List<File> descriptions) throws Exception {
 		final Environment env = testConquery.getDropwizard().getEnvironment();
 		final net.sourceforge.argparse4j.inf.Namespace namespace = new net.sourceforge.argparse4j.inf.Namespace(
-				Map.of(
-						"in", tmpDir,
-						"out", tmpDir,
-						"desc", descriptions,
-						"buckets", 10,
-						"strict", true,
-						"fast-fail", true
-				)
+			Map.of(
+				"in",
+				tmpDir,
+				"out",
+				tmpDir,
+				"desc",
+				descriptions,
+				"buckets",
+				10,
+				"strict",
+				true,
+				"fast-fail",
+				true
+			)
 		);
 
 		// We use this to change the visibility of the run method, hence it cannot be instantiated.
-		new PreprocessorCommand(MoreExecutors.newDirectExecutorService()){
+		new PreprocessorCommand(MoreExecutors.newDirectExecutorService()) {
 			@Override
-			public void run(Environment environment, net.sourceforge.argparse4j.inf.Namespace namespace, ConqueryConfig config) throws Exception {
+			public void run(
+				Environment environment,
+				net.sourceforge.argparse4j.inf.Namespace namespace,
+				ConqueryConfig config) throws Exception {
 				super.run(environment, namespace, config);
 			}
-		}
-		.run(env, namespace, config);
+		}.run(env, namespace, config);
 	}
 
 	public NamespaceStorage getNamespaceStorage() {
@@ -81,10 +89,7 @@ public class StandaloneSupport implements TestSupport {
 	}
 
 	public UriBuilder defaultApiURIBuilder() {
-		return UriBuilder.fromPath("api")
-						 .host("localhost")
-						 .scheme("http")
-						 .port(getLocalPort());
+		return UriBuilder.fromPath("api").host("localhost").scheme("http").port(getLocalPort());
 	}
 
 	/**
@@ -97,10 +102,7 @@ public class StandaloneSupport implements TestSupport {
 	}
 
 	public UriBuilder defaultAdminURIBuilder() {
-		return UriBuilder.fromPath("admin")
-						 .host("localhost")
-						 .scheme("http")
-						 .port(getAdminPort());
+		return UriBuilder.fromPath("admin").host("localhost").scheme("http").port(getAdminPort());
 	}
 
 	/**
@@ -112,7 +114,9 @@ public class StandaloneSupport implements TestSupport {
 		return testConquery.getDropwizard().getAdminPort();
 	}
 
-	public enum Mode {WORKER, SQL}
+	public enum Mode {
+		WORKER, SQL
+	}
 
 
 }

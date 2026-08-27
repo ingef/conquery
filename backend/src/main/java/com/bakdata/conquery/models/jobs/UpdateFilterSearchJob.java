@@ -49,29 +49,35 @@ public class UpdateFilterSearchJob extends Job {
 		log.info("BEGIN loading SourceSearch");
 
 		// collect all SelectFilters to create searches for them
-		final List<SelectFilter<?>> allSelectFilters =
-				getAllSelectFilters(storage);
+		final List<SelectFilter<?>> allSelectFilters = getAllSelectFilters(storage);
 
 
 		// Unfortunately the is no ClassToInstanceMultimap yet
-		final Map<Class<?>, Set<Searchable>> collectedSearchables =
-				allSelectFilters.stream()
-								.map(SelectFilter::getSearchReferences)
-								.flatMap(Collection::stream)
-								// Group Searchables into "Columns" and other "Searchables"
-								.collect(Collectors.groupingBy(s -> s instanceof Column ? Column.class : Searchable.class, Collectors.toSet()));
+		final Map<Class<?>, Set<Searchable>> collectedSearchables = allSelectFilters.stream()
+			.map(
+				SelectFilter::getSearchReferences)
+			.flatMap(Collection::stream)
+			// Group Searchables into "Columns" and other "Searchables"
+			.collect(
+				Collectors.groupingBy(
+					s -> s instanceof Column ? Column.class : Searchable.class,
+					Collectors.toSet()));
 
 
 		log.debug("Found {} searchable Objects.", collectedSearchables.values().stream().mapToLong(Set::size).sum());
 
-		Set<Searchable> managerSearchables = collectedSearchables.getOrDefault(Searchable.class, Collections.emptySet());
+		Set<Searchable> managerSearchables = collectedSearchables.getOrDefault(
+			Searchable.class,
+			Collections.emptySet());
 
 
 		searchProcessor.indexManagerResidingSearches(managerSearchables, getCancelledState(), getProgressReporter());
 
 
 		// The following cast is safe
-		final Set<Column> searchableColumns = (Set) collectedSearchables.getOrDefault(Column.class, Collections.emptySet());
+		final Set<Column> searchableColumns = (Set) collectedSearchables.getOrDefault(
+			Column.class,
+			Collections.emptySet());
 		log.debug("Start collecting column values: {}", Arrays.toString(searchableColumns.toArray()));
 		registerColumnValuesInSearch.accept(searchableColumns);
 
@@ -80,16 +86,16 @@ public class UpdateFilterSearchJob extends Job {
 	}
 
 
-
 	@NotNull
 	public static List<SelectFilter<?>> getAllSelectFilters(NamespaceStorage storage) {
-		try(Stream<Concept<?>> allConcepts = storage.getAllConcepts()) {
-			return allConcepts
-					.flatMap(c -> c.getConnectors().stream())
-					.flatMap(co -> co.collectAllFilters().stream())
-					.filter(SelectFilter.class::isInstance)
-					.map(f -> ((SelectFilter<?>) f))
-					.collect(Collectors.toList());
+		try (Stream<Concept<?>> allConcepts = storage.getAllConcepts()) {
+			return allConcepts.flatMap(c -> c.getConnectors().stream())
+				.flatMap(
+					co -> co.collectAllFilters().stream())
+				.filter(SelectFilter.class::isInstance)
+				.map(
+					f -> ((SelectFilter<?>) f))
+				.collect(Collectors.toList());
 		}
 	}
 

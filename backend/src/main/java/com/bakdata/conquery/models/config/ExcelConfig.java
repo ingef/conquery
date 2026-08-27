@@ -1,10 +1,10 @@
 package com.bakdata.conquery.models.config;
 
-import java.util.Collections;
-import java.util.Map;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.util.Collections;
+import java.util.Map;
 
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.google.common.collect.ImmutableMap;
@@ -29,11 +29,15 @@ public class ExcelConfig {
 	public static final String INTEGER_STYLE = "integer";
 
 	private static final Map<String, CellStyler> FALLBACK_STYLES = Map.of(
-			BASIC_STYLE, new CellStyler(),
-			// \u00A0 is the non breakable space
-			CURRENCY_STYLE_PREFIX + "EUR", new CellStyler().withDataFormatString("#,##0.00\u00A0€"),
-			NUMERIC_STYLE, new CellStyler().withDataFormatString("#,##0.00"),
-			INTEGER_STYLE, new CellStyler().withDataFormatString("#,##0")
+		BASIC_STYLE,
+		new CellStyler(),
+		// \u00A0 is the non breakable space
+		CURRENCY_STYLE_PREFIX + "EUR",
+		new CellStyler().withDataFormatString("#,##0.00\u00A0€"),
+		NUMERIC_STYLE,
+		new CellStyler().withDataFormatString("#,##0.00"),
+		INTEGER_STYLE,
+		new CellStyler().withDataFormatString("#,##0")
 	);
 
 	/**
@@ -62,7 +66,7 @@ public class ExcelConfig {
 	private int lastRowToAutosize = 30;
 
 
-	public ImmutableMap<String, CellStyle> generateStyles(SXSSFWorkbook workbook, PrintSettings settings){
+	public ImmutableMap<String, CellStyle> generateStyles(SXSSFWorkbook workbook, PrintSettings settings) {
 		ImmutableMap.Builder<String, CellStyle> styles = ImmutableMap.builder();
 
 		// Add localized DateCell style
@@ -76,7 +80,7 @@ public class ExcelConfig {
 
 		// Add missing basic styles
 		for (String s : FALLBACK_STYLES.keySet()) {
-			if(this.styles.containsKey(s)){
+			if (this.styles.containsKey(s)) {
 				continue;
 			}
 			styles.put(s, FALLBACK_STYLES.get(s).generateStyle(workbook));
@@ -105,14 +109,14 @@ public class ExcelConfig {
 		private CellStyle generateStyle(SXSSFWorkbook workbook) {
 			DataFormat dataFormat = workbook.createDataFormat();
 			CellStyle style = workbook.createCellStyle();
-			if (fillPattern != null){
+			if (fillPattern != null) {
 				style.setFillPattern(fillPattern);
 			}
 			if (foregroundColors != null) {
 				style.setFillForegroundColor(foregroundColors);
 			}
 
-			if (dataFormatString != null){
+			if (dataFormatString != null) {
 				style.setDataFormat(dataFormat.getFormat(dataFormatString));
 			}
 

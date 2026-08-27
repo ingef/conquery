@@ -43,7 +43,11 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 	private final ClusterState clusterState;
 
-	public DistributedExecutionManager(MetaStorage storage, DatasetRegistry<?> datasetRegistry, ClusterState state, ConqueryConfig config) {
+	public DistributedExecutionManager(
+		MetaStorage storage,
+		DatasetRegistry<?> datasetRegistry,
+		ClusterState state,
+		ConqueryConfig config) {
 		super(storage, datasetRegistry, config);
 		clusterState = state;
 	}
@@ -53,12 +57,16 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 		log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), execution.getDataset());
 
-		List<ResultInfo> resultInfo = execution instanceof SingleTableResult singleTableResult ? singleTableResult.collectResultInfos() : Collections.emptyList();
+		List<ResultInfo> resultInfo = execution instanceof SingleTableResult singleTableResult ? singleTableResult
+			.collectResultInfos() : Collections.emptyList();
 
 		addState(execution.getId(), new DistributedExecutionInfo(resultInfo));
 
 		if (execution instanceof ManagedInternalForm<?> form) {
-			form.getSubQueries().values().forEach((query) -> addState(query, new DistributedExecutionInfo(form.collectResultInfos())));
+			form.getSubQueries()
+				.values()
+				.forEach(
+					(query) -> addState(query, new DistributedExecutionInfo(form.collectResultInfos())));
 		}
 
 		final WorkerHandler workerHandler = getWorkerHandler(execution.getDataset());
@@ -83,7 +91,9 @@ public class DistributedExecutionManager extends ExecutionManager {
 	 * @implNote subQueries of Forms are managed by the form itself, so need to be passed from outside.
 	 */
 	@SneakyThrows
-	public <R extends ShardResult, E extends ManagedExecution & InternalExecution> void handleQueryResult(R result, E execution) {
+	public <R extends ShardResult, E extends ManagedExecution & InternalExecution> void handleQueryResult(
+		R result,
+		E execution) {
 
 		if (execution == null) {
 			log.debug("Ignoring result {} because the corresponding execution was 'null' (probably deleted)", result);
@@ -101,20 +111,28 @@ public class DistributedExecutionManager extends ExecutionManager {
 		Optional<ExecutionInfo> optInfo = tryGetExecutionInfo(execution.getId());
 
 		if (optInfo.isEmpty()) {
-			log.debug("Ignoring result {} because the corresponding state was not found (execution probably canceled)", result);
+			log.debug(
+				"Ignoring result {} because the corresponding state was not found (execution probably canceled)",
+				result);
 			return;
 		}
 
 		if (!(optInfo.get() instanceof DistributedExecutionInfo distributedInfo)) {
-			throw new IllegalStateException("Expected execution '%s' to be of type %s, but was %s".formatted(execution.getId(),
-																											 DistributedExecutionInfo.class,
-																											 optInfo.getClass()
-			));
+			throw new IllegalStateException(
+				"Expected execution '%s' to be of type %s, but was %s".formatted(
+					execution.getId(),
+					DistributedExecutionInfo.class,
+					optInfo.getClass()
+				));
 		}
 
 		ExecutionState execState = distributedInfo.executionState;
 		if (execState != ExecutionState.RUNNING) {
-			log.warn("Received result form '{}' for Query[{}] that is not RUNNING but {}", result.getWorkerId(), execution.getId(), execState);
+			log.warn(
+				"Received result form '{}' for Query[{}] that is not RUNNING but {}",
+				result.getWorkerId(),
+				execution.getId(),
+				execState);
 			return;
 		}
 
@@ -130,7 +148,9 @@ public class DistributedExecutionManager extends ExecutionManager {
 		// State changed to DONE or FAILED
 		ExecutionState execStateAfterResultCollect = getExecutionInfo(execution.getId()).getExecutionState();
 		if (execStateAfterResultCollect != ExecutionState.RUNNING) {
-			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner().resolve(), getStorage()).map(Group::getName).orElse("none");
+			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(
+				execution.getOwner().resolve(),
+				getStorage()).map(Group::getName).orElse("none");
 
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).dec();
 			ExecutionMetrics.getQueryStateCounter(execStateAfterResultCollect, primaryGroupName).inc();
@@ -138,7 +158,10 @@ public class DistributedExecutionManager extends ExecutionManager {
 
 			/* This log is here to prevent an NPE which could occur when no strong reference to result.getResults()
 			 existed anymore after the query finished and immediately was reset */
-			log.trace("Collected metrics for execution {}. Last result received: {}:", result.getExecutionId(), result.getResults());
+			log.trace(
+				"Collected metrics for execution {}. Last result received: {}:",
+				result.getExecutionId(),
+				result.getResults());
 		}
 
 	}

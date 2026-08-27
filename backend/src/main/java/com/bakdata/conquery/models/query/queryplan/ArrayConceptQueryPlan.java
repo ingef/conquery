@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 import lombok.ToString;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Represents the QueryPlan for corresponding to the {@link ArrayConceptQuery}.
@@ -77,7 +78,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 	@Override
 	public void init(QueryExecutionContext ctx, Entity entity) {
 		validityDateAggregator.init(entity, ctx);
-		childPlans.forEach(child -> child.init(ctx,entity));
+		childPlans.forEach(child -> child.init(ctx, entity));
 	}
 
 	@Override
@@ -94,7 +95,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 
 		Object[] resultValues = new Object[getAggregatorSize()];
 		// Start with 1 for aggregator values if dateSet needs to be added to the result
-		final int  resultOffset = generateDateAggregation ? 1 : 0;
+		final int resultOffset = generateDateAggregation ? 1 : 0;
 		int resultInsertIdx = resultOffset;
 		boolean containedInChildQueries = false;
 
@@ -103,7 +104,9 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 
 			if (result.isEmpty()) {
 				// The sub result was empty. Generate the necessary gapped columns in the result line
-				final Object[] applied = ResultModifier.existAggValuesSetterFor(child.getAggregators(), OptionalInt.of(0)).apply(new Object[child.getAggregatorSize()]);
+				final Object[] applied = ResultModifier.existAggValuesSetterFor(
+					child.getAggregators(),
+					OptionalInt.of(0)).apply(new Object[child.getAggregatorSize()]);
 
 				// applied[0] is the child-queries DateUnion, which we don't copy.
 				int copyLength = applied.length - resultOffset;
@@ -151,8 +154,8 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 	}
 
 	@Override
-	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
-		if(!generateDateAggregation) {
+	public @NonNull Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
+		if (!generateDateAggregation) {
 			return Optional.empty();
 		}
 
@@ -193,7 +196,8 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 		 */
 		int offset = child.getAggregatorSize() - (generateDateAggregation ? 1 : 0);
 		if (offset < 0) {
-			throw new IllegalStateException("Result index offset must be positive, so the advancing pointer does not override results.");
+			throw new IllegalStateException(
+				"Result index offset must be positive, so the advancing pointer does not override results.");
 		}
 		return currentIdx + offset;
 	}

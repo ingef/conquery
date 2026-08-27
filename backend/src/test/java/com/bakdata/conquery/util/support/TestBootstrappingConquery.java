@@ -1,5 +1,6 @@
 package com.bakdata.conquery.util.support;
 
+import jakarta.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.time.Clock;
@@ -16,7 +17,6 @@ import io.dropwizard.configuration.YamlConfigurationFactory;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.logging.common.BootstrapLogging;
 import io.dropwizard.logging.common.DropwizardLayout;
-import jakarta.validation.Validator;
 
 public class TestBootstrappingConquery extends Conquery {
 
@@ -30,15 +30,21 @@ public class TestBootstrappingConquery extends Conquery {
 
 		bootstrap.setConfigurationFactoryFactory(new DefaultConfigurationFactoryFactory<>() {
 			@Override
-			public ConfigurationFactory<ConqueryConfig> create(Class<ConqueryConfig> klass, Validator validator, ObjectMapper objectMapper, String propertyPrefix) {
+			public ConfigurationFactory<ConqueryConfig> create(
+				Class<ConqueryConfig> klass,
+				Validator validator,
+				ObjectMapper objectMapper,
+				String propertyPrefix) {
 				return new YamlConfigurationFactory<ConqueryConfig>(
-						klass,
-						validator,
-						configureObjectMapper(objectMapper.copy()),
-						propertyPrefix
+					klass,
+					validator,
+					configureObjectMapper(objectMapper.copy()),
+					propertyPrefix
 				) {
 					@Override
-					protected ConqueryConfig build(JsonNode node, String path) throws IOException, ConfigurationException {
+					protected ConqueryConfig build(
+						JsonNode node,
+						String path) throws IOException, ConfigurationException {
 						final ConqueryConfig config = super.build(node, path);
 						ConfigOverride.configurePathsAndLogging(config, tmpDir);
 						return config;

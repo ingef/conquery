@@ -12,12 +12,19 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class HistogramColumnDescription extends ColumnStatsCollector.ResultColumnStatistics {
 
-	public record Entry(String label, long value) {};
+	public record Entry(String label, long value) {
+	}
+
 	private final List<Entry> entries;
 
 	private final Map<String, String> extras;
 
-	public HistogramColumnDescription(String name, String label, String description, List<Entry> histogram, Map<String, String> extras) {
+	public HistogramColumnDescription(
+		String name,
+		String label,
+		String description,
+		List<Entry> histogram,
+		Map<String, String> extras) {
 		super(name, label, description);
 		this.entries = histogram;
 		this.extras = extras;

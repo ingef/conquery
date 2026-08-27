@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
+import jakarta.validation.Validator;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -27,7 +28,6 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
@@ -122,15 +122,15 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private final ExecutorService executor;
 
 	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(
-			Store<ByteIterable, ByteIterable> store,
-			Validator validator,
-			ObjectMapper objectMapper,
-			CLASS_K keyType,
-			CLASS_V valueType,
-			boolean validateOnWrite,
-			boolean removeUnreadableFromStore,
-			File unreadableDataDumpDirectory,
-			ExecutorService executorService) {
+		Store<ByteIterable, ByteIterable> store,
+		Validator validator,
+		ObjectMapper objectMapper,
+		CLASS_K keyType,
+		CLASS_V valueType,
+		boolean validateOnWrite,
+		boolean removeUnreadableFromStore,
+		File unreadableDataDumpDirectory,
+		ExecutorService executorService) {
 		this.store = store;
 		this.validator = validator;
 		this.validateOnWrite = validateOnWrite;
@@ -155,10 +155,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		if (shouldDumpUnreadables()) {
 			if (!unreadableValuesDumpDir.exists() && !unreadableValuesDumpDir.mkdirs()) {
-				throw new IllegalStateException("Could not create dump directory: %s".formatted(unreadableValuesDumpDir));
-			}
-			else if (!unreadableValuesDumpDir.isDirectory()) {
-				throw new IllegalArgumentException(String.format("The provided path points to an existing file which is not a directory. Was: %s", unreadableValuesDumpDir.getAbsolutePath()));
+				throw new IllegalStateException(
+					"Could not create dump directory: %s".formatted(unreadableValuesDumpDir));
+			} else if (!unreadableValuesDumpDir.isDirectory()) {
+				throw new IllegalArgumentException(
+					String.format(
+						"The provided path points to an existing file which is not a directory. Was: %s",
+						unreadableValuesDumpDir.getAbsolutePath()));
 			}
 		}
 	}
@@ -170,7 +173,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public boolean add(KEY key, VALUE value) {
 		if (!valueType.isInstance(value)) {
-			throw new IllegalStateException("The element %s is not of the required type %s".formatted(value, valueType));
+			throw new IllegalStateException(
+				"The element %s is not of the required type %s".formatted(value, valueType));
 		}
 		if (validateOnWrite) {
 			ValidatorHelper.failOnError(log, validator.validate(value));
@@ -209,8 +213,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			final byte[] bytes = baos.toByteArray();
 
 			return new ArrayByteIterable(bytes);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new RuntimeException("Failed to write " + obj, e);
 		}
 	}
@@ -221,11 +224,16 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		try {
 			return readValue(binValue);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 
 			if (unreadableValuesDumpDir != null) {
-				dumpToFile(binValue.getBytesUnsafe(), key.toString(), e, unreadableValuesDumpDir, getName(), objectMapper);
+				dumpToFile(
+					binValue.getBytesUnsafe(),
+					key.toString(),
+					e,
+					unreadableValuesDumpDir,
+					getName(),
+					objectMapper);
 			}
 
 			if (removeUnreadablesFromUnderlyingStore) {
@@ -256,7 +264,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * @param unreadableDumpDir The director to dump to. The method assumes that the directory exists and is okay to write to.
 	 * @param storeName         The name of the store which is also used in the dump file name.
 	 */
-	private static void dumpToFile(byte[] gzippedObj, @NonNull String keyOfDump, Exception reason, @NonNull File unreadableDumpDir, String storeName, ObjectMapper objectMapper) {
+	private static void dumpToFile(
+		byte[] gzippedObj,
+		@NonNull String keyOfDump,
+		Exception reason,
+		@NonNull File unreadableDumpDir,
+		String storeName,
+		ObjectMapper objectMapper) {
 		// Create dump filehandle
 		final File dumpfile = makeDumpFileName(keyOfDump, unreadableDumpDir, storeName);
 		final File exceptionFileName = makeExceptionFileName(keyOfDump, unreadableDumpDir, storeName);
@@ -274,26 +288,28 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			if (!dumpfile.getParentFile().exists()) {
 				throw new IllegalStateException("Could not create `%s`.".formatted(dumpfile.getParentFile()));
 			}
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			log.warn("Could not create `{}`", dumpfile.getParentFile(), e);
 		}
 
 		// Write json
 		try {
-			log.info("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
+			log.info(
+				"Dumping value of key {} to {} (because it cannot be deserialized anymore).",
+				keyOfDump,
+				dumpfile.getCanonicalPath());
 
-			final JsonNode dump = objectMapper.readerFor(JsonNode.class).readValue(new GZIPInputStream(new ByteArrayInputStream(gzippedObj)));
+			final JsonNode dump = objectMapper.readerFor(JsonNode.class)
+				.readValue(
+					new GZIPInputStream(new ByteArrayInputStream(gzippedObj)));
 			Jackson.MAPPER.writer().writeValue(dumpfile, dump);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			log.error("Failed to dump unreadable value of key `{}` to file `{}`", keyOfDump, dumpfile, e);
 		}
 
 		try (PrintStream out = new PrintStream(exceptionFileName)) {
 			reason.printStackTrace(out);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			log.error("Failed to dump exception for `{}` to file `{}`.", keyOfDump, exceptionFileName, e);
 		}
 
@@ -317,14 +333,15 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		if (obj == null) {
 			return null;
 		}
-		try (final InputStream inputStream = new GZIPInputStream(new ByteArrayInputStream(obj.getBytesUnsafe(), 0, obj.getLength()))) {
+		try (final InputStream inputStream = new GZIPInputStream(
+			new ByteArrayInputStream(obj.getBytesUnsafe(), 0, obj.getLength()))) {
 			return reader.readValue(inputStream);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			try {
-				throw new RuntimeException("Failed to read " + JacksonUtil.toJsonDebug(debugUnGzip(obj.getBytesUnsafe())), e);
-			}
-			catch (IOException ex) {
+				throw new RuntimeException(
+					"Failed to read " + JacksonUtil.toJsonDebug(debugUnGzip(obj.getBytesUnsafe())),
+					e);
+			} catch (IOException ex) {
 				throw new RuntimeException(ex);
 			}
 		}
@@ -337,12 +354,16 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * Current implementation is `$unreadableDumpDir/$today/$store/$key.json`
 	 */
 	@NotNull
-	public static File makeDumpFileName(@NotNull String keyOfDump, @NotNull File unreadableDumpDir, @NotNull String storeName) {
+	public static File makeDumpFileName(
+		@NotNull String keyOfDump,
+		@NotNull File unreadableDumpDir,
+		@NotNull String storeName) {
 		return unreadableDumpDir.toPath()
-								.resolve(DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()))
-								.resolve(storeName)
-								.resolve(sanitiseFileName(keyOfDump) + "." + DUMP_FILE_EXTENSION)
-								.toFile();
+			.resolve(DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()))
+			.resolve(
+				storeName)
+			.resolve(sanitiseFileName(keyOfDump) + "." + DUMP_FILE_EXTENSION)
+			.toFile();
 
 	}
 
@@ -353,12 +374,16 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * Current implementation is `$unreadableDumpDir/$today/$store/$key.exception`
 	 */
 	@NotNull
-	public static File makeExceptionFileName(@NotNull String keyOfDump, @NotNull File unreadableDumpDir, @NotNull String storeName) {
+	public static File makeExceptionFileName(
+		@NotNull String keyOfDump,
+		@NotNull File unreadableDumpDir,
+		@NotNull String storeName) {
 		return unreadableDumpDir.toPath()
-								.resolve(DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()))
-								.resolve(storeName)
-								.resolve(sanitiseFileName(keyOfDump) + "." + EXCEPTION_FILE_EXTENSION)
-								.toFile();
+			.resolve(DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()))
+			.resolve(
+				storeName)
+			.resolve(sanitiseFileName(keyOfDump) + "." + EXCEPTION_FILE_EXTENSION)
+			.toFile();
 
 	}
 
@@ -396,20 +421,17 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		do {
 			try {
 				maybeFailed = allJobs.get(30, TimeUnit.SECONDS);
-			}
-			catch (InterruptedException e) {
+			} catch (InterruptedException e) {
 				boolean interrupted = Thread.currentThread().isInterrupted();
 				log.debug("Waiting for deserialization was interrupted: {}", interrupted);
 
-				if(interrupted) {
+				if (interrupted) {
 					// Rethrow to propagate
 					Thread.currentThread().interrupt();
 				}
-			}
-			catch (ExecutionException e) {
+			} catch (ExecutionException e) {
 				throw new RuntimeException(e);
-			}
-			catch (TimeoutException e) {
+			} catch (TimeoutException e) {
 				log.debug("Still waiting for {} jobs.", jobs.stream().filter(Predicate.not(Future::isDone)).count());
 			}
 		} while (!allJobs.isDone());
@@ -420,7 +442,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		// Print some statistics
 		final int total = result.getTotalProcessed();
 
-		log.debug(String.format(
+		log.debug(
+			String.format(
 				"While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
 				store.getName(),
 				total,
@@ -428,7 +451,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				total > 0 ? (float) result.getFailedKeys() / total * 100 : 0,
 				result.getFailedValues(),
 				total > 0 ? (float) result.getFailedValues() / total * 100 : 0
-		));
+			));
 
 		// Remove corrupted entries from the store if configured so
 		if (removeUnreadablesFromUnderlyingStore) {
@@ -438,41 +461,51 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		return result;
 	}
 
-	private ByteIterable handle(StoreEntryConsumer<KEY, VALUE> consumer, IterationStatistic result, ByteIterable keyRaw, ByteIterable valueRaw) {
+	private ByteIterable handle(
+		StoreEntryConsumer<KEY, VALUE> consumer,
+		IterationStatistic result,
+		ByteIterable keyRaw,
+		ByteIterable valueRaw) {
 		final KEY key;
 		final VALUE value;
 
 		try {
 
 			// Try to read the key first
-			key =
-					getDeserializedAndDumpFailed(keyRaw, SerializingStore.this::readKey, () -> new String(keyRaw.getBytesUnsafe()), valueRaw, "Could not parse key [{}]");
+			key = getDeserializedAndDumpFailed(
+				keyRaw,
+				SerializingStore.this::readKey,
+				() -> new String(keyRaw.getBytesUnsafe()),
+				valueRaw,
+				"Could not parse key [{}]");
 			if (key == null) {
 				result.incrFailedKeys();
 				return keyRaw;
 			}
 
 			// Try to read the value
-			value = getDeserializedAndDumpFailed(valueRaw, SerializingStore.this::readValue, key::toString, valueRaw, "Could not parse value for key [{}]");
+			value = getDeserializedAndDumpFailed(
+				valueRaw,
+				SerializingStore.this::readValue,
+				key::toString,
+				valueRaw,
+				"Could not parse value for key [{}]");
 
 			if (value == null) {
 				result.incrFailedValues();
 				return keyRaw;
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error("Failed processing key/value", e);
 			return keyRaw;
-		}
-		finally {
+		} finally {
 			result.incrTotalProcessed();
 		}
 
 		// Apply the consumer to key and value
 		try {
 			consumer.accept(key, value, valueRaw.getLength());
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.warn("Unable to apply for-each consumer on key[{}]", key, e);
 		}
 
@@ -490,16 +523,26 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * @param onFailWarnMsgFmt        The warning message that will be logged on failure.
 	 * @return The deserialized value
 	 */
-	private <TYPE> TYPE getDeserializedAndDumpFailed(ByteIterable serial, Function<ByteIterable, TYPE> deserializer, Supplier<String> onFailKeyStringSupplier, ByteIterable onFailOrigValue, String onFailWarnMsgFmt) {
+	private <TYPE> TYPE getDeserializedAndDumpFailed(
+		ByteIterable serial,
+		Function<ByteIterable, TYPE> deserializer,
+		Supplier<String> onFailKeyStringSupplier,
+		ByteIterable onFailOrigValue,
+		String onFailWarnMsgFmt) {
 		try {
 			return deserializer.apply(serial);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			// With trace also print the stacktrace
 			log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), log.isTraceEnabled() ? e : null);
 
 			if (shouldDumpUnreadables()) {
-				dumpToFile(onFailOrigValue.getBytesUnsafe(), onFailKeyStringSupplier.get(), e, unreadableValuesDumpDir, store.getName(), objectMapper);
+				dumpToFile(
+					onFailOrigValue.getBytesUnsafe(),
+					onFailKeyStringSupplier.get(),
+					e,
+					unreadableValuesDumpDir,
+					store.getName(),
+					objectMapper);
 			}
 		}
 		return null;
@@ -508,7 +551,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public boolean update(KEY key, VALUE value) {
 		if (!valueType.isInstance(value)) {
-			throw new IllegalStateException("The element %s is not of the required type %s".formatted(value, valueType));
+			throw new IllegalStateException(
+				"The element %s is not of the required type %s".formatted(value, valueType));
 		}
 
 		if (validateOnWrite) {

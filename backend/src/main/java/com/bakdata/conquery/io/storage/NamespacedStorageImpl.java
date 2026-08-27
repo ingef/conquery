@@ -74,18 +74,17 @@ public abstract class NamespacedStorageImpl implements NamespacedStorage {
 	}
 
 
-
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return values.add(NamespacedStorage.class, this)
-					 .add(NamespacedStorageProvider.class,this);
+		return values.add(NamespacedStorage.class, this).add(NamespacedStorageProvider.class, this);
 	}
 
 	@Override
 	public NamespacedStorage getStorage(@Nullable DatasetId datasetId) {
 		DatasetId thisDatasetId = getDataset().getId();
 		if (datasetId != null && !datasetId.equals(thisDatasetId)) {
-			throw new IllegalArgumentException("Dataset id mismatch: expected " + thisDatasetId + " but got " + datasetId);
+			throw new IllegalArgumentException(
+				"Dataset id mismatch: expected " + thisDatasetId + " but got " + datasetId);
 		}
 		return this;
 	}

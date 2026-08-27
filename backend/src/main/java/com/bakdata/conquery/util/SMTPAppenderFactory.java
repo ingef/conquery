@@ -27,7 +27,12 @@ public class SMTPAppenderFactory extends AbstractAppenderFactory<IAccessEvent> {
 
 
 	@Override
-	public Appender<IAccessEvent> build(LoggerContext context, String applicationName, LayoutFactory<IAccessEvent> layoutFactory, LevelFilterFactory<IAccessEvent> levelFilterFactory, AsyncAppenderFactory<IAccessEvent> asyncAppenderFactory) {
+	public Appender<IAccessEvent> build(
+		LoggerContext context,
+		String applicationName,
+		LayoutFactory<IAccessEvent> layoutFactory,
+		LevelFilterFactory<IAccessEvent> levelFilterFactory,
+		AsyncAppenderFactory<IAccessEvent> asyncAppenderFactory) {
 		final SMTPAppender appender = new SMTPAppender();
 		appender.setName("smtp-appender");
 

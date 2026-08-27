@@ -26,7 +26,8 @@ class ConceptsProcessorTest {
 
 		assertThat(cursor.get(0, 10)).isEqualTo(IntStream.rangeClosed(0, 10).boxed().collect(Collectors.toList()));
 
-		assertThat(cursor.get(0, Integer.MAX_VALUE)).isEqualTo(IntStream.rangeClosed(0, 10).boxed().collect(Collectors.toList()));
+		assertThat(cursor.get(0, Integer.MAX_VALUE)).isEqualTo(
+			IntStream.rangeClosed(0, 10).boxed().collect(Collectors.toList()));
 
 	}
 

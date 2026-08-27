@@ -17,7 +17,6 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
@@ -61,9 +60,10 @@ public class IntegrationTests {
 		final ObjectMapper mapper = Jackson.MAPPER.copy();
 
 		MAPPER = mapper.setConfig(mapper.getDeserializationConfig().withView(View.Persistence.class))
-					   .setConfig(mapper.getSerializationConfig().withView(View.Persistence.class))
-					   // to always deserialize into TestSqlConnectorConfig for our tests
-					   .addMixIn(SqlConnectorConfig.class, TestSqlConnectorConfig.class);
+			.setConfig(
+				mapper.getSerializationConfig().withView(View.Persistence.class))
+			// to always deserialize into TestSqlConnectorConfig for our tests
+			.addMixIn(SqlConnectorConfig.class, TestSqlConnectorConfig.class);
 
 		CONFIG_WRITER = MAPPER.writerFor(ConqueryConfig.class);
 	}
@@ -87,38 +87,44 @@ public class IntegrationTests {
 	private static DynamicContainer toDynamicContainer(ResourceTree currentDir, List<DynamicNode> list) {
 		list.sort(Comparator.comparing(DynamicNode::getDisplayName));
 		return dynamicContainer(
-				currentDir.getName(),
-				URI.create("classpath:/" + currentDir.getFullName() + "/"),
-				list.stream()
+			currentDir.getName(),
+			URI.create("classpath:/" + currentDir.getFullName() + "/"),
+			list.stream()
 		);
 	}
 
 	private static DynamicTest wrapError(Resource resource, String name, Exception e) {
 		return DynamicTest.dynamicTest(
-				name,
-				resource.getURI(),
-				() -> {
-					throw e;
-				}
+			name,
+			resource.getURI(),
+			() -> {
+				throw e;
+			}
 		);
 	}
 
 	private static ResourceTree scanForResources(String testRoot, String pattern) {
 		ResourceTree tree = new ResourceTree(null, null);
-		tree.addAll(CPSTypeIdResolver.SCAN_RESULT.getResourcesMatchingPattern(Pattern.compile("^" + testRoot + pattern)));
+		tree.addAll(
+			CPSTypeIdResolver.SCAN_RESULT.getResourcesMatchingPattern(Pattern.compile("^" + testRoot + pattern)));
 		return tree;
 	}
 
 	public List<DynamicNode> jsonTests() {
 		TestDataImporter testImporter = new WorkerTestDataImporter();
-		final String testRoot = Objects.requireNonNullElse(System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE), defaultTestRoot);
+		final String testRoot = Objects.requireNonNullElse(
+			System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE),
+			defaultTestRoot);
 		ResourceTree tree = scanForResources(testRoot, JSON_TEST_PATTERN);
 		Dialect dialect = null;
 		return collectTestTree(tree, testRoot, testImporter, dialect);
 	}
 
 	@SneakyThrows
-	public Stream<DynamicNode> sqlProgrammaticTests(DatabaseConnectionConfig databaseConfig, SqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
+	public Stream<DynamicNode> sqlProgrammaticTests(
+		DatabaseConnectionConfig databaseConfig,
+		SqlConnectorConfig sqlConfig,
+		TestDataImporter testDataImporter) {
 		this.config.setSqlConnectorConfig(sqlConfig);
 		return programmaticTests(testDataImporter, StandaloneSupport.Mode.SQL);
 	}
@@ -126,84 +132,104 @@ public class IntegrationTests {
 	@SneakyThrows
 	public Stream<DynamicNode> programmaticTests(TestDataImporter testImporter, StandaloneSupport.Mode mode) {
 		String regexFilter = System.getenv(TestTags.TEST_PROGRAMMATIC_REGEX_FILTER);
-		List<Class<?>> programmatic =
-				CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
-											 .filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
-											 .filter(classInfo -> {
-												 // e.g. For the RestartTest: CONQUERY_TEST_PROGRAMMATIC_REGEX_FILTER=Restart.*
+		List<Class<?>> programmatic = CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(
+			ProgrammaticIntegrationTest.class.getName())
+			.filter(
+				info -> info.getPackageName().startsWith(defaultTestRootPackage))
+			.filter(classInfo -> {
+				// e.g. For the RestartTest: CONQUERY_TEST_PROGRAMMATIC_REGEX_FILTER=Restart.*
 
-												 if (Strings.isNullOrEmpty(regexFilter)) {
-													 // No filter set: allow all tests
-													 return true;
-												 }
-												 return classInfo.getSimpleName().matches(regexFilter);
+				if (Strings.isNullOrEmpty(regexFilter)) {
+					// No filter set: allow all tests
+					return true;
+				}
+				return classInfo.getSimpleName().matches(regexFilter);
 
-											 })
-											 .loadClasses();
+			})
+			.loadClasses();
 
 		if (programmatic.isEmpty() && !Strings.isNullOrEmpty(regexFilter)) {
 			throw new RuntimeException("No test cases where found using the filter: " + regexFilter);
 		}
 
-		return programmatic
-				.stream()
-				.<ProgrammaticIntegrationTest>map(c -> {
-					try {
-						return c.asSubclass(ProgrammaticIntegrationTest.class).getDeclaredConstructor().newInstance();
-					}
-					catch (Exception e) {
-						throw new RuntimeException(e);
-					}
-				})
-				.filter(test -> test.isEnabled(mode))
-				.map(programmaticIntegrationTest -> createDynamicProgrammaticTestNode(programmaticIntegrationTest, testImporter));
+		return programmatic.stream().<ProgrammaticIntegrationTest>map(c -> {
+			try {
+				return c.asSubclass(ProgrammaticIntegrationTest.class).getDeclaredConstructor().newInstance();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		})
+			.filter(test -> test.isEnabled(mode))
+			.map(
+				programmaticIntegrationTest -> createDynamicProgrammaticTestNode(
+					programmaticIntegrationTest,
+					testImporter));
 	}
 
-	private DynamicTest createDynamicProgrammaticTestNode(ProgrammaticIntegrationTest test, TestDataImporter testImporter) {
+	private DynamicTest createDynamicProgrammaticTestNode(
+		ProgrammaticIntegrationTest test,
+		TestDataImporter testImporter) {
 		return DynamicTest.dynamicTest(
-				test.getClass().getSimpleName(),
-				//classpath URI
-				URI.create("classpath:/" + test.getClass().getName().replace('.', '/') + ".java"),
-				new IntegrationTest.Wrapper(test.getClass().getSimpleName(), this, test, testImporter)
+			test.getClass().getSimpleName(),
+			//classpath URI
+			URI.create("classpath:/" + test.getClass().getName().replace('.', '/') + ".java"),
+			new IntegrationTest.Wrapper(test.getClass().getSimpleName(), this, test, testImporter)
 		);
 	}
 
 	@SneakyThrows
-	public List<DynamicNode> sqlQueryTests(DatabaseConnectionConfig databaseConfig, SqlConnectorConfig sqlConfig, TestDataImporter testDataImporter) {
+	public List<DynamicNode> sqlQueryTests(
+		DatabaseConnectionConfig databaseConfig,
+		SqlConnectorConfig sqlConfig,
+		TestDataImporter testDataImporter) {
 		this.config.setSqlConnectorConfig(sqlConfig);
-		final String testRoot = Objects.requireNonNullElse(System.getenv(TestTags.SQL_BACKEND_TEST_DIRECTORY_ENVIRONMENT_VARIABLE), defaultTestRoot);
+		final String testRoot = Objects.requireNonNullElse(
+			System.getenv(TestTags.SQL_BACKEND_TEST_DIRECTORY_ENVIRONMENT_VARIABLE),
+			defaultTestRoot);
 		ResourceTree tree = scanForResources(testRoot, SQL_TEST_PATTERN);
 		return collectTestTree(tree, testRoot, testDataImporter, databaseConfig.getDialect());
 	}
 
-	private List<DynamicNode> collectTestTree(ResourceTree tree, String testRoot, TestDataImporter testImporter, Dialect sqlDialect) {
+	private List<DynamicNode> collectTestTree(
+		ResourceTree tree,
+		String testRoot,
+		TestDataImporter testImporter,
+		Dialect sqlDialect) {
 		if (tree.getChildren().isEmpty()) {
 			throw new RuntimeException("Could not find tests in " + testRoot);
 		}
 		final ResourceTree reduced = tree.reduce();
 
 		if (reduced.getChildren().isEmpty()) {
-			return collectTests(reduced, testImporter, sqlDialect)
-					.map(List::of)
-					.orElse(Collections.emptyList());
+			return collectTests(reduced, testImporter, sqlDialect).map(List::of).orElse(Collections.emptyList());
 		}
-		return reduced.getChildren().values().stream()
-					  .map(currentDir -> collectTests(currentDir, testImporter, sqlDialect))
-					  .flatMap(Optional::stream)
-					  .collect(Collectors.toList());
+		return reduced.getChildren()
+			.values()
+			.stream()
+			.map(
+				currentDir -> collectTests(currentDir, testImporter, sqlDialect))
+			.flatMap(Optional::stream)
+			.collect(
+				Collectors.toList());
 	}
 
-	private Optional<DynamicNode> collectTests(ResourceTree currentDir, TestDataImporter testImporter, Dialect sqlDialect) {
+	private Optional<DynamicNode> collectTests(
+		ResourceTree currentDir,
+		TestDataImporter testImporter,
+		Dialect sqlDialect) {
 		if (currentDir.getValue() != null) {
-			Optional<DynamicTest> dynamicTest = readTest(currentDir.getValue(), currentDir.getName(), testImporter, sqlDialect);
+			Optional<DynamicTest> dynamicTest = readTest(
+				currentDir.getValue(),
+				currentDir.getName(),
+				testImporter,
+				sqlDialect);
 			if (dynamicTest.isPresent()) {
 				return Optional.of(dynamicTest.get());
 			}
 		}
 		List<DynamicNode> list = new ArrayList<>();
 		for (ResourceTree child : currentDir.getChildren().values()) {
-			collectTests(child, testImporter, sqlDialect)
-					.ifPresent(list::add);
+			collectTests(child, testImporter, sqlDialect).ifPresent(list::add);
 		}
 
 		if (list.isEmpty()) {
@@ -213,7 +239,11 @@ public class IntegrationTests {
 		return Optional.of(toDynamicContainer(currentDir, list));
 	}
 
-	private Optional<DynamicTest> readTest(Resource resource, String name, TestDataImporter testImporter, Dialect sqlDialect) {
+	private Optional<DynamicTest> readTest(
+		Resource resource,
+		String name,
+		TestDataImporter testImporter,
+		Dialect sqlDialect) {
 		try {
 			ConqueryTestSpec conqueryTestSpec = ConqueryTestSpec.fromResource(resource);
 			JsonIntegrationTest test = new JsonIntegrationTest(conqueryTestSpec);
@@ -223,37 +253,44 @@ public class IntegrationTests {
 			}
 
 			return Optional.of(wrapTest(resource, name, test, testImporter));
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return Optional.of(wrapError(resource, name, e));
 		}
 	}
 
-	private DynamicTest wrapTest(Resource resource, String name, JsonIntegrationTest test, TestDataImporter testImporter) {
+	private DynamicTest wrapTest(
+		Resource resource,
+		String name,
+		JsonIntegrationTest test,
+		TestDataImporter testImporter) {
 		String testLabel = Optional.ofNullable(test.getTestSpec().getLabel())
-								   // If no label was defined use the filename part before the first dot
-								   .orElse(name.split("\\.", 1)[0]);
+			// If no label was defined use the filename part before the first dot
+			.orElse(name.split("\\.", 1)[0]);
 
 		// For easier modification we link the source- not the target-resource of the json tests.
 		// Otherwise, a modification might affect the current test runs,
 		// but it won't persist over rebuilds or in version control
 		final URI compileTargetURI = resource.getURI();
-		final URI sourceResourceURI = URI.create(compileTargetURI.toString().replace("/target/test-classes/", "/src/test/resources/"));
+		final URI sourceResourceURI = URI.create(
+			compileTargetURI.toString().replace("/target/test-classes/", "/src/test/resources/"));
 
 		return DynamicTest.dynamicTest(
+			testLabel,
+			sourceResourceURI,
+			new IntegrationTest.Wrapper(
 				testLabel,
-				sourceResourceURI,
-				new IntegrationTest.Wrapper(
-						testLabel,
-						this,
-						test,
-						testImporter
-				)
+				this,
+				test,
+				testImporter
+			)
 		);
 	}
 
 	@SneakyThrows
-	public synchronized TestConquery getCachedConqueryInstance(File workDir, ConqueryConfig conf, TestDataImporter testDataImporter) {
+	public synchronized TestConquery getCachedConqueryInstance(
+		File workDir,
+		ConqueryConfig conf,
+		TestDataImporter testDataImporter) {
 		// This should be fast enough and a stable comparison
 		String confString = CONFIG_WRITER.writeValueAsString(conf);
 		if (!reusedInstances.containsKey(confString)) {
@@ -263,7 +300,9 @@ public class IntegrationTests {
 			ConfigOverride.configureRandomPorts(conf);
 
 			if (conf.getStorage() instanceof XodusStoreFactory storeFactory) {
-				ConfigOverride.configureWorkdir(storeFactory, workDir.toPath().resolve(String.valueOf(confString.hashCode())));
+				ConfigOverride.configureWorkdir(
+					storeFactory,
+					workDir.toPath().resolve(String.valueOf(confString.hashCode())));
 			}
 
 			log.trace("Creating a new test conquery instance for test {}", conf);

@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
+import jakarta.validation.Valid;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import jakarta.validation.Valid;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Initializing;
@@ -87,9 +87,11 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 
 	@JsonIgnore
 	public List<SelectId> getDefaultSelects() {
-		return getSelects().stream().filter(Select::isDefault)
-						   .map(select -> (SelectId) select.getId())
-						   .collect(Collectors.toList());
+		return getSelects().stream()
+			.filter(Select::isDefault)
+			.map(select -> (SelectId) select.getId())
+			.collect(
+				Collectors.toList());
 	}
 
 	public abstract List<? extends Select> getSelects();
@@ -132,16 +134,15 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	 * Allows concepts to create their own altered FiltersNode if necessary.
 	 */
 	public QPNode createConceptQuery(
-			QueryPlanContext context,
-			List<FilterNode<?>> filters,
-			List<Aggregator<?>> aggregators,
-			EventDateUnionAggregator eventDateAggregators,
-			ValidityDate validityDate) {
+		QueryPlanContext context,
+		List<FilterNode<?>> filters,
+		List<Aggregator<?>> aggregators,
+		EventDateUnionAggregator eventDateAggregators,
+		ValidityDate validityDate) {
 		final QPNode child;
 		if (filters.isEmpty() && aggregators.isEmpty()) {
 			child = new Leaf();
-		}
-		else {
+		} else {
 			child = FiltersNode.create(filters, aggregators, eventDateAggregators);
 		}
 

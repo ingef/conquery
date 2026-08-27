@@ -37,53 +37,77 @@ class TablePath {
 	public TablePath(CQConcept cqConcept, ConversionContext context) {
 		this.cqConcept = cqConcept;
 		this.context = context;
-		cqConcept.getTables().forEach(cqTable -> this.connectorTableMap.put(cqTable, createConnectorTables(cqConcept, cqTable, context)));
+		cqConcept.getTables()
+			.forEach(
+				cqTable -> this.connectorTableMap.put(cqTable, createConnectorTables(cqConcept, cqTable, context)));
 	}
 
 	public ConnectorSqlTables getConnectorTables(CQTable cqTable) {
 		return connectorTableMap.get(cqTable);
 	}
 
-	private static ConnectorSqlTables createConnectorTables(CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
+	private static ConnectorSqlTables createConnectorTables(
+		CQConcept cqConcept,
+		CQTable cqTable,
+		ConversionContext context) {
 
-		String connectorName = context.getNameGenerator().conceptConnectorName(cqConcept, cqTable.getConnector().resolve(), context.getSqlPrintSettings()
-																																 .getLocale());
+		String connectorName = context.getNameGenerator()
+			.conceptConnectorName(
+				cqConcept,
+				cqTable.getConnector().resolve(),
+				context.getSqlPrintSettings().getLocale());
 		TablePathInfo tableInfo = collectConnectorTables(cqConcept, cqTable, context);
-		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), connectorName, context.getNameGenerator());
+		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(
+			tableInfo.getMappings().keySet(),
+			connectorName,
+			context.getNameGenerator());
 
 		return new ConnectorSqlTables(
-				cqTable.getConnector().resolve(),
-				connectorName,
-				tableInfo.getRootTable(),
-				cteNameMap,
-				tableInfo.getMappings(),
-				tableInfo.isContainsIntervalPacking(),
-				tableInfo.isExcludedFromTimeAggregation()
+			cqTable.getConnector().resolve(),
+			connectorName,
+			tableInfo.getRootTable(),
+			cteNameMap,
+			tableInfo.getMappings(),
+			tableInfo.isContainsIntervalPacking(),
+			tableInfo.isExcludedFromTimeAggregation()
 		);
 	}
 
 	public ConceptSqlTables createConceptTables(QueryStep predecessor) {
 
 		TablePathInfo tableInfo = collectConceptTables(predecessor);
-		String conceptName = context.getNameGenerator().conceptName(cqConcept, context.getSqlPrintSettings().getLocale());
-		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), conceptName, context.getNameGenerator());
+		String conceptName = context.getNameGenerator()
+			.conceptName(
+				cqConcept,
+				context.getSqlPrintSettings().getLocale());
+		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(
+			tableInfo.getMappings().keySet(),
+			conceptName,
+			context.getNameGenerator());
 		List<ConnectorSqlTables> connectorSqlTables = this.connectorTableMap.values().stream().toList();
 
 		return new ConceptSqlTables(
-				tableInfo.getRootTable(),
-				cteNameMap,
-				tableInfo.getMappings(),
-				connectorSqlTables
+			tableInfo.getRootTable(),
+			cteNameMap,
+			tableInfo.getMappings(),
+			connectorSqlTables
 		);
 	}
 
-	private static TablePathInfo collectConnectorTables(CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
+	private static TablePathInfo collectConnectorTables(
+		CQConcept cqConcept,
+		CQTable cqTable,
+		ConversionContext context) {
 
 		TablePathInfo tableInfo = new TablePathInfo();
 		tableInfo.setRootTable(cqTable.getConnector().resolve().resolveTableId().getTable());
 		tableInfo.addWithDefaultMapping(MANDATORY_STEPS);
 
-		boolean eventDateSelectsPresent = cqTable.getSelects().stream().map(SelectId::resolve).anyMatch(Select::isEventDateSelect);
+		boolean eventDateSelectsPresent = cqTable.getSelects()
+			.stream()
+			.map(SelectId::resolve)
+			.anyMatch(
+				Select::isEventDateSelect);
 		// no validity date aggregation necessary
 		if (!cqConcept.isAggregateEventDates() && !eventDateSelectsPresent) {
 			return tableInfo;
@@ -104,15 +128,19 @@ class TablePath {
 
 		// interval packing selects required with optional unnest step
 		if (context.getDialectBundle().supportsSingleColumnRanges()) {
-			tableInfo.addMappings(Map.of(
-					UNNEST_DATE, INTERVAL_COMPLETE,
-					INTERVAL_PACKING_SELECTS, UNNEST_DATE
-			));
-		}
-		else {
-			tableInfo.addMappings(Map.of(
-					INTERVAL_PACKING_SELECTS, INTERVAL_COMPLETE
-			));
+			tableInfo.addMappings(
+				Map.of(
+					UNNEST_DATE,
+					INTERVAL_COMPLETE,
+					INTERVAL_PACKING_SELECTS,
+					UNNEST_DATE
+				));
+		} else {
+			tableInfo.addMappings(
+				Map.of(
+					INTERVAL_PACKING_SELECTS,
+					INTERVAL_COMPLETE
+				));
 		}
 
 		return tableInfo;
@@ -130,16 +158,15 @@ class TablePath {
 		}
 
 		Preconditions.checkArgument(
-				predecessor.getSelects().getValidityDate().isPresent(),
-				"Can not convert Selects that require interval packing without a validity date present after converting (a) connector(s)"
+			predecessor.getSelects().getValidityDate().isPresent(),
+			"Can not convert Selects that require interval packing without a validity date present after converting (a) connector(s)"
 		);
 
 		// universal event date selects required with optional additional unnest step
 		if (context.getDialectBundle().supportsSingleColumnRanges()) {
 			tableInfo.addRootTableMapping(UNNEST_DATE);
 			tableInfo.addMappings(Map.of(INTERVAL_PACKING_SELECTS, UNNEST_DATE));
-		}
-		else {
+		} else {
 			tableInfo.addRootTableMapping(INTERVAL_PACKING_SELECTS);
 		}
 

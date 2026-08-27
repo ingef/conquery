@@ -18,8 +18,7 @@ public class MapMultiIndex implements Index<String> {
 
 	@Override
 	public void put(String key, Map<String, String> templateToConcrete) {
-		delegate.computeIfAbsent(key, (ignored) -> new HashSet<>())
-				.add(templateToConcrete.get(externalTemplate));
+		delegate.computeIfAbsent(key, (ignored) -> new HashSet<>()).add(templateToConcrete.get(externalTemplate));
 	}
 
 	@Override

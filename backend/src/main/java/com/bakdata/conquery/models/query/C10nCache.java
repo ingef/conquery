@@ -13,6 +13,8 @@ public class C10nCache {
 
 	public <T> T getLocalized(Class<? super T> clazz, Locale locale) {
 		return (T) cache.computeIfAbsent(locale, (ignored) -> new ConcurrentHashMap<>())
-						.computeIfAbsent(clazz, ignored -> C10N.get(clazz, locale));
+			.computeIfAbsent(
+				clazz,
+				ignored -> C10N.get(clazz, locale));
 	}
 }

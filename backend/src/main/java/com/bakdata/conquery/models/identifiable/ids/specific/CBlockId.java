@@ -27,8 +27,7 @@ public class CBlockId extends NamespacedId<CBlock> {
 
 	@Override
 	public CBlock get() {
-		return assertWorkerStorage(getDomain().getStorage(getDataset()))
-				.getCBlock(this);
+		return assertWorkerStorage(getDomain().getStorage(getDataset())).getCBlock(this);
 	}
 
 	@Override

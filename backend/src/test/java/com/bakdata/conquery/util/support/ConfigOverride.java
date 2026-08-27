@@ -38,8 +38,8 @@ public final class ConfigOverride {
 
 		// set random open ports
 		final Collection<ConnectorFactory> connectorFactories = CollectionUtils.union(
-				((DefaultServerFactory) config.getServerFactory()).getAdminConnectors(),
-				((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors()
+			((DefaultServerFactory) config.getServerFactory()).getAdminConnectors(),
+			((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors()
 		);
 
 		for (ConnectorFactory con : connectorFactories) {

@@ -71,39 +71,39 @@ public class MigrateCommand extends ConqueryCommand {
 	@Override
 	public void configure(Subparser subparser) {
 
-		subparser
-				.addArgument("--in")
-				.help("Input storage directory.")
-				.required(true)
-				.type(Arguments.fileType().verifyIsDirectory().verifyCanRead());
+		subparser.addArgument("--in")
+			.help("Input storage directory.")
+			.required(true)
+			.type(
+				Arguments.fileType().verifyIsDirectory().verifyCanRead());
 
-		subparser
-				.addArgument("--out")
-				.help("Output storage directory.")
-				.required(true)
-				.type(Arguments.fileType());
+		subparser.addArgument("--out").help("Output storage directory.").required(true).type(Arguments.fileType());
 
-		subparser
-				.addArgument("--in-gzip")
-				.help("If true, values are ungzipped before deserialization.")
-				.setDefault(true)
-				.type(Arguments.booleanType());
+		subparser.addArgument("--in-gzip")
+			.help("If true, values are ungzipped before deserialization.")
+			.setDefault(
+				true)
+			.type(Arguments.booleanType());
 
-		subparser
-				.addArgument("--out-gzip")
-				.help("If true, values are gzipped before writing.")
-				.setDefault(true)
-				.type(Arguments.booleanType());
+		subparser.addArgument("--out-gzip")
+			.help("If true, values are gzipped before writing.")
+			.setDefault(true)
+			.type(
+				Arguments.booleanType());
 
-		subparser
-				.addArgument("--script")
-				.help("Migration Script returning a closure implementing MigrationScriptFactory. See supplementary example.groovy for details.\nSignature: String env, String store, String key, ObjectNode value -> return new Tuple(key,value)")
-				.required(true)
-				.type(Arguments.fileType().verifyCanRead().verifyCanExecute());
+		subparser.addArgument("--script")
+			.help(
+				"Migration Script returning a closure implementing MigrationScriptFactory. See supplementary example.groovy for details.\nSignature: String env, String store, String key, ObjectNode value -> return new Tuple(key,value)")
+			.required(
+				true)
+			.type(Arguments.fileType().verifyCanRead().verifyCanExecute());
 	}
 
 	@Override
-	protected void run(io.dropwizard.core.setup.Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception {
+	protected void run(
+		io.dropwizard.core.setup.Environment environment,
+		Namespace namespace,
+		ConqueryConfig configuration) throws Exception {
 
 		final File inStoreDirectory = namespace.get("in");
 		final File outStoreDirectory = namespace.get("out");
@@ -133,43 +133,43 @@ public class MigrateCommand extends ConqueryCommand {
 
 		final ObjectMapper mapper = Jackson.BINARY_MAPPER;
 
-		Arrays.stream(environments)
-			  .parallel()
-			  .forEach(xenv ->
-					   {
-						   final File environmentDirectory = new File(outStoreDirectory, xenv.getName());
-						   if (environmentDirectory.exists()) {
-							   throw new IllegalArgumentException("File or folder already exists. Cannot create environment: " + environmentDirectory.getAbsolutePath());
-						   }
-						   if (!environmentDirectory.mkdirs()) {
-							   throw new IllegalArgumentException("Cannot create environment directory: " + environmentDirectory.getAbsolutePath());
-						   }
+		Arrays.stream(environments).parallel().forEach(xenv -> {
+			final File environmentDirectory = new File(outStoreDirectory, xenv.getName());
+			if (environmentDirectory.exists()) {
+				throw new IllegalArgumentException(
+					"File or folder already exists. Cannot create environment: " + environmentDirectory
+						.getAbsolutePath());
+			}
+			if (!environmentDirectory.mkdirs()) {
+				throw new IllegalArgumentException(
+					"Cannot create environment directory: " + environmentDirectory.getAbsolutePath());
+			}
 
-						   processEnvironment(xenv, logsize, environmentDirectory, migrator, mapper, inGzip, outGzip);
-					   });
+			processEnvironment(xenv, logsize, environmentDirectory, migrator, mapper, inGzip, outGzip);
+		});
 
 	}
 
 	private void processEnvironment(
-			File inStoreDirectory,
-			long logSize,
-			File outStoreDirectory,
-			Function4<String, String, JsonNode, JsonNode, Tuple<JsonNode>> migrator,
-			ObjectMapper mapper,
-			boolean inGzip,
-			boolean outGzip) {
+		File inStoreDirectory,
+		long logSize,
+		File outStoreDirectory,
+		Function4<String, String, JsonNode, JsonNode, Tuple<JsonNode>> migrator,
+		ObjectMapper mapper,
+		boolean inGzip,
+		boolean outGzip) {
 		final jetbrains.exodus.env.Environment inEnvironment;
 		try {
 			inEnvironment = Environments.newInstance(
-					inStoreDirectory,
-					new EnvironmentConfig().setLogFileSize(logSize)
-										   .setEnvIsReadonly(true)
-										   .setEnvCompactOnOpen(false)
-										   .setEnvCloseForcedly(true)
-										   .setGcEnabled(false)
+				inStoreDirectory,
+				new EnvironmentConfig().setLogFileSize(logSize)
+					.setEnvIsReadonly(true)
+					.setEnvCompactOnOpen(
+						false)
+					.setEnvCloseForcedly(true)
+					.setGcEnabled(false)
 			);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new IllegalArgumentException("Unable to open store in " + inStoreDirectory, e);
 		}
 
@@ -177,12 +177,10 @@ public class MigrateCommand extends ConqueryCommand {
 		try {
 			// we dump first, then enable GC.
 			outEnvironment = Environments.newInstance(
-					outStoreDirectory,
-					new EnvironmentConfig().setLogFileSize(logSize)
-										   .setGcEnabled(false)
+				outStoreDirectory,
+				new EnvironmentConfig().setLogFileSize(logSize).setGcEnabled(false)
 			);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new IllegalArgumentException("Unable to open store in " + outStoreDirectory, e);
 		}
 
@@ -194,16 +192,16 @@ public class MigrateCommand extends ConqueryCommand {
 		outEnvironment.clear();
 
 		for (String store : stores) {
-			final Store inStore =
-					inEnvironment.computeInExclusiveTransaction(tx -> inEnvironment.openStore(store, StoreConfig.USE_EXISTING, tx, false));
+			final Store inStore = inEnvironment.computeInExclusiveTransaction(
+				tx -> inEnvironment.openStore(store, StoreConfig.USE_EXISTING, tx, false));
 
 			if (inStore == null) {
 				log.error("{} does not exist, aborting.", store);
 				continue;
 			}
 
-			final Store outStore =
-					outEnvironment.computeInExclusiveTransaction(tx -> outEnvironment.openStore(store, StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, tx, true));
+			final Store outStore = outEnvironment.computeInExclusiveTransaction(
+				tx -> outEnvironment.openStore(store, StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, tx, true));
 
 			if (outEnvironment.computeInReadonlyTransaction(outStore::count) > 0) {
 				log.warn("Store is not empty, aborting.");
@@ -227,12 +225,12 @@ public class MigrateCommand extends ConqueryCommand {
 	}
 
 	private void migrateStore(
-			Store inStore,
-			Store outStore,
-			Function4<String, String, JsonNode, JsonNode, Tuple<JsonNode>> migrator,
-			ObjectMapper mapper,
-			boolean inGzip,
-			boolean outGzip) {
+		Store inStore,
+		Store outStore,
+		Function4<String, String, JsonNode, JsonNode, Tuple<JsonNode>> migrator,
+		ObjectMapper mapper,
+		boolean inGzip,
+		boolean outGzip) {
 
 		final Environment inEnvironment = inStore.getEnvironment();
 		final Environment outEnvironment = outStore.getEnvironment();
@@ -273,17 +271,18 @@ public class MigrateCommand extends ConqueryCommand {
 				outStore.put(writeTx, new ArrayByteIterable(keyWritten), new ArrayByteIterable(valueWritten));
 
 				if (++processed % (1 + (count / 10)) == 0) {
-					log.info("Processed {} / {} ({}%)", processed, count, Math.round(100f * (float) processed / (float) count));
+					log.info(
+						"Processed {} / {} ({}%)",
+						processed,
+						count,
+						Math.round(100f * (float) processed / (float) count));
 				}
 			}
-		}
-		catch (JsonMappingException e) {
+		} catch (JsonMappingException e) {
 			log.error("Failed to Map", e);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			log.error("Failed in IO", e);
-		}
-		finally {
+		} finally {
 			readTx.abort();
 		}
 

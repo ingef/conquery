@@ -40,12 +40,17 @@ import org.mockserver.model.MediaType;
 @Slf4j
 public class IndexServiceTest {
 	@RegisterExtension
-	private static final MockServerExtension REF_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(), IndexServiceTest::initRefServer);
+	private static final MockServerExtension REF_SERVER = new MockServerExtension(
+		ClientAndServer.startClientAndServer(),
+		IndexServiceTest::initRefServer);
 
 	public static final String MAPPING_PATH = "/tests/aggregator/MAPPED/mapping.csv";
 
-	private static final NamespaceStorage NAMESPACE_STORAGE = new NamespaceStorage(new NonPersistentStoreFactory(), IndexServiceTest.class.getName());
-	public static final NamespacedStorageProvider STORAGE_PROVIDER = new TestNamespacedStorageProvider(NAMESPACE_STORAGE);
+	private static final NamespaceStorage NAMESPACE_STORAGE = new NamespaceStorage(
+		new NonPersistentStoreFactory(),
+		IndexServiceTest.class.getName());
+	public static final NamespacedStorageProvider STORAGE_PROVIDER = new TestNamespacedStorageProvider(
+		NAMESPACE_STORAGE);
 
 	private static final Dataset DATASET = new Dataset("dataset");
 	private static final ConqueryConfig CONFIG = new ConqueryConfig();
@@ -56,7 +61,11 @@ public class IndexServiceTest {
 
 		try (InputStream inputStream = LoadingUtil.openResource(MAPPING_PATH)) {
 			mockServer.when(request().withPath("/mapping.csv"))
-					  .respond(HttpResponse.response().withContentType(new MediaType("text", "csv")).withBody(inputStream.readAllBytes()));
+				.respond(
+					HttpResponse.response()
+						.withContentType(new MediaType("text", "csv"))
+						.withBody(
+							inputStream.readAllBytes()));
 		}
 
 	}
@@ -81,32 +90,36 @@ public class IndexServiceTest {
 
 		try (InputStream inputStream = LoadingUtil.openResource(MAPPING_PATH)) {
 			REF_SERVER.when(request().withPath("/mapping.csv"))
-					  .respond(HttpResponse.response().withContentType(new MediaType("text", "csv")).withBody(inputStream.readAllBytes()));
+				.respond(
+					HttpResponse.response()
+						.withContentType(new MediaType("text", "csv"))
+						.withBody(
+							inputStream.readAllBytes()));
 		}
 
 		final MapInternToExternMapper mapper = new MapInternToExternMapper(
-				"test1",
-				new URI("classpath:"+MAPPING_PATH),
-				"internal",
-				"{{external}}",
-				false
+			"test1",
+			new URI("classpath:" + MAPPING_PATH),
+			"internal",
+			"{{external}}",
+			false
 		);
 
 
 		final MapInternToExternMapper mapperUrlAbsolute = new MapInternToExternMapper(
-				"testUrlAbsolute",
-				new URI(String.format("http://localhost:%d/mapping.csv", REF_SERVER.getPort())),
-				"internal",
-				"{{external}}",
-				false
+			"testUrlAbsolute",
+			new URI(String.format("http://localhost:%d/mapping.csv", REF_SERVER.getPort())),
+			"internal",
+			"{{external}}",
+			false
 		);
 
 		final MapInternToExternMapper mapperUrlRelative = new MapInternToExternMapper(
-				"testUrlRelative",
-				new URI("./mapping.csv"),
-				"internal",
-				"{{external}}",
-				false
+			"testUrlRelative",
+			new URI("./mapping.csv"),
+			"internal",
+			"{{external}}",
+			false
 		);
 
 
@@ -132,11 +145,13 @@ public class IndexServiceTest {
 
 	}
 
-	private static void injectComponents(MapInternToExternMapper mapInternToExternMapper, IndexService indexService)
-			throws NoSuchFieldException, IllegalAccessException {
+	private static void injectComponents(
+		MapInternToExternMapper mapInternToExternMapper,
+		IndexService indexService) throws NoSuchFieldException, IllegalAccessException {
 
 
-		final Field indexServiceField = MapInternToExternMapper.class.getDeclaredField(MapInternToExternMapper.Fields.mapIndex);
+		final Field indexServiceField = MapInternToExternMapper.class.getDeclaredField(
+			MapInternToExternMapper.Fields.mapIndex);
 		indexServiceField.setAccessible(true);
 		indexServiceField.set(mapInternToExternMapper, indexService);
 
@@ -148,15 +163,14 @@ public class IndexServiceTest {
 
 	@Test
 	@Order(2)
-	void testEvictOnMapper()
-			throws NoSuchFieldException, IllegalAccessException, URISyntaxException, ExecutionException, InterruptedException {
+	void testEvictOnMapper() throws NoSuchFieldException, IllegalAccessException, URISyntaxException, ExecutionException, InterruptedException {
 		log.info("Test evicting of mapping on mapper");
 		final MapInternToExternMapper mapInternToExternMapper = new MapInternToExternMapper(
-				"test1",
-				new URI("classpath:"+MAPPING_PATH),
-				"internal",
-				"{{external}}",
-				false
+			"test1",
+			new URI("classpath:" + MAPPING_PATH),
+			"internal",
+			"{{external}}",
+			false
 		);
 
 		injectComponents(mapInternToExternMapper, indexService);
@@ -179,7 +193,6 @@ public class IndexServiceTest {
 		final Index<String> mappingAfterEvict = mapInternToExternMapper.getInt2ext().get();
 
 		// Check that the mapping reinitialized
-		assertThat(mappingBeforeEvict).as("Mapping before and after eviction")
-									  .isNotSameAs(mappingAfterEvict);
+		assertThat(mappingBeforeEvict).as("Mapping before and after eviction").isNotSameAs(mappingAfterEvict);
 	}
 }

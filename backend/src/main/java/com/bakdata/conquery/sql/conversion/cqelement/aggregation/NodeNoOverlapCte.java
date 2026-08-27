@@ -32,7 +32,10 @@ class NodeNoOverlapCte extends DateAggregationCte {
 		QueryStep intermediateTableStep = context.getStep(DateAggregationCteStep.INTERMEDIATE_TABLE);
 
 		// first no-overlap step has intermediate table as predecessor
-		QueryStep.QueryStepBuilder noOverlapStep = createNoOverlapStep(validityDates.next(), context, intermediateTableStep);
+		QueryStep.QueryStepBuilder noOverlapStep = createNoOverlapStep(
+			validityDates.next(),
+			context,
+			intermediateTableStep);
 
 		// each following step has it's predeceasing no-overlap as predecessor
 		while (validityDates.hasNext()) {
@@ -46,9 +49,9 @@ class NodeNoOverlapCte extends DateAggregationCte {
 	}
 
 	private QueryStep.QueryStepBuilder createNoOverlapStep(
-			ColumnDateRange validityDate,
-			DateAggregationContext context,
-			QueryStep predecessor
+		ColumnDateRange validityDate,
+		DateAggregationContext context,
+		QueryStep predecessor
 	) {
 
 		SqlTables dateAggregationTables = context.getDateAggregationTables();
@@ -60,19 +63,24 @@ class NodeNoOverlapCte extends DateAggregationCte {
 		Field<Date> asRangeStart = start.as(DateAggregationCte.RANGE_START);
 		String intermediateTableCteName = dateAggregationTables.getPredecessor(getCteStep());
 		Selects nodeNoOverlapSelects = Selects.builder()
-											  .ids(context.getIds())
-											  .validityDate(Optional.of(ColumnDateRange.of(asRangeStart, asRangeEnd)))
-											  .sqlSelects(context.getCarryThroughSelects())
-											  .build();
+			.ids(context.getIds())
+			.validityDate(
+				Optional.of(ColumnDateRange.of(asRangeStart, asRangeEnd)))
+			.sqlSelects(
+				context.getCarryThroughSelects())
+			.build();
 
 		Condition startNotNull = start.isNotNull();
 
 		return QueryStep.builder()
-						.cteName("%s_%s".formatted(dateAggregationTables.cteName(DateAggregationCteStep.NODE_NO_OVERLAP), counter))
-						.selects(nodeNoOverlapSelects)
-						.fromTable(QueryStep.toTableLike(intermediateTableCteName))
-						.conditions(List.of(startNotNull))
-						.predecessors(List.of(predecessor));
+			.cteName(
+				"%s_%s".formatted(dateAggregationTables.cteName(DateAggregationCteStep.NODE_NO_OVERLAP), counter))
+			.selects(
+				nodeNoOverlapSelects)
+			.fromTable(QueryStep.toTableLike(intermediateTableCteName))
+			.conditions(
+				List.of(startNotNull))
+			.predecessors(List.of(predecessor));
 	}
 
 }

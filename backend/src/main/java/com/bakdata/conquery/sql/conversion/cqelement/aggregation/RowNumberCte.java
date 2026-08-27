@@ -32,20 +32,22 @@ class RowNumberCte extends DateAggregationCte {
 		SqlIdColumns ids = context.getIds();
 
 		ColumnDateRange aggregatedValidityDate = context.getDateAggregationDates().getValidityDates().get(0);
-		Field<Integer> rowNumber = DSL.rowNumber().over(DSL.partitionBy(ids.toFields()).orderBy(aggregatedValidityDate.getStart()))
-									  .as(ROW_NUMBER_FIELD_NAME);
+		Field<Integer> rowNumber = DSL.rowNumber()
+			.over(
+				DSL.partitionBy(ids.toFields()).orderBy(aggregatedValidityDate.getStart()))
+			.as(ROW_NUMBER_FIELD_NAME);
 
 		ArrayList<SqlSelect> selects = new ArrayList<>(context.getCarryThroughSelects());
 		selects.add(new FieldWrapper<>(rowNumber));
 
 		Selects rowNumberSelects = Selects.builder()
-										  .ids(ids)
-										  .validityDate(Optional.of(aggregatedValidityDate))
-										  .sqlSelects(selects)
-										  .build();
+			.ids(ids)
+			.validityDate(
+				Optional.of(aggregatedValidityDate))
+			.sqlSelects(selects)
+			.build();
 
-		return QueryStep.builder()
-						.selects(rowNumberSelects);
+		return QueryStep.builder().selects(rowNumberSelects);
 	}
 
 }
