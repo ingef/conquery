@@ -40,9 +40,8 @@
     "rules": {
       "preset": "recommended",
       "complexity": {
-        // Visible for now, the worst offenders get refactored separately
         "noExcessiveCognitiveComplexity": {
-          "level": "warn",
+          "level": "error",
           "options": { "maxAllowedComplexity": 18 }
         },
         "noForEach": "error"
