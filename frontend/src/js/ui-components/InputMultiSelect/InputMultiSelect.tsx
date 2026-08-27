@@ -99,6 +99,9 @@ const InputMultiSelect = ({
   onLoadAndInsertAll,
 }: Props) => {
   const { t } = useTranslation();
+  const defaultPlaceholder = onResolve
+    ? t("inputMultiSelect.dndPlaceholder")
+    : t("inputSelect.placeholder");
 
   useResolvableSelect({
     defaultValue,
@@ -309,11 +312,7 @@ const InputMultiSelect = ({
             placeholder={
               selectedItems.length > 0
                 ? undefined
-                : placeholder
-                  ? placeholder
-                  : onResolve
-                    ? t("inputMultiSelect.dndPlaceholder")
-                    : t("inputSelect.placeholder")
+                : (placeholder ?? defaultPlaceholder)
             }
             onClick={(e) => {
               inputProps.onClick?.(e);

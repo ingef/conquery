@@ -1,4 +1,5 @@
 import isPropValid from "@emotion/is-prop-valid";
+import type { Theme } from "@emotion/react";
 import { keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
@@ -39,6 +40,18 @@ const spin = keyframes`
 const shouldForwardProp = (prop: keyof FaIconPropsT) =>
   isPropValid(prop) || prop === "icon" || prop === "className";
 
+// First matching flag wins, in this order
+const iconColor = (theme: Theme, props: IconStyleProps) => {
+  if (props.disabled) return theme.col.grayMediumLight;
+  if (props.red) return theme.col.red;
+  if (props.gray) return theme.col.gray;
+  if (props.active) return theme.col.blueGrayDark;
+  if (props.white) return "#fff";
+  if (props.light) return theme.col.blueGrayLight;
+  if (props.main) return theme.col.blueGray;
+  return theme.col.black;
+};
+
 // @ts-ignore TODO: Figure out how to avoid a type error with styled here
 export const Icon = styled(FontAwesomeIcon, {
   shouldForwardProp,
@@ -48,22 +61,7 @@ export const Icon = styled(FontAwesomeIcon, {
   text-align: ${({ center }) => (center ? "center" : "left")};
   font-size: ${({ theme, large, tiny }) =>
     large ? theme.font.md : tiny ? theme.font.tiny : theme.font.sm};
-  color: ${({ theme, white, gray, red, light, main, active, disabled }) =>
-    disabled
-      ? theme.col.grayMediumLight
-      : red
-        ? theme.col.red
-        : gray
-          ? theme.col.gray
-          : active
-            ? theme.col.blueGrayDark
-            : white
-              ? "#fff"
-              : light
-                ? theme.col.blueGrayLight
-                : main
-                  ? theme.col.blueGray
-                  : theme.col.black};
+  color: ${({ theme, ...props }) => iconColor(theme, props)};
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "inherit")};
   width: initial !important;
 

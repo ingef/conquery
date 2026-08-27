@@ -117,6 +117,124 @@ export interface EditedFormQueryNodePosition {
 
 const DROP_TYPES = [DNDType.CONCEPT_TREE_NODE];
 
+interface ConceptContext {
+  defaults: ConceptListDefaultsType;
+  tableConfig: Parameters<typeof initializeConcept>[2];
+  selectConfig: Parameters<typeof initializeConcept>[3];
+}
+
+const toConcept = (item: DragItemConceptTreeNode, ctx: ConceptContext) =>
+  isMovedObject(item)
+    ? copyConcept(item)
+    : initializeConcept(item, ctx.defaults, ctx.tableConfig, ctx.selectConfig);
+
+const cloneNewValue = (props: Props) =>
+  JSON.parse(JSON.stringify(props.newValue));
+
+const removeConceptOrRow = (props: Props, i: number, j: number) =>
+  props.value[i].concepts.length === 1
+    ? removeValue(props.value, i)
+    : removeConcept(props.value, i, j);
+
+// A concept dropped between two rows opens a new row there. If it was moved from
+// within the same field, its old slot is removed first, which may shift the index.
+const dropConceptBetweenRows = (
+  props: Props,
+  ctx: ConceptContext,
+  i: number,
+  item: PossibleDroppableObject,
+) => {
+  if (item.type !== DNDType.CONCEPT_TREE_NODE) return null;
+  if (props.isValidConcept && !props.isValidConcept(item)) return null;
+
+  const concept = toConcept(item, ctx);
+
+  let insertIndex = i;
+  let newPropsValue = props.value;
+  const newValue = cloneNewValue(props);
+
+  if (isMovedObject(item)) {
+    const { movedFromFieldName, movedFromAndIdx, movedFromOrIdx } =
+      item.dragContext;
+
+    if (movedFromFieldName === props.fieldName) {
+      const movedConceptWasLast =
+        props.value[movedFromAndIdx].concepts.length === 1;
+      const willConceptMoveDown = i > movedFromAndIdx && movedConceptWasLast;
+
+      if (willConceptMoveDown) {
+        insertIndex = i - 1;
+      }
+      newPropsValue = movedConceptWasLast
+        ? removeValue(props.value, movedFromAndIdx)
+        : removeConcept(props.value, movedFromAndIdx, movedFromOrIdx);
+
+      // rowPrefixField is a special property that is only used in an edge case form,
+      // used for tagging concepts. We only need to pass it back into the value
+      // if the concept is moved to a different position in the same field.
+      if (props.rowPrefixFieldname) {
+        newValue[props.rowPrefixFieldname] =
+          // @ts-ignore rowPrefixFieldname is dynamic, and since it's an edge case, we're not typing this
+          props.value[movedFromAndIdx][props.rowPrefixFieldname];
+      }
+    } else if (exists(item.dragContext.deleteFromOtherField)) {
+      item.dragContext.deleteFromOtherField();
+    }
+  }
+
+  return props.onChange(
+    addConcept(
+      insertValue(newPropsValue, insertIndex, newValue),
+      insertIndex,
+      concept,
+    ),
+  );
+};
+
+// A concept dropped on the group's own dropzone gets a new row at the end
+const dropConceptOnGroup = (
+  props: Props,
+  ctx: ConceptContext,
+  item: DragItemConceptTreeNode,
+) => {
+  if (props.isValidConcept && !props.isValidConcept(item)) return;
+
+  const newValue = cloneNewValue(props);
+
+  // rowPrefixField is a special property that is only used in an edge case form,
+  // for a detailed explanation see dropConceptBetweenRows
+  if (isMovedObject(item)) {
+    const { movedFromFieldName, movedFromAndIdx } = item.dragContext;
+
+    if (movedFromFieldName === props.fieldName && props.rowPrefixFieldname) {
+      newValue[props.rowPrefixFieldname] =
+        // @ts-ignore rowPrefixFieldname is dynamic, and since it's an edge case, we're not typing this
+        props.value[movedFromAndIdx][props.rowPrefixFieldname];
+    }
+  }
+
+  return props.onChange(
+    addConcept(
+      addValue(props.value, newValue),
+      props.value.length, // Assuming the last index has increased after addValue
+      toConcept(item, ctx),
+    ),
+  );
+};
+
+// A concept dropped on an empty slot inside a row fills that slot
+const dropConceptOnSlot = (
+  props: Props,
+  ctx: ConceptContext,
+  i: number,
+  j: number,
+  item: DragItemConceptTreeNode,
+) => {
+  if (props.isValidConcept && !props.isValidConcept(item)) return null;
+
+  return props.onChange(setConcept(props.value, i, j, toConcept(item, ctx)));
+};
+
 const FormConceptGroup = (props: Props) => {
   const { t } = useTranslation();
   const newValue = props.newValue;
@@ -128,6 +246,11 @@ const FormConceptGroup = (props: Props) => {
   const selectConfig = {
     allowlistedSelects: props.allowlistedSelects,
     blocklistedSelects: props.blocklistedSelects,
+  };
+  const conceptContext: ConceptContext = {
+    defaults,
+    tableConfig,
+    selectConfig,
   };
 
   // indicator if it should be scrolled down back to the dropZone
@@ -210,62 +333,9 @@ const FormConceptGroup = (props: Props) => {
             ? t("externalForms.common.concept.copying")
             : props.attributeDropzoneText
         }
-        dropBetween={(i: number) => {
-          return (item: PossibleDroppableObject) => {
-            if (item.type !== DNDType.CONCEPT_TREE_NODE) return null;
-
-            if (props.isValidConcept && !props.isValidConcept(item))
-              return null;
-
-            const concept = isMovedObject(item)
-              ? copyConcept(item)
-              : initializeConcept(item, defaults, tableConfig, selectConfig);
-
-            let insertIndex = i;
-            let newPropsValue = props.value;
-            const newValue = JSON.parse(JSON.stringify(props.newValue));
-
-            if (isMovedObject(item)) {
-              const { movedFromFieldName, movedFromAndIdx, movedFromOrIdx } =
-                item.dragContext;
-
-              if (movedFromFieldName === props.fieldName) {
-                const movedConceptWasLast =
-                  props.value[movedFromAndIdx].concepts.length === 1;
-                const willConceptMoveDown =
-                  i > movedFromAndIdx && movedConceptWasLast;
-
-                if (willConceptMoveDown) {
-                  insertIndex = i - 1;
-                }
-                newPropsValue = movedConceptWasLast
-                  ? removeValue(props.value, movedFromAndIdx)
-                  : removeConcept(props.value, movedFromAndIdx, movedFromOrIdx);
-
-                // rowPrefixField is a special property that is only used in an edge case form,
-                // used for tagging concepts. We only need to pass it back into the value
-                // if the concept is moved to a different position in the same field.
-                if (props.rowPrefixFieldname) {
-                  newValue[props.rowPrefixFieldname] =
-                    // @ts-ignore rowPrefixFieldname is dynamic, and since it's an edge case, we're not typing this
-                    props.value[movedFromAndIdx][props.rowPrefixFieldname];
-                }
-              } else {
-                if (exists(item.dragContext.deleteFromOtherField)) {
-                  item.dragContext.deleteFromOtherField();
-                }
-              }
-            }
-
-            return props.onChange(
-              addConcept(
-                insertValue(newPropsValue, insertIndex, newValue),
-                insertIndex,
-                concept,
-              ),
-            );
-          };
-        }}
+        dropBetween={(i: number) => (item: PossibleDroppableObject) =>
+          dropConceptBetweenRows(props, conceptContext, i, item)
+        }
         acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
         disallowMultipleColumns={props.disallowMultipleColumns}
         onDelete={(i) => props.onChange(removeValue(props.value, i))}
@@ -283,35 +353,7 @@ const FormConceptGroup = (props: Props) => {
             return;
           }
 
-          if (props.isValidConcept && !props.isValidConcept(item)) return;
-
-          const newValue = JSON.parse(JSON.stringify(props.newValue));
-
-          // rowPrefixField is a special property that is only used in an edge case form,
-          // for a detailed explanation see the comment in the dropBetween function
-          if (isMovedObject(item)) {
-            const { movedFromFieldName, movedFromAndIdx } = item.dragContext;
-
-            if (
-              movedFromFieldName === props.fieldName &&
-              props.rowPrefixFieldname
-            ) {
-              newValue[props.rowPrefixFieldname] =
-                // @ts-ignore rowPrefixFieldname is dynamic, and since it's an edge case, we're not typing this
-                props.value[movedFromAndIdx][props.rowPrefixFieldname];
-            }
-          }
-
-          const concept = isMovedObject(item)
-            ? copyConcept(item)
-            : initializeConcept(item, defaults, tableConfig, selectConfig);
-          return props.onChange(
-            addConcept(
-              addValue(props.value, newValue),
-              props.value.length, // Assuming the last index has increased after addValue
-              concept,
-            ),
-          );
+          return dropConceptOnGroup(props, conceptContext, item);
         }}
         items={props.value.map((row, i) => (
           <div key={i}>
@@ -351,11 +393,7 @@ const FormConceptGroup = (props: Props) => {
                 props.onChange(addConcept(props.value, i, null))
               }
               onRemoveClick={(j) =>
-                props.onChange(
-                  props.value && props.value[i].concepts.length === 1
-                    ? removeValue(props.value, i)
-                    : removeConcept(props.value, i, j),
-                )
+                props.onChange(removeConceptOrRow(props, i, j))
               }
               items={row.concepts.map((concept, j) =>
                 concept ? (
@@ -377,13 +415,9 @@ const FormConceptGroup = (props: Props) => {
                       })
                     }
                     fieldName={props.fieldName}
-                    deleteFromOtherField={() => {
-                      return props.onChange(
-                        props.value[i].concepts.length === 1
-                          ? removeValue(props.value, i)
-                          : removeConcept(props.value, i, j),
-                      );
-                    }}
+                    deleteFromOtherField={() =>
+                      props.onChange(removeConceptOrRow(props, i, j))
+                    }
                     // row_prefix is a special property that is only used in an edge case form.
                     // To support reordering of concepts this property needs
                     // to be passed to the concept node
@@ -425,27 +459,12 @@ const FormConceptGroup = (props: Props) => {
                         return;
                       }
 
-                      if (props.isValidConcept && !props.isValidConcept(item))
-                        return null;
-
-                      if (isMovedObject(item)) {
-                        return props.onChange(
-                          setConcept(props.value, i, j, copyConcept(item)),
-                        );
-                      }
-
-                      return props.onChange(
-                        setConcept(
-                          props.value,
-                          i,
-                          j,
-                          initializeConcept(
-                            item,
-                            defaults,
-                            tableConfig,
-                            selectConfig,
-                          ),
-                        ),
+                      return dropConceptOnSlot(
+                        props,
+                        conceptContext,
+                        i,
+                        j,
+                        item,
                       );
                     }}
                   >
