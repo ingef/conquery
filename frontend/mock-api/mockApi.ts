@@ -159,6 +159,7 @@ export default function mockApi(app: Application) {
               status: "DONE",
               label: "Test result",
               numberOfResults: 5,
+              previewAvailable: true,
               resultUrls:
                 dice > 0.85
                   ? [

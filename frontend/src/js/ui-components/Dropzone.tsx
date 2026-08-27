@@ -1,10 +1,5 @@
 import styled from "@emotion/styled";
-import {
-  type ForwardedRef,
-  forwardRef,
-  type ReactElement,
-  type ReactNode,
-} from "react";
+import type { ReactNode, Ref } from "react";
 import { type DropTargetMonitor, useDrop } from "react-dnd";
 
 import { DNDType } from "../common/constants/dndTypes";
@@ -100,21 +95,19 @@ export const isMovedObject = (
   }
 };
 
-const Dropzone = <DroppableObject extends PossibleDroppableObject>(
-  {
-    className,
-    acceptedDropTypes,
-    naked,
-    transparent,
-    bare,
-    canDrop,
-    onDrop,
-    onClick,
-    invisible,
-    children,
-  }: DropzoneProps<DroppableObject>,
-  ref?: ForwardedRef<HTMLDivElement>,
-) => {
+const Dropzone = <DroppableObject extends PossibleDroppableObject>({
+  className,
+  acceptedDropTypes,
+  naked,
+  transparent,
+  bare,
+  canDrop,
+  onDrop,
+  onClick,
+  invisible,
+  children,
+  ref,
+}: DropzoneProps<DroppableObject> & { ref?: Ref<HTMLDivElement> }) => {
   /*  actually, not "any", but ChildArgs<DroppableObject>. But I can't get that to work in JSX */
   const [{ canDrop: canDropResult, isOver, item }, dropRef] = useDrop<
     DroppableObject,
@@ -167,10 +160,4 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>(
   );
 };
 
-export default forwardRef(Dropzone) as <
-  DroppableObject extends PossibleDroppableObject,
->(
-  props: DropzoneProps<DroppableObject> & {
-    ref?: ForwardedRef<HTMLDivElement>;
-  },
-) => ReactElement;
+export default Dropzone;

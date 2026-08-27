@@ -93,6 +93,7 @@ const QueryRunner = ({
               resultUrls={queryRunner.queryResult.resultUrls}
               resultColumns={queryRunner.queryResult.resultColumns}
               queryType={queryRunner.queryResult.queryType}
+              previewAvailable={queryRunner.queryResult.previewAvailable}
             />
           )}
       </Right>

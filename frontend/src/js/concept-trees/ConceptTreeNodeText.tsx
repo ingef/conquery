@@ -5,7 +5,7 @@ import {
   faCaretRight,
   type IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
-import { forwardRef } from "react";
+import type { Ref } from "react";
 import { Highlighter } from "../common/components/Highlighter";
 
 import FaIcon from "../icon/FaIcon";
@@ -93,89 +93,84 @@ const ResultsNumber = styled("span")`
   font-weight: 700;
 `;
 
-const ConceptTreeNodeText = forwardRef<
-  HTMLDivElement,
-  {
-    label: string;
-    depth: number;
-    icon: IconDefinition;
+const ConceptTreeNodeText = ({
+  ref,
+  label,
+  description,
+  icon,
+  resultCount,
+  searchWords,
+  className,
+  depth,
 
-    className?: string;
-    description?: string;
-    resultCount?: number | null;
-    searchWords?: string[] | null;
-    isOpen?: boolean;
-    hasChildren?: boolean;
-    red?: boolean;
-    disabled?: boolean;
-    onClick?: () => void;
-  }
->(
-  (
-    {
-      label,
-      description,
-      icon,
-      resultCount,
-      searchWords,
-      className,
-      depth,
+  isOpen,
+  red,
+  disabled,
+  hasChildren,
 
-      isOpen,
-      red,
-      disabled,
-      hasChildren,
+  onClick,
+}: {
+  ref?: Ref<HTMLDivElement>;
 
-      onClick,
-    },
-    ref,
-  ) => {
-    return (
-      <Root ref={ref} className={className} depth={depth}>
-        <Text onClick={onClick} isOpen={isOpen} red={red} disabled={disabled}>
-          {hasChildren && (
-            <>
-              <CaretIconContainer>
-                <FaIcon
-                  disabled={disabled}
-                  active
-                  icon={isOpen ? faCaretDown : faCaretRight}
-                />
-              </CaretIconContainer>
-              <FolderIconContainer>
-                <FaIcon active disabled={disabled} icon={icon} />
-              </FolderIconContainer>
-            </>
+  label: string;
+  depth: number;
+  icon: IconDefinition;
+
+  className?: string;
+  description?: string;
+  resultCount?: number | null;
+  searchWords?: string[] | null;
+  isOpen?: boolean;
+  hasChildren?: boolean;
+  red?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+}) => {
+  return (
+    <Root ref={ref} className={className} depth={depth}>
+      <Text onClick={onClick} isOpen={isOpen} red={red} disabled={disabled}>
+        {hasChildren && (
+          <>
+            <CaretIconContainer>
+              <FaIcon
+                disabled={disabled}
+                active
+                icon={isOpen ? faCaretDown : faCaretRight}
+              />
+            </CaretIconContainer>
+            <FolderIconContainer>
+              <FaIcon active disabled={disabled} icon={icon} />
+            </FolderIconContainer>
+          </>
+        )}
+        {!hasChildren && (
+          <DashIconContainer>
+            <FaIcon disabled={disabled} large active icon={icon} />
+          </DashIconContainer>
+        )}
+        {resultCount && <ResultsNumber>{resultCount}</ResultsNumber>}
+        <span>
+          {searchWords ? (
+            <Highlighter searchWords={searchWords} textToHighlight={label} />
+          ) : (
+            label
           )}
-          {!hasChildren && (
-            <DashIconContainer>
-              <FaIcon disabled={disabled} large active icon={icon} />
-            </DashIconContainer>
-          )}
-          {resultCount && <ResultsNumber>{resultCount}</ResultsNumber>}
-          <span>
+        </span>
+        {!!description && (
+          <Description>
             {searchWords ? (
-              <Highlighter searchWords={searchWords} textToHighlight={label} />
+              <Highlighter
+                searchWords={searchWords}
+                textToHighlight={description}
+              />
             ) : (
-              label
+              `- ${description}`
             )}
-          </span>
-          {!!description && (
-            <Description>
-              {searchWords ? (
-                <Highlighter
-                  searchWords={searchWords}
-                  textToHighlight={description}
-                />
-              ) : (
-                `- ${description}`
-              )}
-            </Description>
-          )}
-        </Text>
-      </Root>
-    );
-  },
-);
+          </Description>
+        )}
+      </Text>
+    </Root>
+  );
+};
 
 export default ConceptTreeNodeText;

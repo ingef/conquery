@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { type FC, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { NumericFormat } from "react-number-format";
 
 import type { CurrencyConfigT } from "../api/types";
@@ -18,20 +18,18 @@ const SxNumberFormat = styled(NumericFormat)<{ large?: boolean }>`
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
-interface PropsT {
-  value: number | null;
-  onChange: (parsed: number | null) => void;
-  currencyConfig?: CurrencyConfigT;
-  placeholder?: string;
-  large?: boolean;
-}
-
-const CurrencyInput: FC<PropsT> = ({
+const CurrencyInput = ({
   currencyConfig,
   value,
   onChange,
   placeholder,
   large,
+}: {
+  value: number | null;
+  onChange: (parsed: number | null) => void;
+  currencyConfig?: CurrencyConfigT;
+  placeholder?: string;
+  large?: boolean;
 }) => {
   const factor = currencyConfig ? 10 ** currencyConfig.decimalScale : 1;
   // Super weird: In react-number-format,

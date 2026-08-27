@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faMicroscope } from "@fortawesome/free-solid-svg-icons";
-import { type FC, memo, useCallback, useEffect, useMemo, useRef } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -31,7 +31,7 @@ const SxFaIcon = styled(FaIcon)<{ active?: boolean }>`
     active ? theme.col.blueGrayDark : theme.col.gray};
 `;
 
-const SecondaryIdSelector: FC = () => {
+const SecondaryIdSelector = () => {
   const { t } = useTranslation();
   const query = useSelector<StateT, StandardQueryStateT>(
     (state) => state.queryEditor.query,

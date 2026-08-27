@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { type FC, memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -40,7 +40,7 @@ const useIsDatasetSelectDisabled = () => {
   }, [isHistoryOpen, isPreviewOpen]);
 };
 
-const DatasetSelector: FC = () => {
+const DatasetSelector = () => {
   const selectedDatasetId = useSelector<StateT, string | null>(
     (state) => state.datasets.selectedDatasetId,
   );

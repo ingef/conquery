@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -120,11 +120,7 @@ const useIsParentNarrow = () => {
   };
 };
 
-interface Props {
-  className?: string;
-}
-
-const Folders: FC<Props> = ({ className }) => {
+const Folders = ({ className }: { className?: string }) => {
   const folders = useFolders();
   const localFolders = useSelector<StateT, string[]>(
     (state) => state.previousQueries.localFolders,
@@ -260,7 +256,7 @@ const Folders: FC<Props> = ({ className }) => {
       <ScrollContainer>
         {folders.map((folder, i) => {
           return (
-            <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
+            <SxDropzone
               key={`${folder}-${i}`}
               naked
               bare

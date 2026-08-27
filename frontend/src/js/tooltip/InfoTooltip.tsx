@@ -1,17 +1,10 @@
 import styled from "@emotion/styled";
 import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
-import type { FC, ReactElement } from "react";
+import type { ReactElement } from "react";
 
 import FaIcon from "../icon/FaIcon";
 
 import WithTooltip from "./WithTooltip";
-
-interface PropsT {
-  text?: string;
-  html?: ReactElement;
-  className?: string;
-  wide?: boolean;
-}
 
 const SxFaIcon = styled(FaIcon)`
   transition: ${({ theme }) => theme.transitionTime};
@@ -25,7 +18,17 @@ const SpanContainer = styled("span")`
   padding: 0 7px;
 `;
 
-const InfoTooltip: FC<PropsT> = ({ className, text, html, wide }) => {
+const InfoTooltip = ({
+  className,
+  text,
+  html,
+  wide,
+}: {
+  text?: string;
+  html?: ReactElement;
+  className?: string;
+  wide?: boolean;
+}) => {
   return (
     <WithTooltip text={text} html={html} wide={wide}>
       <SpanContainer className={className}>

@@ -1,4 +1,4 @@
-import { type FC, type ReactNode, useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -8,11 +8,7 @@ import SmallTabNavigation from "../../small-tab-navigation/SmallTabNavigation";
 import { setFilter } from "./actions";
 import type { ProjectItemsFilterStateT } from "./reducer";
 
-interface Props {
-  className?: string;
-}
-
-const ProjectItemsFilter: FC<Props> = ({ className }) => {
+const ProjectItemsFilter = ({ className }: { className?: string }) => {
   const { t } = useTranslation();
   const OPTIONS: { value: ProjectItemsFilterStateT; label: () => ReactNode }[] =
     useMemo(

@@ -33,6 +33,7 @@ interface QueryResultT extends APICallType {
   resultUrls?: ResultUrlWithLabel[];
   resultColumns?: ColumnDescription[] | null;
   queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
+  previewAvailable?: boolean;
 }
 
 export interface QueryRunnerStateT {
@@ -58,6 +59,7 @@ const getQueryResult = (
     resultUrls: data.resultUrls,
     resultColumns: data.columnDescriptions,
     queryType: data.queryType,
+    previewAvailable: data.previewAvailable,
   };
 };
 

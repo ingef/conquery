@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
@@ -19,12 +18,13 @@ const Text = styled("p")`
   line-height: 1;
 `;
 
-interface Props {
+const TooManyValues = ({
+  count,
+  onClear,
+}: {
   count: number;
   onClear: () => void;
-}
-
-const TooManyValues: FC<Props> = ({ count, onClear }) => {
+}) => {
   const { t } = useTranslation();
 
   return (

@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ConceptIdT } from "../api/types";
@@ -44,7 +43,20 @@ const CommonSettingsLabel = styled(Heading3)`
   }
 `;
 
-interface PropsT {
+const MenuColumn = ({
+  className,
+  node,
+  selectedTableIdx,
+  showTables,
+  blocklistedTables,
+  allowlistedTables,
+  onCommonSettingsClick,
+  onDropConcept,
+  onRemoveConcept,
+  onToggleTable,
+  onSelectTable,
+  onResetTable,
+}: {
   className?: string;
 
   node: StandardQueryNodeT;
@@ -59,21 +71,6 @@ interface PropsT {
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
   onSelectTable: (tableIdx: number) => void;
   onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
-}
-
-const MenuColumn: FC<PropsT> = ({
-  className,
-  node,
-  selectedTableIdx,
-  showTables,
-  blocklistedTables,
-  allowlistedTables,
-  onCommonSettingsClick,
-  onDropConcept,
-  onRemoveConcept,
-  onToggleTable,
-  onSelectTable,
-  onResetTable,
 }) => {
   const { t } = useTranslation();
   const isOnlyOneTableIncluded =

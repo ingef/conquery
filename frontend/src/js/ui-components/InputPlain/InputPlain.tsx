@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { forwardRef } from "react";
+import type { Ref } from "react";
 
 import type { CurrencyConfigT } from "../../api/types";
 import BaseInput from "../BaseInput";
@@ -33,53 +33,49 @@ interface Props {
   tooltip?: string;
 }
 
-const InputPlain = forwardRef<HTMLInputElement, Props>(
-  (
-    {
-      className,
-      fullWidth,
-      label,
-      tinyLabel,
-      large,
-      indexPrefix,
-      tooltip,
-      inputType = "text",
-      money,
-      placeholder,
-      value,
-      onChange,
-      onBlur,
-      currencyConfig,
-      inputProps,
-    },
-    ref,
-  ) => {
-    return (
-      <Labeled
-        className={className}
+const InputPlain = ({
+  ref,
+  className,
+  fullWidth,
+  label,
+  tinyLabel,
+  large,
+  indexPrefix,
+  tooltip,
+  inputType = "text",
+  money,
+  placeholder,
+  value,
+  onChange,
+  onBlur,
+  currencyConfig,
+  inputProps,
+}: Props & { ref?: Ref<HTMLInputElement> }) => {
+  return (
+    <Labeled
+      className={className}
+      fullWidth={fullWidth}
+      label={label}
+      tinyLabel={tinyLabel}
+      largeLabel={large}
+      indexPrefix={indexPrefix}
+      tooltip={tooltip}
+    >
+      <SxBaseInput
+        ref={ref}
+        large={large}
         fullWidth={fullWidth}
-        label={label}
-        tinyLabel={tinyLabel}
-        largeLabel={large}
-        indexPrefix={indexPrefix}
-        tooltip={tooltip}
-      >
-        <SxBaseInput
-          ref={ref}
-          large={large}
-          fullWidth={fullWidth}
-          inputType={inputType}
-          money={money}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-          onBlur={onBlur}
-          currencyConfig={currencyConfig}
-          inputProps={inputProps}
-        />
-      </Labeled>
-    );
-  },
-);
+        inputType={inputType}
+        money={money}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        onBlur={onBlur}
+        currencyConfig={currencyConfig}
+        inputProps={inputProps}
+      />
+    </Labeled>
+  );
+};
 
 export default InputPlain;

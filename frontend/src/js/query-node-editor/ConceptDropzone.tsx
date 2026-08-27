@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DNDType } from "../common/constants/dndTypes";
@@ -13,16 +12,17 @@ const SxDropzone = styled(Dropzone)`
 
 const DROP_TYPES = [DNDType.CONCEPT_TREE_NODE];
 
-interface PropsT {
+const ConceptDropzone = ({
+  node,
+  onDropConcept,
+}: {
   node: DragItemConceptTreeNode;
   onDropConcept: (concept: DragItemConceptTreeNode) => void;
-}
-
-const ConceptDropzone: FC<PropsT> = ({ node, onDropConcept }) => {
+}) => {
   const { t } = useTranslation();
 
   return (
-    <SxDropzone /* TOOD: ADD GENERIC TYPE <FC<DropzoneProps<DragItemConceptTreeNode>>> */
+    <SxDropzone
       acceptedDropTypes={DROP_TYPES}
       onDrop={(item) => onDropConcept(item as DragItemConceptTreeNode)}
       canDrop={(item) => canNodeBeDropped(node, item)}

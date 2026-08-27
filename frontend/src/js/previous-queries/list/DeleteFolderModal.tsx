@@ -1,20 +1,17 @@
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import DeleteModal from "../../modal/DeleteModal";
 
 import { useDeleteProjectItemFolder } from "./useDeleteProjectItemFolder";
 
-interface PropsT {
-  folder: string;
-  onClose: () => void;
-  onDeleteSuccess: () => void;
-}
-
-const DeleteFolderModal: FC<PropsT> = ({
+const DeleteFolderModal = ({
   folder,
   onClose,
   onDeleteSuccess,
+}: {
+  folder: string;
+  onClose: () => void;
+  onDeleteSuccess: () => void;
 }) => {
   const { t } = useTranslation();
 

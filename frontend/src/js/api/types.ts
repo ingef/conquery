@@ -419,6 +419,7 @@ export interface GetQueryResponseDoneT {
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
   requiredTime: number; // In ms, unused at the moment
   containsDates: boolean;
+  previewAvailable: boolean; // Whether /queries/{id}/statistics can be requested (not the case for most forms)
 }
 
 export interface GetQueryRunningResponseT {

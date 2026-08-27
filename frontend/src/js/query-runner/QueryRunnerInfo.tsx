@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { QueryRunnerStateT } from "./reducer";
@@ -11,11 +10,6 @@ const Status = styled("p")<{ success?: boolean; error?: boolean }>`
   color: ${({ theme, success, error }) =>
     success ? theme.col.green : error ? theme.col.red : "initial"};
 `;
-
-interface PropsT {
-  className?: string;
-  queryRunner: QueryRunnerStateT;
-}
 
 const useMessage = (queryRunner: QueryRunnerStateT) => {
   const { t } = useTranslation();
@@ -42,7 +36,13 @@ const useMessage = (queryRunner: QueryRunnerStateT) => {
   return null;
 };
 
-const QueryRunnerInfo: FC<PropsT> = ({ queryRunner, className }) => {
+const QueryRunnerInfo = ({
+  queryRunner,
+  className,
+}: {
+  className?: string;
+  queryRunner: QueryRunnerStateT;
+}) => {
   const message = useMessage(queryRunner);
 
   const { queryResult } = queryRunner;

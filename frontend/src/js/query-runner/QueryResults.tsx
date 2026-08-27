@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -36,20 +35,20 @@ const Bold = styled("span")`
   font-weight: 700;
 `;
 
-interface PropsT {
-  resultLabel: string;
-  resultUrls: ResultUrlWithLabel[];
-  resultCount?: number | null; // For forms, won't usually have a count
-  resultColumns?: ColumnDescription[] | null; // For forms, won't usually have resultColumns
-  queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
-}
-
-const QueryResults: FC<PropsT> = ({
+const QueryResults = ({
   resultLabel,
   resultUrls,
   resultCount,
   resultColumns,
   queryType,
+  previewAvailable,
+}: {
+  resultLabel: string;
+  resultUrls: ResultUrlWithLabel[];
+  resultCount?: number | null; // For forms, won't usually have a count
+  resultColumns?: ColumnDescription[] | null; // For forms, won't usually have resultColumns
+  queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
+  previewAvailable?: boolean; // Backend decides, e.g. most forms have no preview
 }) => {
   const { t } = useTranslation();
   const csvUrl = resultUrls.find(({ url }) => url.endsWith("csv"));
@@ -71,7 +70,7 @@ const QueryResults: FC<PropsT> = ({
             : t("queryRunner.resultCount")}
         </LgText>
       )}
-      {canViewPreview && <PreviewButton />}
+      {canViewPreview && previewAvailable && <PreviewButton />}
       {!!csvUrl && canViewHistory && exists(resultColumns) && (
         <QueryResultHistoryButton
           columns={resultColumns}

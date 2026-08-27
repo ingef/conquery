@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { forwardRef, memo, useMemo } from "react";
+import { memo, type Ref, useMemo } from "react";
 
 import FaIcon, { type FaIconPropsT, type IconStyleProps } from "../icon/FaIcon";
 
@@ -107,84 +107,80 @@ export interface IconButtonPropsT extends BasicButtonProps {
 }
 
 // A button that is prefixed by an icon
-const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
-  (
-    {
-      icon,
-      active,
-      red,
-      large,
-      left,
-      children,
-      tight,
-      iconProps,
-      small,
-      secondary,
-      light,
-      fixedIconWidth,
-      bgHover,
-      iconColor,
-      ...restProps
-    },
-    ref,
-  ) => {
-    const iconElement = useMemo(() => {
-      const iconEl = (
-        <SxFaIcon
-          main
-          left={left}
-          large={large}
-          active={active}
-          red={red}
-          secondary={secondary}
-          icon={icon}
-          hasChildren={!!children}
-          tight={tight}
-          small={small}
-          light={light}
-          iconColor={iconColor}
-          {...iconProps}
-        />
-      );
-
-      return fixedIconWidth ? (
-        <FixedIconContainer style={{ width: fixedIconWidth }}>
-          {iconEl}
-        </FixedIconContainer>
-      ) : (
-        iconEl
-      );
-    }, [
-      icon,
-      active,
-      red,
-      large,
-      left,
-      children,
-      tight,
-      iconProps,
-      small,
-      secondary,
-      light,
-      fixedIconWidth,
-      iconColor,
-    ]);
-    return (
-      <SxBasicButton
-        active={active}
-        secondary={secondary}
-        tight={tight}
-        bgHover={bgHover}
-        red={red}
+const IconButton = ({
+  ref,
+  icon,
+  active,
+  red,
+  large,
+  left,
+  children,
+  tight,
+  iconProps,
+  small,
+  secondary,
+  light,
+  fixedIconWidth,
+  bgHover,
+  iconColor,
+  ...restProps
+}: IconButtonPropsT & { ref?: Ref<HTMLButtonElement> }) => {
+  const iconElement = useMemo(() => {
+    const iconEl = (
+      <SxFaIcon
+        main
+        left={left}
         large={large}
-        {...restProps}
-        ref={ref}
-      >
-        {iconElement}
-        {children && <Children>{children}</Children>}
-      </SxBasicButton>
+        active={active}
+        red={red}
+        secondary={secondary}
+        icon={icon}
+        hasChildren={!!children}
+        tight={tight}
+        small={small}
+        light={light}
+        iconColor={iconColor}
+        {...iconProps}
+      />
     );
-  },
-);
+
+    return fixedIconWidth ? (
+      <FixedIconContainer style={{ width: fixedIconWidth }}>
+        {iconEl}
+      </FixedIconContainer>
+    ) : (
+      iconEl
+    );
+  }, [
+    icon,
+    active,
+    red,
+    large,
+    left,
+    children,
+    tight,
+    iconProps,
+    small,
+    secondary,
+    light,
+    fixedIconWidth,
+    iconColor,
+  ]);
+  return (
+    <SxBasicButton
+      active={active}
+      secondary={secondary}
+      tight={tight}
+      bgHover={bgHover}
+      red={red}
+      large={large}
+      {...restProps}
+      ref={ref}
+    >
+      {iconElement}
+      {children && <Children>{children}</Children>}
+    </SxBasicButton>
+  );
+};
 
 export default memo(IconButton);

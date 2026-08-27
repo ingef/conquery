@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
-import { createElement, forwardRef, useRef } from "react";
+import { createElement, type Ref, useRef } from "react";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { mergeRefs } from "react-merge-refs";
@@ -59,61 +59,64 @@ type Props = Omit<BaseInputProps, "inputType"> & {
   onCalendarSelect?: (val: string) => void;
 };
 
-const InputDate = forwardRef<ReactDatePicker, Props>(
-  (
-    { className, value, dateFormat, onChange, onCalendarSelect, ...props },
-    ref,
-  ) => {
-    const datePickerRef = useRef<ReactDatePicker>(null);
+const InputDate = ({
+  ref,
+  className,
+  value,
+  dateFormat,
+  onChange,
+  onCalendarSelect,
+  ...props
+}: Props & { ref?: Ref<ReactDatePicker> }) => {
+  const datePickerRef = useRef<ReactDatePicker>(null);
 
-    return (
-      <Root
-        className={className}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") datePickerRef.current?.setOpen(false);
+  return (
+    <Root
+      className={className}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") datePickerRef.current?.setOpen(false);
+      }}
+    >
+      <StyledBaseInput
+        {...props}
+        inputType="text"
+        value={value}
+        onChange={(val) => {
+          onChange(val as string);
         }}
-      >
-        <StyledBaseInput
-          {...props}
-          inputType="text"
-          value={value}
-          onChange={(val) => {
-            onChange(val as string);
-          }}
-          inputProps={{
-            ...props?.inputProps,
-            onKeyPress: (e) => {
-              datePickerRef.current?.setOpen(false);
-              props.inputProps?.onKeyPress?.(e);
-            },
-          }}
-        />
-        <CalendarButton
-          icon={faCalendar}
-          onClick={() => datePickerRef.current?.setOpen(true)}
-        />
-        <ReactDatePicker
-          ref={mergeRefs([datePickerRef, ref])}
-          selected={value ? parseDate(value, dateFormat) : new Date()}
-          onChange={(val: Date | null) => {
-            if (!val) {
-              return;
-            }
-
-            const selectedDate = formatDate(val, dateFormat);
-            onChange(selectedDate);
-            onCalendarSelect?.(selectedDate);
+        inputProps={{
+          ...props?.inputProps,
+          onKeyPress: (e) => {
             datePickerRef.current?.setOpen(false);
-          }}
-          onClickOutside={() => datePickerRef.current?.setOpen(false)}
-          renderCustomHeader={CustomHeader}
-          customInput={createElement(HiddenInput)}
-          calendarContainer={StyledCalendar}
-          calendarStartDay={1}
-        />
-      </Root>
-    );
-  },
-);
+            props.inputProps?.onKeyPress?.(e);
+          },
+        }}
+      />
+      <CalendarButton
+        icon={faCalendar}
+        onClick={() => datePickerRef.current?.setOpen(true)}
+      />
+      <ReactDatePicker
+        ref={mergeRefs([datePickerRef, ref])}
+        selected={value ? parseDate(value, dateFormat) : new Date()}
+        onChange={(val: Date | null) => {
+          if (!val) {
+            return;
+          }
+
+          const selectedDate = formatDate(val, dateFormat);
+          onChange(selectedDate);
+          onCalendarSelect?.(selectedDate);
+          datePickerRef.current?.setOpen(false);
+        }}
+        onClickOutside={() => datePickerRef.current?.setOpen(false)}
+        renderCustomHeader={CustomHeader}
+        customInput={createElement(HiddenInput)}
+        calendarContainer={StyledCalendar}
+        calendarStartDay={1}
+      />
+    </Root>
+  );
+};
 
 export default InputDate;

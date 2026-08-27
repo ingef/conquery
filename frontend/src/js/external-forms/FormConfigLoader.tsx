@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { type FC, memo, type ReactNode, useEffect, useState } from "react";
+import { memo, type ReactNode, useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -80,16 +80,14 @@ const transformLoadedFieldValue = (
   }
 };
 
-interface Props {
-  datasetOptions: SelectOptionT[];
-  className?: string;
-  children: () => ReactNode;
-}
-
-const FormConfigLoader: FC<Props> = ({
+const FormConfigLoader = ({
   className,
   children,
   datasetOptions,
+}: {
+  datasetOptions: SelectOptionT[];
+  className?: string;
+  children: () => ReactNode;
 }) => {
   const { t } = useTranslation();
   const activeLang = useActiveLang();
@@ -186,7 +184,7 @@ const FormConfigLoader: FC<Props> = ({
 
   return (
     <Root className={className}>
-      <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemFormConfig>>> */
+      <SxDropzone
         onDrop={(item) => onLoad(item as DragItemFormConfig)}
         acceptedDropTypes={DROP_TYPES}
         naked

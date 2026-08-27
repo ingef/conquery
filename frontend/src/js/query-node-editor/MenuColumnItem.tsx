@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
 import { faCheckSquare, faSquare } from "@fortawesome/free-regular-svg-icons";
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
@@ -59,7 +58,15 @@ const Row = styled("div")`
   align-items: center;
 `;
 
-interface PropsT {
+const MenuColumnItem = ({
+  table,
+  isOnlyOneTableIncluded,
+  blocklistedTables,
+  allowlistedTables,
+  onClick,
+  onToggleTable,
+  onResetTable,
+}: {
   table: TableWithFilterValueT;
   isActive: boolean;
   isOnlyOneTableIncluded: boolean;
@@ -68,16 +75,6 @@ interface PropsT {
   onClick: () => void;
   onToggleTable: (value: boolean) => void;
   onResetTable: (config: NodeResetConfig) => void;
-}
-
-const MenuColumnItem: FC<PropsT> = ({
-  table,
-  isOnlyOneTableIncluded,
-  blocklistedTables,
-  allowlistedTables,
-  onClick,
-  onToggleTable,
-  onResetTable,
 }) => {
   const { t } = useTranslation();
   const isDisabled = tableIsDisabled(

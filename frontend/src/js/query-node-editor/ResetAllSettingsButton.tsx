@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useMemo } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
@@ -11,12 +11,13 @@ const SxWithTooltip = styled(WithTooltip)`
   white-space: nowrap;
 `;
 
-interface Props {
+const ResetAllSettingsButton = ({
+  compact,
+  onClick,
+}: {
   compact?: boolean;
   onClick: () => void;
-}
-
-const ResetAllSettingsButton: FC<Props> = ({ compact, onClick }) => {
+}) => {
   const { t } = useTranslation();
   const text = t("queryNodeEditor.clearAllSettings");
   const confirmationText = t("queryNodeEditor.clearAllSettingsConfirm");

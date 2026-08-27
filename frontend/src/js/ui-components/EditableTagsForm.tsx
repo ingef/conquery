@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { type FC, type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../api/types";
@@ -9,16 +9,6 @@ import { useClickOutside } from "../common/helpers/useClickOutside";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import InputMultiSelect from "./InputMultiSelect/InputMultiSelect";
-
-interface PropsT {
-  className?: string;
-  tags?: string[];
-  loading?: boolean;
-  label?: string;
-  onSubmit: (tags: string[]) => void;
-  onCancel?: () => void;
-  availableTags: string[];
-}
 
 const Form = styled("form")`
   display: flex;
@@ -35,7 +25,7 @@ const SxInputMultiSelect = styled(InputMultiSelect)`
   flex-grow: 1;
 `;
 
-const EditableTagsForm: FC<PropsT> = ({
+const EditableTagsForm = ({
   className,
   tags,
   loading,
@@ -43,6 +33,14 @@ const EditableTagsForm: FC<PropsT> = ({
   onCancel,
   label,
   availableTags,
+}: {
+  className?: string;
+  tags?: string[];
+  loading?: boolean;
+  label?: string;
+  onSubmit: (tags: string[]) => void;
+  onCancel?: () => void;
+  availableTags: string[];
 }) => {
   const { t } = useTranslation();
   const ref = useRef(null);
