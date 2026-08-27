@@ -183,6 +183,7 @@ const InputDateRange: FC<PropsT> = ({
               {exists(tooltip) && <TooltipMain>{tooltip}</TooltipMain>}
               <TooltipTutorial
                 hasMain={exists(tooltip)}
+                // biome-ignore lint/security/noDangerouslySetInnerHtml: i18n text with markup
                 dangerouslySetInnerHTML={{
                   __html: t("inputDateRange.tooltip.possiblePattern"),
                 }}

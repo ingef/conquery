@@ -149,9 +149,10 @@ const FormConceptNode: FC<PropsT> = ({
       >
         <div>
           <WithTooltip text={tooltipText}>
+            {/* biome-ignore lint/complexity/noUselessFragments: WithTooltip takes a single child */}
             <>
               {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-              <Label>{conceptNode && conceptNode.label}</Label>
+              <Label>{conceptNode?.label}</Label>
               {conceptNode && !!conceptNode.description && (
                 <Description>{conceptNode.description}</Description>
               )}
@@ -159,7 +160,7 @@ const FormConceptNode: FC<PropsT> = ({
           </WithTooltip>
         </div>
         <Right>
-          {expand && expand.expandable && (
+          {expand?.expandable && (
             <WithTooltip text={t("externalForms.common.concept.expand")}>
               <SxIconButton
                 icon={expand.active ? faCompressArrowsAlt : faExpandArrowsAlt}

@@ -1,8 +1,7 @@
 import styled from "@emotion/styled";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
-import Highlighter from "react-highlight-words";
-
 import IconButton from "../button/IconButton";
+import { Highlighter } from "../common/components/Highlighter";
 import HighlightableLabel from "../highlightable-label/HighlightableLabel";
 import WithTooltip from "../tooltip/WithTooltip";
 
@@ -75,11 +74,7 @@ const EditableText = ({
       </WithTooltip>
       <SxHighlightableLabel isHighlighted={isHighlighted}>
         {highlightedWords && highlightedWords.length > 0 ? (
-          <Highlighter
-            searchWords={highlightedWords}
-            autoEscape
-            textToHighlight={text}
-          />
+          <Highlighter searchWords={highlightedWords} textToHighlight={text} />
         ) : (
           text
         )}

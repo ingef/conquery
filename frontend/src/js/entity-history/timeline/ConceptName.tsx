@@ -1,9 +1,8 @@
 import styled from "@emotion/styled";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
-
-import Highlighter from "react-highlight-words";
 import type { ConceptIdT, ConceptT } from "../../api/types";
+import { Highlighter } from "../../common/components/Highlighter";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
 import FaIcon from "../../icon/FaIcon";
 import { useTimelineSearch } from "../timeline-search/timelineSearchState";
@@ -35,7 +34,7 @@ const ConceptLabel = ({
 }) => {
   const label = concept
     ? `${concept.label}${
-        concept.description ? " – " + concept.description : ""
+        concept.description ? ` – ${concept.description}` : ""
       }`
     : conceptId;
 
@@ -63,10 +62,10 @@ const RootConceptLabel = ({
   return searchTerm && searchTerm.length > 0 ? (
     <Highlighter
       searchWords={searchTerm.split(" ")}
-      textToHighlight={rootConcept.label + " "}
+      textToHighlight={`${rootConcept.label} `}
     />
   ) : (
-    rootConcept.label + " "
+    `${rootConcept.label} `
   );
 };
 

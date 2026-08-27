@@ -152,7 +152,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
     function safeOnChange(val: string | number | null) {
       if (
         (typeof val === "string" && val.length === 0) ||
-        (typeof val === "number" && isNaN(val))
+        (typeof val === "number" && Number.isNaN(val))
       ) {
         onChange(null);
       } else {

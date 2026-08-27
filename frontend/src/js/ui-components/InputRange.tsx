@@ -90,8 +90,8 @@ const InputRange = ({
 
   const inputProps = {
     step: stepSize || null,
-    min: (limits && limits.min) || null,
-    max: (limits && limits.max) || null,
+    min: limits?.min || null,
+    max: limits?.max || null,
     pattern: pattern,
   };
 

@@ -27,7 +27,7 @@ export const GroupField = ({
       )}
       <GroupContainer
         style={{
-          display: (field.style && field.style.display) || "flex",
+          display: field.style?.display || "flex",
           gap: field.style?.display === "grid" ? "7px 12px" : "7px 8px",
           gridTemplateColumns: `repeat(${field.style?.gridColumns || 1}, 1fr)`,
         }}

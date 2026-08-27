@@ -3,13 +3,12 @@ import type { ConceptIdT, ConceptT } from "../api/types";
 export const doesQueryMatchNode = (node: ConceptT, query: string) => {
   return (
     node.label.toLowerCase().includes(query) ||
-    (node.description && node.description.toLowerCase().includes(query)) ||
-    (node.additionalInfos &&
-      node.additionalInfos
-        .map(({ value }) => value)
-        .join("")
-        .toLowerCase()
-        .includes(query))
+    node.description?.toLowerCase().includes(query) ||
+    node.additionalInfos
+      ?.map(({ value }) => value)
+      .join("")
+      .toLowerCase()
+      .includes(query)
   );
 };
 

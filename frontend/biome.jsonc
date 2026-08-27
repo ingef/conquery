@@ -9,7 +9,8 @@
       "!!dist",
       "!!storybook-static",
       "!!public",
-      "!mock-api/**/*.json"
+      "!mock-api/**/*.json",
+      "!src/fixtures"
     ],
     "ignoreUnknown": true
   },
@@ -38,7 +39,16 @@
     },
     "rules": {
       "preset": "recommended",
+      "complexity": {
+        // Visible for now, the worst offenders get refactored separately
+        "noExcessiveCognitiveComplexity": {
+          "level": "warn",
+          "options": { "maxAllowedComplexity": 18 }
+        },
+        "noForEach": "error"
+      },
       "correctness": {
+        "noUnusedImports": { "level": "error", "fix": "safe" },
         "noUnusedVariables": {
           "level": "error",
           "options": { "ignoreRestSiblings": true }
@@ -47,19 +57,14 @@
         "noSwitchDeclarations": "off",
         "useExhaustiveDependencies": "warn",
         "useHookAtTopLevel": "error",
-        // TODO: 7 lists render without keys, fix and raise to error
-        "useJsxKeyInIterable": "warn"
-      },
-      "security": {
-        // Markdown/HTML rendering from trusted backend content is intentional
-        "noDangerouslySetInnerHtml": "off"
+        "useJsxKeyInIterable": "error"
       },
       "style": {
         // Was allowed by the previous eslint config
         "noNonNullAssertion": "off"
       },
       "suspicious": {
-        // TODO: ~30 index keys, revisit
+        // Index keys are fine for the static, non-reorderable lists this app renders
         "noArrayIndexKey": "off",
         "noDoubleEquals": "error",
         "noDebugger": "warn",

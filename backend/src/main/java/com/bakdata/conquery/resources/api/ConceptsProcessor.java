@@ -22,6 +22,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -107,10 +108,9 @@ public class ConceptsProcessor {
 		final Namespace namespace = namespaces.get(dataset);
 		final PreviewConfig previewConfig = namespace.getPreviewConfig();
 
+    ConnectorId searchConnector = previewConfig.resolveSearchConnector();
+
 		// Connectors only act as bridge to table for the fronted, but also provide ConceptColumnT semantic
-
-		ConnectorId searchConnector = previewConfig.resolveSearchConnector();
-
 		return new FrontendPreviewConfig(
 			previewConfig.getAllConnectors()
 				.stream()
@@ -128,7 +128,7 @@ public class ConceptsProcessor {
 						id.resolve().getResolvedTable().getLabel()))
 				.collect(Collectors.toSet()),
 			previewConfig.getSearchFilters(),
-			searchConnector.getConcept(),
+			config.getIdColumns().getIds().stream().map(ColumnConfig::getName).toList(),searchConnector.getConcept(),
 			searchConnector
 		);
 	}

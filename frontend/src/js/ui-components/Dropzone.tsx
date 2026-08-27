@@ -158,12 +158,11 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>(
       transparent={transparent}
       bare={bare}
     >
-      {children &&
-        children({
-          isOver,
-          canDrop: canDropResult,
-          item: item as DroppableObject, // Casting because see comment above
-        })}
+      {children?.({
+        isOver,
+        canDrop: canDropResult,
+        item: item as DroppableObject, // Casting because see comment above
+      })}
     </Root>
   );
 };

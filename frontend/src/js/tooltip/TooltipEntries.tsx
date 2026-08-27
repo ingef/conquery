@@ -88,14 +88,16 @@ const TooltipEntries = (props: Props) => {
   const dateFormat = "yyyy-MM-dd";
   const displayDateFormat = t("inputDateRange.dateFormat");
 
-  const parsedFromDate =
-    dateRange && dateRange.min ? parseDate(dateRange.min, dateFormat) : null;
+  const parsedFromDate = dateRange?.min
+    ? parseDate(dateRange.min, dateFormat)
+    : null;
   const fromDate = parsedFromDate
     ? formatDate(parsedFromDate, displayDateFormat)
     : "- - - - - - -";
 
-  const parsedToDate =
-    dateRange && dateRange.max ? parseDate(dateRange.max, dateFormat) : null;
+  const parsedToDate = dateRange?.max
+    ? parseDate(dateRange.max, dateFormat)
+    : null;
   const toDate = parsedToDate
     ? formatDate(parsedToDate, displayDateFormat)
     : "- - - - - - -";

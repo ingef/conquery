@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useMemo } from "react";
-import ReactList from "react-list";
 
+import { IncrementalList } from "../common/components/IncrementalList";
 import FaIcon from "../icon/FaIcon";
 import type { useUpdateHistorySession } from "./actions";
 import type { EntityIdsStatus } from "./History";
@@ -115,11 +115,5 @@ export const EntityIdsList = ({
     );
   };
 
-  return (
-    <ReactList
-      itemRenderer={renderItem}
-      length={entityIds.length}
-      type="uniform"
-    />
-  );
+  return <IncrementalList renderItem={renderItem} length={entityIds.length} />;
 };

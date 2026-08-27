@@ -93,11 +93,7 @@ const ContentColumn: FC<PropsT> = ({
   const itemsRef = useRef<(HTMLDivElement | null)[]>(new Array(tables.length));
 
   useEffect(() => {
-    if (
-      selectedTableIdx !== null &&
-      itemsRef.current &&
-      itemsRef.current[selectedTableIdx]
-    ) {
+    if (selectedTableIdx && itemsRef.current?.[selectedTableIdx]) {
       itemsRef.current[selectedTableIdx]?.scrollIntoView({
         block: "start",
         inline: "start",

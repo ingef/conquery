@@ -34,7 +34,7 @@ const getInitialUserGroupsValue = (
   userGroups: UserGroupT[],
   projectItem?: ProjectItemT,
 ) => {
-  return projectItem && projectItem.groups
+  return projectItem?.groups
     ? userGroups
         .filter((group) => projectItem.groups?.includes(group.id))
         .map((group) => ({

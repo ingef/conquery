@@ -10,7 +10,7 @@ interface ContextT {
 export function selectPermissions(
   state: StateT,
 ): Record<DatasetT["id"], PermissionsT> | null {
-  return state.user.me && state.user.me.datasetAbilities
+  return state.user.me?.datasetAbilities
     ? state.user.me.datasetAbilities
     : null;
 }
@@ -35,8 +35,9 @@ function canDo(
   if (!permissions) return false;
 
   const { selectedDatasetId } = state.datasets;
-  const datasetId: string | null =
-    context && context.datasetId ? context.datasetId : selectedDatasetId;
+  const datasetId: string | null = context?.datasetId
+    ? context.datasetId
+    : selectedDatasetId;
 
   if (!datasetId) {
     return false;

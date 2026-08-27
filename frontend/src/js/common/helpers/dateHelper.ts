@@ -86,7 +86,11 @@ function handleRaw(
   const yIdx = denseFormat.indexOf("y");
   const y = value.substring(yIdx, yIdx + 4);
 
-  let date: Date | null = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+  let date: Date | null = new Date(
+    parseInt(y, 10),
+    parseInt(m, 10) - 1,
+    parseInt(d, 10),
+  );
 
   date = isValid(date) ? date : null;
 
@@ -99,7 +103,7 @@ function handleYear(value: string) {
   if (!match) {
     throw new Error("Quarter.year should match at this point");
   }
-  const year = parseInt(match[1]);
+  const year = parseInt(match[1], 10);
 
   const min = new Date(year, 0, 1);
   const max = new Date(year, 11, 31);
@@ -114,8 +118,8 @@ function handleQuarter(value: string) {
     throw new Error("Quarter.year should match at this point");
   }
 
-  const quarter = parseInt(match[1]);
-  const year = parseInt(match[2]);
+  const quarter = parseInt(match[1], 10);
+  const year = parseInt(match[2], 10);
 
   const min = addQuarters(new Date(year, 0, 1), quarter - 1);
   const max = lastDayOfQuarter(addQuarters(new Date(year, 0, 1), quarter - 1));
@@ -130,8 +134,8 @@ function handleMonth(value: string) {
     throw new Error("Month.year should match at this point");
   }
 
-  const month = parseInt(match[1]);
-  const year = parseInt(match[2]);
+  const month = parseInt(match[1], 10);
+  const year = parseInt(match[2], 10);
 
   const min = addMonths(new Date(year, 0, 1), month - 1);
   const max = endOfMonth(addMonths(new Date(year, 0, 1), month - 1));
