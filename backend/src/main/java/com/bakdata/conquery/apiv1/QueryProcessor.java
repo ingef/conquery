@@ -427,7 +427,7 @@ public class QueryProcessor {
 
 		final UUID queryId = maybeQueryId.orElseGet(UUID::randomUUID);
 
-		final Optional<ManagedExecution> maybeReused = onlyReusingChecker.getOnlyReused(queryContent);
+		final Optional<ManagedQuery> maybeReused = onlyReusingChecker.getOnlyReused(queryContent);
 
 
 		// Never reuse if a query-Id is provided
