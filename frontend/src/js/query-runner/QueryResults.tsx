@@ -42,6 +42,7 @@ interface PropsT {
   resultCount?: number | null; // For forms, won't usually have a count
   resultColumns?: ColumnDescription[] | null; // For forms, won't usually have resultColumns
   queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
+  previewAvailable?: boolean; // Backend decides, e.g. most forms have no preview
 }
 
 const QueryResults: FC<PropsT> = ({
@@ -50,6 +51,7 @@ const QueryResults: FC<PropsT> = ({
   resultCount,
   resultColumns,
   queryType,
+  previewAvailable,
 }) => {
   const { t } = useTranslation();
   const csvUrl = resultUrls.find(({ url }) => url.endsWith("csv"));
@@ -71,7 +73,7 @@ const QueryResults: FC<PropsT> = ({
             : t("queryRunner.resultCount")}
         </LgText>
       )}
-      {canViewPreview && <PreviewButton />}
+      {canViewPreview && previewAvailable && <PreviewButton />}
       {!!csvUrl && canViewHistory && exists(resultColumns) && (
         <QueryResultHistoryButton
           columns={resultColumns}
