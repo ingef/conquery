@@ -7,6 +7,6 @@
   "license": "MIT",
   "packageManager": "pnpm@11.24.0",
   "dependencies": {
-    "cypress": "^13.5.0"
+    "cypress": "^15.20.1"
   }
 }
