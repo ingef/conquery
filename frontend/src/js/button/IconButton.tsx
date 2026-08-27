@@ -129,7 +129,6 @@ const IconButton = ({
       active={active}
       secondary={secondary}
       large={large}
-      small={small}
       {...restProps}
       className={iconButton({
         secondary,
