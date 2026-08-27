@@ -72,6 +72,63 @@ const Label = styled("div")`
   text-overflow: ellipsis;
 `;
 
+type YearValue = TimeStratifiedInfo["years"][number]["values"][string];
+type Column = TimeStratifiedInfo["columns"][number];
+
+const byNumericThenAlphabeticLabel = (
+  c1: { label: string },
+  c2: { label: string },
+) => {
+  const n1 = Number(c1.label);
+  const n2 = Number(c2.label);
+  if (!Number.isNaN(n1) && !Number.isNaN(n2)) {
+    return n1 - n2;
+  }
+  return c1.label.localeCompare(c2.label);
+};
+
+const formatValue = (column: Column, value: YearValue) => {
+  if (typeof value === "number") {
+    return isMoneyColumn(column) ? formatCurrency(value) : Math.round(value);
+  }
+  if (Array.isArray(value)) {
+    return value.join(", ");
+  }
+  return value;
+};
+
+const ConceptValues = ({
+  label,
+  column,
+  values,
+}: {
+  label: string;
+  column: Column;
+  values: string[];
+}) => {
+  const semantic = column.semantics.find(
+    (s): s is ColumnDescriptionSemanticConceptColumn =>
+      s.type === "CONCEPT_COLUMN",
+  );
+  const concepts = values
+    .map((v) => getConceptById(v, semantic!.concept))
+    .filter(exists)
+    .sort(byNumericThenAlphabeticLabel);
+
+  return (
+    <>
+      <Label style={{ gridColumn: "span 2" }}>{label}</Label>
+      <ConceptRow>
+        {concepts.map((concept) => (
+          <WithTooltip key={concept.label} text={concept.description}>
+            <ConceptBubble>{concept.label}</ConceptBubble>
+          </WithTooltip>
+        ))}
+      </ConceptRow>
+    </>
+  );
+};
+
 const TimeStratifiedInfos = ({
   year,
   timeStratifiedInfos,
@@ -113,59 +170,19 @@ const TimeStratifiedInfos = ({
                   return null;
                 }
 
-                if (isConceptColumn(column)) {
-                  const semantic = column.semantics.find(
-                    (s): s is ColumnDescriptionSemanticConceptColumn =>
-                      s.type === "CONCEPT_COLUMN",
+                // TODO: Potentially support single-value concepts
+                if (isConceptColumn(column) && Array.isArray(value)) {
+                  return (
+                    <ConceptValues
+                      key={label}
+                      label={label}
+                      column={column}
+                      values={value}
+                    />
                   );
-
-                  if (Array.isArray(value)) {
-                    const concepts = value
-                      .map((v) => getConceptById(v, semantic!.concept))
-                      .filter(exists)
-                      .sort((c1, c2) => {
-                        const n1 = Number(c1.label);
-                        const n2 = Number(c2.label);
-                        if (!Number.isNaN(n1) && !Number.isNaN(n2)) {
-                          return n1 - n2;
-                        }
-                        return c1.label.localeCompare(c2.label);
-                      });
-
-                    return (
-                      <Fragment key={label}>
-                        <Label
-                          style={{
-                            gridColumn: "span 2",
-                          }}
-                        >
-                          {label}
-                        </Label>
-                        <ConceptRow>
-                          {concepts.map((concept) => (
-                            <WithTooltip
-                              key={concept.label}
-                              text={concept.description}
-                            >
-                              <ConceptBubble>{concept.label}</ConceptBubble>
-                            </WithTooltip>
-                          ))}
-                        </ConceptRow>
-                      </Fragment>
-                    );
-                  }
-
-                  // TOOD: Potentially support single-value concepts
                 }
 
-                let valueFormatted: string | number | string[] = value;
-                if (typeof value === "number") {
-                  valueFormatted = isMoneyColumn(column)
-                    ? formatCurrency(value)
-                    : Math.round(value);
-                } else if (Array.isArray(value)) {
-                  valueFormatted = value.join(", ");
-                }
+                const valueFormatted = formatValue(column, value);
 
                 return (
                   <Fragment key={label}>

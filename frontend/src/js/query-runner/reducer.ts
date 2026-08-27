@@ -70,87 +70,70 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
     queryResult: null,
   };
 
-  const queryTypeMatches = (action: { payload: { queryType: QueryTypeT } }) => {
-    return action.payload.queryType === type;
-  };
+  const isForThisQueryType = (action: Action) =>
+    (action as { payload?: { queryType?: QueryTypeT } }).payload?.queryType ===
+    type;
 
   return (
     state: QueryRunnerStateT = initialState,
     action: Action,
   ): QueryRunnerStateT => {
+    // Every action handled below carries the query type it belongs to
+    if (!isForThisQueryType(action)) return state;
+
     switch (action.type) {
       case getType(startQuery.request):
-        return queryTypeMatches(action)
-          ? {
-              ...state,
-              stopQuery: {},
-              startQuery: { loading: true },
-              queryResult: null,
-            }
-          : state;
+        return {
+          ...state,
+          stopQuery: {},
+          startQuery: { loading: true },
+          queryResult: null,
+        };
       case getType(startQuery.success):
-        return queryTypeMatches(action)
-          ? {
-              ...state,
-              runningQuery: action.payload.data.id,
-              queryRunning: true,
-              stopQuery: {},
-              startQuery: { success: true },
-            }
-          : state;
+        return {
+          ...state,
+          runningQuery: action.payload.data.id,
+          queryRunning: true,
+          stopQuery: {},
+          startQuery: { success: true },
+        };
       case getType(startQuery.failure):
-        return queryTypeMatches(action)
-          ? {
-              ...state,
-              stopQuery: {},
-              startQuery: {
-                error: action.payload.message || action.payload.status,
-              },
-            }
-          : state;
+        return {
+          ...state,
+          stopQuery: {},
+          startQuery: {
+            error: action.payload.message || action.payload.status,
+          },
+        };
       // To cancel a query
       case getType(stopQuery.request):
-        return queryTypeMatches(action)
-          ? { ...state, startQuery: {}, stopQuery: { loading: true } }
-          : state;
+        return { ...state, startQuery: {}, stopQuery: { loading: true } };
       case getType(stopQuery.success):
-        return queryTypeMatches(action)
-          ? {
-              ...state,
-              runningQuery: null,
-              progress: undefined,
-              queryRunning: false,
-              startQuery: {},
-              stopQuery: { success: true },
-            }
-          : state;
+        return {
+          ...state,
+          runningQuery: null,
+          progress: undefined,
+          queryRunning: false,
+          startQuery: {},
+          stopQuery: { success: true },
+        };
       case getType(stopQuery.failure):
-        return queryTypeMatches(action)
-          ? {
-              ...state,
-              startQuery: {},
-              stopQuery: {
-                error: action.payload.message || action.payload.status,
-              },
-            }
-          : state;
+        return {
+          ...state,
+          startQuery: {},
+          stopQuery: {
+            error: action.payload.message || action.payload.status,
+          },
+        };
 
       // To check for query results
       case getType(queryResultStart):
-        return queryTypeMatches(action)
-          ? { ...state, queryResult: { loading: true } }
-          : state;
+        return { ...state, queryResult: { loading: true } };
       case getType(queryResultRunning):
-        return queryTypeMatches(action)
-          ? { ...state, progress: action.payload.progress }
-          : state;
+        return { ...state, progress: action.payload.progress };
       case getType(queryResultReset):
-        return queryTypeMatches(action)
-          ? { ...state, queryResult: { loading: false } }
-          : state;
+        return { ...state, queryResult: { loading: false } };
       case getType(queryResultSuccess):
-        if (!queryTypeMatches(action)) return state;
-
         return {
           ...state,
           queryResult: getQueryResult(
@@ -162,8 +145,6 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
           queryRunning: false,
         };
       case getType(queryResultErrorAction):
-        if (!queryTypeMatches(action)) return state;
-
         return {
           ...state,
           runningQuery: null,
