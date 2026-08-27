@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../../button/IconButton";
@@ -11,13 +10,15 @@ const FoldersButton = styled(IconButton)`
   margin-right: 5px;
 `;
 
-interface Props {
+const FoldersToggleButton = ({
+  className,
+  active,
+  onClick,
+}: {
   className?: string;
   active?: boolean;
   onClick: () => void;
-}
-
-const FoldersToggleButton: FC<Props> = ({ className, active, onClick }) => {
+}) => {
   const { t } = useTranslation();
 
   return (

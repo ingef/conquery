@@ -3,7 +3,7 @@ import {
   faCompressArrowsAlt,
   faExpandArrowsAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useRef } from "react";
+import { useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 
@@ -68,7 +68,19 @@ const RootNode = styled("p")`
   word-break: break-word;
 `;
 
-interface PropsT {
+// generalized node to handle concepts queried in forms
+const FormConceptNode = ({
+  valueIdx,
+  conceptIdx,
+  conceptNode,
+  onClick,
+  hasNonDefaultSettings,
+  hasFilterValues,
+  expand,
+  deleteFromOtherField,
+  fieldName,
+  rowPrefixFieldname,
+}: {
   valueIdx: number;
   conceptIdx: number;
   conceptNode: DragItemConceptTreeNode;
@@ -84,20 +96,6 @@ interface PropsT {
   deleteFromOtherField: () => void;
   fieldName: string;
   rowPrefixFieldname?: string;
-}
-
-// generalized node to handle concepts queried in forms
-const FormConceptNode: FC<PropsT> = ({
-  valueIdx,
-  conceptIdx,
-  conceptNode,
-  onClick,
-  hasNonDefaultSettings,
-  hasFilterValues,
-  expand,
-  deleteFromOtherField,
-  fieldName,
-  rowPrefixFieldname,
 }) => {
   const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(conceptNode);

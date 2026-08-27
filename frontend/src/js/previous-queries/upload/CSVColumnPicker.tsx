@@ -10,7 +10,7 @@ import {
 import { format } from "date-fns";
 import { saveAs } from "file-saver";
 import type { TFunction } from "i18next";
-import { type FC, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import tw from "tailwind-styled-components";
@@ -250,7 +250,7 @@ const CSVPreviewTable = ({
   );
 };
 
-const CSVColumnPicker: FC<PropsT> = ({
+const CSVColumnPicker = ({
   file,
   loading,
   config,
@@ -258,7 +258,7 @@ const CSVColumnPicker: FC<PropsT> = ({
   onUpload,
   onReset,
   onCancel,
-}) => {
+}: PropsT) => {
   const { t } = useTranslation();
   const locale = useActiveLang();
   const [delimiter, setDelimiter] = useState<string>(";");

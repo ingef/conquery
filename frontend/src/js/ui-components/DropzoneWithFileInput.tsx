@@ -125,7 +125,7 @@ const DropzoneWithFileInput = <
   }
 
   return (
-    <SxDropzone /* <FC<DropzoneProps<DroppableObject | DragItemFile>>> */
+    <SxDropzone
       tight={tight}
       acceptedDropTypes={dropTypes}
       onClick={() => {

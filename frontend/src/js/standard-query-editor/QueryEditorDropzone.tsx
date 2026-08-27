@@ -81,7 +81,7 @@ const QueryEditorDropzone = forwardRef<HTMLDivElement, Props>(
     );
 
     return (
-      <SxDropzoneWithFileInput /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<StandardQueryNodeT>>> */
+      <SxDropzoneWithFileInput
         ref={ref}
         className={className}
         isAnd={isAnd}

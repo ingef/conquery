@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import type { FC } from "react";
 
 const ProgressText = styled("div")`
   font-size: ${({ theme }) => theme.font.lg};
@@ -9,11 +8,8 @@ const ProgressText = styled("div")`
 `;
 
 // progress is between 0 and 1
-interface Props {
-  progress: number;
-}
 
-const QueryRunningProgress: FC<Props> = ({ progress }) => {
+const QueryRunningProgress = ({ progress }: { progress: number }) => {
   return <ProgressText>{Math.round(progress * 100)} %</ProgressText>;
 };
 

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { type FC, useCallback, useRef } from "react";
+import { useCallback, useRef } from "react";
 
 import { DNDType } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";
@@ -19,22 +19,20 @@ const DROP_TYPES = [
   DNDType.PREVIOUS_SECONDARY_ID_QUERY,
 ];
 
-interface PropsT {
-  label: string;
-  tooltip?: string;
-  dropzoneText: string;
-  className?: string;
-  value: DragItemQuery | null;
-  onChange: (value: DragItemQuery | null) => void;
-}
-
-const FormQueryDropzone: FC<PropsT> = ({
+const FormQueryDropzone = ({
   label,
   tooltip,
   dropzoneText,
   className,
   value,
   onChange,
+}: {
+  label: string;
+  tooltip?: string;
+  dropzoneText: string;
+  className?: string;
+  value: DragItemQuery | null;
+  onChange: (value: DragItemQuery | null) => void;
 }) => {
   const onDrop = (item: DragItemQuery) => {
     onChange(item);
@@ -60,7 +58,7 @@ const FormQueryDropzone: FC<PropsT> = ({
         {label}
         {exists(tooltip) && <InfoTooltip text={tooltip} />}
       </Label>
-      <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
+      <SxDropzone
         onDrop={(item) => onDrop(item as DragItemQuery)}
         acceptedDropTypes={DROP_TYPES}
       >

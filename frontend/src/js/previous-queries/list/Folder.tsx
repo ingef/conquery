@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
 import { faFolder as faFolderRegular } from "@fortawesome/free-regular-svg-icons";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
 import { Highlighter } from "../../common/components/Highlighter";
 
 import { exists } from "../../common/helpers/exists";
@@ -46,18 +45,7 @@ const ResultCount = styled("span")`
   font-weight: 700;
 `;
 
-interface Props {
-  folder: string;
-  resultCount: number | null;
-  resultWords: string[];
-  className?: string;
-  active?: boolean;
-  special?: boolean;
-  empty?: boolean;
-  onClick: () => void;
-}
-
-const Folder: FC<Props> = ({
+const Folder = ({
   className,
   resultCount,
   resultWords,
@@ -66,6 +54,15 @@ const Folder: FC<Props> = ({
   special,
   empty,
   onClick,
+}: {
+  folder: string;
+  resultCount: number | null;
+  resultWords: string[];
+  className?: string;
+  active?: boolean;
+  special?: boolean;
+  empty?: boolean;
+  onClick: () => void;
 }) => {
   return (
     <Root

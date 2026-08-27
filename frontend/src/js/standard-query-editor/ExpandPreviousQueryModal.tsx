@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import PrimaryButton from "../button/PrimaryButton";
@@ -17,16 +16,14 @@ const Buttons = styled.div`
   justify-content: space-between;
 `;
 
-interface Props {
-  className?: string;
-  onClose: () => void;
-  onAccept: () => void;
-}
-
-const ExpandPreviousQueryModal: FC<Props> = ({
+const ExpandPreviousQueryModal = ({
   onClose,
   onAccept,
   className,
+}: {
+  className?: string;
+  onClose: () => void;
+  onAccept: () => void;
 }) => {
   const { t } = useTranslation();
 
