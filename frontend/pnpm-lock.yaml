@@ -125,9 +125,6 @@ importers:
       react-i18next:
         specifier: ^17.0.11
         version: 17.0.11(i18next@26.3.6(typescript@7.0.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@7.0.2)
-      react-list:
-        specifier: ^0.8.19
-        version: 0.8.19(react@19.2.8)
       react-markdown:
         specifier: ^10.1.0
         version: 10.1.0(@types/react@19.2.18)(react@19.2.8)(supports-color@5.5.0)
@@ -213,9 +210,6 @@ importers:
       '@types/react-dom':
         specifier: ^19.2.4
         version: 19.2.4(@types/react@19.2.18)
-      '@types/react-list':
-        specifier: ^0.8.12
-        version: 0.8.12
       '@vitejs/plugin-react':
         specifier: ^6.0.5
         version: 6.0.5(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.44.0)(tsx@4.23.12))
@@ -1514,9 +1508,6 @@ packages:
     resolution: {integrity: sha512-Bsc+QHgp+P/F02XDzNCY9jnZNCUuLki36KT7VKrTXXLdHf+vHMNZnW1rVu5DNW/rCK+fya3DATySbLM4yhtKUw==}
     peerDependencies:
       '@types/react': ^19.2.0
-
-  '@types/react-list@0.8.12':
-    resolution: {integrity: sha512-X09dFxEJUeqiLe2KNuYl4JyIcvuOzmz3Im2jBH3X3VTH46Mo10wnAYWEsUbDNDIdQ2mGbWgmToqCofXPNGlWXA==}
 
   '@types/react@19.2.18':
     resolution: {integrity: sha512-AnzbBERsrLKtk2XSfTbYRLjQPdy116Sty4q+T+Bp3IC4l6jNBvreVPAHmpq9qhXQM7CXZPjLVmGMw9sy+hxQ3w==}
@@ -3015,11 +3006,6 @@ packages:
 
   react-is@18.3.1:
     resolution: {integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==}
-
-  react-list@0.8.19:
-    resolution: {integrity: sha512-8ORJHcMLbNsIn2YpB6v69FrF1gpM1bbfRKOMsDcKpiDRkmNsk9LDVptYqewmDRo0K7W2WPcveQftEes6ovD+Zw==}
-    peerDependencies:
-      react: 0.14 || 15 - 19
 
   react-markdown@10.1.0:
     resolution: {integrity: sha512-qKxVopLT/TyA6BX3Ue5NwabOsAzm0Q7kAPwq6L+wWDwisYs7R8vZ0nRXqq6rkueboxpkjvLGU9fWifiX/ZZFxQ==}
@@ -4583,10 +4569,6 @@ snapshots:
   '@types/range-parser@1.2.7': {}
 
   '@types/react-dom@19.2.4(@types/react@19.2.18)':
-    dependencies:
-      '@types/react': 19.2.18
-
-  '@types/react-list@0.8.12':
     dependencies:
       '@types/react': 19.2.18
 
@@ -6231,10 +6213,6 @@ snapshots:
   react-is@17.0.2: {}
 
   react-is@18.3.1: {}
-
-  react-list@0.8.19(react@19.2.8):
-    dependencies:
-      react: 19.2.8
 
   react-markdown@10.1.0(@types/react@19.2.18)(react@19.2.8)(supports-color@5.5.0):
     dependencies:
