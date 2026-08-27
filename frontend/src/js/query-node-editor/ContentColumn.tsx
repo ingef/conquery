@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { type FC, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
@@ -44,7 +44,20 @@ const ContentCellGroup = styled(ContentCell)`
   }
 `;
 
-interface PropsT {
+const ContentColumn = ({
+  node,
+  selectedTableIdx,
+  blocklistedSelects,
+  allowlistedSelects,
+  onLoadFilterSuggestions,
+  onSetDateColumn,
+  onSetFilterValue,
+  onSwitchFilterMode,
+  onSelectSelects,
+  onSelectTableSelects,
+  onToggleTimestamps,
+  onToggleSecondaryIdExclude,
+}: {
   node: StandardQueryNodeT;
   selectedTableIdx: number | null;
   blocklistedSelects?: SelectorResultType[];
@@ -70,21 +83,6 @@ interface PropsT {
     config?: { returnOnly?: boolean },
   ) => Promise<PostFilterSuggestionsResponseT | null>;
   onSetDateColumn: (tableIdx: number, value: string) => void;
-}
-
-const ContentColumn: FC<PropsT> = ({
-  node,
-  selectedTableIdx,
-  blocklistedSelects,
-  allowlistedSelects,
-  onLoadFilterSuggestions,
-  onSetDateColumn,
-  onSetFilterValue,
-  onSwitchFilterMode,
-  onSelectSelects,
-  onSelectTableSelects,
-  onToggleTimestamps,
-  onToggleSecondaryIdExclude,
 }) => {
   const { t } = useTranslation();
 

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import type { FC, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 const Root = styled("div")`
   position: relative;
@@ -35,11 +35,7 @@ const Preview = styled("div")<{ large?: boolean }>`
   margin: 5px 0;
 `;
 
-interface PropsT {
-  emptyMessage: ReactNode;
-}
-
-const EmptyList: FC<PropsT> = ({ emptyMessage }) => (
+const EmptyList = ({ emptyMessage }: { emptyMessage: ReactNode }) => (
   <Root>
     <MsgContainer>
       <Msg>

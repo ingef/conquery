@@ -1,21 +1,11 @@
 import styled from "@emotion/styled";
 import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { type FC, type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import WithTooltip from "../tooltip/WithTooltip";
-
-interface PropsT {
-  className?: string;
-  text: string;
-  loading?: boolean;
-  selectTextOnMount?: boolean;
-  saveOnClickoutside?: boolean;
-  onSubmit: (text: string) => void;
-  onCancel: () => void;
-}
 
 const Input = styled("input")`
   font-size: ${({ theme }) => theme.font.sm};
@@ -35,7 +25,7 @@ const SxIconButton = styled(IconButton)`
   margin-left: 3px;
 `;
 
-const EditableTextForm: FC<PropsT> = ({
+const EditableTextForm = ({
   className,
   text,
   loading,
@@ -43,6 +33,14 @@ const EditableTextForm: FC<PropsT> = ({
   saveOnClickoutside,
   onSubmit,
   onCancel,
+}: {
+  className?: string;
+  text: string;
+  loading?: boolean;
+  selectTextOnMount?: boolean;
+  saveOnClickoutside?: boolean;
+  onSubmit: (text: string) => void;
+  onCancel: () => void;
 }) => {
   const { t } = useTranslation();
   const [value, setValue] = useState<string>(text);

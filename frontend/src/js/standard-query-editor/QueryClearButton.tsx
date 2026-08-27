@@ -1,5 +1,4 @@
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 
@@ -9,11 +8,7 @@ import WithTooltip from "../tooltip/WithTooltip";
 
 import { clearQuery } from "./actions";
 
-interface PropsT {
-  className?: string;
-}
-
-const QueryClearButton: FC<PropsT> = ({ className }) => {
+const QueryClearButton = ({ className }: { className?: string }) => {
   const dispatch = useDispatch();
   const onClearQuery = () => dispatch(clearQuery());
   const { t } = useTranslation();

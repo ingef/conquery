@@ -1,6 +1,5 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import type { FC } from "react";
 
 import WithTooltip from "../tooltip/WithTooltip";
 
@@ -57,18 +56,16 @@ interface OptionsT {
   description?: string;
 }
 
-interface PropsT {
-  className?: string;
-  options: OptionsT[];
-  value: string;
-  onChange: (value: string) => void;
-}
-
-const ToggleButton: FC<PropsT> = ({
+const ToggleButton = ({
   options,
   value: inputValue,
   onChange,
   className,
+}: {
+  className?: string;
+  options: OptionsT[];
+  value: string;
+  onChange: (value: string) => void;
 }) => {
   return (
     <Root className={className}>

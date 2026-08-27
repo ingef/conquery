@@ -1,4 +1,4 @@
-import { type FC, type ReactNode, useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -10,11 +10,7 @@ import QuerySymbol from "../../symbols/QuerySymbol";
 import { setTypeFilter } from "./actions";
 import type { ProjectItemsTypeFilterStateT } from "./reducer";
 
-interface Props {
-  className?: string;
-}
-
-const ProjectItemsTypeFilter: FC<Props> = ({ className }) => {
+const ProjectItemsTypeFilter = ({ className }: { className?: string }) => {
   const { t } = useTranslation();
   const OPTIONS: {
     value: ProjectItemsTypeFilterStateT;

@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faFolderMinus, faHome } from "@fortawesome/free-solid-svg-icons";
-import { type FC, memo, useCallback, useRef } from "react";
+import { memo, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -23,11 +23,7 @@ const SxIconButton = styled(IconButton)`
   padding: 9px 6px;
 `;
 
-interface PropsT {
-  className?: string;
-}
-
-const ConceptTreesOpenButtons: FC<PropsT> = ({ className }) => {
+const ConceptTreesOpenButtons = ({ className }: { className?: string }) => {
   const dispatch = useDispatch();
 
   const conceptTreesOpen = useSelector<StateT, ConceptTreesOpenStateT>(

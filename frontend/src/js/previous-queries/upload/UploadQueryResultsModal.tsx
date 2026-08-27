@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
@@ -34,22 +34,20 @@ const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)`
   cursor: pointer;
 `;
 
-interface PropsT {
-  loading: boolean;
-  config: QueryUploadConfigT;
-  uploadResult: UploadQueryResponseT | null;
-  onClearUploadResult: () => void;
-  onClose: () => void;
-  onUpload: (query: QueryToUploadT) => void;
-}
-
-const UploadQueryResultsModal: FC<PropsT> = ({
+const UploadQueryResultsModal = ({
   loading,
   config,
   uploadResult,
   onClearUploadResult,
   onClose,
   onUpload,
+}: {
+  loading: boolean;
+  config: QueryUploadConfigT;
+  uploadResult: UploadQueryResponseT | null;
+  onClearUploadResult: () => void;
+  onClose: () => void;
+  onUpload: (query: QueryToUploadT) => void;
 }) => {
   const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);

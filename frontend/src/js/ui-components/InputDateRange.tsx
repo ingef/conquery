@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
-import { createRef, type FC, type ReactNode, useMemo } from "react";
+import { createRef, type ReactNode, useMemo } from "react";
 import type ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
 
@@ -77,20 +77,6 @@ const TooltipTutorial = styled("div")<{ hasMain?: boolean }>`
     hasMain ? theme.font.sm : theme.font.md};
 `;
 
-interface PropsT {
-  label?: ReactNode;
-  indexPrefix?: number;
-  labelSuffix?: ReactNode;
-  className?: string;
-  inline?: boolean;
-  large?: boolean;
-  center?: boolean;
-  autoFocus?: boolean;
-  tooltip?: string;
-  value: DateStringMinMax;
-  onChange: (value: DateStringMinMax) => void;
-}
-
 function getDisplayDate(
   what: "min" | "max",
   value: DateStringMinMax,
@@ -103,7 +89,7 @@ function getDisplayDate(
   return formatDateFromState(dateString, dateFormat);
 }
 
-const InputDateRange: FC<PropsT> = ({
+const InputDateRange = ({
   large,
   inline,
   center,
@@ -114,6 +100,18 @@ const InputDateRange: FC<PropsT> = ({
   value,
   onChange,
   tooltip,
+}: {
+  label?: ReactNode;
+  indexPrefix?: number;
+  labelSuffix?: ReactNode;
+  className?: string;
+  inline?: boolean;
+  large?: boolean;
+  center?: boolean;
+  autoFocus?: boolean;
+  tooltip?: string;
+  value: DateStringMinMax;
+  onChange: (value: DateStringMinMax) => void;
 }) => {
   const { t } = useTranslation();
 

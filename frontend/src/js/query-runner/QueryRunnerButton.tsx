@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faPlay, faSpinner, faStop } from "@fortawesome/free-solid-svg-icons";
-import { forwardRef } from "react";
+import type { Ref } from "react";
 import { useTranslation } from "react-i18next";
 
 import BasicButton from "../button/BasicButton";
@@ -60,31 +60,33 @@ interface Props {
 }
 
 // A button that is prefixed by an icon
-const QueryRunnerButton = forwardRef<HTMLDivElement, Props>(
-  ({ onClick, isStartStopLoading, isQueryRunning, disabled }, ref) => {
-    const { t } = useTranslation();
-    const label = isQueryRunning
-      ? t("queryRunner.stop")
-      : t("queryRunner.start");
+const QueryRunnerButton = ({
+  ref,
+  onClick,
+  isStartStopLoading,
+  isQueryRunning,
+  disabled,
+}: Props & { ref?: Ref<HTMLDivElement> }) => {
+  const { t } = useTranslation();
+  const label = isQueryRunning ? t("queryRunner.stop") : t("queryRunner.start");
 
-    const icon = getIcon(isStartStopLoading, isQueryRunning);
+  const icon = getIcon(isStartStopLoading, isQueryRunning);
 
-    return (
-      <Root ref={ref}>
-        <StyledBasicButton
-          type="button"
-          onClick={onClick}
-          disabled={disabled}
-          data-test-id="query-runner-button"
-        >
-          <Left running={isQueryRunning}>
-            <FaIcon white={!isQueryRunning} icon={icon} />
-          </Left>
-          <Label className="query-runner-label">{label}</Label>
-        </StyledBasicButton>
-      </Root>
-    );
-  },
-);
+  return (
+    <Root ref={ref}>
+      <StyledBasicButton
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        data-test-id="query-runner-button"
+      >
+        <Left running={isQueryRunning}>
+          <FaIcon white={!isQueryRunning} icon={icon} />
+        </Left>
+        <Label className="query-runner-label">{label}</Label>
+      </StyledBasicButton>
+    </Root>
+  );
+};
 
 export default QueryRunnerButton;

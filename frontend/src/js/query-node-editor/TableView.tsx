@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { type FC, memo, useCallback } from "react";
+import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
@@ -29,7 +29,19 @@ const MaximizedCell = styled(ContentCell)`
   flex-grow: 1;
 `;
 
-interface PropsT {
+const TableView = ({
+  node,
+  tableIdx,
+  allowlistedSelects,
+  blocklistedSelects,
+
+  onSelectTableSelects,
+  onSetDateColumn,
+
+  onSetFilterValue,
+  onSwitchFilterMode,
+  onLoadFilterSuggestions,
+}: {
   node: ConceptQueryNodeType;
   tableIdx: number;
   blocklistedSelects?: SelectorResultType[];
@@ -53,20 +65,6 @@ interface PropsT {
     filterIdx: number,
     config?: { returnOnly?: boolean },
   ) => Promise<PostFilterSuggestionsResponseT | null>;
-}
-
-const TableView: FC<PropsT> = ({
-  node,
-  tableIdx,
-  allowlistedSelects,
-  blocklistedSelects,
-
-  onSelectTableSelects,
-  onSetDateColumn,
-
-  onSetFilterValue,
-  onSwitchFilterMode,
-  onLoadFilterSuggestions,
 }) => {
   const { t } = useTranslation();
 

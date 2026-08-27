@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { type ButtonHTMLAttributes, forwardRef } from "react";
+import type { ButtonHTMLAttributes, Ref } from "react";
 
 export interface BasicButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -37,12 +37,14 @@ const Button = styled("button")<BasicButtonProps>`
   }
 `;
 
-const BasicButton = forwardRef<HTMLButtonElement, BasicButtonProps>(
-  ({ children, ...props }, ref) => (
-    <Button type="button" {...props} ref={ref}>
-      {children}
-    </Button>
-  ),
+const BasicButton = ({
+  ref,
+  children,
+  ...props
+}: BasicButtonProps & { ref?: Ref<HTMLButtonElement> }) => (
+  <Button type="button" {...props} ref={ref}>
+    {children}
+  </Button>
 );
 
 export default BasicButton;
