@@ -39,8 +39,8 @@ import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
@@ -137,7 +137,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 
 	@JsonIgnore
 	@Getter(AccessLevel.NONE)
-	private final Cache<String, PendingAuthorizationRequest> pendingAuthorizationRequests = CacheBuilder.newBuilder()
+	private final Cache<String, PendingAuthorizationRequest> pendingAuthorizationRequests = Caffeine.newBuilder()
 																						.maximumSize(10_000)
 																						.expireAfterWrite(10, TimeUnit.MINUTES)
 																						.build();
