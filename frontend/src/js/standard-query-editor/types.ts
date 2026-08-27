@@ -95,7 +95,7 @@ export interface PreviousQueryQueryNodeType {
   canExpand?: boolean;
   secondaryId?: string | null;
   availableSecondaryIds?: string[];
-  files?: void;
+  files?: undefined;
 
   own?: boolean;
   shared?: boolean;

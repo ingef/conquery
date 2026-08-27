@@ -1,7 +1,8 @@
 /// <reference types="vitest/config" />
+
+import fs from "node:fs";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import fs from "fs";
 import { defineConfig } from "vite";
 
 // https://vitejs.dev/config/

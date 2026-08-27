@@ -29,7 +29,7 @@ const Form = memo(({ config, datasetOptions, methods }: Props) => {
 
   return (
     <div className="w-full flex flex-col gap-2">
-      {config.description && config.description[activeLang] && (
+      {config.description?.[activeLang] && (
         <SxFormHeader
           description={config.description[activeLang]!}
           manualUrl={config.manualUrl}

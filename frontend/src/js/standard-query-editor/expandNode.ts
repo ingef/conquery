@@ -51,7 +51,7 @@ const isMultiSelectFilterConfig = (
   type: "MULTI_SELECT" | "BIG_MULTI_SELECT";
 } =>
   (filter.type === "MULTI_SELECT" || filter.type === "BIG_MULTI_SELECT") &&
-  filter.value instanceof Array;
+  Array.isArray(filter.value);
 
 const mergeRangeFilter = (
   savedFilter: RangeFilterWithValueType,
@@ -141,7 +141,7 @@ const mergeFiltersFromSavedConcept = (
   savedTable: TableWithFilterValueT,
   table?: TableConfigT,
 ): FilterWithValueType[] => {
-  if (!table || !table.filters) return savedTable.filters;
+  if (!table?.filters) return savedTable.filters;
 
   return savedTable.filters.map((savedFilter): FilterWithValueType => {
     // TODO: Improve the api and don't use `.filter`, but `.id` or `.filterId`
@@ -199,7 +199,7 @@ const mergeSelects = (
   savedSelects: SelectorT[],
   conceptOrTable?: QueryConceptNodeT | TableConfigT,
 ) => {
-  if (!conceptOrTable || !conceptOrTable.selects) {
+  if (!conceptOrTable?.selects) {
     return savedSelects;
   }
 
@@ -216,7 +216,7 @@ const mergeDateColumn = (
   savedTable: TableWithFilterValueT,
   table?: TableConfigT,
 ) => {
-  if (!table || !table.dateColumn || !savedTable.dateColumn)
+  if (!table?.dateColumn || !savedTable.dateColumn)
     return savedTable.dateColumn;
 
   return {

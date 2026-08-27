@@ -28,7 +28,7 @@ const useMessage = (queryRunner: QueryRunnerStateT) => {
     return { type: "error", value: t("queryRunner.startError") };
   } else if (queryRunner.stopQuery.error) {
     return { type: "error", value: t("queryRunner.stopError") };
-  } else if (queryRunner.queryResult && queryRunner.queryResult.error) {
+  } else if (queryRunner.queryResult?.error) {
     return {
       type: "error",
       value: queryRunner.queryResult.error,

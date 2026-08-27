@@ -9,7 +9,8 @@
       "!!dist",
       "!!storybook-static",
       "!!public",
-      "!mock-api/**/*.json"
+      "!mock-api/**/*.json",
+      "!src/fixtures"
     ],
     "ignoreUnknown": true
   },
@@ -47,8 +48,7 @@
         "noSwitchDeclarations": "off",
         "useExhaustiveDependencies": "warn",
         "useHookAtTopLevel": "error",
-        // TODO: 7 lists render without keys, fix and raise to error
-        "useJsxKeyInIterable": "warn"
+        "useJsxKeyInIterable": "error"
       },
       "security": {
         // Markdown/HTML rendering from trusted backend content is intentional
@@ -59,7 +59,7 @@
         "noNonNullAssertion": "off"
       },
       "suspicious": {
-        // TODO: ~30 index keys, revisit
+        // Index keys are fine for the static, non-reorderable lists this app renders
         "noArrayIndexKey": "off",
         "noDoubleEquals": "error",
         "noDebugger": "warn",

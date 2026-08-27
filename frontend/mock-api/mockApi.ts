@@ -1,7 +1,7 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import Chance from "chance";
 import type { Application } from "express";
-import path from "path";
-import { fileURLToPath } from "url";
 import packagejson from "../package.json" with { type: "json" };
 
 import config from "./config.json" with { type: "json" };

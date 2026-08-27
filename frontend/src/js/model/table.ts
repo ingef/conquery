@@ -40,8 +40,7 @@ export const tablesHaveFilterValues = (tables: TableWithFilterValueT[]) =>
 export const tableHasNonDefaultSettings = (table: TableWithFilterValueT) => {
   const activeSelects = objectHasNonDefaultSelects(table);
   const activeDateColumn = tableHasNonDefaultDateColumn(table);
-  const activeFilters =
-    table.filters && table.filters.some(filterValueDiffersFromDefault);
+  const activeFilters = table.filters?.some(filterValueDiffersFromDefault);
 
   return activeSelects || activeDateColumn || activeFilters;
 };

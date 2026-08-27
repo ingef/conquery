@@ -119,14 +119,14 @@ const TimeStratifiedInfos = ({
                       s.type === "CONCEPT_COLUMN",
                   );
 
-                  if (value instanceof Array) {
+                  if (Array.isArray(value)) {
                     const concepts = value
                       .map((v) => getConceptById(v, semantic!.concept))
                       .filter(exists)
                       .sort((c1, c2) => {
                         const n1 = Number(c1.label);
                         const n2 = Number(c2.label);
-                        if (!isNaN(n1) && !isNaN(n2)) {
+                        if (!Number.isNaN(n1) && !Number.isNaN(n2)) {
                           return n1 - n2;
                         }
                         return c1.label.localeCompare(c2.label);
@@ -163,7 +163,7 @@ const TimeStratifiedInfos = ({
                   valueFormatted = isMoneyColumn(column)
                     ? formatCurrency(value)
                     : Math.round(value);
-                } else if (value instanceof Array) {
+                } else if (Array.isArray(value)) {
                   valueFormatted = value.join(", ");
                 }
 

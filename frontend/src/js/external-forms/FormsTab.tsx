@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { useDispatch, useSelector, useStore } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { useGetForms } from "../api/api";
 import type { DatasetT } from "../api/types";
@@ -17,7 +17,6 @@ import { collectAllFormFields, getInitialValue } from "./helper";
 import { selectFormConfig } from "./stateSelectors";
 
 const useLoadForms = ({ datasetId }: { datasetId: DatasetT["id"] | null }) => {
-  const store = useStore();
   const getForms = useGetForms();
   const dispatch = useDispatch();
 
@@ -37,7 +36,7 @@ const useLoadForms = ({ datasetId }: { datasetId: DatasetT["id"] | null }) => {
     }
 
     loadForms();
-  }, [store, datasetId, getForms, dispatch]);
+  }, [datasetId, getForms, dispatch]);
 };
 
 export const useDatasetOptions = () => {
@@ -93,6 +92,7 @@ const useInitializeForm = ({
     mode: "onChange",
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-validate whenever the form config changes
   useEffect(
     function triggerValidationInitially() {
       methods.trigger();

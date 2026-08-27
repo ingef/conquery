@@ -49,7 +49,7 @@ export const validateDateRangeRequired = (
     max: string;
   } | null,
 ): string | null => {
-  if (!value || !value.min || !value.max)
+  if (!value?.min || !value.max)
     return t("externalForms.formValidation.isRequired");
 
   return validateDateRange(t, value);

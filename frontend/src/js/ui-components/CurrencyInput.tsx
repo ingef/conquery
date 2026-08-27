@@ -51,13 +51,13 @@ const CurrencyInput: FC<PropsT> = ({
   return (
     <SxNumberFormat
       {...currencyConfig}
-      suffix={" " + currencyConfig?.unit}
+      suffix={` ${currencyConfig?.unit}`}
       placeholder={placeholder}
       type="text"
       value={numberFormatValue}
       large={large}
       onValueChange={(values) => {
-        if (exists(values.floatValue) && !isNaN(values.floatValue)) {
+        if (exists(values.floatValue) && !Number.isNaN(values.floatValue)) {
           setNumberFormatValue(values.floatValue);
           onChange(parseInt((values.floatValue * factor).toFixed(0), 10));
         } else {

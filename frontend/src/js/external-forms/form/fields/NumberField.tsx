@@ -24,7 +24,7 @@ export const NumberField = ({
           ref={ref}
           inputType="number"
           label={field.label[locale] || ""}
-          placeholder={(field.placeholder && field.placeholder[locale]) || ""}
+          placeholder={field.placeholder?.[locale] || ""}
           value={fieldProps.value as number | null}
           onChange={(value) => setValue(field.name, value, setValueConfig)}
           inputProps={{
