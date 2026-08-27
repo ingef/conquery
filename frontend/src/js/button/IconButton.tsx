@@ -1,8 +1,7 @@
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { memo, type Ref, useMemo } from "react";
-
+import { tv } from "tailwind-variants";
 import FaIcon, { type IconStyleProps } from "../icon/FaIcon";
-import { tv } from "../tv";
 
 import BasicButton, { type BasicButtonProps } from "./BasicButton";
 

@@ -2,7 +2,7 @@ import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { ComponentProps, Ref } from "react";
 
-import { tv } from "../tv";
+import { tv } from "tailwind-variants";
 
 export interface IconStyleProps {
   left?: boolean;
@@ -38,7 +38,7 @@ const icon = tv({
     right: { true: "pl-[10px]" },
     center: { true: "text-center" },
     // later wins when both are set
-    tiny: { true: "text-tiny" },
+    tiny: { true: "text-[11px]" },
     large: { true: "text-base" },
     disabled: { true: "cursor-not-allowed" },
   },

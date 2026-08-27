@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
-import { tv } from "../tv";
+import { tv } from "tailwind-variants";
 
 import BasicButton from "./BasicButton";
 
@@ -28,7 +28,7 @@ const superScript = tv({
     "inline-block",
     "pl-[3px]",
     "translate-x-px -translate-y-[2px]",
-    "text-tiny",
+    "text-[11px]",
     "text-gray-500",
   ],
 });

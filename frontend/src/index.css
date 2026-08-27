@@ -25,10 +25,8 @@
   --color-filetype-xlsx: #28a745;
   --color-filetype-json: #1f5f30;
 
-  /* `text-tiny`; the other sizes map onto tailwind defaults:
-     xs 12px, sm 14px, base 16px, xl 20px, 2xl 24px.
-     Font size only, line-height stays inherited (as the old theme did it) */
-  --text-tiny: 11px;
+  /* Font size only, line-height stays inherited (as the old theme did it).
+     Only tailwind's own sizes, anything else is a literal like `text-[11px]` */
   --text-xs--line-height: initial;
   --text-sm--line-height: initial;
   --text-base--line-height: initial;

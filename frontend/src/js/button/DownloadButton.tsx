@@ -9,12 +9,10 @@ import {
   faFilePdf,
 } from "@fortawesome/free-solid-svg-icons";
 import { type ReactNode, type Ref, useContext } from "react";
-
+import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { getEnding } from "../query-runner/DownloadResultsDropdownButton";
-
-import { tv } from "../tv";
 
 import IconButton, { type IconButtonPropsT } from "./IconButton";
 

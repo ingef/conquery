@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 
-import { tv } from "../tv";
+import { tv } from "tailwind-variants";
 
 import { TransparentButton } from "./TransparentButton";
 

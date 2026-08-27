@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, Ref } from "react";
 
-import { tv } from "../tv";
+import { tv } from "tailwind-variants";
 
 export interface BasicButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement> {

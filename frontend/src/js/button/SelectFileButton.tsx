@@ -1,6 +1,6 @@
 import type { Ref } from "react";
 
-import { tv } from "../tv";
+import { tv } from "tailwind-variants";
 
 import BasicButton, { type BasicButtonProps } from "./BasicButton";
 
@@ -10,7 +10,7 @@ const selectFileButton = tv({
     "gap-[5px]",
     "bg-transparent",
     "border-0",
-    "text-tiny",
+    "text-[11px]",
     "text-gray-500",
     "font-light",
     "hover:underline",

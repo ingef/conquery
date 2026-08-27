@@ -1,6 +1,6 @@
 import type { Ref } from "react";
 
-import { tv } from "../tv";
+import { tv } from "tailwind-variants";
 
 import BasicButton, { type BasicButtonProps } from "./BasicButton";
 

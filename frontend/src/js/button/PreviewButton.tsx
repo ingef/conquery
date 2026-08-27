@@ -5,9 +5,9 @@ import {
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import { openPreview, useLoadPreviewData } from "../preview/actions";
-import { tv } from "../tv";
 import IconButton, { type IconButtonPropsT } from "./IconButton";
 
 const previewButton = tv({

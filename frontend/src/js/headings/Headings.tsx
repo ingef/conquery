@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import { tv } from "../tv";
+import { tv } from "tailwind-variants";
 
 const heading3 = tv({ base: "text-lg font-normal text-gray-800" });
 const heading4 = tv({ base: "text-sm font-normal text-gray-500 uppercase" });
