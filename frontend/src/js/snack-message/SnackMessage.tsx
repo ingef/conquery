@@ -46,6 +46,7 @@ export const SnackMessage = memo(function SnackMessageComponent() {
       {message && (
         <Root $success={type === "success"}>
           <div className="relative py-3 pr-10 pl-5">
+            {/* biome-ignore lint/security/noDangerouslySetInnerHtml: messages are our own i18n text */}
             <div dangerouslySetInnerHTML={{ __html: message }} />
             <ClearZone onClick={resetMessage}>
               <FaIcon white large icon={faTimes} />

@@ -102,6 +102,7 @@ const WithTooltip = forwardRef<HTMLElement, Props>(
         <Text
           theme={theme}
           wide={wide}
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: tooltip text is concept metadata from the backend
           dangerouslySetInnerHTML={{ __html: text }}
         />
       ) : (
