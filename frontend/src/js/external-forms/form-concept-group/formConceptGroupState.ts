@@ -188,7 +188,7 @@ export const onToggleIncludeSubnodes = (
 
   const conceptData = getConceptById(concept.ids[0]);
 
-  if (!conceptData || !conceptData.children) return value;
+  if (!conceptData?.children) return value;
 
   const childIds: string[] = [];
   const elements: FormConceptGroupT[] = conceptData.children

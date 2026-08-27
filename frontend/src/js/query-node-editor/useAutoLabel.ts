@@ -9,13 +9,13 @@ interface AutoLabelProps {
   onUpdateLabel: (label: string) => void;
 }
 
+const MAX_AUTOLABEL_LENGTH = 250;
+const DELIMITER = " ";
+
+const formatConceptLabels = (labels: string[]) =>
+  labels.sort().join(DELIMITER).substring(0, MAX_AUTOLABEL_LENGTH);
+
 export function useAutoLabel({ node, onUpdateLabel }: AutoLabelProps) {
-  const MAX_AUTOLABEL_LENGTH = 250;
-  const DELIMITER = " ";
-
-  const formatConceptLabels = (labels: string[]) =>
-    labels.sort().join(DELIMITER).substring(0, MAX_AUTOLABEL_LENGTH);
-
   const autoLabel = useMemo(() => {
     return nodeIsConceptQueryNode(node)
       ? formatConceptLabels(

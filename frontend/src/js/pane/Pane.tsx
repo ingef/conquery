@@ -38,7 +38,7 @@ const Pane = ({ tabs, left, children, className, dataTestId }: Props) => {
           paneType={paneType}
           dataTestId={dataTestId}
         />
-        <Container data-test-id={dataTestId + "-container"}>
+        <Container data-test-id={`${dataTestId}-container`}>
           {children}
         </Container>
       </Container>

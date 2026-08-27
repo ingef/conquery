@@ -111,13 +111,13 @@ const QueryGroupModal = ({
           {t("queryGroupModal.headlineStart")}
         </HeadlinePart>
         {group.elements.map((node, i) => (
-          <Fragment key={i + "-headline"}>
+          <Fragment key={`${i}-headline`}>
             <HeadlinePart>
               {node.label ||
                 (nodeIsConceptQueryNode(node) ? node.ids[0] : node.id)}
             </HeadlinePart>
             {i !== group.elements.length - 1 && (
-              <span key={i + "-comma"}>, </span>
+              <span key={`${i}-comma`}>, </span>
             )}
           </Fragment>
         ))}

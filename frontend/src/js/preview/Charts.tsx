@@ -71,37 +71,35 @@ export default function Charts({
   useHotkeys("right", () => updatePage(1), [page]);
 
   return (
-    <>
-      <Root className={className}>
-        <DiagramContainer>
-          {diagramsOnPage.map((statistic) => {
-            return (
-              <div key={statistic.label}>
-                <SxDiagram
-                  stat={statistic}
-                  onClick={() => showPopup(statistic)}
-                />
-              </div>
-            );
-          })}
-        </DiagramContainer>
-        <DirectionSelector>
-          <SxIconButton
-            icon={faArrowLeft}
-            onClick={() => updatePage(-1)}
-            disabled={page === 0}
-          />
-          <span>
-            {t("preview.page")} {page + 1}/
-            {Math.ceil(statistics.length / DIAGRAMS_PER_PAGE)}
-          </span>
-          <SxIconButton
-            icon={faArrowRight}
-            onClick={() => updatePage(1)}
-            disabled={page === maxPage - 1}
-          />
-        </DirectionSelector>
-      </Root>
-    </>
+    <Root className={className}>
+      <DiagramContainer>
+        {diagramsOnPage.map((statistic) => {
+          return (
+            <div key={statistic.label}>
+              <SxDiagram
+                stat={statistic}
+                onClick={() => showPopup(statistic)}
+              />
+            </div>
+          );
+        })}
+      </DiagramContainer>
+      <DirectionSelector>
+        <SxIconButton
+          icon={faArrowLeft}
+          onClick={() => updatePage(-1)}
+          disabled={page === 0}
+        />
+        <span>
+          {t("preview.page")} {page + 1}/
+          {Math.ceil(statistics.length / DIAGRAMS_PER_PAGE)}
+        </span>
+        <SxIconButton
+          icon={faArrowRight}
+          onClick={() => updatePage(1)}
+          disabled={page === maxPage - 1}
+        />
+      </DirectionSelector>
+    </Root>
   );
 }

@@ -23,7 +23,7 @@ export const TextAreaField = ({
         <InputTextarea
           ref={ref}
           label={field.label[locale] || ""}
-          placeholder={(field.placeholder && field.placeholder[locale]) || ""}
+          placeholder={field.placeholder?.[locale] || ""}
           rows={field.style?.rows ?? 4}
           value={fieldProps.value as string}
           onChange={(value) => {

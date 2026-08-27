@@ -49,7 +49,7 @@ export const useConnectorEditing = ({
   updateTreeNode: (id: string, update: (node: Tree) => void) => void;
 }) => {
   const onRotateConnector = useCallback(() => {
-    if (!enabled || !selectedNode || !selectedNode.children) return;
+    if (!enabled || !selectedNode?.children) return;
 
     updateTreeNode(selectedNode.id, (node) => {
       if (!node.children) return;

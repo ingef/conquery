@@ -8,7 +8,7 @@ export const isEmpty = (variable: unknown) => {
     typeof variable === "undefined" ||
     variable === null ||
     variable === "" ||
-    (variable instanceof Array && variable.length === 0) ||
+    (Array.isArray(variable) && variable.length === 0) ||
     (variable.constructor === Object && Object.keys(variable).length === 0)
   );
 };
@@ -31,6 +31,6 @@ export const toUpperCaseUnderscore = (str: string) => {
   if (str.toUpperCase() === str) return str;
 
   return str
-    .replace(/[A-Z]/g, (upperCaseChar) => "_" + upperCaseChar.toLowerCase())
+    .replace(/[A-Z]/g, (upperCaseChar) => `_${upperCaseChar.toLowerCase()}`)
     .toUpperCase();
 };

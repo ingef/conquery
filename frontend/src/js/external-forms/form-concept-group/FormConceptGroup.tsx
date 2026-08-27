@@ -314,7 +314,7 @@ const FormConceptGroup = (props: Props) => {
           );
         }}
         items={props.value.map((row, i) => (
-          <div>
+          <div key={i}>
             {props.renderRowPrefix
               ? props.renderRowPrefix({
                   value: props.value,
@@ -407,6 +407,7 @@ const FormConceptGroup = (props: Props) => {
                   />
                 ) : (
                   <DropzoneWithFileInput /* TODO: ADD GENERIC TYPE <DragItemConceptTreeNode> */
+                    key={j}
                     acceptedDropTypes={DROP_TYPES}
                     onImportLines={(lines, filename) =>
                       onImportLines(

@@ -245,7 +245,7 @@ const Folders: FC<Props> = ({ className }) => {
         folder={t("folders.allQueries")}
         active={folderFilter.length === 0 && !noFoldersActive}
         onClick={onResetFolderFilter}
-        resultCount={searchResult ? searchResult["__all__"] : null}
+        resultCount={searchResult ? searchResult.__all__ : null}
         resultWords={[]}
       />
       <SxPreviousQueriesFolder
@@ -254,7 +254,7 @@ const Folders: FC<Props> = ({ className }) => {
         folder={t("folders.noFolders")}
         active={noFoldersActive}
         onClick={onToggleNoFoldersActive}
-        resultCount={searchResult ? searchResult["__without_folder__"] : null}
+        resultCount={searchResult ? searchResult.__without_folder__ : null}
         resultWords={[]}
       />
       <ScrollContainer>

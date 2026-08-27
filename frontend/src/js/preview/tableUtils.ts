@@ -28,9 +28,8 @@ export function useCustomTableRenderers(queryData: GetQueryResponseDoneT) {
       });
 
       if (cellType.indexOf("LIST") === 0) {
-        const listType = cellType.match(/LIST\[(?<listtype>.*)\]/)?.groups?.[
-          "listtype"
-        ];
+        const listType = cellType.match(/LIST\[(?<listtype>.*)\]/)?.groups
+          ?.listtype;
         if (listType) {
           const listTypeRenderFunction = getRenderFunction(listType);
           return (value) =>
@@ -48,7 +47,7 @@ export function useCustomTableRenderers(queryData: GetQueryResponseDoneT) {
         });
 
         return (value) => {
-          if (value && !isNaN(value as unknown as number)) {
+          if (value && !Number.isNaN(Number(value))) {
             return numnberFormatter.format(value as unknown as number);
           }
           return "";
@@ -70,7 +69,7 @@ export function useCustomTableRenderers(queryData: GetQueryResponseDoneT) {
         };
       } else if (cellType === "MONEY") {
         return (value) => {
-          if (value && !isNaN(value as unknown as number)) {
+          if (value && !Number.isNaN(Number(value))) {
             return currencyFormatter.format((value as unknown as number) / 100); // MONEY is sent as cent
           }
           return "";
