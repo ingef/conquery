@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
 import { exists } from "../common/helpers/exists";
-import { Icon } from "../icon/FaIcon";
+import FaIcon from "../icon/FaIcon";
 
 const Container = styled("div")`
   display: grid;
@@ -66,7 +66,7 @@ export const DropdownOption = memo(
           {hasDifferentFilterLabel ? (
             <SxIndexPrefix># {filterIdx}</SxIndexPrefix>
           ) : (
-            <Icon
+            <FaIcon
               icon={faFolder}
               active={!hasDifferentFilterLabel}
               gray={hasDifferentFilterLabel}

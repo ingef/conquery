@@ -31,6 +31,8 @@
 
   /* bare `rounded` */
   --radius: 3px;
+
+  --animate-spin-fast: spin 0.5s linear infinite;
 }
 
 @layer base {

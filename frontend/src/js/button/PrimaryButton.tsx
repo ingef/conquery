@@ -1,14 +1,23 @@
-import styled from "@emotion/styled";
+import type { Ref } from "react";
 
-import BasicButton from "./BasicButton";
+import { tv } from "../tv";
 
-export default styled(BasicButton)`
-  color: white;
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
-  background-clip: padding-box;
-  border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
+import BasicButton, { type BasicButtonProps } from "./BasicButton";
 
-  &:hover {
-    opacity: 0.9;
-  }
-`;
+const primaryButton = tv({
+  base: [
+    "text-white",
+    "bg-primary-500 bg-clip-padding",
+    "border border-primary-500",
+    "hover:opacity-90",
+  ],
+});
+
+const PrimaryButton = ({
+  className,
+  ...props
+}: BasicButtonProps & { ref?: Ref<HTMLButtonElement> }) => (
+  <BasicButton className={primaryButton({ className })} {...props} />
+);
+
+export default PrimaryButton;

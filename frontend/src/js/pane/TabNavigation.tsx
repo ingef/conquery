@@ -1,10 +1,9 @@
 import styled from "@emotion/styled";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-
-import { tv } from "tailwind-variants";
 import FaIcon from "../icon/FaIcon";
 import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 import WithTooltip from "../tooltip/WithTooltip";
+import { tv } from "../tv";
 
 const Root = styled("div")`
   border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};

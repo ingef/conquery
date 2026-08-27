@@ -1,47 +1,37 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
 import type { ReactNode } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
+import { tv } from "../tv";
+
 import BasicButton from "./BasicButton";
 
-const common = css`
-  font-weight: 700;
-  padding: 1px 4px;
-  white-space: nowrap;
-`;
+const badgeToggleButton = tv({
+  base: ["rounded", "px-1 py-px", "text-sm", "font-bold", "whitespace-nowrap"],
+  variants: {
+    active: {
+      true: [
+        "border-2 border-primary-500",
+        "bg-white hover:bg-gray-50",
+        "text-primary-500",
+      ],
+      false: [
+        "border-2 border-dotted border-gray-100",
+        "hover:bg-bg-50",
+        "text-gray-500",
+      ],
+    },
+  },
+});
 
-const ActiveButton = styled(BasicButton)`
-  border-radius: ${({ theme }) => theme.borderRadius};
-  border: 2px solid ${({ theme }) => theme.col.blueGrayDark};
-  background-color: white;
-  font-size: ${({ theme }) => theme.font.sm};
-  color: ${({ theme }) => theme.col.blueGrayDark};
-  ${common};
-
-  &:hover {
-    background-color: ${({ theme }) => theme.col.grayVeryLight};
-  }
-`;
-
-const InactiveButton = styled(BasicButton)`
-  border-radius: ${({ theme }) => theme.borderRadius};
-  border: 2px dotted ${({ theme }) => theme.col.grayLight};
-  font-size: ${({ theme }) => theme.font.sm};
-  color: ${({ theme }) => theme.col.gray};
-  ${common};
-  &:hover {
-    background-color: ${({ theme }) => theme.col.bg};
-  }
-`;
-
-const SuperScript = styled("span")`
-  padding-left: 3px;
-  font-size: ${({ theme }) => theme.font.tiny};
-  transform: translate(1px, -2px);
-  display: inline-block;
-  color: ${({ theme }) => theme.col.gray};
-`;
+const superScript = tv({
+  base: [
+    "inline-block",
+    "pl-[3px]",
+    "translate-x-px -translate-y-[2px]",
+    "text-tiny",
+    "text-gray-500",
+  ],
+});
 
 interface Props {
   className?: string;
@@ -58,15 +48,16 @@ export const BadgeToggleButton = ({
   children,
   hotkey,
 }: Props) => {
-  const Component = active ? ActiveButton : InactiveButton;
-
   useHotkeys(hotkey || "", onClick, { enabled: !!hotkey }, [hotkey, onClick]);
 
   return (
-    <Component className={className} onClick={onClick}>
+    <BasicButton
+      className={badgeToggleButton({ active: !!active, className })}
+      onClick={onClick}
+    >
       {!active && "+ "}
       {children}
-      {hotkey && <SuperScript>{hotkey}</SuperScript>}
-    </Component>
+      {hotkey && <span className={superScript()}>{hotkey}</span>}
+    </BasicButton>
   );
 };

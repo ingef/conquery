@@ -14,7 +14,7 @@ import {
   parseDateToState,
 } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
-import { Icon } from "../icon/FaIcon";
+import FaIcon from "../icon/FaIcon";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
 import InputDate from "./InputDate/InputDate";
@@ -172,7 +172,7 @@ const InputDateRange = ({
 
     return (
       <StyledLabel large={large}>
-        <Icon icon={faCalendar} left gray />
+        <FaIcon icon={faCalendar} left gray />
         {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
         {label}
         <InfoTooltip

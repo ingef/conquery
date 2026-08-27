@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import type { DateRangeT } from "../../api/types";
 import IconButton from "../../button/IconButton";
 import type { DateStringMinMax } from "../../common/helpers/dateHelper";
-import { Icon } from "../../icon/FaIcon";
+import FaIcon from "../../icon/FaIcon";
 import Modal from "../../modal/Modal";
 import InputCheckbox from "../../ui-components/InputCheckbox";
 import InputDateRange from "../../ui-components/InputDateRange";
@@ -101,7 +101,7 @@ export const DateModal = ({
         />
         <div>
           <SectionHeadline>
-            <Icon icon={faCalendarMinus} red />
+            <FaIcon icon={faCalendarMinus} red />
             {t("queryNodeEditor.excludeTimestamps")}
             <InputCheckbox
               label=""

@@ -12,8 +12,6 @@ import { saveAs } from "file-saver";
 import type { TFunction } from "i18next";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { tv } from "tailwind-variants";
-
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
 import IconButton from "../../button/IconButton";
 import PrimaryButton from "../../button/PrimaryButton";
@@ -23,6 +21,7 @@ import FaIcon from "../../icon/FaIcon";
 import { useActiveLang } from "../../localization/useActiveLang";
 import ScrollableList from "../../scrollable-list/ScrollableList";
 import WithTooltip from "../../tooltip/WithTooltip";
+import { tv } from "../../tv";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
 
 const Row = styled("div")`

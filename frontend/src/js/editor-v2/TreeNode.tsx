@@ -5,7 +5,7 @@ import { type DOMAttributes, memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DNDType } from "../common/constants/dndTypes";
-import { Icon } from "../icon/FaIcon";
+import FaIcon from "../icon/FaIcon";
 import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { getRootNodeLabel } from "../standard-query-editor/helper";
 import type {
@@ -296,7 +296,7 @@ export function TreeNode({
                 )}
                 {tree.dates?.excluded && (
                   <Dates>
-                    <Icon red icon={faCalendarMinus} left />
+                    <FaIcon red icon={faCalendarMinus} left />
                     {t("editorV2.datesExcluded")}
                   </Dates>
                 )}

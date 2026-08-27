@@ -7,13 +7,13 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { type ComponentProps, useEffect, useState } from "react";
 import { useFieldArray } from "react-hook-form";
-import { tv } from "tailwind-variants";
 import IconButton from "../../../button/IconButton";
 import { TransparentButton } from "../../../button/TransparentButton";
 import { exists } from "../../../common/helpers/exists";
 import { usePrevious } from "../../../common/helpers/usePrevious";
 import FaIcon from "../../../icon/FaIcon";
 import InfoTooltip from "../../../tooltip/InfoTooltip";
+import { tv } from "../../../tv";
 import type { DisclosureListField as DisclosureListFieldT } from "../../config-types";
 import {
   getFieldKey,

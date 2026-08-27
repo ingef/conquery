@@ -1,10 +1,10 @@
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { memo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import FaIcon from "../icon/FaIcon";
+import { tv } from "../tv";
 import { resetMessage as resetMessageAction } from "./actions";
 import type { SnackMessageStateT } from "./reducer";
 

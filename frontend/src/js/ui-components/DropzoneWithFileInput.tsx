@@ -39,7 +39,9 @@ const SxDropzone = styled(Dropzone)<{ isInitial?: boolean; tight?: boolean }>`
   }
 `;
 
-const SxSelectFileButton = styled(SelectFileButton)<{ outside?: boolean }>`
+const SxSelectFileButton = styled(SelectFileButton, {
+  shouldForwardProp: (prop) => prop !== "outside",
+})<{ outside?: boolean }>`
   position: absolute;
   top: ${({ outside }) => (outside ? "-26px" : "3px")};
   right: ${({ outside }) => (outside ? "-12px" : "0")};

@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
-import { tv } from "tailwind-variants";
 import type { DatasetT } from "../api/types";
 import type { StateT } from "../app/reducers";
+import { tv } from "../tv";
 import { useLoadTree } from "./actions";
 import ConceptsProgressBar from "./ConceptsProgressBar";
 import ConceptTreeListItem from "./ConceptTreeListItem";

@@ -1,20 +1,25 @@
-import styled from "@emotion/styled";
+import type { Ref } from "react";
 
-import BasicButton from "./BasicButton";
+import { tv } from "../tv";
 
-export const TransparentButton = styled(BasicButton)<{ light?: boolean }>`
-  color: ${({ theme, light }) => (light ? theme.col.gray : theme.col.black)};
-  background-color: transparent;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid
-    ${({ theme, light }) => (light ? theme.col.grayLight : theme.col.gray)};
+import BasicButton, { type BasicButtonProps } from "./BasicButton";
 
-  &:hover {
-    background-color: ${({ theme }) => theme.col.grayVeryLight};
-  }
+const transparentButton = tv({
+  base: [
+    "rounded",
+    "bg-transparent hover:bg-gray-50 focus:bg-gray-50",
+    "border border-gray-500 focus:border-green",
+    "text-gray-800",
+  ],
+  variants: {
+    light: { true: "border-gray-100 text-gray-500" },
+  },
+});
 
-  &:focus {
-    border: 1px solid ${({ theme }) => theme.col.green};
-    background-color: ${({ theme }) => theme.col.grayVeryLight};
-  }
-`;
+export const TransparentButton = ({
+  className,
+  light,
+  ...props
+}: BasicButtonProps & { light?: boolean; ref?: Ref<HTMLButtonElement> }) => (
+  <BasicButton className={transparentButton({ light, className })} {...props} />
+);
