@@ -11,13 +11,13 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { parseISO } from "date-fns";
 import { forwardRef, useState } from "react";
-import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import type { SecondaryId } from "../../api/types";
 import type { StateT } from "../../app/reducers";
 import DownloadButton from "../../button/DownloadButton";
 import IconButton from "../../button/IconButton";
+import { Highlighter } from "../../common/components/Highlighter";
 import { formatDate } from "../../common/helpers/dateHelper";
 import { exists } from "../../common/helpers/exists";
 import { useFormLabelByType } from "../../external-forms/stateSelectors";
@@ -297,7 +297,6 @@ const ProjectItem = forwardRef<
             {highlightedWords.length > 0 ? (
               <Highlighter
                 searchWords={highlightedWords}
-                autoEscape
                 textToHighlight={item.ownerName}
               />
             ) : (

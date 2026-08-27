@@ -4,7 +4,6 @@ import {
   type IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import { type ReactNode, useMemo } from "react";
-import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,6 +11,7 @@ import remarkFlexibleMarkers from "remark-flexible-markers";
 import remarkGfm from "remark-gfm";
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
+import { Highlighter } from "../common/components/Highlighter";
 import FaIcon from "../icon/FaIcon";
 import ActivateTooltip from "./ActivateTooltip";
 import { toggleAdditionalInfos as toggleInfos } from "./actions";
@@ -129,13 +129,7 @@ const HighlightedText = ({
   words: string[];
   text: string;
 }) => {
-  return (
-    <Highlighter
-      searchWords={words}
-      autoEscape={true}
-      textToHighlight={text || ""}
-    />
-  );
+  return <Highlighter searchWords={words} textToHighlight={text || ""} />;
 };
 
 const ConceptLabel = ({
