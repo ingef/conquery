@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { forwardRef, memo, useCallback } from "react";
+import { memo, type Ref, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { QueryIdT } from "../api/types";
@@ -53,55 +53,51 @@ interface Props {
   onImportLines?: (lines: string[], filename?: string) => void;
 }
 
-const QueryEditorDropzone = forwardRef<HTMLDivElement, Props>(
-  (
-    {
-      className,
-      isAnd,
-      isInitial,
-      onLoadPreviousQuery,
-      onDropFile,
-      onDropNode,
-      onImportLines,
+const QueryEditorDropzone = ({
+  ref,
+  className,
+  isAnd,
+  isInitial,
+  onLoadPreviousQuery,
+  onDropFile,
+  onDropNode,
+  onImportLines,
+}: Props & { ref?: Ref<HTMLDivElement> }) => {
+  const { t } = useTranslation();
+  const onDrop = useCallback(
+    (item: StandardQueryNodeT | DragItemFile) => {
+      if (item.type === "__NATIVE_FILE__") {
+        onDropFile(item.files[0]);
+      } else {
+        onDropNode(item);
+
+        if (!nodeIsConceptQueryNode(item)) onLoadPreviousQuery(item.id);
+      }
     },
-    ref,
-  ) => {
-    const { t } = useTranslation();
-    const onDrop = useCallback(
-      (item: StandardQueryNodeT | DragItemFile) => {
-        if (item.type === "__NATIVE_FILE__") {
-          onDropFile(item.files[0]);
-        } else {
-          onDropNode(item);
+    [onDropFile, onDropNode, onLoadPreviousQuery],
+  );
 
-          if (!nodeIsConceptQueryNode(item)) onLoadPreviousQuery(item.id);
-        }
-      },
-      [onDropFile, onDropNode, onLoadPreviousQuery],
-    );
-
-    return (
-      <SxDropzoneWithFileInput
-        ref={ref}
-        className={className}
-        isAnd={isAnd}
-        isInitial={isInitial}
-        acceptedDropTypes={DROP_TYPES}
-        onDrop={(item) => onDrop(item as StandardQueryNodeT | DragItemFile)}
-        onSelectFile={onDropFile}
-        disableClick={isInitial}
-        showImportButton={isInitial}
-        onImportLines={onImportLines}
-      >
-        {() => (
-          <>
-            {isInitial && <EmptyQueryEditorDropzone />}
-            {!isInitial && <Text>{t("dropzone.dragElementPlease")}</Text>}
-          </>
-        )}
-      </SxDropzoneWithFileInput>
-    );
-  },
-);
+  return (
+    <SxDropzoneWithFileInput
+      ref={ref}
+      className={className}
+      isAnd={isAnd}
+      isInitial={isInitial}
+      acceptedDropTypes={DROP_TYPES}
+      onDrop={(item) => onDrop(item as StandardQueryNodeT | DragItemFile)}
+      onSelectFile={onDropFile}
+      disableClick={isInitial}
+      showImportButton={isInitial}
+      onImportLines={onImportLines}
+    >
+      {() => (
+        <>
+          {isInitial && <EmptyQueryEditorDropzone />}
+          {!isInitial && <Text>{t("dropzone.dragElementPlease")}</Text>}
+        </>
+      )}
+    </SxDropzoneWithFileInput>
+  );
+};
 
 export default memo(QueryEditorDropzone);

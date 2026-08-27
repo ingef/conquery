@@ -1,10 +1,6 @@
 import styled from "@emotion/styled";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import {
-  type DetailedHTMLProps,
-  forwardRef,
-  type TextareaHTMLAttributes,
-} from "react";
+import type { DetailedHTMLProps, Ref, TextareaHTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../../button/IconButton";
@@ -47,10 +43,15 @@ type InputTextareaProps = DetailedHTMLProps<
   HTMLTextAreaElement
 >;
 
-export const InputTextarea = forwardRef<
-  HTMLTextAreaElement,
-  InputTextareaProps & OtherProps
->(({ label, className, indexPrefix, tooltip, onChange, ...props }, ref) => {
+export const InputTextarea = ({
+  ref,
+  label,
+  className,
+  indexPrefix,
+  tooltip,
+  onChange,
+  ...props
+}: InputTextareaProps & OtherProps & { ref?: Ref<HTMLTextAreaElement> }) => {
   const { t } = useTranslation();
 
   return (
@@ -83,4 +84,4 @@ export const InputTextarea = forwardRef<
       </Root>
     </Labeled>
   );
-});
+};

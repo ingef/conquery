@@ -1,12 +1,6 @@
 import styled from "@emotion/styled";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import {
-  type ForwardedRef,
-  forwardRef,
-  type ReactElement,
-  type ReactNode,
-  type Ref,
-} from "react";
+import type { ReactNode, Ref } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 
 import IconButton from "../../button/IconButton";
@@ -77,22 +71,20 @@ interface PropsT<DroppableObject> {
   ) => (item: PossibleDroppableObject, monitor: DropTargetMonitor) => void;
 }
 
-const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
-  {
-    className,
-    label,
-    tooltip,
-    dropzoneChildren,
-    items,
-    acceptedDropTypes,
-    onDelete,
-    disallowMultipleColumns,
-    onDrop,
-    onImportLines,
-    dropBetween,
-  }: PropsT<DroppableObject>,
-  ref: Ref<HTMLDivElement>,
-) => {
+const DropzoneList = <DroppableObject extends PossibleDroppableObject>({
+  className,
+  label,
+  tooltip,
+  dropzoneChildren,
+  items,
+  acceptedDropTypes,
+  onDelete,
+  disallowMultipleColumns,
+  onDrop,
+  onImportLines,
+  dropBetween,
+  ref,
+}: PropsT<DroppableObject> & { ref?: Ref<HTMLDivElement> }) => {
   // allow at least one column
   const showDropzone =
     (items && items.length === 0) || !disallowMultipleColumns;
@@ -149,8 +141,4 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
   );
 };
 
-export default forwardRef(DropzoneList) as <
-  DroppableObject extends PossibleDroppableObject = DragItemFile,
->(
-  props: PropsT<DroppableObject> & { ref?: ForwardedRef<HTMLDivElement> },
-) => ReactElement;
+export default DropzoneList;

@@ -1,6 +1,6 @@
 import { css, type Theme, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { forwardRef } from "react";
+import type { Ref } from "react";
 
 import { HoverNavigatable } from "./HoverNavigatable";
 
@@ -93,17 +93,24 @@ const valueToColor = (theme: Theme, value: string) => {
   }
 };
 
-const SmallTabNavigationButton = forwardRef<
-  HTMLButtonElement,
-  {
-    value: string;
-    size: "M" | "L";
-    isSelected?: boolean;
-    onClick: () => void;
-    children?: React.ReactNode;
-    variant: "primary" | "secondary";
-  }
->(({ value, children, size, isSelected, onClick, variant }, ref) => {
+const SmallTabNavigationButton = ({
+  ref,
+  value,
+  children,
+  size,
+  isSelected,
+  onClick,
+  variant,
+}: {
+  ref?: Ref<HTMLButtonElement>;
+
+  value: string;
+  size: "M" | "L";
+  isSelected?: boolean;
+  onClick: () => void;
+  children?: React.ReactNode;
+  variant: "primary" | "secondary";
+}) => {
   const theme = useTheme();
   const highlightColor = valueToColor(theme, value);
 
@@ -122,6 +129,6 @@ const SmallTabNavigationButton = forwardRef<
       </Button>
     </HoverNavigatable>
   );
-});
+};
 
 export default SmallTabNavigationButton;
