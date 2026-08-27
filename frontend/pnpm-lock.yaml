@@ -116,9 +116,6 @@ importers:
       react-error-boundary:
         specifier: ^6.1.3
         version: 6.1.3(@types/react@19.2.18)(react@19.2.8)
-      react-highlight-words:
-        specifier: ^0.21.0
-        version: 0.21.0(react@19.2.8)
       react-hook-form:
         specifier: ^7.85.0
         version: 7.85.0(react@19.2.8)
@@ -128,9 +125,6 @@ importers:
       react-i18next:
         specifier: ^17.0.11
         version: 17.0.11(i18next@26.3.6(typescript@7.0.2))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@7.0.2)
-      react-list:
-        specifier: ^0.8.19
-        version: 0.8.19(react@19.2.8)
       react-markdown:
         specifier: ^10.1.0
         version: 10.1.0(@types/react@19.2.18)(react@19.2.8)(supports-color@5.5.0)
@@ -216,12 +210,6 @@ importers:
       '@types/react-dom':
         specifier: ^19.2.4
         version: 19.2.4(@types/react@19.2.18)
-      '@types/react-highlight-words':
-        specifier: ^0.20.1
-        version: 0.20.1
-      '@types/react-list':
-        specifier: ^0.8.12
-        version: 0.8.12
       '@vitejs/plugin-react':
         specifier: ^6.0.5
         version: 6.0.5(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.44.0)(tsx@4.23.12))
@@ -1521,12 +1509,6 @@ packages:
     peerDependencies:
       '@types/react': ^19.2.0
 
-  '@types/react-highlight-words@0.20.1':
-    resolution: {integrity: sha512-EgF6RaoibBurIhxk3X3d5xL0uMqjD7KtShvZ8S+d7/o6xZ+mQ4rct1a2E49vWA9r63OzrHCIyghqvQHASb/ERw==}
-
-  '@types/react-list@0.8.12':
-    resolution: {integrity: sha512-X09dFxEJUeqiLe2KNuYl4JyIcvuOzmz3Im2jBH3X3VTH46Mo10wnAYWEsUbDNDIdQ2mGbWgmToqCofXPNGlWXA==}
-
   '@types/react@19.2.18':
     resolution: {integrity: sha512-AnzbBERsrLKtk2XSfTbYRLjQPdy116Sty4q+T+Bp3IC4l6jNBvreVPAHmpq9qhXQM7CXZPjLVmGMw9sy+hxQ3w==}
 
@@ -2241,9 +2223,6 @@ packages:
     resolution: {integrity: sha512-Qgpiaws3Sm30Av8Eah6sjMCZZwjlBu+E68rhpCWBshY1lb09HtLwj5GviX0OyQIn+ulUS0iX0AxN5n3tLZzz1w==}
     engines: {node: '>=18.0.0'}
 
-  highlight-words-core@1.2.3:
-    resolution: {integrity: sha512-m1O9HW3/GNHxzSIXWw1wCNXXsgLlxrP0OI6+ycGUhiUHkikqW3OrwVHz+lxeNBe5yqLESdIcj8PowHQ2zLvUvQ==}
-
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
@@ -2609,9 +2588,6 @@ packages:
   media-typer@1.1.1:
     resolution: {integrity: sha512-yz3xRaG20c6/BOzvYoDaGtPmGscs7YivItZEEqe6GbwNfHuxu9YNmvnEkMzKldAGY4/80pRcQRZSEnhquk9XuQ==}
     engines: {node: '>= 0.8'}
-
-  memoize-one@4.0.3:
-    resolution: {integrity: sha512-QmpUu4KqDmX0plH4u+tf0riMc1KHE1+lw95cMrLlXQAFOx/xnBtwhZ52XJxd9X2O6kwKBqX32kmhbhlobD0cuw==}
 
   merge-descriptors@2.0.0:
     resolution: {integrity: sha512-Snk314V5ayFLhp3fkUREub6WtjBfPdCPY1Ln8/8munuLuiYhsABgBVWsozAG+MWMbVEvcdcpbi9R7ww22l9Q3g==}
@@ -2994,11 +2970,6 @@ packages:
   react-fast-compare@3.2.2:
     resolution: {integrity: sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ==}
 
-  react-highlight-words@0.21.0:
-    resolution: {integrity: sha512-SdWEeU9fIINArEPO1rO5OxPyuhdEKZQhHzZZP1ie6UeXQf+CjycT1kWaB+9bwGcVbR0NowuHK3RqgqNg6bgBDQ==}
-    peerDependencies:
-      react: ^0.14.0 || ^15.0.0 || ^16.0.0-0 || ^17.0.0-0 || ^18.0.0-0 || ^19.0.0-0
-
   react-hook-form@7.85.0:
     resolution: {integrity: sha512-U2MTriFXnclmV4rOE20p2DcRFv5WEg3FIcBFOKcOLFHDVvGIMPvLTkTWefUsonmlaVy23khVDxDWym6uJVGOzw==}
     engines: {node: '>=18.0.0'}
@@ -3035,11 +3006,6 @@ packages:
 
   react-is@18.3.1:
     resolution: {integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==}
-
-  react-list@0.8.19:
-    resolution: {integrity: sha512-8ORJHcMLbNsIn2YpB6v69FrF1gpM1bbfRKOMsDcKpiDRkmNsk9LDVptYqewmDRo0K7W2WPcveQftEes6ovD+Zw==}
-    peerDependencies:
-      react: 0.14 || 15 - 19
 
   react-markdown@10.1.0:
     resolution: {integrity: sha512-qKxVopLT/TyA6BX3Ue5NwabOsAzm0Q7kAPwq6L+wWDwisYs7R8vZ0nRXqq6rkueboxpkjvLGU9fWifiX/ZZFxQ==}
@@ -4606,14 +4572,6 @@ snapshots:
     dependencies:
       '@types/react': 19.2.18
 
-  '@types/react-highlight-words@0.20.1':
-    dependencies:
-      '@types/react': 19.2.18
-
-  '@types/react-list@0.8.12':
-    dependencies:
-      '@types/react': 19.2.18
-
   '@types/react@19.2.18':
     dependencies:
       csstype: 3.2.3
@@ -5317,8 +5275,6 @@ snapshots:
 
   helmet@8.3.0: {}
 
-  highlight-words-core@1.2.3: {}
-
   hoist-non-react-statics@3.3.2:
     dependencies:
       react-is: 16.13.1
@@ -5708,8 +5664,6 @@ snapshots:
       '@types/mdast': 4.0.4
 
   media-typer@1.1.1: {}
-
-  memoize-one@4.0.3: {}
 
   merge-descriptors@2.0.0: {}
 
@@ -6234,12 +6188,6 @@ snapshots:
 
   react-fast-compare@3.2.2: {}
 
-  react-highlight-words@0.21.0(react@19.2.8):
-    dependencies:
-      highlight-words-core: 1.2.3
-      memoize-one: 4.0.3
-      react: 19.2.8
-
   react-hook-form@7.85.0(react@19.2.8):
     dependencies:
       react: 19.2.8
@@ -6265,10 +6213,6 @@ snapshots:
   react-is@17.0.2: {}
 
   react-is@18.3.1: {}
-
-  react-list@0.8.19(react@19.2.8):
-    dependencies:
-      react: 19.2.8
 
   react-markdown@10.1.0(@types/react@19.2.18)(react@19.2.8)(supports-color@5.5.0):
     dependencies:

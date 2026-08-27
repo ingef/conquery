@@ -4,7 +4,6 @@ import {
   faFingerprint,
   faInfo,
 } from "@fortawesome/free-solid-svg-icons";
-import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import { type InputAttributes, NumericFormat } from "react-number-format";
 import type {
@@ -12,6 +11,7 @@ import type {
   ConceptIdT,
   CurrencyConfigT,
 } from "../../api/types";
+import { Highlighter } from "../../common/components/Highlighter";
 import { exists } from "../../common/helpers/exists";
 import FaIcon from "../../icon/FaIcon";
 import WithTooltip from "../../tooltip/WithTooltip";

@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import type { ReactNode } from "react";
-import ReactList from "react-list";
+import { IncrementalList } from "../common/components/IncrementalList";
 
 interface PropsType {
   items: ReactNode[];
@@ -50,9 +50,9 @@ const ScrollableList = ({
   fullWidth,
   dataTestId,
 }: PropsType) => {
-  const renderItem = (index: number, key: string | number) => {
+  const renderItem = (index: number) => {
     return (
-      <Item key={key} className="scrollable-list-item">
+      <Item key={index} className="scrollable-list-item">
         {items[index]}
       </Item>
     );
@@ -64,10 +64,9 @@ const ScrollableList = ({
       fullWidth={!!fullWidth}
       data-test-id={dataTestId}
     >
-      <ReactList
-        itemRenderer={renderItem}
+      <IncrementalList
+        renderItem={renderItem}
         length={items ? items.length : 0}
-        type="uniform"
       />
     </Root>
   );
