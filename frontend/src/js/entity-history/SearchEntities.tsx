@@ -9,7 +9,7 @@ import {
   usePostResolveEntities,
 } from "../api/api";
 import { transformFilterValueToApi } from "../api/apiHelper";
-import type { ConceptT, TableT } from "../api/types";
+import type { TableT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import PrimaryButton from "../button/PrimaryButton";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
@@ -32,21 +32,19 @@ export const SearchEntites = ({
 }: {
   onLoad: (payload: LoadingPayload) => void;
 }) => {
-  const searchConcept = useSelector<StateT, ConceptT | undefined>((state) => {
-    const searchConceptId = state.entityHistory.defaultParams.searchConcept;
+  const searchConceptTable = useSelector<StateT, TableT | undefined>(
+    (state) => {
+      const { searchConcept, searchConnector } =
+        state.entityHistory.defaultParams;
+      const concept = searchConcept ? getConceptById(searchConcept) : undefined;
 
-    return searchConceptId ? getConceptById(searchConceptId) : undefined;
-  });
+      if (!concept || !nodeIsElement(concept)) return undefined;
 
-  if (
-    !searchConcept ||
-    !nodeIsElement(searchConcept) ||
-    searchConcept.tables?.length !== 1
-  ) {
-    return null;
-  }
+      return concept.tables?.find((t) => t.connectorId === searchConnector);
+    },
+  );
 
-  const searchConceptTable = searchConcept.tables[0];
+  if (!searchConceptTable) return null;
 
   return <SearchEntitiesComponent table={searchConceptTable} onLoad={onLoad} />;
 };

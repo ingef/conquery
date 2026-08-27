@@ -541,7 +541,8 @@ export interface HistorySources {
 
 export type GetEntityHistoryDefaultParamsResponse = HistorySources & {
   searchConcept: string | null; // concept id
-  searchFilters?: string[]; // allowlisted filter ids within the searchConcept
+  searchConnector: string | null; // connector id within the searchConcept, the table that holds the searchFilters
+  searchFilters?: string[]; // allowlisted filter ids within the searchConnector
 };
 
 export interface EntityInfo {
