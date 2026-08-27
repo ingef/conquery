@@ -16,6 +16,9 @@ const apiUrlEnv =
 const disableLoginEnv =
   runtimeVar("REACT_APP_DISABLE_LOGIN") ||
   import.meta.env.REACT_APP_DISABLE_LOGIN;
+const enableEditorV2Env =
+  runtimeVar("REACT_APP_EDITOR_V2_ENABLE") ||
+  import.meta.env.REACT_APP_EDITOR_V2_ENABLE;
 const enableIDPEnv =
   runtimeVar("REACT_APP_IDP_ENABLE") || import.meta.env.REACT_APP_IDP_ENABLE;
 const basenameEnv =
@@ -32,6 +35,7 @@ export const isProduction = isProductionEnv === "production" || true;
 export const language = languageEnv === "de" ? "de" : "en";
 export const apiUrl = apiUrlEnv || "";
 export const isLoginDisabled = disableLoginEnv === "true";
+export const isEditorV2Enabled = enableEditorV2Env !== "false";
 export const isIDPEnabled = enableIDPEnv === "true";
 export const basename = basenameEnv || "";
 export const idpUrl = idpUrlEnv || "";
