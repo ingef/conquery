@@ -10,7 +10,7 @@ import {
   faFileExcel,
   faFilePdf,
 } from "@fortawesome/free-solid-svg-icons";
-import { forwardRef, type ReactNode, useContext, useMemo } from "react";
+import { type ReactNode, type Ref, useContext, useMemo } from "react";
 
 import type { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
@@ -65,41 +65,35 @@ interface Props extends Omit<IconButtonPropsT, "icon" | "onClick"> {
   showColoredIcon?: boolean;
 }
 
-const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
-  (
-    {
-      simpleIcon,
-      resultUrl,
-      className,
-      children,
-      onClick,
-      showColoredIcon,
-      ...restProps
-    },
-    ref,
-  ) => {
-    const { authToken } = useContext(AuthTokenContext);
+const DownloadButton = ({
+  ref,
+  simpleIcon,
+  resultUrl,
+  className,
+  children,
+  onClick,
+  showColoredIcon,
+  ...restProps
+}: Props & { ref?: Ref<HTMLAnchorElement> }) => {
+  const { authToken } = useContext(AuthTokenContext);
 
-    const href = `${resultUrl.url}?access_token=${encodeURIComponent(
-      authToken,
-    )}`;
+  const href = `${resultUrl.url}?access_token=${encodeURIComponent(authToken)}`;
 
-    const { icon, color } = useFileIcon(resultUrl.url);
+  const { icon, color } = useFileIcon(resultUrl.url);
 
-    return (
-      <Link href={href} className={className} ref={ref}>
-        <SxIconButton
-          {...restProps}
-          large
-          icon={simpleIcon ? faDownload : icon}
-          onClick={onClick}
-          iconColor={showColoredIcon ? color : undefined}
-        >
-          {children}
-        </SxIconButton>
-      </Link>
-    );
-  },
-);
+  return (
+    <Link href={href} className={className} ref={ref}>
+      <SxIconButton
+        {...restProps}
+        large
+        icon={simpleIcon ? faDownload : icon}
+        onClick={onClick}
+        iconColor={showColoredIcon ? color : undefined}
+      >
+        {children}
+      </SxIconButton>
+    </Link>
+  );
+};
 
 export default DownloadButton;

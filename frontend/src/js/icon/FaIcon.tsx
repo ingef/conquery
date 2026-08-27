@@ -4,7 +4,7 @@ import { keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { forwardRef } from "react";
+import type { Ref } from "react";
 
 export interface IconStyleProps {
   left?: boolean;
@@ -70,18 +70,21 @@ export const Icon = styled(FontAwesomeIcon, {
   }
 `;
 
-const FaIcon = forwardRef<SVGSVGElement, FaIconPropsT>(
-  ({ icon, className, ...restProps }, ref) => {
-    return (
-      <Icon
-        // @ts-ignore TODO: ref is working, try fixing the type error
-        ref={ref}
-        className={`fa-fw ${className}`}
-        icon={icon}
-        {...restProps}
-      />
-    );
-  },
-);
+const FaIcon = ({
+  ref,
+  icon,
+  className,
+  ...restProps
+}: FaIconPropsT & { ref?: Ref<SVGSVGElement> }) => {
+  return (
+    <Icon
+      // @ts-ignore TODO: ref is working, try fixing the type error
+      ref={ref}
+      className={`fa-fw ${className}`}
+      icon={icon}
+      {...restProps}
+    />
+  );
+};
 
 export default FaIcon;

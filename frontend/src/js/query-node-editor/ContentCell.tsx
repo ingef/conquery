@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { forwardRef, type ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 
 import { Heading4 } from "../headings/Headings";
 
@@ -25,13 +25,16 @@ interface PropsT {
   headline?: string;
 }
 
-const ContentCell = forwardRef<HTMLDivElement, PropsT>(
-  ({ className, headline, children }, ref) => (
-    <Root ref={ref} className={className}>
-      {headline && <Headline>{headline}</Headline>}
-      <Content>{children}</Content>
-    </Root>
-  ),
+const ContentCell = ({
+  ref,
+  className,
+  headline,
+  children,
+}: PropsT & { ref?: Ref<HTMLDivElement> }) => (
+  <Root ref={ref} className={className}>
+    {headline && <Headline>{headline}</Headline>}
+    <Content>{children}</Content>
+  </Root>
 );
 
 export default ContentCell;

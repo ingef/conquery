@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { forwardRef, memo } from "react";
+import { memo, type Ref } from "react";
 import ReactMarkdown from "react-markdown";
 
 import type { SelectOptionT } from "../../api/types";
@@ -38,20 +38,22 @@ interface Props extends StyleProps {
   option: SelectOptionT;
 }
 
-const SelectListOption = forwardRef<HTMLDivElement, Props>(
-  ({ option, ...props }, ref) => {
-    const label = option.label || String(option.value);
+const SelectListOption = ({
+  ref,
+  option,
+  ...props
+}: Props & { ref?: Ref<HTMLDivElement> }) => {
+  const label = option.label || String(option.value);
 
-    return (
-      <Container {...props} disabled={option.disabled} ref={ref}>
-        {option.displayLabel ? (
-          option.displayLabel
-        ) : (
-          <ReactMarkdown>{label}</ReactMarkdown>
-        )}
-      </Container>
-    );
-  },
-);
+  return (
+    <Container {...props} disabled={option.disabled} ref={ref}>
+      {option.displayLabel ? (
+        option.displayLabel
+      ) : (
+        <ReactMarkdown>{label}</ReactMarkdown>
+      )}
+    </Container>
+  );
+};
 
 export default memo(SelectListOption);

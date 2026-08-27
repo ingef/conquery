@@ -6,8 +6,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {
   type FocusEvent,
-  forwardRef,
   type KeyboardEvent,
+  type Ref,
   useCallback,
 } from "react";
 import { useTranslation } from "react-i18next";
@@ -121,111 +121,107 @@ const usePatternMatching = ({ pattern }: { pattern?: string }) => {
   return pattern ? { onKeyPress } : {};
 };
 
-const BaseInput = forwardRef<HTMLInputElement, Props>(
-  (
-    {
-      className,
-      inputProps = {},
-      currencyConfig,
-      money,
-      value,
-      onChange,
-      onFocus,
-      onBlur,
-      onClick,
-      placeholder,
-      large,
-      inputType,
-      valid,
-      invalid,
-      invalidText,
-      disabled,
-    },
-    ref,
-  ) => {
-    const { t } = useTranslation();
+const BaseInput = ({
+  ref,
+  className,
+  inputProps = {},
+  currencyConfig,
+  money,
+  value,
+  onChange,
+  onFocus,
+  onBlur,
+  onClick,
+  placeholder,
+  large,
+  inputType,
+  valid,
+  invalid,
+  invalidText,
+  disabled,
+}: Props & { ref?: Ref<HTMLInputElement> }) => {
+  const { t } = useTranslation();
 
-    const patternMatchingProps = usePatternMatching({
-      pattern: inputProps.pattern,
-    });
+  const patternMatchingProps = usePatternMatching({
+    pattern: inputProps.pattern,
+  });
 
-    function safeOnChange(val: string | number | null) {
-      if (
-        (typeof val === "string" && val.length === 0) ||
-        (typeof val === "number" && Number.isNaN(val))
-      ) {
-        onChange(null);
-      } else {
-        onChange(val);
-      }
+  function safeOnChange(val: string | number | null) {
+    if (
+      (typeof val === "string" && val.length === 0) ||
+      (typeof val === "number" && Number.isNaN(val))
+    ) {
+      onChange(null);
+    } else {
+      onChange(val);
     }
+  }
 
-    const isCurrencyInput = money && !!currencyConfig;
+  const isCurrencyInput = money && !!currencyConfig;
 
-    return (
-      <Root className={className}>
-        {isCurrencyInput ? (
-          <CurrencyInput
-            currencyConfig={currencyConfig}
-            placeholder={placeholder}
-            large={large}
-            value={value as number | null}
-            onChange={safeOnChange}
-          />
-        ) : (
-          <Input
-            placeholder={placeholder}
-            type={inputType}
-            ref={ref}
-            onChange={(e) => {
-              let value: string | number | null = e.target.value;
+  return (
+    <Root className={className}>
+      {isCurrencyInput ? (
+        <CurrencyInput
+          currencyConfig={currencyConfig}
+          placeholder={placeholder}
+          large={large}
+          value={value as number | null}
+          onChange={safeOnChange}
+        />
+      ) : (
+        <Input
+          placeholder={placeholder}
+          type={inputType}
+          ref={ref}
+          onChange={(e) => {
+            let value: string | number | null = e.target.value;
 
-              if (inputType === "number") {
-                value = parseFloat(value);
-              }
-
-              safeOnChange(value);
-            }}
-            value={exists(value) ? value : ""}
-            large={large}
-            disabled={disabled}
-            onFocus={onFocus}
-            onBlur={onBlur}
-            onClick={onClick}
-            onWheel={
-              (e) =>
-                (
-                  e.target as HTMLElement
-                ).blur() /* to disable scrolling for number */
+            if (inputType === "number") {
+              value = parseFloat(value);
             }
-            {...inputProps}
-            {...patternMatchingProps}
+
+            safeOnChange(value);
+          }}
+          value={exists(value) ? value : ""}
+          large={large}
+          disabled={disabled}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          onClick={onClick}
+          onWheel={
+            (e) =>
+              (
+                e.target as HTMLElement
+              ).blur() /* to disable scrolling for number */
+          }
+          {...inputProps}
+          {...patternMatchingProps}
+        />
+      )}
+      {exists(value) && !isEmpty(value) && (
+        <>
+          {valid && !invalid && <GreenIcon icon={faCheck} large={large} />}
+          {invalid && (
+            <WithTooltip text={invalidText}>
+              <AbsoluteWrap>
+                <RedIcon icon={faExclamationTriangle} large={large} />
+              </AbsoluteWrap>
+            </WithTooltip>
+          )}
+          <ClearZoneIconButton
+            tiny
+            icon={faTimes}
+            tabIndex={-1}
+            disabled={disabled}
+            title={t("common.clearValue")}
+            aria-label={t("common.clearValue")}
+            onClick={() => onChange(null)}
           />
-        )}
-        {exists(value) && !isEmpty(value) && (
-          <>
-            {valid && !invalid && <GreenIcon icon={faCheck} large={large} />}
-            {invalid && (
-              <WithTooltip text={invalidText}>
-                <AbsoluteWrap>
-                  <RedIcon icon={faExclamationTriangle} large={large} />
-                </AbsoluteWrap>
-              </WithTooltip>
-            )}
-            <ClearZoneIconButton
-              tiny
-              icon={faTimes}
-              tabIndex={-1}
-              disabled={disabled}
-              title={t("common.clearValue")}
-              aria-label={t("common.clearValue")}
-              onClick={() => onChange(null)}
-            />
-          </>
-        )}
-      </Root>
-    );
-  },
-);
+        </>
+      )}
+    </Root>
+  );
+};
 
 export default BaseInput;

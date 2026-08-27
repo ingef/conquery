@@ -11,7 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { parseISO } from "date-fns";
 import type { TFunction } from "i18next";
-import { forwardRef, useState } from "react";
+import { type Ref, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import type { ResultUrlWithLabel, SecondaryId } from "../../api/types";
@@ -260,17 +260,18 @@ const deriveFlags = (item: ProjectItemT, loadedSecondaryIds: SecondaryId[]) => {
   };
 };
 
-const ProjectItem = forwardRef<
-  HTMLDivElement,
-  {
-    item: ProjectItemT;
-    onIndicateShare: () => void;
-    onIndicateEditFolders: () => void;
-  }
->(function ProjectItemComponent(
-  { item, onIndicateShare, onIndicateEditFolders },
+const ProjectItem = ({
   ref,
-) {
+  item,
+  onIndicateShare,
+  onIndicateEditFolders,
+}: {
+  ref?: Ref<HTMLDivElement>;
+
+  item: ProjectItemT;
+  onIndicateShare: () => void;
+  onIndicateEditFolders: () => void;
+}) => {
   const { t } = useTranslation();
   const highlightedWords = useSelector<StateT, string[]>(
     (state) => state.projectItemsSearch.words,
@@ -358,6 +359,6 @@ const ProjectItem = forwardRef<
       </Content>
     </Root>
   );
-});
+};
 
 export default ProjectItem;

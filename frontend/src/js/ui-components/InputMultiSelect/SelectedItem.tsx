@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import { forwardRef, memo } from "react";
+import { memo, type Ref } from "react";
 import ReactMarkdown from "react-markdown";
 
 import type { SelectOptionT } from "../../api/types";
@@ -28,45 +28,46 @@ const SxIconButton = styled(IconButton)`
   padding: 1px 2px 1px 5px;
 `;
 
-const SelectedItem = forwardRef<
-  HTMLDivElement,
-  {
-    active?: boolean;
-    disabled?: boolean;
-    item: SelectOptionT;
+const SelectedItem = ({
+  ref,
+  index,
+  item,
+  disabled,
+  removeSelectedItem,
+  getSelectedItemProps,
+}: {
+  ref?: Ref<HTMLDivElement>;
+
+  active?: boolean;
+  disabled?: boolean;
+  item: SelectOptionT;
+  index: number;
+  getSelectedItemProps: (props: {
+    selectedItem: SelectOptionT;
     index: number;
-    getSelectedItemProps: (props: {
-      selectedItem: SelectOptionT;
-      index: number;
-    }) => object;
-    removeSelectedItem: (item: SelectOptionT) => void;
-  }
->(
-  (
-    { index, item, disabled, removeSelectedItem, getSelectedItemProps },
-    ref,
-  ) => {
-    const label = item.selectedLabel || item.label || item.value;
+  }) => object;
+  removeSelectedItem: (item: SelectOptionT) => void;
+}) => {
+  const label = item.selectedLabel || item.label || item.value;
 
-    const selectedItemProps = getSelectedItemProps({
-      selectedItem: item,
-      index,
-    });
+  const selectedItemProps = getSelectedItemProps({
+    selectedItem: item,
+    index,
+  });
 
-    return (
-      <Container ref={ref} {...selectedItemProps}>
-        <ReactMarkdown>{String(label)}</ReactMarkdown>
-        <SxIconButton
-          icon={faTimes}
-          disabled={disabled}
-          onClick={(e) => {
-            e.stopPropagation(); // otherwise the click handler on the Container overrides this
-            removeSelectedItem(item);
-          }}
-        />
-      </Container>
-    );
-  },
-);
+  return (
+    <Container ref={ref} {...selectedItemProps}>
+      <ReactMarkdown>{String(label)}</ReactMarkdown>
+      <SxIconButton
+        icon={faTimes}
+        disabled={disabled}
+        onClick={(e) => {
+          e.stopPropagation(); // otherwise the click handler on the Container overrides this
+          removeSelectedItem(item);
+        }}
+      />
+    </Container>
+  );
+};
 
 export default memo(SelectedItem);

@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { forwardRef, type ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
 import { exists } from "../common/helpers/exists";
@@ -31,37 +31,33 @@ interface Props {
   htmlFor?: string;
 }
 
-const Labeled = forwardRef<HTMLLabelElement, Props>(
-  (
-    {
-      indexPrefix,
-      className,
-      fullWidth,
-      label,
-      tinyLabel,
-      largeLabel,
-      tooltip,
-      htmlFor,
-      children,
-    },
-    ref,
-  ) => {
-    return (
-      <Root
-        ref={ref}
-        className={className}
-        fullWidth={fullWidth}
-        htmlFor={htmlFor}
-      >
-        <Label fullWidth={fullWidth} tiny={tinyLabel} large={largeLabel}>
-          {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
-          {label}
-          {exists(tooltip) && <InfoTooltip text={tooltip} />}
-        </Label>
-        {children}
-      </Root>
-    );
-  },
-);
+const Labeled = ({
+  ref,
+  indexPrefix,
+  className,
+  fullWidth,
+  label,
+  tinyLabel,
+  largeLabel,
+  tooltip,
+  htmlFor,
+  children,
+}: Props & { ref?: Ref<HTMLLabelElement> }) => {
+  return (
+    <Root
+      ref={ref}
+      className={className}
+      fullWidth={fullWidth}
+      htmlFor={htmlFor}
+    >
+      <Label fullWidth={fullWidth} tiny={tinyLabel} large={largeLabel}>
+        {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
+        {label}
+        {exists(tooltip) && <InfoTooltip text={tooltip} />}
+      </Label>
+      {children}
+    </Root>
+  );
+};
 
 export default Labeled;
