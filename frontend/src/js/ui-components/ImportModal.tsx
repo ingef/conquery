@@ -163,6 +163,7 @@ export const ImportModal = ({
     >
       <Content>
         {description && (
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: description is our own i18n text
           <Subtitle dangerouslySetInnerHTML={{ __html: description }} />
         )}
         <DropzoneWithFileInput

@@ -84,6 +84,7 @@ export const TimelineEmptyPlaceholder = ({
         <div>
           <Headline>{t("history.emptyTimeline.headline")}</Headline>
           <Description>{t("history.emptyTimeline.description")}</Description>
+          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: message is our own i18n text */}
           <Message dangerouslySetInnerHTML={{ __html: message }} />
         </div>
       </Row>

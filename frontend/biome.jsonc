@@ -39,7 +39,16 @@
     },
     "rules": {
       "preset": "recommended",
+      "complexity": {
+        // Visible for now, the worst offenders get refactored separately
+        "noExcessiveCognitiveComplexity": {
+          "level": "warn",
+          "options": { "maxAllowedComplexity": 18 }
+        },
+        "noForEach": "error"
+      },
       "correctness": {
+        "noUnusedImports": { "level": "error", "fix": "safe" },
         "noUnusedVariables": {
           "level": "error",
           "options": { "ignoreRestSiblings": true }
@@ -49,10 +58,6 @@
         "useExhaustiveDependencies": "warn",
         "useHookAtTopLevel": "error",
         "useJsxKeyInIterable": "error"
-      },
-      "security": {
-        // Markdown/HTML rendering from trusted backend content is intentional
-        "noDangerouslySetInnerHtml": "off"
       },
       "style": {
         // Was allowed by the previous eslint config

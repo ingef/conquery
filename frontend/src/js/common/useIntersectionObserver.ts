@@ -22,7 +22,7 @@ export function useIntersectionObserver<T extends Element>(
   const observer = useRef<IntersectionObserver | null>(
     new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
+        for (const entry of entries) {
           const isIntersecting =
             entry.isIntersecting &&
             entry.intersectionRatio > INTERSECTION_THRESHOLD;
@@ -31,7 +31,7 @@ export function useIntersectionObserver<T extends Element>(
             intersecting.current = isIntersecting;
             onChangeRef.current(domNodeRef.current, isIntersecting);
           }
-        });
+        }
       },
       { threshold: [INTERSECTION_THRESHOLD] },
     ),

@@ -104,6 +104,7 @@ const UploadFilterListModal = ({
             <Msg>
               <ErrorIcon icon={faExclamationCircle} />
               <span
+                // biome-ignore lint/security/noDangerouslySetInnerHtml: i18n text with markup
                 dangerouslySetInnerHTML={{
                   __html: t("uploadConceptListModal.unknownCodes", {
                     count: unresolvedItemsCount,
