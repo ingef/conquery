@@ -143,3 +143,22 @@ div[data-tippy-root] {
     border-color: var(--color-gray-200, currentcolor);
   }
 }
+
+/* react-datepicker inside InputDate */
+.conquery-datepicker {
+  .react-datepicker-wrapper {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: -1;
+  }
+  .react-datepicker-popper[data-placement^="bottom"] {
+    padding-top: 4px;
+  }
+  .react-datepicker-popper[data-placement^="top"] {
+    padding-bottom: 0;
+  }
+  .react-datepicker__day--selected {
+    background: var(--color-primary-500);
+  }
+}

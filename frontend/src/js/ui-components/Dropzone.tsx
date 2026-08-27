@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
 import type { ReactNode, Ref } from "react";
 import { type DropTargetMonitor, useDrop } from "react-dnd";
+import { tv } from "tailwind-variants";
 
 import { DNDType } from "../common/constants/dndTypes";
 import { exists } from "../common/helpers/exists";
@@ -12,43 +12,30 @@ import type {
 
 import type { DragItemFile } from "./DropzoneWithFileInput";
 
-const Root = styled("div")<{
-  isOver?: boolean;
-  naked?: boolean;
-  bare?: boolean;
-  transparent?: boolean;
-  canDrop?: boolean;
-  invisible?: boolean;
-}>`
-  border: ${({ theme, isOver, canDrop, naked }) =>
-    naked
-      ? "none"
-      : isOver && !canDrop
-        ? `3px solid ${theme.col.red}`
-        : isOver
-          ? `3px solid ${theme.col.black}`
-          : `3px dashed ${theme.col.grayMediumLight}`};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  padding: ${({ bare }) => (bare ? "0" : "10px")};
-  display: ${({ invisible }) => (invisible ? "none" : "flex")};
-  align-items: center;
-  justify-content: center;
-  background-color: ${({ theme, canDrop, naked, isOver, transparent }) =>
-    naked && isOver && canDrop
-      ? theme.col.grayLight
-      : canDrop
-        ? theme.col.grayVeryLight
-        : transparent
-          ? "transparent"
-          : theme.col.bg};
-  width: 100%;
-  color: ${({ theme, isOver, canDrop }) =>
-    isOver && !canDrop
-      ? theme.col.red
-      : isOver
-        ? theme.col.black
-        : theme.col.gray};
-`;
+const root = tv({
+  base: [
+    "flex items-center justify-center",
+    "w-full",
+    "p-[10px]",
+    "rounded",
+    "border-[3px] border-dashed border-gray-400",
+    "bg-bg-50",
+    "text-gray-500",
+  ],
+  variants: {
+    bare: { true: "p-0" },
+    invisible: { true: "hidden" },
+    // later wins when several are set
+    transparent: { true: "bg-transparent" },
+    canDrop: { true: "bg-gray-50" },
+    isOver: { true: "border-solid border-gray-800 text-gray-800" },
+    naked: { true: "border-none" },
+  },
+  compoundVariants: [
+    { isOver: true, canDrop: false, class: "border-red text-red" },
+    { naked: true, isOver: true, canDrop: true, class: "bg-gray-100" },
+  ],
+});
 
 export interface ChildArgs<DroppableObject> {
   isOver: boolean;
@@ -129,7 +116,9 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>({
   });
 
   return (
-    <Root
+    // biome-ignore lint/a11y/noStaticElementInteractions: drop target, click opens a file dialog
+    // biome-ignore lint/a11y/useKeyWithClickEvents: drop target, click opens a file dialog
+    <div
       ref={(instance) => {
         dropRef(instance);
 
@@ -142,21 +131,23 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>({
           }
         }
       }}
-      isOver={isOver}
-      invisible={invisible && !canDropResult}
-      canDrop={canDropResult}
-      className={className}
+      className={root({
+        isOver,
+        invisible: !!invisible && !canDropResult,
+        canDrop: canDropResult,
+        naked,
+        transparent,
+        bare,
+        className,
+      })}
       onClick={onClick}
-      naked={naked}
-      transparent={transparent}
-      bare={bare}
     >
       {children?.({
         isOver,
         canDrop: canDropResult,
         item: item as DroppableObject, // Casting because see comment above
       })}
-    </Root>
+    </div>
   );
 };
 

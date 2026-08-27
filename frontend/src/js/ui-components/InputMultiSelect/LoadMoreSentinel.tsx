@@ -1,15 +1,11 @@
-import styled from "@emotion/styled";
 import { useCallback, useRef } from "react";
+import { tv } from "tailwind-variants";
 
 import { useIntersectionObserver } from "../../common/useIntersectionObserver";
 
-const Span = styled("span")`
-  width: 1px;
-  height: 1px;
-  background: transparent;
-  pointer-events: none;
-  display: block;
-`;
+const sentinel = tv({
+  base: ["block", "w-px h-px", "bg-transparent", "pointer-events-none"],
+});
 
 interface Props {
   className?: string;
@@ -31,7 +27,9 @@ const LoadMoreSentinel = ({ onLoadMore, className }: Props) => {
     ),
   );
 
-  return <Span className={className} ref={intersectionObserverRef} />;
+  return (
+    <span className={sentinel({ className })} ref={intersectionObserverRef} />
+  );
 };
 
 export default LoadMoreSentinel;

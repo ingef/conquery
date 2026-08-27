@@ -1,18 +1,15 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
 import type { Ref } from "react";
+import { tv } from "tailwind-variants";
 
 import type { CurrencyConfigT } from "../../api/types";
 import BaseInput from "../BaseInput";
 import Labeled from "../Labeled";
 
-const SxBaseInput = styled(BaseInput)<{ fullWidth?: boolean }>`
-  ${({ fullWidth }) =>
-    fullWidth &&
-    css`
-      width: 100%;
-    `};
-`;
+const input = tv({
+  variants: {
+    fullWidth: { true: "w-full" },
+  },
+});
 
 interface Props {
   label: string;
@@ -61,10 +58,10 @@ const InputPlain = ({
       indexPrefix={indexPrefix}
       tooltip={tooltip}
     >
-      <SxBaseInput
+      <BaseInput
         ref={ref}
+        className={input({ fullWidth })}
         large={large}
-        fullWidth={fullWidth}
         inputType={inputType}
         money={money}
         placeholder={placeholder}

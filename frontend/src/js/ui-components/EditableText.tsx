@@ -1,5 +1,6 @@
-import styled from "@emotion/styled";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
+import { tv } from "tailwind-variants";
+
 import IconButton from "../button/IconButton";
 import { Highlighter } from "../common/components/Highlighter";
 import HighlightableLabel from "../highlightable-label/HighlightableLabel";
@@ -7,28 +8,29 @@ import WithTooltip from "../tooltip/WithTooltip";
 
 import EditableTextForm from "./EditableTextForm";
 
-const SxIconButton = styled(IconButton)`
-  margin-right: ${({ large }) => (large ? "10px" : "8px")};
-  padding: 2px 0;
-`;
+const editButton = tv({
+  base: ["px-0 py-[2px]"],
+  variants: {
+    large: {
+      true: "mr-[10px]",
+      false: "mr-2",
+    },
+  },
+});
 
-const Text = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`;
+const text = tv({
+  base: "flex flex-row items-center",
+});
 
-const SxHighlightableLabel = styled(HighlightableLabel)`
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-`;
+const label = tv({
+  base: ["overflow-hidden", "text-ellipsis", "whitespace-nowrap"],
+});
 
 const EditableText = ({
   className,
   loading,
   editing,
-  text,
+  text: textValue,
   tooltip,
   large,
   saveOnClickoutside,
@@ -55,16 +57,17 @@ const EditableText = ({
     <EditableTextForm
       className={className}
       loading={loading}
-      text={text}
+      text={textValue}
       selectTextOnMount={selectTextOnMount}
       saveOnClickoutside={saveOnClickoutside}
       onSubmit={onSubmit}
       onCancel={onToggleEdit}
     />
   ) : (
-    <Text className={className}>
+    <div className={text({ className })}>
       <WithTooltip text={tooltip}>
-        <SxIconButton
+        <IconButton
+          className={editButton({ large: !!large })}
           bare
           icon={faPen}
           onClick={onToggleEdit}
@@ -72,14 +75,17 @@ const EditableText = ({
           large={large}
         />
       </WithTooltip>
-      <SxHighlightableLabel isHighlighted={isHighlighted}>
+      <HighlightableLabel className={label()} isHighlighted={isHighlighted}>
         {highlightedWords && highlightedWords.length > 0 ? (
-          <Highlighter searchWords={highlightedWords} textToHighlight={text} />
+          <Highlighter
+            searchWords={highlightedWords}
+            textToHighlight={textValue}
+          />
         ) : (
-          text
+          textValue
         )}
-      </SxHighlightableLabel>
-    </Text>
+      </HighlightableLabel>
+    </div>
   );
 };
 

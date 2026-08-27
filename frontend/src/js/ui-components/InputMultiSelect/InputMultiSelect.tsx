@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faChevronDown,
   faSpinner,
@@ -52,10 +51,6 @@ const getSentinelInsertIndex = (optionsLength: number) => {
 
   return optionsLength - SENTINEL_INSERT_INDEX_FROM_BOTTOM;
 };
-
-const SxFaIcon = styled(FaIcon)`
-  margin: 3px 6px;
-`;
 
 interface Props {
   label?: string;
@@ -323,7 +318,7 @@ const InputMultiSelect = ({
             }}
           />
         </ItemsInputContainer>
-        {loading && <SxFaIcon icon={faSpinner} />}
+        {loading && <FaIcon className="mx-[6px] my-[3px]" icon={faSpinner} />}
         {!loading && (inputValue.length > 0 || selectedItems.length > 0) && (
           <ResetButton
             icon={faTimes}
