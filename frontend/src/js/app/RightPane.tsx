@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import { EditorV2 } from "../editor-v2/EditorV2";
+import { isEditorV2Enabled } from "../environment";
 import { ResetableErrorBoundary } from "../error-fallback/ResetableErrorBoundary";
 import FormsTab from "../external-forms/FormsTab";
 import Pane from "../pane/Pane";
@@ -37,11 +38,15 @@ const RightPane = () => {
         label: t("rightPane.queryEditor"),
         tooltip: t("help.tabQueryEditor"),
       },
-      {
-        key: "editorV2",
-        label: t("rightPane.editorV2"),
-        tooltip: t("help.tabEditorV2"),
-      },
+      ...(isEditorV2Enabled
+        ? [
+            {
+              key: "editorV2",
+              label: t("rightPane.editorV2"),
+              tooltip: t("help.tabEditorV2"),
+            },
+          ]
+        : []),
       {
         key: "externalForms",
         label: t("rightPane.externalForms"),
@@ -53,21 +58,23 @@ const RightPane = () => {
 
   return (
     <SxPane right tabs={tabs} dataTestId="right-pane">
-      <Tab key={tabs[0].key} isActive={activeTab === tabs[0].key}>
+      <Tab key="queryEditor" isActive={activeTab === "queryEditor"}>
         <StandardQueryEditorTab />
       </Tab>
-      <Tab key={tabs[1].key} isActive={activeTab === tabs[1].key}>
-        <EditorV2
-          featureDates
-          featureNegate
-          featureExpand
-          featureConnectorRotate
-          featureQueryNodeEdit
-          featureContentInfos
-          featureTimebasedQueries
-        />
-      </Tab>
-      <Tab key={tabs[2].key} isActive={activeTab === tabs[2].key}>
+      {isEditorV2Enabled && (
+        <Tab key="editorV2" isActive={activeTab === "editorV2"}>
+          <EditorV2
+            featureDates
+            featureNegate
+            featureExpand
+            featureConnectorRotate
+            featureQueryNodeEdit
+            featureContentInfos
+            featureTimebasedQueries
+          />
+        </Tab>
+      )}
+      <Tab key="externalForms" isActive={activeTab === "externalForms"}>
         <ResetableErrorBoundary>
           <FormsTab />
         </ResetableErrorBoundary>
