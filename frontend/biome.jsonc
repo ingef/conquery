@@ -79,6 +79,15 @@
   },
   "overrides": [
     {
+      // mock data generators are branchy on purpose
+      "includes": ["mock-api/**"],
+      "linter": {
+        "rules": {
+          "complexity": { "noExcessiveCognitiveComplexity": "off" }
+        }
+      }
+    },
+    {
       // tailwind v3 entry directives
       "includes": ["src/index.css"],
       "linter": { "rules": { "suspicious": { "noUnknownAtRules": "off" } } }
