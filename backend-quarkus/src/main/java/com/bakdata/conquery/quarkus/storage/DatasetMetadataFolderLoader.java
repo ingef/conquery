@@ -24,7 +24,7 @@ import com.bakdata.conquery.quarkus.ids.IdPartSanitizer;
 import com.bakdata.conquery.quarkus.ids.StructureNodeId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 import com.bakdata.conquery.quarkus.ids.ValidityDateId;
-import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.ColumnType;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

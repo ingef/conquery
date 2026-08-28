@@ -8,7 +8,7 @@ The current stable surface covers metadata filters:
 - `FilterDefinition`, `AbstractFilterDefinition`, and `SingleColumnFilterDefinition` describe plugin metadata.
 - `FilterDefinitionProvider<T>` is the CDI discovery hook.
 - `FilterConversionContext` validates referenced columns without exposing backend repositories or IDs. It returns the
-  shared dataset `ColumnDescriptor` and `ColumnType` contracts rather than filter-specific column models.
+  shared `dataset-model` contracts `ColumnDescriptor` and `ColumnType` rather than filter-specific column models.
 - `FilterResult` is the implementation-neutral result mapped to the backend catalog by the host.
 - `PolymorphicModelSubtype` declares the JSON/OpenAPI discriminator.
 
@@ -18,3 +18,6 @@ plugin JAR. The complete development, installation, reaugmentation, and test wor
 
 Query filter-value, select, and condition contracts have not yet been extracted into this artifact and should be
 considered provisional.
+
+The plugin API exposes `dataset-model` transitively because dataset vocabulary is part of its public signatures. Plugin
+code imports those types from `com.bakdata.conquery.models.datasets`; it does not need a second explicit dependency.

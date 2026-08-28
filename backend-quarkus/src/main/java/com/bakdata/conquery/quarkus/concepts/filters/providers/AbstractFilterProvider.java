@@ -14,7 +14,7 @@ import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.IntegerR
 import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.MoneyRangeFilterValue;
 import com.bakdata.conquery.quarkus.concepts.filters.values.definitions.RealRangeFilterValue;
 import com.bakdata.conquery.quarkus.models.PolymorphicModelSubtype;
-import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnDescriptor;
+import com.bakdata.conquery.models.datasets.ColumnDescriptor;
 import com.bakdata.conquery.quarkus.plugin.api.filters.AbstractFilterDefinition;
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterConversionContext;
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinitionProvider;

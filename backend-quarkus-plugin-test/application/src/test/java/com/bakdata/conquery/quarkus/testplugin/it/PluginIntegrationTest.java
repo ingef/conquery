@@ -14,7 +14,7 @@ import com.bakdata.conquery.quarkus.ids.ConnectorId;
 import com.bakdata.conquery.quarkus.ids.DatasetId;
 import com.bakdata.conquery.quarkus.ids.TableId;
 import com.bakdata.conquery.quarkus.models.PolymorphicModelRegistry;
-import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinition;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import com.bakdata.conquery.quarkus.testplugin.PrefixFilterDefinition;

@@ -5,7 +5,7 @@ import java.util.*;
 import com.bakdata.conquery.quarkus.concepts.conditions.ConceptCondition;
 import com.bakdata.conquery.quarkus.concepts.selects.SelectDefinition;
 import com.bakdata.conquery.quarkus.concepts.selects.concept.ConceptSelectDefinition;
-import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.quarkus.plugin.api.filters.FilterDefinition;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.ConceptId;

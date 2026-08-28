@@ -198,13 +198,14 @@ For each implementation:
 4. Implement the matching provider interface and annotate the provider with a CDI scope such as `@ApplicationScoped`.
 5. Return the accepted frontend value discriminator IDs from `acceptedValueTypes()`, for example `Set.of("STRING")`.
 6. Convert the model into a plugin API `FilterResult`. Use `FilterConversionContext.requireColumn()` to validate and
-   inspect referenced columns through the shared `ColumnDescriptor` and `ColumnType` dataset contracts. Do not
+   inspect referenced columns through the `dataset-model` contracts `ColumnDescriptor` and `ColumnType`. Do not
    construct backend IDs or repository records in a plugin.
 7. Run `mvn verify` and confirm the built JAR contains `META-INF/jandex.idx`.
 
 The filter contract is contained in `backend-quarkus-plugin-api` under `com.bakdata.conquery.quarkus.plugin.api`. It
-contains the definition bases, provider interface, conversion context/result, shared dataset column descriptors, and
-plugin polymorphism annotations. Backend IDs, storage repositories, and implementation DTOs are intentionally
+contains the definition bases, provider interface, conversion context/result, and plugin polymorphism annotations.
+Shared column descriptors live in the dependency-free `dataset-model` artifact under
+`com.bakdata.conquery.models.datasets`. Backend IDs, storage repositories, and implementation DTOs are intentionally
 excluded. Query filter-value, select, and condition extension contracts are still provisional and remain in
 `backend-quarkus`; extract them into this API before treating them as compatibility-stable third-party extension
 points.
@@ -264,7 +265,7 @@ The repository contains a downstream test application because testing the plugin
 a Maven dependency cycle. The reactor order is:
 
 ```text
-backend-quarkus-plugin-api -> backend-quarkus -> backend-quarkus-test-plugin -> backend-quarkus-plugin-test-application
+dataset-model -> backend-quarkus-plugin-api -> backend-quarkus -> backend-quarkus-test-plugin -> backend-quarkus-plugin-test-application
 ```
 
 Run the fast application-level contract from the repository root:

@@ -7,7 +7,7 @@ import com.bakdata.conquery.quarkus.ids.ConnectorId;
 import com.bakdata.conquery.quarkus.ids.IdPartSanitizer;
 import com.bakdata.conquery.quarkus.ids.SelectId;
 import com.bakdata.conquery.quarkus.ids.TableId;
-import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 
 public record SelectConversionContext(

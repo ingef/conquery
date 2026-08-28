@@ -1,6 +1,6 @@
 package com.bakdata.conquery.quarkus.plugin.api.filters;
 
-import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnDescriptor;
+import com.bakdata.conquery.models.datasets.ColumnDescriptor;
 
 /** Host services available while converting a plugin filter definition. */
 public interface FilterConversionContext {

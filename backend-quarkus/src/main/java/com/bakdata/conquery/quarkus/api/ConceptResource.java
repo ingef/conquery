@@ -3,7 +3,7 @@ package com.bakdata.conquery.quarkus.api;
 import java.util.*;
 
 import com.bakdata.conquery.quarkus.ids.ConceptId;
-import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.quarkus.services.DatasetService;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 import com.fasterxml.jackson.annotation.JsonCreator;

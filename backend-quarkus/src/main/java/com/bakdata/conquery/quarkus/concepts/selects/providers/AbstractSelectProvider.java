@@ -11,7 +11,7 @@ import com.bakdata.conquery.quarkus.concepts.selects.definitions.AbstractSelectD
 import com.bakdata.conquery.quarkus.concepts.selects.definitions.DateRangeSelectDefinition;
 import com.bakdata.conquery.quarkus.ids.ColumnId;
 import com.bakdata.conquery.quarkus.ids.SelectId;
-import com.bakdata.conquery.quarkus.plugin.api.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
 
 abstract class AbstractSelectProvider<T extends AbstractSelectDefinition> implements SelectDefinitionProvider<T> {
