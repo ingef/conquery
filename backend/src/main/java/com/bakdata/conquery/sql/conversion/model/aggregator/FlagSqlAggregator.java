@@ -137,7 +137,7 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 	@Override
 	public ConnectorSqlSelects connectorSelect(FlagSelect flagSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
-		SqlFunctionProvider functionProvider = selectContext.getConversionContext().getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = selectContext.getConversionContext().getCompilerDialect().getFunctionProvider();
 		SqlTables connectorTables = selectContext.getTables();
 
 		Map<String, SingleColumnSqlSelect> rootSelects = createFlagRootSelectMap(flagSelect, connectorTables.getRootTable());

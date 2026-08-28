@@ -56,7 +56,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 	@Override
 	public ConversionContext convert(ConceptQuery conceptQuery, ConversionContext context) {
 
-		SqlFunctionProvider functionProvider = context.getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getCompilerDialect().getFunctionProvider();
 		ConversionContext contextAfterConversion = context.getNodeConversions().convert(conceptQuery.getRoot(), context);
 
 		QueryStep preFinalStep = contextAfterConversion.getLastConvertedStep();

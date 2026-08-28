@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
@@ -45,8 +45,8 @@ public class IntervalPackingContext implements Context {
 	ConversionContext conversionContext;
 
 	@Override
-	public DialectBundle getDialectBundle() {
-		return getConversionContext().getDialectBundle();
+	public LegacyCompilerDialect getCompilerDialect() {
+		return getConversionContext().getCompilerDialect();
 	}
 
 }

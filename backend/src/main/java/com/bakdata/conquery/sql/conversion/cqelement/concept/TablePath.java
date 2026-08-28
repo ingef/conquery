@@ -91,7 +91,7 @@ class TablePath {
 
 		// interval packing requiredw
 		tableInfo.setContainsIntervalPacking(true);
-		tableInfo.addMappings(IntervalPackingCteStep.getMappings(PREPROCESSING, context.getDialectBundle()));
+		tableInfo.addMappings(IntervalPackingCteStep.getMappings(PREPROCESSING, context.getCompilerDialect()));
 
 		// validity date propagation not necessary
 		if (!cqConcept.isAggregateEventDates()) {
@@ -103,7 +103,7 @@ class TablePath {
 		}
 
 		// interval packing selects required with optional unnest step
-		if (context.getDialectBundle().supportsSingleColumnRanges()) {
+		if (context.getCompilerDialect().supportsSingleColumnRanges()) {
 			tableInfo.addMappings(Map.of(
 					UNNEST_DATE, INTERVAL_COMPLETE,
 					INTERVAL_PACKING_SELECTS, UNNEST_DATE
@@ -135,7 +135,7 @@ class TablePath {
 		);
 
 		// universal event date selects required with optional additional unnest step
-		if (context.getDialectBundle().supportsSingleColumnRanges()) {
+		if (context.getCompilerDialect().supportsSingleColumnRanges()) {
 			tableInfo.addRootTableMapping(UNNEST_DATE);
 			tableInfo.addMappings(Map.of(INTERVAL_PACKING_SELECTS, UNNEST_DATE));
 		}

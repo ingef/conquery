@@ -38,7 +38,7 @@ public class QueryStepJoiner {
 	 */
 	public static QueryStep antiJoinWithAllIdsTable(QueryStep queryStep, ConversionContext context, DateAggregationAction dateAggregationAction) {
 
-		SqlFunctionProvider functionProvider = context.getConversionContext().getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getConversionContext().getCompilerDialect().getFunctionProvider();
 
 		Field<String> queryStepPrimaryColumn = queryStep.getQualifiedSelects().getIds().getPrimaryColumn();
 		ColumnConfig idColumnConfig = context.getIdColumns().findPrimaryIdColumn();
@@ -190,7 +190,7 @@ public class QueryStepJoiner {
 		}
 
 		// first, invert dates of negated step
-		SqlDateAggregator dateAggregator = context.getDialectBundle().getDateAggregator();
+		SqlDateAggregator dateAggregator = context.getCompilerDialect().getDateAggregator();
 		negateJoined = dateAggregator.invertAggregatedIntervals(negateJoined, context);
 
 		// join with all-ids table necessary
@@ -204,7 +204,7 @@ public class QueryStepJoiner {
 		DateAggregationDates aggregationDates = DateAggregationDates.forValidityDates(List.of(
 				nonNegateJoined.getQualifiedSelects().getValidityDate(),
 				negateJoined.getQualifiedSelects().getValidityDate(),
-				Optional.of(context.getDialectBundle().getFunctionProvider().allRangeIf(infinityRangeCondition))
+				Optional.of(context.getCompilerDialect().getFunctionProvider().allRangeIf(infinityRangeCondition))
 		));
 		ColumnDateRange merged =
 				dateAggregator.getAggregatedValidityDate(aggregationDates, DateAggregationAction.MERGE)
@@ -326,7 +326,7 @@ public class QueryStepJoiner {
 		withAllValidityDates.addAll(dateAggregationDates.allStartsAndEnds());
 		QueryStep joinedStep = buildJoinedStep(ids, withAllValidityDates, Optional.empty(), Optional.empty(), builder);
 
-		SqlDateAggregator sqlDateAggregator = context.getDialectBundle().getDateAggregator();
+		SqlDateAggregator sqlDateAggregator = context.getCompilerDialect().getDateAggregator();
 		return sqlDateAggregator.apply(
 				joinedStep,
 				mergedSelects,

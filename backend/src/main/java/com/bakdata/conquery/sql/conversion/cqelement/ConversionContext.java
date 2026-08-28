@@ -12,12 +12,11 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.NodeConversionDispatcher;
-import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
-import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -38,9 +37,8 @@ public class ConversionContext implements Context {
 	String defaultPrimaryColumn;
 	PrintSettings sqlPrintSettings;
 	NodeConversionDispatcher nodeConversions;
-	DialectBundle dialectBundle;
+	LegacyCompilerDialect compilerDialect;
 	NameGenerator nameGenerator;
-	SqlExecutionService executionService;
 	@Singular
 	List<QueryStep> querySteps;
 	@Nullable

@@ -6,7 +6,7 @@ import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
-import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
@@ -25,8 +25,8 @@ public class SelectContext<T extends SqlTables> implements Context {
 	ConversionContext conversionContext;
 
 	@Override
-	public DialectBundle getDialectBundle() {
-		return getConversionContext().getDialectBundle();
+	public LegacyCompilerDialect getCompilerDialect() {
+		return getConversionContext().getCompilerDialect();
 	}
 
 	public static SelectContext<ConnectorSqlTables> create(
@@ -48,7 +48,7 @@ public class SelectContext<T extends SqlTables> implements Context {
 	}
 
 	public SqlFunctionProvider getFunctionProvider() {
-		return getDialectBundle().getFunctionProvider();
+		return getCompilerDialect().getFunctionProvider();
 	}
 
     public SqlIdColumns getIds() {

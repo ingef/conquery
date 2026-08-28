@@ -63,7 +63,7 @@ class JoinBranchesCte extends ConnectorCte {
 		}
 		else {
 			IntervalPackingContext intervalPackingContext = createIntervalPackingContext(tableContext);
-			IntervalPacker intervalPacker = tableContext.getConversionContext().getDialectBundle().getIntervalPacker();
+			IntervalPacker intervalPacker = tableContext.getConversionContext().getCompilerDialect().getIntervalPacker();
 			QueryStep lastIntervalPackingStep = intervalPacker.aggregateAsValidityDate(intervalPackingContext);
 			queriesToJoin.add(lastIntervalPackingStep);
 			validityDate = lastIntervalPackingStep.getQualifiedSelects().getValidityDate();
