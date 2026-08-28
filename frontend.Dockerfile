@@ -1,5 +1,5 @@
 # Version Extractor
-FROM alpine/git:v2.52.0@sha256:3136372ed3c9e112d5a2620c66a6803e1b0b7f14a428fcbd0c5028bec4256430 AS version-extractor
+FROM alpine/git:v2.54.0@sha256:6f8eae2205a85c51106a9650e574a37fb1d5e4f645e5f6ea57cb57b9462cd4cf AS version-extractor
 
 WORKDIR /app
 COPY .git .
