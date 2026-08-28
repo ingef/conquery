@@ -17,16 +17,21 @@ The SQL compiler may perform dialect capability checks, but it must not access a
 identifiers. Connections, dialect implementations, compiler state, and execution services are intentionally not part of
 the resolved model.
 
-The model is organized by responsibility:
+The module uses top-level packages as architectural boundaries:
 
-- `query.node` contains the normalized query tree;
-- `query.operation` contains the open operation interfaces and standard implementations;
-- `query.schema` contains resolved physical tables, columns, connectors, and entity metadata;
-- `query.range` and `query.result` contain shared value objects;
-- `query.validation` contains the validation boundary and reusable constraints.
+- `model` contains only the immutable, fully resolved compiler input;
+- `validation` contains Bean Validation constraints and the explicit validation boundary;
+- SQL business logic belongs in sibling packages such as `conversion`, `dialect`, and `execution`, not below `model`.
+
+The resolved model is organized by responsibility:
+
+- `model.node` contains the normalized query tree;
+- `model.operation` contains the open operation interfaces and standard implementations;
+- `model.schema` contains resolved physical tables, columns, connectors, and entity metadata;
+- `model.range` and `model.result` contain shared value objects.
 
 Shared dataset vocabulary such as `ColumnType` comes from the dependency-free `dataset-model` module. SQL-specific
-physical metadata remains in `query.schema`.
+physical metadata remains in `model.schema`.
 
 `ResolvedFilter`, `ResolvedSelect`, `ResolvedCondition`, and `ResolvedAggregation` are open extension points.
 Implementations must be immutable and carry resolved columns and typed values. They must not carry unresolved repository
@@ -41,6 +46,10 @@ classes used by a particular query-producing application.
 The resolved model uses Jakarta Bean Validation annotations. The application supplies a validation provider, normally
 Hibernate Validator, and calls `ResolvedQueryValidation` once before passing a query to the SQL compiler. Validation is
 cascaded through the complete query graph, including extension-provided filters, selects, conditions, and aggregations.
+
+Model records may reference declarative constraints from `validation`, but validation services must never enrich or
+rewrite the model. Conversion and execution code consumes a successfully validated `ResolvedQuery` and must not perform
+logical identifier resolution.
 
 Compact record constructors only create immutable copies of collections. Domain constraints such as compatible column
 types, ordered ranges, and same-table requirements are declarative and are reported together as constraint violations.
