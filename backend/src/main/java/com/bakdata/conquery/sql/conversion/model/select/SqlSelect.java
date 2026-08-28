@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.ExistsSelect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.Qualifiable;
 import org.jooq.Field;
@@ -24,14 +23,14 @@ public interface SqlSelect extends Qualifiable<SqlSelect> {
 	}
 
 	/**
-	 * Special selects like {@link ExistsSelect} require an extra aggregation when joining them with other connectors.
+	 * Special selects like {@link ExistsSqlSelect} require an extra aggregation when joining them with other connectors.
 	 */
 	default SqlSelect connectorAggregate() {
 		return this;
 	}
 
 	/**
-	 * Special selects like {@link ExistsSelect} require to be converted into a specific format before executing the
+	 * Special selects like {@link ExistsSqlSelect} require to be converted into a specific format before executing the
 	 * final query.
 	 */
 	default SqlSelect toFinalRepresentation() {

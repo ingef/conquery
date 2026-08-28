@@ -102,7 +102,7 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 	) {
 		List<QueryStep> unionSteps = connectors.stream().map(connector -> createConnectorColumnSelectQuery(connector, alias, selectContext)).toList();
 		String unionedColumnsCteName = selectContext.getNameGenerator().cteStepName(CONCEPT_COLUMN_STEPS.UNIONED_COLUMNS, alias);
-		return QueryStep.createUnionStep(unionSteps, unionedColumnsCteName, Collections.emptyList(), false, selectContext.getFunctionProvider()); //TODO is false correct here?
+		return QueryStep.createUnionStep(unionSteps, unionedColumnsCteName, Collections.emptyList(), false); //TODO is false correct here?
 	}
 
 	private static QueryStep createConnectorColumnSelectQuery(
