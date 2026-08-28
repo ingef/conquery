@@ -1,6 +1,6 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.conversion.model.Qualifiable;
 import org.jooq.Field;
 
@@ -40,9 +40,9 @@ public interface SqlSelect extends Qualifiable<SqlSelect> {
 	/**
 	 * Aggregate this select to one value per ID group in the final concept query.
 	 */
-	default List<Field<?>> aggregateForFinalQuery(SqlFunctionProvider functionProvider) {
+	default List<Field<?>> aggregateForFinalQuery(CompilerDialect dialect) {
 		return toFinalRepresentation().toFields().stream()
-				.<Field<?>>map(field -> functionProvider.anyValue(field).as(field.getName()))
+				.<Field<?>>map(field -> dialect.anyValue(field).as(field.getName()))
 				.toList();
 	}
 
