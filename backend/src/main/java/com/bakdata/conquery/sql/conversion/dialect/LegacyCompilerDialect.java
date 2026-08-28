@@ -27,6 +27,7 @@ import com.bakdata.conquery.sql.conversion.query.RelativFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.SecondaryIdQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.TableExportQueryConverter;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 
 /**
  * Temporary backend adapter exposing services required by the legacy SQL compiler.
@@ -36,6 +37,11 @@ import org.jooq.DSLContext;
  * connector. New connector code must not depend on this interface.</p>
  */
 public interface LegacyCompilerDialect extends CompilerDialect {
+
+	@Override
+	default <T> Field<T> anyValue(Field<T> field) {
+		return getFunctionProvider().anyValue(field);
+	}
 
 	StratificationFunctions getStratificationFunctions();
 

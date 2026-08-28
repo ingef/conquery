@@ -1,6 +1,6 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
@@ -61,7 +61,7 @@ public class ExistsSqlSelect implements SingleColumnSqlSelect {
 	}
 
 	@Override
-	public List<Field<?>> aggregateForFinalQuery(SqlFunctionProvider functionProvider) {
+	public List<Field<?>> aggregateForFinalQuery(CompilerDialect dialect) {
 		// We have to coalesce at the end of the query because full-outer-joins will create null values, which we want to avoid.
 		Field<Integer> coalesced = coalesce(max(select()), inline(0));
 		return List.of(coalesced.as(alias));
