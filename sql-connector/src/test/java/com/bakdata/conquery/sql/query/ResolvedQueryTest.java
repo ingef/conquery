@@ -2,6 +2,8 @@ package com.bakdata.conquery.sql.query;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static com.bakdata.conquery.sql.query.ValidationTestSupport.assertInvalid;
+import static com.bakdata.conquery.sql.query.ValidationTestSupport.assertValid;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -9,6 +11,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.sql.query.node.AndNode;
+import com.bakdata.conquery.sql.query.node.ConceptNode;
+import com.bakdata.conquery.sql.query.node.DateAggregationAction;
+import com.bakdata.conquery.sql.query.node.QueryNode;
+import com.bakdata.conquery.sql.query.range.DateRange;
+import com.bakdata.conquery.sql.query.result.ResultColumn;
+import com.bakdata.conquery.sql.query.result.ResultType;
+import com.bakdata.conquery.sql.query.schema.EntitySchema;
+import com.bakdata.conquery.sql.query.schema.ResolvedColumn;
+import com.bakdata.conquery.sql.query.schema.ResolvedConnector;
+import com.bakdata.conquery.sql.query.schema.ResolvedValidityDate;
+import com.bakdata.conquery.sql.query.schema.SqlTable;
+import com.bakdata.conquery.sql.query.validation.ResolvedQueryValidation;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 
 class ResolvedQueryTest {
@@ -44,6 +61,8 @@ class ResolvedQueryTest {
 				))
 		);
 
+		assertValid(query);
+		new ResolvedQueryValidation(ValidationTestSupport.VALIDATOR).validate(query);
 		assertEquals(concept, query.root());
 		assertEquals("warehouse", query.target().dataSource());
 	}
@@ -67,7 +86,7 @@ class ResolvedQueryTest {
 				"dataset.other.entity_id", otherTable, "entity_id", ColumnType.STRING, false
 		);
 
-		assertThrows(IllegalArgumentException.class, () -> new ResolvedConnector(
+		ResolvedConnector connector = new ResolvedConnector(
 				"dataset.concept.connector",
 				EVENTS,
 				otherId,
@@ -76,23 +95,48 @@ class ResolvedQueryTest {
 				List.of(),
 				List.of(),
 				List.of()
-		));
+		);
+
+		assertInvalid(connector);
 	}
 
 	@Test
 	void shouldRejectNonDateValidityColumns() {
-		assertThrows(
-				IllegalArgumentException.class,
-				() -> new ResolvedValidityDate.Point(ENTITY_ID)
-		);
+		assertInvalid(new ResolvedValidityDate.Point(ENTITY_ID));
 	}
 
 	@Test
 	void shouldRejectInvertedDateRestriction() {
-		assertThrows(IllegalArgumentException.class, () -> DateRange.closed(
+		assertInvalid(DateRange.closed(
 				LocalDate.of(2025, 2, 1),
 				LocalDate.of(2025, 1, 1)
 		));
+	}
+
+	@Test
+	void shouldValidateTheCompleteQueryGraphAtTheCompilerBoundary() {
+		ResolvedConnector invalidConnector = new ResolvedConnector(
+				"concept.connector",
+				EVENTS,
+				ENTITY_ID,
+				Optional.empty(),
+				new ResolvedValidityDate.Point(ENTITY_ID),
+				List.of(),
+				List.of(),
+				List.of()
+		);
+		ResolvedQuery query = new ResolvedQuery(
+				new ExecutionTarget("dataset", "warehouse"),
+				new EntitySchema(EVENTS, ENTITY_ID),
+				new ConceptNode("concept", List.of(invalidConnector), List.of(), DateAggregationAction.MERGE),
+				true,
+				List.of()
+		);
+
+		assertThrows(
+				ConstraintViolationException.class,
+				() -> new ResolvedQueryValidation(ValidationTestSupport.VALIDATOR).validate(query)
+		);
 	}
 
 	private static ConceptNode conceptNode(SqlTable table) {

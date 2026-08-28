@@ -1,16 +1,21 @@
 package com.bakdata.conquery.sql.query;
 
-import java.util.Objects;
 import java.util.Optional;
 
-/** Selects the dataset snapshot and configured datasource used to execute a query. */
-public record ExecutionTarget(String datasetId, String dataSource, Optional<String> catalogRevision) {
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-	public ExecutionTarget {
-		datasetId = ModelValidation.requireNonBlank(datasetId, "datasetId");
-		dataSource = ModelValidation.requireNonBlank(dataSource, "dataSource");
-		catalogRevision = Objects.requireNonNull(catalogRevision, "catalogRevision")
-				.map(revision -> ModelValidation.requireNonBlank(revision, "catalogRevision"));
+/** Selects the dataset snapshot and configured datasource used to execute a query. */
+public record ExecutionTarget(
+		@NotBlank String datasetId,
+		@NotBlank String dataSource,
+		@NotNull Optional<String> catalogRevision
+) {
+
+	@AssertTrue(message = "catalogRevision must not be blank when present")
+	public boolean isCatalogRevisionValid() {
+		return catalogRevision == null || catalogRevision.isEmpty() || !catalogRevision.get().isBlank();
 	}
 
 	public ExecutionTarget(String datasetId, String dataSource) {

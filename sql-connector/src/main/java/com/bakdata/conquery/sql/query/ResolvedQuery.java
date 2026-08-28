@@ -1,7 +1,13 @@
 package com.bakdata.conquery.sql.query;
 
 import java.util.List;
-import java.util.Objects;
+
+import com.bakdata.conquery.sql.query.internal.ModelNormalization;
+import com.bakdata.conquery.sql.query.node.QueryNode;
+import com.bakdata.conquery.sql.query.result.ResultColumn;
+import com.bakdata.conquery.sql.query.schema.EntitySchema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Complete input for compiling a concept query to SQL.
@@ -9,17 +15,14 @@ import java.util.Objects;
  * @param includeValidityDate whether the final result exposes an aggregated validity-date column
  */
 public record ResolvedQuery(
-		ExecutionTarget target,
-		EntitySchema entitySchema,
-		QueryNode root,
+		@NotNull @Valid ExecutionTarget target,
+		@NotNull @Valid EntitySchema entitySchema,
+		@NotNull @Valid QueryNode root,
 		boolean includeValidityDate,
-		List<ResultColumn> resultColumns
+		@NotNull List<@NotNull @Valid ResultColumn> resultColumns
 ) {
 
 	public ResolvedQuery {
-		Objects.requireNonNull(target, "target");
-		Objects.requireNonNull(entitySchema, "entitySchema");
-		Objects.requireNonNull(root, "root");
-		resultColumns = List.copyOf(Objects.requireNonNull(resultColumns, "resultColumns"));
+		resultColumns = ModelNormalization.immutableCopy(resultColumns);
 	}
 }
