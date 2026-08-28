@@ -4,5 +4,8 @@
  * <p>Instances in this package must not require repository access or identifier resolution during compilation. They
  * describe query semantics and physical database objects, but deliberately exclude connections, dialects, and SQL
  * compiler state.</p>
+ *
+ * <p>The root query aggregate is complemented by dedicated packages for query nodes, operations, ranges, result
+ * metadata, physical schema references, and validation.</p>
  */
 package com.bakdata.conquery.sql.query;

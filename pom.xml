@@ -29,6 +29,7 @@
     </properties>
 
     <modules>
+        <module>dataset-model</module>
         <module>sql-connector</module>
         <module>backend</module>
         <module>backend-quarkus-plugin-api</module>
