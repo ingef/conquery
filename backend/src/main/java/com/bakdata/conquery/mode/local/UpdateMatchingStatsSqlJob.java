@@ -43,21 +43,26 @@ public class UpdateMatchingStatsSqlJob extends Job {
 
 		Stopwatch stopwatch = Stopwatch.createStarted();
 
-		ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(getMatchingStats().getMatchingStatsWorkers()));
+		ListeningExecutorService executorService = MoreExecutors.listeningDecorator(
+			Executors.newFixedThreadPool(getMatchingStats().getMatchingStatsWorkers()));
 
 		Map<ConceptId, ListenableFuture<?>> jobsByConcept = new HashedMap<>();
 		Collection<ListenableFuture<?>> jobs = jobsByConcept.values();
 
 		for (Concept<?> concept : concepts) {
 			if (concept instanceof TreeConcept) {
-				ListenableFuture<?> job = matchingStats.collectMatchingStatsForConcept((TreeConcept) concept, executorService, getMatchingStats().getMatchingStatsRetries());
+				ListenableFuture<?> job = matchingStats.collectMatchingStatsForConcept(
+					(TreeConcept) concept,
+					executorService,
+					getMatchingStats().getMatchingStatsRetries());
 
 				job.addListener(
-						() -> {
-							if (job.state().equals(Future.State.FAILED)) {
-								log.warn("FAILED to collect SQL matching stats for {}", concept, job.exceptionNow());
-							}
-						}, MoreExecutors.directExecutor());
+					() -> {
+						if (job.state().equals(Future.State.FAILED)) {
+							log.warn("FAILED to collect SQL matching stats for {}", concept, job.exceptionNow());
+						}
+					},
+					MoreExecutors.directExecutor());
 
 				jobsByConcept.put(concept.getId(), job);
 			}
@@ -81,7 +86,9 @@ public class UpdateMatchingStatsSqlJob extends Job {
 					// intentionally left blank
 				}
 
-				log.debug("WAITING for {} matching stats to finish.", jobs.stream().filter(job -> job.state().equals(Future.State.RUNNING)).count());
+				log.debug(
+					"WAITING for {} matching stats to finish.",
+					jobs.stream().filter(job -> job.state().equals(Future.State.RUNNING)).count());
 			}
 		}
 

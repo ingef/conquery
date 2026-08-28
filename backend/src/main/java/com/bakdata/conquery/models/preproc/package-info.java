@@ -8,9 +8,5 @@ package com.bakdata.conquery.models.preproc;
  * <p>
  * The file is split into three sections, so we can load them progressively:
  * Initially, we just read the header and determine if it isn't already loaded, and also fits to the {@link com.bakdata.conquery.models.datasets.Table} it is supposed to go in.
- * We then submit an {@link com.bakdata.conquery.models.jobs.ImportJob} which will load the data.
- * <p>
- * We then load the raw data, having claims for Dictionaries in the import resolved via {@link com.bakdata.conquery.io.jackson.serializer.NsIdRef}, which is why they need to be loaded in a second step.
- * <p>
- * TODO write the rest of the documentation for {@link com.bakdata.conquery.models.jobs.ImportJob}
+ * We then distribute each contained {@link com.bakdata.conquery.models.events.Bucket} to a {@link com.bakdata.conquery.models.worker.Worker} on a {@link com.bakdata.conquery.commands.ShardNode}.
  */

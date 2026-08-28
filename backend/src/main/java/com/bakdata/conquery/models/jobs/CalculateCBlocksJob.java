@@ -56,11 +56,12 @@ public class CalculateCBlocksJob extends Job {
 
 		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(getExecutorService());
 
-		final List<? extends ListenableFuture<?>> futures =
-				tasks.stream()
-					 .map(executorService::submit)
-					 .peek(fut -> fut.addListener(this::incrementProgressReporter, MoreExecutors.directExecutor()))
-					 .collect(Collectors.toList());
+		final List<? extends ListenableFuture<?>> futures = tasks.stream()
+			.map(executorService::submit)
+			.peek(
+				fut -> fut.addListener(this::incrementProgressReporter, MoreExecutors.directExecutor()))
+			.collect(
+				Collectors.toList());
 
 
 		final ListenableFuture<?> all = Futures.allAsList(futures);
@@ -68,8 +69,7 @@ public class CalculateCBlocksJob extends Job {
 		while (!all.isDone()) {
 			try {
 				all.get(1, TimeUnit.MINUTES);
-			}
-			catch (TimeoutException exception) {
+			} catch (TimeoutException exception) {
 				log.debug("submitted={}, pool={}", tasks.size(), getExecutorService());
 
 				if (log.isTraceEnabled() && getExecutorService() instanceof ThreadPoolExecutor) {
@@ -110,7 +110,9 @@ public class CalculateCBlocksJob extends Job {
 		public void run() {
 			try {
 				if (bucketManager.hasCBlock(getCBlockId())) {
-					log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.", getCBlockId());
+					log.trace(
+						"Skipping calculation of CBlock[{}] because its already present in the BucketManager.",
+						getCBlockId());
 					return;
 				}
 
@@ -122,8 +124,7 @@ public class CalculateCBlocksJob extends Job {
 
 				bucketManager.addCalculatedCBlock(cBlock);
 				storage.addCBlock(cBlock);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new RuntimeException("Exception in CalculateCBlocksJob %s".formatted(getCBlockId()), e);
 			}
 		}

@@ -11,7 +11,7 @@ import io.dropwizard.core.setup.Environment;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 public interface AuthenticationRealmFactory {
-	
+
 	/**
 	 * Gets the realm specified in the configuration.
 	 *
@@ -21,5 +21,8 @@ public interface AuthenticationRealmFactory {
 	 * @return The realm.
 	 */
 	@JsonIgnore
-	ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController);
+	ConqueryAuthenticationRealm createRealm(
+		Environment environment,
+		ConqueryConfig config,
+		AuthorizationController authorizationController);
 }

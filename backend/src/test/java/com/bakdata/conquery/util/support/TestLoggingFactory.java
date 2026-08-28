@@ -61,13 +61,18 @@ public class TestLoggingFactory implements LoggingFactory {
 		final ConsoleAppenderFactory<ILoggingEvent> consoleAppender = new ConsoleAppenderFactory<>();
 		consoleAppender.setLogFormat(LOG_PATTERN);
 
-		root.addAppender(consoleAppender.build(loggerContext, name, new DropwizardLayoutFactory(), new ThresholdLevelFilterFactory(), new AsyncLoggingEventAppenderFactory()));
+		root.addAppender(
+			consoleAppender.build(
+				loggerContext,
+				name,
+				new DropwizardLayoutFactory(),
+				new ThresholdLevelFilterFactory(),
+				new AsyncLoggingEventAppenderFactory()));
 
 		StatusPrinter.setPrintStream(configurationErrorsStream);
 		try {
 			StatusPrinter.printIfErrorsOccured(loggerContext);
-		}
-		finally {
+		} finally {
 			StatusPrinter.setPrintStream(System.out);
 		}
 
@@ -127,8 +132,7 @@ public class TestLoggingFactory implements LoggingFactory {
 				// appender.stop() if the appender isn't able to flush.
 				asyncAppender.addWarn(asyncAppender.getNumberOfElementsInQueue() + " events may be discarded");
 			}
-		}
-		catch (InterruptedException ignored) {
+		} catch (InterruptedException ignored) {
 			// If the thread waiting for the logs to be flushed is aborted then
 			// user clearly wants the application to quit now, so stop trying
 			// to flush any appenders

@@ -5,12 +5,10 @@ import java.net.URI;
 import java.net.URL;
 import javax.annotation.Nullable;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.models.index.IndexKey;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @Slf4j
 @JsonIgnoreProperties({"emptyLabel"})
-public class IndexConfig  {
+public class IndexConfig {
 
 	/**
 	 * Base url under which reference files are access if the url in
@@ -41,8 +39,7 @@ public class IndexConfig  {
 			// We just try to convert it to an url and discard the return value
 			URL _ignore = baseUrl.toURL();
 			return true;
-		}
-		catch (MalformedURLException e) {
+		} catch (MalformedURLException e) {
 			log.error("URL validation error.", e);
 			return false;
 		}

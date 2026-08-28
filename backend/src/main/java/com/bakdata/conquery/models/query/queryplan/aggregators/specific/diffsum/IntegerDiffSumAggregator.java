@@ -46,6 +46,7 @@ public class IntegerDiffSumAggregator extends ColumnAggregator<Long> {
 
 		return out;
 	}
+
 	@Override
 	public void consumeEvent(Bucket bucket, int event) {
 
@@ -56,7 +57,9 @@ public class IntegerDiffSumAggregator extends ColumnAggregator<Long> {
 		hit = true;
 
 		long addend = bucket.has(event, getAddendColumn()) ? bucket.getInteger(event, getAddendColumn()) : 0;
-		long subtrahend = bucket.has(event, getSubtrahendColumn()) ? bucket.getInteger(event, getSubtrahendColumn()) : 0;
+		long subtrahend = bucket.has(event, getSubtrahendColumn()) ? bucket.getInteger(
+			event,
+			getSubtrahendColumn()) : 0;
 
 		sum = sum + addend - subtrahend;
 	}

@@ -17,8 +17,8 @@ public interface Context {
 	default NameGenerator getNameGenerator() {
 		return getConversionContext().getNameGenerator();
 	}
-	
-	default SqlFunctionProvider getFunctionProvider(){
+
+	default SqlFunctionProvider getFunctionProvider() {
 		return getConversionContext().getDialectBundle().getFunctionProvider();
 	}
 

@@ -45,7 +45,12 @@ public class QueryCleanupTask extends Task {
 	@Override
 	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
 
-		boolean dryRun = Optional.ofNullable(parameters.get(DRY_RUN_PARAM)).filter(Predicate.not(List::isEmpty)).map(List::getFirst).map(Boolean::parseBoolean).orElse(false);
+		boolean dryRun = Optional.ofNullable(parameters.get(DRY_RUN_PARAM))
+			.filter(Predicate.not(List::isEmpty))
+			.map(
+				List::getFirst)
+			.map(Boolean::parseBoolean)
+			.orElse(false);
 
 		Duration queryExpiration = this.queryExpiration;
 
@@ -61,7 +66,10 @@ public class QueryCleanupTask extends Task {
 			throw new IllegalArgumentException("Query Expiration may not be null");
 		}
 
-		log.info("Starting deletion of queries older than {} of {}", queryExpiration, storage.getAllExecutions().count());
+		log.info(
+			"Starting deletion of queries older than {} of {}",
+			queryExpiration,
+			storage.getAllExecutions().count());
 
 		// Iterate for as long as no changes are needed (this is because queries can be referenced by other queries)
 		while (true) {
@@ -108,10 +116,10 @@ public class QueryCleanupTask extends Task {
 			}
 
 			// remove all queries referenced in reused queries.
-			final Collection<ManagedExecution> referenced =
-					requiredQueries.stream()
-								   .map(storage::getExecution)
-								   .collect(Collectors.toSet());
+			final Collection<ManagedExecution> referenced = requiredQueries.stream()
+				.map(storage::getExecution)
+				.collect(
+					Collectors.toSet());
 
 			toDelete.removeAll(referenced);
 

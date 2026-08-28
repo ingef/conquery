@@ -4,9 +4,6 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.forms.util.Resolution;
@@ -51,9 +48,9 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 			return new SqlIdColumns(this.primaryColumn.as(SharedAliases.PRIMARY_COLUMN.getAlias()), null, this);
 		}
 		return new SqlIdColumns(
-				this.primaryColumn.as(SharedAliases.PRIMARY_COLUMN.getAlias()),
-				this.secondaryId.as(SharedAliases.SECONDARY_ID.getAlias()),
-				this
+			this.primaryColumn.as(SharedAliases.PRIMARY_COLUMN.getAlias()),
+			this.secondaryId.as(SharedAliases.SECONDARY_ID.getAlias()),
+			this
 		);
 	}
 
@@ -70,23 +67,25 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 	public SqlIdColumns withAbsoluteStratification(Resolution resolution, Field<Integer> index) {
 		Field<String> resolutionField = DSL.inline(resolution.toString()).as(SharedAliases.RESOLUTION.getAlias());
 		return StratificationSqlIdColumns.builder()
-										 .primaryColumn(this.primaryColumn)
-										 .secondaryId(this.secondaryId)
-										 .resolution(resolutionField)
-										 .index(index)
-										 .eventDate(null)
-										 .build();
+			.primaryColumn(this.primaryColumn)
+			.secondaryId(
+				this.secondaryId)
+			.resolution(resolutionField)
+			.index(index)
+			.eventDate(null)
+			.build();
 	}
 
 	public SqlIdColumns withRelativeStratification(Resolution resolution, Field<Integer> index, Field<Date> eventDate) {
 		Field<String> resolutionField = DSL.inline(resolution.toString()).as(SharedAliases.RESOLUTION.getAlias());
 		return StratificationSqlIdColumns.builder()
-										 .primaryColumn(this.primaryColumn)
-										 .secondaryId(this.secondaryId)
-										 .resolution(resolutionField)
-										 .index(index)
-										 .eventDate(eventDate)
-										 .build();
+			.primaryColumn(this.primaryColumn)
+			.secondaryId(
+				this.secondaryId)
+			.resolution(resolutionField)
+			.index(index)
+			.eventDate(eventDate)
+			.build();
 	}
 
 	public SqlIdColumns forFinalSelect() {
@@ -106,7 +105,7 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 	}
 
 	public List<Field<?>> toFields() {
-		if (getSecondaryId().isEmpty()){
+		if (getSecondaryId().isEmpty()) {
 			return List.of(getPrimaryColumn());
 		}
 
@@ -119,9 +118,8 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 		Condition joinPrimariesCondition = primaryColumn.eq(rightIds.getPrimaryColumn());
 
 		// join on secondary IDs if both are present
-		Condition joinSecondaries = getSecondaryId()
-				.flatMap(leftSecondaryId -> rightIds.getSecondaryId().map(leftSecondaryId::eq))
-				.orElse(DSL.noCondition());
+		Condition joinSecondaries = getSecondaryId().flatMap(
+			leftSecondaryId -> rightIds.getSecondaryId().map(leftSecondaryId::eq)).orElse(DSL.noCondition());
 
 		return List.of(joinPrimariesCondition, joinSecondaries);
 	}
@@ -141,11 +139,15 @@ public class SqlIdColumns implements Qualifiable<SqlIdColumns> {
 			ids.getSecondaryId().ifPresent(secondaryIds::add);
 		});
 
-		Field<String> coalescedPrimaryColumn = coalesceFields(primaryColumns, String.class).coerce(String.class).as(SharedAliases.PRIMARY_COLUMN.getAlias());
+		Field<String> coalescedPrimaryColumn = coalesceFields(primaryColumns, String.class).coerce(String.class)
+			.as(
+				SharedAliases.PRIMARY_COLUMN.getAlias());
 		if (secondaryIds.isEmpty()) {
 			return new SqlIdColumns(coalescedPrimaryColumn);
 		}
-		Field<String> coalescedSecondaryIds = coalesceFields(secondaryIds, String.class).coerce(String.class).as(SharedAliases.SECONDARY_ID.getAlias());
+		Field<String> coalescedSecondaryIds = coalesceFields(secondaryIds, String.class).coerce(String.class)
+			.as(
+				SharedAliases.SECONDARY_ID.getAlias());
 		return new SqlIdColumns(coalescedPrimaryColumn, coalescedSecondaryIds);
 	}
 

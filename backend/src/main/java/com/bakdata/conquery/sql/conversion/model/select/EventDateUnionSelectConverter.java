@@ -11,38 +11,41 @@ import com.google.common.base.Preconditions;
 public class EventDateUnionSelectConverter implements SelectConverter<EventDateUnionSelect> {
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(EventDateUnionSelect select, SelectContext<ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(
+		EventDateUnionSelect select,
+		SelectContext<ConnectorSqlTables> selectContext) {
 
 		FieldWrapper<?> stringAggregation = createEventDateUnionAggregation(select, selectContext);
-		ExtractingSqlSelect<?> finalSelect = stringAggregation.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
+		ExtractingSqlSelect<?> finalSelect = stringAggregation.qualify(
+			selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
 
-		return ConnectorSqlSelects.builder()
-								  .eventDateSelect(stringAggregation)
-								  .finalSelect(finalSelect)
-								  .build();
+		return ConnectorSqlSelects.builder().eventDateSelect(stringAggregation).finalSelect(finalSelect).build();
 	}
 
 	@Override
 	public ConceptSqlSelects conceptSelect(EventDateUnionSelect select, SelectContext<ConceptSqlTables> selectContext) {
 
 		FieldWrapper<?> stringAggregation = createEventDateUnionAggregation(select, selectContext);
-		ExtractingSqlSelect<?> finalSelect = stringAggregation.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.UNIVERSAL_SELECTS));
+		ExtractingSqlSelect<?> finalSelect = stringAggregation.qualify(
+			selectContext.getTables().getPredecessor(ConceptCteStep.UNIVERSAL_SELECTS));
 
-		return ConceptSqlSelects.builder()
-								.eventDateSelect(stringAggregation)
-								.finalSelect(finalSelect)
-								.build();
+		return ConceptSqlSelects.builder().eventDateSelect(stringAggregation).finalSelect(finalSelect).build();
 	}
 
-	private static FieldWrapper<?> createEventDateUnionAggregation(EventDateUnionSelect select, SelectContext<?> selectContext) {
+	private static FieldWrapper<?> createEventDateUnionAggregation(
+		EventDateUnionSelect select,
+		SelectContext<?> selectContext) {
 
-		Preconditions.checkArgument(selectContext.getValidityDate().isPresent(), "Can't convert an EventDateUnionSelect without a validity date being present");
+		Preconditions.checkArgument(
+			selectContext.getValidityDate().isPresent(),
+			"Can't convert an EventDateUnionSelect without a validity date being present");
 		ColumnDateRange validityDate = selectContext.getValidityDate().get();
 
 		SqlFunctionProvider functionProvider = selectContext.getFunctionProvider();
 		String alias = selectContext.getNameGenerator().selectName(select);
 
-		ColumnDateRange qualified = validityDate.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.INTERVAL_PACKING_SELECTS));
+		ColumnDateRange qualified = validityDate.qualify(
+			selectContext.getTables().getPredecessor(ConceptCteStep.INTERVAL_PACKING_SELECTS));
 		return new FieldWrapper<>(functionProvider.dateRangeAggregation(qualified).as(alias));
 	}
 

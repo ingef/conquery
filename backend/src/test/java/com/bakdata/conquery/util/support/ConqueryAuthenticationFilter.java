@@ -1,9 +1,9 @@
 package com.bakdata.conquery.util.support;
 
-import java.util.function.Supplier;
 import jakarta.ws.rs.client.ClientRequestContext;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import jakarta.ws.rs.core.HttpHeaders;
+import java.util.function.Supplier;
 
 /**
  * Simple filter for http client in test to provide authentication information.

@@ -10,7 +10,8 @@ import com.bakdata.conquery.io.cps.CPSBase;
 public interface ResourcesProvider extends Closeable {
 
 	void registerResources(ManagerNode manager);
-	
+
 	@Override
-	default void close() throws IOException {}
+	default void close() throws IOException {
+	}
 }

@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 public class CopyUserTest {
 
 	@Test
-	void testUserCopy(){
+	void testUserCopy() {
 		MetaStorage storage = new NonPersistentStoreFactory().createMetaStorage();
 
 		// Create test role
@@ -38,7 +38,10 @@ public class CopyUserTest {
 		User copy = AuthorizationController.flatCopyUser(originUser, "copytest", storage);
 
 		// Check that it is not the same user
-		assertThat(copy).usingRecursiveComparison().ignoringFieldsOfTypes(User.ShiroUserAdapter.class).isNotEqualTo(originUser);
+		assertThat(copy).usingRecursiveComparison()
+			.ignoringFieldsOfTypes(User.ShiroUserAdapter.class)
+			.isNotEqualTo(
+				originUser);
 
 		// Check that the copy does not have any mappings
 		assertThat(group.containsUser(copy.getId())).isFalse();

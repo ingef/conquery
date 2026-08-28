@@ -31,9 +31,11 @@ public class ConceptValuesAggregator extends Aggregator<Set<Object>> {
 	public ConceptValuesAggregator(TreeConcept concept) {
 		super();
 		this.concept = concept;
-		tableConnectors = concept.getConnectors().stream()
-								 .filter(conn -> conn.getColumn() != null)
-								 .collect(Collectors.toMap(Connector::getResolvedTable, Functions.identity()));
+		tableConnectors = concept.getConnectors()
+			.stream()
+			.filter(conn -> conn.getColumn() != null)
+			.collect(
+				Collectors.toMap(Connector::getResolvedTable, Functions.identity()));
 	}
 
 	@Override

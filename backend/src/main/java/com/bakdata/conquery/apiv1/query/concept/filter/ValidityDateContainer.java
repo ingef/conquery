@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @Data
-@RequiredArgsConstructor(onConstructor_ = @JsonCreator )
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class ValidityDateContainer {
 	private final ValidityDateId value;
 }

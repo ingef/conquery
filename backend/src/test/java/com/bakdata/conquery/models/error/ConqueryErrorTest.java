@@ -13,12 +13,14 @@ public class ConqueryErrorTest {
 	@Test
 	public void errorConvertion() {
 		final ExternalResolveFormatError error = new ExternalResolveFormatError(5, 6);
-		assertThat(error.asPlain()).isEqualTo(new SimpleErrorInfo(error.getId(), "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_FORMAT", error.getMessage()));
+		assertThat(error.asPlain()).isEqualTo(
+			new SimpleErrorInfo(error.getId(), "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_FORMAT", error.getMessage()));
 	}
 
 	@Test
 	public void errorDeserialization() throws JsonProcessingException {
-		final SimpleErrorInfo error = Jackson.MAPPER.readerFor(SimpleErrorInfo.class).readValue(
+		final SimpleErrorInfo error = Jackson.MAPPER.readerFor(SimpleErrorInfo.class)
+			.readValue(
 				"""
 						{\r
 						    "code": "TEST_ERROR",\r
@@ -26,7 +28,11 @@ public class ConqueryErrorTest {
 						    "message": "group was empty."\r
 						  }""");
 
-		assertThat(error).isEqualTo(new SimpleErrorInfo(UUID.fromString("c8be5f10-1ea8-11eb-8fb8-26885ec43e14"), "TEST_ERROR", "group was empty."));
+		assertThat(error).isEqualTo(
+			new SimpleErrorInfo(
+				UUID.fromString("c8be5f10-1ea8-11eb-8fb8-26885ec43e14"),
+				"TEST_ERROR",
+				"group was empty."));
 	}
 
 }

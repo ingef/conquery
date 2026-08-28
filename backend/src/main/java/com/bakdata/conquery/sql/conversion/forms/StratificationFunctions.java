@@ -124,7 +124,11 @@ public abstract class StratificationFunctions {
 	/**
 	 * Shift's a start date by an interval times an amount. The offset will we added to the amount before multiplying.
 	 */
-	public abstract Field<Date> shiftByInterval(Field<Date> startDate, Interval interval, Field<Integer> amount, Offset offset);
+	public abstract Field<Date> shiftByInterval(
+		Field<Date> startDate,
+		Interval interval,
+		Field<Integer> amount,
+		Offset offset);
 
 	/**
 	 * Generates the start and end field for the respective {@link IndexPlacement} and {@link CalendarUnit timeUnit}.
@@ -171,8 +175,8 @@ public abstract class StratificationFunctions {
 		}
 
 		return List.of(
-				positiveStart.as(SharedAliases.INDEX_START_POSITIVE.getAlias()),
-				negativeStart.as(SharedAliases.INDEX_START_NEGATIVE.getAlias())
+			positiveStart.as(SharedAliases.INDEX_START_POSITIVE.getAlias()),
+			negativeStart.as(SharedAliases.INDEX_START_NEGATIVE.getAlias())
 		);
 	}
 
@@ -182,21 +186,28 @@ public abstract class StratificationFunctions {
 	 * @return A {@link Field<Integer>} representing the count of resolution windows.
 	 * @throws CombinationNotSupportedException if the combination of resolution and alignment is not supported.
 	 */
-	public Field<Integer> calculateResolutionWindowCount(ExportForm.ResolutionAndAlignment resolutionAndAlignment, ColumnDateRange bounds) {
+	public Field<Integer> calculateResolutionWindowCount(
+		ExportForm.ResolutionAndAlignment resolutionAndAlignment,
+		ColumnDateRange bounds) {
 		SqlFunctionProvider functionProvider = getFunctionProvider();
 		return switch (resolutionAndAlignment.getResolution()) {
 			case COMPLETE -> DSL.inline(1);
 			case YEARS -> calculateResolutionWindowForYearResolution(resolutionAndAlignment, bounds, functionProvider);
-			case QUARTERS -> calculateResolutionWindowForQuarterResolution(resolutionAndAlignment, bounds, functionProvider);
-			case DAYS -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), exclusiveUpper(bounds))
-										 .as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());
+			case QUARTERS ->
+				calculateResolutionWindowForQuarterResolution(resolutionAndAlignment, bounds, functionProvider);
+			case DAYS ->
+				functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), exclusiveUpper(bounds))
+					.as(
+						SharedAliases.DAY_ALIGNED_COUNT.getAlias());
 		};
 	}
 
 	/**
 	 * Determines the stratification range based on resolution and alignment parameters. The created stratification range is bound by the given range.
 	 */
-	public ColumnDateRange createStratificationRange(ExportForm.ResolutionAndAlignment resolutionAndAlignment, ColumnDateRange bounds) {
+	public ColumnDateRange createStratificationRange(
+		ExportForm.ResolutionAndAlignment resolutionAndAlignment,
+		ColumnDateRange bounds) {
 
 		SqlFunctionProvider functionProvider = getFunctionProvider();
 
@@ -215,16 +226,12 @@ public abstract class StratificationFunctions {
 	 */
 	public Field<Integer> index(SqlIdColumns ids, Optional<ColumnDateRange> stratificationBounds) {
 
-		List<Field<?>> partitioningFields =
-				Stream.concat(
-							  ids.toFields().stream(),
-							  stratificationBounds.stream().flatMap(columnDateRange -> columnDateRange.toFields().stream())
-					  )
-					  .collect(Collectors.toList());
+		List<Field<?>> partitioningFields = Stream.concat(
+			ids.toFields().stream(),
+			stratificationBounds.stream().flatMap(columnDateRange -> columnDateRange.toFields().stream())
+		).collect(Collectors.toList());
 
-		return DSL.rowNumber()
-				  .over(DSL.partitionBy(partitioningFields))
-				  .as(SharedAliases.INDEX.getAlias());
+		return DSL.rowNumber().over(DSL.partitionBy(partitioningFields)).as(SharedAliases.INDEX.getAlias());
 	}
 
 	/**
@@ -242,41 +249,52 @@ public abstract class StratificationFunctions {
 	}
 
 	private Field<Integer> calculateResolutionWindowForQuarterResolution(
-			ExportForm.ResolutionAndAlignment resolutionAndAlignment,
-			ColumnDateRange bounds,
-			SqlFunctionProvider functionProvider
+		ExportForm.ResolutionAndAlignment resolutionAndAlignment,
+		ColumnDateRange bounds,
+		SqlFunctionProvider functionProvider
 	) {
 		return switch (resolutionAndAlignment.getAlignment()) {
-			case QUARTER -> functionProvider.dateDistance(ChronoUnit.MONTHS, QUARTER_START, QUARTER_END)
-											.divide(MONTHS_PER_QUARTER)
-											.as(SharedAliases.QUARTER_ALIGNED_COUNT.getAlias());
-			case DAY -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), exclusiveUpper(bounds))
-										.plus(89)
-										.divide(DAYS_PER_QUARTER)
-										.as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());
+			case QUARTER ->
+				functionProvider.dateDistance(ChronoUnit.MONTHS, QUARTER_START, QUARTER_END)
+					.divide(
+						MONTHS_PER_QUARTER)
+					.as(SharedAliases.QUARTER_ALIGNED_COUNT.getAlias());
+			case DAY ->
+				functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), exclusiveUpper(bounds))
+					.plus(89)
+					.divide(
+						DAYS_PER_QUARTER)
+					.as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());
 			default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
 		};
 	}
 
 	private Field<Integer> calculateResolutionWindowForYearResolution(
-			ExportForm.ResolutionAndAlignment resolutionAndAlignment,
-			ColumnDateRange bounds,
-			SqlFunctionProvider functionProvider
+		ExportForm.ResolutionAndAlignment resolutionAndAlignment,
+		ColumnDateRange bounds,
+		SqlFunctionProvider functionProvider
 	) {
 		return switch (resolutionAndAlignment.getAlignment()) {
-			case YEAR -> functionProvider.dateDistance(ChronoUnit.YEARS, YEAR_START, YEAR_END)
-										 .as(SharedAliases.YEAR_ALIGNED_COUNT.getAlias());
-			case QUARTER -> functionProvider.dateDistance(ChronoUnit.YEARS, QUARTER_START, YEAR_END_QUARTER_ALIGNED)
-											.as(SharedAliases.QUARTER_ALIGNED_COUNT.getAlias());
-			case DAY -> functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), exclusiveUpper(bounds))
-										.plus(364)
-										.divide(DAYS_PER_YEAR)
-										.as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());
+			case YEAR ->
+				functionProvider.dateDistance(ChronoUnit.YEARS, YEAR_START, YEAR_END)
+					.as(
+						SharedAliases.YEAR_ALIGNED_COUNT.getAlias());
+			case QUARTER ->
+				functionProvider.dateDistance(ChronoUnit.YEARS, QUARTER_START, YEAR_END_QUARTER_ALIGNED)
+					.as(
+						SharedAliases.QUARTER_ALIGNED_COUNT.getAlias());
+			case DAY ->
+				functionProvider.dateDistance(ChronoUnit.DAYS, lower(bounds), exclusiveUpper(bounds))
+					.plus(364)
+					.divide(
+						DAYS_PER_YEAR)
+					.as(SharedAliases.DAY_ALIGNED_COUNT.getAlias());
 			default -> throw new CombinationNotSupportedException(resolutionAndAlignment);
 		};
 	}
 
-	private ColumnDateRange createStratificationRangeForQuarterResolution(ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+	private ColumnDateRange createStratificationRangeForQuarterResolution(
+		ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
 		return switch (resolutionAndAlignment.getAlignment()) {
 			case QUARTER -> calcRange(QUARTER_START, Interval.QUARTER_INTERVAL);
 			case DAY -> calcRange(INDEX_START, Interval.NINETY_DAYS_INTERVAL);
@@ -284,7 +302,8 @@ public abstract class StratificationFunctions {
 		};
 	}
 
-	private ColumnDateRange createStratificationRangeForYearResolution(ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
+	private ColumnDateRange createStratificationRangeForYearResolution(
+		ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
 		return switch (resolutionAndAlignment.getAlignment()) {
 			case YEAR -> calcRange(YEAR_START, Interval.ONE_YEAR_INTERVAL);
 			case QUARTER -> calcRange(QUARTER_START, Interval.ONE_YEAR_INTERVAL);
@@ -293,7 +312,9 @@ public abstract class StratificationFunctions {
 		};
 	}
 
-	private static Condition windowCountForQuarterResolution(ExportForm.ResolutionAndAlignment resolutionAndAlignment, Field<Integer> seriesIndex) {
+	private static Condition windowCountForQuarterResolution(
+		ExportForm.ResolutionAndAlignment resolutionAndAlignment,
+		Field<Integer> seriesIndex) {
 		return switch (resolutionAndAlignment.getAlignment()) {
 			case QUARTER -> seriesIndex.lessOrEqual(QUARTER_ALIGNED_COUNT);
 			case DAY -> seriesIndex.lessOrEqual(DAY_ALIGNED_COUNT);
@@ -301,7 +322,9 @@ public abstract class StratificationFunctions {
 		};
 	}
 
-	private static Condition windowCountForYearResolution(ExportForm.ResolutionAndAlignment resolutionAndAlignment, Field<Integer> seriesIndex) {
+	private static Condition windowCountForYearResolution(
+		ExportForm.ResolutionAndAlignment resolutionAndAlignment,
+		Field<Integer> seriesIndex) {
 		return switch (resolutionAndAlignment.getAlignment()) {
 			case YEAR -> seriesIndex.lessOrEqual(YEAR_ALIGNED_COUNT);
 			case QUARTER -> seriesIndex.lessOrEqual(QUARTER_ALIGNED_COUNT);

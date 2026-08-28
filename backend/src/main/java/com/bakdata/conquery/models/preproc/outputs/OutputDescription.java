@@ -1,9 +1,8 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
+import jakarta.validation.constraints.NotEmpty;
 import java.util.InputMismatchException;
 import java.util.StringJoiner;
-
-import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -58,11 +57,11 @@ public abstract class OutputDescription {
 	 */
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder()
-				.append(name)
-				.append(required)
-				.append(getClass().getAnnotation(CPSType.class).id())
-				.toHashCode();
+		return new HashCodeBuilder().append(name)
+			.append(required)
+			.append(
+				getClass().getAnnotation(CPSType.class).id())
+			.toHashCode();
 	}
 
 	/**
@@ -91,7 +90,11 @@ public abstract class OutputDescription {
 			final Object parsed = parseLine(row, type, sourceLine);
 
 			if (OutputDescription.this.isRequired() && parsed == null) {
-				throw new IllegalArgumentException(String.format("Required Output[%s] produced NULL value at line %d", OutputDescription.this.getName(), sourceLine));
+				throw new IllegalArgumentException(
+					String.format(
+						"Required Output[%s] produced NULL value at line %d",
+						OutputDescription.this.getName(),
+						sourceLine));
 			}
 
 			return parsed;
@@ -122,7 +125,8 @@ public abstract class OutputDescription {
 		}
 
 		if (missing.length() != 0) {
-			throw new InputMismatchException(String.format("Did not find headers `%s` in `%s`", missing.toString(), actualHeaders.keySet()));
+			throw new InputMismatchException(
+				String.format("Did not find headers `%s` in `%s`", missing.toString(), actualHeaders.keySet()));
 		}
 	}
 
@@ -134,7 +138,10 @@ public abstract class OutputDescription {
 	 * @param config
 	 * @return the output for the specific headers.
 	 */
-	public abstract Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config);
+	public abstract Output createForHeaders(
+		Object2IntArrayMap<String> headers,
+		DateReader dateReader,
+		ConqueryConfig config);
 
 	/**
 	 * The resulting type after {@link Output} has been applied.

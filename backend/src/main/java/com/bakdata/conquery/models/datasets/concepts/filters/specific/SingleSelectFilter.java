@@ -23,7 +23,10 @@ public class SingleSelectFilter extends SelectFilter<String> {
 	@Override
 	public EventFilterNode<?> createFilterNode(String value) {
 		if (getSubstringRange() != null && !getSubstringRange().isAll()) {
-			return new SubstringMultiSelectFilterNode(getColumn().resolve(), Collections.singleton(value), getSubstringRange());
+			return new SubstringMultiSelectFilterNode(
+				getColumn().resolve(),
+				Collections.singleton(value),
+				getSubstringRange());
 		}
 
 		return new MultiSelectFilterNode(getColumn().resolve(), Collections.singleton(value));

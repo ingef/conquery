@@ -58,8 +58,7 @@ public class QuarterDateRangeStore implements DateRangeStore {
 	public void setDateRange(int event, CDateRange raw) {
 		if (raw.hasLowerBound()) {
 			store.setInteger(event, raw.getMinValue());
-		}
-		else {
+		} else {
 			throw new IllegalArgumentException("Cannot store open dates in QuarterStore");
 		}
 	}

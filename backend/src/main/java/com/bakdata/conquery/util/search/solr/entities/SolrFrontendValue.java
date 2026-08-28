@@ -68,7 +68,12 @@ public class SolrFrontendValue implements SolrEntity {
 
 	}
 
-	public SolrFrontendValue(String searchable, int sourcePriority, @NonNull String value, String label, String optionValue) {
+	public SolrFrontendValue(
+		String searchable,
+		int sourcePriority,
+		@NonNull String value,
+		String label,
+		String optionValue) {
 		this.id = buildId(searchable, value);
 		this.searchable_s = searchable;
 		this.sourcePriority_i = sourcePriority;
@@ -79,7 +84,10 @@ public class SolrFrontendValue implements SolrEntity {
 	}
 
 	public FrontendValue toFrontendValue() {
-		return new FrontendValue(Objects.requireNonNullElse(value_s, ""), Objects.requireNonNullElse(label_t, value_s), optionValue_s);
+		return new FrontendValue(
+			Objects.requireNonNullElse(value_s, ""),
+			Objects.requireNonNullElse(label_t, value_s),
+			optionValue_s);
 	}
 
 	private static String buildId(String searchable, String value) {

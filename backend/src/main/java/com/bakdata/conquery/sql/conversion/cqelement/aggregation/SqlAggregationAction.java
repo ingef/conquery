@@ -19,9 +19,13 @@ interface SqlAggregationAction {
 
 	List<DateAggregationCte> dateAggregationCtes();
 
-	ColumnDateRange getOverlapValidityDate(DateAggregationDates dateAggregationDates, SqlFunctionProvider functionProvider);
+	ColumnDateRange getOverlapValidityDate(
+		DateAggregationDates dateAggregationDates,
+		SqlFunctionProvider functionProvider);
 
-	List<SqlSelect> getIntermediateTableSelects(DateAggregationDates dateAggregationDates, List<SqlSelect> carryThroughSelects);
+	List<SqlSelect> getIntermediateTableSelects(
+		DateAggregationDates dateAggregationDates,
+		List<SqlSelect> carryThroughSelects);
 
 	List<QueryStep> getNoOverlapSelects(DateAggregationContext dateAggregationContext);
 

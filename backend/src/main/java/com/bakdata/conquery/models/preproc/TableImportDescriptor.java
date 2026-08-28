@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.preproc;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -8,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -62,7 +62,8 @@ public class TableImportDescriptor implements Serializable {
 	}
 
 	@JsonIgnore
-	@ValidationMethod(message = "The output of each input needs the same number of output columns of the same type and name")
+	@ValidationMethod(
+		message = "The output of each input needs the same number of output columns of the same type and name")
 	public boolean isSameTypesInEachInput() {
 		if (inputs.length == 1) {
 			return true;
@@ -70,7 +71,10 @@ public class TableImportDescriptor implements Serializable {
 		List<MajorTypeId[]> types = new ArrayList<>();
 
 		for (TableInputDescriptor input : inputs) {
-			MajorTypeId[] inp = Arrays.stream(input.getOutput()).map(OutputDescription::getResultType).toArray(MajorTypeId[]::new);
+			MajorTypeId[] inp = Arrays.stream(input.getOutput())
+				.map(OutputDescription::getResultType)
+				.toArray(
+					MajorTypeId[]::new);
 
 			for (MajorTypeId[] out : types) {
 				if (!Arrays.equals(inp, out)) {

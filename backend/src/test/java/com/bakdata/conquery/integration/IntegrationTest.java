@@ -49,8 +49,7 @@ public interface IntegrationTest {
 
 			try {
 				execute(conquery);
-			}
-			finally {
+			} finally {
 				testConquery.removeSupport(conquery);
 			}
 		}
@@ -74,21 +73,25 @@ public interface IntegrationTest {
 			// we clone the default config to ensure that nothing mangles the config of others.
 			// However, override config _should_ not mutate the incoming config.
 
-			final ConqueryConfig clonedConfig = Cloner.clone(integrationTests.getConfig(), Map.of(), IntegrationTests.MAPPER);
+			final ConqueryConfig clonedConfig = Cloner.clone(
+				integrationTests.getConfig(),
+				Map.of(),
+				IntegrationTests.MAPPER);
 			final ConqueryConfig overridenConfig = test.overrideConfig(clonedConfig, integrationTests.getWorkDir());
 
-			final TestConquery testConquery = integrationTests.getCachedConqueryInstance(integrationTests.getWorkDir(), overridenConfig, testImporter);
+			final TestConquery testConquery = integrationTests.getCachedConqueryInstance(
+				integrationTests.getWorkDir(),
+				overridenConfig,
+				testImporter);
 
 			try {
 				testConquery.beforeEach();
 				test.execute(name, testConquery);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				ConqueryMDC.setLocation(name);
 				log.info("FAILED integration test " + name, e);
 				throw e;
-			}
-			finally {
+			} finally {
 				testConquery.afterEach();
 			}
 			ConqueryMDC.setLocation(name);

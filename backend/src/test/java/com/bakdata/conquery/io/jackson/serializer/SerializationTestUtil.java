@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.jackson.serializer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import jakarta.validation.Validator;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
@@ -12,7 +13,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -41,19 +41,8 @@ public class SerializationTestUtil<T> {
 	/**
 	 * These don't seem to behave well in combination with recursiveComparison.
 	 */
-	public static final Class<?>[]
-			TYPES_TO_IGNORE =
-			new Class[]{
-					AtomicInteger.class,
-					Double.class,
-					SoftReference.class,
-					ThreadLocal.class,
-					User.ShiroUserAdapter.class,
-					Validator.class,
-					WeakReference.class,
-					CompletableFuture.class,
-					NamespacedStorageProvider.class
-			};
+	public static final Class<?>[] TYPES_TO_IGNORE = new Class[]{AtomicInteger.class, Double.class, SoftReference.class, ThreadLocal.class, User.ShiroUserAdapter.class, Validator.class, WeakReference.class, CompletableFuture.class, NamespacedStorageProvider.class
+	};
 
 	private final JavaType type;
 	private final Validator validator = Validators.newValidator();
@@ -74,7 +63,10 @@ public class SerializationTestUtil<T> {
 	}
 
 	public static <T> SerializationTestUtil<T[]> forArrayType(TypeReference<T> elementType) {
-		return new SerializationTestUtil<>(Jackson.MAPPER.getTypeFactory().constructArrayType(Jackson.MAPPER.getTypeFactory().constructType(elementType)));
+		return new SerializationTestUtil<>(
+			Jackson.MAPPER.getTypeFactory()
+				.constructArrayType(
+					Jackson.MAPPER.getTypeFactory().constructType(elementType)));
 	}
 
 	public SerializationTestUtil<T> objectMappers(ObjectMapper... objectMappers) {
@@ -109,11 +101,11 @@ public class SerializationTestUtil<T> {
 		for (ObjectMapper objectMapper : objectMappers) {
 			try {
 				test(
-						value,
-						expected,
-						objectMapper
+					value,
+					expected,
+					objectMapper
 				);
-			} catch (Exception|Error e) {
+			} catch (Exception | Error e) {
 				Class<?> activeView = objectMapper.getSerializationConfig().getActiveView();
 				throw new IllegalStateException("Serdes failed with object mapper using view '" + activeView + "'", e);
 			}
@@ -144,17 +136,18 @@ public class SerializationTestUtil<T> {
 
 		// Preliminary check that ids of identifiables are equal
 		if (value instanceof Identifiable<?, ?> identifiableValue) {
-			assertThat(((Identifiable<?, ?>) copy).getId())
-					.as("the serialized value")
-					.isEqualTo(identifiableValue.getId());
+			assertThat(((Identifiable<?, ?>) copy).getId()).as("the serialized value")
+				.isEqualTo(
+					identifiableValue.getId());
 		}
 
-		RecursiveComparisonAssert<?> ass = assertThat(copy)
-				.as("Unequal after copy.")
-				.usingRecursiveComparison()
-				.usingOverriddenEquals()
-				.ignoringFieldsOfTypes(TYPES_TO_IGNORE)
-				.ignoringFields("metaStorage", "namespacedStorageProvider");
+		RecursiveComparisonAssert<?> ass = assertThat(copy).as(
+			"Unequal after copy.")
+			.usingRecursiveComparison()
+			.usingOverriddenEquals()
+			.ignoringFieldsOfTypes(
+				TYPES_TO_IGNORE)
+			.ignoringFields("metaStorage", "namespacedStorageProvider");
 
 		// Apply assertion customizations
 		ass = assertCustomizer.apply(ass);

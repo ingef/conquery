@@ -78,7 +78,10 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 			final CQTable cqTable = entry.getKey();
 			final ValidityDate validityDate = cqTable.findValidityDate();
 			final QPNode query = entry.getValue();
-			final Map<BucketId, CBlockId> cblocks = ctx.getBucketManager().getEntityCBlocksForConnector(entity, cqTable.getConnector());
+			final Map<BucketId, CBlockId> cblocks = ctx.getBucketManager()
+				.getEntityCBlocksForConnector(
+					entity,
+					cqTable.getConnector());
 			final Connector connector = cqTable.getConnector().resolve();
 
 			for (BucketId bucketId : ctx.getEntityBucketsForTable(entity, connector.resolveTableId())) {
@@ -94,8 +97,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 				for (int event = start; event < end; event++) {
 
-					if (validityDate != null
-						&& !bucket.eventIsContainedIn(event, validityDate, dateRange)) {
+					if (validityDate != null && !bucket.eventIsContainedIn(event, validityDate, dateRange)) {
 						continue;
 					}
 
@@ -157,13 +159,19 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		return query.isContained();
 	}
 
-	private Object[] collectRow(int totalColumns, CQTable exportDescription, Bucket bucket, int event, ValidityDate validityDate, CBlock cblock) {
+	private Object[] collectRow(
+		int totalColumns,
+		CQTable exportDescription,
+		Bucket bucket,
+		int event,
+		ValidityDate validityDate,
+		CBlock cblock) {
 
 		final Object[] entry = new Object[totalColumns];
 
 		final CDateRange date;
 
-		if(validityDate != null && (date = validityDate.getValidityDate(event, bucket)) !=  null) {
+		if (validityDate != null && (date = validityDate.getValidityDate(event, bucket)) != null) {
 			entry[0] = List.of(date);
 		}
 

@@ -28,10 +28,12 @@ public abstract class Job {
 	}
 
 	public abstract void execute() throws Exception;
+
 	public abstract String getLabel();
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName()+"(label='"+getLabel()+"' progress="+progressReporter.getEstimate()+")";
+		return this.getClass().getSimpleName() + "(label='" + getLabel() + "' progress=" + progressReporter
+			.getEstimate() + ")";
 	}
 }

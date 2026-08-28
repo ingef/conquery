@@ -8,10 +8,11 @@ import com.bakdata.conquery.models.forms.util.Resolution;
 class CombinationNotSupportedException extends RuntimeException {
 
 	public CombinationNotSupportedException(ExportForm.ResolutionAndAlignment resolutionAndAlignment) {
-		super("Alignment %s does not fit the resolution %s.".formatted(
+		super(
+			"Alignment %s does not fit the resolution %s.".formatted(
 				resolutionAndAlignment.getAlignment(),
 				resolutionAndAlignment.getResolution()
-		));
+			));
 	}
 
 	public CombinationNotSupportedException(IndexPlacement indexPlacement, CalendarUnit timeUnit) {

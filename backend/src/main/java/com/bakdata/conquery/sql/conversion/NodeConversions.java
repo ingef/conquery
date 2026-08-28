@@ -1,5 +1,8 @@
 package com.bakdata.conquery.sql.conversion;
 
+import java.time.Clock;
+import java.util.Locale;
+
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
@@ -11,9 +14,6 @@ import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.NonNull;
 import org.jooq.DSLContext;
-
-import java.time.Clock;
-import java.util.Locale;
 
 /**
  * Entry point for converting {@link QueryDescription} to an SQL query.
@@ -29,12 +29,12 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 	private final String defaultPrimaryColumn;
 
 	public NodeConversions(
-			IdColumnConfig idColumns,
-			DialectBundle dialectBundle,
-			DSLContext dslContext,
-			SqlExecutionService executionService,
-			Clock clock,
-			String defaultPrimaryColumn
+		IdColumnConfig idColumns,
+		DialectBundle dialectBundle,
+		DSLContext dslContext,
+		SqlExecutionService executionService,
+		Clock clock,
+		String defaultPrimaryColumn
 	) {
 		super(dialectBundle.getNodeConverters(dslContext));
 		this.idColumns = idColumns;
@@ -47,16 +47,21 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 
 	public ConversionContext convert(QueryDescription queryDescription, ConqueryConfig conqueryConfig) {
 		ConversionContext initialCtx = ConversionContext.builder()
-				.idColumns(idColumns)
-				.sqlPrintSettings(new PrintSettings(false, Locale.ROOT, conqueryConfig, null, null))
-				.nameGenerator(nameGenerator)
-				.nodeConversions(this)
-				.clock(clock)
-				.defaultPrimaryColumn(this.defaultPrimaryColumn)
-				.stratificationFunctions(dialect.getStratificationFunctions())
-				.dialectBundle(dialect)
-				.executionService(executionService)
-				.build();
+			.idColumns(idColumns)
+			.sqlPrintSettings(
+				new PrintSettings(false, Locale.ROOT, conqueryConfig, null, null))
+			.nameGenerator(
+				nameGenerator)
+			.nodeConversions(this)
+			.clock(clock)
+			.defaultPrimaryColumn(
+				this.defaultPrimaryColumn)
+			.stratificationFunctions(
+				dialect.getStratificationFunctions())
+			.dialectBundle(dialect)
+			.executionService(
+				executionService)
+			.build();
 		return convert(queryDescription, initialCtx);
 	}
 

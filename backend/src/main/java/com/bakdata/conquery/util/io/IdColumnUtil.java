@@ -23,7 +23,9 @@ public class IdColumnUtil {
 	/**
 	 * If a column contains an ID, create a reader for that ID.
 	 */
-	public static List<Function<String[], ExternalId>> getIdReaders(List<String> format, Map<String, ColumnConfig> idMappers) {
+	public static List<Function<String[], ExternalId>> getIdReaders(
+		List<String> format,
+		Map<String, ColumnConfig> idMappers) {
 		List<Function<String[], ExternalId>> out = new ArrayList<>(format.size());
 
 		for (int index = 0; index < format.size(); index++) {
@@ -44,13 +46,18 @@ public class IdColumnUtil {
 	/**
 	 * Try to create a {@link FullIdPrinter} for user if they are allowed. If not allowed to read ids, they will receive a pseudomized result instead.
 	 */
-	public static IdPrinter getIdPrinter(Subject owner, ManagedExecution execution, Namespace namespace, List<ColumnConfig> ids) {
+	public static IdPrinter getIdPrinter(
+		Subject owner,
+		ManagedExecution execution,
+		Namespace namespace,
+		List<ColumnConfig> ids) {
 		final int size = (int) ids.stream().filter(ColumnConfig::isPrint).count();
 
 		final int pos = IntStream.range(0, ids.size())
-								 .filter(idx -> ids.get(idx).isPrimaryId())
-								 .findFirst()
-								 .orElseThrow();
+			.filter(
+				idx -> ids.get(idx).isPrimaryId())
+			.findFirst()
+			.orElseThrow();
 
 		if (owner.isPermitted(execution.getDataset(), Ability.PRESERVE_ID)) {
 			// todo(tm): The integration of ids in the sql connector needs to be properly managed

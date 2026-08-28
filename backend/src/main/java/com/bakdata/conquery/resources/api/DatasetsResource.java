@@ -1,11 +1,11 @@
 package com.bakdata.conquery.resources.api;
 
-import java.util.stream.Stream;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;

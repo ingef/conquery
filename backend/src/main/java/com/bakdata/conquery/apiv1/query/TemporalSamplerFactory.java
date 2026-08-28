@@ -49,7 +49,7 @@ public enum TemporalSamplerFactory {
 					return OptionalInt.of(span.getMaxValue());
 				}
 
-				if(span.hasLowerBound() && span.getMinValue() > today){
+				if (span.hasLowerBound() && span.getMinValue() > today) {
 					return OptionalInt.of(span.getMinValue());
 				}
 
@@ -82,8 +82,7 @@ public enum TemporalSamplerFactory {
 
 				if (span.hasLowerBound()) {
 					lower = span.getMinValue();
-				}
-				else {
+				} else {
 					// Very rare edge case with no real answer to give
 					lower = CDateRange.NEGATIVE_INFINITY;
 				}
@@ -93,8 +92,7 @@ public enum TemporalSamplerFactory {
 
 				if (span.hasUpperBound()) {
 					upper = span.getMaxValue();
-				}
-				else {
+				} else {
 					// Since there is no satisfying real value, but real values are preferred, we set the maximum to today for sampling purposes.
 					upper = today;
 				}

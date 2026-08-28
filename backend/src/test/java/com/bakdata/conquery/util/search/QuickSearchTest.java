@@ -14,7 +14,16 @@ class QuickSearchTest {
 	@Test
 	public void anaconda() {
 		final TrieSearch<String> search = new TrieSearch<>(3, "");
-		for (String item : List.of("Anaconda", "Anaxonds" /* Simulate Typing Errors */, "Ananas", "Honda", "London", "Analysis", "Canada", "Condor", "Condar")) {
+		for (String item : List.of(
+			"Anaconda",
+			"Anaxonds" /* Simulate Typing Errors */,
+			"Ananas",
+			"Honda",
+			"London",
+			"Analysis",
+			"Canada",
+			"Condor",
+			"Condar")) {
 			search.addItem(item, List.of(item));
 		}
 
@@ -23,17 +32,18 @@ class QuickSearchTest {
 		String query = "anaconda";
 		final List<String> results = search.findItems(List.of(query), Integer.MAX_VALUE);
 
-		assertThat(results)
-				.describedAs("Query for %s".formatted(query))
-				.isEqualTo(List.of("Anaconda",	// Full match
-								   "Condar",	// 3 trigrams
-								   "Condor",	// 2 trigrams
-								   "Honda",		// 2 trigrams
-								   "Anaxonds",	// 1 trigram
-								   "London",	// 1 trigram
-								   "Ananas",	// 1 trigram
-								   "Analysis",	// 1 trigram
-								   "Canada"		// 1 trigram
+		assertThat(results).describedAs("Query for %s".formatted(query))
+			.isEqualTo(
+				List.of(
+					"Anaconda",	// Full match
+					"Condar",	// 3 trigrams
+					"Condor",	// 2 trigrams
+					"Honda",		// 2 trigrams
+					"Anaxonds",	// 1 trigram
+					"London",	// 1 trigram
+					"Ananas",	// 1 trigram
+					"Analysis",	// 1 trigram
+					"Canada"		// 1 trigram
 				));
 
 	}
@@ -50,9 +60,9 @@ class QuickSearchTest {
 		String query = "pants";
 		final List<String> results = search.findItems(List.of(query), Integer.MAX_VALUE);
 
-		assertThat(results)
-				.describedAs("Query for %s".formatted(query))
-				.isEqualTo(List.of("Pants", "PantsPants", "Pantshop", "Sweatpants", "Rantsom", "Fantastic"));
+		assertThat(results).describedAs("Query for %s".formatted(query))
+			.isEqualTo(
+				List.of("Pants", "PantsPants", "Pantshop", "Sweatpants", "Rantsom", "Fantastic"));
 	}
 
 	@Test
@@ -62,15 +72,14 @@ class QuickSearchTest {
 
 		// The more hits an item has, the more do we favor it.
 
-		assertThat(search.findItems(List.of("aa", "c"), Integer.MAX_VALUE))
-				.containsExactly(
-						"c aa",       // Two exact matches
-						"aa",         // One exact match
-						"c",          // One exact match
-						"aaa",        // One prefix match, onto a whole word
-						"aab",        // One prefix match, onto a whole word
-						"d baaacd"    // Two partial matches
-				);
+		assertThat(search.findItems(List.of("aa", "c"), Integer.MAX_VALUE)).containsExactly(
+			"c aa",       // Two exact matches
+			"aa",         // One exact match
+			"c",          // One exact match
+			"aaa",        // One prefix match, onto a whole word
+			"aab",        // One prefix match, onto a whole word
+			"d baaacd"    // Two partial matches
+		);
 
 		// However negative matches are not considered (ie "c" is not used to weigh against "c aa")
 		assertThat(search.findItems(List.of("aa"), 4)).containsExactly("aa", "c aa", "aaa", "aab");
@@ -80,14 +89,14 @@ class QuickSearchTest {
 		final TrieSearch<String> search = new TrieSearch<>(2, "");
 
 		List<String> items = List.of(
-				"a",
-				"aa",
-				"aaa",
-				"aab",
-				"b",
-				"c",
-				"c aa",
-				"d baaacd"
+			"a",
+			"aa",
+			"aaa",
+			"aab",
+			"b",
+			"c",
+			"c aa",
+			"d baaacd"
 		);
 
 		for (String item : items) {
@@ -113,20 +122,17 @@ class QuickSearchTest {
 	public void testNGrams() {
 		final TrieSearch<String> search = new TrieSearch<>(2, null);
 
-		assertThat(search.ngramSplit("baaacd"))
-				.containsExactly(
-						"ba",
-						"aa",
-						"aa",
-						"ac",
-						"cd"
-				);
+		assertThat(search.ngramSplit("baaacd")).containsExactly(
+			"ba",
+			"aa",
+			"aa",
+			"ac",
+			"cd"
+		);
 
-		assertThat(search.ngramSplit("acd"))
-				.containsExactly("ac", "cd");
+		assertThat(search.ngramSplit("acd")).containsExactly("ac", "cd");
 
-		assertThat(search.ngramSplit("aacd"))
-				.containsExactly("aa", "ac", "cd");
+		assertThat(search.ngramSplit("aacd")).containsExactly("aa", "ac", "cd");
 	}
 
 	@Test

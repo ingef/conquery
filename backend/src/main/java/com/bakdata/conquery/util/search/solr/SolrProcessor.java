@@ -78,10 +78,8 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	 * This is mainly used to decouple mina threads from the solr client in order to prevent blocking and to convert between {@link com.bakdata.conquery.models.messages.namespaces.specific.RegisterColumnValues}'s
 	 * and solr chunk sizes.
 	 */
-	private final ExecutorService chunkDecoupleExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder()
-																									.setNameFormat("solr-submitter-%d")
-																									.setDaemon(true)
-																									.build());
+	private final ExecutorService chunkDecoupleExecutor = Executors.newSingleThreadExecutor(
+		new ThreadFactoryBuilder().setNameFormat("solr-submitter-%d").setDaemon(true).build());
 	private SolrClient solrSearchClient;
 	private SolrClient solrIndexClient;
 
@@ -114,16 +112,14 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		if (solrSearchClient != null) {
 			try {
 				solrSearchClient.close();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.warn("Failed to close solr search client", e);
 			}
 		}
 		if (solrIndexClient != null) {
 			try {
 				solrIndexClient.close();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.warn("Failed to close solr index client", e);
 			}
 		}
@@ -148,8 +144,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		try (SolrClient solrClient = solrSearchClientFactory.get()) {
 			log.info("Clearing collection: {}", solrClient.getDefaultCollection());
 			solrClient.deleteByQuery("*:*");
-		}
-		catch (SolrServerException | IOException e) {
+		} catch (SolrServerException | IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -177,9 +172,7 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	 */
 	private String buildNameForSearchable(Searchable searchable) {
 
-		String name = searchable instanceof Column column
-					  ? getNameFromColumn(column)
-					  : searchable.getSearchHandle();
+		String name = searchable instanceof Column column ? getNameFromColumn(column) : searchable.getSearchHandle();
 
 		name = ClientUtils.escapeQueryChars(name);
 
@@ -199,14 +192,17 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		String nameForSearchable = buildNameForSearchable(searchable);
 		int sourcePriority = getFilterValueSourcePriority(searchable);
 
-		return indexers.computeIfAbsent(nameForSearchable,
-										searchRef -> new FilterValueIndexer(sourcePriority,
-																			new ChunkSubmitter(nameForSearchable,
-																							   solrIndexClient,
-																							   filterValueConfig.getUpdateChunkSize(),
-																							   chunkDecoupleExecutor
-																			)
-										)
+		return indexers.computeIfAbsent(
+			nameForSearchable,
+			searchRef -> new FilterValueIndexer(
+				sourcePriority,
+				new ChunkSubmitter(
+					nameForSearchable,
+					solrIndexClient,
+					filterValueConfig.getUpdateChunkSize(),
+					chunkDecoupleExecutor
+				)
+			)
 		);
 	}
 
@@ -231,8 +227,10 @@ public class SolrProcessor implements SearchProcessor, Managed {
 	}
 
 	@Override
-	public void indexManagerResidingSearches(Set<Searchable> managerSearchables, AtomicBoolean cancelledState, ProgressReporter progressReporter)
-			throws InterruptedException {
+	public void indexManagerResidingSearches(
+		Set<Searchable> managerSearchables,
+		AtomicBoolean cancelledState,
+		ProgressReporter progressReporter) throws InterruptedException {
 
 		// Index an empty result for all searches
 		indexEmptyLabel();
@@ -240,7 +238,8 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		progressReporter.setMax(managerSearchables.size());
 		progressReporter.start();
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
-		try (final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1)) {
+		try (final ExecutorService service = Executors.newFixedThreadPool(
+			Runtime.getRuntime().availableProcessors() - 1)) {
 
 			final Map<Searchable, Search<FrontendValue>> searchCache = new ConcurrentHashMap<>();
 			for (Searchable searchable : managerSearchables) {
@@ -261,7 +260,10 @@ public class SolrProcessor implements SearchProcessor, Managed {
 							case FilterTemplate temp -> indexFilterTemplate(search, temp);
 							case LabelMap labelMap -> indexLabelMap(search, labelMap);
 							default -> {
-								log.error("Unsupported searchable of type {}, skipping: {}", searchable.getClass(), searchable);
+								log.error(
+									"Unsupported searchable of type {}, skipping: {}",
+									searchable.getClass(),
+									searchable);
 								return;
 							}
 						}
@@ -269,15 +271,13 @@ public class SolrProcessor implements SearchProcessor, Managed {
 						searchCache.put(searchable, search);
 
 						log.debug(
-								"DONE collecting entries for `{}`, within {}",
-								searchable,
-								watch
+							"DONE collecting entries for `{}`, within {}",
+							searchable,
+							watch
 						);
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						log.error("Failed to create search for {}", searchable, e);
-					}
-					finally {
+					} finally {
 						progressReporter.report(1);
 					}
 
@@ -312,12 +312,17 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		BiMap<String, String> delegate = labelMap.getDelegate();
 		FilterId id = labelMap.getId();
 
-		final List<FrontendValue> collected = delegate.entrySet().stream()
-													  .map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
-													  .toList();
+		final List<FrontendValue> collected = delegate.entrySet()
+			.stream()
+			.map(
+				entry -> new FrontendValue(entry.getKey(), entry.getValue()))
+			.toList();
 
 		if (log.isTraceEnabled()) {
-			log.trace("Labels for {}: `{}`", id, collected.stream().map(FrontendValue::toString).collect(Collectors.toList()));
+			log.trace(
+				"Labels for {}: `{}`",
+				id,
+				collected.stream().map(FrontendValue::toString).collect(Collectors.toList()));
 		}
 
 		StopWatch timer = StopWatch.createStarted();
@@ -345,15 +350,16 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		log.trace("Resolved filter template reference url for search '{}': {}", temp.getId(), resolvedURI);
 
 		try {
-			final FrontendValueIndex ignore = temp.getIndexService().getIndex(new FrontendValueIndexKey(
-					resolvedURI,
-					temp.getColumnValue(),
-					temp.getValue(),
-					temp.getOptionValue(),
-					() -> search
-			));
-		}
-		catch (IndexCreationException e) {
+			final FrontendValueIndex ignore = temp.getIndexService()
+				.getIndex(
+					new FrontendValueIndexKey(
+						resolvedURI,
+						temp.getColumnValue(),
+						temp.getValue(),
+						temp.getOptionValue(),
+						() -> search
+					));
+		} catch (IndexCreationException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -386,7 +392,10 @@ public class SolrProcessor implements SearchProcessor, Managed {
 		solrIndexClient.commit();
 		// Depending on the collection size optimize takes a long time, longer than our client timeout, so we don't wait here.
 		solrIndexClient.optimize(false, false);
-		log.info("DONE explicit commit to core/collection (optimize might still be pending) {} in {}", solrIndexClient.getDefaultCollection(), stopwatch);
+		log.info(
+			"DONE explicit commit to core/collection (optimize might still be pending) {} in {}",
+			solrIndexClient.getDefaultCollection(),
+			stopwatch);
 
 	}
 
@@ -412,10 +421,15 @@ public class SolrProcessor implements SearchProcessor, Managed {
 				}
 				solrProcessor.explicitCommit();
 				getProgressReporter().report(1);
-				log.info("Finished commit on collection {} in {}", solrProcessor.solrIndexClient.getDefaultCollection(), stopwatch);
-			}
-			catch (Exception e) {
-				log.error("Unable to issue explicit commit on collection {}", solrProcessor.solrIndexClient.getDefaultCollection(), e);
+				log.info(
+					"Finished commit on collection {} in {}",
+					solrProcessor.solrIndexClient.getDefaultCollection(),
+					stopwatch);
+			} catch (Exception e) {
+				log.error(
+					"Unable to issue explicit commit on collection {}",
+					solrProcessor.solrIndexClient.getDefaultCollection(),
+					e);
 			}
 		}
 

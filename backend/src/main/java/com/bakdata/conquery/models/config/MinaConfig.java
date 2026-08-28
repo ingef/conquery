@@ -88,14 +88,11 @@ public class MinaConfig implements IoSessionConfig {
 
 		if (status == IdleStatus.BOTH_IDLE) {
 			bothIdleTime = idleTime;
-		}
-		else if (status == IdleStatus.READER_IDLE) {
+		} else if (status == IdleStatus.READER_IDLE) {
 			readerIdleTime = idleTime;
-		}
-		else if (status == IdleStatus.WRITER_IDLE) {
+		} else if (status == IdleStatus.WRITER_IDLE) {
 			writerIdleTime = idleTime;
-		}
-		else {
+		} else {
 			throw new IllegalArgumentException("Unknown idle status: " + status);
 		}
 	}

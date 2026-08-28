@@ -55,24 +55,32 @@ public class ArrowResultGenerationTest {
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
 	private static final int BATCH_SIZE = 2;
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false, Locale.ROOT, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel());
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(
+		false,
+		Locale.ROOT,
+		CONFIG,
+		null,
+		(selectInfo) -> selectInfo.getSelect().getLabel());
 
 	public static String readTSV(InputStream inputStream) throws IOException {
 		StringJoiner stringJoiner = new StringJoiner("\n");
 		try (ArrowStreamReader arrowReader = new ArrowStreamReader(inputStream, ROOT_ALLOCATOR)) {
 			log.info("Reading the produced arrow data.");
 			VectorSchemaRoot readRoot = arrowReader.getVectorSchemaRoot();
-			stringJoiner.add(readRoot.getSchema().getFields().stream().map(Field::getName).collect(Collectors.joining("\t")));
+			stringJoiner.add(
+				readRoot.getSchema().getFields().stream().map(Field::getName).collect(Collectors.joining("\t")));
 			readRoot.setRowCount(BATCH_SIZE);
 			while (arrowReader.loadNextBatch()) {
 				List<FieldVector> vectors = readRoot.getFieldVectors();
 
 				for (int rowI = 0; rowI < readRoot.getRowCount(); rowI++) {
 					final int currentRow = rowI;
-					stringJoiner.add(vectors.stream()
-											.map(vec -> vec.getObject(currentRow))
-											.map(ArrowResultGenerationTest::getPrintValue)
-											.collect(Collectors.joining("\t")));
+					stringJoiner.add(
+						vectors.stream()
+							.map(vec -> vec.getObject(currentRow))
+							.map(
+								ArrowResultGenerationTest::getPrintValue)
+							.collect(Collectors.joining("\t")));
 				}
 			}
 		}
@@ -80,38 +88,33 @@ public class ArrowResultGenerationTest {
 	}
 
 	public static String generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos) {
-		String expected =
-				results.stream()
-					   .map(res -> {
-						   StringJoiner lineJoiner = new StringJoiner("\n");
+		String expected = results.stream().map(res -> {
+			StringJoiner lineJoiner = new StringJoiner("\n");
 
-						   for (Object[] line : res.listResultLines()) {
-							   StringJoiner valueJoiner = new StringJoiner("\t");
+			for (Object[] line : res.listResultLines()) {
+				StringJoiner valueJoiner = new StringJoiner("\t");
 
-							   valueJoiner.add(String.valueOf(res.getEntityId()));
-							   valueJoiner.add(String.valueOf(res.getEntityId()));
+				valueJoiner.add(String.valueOf(res.getEntityId()));
+				valueJoiner.add(String.valueOf(res.getEntityId()));
 
-							   for (int lIdx = 0; lIdx < line.length; lIdx++) {
-								   Object val = line[lIdx];
-								   ResultInfo info = resultInfos.get(lIdx);
+				for (int lIdx = 0; lIdx < line.length; lIdx++) {
+					Object val = line[lIdx];
+					ResultInfo info = resultInfos.get(lIdx);
 
-								   valueJoiner.add(getPrintValue(val, info.getType()));
-							   }
+					valueJoiner.add(getPrintValue(val, info.getType()));
+				}
 
-							   lineJoiner.add(valueJoiner.toString());
-						   }
-						   return lineJoiner.toString();
-					   }).collect(Collectors.joining("\n"));
+				lineJoiner.add(valueJoiner.toString());
+			}
+			return lineJoiner.toString();
+		}).collect(Collectors.joining("\n"));
 
 		return Stream.concat(
-							 // Id column headers
-							 getIdFields().stream().map(i -> i.defaultColumnName(PRINT_SETTINGS)),
-							 // result column headers
-							 getResultTypes().stream().map(ResultType::typeInfo)
-					 )
-					 .collect(Collectors.joining("\t"))
-			   + "\n"
-			   + expected;
+			// Id column headers
+			getIdFields().stream().map(i -> i.defaultColumnName(PRINT_SETTINGS)),
+			// result column headers
+			getResultTypes().stream().map(ResultType::typeInfo)
+		).collect(Collectors.joining("\t")) + "\n" + expected;
 	}
 
 	private static String getPrintValue(Object obj, ResultType type) {
@@ -142,7 +145,7 @@ public class ArrowResultGenerationTest {
 			return sb.toString();
 		}
 		if (obj instanceof Collection<?> col) {
-            // Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
+			// Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
 			ResultType elemType = ((ResultType.ListT<?>) type).getElementType();
 			return col.stream().map(v -> getPrintValue(v, elemType)).collect(Collectors.joining(",", "[", "]"));
 		}
@@ -152,7 +155,10 @@ public class ArrowResultGenerationTest {
 	private static String getPrintValue(Object obj) {
 		if (obj instanceof JsonStringArrayList) {
 			// Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
-			return new ArrayList<>((JsonStringArrayList<?>) obj).stream().map(ArrowResultGenerationTest::getPrintValue).collect(Collectors.joining(",", "[", "]"));
+			return new ArrayList<>((JsonStringArrayList<?>) obj).stream()
+				.map(
+					ArrowResultGenerationTest::getPrintValue)
+				.collect(Collectors.joining(",", "[", "]"));
 		}
 		return Objects.toString(obj);
 	}
@@ -164,9 +170,10 @@ public class ArrowResultGenerationTest {
 		List<Field> fields = generateFields(getIdFields(), uniqueNamer, PRINT_SETTINGS);
 
 		assertThat(fields).containsExactlyElementsOf(
-				List.of(new Field("id1", FieldType.nullable(new ArrowType.Utf8()), null),
-						new Field("id2", FieldType.nullable(new ArrowType.Utf8()), null)
-				));
+			List.of(
+				new Field("id1", FieldType.nullable(new ArrowType.Utf8()), null),
+				new Field("id2", FieldType.nullable(new ArrowType.Utf8()), null)
+			));
 
 	}
 
@@ -176,46 +183,62 @@ public class ArrowResultGenerationTest {
 
 
 		List<ResultInfo> resultInfos = getResultTypes().stream()
-													   .map(TypedSelectDummy::new)
-													   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet()))
-													   .collect(Collectors.toList());
+			.map(TypedSelectDummy::new)
+			.map(
+				select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet()))
+			.collect(
+				Collectors.toList());
 
-		List<Field> fields = generateFields(resultInfos,
-											// Custom column namer so we don't require a dataset registry
-											uniqueNamer, PRINT_SETTINGS
+		List<Field> fields = generateFields(
+			resultInfos,
+			// Custom column namer so we don't require a dataset registry
+			uniqueNamer,
+			PRINT_SETTINGS
 		);
 
 		assertThat(fields).containsExactlyElementsOf(
-				List.of(new Field("BOOLEAN", FieldType.nullable(ArrowType.Bool.INSTANCE), null),
-						new Field("INTEGER", FieldType.nullable(new ArrowType.Int(32, true)), null),
-						new Field("NUMERIC", FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null),
-						new Field("DATE", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null),
-						new Field("DATE_RANGE",
-								  FieldType.nullable(ArrowType.Struct.INSTANCE),
-								  List.of(new Field("min", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null),
-										  new Field("max", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null)
-								  )
-						),
-						new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
-						new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null),
-						new Field("LIST[BOOLEAN]",
-								  FieldType.nullable(ArrowType.List.INSTANCE),
-								  List.of(new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.Bool.INSTANCE), null))
-						),
-						new Field("LIST[DATE_RANGE]",
-								  FieldType.nullable(ArrowType.List.INSTANCE),
-								  List.of(new Field("LIST[DATE_RANGE]",
-													FieldType.nullable(ArrowType.Struct.INSTANCE),
-													List.of(new Field("min", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null),
-															new Field("max", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null)
-													)
-								  ))
-						),
-						new Field("LIST[STRING]",
-								  FieldType.nullable(ArrowType.List.INSTANCE),
-								  List.of(new Field("LIST[STRING]", FieldType.nullable(new ArrowType.Utf8()), null))
-						)
-				));
+			List.of(
+				new Field("BOOLEAN", FieldType.nullable(ArrowType.Bool.INSTANCE), null),
+				new Field("INTEGER", FieldType.nullable(new ArrowType.Int(32, true)), null),
+				new Field(
+					"NUMERIC",
+					FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)),
+					null),
+				new Field("DATE", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null),
+				new Field(
+					"DATE_RANGE",
+					FieldType.nullable(ArrowType.Struct.INSTANCE),
+					List.of(
+						new Field("min", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null),
+						new Field("max", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null)
+					)
+				),
+				new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
+				new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null),
+				new Field(
+					"LIST[BOOLEAN]",
+					FieldType.nullable(ArrowType.List.INSTANCE),
+					List.of(new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.Bool.INSTANCE), null))
+				),
+				new Field(
+					"LIST[DATE_RANGE]",
+					FieldType.nullable(ArrowType.List.INSTANCE),
+					List.of(
+						new Field(
+							"LIST[DATE_RANGE]",
+							FieldType.nullable(ArrowType.Struct.INSTANCE),
+							List.of(
+								new Field("min", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null),
+								new Field("max", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null)
+							)
+						))
+				),
+				new Field(
+					"LIST[STRING]",
+					FieldType.nullable(ArrowType.List.INSTANCE),
+					List.of(new Field("LIST[STRING]", FieldType.nullable(new ArrowType.Utf8()), null))
+				)
+			));
 
 	}
 
@@ -226,11 +249,12 @@ public class ArrowResultGenerationTest {
 		I18n.init();
 
 		// Prepare every input data
-		PrintSettings printSettings = new PrintSettings(false,
-														Locale.ROOT,
-                CONFIG,
-														(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
-														(selectInfo) -> selectInfo.getSelect().getLabel()
+		PrintSettings printSettings = new PrintSettings(
+			false,
+			Locale.ROOT,
+			CONFIG,
+			(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
+			(selectInfo) -> selectInfo.getSelect().getLabel()
 		);
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();
@@ -240,13 +264,14 @@ public class ArrowResultGenerationTest {
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-		renderToStream((root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
-					   printSettings,
-					   new ArrowConfig(BATCH_SIZE),
-					   getIdFields(),
-					   mquery.collectResultInfos(),
-					   mquery.streamResults(OptionalLong.empty()),
-					   new ArrowResultPrinters()
+		renderToStream(
+			(root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
+			printSettings,
+			new ArrowConfig(BATCH_SIZE),
+			getIdFields(),
+			mquery.collectResultInfos(),
+			mquery.streamResults(OptionalLong.empty()),
+			new ArrowResultPrinters()
 		);
 
 		InputStream inputStream = new ByteArrayInputStream(output.toByteArray());

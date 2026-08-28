@@ -2,12 +2,12 @@ package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.net.URI;
-import java.util.Map;
-import java.util.Set;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.net.URI;
+import java.util.Map;
+import java.util.Set;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendSecondaryId;
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -42,9 +42,10 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 
 		{
 			final Response post = uploadDescription(conquery, description);
-			assertThat(post)
-					.describedAs("Response = `%s`", post)
-					.returns(Response.Status.Family.SUCCESSFUL, response -> response.getStatusInfo().getFamily());
+			assertThat(post).describedAs("Response = `%s`", post)
+				.returns(
+					Response.Status.Family.SUCCESSFUL,
+					response -> response.getStatusInfo().getFamily());
 		}
 		final SecondaryIdDescription descriptionHidden = new SecondaryIdDescription();
 		descriptionHidden.setDataset(conquery.getDataset());
@@ -55,9 +56,10 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 
 		{
 			final Response post = uploadDescription(conquery, descriptionHidden);
-			assertThat(post)
-					.describedAs("Response = `%s`", post)
-					.returns(Response.Status.Family.SUCCESSFUL, response -> response.getStatusInfo().getFamily());
+			assertThat(post).describedAs("Response = `%s`", post)
+				.returns(
+					Response.Status.Family.SUCCESSFUL,
+					response -> response.getStatusInfo().getFamily());
 		}
 
 
@@ -67,9 +69,9 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 
 			log.info("{}", secondaryIds);
 			description.setDataset(conquery.getDataset());
-			assertThat(secondaryIds)
-					.extracting(FrontendSecondaryId::getId)
-					.containsExactly(description.getId().toString());
+			assertThat(secondaryIds).extracting(FrontendSecondaryId::getId)
+				.containsExactly(
+					description.getId().toString());
 		}
 
 		{
@@ -77,9 +79,10 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			final Set<FrontendSecondaryId> secondaryIds = fetchSecondaryIdDescriptions(conquery, true);
 
 			log.info("{}", secondaryIds);
-			assertThat(secondaryIds)
-					.extracting(FrontendSecondaryId::getId)
-					.containsExactly(description.getId().toString(), descriptionHidden.getId().toString());
+			assertThat(secondaryIds).extracting(FrontendSecondaryId::getId)
+				.containsExactly(
+					description.getId().toString(),
+					descriptionHidden.getId().toString());
 		}
 
 		// Upload Table referencing SecondaryId
@@ -97,116 +100,140 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			tableNode.set("columns", columnNode);
 
 			final Response response = uploadTable(conquery, tableNode);
-			assertThat(response.getStatusInfo().getFamily())
-					.describedAs(() -> response.readEntity(String.class))
-					.isEqualTo(Response.Status.Family.SUCCESSFUL);
+			assertThat(response.getStatusInfo().getFamily()).describedAs(
+				() -> response.readEntity(String.class)).isEqualTo(Response.Status.Family.SUCCESSFUL);
 		}
 		{
-			final URI uri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), DatasetsUIResource.class, "getDataset")
-										   .buildFromMap(Map.of("dataset", conquery.getDataset().getName()));
+			final URI uri = HierarchyHelper.hierarchicalPath(
+				conquery.defaultAdminURIBuilder(),
+				DatasetsUIResource.class,
+				"getDataset").buildFromMap(Map.of("dataset", conquery.getDataset().getName()));
 
 			final Response actual = conquery.getClient().target(uri).request().get();
-			assertThat(actual)
-					.returns(Response.Status.Family.SUCCESSFUL, response -> response.getStatusInfo().getFamily());
+			assertThat(actual).returns(
+				Response.Status.Family.SUCCESSFUL,
+				response -> response.getStatusInfo().getFamily());
 		}
 
 		{
 			//First one fails because table depends on it
-			assertThat(deleteDescription(conquery, description.getId()))
-					.returns(Response.Status.Family.CLIENT_ERROR, response -> response.getStatusInfo().getFamily());
+			assertThat(deleteDescription(conquery, description.getId())).returns(
+				Response.Status.Family.CLIENT_ERROR,
+				response -> response.getStatusInfo().getFamily());
 
 			deleteTable(conquery, new TableId(conquery.getDataset(), "table"));
 
 			// We've deleted the table, now it should be successful
-			assertThat(deleteDescription(conquery, description.getId()))
-					.returns(Response.Status.Family.SUCCESSFUL, response -> response.getStatusInfo().getFamily());
+			assertThat(deleteDescription(conquery, description.getId())).returns(
+				Response.Status.Family.SUCCESSFUL,
+				response -> response.getStatusInfo().getFamily());
 
 			final Set<FrontendSecondaryId> secondaryIds = fetchSecondaryIdDescriptions(conquery, false);
 
 			log.info("{}", secondaryIds);
 
-			assertThat(secondaryIds)
-					.isEmpty();
+			assertThat(secondaryIds).isEmpty();
 		}
 
 	}
 
 	private static Response uploadDescription(StandaloneSupport conquery, SecondaryIdDescription description) {
-		final URI uri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminDatasetResource.class, "addSecondaryId")
+		final URI uri = HierarchyHelper.hierarchicalPath(
+			conquery.defaultAdminURIBuilder(),
+			AdminDatasetResource.class,
+			"addSecondaryId")
 
-									   .buildFromMap(Map.of(
-											   "dataset", conquery.getDataset().getName()
-									   ));
+			.buildFromMap(
+				Map.of(
+					"dataset",
+					conquery.getDataset().getName()
+				));
 
 		return conquery.getClient()
-					   .target(uri)
-					   .request(MediaType.APPLICATION_JSON_TYPE)
-					   .post(Entity.entity(
-							   description, MediaType.APPLICATION_JSON_TYPE
-					   ));
+			.target(uri)
+			.request(MediaType.APPLICATION_JSON_TYPE)
+			.post(
+				Entity.entity(
+					description,
+					MediaType.APPLICATION_JSON_TYPE
+				));
 	}
 
-	private static Set<FrontendSecondaryId> fetchSecondaryIdDescriptions(StandaloneSupport conquery, boolean showHidden) throws java.io.IOException {
-		final URI uri = HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetResource.class, "getRoot")
-									   .queryParam("showHidden", showHidden)
-									   .buildFromMap(Map.of(
-											   "dataset", conquery.getDataset().getName()
-									   ));
+	private static Set<FrontendSecondaryId> fetchSecondaryIdDescriptions(
+		StandaloneSupport conquery,
+		boolean showHidden) throws java.io.IOException {
+		final URI uri = HierarchyHelper.hierarchicalPath(
+			conquery.defaultApiURIBuilder(),
+			DatasetResource.class,
+			"getRoot")
+			.queryParam("showHidden", showHidden)
+			.buildFromMap(
+				Map.of(
+					"dataset",
+					conquery.getDataset().getName()
+				));
 
 
 		// We cannot effectively parse a full FERoot so we resort to only parsing the field.
-		final ObjectNode objectNode = conquery.getClient()
-											  .target(uri)
-											  .request()
-											  .get(ObjectNode.class);
+		final ObjectNode objectNode = conquery.getClient().target(uri).request().get(ObjectNode.class);
 
 		// The injection is necessary to deserialize the dataset.
 		ObjectMapper mapper = conquery.getDatasetRegistry().injectIntoNew(Jackson.MAPPER);
 		mapper = conquery.getNamespace().getDataset().injectIntoNew(mapper);
 
 		return objectNode.get("secondaryIds")
-						 .traverse(mapper.getFactory().getCodec())
-						 .readValueAs(new TypeReference<Set<FrontendSecondaryId>>() {
-						 });
+			.traverse(mapper.getFactory().getCodec())
+			.readValueAs(
+				new TypeReference<Set<FrontendSecondaryId>>() {
+				});
 	}
 
 	private static Response uploadTable(StandaloneSupport conquery, ObjectNode table) {
-		final URI addTable = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminDatasetResource.class, "addTable")
-											.buildFromMap(Map.of(ResourceConstants.DATASET, conquery.getDataset().getName()));
+		final URI addTable = HierarchyHelper.hierarchicalPath(
+			conquery.defaultAdminURIBuilder(),
+			AdminDatasetResource.class,
+			"addTable").buildFromMap(Map.of(ResourceConstants.DATASET, conquery.getDataset().getName()));
 
 		return conquery.getClient()
-					   .target(addTable)
-					   .request(MediaType.APPLICATION_JSON)
-					   .post(Entity.entity(table, MediaType.APPLICATION_JSON_TYPE));
+			.target(addTable)
+			.request(MediaType.APPLICATION_JSON)
+			.post(
+				Entity.entity(table, MediaType.APPLICATION_JSON_TYPE));
 
 	}
 
 	private static Response deleteDescription(StandaloneSupport conquery, SecondaryIdDescriptionId id) {
-		final URI uri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminDatasetResource.class, "deleteSecondaryId")
-									   .buildFromMap(Map.of(
-											   "dataset", conquery.getDataset().getName(),
-											   "secondaryId", id
-									   ));
+		final URI uri = HierarchyHelper.hierarchicalPath(
+			conquery.defaultAdminURIBuilder(),
+			AdminDatasetResource.class,
+			"deleteSecondaryId")
+			.buildFromMap(
+				Map.of(
+					"dataset",
+					conquery.getDataset().getName(),
+					"secondaryId",
+					id
+				));
 
 
-		return conquery.getClient()
-					   .target(uri)
-					   .request()
-					   .delete();
+		return conquery.getClient().target(uri).request().delete();
 	}
 
 	private static Response deleteTable(StandaloneSupport conquery, TableId id) {
-		final URI uri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminTablesResource.class, "remove")
-									   .buildFromMap(Map.of(
-											   "dataset", conquery.getDataset().getName(),
-											   "table", id
-									   ));
+		final URI uri = HierarchyHelper.hierarchicalPath(
+			conquery.defaultAdminURIBuilder(),
+			AdminTablesResource.class,
+			"remove")
+			.buildFromMap(
+				Map.of(
+					"dataset",
+					conquery.getDataset().getName(),
+					"table",
+					id
+				));
 
 
-		return conquery.getClient()
-					   .target(uri)
-					   .request()
-					   .delete();
+		return conquery.getClient().target(uri).request().delete();
 	}
 
 }

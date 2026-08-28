@@ -69,7 +69,8 @@ public class NameGenerator {
 		return switch (logicalOperation) {
 			case INNER_JOIN -> "AND-%d".formatted(++andCount);
 			case OUTER_JOIN -> "OR-%d".formatted(++orCount);
-			case LEFT_JOIN -> throw new UnsupportedOperationException("Creating CTE names for LEFT_JOIN nodes is not supported");
+			case LEFT_JOIN ->
+				throw new UnsupportedOperationException("Creating CTE names for LEFT_JOIN nodes is not supported");
 		};
 	}
 
@@ -83,8 +84,7 @@ public class NameGenerator {
 	}
 
 	private static String lowerAndReplaceWhitespace(String name) {
-		return WHITESPACE.matcher(name.toLowerCase())
-						 .replaceAll("_");
+		return WHITESPACE.matcher(name.toLowerCase()).replaceAll("_");
 	}
 
 }

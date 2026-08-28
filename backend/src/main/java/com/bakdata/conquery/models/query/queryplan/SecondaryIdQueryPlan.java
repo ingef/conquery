@@ -30,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jspecify.annotations.NonNull;
 
 /**
  * This class is able to execute a typical ConceptQueryPlan, but will create
@@ -113,7 +114,10 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		nextTable(ctxWithPhase, currentTable);
 
-		final Set<BucketId> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable.getId());
+		final Set<BucketId> tableBuckets = ctx.getBucketManager()
+			.getEntityBucketsForTable(
+				entity,
+				currentTable.getId());
 
 		for (BucketId bucketId : tableBuckets) {
 			Bucket bucket = bucketId.resolve();
@@ -153,8 +157,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 				if (consumed) {
 					childPerKey.put(key, plan);
-				}
-				else {
+				} else {
 					discardSubPlan(plan);
 				}
 
@@ -166,7 +169,10 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		nextTable(ctx, currentTable);
 
-		final Set<BucketId> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable.getId());
+		final Set<BucketId> tableBuckets = ctx.getBucketManager()
+			.getEntityBucketsForTable(
+				entity,
+				currentTable.getId());
 
 		for (BucketId bucketId : tableBuckets) {
 			Bucket bucket = bucketId.resolve();
@@ -213,7 +219,9 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		queryPlan.nextTable(ctx, currentTable);
 		for (ConceptQueryPlan c : childPerKey.values()) {
-			final QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(ctx, c::getValidityDateAggregator);
+			final QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(
+				ctx,
+				c::getValidityDateAggregator);
 			c.nextTable(context, currentTable);
 		}
 	}
@@ -244,7 +252,9 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 			plan = query.createQueryPlan(queryPlanContext.withSelectedSecondaryId(secondaryId));
 		}
 
-		final QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(currentContext, plan::getValidityDateAggregator);
+		final QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(
+			currentContext,
+			plan::getValidityDateAggregator);
 
 		plan.init(context, queryPlan.getEntity());
 		plan.nextTable(context, currentBucket.getTable().resolve());
@@ -264,7 +274,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	@Override
-	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
+	public @NonNull Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
 		if (!queryPlan.isAggregateValidityDates()) {
 			return Optional.empty();
 		}

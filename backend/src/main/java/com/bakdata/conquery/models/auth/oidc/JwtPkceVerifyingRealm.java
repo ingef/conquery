@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.auth.oidc;
 
+import jakarta.validation.Validator;
 import java.security.PublicKey;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
@@ -57,21 +57,19 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 	 * Used in handleRoleClaims as size-limited set, with LRU characteristics.
 	 * @implNote maximumSize is an arbitrary medium high number to avoid stuffing memory with token hashes, while avoiding reprocessing known access tokens.
 	 */
-	private final Cache<String, String> processedRoleClaims = CacheBuilder.newBuilder()
-																		  .maximumSize(1_000)
-																		  .build();
+	private final Cache<String, String> processedRoleClaims = CacheBuilder.newBuilder().maximumSize(1_000).build();
 
 	Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier;
 
 
 	public JwtPkceVerifyingRealm(
-			@NonNull Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier,
-			@NonNull String allowedAudience,
-			List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks,
-			List<String> alternativeIdClaims,
-			MetaStorage storage,
-			int tokenLeeway,
-			Validator validator
+		@NonNull Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier,
+		@NonNull String allowedAudience,
+		List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks,
+		List<String> alternativeIdClaims,
+		MetaStorage storage,
+		int tokenLeeway,
+		Validator validator
 	) {
 		this.storage = storage;
 		this.idpConfigurationSupplier = idpConfigurationSupplier;
@@ -85,9 +83,11 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 	}
 
 	@Override
-	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+	public ConqueryAuthenticationInfo doGetAuthenticationInfo(
+		AuthenticationToken token) throws AuthenticationException {
 
-		final Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
+		final Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier
+			.get();
 
 		if (idpConfigurationOpt.isEmpty()) {
 			log.warn("Unable to start authentication, because idp configuration is not available.");
@@ -110,13 +110,16 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 		}
 
 		log.trace("Creating token verifier");
-		final TokenVerifier<AccessToken>
-				verifier =
-				TokenVerifier.create(bearerToken.getToken(), AccessToken.class)
-							 .withChecks(new TokenVerifier.RealmUrlCheck(idpConfiguration.issuer()), TokenVerifier.SUBJECT_EXISTS_CHECK, activeVerifier)
-							 .withChecks(tokenChecks)
-							 .publicKey(publicKey)
-							 .audience(allowedAudience);
+		final TokenVerifier<AccessToken> verifier = TokenVerifier.create(
+			bearerToken.getToken(),
+			AccessToken.class)
+			.withChecks(
+				new TokenVerifier.RealmUrlCheck(idpConfiguration.issuer()),
+				TokenVerifier.SUBJECT_EXISTS_CHECK,
+				activeVerifier)
+			.withChecks(tokenChecks)
+			.publicKey(publicKey)
+			.audience(allowedAudience);
 
 		log.trace("Verifying token");
 
@@ -124,8 +127,7 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 		try {
 			verifier.verify();
 			accessToken = verifier.getToken();
-		}
-		catch (VerificationException e) {
+		} catch (VerificationException e) {
 			log.trace("Verification failed", e);
 			throw new IncorrectCredentialsException(e);
 		}
@@ -180,7 +182,10 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 	 * Creates a new user from values in the access token
 	 */
 	private User createUser(AccessToken accessToken) {
-		String userLabel = ObjectUtils.firstNonNull(accessToken.getName(), accessToken.getPreferredUsername(), accessToken.getSubject());
+		String userLabel = ObjectUtils.firstNonNull(
+			accessToken.getName(),
+			accessToken.getPreferredUsername(),
+			accessToken.getSubject());
 
 		final User user = new User(accessToken.getSubject(), userLabel, storage);
 

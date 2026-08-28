@@ -34,7 +34,7 @@ public class ValidityDateNode extends QPChainNode {
 		//no dateRestriction or event is in date restriction
 		final boolean contained = bucket.eventIsContainedIn(event, validityDate, context.getDateRestriction());
 
-		if (!contained){
+		if (!contained) {
 			return false;
 		}
 
@@ -46,7 +46,10 @@ public class ValidityDateNode extends QPChainNode {
 		super.nextTable(ctx.withValidityDateColumn(validityDate), currentTable);
 		restriction = ctx.getDateRestriction();
 
-		preCurrentRow = ctx.getBucketManager().getEntityCBlocksForConnector(getEntity(), context.getConnector().getId());
+		preCurrentRow = ctx.getBucketManager()
+			.getEntityCBlocksForConnector(
+				getEntity(),
+				context.getConnector().getId());
 	}
 
 	@Override

@@ -46,8 +46,8 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 			return super.createPrinter(printerFactory, printSettings);
 		}
 
-		return new FlatMappingPrinter(new OneToManyMappingPrinter(getMapping().resolve()))
-				.andThen(printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
+		return new FlatMappingPrinter(new OneToManyMappingPrinter(getMapping().resolve())).andThen(
+			printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
 	}
 
 	@Override

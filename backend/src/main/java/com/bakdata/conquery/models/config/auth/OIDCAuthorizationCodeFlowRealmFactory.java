@@ -21,7 +21,10 @@ public class OIDCAuthorizationCodeFlowRealmFactory implements AuthenticationReal
 	private IntrospectionDelegatingRealmFactory client;
 
 	@Override
-	public ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController) {
+	public ConqueryAuthenticationRealm createRealm(
+		Environment environment,
+		ConqueryConfig config,
+		AuthorizationController authorizationController) {
 		return client.createRealm(environment, authorizationController);
 	}
 }

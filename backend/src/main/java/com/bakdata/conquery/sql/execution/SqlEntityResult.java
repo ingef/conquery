@@ -16,8 +16,8 @@ import lombok.ToString;
 @ToString
 @Getter
 @Setter
-@AllArgsConstructor(onConstructor_=@JsonCreator)
-@CPSType(id="SQL_RESULT", base= EntityResult.class)
+@AllArgsConstructor(onConstructor_ = @JsonCreator)
+@CPSType(id = "SQL_RESULT", base = EntityResult.class)
 public class SqlEntityResult implements EntityResult {
 
 	private final String id;

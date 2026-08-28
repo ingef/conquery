@@ -17,14 +17,16 @@ public interface SqlDateAggregator {
 	 * @param carryThroughSelects The selects that should be carried through the date aggregation process. They remain unchanged.
 	 */
 	QueryStep apply(
-			QueryStep joinedStep,
-			List<SqlSelect> carryThroughSelects,
-			DateAggregationDates dateAggregationDates,
-			DateAggregationAction dateAggregationAction,
-			ConversionContext conversionContext
+		QueryStep joinedStep,
+		List<SqlSelect> carryThroughSelects,
+		DateAggregationDates dateAggregationDates,
+		DateAggregationAction dateAggregationAction,
+		ConversionContext conversionContext
 	);
 
-	ColumnDateRange getAggregatedValidityDate(DateAggregationDates dateAggregationDates, DateAggregationAction dateAggregationAction);
+	ColumnDateRange getAggregatedValidityDate(
+		DateAggregationDates dateAggregationDates,
+		DateAggregationAction dateAggregationAction);
 
 	/**
 	 * Inverts the validity date of the given base step.

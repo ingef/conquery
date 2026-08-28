@@ -33,17 +33,20 @@ public class FormConfigResource {
 	public FormConfigFullRepresentation getConfig(@Auth Subject subject, @PathParam(FORM_CONFIG) FormConfigId form) {
 		return processor.getConfig(subject, form);
 	}
-	
+
 	@PATCH
 	@Path("{" + FORM_CONFIG + "}")
-	public FormConfigFullRepresentation patchConfig(@Auth Subject subject, @PathParam(FORM_CONFIG) FormConfigId form, FormConfigPatch patch) {
+	public FormConfigFullRepresentation patchConfig(
+		@Auth Subject subject,
+		@PathParam(FORM_CONFIG) FormConfigId form,
+		FormConfigPatch patch) {
 		return processor.patchConfig(subject, form, patch);
 	}
-	
+
 	@DELETE
 	@Path("{" + FORM_CONFIG + "}")
 	public void deleteConfig(@Auth Subject subject, @PathParam(FORM_CONFIG) FormConfigId form) {
 		processor.deleteConfig(subject, form);
 	}
-	
+
 }

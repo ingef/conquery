@@ -30,19 +30,19 @@ public class SelectContext<T extends SqlTables> implements Context {
 	}
 
 	public static SelectContext<ConnectorSqlTables> create(
-			SqlIdColumns ids,
-			Optional<ColumnDateRange> validityDate,
-			ConnectorSqlTables tables,
-			ConversionContext conversionContext
+		SqlIdColumns ids,
+		Optional<ColumnDateRange> validityDate,
+		ConnectorSqlTables tables,
+		ConversionContext conversionContext
 	) {
 		return new SelectContext<>(ids, validityDate, tables, conversionContext);
 	}
 
 	public static SelectContext<ConceptSqlTables> create(
-			SqlIdColumns ids,
-			Optional<ColumnDateRange> validityDate,
-			ConceptSqlTables tables,
-			ConversionContext conversionContext
+		SqlIdColumns ids,
+		Optional<ColumnDateRange> validityDate,
+		ConceptSqlTables tables,
+		ConversionContext conversionContext
 	) {
 		return new SelectContext<>(ids, validityDate, tables, conversionContext);
 	}
@@ -51,9 +51,9 @@ public class SelectContext<T extends SqlTables> implements Context {
 		return getDialectBundle().getFunctionProvider();
 	}
 
-    public SqlIdColumns getIds() {
-        return this.conversionContext.isWithStratification()
-                ? this.conversionContext.getStratificationTable().getSelects().getIds()
-                : this.ids;
-    }
+	public SqlIdColumns getIds() {
+		return this.conversionContext.isWithStratification() ? this.conversionContext.getStratificationTable()
+			.getSelects()
+			.getIds() : this.ids;
+	}
 }

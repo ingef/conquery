@@ -72,16 +72,21 @@ public class InternalFilterSearch implements SearchProcessor {
 	/**
 	 * Cache of all search results on SelectFilters.
 	 */
-	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FrontendValue>>
-			searchResults =
-			CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
+	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FrontendValue>> searchResults = CacheBuilder
+		.newBuilder()
+		.softValues()
+		.build(
+			new CacheLoader<>() {
 
 				@Override
 				public List<FrontendValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
 					final String searchTerm = filterAndSearch.getValue();
 					final SelectFilter<?> searchable = filterAndSearch.getKey();
 
-					log.trace("Calculating a new search cache for the term \"{}\" on Searchable[{}]", searchTerm, searchable.getId());
+					log.trace(
+						"Calculating a new search cache for the term \"{}\" on Searchable[{}]",
+						searchTerm,
+						searchable.getId());
 
 					return topItems(searchable, searchTerm);
 				}
@@ -92,14 +97,17 @@ public class InternalFilterSearch implements SearchProcessor {
 	 * Cache of raw listing of values on a filter.
 	 * We use Cursor here to reduce strain on memory and increase response time.
 	 */
-	private final LoadingCache<SelectFilter<?>, CursorAndLength> listResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
-		@Override
-		public CursorAndLength load(SelectFilter<?> searchable) {
-			log.trace("Creating cursor for `{}`", searchable.getId());
-			return new CursorAndLength(listAllValues(searchable), getTotal(searchable));
-		}
+	private final LoadingCache<SelectFilter<?>, CursorAndLength> listResults = CacheBuilder.newBuilder()
+		.softValues()
+		.build(
+			new CacheLoader<>() {
+				@Override
+				public CursorAndLength load(SelectFilter<?> searchable) {
+					log.trace("Creating cursor for `{}`", searchable.getId());
+					return new CursorAndLength(listAllValues(searchable), getTotal(searchable));
+				}
 
-	});
+			});
 
 	/**
 	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
@@ -108,15 +116,14 @@ public class InternalFilterSearch implements SearchProcessor {
 		final List<? extends Searchable> references = searchable.getSearchReferences();
 
 		if (log.isTraceEnabled()) {
-			log.trace("Got {} as searchables for {}", references.stream().map(Searchable::toString).collect(Collectors.toList()), searchable.getId());
+			log.trace(
+				"Got {} as searchables for {}",
+				references.stream().map(Searchable::toString).collect(Collectors.toList()),
+				searchable.getId());
 		}
 
-		return references.stream()
-						 .map(searchCache::get)
-						 .filter(Objects::nonNull)
-						 .toList();
+		return references.stream().map(searchCache::get).filter(Objects::nonNull).toList();
 	}
-
 
 
 	private Cursor<FrontendValue> listAllValues(SelectFilter<?> searchable) {
@@ -130,13 +137,13 @@ public class InternalFilterSearch implements SearchProcessor {
 
 		final List<TrieSearch<FrontendValue>> searchList = getSearchesFor(searchable);
 
-		final Iterator<FrontendValue> searches = Iterators.concat(Iterators.transform(searchList.iterator(), TrieSearch::iterator));
-		final Iterator<FrontendValue> iterators =
-				Iterators.concat(
-						 // We are always leading with the empty value.
-						 Iterators.singletonIterator(new FrontendValue("", searchConfig.getEmptyLabel())),
-						searches
-				);
+		final Iterator<FrontendValue> searches = Iterators.concat(
+			Iterators.transform(searchList.iterator(), TrieSearch::iterator));
+		final Iterator<FrontendValue> iterators = Iterators.concat(
+			// We are always leading with the empty value.
+			Iterators.singletonIterator(new FrontendValue("", searchConfig.getEmptyLabel())),
+			searches
+		);
 
 		// Use Set to accomplish distinct values
 		final Set<FrontendValue> seen = new HashSet<>();
@@ -172,12 +179,15 @@ public class InternalFilterSearch implements SearchProcessor {
 	 * prevents from adding new values.
 	 */
 	public void registerValues(Searchable searchable, Collection<String> values) {
-		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> searchConfig.createSearch(searchable));
+		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(
+			searchable,
+			(ignored) -> searchConfig.createSearch(searchable));
 
 		synchronized (search) {
 			values.stream()
-				  .map(value -> new FrontendValue(value, value))
-				  .forEach(value -> search.addItem(value, SearchProcessor.extractKeywords(value)));
+				.map(value -> new FrontendValue(value, value))
+				.forEach(
+					value -> search.addItem(value, SearchProcessor.extractKeywords(value)));
 		}
 	}
 
@@ -224,11 +234,15 @@ public class InternalFilterSearch implements SearchProcessor {
 		return new UpdateFilterSearchJob(storage, this, columnsConsumer);
 	}
 
-	public void indexManagerResidingSearches(Set<Searchable> managerSearchables, AtomicBoolean cancelledState, ProgressReporter progressReporter) throws InterruptedException {
+	public void indexManagerResidingSearches(
+		Set<Searchable> managerSearchables,
+		AtomicBoolean cancelledState,
+		ProgressReporter progressReporter) throws InterruptedException {
 
 
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
-		try(final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1)) {
+		try (final ExecutorService service = Executors.newFixedThreadPool(
+			Runtime.getRuntime().availableProcessors() - 1)) {
 
 			final Map<Searchable, TrieSearch<FrontendValue>> searchCache = new ConcurrentHashMap<>();
 			for (Searchable searchable : managerSearchables) {
@@ -248,13 +262,12 @@ public class InternalFilterSearch implements SearchProcessor {
 						searchCache.put(searchable, search);
 
 						log.debug(
-								"DONE collecting {} entries for `{}`, within {}",
-								search.calculateSize(),
-								searchable,
-								watch
+							"DONE collecting {} entries for `{}`, within {}",
+							search.calculateSize(),
+							searchable,
+							watch
 						);
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						log.error("Failed to create search for {}", searchable, e);
 					}
 
@@ -299,7 +312,7 @@ public class InternalFilterSearch implements SearchProcessor {
 		// search in the full text engine
 		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
 
-		for (final Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext(); ) {
+		for (final Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext();) {
 
 			final String searchTerm = iterator.next();
 			final List<FrontendValue> results = findExact(filter, searchTerm);
@@ -316,7 +329,11 @@ public class InternalFilterSearch implements SearchProcessor {
 	}
 
 	@Override
-	public ConceptsProcessor.AutoCompleteResult query(SelectFilter<?> filter, String maybeText, int itemsPerPage, int pageNumber) {
+	public ConceptsProcessor.AutoCompleteResult query(
+		SelectFilter<?> filter,
+		String maybeText,
+		int itemsPerPage,
+		int pageNumber) {
 		final int startIncl = itemsPerPage * pageNumber;
 		final int endExcl = startIncl + itemsPerPage;
 
@@ -336,10 +353,11 @@ public class InternalFilterSearch implements SearchProcessor {
 				return new ConceptsProcessor.AutoCompleteResult(Collections.emptyList(), fullResult.size());
 			}
 
-			return new ConceptsProcessor.AutoCompleteResult(fullResult.subList(startIncl, Math.min(fullResult.size(), endExcl)), fullResult.size());
-		}
-		catch (ExecutionException e) {
-			log.warn("Failed to search for \"{}\".", maybeText, passExceptionOnTrace(log,e));
+			return new ConceptsProcessor.AutoCompleteResult(
+				fullResult.subList(startIncl, Math.min(fullResult.size(), endExcl)),
+				fullResult.size());
+		} catch (ExecutionException e) {
+			log.warn("Failed to search for \"{}\".", maybeText, passExceptionOnTrace(log, e));
 			return new ConceptsProcessor.AutoCompleteResult(Collections.emptyList(), 0);
 		}
 	}
@@ -376,11 +394,9 @@ public class InternalFilterSearch implements SearchProcessor {
 				final Column column = columnId.resolve();
 				try {
 					filterSearch.finalizeSearch(column);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					log.warn("Unable to shrink search for {}", column, e);
-				}
-				finally {
+				} finally {
 					getProgressReporter().report(1);
 				}
 			}
@@ -393,11 +409,9 @@ public class InternalFilterSearch implements SearchProcessor {
 				try {
 					final long total = filterSearch.getTotal(filter);
 					log.trace("Filter '{}' totals: {}", filter, total);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					log.warn("Unable to calculate totals for filter '{}'", filter.getId(), e);
-				}
-				finally {
+				} finally {
 					getProgressReporter().report(1);
 				}
 			}

@@ -34,15 +34,24 @@ public class ConceptNode extends QPChainNode {
 	private Map<BucketId, CBlockId> preCurrentRow;
 	private CBlock currentRow;
 
-	public ConceptNode(QPNode child, List<ConceptElement<?>> concepts, CQTable table, SecondaryIdDescription selectedSecondaryId) {
+	public ConceptNode(
+		QPNode child,
+		List<ConceptElement<?>> concepts,
+		CQTable table,
+		SecondaryIdDescription selectedSecondaryId) {
 		this(child, concepts, calculateBitMask(concepts), table, selectedSecondaryId);
 	}
 
 	// For cloning
-	private ConceptNode(QPNode child, List<ConceptElement<?>> concepts, long requiredBits, CQTable table, SecondaryIdDescription selectedSecondaryId) {
+	private ConceptNode(
+		QPNode child,
+		List<ConceptElement<?>> concepts,
+		long requiredBits,
+		CQTable table,
+		SecondaryIdDescription selectedSecondaryId) {
 		super(child);
 		this.concepts = concepts;
-		this.requiredBits =	requiredBits;
+		this.requiredBits = requiredBits;
 		this.table = table;
 
 		this.selectedSecondaryId = selectedSecondaryId;
@@ -64,15 +73,16 @@ public class ConceptNode extends QPChainNode {
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
-		preCurrentRow = context.getBucketManager().getEntityCBlocksForConnector(getEntity(),table.getConnector());
+		preCurrentRow = context.getBucketManager().getEntityCBlocksForConnector(getEntity(), table.getConnector());
 	}
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		Connector connector = table.getConnector().resolve();
-		tableActive = connector.resolveTableId().equals(currentTable.getId())
-					  && ctx.getActiveSecondaryId() == selectedSecondaryId;
-		if(tableActive) {
+		tableActive = connector.resolveTableId()
+			.equals(
+				currentTable.getId()) && ctx.getActiveSecondaryId() == selectedSecondaryId;
+		if (tableActive) {
 			super.nextTable(ctx.withConnector(connector), currentTable);
 		}
 	}
@@ -88,8 +98,10 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return context.getBucketManager().hasEntityCBlocksForConnector(entity, table.getConnector())
-			   && getChild().isOfInterest(entity);
+		return context.getBucketManager()
+			.hasEntityCBlocksForConnector(
+				entity,
+				table.getConnector()) && getChild().isOfInterest(entity);
 	}
 
 	@Override
@@ -98,13 +110,13 @@ public class ConceptNode extends QPChainNode {
 			return false;
 		}
 
-		if(!bucket.containsEntity(getEntity().getId())){
+		if (!bucket.containsEntity(getEntity().getId())) {
 			return false;
 		}
 
 		final CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket.getId()).resolve());
 
-		if(cBlock.isConceptIncluded(entity.getId(), requiredBits)) {
+		if (cBlock.isConceptIncluded(entity.getId(), requiredBits)) {
 			return super.isOfInterest(bucket);
 		}
 

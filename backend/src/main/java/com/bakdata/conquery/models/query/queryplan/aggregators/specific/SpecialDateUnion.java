@@ -44,7 +44,7 @@ public class SpecialDateUnion extends Aggregator<CDateSet> {
 
 		final CDateRange dateRange = validityDate.getValidityDate(event, bucket);
 
-		if (dateRange == null){
+		if (dateRange == null) {
 			set.addAll(dateRestriction);
 			return;
 		}

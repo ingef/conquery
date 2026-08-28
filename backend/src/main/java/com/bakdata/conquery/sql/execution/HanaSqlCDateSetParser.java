@@ -21,17 +21,17 @@ public class HanaSqlCDateSetParser extends DefaultCDateSetParser {
 
 	public HanaSqlCDateSetParser() {
 		super(
-				new DateReader(Set.of("yyyy-M-dd"), Collections.emptyList(), Collections.emptyList()),
-				Character.toString(DATE_SET_SEPARATOR),
-				DATE_RANGE_SEP,
-				HanaSqlFunctionProvider.MIN_DATE_VALUE,
-				HanaSqlFunctionProvider.MAX_DATE_VALUE,
-				DATE_RANGE_END_EXCLUSIVE,
-				DATE_RANGE_END_INCLUSIVE,
-				DATE_RANGE_BEGIN_INCLUSIVE,
-				DATE_SET_START,
-				DATE_SET_END,
-				EMPTY_DATE_SET
+			new DateReader(Set.of("yyyy-M-dd"), Collections.emptyList(), Collections.emptyList()),
+			Character.toString(DATE_SET_SEPARATOR),
+			DATE_RANGE_SEP,
+			HanaSqlFunctionProvider.MIN_DATE_VALUE,
+			HanaSqlFunctionProvider.MAX_DATE_VALUE,
+			DATE_RANGE_END_EXCLUSIVE,
+			DATE_RANGE_END_INCLUSIVE,
+			DATE_RANGE_BEGIN_INCLUSIVE,
+			DATE_SET_START,
+			DATE_SET_END,
+			EMPTY_DATE_SET
 		);
 	}
 

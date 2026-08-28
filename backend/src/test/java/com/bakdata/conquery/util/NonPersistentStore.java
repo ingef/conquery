@@ -18,7 +18,7 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public boolean add(KEY key, VALUE value) {
 		synchronized (map) {
 			boolean notPresent = !map.containsKey(key);
-			if(notPresent) {
+			if (notPresent) {
 				map.put(key, value);
 			}
 			// Was not present before

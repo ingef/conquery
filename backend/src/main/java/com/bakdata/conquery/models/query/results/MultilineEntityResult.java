@@ -1,22 +1,23 @@
 package com.bakdata.conquery.models.query.results;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-import jakarta.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter @Setter @ToString
-@CPSType(id="MULTI_LINE", base= EntityResult.class)
+@Getter
+@Setter
+@ToString
+@CPSType(id = "MULTI_LINE", base = EntityResult.class)
 public class MultilineEntityResult implements EntityResult {
-	
+
 	private final String entityId;
 	@NotNull
 	private final List<Object[]> values;

@@ -15,8 +15,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 public class GroupHandlingTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 
-
-
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		MetaStorage storage = conquery.getMetaStorage();
@@ -41,9 +39,7 @@ public class GroupHandlingTest extends IntegrationTest.Simple implements Program
 			assertThat(group1.getMembers()).containsExactlyInAnyOrder(user1.getId());
 
 
-
-		}
-		finally {
+		} finally {
 			storage.removeUser(user1.getId());
 			storage.removeUser(user2.getId());
 			storage.removeGroup(group1.getId());

@@ -21,7 +21,9 @@ public class GroupUtil {
 	 * @return all group memberships
 	 */
 	@NotNull
-	public static Set<KeycloakGroup> getAllUserGroups(Set<KeycloakGroup> userGroups, Set<KeycloakGroup> groupHierarchy) {
+	public static Set<KeycloakGroup> getAllUserGroups(
+		Set<KeycloakGroup> userGroups,
+		Set<KeycloakGroup> groupHierarchy) {
 		Set<KeycloakGroup> allMemberships = Collections.emptySet();
 		for (KeycloakGroup userGroup : userGroups) {
 			allMemberships = Sets.union(allMemberships, GroupUtil.getParentGroups(userGroup, groupHierarchy));
@@ -68,7 +70,10 @@ public class GroupUtil {
 		return builder.build();
 	}
 
-	private static void getParentGroups(KeycloakGroup group, Set<KeycloakGroup> hierarchy, ImmutableCollection.Builder<KeycloakGroup> builder) {
+	private static void getParentGroups(
+		KeycloakGroup group,
+		Set<KeycloakGroup> hierarchy,
+		ImmutableCollection.Builder<KeycloakGroup> builder) {
 		if (hierarchy == null || hierarchy.isEmpty()) {
 			throw new NoSuchElementException("Group '" + group.path() + "' cannot be found in the hierarchy");
 		}
@@ -84,7 +89,8 @@ public class GroupUtil {
 			if (group.path().startsWith(groupParent.path() + HIERARCHY_SEPARATOR)) {
 
 				if (foundMatchingPath) {
-					throw new IllegalStateException("Group '" + group.path() + "' fits into multiple paths of the group hierarchy");
+					throw new IllegalStateException(
+						"Group '" + group.path() + "' fits into multiple paths of the group hierarchy");
 				}
 				foundMatchingPath = true;
 

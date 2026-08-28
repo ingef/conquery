@@ -13,10 +13,10 @@ public class ConceptSqlTables extends SqlTables {
 	private final List<ConnectorSqlTables> connectorTables;
 
 	public ConceptSqlTables(
-			String rootTable,
-			Map<CteStep, String> cteNameMap,
-			Map<CteStep, CteStep> predecessorMap,
-			List<ConnectorSqlTables> connectorTables
+		String rootTable,
+		Map<CteStep, String> cteNameMap,
+		Map<CteStep, CteStep> predecessorMap,
+		List<ConnectorSqlTables> connectorTables
 	) {
 		super(rootTable, cteNameMap, predecessorMap);
 		this.connectorTables = connectorTables;

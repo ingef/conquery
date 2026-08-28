@@ -6,12 +6,8 @@ import org.apache.mina.transport.socket.DefaultSocketSessionConfig;
 /**
  * MixIn to suppress artificial properties of {@link DefaultSocketSessionConfig}.
  */
-@JsonIgnoreProperties(value = {
-		"throughputCalculationIntervalInMillis",
-		"readerIdleTimeInMillis",
-		"writeTimeoutInMillis",
-		"writerIdleTimeInMillis",
-		"bothIdleTimeInMillis"
-})
+@JsonIgnoreProperties(
+	value = {"throughputCalculationIntervalInMillis", "readerIdleTimeInMillis", "writeTimeoutInMillis", "writerIdleTimeInMillis", "bothIdleTimeInMillis"
+	})
 public class DefaultSocketSessionConfigMixIn extends DefaultSocketSessionConfig {
 }

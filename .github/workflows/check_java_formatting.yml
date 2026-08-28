@@ -1,0 +1,25 @@
+name: "Check Java Formatting"
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - release
+  pull_request:
+
+jobs:
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - name: Check Java formatting
+        run: mvn -B -ntp spotless:check

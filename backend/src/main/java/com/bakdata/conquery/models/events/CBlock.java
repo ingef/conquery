@@ -1,17 +1,16 @@
 package com.bakdata.conquery.models.events;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.IntFunction;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
@@ -79,13 +78,10 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 	 * @param depthEstimate estimate of depth of mostSpecificChildren
 	 */
 	public static long estimateMemoryBytes(long entities, long entries, double depthEstimate) {
-		return Math.round(entities *
-						  (
-								  Integer.BYTES + Long.BYTES // includedConcepts
-								  + Integer.BYTES // minDate
-								  + Integer.BYTES // maxDate
-						  )
-						  + entries * depthEstimate * Integer.BYTES // mostSpecificChildren (rough estimate, not resident on ManagerNode)
+		return Math.round(entities * (Integer.BYTES + Long.BYTES // includedConcepts
+				+ Integer.BYTES // minDate
+				+ Integer.BYTES // maxDate
+		) + entries * depthEstimate * Integer.BYTES // mostSpecificChildren (rough estimate, not resident on ManagerNode)
 		);
 	}
 
@@ -98,7 +94,12 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 		final Map<String, Long> includedConcepts = calculateConceptElementPathBloomFilter(bucket, mostSpecificChildren);
 		final Map<String, CDateRange> entitySpans = calculateEntityDateIndices(bucket, connector);
 
-		final CBlock cBlock = new CBlock(bucketId, connector.getId(), includedConcepts, entitySpans, mostSpecificChildren);
+		final CBlock cBlock = new CBlock(
+			bucketId,
+			connector.getId(),
+			includedConcepts,
+			entitySpans,
+			mostSpecificChildren);
 		return cBlock;
 	}
 
@@ -106,7 +107,10 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 	 * Calculates the path for each event from the root of the {@link TreeConcept} to the most specific {@link ConceptTreeChild}
 	 * denoted by the individual {@link ConceptTreeChild#getPrefix()}.
 	 */
-	private static int[][] calculateSpecificChildrenPaths(Bucket bucket, ConceptTreeConnector connector, BucketManager bucketManager) {
+	private static int[][] calculateSpecificChildrenPaths(
+		Bucket bucket,
+		ConceptTreeConnector connector,
+		BucketManager bucketManager) {
 		if (connector.getColumn() == null) {
 			return calculateSpecificChildrenPathsWithoutColumn(bucket, connector);
 		}
@@ -120,7 +124,9 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 	 * This is used in the evaluation of a query to quickly decide if an event is of interest by logically ANDing
 	 * the bitmask of the event with the bitmask calculated by {@link ConceptNode#calculateBitMask(Collection)}
 	 */
-	private static Map<String, Long> calculateConceptElementPathBloomFilter(Bucket bucket, int[][] mostSpecificChildren) {
+	private static Map<String, Long> calculateConceptElementPathBloomFilter(
+		Bucket bucket,
+		int[][] mostSpecificChildren) {
 		final Map<String, Long> includedConcepts = new HashMap<>(bucket.entities().size());
 
 		for (String entity : bucket.entities()) {
@@ -164,7 +170,7 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 
 					final CDateRange range = validityDate.getValidityDate(event, bucket);
 
-					if(range == null) {
+					if (range == null) {
 						continue;
 					}
 
@@ -216,7 +222,8 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 				// Lazy evaluation of map to avoid allocations if possible.
 				// Copy event for closure.
 				final int _event = event;
-				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> mapCalculator.apply(_event));
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(
+					() -> mapCalculator.apply(_event));
 
 				if (connector.getCondition().matches(columnValue, rowMap)) {
 					// by default initialized to the only element, the root.
@@ -224,9 +231,13 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 				}
 
 				mostSpecificChildren[event] = Connector.NOT_CONTAINED;
-			}
-			catch (ConceptConfigurationException ex) {
-				log.error("Failed to evaluate event {}, row {} against connector {}", bucket.getId(), event, connector.getId(), ex);
+			} catch (ConceptConfigurationException ex) {
+				log.error(
+					"Failed to evaluate event {}, row {} against connector {}",
+					bucket.getId(),
+					event,
+					connector.getId(),
+					ex);
 			}
 		}
 
@@ -237,7 +248,10 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 	 * Calculates the path for each event from the root of the {@link TreeConcept} to the most specific {@link ConceptTreeChild}
 	 * denoted by the individual {@link ConceptTreeChild#getPrefix()}.
 	 */
-	private static int[][] calculateSpecificChildrenPathsWithColumn(Bucket bucket, ConceptTreeConnector connector, BucketManager bucketManager) {
+	private static int[][] calculateSpecificChildrenPathsWithColumn(
+		Bucket bucket,
+		ConceptTreeConnector connector,
+		BucketManager bucketManager) {
 
 		final Column column = connector.getColumn().resolve();
 
@@ -263,7 +277,8 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 				// Lazy evaluation of map to avoid allocations if possible.
 				// Copy event for closure.
 				final int _event = event;
-				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> mapCalculator.apply(_event));
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(
+					() -> mapCalculator.apply(_event));
 
 				if (connector.getCondition() != null && !connector.getCondition().matches(columnValue, rowMap)) {
 					continue;
@@ -278,19 +293,23 @@ public class CBlock extends NamespacedIdentifiable<CBlockId> {
 				}
 
 				mostSpecificChildren[event] = child.getPrefix();
-			}
-			catch (ConceptConfigurationException ex) {
-				log.error("Failed to resolve event {}, row {} against connector {}", bucket.getId(), event, connector.getId(), ex);
+			} catch (ConceptConfigurationException ex) {
+				log.error(
+					"Failed to resolve event {}, row {} against connector {}",
+					bucket.getId(),
+					event,
+					connector.getId(),
+					ex);
 			}
 		}
 
 
 		log.trace(
-				"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
-				cache.getHits(),
-				cache.getMisses(),
-				(double) cache.getHits() / cache.getMisses(),
-				(double) cache.getHits() / (cache.getHits() + cache.getMisses())
+			"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
+			cache.getHits(),
+			cache.getMisses(),
+			(double) cache.getHits() / cache.getMisses(),
+			(double) cache.getHits() / (cache.getHits() + cache.getMisses())
 		);
 
 

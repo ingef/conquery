@@ -7,15 +7,15 @@ import freemarker.template.TemplateModelException;
 
 public class ResourceConstants {
 
-	public static final String DATASET	=	"dataset";
+	public static final String DATASET = "dataset";
 	public static final String CONCEPT = "concept";
 	public static final String CONNECTOR = "connector";
 	public static final String TABLE = "table";
-	public static final String FILTER	=	"filter";
-	public static final String QUERY	=	"query";
-	public static final String FORM_CONFIG	=	"form-config";
-	public static final String FILENAME	=	"filename";
-	public static final String API		=	"api";
+	public static final String FILTER = "filter";
+	public static final String QUERY = "query";
+	public static final String FORM_CONFIG = "form-config";
+	public static final String FILENAME = "filename";
+	public static final String API = "api";
 	public static final String IMPORT_ID = "importId";
 	public static final String JOB_ID = "jobId";
 	public static final String OWNER_ID = "ownerId";
@@ -50,13 +50,14 @@ public class ResourceConstants {
 	 */
 	public static TemplateModel getAsTemplateModel() {
 		try {
-			return new DefaultObjectWrapperBuilder(Freemarker.VERSION)
-				.build()
+			return new DefaultObjectWrapperBuilder(Freemarker.VERSION).build()
 				.getStaticModels()
-				.get(ResourceConstants.class.getName());
-		}
-		catch (TemplateModelException e) {
-			throw new IllegalStateException("Could not generate template model for " + ResourceConstants.class.getName(), e);
+				.get(
+					ResourceConstants.class.getName());
+		} catch (TemplateModelException e) {
+			throw new IllegalStateException(
+				"Could not generate template model for " + ResourceConstants.class.getName(),
+				e);
 		}
 	}
 }

@@ -32,13 +32,13 @@ public class ConnectorSqlTables extends SqlTables {
 	private final Connector connector;
 
 	public ConnectorSqlTables(
-			Connector connector,
-			String connectorName,
-			String rootTable,
-			Map<CteStep, String> cteNameMap,
-			Map<CteStep, CteStep> predecessorMap,
-			boolean containsIntervalPacking,
-			boolean excludedFromTimeAggregation
+		Connector connector,
+		String connectorName,
+		String rootTable,
+		Map<CteStep, String> cteNameMap,
+		Map<CteStep, CteStep> predecessorMap,
+		boolean containsIntervalPacking,
+		boolean excludedFromTimeAggregation
 	) {
 		super(rootTable, cteNameMap, predecessorMap);
 		this.connector = connector;

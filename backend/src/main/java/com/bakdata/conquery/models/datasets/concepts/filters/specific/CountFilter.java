@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -51,10 +51,16 @@ public class CountFilter extends AggregationFilter<Range.LongRange> {
 		}
 
 		if (distinctByColumn != null && !getDistinctByColumn().isEmpty()) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn().resolve()), getDistinctByColumn().stream().map(ColumnId::resolve).toList()));
+			return new RangeFilterNode(
+				value,
+				new DistinctValuesWrapperAggregator(
+					new CountAggregator(getColumn().resolve()),
+					getDistinctByColumn().stream().map(ColumnId::resolve).toList()));
 		}
 
-		return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(), List.of(getColumn().resolve())));
+		return new RangeFilterNode(
+			value,
+			new DistinctValuesWrapperAggregator(new CountAggregator(), List.of(getColumn().resolve())));
 
 	}
 

@@ -21,24 +21,29 @@ import lombok.extern.slf4j.Slf4j;
 public class ResourceFormConfigProvider {
 
 	public static void accept(ImmutableCollection.Builder<FormFrontendConfigInformation> formConfigInfos) {
-		ResourceList frontendConfigs = CPSTypeIdResolver.SCAN_RESULT
-				.getResourcesMatchingPattern(Pattern.compile(".*\\.frontend_conf\\.json"));
+		ResourceList frontendConfigs = CPSTypeIdResolver.SCAN_RESULT.getResourcesMatchingPattern(
+			Pattern.compile(".*\\.frontend_conf\\.json"));
 
 		for (Resource config : frontendConfigs) {
 			try (config) {
 				try (InputStream in = config.open()) {
 					JsonNode configTree = Jackson.MAPPER.reader().readTree(in);
 					if (!configTree.isObject()) {
-						log.warn("Expected '{}' to be an JSON object but was '{}'. Skipping registration.", config.getPath(), configTree.getNodeType());
+						log.warn(
+							"Expected '{}' to be an JSON object but was '{}'. Skipping registration.",
+							config.getPath(),
+							configTree.getNodeType());
 					}
-					formConfigInfos.add(new FormFrontendConfigInformation("Resource " + config.getPath(), (ObjectNode) configTree));
+					formConfigInfos.add(
+						new FormFrontendConfigInformation("Resource " + config.getPath(), (ObjectNode) configTree));
 				}
-			}
-			catch (IOException e) {
-				throw new IllegalArgumentException(String.format("Could not parse the frontend config: %s", config.getPath()), e);
+			} catch (IOException e) {
+				throw new IllegalArgumentException(
+					String.format("Could not parse the frontend config: %s", config.getPath()),
+					e);
 			}
 		}
-		
+
 	}
-	
+
 }

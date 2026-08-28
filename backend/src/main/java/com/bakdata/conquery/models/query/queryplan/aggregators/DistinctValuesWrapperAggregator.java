@@ -39,10 +39,7 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 
 	@Override
 	public List<Column> getRequiredColumns() {
-		return ImmutableList.<Column>builder()
-							.addAll(aggregator.getRequiredColumns())
-							.addAll(getColumns())
-							.build();
+		return ImmutableList.<Column>builder().addAll(aggregator.getRequiredColumns()).addAll(getColumns()).build();
 	}
 
 	@Override
@@ -81,8 +78,7 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 			if (bucket.has(event, column)) {
 				anyPresent = true;
 				incoming.add(bucket.createScriptValue(event, column));
-			}
-			else {
+			} else {
 				incoming.add(null);
 			}
 		}

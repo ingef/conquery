@@ -29,7 +29,7 @@ public class PreprocessingJob implements Serializable {
 
 
 	public File getPreprocessedFile() {
-		if(tag.isEmpty()){
+		if (tag.isEmpty()) {
 			return preprocessedOut.resolve(descriptor.getName() + EXTENSION_PREPROCESSED).toFile();
 		}
 

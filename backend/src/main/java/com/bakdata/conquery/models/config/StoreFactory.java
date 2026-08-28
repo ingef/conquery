@@ -47,7 +47,9 @@ public interface StoreFactory {
 	// NamespacedStorage (Important for serdes communication between manager and shards)
 	SingletonStore<Dataset> createDatasetStore(String pathName, ObjectMapper objectMapper);
 
-	IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(String pathName, ObjectMapper objectMapper);
+	IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(
+		String pathName,
+		ObjectMapper objectMapper);
 
 	IdentifiableStore<Table> createTableStore(String pathName, ObjectMapper objectMapper);
 
@@ -80,7 +82,9 @@ public interface StoreFactory {
 
 	IdentifiableStore<Group> createGroupStore(String pathName, ObjectMapper objectMapper);
 
-	IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, ObjectMapper objectMapper);
+	IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(
+		String pathName,
+		ObjectMapper objectMapper);
 
 	IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, ObjectMapper objectMapper);
 

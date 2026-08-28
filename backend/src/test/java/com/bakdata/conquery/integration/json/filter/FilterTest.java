@@ -2,11 +2,11 @@ package com.bakdata.conquery.integration.json.filter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -117,7 +117,11 @@ public class FilterTest extends AbstractQueryEngineTest {
 		}
 
 
-		FilterValue<?> result = LoadingUtil.parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class), true);
+		FilterValue<?> result = LoadingUtil.parseSubTree(
+			support,
+			rawFilterValue,
+			Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class),
+			true);
 
 		CQTable cqTable = new CQTable();
 
@@ -141,15 +145,27 @@ public class FilterTest extends AbstractQueryEngineTest {
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
 		try {
-			final Connector internalConnector = standaloneSupport.getNamespace().getStorage().getAllConcepts().findFirst().get().getConnectors().getFirst();
-			final FrontendFilterConfiguration.Top actual = internalConnector.getFilters().iterator().next().createFrontendConfig(standaloneSupport.getConfig());
+			final Connector internalConnector = standaloneSupport.getNamespace()
+				.getStorage()
+				.getAllConcepts()
+				.findFirst()
+				.get()
+				.getConnectors()
+				.getFirst();
+			final FrontendFilterConfiguration.Top actual = internalConnector.getFilters()
+				.iterator()
+				.next()
+				.createFrontendConfig(
+					standaloneSupport.getConfig());
 
 			if (expectedFrontendConfig != null) {
 				log.info("Checking actual FrontendConfig: {}", actual);
-				assertThat(actual).usingRecursiveComparison().ignoringFieldsOfTypes(SerializationTestUtil.TYPES_TO_IGNORE).isEqualTo(expectedFrontendConfig);
+				assertThat(actual).usingRecursiveComparison()
+					.ignoringFieldsOfTypes(
+						SerializationTestUtil.TYPES_TO_IGNORE)
+					.isEqualTo(expectedFrontendConfig);
 			}
-		}
-		catch (ConceptConfigurationException e) {
+		} catch (ConceptConfigurationException e) {
 			throw new IllegalStateException(e);
 		}
 

@@ -1,9 +1,9 @@
 package com.bakdata.conquery.io.result.ResultRender;
 
+import jakarta.ws.rs.core.UriBuilder;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.Collection;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.commands.ManagerNode;
@@ -25,8 +25,10 @@ public interface ResultRendererProvider {
 	 * @param allProviders A flag that should override internal "hide-this-url" flags.
 	 * @return An Optional with the url or an empty optional.
 	 */
-	Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders)
-			throws MalformedURLException, URISyntaxException;
+	Collection<ResultAsset> generateResultURLs(
+		ManagedExecution exec,
+		UriBuilder uriBuilder,
+		boolean allProviders) throws MalformedURLException, URISyntaxException;
 
 	void registerResultResource(DropwizardResourceConfig environment, ManagerNode manager);
 }

@@ -24,7 +24,7 @@ public class ArrowResultPrinters extends JavaResultPrinters {
 	private record MoneyPrinter() implements Printer<Number> {
 		@Override
 		public Object apply(@NotNull Number value) {
-			if (value instanceof BigDecimal bigDecimal){
+			if (value instanceof BigDecimal bigDecimal) {
 				if (bigDecimal.scale() > 2) {
 					log.warn("Rounding money value '{}' as scale is greater than 2", bigDecimal);
 				}

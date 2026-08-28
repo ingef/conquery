@@ -18,9 +18,13 @@ public class AdminEndpointTest implements ProgrammaticIntegrationTest {
 
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
-		List<EndPoint> expectedEndpoints = READER.readValue(LoadingUtil.openResource("/tests/endpoints/adminEndpointInfo.json"));
+		List<EndPoint> expectedEndpoints = READER.readValue(
+			LoadingUtil.openResource("/tests/endpoints/adminEndpointInfo.json"));
 
-		DropwizardResourceConfig jerseyConfig = testConquery.getStandaloneCommand().getManagerNode().getAdmin().getJerseyConfig();
+		DropwizardResourceConfig jerseyConfig = testConquery.getStandaloneCommand()
+			.getManagerNode()
+			.getAdmin()
+			.getJerseyConfig();
 
 		List<EndPoint> resources = EndpointTestHelper.collectEndpoints(jerseyConfig);
 

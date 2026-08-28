@@ -40,15 +40,17 @@ public class IdMapTest {
 		storage.injectInto(mapper);
 
 		JsonNode json = mapper.valueToTree(containedDataset);
-		
+
 		/*assertThat(json.isArray()).isTrue();
 		assertThat(json.get(0)).isEqualTo(Jackson.MAPPER.valueToTree(d1));*/
 
 		ContainingDataset constructed = mapper.treeToValue(json, ContainingDataset.class);
 		assertThat(constructed.idMap.entrySet()).isEqualTo(containedDataset.idMap.entrySet());
 	}
-	
-	@Data @NoArgsConstructor @AllArgsConstructor
+
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class ContainingDataset {
 		private IdMap<DatasetId, Dataset> idMap = new IdMap<>();
 	}

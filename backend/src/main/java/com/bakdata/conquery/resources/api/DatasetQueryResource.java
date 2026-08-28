@@ -2,10 +2,6 @@ package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -21,6 +17,10 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.QueryProcessor;
@@ -56,24 +56,35 @@ public class DatasetQueryResource {
 
 	@POST
 	@Path("/entity")
-	public FullExecutionStatus getEntityData(@Auth Subject subject, @Valid EntityPreviewRequest query, @Context HttpServletRequest request) {
+	public FullExecutionStatus getEntityData(
+		@Auth Subject subject,
+		@Valid EntityPreviewRequest query,
+		@Context HttpServletRequest request) {
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(dataset, Ability.PRESERVE_ID);
 
 		final UriBuilder uriBuilder = RequestAwareUriBuilder.fromRequest(request);
-		return processor.getSingleEntityExport(subject, uriBuilder, query.getIdKind(), query.getEntityId(), query.getSources(), dataset, query.getTime());
+		return processor.getSingleEntityExport(
+			subject,
+			uriBuilder,
+			query.getIdKind(),
+			query.getEntityId(),
+			query.getSources(),
+			dataset,
+			query.getTime());
 	}
 
 
 	@POST
 	@Path("/resolve-entities")
-	public Stream<Map<String, String>> resolveEntities(@Auth Subject subject, @Valid @NotEmpty List<FilterValue<?>> container) {
+	public Stream<Map<String, String>> resolveEntities(
+		@Auth Subject subject,
+		@Valid @NotEmpty List<FilterValue<?>> container) {
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(dataset, Ability.PRESERVE_ID);
 
 		return processor.resolveEntities(subject, container, dataset);
 	}
-
 
 
 	@POST
@@ -87,7 +98,9 @@ public class DatasetQueryResource {
 
 
 	@GET
-	public List<? extends ExecutionStatus> getAllQueries(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+	public List<? extends ExecutionStatus> getAllQueries(
+		@Auth Subject subject,
+		@QueryParam("all-providers") Optional<Boolean> allProviders) {
 
 		subject.authorize(dataset, Ability.READ);
 
@@ -95,19 +108,22 @@ public class DatasetQueryResource {
 	}
 
 	@POST
-	public Response postQuery(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders, @NotNull @Valid QueryDescription query) {
+	public Response postQuery(
+		@Auth Subject subject,
+		@QueryParam("all-providers") Optional<Boolean> allProviders,
+		@NotNull @Valid QueryDescription query) {
 
 		subject.authorize(dataset, Ability.READ);
 
 		final ManagedExecution execution = processor.postQuery(dataset, query, subject, false);
 
-		return Response.ok(processor.getQueryFullStatus(execution.getId(),
-														subject,
-														RequestAwareUriBuilder.fromRequest(servletRequest),
-														allProviders.orElse(false),
-														false
-					   ))
-					   .status(Response.Status.CREATED)
-					   .build();
+		return Response.ok(
+			processor.getQueryFullStatus(
+				execution.getId(),
+				subject,
+				RequestAwareUriBuilder.fromRequest(servletRequest),
+				allProviders.orElse(false),
+				false
+			)).status(Response.Status.CREATED).build();
 	}
 }

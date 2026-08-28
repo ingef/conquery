@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept.specific;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,11 +26,13 @@ public class EventDateUnionSelect extends UniversalSelect {
 	public Aggregator<?> createAggregator() {
 		EventDateUnionAggregator dateUnionAggregator = new EventDateUnionAggregator();
 
-		dateUnionAggregator.setRequiredTables(getHolder().findConcept()
-														 .getConnectors()
-														 .stream()
-														 .map(Connector::getResolvedTable)
-														 .collect(Collectors.toSet()));
+		dateUnionAggregator.setRequiredTables(
+			getHolder().findConcept()
+				.getConnectors()
+				.stream()
+				.map(Connector::getResolvedTable)
+				.collect(
+					Collectors.toSet()));
 
 
 		return dateUnionAggregator;

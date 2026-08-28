@@ -65,7 +65,6 @@ public interface ResultSetProcessor {
 
 	@FunctionalInterface
 	interface Reader<T> {
-		T read(ResultSet resultSet, int columnIndex)
-				throws SQLException;
+		T read(ResultSet resultSet, int columnIndex) throws SQLException;
 	}
 }

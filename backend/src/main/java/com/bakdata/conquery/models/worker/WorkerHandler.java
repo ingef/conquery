@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.worker;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -16,9 +19,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Handler for worker in a single namespace.
@@ -44,9 +44,7 @@ public class WorkerHandler {
 
 	@NotNull
 	public Set<WorkerId> getAllWorkerIds() {
-		return getWorkers().stream()
-						   .map(WorkerInformation::getId)
-						   .collect(Collectors.toSet());
+		return getWorkers().stream().map(WorkerInformation::getId).collect(Collectors.toSet());
 	}
 
 
@@ -72,7 +70,11 @@ public class WorkerHandler {
 		final PendingReaction pendingReaction = pendingReactions.get(callerId);
 
 		if (pendingReaction == null) {
-			throw new IllegalStateException(String.format("No pending action registered (anymore) for caller id %s from reaction message: %s", callerId, message));
+			throw new IllegalStateException(
+				String.format(
+					"No pending action registered (anymore) for caller id %s from reaction message: %s",
+					callerId,
+					message));
 		}
 
 		if (pendingReaction.checkoffWorker(message)) {
@@ -134,10 +136,11 @@ public class WorkerHandler {
 	 */
 
 	public synchronized WorkerInformation addResponsibility(int bucket) {
-		final WorkerInformation smallest = workers
-				.stream()
-				.min(Comparator.comparing(si -> si.getIncludedBuckets().size()))
-				.orElseThrow(() -> new IllegalStateException("Unable to find minimum."));
+		final WorkerInformation smallest = workers.stream()
+			.min(
+				Comparator.comparing(si -> si.getIncludedBuckets().size()))
+			.orElseThrow(
+				() -> new IllegalStateException("Unable to find minimum."));
 
 		log.debug("Assigning Bucket[{}] to Worker[{}]", bucket, smallest.getId());
 
@@ -153,15 +156,16 @@ public class WorkerHandler {
 		if (old != null) {
 			old.setIncludedBuckets(info.getIncludedBuckets());
 			old.setConnectedShardNode(node);
-		}
-		else {
+		} else {
 			info.setConnectedShardNode(node);
 		}
 		addWorker(info);
 	}
 
 	public synchronized void addWorker(WorkerInformation info) {
-		Objects.requireNonNull(info.getConnectedShardNode(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
+		Objects.requireNonNull(
+			info.getConnectedShardNode(),
+			() -> String.format("No open connections found for Worker[%s]", info.getId()));
 
 		workers.add(info);
 
@@ -170,7 +174,8 @@ public class WorkerHandler {
 
 			// This is a completely invalid state from which we should not recover even in production settings.
 			if (old != null && !old.equals(info)) {
-				throw new IllegalStateException(String.format("Duplicate claims for Bucket[%d] from %s and %s", bucket, old, info));
+				throw new IllegalStateException(
+					String.format("Duplicate claims for Bucket[%d] from %s and %s", bucket, old, info));
 			}
 		}
 	}
@@ -218,10 +223,18 @@ public class WorkerHandler {
 			}
 
 			if (!pendingWorkers.remove(workerId)) {
-				throw new IllegalStateException(String.format("Could not check off worker %s for action-reaction message '%s'. Worker was not checked in.", workerId, parent.getMessageId()));
+				throw new IllegalStateException(
+					String.format(
+						"Could not check off worker %s for action-reaction message '%s'. Worker was not checked in.",
+						workerId,
+						parent.getMessageId()));
 			}
 
-			log.debug("Checked off worker '{}' for action-reaction message '{}', still waiting for {}.", workerId, parent, pendingWorkers.size());
+			log.debug(
+				"Checked off worker '{}' for action-reaction message '{}', still waiting for {}.",
+				workerId,
+				parent,
+				pendingWorkers.size());
 
 			if (!pendingWorkers.isEmpty()) {
 				return false;

@@ -47,7 +47,12 @@ public interface QueryDescription extends Visitable {
 	 * @param config
 	 * @return
 	 */
-	ManagedExecution toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config);
+	ManagedExecution toManagedExecution(
+		UserId user,
+		DatasetId submittedDataset,
+		MetaStorage storage,
+		DatasetRegistry<?> datasetRegistry,
+		ConqueryConfig config);
 
 	/**
 	 * Initializes a submitted description using the provided context.
@@ -55,7 +60,7 @@ public interface QueryDescription extends Visitable {
 	 * @param context Holds information which can be used for the initialize the description of the query to be executed.
 	 */
 	void resolve(QueryResolveContext context);
-	
+
 	/**
 	 * Allows the implementation to add visitors that traverse the QueryTree.
 	 * All visitors are concatenated so only a single traverse needs to be done.
@@ -65,39 +70,57 @@ public interface QueryDescription extends Visitable {
 		// Register visitors for permission checks
 		visitors.add(new QueryUtils.ExternalIdChecker());
 	}
-	
+
 	/**
 	 * Check implementation specific permissions. Is called after all visitors have been registered and executed.
 	 */
-	default void authorize(Subject subject, DatasetId submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
+	default void authorize(
+		Subject subject,
+		DatasetId submittedDataset,
+		List<QueryVisitor> visitors,
+		MetaStorage storage) {
 		authorizeQuery(this, subject, submittedDataset, visitors, storage);
 	}
 
-	static void authorizeQuery(QueryDescription queryDescription, Subject subject, DatasetId submittedDataset, List<QueryVisitor> visitors, MetaStorage storage) {
-		NamespacedIdentifiableCollector nsIdCollector = QueryUtils.getVisitor(visitors, NamespacedIdentifiableCollector.class);
+	static void authorizeQuery(
+		QueryDescription queryDescription,
+		Subject subject,
+		DatasetId submittedDataset,
+		List<QueryVisitor> visitors,
+		MetaStorage storage) {
+		NamespacedIdentifiableCollector nsIdCollector = QueryUtils.getVisitor(
+			visitors,
+			NamespacedIdentifiableCollector.class);
 		ExternalIdChecker externalIdChecker = QueryUtils.getVisitor(visitors, ExternalIdChecker.class);
 
 		// Generate DatasetPermissions
-		final Set<DatasetId> datasets = nsIdCollector.getIdentifiables().stream()
-												   .map(NamespacedIdentifiable::getDataset)
-												   .collect(Collectors.toSet());
+		final Set<DatasetId> datasets = nsIdCollector.getIdentifiables()
+			.stream()
+			.map(
+				NamespacedIdentifiable::getDataset)
+			.collect(Collectors.toSet());
 
 		subject.authorize(datasets, Ability.READ);
 
 		// Generate ConceptPermissions
-		final Set<Concept<?>> concepts = nsIdCollector.getIdentifiables().stream()
-												   .filter(ConceptElement.class::isInstance)
-												   .map(ConceptElement.class::cast)
-												   .<Concept<?>>map(ConceptElement::getConcept)
-												   .collect(Collectors.toSet());
+		final Set<Concept<?>> concepts = nsIdCollector.getIdentifiables()
+			.stream()
+			.filter(
+				ConceptElement.class::isInstance)
+			.map(ConceptElement.class::cast)
+			.<Concept<?>>map(
+				ConceptElement::getConcept)
+			.collect(Collectors.toSet());
 
 		subject.authorize(concepts, Ability.READ);
 
 		// Check reused query permissions
-		final Set<ManagedExecution> collectedExecutions = queryDescription.collectRequiredQueries().stream()
-																		  .map(storage::getExecution)
-																		  .filter(Objects::nonNull)
-																		  .collect(Collectors.toSet());
+		final Set<ManagedExecution> collectedExecutions = queryDescription.collectRequiredQueries()
+			.stream()
+			.map(
+				storage::getExecution)
+			.filter(Objects::nonNull)
+			.collect(Collectors.toSet());
 
 		subject.authorize(collectedExecutions, Ability.READ);
 
@@ -109,7 +132,7 @@ public interface QueryDescription extends Visitable {
 
 	Set<ManagedExecutionId> collectRequiredQueries();
 
-	default RequiredEntities collectRequiredEntities(QueryExecutionContext context){
+	default RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
 		return new RequiredEntities(context.getBucketManager().getEntities());
 	}
 }

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.EnumSet;
 
 import com.bakdata.conquery.io.cps.CPSType;

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.filter.event;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
@@ -7,7 +8,6 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

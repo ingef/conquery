@@ -30,23 +30,23 @@ class OverlapCte extends DateAggregationCte {
 		List<Field<Date>> allStarts = dateAggregationDates.allStarts();
 		List<Field<Date>> allEnds = dateAggregationDates.allEnds();
 
-		ColumnDateRange overlapValidityDate = context.getSqlAggregationAction().getOverlapValidityDate(context.getDateAggregationDates(), functionProvider);
+		ColumnDateRange overlapValidityDate = context.getSqlAggregationAction()
+			.getOverlapValidityDate(
+				context.getDateAggregationDates(),
+				functionProvider);
 		Selects overlapSelects = Selects.builder()
-										.ids(context.getIds())
-										.validityDate(Optional.of(overlapValidityDate.asValidityDateRange(predecessor)))
-										.sqlSelects(context.getCarryThroughSelects())
-										.build();
+			.ids(context.getIds())
+			.validityDate(
+				Optional.of(overlapValidityDate.asValidityDateRange(predecessor)))
+			.sqlSelects(
+				context.getCarryThroughSelects())
+			.build();
 
 		Condition startBeforeEnd = functionProvider.greatest(allStarts).lessThan(functionProvider.least(allEnds));
-		Condition allStartsNotNull = allStarts.stream()
-											  .map(Field::isNotNull)
-											  .reduce(Condition::and)
-											  .orElseThrow();
+		Condition allStartsNotNull = allStarts.stream().map(Field::isNotNull).reduce(Condition::and).orElseThrow();
 		Condition overlapConditions = allStartsNotNull.and(startBeforeEnd);
 
-		return QueryStep.builder()
-						.selects(overlapSelects)
-						.conditions(List.of(overlapConditions));
+		return QueryStep.builder().selects(overlapSelects).conditions(List.of(overlapConditions));
 	}
 
 }

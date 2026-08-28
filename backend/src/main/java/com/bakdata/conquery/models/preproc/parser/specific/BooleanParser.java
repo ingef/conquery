@@ -39,7 +39,7 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 
 	@Override
 	public void setValue(BooleanStore store, int event, Boolean value) {
-		if(value == null){
+		if (value == null) {
 			store.setNull(event);
 			return;
 		}

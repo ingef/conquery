@@ -11,7 +11,6 @@ import com.google.common.base.Throwables;
  *  @JsonDeserialize(converter = Initializing.Converter.class )
  *  }
  * </pre>
- * @param <T>
  * @implNote Every class that inherits from an initializing class needs to define its own Converter.
  * Otherwise, the class is parsed as the super class, and its overrides are not called.
  */
@@ -26,8 +25,7 @@ public interface Initializing {
 			try {
 				value.init();
 				return value;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				Throwables.throwIfUnchecked(e);
 				throw new IllegalStateException("Could not initialize %s".formatted(value), e);
 			}

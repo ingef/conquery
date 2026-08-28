@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.config.auth;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.auth.ProtoRole;
@@ -8,7 +9,6 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.auth.UserManageable;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import jakarta.validation.constraints.NotNull;
 
 /**
  * Configurations of this type define the initial users with their permissions
@@ -25,6 +25,7 @@ public interface AuthorizationConfig {
 	 */
 	@NotNull
 	List<ProtoUser> getInitialUsers();
+
 	List<ProtoRole> getInitialRoles();
 
 	/**

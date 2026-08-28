@@ -45,9 +45,9 @@ public class ConceptsUIResource {
 	@GET
 	public View getConceptView() {
 		return new UIView<>(
-				"concept.html.ftl",
-				uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(request)),
-				concept.resolve()
+			"concept.html.ftl",
+			uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(request)),
+			concept.resolve()
 		);
 	}
 }

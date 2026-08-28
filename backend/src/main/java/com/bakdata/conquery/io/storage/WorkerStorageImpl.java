@@ -30,16 +30,16 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	public ImmutableList<ManagedStore> getStores() {
 		return ImmutableList.of(
-				dataset,
-				secondaryIds,
-				tables,
-				imports,
-				concepts,
+			dataset,
+			secondaryIds,
+			tables,
+			imports,
+			concepts,
 
-				entity2Bucket,
-				worker,
-				buckets,
-				cBlocks
+			entity2Bucket,
+			worker,
+			buckets,
+			cBlocks
 		);
 	}
 

@@ -47,13 +47,13 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 
 		//this creates an aggregate map of all the children
 		Iterable<Class<?>> types = Traverser.forGraph(
-				(SuccessorsFunction<Class<?>>) node -> {
-					Class<?> superclass = node.getSuperclass();
-					List<Class<?>> interfaces = Arrays.asList(node.getInterfaces());
-					return superclass == null
-						   ? interfaces
-						   : Iterables.concat(interfaces, Collections.singleton(superclass));
-				}
+			(SuccessorsFunction<Class<?>>) node -> {
+				Class<?> superclass = node.getSuperclass();
+				List<Class<?>> interfaces = Arrays.asList(node.getInterfaces());
+				return superclass == null ? interfaces : Iterables.concat(
+					interfaces,
+					Collections.singleton(superclass));
+			}
 		).breadthFirst(baseType.getRawClass());
 
 		for (Class<?> type : types) {
@@ -70,15 +70,14 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 		log.info("Scanning Classpath");
 		//scan classpaths for annotated child classes
 
-		SCAN_RESULT = new ClassGraph()
-							  .enableClassInfo()
-							  .enableAnnotationInfo()
-							  //TODO if ever necessary, use an environment variable also
-							  .acceptPackages(
-									  "com.bakdata",
-									  "tests"
-							  )
-							  .scan();
+		SCAN_RESULT = new ClassGraph().enableClassInfo()
+			.enableAnnotationInfo()
+			//TODO if ever necessary, use an environment variable also
+			.acceptPackages(
+				"com.bakdata",
+				"tests"
+			)
+			.scan();
 
 		log.info("Scanned: {} classes in classpath", SCAN_RESULT.getAllClasses().size());
 		Set<Class<?>> types = new HashSet<>();
@@ -94,16 +93,19 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 				//check if base is marked as base
 				CPSBase baseAnno = anno.base().getAnnotation(CPSBase.class);
 				if (baseAnno == null) {
-					throw new IllegalStateException("The class " + anno.base() + " is used as a CPSBase in " + type + " but not annotated as such.");
+					throw new IllegalStateException(
+						"The class " + anno
+							.base() + " is used as a CPSBase in " + type + " but not annotated as such.");
 				}
 				if (!anno.base().isAssignableFrom(type)) {
-					throw new IllegalStateException("The class " + anno.base() + " is used as a CPSBase in " + type + " but type is no subclass of it.");
+					throw new IllegalStateException(
+						"The class " + anno
+							.base() + " is used as a CPSBase in " + type + " but type is no subclass of it.");
 				}
 				if (anno.subTyped() && !SubTyped.class.isAssignableFrom(type)) {
-					throw new IllegalStateException("The class "
-													+ type
-													+ " is flagged to support a subtyping information but does not implement "
-													+ SubTyped.class.getName());
+					throw new IllegalStateException(
+						"The class " + type + " is flagged to support a subtyping information but does not implement " + SubTyped.class
+							.getName());
 				}
 
 				map.add(anno.id(), type);
@@ -115,8 +117,7 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 			CPSMap map = globalMap.get(b);
 			if (map == null) {
 				log.warn("\tBase Class {}:\tNo registered types", b);
-			}
-			else {
+			} else {
 				log.info("\tBase Class {}", b.getSimpleName());
 				map.calculateInverse();
 				for (Entry<Class<?>, String> e : map) {
@@ -131,7 +132,11 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 	public JavaType typeFromId(DatabindContext context, String id) throws IOException {
 		Class<?> result = cpsMap.getClassFromId(truncateSubTypeInformation(id));
 		if (result == null) {
-			throw new InvalidTypeIdException(null, "There is no type " + id + " for " + baseType.getTypeName() + ". Try: " + getDescForKnownTypeIds(), baseType, id);
+			throw new InvalidTypeIdException(
+				null,
+				"There is no type " + id + " for " + baseType.getTypeName() + ". Try: " + getDescForKnownTypeIds(),
+				baseType,
+				id);
 		}
 		String subTypeInfo = extractSubTypeInformation(id);
 		if (!Strings.isNullOrEmpty(subTypeInfo)) {
@@ -180,13 +185,11 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 
 	public static Set<Pair<Class<?>, Class<?>>> listImplementations() {
 		return globalMap.entrySet()
-						.stream()
-					   .<Pair<Class<?>, Class<?>>>flatMap(e -> e.getValue()
-																.getClasses()
-																.stream()
-																.map(v -> Pair.of(e.getKey(), v))
-					   )
-					   .collect(Collectors.toSet());
+			.stream()
+			.<Pair<Class<?>, Class<?>>>flatMap(
+				e -> e.getValue().getClasses().stream().map(v -> Pair.of(e.getKey(), v))
+			)
+			.collect(Collectors.toSet());
 	}
 
 	@Override
@@ -196,7 +199,8 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 			//check if other base
 			CPSType anno = value.getClass().getAnnotation(CPSType.class);
 			if (anno == null) {
-				throw new IllegalStateException("There is no id for the class " + suggestedType + " for " + baseType.getTypeName() + ".");
+				throw new IllegalStateException(
+					"There is no id for the class " + suggestedType + " for " + baseType.getTypeName() + ".");
 			}
 			return anno.id();
 		}

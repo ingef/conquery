@@ -15,8 +15,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum Dialect {
 
-	CLICKHOUSE(new ClickhouseDialectBundle()),
-	HANA(new HanaDialectBundle());
+	CLICKHOUSE(new ClickhouseDialectBundle()), HANA(new HanaDialectBundle());
 
 	private final DialectBundle dialectBundle;
 }

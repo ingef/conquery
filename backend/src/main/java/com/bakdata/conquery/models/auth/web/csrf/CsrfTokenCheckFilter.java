@@ -1,15 +1,15 @@
 package com.bakdata.conquery.models.auth.web.csrf;
 
-import java.io.IOException;
-import java.util.Optional;
-
-import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.core.Cookie;
+import java.io.IOException;
+import java.util.Optional;
+
+import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,9 +25,8 @@ public class CsrfTokenCheckFilter implements ContainerRequestFilter {
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
-		final String
-				cookieTokenHash =
-				Optional.ofNullable(requestContext.getCookies().get(CsrfTokenSetFilter.CSRF_COOKIE_NAME)).map(Cookie::getValue).orElse(null);
+		final String cookieTokenHash = Optional.ofNullable(
+			requestContext.getCookies().get(CsrfTokenSetFilter.CSRF_COOKIE_NAME)).map(Cookie::getValue).orElse(null);
 		final String headerToken = requestContext.getHeaders().getFirst(CSRF_TOKEN_HEADER);
 
 		final String method = requestContext.getMethod();

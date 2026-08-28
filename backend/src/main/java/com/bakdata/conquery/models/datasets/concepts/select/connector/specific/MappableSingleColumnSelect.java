@@ -4,10 +4,10 @@ import static com.bakdata.conquery.models.types.ResultType.Primitive.STRING;
 import static com.bakdata.conquery.models.types.ResultType.resolveResultType;
 import static org.jooq.impl.DSL.*;
 
+import jakarta.validation.Valid;
 import java.util.Collections;
 import java.util.Set;
 import javax.annotation.Nullable;
-import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.View;
@@ -51,27 +51,33 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	private final Range.IntegerRange substringRange;
 
 
-	public MappableSingleColumnSelect(ColumnId column, @Nullable InternToExternMapperId mapping, @Nullable Range.IntegerRange substringRange) {
+	public MappableSingleColumnSelect(
+		ColumnId column,
+		@Nullable InternToExternMapperId mapping,
+		@Nullable Range.IntegerRange substringRange) {
 		super(column);
 		this.mapping = mapping;
 		this.substringRange = substringRange;
 	}
 
 	public static SingleColumnSqlSelect getSubstringSelect(
-			Column column, Range.IntegerRange substringRange, SelectContext<ConnectorSqlTables> selectContext,
-			String alias) {
+		Column column,
+		Range.IntegerRange substringRange,
+		SelectContext<ConnectorSqlTables> selectContext,
+		String alias) {
 
 		Field<String> field = field(name(selectContext.getTables().getRootTable(), column.getName()), String.class);
 
 		if (substringRange != null && !substringRange.isAll()) {
 			if (substringRange.isAtLeast()) {
 				field = substring(field, 1 + substringRange.getMin());
-			}
-			else if (substringRange.isAtMost()) {
+			} else if (substringRange.isAtMost()) {
 				field = substring(field, 1, substringRange.getMax());
-			}
-			else {
-				field = substring(field, 1 + substringRange.getMin(), substringRange.getMax() - substringRange.getMin());
+			} else {
+				field = substring(
+					field,
+					1 + substringRange.getMin(),
+					substringRange.getMax() - substringRange.getMin());
 			}
 		}
 

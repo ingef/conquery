@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -12,7 +13,6 @@ import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
 import com.bakdata.conquery.util.DateReader;
 import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.ToString;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -34,13 +34,13 @@ public class DateRangeOutput extends OutputDescription {
 	public boolean allowOpen = false;
 
 	@Override
-	public int hashCode(){
-		return new HashCodeBuilder()
-					   .append(super.hashCode())
-					   .append(startColumn)
-					   .append(endColumn)
-					   .append(allowOpen)
-					   .toHashCode();
+	public int hashCode() {
+		return new HashCodeBuilder().append(super.hashCode())
+			.append(startColumn)
+			.append(endColumn)
+			.append(
+				allowOpen)
+			.toHashCode();
 	}
 
 	@Override

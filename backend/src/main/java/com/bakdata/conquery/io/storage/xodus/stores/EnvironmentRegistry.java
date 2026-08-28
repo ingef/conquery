@@ -46,7 +46,9 @@ public class EnvironmentRegistry {
 			final Environment remove = activeEnvironments.remove(environment.getLocation());
 
 			if (remove == null) {
-				log.warn("Could not unregister environment, because it was not registered: {}", environment.getLocation());
+				log.warn(
+					"Could not unregister environment, because it was not registered: {}",
+					environment.getLocation());
 			}
 		}
 	}
@@ -57,11 +59,10 @@ public class EnvironmentRegistry {
 			try {
 				// Check for old env or register new env
 				return activeEnvironments.computeIfAbsent(
-						path.toString(),
-						newPath -> createManaged(Environments.newInstance(newPath, xodusConfig.createConfig()))
+					path.toString(),
+					newPath -> createManaged(Environments.newInstance(newPath, xodusConfig.createConfig()))
 				);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new IllegalStateException("Unable to open environment: " + path, e);
 			}
 		}

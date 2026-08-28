@@ -8,7 +8,7 @@ public class PseudomizationTest {
 
 	@Test
 	void pseudoIdGeneration() {
-		AutoIncrementingPseudomizer pseudomizer = new AutoIncrementingPseudomizer(4,2);
+		AutoIncrementingPseudomizer pseudomizer = new AutoIncrementingPseudomizer(4, 2);
 
 		// Id changes from internal to external
 		assertThat(pseudomizer.getPseudoId("0")).isEqualTo(EntityPrintId.from(null, null, "anon_0", null));

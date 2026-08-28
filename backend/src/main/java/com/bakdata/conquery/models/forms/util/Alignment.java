@@ -1,14 +1,14 @@
 package com.bakdata.conquery.models.forms.util;
 
-import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalInt;
 import java.util.function.Function;
+
+import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Specifier for the alignment of {@link DateContext}s of a certain resolution.
@@ -18,7 +18,7 @@ import java.util.function.Function;
  */
 @RequiredArgsConstructor
 public enum Alignment {
-	NO_ALIGN(List::of){
+	NO_ALIGN(List::of) {
 		@Override
 		protected Map<Resolution, Integer> getAmountPerResolution() {
 			return Map.of(Resolution.COMPLETE, 1);
@@ -28,17 +28,22 @@ public enum Alignment {
 		@Override
 		protected Map<Resolution, Integer> getAmountPerResolution() {
 			return Map.of(
-					Resolution.YEARS, 365,
-					Resolution.QUARTERS, 90,
-					Resolution.DAYS, 1);
+				Resolution.YEARS,
+				365,
+				Resolution.QUARTERS,
+				90,
+				Resolution.DAYS,
+				1);
 		}
 	},
 	QUARTER(CDateRange::getCoveredQuarters) {
 		@Override
 		protected Map<Resolution, Integer> getAmountPerResolution() {
 			return Map.of(
-					Resolution.YEARS, 4,
-					Resolution.QUARTERS, 1);
+				Resolution.YEARS,
+				4,
+				Resolution.QUARTERS,
+				1);
 		}
 	},
 	YEAR(CDateRange::getCoveredYears) {
@@ -67,4 +72,3 @@ public enum Alignment {
 		return OptionalInt.empty();
 	}
 }
-

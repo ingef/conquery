@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Data
-@RequiredArgsConstructor(onConstructor_ = {@JsonCreator} )
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class PPColumn {
 	@NonNull
 	private final String name;

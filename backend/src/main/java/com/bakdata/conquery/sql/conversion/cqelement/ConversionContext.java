@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.NodeConversions;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
@@ -25,7 +24,8 @@ import lombok.Singular;
 import lombok.Value;
 import lombok.With;
 
-//TODO this class is less context and more state. It's also incredibly dangerous because it hides a lot of moving parts and creates indirections.
+// TODO this class is less context and more state. It's also incredibly dangerous because it hides a lot of moving parts
+// and creates indirections.
 @Value
 @With
 @Builder(toBuilder = true)
@@ -74,7 +74,6 @@ public class ConversionContext implements Context {
 	public boolean isWithStratification() {
 		return this.stratificationTable != null;
 	}
-
 
 
 	/**

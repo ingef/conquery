@@ -55,7 +55,7 @@ public class QuarterAggregator extends Aggregator<String> {
 	public void consumeEvent(Bucket bucket, int event) {
 		final CDateRange dateRange = validityDate.getValidityDate(event, bucket);
 
-		if (dateRange == null){
+		if (dateRange == null) {
 			return;
 		}
 

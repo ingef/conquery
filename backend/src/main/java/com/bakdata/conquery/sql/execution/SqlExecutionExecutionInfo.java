@@ -28,7 +28,12 @@ public class SqlExecutionExecutionInfo implements ExecutionManager.InternalExecu
 		this.executingLock = new CountDownLatch(1);
 	}
 
-	public SqlExecutionExecutionInfo(ExecutionState executionState, List<String> columnNames, List<EntityResult> table, List<ResultInfo> resultInfos, CountDownLatch executingLock) {
+	public SqlExecutionExecutionInfo(
+		ExecutionState executionState,
+		List<String> columnNames,
+		List<EntityResult> table,
+		List<ResultInfo> resultInfos,
+		CountDownLatch executingLock) {
 		this.executionState = executionState;
 		this.columnNames = columnNames;
 		this.resultInfos = resultInfos;

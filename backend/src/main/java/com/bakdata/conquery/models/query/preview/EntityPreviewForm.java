@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.preview;
 
+import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
@@ -79,28 +79,36 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	private final Map<String, AbsoluteFormQuery> timeOverViews;
 
 	public static EntityPreviewForm create(
-			String entity,
-			String idKind,
-			Range<LocalDate> dateRange,
-			List<ConnectorId> sources,
-			List<SelectId> infos,
-			List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects,
-			DatasetRegistry<?> datasetRegistry) {
+		String entity,
+		String idKind,
+		Range<LocalDate> dateRange,
+		List<ConnectorId> sources,
+		List<SelectId> infos,
+		List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects,
+		DatasetRegistry<?> datasetRegistry) {
 
 		// We use this query to filter for the single selected query.
-		final Query entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
+		final Query entitySelectQuery = new ConceptQuery(
+			new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
 
 		final TableExportQuery exportQuery = createExportQuery(dateRange, sources, entitySelectQuery);
 
 		final AbsoluteFormQuery infoCardQuery = createInfoCardQuery(dateRange, infos, entitySelectQuery);
 
-		final Map<String, AbsoluteFormQuery> timeQueries = createTimeStratifiedQueries(dateRange, timeStratifiedSelects, datasetRegistry, entitySelectQuery);
+		final Map<String, AbsoluteFormQuery> timeQueries = createTimeStratifiedQueries(
+			dateRange,
+			timeStratifiedSelects,
+			datasetRegistry,
+			entitySelectQuery);
 
 		return new EntityPreviewForm(infoCardQuery, exportQuery, timeQueries);
 	}
 
 	@NotNull
-	private static TableExportQuery createExportQuery(Range<LocalDate> dateRange, List<ConnectorId> sources, Query entitySelectQuery) {
+	private static TableExportQuery createExportQuery(
+		Range<LocalDate> dateRange,
+		List<ConnectorId> sources,
+		Query entitySelectQuery) {
 		// Query exporting selected Sources of the Entity.
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
 
@@ -111,36 +119,47 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@NotNull
-	private static AbsoluteFormQuery createInfoCardQuery(Range<LocalDate> dateRange, List<SelectId> infos, Query entitySelectQuery) {
+	private static AbsoluteFormQuery createInfoCardQuery(
+		Range<LocalDate> dateRange,
+		List<SelectId> infos,
+		Query entitySelectQuery) {
 		// Query exporting a few additional infos on the entity.
-		return new AbsoluteFormQuery(entitySelectQuery, dateRange,
-							 ArrayConceptQuery.createFromFeatures(
-									  infos.stream()
-										   .map(CQConcept::forSelect)
-										   .collect(Collectors.toList())
-							  ),
-							 List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
+		return new AbsoluteFormQuery(
+			entitySelectQuery,
+			dateRange,
+			ArrayConceptQuery.createFromFeatures(
+				infos.stream().map(CQConcept::forSelect).collect(Collectors.toList())
+			),
+			List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
 		);
 	}
 
 	@NotNull
-	private static Map<String, AbsoluteFormQuery> createTimeStratifiedQueries(Range<LocalDate> dateRange, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry<?> datasetRegistry, Query entitySelectQuery) {
+	private static Map<String, AbsoluteFormQuery> createTimeStratifiedQueries(
+		Range<LocalDate> dateRange,
+		List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects,
+		DatasetRegistry<?> datasetRegistry,
+		Query entitySelectQuery) {
 		final Map<String, AbsoluteFormQuery> timeQueries = new HashMap<>();
 
 		// per group create an AbsoluteFormQuery on years and quarters.
 		for (PreviewConfig.TimeStratifiedSelects selects : timeStratifiedSelects) {
 
-			final AbsoluteFormQuery query = new AbsoluteFormQuery(entitySelectQuery, dateRange,
-																  ArrayConceptQuery.createFromFeatures(
-																		  selects.selects().stream()
-																				 .map(PreviewConfig.InfoCardSelect::select)
-																				 .map(CQConcept::forSelect)
-																				 .collect(Collectors.toList())),
-																  List.of(
-																		  ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN),
-																		  ExportForm.ResolutionAndAlignment.of(Resolution.YEARS, Alignment.YEAR),
-																		  ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER)
-																  )
+			final AbsoluteFormQuery query = new AbsoluteFormQuery(
+				entitySelectQuery,
+				dateRange,
+				ArrayConceptQuery.createFromFeatures(
+					selects.selects()
+						.stream()
+						.map(PreviewConfig.InfoCardSelect::select)
+						.map(
+							CQConcept::forSelect)
+						.collect(Collectors.toList())),
+				List.of(
+					ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN),
+					ExportForm.ResolutionAndAlignment.of(Resolution.YEARS, Alignment.YEAR),
+					ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER)
+				)
 			);
 
 			timeQueries.put(selects.label(), query);
@@ -156,7 +175,11 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@Override
-	public void authorize(Subject subject, DatasetId submittedDataset, @NonNull List<QueryVisitor> visitors, MetaStorage storage) {
+	public void authorize(
+		Subject subject,
+		DatasetId submittedDataset,
+		@NonNull List<QueryVisitor> visitors,
+		MetaStorage storage) {
 		QueryDescription.authorizeQuery(this, subject, submittedDataset, visitors, storage);
 	}
 
@@ -179,7 +202,12 @@ public class EntityPreviewForm extends Form implements InternalForm {
 	}
 
 	@Override
-	public ManagedExecution toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+	public ManagedExecution toManagedExecution(
+		UserId user,
+		DatasetId submittedDataset,
+		MetaStorage storage,
+		DatasetRegistry<?> datasetRegistry,
+		ConqueryConfig config) {
 		return new EntityPreviewExecution(this, user, submittedDataset, storage, datasetRegistry, config);
 	}
 

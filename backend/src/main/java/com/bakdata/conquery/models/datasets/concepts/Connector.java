@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -7,8 +9,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
@@ -94,9 +94,7 @@ public abstract class Connector extends LabeledNamespaceIdentifiable<ConnectorId
 
 	@JsonIgnore
 	public List<Select> getDefaultSelects() {
-		return getSelects()
-				.stream().filter(Select::isDefault)
-				.collect(Collectors.toList());
+		return getSelects().stream().filter(Select::isDefault).collect(Collectors.toList());
 	}
 
 	@Override
@@ -118,7 +116,11 @@ public abstract class Connector extends LabeledNamespaceIdentifiable<ConnectorId
 	public boolean isUniqueFilterNames() {
 		boolean valid = true;
 
-		for (Entry<String> e : collectAllFilters().stream().map(Filter::getName).collect(ImmutableMultiset.toImmutableMultiset()).entrySet()) {
+		for (Entry<String> e : collectAllFilters().stream()
+			.map(Filter::getName)
+			.collect(
+				ImmutableMultiset.toImmutableMultiset())
+			.entrySet()) {
 			if (e.getCount() == 1) {
 				continue;
 			}

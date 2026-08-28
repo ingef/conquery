@@ -32,14 +32,14 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	private int nulls;
 
 	public NumberColumnStatsCollector(
-			String name,
-			String label,
-			String description,
-			ResultType type,
-			PrintSettings printSettings,
-			int expectedBins,
-			double lowerPercentile,
-			double upperPercentile) {
+		String name,
+		String label,
+		String description,
+		ResultType type,
+		PrintSettings printSettings,
+		int expectedBins,
+		double lowerPercentile,
+		double upperPercentile) {
 		super(name, label, description, printSettings);
 
 		this.type = type;
@@ -61,7 +61,8 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		return switch (((ResultType.Primitive) type)) {
 			case INTEGER -> Comparator.comparingInt(Number::intValue);
 			case MONEY, NUMERIC -> Comparator.comparingDouble(Number::doubleValue);
-			default -> throw new IllegalArgumentException("Cannot handle result type %s".formatted(resultType.toString()));
+			default ->
+				throw new IllegalArgumentException("Cannot handle result type %s".formatted(resultType.toString()));
 		};
 	}
 
@@ -76,7 +77,12 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	/**
 	 * If distance between bounds is less than expectedBins, we expand our bounds along percentiles.
 	 */
-	private static Range<Double> expandBounds(double lower, double upper, int expectedBins, DescriptiveStatistics statistics, double by) {
+	private static Range<Double> expandBounds(
+		double lower,
+		double upper,
+		int expectedBins,
+		DescriptiveStatistics statistics,
+		double by) {
 		assert by > 0;
 
 
@@ -113,7 +119,12 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	public ResultColumnStatistics describe() {
 		// If no real samples were collected, we short-circuit, as Statistics will throw an exception when empty.
 		if (getStatistics().getN() == 0) {
-			return new HistogramColumnDescription(getName(), getLabel(), getDescription(), Collections.emptyList(), Collections.emptyMap());
+			return new HistogramColumnDescription(
+				getName(),
+				getLabel(),
+				getDescription(),
+				Collections.emptyList(),
+				Collections.emptyMap());
 		}
 
 		final List<HistogramColumnDescription.Entry> bins = createBins();
@@ -129,43 +140,41 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		final Range<Double> bounds;
 
 		// Shortcut for ranges close to exactly [0..1]
-		if (statistics.getMin() > 0 && statistics.getMin() <= 0.1 && statistics.getMax() < 1 && statistics.getMax() > 0.9) {
+		if (statistics.getMin() > 0 && statistics.getMin() <= 0.1 && statistics.getMax() < 1 && statistics
+			.getMax() > 0.9) {
 			bounds = Range.closed(0d, 1d);
-		}
-		else {
+		} else {
 			bounds = expandBounds(lowerPercentile, upperPercentile, expectedBins, statistics, 5);
 		}
 
-		log.trace("Creating Histogram for {} with params inner=({},  {}), bounds=({},{}) bins={}",
-				  getLabel(),
-				  bounds.lowerEndpoint(),
-				  bounds.upperEndpoint(),
-				  getStatistics().getMin(),
-				  getStatistics().getMax(),
-				  expectedBins
+		log.trace(
+			"Creating Histogram for {} with params inner=({},  {}), bounds=({},{}) bins={}",
+			getLabel(),
+			bounds.lowerEndpoint(),
+			bounds.upperEndpoint(),
+			getStatistics().getMin(),
+			getStatistics().getMax(),
+			expectedBins
 		);
 
 		boolean integral = ResultType.Primitive.INTEGER.equals(getType());
-		final Histogram histogram =
-				Histogram.zeroAligned(bounds.lowerEndpoint(),
-									  bounds.upperEndpoint(),
-									  getStatistics().getMin(),
-									  getStatistics().getMax(),
-									  expectedBins,
-									  integral || bounds.upperEndpoint() - bounds.lowerEndpoint() > 1,
-									  integral
-				);
+		final Histogram histogram = Histogram.zeroAligned(
+			bounds.lowerEndpoint(),
+			bounds.upperEndpoint(),
+			getStatistics().getMin(),
+			getStatistics().getMax(),
+			expectedBins,
+			integral || bounds.upperEndpoint() - bounds.lowerEndpoint() > 1,
+			integral
+		);
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 
-		return histogram.getNodes().asMapOfRanges().entrySet()
-						.stream()
-						.map(bin -> {
-							final String binLabel = histogram.createLabel(bin.getKey(), this::printValue);
+		return histogram.getNodes().asMapOfRanges().entrySet().stream().map(bin -> {
+			final String binLabel = histogram.createLabel(bin.getKey(), this::printValue);
 
-							return new HistogramColumnDescription.Entry(binLabel, bin.getValue().getCount());
-						})
-						.toList();
+			return new HistogramColumnDescription.Entry(binLabel, bin.getValue().getCount());
+		}).toList();
 	}
 
 	@NotNull
@@ -182,8 +191,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		// mean is always a decimal number, therefore integer needs special handling
 		if (ResultType.Primitive.INTEGER.equals(getType())) {
 			out.put(labels.mean(), decimalFormat.format(getStatistics().getMean()));
-		}
-		else {
+		} else {
 			out.put(labels.mean(), printValue(getStatistics().getMean()));
 		}
 

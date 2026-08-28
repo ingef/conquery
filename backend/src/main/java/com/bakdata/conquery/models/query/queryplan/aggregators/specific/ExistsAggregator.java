@@ -25,13 +25,14 @@ public class ExistsAggregator extends Aggregator<Boolean> {
 	private QPNode reference;
 
 	@Override
-	public void consumeEvent(Bucket bucket, int event) {  }
+	public void consumeEvent(Bucket bucket, int event) {
+	}
 
 	@Override
 	public Boolean createAggregationResult() {
 		return reference.isContained();
 	}
-	
+
 	@Override
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		requiredTables.addAll(this.requiredTables);

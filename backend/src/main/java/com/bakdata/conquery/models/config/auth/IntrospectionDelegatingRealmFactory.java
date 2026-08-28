@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.config.auth;
 
+import jakarta.ws.rs.client.Client;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,6 @@ import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.ws.rs.client.Client;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -46,10 +46,14 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 
 	private transient AuthzClient authClient;
 
-	public ConqueryAuthenticationRealm createRealm(Environment environment, AuthorizationController authorizationController) {
+	public ConqueryAuthenticationRealm createRealm(
+		Environment environment,
+		AuthorizationController authorizationController) {
 
 		// Register token extractor for JWT Tokens
-		AuthFilter.registerTokenExtractor(JWTokenHandler.JWTokenExtractor.class, environment.jersey().getResourceConfig());
+		AuthFilter.registerTokenExtractor(
+			JWTokenHandler.JWTokenExtractor.class,
+			environment.jersey().getResourceConfig());
 
 		// At start up, try tp retrieve the idp client api object if possible. If the idp service is not up don't fail start up.
 		authClient = getAuthClient(false);
@@ -79,7 +83,7 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 	 * @return
 	 */
 	@JsonIgnore
-	public String getTokenEndpoint(){
+	public String getTokenEndpoint() {
 		return getAuthClient(true).getServerConfiguration().getTokenEndpoint();
 	}
 
@@ -106,15 +110,15 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 
 	@JsonIgnore
 	public AuthzClient getAuthClient(boolean exceptionOnFailedRetrieval) {
-		if(authClient != null) {
+		if (authClient != null) {
 			return authClient;
 		}
 		try {
 			// This tries to contact the identity providers discovery endpoint and can possibly timeout
 			return AuthzClient.create(this);
 		} catch (RuntimeException e) {
-			log.warn("Unable to establish connection to auth server.", log.isTraceEnabled()? e : null );
-			if(exceptionOnFailedRetrieval) {
+			log.warn("Unable to establish connection to auth server.", log.isTraceEnabled() ? e : null);
+			if (exceptionOnFailedRetrieval) {
 				throw e;
 			}
 		}
@@ -138,19 +142,19 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 	@JsonIgnore
 	@ValidationMethod(message = "Secret not found")
 	public boolean isSecretFilled() {
-		if(credentials == null) {
+		if (credentials == null) {
 			return false;
 		}
 
 		Object secret = credentials.get(CONFIDENTIAL_CREDENTIAL);
-		if(secret == null) {
+		if (secret == null) {
 			return false;
 		}
 
-		if(!(secret instanceof String)) {
+		if (!(secret instanceof String)) {
 			return false;
 		}
 
-		return !((String)secret).isBlank();
+		return !((String) secret).isBlank();
 	}
 }

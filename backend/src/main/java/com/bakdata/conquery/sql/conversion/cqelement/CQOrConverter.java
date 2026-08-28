@@ -19,15 +19,17 @@ public class CQOrConverter implements NodeConverter<CQOr> {
 
 		QueryStep joined;
 		if (orNode.getChildren().size() == 1) {
-			ConversionContext withConvertedChild = context.getNodeConversions().convert(orNode.getChildren().get(0), context);
+			ConversionContext withConvertedChild = context.getNodeConversions()
+				.convert(
+					orNode.getChildren().get(0),
+					context);
 			joined = withConvertedChild.getLastConvertedStep();
-		}
-		else {
+		} else {
 			joined = QueryStepJoiner.joinChildren(
-					orNode.getChildren(),
-					context,
-					ConqueryJoinType.OUTER_JOIN,
-					orNode.getDateAction()
+				orNode.getChildren(),
+				context,
+				ConqueryJoinType.OUTER_JOIN,
+				orNode.getDateAction()
 			);
 		}
 

@@ -31,10 +31,10 @@ public class MoneyParser extends Parser<BigDecimal, MoneyStore> {
 
 	@Override
 	protected void registerValue(BigDecimal v) {
-		if (maxValue == null){
+		if (maxValue == null) {
 			maxValue = v;
 		}
-		if(minValue == null){
+		if (minValue == null) {
 			minValue = v;
 		}
 

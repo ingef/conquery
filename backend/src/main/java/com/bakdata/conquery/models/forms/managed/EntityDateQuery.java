@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
@@ -59,21 +59,18 @@ public class EntityDateQuery extends Query {
 	@Override
 	public EntityDateQueryPlan createQueryPlan(QueryPlanContext context) {
 		// Clear all selects we need only the date union which is enforced through the content
-		Visitable.stream(query)
-				 .filter(CQConcept.class::isInstance)
-				 .map(CQConcept.class::cast)
-				 .forEach(concept -> {
-					 concept.setSelects(Collections.emptyList());
-					 concept.getTables().forEach(t -> t.setSelects(Collections.emptyList()));
-				 });
+		Visitable.stream(query).filter(CQConcept.class::isInstance).map(CQConcept.class::cast).forEach(concept -> {
+			concept.setSelects(Collections.emptyList());
+			concept.getTables().forEach(t -> t.setSelects(Collections.emptyList()));
+		});
 
 		return new EntityDateQueryPlan(
-				query.createQueryPlan(context),
-				features.createQueryPlan(context),
-                resolutionsAndAlignments,
-                dateRange
-        );
-    }
+			query.createQueryPlan(context),
+			features.createQueryPlan(context),
+			resolutionsAndAlignments,
+			dateRange
+		);
+	}
 
 	@Override
 	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
@@ -81,15 +78,15 @@ public class EntityDateQuery extends Query {
 		features.collectRequiredQueries(requiredQueries);
 	}
 
-    @Override
-    public void resolve(QueryResolveContext context) {
-        query.resolve(context.withDateAggregationMode(dateAggregationMode));
-        features.resolve(context);
-    }
+	@Override
+	public void resolve(QueryResolveContext context) {
+		query.resolve(context.withDateAggregationMode(dateAggregationMode));
+		features.resolve(context);
+	}
 
-    @Override
-    public List<ResultInfo> getResultInfos() {
-		List<ResultInfo>  resultInfos = new ArrayList<>();
+	@Override
+	public List<ResultInfo> getResultInfos() {
+		List<ResultInfo> resultInfos = new ArrayList<>();
 		resultInfos.add(ResultHeaders.formResolutionInfo());
 		resultInfos.add(ResultHeaders.formContextInfo());
 		resultInfos.add(ResultHeaders.formDateRangeInfo());
@@ -98,14 +95,14 @@ public class EntityDateQuery extends Query {
 
 		return resultInfos;
 
-    }
+	}
 
-    @Override
-    public void visit(Consumer<Visitable> visitor) {
-        visitor.accept(this);
-        query.visit(visitor);
-        features.visit(visitor);
-    }
+	@Override
+	public void visit(Consumer<Visitable> visitor) {
+		visitor.accept(this);
+		query.visit(visitor);
+		features.visit(visitor);
+	}
 
 	@Override
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {

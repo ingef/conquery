@@ -41,8 +41,7 @@ public class MetaStorage implements ConqueryStorage, Injectable {
 	private IdentifiableStore<Group> authGroup;
 
 	public static MetaStorage getInjected(DeserializationContext ctxt) throws JsonMappingException {
-		return (MetaStorage) ctxt
-				.findInjectableValue(MetaStorage.class.getName(), null, null);
+		return (MetaStorage) ctxt.findInjectableValue(MetaStorage.class.getName(), null, null);
 	}
 
 	@Override
@@ -54,11 +53,11 @@ public class MetaStorage implements ConqueryStorage, Injectable {
 		Preconditions.checkNotNull(formConfigs, "FormConfig storage was not created");
 
 		return ImmutableList.of(
-				authUser,
-				authRole,
-				authGroup,
-				executions,
-				formConfigs
+			authUser,
+			authRole,
+			authGroup,
+			executions,
+			formConfigs
 		);
 	}
 
@@ -86,9 +85,7 @@ public class MetaStorage implements ConqueryStorage, Injectable {
 	}
 
 	public Stream<ManagedExecution> getAllExecutions() {
-		return executions.getAllKeys()
-						 .map(executions::get)
-						 .filter(Objects::nonNull);
+		return executions.getAllKeys().map(executions::get).filter(Objects::nonNull);
 	}
 
 	public Stream<ManagedExecutionId> getAllExecutionIds() {

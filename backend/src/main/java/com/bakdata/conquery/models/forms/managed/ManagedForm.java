@@ -47,7 +47,13 @@ public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 	@Getter
 	private Form submittedForm;
 
-	protected ManagedForm(F submittedForm, UserId owner, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+	protected ManagedForm(
+		F submittedForm,
+		UserId owner,
+		DatasetId submittedDataset,
+		MetaStorage storage,
+		DatasetRegistry<?> datasetRegistry,
+		ConqueryConfig config) {
 		super(owner, submittedDataset, storage, datasetRegistry, config);
 		this.submittedForm = submittedForm;
 	}
@@ -60,10 +66,14 @@ public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 
 			if (getSubmittedForm().getValues() != null) {
 				// save as formConfig
-				final FormConfigAPI build = FormConfigAPI.builder().formType(getSubmittedForm().getFormType())
-														 .label(this.getLabelWithoutAutoLabelSuffix())
-														 .tags(this.getTags())
-														 .values(getSubmittedForm().getValues()).build();
+				final FormConfigAPI build = FormConfigAPI.builder()
+					.formType(getSubmittedForm().getFormType())
+					.label(
+						this.getLabelWithoutAutoLabelSuffix())
+					.tags(this.getTags())
+					.values(
+						getSubmittedForm().getValues())
+					.build();
 
 				final FormConfig formConfig = build.intern(getOwner(), getDataset());
 
@@ -83,8 +93,6 @@ public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 	public F getSubmitted() {
 		return (F) submittedForm;
 	}
-
-
 
 
 	@Override

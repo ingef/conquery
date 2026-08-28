@@ -9,11 +9,11 @@ import static org.mockserver.model.HttpResponse.response;
 import static org.mockserver.model.Parameter.param;
 import static org.mockserver.model.ParameterBody.params;
 
+import jakarta.validation.Validator;
 import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import jakarta.validation.Validator;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -47,7 +47,9 @@ import org.mockserver.model.MediaType;
 @Slf4j
 public class IntrospectionDelegatingRealmTest {
 	@RegisterExtension
-	private static final MockServerExtension OIDC_SERVER = new MockServerExtension(ClientAndServer.startClientAndServer(), IntrospectionDelegatingRealmTest::initOIDCServer);
+	private static final MockServerExtension OIDC_SERVER = new MockServerExtension(
+		ClientAndServer.startClientAndServer(),
+		IntrospectionDelegatingRealmTest::initOIDCServer);
 
 	@RegisterExtension
 	@Order(0)
@@ -66,10 +68,11 @@ public class IntrospectionDelegatingRealmTest {
 	public static final String BACKEND_AUD = "backend";
 	public static final String SOME_SECRET = "secret";
 	private static final String USER_1_TOKEN = JWT.create()
-												  .withSubject(USER_1_NAME)
-												  .withAudience(BACKEND_AUD)
-												  .withClaim("name", USER_1_NAME)
-												  .sign(Algorithm.HMAC256(SOME_SECRET));
+		.withSubject(USER_1_NAME)
+		.withAudience(
+			BACKEND_AUD)
+		.withClaim("name", USER_1_NAME)
+		.sign(Algorithm.HMAC256(SOME_SECRET));
 	private static final BearerToken USER1_TOKEN_WRAPPED = new BearerToken(USER_1_TOKEN);
 
 	// User 2
@@ -78,10 +81,11 @@ public class IntrospectionDelegatingRealmTest {
 	@RegisterExtension
 	private static final UserExtension USER_2_EXTENSION = new UserExtension(STORAGE, USER_2_NAME, USER_2_LABEL);
 	private static final String USER_2_TOKEN = JWT.create()
-												  .withSubject(USER_2_NAME)
-												  .withAudience(BACKEND_AUD)
-												  .withClaim("name", USER_2_LABEL)
-												  .sign(Algorithm.HMAC256(SOME_SECRET));
+		.withSubject(USER_2_NAME)
+		.withAudience(
+			BACKEND_AUD)
+		.withClaim("name", USER_2_LABEL)
+		.sign(Algorithm.HMAC256(SOME_SECRET));
 	private static final BearerToken USER_2_TOKEN_WRAPPED = new BearerToken(USER_2_TOKEN);
 
 	// User 3 existing
@@ -90,10 +94,11 @@ public class IntrospectionDelegatingRealmTest {
 	@RegisterExtension
 	private static final UserExtension USER_3_EXTENSION = new UserExtension(STORAGE, USER_3_NAME, USER_3_LABEL);
 	private static final String USER_3_TOKEN = JWT.create()
-												  .withSubject(USER_3_NAME)
-												  .withAudience(BACKEND_AUD)
-												  .withClaim("name", USER_3_LABEL)
-												  .sign(Algorithm.HMAC256(SOME_SECRET));
+		.withSubject(USER_3_NAME)
+		.withAudience(
+			BACKEND_AUD)
+		.withClaim("name", USER_3_LABEL)
+		.sign(Algorithm.HMAC256(SOME_SECRET));
 	private static final BearerToken USER_3_TOKEN_WRAPPED = new BearerToken(USER_3_TOKEN);
 
 	// Groups
@@ -104,7 +109,8 @@ public class IntrospectionDelegatingRealmTest {
 
 	private static final String GROUPNAME_2 = "group2"; // Group is created during test
 	public static KeycloakGroup KEYCLOAK_GROUP_2;
-	public static final URI FRONT_CHANNEL_LOGOUT = URI.create("http://localhost:%d/realms/test_realm/protocol/openid-connect/logout".formatted(OIDC_SERVER.getPort()));
+	public static final URI FRONT_CHANNEL_LOGOUT = URI.create(
+		"http://localhost:%d/realms/test_realm/protocol/openid-connect/logout".formatted(OIDC_SERVER.getPort()));
 
 	private static TestRealm REALM;
 
@@ -112,20 +118,29 @@ public class IntrospectionDelegatingRealmTest {
 
 	@BeforeAll
 	public static void beforeAll() {
-		KEYCLOAK_GROUP_1 = new KeycloakGroup(UUID.randomUUID().toString(), "Group1", "g1", Map.of(GROUP_ID_ATTRIBUTE, GROUP_1_EXISTING_EXTENSION.getGroup().getId().toString()), Set.of());
-		KEYCLOAK_GROUP_2 = new KeycloakGroup(UUID.randomUUID().toString(), "Group2", "g2", Map.of(GROUP_ID_ATTRIBUTE, new GroupId(GROUPNAME_2).toString()), Set.of());
+		KEYCLOAK_GROUP_1 = new KeycloakGroup(
+			UUID.randomUUID().toString(),
+			"Group1",
+			"g1",
+			Map.of(GROUP_ID_ATTRIBUTE, GROUP_1_EXISTING_EXTENSION.getGroup().getId().toString()),
+			Set.of());
+		KEYCLOAK_GROUP_2 = new KeycloakGroup(
+			UUID.randomUUID().toString(),
+			"Group2",
+			"g2",
+			Map.of(GROUP_ID_ATTRIBUTE, new GroupId(GROUPNAME_2).toString()),
+			Set.of());
 
 		KEYCLOAK_API = mock(KeycloakApi.class);
-		doAnswer(invocation -> Set.of(KEYCLOAK_GROUP_1, KEYCLOAK_GROUP_2)).when(KEYCLOAK_API)
-																		  .getGroupHierarchy();
+		doAnswer(invocation -> Set.of(KEYCLOAK_GROUP_1, KEYCLOAK_GROUP_2)).when(KEYCLOAK_API).getGroupHierarchy();
 		doAnswer(
-				invocation -> {
-					final String userId = invocation.getArgument(0);
-					if (userId.equals(USER_2_NAME)) {
-						return Set.of(KEYCLOAK_GROUP_1, KEYCLOAK_GROUP_2);
-					}
-					return Set.of();
+			invocation -> {
+				final String userId = invocation.getArgument(0);
+				if (userId.equals(USER_2_NAME)) {
+					return Set.of(KEYCLOAK_GROUP_1, KEYCLOAK_GROUP_2);
 				}
+				return Set.of();
+			}
 		).when(KEYCLOAK_API).getUserGroups(any(String.class));
 
 		initRealm();
@@ -160,57 +175,93 @@ public class IntrospectionDelegatingRealmTest {
 	private static void initOIDCServer(ClientAndServer mockServer) {
 		// Mock username-password-for-token exchange
 		OIDCMockServer.init(
-				mockServer,
-				(server) -> {
-					server.when(
-								  request().withMethod("POST").withPath(String.format("/realms/%s/protocol/openid-connect/token", OIDCMockServer.REALM_NAME))
-										   .withHeaders(header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")).withBody(
-												   params(
-														   param("password", USER_1_PASSWORD),
-														   param("grant_type", "password"),
-														   param("username", USER_1_NAME),
-														   param("scope", "openid")
-												   )))
-						  .respond(
-								  response().withContentType(MediaType.APPLICATION_JSON_UTF_8)
-											.withBody("{\"token_type\" : \"Bearer\",\"access_token\" : \"" + USER_1_TOKEN + "\"}"));
+			mockServer,
+			(server) -> {
+				server.when(
+					request().withMethod("POST")
+						.withPath(
+							String.format(
+								"/realms/%s/protocol/openid-connect/token",
+								OIDCMockServer.REALM_NAME))
+						.withHeaders(
+							header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"))
+						.withBody(
+							params(
+								param("password", USER_1_PASSWORD),
+								param("grant_type", "password"),
+								param("username", USER_1_NAME),
+								param("scope", "openid")
+							)))
+					.respond(
+						response().withContentType(MediaType.APPLICATION_JSON_UTF_8)
+							.withBody(
+								"{\"token_type\" : \"Bearer\",\"access_token\" : \"" + USER_1_TOKEN + "\"}"));
 
-					// Block other exchange requests (this has a lower prio than the above)
-					server.when(
-								  request().withMethod("POST").withPath(String.format("/realms/%s/protocol/openid-connect/token", OIDCMockServer.REALM_NAME)))
-						  .respond(
-								  response().withStatusCode(HttpStatus.SC_FORBIDDEN).withContentType(MediaType.APPLICATION_JSON_UTF_8)
-											.withBody("{\"error\" : \"Wrong username or password\""));
+				// Block other exchange requests (this has a lower prio than the above)
+				server.when(
+					request().withMethod("POST")
+						.withPath(
+							String.format("/realms/%s/protocol/openid-connect/token", OIDCMockServer.REALM_NAME)))
+					.respond(
+						response().withStatusCode(HttpStatus.SC_FORBIDDEN)
+							.withContentType(
+								MediaType.APPLICATION_JSON_UTF_8)
+							.withBody(
+								"{\"error\" : \"Wrong username or password\""));
 
-					// Mock token introspection
-					// For USER 1
-					server.when(
-								  request().withMethod("POST")
-										   .withPath(String.format("/realms/%s/protocol/openid-connect/token/introspect", OIDCMockServer.REALM_NAME))
-										   .withHeaders(header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"))
-										   .withBody(params(param("token_type_hint", "access_token"), param("token", USER_1_TOKEN))))
-						  .respond(
-								  response().withContentType(MediaType.APPLICATION_JSON_UTF_8)
-											.withBody("{\"username\" : \"" + USER_1_NAME + "\", \"active\": true}"));
-					// For USER 2
-					server.when(
-								  request().withMethod("POST")
-										   .withPath(String.format("/realms/%s/protocol/openid-connect/token/introspect", OIDCMockServer.REALM_NAME))
-										   .withHeaders(header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"))
-										   .withBody(params(param("token_type_hint", "access_token"), param("token", USER_2_TOKEN))))
-						  .respond(
-								  response().withContentType(MediaType.APPLICATION_JSON_UTF_8)
-											.withBody("{\"username\" : \"" + USER_2_NAME + "\",\"name\" : \"" + USER_2_LABEL + "\", \"active\": true}"));
-					// For USER 3
-					server.when(
-								  request().withMethod("POST")
-										   .withPath(String.format("/realms/%s/protocol/openid-connect/token/introspect", OIDCMockServer.REALM_NAME))
-										   .withHeaders(header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"))
-										   .withBody(params(param("token_type_hint", "access_token"), param("token", USER_3_TOKEN))))
-						  .respond(
-								  response().withContentType(MediaType.APPLICATION_JSON_UTF_8)
-											.withBody("{\"username\" : \"" + USER_3_NAME + "\",\"name\" : \"" + USER_3_LABEL + "\", \"active\": true}"));
-				}
+				// Mock token introspection
+				// For USER 1
+				server.when(
+					request().withMethod("POST")
+						.withPath(
+							String.format(
+								"/realms/%s/protocol/openid-connect/token/introspect",
+								OIDCMockServer.REALM_NAME))
+						.withHeaders(
+							header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"))
+						.withBody(
+							params(
+								param("token_type_hint", "access_token"),
+								param("token", USER_1_TOKEN))))
+					.respond(
+						response().withContentType(MediaType.APPLICATION_JSON_UTF_8)
+							.withBody(
+								"{\"username\" : \"" + USER_1_NAME + "\", \"active\": true}"));
+				// For USER 2
+				server.when(
+					request().withMethod("POST")
+						.withPath(
+							String.format(
+								"/realms/%s/protocol/openid-connect/token/introspect",
+								OIDCMockServer.REALM_NAME))
+						.withHeaders(
+							header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"))
+						.withBody(
+							params(
+								param("token_type_hint", "access_token"),
+								param("token", USER_2_TOKEN))))
+					.respond(
+						response().withContentType(MediaType.APPLICATION_JSON_UTF_8)
+							.withBody(
+								"{\"username\" : \"" + USER_2_NAME + "\",\"name\" : \"" + USER_2_LABEL + "\", \"active\": true}"));
+				// For USER 3
+				server.when(
+					request().withMethod("POST")
+						.withPath(
+							String.format(
+								"/realms/%s/protocol/openid-connect/token/introspect",
+								OIDCMockServer.REALM_NAME))
+						.withHeaders(
+							header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"))
+						.withBody(
+							params(
+								param("token_type_hint", "access_token"),
+								param("token", USER_3_TOKEN))))
+					.respond(
+						response().withContentType(MediaType.APPLICATION_JSON_UTF_8)
+							.withBody(
+								"{\"username\" : \"" + USER_3_NAME + "\",\"name\" : \"" + USER_3_LABEL + "\", \"active\": true}"));
+			}
 		);
 	}
 
@@ -218,13 +269,20 @@ public class IntrospectionDelegatingRealmTest {
 	public void tokenIntrospectionSimpleUserNew() {
 		AuthenticationInfo info = REALM.doGetAuthenticationInfo(USER1_TOKEN_WRAPPED);
 
-		assertThat(info)
-				.usingRecursiveComparison()
-				.usingOverriddenEquals()
-				.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
-				.ignoringFieldsOfTypes(User.ShiroUserAdapter.class)
-				.isEqualTo(new ConqueryAuthenticationInfo(USER_1_EXTENSION.getUser(), USER1_TOKEN_WRAPPED, REALM, true, FRONT_CHANNEL_LOGOUT));
-		assertThat(STORAGE.getAllUsers()).containsOnly(new User(USER_1_NAME, USER_1_NAME, STORAGE_EXTENTION.getMetaStorage()));
+		assertThat(info).usingRecursiveComparison()
+			.usingOverriddenEquals()
+			.ignoringFields(
+				ConqueryAuthenticationInfo.Fields.credentials)
+			.ignoringFieldsOfTypes(User.ShiroUserAdapter.class)
+			.isEqualTo(
+				new ConqueryAuthenticationInfo(
+					USER_1_EXTENSION.getUser(),
+					USER1_TOKEN_WRAPPED,
+					REALM,
+					true,
+					FRONT_CHANNEL_LOGOUT));
+		assertThat(STORAGE.getAllUsers()).containsOnly(
+			new User(USER_1_NAME, USER_1_NAME, STORAGE_EXTENTION.getMetaStorage()));
 	}
 
 	@Test
@@ -232,11 +290,17 @@ public class IntrospectionDelegatingRealmTest {
 
 		AuthenticationInfo info = REALM.doGetAuthenticationInfo(USER1_TOKEN_WRAPPED);
 
-		assertThat(info)
-				.usingRecursiveComparison()
-				.usingOverriddenEquals()
-				.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
-				.isEqualTo(new ConqueryAuthenticationInfo(USER_1_EXTENSION.getUser(), USER1_TOKEN_WRAPPED, REALM, true, FRONT_CHANNEL_LOGOUT));
+		assertThat(info).usingRecursiveComparison()
+			.usingOverriddenEquals()
+			.ignoringFields(
+				ConqueryAuthenticationInfo.Fields.credentials)
+			.isEqualTo(
+				new ConqueryAuthenticationInfo(
+					USER_1_EXTENSION.getUser(),
+					USER1_TOKEN_WRAPPED,
+					REALM,
+					true,
+					FRONT_CHANNEL_LOGOUT));
 		assertThat(STORAGE.getAllUsers()).containsOnly(USER_1_EXTENSION.getUser());
 	}
 
@@ -245,11 +309,13 @@ public class IntrospectionDelegatingRealmTest {
 
 		AuthenticationInfo info = REALM.doGetAuthenticationInfo(USER_2_TOKEN_WRAPPED);
 
-		final ConqueryAuthenticationInfo expected = new ConqueryAuthenticationInfo(USER_2_EXTENSION.getUser(), USER_2_TOKEN_WRAPPED, REALM, true, FRONT_CHANNEL_LOGOUT);
-		assertThat(info)
-				.usingRecursiveComparison()
-				.usingOverriddenEquals()
-				.isEqualTo(expected);
+		final ConqueryAuthenticationInfo expected = new ConqueryAuthenticationInfo(
+			USER_2_EXTENSION.getUser(),
+			USER_2_TOKEN_WRAPPED,
+			REALM,
+			true,
+			FRONT_CHANNEL_LOGOUT);
+		assertThat(info).usingRecursiveComparison().usingOverriddenEquals().isEqualTo(expected);
 		assertThat(STORAGE.getAllUsers()).containsOnly(USER_2_EXTENSION.getUser());
 		assertThat(STORAGE.getAllGroups()).hasSize(2); // Pre-existing group and a second group that has been added in the process
 		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_1)).getMembers()).contains(new UserId(USER_2_NAME));
@@ -264,13 +330,19 @@ public class IntrospectionDelegatingRealmTest {
 
 		AuthenticationInfo info = REALM.doGetAuthenticationInfo(USER_3_TOKEN_WRAPPED);
 
-		assertThat(info)
-				.usingRecursiveComparison()
-				.usingOverriddenEquals()
-				.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
-				.isEqualTo(new ConqueryAuthenticationInfo(USER_3_EXTENSION.getUser(), USER_3_TOKEN_WRAPPED, REALM, true, FRONT_CHANNEL_LOGOUT));
+		assertThat(info).usingRecursiveComparison()
+			.usingOverriddenEquals()
+			.ignoringFields(
+				ConqueryAuthenticationInfo.Fields.credentials)
+			.isEqualTo(
+				new ConqueryAuthenticationInfo(
+					USER_3_EXTENSION.getUser(),
+					USER_3_TOKEN_WRAPPED,
+					REALM,
+					true,
+					FRONT_CHANNEL_LOGOUT));
 		assertThat(STORAGE.getAllUsers()).containsOnly(USER_3_EXTENSION.getUser());
-		assertThat(STORAGE.getAllGroups()).hasSize(1); // Pre-existing group 
+		assertThat(STORAGE.getAllGroups()).hasSize(1); // Pre-existing group
 		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_1)).getMembers()).doesNotContain(new UserId(USER_3_NAME));
 	}
 

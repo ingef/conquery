@@ -12,12 +12,12 @@ public class IdResolvingException extends ConqueryError {
 
 	public IdResolvingException(Id<?, ?> id) {
 		this.id = id;
-    }
+	}
 
 	public IdResolvingException(Id<?, ?> id, Throwable cause) {
-        super(ConqueryError.asConqueryError(cause));
+		super(ConqueryError.asConqueryError(cause));
 		this.id = id;
-    }
+	}
 
 	@Override
 	public String getMessageTemplate(ErrorMessages errorMessages) {

@@ -1,5 +1,14 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import javax.annotation.CheckForNull;
+
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.LabelMap;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
@@ -20,19 +29,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.annotation.CheckForNull;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Setter
 @Getter
@@ -68,7 +68,9 @@ public abstract class SelectFilter<FE_TYPE> extends EventFilter<FE_TYPE> {
 	}
 
 	@Override
-	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
+	public void configureFrontend(
+		FrontendFilterConfiguration.Top f,
+		ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
 		final SearchIndexId searchIndexId = getTemplate();
 		if (searchIndexId != null) {
 			f.setTemplate((FilterTemplate) searchIndexId.resolve());
@@ -76,7 +78,10 @@ public abstract class SelectFilter<FE_TYPE> extends EventFilter<FE_TYPE> {
 		f.setType(getFilterType());
 
 		// If either not searches are available or all are disabled, we allow users to supply their own values
-		f.setCreatable(conqueryConfig.getFrontend().isAlwaysAllowCreateValue() || getSearchReferences().stream().noneMatch(Predicate.not(Searchable::isSearchDisabled)));
+		f.setCreatable(
+			conqueryConfig.getFrontend().isAlwaysAllowCreateValue() || getSearchReferences().stream()
+				.noneMatch(
+					Predicate.not(Searchable::isSearchDisabled)));
 
 		f.setOptions(collectLabels());
 	}
@@ -115,9 +120,11 @@ public abstract class SelectFilter<FE_TYPE> extends EventFilter<FE_TYPE> {
 
 	@NotNull
 	protected List<FrontendValue> collectLabels() {
-		return labels.entrySet().stream()
-				.map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
-				.collect(Collectors.toList());
+		return labels.entrySet()
+			.stream()
+			.map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
+			.collect(
+				Collectors.toList());
 	}
 
 	@JsonIgnore

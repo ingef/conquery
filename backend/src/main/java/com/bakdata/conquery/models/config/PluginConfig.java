@@ -8,7 +8,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @CPSBase
 public interface PluginConfig {
 
-	default void initialize(ManagerNode managerNode){}
+	default void initialize(ManagerNode managerNode) {
+	}
 
-	default void close(){}
+	default void close() {
+	}
 }

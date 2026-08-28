@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

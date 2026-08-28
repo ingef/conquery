@@ -1,5 +1,7 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Consumer;
@@ -15,8 +17,6 @@ import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.fasterxml.jackson.annotation.JsonView;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,8 +42,9 @@ public class AbsoluteMode extends Mode {
 	@Override
 	public Query createSpecializedQuery() {
 
-		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments =
-				ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint());
+		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments = ExportForm.getResolutionAlignmentMap(
+			getForm().getResolvedResolutions(),
+			getAlignmentHint());
 
 		Query prerequisite = getForm().getPrerequisite();
 		return new AbsoluteFormQuery(prerequisite, dateRange, resolvedFeatures, resolutionsAndAlignments);

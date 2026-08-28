@@ -20,7 +20,6 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
 import org.jooq.TableOnConditionStep;
-import org.jooq.impl.DSL;
 
 /**
  * Concept for date range inversion taken from <a href="https://explainextended.com/2009/11/09/inverting-date-ranges/">Inverting date ranges</a>.
@@ -50,49 +49,57 @@ class InvertCte extends DateAggregationCte {
 		Selects invertSelects = getInvertSelects(rowNumberStep, coalescedIds, context);
 		TableOnConditionStep<Record> fromTable = selfJoinWithShiftedRows(leftIds, rightIds, rowNumberStep);
 
-		return QueryStep.builder()
-						.selects(invertSelects)
-						.fromTable(fromTable);
+		return QueryStep.builder().selects(invertSelects).fromTable(fromTable);
 	}
 
-	private Selects getInvertSelects(QueryStep rowNumberStep, SqlIdColumns coalescedIds, DateAggregationContext context) {
+	private Selects getInvertSelects(
+		QueryStep rowNumberStep,
+		SqlIdColumns coalescedIds,
+		DateAggregationContext context) {
 
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		ColumnDateRange validityDate = rowNumberStep.getSelects().getValidityDate().get();
 
 		Field<Date> rangeStart = coalesce(
-				QualifyingUtil.qualify(validityDate.getEnd(), ROWS_LEFT_TABLE_NAME),
-				functionProvider.getMinDateExpression()
+			QualifyingUtil.qualify(validityDate.getEnd(), ROWS_LEFT_TABLE_NAME),
+			functionProvider.getMinDateExpression()
 		).as(DateAggregationCte.RANGE_START);
 
 		Field<Date> rangeEnd = coalesce(
-				QualifyingUtil.qualify(validityDate.getStart(), ROWS_RIGHT_TABLE_NAME),
-				functionProvider.getMaxDateExpression()
+			QualifyingUtil.qualify(validityDate.getStart(), ROWS_RIGHT_TABLE_NAME),
+			functionProvider.getMaxDateExpression()
 		).as(DateAggregationCte.RANGE_END);
 
 		return Selects.builder()
-					  .ids(coalescedIds)
-					  .validityDate(Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)))
-					  .sqlSelects(context.getCarryThroughSelects())
-					  .build();
+			.ids(coalescedIds)
+			.validityDate(
+				Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)))
+			.sqlSelects(context.getCarryThroughSelects())
+			.build();
 	}
 
-	private TableOnConditionStep<Record> selfJoinWithShiftedRows(SqlIdColumns leftIds, SqlIdColumns rightIds, QueryStep rowNumberStep) {
+	private TableOnConditionStep<Record> selfJoinWithShiftedRows(
+		SqlIdColumns leftIds,
+		SqlIdColumns rightIds,
+		QueryStep rowNumberStep) {
 
-		Field<Integer> leftRowNumber = field(name(ROWS_LEFT_TABLE_NAME, RowNumberCte.ROW_NUMBER_FIELD_NAME), Integer.class)
-				.plus(1);
-		Field<Integer> rightRowNumber = field(name(ROWS_RIGHT_TABLE_NAME, RowNumberCte.ROW_NUMBER_FIELD_NAME), Integer.class);
+		Field<Integer> leftRowNumber = field(
+			name(ROWS_LEFT_TABLE_NAME, RowNumberCte.ROW_NUMBER_FIELD_NAME),
+			Integer.class).plus(1);
+		Field<Integer> rightRowNumber = field(
+			name(ROWS_RIGHT_TABLE_NAME, RowNumberCte.ROW_NUMBER_FIELD_NAME),
+			Integer.class);
 
 		Condition[] joinConditions = Stream.concat(
-												   Stream.of(leftRowNumber.eq(rightRowNumber)),
-												   leftIds.join(rightIds).stream()
-										   )
-										   .toArray(Condition[]::new);
+			Stream.of(leftRowNumber.eq(rightRowNumber)),
+			leftIds.join(rightIds).stream()
+		).toArray(Condition[]::new);
 
 		TableLike<Record> rowNumberTable = QueryStep.toTableLike(rowNumberStep.getCteName());
 		return rowNumberTable.asTable(ROWS_LEFT_TABLE_NAME)
-							 .fullJoin(rowNumberTable.asTable(ROWS_RIGHT_TABLE_NAME))
-							 .on(joinConditions);
+			.fullJoin(rowNumberTable.asTable(ROWS_RIGHT_TABLE_NAME))
+			.on(
+				joinConditions);
 	}
 
 }

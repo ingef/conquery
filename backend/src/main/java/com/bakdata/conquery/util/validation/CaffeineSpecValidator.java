@@ -19,17 +19,18 @@ public class CaffeineSpecValidator implements ConstraintValidator<ValidCaffeineS
 		boolean isValid = true;
 		try {
 			CaffeineSpec.parse(value);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			isValid = false;
-			context.buildConstraintViolationWithTemplate("CaffeineSpec is invalid:" + e.getMessage()).addConstraintViolation();
+			context.buildConstraintViolationWithTemplate(
+				"CaffeineSpec is invalid:" + e.getMessage()).addConstraintViolation();
 		}
 
 		if (softValue) {
 			// As long as we work with concrete objects (not Proxies) we need to ensure that we always hand out the one already referenced value if possible
-			if(!value.contains("softValues")) {
+			if (!value.contains("softValues")) {
 				isValid = false;
-				context.buildConstraintViolationWithTemplate("Currently softValues need to be configured").addConstraintViolation();
+				context.buildConstraintViolationWithTemplate(
+					"Currently softValues need to be configured").addConstraintViolation();
 			}
 		}
 

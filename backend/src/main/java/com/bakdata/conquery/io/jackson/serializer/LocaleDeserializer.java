@@ -31,7 +31,10 @@ public class LocaleDeserializer extends JsonDeserializer<Locale> {
 		if (StringUtils.isNotBlank(languageTag) && !languageTag.equals(ROOT_LOCALE_TAG) && locale == Locale.ROOT) {
 			// When Locale#forLanguageTag does not recognize the tag it defaults to Locale.ROOT
 			// This should only be intended if the tag was blank or "und" (undefined ~= Locale.ROOT.toLanguageTag())
-			throw MismatchedInputException.from(p, Locale.class, "Unable to map language tag '" + languageTag + "' to locale");
+			throw MismatchedInputException.from(
+				p,
+				Locale.class,
+				"Unable to map language tag '" + languageTag + "' to locale");
 		}
 
 		return locale;

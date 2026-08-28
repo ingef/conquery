@@ -4,7 +4,6 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
@@ -41,7 +40,7 @@ public class DateParser extends Parser<Integer, DateStore> {
 
 	@Override
 	public Integer addLine(Integer v) {
-		if(v == null){
+		if (v == null) {
 			subType.addLine(null);
 			return super.addLine(null);
 		}

@@ -11,13 +11,13 @@ import lombok.Setter;
 import lombok.ToString;
 
 public abstract class LabeledNamespaceIdentifiable<ID extends NamespacedId<?>> extends NamespacedIdentifiable<ID> {
-	private static final CharMatcher DEFAULT_NAME_UNWANTED = CharMatcher.is(IdUtil.JOIN_CHAR).or(CharMatcher.whitespace());
+	private static final CharMatcher DEFAULT_NAME_UNWANTED = CharMatcher.is(IdUtil.JOIN_CHAR)
+		.or(
+			CharMatcher.whitespace());
 
 
 	/**
-	 * shown in the frontend
-	 *
-	 * @jsonExample "someLabel"
+	 * Shown in the frontend
 	 */
 	private String label;
 

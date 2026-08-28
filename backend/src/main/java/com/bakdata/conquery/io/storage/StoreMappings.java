@@ -51,27 +51,27 @@ import lombok.ToString;
 @ToString(of = {"keyType", "valueType"})
 public enum StoreMappings {
 
-	AUTH_GROUP(Group.class, GroupId.class),
-	AUTH_ROLE(Role.class, RoleId.class),
-	AUTH_USER(User.class, UserId.class),
-	BUCKETS(Bucket.class, BucketId.class),
-	CONCEPTS(Concept.class, ConceptId.class),
-	C_BLOCKS(CBlock.class, CBlockId.class),
-	DATASET(Dataset.class, Boolean.class),
-	ENTITY_PREVIEW(PreviewConfig.class, Boolean.class),
-	ENTITY_TO_BUCKET(Integer.class, String.class),
-	EXECUTIONS(ManagedExecution.class, ManagedExecutionId.class),
-	FORM_CONFIG(FormConfig.class, FormConfigId.class),
-	ID_MAPPING(EntityIdMap.class, Boolean.class),
-	IMPORTS(Import.class, ImportId.class),
-	INTERN_TO_EXTERN(InternToExternMapper.class, InternToExternMapperId.class),
-	NAMESPACES(DatasetRegistry.class, Boolean.class),
-	SEARCH_INDEX(SearchIndex.class, SearchIndexId.class),
-	SECONDARY_IDS(SecondaryIdDescription.class, SecondaryIdDescriptionId.class),
-	STRUCTURE(StructureNode[].class, Boolean.class),
-	TABLES(Table.class, TableId.class),
-	WORKER(WorkerInformation.class, Boolean.class),
-	WORKER_TO_BUCKETS(WorkerToBucketsMap.class, Boolean.class);
+	AUTH_GROUP(Group.class, GroupId.class), AUTH_ROLE(Role.class, RoleId.class), AUTH_USER(
+		User.class,
+		UserId.class), BUCKETS(Bucket.class, BucketId.class), CONCEPTS(Concept.class, ConceptId.class), C_BLOCKS(
+			CBlock.class,
+			CBlockId.class), DATASET(Dataset.class, Boolean.class), ENTITY_PREVIEW(
+				PreviewConfig.class,
+				Boolean.class), ENTITY_TO_BUCKET(Integer.class, String.class), EXECUTIONS(
+					ManagedExecution.class,
+					ManagedExecutionId.class), FORM_CONFIG(FormConfig.class, FormConfigId.class), ID_MAPPING(
+						EntityIdMap.class,
+						Boolean.class), IMPORTS(Import.class, ImportId.class), INTERN_TO_EXTERN(
+							InternToExternMapper.class,
+							InternToExternMapperId.class), NAMESPACES(
+								DatasetRegistry.class,
+								Boolean.class), SEARCH_INDEX(SearchIndex.class, SearchIndexId.class), SECONDARY_IDS(
+									SecondaryIdDescription.class,
+									SecondaryIdDescriptionId.class), STRUCTURE(
+										StructureNode[].class,
+										Boolean.class), TABLES(Table.class, TableId.class), WORKER(
+											WorkerInformation.class,
+											Boolean.class), WORKER_TO_BUCKETS(WorkerToBucketsMap.class, Boolean.class);
 
 	private final Class<?> valueType;
 	private final Class<?> keyType;

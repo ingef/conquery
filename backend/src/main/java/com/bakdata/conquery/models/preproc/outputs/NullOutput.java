@@ -16,17 +16,14 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * Output a null value.
  */
 @Data
-@CPSType(id="NULL", base= OutputDescription.class)
+@CPSType(id = "NULL", base = OutputDescription.class)
 public class NullOutput extends OutputDescription {
-	
+
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public int hashCode(){
-		return new HashCodeBuilder()
-					   .append(super.hashCode())
-					   .append(inputType.name())
-					   .toHashCode();
+	public int hashCode() {
+		return new HashCodeBuilder().append(super.hashCode()).append(inputType.name()).toHashCode();
 	}
 
 	@NotNull

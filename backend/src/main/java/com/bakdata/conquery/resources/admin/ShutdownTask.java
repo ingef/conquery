@@ -27,7 +27,7 @@ public class ShutdownTask extends Task implements ServerLifecycleListener {
 	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
 		log.info("Received Shutdown command");
 
-		if(server == null) {
+		if (server == null) {
 			output.print("Server not yet started");
 			return;
 		}

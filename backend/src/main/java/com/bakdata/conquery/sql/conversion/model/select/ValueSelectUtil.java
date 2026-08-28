@@ -28,37 +28,45 @@ import org.jooq.SortField;
 class ValueSelectUtil {
 
 	public static ConnectorSqlSelects createValueSelect(
-			Column column,
-			String alias,
-			Function<Field<?>, ? extends SortField<?>> ordering,
-			Range.IntegerRange substringRange, SelectContext<ConnectorSqlTables> selectContext) {
+		Column column,
+		String alias,
+		Function<Field<?>, ? extends SortField<?>> ordering,
+		Range.IntegerRange substringRange,
+		SelectContext<ConnectorSqlTables> selectContext) {
 
 
-		SingleColumnSqlSelect rootSelect = MappableSingleColumnSelect.getSubstringSelect(column, substringRange, selectContext, alias);
+		SingleColumnSqlSelect rootSelect = MappableSingleColumnSelect.getSubstringSelect(
+			column,
+			substringRange,
+			selectContext,
+			alias);
 
 		// create a CTE, that per row makes a window calculation to select for the rank of the validity date.
 		// Further down below, we select the values with rank=1, which is FIRST/LAST depending on sort order supplied by the creator.
 
-		QueryStep rowNumberStep =
-				buildRowNumberStep(rootSelect, ordering, alias, selectContext);
+		QueryStep rowNumberStep = buildRowNumberStep(rootSelect, ordering, alias, selectContext);
 
 		QueryStep rowFilterStep = buildRowFilterStep(rowNumberStep, alias, selectContext.getIds());
 
 		SqlSelect finalSelect = rowFilterStep.getQualifiedSelects().getSqlSelects().getFirst();
 
-		FieldWrapper<SqlSelect> aggregationSelect =
-				new FieldWrapper<>(field(coalesce(finalSelect.qualify(ValueSelectCteStep.ROW_SELECT_STEP.cteName(alias)))).as(alias), column.getName());
+		FieldWrapper<SqlSelect> aggregationSelect = new FieldWrapper<>(
+			field(coalesce(finalSelect.qualify(ValueSelectCteStep.ROW_SELECT_STEP.cteName(alias)))).as(alias),
+			column.getName());
 
 		return ConnectorSqlSelects.builder()
-								  .additionalPredecessor(Optional.of(rowFilterStep))
-								  .preprocessingSelect(rootSelect)
-								  .finalSelect(aggregationSelect)
-								  .build();
+			.additionalPredecessor(Optional.of(rowFilterStep))
+			.preprocessingSelect(
+				rootSelect)
+			.finalSelect(aggregationSelect)
+			.build();
 	}
 
 	private static QueryStep buildRowNumberStep(
-			SingleColumnSqlSelect rootSelect, Function<Field<?>, ? extends SortField<?>> ordering, String alias,
-			SelectContext<ConnectorSqlTables> selectContext) {
+		SingleColumnSqlSelect rootSelect,
+		Function<Field<?>, ? extends SortField<?>> ordering,
+		String alias,
+		SelectContext<ConnectorSqlTables> selectContext) {
 
 		SqlFunctionProvider functionProvider = selectContext.getFunctionProvider();
 
@@ -66,65 +74,78 @@ class ValueSelectUtil {
 		Field<?> qualifiedRootSelect = rootSelect.qualify(predecessor).select();
 
 		return QueryStep.builder()
-						.selects(Selects.builder()
-										.ids(selectContext.getIds().qualify(null))
-										.sqlSelects(List.of(
-												new FieldWrapper<>(qualifiedRootSelect.as(alias), qualifiedRootSelect.getName()),
-												rowNumberField(predecessor, selectContext.getValidityDate(), ordering,
-															   selectContext.getIds(),
-															   functionProvider
-												)
-										))
-										.build())
-						.cteName(ValueSelectCteStep.ROW_NUMBER_STEP.cteName(alias))
-						.conditions(List.of(qualifiedRootSelect.isNotNull()))
-						.fromTable(table(name(predecessor)))
-						.build();
+			.selects(
+				Selects.builder()
+					.ids(selectContext.getIds().qualify(null))
+					.sqlSelects(
+						List.of(
+							new FieldWrapper<>(qualifiedRootSelect.as(alias), qualifiedRootSelect.getName()),
+							rowNumberField(
+								predecessor,
+								selectContext.getValidityDate(),
+								ordering,
+								selectContext.getIds(),
+								functionProvider
+							)
+						))
+					.build())
+			.cteName(ValueSelectCteStep.ROW_NUMBER_STEP.cteName(alias))
+			.conditions(
+				List.of(qualifiedRootSelect.isNotNull()))
+			.fromTable(table(name(predecessor)))
+			.build();
 	}
 
 	private static QueryStep buildRowFilterStep(QueryStep rowNumberStep, String alias, SqlIdColumns idColumns) {
 		Field<Object> rowNumber = field(name("row-number"));
 
 		SqlIdColumns unqualifiedIds = idColumns.qualify(null);
-		SelectConditionStep<Record> selectFirst =
-				select(unqualifiedIds.toFields())
-						.select(field(name(alias)), field(name("select-result", "row-number")))
-						.from(table(name(ValueSelectCteStep.ROW_NUMBER_STEP.cteName(alias)))
-									  .as("select-result"))
-						.where(or(rowNumber.equal(inline(1)), rowNumber.isNull()));
+		SelectConditionStep<Record> selectFirst = select(unqualifiedIds.toFields()).select(
+			field(name(alias)),
+			field(name("select-result", "row-number")))
+			.from(
+				table(name(ValueSelectCteStep.ROW_NUMBER_STEP.cteName(alias))).as("select-result"))
+			.where(
+				or(rowNumber.equal(inline(1)), rowNumber.isNull()));
 
 
 		return QueryStep.builder()
-						.predecessor(rowNumberStep)
-						.selects(Selects.builder()
-										.ids(unqualifiedIds)
-										.sqlSelect(new FieldWrapper<>(selectFirst.field(alias)))
-										.build())
-						.cteName(ValueSelectCteStep.ROW_SELECT_STEP.cteName(alias))
-						.fromTable(selectFirst)
-						.build();
+			.predecessor(rowNumberStep)
+			.selects(
+				Selects.builder()
+					.ids(unqualifiedIds)
+					.sqlSelect(
+						new FieldWrapper<>(selectFirst.field(alias)))
+					.build())
+			.cteName(
+				ValueSelectCteStep.ROW_SELECT_STEP.cteName(alias))
+			.fromTable(selectFirst)
+			.build();
 	}
 
 	@NotNull
 	private static FieldWrapper<Integer> rowNumberField(
-			String predecessor, Optional<ColumnDateRange> validityDate, Function<Field<?>, ? extends SortField<?>> ordering,
-			SqlIdColumns idColumns, SqlFunctionProvider functionProvider) {
+		String predecessor,
+		Optional<ColumnDateRange> validityDate,
+		Function<Field<?>, ? extends SortField<?>> ordering,
+		SqlIdColumns idColumns,
+		SqlFunctionProvider functionProvider) {
 
 		List<Field<?>> qualifiedIds = idColumns.qualify(predecessor).toFields();
 
 		if (validityDate.isEmpty()) {
 			return new FieldWrapper<>(
-					rowNumber().over(partitionBy(qualifiedIds).orderBy(qualifiedIds)).as("row-number"),
-					new String[0]
+				rowNumber().over(partitionBy(qualifiedIds).orderBy(qualifiedIds)).as("row-number"),
+				new String[0]
 			);
 		}
 
 		return new FieldWrapper<>(
-				rowNumber().over(
-						partitionBy(qualifiedIds)
-								.orderBy(functionProvider.orderByValidityDates(ordering, validityDate.get().qualify(predecessor).toFields()))
-				).as("row-number"),
-				new String[0]
+			rowNumber().over(
+				partitionBy(qualifiedIds).orderBy(
+					functionProvider.orderByValidityDates(ordering, validityDate.get().qualify(predecessor).toFields()))
+			).as("row-number"),
+			new String[0]
 		);
 	}
 
@@ -132,7 +153,9 @@ class ValueSelectUtil {
 	@RequiredArgsConstructor
 	@Getter
 	enum ValueSelectCteStep implements CteStep {
-		ROW_NUMBER_STEP("value_select_assign_row_number_step", ConceptCteStep.PREPROCESSING), ROW_SELECT_STEP("value_select_first_row_step", ROW_NUMBER_STEP);
+		ROW_NUMBER_STEP("value_select_assign_row_number_step", ConceptCteStep.PREPROCESSING), ROW_SELECT_STEP(
+			"value_select_first_row_step",
+			ROW_NUMBER_STEP);
 
 		private final String suffix;
 		private final CteStep predecessor;

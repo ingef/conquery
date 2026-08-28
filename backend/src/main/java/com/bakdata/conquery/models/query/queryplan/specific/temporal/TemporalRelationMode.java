@@ -17,7 +17,8 @@ import lombok.RequiredArgsConstructor;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-sealed public interface TemporalRelationMode permits TemporalRelationMode.After, TemporalRelationMode.Before, TemporalRelationMode.While {
+sealed public interface TemporalRelationMode permits TemporalRelationMode.After, TemporalRelationMode.Before,
+		TemporalRelationMode.While {
 
 	/**
 	 * Take result-dates and convert it to date-restrictions to assert the temporal relation.

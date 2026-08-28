@@ -12,14 +12,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum MajorTypeId {
 
-	STRING(StringParser::new),
-	INTEGER(IntegerParser::new),
-	BOOLEAN(BooleanParser::new),
-	REAL(RealParser::new),
-	DECIMAL(DecimalParser::new),
-	MONEY(MoneyParser::new),
-	DATE(DateParser::new),
-	DATE_RANGE(DateRangeParser::new);
+	STRING(StringParser::new), INTEGER(IntegerParser::new), BOOLEAN(BooleanParser::new), REAL(RealParser::new), DECIMAL(
+		DecimalParser::new), MONEY(MoneyParser::new), DATE(DateParser::new), DATE_RANGE(DateRangeParser::new);
 
 	public static final Set<MajorTypeId> DATE_COMPATIBLE = EnumSet.of(DATE, DATE_RANGE);
 	public static final Set<MajorTypeId> NUMERIC = EnumSet.of(INTEGER, REAL, DECIMAL, MONEY);

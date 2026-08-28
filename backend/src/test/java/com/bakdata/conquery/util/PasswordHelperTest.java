@@ -38,10 +38,18 @@ public class PasswordHelperTest {
 	 */
 	static Stream<Arguments> arguments() {
 		return Stream.of(
-				Arguments.arguments("$argon2id$v=19$m=15360,t=2,p=1$r35m/UGz8lq4ICjcNkb2GUcfYub07450QRTTapYwiJCQDOI9Maa0dlym/iL0AceTNNXgaxLUyGB5EfJoqr+Wng$WVnHZU8uwvufgWPlVh5T+MnTtX5Ry0hhCD0ej90L0Kk", Argon2Function.getInstance(15360, 2, 1, 32, Argon2.ID)),
-				Arguments.arguments("$100801$SBpPHCtLT+2FbJ2BS49J4sgRXfvduVm17U9yd0Ygky/3MgUgK1r4LMixKSQX4LQjSEuE6tV8ibABXXAr9tCZKA==$aPTssj2maVw34QgrhRIsUHu6irB1NrjiFpdpUXFHHA+XhjPG03PKrbj5CBXJx3cCUosU/IARQliSW2LWRLFtiw==", ScryptFunction.getInstance(65536, 8, 1, 64)),
-				Arguments.arguments("$2b$10$YMPj.MoAs81tO8HzrCYxnOujaPwbu5SGsSrdNyxdIJ9BlBIv9i0t.", BcryptFunction.getInstance(Bcrypt.B, 10)),
-				Arguments.arguments("$3$1331439861760256$+Rqke26gKhtP60UkVR2a3SfszrOkVrMiJ6LZUWvl2vI5OpW815zKiod8Sdz3aOcuajo6c1iKEXcWjk61emmgTw==$CiH0mwqibUZD5R5HqFNpaYCkWjiYcTQe0sjG+4ZYw/A=", CompressedPBKDF2Function.getInstance(Hmac.SHA256, 310000, 256))
+			Arguments.arguments(
+				"$argon2id$v=19$m=15360,t=2,p=1$r35m/UGz8lq4ICjcNkb2GUcfYub07450QRTTapYwiJCQDOI9Maa0dlym/iL0AceTNNXgaxLUyGB5EfJoqr+Wng$WVnHZU8uwvufgWPlVh5T+MnTtX5Ry0hhCD0ej90L0Kk",
+				Argon2Function.getInstance(15360, 2, 1, 32, Argon2.ID)),
+			Arguments.arguments(
+				"$100801$SBpPHCtLT+2FbJ2BS49J4sgRXfvduVm17U9yd0Ygky/3MgUgK1r4LMixKSQX4LQjSEuE6tV8ibABXXAr9tCZKA==$aPTssj2maVw34QgrhRIsUHu6irB1NrjiFpdpUXFHHA+XhjPG03PKrbj5CBXJx3cCUosU/IARQliSW2LWRLFtiw==",
+				ScryptFunction.getInstance(65536, 8, 1, 64)),
+			Arguments.arguments(
+				"$2b$10$YMPj.MoAs81tO8HzrCYxnOujaPwbu5SGsSrdNyxdIJ9BlBIv9i0t.",
+				BcryptFunction.getInstance(Bcrypt.B, 10)),
+			Arguments.arguments(
+				"$3$1331439861760256$+Rqke26gKhtP60UkVR2a3SfszrOkVrMiJ6LZUWvl2vI5OpW815zKiod8Sdz3aOcuajo6c1iKEXcWjk61emmgTw==$CiH0mwqibUZD5R5HqFNpaYCkWjiYcTQe0sjG+4ZYw/A=",
+				CompressedPBKDF2Function.getInstance(Hmac.SHA256, 310000, 256))
 		);
 	}
 

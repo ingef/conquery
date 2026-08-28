@@ -25,22 +25,28 @@ class IntegerParserTest {
 
 	public static Stream<Arguments> arguments() {
 		return Stream.of(
-				// Long is everything not match-able to other sizes.
-				Arguments.of(Integer.MIN_VALUE, Integer.MAX_VALUE * 2L, direct(LongArrayStore.class)),
+			// Long is everything not match-able to other sizes.
+			Arguments.of(Integer.MIN_VALUE, Integer.MAX_VALUE * 2L, direct(LongArrayStore.class)),
 
-				// IntegerStore
-				Arguments.of(Integer.MIN_VALUE, (long) Integer.MAX_VALUE - 1L, direct(IntArrayStore.class)),
-				Arguments.of(Long.MIN_VALUE, Long.MIN_VALUE + (long) Integer.MAX_VALUE - 1L, rebased(IntArrayStore.class)),
+			// IntegerStore
+			Arguments.of(Integer.MIN_VALUE, (long) Integer.MAX_VALUE - 1L, direct(IntArrayStore.class)),
+			Arguments.of(Long.MIN_VALUE, Long.MIN_VALUE + (long) Integer.MAX_VALUE - 1L, rebased(IntArrayStore.class)),
 
-				// ByteArrayStore
-				Arguments.of(Byte.MIN_VALUE, Byte.MAX_VALUE - 1L, direct(ByteArrayStore.class)),
-				Arguments.of(Long.MIN_VALUE, Long.MIN_VALUE + 255 - 1L, rebased(ByteArrayStore.class)),
-				Arguments.of(Short.MAX_VALUE, Short.MAX_VALUE + 255 - 1L, rebased(ByteArrayStore.class)),
+			// ByteArrayStore
+			Arguments.of(Byte.MIN_VALUE, Byte.MAX_VALUE - 1L, direct(ByteArrayStore.class)),
+			Arguments.of(Long.MIN_VALUE, Long.MIN_VALUE + 255 - 1L, rebased(ByteArrayStore.class)),
+			Arguments.of(Short.MAX_VALUE, Short.MAX_VALUE + 255 - 1L, rebased(ByteArrayStore.class)),
 
-				// ShortArrayStore
-				Arguments.of(Short.MIN_VALUE, Short.MAX_VALUE - 1L, direct(ShortArrayStore.class)),
-				Arguments.of(Integer.MIN_VALUE, Integer.MIN_VALUE + ((long) Short.MAX_VALUE - (long) Short.MIN_VALUE) - 1L, rebased(ShortArrayStore.class)),
-				Arguments.of(Short.MAX_VALUE, Short.MAX_VALUE + (Short.MAX_VALUE - Short.MIN_VALUE) - 1L, rebased(ShortArrayStore.class))
+			// ShortArrayStore
+			Arguments.of(Short.MIN_VALUE, Short.MAX_VALUE - 1L, direct(ShortArrayStore.class)),
+			Arguments.of(
+				Integer.MIN_VALUE,
+				Integer.MIN_VALUE + ((long) Short.MAX_VALUE - (long) Short.MIN_VALUE) - 1L,
+				rebased(ShortArrayStore.class)),
+			Arguments.of(
+				Short.MAX_VALUE,
+				Short.MAX_VALUE + (Short.MAX_VALUE - Short.MIN_VALUE) - 1L,
+				rebased(ShortArrayStore.class))
 		);
 	}
 
@@ -50,10 +56,11 @@ class IntegerParserTest {
 
 	public static Consumer<ColumnStore> rebased(Class<?> clazz) {
 		return store -> {
-			assertThat(store)
-					.asInstanceOf(new InstanceOfAssertFactory<>(RebasingIntegerStore.class, new ObjectAssertFactory<>()))
-					.extracting(RebasingIntegerStore::getStore)
-					.isInstanceOf(clazz);
+			assertThat(store).asInstanceOf(
+				new InstanceOfAssertFactory<>(RebasingIntegerStore.class, new ObjectAssertFactory<>()))
+				.extracting(
+					RebasingIntegerStore::getStore)
+				.isInstanceOf(clazz);
 		};
 	}
 
@@ -65,7 +72,6 @@ class IntegerParserTest {
 		parser.setMinValue(min);
 		parser.setMaxValue(max);
 
-		assertThat(parser.decideType())
-				.satisfies(test);
+		assertThat(parser.decideType()).satisfies(test);
 	}
 }

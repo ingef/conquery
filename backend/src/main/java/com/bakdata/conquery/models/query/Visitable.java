@@ -10,12 +10,12 @@ public interface Visitable {
 	/**
 	 * Creates a stream of all elements in the Visitable.
 	 */
-	public static Stream<Visitable> stream(Visitable visitable) {
+	static Stream<Visitable> stream(Visitable visitable) {
 		final Stream.Builder<Visitable> builder = Stream.builder();
 
 		visitable.visit(builder);
 
 		return builder.build();
 	}
-	
+
 }

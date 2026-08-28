@@ -27,14 +27,17 @@ public class SolrServerExtension implements BeforeAllCallback, AfterAllCallback 
 		solrBaseUrl = System.getenv(SOLR_BASE_URL_ENV);
 
 		if (solrBaseUrl != null) {
-			log.info("Environment variable {} was set to {}. Using external solr for testing.", SOLR_BASE_URL_ENV, solrBaseUrl);
+			log.info(
+				"Environment variable {} was set to {}. Using external solr for testing.",
+				SOLR_BASE_URL_ENV,
+				solrBaseUrl);
 			return;
 		}
 
 		log.info("Spin up local container");
 		solrContainer = new SolrContainer(DockerImageName.parse("solr:9.10.1"));
-        solrContainer.withCollection(collection);
-        solrContainer.start();
+		solrContainer.withCollection(collection);
+		solrContainer.start();
 
 		solrBaseUrl = "http://" + solrContainer.getHost() + ":" + solrContainer.getSolrPort() + "/solr";
 	}

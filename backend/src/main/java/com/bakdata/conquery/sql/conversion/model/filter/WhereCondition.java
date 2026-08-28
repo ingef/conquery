@@ -20,7 +20,9 @@ public interface WhereCondition {
 		return combineConditions(whereCondition, Condition::or);
 	}
 
-	private WhereCondition combineConditions(WhereCondition whereCondition, BiFunction<Condition, Condition, Condition> operation) {
+	private WhereCondition combineConditions(
+		WhereCondition whereCondition,
+		BiFunction<Condition, Condition, Condition> operation) {
 		Condition combinedCondition = operation.apply(this.condition(), whereCondition.condition());
 		return new ConditionWrappingWhereCondition(combinedCondition);
 	}

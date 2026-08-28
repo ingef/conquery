@@ -48,23 +48,23 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 	@Override
 	public ImmutableList<ManagedStore> getStores() {
 		return ImmutableList.of(
-				dataset,
+			dataset,
 
-				internToExternMappers,
-				searchIndexes,
+			internToExternMappers,
+			searchIndexes,
 
-				secondaryIds,
-				tables,
-				imports,
+			secondaryIds,
+			tables,
+			imports,
 
-				// Concepts depend on internToExternMappers
-				concepts,
+			// Concepts depend on internToExternMappers
+			concepts,
 
-				preview,
-				idMapping,
-				structure,
-				workerToBuckets,
-				entity2Bucket
+			preview,
+			idMapping,
+			structure,
+			workerToBuckets,
+			entity2Bucket
 		);
 	}
 
@@ -162,7 +162,7 @@ public class NamespaceStorage extends NamespacedStorageImpl {
 		return preview.get();
 	}
 
-	public void setPreviewConfig(PreviewConfig previewConfig){
+	public void setPreviewConfig(PreviewConfig previewConfig) {
 		preview.update(previewConfig);
 	}
 

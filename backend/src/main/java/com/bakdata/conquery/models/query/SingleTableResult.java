@@ -30,8 +30,12 @@ public interface SingleTableResult {
 
 		// First add the id columns to the descriptor list. The are the first columns
 		for (ResultInfo header : config.getIdColumns().getIdResultInfos()) {
-			final ColumnDescriptor descriptor =
-					new ColumnDescriptor(uniqNamer.getUniqueName(header, settings), null, null, ResultType.Primitive.STRING.typeInfo(), header.getSemantics());
+			final ColumnDescriptor descriptor = new ColumnDescriptor(
+				uniqNamer.getUniqueName(header, settings),
+				null,
+				null,
+				ResultType.Primitive.STRING.typeInfo(),
+				header.getSemantics());
 			columnDescriptions.add(descriptor);
 		}
 

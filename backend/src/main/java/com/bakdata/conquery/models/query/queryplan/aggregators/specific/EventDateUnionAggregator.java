@@ -72,14 +72,14 @@ public class EventDateUnionAggregator extends Aggregator<CDateSet> {
 
 	@Override
 	public void consumeEvent(Bucket bucket, int event) {
-		if(validityDateColumn == null) {
+		if (validityDateColumn == null) {
 			set.addAll(dateRestriction);
 			return;
 		}
 
 		final CDateRange dateRange = validityDateColumn.getValidityDate(event, bucket);
 
-		if (dateRange == null){
+		if (dateRange == null) {
 			return;
 		}
 

@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.config;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.core.UriBuilder;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.commands.ManagerNode;
@@ -31,8 +31,10 @@ public class ArrowResultProvider implements ResultRendererProvider {
 	private ArrowConfig config = new ArrowConfig();
 
 	@Override
-	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders)
-			throws MalformedURLException, URISyntaxException {
+	public Collection<ResultAsset> generateResultURLs(
+		ManagedExecution exec,
+		UriBuilder uriBuilder,
+		boolean allProviders) throws MalformedURLException, URISyntaxException {
 		if (!(exec instanceof SingleTableResult)) {
 			return Collections.emptyList();
 		}
@@ -42,9 +44,16 @@ public class ArrowResultProvider implements ResultRendererProvider {
 		}
 
 		return List.of(
-				new ResultAsset("Arrow File", ResultArrowResource.getFileDownloadURL(uriBuilder.clone(), (ManagedExecution & SingleTableResult) exec).toURI()),
-				new ResultAsset("Arrow Stream", ResultArrowResource.getStreamDownloadURL(uriBuilder.clone(), (ManagedExecution & SingleTableResult) exec)
-																   .toURI())
+			new ResultAsset(
+				"Arrow File",
+				ResultArrowResource.getFileDownloadURL(
+					uriBuilder.clone(),
+					(ManagedExecution & SingleTableResult) exec).toURI()),
+			new ResultAsset(
+				"Arrow Stream",
+				ResultArrowResource.getStreamDownloadURL(
+					uriBuilder.clone(),
+					(ManagedExecution & SingleTableResult) exec).toURI())
 		);
 	}
 

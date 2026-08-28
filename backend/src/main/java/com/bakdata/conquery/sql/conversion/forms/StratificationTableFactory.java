@@ -31,31 +31,42 @@ public class StratificationTableFactory {
 	}
 
 	public QueryStep createRelativeStratificationTable(RelativeFormQuery form, ConversionContext context) {
-		RelativeStratification relativeStratification = new RelativeStratification(baseStep, stratificationFunctions, functionProvider);
+		RelativeStratification relativeStratification = new RelativeStratification(
+			baseStep,
+			stratificationFunctions,
+			functionProvider);
 		return relativeStratification.createRelativeStratificationTable(form, context);
 	}
 
-	public QueryStep createAbsoluteStratificationTable(List<ExportForm.ResolutionAndAlignment> resolutionAndAlignments, ConversionContext context) {
+	public QueryStep createAbsoluteStratificationTable(
+		List<ExportForm.ResolutionAndAlignment> resolutionAndAlignments,
+		ConversionContext context) {
 		AbsoluteStratification absoluteStratification = new AbsoluteStratification(baseStep, stratificationFunctions);
 		return absoluteStratification.createStratificationTable(resolutionAndAlignments, context);
 	}
 
-	protected static QueryStep unionResolutionTables(List<QueryStep> unionSteps, List<QueryStep> predecessors, ConversionContext context) {
+	protected static QueryStep unionResolutionTables(
+		List<QueryStep> unionSteps,
+		List<QueryStep> predecessors,
+		ConversionContext context) {
 
 		Preconditions.checkArgument(!unionSteps.isEmpty(), "Expecting at least 1 resolution table");
 
 		List<QueryStep> withQualifiedSelects = unionSteps.stream()
-														 .map(queryStep -> QueryStep.builder()
-																					.selects(queryStep.getQualifiedSelects())
-																					.fromTable(QueryStep.toTableLike(queryStep.getCteName()))
-																					.build())
-														 .toList();
+			.map(
+				queryStep -> QueryStep.builder()
+					.selects(queryStep.getQualifiedSelects())
+					.fromTable(
+						QueryStep.toTableLike(queryStep.getCteName()))
+					.build())
+			.toList();
 
 		return QueryStep.createUnionAllStep(
-				withQualifiedSelects,
-				FormCteStep.FULL_STRATIFICATION.getSuffix(),
-				Stream.concat(predecessors.stream(), unionSteps.stream()).toList(),
-				context.isNegation(), context.getFunctionProvider()
+			withQualifiedSelects,
+			FormCteStep.FULL_STRATIFICATION.getSuffix(),
+			Stream.concat(predecessors.stream(), unionSteps.stream()).toList(),
+			context.isNegation(),
+			context.getFunctionProvider()
 		);
 	}
 

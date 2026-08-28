@@ -16,7 +16,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.jooq.Condition;
-import org.jooq.impl.DSL;
 
 /**
  * This condition requires that the selected Column has a value.
@@ -43,7 +42,9 @@ public class IsEmptyCondition implements CTCondition {
 
 	@Override
 	public ConceptConditions buildExpression(CTConditionContext context, ConceptElement<?> id) {
-		FieldCondition condition = new FieldCondition(context.getFunctionProvider().isNull(field(name(column))), Set.of(inline(true)));
+		FieldCondition condition = new FieldCondition(
+			context.getFunctionProvider().isNull(field(name(column))),
+			Set.of(inline(true)));
 		return new ConceptConditions(id, Map.of(field(name("%s_is_empty".formatted(column)), BOOLEAN), condition));
 	}
 }

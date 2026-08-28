@@ -9,9 +9,11 @@ import lombok.ToString;
 
 @AllArgsConstructor
 @ToString
-public abstract sealed class FilterNode<FILTER_VALUE> extends EventIterating permits EventFilterNode, AggregationFilterNode {
+public abstract sealed class FilterNode<FILTER_VALUE> extends EventIterating permits EventFilterNode,
+		AggregationFilterNode {
 
-	@Setter(AccessLevel.PROTECTED) @Getter
+	@Setter(AccessLevel.PROTECTED)
+	@Getter
 	protected FILTER_VALUE filterValue;
 
 

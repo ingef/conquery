@@ -4,12 +4,11 @@ import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -68,8 +67,12 @@ public class ColumnEqualCondition implements CTCondition {
 
 	@Override
 	public ConceptConditions buildExpression(CTConditionContext context, ConceptElement<?> id) {
-		FieldCondition condition = new FieldCondition(field(name(getColumn()), VARCHAR), values.stream().map(DSL::inline).collect(Collectors.toSet()));
+		FieldCondition condition = new FieldCondition(
+			field(name(getColumn()), VARCHAR),
+			values.stream().map(DSL::inline).collect(Collectors.toSet()));
 
-		return new ConceptConditions(id, Map.of(field(name("%s_equal".formatted(column)), VARCHAR(fieldLength())), condition));
+		return new ConceptConditions(
+			id,
+			Map.of(field(name("%s_equal".formatted(column)), VARCHAR(fieldLength())), condition));
 	}
 }

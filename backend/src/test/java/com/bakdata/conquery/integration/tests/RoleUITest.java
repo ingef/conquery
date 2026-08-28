@@ -3,10 +3,10 @@ package com.bakdata.conquery.integration.tests;
 import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.ws.rs.core.Response;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -39,7 +39,9 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 		UserId userId = user.getId();
 		try {
 
-			ConqueryPermission permission = DatasetPermission.onInstance(Ability.READ.asSet(), new DatasetId("testDatasetId"));
+			ConqueryPermission permission = DatasetPermission.onInstance(
+				Ability.READ.asSet(),
+				new DatasetId("testDatasetId"));
 
 			storage.addRole(mandator);
 			storage.addUser(user);
@@ -49,21 +51,18 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 			user.addRole(mandator.getId());
 
 
-			URI classBase = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), RoleUIResource.class, "getRole")
-				.buildFromMap(Map.of(ROLE_ID, mandatorId.toString()));
-	
-			Response response = conquery
-				.getClient()
-				.target(classBase)
-				.request()
-				.get();
-	
+			URI classBase = HierarchyHelper.hierarchicalPath(
+				conquery.defaultAdminURIBuilder(),
+				RoleUIResource.class,
+				"getRole").buildFromMap(Map.of(ROLE_ID, mandatorId.toString()));
+
+			Response response = conquery.getClient().target(classBase).request().get();
+
 			assertThat(response.getStatus()).isEqualTo(200);
 			// Check for Freemarker Errors
 			assertThat(response.readEntity(String.class).toLowerCase()).doesNotContain(List.of("freemarker", "debug"));
 
-		}
-		finally {
+		} finally {
 			storage.removeRole(mandatorId);
 			storage.removeUser(userId);
 		}

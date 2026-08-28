@@ -1,10 +1,10 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -50,7 +50,7 @@ public abstract class SingleColumnSelect extends Select {
 	@Override
 	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
 
-		if(categorical){
+		if (categorical) {
 			return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()));
 		}
 
@@ -72,7 +72,12 @@ public abstract class SingleColumnSelect extends Select {
 			return true;
 		}
 
-		log.error("Column[{}] is of Type[{}]. Not one of {} for {}", column, type, getAcceptedColumnTypes(), getClass().getSimpleName());
+		log.error(
+			"Column[{}] is of Type[{}]. Not one of {} for {}",
+			column,
+			type,
+			getAcceptedColumnTypes(),
+			getClass().getSimpleName());
 
 		return false;
 	}

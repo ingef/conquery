@@ -77,13 +77,15 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		}
 
 
-		TestContextProvider provider = useLocalHanaDb
-									   ? new HanaTestcontainerContextProvider()
-									   : new RemoteHanaContextProvider();
+		TestContextProvider provider = useLocalHanaDb ? new HanaTestcontainerContextProvider() : new RemoteHanaContextProvider();
 
 		log.info("Running HANA tests with {}.", provider.getClass().getSimpleName());
 
-		managedConnection = new ManagedConnection("test", provider.getSqlConnectorConfig(), provider.getDatabaseConfig(), null);
+		managedConnection = new ManagedConnection(
+			"test",
+			provider.getSqlConnectorConfig(),
+			provider.getDatabaseConfig(),
+			null);
 		managedConnection.start();
 
 		dslContext = managedConnection.connect();
@@ -95,9 +97,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 		if (Files.exists(TMP_HANA_MOUNT_DIR)) {
 			try (Stream<Path> walk = Files.walk(TMP_HANA_MOUNT_DIR)) {
-				walk.sorted(Comparator.naturalOrder())
-					.map(Path::toFile)
-					.forEach(File::delete);
+				walk.sorted(Comparator.naturalOrder()).map(Path::toFile).forEach(File::delete);
 			}
 		}
 	}
@@ -108,12 +108,13 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 		DatabaseConnectionConfig databaseConfig = managedConnection.getConnection();
 		TestHanaDialectBundle testHanaDialect = new TestHanaDialectBundle();
-		TestDataImporter testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContext, testHanaDialect, databaseConfig));
+		TestDataImporter testDataImporter = new SqlTestDataImporter(
+			new CsvTableImporter(dslContext, testHanaDialect, databaseConfig));
 
 
 		return Stream.concat(
-				super.sqlProgrammaticTests(databaseConfig, managedConnection.getConfig(), testDataImporter),
-				super.sqlQueryTests(databaseConfig, managedConnection.getConfig(), testDataImporter).stream()
+			super.sqlProgrammaticTests(databaseConfig, managedConnection.getConfig(), testDataImporter),
+			super.sqlQueryTests(databaseConfig, managedConnection.getConfig(), testDataImporter).stream()
 		);
 	}
 
@@ -128,12 +129,17 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 	private static class HanaTestFunctionProvider implements TestFunctionProvider {
 
 		@Override
-		public void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement, DSLContext dslContext)
-				throws SQLException {
+		public void insertValuesIntoTable(
+			Table<Record> table,
+			List<Field<?>> columns,
+			List<RowN> content,
+			Statement statement,
+			DSLContext dslContext) throws SQLException {
 			for (RowN rowN : content) {
 				String insertRowStatement = dslContext.insertInto(table, columns)
-													  .values(rowN)
-													  .getSQL(ParamType.INLINED);
+					.values(rowN)
+					.getSQL(
+						ParamType.INLINED);
 
 				statement.execute(insertRowStatement);
 			}
@@ -141,8 +147,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 		@Override
 		public String createDropTableStatement(Table<Record> table, DSLContext dslContext) {
-			return dslContext.dropTable(table)
-							 .getSQL(ParamType.INLINED);
+			return dslContext.dropTable(table).getSQL(ParamType.INLINED);
 		}
 
 	}
@@ -157,17 +162,20 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		private final HanaContainer<?> hanaContainer;
 
 		public HanaTestcontainerContextProvider() {
-			this.hanaContainer = new HanaContainer<>(HANA_IMAGE)
-					.withFileSystemBind(TMP_HANA_MOUNT_DIR.toString(), "/home/secrets");
+			this.hanaContainer = new HanaContainer<>(HANA_IMAGE).withFileSystemBind(
+				TMP_HANA_MOUNT_DIR.toString(),
+				"/home/secrets");
 			this.hanaContainer.start();
 
 
 			this.databaseConfig = DatabaseConnectionConfig.builder()
-														  .dialect(Dialect.HANA)
-														  .jdbcConnectionUrl(hanaContainer.getJdbcUrl())
-														  .databaseUsername(hanaContainer.getUsername())
-														  .databasePassword(hanaContainer.getPassword())
-														  .build();
+				.dialect(Dialect.HANA)
+				.jdbcConnectionUrl(
+					hanaContainer.getJdbcUrl())
+				.databaseUsername(hanaContainer.getUsername())
+				.databasePassword(
+					hanaContainer.getPassword())
+				.build();
 			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
 		}
 	}
@@ -177,7 +185,10 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 		private final static String PORT = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_PORT"), "39041");
 		private final static String HOST = System.getenv("CONQUERY_SQL_DB");
-		private final static String CONNECTION_URL = "jdbc:sap://%s:%s/databaseName=HXE&encrypt=true&validateCertificate=false".formatted(HOST, PORT);
+		private final static String CONNECTION_URL = "jdbc:sap://%s:%s/databaseName=HXE&encrypt=true&validateCertificate=false"
+			.formatted(
+				HOST,
+				PORT);
 		private final static String USERNAME = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_USER"), "SYSTEM");
 		private final static String PASSWORD = System.getenv("CONQUERY_SQL_PASSWORD");
 		private final DatabaseConnectionConfig databaseConfig;
@@ -185,11 +196,12 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 		public RemoteHanaContextProvider() {
 			this.databaseConfig = DatabaseConnectionConfig.builder()
-														  .dialect(Dialect.HANA)
-														  .jdbcConnectionUrl(CONNECTION_URL)
-														  .databaseUsername(USERNAME)
-														  .databasePassword(PASSWORD)
-														  .build();
+				.dialect(Dialect.HANA)
+				.jdbcConnectionUrl(
+					CONNECTION_URL)
+				.databaseUsername(USERNAME)
+				.databasePassword(PASSWORD)
+				.build();
 			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
 		}
 

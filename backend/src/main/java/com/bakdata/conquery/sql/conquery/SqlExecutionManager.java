@@ -29,7 +29,12 @@ public class SqlExecutionManager extends ExecutionManager {
 	private final SqlConverter converter;
 	private final ConcurrentMap<ManagedExecutionId, CompletableFuture<Void>> runningExecutions;
 
-	public SqlExecutionManager(SqlConverter sqlConverter, SqlExecutionService sqlExecutionService, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+	public SqlExecutionManager(
+		SqlConverter sqlConverter,
+		SqlExecutionService sqlExecutionService,
+		MetaStorage storage,
+		DatasetRegistry<?> datasetRegistry,
+		ConqueryConfig config) {
 		super(storage, datasetRegistry, config);
 		this.converter = sqlConverter;
 		this.executionService = sqlExecutionService;
@@ -49,12 +54,10 @@ public class SqlExecutionManager extends ExecutionManager {
 
 		if (execution instanceof ManagedInternalForm<?> managedForm) {
 			CompletableFuture.allOf(managedForm.getSubQueries().values().stream().map(executionId -> {
-												   addState(executionId, new SqlExecutionExecutionInfo());
-												   return executeAsync((ManagedQuery) executionId.resolve());
+				addState(executionId, new SqlExecutionExecutionInfo());
+				return executeAsync((ManagedQuery) executionId.resolve());
 
-											   })
-											   .toArray(CompletableFuture[]::new))
-							 .thenRun(() -> managedForm.finish(ExecutionState.DONE));
+			}).toArray(CompletableFuture[]::new)).thenRun(() -> managedForm.finish(ExecutionState.DONE));
 			return;
 		}
 
@@ -64,25 +67,26 @@ public class SqlExecutionManager extends ExecutionManager {
 	private CompletableFuture<Void> executeAsync(ManagedQuery managedQuery) {
 		SqlQuery sqlQuery = converter.convert(managedQuery.getQuery());
 
-		return CompletableFuture.supplyAsync(() -> executionService.execute(sqlQuery))
-								.thenAccept(result -> {
-									ManagedExecutionId id = managedQuery.getId();
+		return CompletableFuture.supplyAsync(() -> executionService.execute(sqlQuery)).thenAccept(result -> {
+			ManagedExecutionId id = managedQuery.getId();
 
-									// We need to transfer the columns and data from the query result together with the execution lock to a new result
-									SqlExecutionExecutionInfo startResult = getExecutionInfo(id);
-									SqlExecutionExecutionInfo
-											finishResult =
-											new SqlExecutionExecutionInfo(ExecutionState.DONE, result.getColumnNames(), result.getTable(), result.getResultInfos(), startResult.getExecutingLock());
-									addState(id, finishResult);
+			// We need to transfer the columns and data from the query result together with the execution lock to a new result
+			SqlExecutionExecutionInfo startResult = getExecutionInfo(id);
+			SqlExecutionExecutionInfo finishResult = new SqlExecutionExecutionInfo(
+				ExecutionState.DONE,
+				result.getColumnNames(),
+				result.getTable(),
+				result.getResultInfos(),
+				startResult.getExecutingLock());
+			addState(id, finishResult);
 
-									managedQuery.finish(ExecutionState.DONE);
-									runningExecutions.remove(id);
-								})
-								.exceptionally(e -> {
-									managedQuery.fail(ConqueryError.asConqueryError(e));
-									runningExecutions.remove(managedQuery.getId());
-									return null;
-								});
+			managedQuery.finish(ExecutionState.DONE);
+			runningExecutions.remove(id);
+		}).exceptionally(e -> {
+			managedQuery.fail(ConqueryError.asConqueryError(e));
+			runningExecutions.remove(managedQuery.getId());
+			return null;
+		});
 	}
 
 	@Override

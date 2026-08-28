@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class GroovyPredicate extends Script {
 
-	public boolean filterRow(String[] row){
+	public boolean filterRow(String[] row) {
 		setProperty("row", row);
 		log.trace("Row = {}, length = {}", row, row.length);
 		return run();

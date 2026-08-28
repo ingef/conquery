@@ -1,5 +1,10 @@
 package com.bakdata.conquery.models.config;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.ws.rs.client.Client;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -7,11 +12,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nullable;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.ws.rs.client.Client;
 
 import com.bakdata.conquery.apiv1.forms.ExternalForm;
 import com.bakdata.conquery.apiv1.frontend.VersionContainer;
@@ -111,7 +111,6 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 		client = conqueryClientBuilder.using(managerNode.getConfig().getJerseyClient()).build(getId());
 
 
-
 		final ObjectMapper om = configureObjectMapper(managerNode.getEnvironment().getObjectMapper().copy());
 		client.register(new JacksonMessageBodyProvider(om));
 
@@ -122,7 +121,9 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 
 		// Register form configuration provider
 		log.info("Registering frontend form config provider for '{}'", getId());
-		managerNode.getFormScanner().registerFrontendFormConfigProvider(new FormConfigProvider(getId(), this::registerFormConfigs));
+		managerNode.getFormScanner()
+			.registerFrontendFormConfigProvider(
+				new FormConfigProvider(getId(), this::registerFormConfigs));
 	}
 
 	public static ObjectMapper configureObjectMapper(ObjectMapper om) {
@@ -130,7 +131,18 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	}
 
 	public ExternalFormBackendApi createApi() {
-		return new ExternalFormBackendApi(client, baseURI, formConfigPath, postFormPath, statusTemplatePath, cancelTaskPath, healthCheckPath, versionPath, this::createAccessToken, conqueryApiUrl, getAuthentication());
+		return new ExternalFormBackendApi(
+			client,
+			baseURI,
+			formConfigPath,
+			postFormPath,
+			statusTemplatePath,
+			cancelTaskPath,
+			healthCheckPath,
+			versionPath,
+			this::createAccessToken,
+			conqueryApiUrl,
+			getAuthentication());
 	}
 
 	/**
@@ -172,7 +184,11 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	 * @param subType the type that will be the subtype of {@link ExternalForm}
 	 */
 	public static String createSubTypedId(String subType) {
-		return String.format("%s%s%s", ExternalForm.class.getAnnotation(CPSType.class).id(), CPSTypeIdResolver.SEPARATOR_SUB_TYPE, subType);
+		return String.format(
+			"%s%s%s",
+			ExternalForm.class.getAnnotation(CPSType.class).id(),
+			CPSTypeIdResolver.SEPARATOR_SUB_TYPE,
+			subType);
 	}
 
 	/**
@@ -182,17 +198,16 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 
 		try {
 			final FormBackendVersion versionInfo = externalApi.getVersion();
-			final VersionContainer
-					oldVersion =
-					VersionInfo.INSTANCE.setFormBackendVersion(new VersionContainer(getId(), versionInfo.version(), versionInfo.buildTime()));
+			final VersionContainer oldVersion = VersionInfo.INSTANCE.setFormBackendVersion(
+				new VersionContainer(getId(), versionInfo.version(), versionInfo.buildTime()));
 			if (!versionInfo.version().equals(oldVersion.version())) {
 				log.info("Form Backend '{}' versionInfo update: {} -> {}", getId(), oldVersion, versionInfo);
 			}
-		}
-		catch (Exception e) {
-			log.warn("Unable to retrieve version from form backend '{}'. Enable trace logging for more info", getId(), (Exception) (log.isTraceEnabled()
-																																	? e
-																																	: null));
+		} catch (Exception e) {
+			log.warn(
+				"Unable to retrieve version from form backend '{}'. Enable trace logging for more info",
+				getId(),
+				(Exception) (log.isTraceEnabled() ? e : null));
 
 			VersionInfo.INSTANCE.setFormBackendVersion(new VersionContainer(getId(), null, null));
 		}
@@ -212,8 +227,7 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 			if (internalHttpClient != null) {
 				internalHttpClient.getClient().close();
 			}
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -227,9 +241,10 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 		// We create a service user with elevated permissions (allow downloads, which a form backend relies on) so we don't
 		// have to give the permission to the actual user. The service user will have a snapshot of the permissions of
 		// the actual user and download permissions.
-		final User
-				serviceUser =
-				managerNode.getAuthController().flatCopyUser(originalUser, String.format("%s_%s", getClass().getSimpleName().toLowerCase(), getId()));
+		final User serviceUser = managerNode.getAuthController()
+			.flatCopyUser(
+				originalUser,
+				String.format("%s_%s", getClass().getSimpleName().toLowerCase(), getId()));
 
 		// The user is able to read the dataset, ensure that the service user can download results
 		serviceUser.addPermission(dataset.createPermission(Ability.DOWNLOAD.asSet()));
@@ -251,10 +266,13 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 		}
 
 		@Override
-		protected DropwizardApacheConnector createDropwizardApacheConnector(ConfiguredCloseableHttpClient configuredClient) {
+		protected DropwizardApacheConnector createDropwizardApacheConnector(
+			ConfiguredCloseableHttpClient configuredClient) {
 			httpClient = configuredClient;
-			return new DropwizardApacheConnector(configuredClient.getClient(), configuredClient.getDefaultRequestConfig(),
-												 true);
+			return new DropwizardApacheConnector(
+				configuredClient.getClient(),
+				configuredClient.getDefaultRequestConfig(),
+				true);
 		}
 	}
 }

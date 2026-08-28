@@ -21,7 +21,10 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 		ConnectorSqlTables tables = filterContext.getTables();
 
 		Class<? extends Number> numberClass = NumberMapUtil.getType(column);
-		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), column.getName(), numberClass);
+		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
+			tables.getRootTable(),
+			column.getName(),
+			numberClass);
 
 		IRange<? extends Number, ?> filterValue = filterContext.getValue();
 		NumberCondition condition = new NumberCondition(rootSelect.select(), filterValue);

@@ -64,13 +64,15 @@ public class ClickhouseSqlIntegrationTests extends IntegrationTests {
 
 	@BeforeAll
 	static void before() throws Exception {
-		TestContextProvider provider = useLocal
-									   ? new ClickhouseTestContainerContextProvider()
-									   : new RemoteClickhouseContextProvider();
+		TestContextProvider provider = useLocal ? new ClickhouseTestContainerContextProvider() : new RemoteClickhouseContextProvider();
 
 		log.info("Running Clickhouse tests with {}.", provider.getClass().getSimpleName());
 
-		managedConnection = new ManagedConnection("test", provider.getSqlConnectorConfig(), provider.getDatabaseConfig(), null);
+		managedConnection = new ManagedConnection(
+			"test",
+			provider.getSqlConnectorConfig(),
+			provider.getDatabaseConfig(),
+			null);
 		managedConnection.start();
 
 		dslContext = managedConnection.connect();
@@ -87,12 +89,13 @@ public class ClickhouseSqlIntegrationTests extends IntegrationTests {
 
 		DatabaseConnectionConfig databaseConfig = managedConnection.getConnection();
 		TestDialectBundle testHanaDialect = new TestClickhouseDialectBundle();
-		TestDataImporter testDataImporter = new SqlTestDataImporter(new CsvTableImporter(dslContext, testHanaDialect, databaseConfig));
+		TestDataImporter testDataImporter = new SqlTestDataImporter(
+			new CsvTableImporter(dslContext, testHanaDialect, databaseConfig));
 
 
 		return Stream.concat(
-				super.sqlProgrammaticTests(databaseConfig, managedConnection.getConfig(), testDataImporter),
-				super.sqlQueryTests(databaseConfig, managedConnection.getConfig(), testDataImporter).stream()
+			super.sqlProgrammaticTests(databaseConfig, managedConnection.getConfig(), testDataImporter),
+			super.sqlQueryTests(databaseConfig, managedConnection.getConfig(), testDataImporter).stream()
 		);
 	}
 
@@ -107,23 +110,25 @@ public class ClickhouseSqlIntegrationTests extends IntegrationTests {
 	private static class ClickhouseTestFunctionProvider implements TestFunctionProvider {
 
 		@Override
-		public void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement, DSLContext dslContext) {
+		public void insertValuesIntoTable(
+			Table<Record> table,
+			List<Field<?>> columns,
+			List<RowN> content,
+			Statement statement,
+			DSLContext dslContext) {
 
 			List<InsertValuesStepN> statements = new ArrayList<>();
 			for (RowN rowN : content) {
-				InsertValuesStepN<Record> values = dslContext.insertInto(table, columns)
-															 .values(rowN);
+				InsertValuesStepN<Record> values = dslContext.insertInto(table, columns).values(rowN);
 				statements.add(values);
 			}
 
-			dslContext.batch(statements)
-					  .execute();
+			dslContext.batch(statements).execute();
 		}
 
 		@Override
 		public String createDropTableStatement(Table<Record> table, DSLContext dslContext) {
-			return dslContext.dropTable(table)
-							 .getSQL(ParamType.INLINED);
+			return dslContext.dropTable(table).getSQL(ParamType.INLINED);
 		}
 
 	}
@@ -142,11 +147,13 @@ public class ClickhouseSqlIntegrationTests extends IntegrationTests {
 			this.container.start();
 
 			this.databaseConfig = DatabaseConnectionConfig.builder()
-														  .dialect(Dialect.CLICKHOUSE)
-														  .jdbcConnectionUrl(container.getJdbcUrl())
-														  .databaseUsername(container.getUsername())
-														  .databasePassword(container.getPassword())
-														  .build();
+				.dialect(Dialect.CLICKHOUSE)
+				.jdbcConnectionUrl(
+					container.getJdbcUrl())
+				.databaseUsername(container.getUsername())
+				.databasePassword(
+					container.getPassword())
+				.build();
 			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
 		}
 	}
@@ -157,7 +164,9 @@ public class ClickhouseSqlIntegrationTests extends IntegrationTests {
 		private final static String PORT = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_PORT"), "8123");
 		private final static String HOST = System.getenv("CONQUERY_SQL_HOST");
 		private final static String CONNECTION_URL = "jdbc:clickhouse://%s:%s/".formatted(HOST, PORT);
-		private final static String USERNAME = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_USER"), "default");
+		private final static String USERNAME = Objects.requireNonNullElse(
+			System.getenv("CONQUERY_SQL_USER"),
+			"default");
 		private final static String PASSWORD = System.getenv("CONQUERY_SQL_PASSWORD");
 
 		private final DatabaseConnectionConfig databaseConfig;
@@ -165,11 +174,12 @@ public class ClickhouseSqlIntegrationTests extends IntegrationTests {
 
 		public RemoteClickhouseContextProvider() {
 			this.databaseConfig = DatabaseConnectionConfig.builder()
-														  .dialect(Dialect.CLICKHOUSE)
-														  .jdbcConnectionUrl(CONNECTION_URL)
-														  .databaseUsername(USERNAME)
-														  .databasePassword(PASSWORD)
-														  .build();
+				.dialect(Dialect.CLICKHOUSE)
+				.jdbcConnectionUrl(
+					CONNECTION_URL)
+				.databaseUsername(USERNAME)
+				.databasePassword(PASSWORD)
+				.build();
 			this.sqlConnectorConfig = new TestSqlConnectorConfig(databaseConfig);
 		}
 

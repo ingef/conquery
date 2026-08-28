@@ -3,16 +3,16 @@ package com.bakdata.conquery.io.result.csv;
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
-import java.util.Locale;
-import java.util.OptionalLong;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.util.Locale;
+import java.util.OptionalLong;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -37,7 +37,12 @@ public class ResultCsvProcessor {
 
 	private final ConqueryConfig config;
 
-	public <E extends ManagedExecution & SingleTableResult> Response createResult(E exec, Subject subject, boolean pretty, Charset charset, OptionalLong limit) {
+	public <E extends ManagedExecution & SingleTableResult> Response createResult(
+		E exec,
+		Subject subject,
+		boolean pretty,
+		Charset charset,
+		OptionalLong limit) {
 
 		ManagedExecutionId execId = exec.getId();
 		final Namespace namespace = exec.getNamespace();
@@ -63,23 +68,26 @@ public class ResultCsvProcessor {
 		final StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
 				final CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
-				renderer.toCSV(config.getIdColumns().getIdResultInfos(), exec.collectResultInfos(), exec.streamResults(limit), settings, charset);
-			}
-			catch (EofException e) {
+				renderer.toCSV(
+					config.getIdColumns().getIdResultInfos(),
+					exec.collectResultInfos(),
+					exec.streamResults(limit),
+					settings,
+					charset);
+			} catch (EofException e) {
 				log.trace("User canceled download");
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new WebApplicationException("Failed to load result", e);
-			}
-			finally {
+			} finally {
 				log.trace("FINISHED downloading {}", exec.getId());
 			}
 		};
 
-		return makeResponseWithFileName(Response.ok(out),
-										String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_CSV),
-										new MediaType("text", "csv", charset.toString()),
-										ResultUtil.ContentDispositionOption.ATTACHMENT
+		return makeResponseWithFileName(
+			Response.ok(out),
+			String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_CSV),
+			new MediaType("text", "csv", charset.toString()),
+			ResultUtil.ContentDispositionOption.ATTACHMENT
 		);
 
 	}

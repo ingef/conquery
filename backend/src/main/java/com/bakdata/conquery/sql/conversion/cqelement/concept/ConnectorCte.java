@@ -23,10 +23,13 @@ abstract class ConnectorCte {
 			queryStepBuilder.predecessors(List.of());
 		}
 		// if interval packing takes place, fromTable and predecessors of the final concept step are already set
-		else if (queryStepBuilder.build().getFromTables().isEmpty() && queryStepBuilder.build().getPredecessors().isEmpty()) {
-			queryStepBuilder.fromTable(QueryStep.toTableLike(previous.get().getCteName()))
-							.predecessors(List.of(previous.get()));
-		}
+		else if (queryStepBuilder.build().getFromTables().isEmpty() && queryStepBuilder.build()
+			.getPredecessors()
+			.isEmpty()) {
+				queryStepBuilder.fromTable(QueryStep.toTableLike(previous.get().getCteName()))
+					.predecessors(
+						List.of(previous.get()));
+			}
 		return Optional.of(queryStepBuilder.build());
 	}
 

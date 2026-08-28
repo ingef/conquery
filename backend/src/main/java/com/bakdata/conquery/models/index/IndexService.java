@@ -44,63 +44,69 @@ public class IndexService implements Injectable {
 	 * The Index interface offers methods, that are only relevant for the {@link InternToExternMapper} like {@link Index#external(String)}.
 	 * We should clean this up and split the async CSV parsing from the index functionality.
 	 */
-	private final LoadingCache<IndexKey, Index<?>> mappings = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<>() {
-		@NotNull
-		@Override
-		public Index<?> load(@NotNull IndexKey key) throws Exception {
+	private final LoadingCache<IndexKey, Index<?>> mappings = CacheBuilder.newBuilder()
+		.recordStats()
+		.build(
+			new CacheLoader<>() {
+				@NotNull
+				@Override
+				public Index<?> load(@NotNull IndexKey key) throws Exception {
 
-			final StopWatch timer = StopWatch.createStarted();
+					final StopWatch timer = StopWatch.createStarted();
 
-			log.info("Started to parse mapping {}", key);
+					log.info("Started to parse mapping {}", key);
 
-			final Map<String, String> emptyDefaults = computeEmptyDefaults(key);
+					final Map<String, String> emptyDefaults = computeEmptyDefaults(key);
 
-			final Index<?> int2ext = key.createIndex();
+					final Index<?> int2ext = key.createIndex();
 
-			final CsvParser csvParser = new CsvParser(csvParserSettings);
+					final CsvParser csvParser = new CsvParser(csvParserSettings);
 
-			try (InputStream inputStream = key.getCsv().toURL().openStream()) {
+					try (InputStream inputStream = key.getCsv().toURL().openStream()) {
 
-				final IterableResult<Record, ParsingContext> records = csvParser.iterateRecords(inputStream);
+						final IterableResult<Record, ParsingContext> records = csvParser.iterateRecords(inputStream);
 
-				// Set default to "" for all columns
-				final String[] headers = records.getContext().headers();
-				records.getContext().recordMetaData().setDefaultValueOfColumns("", headers);
+						// Set default to "" for all columns
+						final String[] headers = records.getContext().headers();
+						records.getContext().recordMetaData().setDefaultValueOfColumns("", headers);
 
-				// Iterate records
-				for (Record row : records) {
-					// There can be multiple templates and multiple external values, hence the right side is a map
-					final Pair<String, Map<String, String>> pair = computeInternalExternal(key, csvParser, row);
-					if (pair == null) {
-						continue;
+						// Iterate records
+						for (Record row : records) {
+							// There can be multiple templates and multiple external values, hence the right side is a map
+							final Pair<String, Map<String, String>> pair = computeInternalExternal(key, csvParser, row);
+							if (pair == null) {
+								continue;
+							}
+
+							final String internalValue = pair.getLeft();
+							final Map<String, String> externalValue = pair.getRight();
+
+							// If the computed value is equal to a template without any values, replace it with value
+							externalValue.replaceAll(
+								(template, value) -> emptyDefaults.get(template).equals(value) ? internalValue : value);
+
+							try {
+								int2ext.put(internalValue, externalValue);
+							} catch (IllegalArgumentException e) {
+								log.warn(
+									"Skipping mapping '{}'->'{}' in row {}, because there was already a mapping",
+									internalValue,
+									externalValue,
+									csvParser.getContext().currentLine(),
+									LogUtil.passExceptionOnTrace(log, e)
+								);
+							}
+						}
 					}
 
-					final String internalValue = pair.getLeft();
-					final Map<String, String> externalValue = pair.getRight();
+					// Run finalizing operations on the index
+					int2ext.finalizer();
 
-					// If the computed value is equal to a template without any values, replace it with value
-					externalValue.replaceAll((template, value) -> emptyDefaults.get(template).equals(value) ? internalValue : value);
+					log.info("Finished parsing mapping {} with {} entries, within {}", key, int2ext.size(), timer);
 
-					try {
-						int2ext.put(internalValue, externalValue);
-					}
-					catch (IllegalArgumentException e) {
-						log.warn("Skipping mapping '{}'->'{}' in row {}, because there was already a mapping",
-								 internalValue, externalValue, csvParser.getContext().currentLine(),
-								 LogUtil.passExceptionOnTrace(log,e)
-						);
-					}
+					return int2ext;
 				}
-			}
-
-			// Run finalizing operations on the index
-			int2ext.finalizer();
-
-			log.info("Finished parsing mapping {} with {} entries, within {}", key, int2ext.size(), timer);
-
-			return int2ext;
-		}
-	});
+			});
 
 	public IndexService(CsvParserSettings csvParserSettings) {
 		this.csvParserSettings = csvParserSettings.clone();
@@ -108,16 +114,23 @@ public class IndexService implements Injectable {
 	}
 
 	@Nullable
-	private Pair<String, Map<String, String>> computeInternalExternal(@NotNull IndexKey key, CsvParser csvParser, Record row) {
-		final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
+	private Pair<String, Map<String, String>> computeInternalExternal(
+		@NotNull IndexKey key,
+		CsvParser csvParser,
+		Record row) {
+		final StringSubstitutor substitutor = new StringSubstitutor(
+			row::getString,
+			"{{",
+			"}}",
+			StringSubstitutor.DEFAULT_ESCAPE);
 
 		final String internalValue = row.getString(key.getInternalColumn());
 
 		if (internalValue == null) {
-			log.trace("Could not create a mapping for row {} because the cell for the internal value was empty. Row: {}", csvParser.getContext().currentLine(),
-					  log.isTraceEnabled()
-					  ? StringUtils.join(row.toFieldMap())
-					  : null
+			log.trace(
+				"Could not create a mapping for row {} because the cell for the internal value was empty. Row: {}",
+				csvParser.getContext().currentLine(),
+				log.isTraceEnabled() ? StringUtils.join(row.toFieldMap()) : null
 			);
 			return null;
 		}
@@ -134,12 +147,19 @@ public class IndexService implements Injectable {
 		final CharMatcher whitespaceMatcher = CharMatcher.whitespace();
 
 		return externalTemplates.stream()
-								.distinct()
-								.collect(Collectors.toMap(Functions.identity(), value -> whitespaceMatcher.trimAndCollapseFrom(substitutor.replace(value), ' ')));
+			.distinct()
+			.collect(
+				Collectors.toMap(
+					Functions.identity(),
+					value -> whitespaceMatcher.trimAndCollapseFrom(substitutor.replace(value), ' ')));
 	}
 
 	private Map<String, String> computeEmptyDefaults(IndexKey key) {
-		final StringSubstitutor substitutor = new StringSubstitutor((ignored) -> "", "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
+		final StringSubstitutor substitutor = new StringSubstitutor(
+			(ignored) -> "",
+			"{{",
+			"}}",
+			StringSubstitutor.DEFAULT_ESCAPE);
 
 		final List<String> externalTemplates = key.getExternalTemplates();
 
@@ -164,8 +184,7 @@ public class IndexService implements Injectable {
 	public <I extends Index<?>> I getIndex(@NotNull IndexKey key) throws IndexCreationException {
 		try {
 			return (I) mappings.get(key);
-		}
-		catch (ExecutionException e) {
+		} catch (ExecutionException e) {
 			throw new IndexCreationException(key, e);
 		}
 	}

@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.auth.web;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 
@@ -17,7 +18,8 @@ public class AuthenticationExceptionMapper implements ExceptionMapper<Authentica
 		log.warn("Shiro failed to authenticate the request. See the following trace:", exception);
 		return Response.status(Response.Status.UNAUTHORIZED)
 			.type(MediaType.APPLICATION_JSON_TYPE)
-					   .entity("An authentication error occurred. The error has been logged")
+			.entity(
+				"An authentication error occurred. The error has been logged")
 			.build();
 	}
 

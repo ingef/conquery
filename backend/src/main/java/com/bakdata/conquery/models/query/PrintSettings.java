@@ -51,11 +51,30 @@ public class PrintSettings {
 
 	private final PrintIdMapper idMapper;
 
-	public PrintSettings(boolean prettyPrint, Locale locale, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer) {
-		this(prettyPrint, locale, config, idMapper, columnNamer, DECIMAL_FORMAT.apply(locale), NUMBER_FORMAT.apply(locale));
+	public PrintSettings(
+		boolean prettyPrint,
+		Locale locale,
+		ConqueryConfig config,
+		PrintIdMapper idMapper,
+		Function<SelectResultInfo, String> columnNamer) {
+		this(
+			prettyPrint,
+			locale,
+			config,
+			idMapper,
+			columnNamer,
+			DECIMAL_FORMAT.apply(locale),
+			NUMBER_FORMAT.apply(locale));
 	}
 
-	public PrintSettings(boolean prettyPrint, Locale locale, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer, NumberFormat decimalFormat, NumberFormat numberFormat) {
+	public PrintSettings(
+		boolean prettyPrint,
+		Locale locale,
+		ConqueryConfig config,
+		PrintIdMapper idMapper,
+		Function<SelectResultInfo, String> columnNamer,
+		NumberFormat decimalFormat,
+		NumberFormat numberFormat) {
 		this.prettyPrint = prettyPrint;
 		this.locale = locale;
 		this.currency = config.getPreprocessor().getParsers().getCurrency();
@@ -66,7 +85,9 @@ public class PrintSettings {
 		this.decimalFormat = decimalFormat;
 
 		this.listFormat = prettyPrint ? config.getLocale().getListFormats().getFirst() : UNPRETTY_LIST_FORMAT;
-		this.dateRangeSeparator = prettyPrint ? config.getLocale().findDateRangeSeparator(locale) : UNPRETTY_DATERANGE_SEPERATOR;
+		this.dateRangeSeparator = prettyPrint ? config.getLocale()
+			.findDateRangeSeparator(
+				locale) : UNPRETTY_DATERANGE_SEPERATOR;
 
 		this.dateFormat = config.getLocale().findDateFormat(locale);
 		this.dateFormatter = prettyPrint ? DateTimeFormatter.ofPattern(dateFormat) : UNPRETTY_DATEFORMATTER;

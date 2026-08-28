@@ -5,11 +5,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.shiro.authc.AuthenticationToken;
 
-@SuppressWarnings("serial")
 @Getter
 @RequiredArgsConstructor
 public class DevelopmentToken implements AuthenticationToken {
-	//TODO migrate to user?
 	private final UserId principal;
 	private final String credentials;
 

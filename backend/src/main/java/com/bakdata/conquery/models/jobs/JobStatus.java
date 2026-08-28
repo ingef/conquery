@@ -25,9 +25,6 @@ public class JobStatus implements Comparable<JobStatus> {
 
 	@Override
 	public int compareTo(@NotNull JobStatus o) {
-		return BY_PROGRESS
-					   .thenComparing(BY_LABEL)
-					   .thenComparing(BY_UUID)
-					   .compare(this, o);
+		return BY_PROGRESS.thenComparing(BY_LABEL).thenComparing(BY_UUID).compare(this, o);
 	}
 }

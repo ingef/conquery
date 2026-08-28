@@ -1,14 +1,14 @@
 package com.bakdata.conquery.sql.conversion.model.filter;
 
+import static org.jooq.impl.DSL.*;
+
+import java.util.Arrays;
+
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
-
-import java.util.Arrays;
-
-import static org.jooq.impl.DSL.*;
 
 @RequiredArgsConstructor
 public class MultiSelectCondition implements WhereCondition {
@@ -31,8 +31,9 @@ public class MultiSelectCondition implements WhereCondition {
 
 		// values can contain empty or null Strings
 		String[] valuesWithoutNull = Arrays.stream(values)
-				.filter(value -> !Strings.isNullOrEmpty(value))
-				.toArray(String[]::new);
+			.filter(value -> !Strings.isNullOrEmpty(value))
+			.toArray(
+				String[]::new);
 
 
 		Condition inCondition;

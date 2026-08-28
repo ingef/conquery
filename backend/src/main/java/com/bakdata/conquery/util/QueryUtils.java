@@ -48,11 +48,13 @@ import lombok.extern.slf4j.Slf4j;
 public class QueryUtils {
 
 	private static final int MAX_CONCEPT_LABEL_CONCAT_LENGTH = 70;
+
 	/**
 	 * Provides a starting operator for consumer chains, that does nothing.
 	 */
 	public static <T> Consumer<T> getNoOpEntryPoint() {
-		return (whatever) -> {};
+		return (whatever) -> {
+		};
 	}
 
 	/**
@@ -65,17 +67,31 @@ public class QueryUtils {
 	/**
 	 * Create label for children preferring the children's user label if provided.
 	 */
-	public static String createUserMultiLabel(List<CQElement> elements, String delimiter, String postfix, Locale locale) {
-		return elements.stream().map(elt -> elt.userLabel(locale)).collect(Collectors.joining(delimiter,"", postfix));
+	public static String createUserMultiLabel(
+		List<CQElement> elements,
+		String delimiter,
+		String postfix,
+		Locale locale) {
+		return elements.stream().map(elt -> elt.userLabel(locale)).collect(Collectors.joining(delimiter, "", postfix));
 	}
+
 	/**
 	 * Create label for children the children's default label ignoring user provided label.
 	 */
-	public static String createDefaultMultiLabel(List<CQElement> elements, String delimiter, String postfix, Locale locale) {
-		return elements.stream().map(elt -> elt.defaultLabel(locale)).collect(Collectors.joining(delimiter, "", postfix));
+	public static String createDefaultMultiLabel(
+		List<CQElement> elements,
+		String delimiter,
+		String postfix,
+		Locale locale) {
+		return elements.stream()
+			.map(elt -> elt.defaultLabel(locale))
+			.collect(
+				Collectors.joining(delimiter, "", postfix));
 	}
 
-	public static QueryExecutionContext determineDateAggregatorForContext(QueryExecutionContext ctx, Supplier<Optional<Aggregator<CDateSet>>> altValidityDateAggregator) {
+	public static QueryExecutionContext determineDateAggregatorForContext(
+		QueryExecutionContext ctx,
+		Supplier<Optional<Aggregator<CDateSet>>> altValidityDateAggregator) {
 		if (ctx.getQueryDateAggregator().isPresent()) {
 			return ctx;
 		}
@@ -85,9 +101,9 @@ public class QueryUtils {
 	public static String makeQueryLabel(final Visitable query, PrintSettings cfg, ManagedExecutionId id) {
 		final StringBuilder sb = new StringBuilder();
 
-		final Map<Class<? extends Visitable>, List<Visitable>> sortedContents =
-				Visitable.stream(query)
-						 .collect(Collectors.groupingBy(Visitable::getClass));
+		final Map<Class<? extends Visitable>, List<Visitable>> sortedContents = Visitable.stream(query)
+			.collect(
+				Collectors.groupingBy(Visitable::getClass));
 
 		int sbStartSize = sb.length();
 
@@ -118,15 +134,17 @@ public class QueryUtils {
 			final AtomicInteger length = new AtomicInteger();
 
 			sortedContents.get(CQConcept.class)
-						  .stream()
-						  .map(CQConcept.class::cast)
+				.stream()
+				.map(CQConcept.class::cast)
 
-						  .map(c -> makeLabelWithRootAndChild(c, cfg))
-						  .filter(Predicate.not(Strings::isNullOrEmpty))
-						  .distinct()
+				.map(c -> makeLabelWithRootAndChild(c, cfg))
+				.filter(
+					Predicate.not(Strings::isNullOrEmpty))
+				.distinct()
 
-						  .takeWhile(elem -> length.addAndGet(elem.length()) < MAX_CONCEPT_LABEL_CONCAT_LENGTH)
-						  .forEach(label -> sb.append(label).append(" "));
+				.takeWhile(elem -> length.addAndGet(elem.length()) < MAX_CONCEPT_LABEL_CONCAT_LENGTH)
+				.forEach(
+					label -> sb.append(label).append(" "));
 
 			// Last entry will output one Space that we don't want
 			if (!sb.isEmpty()) {
@@ -158,7 +176,7 @@ public class QueryUtils {
 		// Concat everything with dashes
 		return label.replace(" ", "-");
 	}
-	
+
 	/**
 	 * Checks if the query requires to resolve external ids.
 	 */
@@ -191,7 +209,7 @@ public class QueryUtils {
 
 		@Override
 		public void accept(Visitable element) {
-			if(containsOthersElements){
+			if (containsOthersElements) {
 				return;
 			}
 
@@ -201,8 +219,7 @@ public class QueryUtils {
 
 				if (reusedQuery == null) {
 					reusedQuery = (CQReusedQuery) element;
-				}
-				else {
+				} else {
 					containsOthersElements = true;
 				}
 				return;
@@ -250,16 +267,16 @@ public class QueryUtils {
 
 		@Override
 		public void accept(Visitable element) {
-			if(element instanceof final CQConcept cqConcept){
+			if (element instanceof final CQConcept cqConcept) {
 
 				// Excluded Concepts are not available
-				if(cqConcept.isExcludeFromSecondaryId()){
+				if (cqConcept.isExcludeFromSecondaryId()) {
 					return;
 				}
 
 				for (Connector connector : cqConcept.getConcept().getConnectors()) {
 					for (Column column : connector.getResolvedTable().getColumns()) {
-						if(column.getSecondaryId() == null){
+						if (column.getSecondaryId() == null) {
 							continue;
 						}
 

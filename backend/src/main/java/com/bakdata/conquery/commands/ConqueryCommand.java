@@ -21,14 +21,18 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 	}
 
 	@Override
-	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
-		final Environment environment = new Environment(bootstrap.getApplication().getName(),
-														bootstrap.getObjectMapper(),
-														bootstrap.getValidatorFactory(),
-														bootstrap.getMetricRegistry(),
-														bootstrap.getClassLoader(),
-														bootstrap.getHealthCheckRegistry(),
-														configuration);
+	protected void run(
+		Bootstrap<ConqueryConfig> bootstrap,
+		Namespace namespace,
+		ConqueryConfig configuration) throws Exception {
+		final Environment environment = new Environment(
+			bootstrap.getApplication().getName(),
+			bootstrap.getObjectMapper(),
+			bootstrap.getValidatorFactory(),
+			bootstrap.getMetricRegistry(),
+			bootstrap.getClassLoader(),
+			bootstrap.getHealthCheckRegistry(),
+			configuration);
 		configuration.getMetricsFactory().configure(environment.lifecycle(), bootstrap.getMetricRegistry());
 		configuration.getServerFactory().configure(environment);
 
@@ -45,15 +49,13 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 				public void run() {
 					try {
 						lifeCycle.stop();
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						log.error("Interrupted during shutdown", e);
 					}
 				}
 			});
-		}
-		catch(Throwable t) {
-			log.error("Uncaught Exception in "+getName(), t);
+		} catch (Throwable t) {
+			log.error("Uncaught Exception in " + getName(), t);
 			lifeCycle.stop();
 			throw t;
 		}
@@ -67,6 +69,9 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 	 * @param configuration the configuration object
 	 * @throws Exception if something goes wrong
 	 */
-	protected abstract void run(Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception;
+	protected abstract void run(
+		Environment environment,
+		Namespace namespace,
+		ConqueryConfig configuration) throws Exception;
 
 }

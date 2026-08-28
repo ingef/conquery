@@ -33,31 +33,33 @@ class IntersectAggregationAction implements SqlAggregationAction {
 	}
 
 	@Override
-	public ColumnDateRange getOverlapValidityDate(DateAggregationDates dateAggregationDates, SqlFunctionProvider functionProvider) {
+	public ColumnDateRange getOverlapValidityDate(
+		DateAggregationDates dateAggregationDates,
+		SqlFunctionProvider functionProvider) {
 
 		Field<Date> rangeStart = functionProvider.greatest(dateAggregationDates.allStarts());
 		Field<Date> rangeEnd = functionProvider.least(dateAggregationDates.allEnds());
 
 		return ColumnDateRange.of(
-				rangeStart.as(DateAggregationCte.RANGE_START),
-				rangeEnd.as(DateAggregationCte.RANGE_END)
+			rangeStart.as(DateAggregationCte.RANGE_START),
+			rangeEnd.as(DateAggregationCte.RANGE_END)
 		);
 	}
 
 	@Override
-	public List<SqlSelect> getIntermediateTableSelects(DateAggregationDates dateAggregationDates, List<SqlSelect> carryThroughSelects) {
+	public List<SqlSelect> getIntermediateTableSelects(
+		DateAggregationDates dateAggregationDates,
+		List<SqlSelect> carryThroughSelects) {
 
-		List<FieldWrapper<?>> nulledRangeStartAndEnd =
-				Stream.of(
-							  DSL.inline(null, Date.class).as(DateAggregationCte.RANGE_START),
-							  DSL.inline(null, Date.class).as(DateAggregationCte.RANGE_END)
-					  )
-					  .map(FieldWrapper::new)
-					  .collect(Collectors.toList());
+		List<FieldWrapper<?>> nulledRangeStartAndEnd = Stream.of(
+			DSL.inline(null, Date.class).as(DateAggregationCte.RANGE_START),
+			DSL.inline(null, Date.class).as(DateAggregationCte.RANGE_END)
+		).map(FieldWrapper::new).collect(Collectors.toList());
 
 		return Stream.of(nulledRangeStartAndEnd, carryThroughSelects)
-					 .flatMap(Collection::stream)
-					 .collect(Collectors.toList());
+			.flatMap(Collection::stream)
+			.collect(
+				Collectors.toList());
 	}
 
 	@Override

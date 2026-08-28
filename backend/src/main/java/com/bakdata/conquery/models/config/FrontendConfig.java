@@ -1,13 +1,12 @@
 package com.bakdata.conquery.models.config;
 
-import java.net.URI;
-import java.net.URL;
-
-import javax.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import java.net.URI;
+import java.net.URL;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.fasterxml.jackson.annotation.JsonAlias;
@@ -77,7 +76,7 @@ public class FrontendConfig {
 	@ValidationMethod(message = "Percentiles must be concrete and within 0 - 100")
 	@JsonIgnore
 	public boolean isValidPercentiles() {
-		if(!visualisationPercentiles.hasLowerBound() || !visualisationPercentiles.hasUpperBound()){
+		if (!visualisationPercentiles.hasLowerBound() || !visualisationPercentiles.hasUpperBound()) {
 			return false;
 		}
 

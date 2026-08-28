@@ -77,8 +77,8 @@ public class MatchingStats {
 			}
 
 			return CDateRange.of(
-					minDate == Integer.MAX_VALUE ? Integer.MIN_VALUE : minDate,
-					maxDate == Integer.MIN_VALUE ? Integer.MAX_VALUE : maxDate
+				minDate == Integer.MAX_VALUE ? Integer.MIN_VALUE : minDate,
+				maxDate == Integer.MIN_VALUE ? Integer.MAX_VALUE : maxDate
 			);
 		}
 

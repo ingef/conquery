@@ -88,8 +88,11 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(secondaryIdDescriptionStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
+	public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(
+		String pathName,
+		ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(
+			secondaryIdDescriptionStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
 	}
 
 	@Override
@@ -163,8 +166,11 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, ObjectMapper objectMapper) {
-		return StoreMappings.identifiable(internToExternStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
+	public IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(
+		String pathName,
+		ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(
+			internToExternStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
 	}
 
 	@Override

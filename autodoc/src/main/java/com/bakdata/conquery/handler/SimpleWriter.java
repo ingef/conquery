@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.base.Joiner;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,31 +21,32 @@ public class SimpleWriter implements Closeable {
 	}
 
 	public void heading(String str) throws IOException {
-		line("\n# "+str);
+		line("\n# " + str);
 	}
-	
+
 	public void subHeading(String str) throws IOException {
-		line("\n---\n\n## "+str);
+		line("\n---\n\n## " + str);
 	}
-	
+
 	public void subSubHeading(String str) throws IOException {
-		line("\n### "+str);
+		line("\n### " + str);
 	}
-	
+
 	public void tableHeader(String... header) throws IOException {
-		line("\n| "+Joiner.on(" | ").join(header)+" |");
-		line("| "+Stream.generate(()->"---").limit(header.length).collect(Collectors.joining(" | "))+" |");
+		line("\n| " + Joiner.on(" | ").join(header) + " |");
+		line("| " + Stream.generate(() -> "---").limit(header.length).collect(Collectors.joining(" | ")) + " |");
 	}
+
 	public void table(String... values) throws IOException {
-		line("| "+Joiner.on(" | ").join(values)+" | ");
+		line("| " + Joiner.on(" | ").join(values) + " | ");
 	}
-	
+
 	public void paragraph(String str) throws IOException {
-		line(str+"\n");
+		line(str + "\n");
 	}
 
 	public void line(String str) throws IOException {
-		writer.write(str+"\n");
+		writer.write(str + "\n");
 		log.trace(str);
 	}
 }

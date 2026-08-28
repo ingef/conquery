@@ -1,5 +1,11 @@
 package com.bakdata.conquery.metrics;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Priority;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.PreMatching;
 import java.security.Principal;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -16,12 +22,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Priority;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.container.ContainerRequestFilter;
-import jakarta.ws.rs.container.PreMatching;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -80,11 +80,11 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 	/**
 	 * Count the number of users who have issued a request in the configured duration.
 	 */
-	private Gauge<Integer> activeUsersGauge(Group group){
+	private Gauge<Integer> activeUsersGauge(Group group) {
 		return () -> {
 			int active = 0;
 			for (Map.Entry<User, LocalDateTime> usageTimes : activeUsers.row(group).entrySet()) {
-				if(usageTimes.getValue().isBefore(LocalDateTime.now().minus(activeUserDuration))){
+				if (usageTimes.getValue().isBefore(LocalDateTime.now().minus(activeUserDuration))) {
 					continue;
 				}
 

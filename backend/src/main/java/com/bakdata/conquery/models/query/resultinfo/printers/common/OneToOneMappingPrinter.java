@@ -9,7 +9,7 @@ public record OneToOneMappingPrinter(InternToExternMapper mapper, Printer<String
 	@Override
 	public Object apply(@NotNull String f) {
 		String external = mapper.external(f);
-		if (external == null){
+		if (external == null) {
 			return f;
 		}
 		return andThen.apply(external);

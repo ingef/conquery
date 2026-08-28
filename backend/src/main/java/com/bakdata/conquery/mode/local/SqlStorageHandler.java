@@ -25,20 +25,22 @@ public class SqlStorageHandler implements StorageHandler {
 
 	@Override
 	public Stream<String> lookupColumnValues(NamespaceStorage namespaceStorage, Column column) {
-		Select<Record1<Object>> columValuesQuery = dslContext.selectDistinct(DSL.field(DSL.name(column.getName())))
-															 .from(DSL.table(DSL.name(column.getTable().getName())));
+		Select<Record1<Object>> columValuesQuery = dslContext.selectDistinct(
+			DSL.field(DSL.name(column.getName()))).from(DSL.table(DSL.name(column.getTable().getName())));
 		return queryForDistinctValues(columValuesQuery);
 	}
 
 	private Stream<String> queryForDistinctValues(Select<Record1<Object>> columValuesQuery) {
 		try {
 			return sqlExecutionService.fetchStream(columValuesQuery)
-									  .map(record -> record.get(0, String.class))
-									  // the database might return null or a blank string as a distinct value
-									  .filter(value -> value != null && !value.isBlank());
-		}
-		catch (Exception e) {
-			log.error("Expecting exactly 1 column in Result when querying for distinct values of a column. Query: {}.", columValuesQuery, e);
+				.map(record -> record.get(0, String.class))
+				// the database might return null or a blank string as a distinct value
+				.filter(value -> value != null && !value.isBlank());
+		} catch (Exception e) {
+			log.error(
+				"Expecting exactly 1 column in Result when querying for distinct values of a column. Query: {}.",
+				columValuesQuery,
+				e);
 		}
 		return Stream.empty();
 	}

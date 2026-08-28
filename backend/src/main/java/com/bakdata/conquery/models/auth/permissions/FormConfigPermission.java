@@ -11,13 +11,13 @@ import org.jetbrains.annotations.TestOnly;
 public class FormConfigPermission extends StringPermissionBuilder {
 
 	public static final String DOMAIN = "form-config";
-	
+
 
 	public static final EnumSet<Ability> ALLOWED_ABILITIES = AbilitySets.FORM_CONFIG_CREATOR;
-	
+
 	public static final FormConfigPermission INSTANCE = new FormConfigPermission();
-	
-	
+
+
 	private ConqueryPermission instancePermission(Ability ability, FormConfigId instance) {
 		return instancePermission(ability, instance.toString());
 	}

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.identifiable;
 
+import jakarta.validation.Valid;
 import java.util.Collection;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -8,7 +9,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
-import jakarta.validation.Valid;
 
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.google.common.collect.ForwardingMap;
@@ -29,16 +29,16 @@ public class IdMap<ID extends Id, V extends Identifiable<? extends ID, ?>> exten
 
 	public IdMap(Collection<V> collection) {
 		map = new ConcurrentHashMap<>();
-		for(V value : collection) {
+		for (V value : collection) {
 			map.put(value.getId(), value);
 		}
 	}
-	
+
 	@Override
-	public Set<Map.Entry <ID, V>> entrySet(){
+	public Set<Map.Entry<ID, V>> entrySet() {
 		return map.entrySet();
 	}
-	
+
 	@Override
 	public Collection<V> values() {
 		return map.values();
@@ -47,7 +47,7 @@ public class IdMap<ID extends Id, V extends Identifiable<? extends ID, ?>> exten
 	public Stream<V> stream() {
 		return map.values().stream();
 	}
-	
+
 	@Override
 	public int size() {
 		return map.size();
@@ -55,8 +55,8 @@ public class IdMap<ID extends Id, V extends Identifiable<? extends ID, ?>> exten
 
 	public V getOrFail(ID id) {
 		V res = map.get(id);
-		if(res==null) {
-			throw new NoSuchElementException("Could not find an element called '"+id+"'");
+		if (res == null) {
+			throw new NoSuchElementException("Could not find an element called '" + id + "'");
 		}
 		return res;
 	}
@@ -64,41 +64,43 @@ public class IdMap<ID extends Id, V extends Identifiable<? extends ID, ?>> exten
 	private void addToMap(V entry) {
 		// The following cast should be unnecessary, but intellij is complaining without it. Please leave it here for now
 		V old = (V) map.put(entry.getId(), entry);
-		if(old != null && !old.equals(entry)) {
-			throw new IllegalStateException("The element "+entry.getId()+" is present twice in this map.");
+		if (old != null && !old.equals(entry)) {
+			throw new IllegalStateException("The element " + entry.getId() + " is present twice in this map.");
 		}
 	}
 
 	public Optional<V> getOptional(ID id) {
 		return Optional.ofNullable(map.get(id));
 	}
-	
+
 	public boolean add(V entry) {
 		addToMap(entry);
 		return true;
 	}
-	
+
 	public V update(V entry) {
 		return map.put(entry.getId(), entry);
 	}
-	
+
 	public V remove(ID id) {
 		V obj = map.remove(id);
 		return obj;
 	}
-	
-	@Override @Deprecated
+
+	@Override
+	@Deprecated
 	public V remove(Object object) {
 		return super.remove(object);
 	}
-	
-	@Override @Deprecated
+
+	@Override
+	@Deprecated
 	public V put(ID key, V value) {
 		return super.put(key, value);
 	}
 
 	@Override
-	protected Map <ID, V> delegate() {
+	protected Map<ID, V> delegate() {
 		return map;
 	}
 }

@@ -33,7 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(onConstructor_ = {@JsonCreator})
-public class ShardResult  extends NamespaceMessage {
+public class ShardResult extends NamespaceMessage {
 
 
 	@ToString.Include
@@ -68,14 +68,21 @@ public class ShardResult  extends NamespaceMessage {
 		finishTime = LocalDateTime.now();
 
 
-		log.info("FINISHED Query[{}] with {} results within {}", executionId, results.size(), Duration.between(startTime, finishTime));
+		log.info(
+			"FINISHED Query[{}] with {} results within {}",
+			executionId,
+			results.size(),
+			Duration.between(startTime, finishTime));
 
 		this.results = results;
 
 		// Truncate here because too large logs will crash/lock the process
-		log.trace("Collected Results for execution {}\n{}", executionId, StringUtils.truncate(results.toString(), 1000) + " (...)");
+		log.trace(
+			"Collected Results for execution {}\n{}",
+			executionId,
+			StringUtils.truncate(results.toString(), 1000) + " (...)");
 	}
-	
+
 	protected void addResult(DistributedExecutionManager executionManager) {
 		executionManager.handleQueryResult(this, ((ManagedQuery) executionManager.getExecution(executionId)));
 	}

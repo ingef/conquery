@@ -67,7 +67,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 		try (Stream<Group> allGroups = getMetaStorage().getAllGroups()) {
 
-			for (Iterator<Group> it = allGroups.iterator(); it.hasNext(); ) {
+			for (Iterator<Group> it = allGroups.iterator(); it.hasNext();) {
 				Group group = it.next();
 				if (!group.containsUser(getId())) {
 					continue;
@@ -184,8 +184,8 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	@Getter
 	public class ShiroUserAdapter extends FilteredUser {
 
-		private final ThreadLocal<ConqueryAuthenticationInfo> authenticationInfo =
-				ThreadLocal.withInitial(() -> new ConqueryAuthenticationInfo(User.this, null, null, false, null));
+		private final ThreadLocal<ConqueryAuthenticationInfo> authenticationInfo = ThreadLocal.withInitial(
+			() -> new ConqueryAuthenticationInfo(User.this, null, null, false, null));
 
 		@Override
 		public Object getPrincipal() {

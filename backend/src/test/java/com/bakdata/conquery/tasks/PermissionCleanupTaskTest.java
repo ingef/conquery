@@ -29,114 +29,129 @@ import org.junit.jupiter.api.Test;
 class PermissionCleanupTaskTest {
 
 
-    private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
+	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
-    @AfterEach
-    public void teardownAfterEach() {
-        STORAGE.clear();
-    }
+	@AfterEach
+	public void teardownAfterEach() {
+		STORAGE.clear();
+	}
 
-    @Test
-    void doNotDeletePermissionValidReference() {
-        assertThat(STORAGE.getAllExecutions()).isEmpty();
+	@Test
+	void doNotDeletePermissionValidReference() {
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 
-        final ManagedQuery managedQuery = createManagedQuery();
-        // Saving the Execution
-        User user = new User("test", "test", STORAGE);
-        STORAGE.updateUser(user);
-        user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQuery.getId()));
+		final ManagedQuery managedQuery = createManagedQuery();
+		// Saving the Execution
+		User user = new User("test", "test", STORAGE);
+		STORAGE.updateUser(user);
+		user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQuery.getId()));
 
-        deleteQueryPermissionsWithMissingRef(STORAGE, STORAGE.getAllUsers());
+		deleteQueryPermissionsWithMissingRef(STORAGE, STORAGE.getAllUsers());
 
-        assertThat(user.getPermissions()).containsOnly(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQuery.getId()));
+		assertThat(user.getPermissions()).containsOnly(
+			ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQuery.getId()));
 
-    }
+	}
 
-    private ManagedQuery createManagedQuery() {
-        final CQAnd root = new CQAnd();
-        root.setChildren(new ArrayList<>());
+	private ManagedQuery createManagedQuery() {
+		final CQAnd root = new CQAnd();
+		root.setChildren(new ArrayList<>());
 
-        ConceptQuery query = new ConceptQuery(root);
+		ConceptQuery query = new ConceptQuery(root);
 
-		final ManagedQuery managedQuery = new ManagedQuery(query, new UserId("test_user"), new DatasetId("test"), STORAGE, null, null);
+		final ManagedQuery managedQuery = new ManagedQuery(
+			query,
+			new UserId("test_user"),
+			new DatasetId("test"),
+			STORAGE,
+			null,
+			null);
 
-        managedQuery.setCreationTime(LocalDateTime.now().minusDays(1));
+		managedQuery.setCreationTime(LocalDateTime.now().minusDays(1));
 
-        STORAGE.addExecution(managedQuery);
+		STORAGE.addExecution(managedQuery);
 
-        return managedQuery;
-    }
+		return managedQuery;
+	}
 
-    @Test
-    void doDeletePermissionInvalidReference() {
-        assertThat(STORAGE.getAllExecutions()).isEmpty();
+	@Test
+	void doDeletePermissionInvalidReference() {
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 
-        final ManagedQuery managedQuery = createManagedQuery();
-        // Removing the execution
-        STORAGE.removeExecution(managedQuery.getId());
-        User user = new User("test", "test", STORAGE);
-        STORAGE.updateUser(user);
-        user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQuery.getId()));
+		final ManagedQuery managedQuery = createManagedQuery();
+		// Removing the execution
+		STORAGE.removeExecution(managedQuery.getId());
+		User user = new User("test", "test", STORAGE);
+		STORAGE.updateUser(user);
+		user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQuery.getId()));
 
-        deleteQueryPermissionsWithMissingRef(STORAGE, STORAGE.getAllUsers());
+		deleteQueryPermissionsWithMissingRef(STORAGE, STORAGE.getAllUsers());
 
-        assertThat(user.getPermissions()).isEmpty();
+		assertThat(user.getPermissions()).isEmpty();
 
-    }
+	}
 
-    @Test
-    void doDeletePartialPermissionWithInvalidReference() {
-        assertThat(STORAGE.getAllExecutions()).isEmpty();
+	@Test
+	void doDeletePartialPermissionWithInvalidReference() {
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 
-        final ManagedQuery managedQuery1 = createManagedQuery();
-        final ManagedQuery managedQuery2 = createManagedQuery();
-        // Removing the second execution
-        STORAGE.removeExecution(managedQuery2.getId());
-        User user = new User("test", "test", STORAGE);
-        STORAGE.updateUser(user);
-        user.addPermission(
-				// Build a permission with multiple instances
-                new WildcardPermission(List.of(
-                        Set.of(ExecutionPermission.DOMAIN),
-                        Set.of(Ability.READ.toString().toLowerCase()),
-                        Set.of(managedQuery1.getId().toString(), managedQuery2.getId().toString())), Instant.now()));
+		final ManagedQuery managedQuery1 = createManagedQuery();
+		final ManagedQuery managedQuery2 = createManagedQuery();
+		// Removing the second execution
+		STORAGE.removeExecution(managedQuery2.getId());
+		User user = new User("test", "test", STORAGE);
+		STORAGE.updateUser(user);
+		user.addPermission(
+			// Build a permission with multiple instances
+			new WildcardPermission(
+				List.of(
+					Set.of(ExecutionPermission.DOMAIN),
+					Set.of(Ability.READ.toString().toLowerCase()),
+					Set.of(managedQuery1.getId().toString(), managedQuery2.getId().toString())),
+				Instant.now()));
 
-        deleteQueryPermissionsWithMissingRef(STORAGE, STORAGE.getAllUsers());
+		deleteQueryPermissionsWithMissingRef(STORAGE, STORAGE.getAllUsers());
 
-        assertThat(user.getPermissions()).containsOnly(ExecutionPermission.onInstance(Ability.READ, managedQuery1.getId()));
+		assertThat(user.getPermissions()).containsOnly(
+			ExecutionPermission.onInstance(Ability.READ, managedQuery1.getId()));
 
-    }
+	}
 
 
-    @Test
-    void doDeletePermissionsOfOwnedReference() {
-        assertThat(STORAGE.getAllExecutions()).isEmpty();
+	@Test
+	void doDeletePermissionsOfOwnedReference() {
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 
-        // Created owned execution
-        final ManagedQuery managedQueryOwned = createManagedQuery();
-        // Setup user
+		// Created owned execution
+		final ManagedQuery managedQueryOwned = createManagedQuery();
+		// Setup user
 		User user = new User("test", "test", STORAGE);
 		User user2 = new User("test2", "test2", STORAGE);
 
-        STORAGE.updateUser(user);
-        user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQueryOwned.getId()));
+		STORAGE.updateUser(user);
+		user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQueryOwned.getId()));
 
-        managedQueryOwned.setOwner(user.getId());
-        STORAGE.updateExecution(managedQueryOwned);
+		managedQueryOwned.setOwner(user.getId());
+		STORAGE.updateExecution(managedQueryOwned);
 
-        // Created not owned execution
-        final ManagedQuery managedQueryNotOwned = createManagedQuery();
-        // Setup user
-        user.addPermission(ExecutionPermission.onInstance(Ability.READ, managedQueryNotOwned.getId()));
+		// Created not owned execution
+		final ManagedQuery managedQueryNotOwned = createManagedQuery();
+		// Setup user
+		user.addPermission(ExecutionPermission.onInstance(Ability.READ, managedQueryNotOwned.getId()));
 
-        // Set owner
-        managedQueryNotOwned.setOwner(user2.getId());
-        STORAGE.updateExecution(managedQueryNotOwned);
+		// Set owner
+		managedQueryNotOwned.setOwner(user2.getId());
+		STORAGE.updateExecution(managedQueryNotOwned);
 
-        deletePermissionsOfOwnedInstances(STORAGE, ExecutionPermission.DOMAIN.toLowerCase(), ManagedExecutionId.Parser.INSTANCE, STORAGE::getExecution);
+		deletePermissionsOfOwnedInstances(
+			STORAGE,
+			ExecutionPermission.DOMAIN.toLowerCase(),
+			ManagedExecutionId.Parser.INSTANCE,
+			STORAGE::getExecution);
 
-        assertThat(user.getPermissions()).containsOnly(ExecutionPermission.onInstance(Ability.READ, managedQueryNotOwned.getId()));
+		assertThat(user.getPermissions()).containsOnly(
+			ExecutionPermission.onInstance(Ability.READ, managedQueryNotOwned.getId()));
 
-    }
+	}
 
 }

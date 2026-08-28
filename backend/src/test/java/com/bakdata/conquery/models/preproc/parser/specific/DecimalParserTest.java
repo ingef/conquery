@@ -14,11 +14,11 @@ import org.junit.jupiter.api.Test;
 class DecimalParserTest {
 
 	@Test
-	public void test(){
+	public void test() {
 		final DecimalParser parser = new DecimalParser(new ConqueryConfig());
 
-		parser.addLine(BigDecimal.valueOf(10,1000));
-		parser.addLine(BigDecimal.valueOf(30,1000));
+		parser.addLine(BigDecimal.valueOf(10, 1000));
+		parser.addLine(BigDecimal.valueOf(30, 1000));
 
 		assertThat(parser.decideType()).isInstanceOf(ScaledDecimalStore.class);
 

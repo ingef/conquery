@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
 import java.net.URI;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -23,13 +22,13 @@ import org.apache.shiro.authc.AuthenticationInfo;
 public class ConqueryAuthenticationInfo implements AuthenticationInfo {
 
 	private final SubjectPrincipalCollection principals;
-	
+
 	/**
 	 * The credential a realm used for authentication.
 	 */
 	private final Object credentials;
-	
-	
+
+
 	/**
 	 * A realm can indicate whether a logout button is shown for the user or not
 	 */
@@ -42,11 +41,11 @@ public class ConqueryAuthenticationInfo implements AuthenticationInfo {
 	private final URI frontChannelLogout;
 
 	public ConqueryAuthenticationInfo(
-			Subject subject,
-			Object credentials,
-			ConqueryAuthenticationRealm realm,
-			boolean displayLogout,
-			@Nullable URI frontChannelLogout
+		Subject subject,
+		Object credentials,
+		ConqueryAuthenticationRealm realm,
+		boolean displayLogout,
+		@Nullable URI frontChannelLogout
 	) {
 		this.credentials = credentials;
 		this.displayLogout = displayLogout;

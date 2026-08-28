@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.query.filter.event;
 
-import java.util.Set;
 import jakarta.validation.constraints.NotNull;
+import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
@@ -27,7 +27,7 @@ public class MultiSelectFilterNode extends EventFilterNode<Set<String>> {
 	private Column column;
 
 	private final boolean empty;
-	
+
 
 	public MultiSelectFilterNode(Column column, Set<String> filterValue) {
 		super(filterValue);
@@ -65,4 +65,4 @@ public class MultiSelectFilterNode extends EventFilterNode<Set<String>> {
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		requiredTables.add(column.getTable());
 	}
-	}
+}

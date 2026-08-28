@@ -16,20 +16,25 @@ public class CachedStoreTest {
 
 	@RegisterExtension
 	private final static XodusEnvironmentExtension ENVIRONMENT = new XodusEnvironmentExtension();
-	private final XodusStore xodusStore = new XodusStore(ENVIRONMENT, getClass().getSimpleName(), (env) -> {}, (env) -> {});
+	private final XodusStore xodusStore = new XodusStore(ENVIRONMENT, getClass().getSimpleName(), (env) -> {
+	}, (env) -> {
+	});
 	private final SerializingStore<String, String> backingStore = new SerializingStore<>(
-			xodusStore,
-			null,
-			Jackson.MAPPER,
-			String.class,
-			String.class,
-			false,
-			false,
-			null,
-			new DirectExecutorService()
+		xodusStore,
+		null,
+		Jackson.MAPPER,
+		String.class,
+		String.class,
+		false,
+		false,
+		null,
+		new DirectExecutorService()
 
 	);
-	private final CachedStore<String, String> cachedStore = new CachedStore<>(backingStore, CaffeineSpec.parse("softValues"), null);
+	private final CachedStore<String, String> cachedStore = new CachedStore<>(
+		backingStore,
+		CaffeineSpec.parse("softValues"),
+		null);
 
 	@BeforeEach
 	public void beforeEach() {
@@ -46,18 +51,22 @@ public class CachedStoreTest {
 
 		// Backing Store
 		assertThat(backingStore.getAllKeys()).as("All expected keys in backing store")
-											 .containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("t1_%d"::formatted).toArray(String[]::new));
+			.containsExactlyInAnyOrder(
+				IntStream.range(0, 10).mapToObj("t1_%d"::formatted).toArray(String[]::new));
 
 
 		assertThat(backingStore.getAll()).as("All expected values in backing store")
-										 .containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
+			.containsExactlyInAnyOrder(
+				IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
 
 		// Cached Store (getAllKeys only delegates)
 		assertThat(cachedStore.getAllKeys()).as("All expected keys in cached store")
-											.containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("t1_%d"::formatted).toArray(String[]::new));
+			.containsExactlyInAnyOrder(
+				IntStream.range(0, 10).mapToObj("t1_%d"::formatted).toArray(String[]::new));
 
 		assertThat(cachedStore.getAll()).as("All expected values in cached store")
-										.containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
+			.containsExactlyInAnyOrder(
+				IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
 
 
 		// Retrieve individually
@@ -76,10 +85,12 @@ public class CachedStoreTest {
 
 		// Cached Store
 		assertThat(cachedStore.getAllKeys()).as("All expected keys in backing store")
-											.containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("t2_%d"::formatted).toArray(String[]::new));
+			.containsExactlyInAnyOrder(
+				IntStream.range(0, 10).mapToObj("t2_%d"::formatted).toArray(String[]::new));
 
 		assertThat(cachedStore.getAll()).as("All expected values in backing store")
-										.containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
+			.containsExactlyInAnyOrder(
+				IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
 
 
 		// Retrieve individually
@@ -100,7 +111,8 @@ public class CachedStoreTest {
 		}
 
 		assertThat(backingStore.getAll()).as("All expected values in backing store")
-										 .containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
+			.containsExactlyInAnyOrder(
+				IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
 
 		// Update values (should not succeed as keys are already present)
 		for (int i : IntStream.range(0, 10).toArray()) {
@@ -114,7 +126,8 @@ public class CachedStoreTest {
 		}
 
 		assertThat(backingStore.getAll()).as("All expected values in backing store")
-										 .containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
+			.containsExactlyInAnyOrder(
+				IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
 	}
 
 	@Test
@@ -129,7 +142,8 @@ public class CachedStoreTest {
 		}
 
 		assertThat(backingStore.getAll()).as("All expected values in backing store")
-										 .containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
+			.containsExactlyInAnyOrder(
+				IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
 
 		// Update values
 		for (int i : IntStream.range(0, 10).toArray()) {
@@ -142,7 +156,8 @@ public class CachedStoreTest {
 			assertThat(cachedStore.get("t4_" + i)).isEqualTo("%d_updated".formatted(i));
 
 			assertThat(backingStore.getAll()).as("All expected values in backing store")
-											 .containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("%d_updated"::formatted).toArray(String[]::new));
+				.containsExactlyInAnyOrder(
+					IntStream.range(0, 10).mapToObj("%d_updated"::formatted).toArray(String[]::new));
 		}
 
 		// Check for equality
@@ -159,10 +174,12 @@ public class CachedStoreTest {
 
 
 		assertThat(cachedStore.getAll()).as("All expected values in cached store")
-										.containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
+			.containsExactlyInAnyOrder(
+				IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
 
 		assertThat(backingStore.getAll()).as("All expected values in backing store")
-										 .containsExactlyInAnyOrder(IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
+			.containsExactlyInAnyOrder(
+				IntStream.range(0, 10).mapToObj("%d"::formatted).toArray(String[]::new));
 
 		// Remove half of the entries
 		for (int i : IntStream.range(0, 5).toArray()) {
@@ -171,10 +188,12 @@ public class CachedStoreTest {
 
 
 		assertThat(cachedStore.getAll()).as("All expected values in cached store")
-										 .containsExactlyInAnyOrder(IntStream.range(5, 10).mapToObj("%d"::formatted).toArray(String[]::new));
+			.containsExactlyInAnyOrder(
+				IntStream.range(5, 10).mapToObj("%d"::formatted).toArray(String[]::new));
 
 		assertThat(backingStore.getAll()).as("All expected values in backing store")
-										 .containsExactlyInAnyOrder(IntStream.range(5, 10).mapToObj("%d"::formatted).toArray(String[]::new));
+			.containsExactlyInAnyOrder(
+				IntStream.range(5, 10).mapToObj("%d"::formatted).toArray(String[]::new));
 
 		// Check retrieval of deleted values
 		for (int i : IntStream.range(0, 5).toArray()) {

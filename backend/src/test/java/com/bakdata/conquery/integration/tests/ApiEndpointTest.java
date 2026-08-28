@@ -14,9 +14,13 @@ public class ApiEndpointTest implements ProgrammaticIntegrationTest {
 
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
-		List<EndPoint> expectedEndpoints = READER.readValue(LoadingUtil.openResource("/tests/endpoints/apiEndpointInfo.json"));
+		List<EndPoint> expectedEndpoints = READER.readValue(
+			LoadingUtil.openResource("/tests/endpoints/apiEndpointInfo.json"));
 
-		DropwizardResourceConfig jerseyConfig = testConquery.getDropwizard().getEnvironment().jersey().getResourceConfig();
+		DropwizardResourceConfig jerseyConfig = testConquery.getDropwizard()
+			.getEnvironment()
+			.jersey()
+			.getResourceConfig();
 
 		List<EndPoint> resources = EndpointTestHelper.collectEndpoints(jerseyConfig);
 

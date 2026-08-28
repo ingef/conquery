@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.exceptions;
 
-import java.util.Objects;
 
 /**
  * This exception if thrown if any value could not be parsed as intended.
@@ -18,10 +17,10 @@ public class ParsingException extends RuntimeException {
 	}
 
 	public static ParsingException of(String value, String format) {
-		return new ParsingException("Failed to parse '"+Objects.toString(value)+"' as "+format);
+		return new ParsingException("Failed to parse '" + value + "' as " + format);
 	}
-	
+
 	public static ParsingException of(String value, String format, Throwable cause) {
-		return new ParsingException("Failed to parse '"+Objects.toString(value)+"' as "+format, cause);
+		return new ParsingException("Failed to parse '" + value + "' as " + format, cause);
 	}
 }

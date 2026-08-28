@@ -20,6 +20,7 @@ import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 
 @Getter
 @ToString
@@ -33,7 +34,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final boolean withRelativeEventDate;
 	private final boolean withObservationScope;
 
-	public FormQueryPlan(List<DateContext> dateContexts, ArrayConceptQueryPlan features, boolean withObservationScope ) {
+	public FormQueryPlan(List<DateContext> dateContexts, ArrayConceptQueryPlan features, boolean withObservationScope) {
 		this.dateContexts = dateContexts;
 		this.features = features;
 		this.withObservationScope = withObservationScope;
@@ -53,7 +54,8 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		for (DateContext dateContext : dateContexts) {
 			if ((dateContext.getEventDate() == null) == withRelativeEventDate) {
-				throw new IllegalStateException("QueryPlan has absolute AND relative date contexts. Only one kind is allowed.");
+				throw new IllegalStateException(
+					"QueryPlan has absolute AND relative date contexts. Only one kind is allowed.");
 			}
 		}
 		constantCount = calculateConstantCount(withRelativeEventDate, this.withObservationScope);
@@ -86,8 +88,9 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			dateRestriction.retainAll(dateContext.getDateRange());
 
 			// Reference the dates per sub-query, don't accumulate dates of all sub-queries
-			QueryExecutionContext innerContext = QueryUtils.determineDateAggregatorForContext(ctx, features::getValidityDateAggregator)
-														   .withDateRestriction(dateRestriction);
+			QueryExecutionContext innerContext = QueryUtils.determineDateAggregatorForContext(
+				ctx,
+				features::getValidityDateAggregator).withDateRestriction(dateRestriction);
 
 			features.init(ctx, entity);
 
@@ -99,12 +102,12 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			}
 
 			resultValues.addAll(
-					ResultModifier.modify(
-							subResult.get(),
-							ResultModifier.existAggValuesSetterFor(features.getAggregators(), OptionalInt.of(0))
-										  .unaryAndThen(v -> addConstants(v, dateContext))
-					)
-								  .listResultLines()
+				ResultModifier.modify(
+					subResult.get(),
+					ResultModifier.existAggValuesSetterFor(features.getAggregators(), OptionalInt.of(0))
+						.unaryAndThen(
+							v -> addConstants(v, dateContext))
+				).listResultLines()
 			);
 		}
 
@@ -122,9 +125,10 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		result.add(new Object[features.getAggregatorSize()]);
 
 		return ResultModifier.modify(
-				new MultilineEntityResult(entity.getId(), result),
-				ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(0))
-							  .unaryAndThen(v -> addConstants(v, dateContext))
+			new MultilineEntityResult(entity.getId(), result),
+			ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(0))
+				.unaryAndThen(
+					v -> addConstants(v, dateContext))
 		);
 	}
 
@@ -154,7 +158,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		//add date range at [2] or [3]
 		result[getDateRangeResultPosition()] = dateContext.getDateRange();
 
-		if(withObservationScope){
+		if (withObservationScope) {
 			//add observation scope at [3] or [4]
 			result[getDateRangeResultPosition() + 1] = dateContext.getFeatureGroup();
 		}
@@ -163,7 +167,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	private int getDateRangeResultPosition() {
-		return constantCount - (withObservationScope ? 2 : 1 );
+		return constantCount - (withObservationScope ? 2 : 1);
 	}
 
 	@Override
@@ -173,7 +177,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	@Override
-	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
+	public @NonNull Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
 		return Optional.empty();
 	}
 

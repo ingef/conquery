@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.config;
 
+import jakarta.ws.rs.core.UriBuilder;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.commands.ManagerNode;
@@ -26,8 +26,10 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 public class CsvResultProvider implements ResultRendererProvider {
 	private boolean hidden = false;
 
-	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders)
-			throws MalformedURLException, URISyntaxException {
+	public Collection<ResultAsset> generateResultURLs(
+		ManagedExecution exec,
+		UriBuilder uriBuilder,
+		boolean allProviders) throws MalformedURLException, URISyntaxException {
 		if (!(exec instanceof SingleTableResult)) {
 			return Collections.emptyList();
 		}
@@ -36,7 +38,10 @@ public class CsvResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
-		return List.of(new ResultAsset("CSV", ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution & SingleTableResult) exec).toURI()));
+		return List.of(
+			new ResultAsset(
+				"CSV",
+				ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution & SingleTableResult) exec).toURI()));
 	}
 
 	@Override

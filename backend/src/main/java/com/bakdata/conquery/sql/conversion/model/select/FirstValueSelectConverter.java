@@ -7,13 +7,15 @@ import org.jooq.Field;
 public class FirstValueSelectConverter implements SelectConverter<FirstValueSelect> {
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(FirstValueSelect select, SelectContext<ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(
+		FirstValueSelect select,
+		SelectContext<ConnectorSqlTables> selectContext) {
 		return ValueSelectUtil.createValueSelect(
-				select.getColumn().resolve(),
-				selectContext.getNameGenerator().selectName(select),
-				Field::asc,
-				select.getSubstringRange(),
-				selectContext
+			select.getColumn().resolve(),
+			selectContext.getNameGenerator().selectName(select),
+			Field::asc,
+			select.getSubstringRange(),
+			selectContext
 		);
 	}
 

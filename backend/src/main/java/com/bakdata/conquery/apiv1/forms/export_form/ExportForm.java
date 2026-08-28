@@ -1,5 +1,9 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
+import jakarta.validation.Valid;
+import jakarta.validation.ValidationException;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -7,10 +11,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import jakarta.validation.Valid;
-import jakarta.validation.ValidationException;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 
 import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
@@ -104,15 +104,18 @@ public class ExportForm extends Form implements InternalForm {
 	 * 						Note that this alignment is chosen when a resolution is equal or coarser.
 	 * @return The given resolutions mapped to a fitting calendar alignment.
 	 */
-	public static List<ResolutionAndAlignment> getResolutionAlignmentMap(List<Resolution> resolutions, Alignment alignmentHint) {
+	public static List<ResolutionAndAlignment> getResolutionAlignmentMap(
+		List<Resolution> resolutions,
+		Alignment alignmentHint) {
 
 		return resolutions.stream()
-				.map(r -> ResolutionAndAlignment.of(r, getFittingAlignment(alignmentHint, r)))
-				.collect(Collectors.toList());
+			.map(
+				r -> ResolutionAndAlignment.of(r, getFittingAlignment(alignmentHint, r)))
+			.collect(Collectors.toList());
 	}
 
 	private static Alignment getFittingAlignment(Alignment alignmentHint, Resolution resolution) {
-		if(resolution.isAlignmentSupported(alignmentHint) ) {
+		if (resolution.isAlignmentSupported(alignmentHint)) {
 			return alignmentHint;
 		}
 		return resolution.getDefaultAlignment();
@@ -128,8 +131,8 @@ public class ExportForm extends Form implements InternalForm {
 	@Override
 	public Map<String, Query> createSubQueries() {
 		return Map.of(
-				ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
-				timeMode.createSpecializedQuery()
+			ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
+			timeMode.createSpecializedQuery()
 		);
 	}
 
@@ -139,8 +142,12 @@ public class ExportForm extends Form implements InternalForm {
 	}
 
 	@Override
-	public ManagedInternalForm<ExportForm> toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry,
-															  ConqueryConfig config) {
+	public ManagedInternalForm<ExportForm> toManagedExecution(
+		UserId user,
+		DatasetId submittedDataset,
+		MetaStorage storage,
+		DatasetRegistry<?> datasetRegistry,
+		ConqueryConfig config) {
 		return new ManagedInternalForm<>(this, user, submittedDataset, storage, datasetRegistry, config);
 	}
 
@@ -155,11 +162,10 @@ public class ExportForm extends Form implements InternalForm {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		if(queryGroupId != null) {
+		if (queryGroupId != null) {
 			queryGroup = (ManagedQuery) queryGroupId.resolve();
 			prerequisite = queryGroup.getQuery();
-		}
-		else {
+		} else {
 			prerequisite = new ConceptQuery(new CQYes());
 		}
 
@@ -170,18 +176,19 @@ public class ExportForm extends Form implements InternalForm {
 		timeMode.resolve(context);
 
 		List<Resolution> resolutionsFlat = resolution.stream()
-													 .flatMap(ResolutionShortNames::correspondingResolutions)
-													 .distinct()
-													 .toList();
+			.flatMap(
+				ResolutionShortNames::correspondingResolutions)
+			.distinct()
+			.toList();
 
 
 		if (isAlsoCreateCoarserSubdivisions()) {
 			if (resolutionsFlat.size() != 1) {
-				throw new IllegalStateException("Abort Form creation, because coarser subdivision are requested and multiple resolutions are given. With 'alsoCreateCoarserSubdivisions' set to true, provide only one resolution.");
+				throw new IllegalStateException(
+					"Abort Form creation, because coarser subdivision are requested and multiple resolutions are given. With 'alsoCreateCoarserSubdivisions' set to true, provide only one resolution.");
 			}
 			resolvedResolutions = resolutionsFlat.getFirst().getThisAndCoarserSubdivisions();
-		}
-		else {
+		} else {
 			resolvedResolutions = resolutionsFlat;
 		}
 	}
@@ -193,11 +200,12 @@ public class ExportForm extends Form implements InternalForm {
 
 		static void enable(CQElement feature) {
 			switch (feature) {
-				case DefaultSelectSettable settable  -> settable.setDefaultSelects();
+				case DefaultSelectSettable settable -> settable.setDefaultSelects();
 				// CQNegation and CQDateRestriction chain CQElements and don't have selects themselves
 				case CQNegation negation -> enable(negation.getChild());
 				case CQDateRestriction dr -> enable(dr.getChild());
-				default -> {}
+				default -> {
+				}
 			}
 		}
 
@@ -220,9 +228,10 @@ public class ExportForm extends Form implements InternalForm {
 		private final Alignment alignment;
 
 		@JsonCreator
-		public static ResolutionAndAlignment of(Resolution resolution, Alignment alignment){
+		public static ResolutionAndAlignment of(Resolution resolution, Alignment alignment) {
 			if (!resolution.isAlignmentSupported(alignment)) {
-				throw new ValidationException(String.format("The alignment %s is not supported by the resolution %s", alignment, resolution));
+				throw new ValidationException(
+					String.format("The alignment %s is not supported by the resolution %s", alignment, resolution));
 			}
 
 			return new ResolutionAndAlignment(resolution, alignment);

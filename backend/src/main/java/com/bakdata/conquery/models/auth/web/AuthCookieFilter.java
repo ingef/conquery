@@ -2,10 +2,6 @@ package com.bakdata.conquery.models.auth.web;
 
 import static com.bakdata.conquery.models.auth.web.AuthCookieFilter.PRIORITY;
 
-import java.io.IOException;
-
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.google.common.base.Strings;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
@@ -18,6 +14,10 @@ import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.UriBuilder;
+import java.io.IOException;
+
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpHeader;
@@ -58,13 +58,13 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 
 		String queryToken = requestContext.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN);
 
-		if(!cookie.getValue().isEmpty() && queryToken != null) {
+		if (!cookie.getValue().isEmpty() && queryToken != null) {
 			log.trace("Ignoring cookie");
 			return;
 		}
-		
+
 		// Get the token from the cookie and put it into the header
-		requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION,PREFIX + " " + cookie.getValue());
+		requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, PREFIX + " " + cookie.getValue());
 		// Remove the cookie for the rest of this processing
 		requestContext.getCookies().remove(ACCESS_TOKEN);
 		// Remove the query parameter
@@ -87,10 +87,11 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 				log.debug("Overwriting {} cookie", ACCESS_TOKEN);
 			}
 			final NewCookie authCookie = config.getAuthentication().createAuthCookie(request, token);
-			response.getHeaders().add(
+			response.getHeaders()
+				.add(
 					HttpHeader.SET_COOKIE.toString(),
 					authCookie
-			);
+				);
 
 		}
 	}

@@ -2,8 +2,6 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
-import java.util.Collection;
-import java.util.List;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.ws.rs.Consumes;
@@ -14,6 +12,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import java.util.Collection;
+import java.util.List;
 
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;

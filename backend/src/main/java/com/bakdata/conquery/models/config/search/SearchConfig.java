@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.core.setup.Environment;
 
 @CPSBase
-@JsonTypeInfo(property = "type", use = JsonTypeInfo.Id.CUSTOM )
+@JsonTypeInfo(property = "type", use = JsonTypeInfo.Id.CUSTOM)
 public interface SearchConfig {
 
 	SearchProcessor createSearchProcessor(Environment environment, DatasetId id);

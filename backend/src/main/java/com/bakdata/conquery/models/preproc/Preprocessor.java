@@ -45,7 +45,9 @@ public class Preprocessor {
 			return file;
 		}
 
-		return new File(file.getParentFile(), file.getName().replaceAll(Pattern.quote(extension) + "$", String.format(".%s%s", tag, extension)));
+		return new File(
+			file.getParentFile(),
+			file.getName().replaceAll(Pattern.quote(extension) + "$", String.format(".%s%s", tag, extension)));
 	}
 
 
@@ -54,7 +56,11 @@ public class Preprocessor {
 	 * <p>
 	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link ColumnStore}.
 	 */
-	public static void preprocess(PreprocessingJob preprocessingJob, ProgressBar totalProgress, ConqueryConfig config, int buckets) throws IOException {
+	public static void preprocess(
+		PreprocessingJob preprocessingJob,
+		ProgressBar totalProgress,
+		ConqueryConfig config,
+		int buckets) throws IOException {
 
 		final File preprocessedFile = preprocessingJob.getPreprocessedFile();
 		TableImportDescriptor descriptor = preprocessingJob.getDescriptor();
@@ -70,9 +76,8 @@ public class Preprocessor {
 		}
 
 		if (!Files.isWritable(preprocessedFile.toPath().getParent())) {
-			throw new IllegalArgumentException("No write permission in " + LogUtil.printPath(preprocessedFile
-																									 .toPath()
-																									 .getParent()));
+			throw new IllegalArgumentException(
+				"No write permission in " + LogUtil.printPath(preprocessedFile.toPath().getParent()));
 		}
 
 		//delete target file if it exists
@@ -95,9 +100,17 @@ public class Preprocessor {
 
 		for (int inputSource = 0; inputSource < descriptor.getInputs().length; inputSource++) {
 			final TableInputDescriptor input = descriptor.getInputs()[inputSource];
-			final File sourceFile = resolveSourceFile(input.getSourceFile(), preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
+			final File sourceFile = resolveSourceFile(
+				input.getSourceFile(),
+				preprocessingJob.getCsvDirectory(),
+				preprocessingJob.getTag());
 
-			final String name = String.format("%s:%s[%d/%s]", descriptor.toString(), descriptor.getTable(), inputSource, sourceFile.getName());
+			final String name = String.format(
+				"%s:%s[%d/%s]",
+				descriptor.toString(),
+				descriptor.getTable(),
+				inputSource,
+				sourceFile.getName());
 			ConqueryMDC.setLocation(name);
 
 			if (!(sourceFile.exists() && sourceFile.canRead())) {
@@ -114,7 +127,9 @@ public class Preprocessor {
 				// Create CSV parser according to config, but overriding some behaviour.
 				parser = csvSettings.withParseHeaders(true).withSkipHeader(false).createParser();
 
-				parser.beginParsing(FileUtil.isGZipped(sourceFile) ? new GZIPInputStream(countingIn) : countingIn, csvSettings.getEncoding());
+				parser.beginParsing(
+					FileUtil.isGZipped(sourceFile) ? new GZIPInputStream(countingIn) : countingIn,
+					csvSettings.getEncoding());
 
 				final String[] headers = parser.getContext().parsedHeaders();
 
@@ -125,7 +140,11 @@ public class Preprocessor {
 
 
 				DateReader dateReader = config.getLocale().getDateReader();
-				final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap, dateReader, config);
+				final OutputDescription.Output primaryOut = input.getPrimary()
+					.createForHeaders(
+						headerMap,
+						dateReader,
+						config);
 				final List<OutputDescription.Output> outputs = new ArrayList<>();
 				final PPColumn[] columns = result.getColumns();
 
@@ -146,8 +165,9 @@ public class Preprocessor {
 					}
 
 					try {
-						String primaryId =
-								(String) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
+						String primaryId = (String) Objects.requireNonNull(
+							primaryOut.createOutput(row, result.getPrimaryColumn(), lineId),
+							"primaryId may not be null");
 
 
 						final String primary = result.addPrimary(primaryId);
@@ -155,37 +175,37 @@ public class Preprocessor {
 
 						result.addRow(primary, columns, outRow);
 
-					}
-					catch (OutputDescription.OutputException e) {
+					} catch (OutputDescription.OutputException e) {
 						exceptions.put(e.getCause().getClass(), exceptions.getInt(e.getCause().getClass()) + 1);
 
 						errors++;
 
 						if (log.isTraceEnabled() || errors < config.getPreprocessor().getMaximumPrintedErrors()) {
-							log.warn("Failed to parse `{}` from line: {} content: {}", e.getSource(), lineId, row, e.getCause());
-						}
-						else if (errors == config.getPreprocessor().getMaximumPrintedErrors()) {
-							log.warn("More erroneous lines occurred. Only the first "
-									 + config.getPreprocessor().getMaximumPrintedErrors()
-									 + " were printed.");
+							log.warn(
+								"Failed to parse `{}` from line: {} content: {}",
+								e.getSource(),
+								lineId,
+								row,
+								e.getCause());
+						} else if (errors == config.getPreprocessor().getMaximumPrintedErrors()) {
+							log.warn(
+								"More erroneous lines occurred. Only the first " + config.getPreprocessor()
+									.getMaximumPrintedErrors() + " were printed.");
 						}
 
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						exceptions.put(e.getClass(), exceptions.getInt(e.getClass()) + 1);
 
 						errors++;
 
 						if (log.isTraceEnabled() || errors < config.getPreprocessor().getMaximumPrintedErrors()) {
 							log.warn("Failed to parse line: {} content: {}", lineId, row, e);
+						} else if (errors == config.getPreprocessor().getMaximumPrintedErrors()) {
+							log.warn(
+								"More erroneous lines occurred. Only the first " + config.getPreprocessor()
+									.getMaximumPrintedErrors() + " were printed.");
 						}
-						else if (errors == config.getPreprocessor().getMaximumPrintedErrors()) {
-							log.warn("More erroneous lines occurred. Only the first "
-									 + config.getPreprocessor().getMaximumPrintedErrors()
-									 + " were printed.");
-						}
-					}
-					finally {
+					} finally {
 						//report progress
 						totalProgress.addCurrentValue(countingIn.getCount() - progress);
 						progress = countingIn.getCount();
@@ -193,8 +213,7 @@ public class Preprocessor {
 					}
 				}
 
-			}
-			finally {
+			} finally {
 				if (parser != null) {
 					parser.stopParsing();
 				}
@@ -212,7 +231,11 @@ public class Preprocessor {
 		result.write(tmp, buckets);
 
 		if (errors > 0) {
-			log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%.2f", 100d * (double) errors / (double) lineId), errors, lineId);
+			log.warn(
+				"Had {}% faulty lines ({} of ~{} lines)",
+				String.format("%.2f", 100d * (double) errors / (double) lineId),
+				errors,
+				lineId);
 		}
 
 		if ((double) errors / (double) lineId > config.getPreprocessor().getFaultyLineThreshold()) {
@@ -228,8 +251,11 @@ public class Preprocessor {
 	/**
 	 * Apply each output for a single row. Returning all resulting values.
 	 */
-	private static Object[] applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, long lineId)
-			throws ParsingException, OutputDescription.OutputException {
+	private static Object[] applyOutputs(
+		List<OutputDescription.Output> outputs,
+		PPColumn[] columns,
+		String[] row,
+		long lineId) throws ParsingException, OutputDescription.OutputException {
 		Object[] outRow = new Object[outputs.size()];
 
 		for (int index = 0; index < outputs.size(); index++) {
@@ -245,8 +271,7 @@ public class Preprocessor {
 				}
 
 				outRow[index] = result;
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				throw new OutputDescription.OutputException(out.getDescription(), e);
 			}
 		}
@@ -267,12 +292,10 @@ public class Preprocessor {
 		if (name.endsWith(".csv.gz")) {
 			name = name.substring(0, name.length() - ".csv.gz".length());
 			suffix = ".csv.gz";
-		}
-		else if (name.endsWith(".csv")) {
+		} else if (name.endsWith(".csv")) {
 			name = name.substring(0, name.length() - ".csv".length());
 			suffix = ".csv";
-		}
-		else {
+		} else {
 			throw new IllegalArgumentException("Unknown suffix for file " + name);
 		}
 

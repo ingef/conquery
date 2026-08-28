@@ -16,22 +16,20 @@ abstract class AbstractSelectFilterConverter<F extends SelectFilter<T>, T> imple
 	public SqlFilters convertToSqlFilter(F filter, FilterContext<T> filterContext) {
 
 		ExtractingSqlSelect<String> rootSelect = new ExtractingSqlSelect<>(
-				filterContext.getTables().getPredecessor(ConceptCteStep.PREPROCESSING),
-				filter.getColumn().getColumn(),
-				String.class
+			filterContext.getTables().getPredecessor(ConceptCteStep.PREPROCESSING),
+			filter.getColumn().getColumn(),
+			String.class
 		);
 
 		WhereCondition condition = new MultiSelectCondition(
-				rootSelect.select(),
-				getValues(filterContext),
-				filterContext.getFunctionProvider()
+			rootSelect.select(),
+			getValues(filterContext),
+			filterContext.getFunctionProvider()
 		);
 
 		return new SqlFilters(
-				ConnectorSqlSelects.none(),
-				WhereClauses.builder()
-							.eventFilter(condition)
-							.build()
+			ConnectorSqlSelects.none(),
+			WhereClauses.builder().eventFilter(condition).build()
 		);
 	}
 
@@ -41,7 +39,10 @@ abstract class AbstractSelectFilterConverter<F extends SelectFilter<T>, T> imple
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
 		Field<String> field = DSL.field(DSL.name(tableName, columnName), String.class);
-		return new MultiSelectCondition(field, getValues(filterContext), filterContext.getFunctionProvider()).condition();
+		return new MultiSelectCondition(
+			field,
+			getValues(filterContext),
+			filterContext.getFunctionProvider()).condition();
 	}
 
 	protected abstract String[] getValues(FilterContext<T> filterContext);

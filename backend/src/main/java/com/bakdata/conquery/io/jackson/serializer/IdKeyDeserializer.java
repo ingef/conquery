@@ -26,8 +26,7 @@ public class IdKeyDeserializer<ID extends Id<?, ?>> extends KeyDeserializer impl
 	public ID deserializeKey(String key, DeserializationContext ctxt) {
 		try {
 			return IdDeserializer.deserializeId(key, idParser, parsePrefixed, ctxt);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new IllegalArgumentException("Could not parse an " + idClass.getSimpleName() + " from " + key, e);
 		}
 	}
@@ -35,7 +34,8 @@ public class IdKeyDeserializer<ID extends Id<?, ?>> extends KeyDeserializer impl
 	@Override
 	public KeyDeserializer createContextual(DeserializationContext ctxt, BeanProperty property) {
 		JavaType type = Optional.ofNullable(ctxt.getContextualType())
-								.orElseGet(Optional.ofNullable(property).map(BeanProperty::getType)::get);
+			.orElseGet(
+				Optional.ofNullable(property).map(BeanProperty::getType)::get);
 
 		//since this a key serializer property should point to a map
 		type = type.getKeyType();

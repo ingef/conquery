@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.config;
 
+import jakarta.validation.constraints.NotNull;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -10,7 +11,6 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import com.univocity.parsers.csv.CsvWriter;
 import com.univocity.parsers.csv.CsvWriterSettings;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,14 +20,19 @@ import lombok.With;
 import org.hibernate.validator.constraints.Length;
 
 /**
- * Holds the necessary information to configure CSV parsers and writers. 
+ * Holds the necessary information to configure CSV parsers and writers.
  */
-@Getter @Setter @With @AllArgsConstructor @NoArgsConstructor
+@Getter
+@Setter
+@With
+@AllArgsConstructor
+@NoArgsConstructor
 public class CSVConfig {
 	private char escape = '\\';
 	private char comment = '\0';
 	private char delimeter = ',';
-	@Length(min=1, max=2) @NotNull
+	@Length(min = 1, max = 2)
+	@NotNull
 	private String lineSeparator = "\n";
 	private char quote = '"';
 	@NotNull
@@ -35,7 +40,7 @@ public class CSVConfig {
 	private boolean skipHeader = false;
 	private boolean parseHeaders = true;
 	private int maxColumns = 1_000_000; // This should be sufficiently large.
-	
+
 	/**
 	 * Helper method to generate parser settings from the provided options in this class.
 	 * @return Setting object that can be passed into a {@link CsvParser}.
@@ -59,7 +64,7 @@ public class CSVConfig {
 		settings.setFormat(createCsvFormat());
 		return settings;
 	}
-	
+
 	/**
 	 * Helper method to generate format settings from the provided options in this class.
 	 * @return Format object that can be passed into {@link CsvWriterSettings} and {@link CsvParserSettings}.

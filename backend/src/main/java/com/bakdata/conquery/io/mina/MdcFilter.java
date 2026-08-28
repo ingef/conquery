@@ -31,15 +31,13 @@ public class MdcFilter extends CommonEventFilter {
 		try {
 			/* propagate event down the filter chain */
 			event.fire();
-		}
-		finally {
+		} finally {
 			if (currentCallDepth == 0) {
 				/* remove context from the MDC */
 				ConqueryMDC.clearLocation();
 
 				callDepth.remove();
-			}
-			else {
+			} else {
 				callDepth.set(currentCallDepth);
 			}
 		}

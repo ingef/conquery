@@ -5,6 +5,12 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -20,12 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.Invocation;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -85,31 +85,47 @@ public class LoadingUtil {
 
 	public static void importDataset(Client client, UriBuilder adminUriBuilder, Dataset dataset) {
 
-		final URI uri = HierarchyHelper.hierarchicalPath(adminUriBuilder, AdminDatasetsResource.class, "addDataset")
-									   .build();
+		final URI uri = HierarchyHelper.hierarchicalPath(
+			adminUriBuilder,
+			AdminDatasetsResource.class,
+			"addDataset").build();
 
 		final Invocation.Builder request = client.target(uri).request(MediaType.APPLICATION_JSON_TYPE);
 		try (final Response response = request.post(Entity.json(dataset))) {
 
-			assertThat(response.getStatusInfo().getFamily())
-					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(Response.Status.Family.SUCCESSFUL);
+			assertThat(response.getStatusInfo().getFamily()).describedAs(
+				new LazyTextDescription(() -> response.readEntity(String.class)))
+				.isEqualTo(
+					Response.Status.Family.SUCCESSFUL);
 		}
 	}
 
-	public static void importPreviousQueries(StandaloneSupport support, RequiredData content, User user) throws IOException {
+	public static void importPreviousQueries(
+		StandaloneSupport support,
+		RequiredData content,
+		User user) throws IOException {
 		// Load previous query results if available
 		int id = 1;
 		for (ResourceFile queryResults : content.getPreviousQueryResults()) {
 			UUID queryId = new UUID(0L, id++);
 
-			final CsvParser parser = support.getConfig().getCsv().withParseHeaders(false).withSkipHeader(false).createParser();
+			final CsvParser parser = support.getConfig()
+				.getCsv()
+				.withParseHeaders(false)
+				.withSkipHeader(
+					false)
+				.createParser();
 			String[][] data = parser.parseAll(queryResults.stream()).toArray(new String[0][]);
 
 			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data, false));
 
 			ExecutionManager executionManager = support.getNamespace().getExecutionManager();
-			ManagedExecution managed = executionManager.createExecution(query, queryId, user.getId(), support.getNamespace(), false);
+			ManagedExecution managed = executionManager.createExecution(
+				query,
+				queryId,
+				user.getId(),
+				support.getNamespace(),
+				false);
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
@@ -126,7 +142,12 @@ public class LoadingUtil {
 			UUID queryId = new UUID(0L, id++);
 
 			ExecutionManager executionManager = support.getNamespace().getExecutionManager();
-			ManagedExecution managed = executionManager.createExecution(query, queryId, user.getId(), support.getNamespace(), false);
+			ManagedExecution managed = executionManager.createExecution(
+				query,
+				queryId,
+				user.getId(),
+				support.getNamespace(),
+				false);
 
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
@@ -136,7 +157,10 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
+	public static void importTables(
+		StandaloneSupport support,
+		List<RequiredTable> tables,
+		boolean autoConcept) throws JSONException {
 
 		for (RequiredTable rTable : tables) {
 			final Table table = rTable.toTable(support.getDataset(), support.getDatasetRegistry());
@@ -151,36 +175,46 @@ public class LoadingUtil {
 	}
 
 	private static void uploadTable(StandaloneSupport support, Table table) {
-		final URI uri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addTable")
-									   .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset()));
+		final URI uri = HierarchyHelper.hierarchicalPath(
+			support.defaultAdminURIBuilder(),
+			AdminDatasetResource.class,
+			"addTable").buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset()));
 
 		final Invocation.Builder request = support.getClient().target(uri).request(MediaType.APPLICATION_JSON_TYPE);
 		try (final Response response = request.post(Entity.json(table))) {
 
-			assertThat(response.getStatusInfo().getFamily())
-					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(Response.Status.Family.SUCCESSFUL);
+			assertThat(response.getStatusInfo().getFamily()).describedAs(
+				new LazyTextDescription(() -> response.readEntity(String.class)))
+				.isEqualTo(
+					Response.Status.Family.SUCCESSFUL);
 		}
 	}
 
 	public static void uploadConcept(StandaloneSupport support, DatasetId dataset, Concept<?> concept) {
-		final URI uri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addConcept")
-									   .buildFromMap(Map.of(ResourceConstants.DATASET, dataset.toString()));
+		final URI uri = HierarchyHelper.hierarchicalPath(
+			support.defaultAdminURIBuilder(),
+			AdminDatasetResource.class,
+			"addConcept").buildFromMap(Map.of(ResourceConstants.DATASET, dataset.toString()));
 
 		final Invocation.Builder request = support.getClient().target(uri).request(MediaType.APPLICATION_JSON_TYPE);
 		try (final Response response = request.post(Entity.json(concept))) {
 
-			assertThat(response.getStatusInfo().getFamily())
-					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(Response.Status.Family.SUCCESSFUL);
+			assertThat(response.getStatusInfo().getFamily()).describedAs(
+				new LazyTextDescription(() -> response.readEntity(String.class)))
+				.isEqualTo(
+					Response.Status.Family.SUCCESSFUL);
 		}
 	}
 
-	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
+	public static void importTableContents(
+		StandaloneSupport support,
+		Collection<RequiredTable> tables) throws Exception {
 		support.getTestImporter().importTableContents(support, tables);
 	}
 
-	public static List<File> generateCqpp(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
+	public static List<File> generateCqpp(
+		StandaloneSupport support,
+		Collection<RequiredTable> tables) throws Exception {
 		List<File> preprocessedFiles = new ArrayList<>();
 		List<File> descriptions = new ArrayList<>();
 
@@ -188,10 +222,16 @@ public class LoadingUtil {
 		for (RequiredTable rTable : tables) {
 			// copy csv to tmp folder
 			String name = rTable.getName();
-			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
+			FileUtils.copyInputStreamToFile(
+				rTable.getCsv().stream(),
+				new File(support.getTmpDir(), rTable.getCsv().getName()));
 
 			// create import descriptor
-			final File descriptionFile = support.getTmpDir().toPath().resolve(name + ConqueryConstants.EXTENSION_DESCRIPTION).toFile();
+			final File descriptionFile = support.getTmpDir()
+				.toPath()
+				.resolve(
+					name + ConqueryConstants.EXTENSION_DESCRIPTION)
+				.toFile();
 			final File outFile = support.getTmpDir().toPath().resolve(name + EXTENSION_PREPROCESSED).toFile();
 
 			TableImportDescriptor desc = new TableImportDescriptor();
@@ -229,16 +269,21 @@ public class LoadingUtil {
 		support.waitUntilWorkDone();
 	}
 
-	public static void uploadCqpp(StandaloneSupport support, File cqpp, boolean update, Response.Status.Family expectedResponseFamily) {
+	public static void uploadCqpp(
+		StandaloneSupport support,
+		File cqpp,
+		boolean update,
+		Response.Status.Family expectedResponseFamily) {
 		if (update) {
 			assertThat(cqpp).exists();
 		}
 
 		final String methodName = update ? "updateCqppImport" : "uploadImport";
 
-		final URI addImport =
-				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, methodName)
-							   .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset()));
+		final URI addImport = HierarchyHelper.hierarchicalPath(
+			support.defaultAdminURIBuilder(),
+			AdminDatasetResource.class,
+			methodName).buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset()));
 
 		final Entity<FileInputStream> entity;
 		try {
@@ -246,8 +291,9 @@ public class LoadingUtil {
 
 
 			final Invocation.Builder request = support.getClient()
-													  .target(addImport)
-													  .request(MediaType.APPLICATION_JSON);
+				.target(addImport)
+				.request(
+					MediaType.APPLICATION_JSON);
 
 			final Invocation invocation = update ? request.buildPut(entity) : request.buildPost(entity);
 
@@ -255,24 +301,24 @@ public class LoadingUtil {
 
 			try (final Response response = invocation.invoke()) {
 
-				assertThat(response.getStatusInfo().getFamily())
-						.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-						.isEqualTo(expectedResponseFamily);
+				assertThat(response.getStatusInfo().getFamily()).describedAs(
+					new LazyTextDescription(() -> response.readEntity(String.class))).isEqualTo(expectedResponseFamily);
 			}
-		}
-		catch (FileNotFoundException e) {
+		} catch (FileNotFoundException e) {
 			fail("Cqpp not found", e);
 		}
 	}
 
-	public static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
+	public static void importConcepts(
+		StandaloneSupport support,
+		ArrayNode rawConcepts) throws JSONException, IOException {
 
 		List<Concept<?>> concepts = parseSubTreeList(
-				support,
-				rawConcepts,
-				Concept.class,
-				c -> {
-				}
+			support,
+			rawConcepts,
+			Concept.class,
+			c -> {
+			}
 		);
 
 		for (Concept<?> concept : concepts) {
@@ -280,8 +326,10 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void updateConcepts(StandaloneSupport support, ArrayNode rawConcepts, @NonNull Response.Status.Family expectedResponseFamily)
-			throws IOException {
+	public static void updateConcepts(
+		StandaloneSupport support,
+		ArrayNode rawConcepts,
+		@NonNull Response.Status.Family expectedResponseFamily) throws IOException {
 		List<Concept<?>> concepts = getConcepts(support, rawConcepts);
 		for (Concept<?> concept : concepts) {
 			updateConcept(support, concept, expectedResponseFamily);
@@ -292,31 +340,33 @@ public class LoadingUtil {
 
 	private static List<Concept<?>> getConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws IOException {
 		return parseSubTreeList(
-				support,
-				rawConcepts,
-				Concept.class,
-				c -> {
-				}
+			support,
+			rawConcepts,
+			Concept.class,
+			c -> {
+			}
 		);
 	}
 
-	private static void updateConcept(@NonNull StandaloneSupport support, @NonNull Concept<?> concept, @NonNull Response.Status.Family expectedResponseFamily) {
-		final URI
-				conceptURI =
-				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "updateConcept")
-							   .buildFromMap(Map.of(
-									   ResourceConstants.DATASET, support.getDataset()
-							   ));
+	private static void updateConcept(
+		@NonNull StandaloneSupport support,
+		@NonNull Concept<?> concept,
+		@NonNull Response.Status.Family expectedResponseFamily) {
+		final URI conceptURI = HierarchyHelper.hierarchicalPath(
+			support.defaultAdminURIBuilder(),
+			AdminDatasetResource.class,
+			"updateConcept")
+			.buildFromMap(
+				Map.of(
+					ResourceConstants.DATASET,
+					support.getDataset()
+				));
 
-		final Invocation.Builder request = support.getClient()
-												  .target(conceptURI)
-												  .request(MediaType.APPLICATION_JSON);
-		try (final Response response = request
-				.put(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE))) {
+		final Invocation.Builder request = support.getClient().target(conceptURI).request(MediaType.APPLICATION_JSON);
+		try (final Response response = request.put(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE))) {
 
-			assertThat(response.getStatusInfo().getFamily())
-					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(expectedResponseFamily);
+			assertThat(response.getStatusInfo().getFamily()).describedAs(
+				new LazyTextDescription(() -> response.readEntity(String.class))).isEqualTo(expectedResponseFamily);
 		}
 	}
 
@@ -330,12 +380,13 @@ public class LoadingUtil {
 		}
 	}
 
-	public static Map<String, SecondaryIdDescription> importSecondaryIds(StandaloneSupport support, List<RequiredSecondaryId> secondaryIds) {
+	public static Map<String, SecondaryIdDescription> importSecondaryIds(
+		StandaloneSupport support,
+		List<RequiredSecondaryId> secondaryIds) {
 		Map<String, SecondaryIdDescription> out = new HashMap<>();
 
 		for (RequiredSecondaryId required : secondaryIds) {
-			final SecondaryIdDescription description =
-					required.toSecondaryId(support.getDataset());
+			final SecondaryIdDescription description = required.toSecondaryId(support.getDataset());
 
 			uploadSecondaryId(support, description);
 
@@ -345,51 +396,60 @@ public class LoadingUtil {
 		return out;
 	}
 
-	private static void uploadSecondaryId(@NonNull StandaloneSupport support, @NonNull SecondaryIdDescription secondaryIdDescription) {
-		final URI
-				conceptURI =
-				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addSecondaryId")
-							   .buildFromMap(Map.of(
-									   ResourceConstants.DATASET, support.getDataset()
-							   ));
+	private static void uploadSecondaryId(
+		@NonNull StandaloneSupport support,
+		@NonNull SecondaryIdDescription secondaryIdDescription) {
+		final URI conceptURI = HierarchyHelper.hierarchicalPath(
+			support.defaultAdminURIBuilder(),
+			AdminDatasetResource.class,
+			"addSecondaryId")
+			.buildFromMap(
+				Map.of(
+					ResourceConstants.DATASET,
+					support.getDataset()
+				));
 
-		final Invocation.Builder request = support.getClient()
-												  .target(conceptURI)
-												  .request(MediaType.APPLICATION_JSON);
-		try (final Response response = request
-				.post(Entity.entity(secondaryIdDescription, MediaType.APPLICATION_JSON_TYPE))) {
+		final Invocation.Builder request = support.getClient().target(conceptURI).request(MediaType.APPLICATION_JSON);
+		try (final Response response = request.post(
+			Entity.entity(secondaryIdDescription, MediaType.APPLICATION_JSON_TYPE))) {
 
 
-			assertThat(response.getStatusInfo().getFamily())
-					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(Response.Status.Family.SUCCESSFUL);
+			assertThat(response.getStatusInfo().getFamily()).describedAs(
+				new LazyTextDescription(() -> response.readEntity(String.class)))
+				.isEqualTo(
+					Response.Status.Family.SUCCESSFUL);
 		}
 	}
 
-	public static void importInternToExternMappers(StandaloneSupport support, List<InternToExternMapper> internToExternMappers) {
+	public static void importInternToExternMappers(
+		StandaloneSupport support,
+		List<InternToExternMapper> internToExternMappers) {
 		for (InternToExternMapper internToExternMapper : internToExternMappers) {
 			uploadInternalToExternalMappings(support, internToExternMapper);
 		}
 	}
 
-	private static void uploadInternalToExternalMappings(@NonNull StandaloneSupport support, @NonNull InternToExternMapper mapping) {
-		final URI
-				conceptURI =
-				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addInternToExternMapping")
-							   .buildFromMap(Map.of(
-									   ResourceConstants.DATASET, support.getDataset()
-							   ));
+	private static void uploadInternalToExternalMappings(
+		@NonNull StandaloneSupport support,
+		@NonNull InternToExternMapper mapping) {
+		final URI conceptURI = HierarchyHelper.hierarchicalPath(
+			support.defaultAdminURIBuilder(),
+			AdminDatasetResource.class,
+			"addInternToExternMapping")
+			.buildFromMap(
+				Map.of(
+					ResourceConstants.DATASET,
+					support.getDataset()
+				));
 
-		final Invocation.Builder request = support.getClient()
-												  .target(conceptURI)
-												  .request(MediaType.APPLICATION_JSON);
-		try (final Response response = request
-				.post(Entity.entity(mapping, MediaType.APPLICATION_JSON_TYPE))) {
+		final Invocation.Builder request = support.getClient().target(conceptURI).request(MediaType.APPLICATION_JSON);
+		try (final Response response = request.post(Entity.entity(mapping, MediaType.APPLICATION_JSON_TYPE))) {
 
 
-			assertThat(response.getStatusInfo().getFamily())
-					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(Response.Status.Family.SUCCESSFUL);
+			assertThat(response.getStatusInfo().getFamily()).describedAs(
+				new LazyTextDescription(() -> response.readEntity(String.class)))
+				.isEqualTo(
+					Response.Status.Family.SUCCESSFUL);
 		}
 	}
 
@@ -400,30 +460,34 @@ public class LoadingUtil {
 	}
 
 	private static void uploadSearchIndex(@NonNull StandaloneSupport support, @NonNull SearchIndex searchIndex) {
-		final URI
-				conceptURI =
-				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addSearchIndex")
-							   .buildFromMap(Map.of(
-									   ResourceConstants.DATASET, support.getDataset()
-							   ));
+		final URI conceptURI = HierarchyHelper.hierarchicalPath(
+			support.defaultAdminURIBuilder(),
+			AdminDatasetResource.class,
+			"addSearchIndex")
+			.buildFromMap(
+				Map.of(
+					ResourceConstants.DATASET,
+					support.getDataset()
+				));
 
-		Invocation.Builder request = support.getClient()
-											.target(conceptURI)
-											.request(MediaType.APPLICATION_JSON);
+		Invocation.Builder request = support.getClient().target(conceptURI).request(MediaType.APPLICATION_JSON);
 		try (final Response response = request.post(Entity.entity(searchIndex, MediaType.APPLICATION_JSON_TYPE))) {
 			assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
 		}
 	}
 
 	public static void updateMatchingStats(@NonNull StandaloneSupport support) {
-		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "postprocessNamespace"
-													)
-													.buildFromMap(Map.of(DATASET, support.getDataset()));
+		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(
+			support.defaultAdminURIBuilder(),
+			AdminDatasetResource.class,
+			"postprocessNamespace"
+		).buildFromMap(Map.of(DATASET, support.getDataset()));
 
-		final Response post = support.getClient().target(matchingStatsUri)
-									 .request(MediaType.APPLICATION_JSON_TYPE)
-									 .post(null);
+		final Response post = support.getClient()
+			.target(matchingStatsUri)
+			.request(
+				MediaType.APPLICATION_JSON_TYPE)
+			.post(null);
 		post.close();
 	}
 
@@ -437,26 +501,36 @@ public class LoadingUtil {
 		return IOUtils.resourceToString(path, StandardCharsets.UTF_8);
 	}
 
-	public static <T> T parseSubTree(TestSupport support, JsonNode node, Class<T> expectedClass, boolean injectResolvers)
-			throws IOException {
+	public static <T> T parseSubTree(
+		TestSupport support,
+		JsonNode node,
+		Class<T> expectedClass,
+		boolean injectResolvers) throws IOException {
 		return parseSubTree(support, node, expectedClass, null, injectResolvers);
 	}
 
 	public static <T> T parseSubTree(
-			TestSupport support,
-			JsonNode node,
-			Class<T> expectedClass,
-			Consumer<T> modifierBeforeValidation,
-			boolean injectResolvers
+		TestSupport support,
+		JsonNode node,
+		Class<T> expectedClass,
+		Consumer<T> modifierBeforeValidation,
+		boolean injectResolvers
 	) throws IOException {
-		return parseSubTree(support, node, Jackson.MAPPER.getTypeFactory()
-														 .constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation, injectResolvers
+		return parseSubTree(
+			support,
+			node,
+			Jackson.MAPPER.getTypeFactory().constructParametricType(expectedClass, new JavaType[0]),
+			modifierBeforeValidation,
+			injectResolvers
 		);
 	}
 
 	public static <T> T parseSubTree(
-			TestSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation,
-			boolean injectResolvers) throws IOException {
+		TestSupport support,
+		JsonNode node,
+		JavaType expectedType,
+		Consumer<T> modifierBeforeValidation,
+		boolean injectResolvers) throws IOException {
 		final ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 		final ObjectMapper mapper = om.addHandler(new DatasetPlaceHolderFiller(support));
 
@@ -482,13 +556,19 @@ public class LoadingUtil {
 		return result;
 	}
 
-	public static <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, boolean injectResolvers)
-			throws IOException {
+	public static <T> T parseSubTree(
+		TestSupport support,
+		JsonNode node,
+		JavaType expectedType,
+		boolean injectResolvers) throws IOException {
 		return parseSubTree(support, node, expectedType, null, injectResolvers);
 	}
 
-	public static <T> List<T> parseSubTreeList(TestSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation)
-			throws IOException {
+	public static <T> List<T> parseSubTreeList(
+		TestSupport support,
+		ArrayNode node,
+		Class<?> expectedType,
+		Consumer<T> modifierBeforeValidation) throws IOException {
 		final ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
 		final ObjectMapper mapper = om.addHandler(new DatasetPlaceHolderFiller(support));
 
@@ -502,18 +582,17 @@ public class LoadingUtil {
 			T value;
 			try {
 				value = mapper.readerFor(expectedType).readValue(child);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				if (child.isValueNode()) {
 					String potentialPath = child.textValue();
 					try {
-						value = mapper.readerFor(expectedType).readValue(IntegrationTest.class.getResource(potentialPath));
-					}
-					catch (Exception e2) {
+						value = mapper.readerFor(expectedType)
+							.readValue(
+								IntegrationTest.class.getResource(potentialPath));
+					} catch (Exception e2) {
 						throw new RuntimeException("Could not parse value " + potentialPath, e2);
 					}
-				}
-				else {
+				} else {
 					throw e;
 				}
 			}
@@ -535,7 +614,11 @@ public class LoadingUtil {
 		private final TestSupport support;
 
 		@Override
-		public Object handleWeirdStringValue(DeserializationContext ctxt, Class<?> targetType, String valueToConvert, String failureMsg) {
+		public Object handleWeirdStringValue(
+			DeserializationContext ctxt,
+			Class<?> targetType,
+			String valueToConvert,
+			String failureMsg) {
 			IdUtil.Parser<?> parser = IdUtil.<Id<Identifiable<?, ?>, ?>>createParser((Class) targetType);
 			return parser.parsePrefixed(support.getDataset().getName(), valueToConvert);
 		}

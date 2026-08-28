@@ -13,8 +13,10 @@ import lombok.Setter;
 import lombok.ToString;
 
 @ToString
-@Getter @Setter @AllArgsConstructor(onConstructor_=@JsonCreator)
-@CPSType(id="SINGLE_LINE", base= EntityResult.class)
+@Getter
+@Setter
+@AllArgsConstructor(onConstructor_ = @JsonCreator)
+@CPSType(id = "SINGLE_LINE", base = EntityResult.class)
 public class SinglelineEntityResult implements EntityResult {
 
 	private final String entityId;

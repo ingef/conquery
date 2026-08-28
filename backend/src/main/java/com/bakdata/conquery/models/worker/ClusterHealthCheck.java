@@ -24,28 +24,36 @@ public class ClusterHealthCheck extends HealthCheck {
 	protected Result check() throws Exception {
 
 		Collection<ShardNodeInformation> knownShards = clusterState.getShardNodes().values();
-		final List<String> disconnectedWorkers =
-				knownShards.stream()
-						   .filter(Predicate.not(ShardNodeInformation::isConnected))
-						   .map(ShardNodeInformation::toString)
-						   .toList();
+		final List<String> disconnectedWorkers = knownShards.stream()
+			.filter(
+				Predicate.not(ShardNodeInformation::isConnected))
+			.map(ShardNodeInformation::toString)
+			.toList();
 
 		if (!disconnectedWorkers.isEmpty()) {
-			return Result.unhealthy("The shard(s) %s are no longer connected.".formatted(String.join(",", disconnectedWorkers)));
+			return Result.unhealthy(
+				"The shard(s) %s are no longer connected.".formatted(String.join(",", disconnectedWorkers)));
 		}
 
 		LocalDateTime now = LocalDateTime.now();
-		List<ShardNodeInformation> timeoutShards =
-				clusterState.getShardNodes().values().stream()
-							.filter((status) -> heartbeatTimeout.minus(Duration.between(status.getLastStatusTime(), now).abs())
-																.isNegative()).toList();
+		List<ShardNodeInformation> timeoutShards = clusterState.getShardNodes()
+			.values()
+			.stream()
+			.filter(
+				(status) -> heartbeatTimeout.minus(
+					Duration.between(status.getLastStatusTime(), now).abs()).isNegative())
+			.toList();
 
 		if (!timeoutShards.isEmpty()) {
-			return Result.unhealthy("Shards timed out:%s".formatted(timeoutShards.stream()
-																				 .map(ShardNodeInformation::getSession)
-																				 .map(NetworkSession::getRemoteAddress)
-																				 .map(SocketAddress::toString)
-																				 .collect(Collectors.joining(", "))));
+			return Result.unhealthy(
+				"Shards timed out:%s".formatted(
+					timeoutShards.stream()
+						.map(ShardNodeInformation::getSession)
+						.map(
+							NetworkSession::getRemoteAddress)
+						.map(SocketAddress::toString)
+						.collect(
+							Collectors.joining(", "))));
 		}
 
 		return Result.healthy(HEALTHY_MESSAGE_FMT, knownShards.size());

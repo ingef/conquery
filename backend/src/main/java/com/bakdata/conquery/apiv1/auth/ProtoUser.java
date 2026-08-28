@@ -1,10 +1,10 @@
 package com.bakdata.conquery.apiv1.auth;
 
-import java.util.Collections;
-import java.util.Set;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import java.util.Collections;
+import java.util.Set;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.UserManageable;
@@ -57,11 +57,11 @@ public class ProtoUser {
 		final User user = new User(name, label, storage);
 		storage.updateUser(user);
 
-		if (roles != null){
+		if (roles != null) {
 			for (String roleId : roles) {
 				final Role role = storage.getRole(new RoleId(roleId));
 
-				if(role == null){
+				if (role == null) {
 					log.warn("Unknown Role[{}] for {}", roleId, this);
 					continue;
 				}

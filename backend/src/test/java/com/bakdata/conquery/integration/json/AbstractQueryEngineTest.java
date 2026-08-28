@@ -4,6 +4,8 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.validation.UnexpectedTypeException;
+import jakarta.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -11,8 +13,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.OptionalLong;
-import jakarta.validation.UnexpectedTypeException;
-import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -46,7 +46,13 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		final User testUser = standaloneSupport.getTestUser();
 
 
-		final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(standaloneSupport, query, -1, ExecutionState.DONE, testUser, 201);
+		final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(
+			standaloneSupport,
+			query,
+			-1,
+			ExecutionState.DONE,
+			testUser,
+			201);
 
 		final ManagedExecution execution = standaloneSupport.getMetaStorage().getExecution(executionId);
 		execution.initExecutable();
@@ -54,42 +60,49 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		List<ResultInfo> resultInfos = executionResult.collectResultInfos();
 
-		assertThat(executionResult.streamResults(OptionalLong.empty()).flatMap(EntityResult::streamValues))
-				.as("Should have same size as result infos")
-				.allSatisfy(v -> assertThat(v).hasSameSizeAs(resultInfos));
+		assertThat(executionResult.streamResults(OptionalLong.empty()).flatMap(EntityResult::streamValues)).as(
+			"Should have same size as result infos").allSatisfy(v -> assertThat(v).hasSameSizeAs(resultInfos));
 
 		// Get the actual response and compare with expected result.
-		final Response csvResponse =
-				standaloneSupport.getClient()
-								 .target(HierarchyHelper.hierarchicalPath(standaloneSupport.defaultApiURIBuilder(), ResultCsvResource.class, "getAsCsv")
-														.buildFromMap(
-																Map.of(
-																		DATASET, standaloneSupport.getDataset().getName(),
-																		QUERY, execution.getId().toString()
-																)
-														))
-								 .queryParam("pretty", false)
-								 .request(AdditionalMediaTypes.CSV)
-								 .acceptLanguage(Locale.ENGLISH)
-								 .get();
+		final Response csvResponse = standaloneSupport.getClient()
+			.target(
+				HierarchyHelper.hierarchicalPath(
+					standaloneSupport.defaultApiURIBuilder(),
+					ResultCsvResource.class,
+					"getAsCsv")
+					.buildFromMap(
+						Map.of(
+							DATASET,
+							standaloneSupport.getDataset().getName(),
+							QUERY,
+							execution.getId().toString()
+						)
+					))
+			.queryParam("pretty", false)
+			.request(AdditionalMediaTypes.CSV)
+			.acceptLanguage(Locale.ENGLISH)
+			.get();
 
 		List<String> actual = IOUtils.readLines((InputStream) csvResponse.getEntity(), StandardCharsets.UTF_8);
 
 		List<String> expected = IOUtils.readLines(getExpectedCsv().stream(), StandardCharsets.UTF_8);
 
 		assertThat(actual).as("Results for %s are not as expected.", this)
-						  .containsExactlyInAnyOrderElementsOf(expected);
+			.containsExactlyInAnyOrderElementsOf(
+				expected);
 
 		// check that getLastResultCount returns the correct size
 		if (executionResult.streamResults(OptionalLong.empty()).noneMatch(MultilineEntityResult.class::isInstance)) {
 			long lastResultCount;
 			if (executionResult instanceof ManagedQuery editorQuery) {
 				lastResultCount = editorQuery.resultRowCount().orElseThrow();
+			} else {
+				throw new UnexpectedTypeException(
+					"Did expect an EditorQuery, but got element of type %s.".formatted(execution.getClass()));
 			}
-			else {
-				throw new UnexpectedTypeException("Did expect an EditorQuery, but got element of type %s.".formatted(execution.getClass()));
-			}
-			assertThat(lastResultCount).as("Result count for %s is not as expected.", this).isEqualTo(expected.size() - 1);
+			assertThat(lastResultCount).as("Result count for %s is not as expected.", this)
+				.isEqualTo(
+					expected.size() - 1);
 		}
 
 		log.info("INTEGRATION TEST SUCCESSFUL {} {} on {} rows", getClass().getSimpleName(), this, expected.size());

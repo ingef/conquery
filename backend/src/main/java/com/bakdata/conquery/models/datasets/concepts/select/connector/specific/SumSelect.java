@@ -1,12 +1,10 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Column;
@@ -61,7 +59,9 @@ public class SumSelect extends Select {
 	@Override
 	public Aggregator<? extends Number> createAggregator() {
 		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
-			return new DistinctValuesWrapperAggregator<>(getAggregator(), getDistinctByColumn().stream().map(ColumnId::resolve).toList());
+			return new DistinctValuesWrapperAggregator<>(
+				getAggregator(),
+				getDistinctByColumn().stream().map(ColumnId::resolve).toList());
 		}
 		return getAggregator();
 	}
@@ -75,13 +75,17 @@ public class SumSelect extends Select {
 				case MONEY -> new MoneySumAggregator(resolved);
 				case DECIMAL -> new DecimalSumAggregator(resolved);
 				case REAL -> new RealSumAggregator(resolved);
-				default -> throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", resolved.getType()));
+				default -> throw new IllegalStateException(
+					String.format("Invalid column type '%s' for SUM Aggregator", resolved.getType()));
 			};
 		}
 		Column resolvedSubstract = getSubtractColumn().resolve();
 		if (resolved.getType() != resolvedSubstract.getType()) {
-			throw new IllegalStateException(String.format("Column types are not the same: Column %s\tSubstractColumn %s", resolved.getType(), resolvedSubstract
-					.getType()));
+			throw new IllegalStateException(
+				String.format(
+					"Column types are not the same: Column %s\tSubstractColumn %s",
+					resolved.getType(),
+					resolvedSubstract.getType()));
 		}
 
 		return switch (resolved.getType()) {
@@ -89,12 +93,17 @@ public class SumSelect extends Select {
 			case MONEY -> new MoneyDiffSumAggregator(resolved, resolvedSubstract);
 			case DECIMAL -> new DecimalDiffSumAggregator(resolved, resolvedSubstract);
 			case REAL -> new RealDiffSumAggregator(resolved, resolvedSubstract);
-			default -> throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", resolved.getType()));
+			default -> throw new IllegalStateException(
+				String.format("Invalid column type '%s' for SUM Aggregator", resolved.getType()));
 		};
 	}
 
 
-	private static final EnumSet<MajorTypeId> NUMBER_COMPATIBLE = EnumSet.of(MajorTypeId.INTEGER, MajorTypeId.MONEY, MajorTypeId.DECIMAL, MajorTypeId.REAL);
+	private static final EnumSet<MajorTypeId> NUMBER_COMPATIBLE = EnumSet.of(
+		MajorTypeId.INTEGER,
+		MajorTypeId.MONEY,
+		MajorTypeId.DECIMAL,
+		MajorTypeId.REAL);
 
 	@Override
 	public List<ColumnId> getRequiredColumns() {
@@ -137,7 +146,10 @@ public class SumSelect extends Select {
 	@ValidationMethod(message = "Columns are not of same Type.")
 	@JsonIgnore
 	public boolean isColumnsOfSameType() {
-		return getSubtractColumn() == null || getSubtractColumn().resolve().getType().equals(getColumn().resolve().getType());
+		return getSubtractColumn() == null || getSubtractColumn().resolve()
+			.getType()
+			.equals(
+				getColumn().resolve().getType());
 	}
 
 

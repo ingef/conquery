@@ -2,13 +2,13 @@ package com.bakdata.conquery.io.result;
 
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Locale;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -36,12 +36,20 @@ public class ResultUtil {
 	}
 
 
-	public static Response makeResponseWithFileName(Response.ResponseBuilder response, String filename, MediaType mediaType, ContentDispositionOption disposition) {
+	public static Response makeResponseWithFileName(
+		Response.ResponseBuilder response,
+		String filename,
+		MediaType mediaType,
+		ContentDispositionOption disposition) {
 		response.header(HttpHeaders.CONTENT_TYPE, mediaType);
 		if (!(Strings.isNullOrEmpty(filename) || filename.isBlank())) {
 			// Set filename from filename if the filename was set, otherwise the browser will name the file according to the request path
-			response.header("Content-Disposition", String.format(
-					"%s; filename=\"%s\"", disposition.getHeaderValue(), FileUtil.makeSafeFileName(filename)));
+			response.header(
+				"Content-Disposition",
+				String.format(
+					"%s; filename=\"%s\"",
+					disposition.getHeaderValue(),
+					FileUtil.makeSafeFileName(filename)));
 		}
 		return response.build();
 	}
@@ -54,8 +62,7 @@ public class ResultUtil {
 		if (queryCharset != null) {
 			try {
 				return Charset.forName(queryCharset);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.warn("Unable to map '{}' to a charset.", queryCharset);
 			}
 		}

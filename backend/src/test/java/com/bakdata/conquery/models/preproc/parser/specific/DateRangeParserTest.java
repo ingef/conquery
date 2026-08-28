@@ -20,15 +20,15 @@ class DateRangeParserTest {
 	public void onlyClosed() {
 		final DateRangeParser parser = new DateRangeParser(new ConqueryConfig());
 
-		List.of(CDateRange.of(10, 11), CDateRange.exactly(10))
-			.forEach(parser::addLine);
+		List.of(CDateRange.of(10, 11), CDateRange.exactly(10)).forEach(parser::addLine);
 
 		final ColumnStore actual = parser.decideType();
 
 		assertThat(actual).isInstanceOf(DirectDateRangeStore.class);
 
-		assertThat(((IntegerDateStore) ((DirectDateRangeStore) actual).getMinStore()).getStore())
-				.isInstanceOfAny(ByteArrayStore.class, RebasingIntegerStore.class);
+		assertThat(((IntegerDateStore) ((DirectDateRangeStore) actual).getMinStore()).getStore()).isInstanceOfAny(
+			ByteArrayStore.class,
+			RebasingIntegerStore.class);
 	}
 
 
@@ -36,8 +36,7 @@ class DateRangeParserTest {
 	public void notOnlyClosed() {
 		final DateRangeParser parser = new DateRangeParser(new ConqueryConfig());
 
-		List.of(CDateRange.of(10, 11), CDateRange.exactly(10), CDateRange.atMost(10))
-			.forEach(parser::addLine);
+		List.of(CDateRange.of(10, 11), CDateRange.exactly(10), CDateRange.atMost(10)).forEach(parser::addLine);
 
 		assertThat(parser.decideType()).isInstanceOf(DirectDateRangeStore.class);
 	}
@@ -46,8 +45,10 @@ class DateRangeParserTest {
 	public void onlyQuarters() {
 		final DateRangeParser parser = new DateRangeParser(new ConqueryConfig());
 
-		List.of(CDateRange.of(QuarterUtils.getFirstDayOfQuarter(2011, 1), QuarterUtils.getLastDayOfQuarter(2011, 1)))
-			.forEach(parser::addLine);
+		List.of(
+			CDateRange.of(
+				QuarterUtils.getFirstDayOfQuarter(2011, 1),
+				QuarterUtils.getLastDayOfQuarter(2011, 1))).forEach(parser::addLine);
 
 		assertThat(parser.decideType()).isInstanceOf(QuarterDateRangeStore.class);
 	}

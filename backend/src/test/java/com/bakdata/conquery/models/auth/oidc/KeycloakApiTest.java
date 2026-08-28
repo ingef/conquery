@@ -2,10 +2,9 @@ package com.bakdata.conquery.models.auth.oidc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.ws.rs.client.ClientBuilder;
 import java.util.Map;
 import java.util.Set;
-
-import jakarta.ws.rs.client.ClientBuilder;
 
 import com.bakdata.conquery.models.auth.oidc.keycloak.KeycloakApi;
 import com.bakdata.conquery.models.auth.oidc.keycloak.KeycloakGroup;
@@ -16,7 +15,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 @Slf4j
-@EnabledIfEnvironmentVariable(named = "KEYCLOAK_SERVER_URL", matches = "^https?://.+", disabledReason = "As long as there is no mock server, test manually against a real server")
+@EnabledIfEnvironmentVariable(
+	named = "KEYCLOAK_SERVER_URL",
+	matches = "^https?://.+",
+	disabledReason = "As long as there is no mock server, test manually against a real server")
 @EnabledIfEnvironmentVariable(named = "KEYCLOAK_REALM", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "KEYCLOAK_CLIENT_ID", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "KEYCLOAK_CLIENT_SECRET", matches = ".+")

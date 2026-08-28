@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.datasets;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.Initializing;
 import com.bakdata.conquery.io.jackson.View;
@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @JsonDeserialize(converter = Table.Initializer.class)
 @ValidSqlTable(groups = {ValidationMode.Local.class})
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper = false)
 public class Table extends LabeledNamespaceIdentifiable<TableId> implements Initializing {
 
 	/**
@@ -112,16 +112,15 @@ public class Table extends LabeledNamespaceIdentifiable<TableId> implements Init
 
 	public Stream<Import> findImports(NamespacedStorage storage) {
 		final TableId thisId = getId();
-		return storage.getAllImports()
-					  .filter(imp -> imp.getTable().equals(thisId))
-					  .map(ImportId::resolve);
+		return storage.getAllImports().filter(imp -> imp.getTable().equals(thisId)).map(ImportId::resolve);
 	}
 
 	public Column getColumnByName(@NotNull String columnName) {
 		return Arrays.stream(columns)
-					 .filter(column -> column.getName().equals(columnName))
-					 .findFirst()
-					 .orElseThrow(() -> new IllegalStateException(String.format("Column %s not found", columnName)));
+			.filter(column -> column.getName().equals(columnName))
+			.findFirst()
+			.orElseThrow(
+				() -> new IllegalStateException(String.format("Column %s not found", columnName)));
 	}
 
 	/**

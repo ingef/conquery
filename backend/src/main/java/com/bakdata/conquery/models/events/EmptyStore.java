@@ -19,8 +19,7 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
  * @implNote this class is a singleton.
  */
 @CPSType(base = ColumnStore.class, id = "EMPTY")
-public enum EmptyStore implements
-		IntegerStore, RealStore, BooleanStore, DecimalStore, StringStore, MoneyStore, DateStore {
+public enum EmptyStore implements IntegerStore, RealStore, BooleanStore, DecimalStore, StringStore, MoneyStore, DateStore {
 	INSTANCE;
 
 	@Override

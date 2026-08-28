@@ -21,9 +21,11 @@ public class CTConditionContext {
 
 	public static CTConditionContext forConnector(Connector connector, SqlFunctionProvider functionProvider) {
 		return new CTConditionContext(
-				connector.getColumn() != null ? name(connector.resolveTableId().getTable(), connector.getColumn().getColumn()) : null,
-				functionProvider,
-				true
+			connector.getColumn() != null ? name(
+				connector.resolveTableId().getTable(),
+				connector.getColumn().getColumn()) : null,
+			functionProvider,
+			true
 		);
 	}
 

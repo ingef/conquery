@@ -1,11 +1,10 @@
 package com.bakdata.conquery.resources.hierarchies;
 
-import java.security.Principal;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response.Status;
+import java.security.Principal;
 
 import com.bakdata.conquery.models.auth.entities.Subject;
 import lombok.Getter;

@@ -31,22 +31,27 @@ class MergeAggregateAction implements SqlAggregationAction {
 	}
 
 	@Override
-	public ColumnDateRange getOverlapValidityDate(DateAggregationDates dateAggregationDates, SqlFunctionProvider functionProvider) {
+	public ColumnDateRange getOverlapValidityDate(
+		DateAggregationDates dateAggregationDates,
+		SqlFunctionProvider functionProvider) {
 
 		Field<Date> rangeStart = functionProvider.least(dateAggregationDates.allStarts());
 		Field<Date> rangeEnd = functionProvider.greatest(dateAggregationDates.allEnds());
 
 		return ColumnDateRange.of(
-				rangeStart.as(DateAggregationCte.RANGE_START),
-				rangeEnd.as(DateAggregationCte.RANGE_END)
+			rangeStart.as(DateAggregationCte.RANGE_START),
+			rangeEnd.as(DateAggregationCte.RANGE_END)
 		);
 	}
 
 	@Override
-	public List<SqlSelect> getIntermediateTableSelects(DateAggregationDates dateAggregationDates, List<SqlSelect> carryThroughSelects) {
+	public List<SqlSelect> getIntermediateTableSelects(
+		DateAggregationDates dateAggregationDates,
+		List<SqlSelect> carryThroughSelects) {
 		return Stream.of(dateAggregationDates.allStartsAndEnds(), carryThroughSelects)
-					 .flatMap(Collection::stream)
-					 .collect(Collectors.toList());
+			.flatMap(
+				Collection::stream)
+			.collect(Collectors.toList());
 	}
 
 	@Override

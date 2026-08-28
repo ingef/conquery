@@ -10,14 +10,14 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id="REMOVE_WORKER", base=NetworkMessage.class)
+@CPSType(id = "REMOVE_WORKER", base = NetworkMessage.class)
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @Data
 @Slf4j
 public class RemoveWorker extends MessageToShardNode.Slow {
 
 	private final DatasetId dataset;
-	
+
 	@Override
 	public void react(ShardNodeNetworkContext context) throws Exception {
 		log.info("Removing worker {}", dataset);

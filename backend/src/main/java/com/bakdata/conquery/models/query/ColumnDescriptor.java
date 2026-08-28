@@ -38,7 +38,12 @@ public class ColumnDescriptor {
 
 	private final Set<SemanticType> semantics;
 
-	public ColumnDescriptor(String label, String defaultLabel, String description, String type, Set<SemanticType> semantics){
+	public ColumnDescriptor(
+		String label,
+		String defaultLabel,
+		String description,
+		String type,
+		Set<SemanticType> semantics) {
 
 		this.label = label;
 		this.description = description;

@@ -21,26 +21,25 @@ public class FileUtil {
 	public static final Pattern SAVE_FILENAME_REPLACEMENT_MATCHER = Pattern.compile("[^a-zA-Z0-9äÄöÖüÜß .\\-]");
 
 
-    public static String makeSafeFileName(String label) {
-        return SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(label).replaceAll("_");
-    }
+	public static String makeSafeFileName(String label) {
+		return SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(label).replaceAll("_");
+	}
 
-    public void deleteRecursive(Path path) throws IOException {
-        Files.walkFileTree((path),
-						   new SimpleFileVisitor<>() {
-							   @Override
-							   public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-								   Files.delete(dir);
-								   return FileVisitResult.CONTINUE;
-							   }
+	public void deleteRecursive(Path path) throws IOException {
+		Files.walkFileTree((path), new SimpleFileVisitor<>() {
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+				Files.delete(dir);
+				return FileVisitResult.CONTINUE;
+			}
 
-							   @Override
-							   public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-								   Files.delete(file);
-								   return FileVisitResult.CONTINUE;
-                    }
-                });
-    }
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+				Files.delete(file);
+				return FileVisitResult.CONTINUE;
+			}
+		});
+	}
 
 
 	/**
@@ -67,8 +66,7 @@ public class FileUtil {
 		try {
 			// Check if resolved URI is still a valid URL
 			resolvedURI.toURL();
-		}
-		catch (MalformedURLException e) {
+		} catch (MalformedURLException e) {
 			throw new IllegalArgumentException("Resolved url is not valid", e);
 		}
 		return resolvedURI;

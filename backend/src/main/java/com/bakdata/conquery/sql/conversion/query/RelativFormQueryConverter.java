@@ -26,11 +26,11 @@ public class RelativFormQueryConverter implements NodeConverter<RelativeFormQuer
 		QueryStep stratificationTable = tableFactory.createRelativeStratificationTable(form, context);
 
 		return formHelper.convertForm(
-				FormType.RELATIVE,
-				stratificationTable,
-				form.getFeatures(),
-				form.getResultInfos(),
-				context
+			FormType.RELATIVE,
+			stratificationTable,
+			form.getFeatures(),
+			form.getResultInfos(),
+			context
 		);
 	}
 

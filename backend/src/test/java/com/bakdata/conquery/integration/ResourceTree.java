@@ -16,7 +16,9 @@ import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
-@RequiredArgsConstructor @Getter @ToString
+@RequiredArgsConstructor
+@Getter
+@ToString
 public class ResourceTree {
 	@ToString.Include
 	private final String name;
@@ -29,7 +31,7 @@ public class ResourceTree {
 	private Map<String, ResourceTree> children = new HashMap<>();
 
 	public void addAll(Iterable<Resource> resources) {
-		for(Resource r : resources) {
+		for (Resource r : resources) {
 			add(r);
 		}
 	}
@@ -40,19 +42,17 @@ public class ResourceTree {
 	}
 
 	private void add(Resource r, String[] parts, int index) {
-		if(index == parts.length) {
+		if (index == parts.length) {
 			this.value = r;
 			return;
 		}
-		children
-			.computeIfAbsent(parts[index], name -> new ResourceTree(name, this))
-			.add(r, parts, index+1);
+		children.computeIfAbsent(parts[index], name -> new ResourceTree(name, this)).add(r, parts, index + 1);
 	}
 
 	public String getFullName() {
-		List<String> l = Stream
-			.iterate(this, Objects::nonNull, ResourceTree::getParent)
-			.map(ResourceTree::getName)
+		List<String> l = Stream.iterate(this, Objects::nonNull, ResourceTree::getParent)
+			.map(
+				ResourceTree::getName)
 			.filter(Objects::nonNull)
 			.collect(Collectors.toList());
 		Collections.reverse(l);

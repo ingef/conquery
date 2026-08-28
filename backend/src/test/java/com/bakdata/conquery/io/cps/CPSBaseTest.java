@@ -13,36 +13,35 @@ public class CPSBaseTest {
 
 	@TestFactory
 	public Stream<DynamicTest> testCPSBase() {
-		return CPSTypeIdResolver
-			.listImplementations()
+		return CPSTypeIdResolver.listImplementations()
 			.stream()
 			.map(this::createTest)
-			.sorted(Comparator.comparing(DynamicTest::getDisplayName));
+			.sorted(
+				Comparator.comparing(DynamicTest::getDisplayName));
 	}
-	
-	public DynamicTest createTest(Pair<Class<?>,Class<?>> baseTypePair) {
+
+	public DynamicTest createTest(Pair<Class<?>, Class<?>> baseTypePair) {
 		String name;
-		if(baseTypePair.getRight().getAnnotation(CPSType.class)!=null) {
+		if (baseTypePair.getRight().getAnnotation(CPSType.class) != null) {
 			name = baseTypePair.getRight().getAnnotation(CPSType.class).id();
-		}
-		else {
+		} else {
 			name = "multiple";
 		}
-				
-		name += " -> "+baseTypePair.getRight().getSimpleName();
-		return DynamicTest.dynamicTest(name, ()->test(baseTypePair.getLeft(), baseTypePair.getRight()));
+
+		name += " -> " + baseTypePair.getRight().getSimpleName();
+		return DynamicTest.dynamicTest(name, () -> test(baseTypePair.getLeft(), baseTypePair.getRight()));
 	}
 
 	public void test(Class<?> base, Class<?> type) {
 		CPSType[] annos = type.getAnnotationsByType(CPSType.class);
 		assertThat(annos).isNotEmpty();
-		for(CPSType anno : annos) {
+		for (CPSType anno : annos) {
 			assertThat(anno.base()).isNotNull();
 			assertThat(anno.id()).isNotEmpty();
 			assertThat(anno.base()).isEqualTo(base);
 			assertThat(base).hasAnnotation(CPSBase.class);
 			assertThat(base).isAssignableFrom(base);
-			if(anno.subTyped()) {				
+			if (anno.subTyped()) {
 				assertThat(SubTyped.class).isAssignableFrom(type);
 			}
 		}

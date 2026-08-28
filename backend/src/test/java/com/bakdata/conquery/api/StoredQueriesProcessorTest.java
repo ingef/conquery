@@ -3,6 +3,8 @@ package com.bakdata.conquery.api;
 import static com.bakdata.conquery.models.execution.ExecutionState.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.validation.Validator;
+import jakarta.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -12,8 +14,6 @@ import java.util.List;
 import java.util.OptionalLong;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
@@ -78,32 +78,32 @@ public class StoredQueriesProcessorTest {
 	private static final UserExtension USER_0_EXTENSIONS = new UserExtension(STORAGE, "0");
 	@RegisterExtension
 	private static final UserExtension USER_1_EXTENSIONS = new UserExtension(STORAGE, "1");
-	private static final User[] USERS = new User[]{
-			USER_0_EXTENSIONS.getUser(),
-			USER_1_EXTENSIONS.getUser()
+	private static final User[] USERS = new User[]{USER_0_EXTENSIONS.getUser(), USER_1_EXTENSIONS.getUser()
 	};
 
 	private static final Validator VALIDATOR = Validators.newValidator();
 	public static final InternalMapperFactory INTERNAL_MAPPER_FACTORY = new InternalMapperFactory(CONFIG, VALIDATOR);
-	private static final DatasetRegistry<DistributedNamespace>
-			DATASET_REGISTRY =
-			new DatasetRegistry<>(
-					CONFIG,
-					INTERNAL_MAPPER_FACTORY,
-					new ClusterNamespaceHandler(new ClusterState(), CONFIG, INTERNAL_MAPPER_FACTORY),
-					INDEX_SERVICE
-			);
+	private static final DatasetRegistry<DistributedNamespace> DATASET_REGISTRY = new DatasetRegistry<>(
+		CONFIG,
+		INTERNAL_MAPPER_FACTORY,
+		new ClusterNamespaceHandler(new ClusterState(), CONFIG, INTERNAL_MAPPER_FACTORY),
+		INDEX_SERVICE
+	);
 	private static final QueryProcessor processor = new QueryProcessor(DATASET_REGISTRY, STORAGE, CONFIG, VALIDATOR);
 	private static final ExcelResultProvider EXCEL_RESULT_PROVIDER = new ExcelResultProvider();
 	private static final CsvResultProvider CSV_RESULT_PROVIDER = new CsvResultProvider();
 	private static final ArrowResultProvider ARROW_RESULT_PROVIDER = new ArrowResultProvider();
 	private static final ParquetResultProvider PARQUET_RESULT_PROVIDER = new ParquetResultProvider();
-	private static final Dataset DATASET_0 = new Dataset() {{
-		setName("dataset0");
-	}};
-	private static final Dataset DATASET_1 = new Dataset() {{
-		setName("dataset1");
-	}};
+	private static final Dataset DATASET_0 = new Dataset() {
+		{
+			setName("dataset0");
+		}
+	};
+	private static final Dataset DATASET_1 = new Dataset() {
+		{
+			setName("dataset1");
+		}
+	};
 	private static ManagedExecutionId QUERY_ID_0;
 	private static ManagedExecutionId QUERY_ID_1;
 	private static ManagedExecutionId QUERY_ID_2;
@@ -118,7 +118,11 @@ public class StoredQueriesProcessorTest {
 
 	@BeforeAll
 	public static void beforeAll() throws IOException {
-		new AuthorizationController(STORAGE, CONFIG, new Environment(StoredQueriesProcessorTest.class.getSimpleName()), null);
+		new AuthorizationController(
+			STORAGE,
+			CONFIG,
+			new Environment(StoredQueriesProcessorTest.class.getSimpleName()),
+			null);
 
 		DATASET_REGISTRY.createNamespace(DATASET_0, STORAGE, ENVIRONMENT);
 		DATASET_REGISTRY.createNamespace(DATASET_1, STORAGE, ENVIRONMENT);
@@ -143,38 +147,34 @@ public class StoredQueriesProcessorTest {
 
 
 		QUERIES = ImmutableList.of(
-				mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_0, NEW, DATASET_0, 100L),            // included
-				mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_1, NEW, DATASET_1, 100L),            // not included: wrong dataset
-				mockManagedForm(USERS[0], QUERY_ID_2, NEW, DATASET_0),                            // not included: not a ManagedQuery
-				mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_3, NEW, DATASET_0, 100L),         // not included: missing permission
-				mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_4, DONE, DATASET_0, 100L),        // included
-				mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_5, FAILED, DATASET_0, 100L),        // not included: wrong state
-				mockManagedQuery(new AbsoluteFormQuery(null, null, null, null),
-								 USERS[0],
-								 QUERY_ID_6,
-								 NEW,
-								 DATASET_0,
-								 100L
-				),                                                    // not included: wrong query structure
-				mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_7, DONE, new CQAnd() {{
-														setChildren(List.of(new CQConcept() {{
-															setLabel("User Concept Label");
-														}}));
-													}}, DATASET_0
-				),    // included, but secondaryId-Query
-				mockManagedQuery(new ConceptQuery(new CQExternal(new ArrayList<>(), new String[0][0], false)),
-								 USERS[1],
-						QUERY_ID_8,
-								 DONE,
-								 DATASET_0,
-								 100L
-				),        // included
-				mockManagedConceptQueryFrontEnd(USERS[1],
-						QUERY_ID_9,
-												DONE,
-												DATASET_0,
-												2_000_000L
-				)        // included, but no result url for xlsx (result has too many rows)
+			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_0, NEW, DATASET_0, 100L),            // included
+			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_1, NEW, DATASET_1, 100L),            // not included: wrong dataset
+			mockManagedForm(USERS[0], QUERY_ID_2, NEW, DATASET_0),                            // not included: not a ManagedQuery
+			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_3, NEW, DATASET_0, 100L),         // not included: missing permission
+			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_4, DONE, DATASET_0, 100L),        // included
+			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_5, FAILED, DATASET_0, 100L),        // not included: wrong state
+			mockManagedQuery(new AbsoluteFormQuery(null, null, null, null), USERS[0], QUERY_ID_6, NEW, DATASET_0, 100L
+			),                                                    // not included: wrong query structure
+			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_7, DONE, new CQAnd() {
+				{
+					setChildren(List.of(new CQConcept() {
+						{
+							setLabel("User Concept Label");
+						}
+					}));
+				}
+			}, DATASET_0
+			),    // included, but secondaryId-Query
+			mockManagedQuery(
+				new ConceptQuery(new CQExternal(new ArrayList<>(), new String[0][0], false)),
+				USERS[1],
+				QUERY_ID_8,
+				DONE,
+				DATASET_0,
+				100L
+			),        // included
+			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_9, DONE, DATASET_0, 2_000_000L
+			)        // included, but no result url for xlsx (result has too many rows)
 
 		);
 
@@ -183,7 +183,8 @@ public class StoredQueriesProcessorTest {
 
 	private static void setState(ExecutionState execState, ManagedExecutionId id) {
 		if (execState != NEW) {
-			DistributedExecutionManager.DistributedExecutionInfo state = new DistributedExecutionManager.DistributedExecutionInfo(Collections.emptyList());
+			DistributedExecutionManager.DistributedExecutionInfo state = new DistributedExecutionManager.DistributedExecutionInfo(
+				Collections.emptyList());
 			state.setExecutionState(execState);
 			state.getExecutingLock().countDown();
 
@@ -198,25 +199,46 @@ public class StoredQueriesProcessorTest {
 		return new ManagedExecutionId(dataset0.getId(), UUID.fromString(idBuilder.toString()));
 	}
 
-	private static ManagedQuery mockManagedConceptQueryFrontEnd(User user, ManagedExecutionId id, ExecutionState execState, Dataset dataset, long resultCount) {
+	private static ManagedQuery mockManagedConceptQueryFrontEnd(
+		User user,
+		ManagedExecutionId id,
+		ExecutionState execState,
+		Dataset dataset,
+		long resultCount) {
 		return mockManagedQuery(
-				new ConceptQuery(
-						new CQAnd() {{
-							// Shorthand class initializer block to support visiting of CQAnd Children
-							// We set a user label here, so that no ConceptId needs to be resolved
-							setChildren(List.of(new CQConcept() {{
+			new ConceptQuery(
+				new CQAnd() {
+					{
+						// Shorthand class initializer block to support visiting of CQAnd Children
+						// We set a user label here, so that no ConceptId needs to be resolved
+						setChildren(List.of(new CQConcept() {
+							{
 								setLabel("User Concept Label");
-							}}));
-						}}
-				),
-				user,
-				id,
-				execState, dataset, resultCount
+							}
+						}));
+					}
+				}
+			),
+			user,
+			id,
+			execState,
+			dataset,
+			resultCount
 		);
 	}
 
-	private static ManagedForm<?> mockManagedForm(User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset) {
-		return new ManagedInternalForm<>(new ExportForm(), user.getId(), dataset.getId(), STORAGE, DATASET_REGISTRY, CONFIG) {
+	private static ManagedForm<?> mockManagedForm(
+		User user,
+		ManagedExecutionId id,
+		ExecutionState execState,
+		final Dataset dataset) {
+		return new ManagedInternalForm<>(
+			new ExportForm(),
+			user.getId(),
+			dataset.getId(),
+			STORAGE,
+			DATASET_REGISTRY,
+			CONFIG) {
 			{
 				setState(execState, id);
 				setCreationTime(LocalDateTime.MIN);
@@ -226,13 +248,19 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static ManagedQuery mockManagedQuery(
-			Query queryDescription,
-			User user,
-			ManagedExecutionId id,
-			ExecutionState execState,
-			final Dataset dataset,
-			final long resultCount) {
-		ManagedQuery managedQuery = new ManagedQuery(queryDescription, user.getId(), dataset.getId(), STORAGE, DATASET_REGISTRY, CONFIG) {
+		Query queryDescription,
+		User user,
+		ManagedExecutionId id,
+		ExecutionState execState,
+		final Dataset dataset,
+		final long resultCount) {
+		ManagedQuery managedQuery = new ManagedQuery(
+			queryDescription,
+			user.getId(),
+			dataset.getId(),
+			STORAGE,
+			DATASET_REGISTRY,
+			CONFIG) {
 			{
 				setCreationTime(LocalDateTime.MIN);
 				setQueryId(id.getExecution());
@@ -255,12 +283,19 @@ public class StoredQueriesProcessorTest {
 		return managedQuery;
 	}
 
-	private static ManagedQuery mockManagedSecondaryIdQueryFrontEnd(User user, ManagedExecutionId id, ExecutionState execState, CQElement root, Dataset dataset) {
+	private static ManagedQuery mockManagedSecondaryIdQueryFrontEnd(
+		User user,
+		ManagedExecutionId id,
+		ExecutionState execState,
+		CQElement root,
+		Dataset dataset) {
 		final SecondaryIdQuery sIdQ = new SecondaryIdQuery();
-		SecondaryIdDescription sId = new SecondaryIdDescription() {{
-			setDataset(dataset.getId());
-			setName("sid");
-		}};
+		SecondaryIdDescription sId = new SecondaryIdDescription() {
+			{
+				setDataset(dataset.getId());
+				setName("sid");
+			}
+		};
 		sIdQ.setSecondaryId(sId.getId());
 		sIdQ.setRoot(root);
 
@@ -270,31 +305,47 @@ public class StoredQueriesProcessorTest {
 	@Test
 	public void getQueriesFiltered() {
 
-		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0.getId(), URI_BUILDER, USERS[0], QUERIES.stream().map(ManagedExecution::getId), true)
-											   .collect(Collectors.toList());
+		List<ExecutionStatus> infos = processor.getQueriesFiltered(
+			DATASET_0.getId(),
+			URI_BUILDER,
+			USERS[0],
+			QUERIES.stream().map(ManagedExecution::getId),
+			true).collect(Collectors.toList());
 
-		assertThat(infos)
-				.containsExactly(
-						makeState(QUERY_ID_0, USERS[0], USERS[0], NEW, "CONCEPT_QUERY", null, null),
-						makeState(QUERY_ID_4, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null, 100L),
-						makeState(QUERY_ID_7, USERS[1], USERS[0], DONE, "SECONDARY_ID_QUERY", new SecondaryIdDescriptionId(DATASET_0.getId(), "sid"), 100L),
-						makeState(QUERY_ID_8, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null, 100L),
-						makeState(QUERY_ID_9, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null, 2_000_000L)
-				);
+		assertThat(infos).containsExactly(
+			makeState(QUERY_ID_0, USERS[0], USERS[0], NEW, "CONCEPT_QUERY", null, null),
+			makeState(QUERY_ID_4, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null, 100L),
+			makeState(
+				QUERY_ID_7,
+				USERS[1],
+				USERS[0],
+				DONE,
+				"SECONDARY_ID_QUERY",
+				new SecondaryIdDescriptionId(DATASET_0.getId(), "sid"),
+				100L),
+			makeState(QUERY_ID_8, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null, 100L),
+			makeState(QUERY_ID_9, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null, 2_000_000L)
+		);
 	}
 
 	@SneakyThrows
 	private static ExecutionStatus makeState(
-			ManagedExecutionId id,
-			User owner,
-			User callingUser,
-			ExecutionState state,
-			String typeLabel,
-			SecondaryIdDescriptionId secondaryId,
-			Long resultCount) {
+		ManagedExecutionId id,
+		User owner,
+		User callingUser,
+		ExecutionState state,
+		String typeLabel,
+		SecondaryIdDescriptionId secondaryId,
+		Long resultCount) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
 
-		final ManagedQuery execMock = new ManagedQuery(null, owner.getId(), DATASET_0.getId(), STORAGE, DATASET_REGISTRY, CONFIG) {
+		final ManagedQuery execMock = new ManagedQuery(
+			null,
+			owner.getId(),
+			DATASET_0.getId(),
+			STORAGE,
+			DATASET_REGISTRY,
+			CONFIG) {
 			{
 				setQueryId(id.getExecution());
 				setConfig(CONFIG);
@@ -307,7 +358,7 @@ public class StoredQueriesProcessorTest {
 
 			@Override
 			public synchronized OptionalLong resultRowCount() {
-				return resultCount == null ? OptionalLong.empty(): OptionalLong.of(resultCount);
+				return resultCount == null ? OptionalLong.empty() : OptionalLong.of(resultCount);
 			}
 		};
 

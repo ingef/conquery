@@ -26,40 +26,53 @@ import org.jooq.impl.DSL;
 public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterConverter<CountFilter, Range.LongRange>, SqlAggregator {
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(CountSelect countSelect, SelectContext<ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(
+		CountSelect countSelect,
+		SelectContext<ConnectorSqlTables> selectContext) {
 
 		ConnectorSqlTables tables = selectContext.getTables();
 		boolean distinct = countSelect.isDistinct();
 		Column countColumn = countSelect.getColumn().resolve();
 		String alias = selectContext.getNameGenerator().selectName(countSelect);
 
-		CommonAggregationSelect<Integer> countAggregationSelect = createCountAggregationSelect(countColumn, distinct, alias, tables);
+		CommonAggregationSelect<Integer> countAggregationSelect = createCountAggregationSelect(
+			countColumn,
+			distinct,
+			alias,
+			tables);
 
 		String finalPredecessor = tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
 		ExtractingSqlSelect<Integer> finalSelect = countAggregationSelect.getGroupBy().qualify(finalPredecessor);
 
 		return ConnectorSqlSelects.builder()
-								  .preprocessingSelects(countAggregationSelect.getRootSelects())
-								  .aggregationSelect(countAggregationSelect.getGroupBy())
-								  .finalSelect(finalSelect)
-								  .build();
+			.preprocessingSelects(
+				countAggregationSelect.getRootSelects())
+			.aggregationSelect(countAggregationSelect.getGroupBy())
+			.finalSelect(
+				finalSelect)
+			.build();
 	}
 
-	private CommonAggregationSelect<Integer> createCountAggregationSelect(Column countColumn, boolean distinct, String alias, ConnectorSqlTables tables) {
+	private CommonAggregationSelect<Integer> createCountAggregationSelect(
+		Column countColumn,
+		boolean distinct,
+		String alias,
+		ConnectorSqlTables tables) {
 
-		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), countColumn.getName(), Object.class);
+		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(
+			tables.getRootTable(),
+			countColumn.getName(),
+			Object.class);
 
 
-		Field<?> qualifiedRootSelect = rootSelect.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
-		Field<Integer> countField = distinct
-									? DSL.countDistinct(qualifiedRootSelect)
-									: DSL.count(qualifiedRootSelect);
-		FieldWrapper<Integer> countGroupBy = new FieldWrapper<>(DSL.nullif(countField, 0).as(alias), countColumn.getName());
+		Field<?> qualifiedRootSelect = rootSelect.qualify(
+			tables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
+		Field<Integer> countField = distinct ? DSL.countDistinct(qualifiedRootSelect) : DSL.count(qualifiedRootSelect);
+		FieldWrapper<Integer> countGroupBy = new FieldWrapper<>(
+			DSL.nullif(countField, 0).as(alias),
+			countColumn.getName());
 
-		return CommonAggregationSelect.<Integer>builder()
-									  .rootSelect(rootSelect)
-									  .groupBy(countGroupBy)
-									  .build();
+		return CommonAggregationSelect.<Integer>builder().rootSelect(rootSelect).groupBy(countGroupBy).build();
 	}
 
 	@Override
@@ -70,17 +83,23 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 		Column countColumn = countFilter.getColumn().resolve();
 		String alias = filterContext.getNameGenerator().selectName(countFilter);
 
-		CommonAggregationSelect<Integer> countAggregationSelect = createCountAggregationSelect(countColumn, distinct, alias, tables);
+		CommonAggregationSelect<Integer> countAggregationSelect = createCountAggregationSelect(
+			countColumn,
+			distinct,
+			alias,
+			tables);
 		ConnectorSqlSelects selects = ConnectorSqlSelects.builder()
-														 .preprocessingSelects(countAggregationSelect.getRootSelects())
-														 .aggregationSelect(countAggregationSelect.getGroupBy())
-														 .build();
+			.preprocessingSelects(
+				countAggregationSelect.getRootSelects())
+			.aggregationSelect(countAggregationSelect.getGroupBy())
+			.build();
 
-		Field<Integer> qualifiedCountSelect = countAggregationSelect.getGroupBy().qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER)).select();
+		Field<Integer> qualifiedCountSelect = countAggregationSelect.getGroupBy()
+			.qualify(
+				tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER))
+			.select();
 		CountCondition countCondition = new CountCondition(qualifiedCountSelect, filterContext.getValue());
-		WhereClauses whereClauses = WhereClauses.builder()
-												.groupFilter(countCondition)
-												.build();
+		WhereClauses whereClauses = WhereClauses.builder().groupFilter(countCondition).build();
 
 		return new SqlFilters(selects, whereClauses);
 	}
@@ -90,7 +109,6 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 		Param<Integer> field = DSL.inline(1); // no grouping, count is always 1 per row
 		return new CountCondition(field, filterContext.getValue()).condition();
 	}
-
 
 
 }

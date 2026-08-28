@@ -10,7 +10,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id="ADD_IMPORT", base=NamespacedMessage.class)
+@CPSType(id = "ADD_IMPORT", base = NamespacedMessage.class)
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @Slf4j
 @Getter

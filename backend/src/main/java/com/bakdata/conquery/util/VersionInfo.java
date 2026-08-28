@@ -42,14 +42,12 @@ public class VersionInfo {
 			ZonedDateTime parsedBuildTime = null;
 			try {
 				parsedBuildTime = ZonedDateTime.parse(timeProp);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error("Could not parse date time from git.properties", e);
 			}
 			buildTime = parsedBuildTime;
 			projectVersion = properties.getProperty("project.version");
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new IllegalStateException("Could not read git properties information", e);
 		}
 	}

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.execution;
 
+import jakarta.validation.constraints.NotNull;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -10,7 +11,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -145,7 +145,12 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	private transient DatasetRegistry<?> datasetRegistry;
 
 
-	public ManagedExecution(@NonNull UserId owner, @NonNull DatasetId dataset, MetaStorage metaStorage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
+	public ManagedExecution(
+		@NonNull UserId owner,
+		@NonNull DatasetId dataset,
+		MetaStorage metaStorage,
+		DatasetRegistry<?> datasetRegistry,
+		ConqueryConfig config) {
 		this.owner = owner;
 		this.dataset = dataset;
 		this.config = config;
@@ -158,13 +163,15 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 		query.visit(namespacesIdCollector);
 
 		final Set<Concept<?>> concepts = namespacesIdCollector.getIdentifiables()
-															  .stream()
-															  .filter(ConceptElement.class::isInstance)
-															  .map(ConceptElement.class::cast)
-															  .<Concept<?>>map(ConceptElement::getConcept)
-															  .collect(Collectors.toSet());
+			.stream()
+			.filter(
+				ConceptElement.class::isInstance)
+			.map(ConceptElement.class::cast)
+			.<Concept<?>>map(
+				ConceptElement::getConcept)
+			.collect(Collectors.toSet());
 
-        return subject.isPermittedAll(concepts, Ability.READ);
+		return subject.isPermittedAll(concepts, Ability.READ);
 	}
 
 	/**
@@ -203,13 +210,11 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	protected abstract void doInitExecutable();
 
 	private static boolean containsDates(QueryDescription query) {
-		return Visitable.stream(query)
-						.anyMatch(visitable ->
-										  switch (visitable) {
-											  case CQConcept cqConcept -> !cqConcept.isExcludeFromTimeAggregation();
-											  case CQExternal external -> external.containsDates();
-											  default -> false;
-										  });
+		return Visitable.stream(query).anyMatch(visitable -> switch (visitable) {
+			case CQConcept cqConcept -> !cqConcept.isExcludeFromTimeAggregation();
+			case CQExternal external -> external.containsDates();
+			default -> false;
+		});
 	}
 
 	/**
@@ -235,9 +240,12 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	public void fail(ConqueryErrorInfo error) {
 		if (this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
 			// Warn only again if the error is different (failed might be called per collected shard result)
-			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
-		}
-		else {
+			log.warn(
+				"The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}",
+				getId(),
+				this.error,
+				error);
+		} else {
 			this.error = error;
 			// Log the error, so its id is at least once in the logs
 			log.warn("The execution [{}] failed with:\n\t{}", getId(), getError());
@@ -279,7 +287,8 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 
 			if (getExecutionManager().isInfoPresent(getId())) {
-				Preconditions.checkArgument(getExecutionManager().getExecutionInfo(getId()).getExecutionState() != ExecutionState.RUNNING);
+				Preconditions.checkArgument(
+					getExecutionManager().getExecutionInfo(getId()).getExecutionState() != ExecutionState.RUNNING);
 			}
 
 			startTime = LocalDateTime.now();
@@ -306,7 +315,8 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 		status.setShared(shared);
 		status.setOwn(subject.isOwner(this));
 		status.setCreatedAt(getCreationTime().atZone(ZoneId.systemDefault()));
-		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
+		status.setRequiredTime(
+			(startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
 		status.setStartTime(startTime);
 		status.setFinishTime(finishTime);
 		status.setStatus(getState());
@@ -403,7 +413,10 @@ public abstract class ManagedExecution extends MetaIdentifiable<ManagedExecution
 	/**
 	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
 	 */
-	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status, Namespace namespace) {
+	protected void setAdditionalFieldsForStatusWithSource(
+		Subject subject,
+		FullExecutionStatus status,
+		Namespace namespace) {
 		QueryDescription query = getSubmitted();
 
 		status.setCanExpand(canSubjectExpand(subject, query));

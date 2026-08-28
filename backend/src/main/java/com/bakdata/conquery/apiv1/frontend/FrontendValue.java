@@ -15,8 +15,8 @@ import org.jetbrains.annotations.NotNull;
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class FrontendValue implements Comparable<FrontendValue> {
-	private static final Comparator<FrontendValue> COMPARATOR = Comparator.comparing(FrontendValue::getValue)
-																		  .thenComparing(FrontendValue::getLabel);
+	private static final Comparator<FrontendValue> COMPARATOR = Comparator.comparing(
+		FrontendValue::getValue).thenComparing(FrontendValue::getLabel);
 
 	/**
 	 * Value is the only relevant data-point for hashing/equality and searching from the service perspective.

@@ -40,7 +40,8 @@ public class SqlExecutionService {
 
 	public SqlExecutionExecutionInfo execute(SqlQuery sqlQuery) {
 
-		final SqlExecutionExecutionInfo result = dslContext.connectionResult(connection -> createStatementAndExecute(sqlQuery, connection));
+		final SqlExecutionExecutionInfo result = dslContext.connectionResult(
+			connection -> createStatementAndExecute(sqlQuery, connection));
 
 		return result;
 	}
@@ -50,18 +51,24 @@ public class SqlExecutionService {
 		final String sqlString = sqlQuery.getSql();
 		List<ResultInfo> resultInfos = sqlQuery.getResultInfos();
 		final List<ResultSetProcessor.Reader<?>> resultTypes = resultInfos.stream()
-														.map(resultInfo -> resultInfo.createReader(resultSetProcessor))
-														.collect(Collectors.toList());
+			.map(
+				resultInfo -> resultInfo.createReader(resultSetProcessor))
+			.collect(Collectors.toList());
 
 		log.info("Executing query: \n{}", sqlString);
 
-		try (Statement statement = connection.createStatement();
-			 ResultSet resultSet = statement.executeQuery(sqlString)) {
+		try (Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery(
+			sqlString)) {
 			final int columnCount = resultSet.getMetaData().getColumnCount();
 			final List<String> columnNames = getColumnNames(resultSet, columnCount);
 			final List<EntityResult> resultTable = createResultTable(resultSet, resultTypes, columnCount);
 
-			return new SqlExecutionExecutionInfo(ExecutionState.RUNNING, columnNames, resultTable, resultInfos, new CountDownLatch(1));
+			return new SqlExecutionExecutionInfo(
+				ExecutionState.RUNNING,
+				columnNames,
+				resultTable,
+				resultInfos,
+				new CountDownLatch(1));
 		}
 		// not all DB vendors throw SQLExceptions
 		catch (SQLException | RuntimeException e) {
@@ -73,11 +80,15 @@ public class SqlExecutionService {
 	private List<String> getColumnNames(ResultSet resultSet, int columnCount) {
 		// JDBC ResultSet indices start with 1
 		return IntStream.rangeClosed(1, columnCount)
-						.mapToObj(columnIndex -> getColumnName(resultSet, columnIndex))
-						.toList();
+			.mapToObj(
+				columnIndex -> getColumnName(resultSet, columnIndex))
+			.toList();
 	}
 
-	private List<EntityResult> createResultTable(ResultSet resultSet, List<ResultSetProcessor.Reader<?>> resultTypes, int columnCount) throws SQLException {
+	private List<EntityResult> createResultTable(
+		ResultSet resultSet,
+		List<ResultSetProcessor.Reader<?>> resultTypes,
+		int columnCount) throws SQLException {
 		final List<EntityResult> resultTable = new ArrayList<>(resultSet.getFetchSize());
 		while (resultSet.next()) {
 			final SqlEntityResult resultRow = getResultRow(resultSet, resultTypes, columnCount);
@@ -89,13 +100,15 @@ public class SqlExecutionService {
 	private String getColumnName(ResultSet resultSet, int columnIndex) {
 		try {
 			return resultSet.getMetaData().getColumnName(columnIndex);
-		}
-		catch (SQLException e) {
+		} catch (SQLException e) {
 			throw new ConqueryError.SqlError(e);
 		}
 	}
 
-	private SqlEntityResult getResultRow(ResultSet resultSet, List<ResultSetProcessor.Reader<?>> resultTypes, int columnCount) throws SQLException {
+	private SqlEntityResult getResultRow(
+		ResultSet resultSet,
+		List<ResultSetProcessor.Reader<?>> resultTypes,
+		int columnCount) throws SQLException {
 
 		final String id = resultSet.getString(PID_COLUMN_INDEX);
 		final Object[] resultRow = new Object[columnCount - 1];
@@ -121,8 +134,7 @@ public class SqlExecutionService {
 		log.debug("Executing query: \n{}", query);
 		try {
 			return dslContext.fetchStream(query);
-		}
-		catch (DataAccessException exception) {
+		} catch (DataAccessException exception) {
 			throw new ConqueryError.SqlError(exception);
 		}
 	}

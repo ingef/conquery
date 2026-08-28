@@ -2,17 +2,17 @@ package com.bakdata.conquery.integration.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.Invocation;
-import jakarta.ws.rs.core.GenericType;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -49,31 +49,38 @@ public class IntegrationUtils {
 	/**
 	 * Send a query onto the conquery instance and assert the result's size.
 	 */
-	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, Object query, long expectedSize, ExecutionState expectedState, @Nullable User user, int expectedResponseCode) {
+	public static ManagedExecutionId assertQueryResult(
+		StandaloneSupport conquery,
+		Object query,
+		long expectedSize,
+		ExecutionState expectedState,
+		@Nullable User user,
+		int expectedResponseCode) {
 		final URI postQueryURI = getPostQueryURI(conquery);
 
 		// Submit Query
-		Invocation.Builder request = conquery.getClient()
-											 .target(postQueryURI)
-											 .request(MediaType.APPLICATION_JSON_TYPE);
+		Invocation.Builder request = conquery.getClient().target(postQueryURI).request(MediaType.APPLICATION_JSON_TYPE);
 
 		if (user != null) {
 			// Override authentication if user is provided
 			final String userToken = conquery.getAuthorizationController()
-											 .getConqueryTokenRealm()
-											 .createTokenForUser(user.getId());
+				.getConqueryTokenRealm()
+				.createTokenForUser(
+					user.getId());
 
 			request.header("Authorization", "Bearer " + userToken);
 		}
 
-		try(final Response response = request
-										  .post(Entity.entity(query, MediaType.APPLICATION_JSON_TYPE))) {
+		try (final Response response = request.post(Entity.entity(query, MediaType.APPLICATION_JSON_TYPE))) {
 
-			assertThat(response.getStatusInfo().getStatusCode())
-					.as(() -> response.readEntity(String.class))
-					.isEqualTo(expectedResponseCode);
+			assertThat(response.getStatusInfo().getStatusCode()).as(() -> response.readEntity(String.class))
+				.isEqualTo(
+					expectedResponseCode);
 
-			if (expectedState == ExecutionState.FAILED && !response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
+			if (expectedState == ExecutionState.FAILED && !response.getStatusInfo()
+				.getFamily()
+				.equals(
+					Response.Status.Family.SUCCESSFUL)) {
 				return null;
 			}
 
@@ -89,9 +96,7 @@ public class IntegrationUtils {
 			assertThat(status).isEqualTo(expectedState.name());
 
 			if (expectedState == ExecutionState.DONE && expectedSize != -1) {
-				assertThat(numberOfResults)
-						.describedAs("Query results")
-						.isEqualTo(expectedSize);
+				assertThat(numberOfResults).describedAs("Query results").isEqualTo(expectedSize);
 			}
 
 			return ManagedExecutionId.Parser.INSTANCE.parse(id);
@@ -102,31 +107,43 @@ public class IntegrationUtils {
 
 		URI allQueriesURI = getAllQueriesURI(conquery);
 		final Response response = conquery.getClient()
-										  .target(allQueriesURI)
-										  .queryParam("all-providers", true)
-										  .request(MediaType.APPLICATION_JSON_TYPE)
-										  .get();
+			.target(allQueriesURI)
+			.queryParam("all-providers", true)
+			.request(
+				MediaType.APPLICATION_JSON_TYPE)
+			.get();
 
 
 		assertThat(response.getStatusInfo().getStatusCode()).as(() -> response.readEntity(String.class))
-															.isEqualTo(expectedResponseCode);
+			.isEqualTo(
+				expectedResponseCode);
 
 		return response.readEntity(new GenericType<>() {
 		});
 	}
 
 	public static URI getPostQueryURI(StandaloneSupport conquery) {
-		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetQueryResource.class, "postQuery")
-							  .buildFromMap(Map.of(
-									  "dataset", conquery.getDataset()
-							  ));
+		return HierarchyHelper.hierarchicalPath(
+			conquery.defaultApiURIBuilder(),
+			DatasetQueryResource.class,
+			"postQuery")
+			.buildFromMap(
+				Map.of(
+					"dataset",
+					conquery.getDataset()
+				));
 	}
 
 	private static URI getAllQueriesURI(StandaloneSupport conquery) {
-		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetQueryResource.class, "getAllQueries")
-							  .buildFromMap(Map.of(
-									  "dataset", conquery.getDataset()
-							  ));
+		return HierarchyHelper.hierarchicalPath(
+			conquery.defaultApiURIBuilder(),
+			DatasetQueryResource.class,
+			"getAllQueries")
+			.buildFromMap(
+				Map.of(
+					"dataset",
+					conquery.getDataset()
+				));
 	}
 
 	private static JsonNode getRawExecutionStatus(String id, StandaloneSupport conquery, User user) {
@@ -136,12 +153,17 @@ public class IntegrationUtils {
 		for (int trial = 0; trial < 5; trial++) {
 			log.debug("Trying to get Query result");
 
-			final JsonNode execStatusRaw =
-					conquery.getClient()
-							.target(queryStatusURI)
-							.request(MediaType.APPLICATION_JSON_TYPE)
-							.header("Authorization", "Bearer " + conquery.getAuthorizationController().getConqueryTokenRealm().createTokenForUser(user.getId()))
-							.get(JsonNode.class);
+			final JsonNode execStatusRaw = conquery.getClient()
+				.target(queryStatusURI)
+				.request(
+					MediaType.APPLICATION_JSON_TYPE)
+				.header(
+					"Authorization",
+					"Bearer " + conquery.getAuthorizationController()
+						.getConqueryTokenRealm()
+						.createTokenForUser(
+							user.getId()))
+				.get(JsonNode.class);
 
 			final String status = execStatusRaw.get(ExecutionStatus.Fields.status).asText();
 
@@ -154,35 +176,56 @@ public class IntegrationUtils {
 	}
 
 	private static URI getQueryStatusURI(StandaloneSupport conquery, String id) {
-		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "getStatus")
-							  .buildFromMap(Map.of(
-									  "query", id, "dataset", conquery.getDataset()
-							  ));
+		return HierarchyHelper.hierarchicalPath(
+			conquery.defaultApiURIBuilder(),
+			QueryResource.class,
+			"getStatus")
+			.buildFromMap(
+				Map.of(
+					"query",
+					id,
+					"dataset",
+					conquery.getDataset()
+				));
 	}
 
 	private static URI getQueryCancelURI(StandaloneSupport conquery, String id) {
-		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "cancel")
-							  .buildFromMap(Map.of(
-									  "query", id, "dataset", conquery.getDataset()
-							  ));
+		return HierarchyHelper.hierarchicalPath(
+			conquery.defaultApiURIBuilder(),
+			QueryResource.class,
+			"cancel")
+			.buildFromMap(
+				Map.of(
+					"query",
+					id,
+					"dataset",
+					conquery.getDataset()
+				));
 	}
 
-	public static FullExecutionStatus getExecutionStatus(StandaloneSupport conquery, ManagedExecutionId executionId, User user, int expectedResponseCode) {
+	public static FullExecutionStatus getExecutionStatus(
+		StandaloneSupport conquery,
+		ManagedExecutionId executionId,
+		User user,
+		int expectedResponseCode) {
 		final URI queryStatusURI = getQueryStatusURI(conquery, executionId.toString());
 
 		final String userToken = conquery.getAuthorizationController()
-										 .getConqueryTokenRealm()
-										 .createTokenForUser(user.getId());
+			.getConqueryTokenRealm()
+			.createTokenForUser(
+				user.getId());
 
 		final Response response = conquery.getClient()
-										  .target(queryStatusURI)
-										  .request(MediaType.APPLICATION_JSON_TYPE)
-										  .header("Authorization", "Bearer " + userToken)
-										  .get();
+			.target(queryStatusURI)
+			.request(
+				MediaType.APPLICATION_JSON_TYPE)
+			.header("Authorization", "Bearer " + userToken)
+			.get();
 
 
 		assertThat(response.getStatusInfo().getStatusCode()).as("Result of %s", queryStatusURI)
-															.isEqualTo(expectedResponseCode);
+			.isEqualTo(
+				expectedResponseCode);
 
 
 		return response.readEntity(FullExecutionStatus.class);
@@ -192,14 +235,17 @@ public class IntegrationUtils {
 		final URI cancelQueryURI = getQueryCancelURI(conquery, executionId.toString());
 
 		final String userToken = conquery.getAuthorizationController()
-										 .getConqueryTokenRealm()
-										 .createTokenForUser(user.getId());
+			.getConqueryTokenRealm()
+			.createTokenForUser(
+				user.getId());
 
 		return conquery.getClient()
-										  .target(cancelQueryURI)
-										  .request(MediaType.APPLICATION_JSON_TYPE)
-										  .header("Authorization", "Bearer " + userToken)
-										  .post(null);
+			.target(cancelQueryURI)
+			.request(MediaType.APPLICATION_JSON_TYPE)
+			.header(
+				"Authorization",
+				"Bearer " + userToken)
+			.post(null);
 
 	}
 }

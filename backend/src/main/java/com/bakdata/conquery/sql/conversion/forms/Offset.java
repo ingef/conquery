@@ -12,8 +12,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum Offset {
-	MINUS_ONE(-1),
-	NONE(0),
-	ONE(1);
+	MINUS_ONE(-1), NONE(0), ONE(1);
+
 	private final int offset;
 }

@@ -28,8 +28,7 @@ public abstract class QPChainNode extends QPNode {
 	public void setChild(QPNode child) {
 		if (child == null) {
 			this.child = new Leaf();
-		}
-		else {
+		} else {
 			this.child = child;
 		}
 	}

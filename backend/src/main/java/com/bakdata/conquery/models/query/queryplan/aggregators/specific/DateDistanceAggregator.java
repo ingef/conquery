@@ -38,8 +38,7 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		if (CDate.isPositiveInfinity(ctx.getDateRestriction().getMaxValue()) || ctx.getDateRestriction().isEmpty()) {
 			reference = CDate.toLocalDate(ctx.getToday());
-		}
-		else {
+		} else {
 			reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
 		}
 	}

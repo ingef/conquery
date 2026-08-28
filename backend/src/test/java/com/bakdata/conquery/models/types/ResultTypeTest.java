@@ -46,69 +46,85 @@ public class ResultTypeTest {
 
 	@SuppressWarnings("unused")
 	public static List<Arguments> testData() {
-		return List.of(Arguments.of(PRETTY, ResultType.Primitive.BOOLEAN, true, "Yes"),
-					   Arguments.of(PRETTY, ResultType.Primitive.BOOLEAN, false, "No"),
-					   Arguments.of(PRETTY, ResultType.Primitive.STRING, "test", "test"),
-					   Arguments.of(PRETTY, ResultType.Primitive.DATE, CDate.ofLocalDate(LocalDate.of(2013, 7, 12)), "2013-07-12"),
-					   Arguments.of(PRETTY_DE, ResultType.Primitive.DATE, CDate.ofLocalDate(LocalDate.of(2013, 7, 12)), "12.07.2013"),
-					   Arguments.of(PRETTY,
-									ResultType.Primitive.DATE_RANGE,
-									List.of(CDate.ofLocalDate(LocalDate.of(2013, 7, 12)), CDate.ofLocalDate(LocalDate.of(2013, 7, 12))),
-									"2013-07-12"
-					   ),
-					   Arguments.of(PRETTY_DE,
-									ResultType.Primitive.DATE_RANGE,
-									List.of(CDate.ofLocalDate(LocalDate.of(2013, 7, 12)), CDate.ofLocalDate(LocalDate.of(2013, 7, 12))),
-									"12.07.2013"
-					   ),
-					   Arguments.of(PRETTY,
-									ResultType.Primitive.DATE_RANGE,
-									List.of(CDate.ofLocalDate(LocalDate.of(2013, 7, 12)), CDate.ofLocalDate(LocalDate.of(2014, 7, 12))),
-									"2013-07-12/2014-07-12"
-					   ),
-					   Arguments.of(PRETTY_DE,
-									ResultType.Primitive.DATE_RANGE,
-									List.of(CDate.ofLocalDate(LocalDate.of(2013, 7, 12)), CDate.ofLocalDate(LocalDate.of(2014, 7, 12))),
-									"12.07.2013 - 12.07.2014"
-					   ),
-					   Arguments.of(PRETTY, ResultType.Primitive.INTEGER, 51839274L, "51,839,274"),
-					   Arguments.of(PRETTY_DE, ResultType.Primitive.INTEGER, 51839274L, "51.839.274"),
-					   Arguments.of(PRETTY, ResultType.Primitive.MONEY, new BigDecimal("518392.74"), "€518,392.74"),
-					   Arguments.of(PRETTY_DE, ResultType.Primitive.MONEY, new BigDecimal("518392.74"), "518.392,74\u00A0€"),
-					   Arguments.of(PRETTY, ResultType.Primitive.NUMERIC, 0.2, "0.2"),
-					   Arguments.of(PRETTY_DE, ResultType.Primitive.NUMERIC, 0.2, "0,2"),
-					   Arguments.of(PRETTY,
-									ResultType.Primitive.NUMERIC,
-									new BigDecimal("716283712389817246892743124.12312"),
-									"716,283,712,389,817,246,892,743,124.12312"
-					   ),
-					   Arguments.of(PRETTY_DE,
-									ResultType.Primitive.NUMERIC,
-									new BigDecimal("716283712389817246892743124.12312"),
-									"716.283.712.389.817.246.892.743.124,12312"
-					   ),
-					   Arguments.of(PRETTY, ResultType.Primitive.STRING, "test", "test"),
+		return List.of(
+			Arguments.of(PRETTY, ResultType.Primitive.BOOLEAN, true, "Yes"),
+			Arguments.of(PRETTY, ResultType.Primitive.BOOLEAN, false, "No"),
+			Arguments.of(PRETTY, ResultType.Primitive.STRING, "test", "test"),
+			Arguments.of(PRETTY, ResultType.Primitive.DATE, CDate.ofLocalDate(LocalDate.of(2013, 7, 12)), "2013-07-12"),
+			Arguments.of(
+				PRETTY_DE,
+				ResultType.Primitive.DATE,
+				CDate.ofLocalDate(LocalDate.of(2013, 7, 12)),
+				"12.07.2013"),
+			Arguments.of(
+				PRETTY,
+				ResultType.Primitive.DATE_RANGE,
+				List.of(CDate.ofLocalDate(LocalDate.of(2013, 7, 12)), CDate.ofLocalDate(LocalDate.of(2013, 7, 12))),
+				"2013-07-12"
+			),
+			Arguments.of(
+				PRETTY_DE,
+				ResultType.Primitive.DATE_RANGE,
+				List.of(CDate.ofLocalDate(LocalDate.of(2013, 7, 12)), CDate.ofLocalDate(LocalDate.of(2013, 7, 12))),
+				"12.07.2013"
+			),
+			Arguments.of(
+				PRETTY,
+				ResultType.Primitive.DATE_RANGE,
+				List.of(CDate.ofLocalDate(LocalDate.of(2013, 7, 12)), CDate.ofLocalDate(LocalDate.of(2014, 7, 12))),
+				"2013-07-12/2014-07-12"
+			),
+			Arguments.of(
+				PRETTY_DE,
+				ResultType.Primitive.DATE_RANGE,
+				List.of(CDate.ofLocalDate(LocalDate.of(2013, 7, 12)), CDate.ofLocalDate(LocalDate.of(2014, 7, 12))),
+				"12.07.2013 - 12.07.2014"
+			),
+			Arguments.of(PRETTY, ResultType.Primitive.INTEGER, 51839274L, "51,839,274"),
+			Arguments.of(PRETTY_DE, ResultType.Primitive.INTEGER, 51839274L, "51.839.274"),
+			Arguments.of(PRETTY, ResultType.Primitive.MONEY, new BigDecimal("518392.74"), "€518,392.74"),
+			Arguments.of(PRETTY_DE, ResultType.Primitive.MONEY, new BigDecimal("518392.74"), "518.392,74\u00A0€"),
+			Arguments.of(PRETTY, ResultType.Primitive.NUMERIC, 0.2, "0.2"),
+			Arguments.of(PRETTY_DE, ResultType.Primitive.NUMERIC, 0.2, "0,2"),
+			Arguments.of(
+				PRETTY,
+				ResultType.Primitive.NUMERIC,
+				new BigDecimal("716283712389817246892743124.12312"),
+				"716,283,712,389,817,246,892,743,124.12312"
+			),
+			Arguments.of(
+				PRETTY_DE,
+				ResultType.Primitive.NUMERIC,
+				new BigDecimal("716283712389817246892743124.12312"),
+				"716.283.712.389.817.246.892.743.124,12312"
+			),
+			Arguments.of(PRETTY, ResultType.Primitive.STRING, "test", "test"),
 
-					   Arguments.of(PLAIN, ResultType.Primitive.BOOLEAN, true, "1"),
-					   Arguments.of(PLAIN, ResultType.Primitive.BOOLEAN, false, "0"),
-					   Arguments.of(PLAIN, ResultType.Primitive.STRING, "test", "test"),
-					   Arguments.of(PLAIN, ResultType.Primitive.DATE, LocalDate.of(2013, 7, 12).toEpochDay(), "2013-07-12"),
-					   Arguments.of(PLAIN, ResultType.Primitive.INTEGER, 51839274L, "51839274"),
-					   Arguments.of(PLAIN, ResultType.Primitive.MONEY, new BigDecimal(51839274L), "51839274"),
-					   Arguments.of(PLAIN, ResultType.Primitive.NUMERIC, 0.2, "0.2"),
-					   Arguments.of(PLAIN,
-									ResultType.Primitive.NUMERIC,
-									new BigDecimal("716283712389817246892743124.12312"),
-									"716283712389817246892743124.12312"
-					   ),
-					   Arguments.of(PLAIN, ResultType.Primitive.STRING, "test", "test"),
-					   Arguments.of(PLAIN, ResultType.Primitive.STRING, Resolution.COMPLETE.name(), "COMPLETE")
+			Arguments.of(PLAIN, ResultType.Primitive.BOOLEAN, true, "1"),
+			Arguments.of(PLAIN, ResultType.Primitive.BOOLEAN, false, "0"),
+			Arguments.of(PLAIN, ResultType.Primitive.STRING, "test", "test"),
+			Arguments.of(PLAIN, ResultType.Primitive.DATE, LocalDate.of(2013, 7, 12).toEpochDay(), "2013-07-12"),
+			Arguments.of(PLAIN, ResultType.Primitive.INTEGER, 51839274L, "51839274"),
+			Arguments.of(PLAIN, ResultType.Primitive.MONEY, new BigDecimal(51839274L), "51839274"),
+			Arguments.of(PLAIN, ResultType.Primitive.NUMERIC, 0.2, "0.2"),
+			Arguments.of(
+				PLAIN,
+				ResultType.Primitive.NUMERIC,
+				new BigDecimal("716283712389817246892743124.12312"),
+				"716283712389817246892743124.12312"
+			),
+			Arguments.of(PLAIN, ResultType.Primitive.STRING, "test", "test"),
+			Arguments.of(PLAIN, ResultType.Primitive.STRING, Resolution.COMPLETE.name(), "COMPLETE")
 		);
 	}
 
 	@ParameterizedTest(name = "{0} {1}: {2} -> {3}")
 	@MethodSource("testData")
-	public void testPrinting(PrintSettings printSettings, ResultType type, Object value, String expected) throws IOException {
+	public void testPrinting(
+		PrintSettings printSettings,
+		ResultType type,
+		Object value,
+		String expected) throws IOException {
 		ResultInfo info = info(type);
 
 
@@ -128,7 +144,11 @@ public class ResultTypeTest {
 
 	@ParameterizedTest(name = "{1}: {2}")
 	@MethodSource("testData")
-	public void testBinaryPrinting(PrintSettings printSettings, ResultType type, Object value, String expected) throws IOException {
+	public void testBinaryPrinting(
+		PrintSettings printSettings,
+		ResultType type,
+		Object value,
+		String expected) throws IOException {
 		ResultInfo info = info(type);
 
 		final Printer printer = info.createPrinter(PRINTERS, printSettings);

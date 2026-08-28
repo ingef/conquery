@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Column;
@@ -42,7 +42,9 @@ public class CountSelect extends Select {
 		}
 
 		if (distinctByColumn != null && !getDistinctByColumn().isEmpty()) {
-			return new DistinctValuesWrapperAggregator(new CountAggregator(resolved), getDistinctByColumn().stream().map(ColumnId::resolve).toList());
+			return new DistinctValuesWrapperAggregator(
+				new CountAggregator(resolved),
+				getDistinctByColumn().stream().map(ColumnId::resolve).toList());
 		}
 
 		return new DistinctValuesWrapperAggregator(new CountAggregator(resolved), List.of(getColumn().resolve()));

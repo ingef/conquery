@@ -1,8 +1,8 @@
 package com.bakdata.conquery.apiv1;
 
-import java.net.URI;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import java.net.URI;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;

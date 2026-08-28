@@ -14,7 +14,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter(AccessLevel.PROTECTED) @Setter(AccessLevel.PROTECTED)
+@Getter(AccessLevel.PROTECTED)
+@Setter(AccessLevel.PROTECTED)
 public abstract class QPNode extends EventIterating {
 	protected QueryExecutionContext context;
 	protected Entity entity;

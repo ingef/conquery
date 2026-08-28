@@ -46,7 +46,7 @@ public class ColumnResultInfo extends ResultInfo {
 
 	@Override
 	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
-		if(concept != null){
+		if (concept != null) {
 			return new ConceptIdPrinter(concept, printSettings);
 		}
 		return printerFactory.printerFor(type, printSettings);

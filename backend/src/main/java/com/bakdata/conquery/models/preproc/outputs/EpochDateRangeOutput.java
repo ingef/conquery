@@ -33,13 +33,13 @@ public class EpochDateRangeOutput extends OutputDescription {
 	private boolean allowOpen = false;
 
 	@Override
-	public int hashCode(){
-		return new HashCodeBuilder()
-					   .append(super.hashCode())
-					   .append(startColumn)
-					   .append(endColumn)
-					   .append(allowOpen)
-					   .toHashCode();
+	public int hashCode() {
+		return new HashCodeBuilder().append(super.hashCode())
+			.append(startColumn)
+			.append(endColumn)
+			.append(
+				allowOpen)
+			.toHashCode();
 	}
 
 	@Override
@@ -63,11 +63,11 @@ public class EpochDateRangeOutput extends OutputDescription {
 					throw new IllegalArgumentException("Open Ranges are not allowed.");
 				}
 
-				if(startNull){
+				if (startNull) {
 					return CDateRange.atMost(Integer.parseInt(row[endIndex]));
 				}
 
-				if(endNull){
+				if (endNull) {
 					return CDateRange.atLeast(Integer.parseInt(row[startIndex]));
 				}
 

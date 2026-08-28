@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
@@ -60,14 +60,12 @@ public class RelativeFormQuery extends Query {
 		query.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
 		features.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
 
-		boolean noDates = Visitable.stream(query)
-								   .noneMatch(v ->
-													  switch (v) {
-														  case CQConcept cqConcept -> cqConcept.isAggregateEventDates();
-														  case CQExternal external -> external.containsDates();
-														  default -> false;
-													  }
-								   );
+		boolean noDates = Visitable.stream(query).noneMatch(v -> switch (v) {
+			case CQConcept cqConcept -> cqConcept.isAggregateEventDates();
+			case CQExternal external -> external.containsDates();
+			default -> false;
+		}
+		);
 
 		if (noDates) {
 			throw new ConqueryError.RelativeFormMissingDatesError();
@@ -78,10 +76,15 @@ public class RelativeFormQuery extends Query {
 	@Override
 	public RelativeFormQueryPlan createQueryPlan(QueryPlanContext context) {
 		return new RelativeFormQueryPlan(
-				query.createQueryPlan(context),
-				// At the moment we do not use the dates of feature and outcome query
-				features.createQueryPlan(context),
-				indexSelector, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutionsAndAlignmentMap
+			query.createQueryPlan(context),
+			// At the moment we do not use the dates of feature and outcome query
+			features.createQueryPlan(context),
+			indexSelector,
+			indexPlacement,
+			timeCountBefore,
+			timeCountAfter,
+			timeUnit,
+			resolutionsAndAlignmentMap
 		);
 	}
 

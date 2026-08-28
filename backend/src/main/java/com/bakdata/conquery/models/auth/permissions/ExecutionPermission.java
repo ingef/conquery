@@ -13,12 +13,12 @@ public class ExecutionPermission extends StringPermissionBuilder {
 	public static final String DOMAIN = "queries";
 
 	public static final EnumSet<Ability> ALLOWED_ABILITIES = EnumSet.of(
-			Ability.READ,
-			Ability.DELETE,
-			Ability.SHARE,
-			Ability.TAG,
-			Ability.CANCEL,
-			Ability.LABEL
+		Ability.READ,
+		Ability.DELETE,
+		Ability.SHARE,
+		Ability.TAG,
+		Ability.CANCEL,
+		Ability.LABEL
 	);
 
 	public static final ExecutionPermission INSTANCE = new ExecutionPermission();

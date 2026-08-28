@@ -8,7 +8,9 @@ import org.jooq.Field;
 public class RandomValueSelectConverter implements SelectConverter<RandomValueSelect> {
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(RandomValueSelect select, SelectContext<ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(
+		RandomValueSelect select,
+		SelectContext<ConnectorSqlTables> selectContext) {
 
 		ConnectorSqlTables tables = selectContext.getTables();
 
@@ -17,16 +19,19 @@ public class RandomValueSelectConverter implements SelectConverter<RandomValueSe
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(rootTableName, columnName, Object.class);
 
 		String alias = selectContext.getNameGenerator().selectName(select);
-		Field<?> qualifiedRootSelect = rootSelect.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
+		Field<?> qualifiedRootSelect = rootSelect.qualify(
+			tables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
 		Field<?> firstAggregation = selectContext.getFunctionProvider().random(qualifiedRootSelect).as(alias);
 		FieldWrapper<?> firstAggregationSqlSelect = new FieldWrapper<>(firstAggregation, columnName);
 
-		ExtractingSqlSelect<?> finalSelect = firstAggregationSqlSelect.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
+		ExtractingSqlSelect<?> finalSelect = firstAggregationSqlSelect.qualify(
+			tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
 
 		return ConnectorSqlSelects.builder()
-								  .preprocessingSelect(rootSelect)
-								  .aggregationSelect(firstAggregationSqlSelect)
-								  .finalSelect(finalSelect)
-								  .build();
+			.preprocessingSelect(rootSelect)
+			.aggregationSelect(
+				firstAggregationSqlSelect)
+			.finalSelect(finalSelect)
+			.build();
 	}
 }

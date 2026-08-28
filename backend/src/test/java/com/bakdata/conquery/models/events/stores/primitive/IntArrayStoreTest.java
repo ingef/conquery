@@ -17,7 +17,7 @@ class IntArrayStoreTest {
 		final IntArrayStore store = IntArrayStore.create(values.size());
 
 		for (int index = 0; index < values.size(); index++) {
-			if(values.get(index) == null){
+			if (values.get(index) == null) {
 				store.setNull(index);
 				continue;
 			}
@@ -27,8 +27,7 @@ class IntArrayStoreTest {
 		for (int index = 0; index < values.size(); index++) {
 			if (values.get(index) == null) {
 				assertThat(store.has(index)).isFalse();
-			}
-			else {
+			} else {
 				assertThat(store.getInteger(index)).isEqualTo(values.get(index));
 			}
 		}
@@ -48,7 +47,7 @@ class IntArrayStoreTest {
 		final ByteArrayStore store = ByteArrayStore.create(values.size());
 
 		for (int index = 0; index < values.size(); index++) {
-			if(values.get(index) == null){
+			if (values.get(index) == null) {
 				store.setNull(index);
 				continue;
 			}
@@ -59,8 +58,7 @@ class IntArrayStoreTest {
 		for (int index = 0; index < values.size(); index++) {
 			if (values.get(index) == null) {
 				assertThat(store.has(index)).isFalse();
-			}
-			else {
+			} else {
 				assertThat(store.getInteger(index)).isEqualTo(values.get(index));
 			}
 		}
@@ -82,7 +80,7 @@ class IntArrayStoreTest {
 		final ShortArrayStore store = ShortArrayStore.create(values.size());
 
 		for (int index = 0; index < values.size(); index++) {
-			if(values.get(index) == null){
+			if (values.get(index) == null) {
 				store.setNull(index);
 				continue;
 			}
@@ -93,8 +91,7 @@ class IntArrayStoreTest {
 		for (int index = 0; index < values.size(); index++) {
 			if (values.get(index) == null) {
 				assertThat(store.has(index)).isFalse();
-			}
-			else {
+			} else {
 				assertThat(store.getInteger(index)).isEqualTo(values.get(index));
 			}
 		}

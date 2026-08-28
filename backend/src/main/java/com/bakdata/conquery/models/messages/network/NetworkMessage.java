@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.messages.network;
 
-import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.messages.Message;

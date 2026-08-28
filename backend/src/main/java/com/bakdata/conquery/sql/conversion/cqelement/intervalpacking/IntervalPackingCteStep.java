@@ -16,9 +16,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum IntervalPackingCteStep implements CteStep {
 
-	PREVIOUS_END("previous_end", null),
-	RANGE_INDEX("range_index", PREVIOUS_END),
-	INTERVAL_COMPLETE("interval_complete", RANGE_INDEX);
+	PREVIOUS_END("previous_end", null), RANGE_INDEX("range_index", PREVIOUS_END), INTERVAL_COMPLETE(
+		"interval_complete",
+		RANGE_INDEX);
 
 	private static final Set<IntervalPackingCteStep> STEPS = Set.of(values());
 
@@ -31,11 +31,13 @@ public enum IntervalPackingCteStep implements CteStep {
 	public static SqlTables createTables(QueryStep predecessor, Context context) {
 
 		String rootTable = predecessor.getCteName();
-		Set<CteStep> requiredSteps = context.getDialectBundle().supportsSingleColumnRanges()
-									 ? Set.of(INTERVAL_COMPLETE)
-									 : Set.of(values());
+		Set<CteStep> requiredSteps = context.getDialectBundle().supportsSingleColumnRanges() ? Set.of(
+			INTERVAL_COMPLETE) : Set.of(values());
 
-		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(requiredSteps, rootTable, context.getNameGenerator());
+		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(
+			requiredSteps,
+			rootTable,
+			context.getNameGenerator());
 		Map<CteStep, CteStep> predecessorMap = CteStep.getDefaultPredecessorMap(requiredSteps);
 
 		return new SqlTables(rootTable, cteNameMap, predecessorMap);

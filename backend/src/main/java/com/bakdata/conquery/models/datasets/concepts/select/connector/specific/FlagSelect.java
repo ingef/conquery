@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,7 +50,10 @@ public class FlagSelect extends Select {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		final Map<String, Column> collect = flags.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().resolve()));
+		final Map<String, Column> collect = flags.entrySet()
+			.stream()
+			.collect(
+				Collectors.toMap(Map.Entry::getKey, e -> e.getValue().resolve()));
 		return new FlagsAggregator(collect);
 	}
 
@@ -66,7 +67,12 @@ public class FlagSelect extends Select {
 	@JsonIgnore
 	@ValidationMethod(message = "Columns must be BOOLEAN.")
 	public boolean isAllColumnsBoolean() {
-		return flags.values().stream().map(ColumnId::resolve).map(Column::getType).allMatch(MajorTypeId.BOOLEAN::equals);
+		return flags.values()
+			.stream()
+			.map(ColumnId::resolve)
+			.map(Column::getType)
+			.allMatch(
+				MajorTypeId.BOOLEAN::equals);
 	}
 
 	@Override

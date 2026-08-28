@@ -51,8 +51,6 @@ public class StringParser extends Parser<String, StringStore> {
 	}
 
 
-
-
 	@Override
 	public void setValue(StringStore store, int event, String value) {
 		store.setString(event, value);

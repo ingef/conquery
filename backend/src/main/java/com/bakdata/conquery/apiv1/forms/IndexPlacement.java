@@ -3,9 +3,8 @@ package com.bakdata.conquery.apiv1.forms;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor @Getter
+@RequiredArgsConstructor
+@Getter
 public enum IndexPlacement {
-	BEFORE,
-	NEUTRAL,
-	AFTER;	
+	BEFORE, NEUTRAL, AFTER
 }

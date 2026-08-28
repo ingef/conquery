@@ -98,7 +98,8 @@ public class FormScanner extends Task {
 		final List<FormFrontendConfigInformation> frontendConfigs = findFrontendFormConfigs();
 
 		// Match frontend form configurations to backend implementations
-		final ImmutableMap.Builder<String, FormType> result = ImmutableMap.builderWithExpectedSize(frontendConfigs.size());
+		final ImmutableMap.Builder<String, FormType> result = ImmutableMap.builderWithExpectedSize(
+			frontendConfigs.size());
 
 
 		for (FormFrontendConfigInformation configInfo : frontendConfigs) {
@@ -123,23 +124,26 @@ public class FormScanner extends Task {
 			// Make relative manual URLs relative to configured handbook base
 			// Config url mappings override urls from frontend config jsons
 			final URI manualURL = config.getPluginConfig(ManualConfig.class)
-										// first check override
-										.map(ManualConfig::getForms)
-										.map(m -> m.get(fullTypeIdentifier))
-										// then query the frontend config json
-										.orElseGet(() -> {
-											final JsonNode manualUrl = configTree.get(MANUAL_URL_KEY);
-											if (manualUrl == null) {
-												// Nothing specified, skip
-												return null;
-											}
-											if (!manualUrl.isTextual()) {
-												throw new IllegalArgumentException(
-														String.format("FrontendFormConfig %s contained field 'manualUrl' but it was not a text. Was: '%s'.", fullTypeIdentifier, manualUrl.getNodeType()));
-											}
+				// first check override
+				.map(ManualConfig::getForms)
+				.map(m -> m.get(fullTypeIdentifier))
+				// then query the frontend config json
+				.orElseGet(() -> {
+					final JsonNode manualUrl = configTree.get(MANUAL_URL_KEY);
+					if (manualUrl == null) {
+						// Nothing specified, skip
+						return null;
+					}
+					if (!manualUrl.isTextual()) {
+						throw new IllegalArgumentException(
+							String.format(
+								"FrontendFormConfig %s contained field 'manualUrl' but it was not a text. Was: '%s'.",
+								fullTypeIdentifier,
+								manualUrl.getNodeType()));
+					}
 
-											return URI.create(manualUrl.textValue());
-										});
+					return URI.create(manualUrl.textValue());
+				});
 
 
 			final URL manualBaseUrl = config.getFrontend().getManualUrl();
@@ -149,7 +153,9 @@ public class FormScanner extends Task {
 				final TextNode manualNode = relativizeManualUrl(fullTypeIdentifier, manualURL, manualBaseUrl);
 
 				if (manualNode == null) {
-					log.warn("Manual url relativization did not succeed for {}. Skipping registration.", fullTypeIdentifier);
+					log.warn(
+						"Manual url relativization did not succeed for {}. Skipping registration.",
+						fullTypeIdentifier);
 					continue;
 				}
 
@@ -158,7 +164,11 @@ public class FormScanner extends Task {
 
 			result.put(fullTypeIdentifier, new FormType(fullTypeIdentifier, configTree));
 
-			log.info("Form[{}] from `{}` of Type[{}]", fullTypeIdentifier, configInfo.getOrigin(), forms.get(typeIdentifier).getName());
+			log.info(
+				"Form[{}] from `{}` of Type[{}]",
+				fullTypeIdentifier,
+				configInfo.getOrigin(),
+				forms.get(typeIdentifier).getName());
 		}
 
 		return result.build();
@@ -201,9 +211,11 @@ public class FormScanner extends Task {
 
 			try {
 				formConfigProvider.addFormConfigs(frontendConfigs);
-			}
-			catch (Exception e) {
-				log.error("Unable to collect frontend form configurations from {}.", formConfigProvider.getProviderName(), e);
+			} catch (Exception e) {
+				log.error(
+					"Unable to collect frontend form configurations from {}.",
+					formConfigProvider.getProviderName(),
+					e);
 			}
 		}
 
@@ -215,11 +227,17 @@ public class FormScanner extends Task {
 		return node != null && node.isTextual() && !node.asText().isEmpty();
 	}
 
-	private TextNode relativizeManualUrl(@NonNull String formTypeIdentifier, @NonNull URI manualUri, @NonNull URL manualBaseUrl) {
+	private TextNode relativizeManualUrl(
+		@NonNull String formTypeIdentifier,
+		@NonNull URI manualUri,
+		@NonNull URL manualBaseUrl) {
 
 		try {
 			if (manualUri.isAbsolute()) {
-				log.trace("Manual url for {} was already absolute: {}. Skipping relativization.", formTypeIdentifier, manualUri);
+				log.trace(
+					"Manual url for {} was already absolute: {}. Skipping relativization.",
+					formTypeIdentifier,
+					manualUri);
 				return new TextNode(manualUri.toURL().toString());
 			}
 
@@ -227,13 +245,15 @@ public class FormScanner extends Task {
 				final String absoluteUrl = manualBaseUrl.toURI().resolve(manualUri).toURL().toString();
 				log.trace("Computed manual url for {}: {}", formTypeIdentifier, absoluteUrl);
 				return new TextNode(absoluteUrl);
-			}
-			catch (URISyntaxException e) {
-				log.warn("Unable to resolve manual base url ('{}') and relative manual url ('{}')", manualBaseUrl, manualUri, e);
+			} catch (URISyntaxException e) {
+				log.warn(
+					"Unable to resolve manual base url ('{}') and relative manual url ('{}')",
+					manualBaseUrl,
+					manualUri,
+					e);
 				return null;
 			}
-		}
-		catch (MalformedURLException e) {
+		} catch (MalformedURLException e) {
 			log.error("Unable to build url", e);
 			return null;
 		}

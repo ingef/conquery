@@ -2,12 +2,12 @@ package com.bakdata.conquery.io.result.parquet;
 
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 
-import java.util.Locale;
-import java.util.OptionalLong;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
+import java.util.Locale;
+import java.util.OptionalLong;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -30,7 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultParquetProcessor {
-	public static final MediaType PARQUET_MEDIA_TYPE = MediaType.valueOf(ResultParquetResource.PARQUET_MEDIA_TYPE_STRING);
+	public static final MediaType PARQUET_MEDIA_TYPE = MediaType.valueOf(
+		ResultParquetResource.PARQUET_MEDIA_TYPE_STRING);
 
 	private final DatasetRegistry<?> datasetRegistry;
 	private final ConqueryConfig config;
@@ -49,7 +50,11 @@ public class ResultParquetProcessor {
 
 		final Namespace namespace = datasetRegistry.get(execution.getDataset());
 
-		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, execution, namespace, config.getIdColumns().getIds());
+		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(
+			subject,
+			execution,
+			namespace,
+			config.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();
 		final PrintSettings settings = new PrintSettings(pretty, locale, config, idPrinter::createId, null);
@@ -58,20 +63,21 @@ public class ResultParquetProcessor {
 
 			final SingleTableResult singleTableResult = (SingleTableResult) execution;
 			ParquetRenderer.writeToStream(
-					output,
-					config.getIdColumns().getIdResultInfos(),
-					singleTableResult.collectResultInfos(),
-					settings,
-					singleTableResult.streamResults(limit)
+				output,
+				config.getIdColumns().getIdResultInfos(),
+				singleTableResult.collectResultInfos(),
+				settings,
+				singleTableResult.streamResults(limit)
 			);
 
 		};
 
 
-		return makeResponseWithFileName(Response.ok(out),
-										String.join(".", execution.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_PARQUET),
-										PARQUET_MEDIA_TYPE,
-										ResultUtil.ContentDispositionOption.ATTACHMENT
+		return makeResponseWithFileName(
+			Response.ok(out),
+			String.join(".", execution.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_PARQUET),
+			PARQUET_MEDIA_TYPE,
+			ResultUtil.ContentDispositionOption.ATTACHMENT
 		);
 	}
 }

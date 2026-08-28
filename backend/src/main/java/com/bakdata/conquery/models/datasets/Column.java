@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.datasets;
 
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.events.MajorTypeId;

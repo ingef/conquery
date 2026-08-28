@@ -30,17 +30,19 @@ import org.jooq.impl.DSL;
 public class DurationSumSqlAggregator implements SelectConverter<DurationSumSelect>, FilterConverter<DurationSumFilter, Range.LongRange>, SqlAggregator {
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(DurationSumSelect select, SelectContext<ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(
+		DurationSumSelect select,
+		SelectContext<ConnectorSqlTables> selectContext) {
 		return DaterangeSelectUtil.createForSelect(select, durationSumSelectFunction(), selectContext);
 	}
 
 	@Override
 	public SqlFilters convertToSqlFilter(DurationSumFilter filter, FilterContext<LongRange> context) {
 		return DaterangeSelectUtil.createForFilter(
-				filter,
-				durationSumSelectFunction(),
-				(aggregationField -> new SumCondition((Field<? extends Number>) aggregationField, context.getValue())),
-				context);
+			filter,
+			durationSumSelectFunction(),
+			(aggregationField -> new SumCondition((Field<? extends Number>) aggregationField, context.getValue())),
+			context);
 	}
 
 	@Override
@@ -56,8 +58,7 @@ public class DurationSumSqlAggregator implements SelectConverter<DurationSumSele
 			Field<Date> daterangeField = field(DSL.name(tableName, column.getName()), Date.class);
 			startDateField = daterangeField;
 			endDateField = daterangeField;
-		}
-		else {
+		} else {
 			Column startColumn = filter.getStartColumn().resolve();
 			Column endColumn = filter.getEndColumn().resolve();
 			String tableName = startColumn.getTable().getName();

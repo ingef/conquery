@@ -9,19 +9,19 @@ import org.apache.shiro.authz.Permission;
 
 public class TestUser extends User {
 
-    public TestUser(MetaStorage storage) {
-        super("user", "user", storage);
-    }
+	public TestUser(MetaStorage storage) {
+		super("user", "user", storage);
+	}
 
-    public boolean isPermitted(Permission permission) {
-        return getShiroUserAdapter().isPermitted(permission);
-    }
+	public boolean isPermitted(Permission permission) {
+		return getShiroUserAdapter().isPermitted(permission);
+	}
 
-    public boolean[] isPermitted(List<Permission> permissions) {
-        return getShiroUserAdapter().isPermitted(permissions);
-    }
+	public boolean[] isPermitted(List<Permission> permissions) {
+		return getShiroUserAdapter().isPermitted(permissions);
+	}
 
-    public boolean isPermittedAll(Collection<Permission> permissions) {
-        return getShiroUserAdapter().isPermittedAll(permissions);
-    }
+	public boolean isPermittedAll(Collection<Permission> permissions) {
+		return getShiroUserAdapter().isPermittedAll(permissions);
+	}
 }

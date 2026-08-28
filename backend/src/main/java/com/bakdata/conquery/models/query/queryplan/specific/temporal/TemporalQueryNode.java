@@ -165,21 +165,24 @@ public class TemporalQueryNode extends QPNode {
 
 				if (compareContained[inner]) {
 					compareDates[inner] = innerCompareQueryPlan.getDateAggregator().createAggregationResult();
-					compareAggregationResults[inner] = innerCompareQueryPlan.getAggregators().stream()
-																			.skip(1) // Skip the result-date
-																			.map(Aggregator::createAggregationResult).toArray();
+					compareAggregationResults[inner] = innerCompareQueryPlan.getAggregators()
+						.stream()
+						.skip(1) // Skip the result-date
+						.map(Aggregator::createAggregationResult)
+						.toArray();
 				}
 			}
 
 			boolean satisfies = compareSelector.satisfies(compareContained);
 
-			log.trace("{}:{} => indexPeriod={}, comparePeriods={}, compareContained={} => {}",
-					  getEntity(),
-					  compareSelector,
-					  indexPeriod,
-					  comparePeriods,
-					  compareContained,
-					  satisfies
+			log.trace(
+				"{}:{} => indexPeriod={}, comparePeriods={}, compareContained={} => {}",
+				getEntity(),
+				compareSelector,
+				indexPeriod,
+				comparePeriods,
+				compareContained,
+				satisfies
 			);
 
 			results[current] = satisfies;
@@ -195,7 +198,13 @@ public class TemporalQueryNode extends QPNode {
 
 		boolean satisfies = indexSelector.satisfies(results);
 
-		log.trace("{}:{} => indexPeriods={}, results={} => {}", getEntity(), indexSelector, indexPeriods, results, satisfies);
+		log.trace(
+			"{}:{} => indexPeriods={}, results={} => {}",
+			getEntity(),
+			indexSelector,
+			indexPeriods,
+			results,
+			satisfies);
 
 
 		return satisfies;
@@ -206,9 +215,12 @@ public class TemporalQueryNode extends QPNode {
 	 *
 	 * @return if the entity is contained or not.
 	 */
-	private static boolean evaluateWithRestriction(Entity entity, CDateRange partition, ConceptQueryPlan cqp, QueryExecutionContext ctx) {
-		ctx = ctx.withDateRestriction(CDateSet.create(partition))
-				 .withQueryDateAggregator(Optional.empty());
+	private static boolean evaluateWithRestriction(
+		Entity entity,
+		CDateRange partition,
+		ConceptQueryPlan cqp,
+		QueryExecutionContext ctx) {
+		ctx = ctx.withDateRestriction(CDateSet.create(partition)).withQueryDateAggregator(Optional.empty());
 
 		cqp.init(ctx, entity);
 		cqp.execute(ctx, entity);
@@ -220,7 +232,10 @@ public class TemporalQueryNode extends QPNode {
 	 * Collect aggregation results of satisfied innerQueries.
 	 */
 	@SuppressWarnings("unchecked")
-	private void addAggregationResults(boolean[] compareContained, CDateSet[] compareDates, Object[][] compareAggregationResults) {
+	private void addAggregationResults(
+		boolean[] compareContained,
+		CDateSet[] compareDates,
+		Object[][] compareAggregationResults) {
 		assert compareContained.length == compareDates.length;
 		assert compareContained.length == compareAggregationResults.length;
 
@@ -232,9 +247,7 @@ public class TemporalQueryNode extends QPNode {
 			compareDateResult.addAll(compareDates[index]);
 			for (int aggIndex = 0; aggIndex < aggregationResults.size(); aggIndex++) {
 
-				aggregationResults.get(aggIndex)
-								  .getValue()
-								  .add(compareAggregationResults[index][aggIndex]);
+				aggregationResults.get(aggIndex).getValue().add(compareAggregationResults[index][aggIndex]);
 			}
 		}
 	}

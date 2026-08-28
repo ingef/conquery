@@ -3,15 +3,15 @@ package com.bakdata.conquery.models.datasets.concepts.conditions;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
-import java.util.Map;
 import jakarta.validation.constraints.NotEmpty;
+import java.util.Map;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionWrappingWhereCondition;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -73,8 +73,7 @@ public class PrefixRangeCondition implements CTCondition {
 			char maxChar = maxChars[i];
 			if (minChar != maxChar) {
 				builder.append("[%s-%s]".formatted(minChar, maxChar));
-			}
-			else {
+			} else {
 				builder.append(minChar);
 			}
 		}

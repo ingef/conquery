@@ -26,13 +26,14 @@ public class UpdateJobManagerStatus extends MessageToManagerNode {
 		final ShardNodeInformation node = context.getClusterState().getShardNodes().get(context.getRemoteAddress());
 
 		if (node == null) {
-			log.error("Could not find ShardNode `{}`, I only know of {}", context.getRemoteAddress(), context.getClusterState().getShardNodes().keySet());
+			log.error(
+				"Could not find ShardNode `{}`, I only know of {}",
+				context.getRemoteAddress(),
+				context.getClusterState().getShardNodes().keySet());
 			return;
 		}
 		// The shards don't know their own name so we attach it here
-		node.addJobManagerStatus(status.toBuilder()
-									   .origin(context.getRemoteAddress().toString())
-									   .build());
+		node.addJobManagerStatus(status.toBuilder().origin(context.getRemoteAddress().toString()).build());
 	}
 
 }

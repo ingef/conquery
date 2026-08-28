@@ -23,6 +23,9 @@ public class PrometheusBundle implements ConfiguredBundle<ConqueryConfig> {
 	@Override
 	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
 
-		environment.getAdminContext().addServlet(new ServletHolder(new PrometheusMetricsServlet()), "/metrics-prometheus");
+		environment.getAdminContext()
+			.addServlet(
+				new ServletHolder(new PrometheusMetricsServlet()),
+				"/metrics-prometheus");
 	}
 }

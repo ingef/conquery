@@ -1,5 +1,6 @@
 package com.bakdata.conquery.util.search;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -7,7 +8,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import javax.annotation.CheckForNull;
-import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -27,12 +27,14 @@ public interface SearchProcessor {
 	 * Similar  to {@link Managed} but we don't want this to be part of a lifecycle because datasets, etc. might get created after
 	 * the lifecycle called {@link Managed#start()}
 	 */
-	default void start() throws Exception {}
+	default void start() throws Exception {
+	}
 
 	/**
 	 * See {@link SearchProcessor#start()}
 	 */
-	default void stop() throws Exception {}
+	default void stop() throws Exception {
+	}
 
 
 	/**
@@ -74,7 +76,10 @@ public interface SearchProcessor {
 	/**
 	 * Callback for {@link com.bakdata.conquery.models.jobs.UpdateFilterSearchJob} to index values that are present to the manager.
 	 */
-	void indexManagerResidingSearches(Set<Searchable> managerSearchables, AtomicBoolean cancelledState, ProgressReporter progressReporter) throws InterruptedException;
+	void indexManagerResidingSearches(
+		Set<Searchable> managerSearchables,
+		AtomicBoolean cancelledState,
+		ProgressReporter progressReporter) throws InterruptedException;
 
 
 	/**
@@ -95,7 +100,11 @@ public interface SearchProcessor {
 	 * @param pageNumber Pagination: page (zero-based)
 	 * @return Found matches
 	 */
-	ConceptsProcessor.AutoCompleteResult query(SelectFilter<?> filter, @CheckForNull String maybeText, int itemsPerPage, int pageNumber);
+	ConceptsProcessor.AutoCompleteResult query(
+		SelectFilter<?> filter,
+		@CheckForNull String maybeText,
+		int itemsPerPage,
+		int pageNumber);
 
 	/**
 	 * Job to run after all ColumnValues are processed by the manager.

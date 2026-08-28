@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -50,7 +48,9 @@ public class ConceptColumnSelect extends UniversalSelect {
 	@Override
 	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		if (isAsIds()) {
-			return printerFactory.getListPrinter(new ConceptIdPrinter((TreeConcept) getHolder().findConcept(), printSettings), printSettings);
+			return printerFactory.getListPrinter(
+				new ConceptIdPrinter((TreeConcept) getHolder().findConcept(), printSettings),
+				printSettings);
 		}
 
 		return printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings);
@@ -60,7 +60,10 @@ public class ConceptColumnSelect extends UniversalSelect {
 	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
 
 		if (isAsIds()) {
-			return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConceptId())));
+			return new SelectResultInfo(
+				this,
+				cqConcept,
+				Set.of(new SemanticType.ConceptColumnT(cqConcept.getConceptId())));
 		}
 
 		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConceptId())));

@@ -45,53 +45,111 @@ import org.junit.jupiter.api.Test;
 public class ParquetResultGenerationTest {
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
-	private static final PrintSettings
-			PRINT_SETTINGS =
-			new PrintSettings(false, Locale.ROOT, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel());
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(
+		false,
+		Locale.ROOT,
+		CONFIG,
+		null,
+		(selectInfo) -> selectInfo.getSelect().getLabel());
 
 
 	@Test
 	void generateSchema() {
 		final UniqueNamer uniqueNamer = new UniqueNamer(PRINT_SETTINGS);
 
-		List<ResultInfo> resultInfos = getResultTypes().stream().map(TypedSelectDummy::new)
-													   .map(select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet())).collect(Collectors.toList());
+		List<ResultInfo> resultInfos = getResultTypes().stream()
+			.map(TypedSelectDummy::new)
+			.map(
+				select -> new SelectResultInfo(select, new CQConcept(), Collections.emptySet()))
+			.collect(
+				Collectors.toList());
 
-		final MessageType messageType = EntityResultWriteSupport.generateSchema(getIdFields(), resultInfos, uniqueNamer, PRINT_SETTINGS);
+		final MessageType messageType = EntityResultWriteSupport.generateSchema(
+			getIdFields(),
+			resultInfos,
+			uniqueNamer,
+			PRINT_SETTINGS);
 
 		assertThat(messageType).isEqualTo(
-				Types.buildMessage()
-					 .optional(BINARY).as(stringType()).named("id1")
-					 .optional(BINARY).as(stringType()).named("id2")
-					 .optional(BOOLEAN).named("BOOLEAN")
-					 .optional(INT32).as(LogicalTypeAnnotation.intType(32, true)).named("INTEGER")
-					 .optional(DOUBLE).named("NUMERIC")
-					 .optional(INT32).as(LogicalTypeAnnotation.dateType()).named("DATE")
-					 .optionalGroup()
-					 .optional(INT32).as(LogicalTypeAnnotation.dateType()).named("min")
-					 .optional(INT32).as(LogicalTypeAnnotation.dateType()).named("max")
-					 .named("DATE_RANGE")
-					 .optional(BINARY).as(stringType()).named("STRING")
-					 .optional(INT32).as(LogicalTypeAnnotation.intType(32, true)).named("MONEY")
-					 .optionalGroup().as(LogicalTypeAnnotation.listType())
-					 .repeatedGroup()
-					 .optional(BOOLEAN).named("element")
-					 .named("list")
-					 .named("LIST[BOOLEAN]")
-					 .optionalGroup().as(LogicalTypeAnnotation.listType())
-					 .repeatedGroup()
-					 .optionalGroup()
-					 .optional(INT32).as(LogicalTypeAnnotation.dateType()).named("min")
-					 .optional(INT32).as(LogicalTypeAnnotation.dateType()).named("max")
-					 .named("element")
-					 .named("list")
-					 .named("LIST[DATE_RANGE]")
-					 .optionalGroup().as(LogicalTypeAnnotation.listType())
-					 .repeatedGroup()
-					 .optional(BINARY).as(stringType()).named("element")
-					 .named("list")
-					 .named("LIST[STRING]")
-					 .named("root")
+			Types.buildMessage()
+				.optional(BINARY)
+				.as(stringType())
+				.named("id1")
+				.optional(BINARY)
+				.as(stringType())
+				.named(
+					"id2")
+				.optional(BOOLEAN)
+				.named("BOOLEAN")
+				.optional(INT32)
+				.as(
+					LogicalTypeAnnotation.intType(32, true))
+				.named("INTEGER")
+				.optional(DOUBLE)
+				.named(
+					"NUMERIC")
+				.optional(INT32)
+				.as(LogicalTypeAnnotation.dateType())
+				.named(
+					"DATE")
+				.optionalGroup()
+				.optional(INT32)
+				.as(LogicalTypeAnnotation.dateType())
+				.named(
+					"min")
+				.optional(INT32)
+				.as(LogicalTypeAnnotation.dateType())
+				.named("max")
+				.named(
+					"DATE_RANGE")
+				.optional(BINARY)
+				.as(stringType())
+				.named("STRING")
+				.optional(INT32)
+				.as(
+					LogicalTypeAnnotation.intType(32, true))
+				.named("MONEY")
+				.optionalGroup()
+				.as(
+					LogicalTypeAnnotation.listType())
+				.repeatedGroup()
+				.optional(BOOLEAN)
+				.named(
+					"element")
+				.named("list")
+				.named("LIST[BOOLEAN]")
+				.optionalGroup()
+				.as(
+					LogicalTypeAnnotation.listType())
+				.repeatedGroup()
+				.optionalGroup()
+				.optional(
+					INT32)
+				.as(LogicalTypeAnnotation.dateType())
+				.named(
+					"min")
+				.optional(INT32)
+				.as(
+					LogicalTypeAnnotation.dateType())
+				.named("max")
+				.named(
+					"element")
+				.named("list")
+				.named(
+					"LIST[DATE_RANGE]")
+				.optionalGroup()
+				.as(
+					LogicalTypeAnnotation.listType())
+				.repeatedGroup()
+				.optional(
+					BINARY)
+				.as(stringType())
+				.named(
+					"element")
+				.named("list")
+				.named(
+					"LIST[STRING]")
+				.named("root")
 		);
 
 	}
@@ -103,11 +161,12 @@ public class ParquetResultGenerationTest {
 		I18n.init();
 
 		// Prepare every input data
-		PrintSettings printSettings = new PrintSettings(false,
-														Locale.ROOT,
-                CONFIG,
-														(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
-														(selectInfo) -> selectInfo.getSelect().getLabel()
+		PrintSettings printSettings = new PrintSettings(
+			false,
+			Locale.ROOT,
+			CONFIG,
+			(cer) -> EntityPrintId.from(cer.getEntityId(), cer.getEntityId()),
+			(selectInfo) -> selectInfo.getSelect().getLabel()
 		);
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();
@@ -116,7 +175,12 @@ public class ParquetResultGenerationTest {
 
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		ParquetRenderer.writeToStream(output, getIdFields(), managedQuery.collectResultInfos(), printSettings, managedQuery.streamResults(OptionalLong.empty()));
+		ParquetRenderer.writeToStream(
+			output,
+			getIdFields(),
+			managedQuery.collectResultInfos(),
+			printSettings,
+			managedQuery.streamResults(OptionalLong.empty()));
 
 		final byte[] buf = output.toByteArray();
 
@@ -138,7 +202,8 @@ public class ParquetResultGenerationTest {
 
 		log.info("\n{}", actual);
 
-		assertThat(actual).isEqualTo(ArrowResultGenerationTest.generateExpectedTSV(results, managedQuery.collectResultInfos()));
+		assertThat(actual).isEqualTo(
+			ArrowResultGenerationTest.generateExpectedTSV(results, managedQuery.collectResultInfos()));
 
 	}
 
@@ -167,8 +232,7 @@ public class ParquetResultGenerationTest {
 					}
 					builder.append("]");
 
-				}
-				else if (field.isPrimitive()) {
+				} else if (field.isPrimitive()) {
 					final String stringValue = group.getValueToString(fieldIndex, i);
 					if (inSubGroup) {
 						builder.append("\"").append(name).append("\":");
@@ -188,24 +252,20 @@ public class ParquetResultGenerationTest {
 
 					}
 				}
-			}
-			catch (RuntimeException e) {
+			} catch (RuntimeException e) {
 				// Trapped into an unset field
 				if (!inSubGroup) {
 					// Only print null if not in a struct (actual subgroup)
 					builder.append("null");
-				}
-				else if (fieldIndex > 0 && fieldIndex < fieldCount) {
+				} else if (fieldIndex > 0 && fieldIndex < fieldCount) {
 					// Remove the last `,`
 					builder.deleteCharAt(builder.length() - 1);
 				}
-			}
-			finally {
+			} finally {
 				if (fieldIndex + 1 < fieldCount) {
 					if (inSubGroup) {
 						builder.append(",");
-					}
-					else {
+					} else {
 						builder.append("\t");
 					}
 				}
