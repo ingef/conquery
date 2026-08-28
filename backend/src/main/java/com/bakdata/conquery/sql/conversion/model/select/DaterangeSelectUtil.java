@@ -24,7 +24,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.IntervalPackingSelectsCte;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
-import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
@@ -57,7 +57,7 @@ public class DaterangeSelectUtil {
 											   .collect(Collectors.toList());
 
 		SqlTables daterangeSelectTables = createTables(alias, context.getTables(), context);
-		QueryStep lastIntervalPackingStep = applyIntervalPacking(daterange, daterangeSelectTables, context.getIds(), context.getTables(), context.getDialectBundle());
+		QueryStep lastIntervalPackingStep = applyIntervalPacking(daterange, daterangeSelectTables, context.getIds(), context.getTables(), context.getCompilerDialect());
 
 		ColumnDateRange qualified = daterange.qualify(daterangeSelectTables.getPredecessor(INTERVAL_PACKING_SELECTS));
 		FieldWrapper<?> aggregationField = aggregationFunction.apply(qualified, alias, functionProvider);
@@ -67,7 +67,7 @@ public class DaterangeSelectUtil {
 				qualified,
 				aggregationField,
 				daterangeSelectTables,
-				context.getDialectBundle()
+				context.getCompilerDialect()
 		);
 
 		ConnectorSqlTables tables = context.getTables();
@@ -91,7 +91,7 @@ public class DaterangeSelectUtil {
 			FilterContext<?> context
 	) {
 		String alias = context.getNameGenerator().selectName((LabeledNamespaceIdentifiable<?>) filter);
-		SqlFunctionProvider functionProvider = context.getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getCompilerDialect().getFunctionProvider();
 
 		ColumnDateRange daterange = functionProvider.forArbitraryDateRange(filter).as(alias);
 		List<SqlSelect> rootSelects = daterange.toFields().stream()
@@ -99,7 +99,7 @@ public class DaterangeSelectUtil {
 											   .collect(Collectors.toList());
 
 		SqlTables daterangeSelectTables = createTables(alias, context.getTables(), context);
-		QueryStep lastIntervalPackingStep = applyIntervalPacking(daterange, daterangeSelectTables, context.getIds(), context.getTables(), context.getDialectBundle());
+		QueryStep lastIntervalPackingStep = applyIntervalPacking(daterange, daterangeSelectTables, context.getIds(), context.getTables(), context.getCompilerDialect());
 
 		ColumnDateRange qualified = daterange.qualify(daterangeSelectTables.getPredecessor(INTERVAL_PACKING_SELECTS));
 		FieldWrapper<?> aggregationField = aggregationFunction.apply(qualified, alias, functionProvider);
@@ -109,7 +109,7 @@ public class DaterangeSelectUtil {
 				qualified,
 				aggregationField,
 				daterangeSelectTables,
-				context.getDialectBundle()
+				context.getCompilerDialect()
 		);
 
 		ConnectorSqlSelects sqlSelects = ConnectorSqlSelects.builder()
@@ -143,8 +143,8 @@ public class DaterangeSelectUtil {
 	private static SqlTables createTables(String alias, ConnectorSqlTables connectorTables, Context context) {
 		Map<CteStep, CteStep> predecessorMapping = new HashMap<>();
 		String preprocessingCteName = connectorTables.cteName(PREPROCESSING);
-		predecessorMapping.putAll(IntervalPackingCteStep.getMappings(context.getDialectBundle()));
-		if (context.getDialectBundle().supportsSingleColumnRanges()) {
+		predecessorMapping.putAll(IntervalPackingCteStep.getMappings(context.getCompilerDialect()));
+		if (context.getCompilerDialect().supportsSingleColumnRanges()) {
 			predecessorMapping.put(UNNEST_DATE, INTERVAL_COMPLETE);
 			predecessorMapping.put(INTERVAL_PACKING_SELECTS, UNNEST_DATE);
 		}
@@ -160,7 +160,7 @@ public class DaterangeSelectUtil {
 			SqlTables dateUnionTables,
 			SqlIdColumns idColumns,
 			ConnectorSqlTables connectorSqlTables,
-			DialectBundle sqlDialect
+			LegacyCompilerDialect sqlDialect
 	) {
 		String preprocessingCteName = connectorSqlTables.cteName(PREPROCESSING);
 		IntervalPackingContext intervalPackingContext = IntervalPackingContext.builder()

@@ -111,7 +111,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 							   selectContext.getNameGenerator().selectName(countQuartersSelect),
 							   selectContext.getTables(),
 							   selectContext.getFunctionProvider(),
-							   selectContext.getDialectBundle().getStratificationFunctions()
+							   selectContext.getCompilerDialect().getStratificationFunctions()
 				);
 
 		String finalPredecessor = selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
@@ -134,7 +134,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 							   filterContext.getNameGenerator().selectName(countQuartersFilter),
 							   filterContext.getTables(),
 							   filterContext.getFunctionProvider(),
-							   filterContext.getDialectBundle().getStratificationFunctions()
+							   filterContext.getCompilerDialect().getStratificationFunctions()
 				);
 
 		ConnectorSqlSelects selects = ConnectorSqlSelects.builder()

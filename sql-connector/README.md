@@ -21,7 +21,8 @@ The module uses top-level packages as architectural boundaries:
 
 - `model` contains only the immutable, fully resolved compiler input;
 - `validation` contains Bean Validation constraints and the explicit validation boundary;
-- SQL business logic belongs in sibling packages such as `conversion`, `dialect`, and `execution`, not below `model`.
+- `compiler` contains framework-neutral compilation contracts, including the public dialect capabilities;
+- SQL conversion and execution implementations belong in sibling packages, not below `model`.
 
 The resolved model is organized by responsibility:
 

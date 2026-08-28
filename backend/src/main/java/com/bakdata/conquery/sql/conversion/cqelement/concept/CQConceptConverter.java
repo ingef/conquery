@@ -65,7 +65,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		List<ConceptSqlSelects> converted = cqConcept.getSelects().stream()
 				.map(selectId -> {
 					Select select = selectId.resolve();
-					return context.getDialectBundle().getSelectConverter(select).conceptSelect(select, selectContext);
+					return context.getCompilerDialect().getSelectConverter(select).conceptSelect(select, selectContext);
 				})
 				.toList();
 
@@ -247,7 +247,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				.map(SelectId::resolve)
 				.filter(select -> select instanceof ConceptColumnSelect)
 				.findFirst()
-				.map(select -> selectContext.getDialectBundle().getSelectConverter(select).connectorSelect(select, selectContext))
+				.map(select -> selectContext.getCompilerDialect().getSelectConverter(select).connectorSelect(select, selectContext))
 				.orElse(ConnectorSqlSelects.none());
 	}
 
@@ -310,7 +310,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		cqTable.getSelects()
 				.stream()
 				.map(SelectId::resolve)
-				.map(select -> selectContext.getDialectBundle().getSelectConverter(select).connectorSelect(select, selectContext))
+				.map(select -> selectContext.getCompilerDialect().getSelectConverter(select).connectorSelect(select, selectContext))
 				.forEach(allSelectsForTable::add);
 
 		return CQTableContext.builder()
