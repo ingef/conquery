@@ -163,7 +163,7 @@ class RelativeStratification {
 				Stream.concat(Stream.ofNullable(outcomeTable), Stream.ofNullable(featureTable)).toList(),
 				FormCteStep.COMPLETE.getSuffix(),
 				Collections.emptyList(),
-				context.isNegation(), functionProvider
+				context.isNegation()
 		);
 	}
 
@@ -196,7 +196,7 @@ class RelativeStratification {
 				List.of(timeBeforeStep, timeAfterStep),
 				FormCteStep.stratificationCte(resolution).getSuffix(),
 				Collections.emptyList(),
-				context.isNegation(), functionProvider
+				context.isNegation()
 		);
 	}
 

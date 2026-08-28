@@ -206,7 +206,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 				convertedTables,
 				null, // no CTE name required as this step will be the final select
 				List.of(convertedPrerequisite),
-				context.isNegation(), context.getFunctionProvider()
+				context.isNegation()
 		);
 		final Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables, context.getFunctionProvider());
 

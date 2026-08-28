@@ -41,7 +41,7 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 			unions.addAll(rowSelects);
 		}
 		Preconditions.checkArgument(!unions.isEmpty(), "Expecting at least 1 resolved row when converting a CQExternal");
-		QueryStep allStep = QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_IDS_CTE_NAME, Collections.emptyList(), context.isNegation(), functionProvider);
+		QueryStep allStep = QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_IDS_CTE_NAME, Collections.emptyList(), context.isNegation());
 
 		Optional<ColumnDateRange> maybeValidityDate = allStep.getSelects().getValidityDate();
 
@@ -173,7 +173,7 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 			unions.add(rowSelects);
 		}
 		Preconditions.checkArgument(!unions.isEmpty(), "Expecting at least 1 converted resolved row when converting a CQExternal");
-		return QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_EXTRAS_CTE_NAME, Collections.emptyList(), context.isNegation(), functionProvider);
+		return QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_EXTRAS_CTE_NAME, Collections.emptyList(), context.isNegation());
 	}
 
 

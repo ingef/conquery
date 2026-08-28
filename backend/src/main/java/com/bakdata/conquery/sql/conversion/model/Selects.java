@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.conversion.model;
 
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
@@ -87,7 +86,7 @@ public class Selects {
 	}
 
 	/**
-	 * All {@link Select}s that have not been explicitly selected (IDs, validity/stratification dates).
+	 * All fields that have not been explicitly selected (IDs, validity/stratification dates).
 	 */
 	public List<Field<?>> nonExplicitSelects() {
 		return Stream.of(
@@ -102,7 +101,7 @@ public class Selects {
 	}
 
 	/**
-	 * All explicitly selected and converted {@link Select}s.
+	 * All explicitly selected and converted fields.
 	 */
 	public List<Field<?>> explicitSelects() {
 		return this.sqlSelects.stream()
