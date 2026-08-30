@@ -13,13 +13,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.StreamingResponseCallback;
-import org.apache.solr.client.solrj.impl.StreamingBinaryResponseParser;
+import org.apache.solr.client.solrj.beans.DocumentObjectBinder;
 import org.apache.solr.client.solrj.request.QueryRequest;
+import org.apache.solr.client.solrj.request.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.StreamingJavaBinResponseParser;
+import org.apache.solr.client.solrj.response.StreamingResponseCallback;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocument;
 import org.jetbrains.annotations.NotNull;
@@ -117,7 +118,7 @@ public class FilterValueSearch {
             final StreamingResponseCallback callback = new StreamingResponseCallback() {
                 @Override
                 public void streamSolrDocument(SolrDocument doc) {
-                    SolrFrontendValue bean = solrClient.getBinder().getBean(SolrFrontendValue.class, doc);
+                    SolrFrontendValue bean = DocumentObjectBinder.INSTANCE.getBean(SolrFrontendValue.class, doc);
                     beans.add(bean.toFrontendValue());
                 }
 
@@ -128,7 +129,7 @@ public class FilterValueSearch {
             };
 
             final QueryRequest request = new QueryRequest(query, SolrRequest.METHOD.POST);
-            request.setResponseParser(new StreamingBinaryResponseParser(callback));
+            request.setResponseParser(new StreamingJavaBinResponseParser(callback));
             final QueryResponse response = request.process(solrClient);
 
             log.debug("Query [{}] Found: {} | Collected: {} | QTime: {} | ElapsedTime: {}", queryHash, numFound.get(), beans.size(), response.getQTime(), response.getElapsedTime());
@@ -229,7 +230,7 @@ public class FilterValueSearch {
                             return;
                         }
 
-                        SolrFrontendValue bean = solrClient.getBinder().getBean(SolrFrontendValue.class, doc);
+                        SolrFrontendValue bean = DocumentObjectBinder.INSTANCE.getBean(SolrFrontendValue.class, doc);
 
 
                         // Remove from unresolved and add to resolved values if either value or label matches

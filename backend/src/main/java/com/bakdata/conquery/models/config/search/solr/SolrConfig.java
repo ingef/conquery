@@ -15,9 +15,9 @@ import io.dropwizard.util.Duration;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
-import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
+import org.apache.solr.client.solrj.jetty.ConcurrentUpdateJettySolrClient;
+import org.apache.solr.client.solrj.jetty.HttpJettySolrClient;
 import org.apache.solr.client.solrj.request.HealthCheckRequest;
 import org.apache.solr.common.util.NamedList;
 
@@ -95,24 +95,24 @@ public class SolrConfig implements SearchConfig {
 	public SolrClient createIndexClient(@Nullable String collection) {
 		log.info("Creating solr index client. Base url: {}, Collection: {})", baseSolrUrl, collection);
 
-		Http2SolrClient.Builder http2Builder = new Http2SolrClient.Builder(baseSolrUrl)
+		HttpJettySolrClient.Builder jettyBuilder = new HttpJettySolrClient.Builder(baseSolrUrl)
 				.withConnectionTimeout(connectionTimeout.toSeconds(), TimeUnit.SECONDS)
 				.withRequestTimeout(requestTimeout.toSeconds(), TimeUnit.SECONDS);
 
 		if (username != null) {
-			http2Builder.withBasicAuthCredentials(username, password);
+			jettyBuilder.withBasicAuthCredentials(username, password);
 		}
 
         if (useHttp1_1 != null) {
-            http2Builder.useHttp1_1(useHttp1_1);
+            jettyBuilder.useHttp1_1(useHttp1_1);
         }
 
-		Http2SolrClient http2Client = http2Builder.build();
+		HttpJettySolrClient jettyClient = jettyBuilder.build();
 
-		ConcurrentUpdateHttp2SolrClient.Builder concurrentClientBuilder = new ConcurrentUpdateHttp2SolrClient.Builder(baseSolrUrl, http2Client)
-				.withDefaultCollection(collection)
-				.withQueueSize(indexerClientQueueSize)
-				.withThreadCount(indexerClientThreads);
+		ConcurrentUpdateJettySolrClient.Builder concurrentClientBuilder = new ConcurrentUpdateJettySolrClient.Builder(baseSolrUrl, jettyClient);
+		concurrentClientBuilder.withDefaultCollection(collection);
+		concurrentClientBuilder.withQueueSize(indexerClientQueueSize);
+		concurrentClientBuilder.withThreadCount(indexerClientThreads);
 
 
 		return concurrentClientBuilder.build();

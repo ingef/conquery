@@ -15,8 +15,8 @@ import com.bakdata.conquery.util.search.Search;
 import com.bakdata.conquery.util.search.solr.entities.SolrFrontendValue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.request.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
 
 
