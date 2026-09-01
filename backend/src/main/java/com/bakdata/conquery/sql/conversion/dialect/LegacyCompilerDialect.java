@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
+import java.sql.Date;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -7,6 +8,7 @@ import java.util.Map;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQAndConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQDateRestrictionConverter;
@@ -41,6 +43,16 @@ public interface LegacyCompilerDialect extends CompilerDialect {
 	@Override
 	default <T> Field<T> anyValue(Field<T> field) {
 		return getFunctionProvider().anyValue(field);
+	}
+
+	@Override
+	default Field<?> renderDateRange(Field<Date> start, Field<Date> end) {
+		return getFunctionProvider().dateRangeToField(ColumnDateRange.of(start, end));
+	}
+
+	@Override
+	default Field<?> aggregateDateRanges(Field<Date> start, Field<Date> end) {
+		return getFunctionProvider().dateRangeAggregation(ColumnDateRange.of(start, end));
 	}
 
 	StratificationFunctions getStratificationFunctions();

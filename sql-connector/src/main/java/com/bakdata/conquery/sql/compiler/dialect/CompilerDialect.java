@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.compiler.dialect;
 
+import java.sql.Date;
+
 import org.jooq.Field;
 
 /**
@@ -21,6 +23,16 @@ public interface CompilerDialect {
 	 * use {@code MIN} as an equivalent deterministic representative where the compiler only requires one value.</p>
 	 */
 	<T> Field<T> anyValue(Field<T> field);
+
+	/**
+	 * Render the bounds of one date range into the database-specific physical result representation.
+	 */
+	Field<?> renderDateRange(Field<Date> start, Field<Date> end);
+
+	/**
+	 * Aggregate multiple date ranges into the database-specific physical result representation.
+	 */
+	Field<?> aggregateDateRanges(Field<Date> start, Field<Date> end);
 
 	/** Maximum identifier length supported by the target database. */
 	int getNameMaxLength();

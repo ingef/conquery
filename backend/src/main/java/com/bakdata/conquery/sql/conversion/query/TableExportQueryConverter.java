@@ -211,7 +211,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 				List.of(convertedPrerequisite),
 				context.isNegation()
 		);
-		final Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables, context.getFunctionProvider());
+		final Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables, context.getCompilerDialect());
 
 		return context.withFinalQuery(new SqlQuery(selectQuery, tableExportQuery.getResultInfos()));
 	}
