@@ -9,7 +9,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.sql.model.node.AndNode;
@@ -56,9 +55,7 @@ class ResolvedQueryTest {
 				new EntitySchema(EVENTS, ENTITY_ID),
 				concept,
 				true,
-				List.of(new ResultColumn(
-						"Entity", Optional.of("Entity"), Optional.empty(), ResultType.Primitive.STRING, Set.of("ID")
-				))
+				List.of(new ResultColumn("entity", ResultType.Primitive.STRING))
 		);
 
 		assertValid(query);
@@ -137,6 +134,22 @@ class ResolvedQueryTest {
 				ConstraintViolationException.class,
 				() -> new ResolvedQueryValidation(ValidationTestSupport.VALIDATOR).validate(query)
 		);
+	}
+
+	@Test
+	void shouldRejectAmbiguousResultColumnIds() {
+		ResolvedQuery query = new ResolvedQuery(
+				new ExecutionTarget("dataset", "warehouse"),
+				new EntitySchema(EVENTS, ENTITY_ID),
+				conceptNode(EVENTS),
+				false,
+				List.of(
+						new ResultColumn("duplicate", ResultType.Primitive.STRING),
+						new ResultColumn("duplicate", ResultType.Primitive.BOOLEAN)
+				)
+		);
+
+		assertInvalid(query);
 	}
 
 	private static ConceptNode conceptNode(SqlTable table) {

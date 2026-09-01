@@ -7,6 +7,7 @@ import com.bakdata.conquery.sql.model.node.QueryNode;
 import com.bakdata.conquery.sql.model.result.ResultColumn;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -24,5 +25,13 @@ public record ResolvedQuery(
 
 	public ResolvedQuery {
 		resultColumns = ModelNormalization.immutableCopy(resultColumns);
+	}
+
+	@AssertTrue(message = "result column outputIds must be unique")
+	public boolean isResultColumnOutputIdsUnique() {
+		return resultColumns == null || resultColumns.stream()
+				.map(ResultColumn::outputId)
+				.distinct()
+				.count() == resultColumns.size();
 	}
 }
