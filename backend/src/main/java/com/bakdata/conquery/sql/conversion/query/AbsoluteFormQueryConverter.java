@@ -7,7 +7,7 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.forms.FormCteStep;
 import com.bakdata.conquery.sql.conversion.forms.FormType;
@@ -15,7 +15,7 @@ import com.bakdata.conquery.sql.conversion.forms.StratificationTableFactory;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.google.common.base.Preconditions;
 import lombok.RequiredArgsConstructor;
 

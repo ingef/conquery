@@ -9,12 +9,12 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.forms.util.Resolution;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.google.common.base.Preconditions;
 import lombok.RequiredArgsConstructor;
@@ -118,7 +118,7 @@ class AbsoluteStratification {
 		// complete range shall have a null index because it spans the complete range, but we set it to 1 to ensure we can join tables on index,
 		// because a condition involving null in a join (e.g., null = some_value or null = null) always evaluates to false
 		Field<Integer> index = field(inline(1)).as(SharedAliases.INDEX.getAlias());
-		SqlIdColumns ids = baseStepSelects.getIds().withAbsoluteStratification(Resolution.COMPLETE, index);
+		SqlIdColumns ids = baseStepSelects.getIds().withStratification(Resolution.COMPLETE.name(), index);
 
 		ColumnDateRange completeRange = baseStepSelects.getStratificationDate().get();
 
@@ -146,7 +146,7 @@ class AbsoluteStratification {
 		);
 
 		Field<Integer> index = stratificationFunctions.index(countsCteSelects.getIds(), countsCte.getQualifiedSelects().getStratificationDate());
-		SqlIdColumns ids = countsCteSelects.getIds().withAbsoluteStratification(resolutionAndAlignment.getResolution(), index);
+		SqlIdColumns ids = countsCteSelects.getIds().withStratification(resolutionAndAlignment.getResolution().name(), index);
 
 		Selects selects = Selects.builder()
 								 .ids(ids)

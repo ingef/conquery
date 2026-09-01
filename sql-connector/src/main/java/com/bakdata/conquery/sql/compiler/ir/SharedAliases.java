@@ -1,10 +1,6 @@
-package com.bakdata.conquery.sql.conversion;
+package com.bakdata.conquery.sql.compiler.ir;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
-@Getter
-@RequiredArgsConstructor
+/** Shared SQL aliases used by compiler transformations and their generated output columns. */
 public enum SharedAliases {
 
 	PRIMARY_COLUMN("primary_id"),
@@ -13,7 +9,6 @@ public enum SharedAliases {
 
 	NOP_TABLE("nop_table"),
 
-	// form related
 	INDEX_START("index_start"),
 	QUARTER_START("quarter_start"),
 	QUARTER_END("quarter_end"),
@@ -32,8 +27,15 @@ public enum SharedAliases {
 	STRATIFICATION_BOUNDS("stratification_bounds"),
 	OBSERVATION_SCOPE("scope"),
 
-	// full export form
 	SOURCE("source");
 
 	private final String alias;
+
+	SharedAliases(String alias) {
+		this.alias = alias;
+	}
+
+	public String getAlias() {
+		return alias;
+	}
 }

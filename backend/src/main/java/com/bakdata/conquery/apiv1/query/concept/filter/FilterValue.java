@@ -18,7 +18,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
