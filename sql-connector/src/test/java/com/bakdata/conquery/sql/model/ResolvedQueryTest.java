@@ -51,7 +51,6 @@ class ResolvedQueryTest {
 		);
 
 		ResolvedQuery query = new ResolvedQuery(
-				new ExecutionTarget("dataset", "warehouse"),
 				new EntitySchema(EVENTS, ENTITY_ID),
 				concept,
 				true,
@@ -61,7 +60,6 @@ class ResolvedQueryTest {
 		assertValid(query);
 		new ResolvedQueryValidation(ValidationTestSupport.VALIDATOR).validate(query);
 		assertEquals(concept, query.root());
-		assertEquals("warehouse", query.target().dataSource());
 	}
 
 	@Test
@@ -123,7 +121,6 @@ class ResolvedQueryTest {
 				List.of()
 		);
 		ResolvedQuery query = new ResolvedQuery(
-				new ExecutionTarget("dataset", "warehouse"),
 				new EntitySchema(EVENTS, ENTITY_ID),
 				new ConceptNode("concept", List.of(invalidConnector), List.of(), DateAggregationAction.MERGE),
 				true,
@@ -139,7 +136,6 @@ class ResolvedQueryTest {
 	@Test
 	void shouldRejectAmbiguousResultColumnIds() {
 		ResolvedQuery query = new ResolvedQuery(
-				new ExecutionTarget("dataset", "warehouse"),
 				new EntitySchema(EVENTS, ENTITY_ID),
 				conceptNode(EVENTS),
 				false,

@@ -16,7 +16,6 @@ import jakarta.validation.constraints.NotNull;
  * @param includeValidityDate whether the final result exposes an aggregated validity-date column
  */
 public record ResolvedQuery(
-		@NotNull @Valid ExecutionTarget target,
 		@NotNull @Valid EntitySchema entitySchema,
 		@NotNull @Valid QueryNode root,
 		boolean includeValidityDate,
