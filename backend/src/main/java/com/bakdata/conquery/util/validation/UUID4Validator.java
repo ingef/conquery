@@ -8,6 +8,6 @@ public class UUID4Validator implements ConstraintValidator<ValidUUID4 , UUID> {
 
 	@Override
 	public boolean isValid(UUID id, ConstraintValidatorContext context) {
-		return id == null || id.version() != 4;
+		return id == null || id.version() == 4;
 	}
 }

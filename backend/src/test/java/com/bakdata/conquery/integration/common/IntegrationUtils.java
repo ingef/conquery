@@ -6,10 +6,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -49,12 +51,18 @@ public class IntegrationUtils {
 	/**
 	 * Send a query onto the conquery instance and assert the result's size.
 	 */
-	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, Object query, long expectedSize, ExecutionState expectedState, @Nullable User user, int expectedResponseCode) {
+	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, Object query, UUID uuid, long expectedSize, ExecutionState expectedState, @Nullable User user, int expectedResponseCode) {
 		final URI postQueryURI = getPostQueryURI(conquery);
 
 		// Submit Query
-		Invocation.Builder request = conquery.getClient()
-											 .target(postQueryURI)
+		WebTarget webTarget = conquery.getClient()
+				.target(postQueryURI);
+
+		if (uuid != null) {
+			webTarget = webTarget.queryParam("queryId", uuid);
+		}
+
+		Invocation.Builder request = webTarget
 											 .request(MediaType.APPLICATION_JSON_TYPE);
 
 		if (user != null) {
