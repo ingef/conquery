@@ -1,17 +1,14 @@
 package com.bakdata.conquery.sql.conversion.model;
 
-import com.bakdata.conquery.sql.compiler.ir.Selects;
-import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.rendering.SelectProjectionRenderer;
+import com.bakdata.conquery.sql.compiler.rendering.SelectProjectionRenderer.ValidityDateRendering;
 import lombok.RequiredArgsConstructor;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -25,11 +22,14 @@ public class QueryStepTransformer {
 	/**
 	 * Converts a given {@link QueryStep} into an executable SELECT statement.
 	 */
-	public Select<Record> toSelectQuery(QueryStep queryStep, SqlFunctionProvider functionProvider) {
+	public Select<Record> toSelectQuery(QueryStep queryStep, CompilerDialect dialect) {
 
-		List<Field<?>> finalRepresentation = renderFinalRepresentation(queryStep.getSelects(), functionProvider, queryStep.isForTableExport());
+		ValidityDateRendering validityDateRendering = queryStep.isForTableExport()
+				? ValidityDateRendering.INDIVIDUAL
+				: ValidityDateRendering.AGGREGATED;
+		List<Field<?>> finalRepresentation = SelectProjectionRenderer.render(queryStep.getSelects(), dialect, validityDateRendering);
 
-		SelectConditionStep<Record> queryBase = this.dslContext.with(constructPredecessorCteList(queryStep, functionProvider))
+		SelectConditionStep<Record> queryBase = this.dslContext.with(constructPredecessorCteList(queryStep, dialect))
 				.select(finalRepresentation)
 				.from(queryStep.getFromTables())
 				.where(queryStep.getConditions());
@@ -42,40 +42,40 @@ public class QueryStepTransformer {
 
 		// union
 		if (queryStep.isUnion()) {
-			return union(queryStep, grouped, functionProvider);
+			return union(queryStep, grouped, dialect);
 		}
 
 		return grouped;
 	}
 
-	private List<CommonTableExpression<Record>> constructPredecessorCteList(QueryStep queryStep, SqlFunctionProvider functionProvider) {
-		return predecessorCtes(queryStep, functionProvider)
+	private List<CommonTableExpression<Record>> constructPredecessorCteList(QueryStep queryStep, CompilerDialect dialect) {
+		return predecessorCtes(queryStep, dialect)
 				.toList();
 	}
 
-	private List<CommonTableExpression<Record>> toCteList(QueryStep queryStep, SqlFunctionProvider functionProvider) {
+	private List<CommonTableExpression<Record>> toCteList(QueryStep queryStep, CompilerDialect dialect) {
 		return Stream.concat(
-				this.predecessorCtes(queryStep, functionProvider),
-				Stream.of(toCte(queryStep, functionProvider))
+				this.predecessorCtes(queryStep, dialect),
+				Stream.of(toCte(queryStep, dialect))
 		).toList();
 	}
 
-	private Stream<CommonTableExpression<Record>> predecessorCtes(QueryStep queryStep, SqlFunctionProvider functionProvider) {
+	private Stream<CommonTableExpression<Record>> predecessorCtes(QueryStep queryStep, CompilerDialect dialect) {
 		return queryStep.getPredecessors().stream()
-				.flatMap(predecessor -> toCteList(predecessor, functionProvider).stream());
+				.flatMap(predecessor -> toCteList(predecessor, dialect).stream());
 	}
 
-	private CommonTableExpression<Record> toCte(QueryStep queryStep, SqlFunctionProvider functionProvider) {
-		Select<Record> selectStep = toSelectStep(queryStep, functionProvider);
+	private CommonTableExpression<Record> toCte(QueryStep queryStep, CompilerDialect dialect) {
+		Select<Record> selectStep = toSelectStep(queryStep, dialect);
 		return DSL.name(queryStep.getCteName()).as(selectStep);
 	}
 
-	private Select<Record> toSelectStep(QueryStep queryStep, SqlFunctionProvider functionProvider) {
+	private Select<Record> toSelectStep(QueryStep queryStep, CompilerDialect dialect) {
 
 		SelectSelectStep<Record> selectClause;
 
 		List<Field<?>> allSelects = queryStep.isForTableExport()
-				? renderFinalRepresentation(queryStep.getSelects(), functionProvider, true)
+				? SelectProjectionRenderer.render(queryStep.getSelects(), dialect, ValidityDateRendering.INDIVIDUAL)
 				: queryStep.getSelects().all();
 
 		if (queryStep.isSelectDistinct()) {
@@ -91,43 +91,19 @@ public class QueryStepTransformer {
 		}
 
 		if (queryStep.isUnion()) {
-			selectStep = union(queryStep, selectStep, functionProvider);
+			selectStep = union(queryStep, selectStep, dialect);
 		}
 
 		return selectStep;
 	}
 
-	private static List<Field<?>> renderFinalRepresentation(
-			Selects selects,
-			SqlFunctionProvider functionProvider,
-			boolean forTableExport
-	) {
-		final Optional<Field<?>> validityDateRendered = !forTableExport
-				? selects.getValidityDate().map(dateRange -> functionProvider.dateRangeAggregation(dateRange).as(SharedAliases.DATES_COLUMN.getAlias()))
-				: selects.getValidityDate().map(dateRange -> functionProvider.dateRangeToField(dateRange).as(SharedAliases.DATES_COLUMN.getAlias()));
-
-		final Optional<Field<?>> stratificationDateRendered = selects.getStratificationDate()
-				.map(dateRange -> functionProvider.dateRangeToField(dateRange).as(SharedAliases.STRATIFICATION_BOUNDS.getAlias()));
-
-		return Stream.of(
-						selects.getIds().toFields().stream(),
-						stratificationDateRendered.stream(),
-						validityDateRendered.stream(),
-						selects.getSqlSelects().stream().flatMap(sqlSelect -> sqlSelect.toFinalRepresentation().toFields().stream())
-				)
-				.flatMap(Function.identity())
-				.map(select -> (Field<?>) select)
-				.distinct()
-				.collect(Collectors.toList());
-	}
-
-	private Select<Record> union(QueryStep queryStep, Select<Record> base, SqlFunctionProvider functionProvider) {
+	private Select<Record> union(QueryStep queryStep, Select<Record> base, CompilerDialect dialect) {
 		for (QueryStep unionStep : queryStep.getUnion()) {
 			Select<Record> selectStep =
 					queryStep.isForTableExport() ?
 							// TODO this feels like a leaked abstraction, but i am not able to find the proper injection layer at the moment.
-							toSelectQuery(unionStep, functionProvider) :
-							toSelectStep(unionStep, functionProvider);
+							toSelectQuery(unionStep, dialect) :
+							toSelectStep(unionStep, dialect);
 
 			if (queryStep.isUnionAll()) {
 				base = base.unionAll(selectStep);

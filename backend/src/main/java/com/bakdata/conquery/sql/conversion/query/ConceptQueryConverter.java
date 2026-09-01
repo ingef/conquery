@@ -59,7 +59,6 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 	@Override
 	public ConversionContext convert(ConceptQuery conceptQuery, ConversionContext context) {
 
-		SqlFunctionProvider functionProvider = context.getCompilerDialect().getFunctionProvider();
 		ConversionContext contextAfterConversion = context.getNodeConversions().convert(conceptQuery.getRoot(), context);
 
 		QueryStep preFinalStep = contextAfterConversion.getLastConvertedStep();
@@ -79,7 +78,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 				.predecessors(predecessors)
 				.build();
 
-		Select<Record> finalQuery = this.queryStepTransformer.toSelectQuery(finalStep, functionProvider);
+		Select<Record> finalQuery = this.queryStepTransformer.toSelectQuery(finalStep, context.getCompilerDialect());
 		return contextAfterConversion.withFinalQuery(new SqlQuery(finalQuery, conceptQuery.getResultInfos()));
 	}
 
