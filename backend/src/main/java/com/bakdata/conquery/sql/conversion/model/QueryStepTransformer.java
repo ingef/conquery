@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model;
 
+import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import lombok.RequiredArgsConstructor;
 import org.jooq.*;
@@ -7,6 +9,9 @@ import org.jooq.Record;
 import org.jooq.impl.DSL;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -22,7 +27,7 @@ public class QueryStepTransformer {
 	 */
 	public Select<Record> toSelectQuery(QueryStep queryStep, SqlFunctionProvider functionProvider) {
 
-		List<Field<?>> finalRepresentation = queryStep.getSelects().toFinalRepresentation(functionProvider, queryStep.isForTableExport());
+		List<Field<?>> finalRepresentation = renderFinalRepresentation(queryStep.getSelects(), functionProvider, queryStep.isForTableExport());
 
 		SelectConditionStep<Record> queryBase = this.dslContext.with(constructPredecessorCteList(queryStep, functionProvider))
 				.select(finalRepresentation)
@@ -69,7 +74,9 @@ public class QueryStepTransformer {
 
 		SelectSelectStep<Record> selectClause;
 
-		List<Field<?>> allSelects = queryStep.isForTableExport() ? queryStep.getSelects().toFinalRepresentation(functionProvider, true) : queryStep.getSelects().all();
+		List<Field<?>> allSelects = queryStep.isForTableExport()
+				? renderFinalRepresentation(queryStep.getSelects(), functionProvider, true)
+				: queryStep.getSelects().all();
 
 		if (queryStep.isSelectDistinct()) {
 			selectClause = dslContext.selectDistinct(allSelects);
@@ -88,6 +95,30 @@ public class QueryStepTransformer {
 		}
 
 		return selectStep;
+	}
+
+	private static List<Field<?>> renderFinalRepresentation(
+			Selects selects,
+			SqlFunctionProvider functionProvider,
+			boolean forTableExport
+	) {
+		final Optional<Field<?>> validityDateRendered = !forTableExport
+				? selects.getValidityDate().map(dateRange -> functionProvider.dateRangeAggregation(dateRange).as(SharedAliases.DATES_COLUMN.getAlias()))
+				: selects.getValidityDate().map(dateRange -> functionProvider.dateRangeToField(dateRange).as(SharedAliases.DATES_COLUMN.getAlias()));
+
+		final Optional<Field<?>> stratificationDateRendered = selects.getStratificationDate()
+				.map(dateRange -> functionProvider.dateRangeToField(dateRange).as(SharedAliases.STRATIFICATION_BOUNDS.getAlias()));
+
+		return Stream.of(
+						selects.getIds().toFields().stream(),
+						stratificationDateRendered.stream(),
+						validityDateRendered.stream(),
+						selects.getSqlSelects().stream().flatMap(sqlSelect -> sqlSelect.toFinalRepresentation().toFields().stream())
+				)
+				.flatMap(Function.identity())
+				.map(select -> (Field<?>) select)
+				.distinct()
+				.collect(Collectors.toList());
 	}
 
 	private Select<Record> union(QueryStep queryStep, Select<Record> base, SqlFunctionProvider functionProvider) {

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
+import com.bakdata.conquery.sql.compiler.ir.Selects;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
