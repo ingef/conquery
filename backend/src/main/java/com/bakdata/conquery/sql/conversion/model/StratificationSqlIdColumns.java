@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.sql.compiler.ir.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
