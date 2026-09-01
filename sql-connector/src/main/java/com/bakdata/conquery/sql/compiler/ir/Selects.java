@@ -1,10 +1,7 @@
-package com.bakdata.conquery.sql.conversion.model;
+package com.bakdata.conquery.sql.compiler.ir;
 
-import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
-import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -16,6 +13,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Fields selected by a compiler step before dialect-specific rendering.
+ *
+ * <p>This type only describes and transforms compiler state. Turning date ranges and select expressions into the
+ * final SQL projection belongs to the compiler layer that owns the dialect.</p>
+ */
 @Value
 @Builder(toBuilder = true)
 public class Selects {
@@ -28,27 +31,6 @@ public class Selects {
 	@Singular
 	List<SqlSelect> sqlSelects;
 
-	public List<Field<?>> toFinalRepresentation(SqlFunctionProvider functionProvider, boolean forTableExport) {
-
-		final Optional<Field<?>> validityDateRendered =
-				!forTableExport
-						? getValidityDate().map(vdd -> functionProvider.dateRangeAggregation(vdd).as(SharedAliases.DATES_COLUMN.getAlias()))
-						: getValidityDate().map(vdd -> functionProvider.dateRangeToField(vdd).as(SharedAliases.DATES_COLUMN.getAlias()));
-
-		final Optional<Field<?>> stratificationDateRendered = getStratificationDate().map(vdd -> functionProvider.dateRangeToField(vdd).as(SharedAliases.STRATIFICATION_BOUNDS.getAlias()));
-
-		return Stream.of(
-						getIds().toFields().stream(),
-						stratificationDateRendered.stream(),
-						validityDateRendered.stream(),
-						getSqlSelects().stream().flatMap(sqlSelect -> sqlSelect.toFinalRepresentation().toFields().stream())
-				)
-				.flatMap(Function.identity())
-				.map(select -> (Field<?>) select)
-				.distinct()
-				.collect(Collectors.toList());
-	}
-
 	public Selects blockValidityDate() {
 		return this.toBuilder()
 				.validityDate(Optional.empty())
@@ -56,22 +38,17 @@ public class Selects {
 	}
 
 	public Selects qualify(String qualifier) {
-		SqlIdColumns ids = this.ids.qualify(qualifier);
-		List<SqlSelect> sqlSelects = this.sqlSelects.stream().map(sqlSelect -> sqlSelect.qualify(qualifier)).collect(Collectors.toList());
+		SqlIdColumns qualifiedIds = this.ids.qualify(qualifier);
+		List<SqlSelect> qualifiedSqlSelects = this.sqlSelects.stream()
+				.map(sqlSelect -> sqlSelect.qualify(qualifier))
+				.toList();
 
-		SelectsBuilder builder = Selects.builder()
-				.ids(ids)
-				.sqlSelects(sqlSelects);
-
-		if (this.validityDate.isPresent()) {
-			builder = builder.validityDate(this.validityDate.map(_validityDate -> _validityDate.qualify(qualifier)));
-		}
-
-		if (this.stratificationDate.isPresent()) {
-			builder = builder.stratificationDate(this.stratificationDate.map(_validityDate -> _validityDate.qualify(qualifier)));
-		}
-
-		return builder.build();
+		return Selects.builder()
+				.ids(qualifiedIds)
+				.validityDate(this.validityDate.map(dateRange -> dateRange.qualify(qualifier)))
+				.stratificationDate(this.stratificationDate.map(dateRange -> dateRange.qualify(qualifier)))
+				.sqlSelects(qualifiedSqlSelects)
+				.build();
 	}
 
 	public List<Field<?>> all() {

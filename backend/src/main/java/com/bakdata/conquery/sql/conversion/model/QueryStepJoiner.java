@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.model;
 
+import com.bakdata.conquery.sql.compiler.ir.Selects;
 import static org.jooq.impl.DSL.*;
 
 import java.util.ArrayList;

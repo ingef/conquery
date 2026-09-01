@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.model;
 
+import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.Builder;
 import lombok.Singular;
