@@ -30,7 +30,7 @@ import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;

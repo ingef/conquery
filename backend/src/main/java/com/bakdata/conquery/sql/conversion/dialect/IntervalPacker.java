@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.conversion.dialect;
 
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 
 /**
  * Packing intervals involves packing groups of intersecting validity date intervals into their respective continuous intervals.

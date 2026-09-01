@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.conversion.model;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 

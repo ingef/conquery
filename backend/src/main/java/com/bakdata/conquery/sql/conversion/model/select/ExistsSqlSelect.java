@@ -1,6 +1,8 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
