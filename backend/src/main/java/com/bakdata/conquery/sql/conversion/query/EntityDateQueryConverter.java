@@ -11,7 +11,7 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.FormCteStep;
 import com.bakdata.conquery.sql.conversion.forms.FormType;
 import com.bakdata.conquery.sql.conversion.forms.StratificationTableFactory;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.google.common.base.Preconditions;

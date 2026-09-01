@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;

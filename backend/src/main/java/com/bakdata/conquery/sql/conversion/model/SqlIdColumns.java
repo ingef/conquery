@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.compiler.ir.Qualifiable;
+import com.bakdata.conquery.sql.compiler.ir.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.SharedAliases;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
