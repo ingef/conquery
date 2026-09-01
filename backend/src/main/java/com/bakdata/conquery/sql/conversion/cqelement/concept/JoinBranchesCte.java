@@ -13,7 +13,7 @@ import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import org.jooq.Record;
 import org.jooq.TableLike;
 

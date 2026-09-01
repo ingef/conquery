@@ -13,7 +13,7 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.select.ConceptSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import com.google.common.base.Preconditions;
 
 public class IntervalPackingSelectsCte {

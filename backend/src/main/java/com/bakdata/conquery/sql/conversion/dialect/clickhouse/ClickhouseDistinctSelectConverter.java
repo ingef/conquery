@@ -10,7 +10,7 @@ import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
 
 public class ClickhouseDistinctSelectConverter implements SelectConverter<DistinctSelect> {
 

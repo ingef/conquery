@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.model.select;
 
 import java.util.List;
 
+import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
 import lombok.Value;
 import org.jooq.Field;
 import org.jooq.impl.DSL;

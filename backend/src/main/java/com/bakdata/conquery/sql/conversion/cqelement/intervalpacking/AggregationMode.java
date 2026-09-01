@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.conversion.cqelement.intervalpacking;
 
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 
 /**
  * Determines if the date that is getting interval-packed is stored as validity date of {@link Selects} or as arbitrary {@link SqlSelect}.
