@@ -12,7 +12,7 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.FormCteStep;
 import com.bakdata.conquery.sql.conversion.forms.FormType;
 import com.bakdata.conquery.sql.conversion.model.*;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.google.common.base.Preconditions;
 import lombok.RequiredArgsConstructor;
 import org.jooq.*;

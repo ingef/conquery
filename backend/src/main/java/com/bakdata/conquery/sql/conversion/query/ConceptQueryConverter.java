@@ -9,7 +9,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.*;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
 import org.jooq.*;

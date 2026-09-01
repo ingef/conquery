@@ -1,2 +1,2 @@
-/** SQL select expressions used by the compiler intermediate representation. */
+/** Internal SQL select expressions used while compiling a resolved query. */
 package com.bakdata.conquery.sql.compiler.ir.select;

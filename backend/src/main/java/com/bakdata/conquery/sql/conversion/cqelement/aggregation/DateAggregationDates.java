@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

@@ -26,7 +26,7 @@ import com.bakdata.conquery.models.query.resultinfo.printers.PrinterFactory;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
