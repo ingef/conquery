@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
+import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;

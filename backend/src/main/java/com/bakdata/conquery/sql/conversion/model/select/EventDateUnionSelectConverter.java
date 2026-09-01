@@ -1,6 +1,8 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDateUnionSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;

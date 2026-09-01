@@ -5,7 +5,7 @@ import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.model.ConqueryJoinType;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
-import com.bakdata.conquery.sql.conversion.model.select.ExistsSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.ExistsSqlSelect;
 
 public class CQAndConverter implements NodeConverter<CQAnd> {
 

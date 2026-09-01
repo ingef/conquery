@@ -1,20 +1,18 @@
-package com.bakdata.conquery.sql.conversion.model.select;
+package com.bakdata.conquery.sql.compiler.ir.select;
+
+import static org.jooq.impl.DSL.coalesce;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.inline;
+import static org.jooq.impl.DSL.max;
+import static org.jooq.impl.DSL.name;
+
+import java.util.List;
 
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
-import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
-import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
 import org.jooq.Name;
 
-import java.util.Collections;
-import java.util.List;
-
-import static org.jooq.impl.DSL.*;
-import static org.jooq.impl.DSL.field;
-
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+/** A single-column marker select indicating whether a row exists. */
 public class ExistsSqlSelect implements SingleColumnSqlSelect {
 
 	private static final Field<Integer> EXISTS = inline(1);
@@ -22,13 +20,18 @@ public class ExistsSqlSelect implements SingleColumnSqlSelect {
 	private final Field<Integer> exists;
 	private final Name alias;
 
-	public static ExistsSqlSelect withAlias(final String alias) {
+	private ExistsSqlSelect(Field<Integer> exists, Name alias) {
+		this.exists = exists;
+		this.alias = alias;
+	}
+
+	public static ExistsSqlSelect withAlias(String alias) {
 		return new ExistsSqlSelect(EXISTS.as(alias), name(alias));
 	}
 
 	@Override
 	public List<String> requiredColumns() {
-		return Collections.emptyList();
+		return List.of();
 	}
 
 	@Override
@@ -47,8 +50,8 @@ public class ExistsSqlSelect implements SingleColumnSqlSelect {
 	}
 
 	@Override
-	public SingleColumnSqlSelect qualify(final String qualifier) {
-		final Field<Integer> qualified = field(name(name(qualifier), alias), exists.getType());
+	public SingleColumnSqlSelect qualify(String qualifier) {
+		Field<Integer> qualified = field(name(name(qualifier), alias), exists.getType());
 		return new ExistsSqlSelect(qualified, alias);
 	}
 
@@ -64,7 +67,7 @@ public class ExistsSqlSelect implements SingleColumnSqlSelect {
 
 	@Override
 	public List<Field<?>> aggregateForFinalQuery(CompilerDialect dialect) {
-		// We have to coalesce at the end of the query because full-outer-joins will create null values, which we want to avoid.
+		// Full outer joins can introduce null values, which an existence marker represents as zero.
 		Field<Integer> coalesced = coalesce(max(select()), inline(0));
 		return List.of(coalesced.as(alias));
 	}
