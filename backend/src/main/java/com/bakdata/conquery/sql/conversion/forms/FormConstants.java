@@ -5,7 +5,7 @@ import java.sql.Date;
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 

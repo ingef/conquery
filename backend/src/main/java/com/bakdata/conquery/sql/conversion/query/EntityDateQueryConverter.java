@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.FormCteStep;

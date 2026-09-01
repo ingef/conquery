@@ -19,7 +19,7 @@ import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.NumberMapUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;

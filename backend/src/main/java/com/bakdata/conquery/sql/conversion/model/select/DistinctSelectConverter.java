@@ -17,7 +17,7 @@ import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

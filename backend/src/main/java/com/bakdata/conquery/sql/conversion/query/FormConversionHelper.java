@@ -4,11 +4,13 @@ import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.FormCteStep;
@@ -43,7 +45,7 @@ public class FormConversionHelper {
 		Selects preFinalSelects = convertedFeatures.getQualifiedSelects();
 		Selects stratificationSelects = stratificationTable.getQualifiedSelects();
 
-		SqlIdColumns ids = stratificationSelects.getIds().forFinalSelect();
+		SqlIdColumns ids = stratificationSelects.getIds().forFinalSelect(Resolution.COMPLETE.name());
 
 		Selects.SelectsBuilder selects = Selects.builder()
 				.ids(ids)
