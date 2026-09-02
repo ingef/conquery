@@ -1,20 +1,13 @@
-import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import PrimaryButton from "../button/PrimaryButton";
 import { TransparentButton } from "../button/TransparentButton";
 import Modal from "../modal/Modal";
 
-const Description = styled.p`
-  max-width: 400px;
-  margin: 0 0 20px;
-`;
-
-const Buttons = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
+const description = tv({
+  base: ["max-w-[400px]", "mb-5"],
+});
 
 const ExpandPreviousQueryModal = ({
   onClose,
@@ -39,15 +32,17 @@ const ExpandPreviousQueryModal = ({
           onAccept();
         }}
       >
-        <Description>{t("expandPreviousQueryModal.description")}</Description>
-        <Buttons>
+        <p className={description()}>
+          {t("expandPreviousQueryModal.description")}
+        </p>
+        <div className="flex items-center justify-between">
           <TransparentButton onClick={onClose} type="button">
             {t("common.cancel")}
           </TransparentButton>
           <PrimaryButton autoFocus onClick={onAccept} type="submit">
             {t("expandPreviousQueryModal.submit")}
           </PrimaryButton>
-        </Buttons>
+        </div>
       </form>
     </Modal>
   );

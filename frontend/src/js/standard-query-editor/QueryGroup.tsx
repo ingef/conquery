@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { DateRangeT, QueryT } from "../api/types";
 import type { PreviousQueryT } from "../previous-queries/list/reducer";
@@ -11,38 +11,27 @@ import QueryGroupActions from "./QueryGroupActions";
 import QueryNode from "./QueryNode";
 import type { QueryGroupType, StandardQueryNodeT } from "./types";
 
-const Root = styled("div")`
-  font-size: ${({ theme }) => theme.font.sm};
-  max-width: 250px;
-`;
+const groupBox = tv({
+  base: [
+    "relative",
+    "w-[220px]",
+    "pt-[6px] px-2 pb-2",
+    "bg-bg-50",
+    "shadow-[0_0_10px_0_rgba(0,0,0,0.12)]",
+    "rounded",
+    "text-center",
+  ],
+  variants: {
+    excluded: {
+      true: "border-2 border-red",
+      false: "border border-gray-100",
+    },
+  },
+});
 
-const Group = styled("div")<{ excluded?: boolean }>`
-  position: relative;
-  padding: 6px 8px 8px;
-  background-color: ${({ theme }) => theme.col.bg};
-  border: ${({ theme, excluded }) =>
-    excluded
-      ? `2px solid ${theme.col.red}`
-      : `1px solid ${theme.col.grayLight}`};
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.12);
-  text-align: center;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  width: 220px;
-`;
-
-const QueryOrConnector = styled("p")`
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.sm};
-  color: ${({ theme }) => theme.col.gray};
-  text-align: center;
-`;
-
-// To override tippy here.
-// Maybe also possible in another way by adjusting
-// QueryEditorDropzone styles
-const SxWithTooltip = styled(WithTooltip)`
-  display: block !important;
-`;
+const queryOrConnector = tv({
+  base: ["text-sm", "text-gray-500", "text-center"],
+});
 
 const isDateActive = (dateRange?: DateRangeT) => {
   return !!dateRange && (!!dateRange.min || !!dateRange.max);
@@ -112,8 +101,9 @@ const QueryGroup = ({
   );
 
   return (
-    <Root>
-      <SxWithTooltip text={t("help.editorDropzoneOr")} lazy>
+    <div className="max-w-[250px] text-sm">
+      {/* block! overrides tippy's inline-block wrapper */}
+      <WithTooltip className="block!" text={t("help.editorDropzoneOr")} lazy>
         <QueryEditorDropzone
           key={group.elements.length + 1}
           onDropNode={onDropNode}
@@ -121,9 +111,12 @@ const QueryGroup = ({
           onLoadPreviousQuery={onLoadPreviousQuery}
           onImportLines={importLines}
         />
-      </SxWithTooltip>
-      <QueryOrConnector>{t("common.or")}</QueryOrConnector>
-      <Group excluded={group.exclude} data-test-id="query-group">
+      </WithTooltip>
+      <p className={queryOrConnector()}>{t("common.or")}</p>
+      <div
+        className={groupBox({ excluded: !!group.exclude })}
+        data-test-id="query-group"
+      >
         <QueryGroupActions
           excludeActive={!!group.exclude}
           dateActive={isDateActive(group.dateRange)}
@@ -146,9 +139,9 @@ const QueryGroup = ({
                   onExpandClick={onExpandClick}
                 />
                 {orIdx !== group.elements.length - 1 && (
-                  <QueryOrConnector key={"last-or"}>
+                  <p className={queryOrConnector()} key={"last-or"}>
                     {t("common.or")}
-                  </QueryOrConnector>
+                  </p>
                 )}
               </div>
             )),
@@ -163,8 +156,8 @@ const QueryGroup = ({
             onExpandClick,
           ],
         )}
-      </Group>
-    </Root>
+      </div>
+    </div>
   );
 };
 

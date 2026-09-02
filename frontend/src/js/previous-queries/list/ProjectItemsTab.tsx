@@ -1,9 +1,8 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { Group, Panel } from "react-resizable-panels";
+import { tv } from "tailwind-variants";
 import type { DatasetT } from "../../api/types";
 import type { StateT } from "../../app/reducers";
 import { usePrevious } from "../../common/helpers/usePrevious";
@@ -27,65 +26,26 @@ import { ProjectItems } from "./ProjectItems";
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 import { selectPreviousQueries } from "./selector";
 
-const ScrollContainer = styled("div")`
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
+const foldersAndQueries = tv({
+  base: [
+    "flex items-start",
+    "grow",
+    "mt-2 mr-2 mb-0 ml-[10px]",
+    "overflow-hidden",
+    "relative",
+  ],
+});
 
-const Row = styled("div")`
-  display: flex;
-  align-items: flex-start;
-  margin: 8px 10px 0;
-`;
+const typeFilter = tv({
+  base: ["flex items-start", "mr-5", "pr-[10px]"],
+});
 
-const FoldersAndQueries = styled(Row)`
-  flex-grow: 1;
-  margin: 8px 8px 0 10px;
-  overflow: hidden;
-  position: relative;
-`;
-const SxProjectItemsSearchBox = styled(ProjectItemsSearchBox)`
-  flex-grow: 1;
-`;
-
-const Filters = styled("div")`
-  display: flex;
-  align-items: flex-start;
-  margin: 8px 0;
-`;
-const SxProjectItemsFilter = styled(ProjectItemsFilter)`
-  display: flex;
-  align-items: flex-start;
-`;
-
-const SxProjectItemsTypeFilter = styled(ProjectItemsTypeFilter)`
-  display: flex;
-  align-items: flex-start;
-  margin-right: 20px;
-  padding-right: 10px;
-`;
-
-const SxUploadQueryResults = styled(UploadQueryResults)`
-  margin-left: 5px;
-`;
-
-const SxFolders = styled(Folders)`
-  padding: 8px 8px 8px 0;
-`;
-
-const Expand = styled("div")<{ areFoldersOpen?: boolean }>`
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding-right: 2px;
-  ${({ areFoldersOpen }) =>
-    areFoldersOpen &&
-    css`
-      padding-left: 8px;
-    `}
-`;
+const expand = tv({
+  base: ["flex flex-col", "grow", "h-full", "pr-[2px]"],
+  variants: {
+    areFoldersOpen: { true: "pl-2" },
+  },
+});
 
 interface PropsT {
   datasetId: DatasetT["id"] | null;
@@ -110,17 +70,17 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
 
   return (
     <>
-      <Row>
+      <div className="mx-[10px] mt-2 flex items-start">
         <FoldersToggleButton
           active={areFoldersOpen}
           onClick={onToggleFoldersOpen}
         />
-        <SxProjectItemsSearchBox />
+        <ProjectItemsSearchBox className="grow" />
         {hasPermissionToUpload && (
-          <SxUploadQueryResults datasetId={datasetId} />
+          <UploadQueryResults className="ml-[5px]" datasetId={datasetId} />
         )}
-      </Row>
-      <FoldersAndQueries>
+      </div>
+      <div className={foldersAndQueries()}>
         <Group orientation="horizontal">
           <Panel
             key="left"
@@ -130,30 +90,30 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
             minSize="10"
             defaultSize={areFoldersOpen ? "25" : 0}
           >
-            <SxFolders />
+            <Folders className="py-2 pr-2 pl-0" />
           </Panel>
           <ResizeHandle
             disabled={!areFoldersOpen}
             style={areFoldersOpen ? undefined : { display: "none" }}
           />
           <Panel key="right">
-            <Expand areFoldersOpen={areFoldersOpen}>
-              <Filters>
-                <SxProjectItemsTypeFilter />
-                <SxProjectItemsFilter />
-              </Filters>
-              <ScrollContainer>
+            <div className={expand({ areFoldersOpen })}>
+              <div className="my-2 flex items-start">
+                <ProjectItemsTypeFilter className={typeFilter()} />
+                <ProjectItemsFilter className="flex items-start" />
+              </div>
+              <div className="overflow-y-auto text-sm [-webkit-overflow-scrolling:touch]">
                 {items.length === 0 && !loading && (
                   <EmptyList
                     emptyMessage={t("previousQueries.noQueriesFound")}
                   />
                 )}
-              </ScrollContainer>
+              </div>
               <ProjectItems items={items} datasetId={datasetId} />
-            </Expand>
+            </div>
           </Panel>
         </Group>
-      </FoldersAndQueries>
+      </div>
     </>
   );
 };

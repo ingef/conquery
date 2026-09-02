@@ -1,8 +1,8 @@
-import styled from "@emotion/styled";
 import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import type { StateT } from "../../app/reducers";
 import IconButton from "../../button/IconButton";
@@ -35,69 +35,41 @@ const DROP_TYPES = [
   DNDType.PREVIOUS_SECONDARY_ID_QUERY,
 ];
 
-const Root = styled("div")`
-  flex-shrink: 0;
-  height: 100%;
-  overflow: hidden;
-  border-right: none;
-  display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-`;
+const root = tv({
+  base: ["flex flex-col items-start", "shrink-0", "h-full", "overflow-hidden"],
+});
 
-const SxIconButton = styled(IconButton)`
-  background-color: ${({ theme }) => theme.col.bg};
-  padding: 2px 8px;
-  opacity: 1;
-  border-radius: 0;
+// hidden until the surrounding folder dropzone (group/folder) is hovered
+const deleteButton = tv({
+  base: [
+    "absolute top-0 right-0",
+    "hidden group-hover/folder:block",
+    "bg-bg-50",
+    "px-2 py-[2px]",
+    "opacity-100",
+    "rounded-none",
+  ],
+});
 
-  position: absolute;
-  right: 0px;
-  top: 0px;
-  display: none;
-`;
+const folderDropzone = tv({
+  base: [
+    "group/folder",
+    "relative",
+    "justify-start",
+    "mb-[2px]",
+    "cursor-pointer",
+    "hover:bg-gray-50",
+  ],
+});
 
-const AddFolderIconButton = styled(IconButton)`
-  text-align: left;
-  padding: 4px 6px;
-`;
-
-const Row = styled("div")`
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 12px;
-  min-width: 100px;
-  width: 100%;
-`;
-
-const SxDropzone = styled(Dropzone)`
-  justify-content: flex-start;
-  margin-bottom: 2px;
-  position: relative;
-  cursor: pointer;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.col.grayVeryLight};
-    .folder-delete-button {
-      display: block;
-    }
-  }
-`;
-
-const SxPreviousQueriesFolder = styled(Folder)`
-  margin-bottom: 5px;
-`;
-
-const ScrollContainer = styled("div")`
-  overflow-y: auto;
-  overflow-x: hidden;
-  flex-grow: 1;
-  width: 100%;
-
-  display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-`;
+const scrollContainer = tv({
+  base: [
+    "flex flex-col items-start",
+    "grow",
+    "w-full",
+    "overflow-y-auto overflow-x-hidden",
+  ],
+});
 
 const NARROW_WIDTH = 120;
 const useIsParentNarrow = () => {
@@ -203,7 +175,7 @@ const Folders = ({ className }: { className?: string }) => {
   );
 
   return (
-    <Root className={className}>
+    <div className={root({ className })}>
       {folderToDelete && (
         <DeleteFolderModal
           folder={folderToDelete}
@@ -214,16 +186,20 @@ const Folders = ({ className }: { className?: string }) => {
           }}
         />
       )}
-      <Row ref={parentRef}>
-        <AddFolderIconButton
+      <div
+        className="mb-3 flex w-full min-w-[100px] items-start"
+        ref={parentRef}
+      >
+        <IconButton
+          className="px-[6px] py-1 text-left"
           icon={faPlus}
           frame
           tight
           onClick={() => setShowAddFolderModal(true)}
         >
           {isNarrow ? t("folders.addShort") : t("folders.add")}
-        </AddFolderIconButton>
-      </Row>
+        </IconButton>
+      </div>
       {showAddFolderModal && (
         <AddFolderModal
           onClose={() => setShowAddFolderModal(false)}
@@ -236,7 +212,8 @@ const Folders = ({ className }: { className?: string }) => {
           }}
         />
       )}
-      <SxPreviousQueriesFolder
+      <Folder
+        className="mb-[5px]"
         key="all-queries"
         folder={t("folders.allQueries")}
         active={folderFilter.length === 0 && !noFoldersActive}
@@ -244,7 +221,8 @@ const Folders = ({ className }: { className?: string }) => {
         resultCount={searchResult ? searchResult.__all__ : null}
         resultWords={[]}
       />
-      <SxPreviousQueriesFolder
+      <Folder
+        className="mb-[5px]"
         key="no-folder"
         special
         folder={t("folders.noFolders")}
@@ -253,10 +231,11 @@ const Folders = ({ className }: { className?: string }) => {
         resultCount={searchResult ? searchResult.__without_folder__ : null}
         resultWords={[]}
       />
-      <ScrollContainer>
+      <div className={scrollContainer()}>
         {folders.map((folder, i) => {
           return (
-            <SxDropzone
+            <Dropzone
+              className={folderDropzone()}
               key={`${folder}-${i}`}
               naked
               bare
@@ -286,8 +265,8 @@ const Folders = ({ className }: { className?: string }) => {
                     resultWords={searchResultWords}
                   />
                   <WithTooltip text={t("common.delete")}>
-                    <SxIconButton
-                      className="folder-delete-button"
+                    <IconButton
+                      className={deleteButton()}
                       icon={faTimes}
                       onClick={(e) => {
                         setFolderToDelete(folder);
@@ -297,11 +276,11 @@ const Folders = ({ className }: { className?: string }) => {
                   </WithTooltip>
                 </>
               )}
-            </SxDropzone>
+            </Dropzone>
           );
         })}
-      </ScrollContainer>
-    </Root>
+      </div>
+    </div>
   );
 };
 export default Folders;

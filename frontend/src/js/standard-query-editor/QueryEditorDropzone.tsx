@@ -1,7 +1,6 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
 import { memo, type Ref, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { QueryIdT } from "../api/types";
 import { DNDType } from "../common/constants/dndTypes";
@@ -19,29 +18,12 @@ const DROP_TYPES = [
   DNDType.PREVIOUS_SECONDARY_ID_QUERY,
 ];
 
-const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)<{
-  isInitial?: boolean;
-  isAnd?: boolean;
-}>`
-  ${({ isInitial }) =>
-    isInitial &&
-    css`
-      height: 100%;
-    `};
-
-  ${({ isAnd }) =>
-    isAnd &&
-    css`
-      height: 100px;
-      white-space: nowrap;
-      width: initial;
-    `};
-`;
-
-const Text = styled("p")`
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
+const dropzone = tv({
+  variants: {
+    isInitial: { true: "h-full" },
+    isAnd: { true: ["h-[100px]", "whitespace-nowrap", "w-[initial]"] },
+  },
+});
 
 interface Props {
   className?: string;
@@ -78,10 +60,9 @@ const QueryEditorDropzone = ({
   );
 
   return (
-    <SxDropzoneWithFileInput
+    <DropzoneWithFileInput
       ref={ref}
-      className={className}
-      isAnd={isAnd}
+      className={dropzone({ isInitial, isAnd, className })}
       isInitial={isInitial}
       acceptedDropTypes={DROP_TYPES}
       onDrop={(item) => onDrop(item as StandardQueryNodeT | DragItemFile)}
@@ -93,10 +74,12 @@ const QueryEditorDropzone = ({
       {() => (
         <>
           {isInitial && <EmptyQueryEditorDropzone />}
-          {!isInitial && <Text>{t("dropzone.dragElementPlease")}</Text>}
+          {!isInitial && (
+            <p className="text-sm">{t("dropzone.dragElementPlease")}</p>
+          )}
         </>
       )}
-    </SxDropzoneWithFileInput>
+    </DropzoneWithFileInput>
   );
 };
 

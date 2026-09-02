@@ -1,23 +1,22 @@
-import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { DateRangeT } from "../../api/types";
 import { formatDate } from "../../common/helpers/dateHelper";
 
-const Root = styled("div")`
-  font-size: ${({ theme }) => theme.font.xs};
-  font-family: monospace;
-  display: inline-grid;
-  gap: 0 5px;
-  grid-template-columns: auto 1fr;
-`;
+const root = tv({
+  base: [
+    "inline-grid",
+    "grid-cols-[auto_1fr]",
+    "gap-x-[5px] gap-y-0",
+    "text-xs",
+    "font-mono",
+  ],
+});
 
-const Label = styled("div")`
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.col.blueGrayDark};
-  font-weight: 700;
-  justify-self: flex-end;
-`;
+const dateLabel = tv({
+  base: ["justify-self-end", "uppercase", "text-primary-500", "font-bold"],
+});
 
 const getFormattedDate = (date: string | undefined, dateFormat: string) => {
   if (!date) return null;
@@ -37,19 +36,19 @@ export const DateRange = ({ dateRange }: { dateRange: DateRangeT }) => {
   const dateMax = getFormattedDate(dateRange.max, dateFormat);
 
   return (
-    <Root>
+    <div className={root()}>
       {dateMin && (
         <>
-          <Label>{t("inputDateRange.from")}</Label>
+          <div className={dateLabel()}>{t("inputDateRange.from")}</div>
           <span>{dateMin}</span>
         </>
       )}
       {dateMax && dateMax !== dateMin && (
         <>
-          <Label>{t("inputDateRange.to")}</Label>
+          <div className={dateLabel()}>{t("inputDateRange.to")}</div>
           <span>{dateMax}</span>
         </>
       )}
-    </Root>
+    </div>
   );
 };

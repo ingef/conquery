@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -18,17 +17,6 @@ import {
 } from "./actions";
 import { isFormConfig } from "./helpers";
 import type { ProjectItemT } from "./ProjectItem";
-
-const Row = styled("div")`
-  width: 100%;
-  display: flex;
-  align-items: flex-end;
-`;
-
-const SxIconButton = styled(IconButton)`
-  padding: 7px 10px;
-  margin-left: 3px;
-`;
 
 const getInitialUserGroupsValue = (
   userGroups: UserGroupT[],
@@ -150,7 +138,7 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
           onShareClicked();
         }}
       >
-        <Row>
+        <div className="flex w-full items-end">
           <InputMultiSelect
             autoFocus
             value={userGroupsValue}
@@ -159,14 +147,15 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
             options={userGroupOptions}
           />
           <WithTooltip text={shareLabel}>
-            <SxIconButton
+            <IconButton
+              className="ml-[3px] px-[10px] py-[7px]"
               type="submit"
               frame
               disabled={buttonDisabled}
               icon={loading ? faSpinner : faCheck}
             />
           </WithTooltip>
-        </Row>
+        </div>
       </form>
     </Modal>
   );

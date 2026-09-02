@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faCheckCircle,
   faDownload,
@@ -24,80 +23,31 @@ import ScrollableList from "../../scrollable-list/ScrollableList";
 import WithTooltip from "../../tooltip/WithTooltip";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
 
-const Row = styled("div")`
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-bottom: 15px;
-`;
-
 const td = tv({
   base: "min-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap text-xs",
 });
-const Th = styled("th")`
-  font-size: ${({ theme }) => theme.font.xs};
-  vertical-align: top;
-  width: 150px;
-`;
 
-const Padded = styled("span")`
-  padding: 0 6px;
-`;
-const SxPadded = styled(Padded)`
-  display: inline-block;
-  margin-top: 10px;
-`;
+const th = tv({
+  base: ["w-[150px]", "align-top", "text-xs"],
+});
 
-const SxInputSelect = styled(InputSelect)`
-  width: 150px;
-  text-align: left;
-  display: inline-block;
-  margin-left: 15px;
-`;
+const msg = tv({
+  base: ["flex items-center", "mt-[10px] mb-2 first-of-type:mt-0", "text-sm"],
+});
 
-const Msg = styled("p")`
-  margin: 10px 0 8px;
-  &:first-of-type {
-    margin-top: 0;
-  }
-  font-size: ${({ theme }) => theme.font.sm};
-  display: flex;
-  align-items: center;
-`;
+const partialUploadResults = tv({
+  base: ["mt-[15px]", "p-[15px]", "shadow-[0_0_5px_0_rgba(0,0,0,0.1)]"],
+});
 
-const PartialUploadResults = styled("div")`
-  box-shadow: 0 0 5px 0 rgb(0, 0, 0, 0.1);
-  padding: 15px;
-  margin-top: 15px;
-`;
-
-const BigIcon = styled(FaIcon)`
-  font-size: ${({ theme }) => theme.font.lg};
-  margin-right: 7px;
-`;
-const ErrorIcon = styled(BigIcon)`
-  color: ${({ theme }) => theme.col.red};
-`;
-const SuccessIcon = styled(BigIcon)`
-  color: ${({ theme }) => theme.col.green};
-`;
-const Buttons = styled("div")`
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  margin-top: 12px;
-`;
-
-const SxPrimaryButton = styled(PrimaryButton)`
-  margin-left: 10px;
-`;
-const SxTransparentButton = styled(TransparentButton)`
-  margin-left: 10px;
-`;
-
-const DownloadUnresolvedButton = styled(TransparentButton)`
-  margin-right: auto;
-`;
+const bigIcon = tv({
+  base: ["mr-[7px]", "text-xl"],
+  variants: {
+    kind: {
+      error: "text-red",
+      success: "text-green",
+    },
+  },
+});
 
 export interface QueryToUploadT {
   format: string[];
@@ -196,7 +146,7 @@ const CSVPreviewTable = ({
           csv.slice(0, 1).map((row, j) => (
             <tr key={j}>
               {row.map((cell, i) => (
-                <Th key={cell + i}>
+                <th key={cell + i} className={th()}>
                   <InputSelect
                     smallMenu
                     options={selectOptions}
@@ -214,8 +164,10 @@ const CSVPreviewTable = ({
                       }
                     }}
                   />
-                  <SxPadded>{cell}</SxPadded>
-                </Th>
+                  <span className="mt-[10px] inline-block px-[6px]">
+                    {cell}
+                  </span>
+                </th>
               ))}
             </tr>
           ))}
@@ -226,7 +178,7 @@ const CSVPreviewTable = ({
             <tr key={j}>
               {row.map((cell, i) => (
                 <td key={cell + i} className={td()}>
-                  <Padded>{cell}</Padded>
+                  <span className="px-[6px]">{cell}</span>
                 </td>
               ))}
             </tr>
@@ -235,7 +187,7 @@ const CSVPreviewTable = ({
           <tr>
             {new Array(csv[0].length).fill(null).map((_, j) => (
               <td key={j} className={td()}>
-                <Padded>...</Padded>
+                <span className="px-[6px]">...</span>
               </td>
             ))}
           </tr>
@@ -301,7 +253,7 @@ const CSVColumnPicker = ({
 
   return (
     <div>
-      <Row>
+      <div className="mb-[15px] flex items-end justify-between">
         <div className="flex items-center gap-3">
           <div className="flex flex-col text-sm">
             <code className="font-bold">{file.name}</code>
@@ -312,7 +264,8 @@ const CSVColumnPicker = ({
           </WithTooltip>
         </div>
         {csv.length > 0 && (
-          <SxInputSelect
+          <InputSelect
+            className="ml-[15px] inline-block w-[150px] text-left"
             label={t("csvColumnPicker.delimiter")}
             onChange={(val) => {
               if (val) setDelimiter(val.value as string);
@@ -324,7 +277,7 @@ const CSVColumnPicker = ({
             options={DELIMITER_OPTIONS}
           />
         )}
-      </Row>
+      </div>
       <div className="overflow-hidden rounded-sm py-3 px-2 border w-full">
         <div className="overflow-x-auto">
           <CSVPreviewTable
@@ -337,19 +290,27 @@ const CSVColumnPicker = ({
         </div>
       </div>
       {uploadResult && (
-        <PartialUploadResults>
-          <Msg>
-            {uploadResult.resolved > 0 && <SuccessIcon icon={faCheckCircle} />}
+        <div className={partialUploadResults()}>
+          <p className={msg()}>
+            {uploadResult.resolved > 0 && (
+              <FaIcon
+                className={bigIcon({ kind: "success" })}
+                icon={faCheckCircle}
+              />
+            )}
             {t("csvColumnPicker.resolved", { count: uploadResult.resolved })}
-          </Msg>
+          </p>
           {uploadResult.unreadableDate.length > 0 && (
             <>
-              <Msg>
-                <ErrorIcon icon={faExclamationCircle} />
+              <p className={msg()}>
+                <FaIcon
+                  className={bigIcon({ kind: "error" })}
+                  icon={faExclamationCircle}
+                />
                 {t("csvColumnPicker.unreadableDate", {
                   count: uploadResult.unreadableDate.length,
                 })}
-              </Msg>
+              </p>
               <ScrollableList
                 maxVisibleItems={3}
                 fullWidth
@@ -363,12 +324,15 @@ const CSVColumnPicker = ({
           )}
           {uploadResult.unresolvedId.length > 0 && (
             <>
-              <Msg>
-                <ErrorIcon icon={faExclamationCircle} />
+              <p className={msg()}>
+                <FaIcon
+                  className={bigIcon({ kind: "error" })}
+                  icon={faExclamationCircle}
+                />
                 {t("csvColumnPicker.unresolvedId", {
                   count: uploadResult.unresolvedId.length,
                 })}
-              </Msg>
+              </p>
               <ScrollableList
                 maxVisibleItems={3}
                 fullWidth
@@ -379,46 +343,58 @@ const CSVColumnPicker = ({
               />
             </>
           )}
-        </PartialUploadResults>
+        </div>
       )}
-      <Buttons>
+      <div className="mt-3 flex items-end justify-end">
         {uploadResult &&
           (uploadResult.unreadableDate.length > 0 ||
             uploadResult.unresolvedId.length > 0) && (
-            <DownloadUnresolvedButton onClick={downloadUnresolved}>
+            <TransparentButton className="mr-auto" onClick={downloadUnresolved}>
               <FaIcon icon={faDownload} />{" "}
               {t("uploadQueryResultsModal.downloadUnresolved", {
                 count:
                   uploadResult.unreadableDate.length +
                   uploadResult.unresolvedId.length,
               })}
-            </DownloadUnresolvedButton>
+            </TransparentButton>
           )}
         {uploadResult && (
-          <SxPrimaryButton disabled={uploadDisabled} onClick={uploadQuery}>
+          <PrimaryButton
+            className="ml-[10px]"
+            disabled={uploadDisabled}
+            onClick={uploadQuery}
+          >
             {loading ? (
               <FaIcon white icon={faSpinner} />
             ) : (
               <FaIcon white left icon={faUpload} />
             )}{" "}
             {t("uploadQueryResultsModal.uploadAgain")}
-          </SxPrimaryButton>
+          </PrimaryButton>
         )}
         {uploadResult ? (
-          <SxTransparentButton disabled={loading} onClick={onCancel}>
+          <TransparentButton
+            className="ml-[10px]"
+            disabled={loading}
+            onClick={onCancel}
+          >
             {t("common.done")}
-          </SxTransparentButton>
+          </TransparentButton>
         ) : (
-          <SxPrimaryButton disabled={uploadDisabled} onClick={uploadQuery}>
+          <PrimaryButton
+            className="ml-[10px]"
+            disabled={uploadDisabled}
+            onClick={uploadQuery}
+          >
             {loading ? (
               <FaIcon white icon={faSpinner} />
             ) : (
               <FaIcon left white icon={faUpload} />
             )}{" "}
             {t("uploadQueryResultsModal.upload")}
-          </SxPrimaryButton>
+          </PrimaryButton>
         )}
-      </Buttons>
+      </div>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   useCallback,
   useEffect,
@@ -7,6 +6,7 @@ import {
   useState,
 } from "react";
 import { List, type RowComponentProps } from "react-window";
+import { tv } from "tailwind-variants";
 
 import type { DatasetT } from "../../api/types";
 import { useResizeObserver } from "../../common/helpers/useResizeObserver";
@@ -40,13 +40,12 @@ const ProjectItemRow = ({
   </div>
 );
 
+// must match root's py-1
 const ROOT_PADDING_Y = 4;
 
-const Root = styled("div")`
-  flex-grow: 1;
-  font-size: ${({ theme }) => theme.font.sm};
-  padding: ${ROOT_PADDING_Y}px 0;
-`;
+const root = tv({
+  base: ["grow", "py-1", "text-sm"],
+});
 
 export const ProjectItems = ({
   datasetId,
@@ -101,7 +100,8 @@ export const ProjectItems = ({
   }, []);
 
   return (
-    <Root
+    <div
+      className={root()}
       data-test-id="project-items-list"
       ref={(instance) => {
         if (!instance) {
@@ -131,6 +131,6 @@ export const ProjectItems = ({
           rowProps={{ items, setItemToShare, setItemToEditFolders }}
         />
       )}
-    </Root>
+    </div>
   );
 };

@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -6,22 +5,6 @@ import PrimaryButton from "../../button/PrimaryButton";
 import { TransparentButton } from "../../button/TransparentButton";
 import Modal from "../../modal/Modal";
 import InputPlain from "../../ui-components/InputPlain/InputPlain";
-
-const Buttons = styled("div")`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 20px;
-`;
-
-const SxPrimaryButton = styled(PrimaryButton)`
-  margin-left: 20px;
-`;
-
-const Content = styled("div")`
-  max-width: 500px;
-`;
 
 interface Props {
   onClose: () => void;
@@ -35,7 +18,7 @@ const AddFolderModal = ({ onClose, onSubmit, isValidName }: Props) => {
 
   return (
     <Modal onClose={onClose} headline={t("addFolderModal.headline")}>
-      <Content>
+      <div className="max-w-[500px]">
         <p>{t("addFolderModal.description")}</p>
         <form
           onSubmit={(e) => {
@@ -50,16 +33,20 @@ const AddFolderModal = ({ onClose, onSubmit, isValidName }: Props) => {
             onChange={(value) => setFolderName((value as string | null) || "")}
             inputProps={{ autoFocus: true }}
           />
-          <Buttons>
+          <div className="mt-5 flex w-full items-center justify-between">
             <TransparentButton onClick={onClose}>
               {t("common.cancel")}
             </TransparentButton>
-            <SxPrimaryButton type="submit" disabled={!isValidName(folderName)}>
+            <PrimaryButton
+              className="ml-5"
+              type="submit"
+              disabled={!isValidName(folderName)}
+            >
               {t("common.create")}
-            </SxPrimaryButton>
-          </Buttons>
+            </PrimaryButton>
+          </div>
         </form>
-      </Content>
+      </div>
     </Modal>
   );
 };

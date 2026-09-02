@@ -1,7 +1,7 @@
-import styled from "@emotion/styled";
 import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
 import FaIcon from "../../icon/FaIcon";
@@ -11,28 +11,13 @@ import DropzoneWithFileInput from "../../ui-components/DropzoneWithFileInput";
 
 import CSVColumnPicker, { type QueryToUploadT } from "./CSVColumnPicker";
 
-const Root = styled("div")``;
+const successIcon = tv({
+  base: ["block", "mx-auto mb-[10px]", "text-[40px]", "text-green"],
+});
 
-const Success = styled("div")`
-  margin: 25px 0;
-`;
-
-const StyledFaIcon = styled(FaIcon)`
-  font-size: 40px;
-  display: block;
-  margin: 0 auto 10px;
-  color: ${({ theme }) => theme.col.green};
-`;
-
-const SuccessMsg = styled("p")`
-  margin: 0;
-`;
-
-const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)`
-  padding: 180px 250px;
-  width: 100%;
-  cursor: pointer;
-`;
+const dropzone = tv({
+  base: ["w-full", "cursor-pointer", "px-[250px] py-[180px]"],
+});
 
 const UploadQueryResultsModal = ({
   loading,
@@ -72,16 +57,16 @@ const UploadQueryResultsModal = ({
         </>
       }
     >
-      <Root>
+      <div>
         {fullUploadSuccess ? (
-          <Success>
-            <StyledFaIcon icon={faCheckCircle} />
-            <SuccessMsg>
+          <div className="my-[25px]">
+            <FaIcon className={successIcon()} icon={faCheckCircle} />
+            <p className="m-0">
               {t("uploadQueryResultsModal.uploadSucceeded", {
                 count: uploadResult?.resolved || 0,
               })}
-            </SuccessMsg>
-          </Success>
+            </p>
+          </div>
         ) : (
           <div>
             {file && (
@@ -99,7 +84,8 @@ const UploadQueryResultsModal = ({
               />
             )}
             {!file && (
-              <SxDropzoneWithFileInput
+              <DropzoneWithFileInput
+                className={dropzone()}
                 onDrop={(item) => {
                   if (item.type === "__NATIVE_FILE__") {
                     setFile(item.files[0]);
@@ -109,11 +95,11 @@ const UploadQueryResultsModal = ({
                 accept="text/csv"
               >
                 {() => t("uploadQueryResultsModal.dropzone")}
-              </SxDropzoneWithFileInput>
+              </DropzoneWithFileInput>
             )}
           </div>
         )}
-      </Root>
+      </div>
     </Modal>
   );
 };

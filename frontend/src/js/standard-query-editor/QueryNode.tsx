@@ -1,7 +1,7 @@
-import styled from "@emotion/styled";
 import { memo, useCallback, useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import type { QueryT } from "../api/types";
 import { getWidthAndHeight } from "../app/DndProvider";
@@ -20,31 +20,26 @@ import QueryNodeActions from "./QueryNodeActions";
 import QueryNodeContent from "./QueryNodeContent";
 import type { StandardQueryNodeT } from "./types";
 
-const FlexHoverNavigatable = styled(HoverNavigatable)`
-  display: flex;
-  width: 100%;
-`;
-
-const Root = styled("div")<{
-  active?: boolean;
-}>`
-  position: relative;
-  width: 100%;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr auto;
-
-  padding: 7px;
-  font-size: ${({ theme }) => theme.font.sm};
-  cursor: pointer;
-  text-align: left;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  transition: background-color ${({ theme }) => theme.transitionTime};
-  border: ${({ theme, active }) =>
-    active
-      ? `2px solid ${theme.col.blueGrayDark}`
-      : `1px solid ${theme.col.grayMediumLight}`};
-`;
+const root = tv({
+  base: [
+    "relative",
+    "grid grid-cols-[1fr_auto]",
+    "w-full",
+    "mx-auto",
+    "p-[7px]",
+    "rounded",
+    "text-sm",
+    "text-left",
+    "cursor-pointer",
+    "transition-[background-color] duration-100",
+  ],
+  variants: {
+    active: {
+      true: "border-2 border-primary-500",
+      false: "border border-gray-400",
+    },
+  },
+});
 
 interface PropsT {
   node: StandardQueryNodeT;
@@ -174,17 +169,20 @@ const QueryNode = ({
       : undefined;
 
   const QueryNodeRoot = (
-    <FlexHoverNavigatable
+    <HoverNavigatable
+      className="flex w-full"
       triggerNavigate={onClick}
       canDrop={(item) => canNodeBeDropped(node, item)}
       highlightDroppable
     >
-      <Root
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: TODO make this a button */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: see above */}
+      <div
+        className={root({ active: !!active })}
         ref={(instance) => {
           ref.current = instance;
           drag(instance);
         }}
-        active={active}
         onClick={node.error ? undefined : () => onEditClick(andIdx, orIdx)}
       >
         <QueryNodeContent
@@ -209,8 +207,8 @@ const QueryNode = ({
           previousQueryLoading={node.loading}
           error={node.error}
         />
-      </Root>
-    </FlexHoverNavigatable>
+      </div>
+    </HoverNavigatable>
   );
 
   if (nodeIsConceptQueryNode(node)) {

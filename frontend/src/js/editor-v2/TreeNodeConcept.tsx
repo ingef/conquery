@@ -1,37 +1,22 @@
-import styled from "@emotion/styled";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import { exists } from "../common/helpers/exists";
 import type { DragItemConceptTreeNode } from "../standard-query-editor/types";
 
-const Bold = styled("span")`
-  font-weight: 400;
-`;
+const sectionHeading = tv({
+  base: ["font-bold", "text-primary-500", "uppercase", "text-xs"],
+});
 
-const SectionHeading = styled("h4")`
-  font-weight: 700;
-  color: ${(props) => props.theme.col.blueGrayDark};
-  margin: 0;
-  text-transform: uppercase;
-  font-size: ${({ theme }) => theme.font.xs};
-`;
-
-const Appendix = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 8px;
-`;
-
-const Description = styled("div")`
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.black};
-  display: flex;
-  align-items: center;
-  gap: 0px 5px;
-  flex-wrap: wrap;
-`;
+const description = tv({
+  base: [
+    "flex items-center flex-wrap",
+    "gap-x-[5px] gap-y-0",
+    "text-xs",
+    "text-gray-800",
+  ],
+});
 
 export const TreeNodeConcept = ({
   node,
@@ -58,29 +43,35 @@ export const TreeNodeConcept = ({
 
   return (
     <>
-      {node.description && <Description>{node.description}</Description>}
+      {node.description && (
+        <div className={description()}>{node.description}</div>
+      )}
       {showAppendix && (
-        <Appendix>
+        <div className="mt-2 flex flex-col gap-[6px]">
           {selectedSelects.length > 0 && (
             <div>
-              <SectionHeading>{t("editorV2.outputSection")}</SectionHeading>
-              <Description>
+              <h4 className={sectionHeading()}>
+                {t("editorV2.outputSection")}
+              </h4>
+              <div className={description()}>
                 <Value value={selectedSelects} />
-              </Description>
+              </div>
             </div>
           )}
           {filtersWithValues.length > 0 && (
             <div>
-              <SectionHeading>{t("editorV2.filtersSection")}</SectionHeading>
+              <h4 className={sectionHeading()}>
+                {t("editorV2.filtersSection")}
+              </h4>
               {filtersWithValues.map((f) => (
-                <Description key={f.label}>
-                  <Bold>{f.label}:</Bold>
+                <div key={f.label} className={description()}>
+                  <span className="font-normal">{f.label}:</span>
                   <Value value={f.value} />
-                </Description>
+                </div>
               ))}
             </div>
           )}
-        </Appendix>
+        </div>
       )}
     </>
   );

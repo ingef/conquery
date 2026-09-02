@@ -1,7 +1,7 @@
-import styled from "@emotion/styled";
 import { Fragment, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import type { QueryT } from "../api/types";
 import type { StateT } from "../app/reducers";
@@ -83,28 +83,13 @@ const useImport = () => {
   };
 };
 
-const Container = styled("div")`
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-`;
+const groups = tv({
+  base: ["flex flex-row items-start", "grow", "mb-[10px]", "overflow-auto"],
+});
 
-const Groups = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  margin: 0 0 10px;
-  flex-grow: 1;
-  overflow: auto;
-`;
-
-const QueryGroupConnector = styled("p")`
-  padding: 110px 6px 0;
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.sm};
-  color: ${({ theme }) => theme.col.gray};
-  text-align: center;
-`;
+const queryGroupConnector = tv({
+  base: ["pt-[110px] px-[6px]", "text-sm", "text-gray-500", "text-center"],
+});
 
 const Query = ({
   setEditedNode,
@@ -205,7 +190,7 @@ const Query = ({
   }
 
   return (
-    <Container>
+    <div className="flex h-full flex-col">
       {dropFileModalOpen && (
         <QueryUploadConceptListModal
           andIdx={dropFileModalAndIdx}
@@ -238,7 +223,7 @@ const Query = ({
       ) : (
         <>
           <QueryHeader />
-          <Groups>
+          <div className={groups()}>
             {query.map((group, andIdx) => (
               <Fragment key={andIdx}>
                 <QueryGroup
@@ -258,9 +243,9 @@ const Query = ({
                   onToggleTimestamps={onToggleTimestamps}
                   onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
                 />
-                <QueryGroupConnector key={`${andIdx}.and`}>
+                <p className={queryGroupConnector()} key={`${andIdx}.and`}>
                   {t("common.and")}
-                </QueryGroupConnector>
+                </p>
               </Fragment>
             ))}
             <QueryAndDropzone
@@ -269,11 +254,11 @@ const Query = ({
               onDropFile={onDropFile}
               onImportLines={onImportLines}
             />
-          </Groups>
+          </div>
           <SecondaryIdSelector />
         </>
       )}
-    </Container>
+    </div>
   );
 };
 
