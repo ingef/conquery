@@ -70,6 +70,7 @@ export type Field =
   | DatasetSelectField
   | ResultGroupField
   | ConceptListField
+  | DateField
   | DateRangeField;
 // TODO: At some point, handle multi select as well
 // | MultiSelectField;
@@ -186,6 +187,15 @@ export type DatasetSelectField = CommonField & {
 //   defaultValue?: SelectValue[];
 //   validations?: SelectFieldValidation[];
 // };
+
+/* ------------------------------ */
+
+type DateFieldValidation = NOT_EMPTY_VALIDATION;
+export type DateField = CommonField & {
+  type: "DATE";
+  defaultValue?: string; // "yyyy-MM-dd", default: null
+  validations?: DateFieldValidation[];
+};
 
 /* ------------------------------ */
 

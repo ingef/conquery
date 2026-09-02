@@ -67,6 +67,8 @@ function transformFieldToApiEntries(
       return [
         [rawFieldname, formValue ? (formValue as DragItemQuery).id : null],
       ];
+    case "DATE":
+      return [[rawFieldname, (formValue as string | null) || null]];
     case "DATE_RANGE":
       return [
         [

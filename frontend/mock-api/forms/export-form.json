@@ -120,6 +120,16 @@
                 }
               },
               {
+                "name": "referenceDate",
+                "type": "DATE",
+                "label": {
+                  "de": "Stichtag"
+                },
+                "tooltip": {
+                  "de": "Ein einzelnes Datum"
+                }
+              },
+              {
                 "name": "features",
                 "type": "CONCEPT_LIST",
                 "label": {
