@@ -6,8 +6,8 @@ import { tv } from "tailwind-variants";
 import type { DatasetT, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
-import WithTooltip from "../tooltip/WithTooltip";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
+import WithTooltip from "../ui-components/WithTooltip";
 
 import { useSelectDataset } from "./actions";
 

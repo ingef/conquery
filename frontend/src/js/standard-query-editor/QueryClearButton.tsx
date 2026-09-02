@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 
 import IconButton from "../button/IconButton";
-import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
-import WithTooltip from "../tooltip/WithTooltip";
+import { ConfirmableTooltip } from "../ui-components/ConfirmableTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 import { clearQuery } from "./actions";
 

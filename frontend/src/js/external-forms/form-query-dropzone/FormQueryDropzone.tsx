@@ -3,8 +3,8 @@ import { useCallback, useRef } from "react";
 import { DNDType } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";
 import type { DragItemQuery } from "../../standard-query-editor/types";
-import InfoTooltip from "../../tooltip/InfoTooltip";
 import Dropzone from "../../ui-components/Dropzone";
+import InfoTooltip from "../../ui-components/InfoTooltip";
 import Label from "../../ui-components/Label";
 
 import ValidatedFormQueryResult from "./ValidatedFormQueryResult";

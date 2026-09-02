@@ -14,7 +14,7 @@ import type {
 import { Highlighter } from "../../common/components/Highlighter";
 import { exists } from "../../common/helpers/exists";
 import FaIcon from "../../icon/FaIcon";
-import WithTooltip from "../../tooltip/WithTooltip";
+import WithTooltip from "../../ui-components/WithTooltip";
 import type { ContentFilterValue } from "../ContentControl";
 import { RowDates } from "../RowDates";
 import type { DateRow, EntityEvent } from "../reducer";

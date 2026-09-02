@@ -4,7 +4,7 @@ import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
 
-import { toggleDisplayTooltip } from "./actions";
+import { toggleInfoPane } from "./actions";
 
 const button = tv({
   base: [
@@ -16,9 +16,9 @@ const button = tv({
   ],
 });
 
-const ActivateTooltip = () => {
+const InfoPaneCollapsed = () => {
   const dispatch = useDispatch();
-  const onToggleTooltip = () => dispatch(toggleDisplayTooltip());
+  const onToggleInfoPane = () => dispatch(toggleInfoPane());
 
   return (
     <div className="relative h-full">
@@ -26,10 +26,10 @@ const ActivateTooltip = () => {
         className={button()}
         bgHover
         icon={faAngleRight}
-        onClick={onToggleTooltip}
+        onClick={onToggleInfoPane}
       />
     </div>
   );
 };
 
-export default ActivateTooltip;
+export default InfoPaneCollapsed;

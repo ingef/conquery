@@ -17,9 +17,8 @@ import IconButton from "../button/IconButton";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
-import WithTooltip from "../tooltip/WithTooltip";
-
 import CurrencyInput from "./CurrencyInput";
+import WithTooltip from "./WithTooltip";
 
 const root = tv({ base: "relative" });
 

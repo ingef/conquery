@@ -14,6 +14,7 @@ import {
   activeFormReducer,
   availableFormsReducer,
 } from "../external-forms/reducer";
+import infoPane, { type InfoPaneStateT } from "../info-pane/reducer";
 import panes, { type PanesStateT } from "../pane/reducer";
 import preview, { type PreviewStateT } from "../preview/reducer";
 import projectItemsFilter, {
@@ -44,7 +45,6 @@ import selectedSecondaryIdsReducer, {
   type SelectedSecondaryIdStateT,
 } from "../standard-query-editor/selectedSecondaryIdReducer";
 import startup, { type StartupStateT } from "../startup/reducer";
-import tooltip, { type TooltipStateT } from "../tooltip/reducer";
 import uploadConceptListModal, {
   type UploadConceptListModalStateT,
 } from "../upload-concept-list-modal/reducer";
@@ -54,7 +54,7 @@ export type StateT = {
   conceptTrees: ConceptTreesStateT;
   conceptTreesOpen: ConceptTreesOpenStateT;
   datasets: DatasetStateT;
-  tooltip: TooltipStateT;
+  infoPane: InfoPaneStateT;
   panes: PanesStateT;
   uploadConceptListModal: UploadConceptListModalStateT;
   user: UserStateT;
@@ -89,7 +89,7 @@ const buildAppReducer = () => {
     conceptTreesOpen,
     uploadConceptListModal,
     datasets,
-    tooltip,
+    infoPane,
     panes,
     previousQueries,
     projectItemsSearch,

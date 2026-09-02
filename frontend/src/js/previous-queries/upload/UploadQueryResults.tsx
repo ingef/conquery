@@ -12,7 +12,7 @@ import type {
 import type { StateT } from "../../app/reducers";
 import IconButton from "../../button/IconButton";
 import { setMessage } from "../../snack-message/actions";
-import WithTooltip from "../../tooltip/WithTooltip";
+import WithTooltip from "../../ui-components/WithTooltip";
 import { useLoadQueries } from "../list/actions";
 
 import type { QueryToUploadT } from "./CSVColumnPicker";

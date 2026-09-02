@@ -7,7 +7,7 @@ import IconButton from "../button/IconButton";
 import type { NodeResetConfig } from "../model/node";
 import { tableHasFilterValues, tableIsDisabled } from "../model/table";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 const container = tv({
   base: [

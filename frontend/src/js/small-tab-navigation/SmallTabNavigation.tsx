@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 import SmallTabNavigationButton from "./SmallTabNavigationButton";
 

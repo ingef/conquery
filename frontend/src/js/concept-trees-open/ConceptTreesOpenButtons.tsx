@@ -8,7 +8,7 @@ import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import { clearSearchQuery } from "../concept-trees/actions";
 import { useRootConceptIds } from "../concept-trees/useRootConceptIds";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 import { closeAllConceptOpen, resetAllConceptOpen } from "./actions";
 import type { ConceptTreesOpenStateT } from "./reducer";

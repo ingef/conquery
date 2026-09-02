@@ -6,9 +6,9 @@ import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import { useActiveLang } from "../localization/useActiveLang";
-import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
-import WithTooltip from "../tooltip/WithTooltip";
+import { ConfirmableTooltip } from "../ui-components/ConfirmableTooltip";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
+import WithTooltip from "../ui-components/WithTooltip";
 
 import { setExternalForm } from "./actions";
 import type { Form } from "./config-types";

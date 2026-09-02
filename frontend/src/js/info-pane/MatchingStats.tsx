@@ -64,7 +64,7 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
   idLabel?: string;
 }
 
-const TooltipEntries = (props: Props) => {
+const MatchingStats = (props: Props) => {
   const { t } = useTranslation();
   const { matchingEntries, matchingEntities, dateRange, idLabel, ...rest } =
     props;
@@ -117,7 +117,7 @@ const TooltipEntries = (props: Props) => {
         </p>
         <p className={text({ zero: isZero })}>
           {t(
-            "tooltip.entriesFound",
+            "common.entriesFound",
             { count: matchingEntries || 2 }, // For pluralization
           )}
         </p>
@@ -137,7 +137,7 @@ const TooltipEntries = (props: Props) => {
         </p>
         <p className={text({ zero: isZeroEntities })}>
           {t(
-            "tooltip.entitiesFound",
+            "common.entitiesFound",
             { count: matchingEntities || 2 }, // For pluralization
           )}
         </p>
@@ -146,15 +146,15 @@ const TooltipEntries = (props: Props) => {
       <div className="shrink-0">
         <p className={dateText()}>
           {fromDate}
-          <span className={suffix()}>{`${t("tooltip.date.from")}`}</span>
+          <span className={suffix()}>{`${t("infoPane.date.from")}`}</span>
         </p>
         <p className={dateText()}>
           {toDate}
-          <span className={suffix()}>{`${t("tooltip.date.to")}`}</span>
+          <span className={suffix()}>{`${t("infoPane.date.to")}`}</span>
         </p>
       </div>
     </div>
   );
 };
 
-export default TooltipEntries;
+export default MatchingStats;

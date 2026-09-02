@@ -13,7 +13,7 @@ import { TransparentButton } from "../../../button/TransparentButton";
 import { exists } from "../../../common/helpers/exists";
 import { usePrevious } from "../../../common/helpers/usePrevious";
 import FaIcon from "../../../icon/FaIcon";
-import InfoTooltip from "../../../tooltip/InfoTooltip";
+import InfoTooltip from "../../../ui-components/InfoTooltip";
 import type { DisclosureListField as DisclosureListFieldT } from "../../config-types";
 import {
   getFieldKey,

@@ -22,9 +22,9 @@ import type {
   DragItemConceptTreeNode,
   DragItemQuery,
 } from "../standard-query-editor/types";
-import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
-import WithTooltip from "../tooltip/WithTooltip";
+import { ConfirmableTooltip } from "../ui-components/ConfirmableTooltip";
 import Dropzone from "../ui-components/Dropzone";
+import WithTooltip from "../ui-components/WithTooltip";
 import { EDITOR_DROP_TYPES, HOTKEYS } from "./config";
 import { useConnectorEditing } from "./connector-update/useConnectorRotation";
 import { DateModal } from "./date-restriction/DateModal";

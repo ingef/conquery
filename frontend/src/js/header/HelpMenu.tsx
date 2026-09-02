@@ -10,7 +10,7 @@ import { tv } from "tailwind-variants";
 
 import { useAbout } from "../app/About";
 import IconButton from "../button/IconButton";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 const list = tv({ base: ["flex flex-col", "gap-[2px]", "p-2"] });
 
