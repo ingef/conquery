@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { faCalendar, faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import {
   faBan,
@@ -13,6 +12,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
 import { useDatasetId } from "../dataset/selectors";
@@ -42,43 +42,19 @@ import { useTimeConnectionEditing } from "./time-connection/useTimeConnectionEdi
 import type { Tree, TreeChildrenTime } from "./types";
 import { findNodeById, useGetTranslatedConnection } from "./util";
 
-const Root = styled("div")`
-  flex-grow: 1;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-`;
+const main = tv({
+  base: [
+    "grow",
+    "h-full",
+    "pt-2 pb-[10px] px-[10px]",
+    "flex flex-col",
+    "gap-[10px]",
+  ],
+});
 
-const Main = styled("div")`
-  flex-grow: 1;
-  height: 100%;
-  padding: 8px 10px 10px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const SxDropzone = styled(Dropzone)`
-  width: 100%;
-  height: 100%;
-`;
-
-const Actions = styled("div")`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const Flex = styled("div")`
-  display: flex;
-  align-items: center;
-`;
-
-const SxIconButton = styled(IconButton)`
-  display: flex;
-  align-items: center;
-  gap: 5px;
-`;
+const actionIconButton = tv({
+  base: ["flex items-center", "gap-[5px]"],
+});
 
 const useEditorState = () => {
   const [tree, setTree] = useState<Tree | undefined>(undefined);
@@ -270,8 +246,8 @@ export function EditorV2({
   );
 
   return (
-    <Root>
-      <Main>
+    <div className="flex h-full grow flex-col">
+      <div className={main()}>
         {showQueryNodeEditor &&
           selectedNode?.data &&
           nodeIsConceptQueryNode(selectedNode.data) && (
@@ -319,8 +295,8 @@ export function EditorV2({
           />
         )}
         {tree && (
-          <Actions>
-            <Flex>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
               {featureQueryNodeEdit && selectedNode && (
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.editQueryNode.keyname}
@@ -377,7 +353,8 @@ export function EditorV2({
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.rotateConnector.keyname}
                 >
-                  <SxIconButton
+                  <IconButton
+                    className={actionIconButton()}
                     icon={faCircleNodes}
                     tight
                     disabled={!selectedNode?.children}
@@ -387,14 +364,15 @@ export function EditorV2({
                     }}
                   >
                     <Connector>{connection}</Connector>
-                  </SxIconButton>
+                  </IconButton>
                 </KeyboardShortcutTooltip>
               )}
               {selectedNode?.children?.connection === "time" && (
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.editTimeConnection.keyname}
                 >
-                  <SxIconButton
+                  <IconButton
+                    className={actionIconButton()}
                     icon={faHourglass}
                     tight
                     onClick={(e) => {
@@ -403,7 +381,7 @@ export function EditorV2({
                     }}
                   >
                     <span>{t("editorV2.timeConnection")}</span>
-                  </SxIconButton>
+                  </IconButton>
                 </KeyboardShortcutTooltip>
               )}
               {canExpand && (
@@ -420,8 +398,8 @@ export function EditorV2({
                   </IconButton>
                 </KeyboardShortcutTooltip>
               )}
-            </Flex>
-            <Flex>
+            </div>
+            <div className="flex items-center">
               {selectedNode && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.flip.keyname}>
                   <IconButton
@@ -464,8 +442,8 @@ export function EditorV2({
                   />
                 </WithTooltip>
               </ConfirmableTooltip>
-            </Flex>
-          </Actions>
+            </div>
+          </div>
         )}
         <Grid
           onClick={() => {
@@ -486,7 +464,8 @@ export function EditorV2({
               onRotateConnector={onRotateConnector}
             />
           ) : (
-            <SxDropzone
+            <Dropzone
+              className="h-full w-full"
               onDrop={(item) => {
                 const id = createId();
                 setTree({
@@ -498,12 +477,12 @@ export function EditorV2({
               acceptedDropTypes={EDITOR_DROP_TYPES}
             >
               {() => <EmptyQueryEditorDropzone />}
-            </SxDropzone>
+            </Dropzone>
           )}
         </Grid>
-      </Main>
+      </div>
 
       <EditorV2QueryRunner query={{ tree }} />
-    </Root>
+    </div>
   );
 }

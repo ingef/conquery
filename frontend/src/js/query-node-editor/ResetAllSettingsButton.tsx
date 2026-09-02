@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,10 +5,6 @@ import { useTranslation } from "react-i18next";
 import IconButton from "../button/IconButton";
 import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
 import WithTooltip from "../tooltip/WithTooltip";
-
-const SxWithTooltip = styled(WithTooltip)`
-  white-space: nowrap;
-`;
 
 const ResetAllSettingsButton = ({
   compact,
@@ -24,9 +19,9 @@ const ResetAllSettingsButton = ({
 
   const button = useMemo(() => {
     return compact ? (
-      <SxWithTooltip text={text}>
+      <WithTooltip className="whitespace-nowrap" text={text}>
         <IconButton icon={faTrash} active />
-      </SxWithTooltip>
+      </WithTooltip>
     ) : (
       <IconButton icon={faTrash} active>
         {text}

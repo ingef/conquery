@@ -1,20 +1,12 @@
-import styled from "@emotion/styled";
 import { memo } from "react";
 
 import QueryClearButton from "./QueryClearButton";
 
-const Container = styled("div")`
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-bottom: 5px;
-`;
-
 const QueryHeader = () => {
   return (
-    <Container>
+    <div className="mb-[5px] flex items-center justify-end">
       <QueryClearButton />
-    </Container>
+    </div>
   );
 };
 

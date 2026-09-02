@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -7,11 +6,6 @@ import type { NodeResetConfig } from "../model/node";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import ResetAllSettingsButton from "./ResetAllSettingsButton";
-
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
-`;
 
 interface Props {
   isCompact: boolean;
@@ -29,7 +23,7 @@ const ResetAndClose = ({
   const { t } = useTranslation();
 
   return (
-    <Row>
+    <div className="flex items-center">
       {showClearReset && (
         <ResetAllSettingsButton
           onClick={() => onResetAllSettings({ useDefaults: false })}
@@ -41,7 +35,7 @@ const ResetAndClose = ({
           {t("common.save")}
         </TransparentButton>
       </WithTooltip>
-    </Row>
+    </div>
   );
 };
 

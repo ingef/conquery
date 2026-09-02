@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faBook,
   faInfoCircle,
@@ -7,25 +6,13 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import { useAbout } from "../app/About";
 import IconButton from "../button/IconButton";
 import WithTooltip from "../tooltip/WithTooltip";
 
-const List = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px;
-`;
-
-const SxIconButton = styled(IconButton)`
-  padding: 7px 12px;
-`;
-
-const DropdownItemButton = styled(IconButton)`
-  width: 100%;
-`;
+const list = tv({ base: ["flex flex-col", "gap-[2px]", "p-2"] });
 
 interface Props {
   contactEmail?: string;
@@ -42,15 +29,20 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
 
   const Dropdown = useMemo(
     () => (
-      <List>
+      <div className={list()}>
         <a
           href={`mailto:${contactEmail}`}
           rel="noopener noreferrer"
           data-test-id="help-email"
         >
-          <DropdownItemButton bgHover fixedIconWidth={14} icon={faPaperPlane}>
+          <IconButton
+            className="w-full"
+            bgHover
+            fixedIconWidth={14}
+            icon={faPaperPlane}
+          >
             {t("common.contact")}
-          </DropdownItemButton>
+          </IconButton>
         </a>
         <a
           href={manualUrl}
@@ -58,19 +50,25 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
           rel="noopener noreferrer"
           data-test-id="help-manual"
         >
-          <DropdownItemButton bgHover fixedIconWidth={14} icon={faBook}>
+          <IconButton
+            className="w-full"
+            bgHover
+            fixedIconWidth={14}
+            icon={faBook}
+          >
             {t("common.manual")}
-          </DropdownItemButton>
+          </IconButton>
         </a>
-        <DropdownItemButton
+        <IconButton
+          className="w-full"
           bgHover
           fixedIconWidth={14}
           icon={faInfoCircle}
           onClick={() => setOpen(true)}
         >
           {t("common.version")}
-        </DropdownItemButton>
-      </List>
+        </IconButton>
+      </div>
     ),
     [t, manualUrl, contactEmail, setOpen],
   );
@@ -83,7 +81,12 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
       offset={dropdownOffset}
       hideOnClick
     >
-      <SxIconButton icon={faQuestion} frame data-test-id="help-menu" />
+      <IconButton
+        className="px-3 py-[7px]"
+        icon={faQuestion}
+        frame
+        data-test-id="help-menu"
+      />
     </WithTooltip>
   );
 };

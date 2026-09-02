@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { useEffect, useState } from "react";
 
 import { useIsCacheEnabled } from "../common/feature-flags/useIsCacheEnabled";
@@ -8,12 +7,6 @@ import { SnackMessage } from "../snack-message/SnackMessage";
 import { useStartup } from "../startup/useStartup";
 import { About } from "./About";
 import Content from "./Content";
-
-const Root = styled("div")`
-  height: 100vh;
-  width: 100%;
-  position: relative;
-`;
 
 const useCacheClear = () => {
   const [cacheReady, setCacheReady] = useState<boolean>(false);
@@ -41,12 +34,12 @@ const App = () => {
   useStartup({ ready: cacheReady });
 
   return (
-    <Root>
+    <div className="relative h-screen w-full">
       <About />
       <Header />
       <Content />
       <SnackMessage />
-    </Root>
+    </div>
   );
 };
 

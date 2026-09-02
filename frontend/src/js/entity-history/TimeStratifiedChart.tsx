@@ -1,5 +1,3 @@
-import { useTheme } from "@emotion/react";
-import styled from "@emotion/styled";
 import {
   BarElement,
   CategoryScale,
@@ -13,9 +11,11 @@ import {
 } from "chart.js";
 import { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
+import { tv } from "tailwind-variants";
 
 import type { TimeStratifiedInfo } from "../api/types";
 import { exists } from "../common/helpers/exists";
+import { getCssVarColor } from "../preview/getThemeColor";
 
 import { formatCurrency } from "./timeline/util/util";
 
@@ -33,12 +33,9 @@ ChartJS.register(
   Tooltip,
 );
 
-const ChartContainer = styled("div")`
-  height: 190px;
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-`;
+const chartContainer = tv({
+  base: ["flex justify-end", "h-[190px]", "w-full"],
+});
 
 export function hexToRgbA(hex: string) {
   let c: string | string[];
@@ -63,24 +60,22 @@ export const TimeStratifiedChart = ({
 }: {
   timeStratifiedInfo: TimeStratifiedInfo;
 }) => {
-  const theme = useTheme();
   const labels = timeStratifiedInfo.columns.map((col) => col.label);
 
   const datasets = useMemo(() => {
     const sortedYears = [...timeStratifiedInfo.years].sort(
       (a, b) => b.year - a.year,
     );
+    const color = hexToRgbA(getCssVarColor("--color-primary-500"));
 
     return sortedYears.map((year, i) => {
       return {
         label: year.year.toString(),
         data: labels.map((label) => year.values[label]),
-        backgroundColor: `rgba(${hexToRgbA(
-          theme.col.blueGrayDark,
-        )}, ${interpolateDecreasingOpacity(i)})`,
+        backgroundColor: `rgba(${color}, ${interpolateDecreasingOpacity(i)})`,
       };
     });
-  }, [theme, timeStratifiedInfo, labels]);
+  }, [timeStratifiedInfo, labels]);
 
   const data = {
     labels,
@@ -156,8 +151,8 @@ export const TimeStratifiedChart = ({
   }, [timeStratifiedInfo, labels]);
 
   return (
-    <ChartContainer>
+    <div className={chartContainer()}>
       <Bar options={options} data={data} />
-    </ChartContainer>
+    </div>
   );
 };

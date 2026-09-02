@@ -1,22 +1,12 @@
-import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 import { Highlighter } from "../../common/components/Highlighter";
 
 import EditableText from "../../ui-components/EditableText";
 
-const Text = styled("div")`
-  display: block;
-  font-weight: 400;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-const SxEditableText = styled(EditableText)`
-  font-weight: 400;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
+const labelText = tv({
+  base: ["font-normal", "whitespace-nowrap", "overflow-hidden text-ellipsis"],
+});
 
 const ProjectItemLabel = ({
   mayEdit,
@@ -40,7 +30,8 @@ const ProjectItemLabel = ({
   const { t } = useTranslation();
 
   return mayEdit ? (
-    <SxEditableText
+    <EditableText
+      className={labelText()}
       loading={loading}
       text={label}
       selectTextOnMount={selectTextOnMount}
@@ -51,13 +42,13 @@ const ProjectItemLabel = ({
       tooltip={t("common.edit")}
     />
   ) : (
-    <Text>
+    <div className={labelText()}>
       {highlightedWords.length > 0 ? (
         <Highlighter searchWords={highlightedWords} textToHighlight={label} />
       ) : (
         label
       )}
-    </Text>
+    </div>
   );
 };
 

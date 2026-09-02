@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faCalendar,
   faFolder as faFolderRegular,
@@ -14,6 +13,7 @@ import type { TFunction } from "i18next";
 import { type Ref, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel, SecondaryId } from "../../api/types";
 import type { StateT } from "../../app/reducers";
 import DownloadButton from "../../button/DownloadButton";
@@ -34,112 +34,62 @@ import type { FormConfigT, PreviousQueryT } from "./reducer";
 
 export type ProjectItemT = PreviousQueryT | FormConfigT;
 
-const Root = styled("div")<{ own?: boolean; system?: boolean }>`
-  margin: 0;
-  cursor: pointer;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid ${({ theme }) => theme.col.grayLight};
-  background-color: ${({ theme }) => theme.col.bg};
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
+const root = tv({
+  base: [
+    "flex items-center",
+    "m-0",
+    "cursor-pointer",
+    "rounded",
+    "border border-gray-100 hover:border-primary-200",
+    "bg-bg-50",
+    "shadow-[0_1px_2px_0_rgba(0,0,0,0.2)]",
+    "overflow-hidden",
+  ],
+});
 
-  &:hover {
-    border-color: ${({ theme }) => theme.col.blueGray};
-  }
-`;
+const topInfos = tv({
+  base: [
+    "flex items-center justify-between",
+    "leading-5",
+    "text-gray-500",
+    "text-xs",
+  ],
+});
 
-const Gray = styled("div")`
-  color: ${({ theme }) => theme.col.gray};
-  font-size: ${({ theme }) => theme.font.xs};
-`;
+const ownerName = tv({
+  base: ["shrink-0", "pl-[5px]", "text-gray-500", "text-xs"],
+});
 
-const TopInfos = styled(Gray)`
-  line-height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
+const tooltipText = tv({
+  base: [
+    "flex flex-col items-start",
+    "px-[14px] py-2",
+    "font-normal",
+    "text-base",
+  ],
+});
 
-const OwnerName = styled(Gray)`
-  flex-shrink: 0;
-  padding-left: 5px;
-`;
+const labelRow = tv({
+  base: ["flex justify-between", "w-full", "leading-6", "my-[2px]"],
+});
 
-const SxQuerySymbol = styled(QuerySymbol)`
-  flex-shrink: 0;
-`;
+const content = tv({
+  base: [
+    "grow shrink",
+    "px-[10px] py-1",
+    "overflow-hidden",
+    "border-l border-gray-100",
+  ],
+  variants: {
+    // later wins when both are set
+    system: { true: "border-l-[5px]" },
+    own: { true: "border-l-[5px] border-primary-500" },
+  },
+});
 
-const SxFormSymbol = styled(FormSymbol)`
-  flex-shrink: 0;
-`;
-
-const TopRight = styled("div")`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-  margin-left: 5px;
-`;
-const TopLeft = styled("div")`
-  display: flex;
-  align-items: center;
-`;
-
-const TooltipText = styled("div")`
-  font-weight: 400;
-  font-size: ${({ theme }) => theme.font.md};
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 8px 14px;
-`;
-
-const ActiveFolders = styled("ul")`
-  margin: 6px 0 0;
-  text-align: left;
-  padding-left: 18px;
-`;
-
-const NonBreakingText = styled("span")`
-  white-space: nowrap;
-`;
-const LabelRow = styled("div")`
-  display: flex;
-  width: 100%;
-  justify-content: space-between;
-  line-height: 24px;
-  margin: 2px 0;
-`;
-
-const Content = styled("div")<{ own?: boolean; system?: boolean }>`
-  flex-grow: 1;
-  flex-shrink: 1;
-  padding: 4px 10px;
-  overflow: hidden;
-  border-left: ${({ theme, own, system }) =>
-    own
-      ? `5px solid ${theme.col.blueGrayDark}`
-      : system
-        ? `5px solid ${theme.col.grayLight}`
-        : `1px solid ${theme.col.grayLight}`};
-`;
-
-const SxDownloadButton = styled(DownloadButton)`
-  white-space: nowrap;
-  button {
-    font-size: ${({ theme }) => theme.font.xs};
-  }
-`;
-
-const SxFaIcon = styled(FaIcon)`
-  opacity: 0.7;
-`;
-
-const FoldersButton = styled(IconButton)`
-  margin-right: 10px;
-`;
+const downloadButton = tv({
+  base: ["whitespace-nowrap", "[&_button]:text-xs"],
+});
 
 const getTopLeftLabel = (
   item: ProjectItemT,
@@ -169,16 +119,16 @@ const HighlightedText = ({
 const FoldersTooltip = ({ folders }: { folders: string[] }) => {
   const { t } = useTranslation();
   return (
-    <TooltipText>
+    <div className={tooltipText()}>
       {t("previousQuery.editFolders")}
       {folders.length > 0 && (
-        <ActiveFolders>
+        <ul className="mt-[6px] pl-[18px] text-left">
           {folders.map((f) => (
             <li key={f}>{f}</li>
           ))}
-        </ActiveFolders>
+        </ul>
       )}
-    </TooltipText>
+    </div>
   );
 };
 
@@ -193,9 +143,9 @@ const ShareButton = ({
   return (
     <WithTooltip
       html={
-        <TooltipText>
+        <div className={tooltipText()}>
           {isShared ? t("common.shared") : t("common.share")}
-        </TooltipText>
+        </div>
       }
     >
       <IconButton
@@ -231,12 +181,19 @@ const ResultsLabel = ({
   resultUrl: ResultUrlWithLabel | null;
 }) => {
   const { t } = useTranslation();
-  if (!resultUrl) return <NonBreakingText>{label}</NonBreakingText>;
+  if (!resultUrl) return <span className="whitespace-nowrap">{label}</span>;
   return (
     <WithTooltip text={t("previousQuery.downloadResults")}>
-      <SxDownloadButton tight small bare simpleIcon resultUrl={resultUrl}>
+      <DownloadButton
+        className={downloadButton()}
+        tight
+        small
+        bare
+        simpleIcon
+        resultUrl={resultUrl}
+      >
         {label}
-      </SxDownloadButton>
+      </DownloadButton>
     </WithTooltip>
   );
 };
@@ -300,13 +257,18 @@ const ProjectItem = ({
   const onRenameLabel = useRenameProjectItem(item);
 
   return (
-    <Root ref={ref}>
-      {isForm ? <SxFormSymbol /> : <SxQuerySymbol />}
-      <Content own={!!item.own} system={isSystem}>
-        <TopInfos>
-          <TopLeft>
+    <div className={root()} ref={ref}>
+      {isForm ? (
+        <FormSymbol className="shrink-0" />
+      ) : (
+        <QuerySymbol className="shrink-0" />
+      )}
+      <div className={content({ own: !!item.own, system: isSystem })}>
+        <div className={topInfos()}>
+          <div className="flex items-center">
             <WithTooltip html={<FoldersTooltip folders={folders} />}>
-              <FoldersButton
+              <IconButton
+                className="mr-[10px]"
                 icon={folders.length === 0 ? faFolderRegular : faFolder}
                 tight
                 small
@@ -319,12 +281,12 @@ const ProjectItem = ({
               <ResultsLabel label={topLeftLabel} resultUrl={resultUrl} />
               {hasNoDates && (
                 <WithTooltip text={t("previousQuery.hasNoDates")}>
-                  <SxFaIcon red icon={faCalendar} />
+                  <FaIcon className="opacity-70" red icon={faCalendar} />
                 </WithTooltip>
               )}
             </div>
-          </TopLeft>
-          <TopRight>
+          </div>
+          <div className="ml-[5px] flex shrink-0 items-center gap-[10px]">
             {executedAt}
             {secondaryId && (
               <WithTooltip
@@ -337,9 +299,9 @@ const ProjectItem = ({
               <ShareButton isShared={!!isShared} onClick={onIndicateShare} />
             )}
             {item.own && <DeleteProjectItemButton item={item} />}
-          </TopRight>
-        </TopInfos>
-        <LabelRow>
+          </div>
+        </div>
+        <div className={labelRow()}>
           <ProjectItemLabel
             mayEdit={mayEdit}
             label={label}
@@ -349,15 +311,15 @@ const ProjectItem = ({
             isEditing={isEditingLabel}
             setIsEditing={setIsEditingLabel}
           />
-          <OwnerName>
+          <div className={ownerName()}>
             <HighlightedText
               text={item.ownerName}
               highlightedWords={highlightedWords}
             />
-          </OwnerName>
-        </LabelRow>
-      </Content>
-    </Root>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

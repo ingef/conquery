@@ -1,97 +1,90 @@
-import { css, type Theme, useTheme } from "@emotion/react";
-import styled from "@emotion/styled";
 import type { Ref } from "react";
+import { tv } from "tailwind-variants";
 
 import { HoverNavigatable } from "./HoverNavigatable";
 
-const bottomBorderBase = css`
-  content: "";
-  position: absolute;
-  left: 0px;
-  right: 0px;
-  height: 3px;
-  bottom: 0px;
-`;
+const bottomBorder = [
+  "after:content-['']",
+  "after:absolute",
+  "after:inset-x-0",
+  "after:bottom-0",
+  "after:h-[3px]",
+];
 
-const Button = styled("button")<{
-  selected?: boolean;
-  highlightColor: string;
-  size?: "M" | "L";
-  primary?: boolean;
-}>`
-  position: relative;
+// tailwind only generates classes it finds literally in the source,
+// so this cannot be derived from `bottomBorder` at runtime
+const bottomBorderOnHover = [
+  "hover:after:content-['']",
+  "hover:after:absolute",
+  "hover:after:inset-x-0",
+  "hover:after:bottom-0",
+  "hover:after:h-[3px]",
+];
 
-  border-top-left-radius: ${({ theme }) => theme.borderRadius};
-  border-top-right-radius: ${({ theme }) => theme.borderRadius};
-
-  transition: border 0.1s ease-in-out;
-
-  border: ${({ primary, theme, selected }) =>
-    primary && selected
-      ? `1px solid ${theme.col.gray}`
-      : primary
-        ? "1px solid transparent"
-        : "none"};
-  &:hover {
-    border: ${({ primary, theme, selected }) =>
-      primary && selected
-        ? `1px solid ${theme.col.gray}`
-        : primary
-          ? `1px solid ${theme.col.grayMediumLight}`
-          : "none"};
-    border-bottom: none;
-  }
-  border-bottom: none;
-
-  background-color: ${({ primary, theme, selected }) =>
-    selected && primary ? theme.col.bg : "transparent"};
-  margin: 0 2px;
-  height: ${({ size }) => (size === "L" ? "30px" : "26px")};
-  padding: ${({ size }) => (size === "L" ? "0px 10px" : "0px 3px")};
-  font-size: ${({ theme, size }) =>
-    size === "L" ? theme.font.sm : theme.font.xs};
-
-  transform: ${({ primary }) => (primary ? "translateY(1px)" : "none")};
-
-  ${({ size }) =>
-    size === "M" &&
-    css`
-      text-transform: uppercase;
-    `};
-
-  ${({ selected, primary, highlightColor }) =>
-    selected &&
-    !primary &&
-    css`
-      &::after {
-        ${bottomBorderBase};
-        background-color: ${highlightColor};
-      }
-    `}
-  ${({ theme, selected, primary }) =>
-    !selected &&
-    !primary &&
-    css`
-      color: ${theme.col.gray};
-      &:hover {
-        &::after {
-          ${bottomBorderBase};
-          background-color: ${theme.col.grayLight};
-        }
-      }
-    `};
-`;
-
-const valueToColor = (theme: Theme, value: string) => {
-  switch (value) {
-    case "own":
-      return theme.col.blueGrayDark;
-    case "system":
-      return theme.col.grayLight;
-    default:
-      return theme.col.black;
-  }
-};
+const button = tv({
+  base: [
+    "relative",
+    "rounded-t",
+    "mx-[2px]",
+    "transition-[border] duration-100 ease-in-out",
+  ],
+  variants: {
+    size: {
+      L: ["h-[30px]", "px-[10px]", "text-sm"],
+      M: ["h-[26px]", "px-[3px]", "text-xs", "uppercase"],
+    },
+    primary: {
+      true: ["translate-y-px", "border border-b-0"],
+    },
+    selected: { true: "", false: "" },
+    // color of the selected bottom bar, keyed by the tab's value
+    highlight: { own: "", system: "", default: "" },
+  },
+  compoundVariants: [
+    {
+      primary: true,
+      selected: true,
+      class: ["border-gray-500", "bg-bg-50"],
+    },
+    {
+      primary: true,
+      selected: false,
+      class: ["border-transparent", "hover:border-gray-400 hover:border-b-0"],
+    },
+    {
+      primary: false,
+      selected: true,
+      class: bottomBorder,
+    },
+    {
+      primary: false,
+      selected: true,
+      highlight: "own",
+      class: "after:bg-primary-500",
+    },
+    {
+      primary: false,
+      selected: true,
+      highlight: "system",
+      class: "after:bg-gray-100",
+    },
+    {
+      primary: false,
+      selected: true,
+      highlight: "default",
+      class: "after:bg-gray-800",
+    },
+    {
+      primary: false,
+      selected: false,
+      class: [
+        "text-gray-500",
+        ...bottomBorderOnHover,
+        "hover:after:bg-gray-100",
+      ],
+    },
+  ],
+});
 
 const SmallTabNavigationButton = ({
   ref,
@@ -111,22 +104,24 @@ const SmallTabNavigationButton = ({
   children?: React.ReactNode;
   variant: "primary" | "secondary";
 }) => {
-  const theme = useTheme();
-  const highlightColor = valueToColor(theme, value);
+  const highlight =
+    value === "own" ? "own" : value === "system" ? "system" : "default";
 
   return (
     <HoverNavigatable triggerNavigate={onClick}>
-      <Button
+      <button
         ref={ref}
-        highlightColor={highlightColor}
+        className={button({
+          size,
+          primary: variant === "primary",
+          selected: !!isSelected,
+          highlight,
+        })}
         type="button"
-        primary={variant === "primary"}
-        size={size}
-        selected={isSelected}
         onClick={onClick}
       >
         {children}
-      </Button>
+      </button>
     </HoverNavigatable>
   );
 };

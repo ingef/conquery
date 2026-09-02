@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
 import type { SelectorResultType } from "../../api/types";
@@ -90,25 +90,15 @@ interface Props {
   rowPrefixFieldname?: string;
 }
 
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
-`;
+// named to avoid shadowing the `row` map param below
+const connectorRow = tv({
+  base: ["flex items-center", "mb-[5px]"],
+});
 
-const SxTransparentButton = styled(TransparentButton)`
-  margin-left: 10px;
-  flex-shrink: 0;
-`;
-
-const SxDescription = styled(Description)`
-  margin: 0 5px 0 0;
-  font-size: ${({ theme }) => theme.font.xs};
-`;
-
-const SxFormConceptNode = styled(FormConceptNode)`
-  margin-top: 5px;
-`;
+// Description's own margins are overridden here
+const connectorDescription = tv({
+  base: ["m-0 mr-[5px]", "text-xs"],
+});
 
 export interface EditedFormQueryNodePosition {
   valueIdx: number;
@@ -319,12 +309,13 @@ const FormConceptGroup = (props: Props) => {
           <>
             {props.label}
             {allowExtendedCopying && (
-              <SxTransparentButton
+              <TransparentButton
+                className="ml-[10px] shrink-0"
                 tiny
                 onClick={() => setIsCopyModalOpen(true)}
               >
                 {t("externalForms.common.concept.copyFrom")}
-              </SxTransparentButton>
+              </TransparentButton>
             )}
           </>
         }
@@ -366,10 +357,10 @@ const FormConceptGroup = (props: Props) => {
                 })
               : null}
             {row.concepts.length > 1 && (
-              <Row>
-                <SxDescription>
+              <div className={connectorRow()}>
+                <Description className={connectorDescription()}>
                   {t("externalForms.common.connectedWith")}:
-                </SxDescription>
+                </Description>
                 <ToggleButton
                   value={props.value[i].connector}
                   onChange={(val) => {
@@ -384,7 +375,7 @@ const FormConceptGroup = (props: Props) => {
                     { value: "AND", label: t("common.and") },
                   ]}
                 />
-              </Row>
+              </div>
             )}
             <DynamicInputGroup
               key={i}
@@ -397,7 +388,7 @@ const FormConceptGroup = (props: Props) => {
               }
               items={row.concepts.map((concept, j) =>
                 concept ? (
-                  <SxFormConceptNode
+                  <FormConceptNode
                     key={j}
                     valueIdx={i}
                     conceptIdx={j}

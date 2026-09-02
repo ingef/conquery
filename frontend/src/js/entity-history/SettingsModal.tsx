@@ -1,14 +1,9 @@
-import styled from "@emotion/styled";
 import type { Dispatch, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../api/types";
 import Modal from "../modal/Modal";
 import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
-
-const Content = styled("div")`
-  width: 300px;
-`;
 
 interface Props {
   onClose: () => void;
@@ -24,7 +19,7 @@ export const SettingsModal = ({
   const { t } = useTranslation();
   return (
     <Modal onClose={onClose} headline={t("history.settings.headline")}>
-      <Content>
+      <div className="w-[300px]">
         <InputMultiSelect
           creatable
           label={t("history.settings.selectStatusHeadline")}
@@ -34,7 +29,7 @@ export const SettingsModal = ({
           value={entityStatusOptions}
           options={entityStatusOptions}
         />
-      </Content>
+      </div>
     </Modal>
   );
 };

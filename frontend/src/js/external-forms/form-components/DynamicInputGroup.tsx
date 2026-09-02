@@ -1,6 +1,7 @@
-import styled from "@emotion/styled";
 import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 import type { ReactNode } from "react";
+
+import { tv } from "tailwind-variants";
 
 import IconButton from "../../button/IconButton";
 
@@ -13,27 +14,17 @@ interface PropsT {
   onRemoveClick: (idx: number) => void;
 }
 
-const Container = styled.div`
-  padding: 4px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-`;
+const container = tv({
+  base: ["flex flex-wrap", "gap-2", "p-1"],
+});
 
-const RemoveBtn = styled(IconButton)`
-  position: absolute;
-  top: -7px;
-  right: -7px;
-  opacity: 1;
-  z-index: 1;
-  background-color: white;
-`;
+const removeButton = tv({
+  base: ["absolute -top-[7px] -right-[7px]", "z-1", "bg-white", "opacity-100"],
+});
 
-const GroupItem = styled("div")`
-  padding: 2px 2px 2px 0;
-  position: relative;
-  max-width: 200px;
-`;
+const groupItem = tv({
+  base: ["relative", "max-w-[200px]", "py-[2px] pr-[2px] pl-0"],
+});
 
 const DynamicInputGroup = ({
   className,
@@ -47,10 +38,10 @@ const DynamicInputGroup = ({
   const limitNotReached = limit === 0 || items.length < limit;
 
   return (
-    <Container className={className}>
+    <div className={container({ className })}>
       {label && <span>{label}</span>}
       {items.map((item, idx) => (
-        <GroupItem key={idx}>
+        <div className={groupItem()} key={idx}>
           {item}
           {/*
             No need to display the remove button, when limit is 1.
@@ -61,19 +52,20 @@ const DynamicInputGroup = ({
             you can also just delete the following constraint:
            */}
           {limit !== 1 && (
-            <RemoveBtn
+            <IconButton
+              className={removeButton()}
               bgHover
               tiny
               icon={faTimes}
               onClick={() => onRemoveClick(idx)}
             />
           )}
-        </GroupItem>
+        </div>
       ))}
       {limitNotReached && (
         <IconButton bgHover icon={faPlus} tiny onClick={onAddClick} />
       )}
-    </Container>
+    </div>
   );
 };
 

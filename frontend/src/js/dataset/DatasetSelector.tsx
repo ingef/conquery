@@ -1,7 +1,7 @@
-import styled from "@emotion/styled";
 import { memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import type { DatasetT, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
@@ -11,21 +11,13 @@ import InputSelect from "../ui-components/InputSelect/InputSelect";
 
 import { useSelectDataset } from "./actions";
 
-const Root = styled("div")`
-  color: ${({ theme }) => theme.col.black};
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-`;
+const root = tv({
+  base: ["flex items-center justify-end", "text-gray-800"],
+});
 
-const Headline = styled("span")`
-  font-size: ${({ theme }) => theme.col.grayLight};
-  padding-right: 12px;
-`;
-
-const SxInputSelect = styled(InputSelect)`
-  min-width: 300px;
-`;
+/* the old styles set `font-size: #dadada` (a color) — invalid, so the
+   font size was always inherited; only the padding was real */
+const headline = tv({ base: "pr-3" });
 
 const useIsDatasetSelectDisabled = () => {
   const isHistoryOpen = useSelector<StateT, boolean>(
@@ -110,9 +102,10 @@ const DatasetSelectorUI = memo(
         }
         lazy
       >
-        <Root data-test-id="dataset-selector">
-          <Headline>{t("datasetSelector.label")}</Headline>
-          <SxInputSelect
+        <div className={root()} data-test-id="dataset-selector">
+          <span className={headline()}>{t("datasetSelector.label")}</span>
+          <InputSelect
+            className="min-w-[300px]"
             value={selected || null}
             onChange={onChange}
             placeholder={
@@ -121,7 +114,7 @@ const DatasetSelectorUI = memo(
             disabled={disabled || exists(error)}
             options={options}
           />
-        </Root>
+        </div>
       </WithTooltip>
     );
   },

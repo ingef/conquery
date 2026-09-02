@@ -1,10 +1,10 @@
-import styled from "@emotion/styled";
 import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { type FormEvent, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-
+import { tv } from "tailwind-variants";
 import { usePostLogin } from "../api/api";
+import { useAppTheme } from "../app-theme-context";
 import PrimaryButton from "../button/PrimaryButton";
 import ErrorMessage from "../error-message/ErrorMessage";
 import FaIcon from "../icon/FaIcon";
@@ -12,67 +12,39 @@ import InputPlain from "../ui-components/InputPlain/InputPlain";
 
 import { AuthTokenContext } from "./AuthTokenProvider";
 
-const Root = styled("div")`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background-color: ${({ theme }) => theme.col.bgAlt};
-`;
+const root = tv({
+  base: ["flex items-center justify-center", "h-screen", "bg-bg-100"],
+});
 
-const Wrap = styled("div")`
-  max-width: 255px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`;
+const wrap = tv({
+  base: ["flex flex-col items-center justify-center", "max-w-[255px]"],
+});
 
-const Logo = styled("div")`
-  width: ${({ theme }) => theme.img.logoWidth};
-  height: 35px;
-  background-image: url(${({ theme }) => theme.img.logo});
-  background-repeat: no-repeat;
-  background-position-y: 50%;
-  background-size: ${({ theme }) => theme.img.logoBackgroundSize};
-`;
+const logo = tv({
+  base: ["h-[35px]", "bg-no-repeat", "[background-position-y:50%]"],
+});
 
-const Headline = styled("h2")`
-  line-height: 2;
-  font-size: ${({ theme }) => theme.font.md};
-  text-transform: uppercase;
-  font-weight: 300;
-  color: ${({ theme }) => theme.col.gray};
-  margin: 0;
-`;
+const headline = tv({
+  base: [
+    "m-0",
+    "text-base",
+    "leading-[2]",
+    "font-light",
+    "uppercase",
+    "text-gray-500",
+  ],
+});
 
-const Form = styled("form")`
-  margin: 15px auto 50px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`;
+const form = tv({
+  base: [
+    "flex flex-col items-center justify-center",
+    "mx-auto mt-[15px] mb-[50px]",
+  ],
+});
 
-const SxInputPlain = styled(InputPlain)`
-  padding: 5px 0;
-`;
-
-const SxPrimaryButton = styled(PrimaryButton)`
-  margin-top: 35px;
-  width: 255px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const SxFaIcon = styled(FaIcon)`
-  margin-right: 10px;
-`;
-
-const SxErrorMessage = styled(ErrorMessage)`
-  margin: 20px 10px 0;
-`;
+const submitButton = tv({
+  base: ["flex items-center justify-center", "mt-[35px]", "w-[255px]"],
+});
 
 const LoginPage = () => {
   const [user, setUser] = useState("");
@@ -83,6 +55,7 @@ const LoginPage = () => {
   const postLogin = usePostLogin();
   const { t } = useTranslation();
   const { setAuthToken } = useContext(AuthTokenContext);
+  const { img } = useAppTheme();
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -106,13 +79,23 @@ const LoginPage = () => {
   }
 
   return (
-    <Root>
-      <Wrap>
-        <Logo />
-        <Headline>{t("login.headline")}</Headline>
-        {!!error && <SxErrorMessage message={t("login.error")} />}
-        <Form onSubmit={onSubmit}>
-          <SxInputPlain
+    <div className={root()}>
+      <div className={wrap()}>
+        <div
+          className={logo()}
+          style={{
+            width: img.logoWidth,
+            backgroundImage: `url(${img.logo})`,
+            backgroundSize: img.logoBackgroundSize,
+          }}
+        />
+        <h2 className={headline()}>{t("login.headline")}</h2>
+        {!!error && (
+          <ErrorMessage className="mx-[10px] mt-5" message={t("login.error")} />
+        )}
+        <form className={form()} onSubmit={onSubmit}>
+          <InputPlain
+            className="px-0 py-[5px]"
             label={t("login.username")}
             large
             value={user}
@@ -121,7 +104,8 @@ const LoginPage = () => {
               disabled: loading,
             }}
           />
-          <SxInputPlain
+          <InputPlain
+            className="px-0 py-[5px]"
             inputType="password"
             label={t("login.password")}
             large
@@ -131,13 +115,23 @@ const LoginPage = () => {
               disabled: loading,
             }}
           />
-          <SxPrimaryButton disabled={!user || !password} large type="submit">
-            <SxFaIcon large white icon={loading ? faSpinner : faCheck} />
+          <PrimaryButton
+            className={submitButton()}
+            disabled={!user || !password}
+            large
+            type="submit"
+          >
+            <FaIcon
+              className="mr-[10px]"
+              large
+              white
+              icon={loading ? faSpinner : faCheck}
+            />
             {t("login.submit")}
-          </SxPrimaryButton>
-        </Form>
-      </Wrap>
-    </Root>
+          </PrimaryButton>
+        </form>
+      </div>
+    </div>
   );
 };
 

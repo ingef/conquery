@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faCheckCircle,
   faExclamationCircle,
@@ -6,6 +5,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 import type { PostFilterResolveResponseT } from "../api/types";
 import PrimaryButton from "../button/PrimaryButton";
 import FaIcon from "../icon/FaIcon";
@@ -13,36 +13,23 @@ import Modal from "../modal/Modal";
 import ScrollableList from "../scrollable-list/ScrollableList";
 import InputCheckbox from "../ui-components/InputCheckbox";
 
-const Root = styled("div")`
-  padding: 0 0 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-`;
-const Col = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-`;
+const root = tv({
+  base: ["flex flex-col", "gap-[15px]", "pb-[10px]"],
+});
 
-const Msg = styled("p")`
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-const BigIcon = styled(FaIcon)`
-  font-size: 20px;
-`;
-const ErrorIcon = styled(BigIcon)`
-  color: ${({ theme }) => theme.col.red};
-`;
-const SuccessIcon = styled(BigIcon)`
-  color: ${({ theme }) => theme.col.green};
-`;
-const CenteredIcon = styled(FaIcon)`
-  text-align: center;
-`;
+const msg = tv({
+  base: ["m-0", "flex items-center", "gap-[10px]"],
+});
+
+const bigIcon = tv({
+  base: "text-xl",
+  variants: {
+    kind: {
+      error: "text-red",
+      success: "text-green",
+    },
+  },
+});
 
 const selectResolvedItemsCount = (
   resolved: PostFilterResolveResponseT | null,
@@ -91,18 +78,24 @@ const UploadFilterListModal = ({
       doneButton
       headline={t("uploadFilterListModal.headline")}
     >
-      <Root>
-        {loading && <CenteredIcon icon={faSpinner} />}
+      <div className={root()}>
+        {loading && <FaIcon center icon={faSpinner} />}
         {error && (
           <p>
-            <ErrorIcon icon={faExclamationCircle} />
+            <FaIcon
+              className={bigIcon({ kind: "error" })}
+              icon={faExclamationCircle}
+            />
             {t("uploadConceptListModal.error")}
           </p>
         )}
         {hasUnresolvedItems && (
-          <Col>
-            <Msg>
-              <ErrorIcon icon={faExclamationCircle} />
+          <div className="flex flex-col gap-[5px]">
+            <p className={msg()}>
+              <FaIcon
+                className={bigIcon({ kind: "error" })}
+                icon={faExclamationCircle}
+              />
               <span
                 // biome-ignore lint/security/noDangerouslySetInnerHtml: i18n text with markup
                 dangerouslySetInnerHTML={{
@@ -111,22 +104,25 @@ const UploadFilterListModal = ({
                   }),
                 }}
               />
-            </Msg>
+            </p>
             <ScrollableList
               maxVisibleItems={3}
               fullWidth
               items={resolved.unknownCodes || []}
             />
-          </Col>
+          </div>
         )}
-        <Col>
+        <div className="flex flex-col gap-[5px]">
           {hasResolvedItems && (
-            <Msg>
-              <SuccessIcon icon={faCheckCircle} />
+            <p className={msg()}>
+              <FaIcon
+                className={bigIcon({ kind: "success" })}
+                icon={faCheckCircle}
+              />
               {t("uploadConceptListModal.resolvedCodes", {
                 count: resolvedItemsCount,
               })}
-            </Msg>
+            </p>
           )}
           {(resolved.unknownCodes?.length || 0) > 0 && (
             <InputCheckbox
@@ -135,7 +131,7 @@ const UploadFilterListModal = ({
               label={t("uploadConceptListModal.includeUnresolved")}
             />
           )}
-        </Col>
+        </div>
         <PrimaryButton
           disabled={loading || nothingToInsert}
           onClick={() => {
@@ -145,7 +141,7 @@ const UploadFilterListModal = ({
         >
           {t("uploadConceptListModal.insertNode")}
         </PrimaryButton>
-      </Root>
+      </div>
     </Modal>
   );
 };

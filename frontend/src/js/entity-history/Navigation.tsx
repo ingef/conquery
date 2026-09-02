@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faArrowDown,
   faArrowUp,
@@ -16,6 +15,7 @@ import {
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
@@ -34,60 +34,40 @@ import type { EntityId } from "./reducer";
 import { SearchEntites } from "./SearchEntities";
 import { saveHistory } from "./saveAndLoad";
 
-const Root = styled("div")`
-  display: grid;
-  gap: 10px;
-  overflow: hidden;
-  background-color: ${({ theme }) => theme.col.bg};
-`;
+const root = tv({
+  base: ["grid", "gap-[10px]", "overflow-hidden", "bg-bg-50"],
+});
 
-const Row = styled("div")`
-  margin: 0 10px 0 20px;
-  display: flex;
-  gap: 10px;
-`;
+const row = tv({
+  base: ["flex", "gap-[10px]", "mr-[10px] ml-5"],
+});
 
-const EntityIdNav = styled("div")`
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding: 0 10px 0 20px;
-`;
-const TopActions = styled("div")`
-  display: flex;
-`;
+const entityIdNav = tv({
+  base: ["flex flex-col", "overflow-hidden", "pr-[10px] pl-5"],
+});
 
-const SxNavigationHeader = styled(NavigationHeader)`
-  margin: 0 10px 0 20px;
-`;
+const loadHistoryDropzone = tv({
+  base: [
+    "block",
+    "h-full",
+    "grow",
+    "overflow-y-auto",
+    "p-[2px]",
+    "text-inherit",
+  ],
+});
 
-const SxLoadHistoryDropzone = styled(LoadHistoryDropzone)`
-  height: 100%;
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 2px;
-  display: block;
-  color: inherit;
-`;
-const BottomActions = styled("div")`
-  display: flex;
-`;
+const containedIconButton = tv({
+  base: ["grow", "justify-center"],
+});
 
-const ContainedIconButton = styled(IconButton)`
-  flex-grow: 1;
-  justify-content: center;
-`;
+const fullWidthIconButton = tv({
+  base: ["w-full", "justify-center"],
+});
 
-const SxIconButton = styled(IconButton)`
-  width: 100%;
-  justify-content: center;
-`;
-
-const ButtonWithTooltip = styled(WithTooltip)`
-  color: black;
-  flex-shrink: 0;
-  width: 100%;
-`;
+const buttonWithTooltip = tv({
+  base: ["w-full", "shrink-0", "text-black"],
+});
 
 export const Navigation = memo(
   ({
@@ -158,21 +138,22 @@ export const Navigation = memo(
     const empty = ids.length === 0;
 
     return (
-      <Root
-        className={className}
+      <div
+        className={root({ className })}
         style={{
           gridTemplateRows: empty ? "auto 1fr" : "auto auto 1fr",
         }}
       >
-        <Row>
+        <div className={row()}>
           <WithTooltip text={backButtonWarning}>
-            <ContainedIconButton
+            <IconButton
+              className={containedIconButton()}
               frame
               icon={faChevronLeft}
               onClick={onCloseHistory}
             >
               {t("common.back")}
-            </ContainedIconButton>
+            </IconButton>
           </WithTooltip>
           {!empty && (
             <ConfirmableTooltip
@@ -180,32 +161,45 @@ export const Navigation = memo(
               placement="bottom"
               confirmationText={t("history.settings.resetConfirm")}
             >
-              <ContainedIconButton frame icon={faTrash}>
+              <IconButton
+                className={containedIconButton()}
+                frame
+                icon={faTrash}
+              >
                 {t("history.settings.reset")}
-              </ContainedIconButton>
+              </IconButton>
             </ConfirmableTooltip>
           )}
-        </Row>
+        </div>
         {!empty && (
-          <SxNavigationHeader
+          <NavigationHeader
+            className="mr-[10px] ml-5"
             markedCount={markedCount}
             idsCount={entityIds.length}
             entityStatusOptions={entityStatusOptions}
             setEntityStatusOptions={setEntityStatusOptions}
           />
         )}
-        <EntityIdNav>
+        <div className={entityIdNav()}>
           {!empty && (
-            <TopActions>
-              <ButtonWithTooltip
+            <div className="flex">
+              <WithTooltip
+                className={buttonWithTooltip()}
                 text={`${t("history.prevButtonLabel")} (shift + ⬆)`}
                 lazy
               >
-                <SxIconButton icon={faArrowUp} onClick={goToPrev} />
-              </ButtonWithTooltip>
-            </TopActions>
+                <IconButton
+                  className={fullWidthIconButton()}
+                  icon={faArrowUp}
+                  onClick={goToPrev}
+                />
+              </WithTooltip>
+            </div>
           )}
-          <SxLoadHistoryDropzone onLoadFromFile={onLoadFromFile}>
+          <LoadHistoryDropzone
+            className={loadHistoryDropzone()}
+            onLoadFromFile={onLoadFromFile}
+          >
             {entityIds.length === 0 && (
               <SearchEntites onLoad={onLoadFromFile} />
             )}
@@ -217,33 +211,42 @@ export const Navigation = memo(
               entityIdsStatus={entityIdsStatus}
               loadingId={loadingId}
             />
-          </SxLoadHistoryDropzone>
+          </LoadHistoryDropzone>
           {!empty && (
             <>
-              <BottomActions>
-                <ButtonWithTooltip
+              <div className="flex">
+                <WithTooltip
+                  className={buttonWithTooltip()}
                   text={`${t("history.nextButtonLabel")} (shift + ⬇)`}
                   lazy
                 >
-                  <SxIconButton icon={faArrowDown} onClick={goToNext} />
-                </ButtonWithTooltip>
-              </BottomActions>
-              <BottomActions style={{ marginTop: "10px" }}>
-                <ButtonWithTooltip text={t("history.downloadButtonLabel")}>
-                  <SxIconButton
+                  <IconButton
+                    className={fullWidthIconButton()}
+                    icon={faArrowDown}
+                    onClick={goToNext}
+                  />
+                </WithTooltip>
+              </div>
+              <div className="flex" style={{ marginTop: "10px" }}>
+                <WithTooltip
+                  className={buttonWithTooltip()}
+                  text={t("history.downloadButtonLabel")}
+                >
+                  <IconButton
+                    className={fullWidthIconButton()}
                     style={{ backgroundColor: "white" }}
                     frame
                     icon={faDownload}
                     onClick={onDownload}
                   >
                     CSV
-                  </SxIconButton>
-                </ButtonWithTooltip>
-              </BottomActions>
+                  </IconButton>
+                </WithTooltip>
+              </div>
             </>
           )}
-        </EntityIdNav>
-      </Root>
+        </div>
+      </div>
     );
   },
 );

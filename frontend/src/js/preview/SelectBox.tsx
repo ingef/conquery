@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { type SetStateAction, useMemo, useRef, useState } from "react";
+import { tv } from "tailwind-variants";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import FaIcon from "../icon/FaIcon";
 import { Input } from "../ui-components/InputSelect/InputSelectComponents";
@@ -17,56 +17,33 @@ interface SelectBoxProps<T extends SelectItem> {
   setIsOpen: (open: boolean) => void;
 }
 
-const Root = styled("div")`
-  display: flex;
-  min-height: 30px;
-  flex-direction: column;
-  width: 20vw;
-`;
+const root = tv({
+  base: ["flex flex-col", "min-h-[30px]", "w-[20vw]"],
+});
 
-const InputContainer = styled("div")`
-  display: flex;
-  flex-direction: row;
-`;
+const list = tv({
+  base: [
+    "absolute",
+    "z-1",
+    "mt-[35px]",
+    "flex flex-col",
+    "gap-[5px]",
+    "max-h-[40vh] w-[20vw]",
+    "overflow-y-auto",
+    "rounded",
+    "bg-white",
+    "shadow-[0_0_5px_rgba(0,0,0,0.2)]",
+    "[clip-path:inset(0px_-8px_-8px_-8px)]",
+  ],
+});
 
-const List = styled("div")`
-  position: absolute;
-  z-index: 1;
-  margin-top: 35px;
-  background-color: white;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  border-radius: ${({ theme }) => theme.borderRadius};
-  clip-path: inset(0px -8px -8px -8px);
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  max-height: 40vh;
-  overflow-y: auto;
-  width: 20vw;
-`;
+const listItem = tv({
+  base: ["px-[5px]", "cursor-pointer", "hover:bg-gray-50"],
+});
 
-const ListItem = styled("div")`
-  padding: 0 5px;
-  cursor: pointer;
-  cursor: pointer;
-  &:hover {
-    background-color: ${({ theme }) => theme.col.grayVeryLight};
-  }
-`;
-
-const SxInput = styled(Input)`
-  margin-top: 5px;
-  width: 190px;
-`;
-const ArrowContainer = styled("div")`
-  margin-right: 5px;
-`;
-const SxArrow = styled(FaIcon)`
-  margin-top: 5px;
-  color: ${({ theme }) => theme.col.gray};
-  font-size: 17px;
-  cursor: pointer;
-`;
+const arrow = tv({
+  base: ["mt-[5px]", "text-[17px]", "text-gray-500", "cursor-pointer"],
+});
 
 export default function SelectBox<T extends SelectItem>({
   items,
@@ -92,9 +69,12 @@ export default function SelectBox<T extends SelectItem>({
   }, [items, searchTerm]);
 
   return (
-    <Root className={className} onClick={() => setIsOpen(!isOpen)}>
-      <InputContainer>
-        <SxInput
+    // biome-ignore lint/a11y/noStaticElementInteractions: TODO make this a real combobox
+    // biome-ignore lint/a11y/useKeyWithClickEvents: see above
+    <div className={root({ className })} onClick={() => setIsOpen(!isOpen)}>
+      <div className="flex flex-row">
+        <Input
+          className="mt-[5px] w-[190px]"
           type="text"
           placeholder=""
           value={searchTerm}
@@ -108,20 +88,26 @@ export default function SelectBox<T extends SelectItem>({
           }}
           spellCheck={false}
         />
-        <ArrowContainer>
-          <SxArrow icon={isOpen ? faCaretUp : faCaretDown} />
-        </ArrowContainer>
-      </InputContainer>
-      <List ref={clickOutsideRef}>
+        <div className="mr-[5px]">
+          <FaIcon className={arrow()} icon={isOpen ? faCaretUp : faCaretDown} />
+        </div>
+      </div>
+      <div className={list()} ref={clickOutsideRef}>
         {isOpen &&
           displayedItems.map((item) => {
             return (
-              <ListItem key={item.label} onClick={() => onChange(item)}>
+              // biome-ignore lint/a11y/noStaticElementInteractions: TODO make this a real listbox option
+              // biome-ignore lint/a11y/useKeyWithClickEvents: see above
+              <div
+                className={listItem()}
+                key={item.label}
+                onClick={() => onChange(item)}
+              >
                 {item.label}
-              </ListItem>
+              </div>
             );
           })}
-      </List>
-    </Root>
+      </div>
+    </div>
   );
 }

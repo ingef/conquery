@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { faFile } from "@fortawesome/free-regular-svg-icons";
 import {
   faArrowRight,
@@ -8,91 +7,80 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import FaIcon from "../icon/FaIcon";
 
-const TextInitial = styled("div")`
-  width: 100%;
-  font-size: ${({ theme }) => theme.font.lg};
-  padding: 30px;
-  font-weight: 400;
-  display: grid;
-  grid-template-areas: "free headline" "arrow description";
-  gap: 12px 20px;
+const textInitial = tv({
+  base: [
+    "grid",
+    "[grid-template-areas:'free_headline'_'arrow_description']",
+    "gap-y-3 gap-x-5",
+    "w-full",
+    "p-[30px]",
+    "text-xl",
+    "font-normal",
+  ],
+});
 
-  p {
-    margin: 0;
-  }
-`;
-const ArrowRight = styled(FaIcon)`
-  font-size: 140px;
-  color: ${({ theme }) => theme.col.grayLight};
-  grid-area: arrow;
-`;
-const Headline = styled("h2")`
-  grid-area: headline;
-`;
-const Grid = styled("div")`
-  display: grid;
-  gap: 5px;
-  align-items: center;
-  grid-template-columns: auto 1fr;
-  margin-top: 10px;
-`;
-const Row = styled("div")`
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  justify-content: flex-end;
-`;
-const Description = styled("div")`
-  grid-area: description;
-`;
-const IconInABox = styled("div")`
-  border: 1px solid ${({ theme }) => theme.col.grayLight};
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
+const arrowRight = tv({
+  base: ["[grid-area:arrow]", "text-[140px]", "text-gray-100"],
+});
+
+const headline = tv({
+  base: ["[grid-area:headline]", "text-2xl", "leading-tight", "font-bold"],
+});
+
+const grid = tv({
+  base: ["grid items-center", "grid-cols-[auto_1fr]", "gap-[5px]", "mt-[10px]"],
+});
+
+const row = tv({
+  base: ["flex items-center justify-end", "gap-[6px]"],
+});
+
+const iconInABox = tv({
+  base: [
+    "flex items-center justify-center",
+    "h-[30px] w-[30px]",
+    "border border-gray-100",
+    "rounded",
+  ],
+});
 
 export const EmptyQueryEditorDropzone = memo(() => {
   const { t } = useTranslation();
 
   return (
-    <TextInitial data-test-id="text-initial">
-      <Headline className="text-2xl leading-tight font-bold">
-        {t("dropzone.explanation")}
-      </Headline>
-      <ArrowRight icon={faArrowRight} />
-      <Description>
+    <div className={textInitial()} data-test-id="text-initial">
+      <h2 className={headline()}>{t("dropzone.explanation")}</h2>
+      <FaIcon className={arrowRight()} icon={faArrowRight} />
+      <div className="[grid-area:description]">
         <p>{t("dropzone.dropIntoThisArea")}</p>
-        <Grid>
-          <Row>
-            <IconInABox>
+        <div className={grid()}>
+          <div className={row()}>
+            <div className={iconInABox()}>
               <FaIcon icon={faFolder} active />
-            </IconInABox>
-            <IconInABox>
+            </div>
+            <div className={iconInABox()}>
               <FaIcon icon={faMinus} active />
-            </IconInABox>
-          </Row>
+            </div>
+          </div>
           {t("dropzone.aConcept")}
-          <Row>
-            <IconInABox>
+          <div className={row()}>
+            <div className={iconInABox()}>
               <FaIcon icon={faDiagramProject} active />
-            </IconInABox>
-          </Row>
+            </div>
+          </div>
           {t("dropzone.aQuery")}
-          <Row>
-            <IconInABox>
+          <div className={row()}>
+            <div className={iconInABox()}>
               <FaIcon icon={faFile} active />
-            </IconInABox>
-          </Row>
+            </div>
+          </div>
           {t("dropzone.aConceptList")}
-        </Grid>
-      </Description>
-    </TextInitial>
+        </div>
+      </div>
+    </div>
   );
 });

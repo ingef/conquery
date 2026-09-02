@@ -1,7 +1,7 @@
-import styled from "@emotion/styled";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import type { ReactNode, Ref } from "react";
 import type { DropTargetMonitor } from "react-dnd";
+import { tv } from "tailwind-variants";
 
 import IconButton from "../../button/IconButton";
 import InfoTooltip from "../../tooltip/InfoTooltip";
@@ -16,40 +16,26 @@ import Label from "../../ui-components/Label";
 
 import DropzoneBetweenElements from "./DropzoneBetweenElements";
 
-const ListItem = styled("div")`
-  position: relative;
-  padding: 5px;
-  box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.1);
-  background-color: white;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  margin-bottom: 5px;
-`;
+const listItem = tv({
+  base: [
+    "relative",
+    "p-[5px]",
+    "mb-[5px]",
+    "bg-white",
+    "rounded",
+    "shadow-[0_0_3px_0_rgba(0,0,0,0.1)]",
+  ],
+});
 
-const StyledIconButton = styled(IconButton)`
-  position: absolute;
-  top: 0;
-  right: 0;
-`;
+const betweenDropzone = tv({
+  variants: {
+    first: { true: "top-[3px]" },
+  },
+});
 
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
-`;
-
-const ConceptContainer = styled("div")`
-  position: relative;
-`;
-
-const SxDropzoneBetweenElements = styled(DropzoneBetweenElements)<{
-  index: number;
-}>`
-  ${({ index }) => (index === 0 ? "top: 3px;" : "")}
-`;
-
-const SxLastDropzoneBetweenElements = styled(DropzoneBetweenElements)`
-  height: 15px;
-  top: -5px;
-`;
+const lastBetweenDropzone = tv({
+  base: ["-top-[5px]", "h-[15px]"],
+});
 
 interface PropsT<DroppableObject> {
   className?: string;
@@ -91,39 +77,41 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>({
 
   return (
     <div className={className}>
-      <Row>
+      <div className="flex items-center">
         {label && <Label>{label}</Label>}
         {tooltip && <InfoTooltip text={tooltip} />}
-      </Row>
+      </div>
       {items && items.length > 0 && (
         <>
           {items.map((item, i) => (
-            <ConceptContainer key={i}>
+            <div className="relative" key={i}>
               {!disallowMultipleColumns && (
-                <SxDropzoneBetweenElements
+                <DropzoneBetweenElements
+                  className={betweenDropzone({ first: i === 0 })}
                   acceptedDropTypes={acceptedDropTypes}
                   onDrop={dropBetween(i)}
-                  index={i}
                 />
               )}
-              <ListItem>
-                <StyledIconButton
+              <div className={listItem()}>
+                <IconButton
+                  className="absolute top-0 right-0"
                   bgHover
                   icon={faTimes}
                   onClick={() => onDelete(i)}
                 />
                 {item}
-              </ListItem>
-            </ConceptContainer>
+              </div>
+            </div>
           ))}
-          <ConceptContainer>
+          <div className="relative">
             {!disallowMultipleColumns && (
-              <SxLastDropzoneBetweenElements
+              <DropzoneBetweenElements
+                className={lastBetweenDropzone()}
                 acceptedDropTypes={acceptedDropTypes}
                 onDrop={dropBetween(items.length)}
               />
             )}
-          </ConceptContainer>
+          </div>
         </>
       )}
       <div ref={ref}>

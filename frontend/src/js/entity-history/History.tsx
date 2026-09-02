@@ -1,10 +1,10 @@
-import styled from "@emotion/styled";
 import { useCallback, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { Group, Panel } from "react-resizable-panels";
+import { tv } from "tailwind-variants";
 import type {
   EntityInfo,
   ResultUrlWithLabel,
@@ -32,70 +32,39 @@ import { useOpenCloseInteraction } from "./useOpenCloseInteraction";
 import { useSourcesControl } from "./useSourcesControl";
 import VisibilityControl from "./VisibilityControl";
 
-const FullScreen = styled("div")`
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  z-index: 2;
-  background-color: ${({ theme }) => theme.col.bgAlt};
-`;
+const fullScreen = tv({
+  base: ["fixed top-0 left-0", "z-2", "h-full w-full", "bg-bg-100"],
+});
 
-const SxNavigation = styled(Navigation)`
-  height: 100%;
-  padding: 55px 0 10px;
-`;
+const controls = tv({
+  base: ["flex items-center", "gap-[18px]", "mr-5"],
+});
 
-const Controls = styled("div")`
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-right: 20px;
-`;
+const sidebar = tv({
+  base: ["flex flex-col", "gap-5", "pt-[10px]", "border-r border-gray-100"],
+});
 
-const Sidebar = styled("div")`
-  padding: 10px 0 0;
-  border-right: 1px solid ${({ theme }) => theme.col.grayLight};
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
-const SidebarBottom = styled("div")`
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  justify-content: flex-end;
-`;
+const sidebarBottom = tv({
+  base: ["flex flex-col justify-end", "grow", "gap-5"],
+});
 
-const Header = styled("div")`
-  display: flex;
-  flex-direction: row-reverse;
-  gap: 15px;
-  justify-content: space-between;
-`;
+const header = tv({
+  base: ["flex flex-row-reverse justify-between", "gap-[15px]"],
+});
 
-const Main = styled("div")`
-  overflow: hidden;
-  height: 100%;
-  display: grid;
-  grid-template-rows: auto 1fr;
-  padding: 55px 0 10px;
-  gap: 10px;
-`;
+const main = tv({
+  base: [
+    "grid grid-rows-[auto_1fr]",
+    "gap-[10px]",
+    "h-full",
+    "overflow-hidden",
+    "pt-[55px] pb-[10px]",
+  ],
+});
 
-const Flex = styled("div")`
-  display: flex;
-  height: 100%;
-  overflow: hidden;
-  border-top: 1px solid ${({ theme }) => theme.col.grayLight};
-`;
-
-const SxSourcesControl = styled(SourcesControl)`
-  flex-shrink: 0;
-  width: 450px;
-`;
+const flex = tv({
+  base: ["flex", "h-full", "overflow-hidden", "border-t border-gray-100"],
+});
 
 export interface EntityIdsStatus {
   [entityId: string]: SelectOptionT[];
@@ -178,10 +147,11 @@ export const History = () => {
 
   return (
     <TimelineSearchProvider>
-      <FullScreen>
+      <div className={fullScreen()}>
         <Group orientation="horizontal">
           <Panel minSize={400} defaultSize={400} maxSize={800}>
-            <SxNavigation
+            <Navigation
+              className="h-full pt-[55px] pb-[10px]"
               blurred={blurred}
               entityIds={entityIds}
               entityIdsStatus={entityIdsStatus}
@@ -196,15 +166,16 @@ export const History = () => {
           <ResizeHandle />
           <Panel minSize={500}>
             <ErrorBoundary fallback={<ErrorFallback allowFullRefresh />}>
-              <Main>
-                <Header>
-                  <Controls>
-                    <SxSourcesControl
+              <div className={main()}>
+                <div className={header()}>
+                  <div className={controls()}>
+                    <SourcesControl
+                      className="w-[450px] shrink-0"
                       options={options}
                       sourcesFilter={sourcesFilter}
                       setSourcesFilter={setSourcesFilter}
                     />
-                  </Controls>
+                  </div>
                   {currentEntityId && (
                     <EntityHeader
                       blurred={blurred}
@@ -215,9 +186,9 @@ export const History = () => {
                       entityStatusOptions={entityStatusOptions}
                     />
                   )}
-                </Header>
-                <Flex>
-                  <Sidebar>
+                </div>
+                <div className={flex()}>
+                  <div className={sidebar()}>
                     <SearchControl />
                     <VisibilityControl
                       blurred={blurred}
@@ -237,7 +208,7 @@ export const History = () => {
                       value={contentFilter}
                       onChange={setContentFilter}
                     />
-                    <SidebarBottom>
+                    <div className={sidebarBottom()}>
                       {resultUrls.length > 0 && (
                         <DownloadResultsDropdownButton
                           tiny
@@ -245,8 +216,8 @@ export const History = () => {
                           tooltip={t("history.downloadEntityData")}
                         />
                       )}
-                    </SidebarBottom>
-                  </Sidebar>
+                    </div>
+                  </div>
                   <Timeline
                     className="mt-[10px]"
                     blurred={blurred}
@@ -261,12 +232,12 @@ export const History = () => {
                     toggleOpenYear={toggleOpenYear}
                     toggleOpenQuarter={toggleOpenQuarter}
                   />
-                </Flex>
-              </Main>
+                </div>
+              </div>
             </ErrorBoundary>
           </Panel>
         </Group>
-      </FullScreen>
+      </div>
     </TimelineSearchProvider>
   );
 };

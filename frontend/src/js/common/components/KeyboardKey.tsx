@@ -1,16 +1,18 @@
-import styled from "@emotion/styled";
 import type { ReactNode } from "react";
+import { tv } from "tailwind-variants";
 
-const KeyShape = styled("kbd")`
-  padding: 2px 4px;
-  border: 1px solid ${({ theme }) => theme.col.grayLight};
-  box-shadow: 0 0 3px 0 ${({ theme }) => theme.col.grayLight};
-  font-size: ${({ theme }) => theme.font.xs};
-  line-height: 1;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  text-transform: uppercase;
-`;
+const keyShape = tv({
+  base: [
+    "px-1 py-[2px]",
+    "rounded",
+    "border border-gray-100",
+    "shadow-[0_0_3px_0_var(--color-gray-100)]",
+    "text-xs",
+    "leading-none",
+    "uppercase",
+  ],
+});
 
 export const KeyboardKey = ({ children }: { children: ReactNode }) => (
-  <KeyShape>{children}</KeyShape>
+  <kbd className={keyShape()}>{children}</kbd>
 );

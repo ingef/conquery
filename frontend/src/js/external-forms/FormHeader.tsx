@@ -1,25 +1,16 @@
-import styled from "@emotion/styled";
 import { faBook } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
+import { tv } from "tailwind-variants";
 import IconButton from "../button/IconButton";
 
-const Root = styled("div")`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 7px;
-`;
+const root = tv({
+  base: ["flex flex-col", "w-full", "gap-[7px]"],
+});
 
-const Description = styled("p")`
-  margin: 0 10px;
-  font-size: ${({ theme }) => theme.font.md};
-`;
-
-const SxIconButton = styled(IconButton)`
-  justify-content: center;
-  width: 100%;
-`;
+const description = tv({
+  base: ["mx-[10px]", "text-base"],
+});
 
 interface Props {
   description: string;
@@ -27,19 +18,23 @@ interface Props {
   manualUrl?: string;
 }
 
-const FormHeader = ({ className, description, manualUrl }: Props) => {
+const FormHeader = ({
+  className,
+  description: descriptionText,
+  manualUrl,
+}: Props) => {
   const { t } = useTranslation();
   return (
-    <Root className={className}>
-      <Description>{description}</Description>
+    <div className={root({ className })}>
+      <p className={description()}>{descriptionText}</p>
       {manualUrl && (
         <a href={manualUrl} target="_blank" rel="noreferrer">
-          <SxIconButton frame icon={faBook}>
+          <IconButton className="w-full justify-center" frame icon={faBook}>
             {t("externalForms.manualButton")}
-          </SxIconButton>
+          </IconButton>
         </a>
       )}
-    </Root>
+    </div>
   );
 };
 

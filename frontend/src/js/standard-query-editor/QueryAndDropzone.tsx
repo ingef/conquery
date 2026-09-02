@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -7,14 +6,6 @@ import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryEditorDropzone from "./QueryEditorDropzone";
 import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
-
-const PaddedTop = styled("div")`
-  padding-top: 70px;
-`;
-
-const SxWithTooltip = styled(WithTooltip)`
-  display: block !important;
-`;
 
 interface Props {
   onDropFile: (file: File, andIdx?: number) => Promise<unknown>;
@@ -32,8 +23,8 @@ const QueryAndDropzone = ({
   const { t } = useTranslation();
 
   return (
-    <PaddedTop>
-      <SxWithTooltip text={t("help.editorDropzoneAnd")} lazy>
+    <div className="pt-[70px]">
+      <WithTooltip className="block!" text={t("help.editorDropzoneAnd")} lazy>
         <QueryEditorDropzone
           isAnd
           onDropNode={onDropAndNode}
@@ -41,8 +32,8 @@ const QueryAndDropzone = ({
           onImportLines={onImportLines}
           onLoadPreviousQuery={onLoadQuery}
         />
-      </SxWithTooltip>
-    </PaddedTop>
+      </WithTooltip>
+    </div>
   );
 };
 

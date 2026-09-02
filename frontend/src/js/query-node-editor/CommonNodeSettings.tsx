@@ -1,16 +1,7 @@
-import styled from "@emotion/styled";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import InputCheckbox from "../ui-components/InputCheckbox";
-
-const Container = styled("div")`
-  margin: 15px 10px;
-`;
-const Row = styled("div")`
-  max-width: 300px;
-  margin-bottom: 10px;
-`;
 
 interface Props {
   excludeTimestamps?: boolean;
@@ -28,9 +19,9 @@ const CommonNodeSettings = ({
   const { t } = useTranslation();
 
   return (
-    <Container>
+    <div className="mx-[10px] my-[15px]">
       {onToggleTimestamps && (
-        <Row>
+        <div className="mb-[10px] max-w-[300px]">
           <InputCheckbox
             label={t("queryNodeEditor.excludeTimestamps")}
             tooltip={t("help.excludeTimestamps")}
@@ -38,10 +29,10 @@ const CommonNodeSettings = ({
             value={excludeTimestamps}
             onChange={onToggleTimestamps}
           />
-        </Row>
+        </div>
       )}
       {onToggleSecondaryIdExclude && (
-        <Row>
+        <div className="mb-[10px] max-w-[300px]">
           <InputCheckbox
             label={t("queryNodeEditor.excludeFromSecondaryId")}
             tooltip={t("help.excludeFromSecondaryId")}
@@ -49,9 +40,9 @@ const CommonNodeSettings = ({
             value={excludeFromSecondaryId}
             onChange={onToggleSecondaryIdExclude}
           />
-        </Row>
+        </div>
       )}
-    </Container>
+    </div>
   );
 };
 

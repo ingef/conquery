@@ -1,97 +1,71 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
 import {
   faCaretDown,
   faCaretRight,
   type IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import type { Ref } from "react";
+import { tv } from "tailwind-variants";
 import { Highlighter } from "../common/components/Highlighter";
 
 import FaIcon from "../icon/FaIcon";
 
-// Root with transparent background
-const Root = styled("div")<{ depth: number }>`
-  position: relative; // Needed to fix a drag & drop issue in Safari
-  cursor: pointer;
-  padding: 0 15px 0 15px;
-  margin: 2px 0;
-  padding-left: ${({ depth }) => `${depth * 15}px`};
-  display: flex;
-`;
+// Root with transparent background.
+// relative: needed to fix a drag & drop issue in Safari
+const root = tv({
+  base: ["relative", "flex", "cursor-pointer", "my-[2px]", "pr-[15px]"],
+});
 
-const Text = styled("p")<{
-  red?: boolean;
-  disabled?: boolean;
-  isOpen?: boolean;
-}>`
-  user-select: none;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  margin: 0;
-  padding: 0 10px;
-  line-height: 18px;
-  color: ${({ theme, red, disabled }) =>
-    red ? theme.col.red : disabled ? theme.col.gray : theme.col.black};
-  display: inline-flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
+const text = tv({
+  base: [
+    "inline-flex flex-row flex-nowrap items-center",
+    "select-none",
+    "rounded",
+    "border border-transparent",
+    "px-[10px]",
+    "leading-[18px]",
+    "text-gray-800",
+    "bg-bg-50",
+  ],
+  variants: {
+    // later wins when several are set
+    disabled: {
+      true: "text-gray-500",
+      false: "hover:border-primary-200",
+    },
+    red: { true: "text-red" },
+    isOpen: { true: "bg-gray-50" },
+  },
+});
 
-  border: 1px solid transparent;
-  background-color: ${({ theme, isOpen }) =>
-    isOpen ? theme.col.grayVeryLight : theme.col.bg};
+const caretIconContainer = tv({
+  base: ["inline-block", "w-[14px]", "shrink-0"],
+});
 
-  ${({ theme, disabled }) =>
-    !disabled &&
-    css`
-      &:hover {
-        border-color: ${theme.col.blueGray};
-      }
-    `};
-`;
+const folderIconContainer = tv({
+  base: ["inline-block", "w-5", "shrink-0"],
+});
 
-const noShrink = css`
-  display: inline-block;
-  flex-shrink: 0;
-`;
+const dashIconContainer = tv({
+  base: ["flex items-center", "w-[34px]", "shrink-0", "pl-[14px]", "text-left"],
+});
 
-const DashIconContainer = styled("span")`
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  width: 34px;
-  text-align: left;
-  padding-left: 14px;
-`;
+const descriptionText = tv({
+  base: ["inline-block", "shrink-0", "pl-[3px]"],
+});
 
-const FolderIconContainer = styled("span")`
-  width: 20px;
-  ${noShrink};
-`;
-
-const CaretIconContainer = styled("span")`
-  width: 14px;
-  ${noShrink};
-`;
-
-const Description = styled("span")`
-  padding-left: 3px;
-  ${noShrink};
-`;
-
-const ResultsNumber = styled("span")`
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  padding: 2px 4px;
-  margin-right: 5px;
-  font-size: ${({ theme }) => theme.font.xs};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  color: ${({ theme }) => theme.col.blueGrayDark};
-  font-weight: 700;
-`;
+const resultsNumber = tv({
+  base: [
+    "inline-flex items-center justify-center",
+    "shrink-0",
+    "px-1 py-[2px]",
+    "mr-[5px]",
+    "leading-none",
+    "text-xs",
+    "rounded",
+    "text-primary-500",
+    "font-bold",
+  ],
+});
 
 const ConceptTreeNodeText = ({
   ref,
@@ -127,28 +101,36 @@ const ConceptTreeNodeText = ({
   onClick?: () => void;
 }) => {
   return (
-    <Root ref={ref} className={className} depth={depth}>
-      <Text onClick={onClick} isOpen={isOpen} red={red} disabled={disabled}>
+    <div
+      ref={ref}
+      className={root({ className })}
+      style={{ paddingLeft: depth * 15 }}
+    >
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO make this a button */}
+      <p
+        className={text({ disabled: !!disabled, red, isOpen })}
+        onClick={onClick}
+      >
         {hasChildren && (
           <>
-            <CaretIconContainer>
+            <span className={caretIconContainer()}>
               <FaIcon
                 disabled={disabled}
                 active
                 icon={isOpen ? faCaretDown : faCaretRight}
               />
-            </CaretIconContainer>
-            <FolderIconContainer>
+            </span>
+            <span className={folderIconContainer()}>
               <FaIcon active disabled={disabled} icon={icon} />
-            </FolderIconContainer>
+            </span>
           </>
         )}
         {!hasChildren && (
-          <DashIconContainer>
+          <span className={dashIconContainer()}>
             <FaIcon disabled={disabled} large active icon={icon} />
-          </DashIconContainer>
+          </span>
         )}
-        {resultCount && <ResultsNumber>{resultCount}</ResultsNumber>}
+        {resultCount && <span className={resultsNumber()}>{resultCount}</span>}
         <span>
           {searchWords ? (
             <Highlighter searchWords={searchWords} textToHighlight={label} />
@@ -157,7 +139,7 @@ const ConceptTreeNodeText = ({
           )}
         </span>
         {!!description && (
-          <Description>
+          <span className={descriptionText()}>
             {searchWords ? (
               <Highlighter
                 searchWords={searchWords}
@@ -166,10 +148,10 @@ const ConceptTreeNodeText = ({
             ) : (
               `- ${description}`
             )}
-          </Description>
+          </span>
         )}
-      </Text>
-    </Root>
+      </p>
+    </div>
   );
 };
 

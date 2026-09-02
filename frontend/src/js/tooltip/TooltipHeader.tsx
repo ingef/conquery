@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,13 +22,9 @@ const header = tv({
   ],
 });
 
-const StyledIconButton = styled(IconButton)`
-  position: absolute;
-  top: 40px;
-  height: 39px;
-  right: 0;
-  border-radius: 0;
-`;
+const toggleButton = tv({
+  base: ["absolute top-[40px] right-0", "h-[39px]", "rounded-none"],
+});
 
 export const TooltipHeader = memo(() => {
   const { t } = useTranslation();
@@ -39,7 +34,8 @@ export const TooltipHeader = memo(() => {
 
   return (
     <>
-      <StyledIconButton
+      <IconButton
+        className={toggleButton()}
         bgHover
         onClick={onToggleDisplayTooltip}
         icon={faAngleLeft}

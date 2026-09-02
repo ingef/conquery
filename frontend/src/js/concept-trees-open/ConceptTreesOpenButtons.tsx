@@ -1,8 +1,8 @@
-import styled from "@emotion/styled";
 import { faFolderMinus, faHome } from "@fortawesome/free-solid-svg-icons";
 import { memo, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
@@ -13,15 +13,7 @@ import WithTooltip from "../tooltip/WithTooltip";
 import { closeAllConceptOpen, resetAllConceptOpen } from "./actions";
 import type { ConceptTreesOpenStateT } from "./reducer";
 
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
-  gap: 5px;
-`;
-
-const SxIconButton = styled(IconButton)`
-  padding: 9px 6px;
-`;
+const row = tv({ base: ["flex items-center", "gap-[5px]"] });
 
 const ConceptTreesOpenButtons = ({ className }: { className?: string }) => {
   const dispatch = useDispatch();
@@ -78,19 +70,25 @@ const ConceptTreesOpenButtonsView = memo(
     const { t } = useTranslation();
 
     return (
-      <Row className={className}>
+      <div className={row({ className })}>
         <WithTooltip text={t("conceptTreesOpen.resetAll")}>
-          <SxIconButton frame icon={faHome} onClick={onResetAllConceptOpen} />
+          <IconButton
+            className="px-[6px] py-[9px]"
+            frame
+            icon={faHome}
+            onClick={onResetAllConceptOpen}
+          />
         </WithTooltip>
         <WithTooltip text={t("conceptTreesOpen.closeAll")}>
-          <SxIconButton
+          <IconButton
+            className="px-[6px] py-[9px]"
             disabled={isCloseAllDisabled}
             frame
             icon={faFolderMinus}
             onClick={onCloseAllConceptOpen}
           />
         </WithTooltip>
-      </Row>
+      </div>
     );
   },
 );

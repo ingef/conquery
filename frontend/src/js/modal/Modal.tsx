@@ -1,51 +1,46 @@
-import styled from "@emotion/styled";
 import { type ReactNode, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import { TransparentButton } from "../button/TransparentButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import { Heading3 } from "../headings/Headings";
 import WithTooltip from "../tooltip/WithTooltip";
 
-const Root = styled("div")`
-  position: fixed;
-  z-index: 10;
-  top: 0;
-  left: 0;
-  width: 100%;
-  max-width: 100%;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(255, 255, 255, 0.5);
-  cursor: pointer;
-`;
+const root = tv({
+  base: [
+    "fixed top-0 left-0",
+    "z-10",
+    "w-full max-w-full",
+    "h-screen",
+    "flex items-center justify-center",
+    "bg-white/50",
+    "cursor-pointer",
+  ],
+});
 
-const Content = styled("div")<{ scrollable?: boolean }>`
-  text-align: left;
-  cursor: initial;
-  background-color: white;
-  box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
-  border-radius: ${({ theme }) => theme.borderRadius};
-  padding: 30px;
-  margin: 0 20px;
-  position: relative;
-  max-height: 95%;
-  overflow-y: ${({ scrollable }) => (scrollable ? "auto" : "visible")};
-`;
+const modalContent = tv({
+  base: [
+    "text-left",
+    "cursor-[initial]",
+    "bg-white",
+    "shadow-[0_0_15px_0_rgba(0,0,0,0.2)]",
+    "rounded",
+    "p-[30px]",
+    "mx-5",
+    "relative",
+    "max-h-[95%]",
+  ],
+  variants: {
+    scrollable: {
+      true: "overflow-y-auto",
+      false: "overflow-y-visible",
+    },
+  },
+});
 
-const TopRow = styled("div")`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-`;
-
-const Subtitle = styled(`p`)`
-  margin: -15px 0 20px;
-  max-width: 600px;
-`;
+const subtitle = tv({ base: ["-mt-[15px] mb-5", "max-w-[600px]"] });
 
 const ModalContent = ({
   children,
@@ -61,9 +56,9 @@ const ModalContent = ({
   useClickOutside(ref, onClose);
 
   return (
-    <Content scrollable={scrollable} ref={ref}>
+    <div className={modalContent({ scrollable: !!scrollable })} ref={ref}>
       {children}
-    </Content>
+    </div>
   );
 };
 
@@ -74,7 +69,7 @@ const Modal = ({
   className,
   children,
   headline,
-  subtitle,
+  subtitle: subtitleProp,
   doneButton,
   scrollable,
   dataTestId,
@@ -94,9 +89,9 @@ const Modal = ({
   useHotkeys("esc", onClose);
 
   return (
-    <Root className={className} data-test-id={dataTestId}>
+    <div className={root({ className })} data-test-id={dataTestId}>
       <ModalContent onClose={onClose} scrollable={scrollable}>
-        <TopRow>
+        <div className="flex items-start justify-between">
           <Heading3>{headline}</Heading3>
           {doneButton && (
             <WithTooltip text={t("common.closeEsc")}>
@@ -105,11 +100,11 @@ const Modal = ({
               </TransparentButton>
             </WithTooltip>
           )}
-        </TopRow>
-        {subtitle && <Subtitle>{subtitle}</Subtitle>}
+        </div>
+        {subtitleProp && <p className={subtitle()}>{subtitleProp}</p>}
         {children}
       </ModalContent>
-    </Root>
+    </div>
   );
 };
 

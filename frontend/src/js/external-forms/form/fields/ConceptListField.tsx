@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import { exists } from "../../../common/helpers/exists";
@@ -9,10 +8,6 @@ import FormConceptGroup from "../../form-concept-group/FormConceptGroup";
 import type { FormConceptGroupT } from "../../form-concept-group/formConceptGroupState";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
 import type Field from "../Field";
-
-const SxToggleButton = styled(ToggleButton)`
-  margin-bottom: 5px;
-`;
 
 export const ConceptListField = ({
   field,
@@ -82,7 +77,8 @@ export const ConceptListField = ({
           renderRowPrefix={
             exists(field.rowPrefixField)
               ? ({ value: fieldValue, onChange, row, i }) => (
-                  <SxToggleButton
+                  <ToggleButton
+                    className="mb-[5px]"
                     options={field.rowPrefixField!.options.map((option) => ({
                       label: option.label[locale] || "",
                       value: option.value,

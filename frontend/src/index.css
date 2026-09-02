@@ -38,6 +38,12 @@
   --radius: 3px;
 
   --animate-spin-fast: spin 0.5s linear infinite;
+  --animate-blink: blink 1s linear infinite;
+  @keyframes blink {
+    50% {
+      color: transparent;
+    }
+  }
 }
 
 @layer base {

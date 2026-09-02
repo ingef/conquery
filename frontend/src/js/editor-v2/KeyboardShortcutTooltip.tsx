@@ -1,22 +1,13 @@
-import styled from "@emotion/styled";
 import { Fragment, type ReactElement } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import { KeyboardKey } from "../common/components/KeyboardKey";
 import WithTooltip from "../tooltip/WithTooltip";
 
-const KeyTooltip = styled("div")`
-  padding: 8px 15px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-`;
-
-const Keys = styled("div")`
-  display: flex;
-  align-items: center;
-  gap: 2px;
-`;
+const keyTooltip = tv({
+  base: ["flex items-center", "gap-[5px]", "px-[15px] py-2"],
+});
 
 export const KeyboardShortcutTooltip = ({
   keyname,
@@ -31,17 +22,17 @@ export const KeyboardShortcutTooltip = ({
   return (
     <WithTooltip
       html={
-        <KeyTooltip>
+        <div className={keyTooltip()}>
           {t("common.shortcut")}:{" "}
-          <Keys>
+          <div className="flex items-center gap-[2px]">
             {keynames.map((keyPart, i) => (
               <Fragment key={keyPart}>
                 <KeyboardKey>{keyPart}</KeyboardKey>
                 {i < keynames.length - 1 && "+"}
               </Fragment>
             ))}
-          </Keys>
-        </KeyTooltip>
+          </div>
+        </div>
       }
     >
       {children}

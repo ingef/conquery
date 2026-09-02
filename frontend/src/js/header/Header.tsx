@@ -1,69 +1,51 @@
-import { useTheme } from "@emotion/react";
-import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
+import { useAppTheme } from "../app-theme-context";
 import { HistoryButton } from "../button/HistoryButton";
 import DatasetSelector from "../dataset/DatasetSelector";
 import { canViewEntityPreview, useHideLogoutButton } from "../user/selectors";
 import { HelpMenu } from "./HelpMenu";
 import LogoutButton from "./LogoutButton";
 
-const Root = styled("header")`
-  background-color: ${({ theme }) => theme.col.bg};
-  box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.3);
-  padding: 0 20px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
+// position absolute: fix, so content can expand to 100% and scroll
+const root = tv({
+  base: [
+    "absolute top-0 left-0",
+    "z-3",
+    "flex flex-row items-center justify-between",
+    "w-full",
+    "px-5",
+    "bg-bg-50",
+    "shadow-[0_0_1px_1px_rgba(0,0,0,0.3)]",
+  ],
+});
 
-  // Fix, so content can expand to 100% and scroll
-  position: absolute;
-  z-index: 3;
-  width: 100%;
-  top: 0;
-  left: 0;
-`;
+const right = tv({
+  base: ["flex flex-row items-center", "gap-[5px]"],
+});
 
-const Right = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 5px;
-`;
+const overflowHidden = tv({
+  base: ["flex flex-row items-center", "shrink-0", "overflow-hidden"],
+});
 
-const OverflowHidden = styled("div")`
-  overflow: hidden;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`;
+const logo = tv({
+  base: ["h-[40px]", "bg-no-repeat", "[background-position-y:50%]"],
+});
 
-const Spacer = styled("span")`
-  margin: 0 5px;
-  height: 20px;
-`;
-
-const Logo = styled("div")`
-  height: 40px;
-  width: ${({ theme }) => theme.img.logoWidth};
-  background-repeat: no-repeat;
-  background-position-y: 50%;
-  background-size: ${({ theme }) => theme.img.logoBackgroundSize};
-`;
-
-const Headline = styled("h1")`
-  margin: 0 auto 0 0;
-  line-height: 2;
-  font-size: ${({ theme }) => theme.font.md};
-  font-weight: 700;
-  font-size: 12px;
-  opacity: 0.3;
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.col.blueGrayDark};
-`;
+// the second font-size of the old styles won, hence text-xs and not text-base
+const headline = tv({
+  base: [
+    "mr-auto",
+    "text-xs",
+    "leading-[2]",
+    "font-bold",
+    "uppercase",
+    "opacity-30",
+    "text-primary-500",
+  ],
+});
 
 const Header = () => {
   const { t } = useTranslation();
@@ -74,29 +56,31 @@ const Header = () => {
     StateT["startup"]["config"]
   >((state) => state.startup.config);
 
-  const theme = useTheme();
-  const logo = theme.img.logo;
+  const { img } = useAppTheme();
 
   return (
-    <Root>
-      <OverflowHidden>
-        <Logo
+    <header className={root()}>
+      <div className={overflowHidden()}>
+        <div
+          className={logo()}
           style={{
-            backgroundImage: `url(${logo})`,
+            width: img.logoWidth,
+            backgroundImage: `url(${img.logo})`,
+            backgroundSize: img.logoBackgroundSize,
           }}
         />
-        <Spacer />
-        <Headline>{t("headline")}</Headline>
-      </OverflowHidden>
-      <Right>
+        <span className="mx-[5px] h-5" />
+        <h1 className={headline()}>{t("headline")}</h1>
+      </div>
+      <div className={right()}>
         <DatasetSelector />
         {canViewHistory && <HistoryButton />}
         {(manualUrl || contactEmail) && (
           <HelpMenu manualUrl={manualUrl} contactEmail={contactEmail} />
         )}
         {!hideLogoutButton && <LogoutButton />}
-      </Right>
-    </Root>
+      </div>
+    </header>
   );
 };
 

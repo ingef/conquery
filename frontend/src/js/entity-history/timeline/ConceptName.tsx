@@ -1,20 +1,15 @@
-import styled from "@emotion/styled";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
+import { tv } from "tailwind-variants";
 import type { ConceptIdT, ConceptT } from "../../api/types";
 import { Highlighter } from "../../common/components/Highlighter";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
 import FaIcon from "../../icon/FaIcon";
 import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 
-const Root = styled("div")`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-const Named = styled("span")`
-  font-weight: 400;
-`;
+const conceptRoot = tv({
+  base: ["flex items-center", "gap-[10px]"],
+});
 
 interface Props {
   className?: string;
@@ -39,7 +34,7 @@ const ConceptLabel = ({
     : conceptId;
 
   return (
-    <Named>
+    <span className="font-normal">
       {searchTerm && searchTerm.length > 0 ? (
         <Highlighter
           searchWords={searchTerm.split(" ")}
@@ -48,7 +43,7 @@ const ConceptLabel = ({
       ) : (
         label
       )}
-    </Named>
+    </span>
   );
 };
 
@@ -96,7 +91,7 @@ const ConceptName = ({ className, title, rootConceptId, conceptId }: Props) => {
   const rootConcept = getConceptById(rootConceptId, rootConceptId);
 
   return (
-    <Root title={title} className={className}>
+    <div title={title} className={conceptRoot({ className })}>
       <FaIcon icon={faFolder} active />
       <span>
         {rootConcept && (
@@ -108,7 +103,7 @@ const ConceptName = ({ className, title, rootConceptId, conceptId }: Props) => {
           searchTerm={searchTerm}
         />
       </span>
-    </Root>
+    </div>
   );
 };
 

@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faEuroSign,
   faFingerprint,
@@ -6,6 +5,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { type InputAttributes, NumericFormat } from "react-number-format";
+import { tv } from "tailwind-variants";
 import type {
   ColumnDescription,
   ConceptIdT,
@@ -25,73 +25,64 @@ import { TinyLabel } from "./TinyLabel";
 import type { ColumnBuckets } from "./util/useColumnInformation";
 import { isDateColumn, isSourceColumn } from "./util/util";
 
-const Card = styled("div")`
-  display: grid;
-  grid-template-columns: auto 45px 1fr;
-  gap: 3px;
-  font-size: ${({ theme }) => theme.font.xs};
-  padding: 5px 0;
-  position: relative;
-`;
+const card = tv({
+  base: [
+    "relative",
+    "grid grid-cols-[auto_45px_1fr]",
+    "gap-[3px]",
+    "py-[5px]",
+    "text-xs",
+  ],
+});
 
-const EventItemContent = styled("div")`
-  border-radius: ${({ theme }) => theme.borderRadius};
-  box-shadow: 0 0 1px 1px ${({ theme }) => theme.col.grayLight};
-  margin-top: 5px;
-  background-color: white;
-  overflow: hidden;
-  > div {
-    &:first-of-type {
-      padding-top: 14px;
-    }
-  }
-`;
+const eventItemContent = tv({
+  base: [
+    "mt-[5px]",
+    "rounded",
+    "shadow-[0_0_1px_1px_var(--color-gray-100)]",
+    "bg-white",
+    "overflow-hidden",
+    "[&>div:first-of-type]:pt-[14px]",
+  ],
+});
 
-const ColBucket = styled("div")`
-  color: black;
-  padding: 1px 4px;
-  display: grid;
-  width: 100%;
-  grid-template-columns: 1fr 1fr 1fr;
-  @media (min-width: 1800px) {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-  }
-  @media (min-width: 2500px) {
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-  }
-  gap: 3px 10px;
-`;
+const colBucket = tv({
+  base: [
+    "grid grid-cols-3 min-[1800px]:grid-cols-4 min-[2500px]:grid-cols-5",
+    "gap-x-[10px] gap-y-[3px]",
+    "w-full",
+    "px-1 py-px",
+    "text-black",
+  ],
+});
 
-const Flex = styled("div")`
-  display: flex;
-  align-items: flex-start;
-  gap: 5px;
-  padding: 12px 15px 10px 6px;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
+const flex = tv({
+  base: [
+    "flex items-start",
+    "gap-[5px]",
+    "pt-3 pr-[15px] pb-[10px] pl-[6px]",
+    "text-sm",
+  ],
+});
 
-const SxRawDataBadge = styled(RawDataBadge)`
-  position: absolute;
-  z-index: 1;
-  top: 4px;
-  left: 55px;
-`;
+const rawDataBadge = tv({
+  base: ["absolute top-[4px] left-[55px]", "z-1"],
+});
 
-const SxFaIcon = styled(FaIcon)`
-  width: 24px !important;
-  text-align: center;
-  margin: 8px 5px;
-  font-size: ${({ theme }) => theme.font.md};
-`;
+const bucketIcon = tv({
+  // w-6! beats FaIcon's own w-[initial]! via merge, like the old !important did
+  base: ["w-6!", "text-center", "mx-[5px] my-2", "text-base"],
+});
 
-const Bullet = styled("div")`
-  width: 10px;
-  height: 10px;
-  margin: 2px 0;
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
-  border-radius: 50%;
-  flex-shrink: 0;
-`;
+const bullet = tv({
+  base: [
+    "h-[10px] w-[10px]",
+    "my-[2px]",
+    "bg-primary-500",
+    "rounded-full",
+    "shrink-0",
+  ],
+});
 
 const EventCard = ({
   row,
@@ -138,19 +129,28 @@ const EventCard = ({
   const restTooltip = t("history.content.rest");
 
   return (
-    <Card>
-      <Bullet />
+    <div className={card()}>
+      <div className={bullet()} />
       <RowDates dates={row[dateColumn.label] as DateRow} />
-      <SxRawDataBadge event={row} sourceColumn={sourceColumn} />
-      <EventItemContent>
+      <RawDataBadge
+        className={rawDataBadge()}
+        event={row}
+        sourceColumn={sourceColumn}
+      />
+      <div className={eventItemContent()}>
         {contentFilter.money && applicableMoney.length > 0 && (
-          <Flex>
+          <div className={flex()}>
             <WithTooltip text={moneyTooltip}>
               <span>
-                <SxFaIcon icon={faEuroSign} active large />
+                <FaIcon
+                  className={bucketIcon()}
+                  icon={faEuroSign}
+                  active
+                  large
+                />
               </span>
             </WithTooltip>
-            <ColBucket>
+            <div className={colBucket()}>
               {applicableMoney.map((column) => (
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
@@ -166,8 +166,8 @@ const EventCard = ({
                   </code>
                 </div>
               ))}
-            </ColBucket>
-          </Flex>
+            </div>
+          </div>
         )}
         {groupedRowsKeysWithDifferentValues && groupedRows && (
           <GroupedContent
@@ -182,13 +182,13 @@ const EventCard = ({
           />
         )}
         {contentFilter.rest && applicableRest.length > 0 && (
-          <Flex>
+          <div className={flex()}>
             <WithTooltip text={restTooltip}>
               <span>
-                <SxFaIcon icon={faInfo} active large />
+                <FaIcon className={bucketIcon()} icon={faInfo} active large />
               </span>
             </WithTooltip>
-            <ColBucket>
+            <div className={colBucket()}>
               {applicableRest.map((column) => (
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
@@ -204,17 +204,22 @@ const EventCard = ({
                   </span>
                 </div>
               ))}
-            </ColBucket>
-          </Flex>
+            </div>
+          </div>
         )}
         {contentFilter.groupId && applicableGroupableIds.length > 0 && (
-          <Flex>
+          <div className={flex()}>
             <WithTooltip text={groupableIdsTooltip}>
               <span>
-                <SxFaIcon icon={faFingerprint} active large />
+                <FaIcon
+                  className={bucketIcon()}
+                  icon={faFingerprint}
+                  active
+                  large
+                />
               </span>
             </WithTooltip>
-            <ColBucket>
+            <div className={colBucket()}>
               {applicableGroupableIds.map((column) => (
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
@@ -230,11 +235,11 @@ const EventCard = ({
                   </span>
                 </div>
               ))}
-            </ColBucket>
-          </Flex>
+            </div>
+          </div>
         )}
-      </EventItemContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
