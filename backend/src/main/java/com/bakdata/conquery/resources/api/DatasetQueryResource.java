@@ -1,23 +1,16 @@
 package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
@@ -35,9 +28,12 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.util.validation.ValidUUID4;
 import io.dropwizard.auth.Auth;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 @Path("datasets/{" + DATASET + "}/queries")
 @Data
@@ -75,7 +71,6 @@ public class DatasetQueryResource {
 	}
 
 
-
 	@POST
 	@Path("/upload")
 	public ExternalUploadResult upload(@Auth Subject subject, @Valid ExternalUpload upload) {
@@ -94,20 +89,43 @@ public class DatasetQueryResource {
 		return processor.getAllQueries(dataset, servletRequest, subject, allProviders.orElse(false));
 	}
 
+	/***
+	 * Create and run the submitted query
+	 */
 	@POST
-	public Response postQuery(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders, @NotNull @Valid QueryDescription query) {
-
+	public Response postQuery(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders, @QueryParam("queryId") Optional<@ValidUUID4 UUID> queryId, @NotNull @Valid QueryDescription query) {
 		subject.authorize(dataset, Ability.READ);
 
-		final ManagedExecution execution = processor.postQuery(dataset, query, subject, false);
+		final ManagedExecution execution = processor.createExecution(dataset, query, subject, false, queryId);
+		processor.runExecution(execution);
 
 		return Response.ok(processor.getQueryFullStatus(execution.getId(),
-														subject,
-														RequestAwareUriBuilder.fromRequest(servletRequest),
-														allProviders.orElse(false),
-														false
-					   ))
-					   .status(Response.Status.CREATED)
-					   .build();
+						subject,
+						RequestAwareUriBuilder.fromRequest(servletRequest),
+						allProviders.orElse(false),
+						false
+				))
+				.status(Response.Status.CREATED)
+				.build();
 	}
+
+	/**
+	 * Only create the query.
+	 */
+	@PUT
+	public Response putQuery(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders, @QueryParam("queryId") Optional<@ValidUUID4 UUID> queryId, @NotNull @Valid QueryDescription query) {
+		subject.authorize(dataset, Ability.READ);
+
+		final ManagedExecution execution = processor.createExecution(dataset, query, subject, false, queryId);
+
+		return Response.ok(processor.getQueryFullStatus(execution.getId(),
+						subject,
+						RequestAwareUriBuilder.fromRequest(servletRequest),
+						allProviders.orElse(false),
+						false
+				))
+				.status(Response.Status.CREATED)
+				.build();
+	}
+
 }

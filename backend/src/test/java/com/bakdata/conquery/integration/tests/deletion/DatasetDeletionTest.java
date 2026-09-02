@@ -94,7 +94,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			log.info("Executing query before deletion");
 
-			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 
 		// Delete Dataset.
@@ -143,7 +143,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 
 					// Try to execute the query after deletion
-					IntegrationUtils.assertQueryResult(conquery, query, 0, ExecutionState.FAILED, conquery.getTestUser(), 404);
+					IntegrationUtils.assertQueryResult(conquery, query, null, 0, ExecutionState.FAILED, conquery.getTestUser(), 404);
 				}
 			}
 
@@ -184,7 +184,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 				final Query query2 = IntegrationUtils.parseQuery(conqueryReimport, test.getRawQuery());
 
 				// Issue a query and assert that it has the same content as the first time around.
-				IntegrationUtils.assertQueryResult(conqueryReimport, query2, 2L, ExecutionState.DONE, conqueryReimport.getTestUser(), 201);
+				IntegrationUtils.assertQueryResult(conqueryReimport, query2, null, 2L, ExecutionState.DONE, conqueryReimport.getTestUser(), 201);
 			}
 
 
@@ -220,7 +220,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 				final Query query3 = IntegrationUtils.parseQuery(conqueryRestart, test.getRawQuery());
 
 				// Issue a query and assert that it has the same content as the first time around.
-				IntegrationUtils.assertQueryResult(conqueryRestart, query3, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+				IntegrationUtils.assertQueryResult(conqueryRestart, query3, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 			}
 		}
 	}
