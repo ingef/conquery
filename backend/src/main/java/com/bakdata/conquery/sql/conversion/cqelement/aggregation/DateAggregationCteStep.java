@@ -7,7 +7,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

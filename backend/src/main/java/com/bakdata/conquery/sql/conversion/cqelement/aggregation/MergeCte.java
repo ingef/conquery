@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import lombok.Getter;
 
 @Getter

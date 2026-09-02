@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
@@ -151,6 +153,7 @@ public class FormConversionHelper {
 		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.LEFT_JOIN, context);
 		QueryStep finalStep = QueryStep.builder()
 				.cteName(null)  // the final QueryStep won't be converted to a CTE
+				.projectionMode(ProjectionMode.AGGREGATED)
 				.selects(getFinalSelects(formType, stratificationTable, convertedFeatures))
 				.fromTable(joinedTable)
 				.predecessors(queriesToJoin)

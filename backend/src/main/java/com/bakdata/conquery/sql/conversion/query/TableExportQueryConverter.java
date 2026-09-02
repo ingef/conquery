@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
@@ -102,7 +104,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 				.selects(selects)
 				.fromTable(joinedTable)
 				.conditions(filters)
-				.forTableExport(true)
+				.projectionMode(ProjectionMode.INDIVIDUAL)
 				.build();
 	}
 

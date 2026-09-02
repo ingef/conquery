@@ -1,8 +1,9 @@
 package com.bakdata.conquery.sql.conversion.model;
 
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.rendering.SelectProjectionRenderer;
-import com.bakdata.conquery.sql.compiler.rendering.SelectProjectionRenderer.ValidityDateRendering;
 import lombok.RequiredArgsConstructor;
 import org.jooq.*;
 import org.jooq.Record;
@@ -24,10 +25,11 @@ public class QueryStepTransformer {
 	 */
 	public Select<Record> toSelectQuery(QueryStep queryStep, CompilerDialect dialect) {
 
-		ValidityDateRendering validityDateRendering = queryStep.isForTableExport()
-				? ValidityDateRendering.INDIVIDUAL
-				: ValidityDateRendering.AGGREGATED;
-		List<Field<?>> finalRepresentation = SelectProjectionRenderer.render(queryStep.getSelects(), dialect, validityDateRendering);
+		List<Field<?>> finalRepresentation = SelectProjectionRenderer.renderFinal(
+				queryStep.getSelects(),
+				dialect,
+				queryStep.getProjectionMode()
+		);
 
 		SelectConditionStep<Record> queryBase = this.dslContext.with(constructPredecessorCteList(queryStep, dialect))
 				.select(finalRepresentation)
@@ -74,9 +76,9 @@ public class QueryStepTransformer {
 
 		SelectSelectStep<Record> selectClause;
 
-		List<Field<?>> allSelects = queryStep.isForTableExport()
-				? SelectProjectionRenderer.render(queryStep.getSelects(), dialect, ValidityDateRendering.INDIVIDUAL)
-				: queryStep.getSelects().all();
+		List<Field<?>> allSelects = queryStep.getProjectionMode() == ProjectionMode.INTERMEDIATE
+				? queryStep.getSelects().all()
+				: SelectProjectionRenderer.renderFinal(queryStep.getSelects(), dialect, queryStep.getProjectionMode());
 
 		if (queryStep.isSelectDistinct()) {
 			selectClause = dslContext.selectDistinct(allSelects);
@@ -100,8 +102,8 @@ public class QueryStepTransformer {
 	private Select<Record> union(QueryStep queryStep, Select<Record> base, CompilerDialect dialect) {
 		for (QueryStep unionStep : queryStep.getUnion()) {
 			Select<Record> selectStep =
-					queryStep.isForTableExport() ?
-							// TODO this feels like a leaked abstraction, but i am not able to find the proper injection layer at the moment.
+					queryStep.getProjectionMode() != ProjectionMode.INTERMEDIATE ?
+							// Final projections must use the same physical representation in every union branch.
 							toSelectQuery(unionStep, dialect) :
 							toSelectStep(unionStep, dialect);
 

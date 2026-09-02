@@ -1,6 +1,5 @@
-package com.bakdata.conquery.sql.conversion.model;
+package com.bakdata.conquery.sql.compiler.ir;
 
-import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.Builder;
 import lombok.Singular;
@@ -14,9 +13,7 @@ import org.jooq.impl.DSL;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Intermediate representation of an SQL query.
- */
+/** Intermediate representation of one SQL query step. */
 @Value
 @Builder(toBuilder = true)
 public class QueryStep {
@@ -28,37 +25,30 @@ public class QueryStep {
 	@Builder.Default
 	List<Condition> conditions = Collections.emptyList();
 	/**
-	 * All {@link Field}s that should be part of the SQL GROUPY BY clause.
+	 * All {@link Field}s that should be part of the SQL GROUP BY clause.
 	 */
 	@Builder.Default
 	List<Field<?>> groupBy = Collections.emptyList();
 	/**
-	 * All {@link QueryStep}s that should be connected via a SQL UNION operator
+	 * All {@link QueryStep}s that should be connected via a SQL UNION operator.
 	 */
 	@Builder.Default
 	List<QueryStep> union = Collections.emptyList();
 	/**
-	 * Determines if this steps union steps should be unioned using a UNION ALL. Default is true.
+	 * Determines whether this step's union steps should be unioned using UNION ALL. Defaults to {@code true}.
 	 */
 	@Builder.Default
 	boolean unionAll = true;
 
 	@Builder.Default
-	boolean forTableExport = false;
+	ProjectionMode projectionMode = ProjectionMode.INTERMEDIATE;
 
-
-	/**
-	 * If the query should be negated or not.
-	 */
+	/** Whether the query should be negated. */
 	@Builder.Default
 	boolean negate = false;
-	/**
-	 * Determines if the select should be distinct.
-	 */
+	/** Whether the SELECT should be distinct. */
 	boolean selectDistinct;
-	/**
-	 * All {@link QueryStep}'s that shall be converted before this {@link QueryStep}.
-	 */
+	/** All {@link QueryStep}s that must be converted before this step. */
 	@Singular
 	List<QueryStep> predecessors;
 
@@ -91,7 +81,7 @@ public class QueryStep {
 	}
 
 	/**
-	 * @return All selects re-mapped to a qualifier, which is the cteName of this QueryStep.
+	 * @return all selects qualified by this step's CTE name
 	 */
 	public Selects getQualifiedSelects() {
 		return this.selects.qualify(this.cteName);
@@ -104,5 +94,4 @@ public class QueryStep {
 	public boolean isUnion() {
 		return !this.union.isEmpty();
 	}
-
 }

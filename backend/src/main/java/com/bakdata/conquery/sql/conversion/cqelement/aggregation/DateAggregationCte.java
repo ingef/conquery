@@ -2,7 +2,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
 import java.util.List;
 
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 
 /**
