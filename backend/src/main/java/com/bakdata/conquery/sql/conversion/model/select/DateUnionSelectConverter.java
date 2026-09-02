@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DateUnionSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 
 public class DateUnionSelectConverter implements SelectConverter<DateUnionSelect> {

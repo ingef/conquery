@@ -20,8 +20,8 @@ import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import org.jooq.Condition;
@@ -111,7 +111,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 							   selectContext.getNameGenerator().selectName(countQuartersSelect),
 							   selectContext.getTables(),
 							   selectContext.getFunctionProvider(),
-							   selectContext.getDialectBundle().getStratificationFunctions()
+							   selectContext.getCompilerDialect().getStratificationFunctions()
 				);
 
 		String finalPredecessor = selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
@@ -134,7 +134,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 							   filterContext.getNameGenerator().selectName(countQuartersFilter),
 							   filterContext.getTables(),
 							   filterContext.getFunctionProvider(),
-							   filterContext.getDialectBundle().getStratificationFunctions()
+							   filterContext.getCompilerDialect().getStratificationFunctions()
 				);
 
 		ConnectorSqlSelects selects = ConnectorSqlSelects.builder()

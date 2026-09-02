@@ -7,12 +7,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
 import org.jooq.impl.DSL;

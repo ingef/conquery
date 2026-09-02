@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -7,13 +8,15 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.FormCteStep;
 import com.bakdata.conquery.sql.conversion.model.*;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Preconditions;
 import lombok.RequiredArgsConstructor;
@@ -206,9 +209,9 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 				convertedTables,
 				null, // no CTE name required as this step will be the final select
 				List.of(convertedPrerequisite),
-				context.isNegation(), context.getFunctionProvider()
+				context.isNegation()
 		);
-		final Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables, context.getFunctionProvider());
+		final Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables, context.getCompilerDialect());
 
 		return context.withFinalQuery(new SqlQuery(selectQuery, tableExportQuery.getResultInfos()));
 	}

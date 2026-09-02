@@ -1,0 +1,195 @@
+package com.bakdata.conquery.quarkus.api;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class DatasetsResourceTest {
+
+	@Test
+	void datasetsEndpointRespondsWithConfiguredDatasets() {
+		given()
+				.when().get("/api/datasets")
+				.then()
+				.statusCode(200)
+				.body("size()", greaterThanOrEqualTo(1))
+				.body("[0].id", equalTo("imdb"))
+				.body("[0].label", equalTo("IMDb"));
+	}
+
+	@Test
+	void entityPreviewEndpointRespondsWithConfiguredDefaults() {
+		given()
+				.when().get("/api/datasets/imdb/entity-preview")
+				.then()
+				.statusCode(200)
+				.body("all[0].name", equalTo("all:entities"))
+				.body("all[0].label", equalTo("Entities"))
+				.body("default[0].name", equalTo("default:entities"))
+				.body("default[0].label", equalTo("Entities"))
+				.body("searchConcept", nullValue())
+				.body("searchFilters.size()", equalTo(0));
+	}
+
+	@Test
+	void entityPreviewEndpointReturns404ForUnknownDataset() {
+		given()
+				.when().get("/api/datasets/unknown/entity-preview")
+				.then()
+				.statusCode(404);
+	}
+
+	@Test
+	void conceptsEndpointRespondsWithFrontendCompatibleShape() {
+		given()
+				.when().get("/api/datasets/imdb/concepts")
+				.then()
+				.statusCode(200)
+				.body("secondaryIds.size()", equalTo(0))
+				.body("concepts.imdb.label", equalTo("IMDb"))
+				.body("concepts.imdb.active", equalTo(true))
+				.body("concepts.imdb.parent", equalTo("imdb.catalog.Movies"))
+				.body("concepts.imdb.detailsAvailable", equalTo(true))
+				.body("concepts.imdb.codeListResolvable", equalTo(true))
+				.body("concepts.imdb.additionalInfos[0].key", equalTo("Source"))
+				.body("concepts.imdb.excludeFromTimeAggregation", equalTo(false))
+				.body("concepts.imdb.children", equalTo(java.util.List.of("imdb.movie")))
+				.body("concepts.imdb.tables[0].default", equalTo(true))
+				.body("concepts.imdb.tables[0].connectorId", equalTo("imdb.titles"))
+				.body("concepts.imdb.tables[0].dateColumn.defaultValue", equalTo("imdb.titles.Release_date"))
+				.body("concepts.imdb.tables[0].filters[0].id", equalTo("imdb.titles.release_age"))
+				.body("concepts.imdb.tables[0].selects[0].id", equalTo("imdb.titles.Title"))
+				.body("concepts.imdb.tables[0].selects[0].default", equalTo(true))
+				.body("concepts.imdb.tables[0].selects[0].resultType.type", equalTo("STRING"))
+				.body("concepts.imdb.selects[0].id", equalTo("imdb.exists"))
+				.body("concepts.imdb.selects[0].default", equalTo(true))
+				.body("concepts.imdb.selects[0].resultType.type", equalTo("BOOLEAN"))
+				.body("concepts.'imdb.catalog'.label", equalTo("Catalog"))
+				.body("concepts.'imdb.catalog'.active", equalTo(false))
+				.body("concepts.'imdb.catalog'.detailsAvailable", equalTo(false))
+				.body("concepts.'imdb.catalog'.children", equalTo(java.util.List.of("imdb.catalog.Movies")))
+				.body("concepts.'imdb.catalog.Movies'.parent", equalTo("imdb.catalog"))
+				.body("concepts.'imdb.catalog.Movies'.children", equalTo(java.util.List.of("imdb")))
+				.body("concepts.'imdb.empty'", nullValue());
+	}
+
+	@Test
+	void conceptsEndpointPreservesStructureNodeJsonOrder() {
+		Map<String, Object> concepts = given()
+				.when().get("/api/datasets/imdb/concepts")
+				.then()
+				.statusCode(200)
+				.extract().path("concepts");
+
+		org.hamcrest.MatcherAssert.assertThat(
+				new ArrayList<>(concepts.keySet()),
+				equalTo(List.of("imdb", "imdb.catalog", "imdb.catalog.Movies"))
+		);
+	}
+
+	@Test
+	void conceptsEndpointReturns404ForUnknownDataset() {
+		given()
+				.when().get("/api/datasets/unknown/concepts")
+				.then()
+				.statusCode(404);
+	}
+
+	@Test
+	void formQueriesEndpointReturnsForms() {
+		given()
+				.when().get("/api/datasets/imdb/form-queries")
+				.then()
+				.statusCode(200)
+				.body("size()", greaterThanOrEqualTo(1))
+				.body("[0].type", equalTo("EXPORT_FORM"))
+				.body("[0].fields.size()", greaterThanOrEqualTo(1));
+	}
+
+	@Test
+	void formQueriesEndpointReturns404ForUnknownDataset() {
+		given()
+				.when().get("/api/datasets/unknown/form-queries")
+				.then()
+				.statusCode(404);
+	}
+
+	@Test
+	void queriesEndpointReturnsEmptyList() {
+		given()
+				.when().get("/api/datasets/imdb/queries")
+				.then()
+				.statusCode(200)
+				.body("size()", equalTo(0));
+	}
+
+	@Test
+	void queriesEndpointReturns404ForUnknownDataset() {
+		given()
+				.when().get("/api/datasets/unknown/queries")
+				.then()
+				.statusCode(404);
+	}
+
+	@Test
+	void postQueriesEndpointReturnsCreatedQueryId() {
+		given()
+				.contentType("application/json")
+				.body("{\"type\":\"CONCEPT_QUERY\"}")
+				.when().post("/api/datasets/imdb/queries")
+				.then()
+				.statusCode(200)
+				.body("id", notNullValue());
+	}
+
+	@Test
+	void postQueriesEndpointReturns404ForUnknownDataset() {
+		given()
+				.contentType("application/json")
+				.body("{\"type\":\"CONCEPT_QUERY\"}")
+				.when().post("/api/datasets/unknown/queries")
+				.then()
+				.statusCode(404);
+	}
+
+	@Test
+	void resolveEntitiesEndpointIsMarkedAsNotImplemented() {
+		given()
+				.contentType("application/json")
+				.body("""
+						[{
+						  "filter":"imdb.titles.release_age",
+						  "type":"MULTI_SELECT",
+						  "value":["one","two"]
+						}]
+						""")
+				.when().post("/api/datasets/imdb/queries/resolve-entities")
+				.then().statusCode(501);
+	}
+
+	@Test
+	void entityHistoryEndpointIsMarkedAsNotImplemented() {
+		given()
+				.contentType("application/json")
+				.body("""
+						{
+						  "idKind":"ID",
+						  "entityId":"one",
+						  "time":{"min":"2020-01-01","max":"2020-12-31"},
+						  "sources":["imdb.titles"]
+						}
+						""")
+				.when().post("/api/datasets/imdb/queries/entity")
+				.then().statusCode(501);
+	}
+}

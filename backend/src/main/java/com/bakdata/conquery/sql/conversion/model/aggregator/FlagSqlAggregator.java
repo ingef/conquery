@@ -22,11 +22,11 @@ import com.bakdata.conquery.sql.conversion.model.filter.FlagCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
 import org.jooq.Condition;
 import org.jooq.Field;
 
@@ -137,7 +137,7 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 	@Override
 	public ConnectorSqlSelects connectorSelect(FlagSelect flagSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
-		SqlFunctionProvider functionProvider = selectContext.getConversionContext().getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = selectContext.getConversionContext().getCompilerDialect().getFunctionProvider();
 		SqlTables connectorTables = selectContext.getTables();
 
 		Map<String, SingleColumnSqlSelect> rootSelects = createFlagRootSelectMap(flagSelect, connectorTables.getRootTable());

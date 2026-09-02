@@ -1,18 +1,21 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.FormCteStep;
 import com.bakdata.conquery.sql.conversion.forms.FormType;
 import com.bakdata.conquery.sql.conversion.model.*;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.google.common.base.Preconditions;
 import lombok.RequiredArgsConstructor;
 import org.jooq.*;
@@ -42,7 +45,7 @@ public class FormConversionHelper {
 		Selects preFinalSelects = convertedFeatures.getQualifiedSelects();
 		Selects stratificationSelects = stratificationTable.getQualifiedSelects();
 
-		SqlIdColumns ids = stratificationSelects.getIds().forFinalSelect();
+		SqlIdColumns ids = stratificationSelects.getIds().forFinalSelect(Resolution.COMPLETE.name());
 
 		Selects.SelectsBuilder selects = Selects.builder()
 				.ids(ids)
@@ -146,8 +149,6 @@ public class FormConversionHelper {
 
 		List<QueryStep> queriesToJoin = List.of(stratificationTable, convertedFeatures);
 		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.LEFT_JOIN, context);
-		SqlFunctionProvider functionProvider = context.getFunctionProvider();
-
 		QueryStep finalStep = QueryStep.builder()
 				.cteName(null)  // the final QueryStep won't be converted to a CTE
 				.selects(getFinalSelects(formType, stratificationTable, convertedFeatures))
@@ -155,7 +156,7 @@ public class FormConversionHelper {
 				.predecessors(queriesToJoin)
 				.build();
 
-		Select<Record> selectQuery = queryStepTransformer.toSelectQuery(finalStep, functionProvider);
+		Select<Record> selectQuery = queryStepTransformer.toSelectQuery(finalStep, context.getCompilerDialect());
 		return context.withFinalQuery(new SqlQuery(selectQuery, resultInfos));
 	}
 

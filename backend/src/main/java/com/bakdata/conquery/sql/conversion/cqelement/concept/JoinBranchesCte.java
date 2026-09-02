@@ -6,14 +6,14 @@ import java.util.Optional;
 
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.ConqueryJoinType;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
-import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import org.jooq.Record;
 import org.jooq.TableLike;
 
@@ -63,7 +63,7 @@ class JoinBranchesCte extends ConnectorCte {
 		}
 		else {
 			IntervalPackingContext intervalPackingContext = createIntervalPackingContext(tableContext);
-			IntervalPacker intervalPacker = tableContext.getConversionContext().getDialectBundle().getIntervalPacker();
+			IntervalPacker intervalPacker = tableContext.getConversionContext().getCompilerDialect().getIntervalPacker();
 			QueryStep lastIntervalPackingStep = intervalPacker.aggregateAsValidityDate(intervalPackingContext);
 			queriesToJoin.add(lastIntervalPackingStep);
 			validityDate = lastIntervalPackingStep.getQualifiedSelects().getValidityDate();

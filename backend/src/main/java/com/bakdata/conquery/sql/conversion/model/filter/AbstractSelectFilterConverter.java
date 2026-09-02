@@ -5,7 +5,7 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilt
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;

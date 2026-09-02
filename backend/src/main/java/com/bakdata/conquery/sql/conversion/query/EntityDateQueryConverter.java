@@ -5,15 +5,15 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.FormCteStep;
 import com.bakdata.conquery.sql.conversion.forms.FormType;
 import com.bakdata.conquery.sql.conversion.forms.StratificationTableFactory;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.google.common.base.Preconditions;
 import lombok.RequiredArgsConstructor;
 

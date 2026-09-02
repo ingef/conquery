@@ -13,7 +13,7 @@ import com.bakdata.conquery.sql.conversion.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.Offset;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;

@@ -4,11 +4,9 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
-import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.NonNull;
 import org.jooq.DSLContext;
 
@@ -18,31 +16,34 @@ import java.util.Locale;
 /**
  * Entry point for converting {@link QueryDescription} to an SQL query.
  */
-public class NodeConversions extends Conversions<Visitable, ConversionContext, ConversionContext> {
+public class NodeConversions implements NodeConversionDispatcher {
 
+	private final Conversions<Object, ConversionContext, ConversionContext> conversions;
 	private final IdColumnConfig idColumns;
-	private final DialectBundle dialect;
+	private final LegacyCompilerDialect dialect;
 	private final NameGenerator nameGenerator;
-	private final SqlExecutionService executionService;
 	private final Clock clock;
 	@NonNull
 	private final String defaultPrimaryColumn;
 
 	public NodeConversions(
 			IdColumnConfig idColumns,
-			DialectBundle dialectBundle,
+			LegacyCompilerDialect compilerDialect,
 			DSLContext dslContext,
-			SqlExecutionService executionService,
 			Clock clock,
 			String defaultPrimaryColumn
 	) {
-		super(dialectBundle.getNodeConverters(dslContext));
+		this.conversions = new Conversions<>(compilerDialect.getNodeConverters(dslContext));
 		this.idColumns = idColumns;
-		this.dialect = dialectBundle;
-		this.nameGenerator = new NameGenerator(dialectBundle.getNameMaxLength());
-		this.executionService = executionService;
+		this.dialect = compilerDialect;
+		this.nameGenerator = new NameGenerator(compilerDialect.getNameMaxLength());
 		this.clock = clock;
 		this.defaultPrimaryColumn = defaultPrimaryColumn;
+	}
+
+	@Override
+	public ConversionContext convert(Object node, ConversionContext context) {
+		return conversions.convert(node, context);
 	}
 
 	public ConversionContext convert(QueryDescription queryDescription, ConqueryConfig conqueryConfig) {
@@ -54,8 +55,7 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 				.clock(clock)
 				.defaultPrimaryColumn(this.defaultPrimaryColumn)
 				.stratificationFunctions(dialect.getStratificationFunctions())
-				.dialectBundle(dialect)
-				.executionService(executionService)
+				.compilerDialect(dialect)
 				.build();
 		return convert(queryDescription, initialCtx);
 	}

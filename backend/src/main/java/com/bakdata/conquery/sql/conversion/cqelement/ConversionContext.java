@@ -11,14 +11,12 @@ import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.sql.conversion.Context;
-import com.bakdata.conquery.sql.conversion.NodeConversions;
-import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.NodeConversionDispatcher;
+import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
-import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -38,10 +36,9 @@ public class ConversionContext implements Context {
 	StratificationFunctions stratificationFunctions;
 	String defaultPrimaryColumn;
 	PrintSettings sqlPrintSettings;
-	NodeConversions nodeConversions;
-	DialectBundle dialectBundle;
+	NodeConversionDispatcher nodeConversions;
+	LegacyCompilerDialect compilerDialect;
 	NameGenerator nameGenerator;
-	SqlExecutionService executionService;
 	@Singular
 	List<QueryStep> querySteps;
 	@Nullable
@@ -74,7 +71,6 @@ public class ConversionContext implements Context {
 	public boolean isWithStratification() {
 		return this.stratificationTable != null;
 	}
-
 
 
 	/**

@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model;
 
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -62,15 +62,15 @@ public class QueryStep {
 	@Singular
 	List<QueryStep> predecessors;
 
-	public static QueryStep createUnionAllStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors, boolean negation, SqlFunctionProvider functionProvider) {
-		return createUnionStep(unionSteps, cteName, predecessors, true, negation, functionProvider);
+	public static QueryStep createUnionAllStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors, boolean negation) {
+		return createUnionStep(unionSteps, cteName, predecessors, true, negation);
 	}
 
-	public static QueryStep createUnionStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors, boolean negation, SqlFunctionProvider functionProvider) {
-		return createUnionStep(unionSteps, cteName, predecessors, false, negation, functionProvider);
+	public static QueryStep createUnionStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors, boolean negation) {
+		return createUnionStep(unionSteps, cteName, predecessors, false, negation);
 	}
 
-	private static QueryStep createUnionStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors, boolean unionAll, boolean negation, SqlFunctionProvider functionProvider) {
+	private static QueryStep createUnionStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors, boolean unionAll, boolean negation) {
 		QueryStep first = unionSteps.getFirst();
 		return first.toBuilder()
 				.cteName(cteName)
