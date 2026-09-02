@@ -1,17 +1,13 @@
-import styled from "@emotion/styled";
 import type { ReactNode } from "react";
 import { useDispatch } from "react-redux";
-
+import { tv } from "tailwind-variants";
 import type { ConceptT } from "../api/types";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { getNodeIcon } from "../model/node";
-
 import { displayAdditionalInfos, toggleAdditionalInfos } from "./actions";
 import type { AdditionalInfosType } from "./reducer";
 
-const Root = styled("div")`
-  cursor: pointer;
-`;
+const hoverableRoot = tv({ base: "cursor-pointer" });
 
 // Allowlist the data we pass (especially: don't pass all children)
 const getAdditionalInfos = (
@@ -65,13 +61,15 @@ const AdditionalInfoHoverable = ({
   };
 
   return (
-    <Root
-      className={className}
+    // biome-ignore lint/a11y/noStaticElementInteractions: TODO hover/click info area, not a button
+    // biome-ignore lint/a11y/useKeyWithClickEvents: see above
+    <div
+      className={hoverableRoot({ className })}
       onMouseEnter={onDisplayAdditionalInfos}
       onClick={onToggleAdditionalInfos}
     >
       {children}
-    </Root>
+    </div>
   );
 };
 

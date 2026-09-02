@@ -1,23 +1,15 @@
-import styled from "@emotion/styled";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { type ReactElement, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 import type { Instance } from "tippy.js";
 
 import IconButton from "../button/IconButton";
 
 import WithTooltip from "./WithTooltip";
 
-const List = styled("div")`
-  display: flex;
-  flex-direction: column;
-`;
-
-const SxIconButton = styled(IconButton)`
-  width: 100%;
-  padding: 8px 14px;
-`;
+const confirmButton = tv({ base: ["w-full", "px-[14px] py-2"] });
 
 const offset = [0, 5] as [number, number];
 export const ConfirmableTooltip = ({
@@ -39,8 +31,9 @@ export const ConfirmableTooltip = ({
   const { t } = useTranslation();
   const dropdown = useMemo(() => {
     return (
-      <List>
-        <SxIconButton
+      <div className="flex flex-col">
+        <IconButton
+          className={confirmButton()}
           icon={confirmationIcon || faCheck}
           onClick={() => {
             onConfirm();
@@ -58,8 +51,8 @@ export const ConfirmableTooltip = ({
           data-test-id="confirm"
         >
           {confirmationText || t("common.confirm")}
-        </SxIconButton>
-      </List>
+        </IconButton>
+      </div>
     );
   }, [t, confirmationText, confirmationIcon, onConfirm, red]);
 

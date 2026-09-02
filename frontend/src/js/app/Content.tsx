@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
 import { Group, Panel } from "react-resizable-panels";
 import { ResizeHandle } from "../common/ResizeHandle";
@@ -11,12 +10,6 @@ import DndProvider from "./DndProvider";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
 import type { StateT } from "./reducers";
-
-const Root = styled("div")`
-  width: 100%;
-  height: 100%;
-  position: relative;
-`;
 
 const Content = () => {
   const displayTooltip = useSelector<StateT, boolean>(
@@ -35,7 +28,7 @@ const Content = () => {
 
   return (
     <DndProvider>
-      <Root>
+      <div className="relative h-full w-full">
         <Group orientation="horizontal">
           <Panel
             panelRef={tooltipPanelRef}
@@ -58,7 +51,7 @@ const Content = () => {
         </Group>
         {isHistoryOpen && <History />}
         {isPreviewOpen && <Preview />}
-      </Root>
+      </div>
     </DndProvider>
   );
 };

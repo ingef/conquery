@@ -1,36 +1,34 @@
-import styled from "@emotion/styled";
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
 
 import { toggleDisplayTooltip } from "./actions";
 
-const Root = styled("div")`
-  position: relative;
-  height: 100%;
-`;
-
-const StyledIconButton = styled(IconButton)`
-  position: absolute;
-  width: 100%;
-  top: 40px;
-  bottom: 0;
-  right: 0;
-  padding: 12px 12px;
-  border-radius: 0;
-  display: flex;
-  align-items: flex-start;
-`;
+const button = tv({
+  base: [
+    "absolute top-[40px] right-0 bottom-0",
+    "w-full",
+    "p-3",
+    "rounded-none",
+    "flex items-start",
+  ],
+});
 
 const ActivateTooltip = () => {
   const dispatch = useDispatch();
   const onToggleTooltip = () => dispatch(toggleDisplayTooltip());
 
   return (
-    <Root>
-      <StyledIconButton bgHover icon={faAngleRight} onClick={onToggleTooltip} />
-    </Root>
+    <div className="relative h-full">
+      <IconButton
+        className={button()}
+        bgHover
+        icon={faAngleRight}
+        onClick={onToggleTooltip}
+      />
+    </div>
   );
 };
 

@@ -1,17 +1,14 @@
-import styled from "@emotion/styled";
+import { tv } from "tailwind-variants";
 
 interface Props {
   className?: string;
   message: string;
 }
 
-const Root = styled("p")`
-  color: ${({ theme }) => theme.col.red};
-  font-weight: 400;
-`;
+const root = tv({ base: ["text-red", "font-normal"] });
 
 const ErrorMessage = ({ className, message }: Props) => {
-  return <Root className={className}>{message}</Root>;
+  return <p className={root({ className })}>{message}</p>;
 };
 
 export default ErrorMessage;

@@ -1,30 +1,15 @@
-import styled from "@emotion/styled";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import { DestroyButton } from "../button/DestroyButton";
 import { TransparentButton } from "../button/TransparentButton";
 
 import Modal from "./Modal";
 
-const Root = styled("div")`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-`;
-
-const Content = styled("div")`
-  max-width: 400px;
-`;
-
-const Description = styled("p")`
-  margin: 0 0 20px;
-`;
-
-const Btn = styled(TransparentButton)`
-  margin: 0 10px;
-`;
+const buttons = tv({
+  base: ["flex items-center justify-center", "gap-[15px]"],
+});
 
 interface PropsType {
   headline: ReactNode;
@@ -43,13 +28,15 @@ const DeleteModal = ({
 
   return (
     <Modal onClose={onClose} headline={headline}>
-      <Content>
-        {description && <Description>{description}</Description>}
-        <Root>
-          <Btn onClick={onClose}>{t("common.cancel")}</Btn>
+      <div className="max-w-[400px]">
+        {description && <p className="mb-5">{description}</p>}
+        <div className={buttons()}>
+          <TransparentButton className="mx-[10px]" onClick={onClose}>
+            {t("common.cancel")}
+          </TransparentButton>
           <DestroyButton onClick={onDelete}>{t("common.delete")}</DestroyButton>
-        </Root>
-      </Content>
+        </div>
+      </div>
     </Modal>
   );
 };

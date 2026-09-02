@@ -1,8 +1,7 @@
-import styled from "@emotion/styled";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-
+import { tv } from "tailwind-variants";
 import { EditorV2 } from "../editor-v2/EditorV2";
 import { isEditorV2Enabled } from "../environment";
 import { ResetableErrorBoundary } from "../error-fallback/ResetableErrorBoundary";
@@ -10,20 +9,17 @@ import FormsTab from "../external-forms/FormsTab";
 import Pane from "../pane/Pane";
 import type { TabNavigationTab } from "../pane/TabNavigation";
 import StandardQueryEditorTab from "../standard-query-editor/StandardQueryEditorTab";
-
 import type { StateT } from "./reducers";
 
-const Tab = styled("div")<{ isActive: boolean }>`
-  height: 100%;
-  flex-grow: 1;
-  flex-direction: column;
-
-  display: ${({ isActive }) => (isActive ? "flex" : "none")};
-`;
-
-const SxPane = styled(Pane)`
-  background-color: ${({ theme }) => theme.col.bgAlt};
-`;
+const tab = tv({
+  base: ["h-full", "grow", "flex-col"],
+  variants: {
+    isActive: {
+      true: "flex",
+      false: "hidden",
+    },
+  },
+});
 
 const RightPane = () => {
   const { t } = useTranslation();
@@ -57,12 +53,18 @@ const RightPane = () => {
   );
 
   return (
-    <SxPane right tabs={tabs} dataTestId="right-pane">
-      <Tab key="queryEditor" isActive={activeTab === "queryEditor"}>
+    <Pane className="bg-bg-100" right tabs={tabs} dataTestId="right-pane">
+      <div
+        key="queryEditor"
+        className={tab({ isActive: activeTab === "queryEditor" })}
+      >
         <StandardQueryEditorTab />
-      </Tab>
+      </div>
       {isEditorV2Enabled && (
-        <Tab key="editorV2" isActive={activeTab === "editorV2"}>
+        <div
+          key="editorV2"
+          className={tab({ isActive: activeTab === "editorV2" })}
+        >
           <EditorV2
             featureDates
             featureNegate
@@ -72,14 +74,17 @@ const RightPane = () => {
             featureContentInfos
             featureTimebasedQueries
           />
-        </Tab>
+        </div>
       )}
-      <Tab key="externalForms" isActive={activeTab === "externalForms"}>
+      <div
+        key="externalForms"
+        className={tab({ isActive: activeTab === "externalForms" })}
+      >
         <ResetableErrorBoundary>
           <FormsTab />
         </ResetableErrorBoundary>
-      </Tab>
-    </SxPane>
+      </div>
+    </Pane>
   );
 };
 

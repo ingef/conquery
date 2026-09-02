@@ -7,6 +7,7 @@ import "../index.css";
 
 import AppRoot from "./AppRoot";
 import type { StateT } from "./app/reducers";
+import { AppThemeContext } from "./app-theme-context";
 import { makeStore } from "./store";
 
 // TODO: OG image required?
@@ -22,7 +23,11 @@ const renderRoot = (theme: Theme) => {
 
   return root.render(
     <ThemeProvider theme={theme}>
-      <AppRoot store={store} />
+      <AppThemeContext.Provider
+        value={{ img: theme.img, palette: theme.col.palette }}
+      >
+        <AppRoot store={store} />
+      </AppThemeContext.Provider>
     </ThemeProvider>,
   );
 };

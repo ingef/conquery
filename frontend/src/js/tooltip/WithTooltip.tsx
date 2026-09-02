@@ -1,37 +1,27 @@
-import { useTheme } from "@emotion/react";
-import styled from "@emotion/styled";
 import Tippy, { type TippyProps } from "@tippyjs/react";
 import { memo, type ReactElement, type Ref, useMemo } from "react";
+import { tv } from "tailwind-variants";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light.css";
 
-const Text = styled("div")<{ wide?: boolean }>`
-  max-width: ${({ wide }) => (wide ? "700px" : "400px")};
-  text-align: left;
-  font-size: 16px;
-  font-weight: 400;
-  padding: 8px 14px;
-  p,
-  h3,
-  h4 {
-    color: ${({ theme }) => theme.col.black};
-    line-height: 1.3;
-    margin: 8px 0 0;
-  }
-  p,
-  h3,
-  li {
-    font-size: ${({ theme }) => theme.font.sm};
-  }
-  ul {
-    margin: 6px 0;
-    padding-left: 16px;
-  }
-  li {
-    line-height: 1.3;
-    margin-bottom: 5px;
-  }
-`;
+const text = tv({
+  base: [
+    "max-w-[400px]",
+    "text-left",
+    "text-base",
+    "font-normal",
+    "px-[14px] py-2",
+    "[&_p]:text-gray-800 [&_h3]:text-gray-800 [&_h4]:text-gray-800",
+    "[&_p]:leading-[1.3] [&_h3]:leading-[1.3] [&_h4]:leading-[1.3]",
+    "[&_p]:mt-2 [&_h3]:mt-2 [&_h4]:mt-2",
+    "[&_p]:text-sm [&_h3]:text-sm [&_li]:text-sm",
+    "[&_ul]:my-[6px] [&_ul]:pl-4",
+    "[&_li]:leading-[1.3] [&_li]:mb-[5px]",
+  ],
+  variants: {
+    wide: { true: "max-w-[700px]" },
+  },
+});
 
 interface Props {
   className?: string;
@@ -59,7 +49,7 @@ const WithTooltip = ({
   ref,
   className,
   children,
-  text,
+  text: textProp,
   html,
   lazy,
   wide,
@@ -71,27 +61,24 @@ const WithTooltip = ({
   hideOnClick,
   popperOptions,
 }: Props & { ref?: Ref<HTMLElement> }) => {
-  const theme = useTheme();
-
   const content = useMemo(() => {
-    return text ? (
-      <Text
-        theme={theme}
-        wide={wide}
+    return textProp ? (
+      <div
+        className={text({ wide })}
         // biome-ignore lint/security/noDangerouslySetInnerHtml: tooltip text is concept metadata from the backend
-        dangerouslySetInnerHTML={{ __html: text }}
+        dangerouslySetInnerHTML={{ __html: textProp }}
       />
     ) : (
       html
     );
-  }, [theme, wide, text, html]);
+  }, [wide, textProp, html]);
 
   const delay = useMemo(
     () => (lazy ? ([1000, 0] as [number, number]) : 0),
     [lazy],
   );
 
-  if (!text && !html) return <>{children}</>;
+  if (!textProp && !html) return <>{children}</>;
 
   return (
     <Tippy

@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
 import { type ReactNode, useState } from "react";
 import { type DropTargetMonitor, useDrop } from "react-dnd";
+import { tv } from "tailwind-variants";
 
 import { DNDType } from "../common/constants/dndTypes";
 import { exists } from "../common/helpers/exists";
@@ -17,21 +17,25 @@ interface PropsT {
   highlightDroppable?: boolean;
 }
 
-const Root = styled("div")<{
-  isOver?: boolean;
-  isDroppable?: boolean;
-  highlightDroppable?: boolean;
-}>`
-  background-color: ${({ theme, isDroppable, highlightDroppable, isOver }) => {
-    if (isOver && isDroppable)
-      return highlightDroppable ? theme.col.grayLight : theme.col.grayVeryLight;
-    if (highlightDroppable && isDroppable) return theme.col.grayVeryLight;
-    return "inherit";
-  }};
-  position: relative;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  display: inline-flex;
-`;
+const root = tv({
+  base: ["relative", "inline-flex", "rounded", "bg-inherit"],
+  variants: {
+    isOver: { true: "", false: "" },
+    isDroppable: { true: "", false: "" },
+    highlightDroppable: { true: "", false: "" },
+  },
+  // later wins when several match
+  compoundVariants: [
+    { isDroppable: true, highlightDroppable: true, class: "bg-gray-50" },
+    { isOver: true, isDroppable: true, class: "bg-gray-50" },
+    {
+      isOver: true,
+      isDroppable: true,
+      highlightDroppable: true,
+      class: "bg-gray-100",
+    },
+  ],
+});
 
 // estimated to feel responsive, but not too quick
 const TIME_UNTIL_NAVIGATE = 1300;
@@ -73,16 +77,18 @@ export const HoverNavigatable = ({
     }),
   });
   return (
-    <Root
+    <div
       ref={(el) => {
         drop(el);
       }}
-      isOver={isOver}
-      isDroppable={isDroppable}
-      className={className}
-      highlightDroppable={highlightDroppable}
+      className={root({
+        isOver,
+        isDroppable,
+        highlightDroppable: !!highlightDroppable,
+        className,
+      })}
     >
       {children}
-    </Root>
+    </div>
   );
 };

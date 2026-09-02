@@ -1,17 +1,12 @@
-import styled from "@emotion/styled";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { tv } from "tailwind-variants";
 import FaIcon from "../icon/FaIcon";
 import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 import WithTooltip from "../tooltip/WithTooltip";
 
-const Root = styled("div")`
-  border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
-  padding: 0 20px;
-  background-color: white;
-  display: flex;
-  align-items: flex-start;
-`;
+const root = tv({
+  base: ["flex items-start", "border-b border-gray-100", "bg-white", "px-5"],
+});
 
 const headline = tv({
   base: [
@@ -35,14 +30,6 @@ const headline = tv({
     },
   },
 });
-
-const SxWithTooltip = styled(WithTooltip)`
-  flex-shrink: 0;
-`;
-
-const SxFaIcon = styled(FaIcon)`
-  margin-left: 5px;
-`;
 
 export interface TabNavigationTab {
   key: string;
@@ -71,24 +58,24 @@ const TabNavigation = ({
   }
 
   return (
-    <Root data-test-id={dataTestId}>
+    <div className={root()} data-test-id={dataTestId}>
       {tabs.map(({ key, label, tooltip, loading }) => {
         return (
           <HoverNavigatable key={key} triggerNavigate={createClickHandler(key)}>
-            <SxWithTooltip text={tooltip} lazy>
+            <WithTooltip className="shrink-0" text={tooltip} lazy>
               <button
                 type="button"
                 className={headline({ active: activeTab === key })}
                 onClick={createClickHandler(key)}
               >
                 {label}
-                {loading && <SxFaIcon icon={faSpinner} />}
+                {loading && <FaIcon className="ml-[5px]" icon={faSpinner} />}
               </button>
-            </SxWithTooltip>
+            </WithTooltip>
           </HoverNavigatable>
         );
       })}
-    </Root>
+    </div>
   );
 };
 

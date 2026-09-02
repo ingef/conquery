@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faCheckCircle,
   faExclamationCircle,
@@ -14,6 +13,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import {
   usePostConceptsListToResolve,
@@ -40,50 +40,15 @@ import InputSelect from "../ui-components/InputSelect/InputSelect";
 import { DropdownOption } from "./DropdownOption";
 import type { UploadConceptListModalStateT } from "./reducer";
 
-const Root = styled("div")`
-  padding: 0 0 10px;
-`;
-
-const Section = styled("div")`
-  margin-top: 15px;
-  display: grid;
-  grid-gap: 20px;
-`;
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
-`;
-
-const ResolvedItemsForm = styled("form")`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const Msg = styled("p")`
-  margin: 0;
-`;
-
-const BigIcon = styled(FaIcon)`
-  font-size: 20px;
-  margin-right: 10px;
-`;
-const ErrorIcon = styled(BigIcon)`
-  color: ${({ theme }) => theme.col.red};
-`;
-const SuccessIcon = styled(BigIcon)`
-  color: ${({ theme }) => theme.col.green};
-`;
-const CenteredIcon = styled(FaIcon)`
-  text-align: center;
-`;
-const SxPrimaryButton = styled(PrimaryButton)`
-  flex-shrink: 0;
-`;
-const SxInputSelect = styled(InputSelect)`
-  width: 60vw;
-  max-width: 900px;
-`;
+const bigIcon = tv({
+  base: ["text-xl", "mr-[10px]"],
+  variants: {
+    kind: {
+      error: "text-red",
+      success: "text-green",
+    },
+  },
+});
 
 const useUnresolvedItemsCount = (
   resolvedConcepts: PostConceptResolveResponseT | null,
@@ -515,8 +480,9 @@ const UploadConceptListModal = ({
       headline={t("uploadConceptListModal.headline")}
       dataTestId="uploadConceptListModal"
     >
-      <Root>
-        <SxInputSelect
+      <div className="pb-[10px]">
+        <InputSelect
+          className="w-[60vw] max-w-[900px]"
           label={t("uploadConceptListModal.selectConceptRootNode")}
           value={
             selectOptions.find(({ value }) => value === selectedValue) || null
@@ -525,26 +491,32 @@ const UploadConceptListModal = ({
           options={selectOptions}
           sortOptions={sortOptions}
         />
-        <Section>
+        <div className="mt-[15px] grid gap-5">
           {error && (
-            <Row>
-              <ErrorIcon icon={faExclamationCircle} />
+            <div className="flex items-center">
+              <FaIcon
+                className={bigIcon({ kind: "error" })}
+                icon={faExclamationCircle}
+              />
               {t("uploadConceptListModal.error")}
-            </Row>
+            </div>
           )}
-          {loading && <CenteredIcon icon={faSpinner} />}
+          {loading && <FaIcon className="text-center" icon={faSpinner} />}
           {(!!resolvedConcepts || !!resolvedFilters) && (
             <>
               {hasUnresolvedItems && (
                 <div>
-                  <Msg>
-                    <ErrorIcon icon={faExclamationCircle} />
+                  <p className="m-0">
+                    <FaIcon
+                      className={bigIcon({ kind: "error" })}
+                      icon={faExclamationCircle}
+                    />
                     <span>
                       {t("uploadConceptListModal.unknownCodes", {
                         count: unresolvedItemsCount,
                       })}
                     </span>
-                  </Msg>
+                  </p>
                   <ScrollableList
                     maxVisibleItems={3}
                     fullWidth
@@ -557,11 +529,18 @@ const UploadConceptListModal = ({
                   />
                 </div>
               )}
-              <ResolvedItemsForm onSubmit={onSubmit} data-test-id="insert-form">
+              <form
+                className="flex flex-col gap-3"
+                onSubmit={onSubmit}
+                data-test-id="insert-form"
+              >
                 <div>
                   {hasResolvedItems && (
                     <>
-                      <SuccessIcon icon={faCheckCircle} />
+                      <FaIcon
+                        className={bigIcon({ kind: "success" })}
+                        icon={faCheckCircle}
+                      />
                       {t("uploadConceptListModal.resolvedCodes", {
                         count: resolvedItemsCount,
                       })}
@@ -592,16 +571,20 @@ const UploadConceptListModal = ({
                     label={t("uploadConceptListModal.includeUnresolved")}
                   />
                 )}
-                <SxPrimaryButton type="submit" data-test-id="insert">
+                <PrimaryButton
+                  className="shrink-0"
+                  type="submit"
+                  data-test-id="insert"
+                >
                   {mustIncludeUnresolved
                     ? t("uploadConceptListModal.insertRegardless")
                     : t("uploadConceptListModal.insertNode")}
-                </SxPrimaryButton>
-              </ResolvedItemsForm>
+                </PrimaryButton>
+              </form>
             </>
           )}
-        </Section>
-      </Root>
+        </div>
+      </div>
     </Modal>
   );
 };
