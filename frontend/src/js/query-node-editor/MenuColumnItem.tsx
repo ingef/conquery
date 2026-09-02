@@ -7,7 +7,7 @@ import IconButton from "../button/IconButton";
 import type { NodeResetConfig } from "../model/node";
 import { tableHasFilterValues, tableIsDisabled } from "../model/table";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const container = tv({
   base: [
@@ -94,10 +94,7 @@ const MenuColumnItem = ({
         <span className="pl-[10px] leading-[20px]">{table.label}</span>
       </div>
       {isFilterActive && (
-        <WithTooltip
-          className="flex!"
-          text={t("queryNodeEditor.clearSettings")}
-        >
+        <TooltipTrigger>
           <IconButton
             className="p-0"
             icon={faFilter}
@@ -113,7 +110,8 @@ const MenuColumnItem = ({
               onResetTable({ useDefaults: false });
             }}
           />
-        </WithTooltip>
+          <Tooltip>{t("queryNodeEditor.clearSettings")}</Tooltip>
+        </TooltipTrigger>
       )}
     </div>
   );

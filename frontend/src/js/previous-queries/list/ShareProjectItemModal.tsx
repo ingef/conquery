@@ -8,7 +8,7 @@ import type { StateT } from "../../app/reducers";
 import IconButton from "../../button/IconButton";
 import Modal from "../../modal/Modal";
 import InputMultiSelect from "../../ui-components/InputMultiSelect/InputMultiSelect";
-import WithTooltip from "../../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import {
   useLoadFormConfig,
   useLoadQuery,
@@ -146,7 +146,7 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
             label={groupsLabel}
             options={userGroupOptions}
           />
-          <WithTooltip text={shareLabel}>
+          <TooltipTrigger>
             <IconButton
               className="ml-[3px] px-[10px] py-[7px]"
               type="submit"
@@ -154,7 +154,8 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
               disabled={buttonDisabled}
               icon={loading ? faSpinner : faCheck}
             />
-          </WithTooltip>
+            <Tooltip>{shareLabel}</Tooltip>
+          </TooltipTrigger>
         </div>
       </form>
     </Modal>

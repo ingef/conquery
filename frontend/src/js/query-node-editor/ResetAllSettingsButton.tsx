@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
 import { ConfirmableTooltip } from "../ui-components/ConfirmableTooltip";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const ResetAllSettingsButton = ({
   compact,
@@ -19,9 +19,10 @@ const ResetAllSettingsButton = ({
 
   const button = useMemo(() => {
     return compact ? (
-      <WithTooltip className="whitespace-nowrap" text={text}>
+      <TooltipTrigger>
         <IconButton icon={faTrash} active />
-      </WithTooltip>
+        <Tooltip className="whitespace-nowrap">{text}</Tooltip>
+      </TooltipTrigger>
     ) : (
       <IconButton icon={faTrash} active>
         {text}

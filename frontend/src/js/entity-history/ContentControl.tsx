@@ -8,7 +8,7 @@ import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 export type ContentType =
   | "groupId"
@@ -58,7 +58,7 @@ const ContentControl = ({ value, onChange }: Props) => {
       {options.map((option) => {
         const active = value[option.key];
         return (
-          <WithTooltip key={option.key} text={option.tooltip}>
+          <TooltipTrigger key={option.key}>
             <IconButton
               icon={option.icon}
               active={active}
@@ -67,7 +67,8 @@ const ContentControl = ({ value, onChange }: Props) => {
                 onChange({ ...value, [option.key]: !value[option.key] });
               }}
             />
-          </WithTooltip>
+            <Tooltip>{option.tooltip}</Tooltip>
+          </TooltipTrigger>
         );
       })}
     </div>

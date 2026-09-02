@@ -7,9 +7,9 @@ import { deleteStoredAuthToken } from "../authorization/helper";
 import IconButton from "../button/IconButton";
 import { clearIndexedDBCache } from "../common/helpers/indexedDBCache";
 import { isIDPEnabled } from "../environment";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
-const LogoutButton = ({ className }: { className?: string }) => {
+const LogoutButton = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { keycloak } = useKeycloak();
@@ -35,9 +35,10 @@ const LogoutButton = ({ className }: { className?: string }) => {
   };
 
   return (
-    <WithTooltip className={className} text={t("common.logout")}>
+    <TooltipTrigger>
       <IconButton small frame icon={faSignOutAlt} onClick={onLogout} />
-    </WithTooltip>
+      <Tooltip>{t("common.logout")}</Tooltip>
+    </TooltipTrigger>
   );
 };
 

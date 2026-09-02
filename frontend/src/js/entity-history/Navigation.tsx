@@ -21,7 +21,7 @@ import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import { ConfirmableTooltip } from "../ui-components/ConfirmableTooltip";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { closeHistory, resetHistory, useUpdateHistorySession } from "./actions";
 import { EntityIdsList } from "./EntityIdsList";
 import type { EntityIdsStatus } from "./History";
@@ -63,10 +63,6 @@ const containedIconButton = tv({
 
 const fullWidthIconButton = tv({
   base: ["w-full", "justify-center"],
-});
-
-const buttonWithTooltip = tv({
-  base: ["w-full", "shrink-0", "text-black"],
 });
 
 export const Navigation = memo(
@@ -145,7 +141,7 @@ export const Navigation = memo(
         }}
       >
         <div className={row()}>
-          <WithTooltip text={backButtonWarning}>
+          <TooltipTrigger>
             <IconButton
               className={containedIconButton()}
               frame
@@ -154,7 +150,8 @@ export const Navigation = memo(
             >
               {t("common.back")}
             </IconButton>
-          </WithTooltip>
+            <Tooltip>{backButtonWarning}</Tooltip>
+          </TooltipTrigger>
           {!empty && (
             <ConfirmableTooltip
               onConfirm={onReset}
@@ -183,17 +180,14 @@ export const Navigation = memo(
         <div className={entityIdNav()}>
           {!empty && (
             <div className="flex">
-              <WithTooltip
-                className={buttonWithTooltip()}
-                text={`${t("history.prevButtonLabel")} (shift + ⬆)`}
-                lazy
-              >
+              <TooltipTrigger delay={1500}>
                 <IconButton
                   className={fullWidthIconButton()}
                   icon={faArrowUp}
                   onClick={goToPrev}
                 />
-              </WithTooltip>
+                <Tooltip>{`${t("history.prevButtonLabel")} (shift + ⬆)`}</Tooltip>
+              </TooltipTrigger>
             </div>
           )}
           <LoadHistoryDropzone
@@ -215,23 +209,17 @@ export const Navigation = memo(
           {!empty && (
             <>
               <div className="flex">
-                <WithTooltip
-                  className={buttonWithTooltip()}
-                  text={`${t("history.nextButtonLabel")} (shift + ⬇)`}
-                  lazy
-                >
+                <TooltipTrigger delay={1500}>
                   <IconButton
                     className={fullWidthIconButton()}
                     icon={faArrowDown}
                     onClick={goToNext}
                   />
-                </WithTooltip>
+                  <Tooltip>{`${t("history.nextButtonLabel")} (shift + ⬇)`}</Tooltip>
+                </TooltipTrigger>
               </div>
               <div className="flex" style={{ marginTop: "10px" }}>
-                <WithTooltip
-                  className={buttonWithTooltip()}
-                  text={t("history.downloadButtonLabel")}
-                >
+                <TooltipTrigger>
                   <IconButton
                     className={fullWidthIconButton()}
                     style={{ backgroundColor: "white" }}
@@ -241,7 +229,8 @@ export const Navigation = memo(
                   >
                     CSV
                   </IconButton>
-                </WithTooltip>
+                  <Tooltip>{t("history.downloadButtonLabel")}</Tooltip>
+                </TooltipTrigger>
               </div>
             </>
           )}

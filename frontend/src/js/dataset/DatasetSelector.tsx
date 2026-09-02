@@ -7,7 +7,11 @@ import type { DatasetT, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
-import WithTooltip from "../ui-components/WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../ui-components/Tooltip";
 
 import { useSelectDataset } from "./actions";
 
@@ -96,13 +100,13 @@ const DatasetSelectorUI = memo(
     const { t } = useTranslation();
 
     return (
-      <WithTooltip
-        text={
-          disabled ? t("datasetSelector.disabled") : t("help.datasetSelector")
-        }
-        lazy
-      >
-        <div className={root()} data-test-id="dataset-selector">
+      <TooltipTrigger delay={1500}>
+        <TooltipTarget
+          as="div"
+          excludeFromTabOrder
+          className={root()}
+          data-test-id="dataset-selector"
+        >
           <span className={headline()}>{t("datasetSelector.label")}</span>
           <InputSelect
             className="min-w-[300px]"
@@ -114,8 +118,11 @@ const DatasetSelectorUI = memo(
             disabled={disabled || exists(error)}
             options={options}
           />
-        </div>
-      </WithTooltip>
+        </TooltipTarget>
+        <Tooltip>
+          {disabled ? t("datasetSelector.disabled") : t("help.datasetSelector")}
+        </Tooltip>
+      </TooltipTrigger>
     );
   },
 );

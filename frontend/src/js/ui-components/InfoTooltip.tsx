@@ -4,7 +4,7 @@ import { tv } from "tailwind-variants";
 
 import FaIcon from "../icon/FaIcon";
 
-import WithTooltip from "./WithTooltip";
+import { Tooltip, TooltipTarget, TooltipTrigger } from "./Tooltip";
 
 const icon = tv({
   base: ["transition-all duration-100", "hover:text-gray-800"],
@@ -24,11 +24,25 @@ const InfoTooltip = ({
   wide?: boolean;
 }) => {
   return (
-    <WithTooltip text={text} html={html} wide={wide}>
-      <span className={spanContainer({ className })}>
+    <TooltipTrigger>
+      <TooltipTarget
+        role="img"
+        aria-label="Info"
+        className={spanContainer({ className })}
+      >
         <FaIcon className={icon()} gray icon={faQuestionCircle} />
-      </span>
-    </WithTooltip>
+      </TooltipTarget>
+      <Tooltip wide={wide}>
+        {text ? (
+          <span
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: help texts come from form configs and the backend, which may use markup
+            dangerouslySetInnerHTML={{ __html: text }}
+          />
+        ) : (
+          html
+        )}
+      </Tooltip>
+    </TooltipTrigger>
   );
 };
 
