@@ -1,7 +1,9 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import com.bakdata.conquery.sql.compiler.ir.JoinMode;
 import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.QueryStepJoiner;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -47,10 +49,9 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 		if (externalExtras == null) {
 			return QueryStep.toTableLike(preFinalStep.getCteName());
 		}
-		return QueryStepJoiner.constructJoinedTable(
+		return QueryStepJoiner.join(
 				List.of(preFinalStep, externalExtras),
-				ConqueryJoinType.INNER_JOIN,
-				context
+				JoinMode.INNER
 		);
 	}
 
@@ -67,7 +68,11 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 		QueryStep preFinalStep = contextAfterConversion.getLastConvertedStep();
 		// negation of a single node results in an anti-join with all ids table
 		if (preFinalStep.isNegate()) {
-			preFinalStep = QueryStepJoiner.antiJoinWithAllIdsTable(preFinalStep, contextAfterConversion, CQNegation.determineDateAction(conceptQuery.getDateAggregationMode()));
+			preFinalStep = QueryStepComposer.antiJoinWithAllIdsTable(
+					preFinalStep,
+					contextAfterConversion,
+					CQNegation.determineDateAction(conceptQuery.getDateAggregationMode())
+			);
 		}
 
 		Selects preFinalSelects = getPreFinalSelects(preFinalStep, contextAfterConversion);

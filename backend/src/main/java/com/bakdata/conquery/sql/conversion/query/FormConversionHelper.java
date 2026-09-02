@@ -1,7 +1,9 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import com.bakdata.conquery.sql.compiler.ir.JoinMode;
 import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.QueryStepJoiner;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
@@ -127,7 +129,7 @@ public class FormConversionHelper {
 
 		// child context contains the converted feature's QuerySteps
 		List<QueryStep> queriesToJoin = childContext.getQuerySteps();
-		QueryStep joinedFeatures = QueryStepJoiner.joinSteps(queriesToJoin, ConqueryJoinType.OUTER_JOIN, DateAggregationAction.BLOCK, context);
+		QueryStep joinedFeatures = QueryStepComposer.joinSteps(queriesToJoin, JoinMode.FULL_OUTER, DateAggregationAction.BLOCK, context);
 		return createFinalSelect(formType, stratificationTable, joinedFeatures, resultInfos, context);
 	}
 
@@ -151,7 +153,7 @@ public class FormConversionHelper {
 		);
 
 		List<QueryStep> queriesToJoin = List.of(stratificationTable, convertedFeatures);
-		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.LEFT_JOIN, context);
+		TableLike<Record> joinedTable = QueryStepJoiner.join(queriesToJoin, JoinMode.LEFT);
 		QueryStep finalStep = QueryStep.builder()
 				.cteName(null)  // the final QueryStep won't be converted to a CTE
 				.projectionMode(ProjectionMode.AGGREGATED)

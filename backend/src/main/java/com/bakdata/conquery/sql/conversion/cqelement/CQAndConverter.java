@@ -1,11 +1,11 @@
 package com.bakdata.conquery.sql.conversion.cqelement;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
-import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.model.ConqueryJoinType;
+import com.bakdata.conquery.sql.compiler.ir.JoinMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.compiler.ir.select.ExistsSqlSelect;
+import com.bakdata.conquery.sql.conversion.NodeConverter;
+import com.bakdata.conquery.sql.conversion.model.QueryStepComposer;
 
 public class CQAndConverter implements NodeConverter<CQAnd> {
 
@@ -23,10 +23,10 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 			joined = withConvertedChild.getLastConvertedStep();
 		}
 		else {
-			joined = QueryStepJoiner.joinChildren(
+			joined = QueryStepComposer.joinChildren(
 					andNode.getChildren(),
 					context,
-					ConqueryJoinType.INNER_JOIN,
+					JoinMode.INNER,
 					andNode.getDateAction()
 			);
 		}

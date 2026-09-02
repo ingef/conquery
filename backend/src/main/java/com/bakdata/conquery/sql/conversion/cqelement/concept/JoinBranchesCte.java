@@ -6,12 +6,12 @@ import java.util.Optional;
 
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.ConqueryJoinType;
+import com.bakdata.conquery.sql.compiler.ir.JoinMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
+import com.bakdata.conquery.sql.compiler.ir.QueryStepJoiner;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import org.jooq.Record;
@@ -85,7 +85,7 @@ class JoinBranchesCte extends ConnectorCte {
 					.forEach(queriesToJoin::add);
 
 		Selects selects = collectSelects(validityDate, queriesToJoin, tableContext);
-		TableLike<Record> fromTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.OUTER_JOIN, tableContext.getConversionContext());
+		TableLike<Record> fromTable = QueryStepJoiner.join(queriesToJoin, JoinMode.FULL_OUTER);
 
 		return QueryStep.builder()
 						.selects(selects)
