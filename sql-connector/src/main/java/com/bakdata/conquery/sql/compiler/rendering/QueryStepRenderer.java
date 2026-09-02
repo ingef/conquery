@@ -1,27 +1,32 @@
-package com.bakdata.conquery.sql.conversion.model;
-
-import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
-import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
-import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.compiler.rendering.SelectProjectionRenderer;
-import lombok.RequiredArgsConstructor;
-import org.jooq.*;
-import org.jooq.Record;
-import org.jooq.impl.DSL;
+package com.bakdata.conquery.sql.compiler.rendering;
 
 import java.util.List;
 import java.util.stream.Stream;
 
-/**
- * Transformer for translating the intermediate representation of {@link QueryStep} into the final SQL query.
- */
+import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import lombok.RequiredArgsConstructor;
+import org.jooq.CommonTableExpression;
+import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.Select;
+import org.jooq.SelectConditionStep;
+import org.jooq.SelectHavingStep;
+import org.jooq.SelectSelectStep;
+import org.jooq.impl.DSL;
+
+/** Renders a tree of compiler query-step IR into a final jOOQ SELECT statement. */
 @RequiredArgsConstructor
-public class QueryStepTransformer {
+public class QueryStepRenderer {
 
 	private final DSLContext dslContext;
 
 	/**
-	 * Converts a given {@link QueryStep} into an executable SELECT statement.
+	 * Render a final query step and all of its predecessor CTEs.
+	 *
+	 * @throws IllegalArgumentException when the supplied root step has an intermediate projection
 	 */
 	public Select<Record> toSelectQuery(QueryStep queryStep, CompilerDialect dialect) {
 
@@ -36,13 +41,11 @@ public class QueryStepTransformer {
 				.from(queryStep.getFromTables())
 				.where(queryStep.getConditions());
 
-		// grouping
 		SelectHavingStep<Record> grouped = queryBase;
 		if (queryStep.isGroupBy()) {
 			grouped = queryBase.groupBy(queryStep.getGroupBy());
 		}
 
-		// union
 		if (queryStep.isUnion()) {
 			return union(queryStep, grouped, dialect);
 		}
@@ -51,8 +54,7 @@ public class QueryStepTransformer {
 	}
 
 	private List<CommonTableExpression<Record>> constructPredecessorCteList(QueryStep queryStep, CompilerDialect dialect) {
-		return predecessorCtes(queryStep, dialect)
-				.toList();
+		return predecessorCtes(queryStep, dialect).toList();
 	}
 
 	private List<CommonTableExpression<Record>> toCteList(QueryStep queryStep, CompilerDialect dialect) {
@@ -73,18 +75,13 @@ public class QueryStepTransformer {
 	}
 
 	private Select<Record> toSelectStep(QueryStep queryStep, CompilerDialect dialect) {
-
-		SelectSelectStep<Record> selectClause;
-
 		List<Field<?>> allSelects = queryStep.getProjectionMode() == ProjectionMode.INTERMEDIATE
 				? queryStep.getSelects().all()
 				: SelectProjectionRenderer.renderFinal(queryStep.getSelects(), dialect, queryStep.getProjectionMode());
 
-		if (queryStep.isSelectDistinct()) {
-			selectClause = dslContext.selectDistinct(allSelects);
-		} else {
-			selectClause = dslContext.select(allSelects);
-		}
+		SelectSelectStep<Record> selectClause = queryStep.isSelectDistinct()
+				? this.dslContext.selectDistinct(allSelects)
+				: this.dslContext.select(allSelects);
 
 		Select<Record> selectStep = selectClause.from(queryStep.getFromTables()).where(queryStep.getConditions());
 
@@ -101,19 +98,15 @@ public class QueryStepTransformer {
 
 	private Select<Record> union(QueryStep queryStep, Select<Record> base, CompilerDialect dialect) {
 		for (QueryStep unionStep : queryStep.getUnion()) {
-			Select<Record> selectStep =
-					queryStep.getProjectionMode() != ProjectionMode.INTERMEDIATE ?
-							// Final projections must use the same physical representation in every union branch.
-							toSelectQuery(unionStep, dialect) :
-							toSelectStep(unionStep, dialect);
+			// Final projections must use the same physical representation in every union branch.
+			Select<Record> selectStep = queryStep.getProjectionMode() != ProjectionMode.INTERMEDIATE
+					? toSelectQuery(unionStep, dialect)
+					: toSelectStep(unionStep, dialect);
 
-			if (queryStep.isUnionAll()) {
-				base = base.unionAll(selectStep);
-			} else {
-				base = base.union(selectStep);
-			}
+			base = queryStep.isUnionAll()
+					? base.unionAll(selectStep)
+					: base.union(selectStep);
 		}
 		return base;
 	}
-
 }

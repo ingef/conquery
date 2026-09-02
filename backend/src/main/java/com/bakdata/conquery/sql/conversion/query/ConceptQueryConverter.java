@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.query;
 import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQNegation;
 import com.bakdata.conquery.models.query.DateAggregationMode;
@@ -25,7 +26,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 
-	private final QueryStepTransformer queryStepTransformer;
+	private final QueryStepRenderer queryStepRenderer;
 
 	private static Selects getPreFinalSelects(QueryStep preFinalStep, ConversionContext context) {
 		Selects preFinalStepSelects = preFinalStep.getQualifiedSelects();
@@ -81,7 +82,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 				.predecessors(predecessors)
 				.build();
 
-		Select<Record> finalQuery = this.queryStepTransformer.toSelectQuery(finalStep, context.getCompilerDialect());
+		Select<Record> finalQuery = this.queryStepRenderer.toSelectQuery(finalStep, context.getCompilerDialect());
 		return contextAfterConversion.withFinalQuery(new SqlQuery(finalQuery, conceptQuery.getResultInfos()));
 	}
 

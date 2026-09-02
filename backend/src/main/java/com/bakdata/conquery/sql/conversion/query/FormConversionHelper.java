@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.query;
 import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -33,7 +34,7 @@ import static org.jooq.impl.DSL.*;
 @RequiredArgsConstructor
 public class FormConversionHelper {
 
-	private final QueryStepTransformer queryStepTransformer;
+	private final QueryStepRenderer queryStepRenderer;
 
 	/**
 	 * Selects the ID, resolution, index and date range from stratification table plus all explicit selects from the converted features step.
@@ -159,7 +160,7 @@ public class FormConversionHelper {
 				.predecessors(queriesToJoin)
 				.build();
 
-		Select<Record> selectQuery = queryStepTransformer.toSelectQuery(finalStep, context.getCompilerDialect());
+		Select<Record> selectQuery = queryStepRenderer.toSelectQuery(finalStep, context.getCompilerDialect());
 		return context.withFinalQuery(new SqlQuery(selectQuery, resultInfos));
 	}
 

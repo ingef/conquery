@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.query;
 import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -43,7 +44,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 	 */
 	private static final int POSITION_OFFSET = 1;
 
-	private final QueryStepTransformer queryStepTransformer;
+	private final QueryStepRenderer queryStepRenderer;
 
 	/**
 	 * Converts the {@link Query} of the given {@link TableExportQuery} and creates another {@link QueryStep} on top which extracts only the primary id.
@@ -213,7 +214,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 				List.of(convertedPrerequisite),
 				context.isNegation()
 		);
-		final Select<Record> selectQuery = queryStepTransformer.toSelectQuery(unionedTables, context.getCompilerDialect());
+		final Select<Record> selectQuery = queryStepRenderer.toSelectQuery(unionedTables, context.getCompilerDialect());
 
 		return context.withFinalQuery(new SqlQuery(selectQuery, tableExportQuery.getResultInfos()));
 	}
