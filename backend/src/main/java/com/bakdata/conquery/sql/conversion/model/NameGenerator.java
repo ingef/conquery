@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
+import com.bakdata.conquery.sql.compiler.ir.JoinMode;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -65,11 +66,11 @@ public class NameGenerator {
 		return ensureValidLength("concept_%s_%s-%d".formatted(conceptLabel, connectorName, conceptCount));
 	}
 
-	public String joinedNodeName(ConqueryJoinType logicalOperation) {
+	public String joinedNodeName(JoinMode logicalOperation) {
 		return switch (logicalOperation) {
-			case INNER_JOIN -> "AND-%d".formatted(++andCount);
-			case OUTER_JOIN -> "OR-%d".formatted(++orCount);
-			case LEFT_JOIN -> throw new UnsupportedOperationException("Creating CTE names for LEFT_JOIN nodes is not supported");
+			case INNER -> "AND-%d".formatted(++andCount);
+			case FULL_OUTER -> "OR-%d".formatted(++orCount);
+			case LEFT -> throw new UnsupportedOperationException("Creating CTE names for LEFT joins is not supported");
 		};
 	}
 

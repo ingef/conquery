@@ -1,7 +1,5 @@
 package com.bakdata.conquery.sql.conversion.model;
 
-import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.compiler.ir.Selects;
 import static org.jooq.impl.DSL.*;
 
 import java.util.ArrayList;
@@ -9,33 +7,42 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
+import com.bakdata.conquery.sql.compiler.ir.JoinMode;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.QueryStepJoiner;
+import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
-import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.aggregation.DateAggregationDates;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.google.common.base.Preconditions;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.Function3;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.TableLike;
-import org.jooq.TableOnConditionStep;
 import org.jooq.impl.DSL;
 
-public class QueryStepJoiner {
+/**
+ * Composes converted backend query nodes, including negation and date aggregation, into compiler query steps.
+ *
+ * <p>TODO Move this composition into {@code sql-connector} after its remaining backend query, schema, and legacy
+ * dialect dependencies have framework-neutral compiler contracts.</p>
+ */
+public class QueryStepComposer {
 
 	private static final String NEGATED_CTE_SUFFIX = "_negated";
+
+	private QueryStepComposer() {
+	}
 
 	/**
 	 * Implements an antijoin against the allIdsTable defined in {@link IdColumnConfig#getTable()}, for negation without siblings.
@@ -79,7 +86,7 @@ public class QueryStepJoiner {
 	public static QueryStep joinChildren(
 			Iterable<CQElement> children,
 			ConversionContext context,
-			ConqueryJoinType logicalOperation,
+			JoinMode logicalOperation,
 			DateAggregationAction dateAggregationAction
 	) {
 		ConversionContext childrenContext = context.createChildContext();
@@ -94,7 +101,7 @@ public class QueryStepJoiner {
 
 	public static QueryStep joinSteps(
 			List<QueryStep> queriesToJoin,
-			ConqueryJoinType logicalOperation,
+			JoinMode logicalOperation,
 			DateAggregationAction dateAggregationAction,
 			ConversionContext context
 	) {
@@ -111,7 +118,7 @@ public class QueryStepJoiner {
 
 	private static QueryStep doJoin(
 			List<QueryStep> queriesToJoin,
-			ConqueryJoinType logicalOperation,
+			JoinMode logicalOperation,
 			DateAggregationAction dateAggregationAction,
 			ConversionContext context) {
 		// no join required
@@ -120,9 +127,9 @@ public class QueryStepJoiner {
 		}
 
 		String joinedNodeName = context.getNameGenerator().joinedNodeName(logicalOperation);
-		SqlIdColumns ids = coalesceIds(queriesToJoin);
-		List<SqlSelect> mergedSelects = mergeSelects(queriesToJoin);
-		TableLike<Record> joinedTable = constructJoinedTable(queriesToJoin, logicalOperation, context);
+		SqlIdColumns ids = QueryStepJoiner.coalesceIds(queriesToJoin);
+		List<SqlSelect> mergedSelects = QueryStepJoiner.mergeSelects(queriesToJoin);
+		TableLike<Record> joinedTable = QueryStepJoiner.join(queriesToJoin, logicalOperation);
 
 		QueryStep joinedStep;
 		QueryStep.QueryStepBuilder joinedStepBuilder = QueryStep.builder()
@@ -155,7 +162,7 @@ public class QueryStepJoiner {
 	 */
 	private static QueryStep joinStepsContainingNegation(
 			List<QueryStep> queriesToJoin,
-			ConqueryJoinType logicalOperation,
+			JoinMode logicalOperation,
 			DateAggregationAction dateAggregationAction,
 			ConversionContext context
 	) {
@@ -174,11 +181,11 @@ public class QueryStepJoiner {
 		QueryStep negateJoined = doJoin(withNegation, logicalOperation, dateAggregationAction, context);
 
 		Selects.SelectsBuilder selects = nonNegateJoined.getQualifiedSelects()
-														.toBuilder()
-														.sqlSelects(mergeSelects(List.of(nonNegateJoined, negateJoined)));
+				.toBuilder()
+				.sqlSelects(QueryStepJoiner.mergeSelects(List.of(nonNegateJoined, negateJoined)));
 
 
-		if (logicalOperation == ConqueryJoinType.INNER_JOIN) {
+		if (logicalOperation == JoinMode.INNER) {
 			Table<?> table = table(name(nonNegateJoined.getCteName()))
 					.leftOuterJoin(table(name(negateJoined.getCteName())))
 					.on(nonNegateJoined.getQualifiedSelects().getIds().getPrimaryColumn()
@@ -235,71 +242,6 @@ public class QueryStepJoiner {
 						.predecessors(List.of(nonNegateJoined, negateJoined))
 						.build();
 
-	}
-
-	public static TableLike<Record> constructJoinedTable(List<QueryStep> queriesToJoin, ConqueryJoinType logicalOperation, ConversionContext context) {
-
-		SqlFunctionProvider functionProvider = context.getFunctionProvider();
-
-		Function3<Table<?>, Table<?>, List<Condition>, TableOnConditionStep<Record>> joinType =
-				switch (logicalOperation) {
-					case INNER_JOIN -> functionProvider::innerJoin;
-					case OUTER_JOIN -> functionProvider::fullOuterJoin;
-					case LEFT_JOIN -> functionProvider::leftJoin;
-				};
-
-		Table<Record> joinedQuery = getIntitialJoinTable(queriesToJoin);
-
-		for (int i = 0; i < queriesToJoin.size() - 1; i++) {
-
-			QueryStep leftPartQS = queriesToJoin.get(i);
-			QueryStep rightPartQS = queriesToJoin.get(i + 1);
-
-			SqlIdColumns leftIds = leftPartQS.getQualifiedSelects().getIds();
-			SqlIdColumns rightIds = rightPartQS.getQualifiedSelects().getIds();
-
-			List<Condition> joinIdsCondition = leftIds.join(rightIds);
-
-			Condition joinDateCondition = joinOnStratification(leftPartQS, rightPartQS);
-
-			List<Condition> joinConditions = Stream.concat(joinIdsCondition.stream(), Stream.of(joinDateCondition)).collect(Collectors.toList());
-
-			Table<Record> rightPartTable = table(name(rightPartQS.getCteName()));
-			joinedQuery = joinType.apply(joinedQuery, rightPartTable, joinConditions);
-		}
-
-		return joinedQuery;
-	}
-
-	/**
-	 * join on stratification date if present
-	 */
-	private static Condition joinOnStratification(QueryStep leftPartQS, QueryStep rightPartQS) {
-		if (leftPartQS.getSelects().getStratificationDate().isEmpty() || rightPartQS.getSelects().getStratificationDate().isEmpty()) {
-			//TODO use unconditionalJoin in the future. Hana does not like noCondition joins
-			return DSL.noCondition();
-		}
-
-		ColumnDateRange leftStratificationDate = leftPartQS.getQualifiedSelects().getStratificationDate().get();
-		ColumnDateRange rightStratificationDate = rightPartQS.getQualifiedSelects().getStratificationDate().get();
-
-		return leftStratificationDate.join(rightStratificationDate);
-	}
-
-	public static List<SqlSelect> mergeSelects(List<QueryStep> querySteps) {
-		return querySteps.stream()
-						 .flatMap(queryStep -> queryStep.getQualifiedSelects().getSqlSelects().stream())
-						 .collect(Collectors.toList());
-	}
-
-	public static SqlIdColumns coalesceIds(List<QueryStep> querySteps) {
-		List<SqlIdColumns> ids = querySteps.stream().map(QueryStep::getQualifiedSelects).map(Selects::getIds).toList();
-		Preconditions.checkArgument(!ids.isEmpty(), "Need at least 1 query step in the list to coalesce Ids");
-		return ids.getFirst().coalesce(ids.subList(1, ids.size()));
-	}
-
-	private static Table<Record> getIntitialJoinTable(List<QueryStep> queriesToJoin) {
-		return table(name(queriesToJoin.getFirst().getCteName()));
 	}
 
 	private static QueryStep buildJoinedStep(

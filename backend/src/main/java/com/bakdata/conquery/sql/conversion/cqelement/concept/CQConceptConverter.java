@@ -1,6 +1,8 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
+import com.bakdata.conquery.sql.compiler.ir.JoinMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.QueryStepJoiner;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,7 +99,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				.sqlSelects(allConceptSelects)
 				.build();
 
-		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.INNER_JOIN, context);
+		TableLike<Record> joinedTable = QueryStepJoiner.join(queriesToJoin, JoinMode.INNER);
 
 		// group by everything which is not part of an aggregation in this step
 		List<Field<?>> groupByFields =
@@ -268,7 +270,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				.flatMap(cqTable -> convertCqTable(tablePath, cqConcept, cqTable, context).stream())
 				.toList();
 
-		QueryStep joinedStep = QueryStepJoiner.joinSteps(convertedCQTables, ConqueryJoinType.OUTER_JOIN, DateAggregationAction.MERGE, context);
+		QueryStep joinedStep = QueryStepComposer.joinSteps(convertedCQTables, JoinMode.FULL_OUTER, DateAggregationAction.MERGE, context);
 		QueryStep lastConceptStep = finishConceptConversion(joinedStep, cqConcept, tablePath, context);
 		return context.withQueryStep(lastConceptStep);
 	}
