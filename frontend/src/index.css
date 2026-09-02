@@ -146,11 +146,20 @@ div[data-tippy-root] {
 
 /* react-datepicker inside InputDate */
 .conquery-datepicker {
+  /* The popup anchors to this wrapper, so it must cover the input's box */
   .react-datepicker-wrapper {
     position: absolute;
-    top: 0;
-    bottom: 0;
+    inset: 0;
     z-index: -1;
+  }
+}
+
+/* The popup renders into a body-level portal so that scroll containers
+   (e.g. the form) can neither clip nor misplace it */
+#datepicker-portal {
+  .react-datepicker-popper {
+    /* above the app header (z-3) and panel contents */
+    z-index: 10;
   }
   .react-datepicker-popper[data-placement^="bottom"] {
     padding-top: 4px;
