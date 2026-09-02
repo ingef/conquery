@@ -12,6 +12,7 @@ import BaseInput, { type Props as BaseInputProps } from "../BaseInput";
 import { CustomHeader } from "./CustomHeader";
 
 // react-datepicker's own elements are styled in index.css under this class
+// and under #datepicker-portal (the popup renders into a body-level portal)
 const root = tv({
   base: ["relative", "conquery-datepicker"],
 });
@@ -74,6 +75,7 @@ const InputDate = ({
       />
       <ReactDatePicker
         ref={mergeRefs([datePickerRef, ref])}
+        portalId="datepicker-portal"
         selected={value ? parseDate(value, dateFormat) : new Date()}
         onChange={(val: Date | null) => {
           if (!val) {
