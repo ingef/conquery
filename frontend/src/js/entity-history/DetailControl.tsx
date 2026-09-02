@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 const root = tv({ base: "flex flex-col items-center" });
 export type DetailLevel = "summary" | "detail" | "full";

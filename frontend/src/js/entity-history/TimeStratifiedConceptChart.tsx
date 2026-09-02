@@ -9,7 +9,7 @@ import type {
 } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import FaIcon from "../icon/FaIcon";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 import { ConceptBubble } from "./ConceptBubble";
 

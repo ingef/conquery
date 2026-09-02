@@ -2,8 +2,8 @@ import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { tv } from "tailwind-variants";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
-import InfoTooltip from "../tooltip/InfoTooltip";
-import WithTooltip from "../tooltip/WithTooltip";
+import InfoTooltip from "./InfoTooltip";
+import WithTooltip from "./WithTooltip";
 
 const row = tv({
   base: ["flex flex-row items-center", "cursor-pointer"],

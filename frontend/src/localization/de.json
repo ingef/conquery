@@ -172,15 +172,15 @@
     "openFileDialog": "Datei auswählen",
     "shortcut": "Kurzbefehl",
     "true": "Wahr",
-    "false": "Falsch"
-  },
-  "tooltip": {
-    "headline": "Info",
-    "placeholder": "Weitere Informationen zu Konzepten ...",
+    "false": "Falsch",
     "entitiesFound_one": "Entität",
     "entitiesFound_other": "Entitäten",
     "entriesFound_one": "Eintrag",
-    "entriesFound_other": "Einträge",
+    "entriesFound_other": "Einträge"
+  },
+  "infoPane": {
+    "headline": "Info",
+    "placeholder": "Weitere Informationen zu Konzepten ...",
     "date": {
       "daterange": "Zeitraum",
       "from": "Von",

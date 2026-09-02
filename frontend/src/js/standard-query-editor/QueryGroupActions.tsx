@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 // h-[18px]: to provide enough space when only the right side is rendered
 const actions = tv({

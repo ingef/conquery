@@ -77,7 +77,7 @@ export default function Preview() {
   const onClose = () => dispatch(closePreview());
   const statistics = preview.statisticsData;
   const idLabel = useMemo(() => {
-    const primaryIdLabel = t("tooltip.entitiesFound", { count: 2 });
+    const primaryIdLabel = t("common.entitiesFound", { count: 2 });
     if (preview.queryData?.secondaryId) {
       const secondaryIdLabel = loadedSecondaryIds.find(
         (x) => x.id === preview.queryData?.secondaryId,

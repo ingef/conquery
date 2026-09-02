@@ -10,8 +10,8 @@ import { DNDType } from "../../common/constants/dndTypes";
 import { useResizeObserver } from "../../common/helpers/useResizeObserver";
 import type { DragItemFormConfig } from "../../external-forms/types";
 import type { DragItemQuery } from "../../standard-query-editor/types";
-import WithTooltip from "../../tooltip/WithTooltip";
 import Dropzone from "../../ui-components/Dropzone";
+import WithTooltip from "../../ui-components/WithTooltip";
 import {
   removeFolderFromFilter,
   setFolderFilter,

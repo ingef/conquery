@@ -4,7 +4,7 @@ import { tv } from "tailwind-variants";
 
 import type { DateRangeT, QueryT } from "../api/types";
 import type { PreviousQueryT } from "../previous-queries/list/reducer";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 import QueryEditorDropzone from "./QueryEditorDropzone";
 import QueryGroupActions from "./QueryGroupActions";

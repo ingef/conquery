@@ -5,7 +5,7 @@ import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel } from "../api/types";
 import DownloadButton from "../button/DownloadButton";
 import IconButton from "../button/IconButton";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 import { getUserSettings, storeUserSettings } from "../user/userSettings";
 
 const frame = tv({

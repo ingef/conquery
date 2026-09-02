@@ -12,11 +12,11 @@ import type {
   DragItemConceptTreeNode,
   DragItemQuery,
 } from "../standard-query-editor/types";
-import WithTooltip from "../tooltip/WithTooltip";
 import Dropzone, {
   type DropzoneProps,
   type PossibleDroppableObject,
 } from "../ui-components/Dropzone";
+import WithTooltip from "../ui-components/WithTooltip";
 import { EDITOR_DROP_TYPES } from "./config";
 import { DateRange } from "./date-restriction/DateRange";
 import { Connector, Grid } from "./EditorLayout";

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import ErrorMessage from "../error-message/ErrorMessage";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 // tv consts named *Text to not shadow the label/description props
 const labelText = tv({

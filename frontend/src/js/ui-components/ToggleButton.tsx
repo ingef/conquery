@@ -1,6 +1,6 @@
 import { tv } from "tailwind-variants";
 
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "./WithTooltip";
 
 const root = tv({ base: ["m-0", "flex flex-wrap items-center"] });
 

@@ -6,9 +6,8 @@ import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../api/types";
 import IconButton from "../button/IconButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
-import WithTooltip from "../tooltip/WithTooltip";
-
 import InputMultiSelect from "./InputMultiSelect/InputMultiSelect";
+import WithTooltip from "./WithTooltip";
 
 const form = tv({
   base: "flex items-start",

@@ -4,9 +4,8 @@ import { tv } from "tailwind-variants";
 import IconButton from "../button/IconButton";
 import { Highlighter } from "../common/components/Highlighter";
 import HighlightableLabel from "../highlightable-label/HighlightableLabel";
-import WithTooltip from "../tooltip/WithTooltip";
-
 import EditableTextForm from "./EditableTextForm";
+import WithTooltip from "./WithTooltip";
 
 const editButton = tv({
   base: ["px-0 py-[2px]"],

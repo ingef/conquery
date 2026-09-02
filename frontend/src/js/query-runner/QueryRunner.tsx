@@ -2,7 +2,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { tv } from "tailwind-variants";
 
 import { exists } from "../common/helpers/exists";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 import QueryResults from "./QueryResults";
 import QueryRunnerButton from "./QueryRunnerButton";

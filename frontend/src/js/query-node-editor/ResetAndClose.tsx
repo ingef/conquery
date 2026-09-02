@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { TransparentButton } from "../button/TransparentButton";
 import type { NodeResetConfig } from "../model/node";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 import ResetAllSettingsButton from "./ResetAllSettingsButton";
 

@@ -2,7 +2,7 @@ import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PreviousQueryT } from "../previous-queries/list/reducer";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 import QueryEditorDropzone from "./QueryEditorDropzone";
 import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
