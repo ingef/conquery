@@ -10,7 +10,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.Qualifiable;
 import com.bakdata.conquery.sql.compiler.ir.QualifyingUtil;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;

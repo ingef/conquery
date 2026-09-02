@@ -15,7 +15,7 @@ import com.bakdata.conquery.sql.conversion.NodeConversionDispatcher;
 import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import lombok.Builder;
 import lombok.NonNull;

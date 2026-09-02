@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQNegation;
@@ -72,6 +74,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 
 		QueryStep finalStep = QueryStep.builder()
 				.cteName(null)  // the final QueryStep won't be converted to a CTE
+				.projectionMode(ProjectionMode.AGGREGATED)
 				.selects(getFinalSelects(conceptQuery, preFinalSelects, context.getCompilerDialect()))
 				.fromTable(getFinalTable(preFinalStep, contextAfterConversion))
 				.groupBy(getFinalGroupBySelects(preFinalSelects))

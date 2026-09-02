@@ -3,18 +3,19 @@ package com.bakdata.conquery.sql.compiler.rendering;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.name;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
-import com.bakdata.conquery.sql.compiler.rendering.SelectProjectionRenderer.ValidityDateRendering;
 import org.jooq.Field;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +25,7 @@ class SelectProjectionRendererTest {
 	void shouldAggregateValidityDatesForGroupedResults() {
 		RecordingDialect dialect = new RecordingDialect();
 
-		List<Field<?>> fields = SelectProjectionRenderer.render(selectsWithDates(), dialect, ValidityDateRendering.AGGREGATED);
+		List<Field<?>> fields = SelectProjectionRenderer.renderFinal(selectsWithDates(), dialect, ProjectionMode.AGGREGATED);
 
 		assertEquals(
 				List.of(
@@ -43,10 +44,26 @@ class SelectProjectionRendererTest {
 	void shouldRenderValidityDatesWithoutAggregation() {
 		RecordingDialect dialect = new RecordingDialect();
 
-		SelectProjectionRenderer.render(selectsWithDates(), dialect, ValidityDateRendering.INDIVIDUAL);
+		SelectProjectionRenderer.renderFinal(selectsWithDates(), dialect, ProjectionMode.INDIVIDUAL);
 
 		assertEquals(0, dialect.aggregatedRanges);
 		assertEquals(2, dialect.renderedRanges);
+	}
+
+	@Test
+	void shouldRejectIntermediateProjectionAsFinalOutput() {
+		RecordingDialect dialect = new RecordingDialect();
+
+		assertThrows(
+				IllegalArgumentException.class,
+				() -> SelectProjectionRenderer.renderFinal(
+						Selects.builder()
+								.ids(new SqlIdColumns(field(name("person"), String.class)))
+								.build(),
+						dialect,
+						ProjectionMode.INTERMEDIATE
+				)
+		);
 	}
 
 	private static Selects selectsWithDates() {

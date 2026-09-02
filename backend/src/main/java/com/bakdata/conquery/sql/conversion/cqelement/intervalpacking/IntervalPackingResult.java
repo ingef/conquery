@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.conversion.cqelement.intervalpacking;
 
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import lombok.Value;
 
 @Value

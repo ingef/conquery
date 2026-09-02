@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
@@ -23,15 +24,19 @@ public final class SelectProjectionRenderer {
 	 *
 	 * @param selects compiler projection state
 	 * @param dialect database-specific compiler capabilities
-	 * @param validityDateRendering whether validity ranges represent individual or grouped rows
+	 * @param projectionMode final physical representation required for the projection
 	 */
-	public static List<Field<?>> render(
+	public static List<Field<?>> renderFinal(
 			Selects selects,
 			CompilerDialect dialect,
-			ValidityDateRendering validityDateRendering
+			ProjectionMode projectionMode
 	) {
+		if (projectionMode == ProjectionMode.INTERMEDIATE) {
+			throw new IllegalArgumentException("An intermediate projection cannot be rendered as final output");
+		}
+
 		Optional<Field<?>> validityDateRendered = selects.getValidityDate()
-				.map(dateRange -> renderValidityDate(dateRange, dialect, validityDateRendering)
+				.map(dateRange -> renderValidityDate(dateRange, dialect, projectionMode)
 						.as(SharedAliases.DATES_COLUMN.getAlias()));
 
 		Optional<Field<?>> stratificationDateRendered = selects.getStratificationDate()
@@ -53,17 +58,12 @@ public final class SelectProjectionRenderer {
 	private static Field<?> renderValidityDate(
 			ColumnDateRange dateRange,
 			CompilerDialect dialect,
-			ValidityDateRendering validityDateRendering
+			ProjectionMode projectionMode
 	) {
-		return switch (validityDateRendering) {
+		return switch (projectionMode) {
 			case AGGREGATED -> dialect.aggregateDateRanges(dateRange.getStart(), dateRange.getEnd());
 			case INDIVIDUAL -> dialect.renderDateRange(dateRange.getStart(), dateRange.getEnd());
+			case INTERMEDIATE -> throw new IllegalArgumentException("An intermediate projection cannot be rendered as final output");
 		};
-	}
-
-	/** Physical representation required for validity dates in the projection. */
-	public enum ValidityDateRendering {
-		AGGREGATED,
-		INDIVIDUAL
 	}
 }
