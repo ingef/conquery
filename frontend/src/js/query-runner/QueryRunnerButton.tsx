@@ -1,52 +1,45 @@
-import styled from "@emotion/styled";
 import { faPlay, faSpinner, faStop } from "@fortawesome/free-solid-svg-icons";
 import type { Ref } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import BasicButton from "../button/BasicButton";
 import FaIcon from "../icon/FaIcon";
 
-const Root = styled("div")`
-  display: flex;
-`;
+const left = tv({
+  base: ["px-[15px]", "transition-[color,background-color] duration-100"],
+  variants: {
+    running: {
+      true: ["bg-white", "border-r border-primary-500"],
+      false: "bg-primary-500",
+    },
+  },
+});
 
-const Left = styled("span")<{ running?: boolean }>`
-  transition: ${({ theme }) =>
-    `color ${theme.transitionTime}, background-color ${theme.transitionTime}`};
-  padding: 0 15px;
-  background-color: ${({ theme, running }) =>
-    running ? "white" : theme.col.blueGrayDark};
-  border-right: ${({ theme, running }) =>
-    running ? `1px solid ${theme.col.blueGrayDark}` : "transparent"};
-`;
+const runnerLabel = tv({
+  base: [
+    "px-[15px]",
+    "bg-white group-hover/runner:bg-gray-50",
+    "text-gray-800",
+    "leading-[2.5]",
+    "whitespace-nowrap",
+    "transition-[background-color] duration-100",
+  ],
+});
 
-const Label = styled("span")`
-  transition: background-color ${({ theme }) => theme.transitionTime};
-  padding: 0 15px;
-  color: ${({ theme }) => theme.col.black};
-  background-color: white;
-  line-height: 2.5;
-  white-space: nowrap;
-`;
-
-const StyledBasicButton = styled(BasicButton)`
-  outline: none;
-  border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  overflow: hidden;
-  padding: 0;
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.sm};
-  line-height: 2.5;
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  &:hover {
-    .query-runner-label {
-      background-color: ${({ theme }) => theme.col.grayVeryLight};
-    }
-  }
-`;
+const button = tv({
+  base: [
+    "group/runner",
+    "inline-flex flex-row items-center",
+    "m-0 p-0",
+    "overflow-hidden",
+    "outline-none",
+    "rounded",
+    "border border-primary-500",
+    "text-sm",
+    "leading-[2.5]",
+  ],
+});
 
 function getIcon(loading: boolean, running: boolean) {
   return loading ? faSpinner : running ? faStop : faPlay;
@@ -73,19 +66,20 @@ const QueryRunnerButton = ({
   const icon = getIcon(isStartStopLoading, isQueryRunning);
 
   return (
-    <Root ref={ref}>
-      <StyledBasicButton
+    <div className="flex" ref={ref}>
+      <BasicButton
         type="button"
+        className={button()}
         onClick={onClick}
         disabled={disabled}
         data-test-id="query-runner-button"
       >
-        <Left running={isQueryRunning}>
+        <span className={left({ running: isQueryRunning })}>
           <FaIcon white={!isQueryRunning} icon={icon} />
-        </Left>
-        <Label className="query-runner-label">{label}</Label>
-      </StyledBasicButton>
-    </Root>
+        </span>
+        <span className={runnerLabel()}>{label}</span>
+      </BasicButton>
+    </div>
   );
 };
 

@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -18,16 +17,6 @@ import ContentCell from "./ContentCell";
 import DateColumnSelect from "./DateColumnSelect";
 import TableFilters from "./TableFilters";
 import TableSelects from "./TableSelects";
-
-const Column = styled("div")`
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-`;
-
-const MaximizedCell = styled(ContentCell)`
-  flex-grow: 1;
-`;
 
 const TableView = ({
   node,
@@ -117,7 +106,7 @@ const TableView = ({
   );
 
   return (
-    <Column>
+    <div className="flex grow flex-col">
       {displaySelects && (
         <ContentCell headline={t("queryNodeEditor.selects")}>
           {table.selects && table.selects.length > 0 && (
@@ -140,7 +129,7 @@ const TableView = ({
         </ContentCell>
       )}
       {displayFilters && (
-        <MaximizedCell headline={t("queryNodeEditor.filters")}>
+        <ContentCell className="grow" headline={t("queryNodeEditor.filters")}>
           <TableFilters
             key={tableIdx}
             filters={table.filters}
@@ -149,9 +138,9 @@ const TableView = ({
             onSwitchFilterMode={setFilterMode}
             onLoadFilterSuggestions={loadFilterSuggestions}
           />
-        </MaximizedCell>
+        </ContentCell>
       )}
-    </Column>
+    </div>
   );
 };
 

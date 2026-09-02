@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
 import { memo } from "react";
 import { useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import type {
   CurrencyConfigT,
@@ -15,9 +15,7 @@ import InputSelect from "../ui-components/InputSelect/InputSelect";
 
 import FilterListMultiSelect from "./FilterListMultiSelect";
 
-const Container = styled("div")`
-  margin-bottom: 10px;
-`;
+const container = tv({ base: "mb-[10px]" });
 
 export interface BaseTableFilterProps {
   className?: string;
@@ -183,9 +181,12 @@ const TableFilter = ({
   })();
 
   return filterComponent ? (
-    <Container className={className} data-test-id={`table-filter-${filter.id}`}>
+    <div
+      className={container({ className })}
+      data-test-id={`table-filter-${filter.id}`}
+    >
       {filterComponent}
-    </Container>
+    </div>
   ) : null;
 };
 

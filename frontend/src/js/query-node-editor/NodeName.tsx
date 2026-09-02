@@ -1,12 +1,7 @@
-import styled from "@emotion/styled";
 import { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import EditableText from "../ui-components/EditableText";
-
-const Root = styled("div")`
-  padding: 10px 15px;
-`;
 
 interface Props {
   allowEditing: boolean;
@@ -20,7 +15,7 @@ const NodeName = ({ allowEditing, label, maxWidth, onUpdateLabel }: Props) => {
   const [editingLabel, setEditingLabel] = useState<boolean>(false);
 
   return (
-    <Root style={{ maxWidth }}>
+    <div className="px-[15px] py-[10px]" style={{ maxWidth }}>
       {allowEditing ? (
         <EditableText
           large
@@ -38,7 +33,7 @@ const NodeName = ({ allowEditing, label, maxWidth, onUpdateLabel }: Props) => {
       ) : (
         label
       )}
-    </Root>
+    </div>
   );
 };
 

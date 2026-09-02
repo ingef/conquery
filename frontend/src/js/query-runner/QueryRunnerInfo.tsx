@@ -1,15 +1,15 @@
-import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { QueryRunnerStateT } from "./reducer";
 
-const Status = styled("p")<{ success?: boolean; error?: boolean }>`
-  font-weight: 400;
-  margin: 0 10px;
-  font-size: ${({ theme }) => theme.font.sm};
-  color: ${({ theme, success, error }) =>
-    success ? theme.col.green : error ? theme.col.red : "initial"};
-`;
+const status = tv({
+  base: ["mx-[10px] my-0", "text-sm", "font-normal"],
+  variants: {
+    success: { true: "text-green" },
+    error: { true: "text-red" },
+  },
+});
 
 const useMessage = (queryRunner: QueryRunnerStateT) => {
   const { t } = useTranslation();
@@ -55,13 +55,15 @@ const QueryRunnerInfo = ({
   }
 
   return (
-    <Status
-      className={className}
-      success={message.type === "success"}
-      error={message.type === "error"}
+    <p
+      className={status({
+        success: message.type === "success",
+        error: message.type === "error",
+        className,
+      })}
     >
       {message.value}
-    </Status>
+    </p>
   );
 };
 
