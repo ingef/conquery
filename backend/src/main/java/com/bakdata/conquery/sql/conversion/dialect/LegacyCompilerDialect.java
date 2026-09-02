@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQAndConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQDateRestrictionConverter;
@@ -18,7 +19,6 @@ import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQYesConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
-import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.query.AbsoluteFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.CQReusedQueryConverter;
@@ -67,8 +67,8 @@ public interface LegacyCompilerDialect extends CompilerDialect {
 
 	default List<NodeConverter<? extends Visitable>> getDefaultNodeConverters(DSLContext dslContext) {
 
-		QueryStepTransformer queryStepTransformer = new QueryStepTransformer(dslContext);
-		FormConversionHelper formConversionUtil = new FormConversionHelper(queryStepTransformer);
+		QueryStepRenderer queryStepRenderer = new QueryStepRenderer(dslContext);
+		FormConversionHelper formConversionUtil = new FormConversionHelper(queryStepRenderer);
 
 		return List.of(
 				new CQDateRestrictionConverter(),
@@ -79,12 +79,12 @@ public interface LegacyCompilerDialect extends CompilerDialect {
 				new CQConceptConverter(),
 				new CQExternalConverter(),
 				new CQReusedQueryConverter(),
-				new ConceptQueryConverter(queryStepTransformer),
+				new ConceptQueryConverter(queryStepRenderer),
 				new SecondaryIdQueryConverter(),
 				new AbsoluteFormQueryConverter(formConversionUtil),
 				new EntityDateQueryConverter(formConversionUtil),
 				new RelativFormQueryConverter(formConversionUtil),
-				new TableExportQueryConverter(queryStepTransformer)
+				new TableExportQueryConverter(queryStepRenderer)
 		);
 	}
 
