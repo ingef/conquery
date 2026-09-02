@@ -1,8 +1,9 @@
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { Focusable } from "react-aria-components";
 import { tv } from "tailwind-variants";
 import FaIcon from "../icon/FaIcon";
 import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const root = tv({
   base: ["flex items-start", "border-b border-gray-100", "bg-white", "px-5"],
@@ -62,16 +63,19 @@ const TabNavigation = ({
       {tabs.map(({ key, label, tooltip, loading }) => {
         return (
           <HoverNavigatable key={key} triggerNavigate={createClickHandler(key)}>
-            <WithTooltip className="shrink-0" text={tooltip} lazy>
-              <button
-                type="button"
-                className={headline({ active: activeTab === key })}
-                onClick={createClickHandler(key)}
-              >
-                {label}
-                {loading && <FaIcon className="ml-[5px]" icon={faSpinner} />}
-              </button>
-            </WithTooltip>
+            <TooltipTrigger delay={1500}>
+              <Focusable>
+                <button
+                  type="button"
+                  className={headline({ active: activeTab === key })}
+                  onClick={createClickHandler(key)}
+                >
+                  {label}
+                  {loading && <FaIcon className="ml-[5px]" icon={faSpinner} />}
+                </button>
+              </Focusable>
+              <Tooltip>{tooltip}</Tooltip>
+            </TooltipTrigger>
           </HoverNavigatable>
         );
       })}

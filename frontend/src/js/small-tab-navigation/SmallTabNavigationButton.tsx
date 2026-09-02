@@ -1,4 +1,4 @@
-import type { Ref } from "react";
+import type { ButtonHTMLAttributes, Ref } from "react";
 import { tv } from "tailwind-variants";
 
 import { HoverNavigatable } from "./HoverNavigatable";
@@ -94,6 +94,7 @@ const SmallTabNavigationButton = ({
   isSelected,
   onClick,
   variant,
+  ...props
 }: {
   ref?: Ref<HTMLButtonElement>;
 
@@ -103,7 +104,10 @@ const SmallTabNavigationButton = ({
   onClick: () => void;
   children?: React.ReactNode;
   variant: "primary" | "secondary";
-}) => {
+} & Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  "onClick" | "value" | "children"
+>) => {
   const highlight =
     value === "own" ? "own" : value === "system" ? "system" : "default";
 
@@ -111,6 +115,7 @@ const SmallTabNavigationButton = ({
     <HoverNavigatable triggerNavigate={onClick}>
       <button
         ref={ref}
+        {...props}
         className={button({
           size,
           primary: variant === "primary",

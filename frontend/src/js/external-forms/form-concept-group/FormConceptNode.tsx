@@ -13,7 +13,11 @@ import { canNodeBeDropped } from "../../model/node";
 import { HoverNavigatable } from "../../small-tab-navigation/HoverNavigatable";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
-import WithTooltip from "../../ui-components/WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../../ui-components/Tooltip";
 
 const node = tv({
   base: [
@@ -140,9 +144,8 @@ const FormConceptNode = ({
         onClick={onClick}
       >
         <div>
-          <WithTooltip text={tooltipText}>
-            {/* biome-ignore lint/complexity/noUselessFragments: WithTooltip takes a single child */}
-            <>
+          <TooltipTrigger>
+            <TooltipTarget as="div" excludeFromTabOrder>
               {rootNodeLabel && <p className={rootNode()}>{rootNodeLabel}</p>}
               <p className={labelText()}>{conceptNode?.label}</p>
               {conceptNode && !!conceptNode.description && (
@@ -150,12 +153,13 @@ const FormConceptNode = ({
                   {conceptNode.description}
                 </div>
               )}
-            </>
-          </WithTooltip>
+            </TooltipTarget>
+            <Tooltip>{tooltipText}</Tooltip>
+          </TooltipTrigger>
         </div>
         <div className="ml-[10px]">
           {expand?.expandable && (
-            <WithTooltip text={t("externalForms.common.concept.expand")}>
+            <TooltipTrigger>
               <IconButton
                 className="px-[6px] py-0"
                 icon={expand.active ? faCompressArrowsAlt : faExpandArrowsAlt}
@@ -165,7 +169,8 @@ const FormConceptNode = ({
                   expand.onClick();
                 }}
               />
-            </WithTooltip>
+              <Tooltip>{t("externalForms.common.concept.expand")}</Tooltip>
+            </TooltipTrigger>
           )}
         </div>
       </div>

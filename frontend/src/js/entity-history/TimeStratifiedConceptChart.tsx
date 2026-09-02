@@ -9,7 +9,11 @@ import type {
 } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import FaIcon from "../icon/FaIcon";
-import WithTooltip from "../ui-components/WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../ui-components/Tooltip";
 
 import { ConceptBubble } from "./ConceptBubble";
 
@@ -101,9 +105,12 @@ export const TimeStratifiedConceptChart = ({
     >
       <div />
       {allValues.map((val) => (
-        <WithTooltip key={val.label} text={val.description}>
-          <ConceptBubble>{val.label}</ConceptBubble>
-        </WithTooltip>
+        <TooltipTrigger key={val.label}>
+          <TooltipTarget as={ConceptBubble} excludeFromTabOrder>
+            {val.label}
+          </TooltipTarget>
+          <Tooltip>{val.description}</Tooltip>
+        </TooltipTrigger>
       ))}
       {years.map((year, i) => (
         <Fragment key={year}>

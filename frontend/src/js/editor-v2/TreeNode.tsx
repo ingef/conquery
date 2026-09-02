@@ -16,7 +16,11 @@ import Dropzone, {
   type DropzoneProps,
   type PossibleDroppableObject,
 } from "../ui-components/Dropzone";
-import WithTooltip from "../ui-components/WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../ui-components/Tooltip";
 import { EDITOR_DROP_TYPES } from "./config";
 import { DateRange } from "./date-restriction/DateRange";
 import { Connector, Grid } from "./EditorLayout";
@@ -259,10 +263,10 @@ export function TreeNode({
           onDrop={() => {}}
         >
           {({ canDrop }) => (
-            <WithTooltip text={tooltipText}>
-              {/* biome-ignore lint/a11y/noStaticElementInteractions: TODO node selection area, emotion had hidden this */}
-              {/* biome-ignore lint/a11y/useKeyWithClickEvents: see above */}
-              <div
+            <TooltipTrigger>
+              <TooltipTarget
+                as="div"
+                excludeFromTabOrder
                 className={node({
                   isDragging: canDrop,
                   active,
@@ -399,8 +403,9 @@ export function TreeNode({
                     </InvisibleDropzone>
                   </Grid>
                 )}
-              </div>
-            </WithTooltip>
+              </TooltipTarget>
+              <Tooltip>{tooltipText}</Tooltip>
+            </TooltipTrigger>
           )}
         </Dropzone>
         {droppable.h && (

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { TransparentButton } from "../button/TransparentButton";
 import type { NodeResetConfig } from "../model/node";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import ResetAllSettingsButton from "./ResetAllSettingsButton";
 
@@ -30,11 +30,12 @@ const ResetAndClose = ({
           compact={isCompact}
         />
       )}
-      <WithTooltip text={t("common.saveAndCloseEsc")}>
+      <TooltipTrigger>
         <TransparentButton small onClick={onClose}>
           {t("common.save")}
         </TransparentButton>
-      </WithTooltip>
+        <Tooltip>{t("common.saveAndCloseEsc")}</Tooltip>
+      </TooltipTrigger>
     </div>
   );
 };

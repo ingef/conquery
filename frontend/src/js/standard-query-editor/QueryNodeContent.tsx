@@ -3,7 +3,11 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import ErrorMessage from "../error-message/ErrorMessage";
-import WithTooltip from "../ui-components/WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../ui-components/Tooltip";
 
 // tv consts named *Text to not shadow the label/description props
 const labelText = tv({
@@ -63,8 +67,8 @@ const QueryNodeContent = ({
   const { t } = useTranslation();
 
   return (
-    <WithTooltip text={tooltipText}>
-      <div className="grow pt-[2px]">
+    <TooltipTrigger>
+      <TooltipTarget as="div" excludeFromTabOrder className="grow pt-[2px]">
         {!isConceptQueryNode && (
           <p className={previousQueryLabel()}>
             {t("queryEditor.previousQuery")}
@@ -79,8 +83,9 @@ const QueryNodeContent = ({
             {description && <p className={descriptionText()}>{description}</p>}
           </>
         )}
-      </div>
-    </WithTooltip>
+      </TooltipTarget>
+      <Tooltip>{tooltipText}</Tooltip>
+    </TooltipTrigger>
   );
 };
 

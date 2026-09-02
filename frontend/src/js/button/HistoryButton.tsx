@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 
 import { openHistory } from "../entity-history/actions";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import IconButton from "./IconButton";
 
@@ -17,8 +17,9 @@ export const HistoryButton = () => {
   }, [dispatch]);
 
   return (
-    <WithTooltip text={t("history.history")}>
+    <TooltipTrigger>
       <IconButton small frame icon={faListUl} onClick={onClick} />
-    </WithTooltip>
+      <Tooltip>{t("history.history")}</Tooltip>
+    </TooltipTrigger>
   );
 };

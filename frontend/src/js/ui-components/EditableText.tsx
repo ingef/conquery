@@ -5,7 +5,7 @@ import IconButton from "../button/IconButton";
 import { Highlighter } from "../common/components/Highlighter";
 import HighlightableLabel from "../highlightable-label/HighlightableLabel";
 import EditableTextForm from "./EditableTextForm";
-import WithTooltip from "./WithTooltip";
+import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 const editButton = tv({
   base: ["px-0 py-[2px]"],
@@ -64,7 +64,7 @@ const EditableText = ({
     />
   ) : (
     <div className={text({ className })}>
-      <WithTooltip text={tooltip}>
+      <TooltipTrigger>
         <IconButton
           className={editButton({ large: !!large })}
           bare
@@ -73,7 +73,8 @@ const EditableText = ({
           small
           large={large}
         />
-      </WithTooltip>
+        <Tooltip>{tooltip}</Tooltip>
+      </TooltipTrigger>
       <HighlightableLabel className={label()} isHighlighted={isHighlighted}>
         {highlightedWords && highlightedWords.length > 0 ? (
           <Highlighter

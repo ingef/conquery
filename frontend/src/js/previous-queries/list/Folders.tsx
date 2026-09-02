@@ -11,7 +11,7 @@ import { useResizeObserver } from "../../common/helpers/useResizeObserver";
 import type { DragItemFormConfig } from "../../external-forms/types";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import Dropzone from "../../ui-components/Dropzone";
-import WithTooltip from "../../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import {
   removeFolderFromFilter,
   setFolderFilter,
@@ -264,7 +264,7 @@ const Folders = ({ className }: { className?: string }) => {
                     resultCount={searchResult ? searchResult[folder] : null}
                     resultWords={searchResultWords}
                   />
-                  <WithTooltip text={t("common.delete")}>
+                  <TooltipTrigger>
                     <IconButton
                       className={deleteButton()}
                       icon={faTimes}
@@ -273,7 +273,8 @@ const Folders = ({ className }: { className?: string }) => {
                         e.stopPropagation();
                       }}
                     />
-                  </WithTooltip>
+                    <Tooltip>{t("common.delete")}</Tooltip>
+                  </TooltipTrigger>
                 </>
               )}
             </Dropzone>

@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 
 import IconButton from "../button/IconButton";
 import { ConfirmableTooltip } from "../ui-components/ConfirmableTooltip";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { clearQuery } from "./actions";
 
@@ -19,9 +19,10 @@ const QueryClearButton = ({ className }: { className?: string }) => {
         confirmationText={t(`queryEditor.clearConfirm`)}
         onConfirm={onClearQuery}
       >
-        <WithTooltip text={t("queryEditor.clear")}>
+        <TooltipTrigger>
           <IconButton tiny icon={faTrash} tabIndex={-1} />
-        </WithTooltip>
+          <Tooltip>{t("queryEditor.clear")}</Tooltip>
+        </TooltipTrigger>
       </ConfirmableTooltip>
     </div>
   );

@@ -12,7 +12,7 @@ import type {
 import type { StateT } from "../../app/reducers";
 import IconButton from "../../button/IconButton";
 import { setMessage } from "../../snack-message/actions";
-import WithTooltip from "../../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import { useLoadQueries } from "../list/actions";
 
 import type { QueryToUploadT } from "./CSVColumnPicker";
@@ -76,14 +76,15 @@ const UploadQueryResults = ({
 
   return (
     <div className={className}>
-      <WithTooltip text={t("uploadQueryResults.uploadResults")}>
+      <TooltipTrigger>
         <IconButton
           className="px-[6px] py-[9px]"
           frame
           icon={faUpload}
           onClick={() => setIsModalOpen(true)}
         />
-      </WithTooltip>
+        <Tooltip>{t("uploadQueryResults.uploadResults")}</Tooltip>
+      </TooltipTrigger>
       {isModalOpen && (
         <UploadQueryResultsModal
           loading={loading}

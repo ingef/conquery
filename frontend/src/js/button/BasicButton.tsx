@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, Ref } from "react";
-
+import { mergeProps, useFocusable, useObjectRef } from "react-aria";
 import { tv } from "tailwind-variants";
 
 export interface BasicButtonProps
@@ -42,22 +42,31 @@ const BasicButton = ({
   large,
   active,
   secondary,
+  disabled,
   ...props
-}: BasicButtonProps & { ref?: Ref<HTMLButtonElement> }) => (
-  <button
-    type="button"
-    className={button({
-      bare,
-      tiny,
-      small,
-      large,
-      active,
-      secondary,
-      className,
-    })}
-    {...props}
-    ref={ref}
-  />
-);
+}: BasicButtonProps & { ref?: Ref<HTMLButtonElement> }) => {
+  const domRef = useObjectRef(ref);
+  // A surrounding TooltipTrigger hands its hover/focus props to the
+  // nearest focusable element: this makes every button a tooltip trigger.
+  const { focusableProps } = useFocusable({ isDisabled: disabled }, domRef);
+
+  return (
+    <button
+      type="button"
+      className={button({
+        bare,
+        tiny,
+        small,
+        large,
+        active,
+        secondary,
+        className,
+      })}
+      disabled={disabled}
+      {...mergeProps(focusableProps, props)}
+      ref={domRef}
+    />
+  );
+};
 
 export default BasicButton;

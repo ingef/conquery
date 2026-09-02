@@ -9,7 +9,7 @@ import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import ProgressBar from "../common/components/ProgressBar";
 import { Heading3 } from "../headings/Headings";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { SettingsModal } from "./SettingsModal";
 
@@ -87,12 +87,13 @@ export const NavigationHeader = memo(
             </Heading3>
             <p className={specialText()}>{t("history.history")}</p>
           </div>
-          <WithTooltip text={t("history.settings.headline")}>
+          <TooltipTrigger>
             <IconButton
               icon={faSliders}
               onClick={() => setSettingsModalOpen(true)}
             />
-          </WithTooltip>
+            <Tooltip>{t("history.settings.headline")}</Tooltip>
+          </TooltipTrigger>
         </div>
         <div className="grid gap-x-2 grid-cols-[auto_1fr] items-center">
           <Heading3 className={heading({ end: true })}>{idsCount}</Heading3>

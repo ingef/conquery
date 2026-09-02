@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 // h-[18px]: to provide enough space when only the right side is rendered
 const actions = tv({
@@ -53,7 +53,7 @@ const QueryGroupActions = ({
   return (
     <div className={actions()}>
       <div>
-        <WithTooltip text={t("help.queryEditorExclude")} lazy>
+        <TooltipTrigger delay={1500}>
           <IconButton
             className={excludeButton({ active: excludeActive })}
             red
@@ -64,8 +64,9 @@ const QueryGroupActions = ({
           >
             {t("queryEditor.exclude")}
           </IconButton>
-        </WithTooltip>
-        <WithTooltip text={t("help.queryEditorDate")} lazy>
+          <Tooltip>{t("help.queryEditorExclude")}</Tooltip>
+        </TooltipTrigger>
+        <TooltipTrigger delay={1500}>
           <IconButton
             className={dateButton({ active: dateActive })}
             active={dateActive}
@@ -75,12 +76,14 @@ const QueryGroupActions = ({
           >
             {t("queryEditor.date")}
           </IconButton>
-        </WithTooltip>
+          <Tooltip>{t("help.queryEditorDate")}</Tooltip>
+        </TooltipTrigger>
       </div>
       <div className="absolute top-[5px] right-[7px]">
-        <WithTooltip text={t("queryEditor.removeColumn")}>
+        <TooltipTrigger>
           <IconButton tiny icon={faTimes} onClick={onDeleteGroup} />
-        </WithTooltip>
+          <Tooltip>{t("queryEditor.removeColumn")}</Tooltip>
+        </TooltipTrigger>
       </div>
     </div>
   );

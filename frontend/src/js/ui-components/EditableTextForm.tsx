@@ -5,7 +5,7 @@ import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
-import WithTooltip from "./WithTooltip";
+import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 const input = tv({
   base: ["h-[28px]", "px-2", "rounded", "border border-gray-500", "text-sm"],
@@ -67,7 +67,7 @@ const EditableTextForm = ({
         }}
       />
       {!saveOnClickoutside && (
-        <WithTooltip text={t("common.save")}>
+        <TooltipTrigger>
           <IconButton
             className={saveButton()}
             type="submit"
@@ -75,7 +75,8 @@ const EditableTextForm = ({
             disabled={loading}
             icon={loading ? faSpinner : faCheck}
           />
-        </WithTooltip>
+          <Tooltip>{t("common.save")}</Tooltip>
+        </TooltipTrigger>
       )}
     </form>
   );

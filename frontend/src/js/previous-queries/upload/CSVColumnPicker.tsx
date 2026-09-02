@@ -21,7 +21,7 @@ import FaIcon from "../../icon/FaIcon";
 import { useActiveLang } from "../../localization/useActiveLang";
 import ScrollableList from "../../scrollable-list/ScrollableList";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
-import WithTooltip from "../../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 
 const td = tv({
   base: "min-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap text-xs",
@@ -259,9 +259,10 @@ const CSVColumnPicker = ({
             <code className="font-bold">{file.name}</code>
             <code>{csv.length} Zeilen</code>
           </div>
-          <WithTooltip text={t("common.clear")}>
+          <TooltipTrigger>
             <IconButton frame icon={faTrash} onClick={onReset} />
-          </WithTooltip>
+            <Tooltip>{t("common.clear")}</Tooltip>
+          </TooltipTrigger>
         </div>
         {csv.length > 0 && (
           <InputSelect
