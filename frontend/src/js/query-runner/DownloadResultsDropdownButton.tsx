@@ -1,11 +1,14 @@
 import { faCaretDown, faDownload } from "@fortawesome/free-solid-svg-icons";
 import { memo, useEffect, useMemo, useState } from "react";
+import { DialogTrigger, Pressable } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import type { ResultUrlWithLabel } from "../api/types";
 import DownloadButton from "../button/DownloadButton";
 import IconButton from "../button/IconButton";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Dialog, Popover } from "../ui-components/Popover";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { getUserSettings, storeUserSettings } from "../user/userSettings";
 
 const frame = tv({
@@ -31,17 +34,6 @@ const downloadButton = tv({
 const dropdownOpenButton = tv({ base: "px-2 py-[9px]" });
 
 const separator = tv({ base: ["h-[33px] w-px", "bg-gray-500"] });
-
-const popperOptions = {
-  modifiers: [
-    {
-      name: "preventOverflow",
-      options: {
-        padding: 20,
-      },
-    },
-  ],
-};
 
 interface FileChoice {
   label: string;
@@ -81,6 +73,7 @@ const DownloadResultsDropdownButton = ({
   tiny?: boolean;
   tooltip?: string;
 }) => {
+  const { t } = useTranslation();
   const [fileChoice, setFileChoice] = useState<FileChoice>(() => {
     const initial = getInitialEndingChoice(resultUrls);
     return { label: initial.label, ending: getEnding(initial.url) };
@@ -101,29 +94,6 @@ const DownloadResultsDropdownButton = ({
     return truncate(fileChoice.label);
   }, [fileChoice]);
 
-  const dropdown = useMemo(() => {
-    return (
-      <div className={list()}>
-        {resultUrls.map((resultUrl) => {
-          const ending = getEnding(resultUrl.url);
-
-          return (
-            <DownloadButton
-              className={downloadButton()}
-              key={resultUrl.url}
-              resultUrl={resultUrl}
-              onClick={() => setFileChoice({ label: resultUrl.label, ending })}
-              bgHover
-              showColoredIcon
-            >
-              {truncate(resultUrl.label)}
-            </DownloadButton>
-          );
-        })}
-      </div>
-    );
-  }, [resultUrls]);
-
   return (
     <div className={frame({ noborder: tiny })}>
       {!tiny && (
@@ -139,21 +109,45 @@ const DownloadResultsDropdownButton = ({
           <div className={separator()} />
         </>
       )}
-      <WithTooltip text={tooltip} hideOnClick>
-        <WithTooltip
-          html={dropdown}
-          interactive
-          arrow={false}
-          trigger="click"
-          popperOptions={popperOptions}
-        >
-          <IconButton
-            className={dropdownOpenButton()}
-            bgHover
-            icon={tiny ? faDownload : faCaretDown}
-          />
-        </WithTooltip>
-      </WithTooltip>
+      <TooltipTrigger>
+        <DialogTrigger>
+          <Pressable>
+            <IconButton
+              className={dropdownOpenButton()}
+              bgHover
+              icon={tiny ? faDownload : faCaretDown}
+            />
+          </Pressable>
+          <Popover containerPadding={20}>
+            <Dialog aria-label={t("previousQuery.downloadResults")}>
+              {({ close }) => (
+                <div className={list()}>
+                  {resultUrls.map((resultUrl) => {
+                    const ending = getEnding(resultUrl.url);
+
+                    return (
+                      <DownloadButton
+                        className={downloadButton()}
+                        key={resultUrl.url}
+                        resultUrl={resultUrl}
+                        onClick={() => {
+                          setFileChoice({ label: resultUrl.label, ending });
+                          close();
+                        }}
+                        bgHover
+                        showColoredIcon
+                      >
+                        {truncate(resultUrl.label)}
+                      </DownloadButton>
+                    );
+                  })}
+                </div>
+              )}
+            </Dialog>
+          </Popover>
+        </DialogTrigger>
+        <Tooltip>{tooltip}</Tooltip>
+      </TooltipTrigger>
     </div>
   );
 };

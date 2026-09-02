@@ -3,7 +3,7 @@ import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../../button/IconButton";
-import { ConfirmableTooltip } from "../../ui-components/ConfirmableTooltip";
+import { ConfirmPopover } from "../../ui-components/ConfirmPopover";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import { useRemoveFormConfig, useRemoveQuery } from "./actions";
 import { isFormConfig } from "./helpers";
@@ -32,7 +32,7 @@ export const DeleteProjectItemButton = ({ item }: { item: ProjectItemT }) => {
 
   return (
     <TooltipTrigger>
-      <ConfirmableTooltip
+      <ConfirmPopover
         red
         onConfirm={onDelete}
         confirmationText={confirmationText}
@@ -43,7 +43,7 @@ export const DeleteProjectItemButton = ({ item }: { item: ProjectItemT }) => {
           aria-label={t("common.delete")}
           data-test-id="project-item-delete-button"
         />
-      </ConfirmableTooltip>
+      </ConfirmPopover>
       <Tooltip>{t("common.delete")}</Tooltip>
     </TooltipTrigger>
   );

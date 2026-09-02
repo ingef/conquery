@@ -134,6 +134,7 @@
   },
   "common": {
     "version": "Version",
+    "help": "Hilfe",
     "manual": "Handbuch",
     "contact": "Kontakt",
     "confirm": "Bestätigen",

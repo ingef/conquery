@@ -22,7 +22,7 @@ import type {
   DragItemConceptTreeNode,
   DragItemQuery,
 } from "../standard-query-editor/types";
-import { ConfirmableTooltip } from "../ui-components/ConfirmableTooltip";
+import { ConfirmPopover } from "../ui-components/ConfirmPopover";
 import Dropzone from "../ui-components/Dropzone";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { EDITOR_DROP_TYPES, HOTKEYS } from "./config";
@@ -432,7 +432,7 @@ export function EditorV2({
                 </KeyboardShortcutTooltip>
               )}
               <TooltipTrigger>
-                <ConfirmableTooltip
+                <ConfirmPopover
                   onConfirm={onReset}
                   confirmationText={t("editorV2.clearConfirm")}
                 >
@@ -440,7 +440,7 @@ export function EditorV2({
                     style={{ marginLeft: "20px", height: "32.5px" }}
                     icon={faTrash}
                   />
-                </ConfirmableTooltip>
+                </ConfirmPopover>
                 <Tooltip>{t("editorV2.clear")}</Tooltip>
               </TooltipTrigger>
             </div>

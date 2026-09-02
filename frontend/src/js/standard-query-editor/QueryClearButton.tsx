@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 
 import IconButton from "../button/IconButton";
-import { ConfirmableTooltip } from "../ui-components/ConfirmableTooltip";
+import { ConfirmPopover } from "../ui-components/ConfirmPopover";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { clearQuery } from "./actions";
@@ -16,12 +16,12 @@ const QueryClearButton = ({ className }: { className?: string }) => {
   return (
     <div className={className}>
       <TooltipTrigger>
-        <ConfirmableTooltip
+        <ConfirmPopover
           confirmationText={t(`queryEditor.clearConfirm`)}
           onConfirm={onClearQuery}
         >
           <IconButton tiny icon={faTrash} excludeFromTabOrder />
-        </ConfirmableTooltip>
+        </ConfirmPopover>
         <Tooltip>{t("queryEditor.clear")}</Tooltip>
       </TooltipTrigger>
     </div>
