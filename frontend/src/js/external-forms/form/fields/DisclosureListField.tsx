@@ -7,7 +7,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { type ComponentProps, useEffect, useState } from "react";
 import { useFieldArray } from "react-hook-form";
-import tw from "tailwind-styled-components";
+import { tv } from "tailwind-variants";
 import IconButton from "../../../button/IconButton";
 import { TransparentButton } from "../../../button/TransparentButton";
 import { exists } from "../../../common/helpers/exists";
@@ -22,20 +22,18 @@ import {
 } from "../../helper";
 import Field from "../Field";
 
-const Summary = tw("summary")`
-  relative
-  cursor-pointer
-  flex
-  items-center
-  justify-between
-  gap-3
-  py-3
-  pl-3
-  pr-10
-  bg-white
-  text-sm
-  font-normal
-`;
+const summary = tv({
+  base: [
+    "relative",
+    "flex items-center justify-between",
+    "gap-3",
+    "cursor-pointer",
+    "bg-white",
+    "py-3 pr-10 pl-3",
+    "text-sm",
+    "font-normal",
+  ],
+});
 
 const DisclosureField = ({
   field,
@@ -74,7 +72,7 @@ const DisclosureField = ({
         toggleOpen();
       }}
     >
-      <Summary>
+      <summary className={summary()}>
         <div className="flex items-center gap-3">
           <span className="w-5">
             <FaIcon icon={isOpen ? faChevronDown : faChevronRight} />
@@ -91,7 +89,7 @@ const DisclosureField = ({
             onClick={() => remove(index)}
           />
         )}
-      </Summary>
+      </summary>
       <div className="flex flex-col gap-2 bg-bg-50 border-t border-gray-300 p-3">
         {field.fields.map((f, i) => {
           const key = getFieldKey(formType, f, i);

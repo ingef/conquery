@@ -14,6 +14,116 @@
 
   --color-bg-50: #fafafa;
   --color-bg-100: #f4f6f5;
+
+  --color-red: #b22125;
+  --color-green: #36971c;
+  --color-orange: #e9711c;
+
+  --color-filetype-csv: #007bff;
+  --color-filetype-pdf: #d73a49;
+  --color-filetype-zip: #6f42c1;
+  --color-filetype-xlsx: #28a745;
+  --color-filetype-json: #1f5f30;
+
+  /* Font size only, line-height stays inherited (as the old theme did it).
+     Only tailwind's own sizes, anything else is a literal like `text-[11px]` */
+  --text-xs--line-height: initial;
+  --text-sm--line-height: initial;
+  --text-base--line-height: initial;
+  --text-lg--line-height: initial;
+  --text-xl--line-height: initial;
+  --text-2xl--line-height: initial;
+
+  /* bare `rounded` */
+  --radius: 3px;
+
+  --animate-spin-fast: spin 0.5s linear infinite;
+}
+
+@layer base {
+  body {
+    font-family: "Roboto", "Arial", sans-serif;
+    font-weight: 300;
+    background: var(--color-bg-50);
+    color: var(--color-gray-800);
+    min-height: 100vh;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  p {
+    line-height: 1.5;
+  }
+
+  button,
+  select,
+  input,
+  textarea {
+    font-family: "Roboto", "Arial", sans-serif;
+  }
+
+  a,
+  a:visited,
+  a:active {
+    color: var(--color-gray-800);
+    text-decoration: none;
+  }
+
+  button {
+    outline: none;
+    cursor: pointer;
+  }
+  button::-moz-focus-inner {
+    padding: 0;
+    border: 0;
+  }
+
+  input::-ms-clear {
+    display: none;
+  }
+
+  select {
+    outline: 0;
+    border-radius: var(--radius);
+    padding: 8px 30px 8px 8px;
+    border: 1px solid var(--color-gray-500);
+    appearance: none;
+    font-size: var(--text-sm);
+    cursor: pointer;
+    &:disabled {
+      cursor: not-allowed;
+    }
+    &:hover {
+      background-color: var(--color-gray-50);
+    }
+  }
+
+  h3 {
+    font-size: var(--text-sm);
+    margin: 0 0 10px 0;
+    color: var(--color-primary-500);
+    line-height: 25px;
+  }
+}
+
+/* @tippyjs/react sets inline styles, hence the specificity */
+div[data-tippy-root] {
+  max-width: 700px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.18);
+  border-radius: var(--radius);
+
+  > div {
+    box-shadow: none;
+    /* biome-ignore lint/complexity/noImportantStyles: beats the inline style tippy sets */
+    max-width: inherit !important;
+    width: 100%;
+    padding: 0;
+  }
+
+  .tippy-content {
+    padding: 0px;
+    box-shadow: none;
+  }
 }
 
 /*
@@ -31,5 +141,24 @@
   ::backdrop,
   ::file-selector-button {
     border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+/* react-datepicker inside InputDate */
+.conquery-datepicker {
+  .react-datepicker-wrapper {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: -1;
+  }
+  .react-datepicker-popper[data-placement^="bottom"] {
+    padding-top: 4px;
+  }
+  .react-datepicker-popper[data-placement^="top"] {
+    padding-bottom: 0;
+  }
+  .react-datepicker__day--selected {
+    background: var(--color-primary-500);
   }
 }

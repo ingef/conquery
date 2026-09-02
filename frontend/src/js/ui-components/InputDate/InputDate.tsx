@@ -1,9 +1,9 @@
-import styled from "@emotion/styled";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
-import { createElement, type Ref, useRef } from "react";
+import { type Ref, useRef } from "react";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { mergeRefs } from "react-merge-refs";
+import { tv } from "tailwind-variants";
 
 import IconButton from "../../button/IconButton";
 import { formatDate, parseDate } from "../../common/helpers/dateHelper";
@@ -11,45 +11,18 @@ import BaseInput, { type Props as BaseInputProps } from "../BaseInput";
 
 import { CustomHeader } from "./CustomHeader";
 
-const Root = styled("div")`
-  position: relative;
+// react-datepicker's own elements are styled in index.css under this class
+const root = tv({
+  base: ["relative", "conquery-datepicker"],
+});
 
-  .react-datepicker-wrapper {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    z-index: -1;
-  }
-  .react-datepicker-popper[data-placement^="bottom"] {
-    padding-top: 4px;
-  }
-  .react-datepicker-popper[data-placement^="top"] {
-    padding-bottom: 0;
-  }
-`;
+const calendarButton = tv({
+  base: ["absolute top-0 left-0", "px-[10px] py-2"],
+});
 
-const CalendarButton = styled(IconButton)`
-  position: absolute;
-  left: 0;
-  top: 0;
-  padding: 8px 10px;
-`;
-
-const StyledBaseInput = styled(BaseInput)`
-  input {
-    padding-left: 28px;
-  }
-`;
-
-const HiddenInput = styled("input")`
-  display: none;
-`;
-
-const StyledCalendar = styled("div")`
-  .react-datepicker__day--selected {
-    background: ${({ theme }) => theme.col.blueGrayDark};
-  }
-`;
+const baseInput = tv({
+  base: "[&_input]:pl-[28px]",
+});
 
 type Props = Omit<BaseInputProps, "inputType"> & {
   value: string | null;
@@ -71,14 +44,16 @@ const InputDate = ({
   const datePickerRef = useRef<ReactDatePicker>(null);
 
   return (
-    <Root
-      className={className}
+    // biome-ignore lint/a11y/noStaticElementInteractions: escape closes the calendar of the input inside
+    <div
+      className={root({ className })}
       onKeyDown={(e) => {
         if (e.key === "Escape") datePickerRef.current?.setOpen(false);
       }}
     >
-      <StyledBaseInput
+      <BaseInput
         {...props}
+        className={baseInput()}
         inputType="text"
         value={value}
         onChange={(val) => {
@@ -92,7 +67,8 @@ const InputDate = ({
           },
         }}
       />
-      <CalendarButton
+      <IconButton
+        className={calendarButton()}
         icon={faCalendar}
         onClick={() => datePickerRef.current?.setOpen(true)}
       />
@@ -111,11 +87,10 @@ const InputDate = ({
         }}
         onClickOutside={() => datePickerRef.current?.setOpen(false)}
         renderCustomHeader={CustomHeader}
-        customInput={createElement(HiddenInput)}
-        calendarContainer={StyledCalendar}
+        customInput={<input className="hidden" />}
         calendarStartDay={1}
       />
-    </Root>
+    </div>
   );
 };
 

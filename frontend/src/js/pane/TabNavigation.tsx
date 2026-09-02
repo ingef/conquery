@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-
-import tw from "tailwind-styled-components";
+import { tv } from "tailwind-variants";
 import FaIcon from "../icon/FaIcon";
 import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 import WithTooltip from "../tooltip/WithTooltip";
@@ -14,29 +13,28 @@ const Root = styled("div")`
   align-items: flex-start;
 `;
 
-const Headline = tw("h2")<{ $active: boolean }>`
-  text-sm
-  mb-0
-  mt-[6px]
-  mr-[5px]
-  px-3
-  font-bold
-  leading-[30px]
-  uppercase
-  shrink-0
-  transition-colors
-  cursor-pointer
-  tracking-wider
-
-  border-b-[3px]
-  ${({ $active }) =>
-    $active ? "text-primary-500" : "text-gray-500 hover:text-black"};
-  ${({ $active }) =>
-    $active
-      ? "border-primary-500"
-      : "border-transparent hover:border-primary-200"};
-
-`;
+const headline = tv({
+  base: [
+    "mt-[6px] mr-[5px] mb-0",
+    "px-3",
+    "shrink-0",
+    "cursor-pointer",
+    "border-b-[3px]",
+    "transition-colors",
+    "text-sm",
+    "leading-[30px]",
+    "font-bold",
+    "uppercase",
+    "tracking-wider",
+  ],
+  variants: {
+    active: {
+      true: "border-primary-500 text-primary-500",
+      false:
+        "border-transparent text-gray-500 hover:border-primary-200 hover:text-black",
+    },
+  },
+});
 
 const SxWithTooltip = styled(WithTooltip)`
   flex-shrink: 0;
@@ -78,13 +76,14 @@ const TabNavigation = ({
         return (
           <HoverNavigatable key={key} triggerNavigate={createClickHandler(key)}>
             <SxWithTooltip text={tooltip} lazy>
-              <Headline
-                $active={activeTab === key}
+              <button
+                type="button"
+                className={headline({ active: activeTab === key })}
                 onClick={createClickHandler(key)}
               >
                 {label}
                 {loading && <SxFaIcon icon={faSpinner} />}
-              </Headline>
+              </button>
             </SxWithTooltip>
           </HoverNavigatable>
         );

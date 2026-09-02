@@ -1,10 +1,10 @@
-import styled from "@emotion/styled";
 import {
   faChevronLeft,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import type { ReactDatePickerCustomHeaderProps } from "react-datepicker";
+import { tv } from "tailwind-variants";
 
 import type { SelectOptionT } from "../../api/types";
 import IconButton from "../../button/IconButton";
@@ -12,43 +12,32 @@ import { TransparentButton } from "../../button/TransparentButton";
 import { useMonthName, useMonthNames } from "../../common/helpers/dateHelper";
 import { List, Menu } from "../InputSelect/InputSelectComponents";
 
-export const Root = styled("div")`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
+const root = tv({
+  base: "flex items-center justify-between",
+});
 
-export const SelectMenuContainer = styled("div")`
-  position: absolute;
-  top: 40px;
-  left: 0;
-  width: 100%;
-`;
+const selectMenuContainer = tv({
+  base: ["absolute top-[40px] left-0", "w-full"],
+});
 
-export const MonthListContainer = styled(List)`
-  display: grid;
-  grid-template-columns: auto auto;
-  gap: 5px;
-`;
+const optionList = tv({
+  base: "gap-[5px]",
+  variants: {
+    layout: {
+      twoColumns: "grid grid-cols-[auto_auto]",
+      oneColumn: ["flex flex-col-reverse", "h-[200px]", "overflow-auto"],
+    },
+  },
+});
 
-export const YearListContainer = styled(List)`
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 5px;
-  height: 200px;
-  overflow: auto;
-`;
-
-export const MonthYearLabel = styled("div")`
-  font-weight: bold;
-  cursor: pointer;
-  transition: opacity ${({ theme }) => theme.transitionTime};
-  opacity: 0.75;
-
-  &:hover {
-    opacity: 1;
-  }
-`;
+const monthYearLabel = tv({
+  base: [
+    "font-bold",
+    "cursor-pointer",
+    "transition-opacity duration-100",
+    "opacity-75 hover:opacity-100",
+  ],
+});
 
 const SelectMenu = ({
   date,
@@ -60,12 +49,10 @@ const SelectMenu = ({
   layout: "oneColumn" | "twoColumns";
   onSelect: (n: number) => void;
 }) => {
-  const OptionList =
-    layout === "twoColumns" ? MonthListContainer : YearListContainer;
   return (
-    <SelectMenuContainer>
+    <div className={selectMenuContainer()}>
       <Menu>
-        <OptionList>
+        <List className={optionList({ layout })}>
           {options.map((option) => (
             <TransparentButton
               small
@@ -79,9 +66,9 @@ const SelectMenu = ({
               {option.label}
             </TransparentButton>
           ))}
-        </OptionList>
+        </List>
       </Menu>
-    </SelectMenuContainer>
+    </div>
   );
 };
 
@@ -116,9 +103,11 @@ const YearMonthSelect = ({
 
   return (
     <>
-      <MonthYearLabel onClick={handleClick}>
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: TODO make this a button */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO make this a button */}
+      <div className={monthYearLabel()} onClick={handleClick}>
         {useMonthName(date)} {date.getFullYear()}
-      </MonthYearLabel>
+      </div>
       {yearSelectOpen && (
         <SelectMenu
           date={date}
@@ -156,7 +145,7 @@ export const CustomHeader = ({
   nextMonthButtonDisabled,
 }: ReactDatePickerCustomHeaderProps) => {
   return (
-    <Root>
+    <div className={root()}>
       <IconButton
         icon={faChevronLeft}
         onClick={decreaseMonth}
@@ -172,6 +161,6 @@ export const CustomHeader = ({
         onClick={increaseMonth}
         disabled={nextMonthButtonDisabled}
       />
-    </Root>
+    </div>
   );
 };

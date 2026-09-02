@@ -1,4 +1,5 @@
-import styled from "@emotion/styled";
+import type { ComponentProps } from "react";
+import { tv } from "tailwind-variants";
 
 type PropsType = {
   className?: string;
@@ -10,45 +11,40 @@ type PropsType = {
   }[];
 };
 
-const Btn = styled("p")`
-  margin: 0 auto;
-`;
+const btn = tv({ base: "mx-auto my-0" });
 
-export const Option = styled("span")<{ active?: boolean }>`
-  font-size: ${({ theme }) => theme.font.xs};
-  display: block;
-  padding: 2px 8px;
-  cursor: pointer;
-  transition: ${({ theme }) =>
-    `color ${theme.transitionTime}, background-color ${theme.transitionTime}`};
-  color: ${({ theme, active }) => (active ? theme.col.black : theme.col.gray)};
-  border-left: 1px solid ${({ theme }) => theme.col.blueGray};
-  border-right: 1px solid ${({ theme }) => theme.col.blueGray};
-  background-color: ${({ theme, active }) =>
-    active ? theme.col.blueGrayVeryLight : "white"};
+const option = tv({
+  base: [
+    "block",
+    "px-2 py-[2px]",
+    "cursor-pointer",
+    "text-xs",
+    "transition-[color,background-color] duration-100",
+    "border-x border-primary-200",
+    // first child's left border does not overlap
+    "first-of-type:ml-0",
+    "first-of-type:border-t first-of-type:rounded-t-[2px]",
+    "last-of-type:border-b last-of-type:rounded-b-[2px]",
+  ],
+  variants: {
+    active: {
+      true: ["text-gray-800", "bg-primary-50 hover:bg-primary-50"],
+      false: ["text-gray-500", "bg-white hover:bg-gray-50"],
+    },
+  },
+});
 
-  &:first-of-type {
-    margin-left: 0; /* first childs left border does not overlap */
-    border-top: 1px solid ${({ theme }) => theme.col.blueGray};
-    border-top-left-radius: 2px;
-    border-top-right-radius: 2px;
-  }
-
-  &:last-of-type {
-    border-bottom: 1px solid ${({ theme }) => theme.col.blueGray};
-    border-bottom-left-radius: 2px;
-    border-bottom-right-radius: 2px;
-  }
-
-  &:hover {
-    background-color: ${({ theme, active }) =>
-      active ? theme.col.blueGrayVeryLight : theme.col.grayVeryLight};
-  }
-`;
+export const Option = ({
+  className,
+  active,
+  ...props
+}: ComponentProps<"span"> & { active?: boolean }) => (
+  <span className={option({ active: !!active, className })} {...props} />
+);
 
 const VerticalToggleButton = (props: PropsType) => {
   return (
-    <Btn className={props.className}>
+    <p className={btn({ className: props.className })}>
       {props.options.map(({ value, label }, i) => (
         <Option
           key={i}
@@ -60,7 +56,7 @@ const VerticalToggleButton = (props: PropsType) => {
           {label}
         </Option>
       ))}
-    </Btn>
+    </p>
   );
 };
 

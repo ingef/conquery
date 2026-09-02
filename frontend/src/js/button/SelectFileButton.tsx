@@ -1,18 +1,25 @@
-import styled from "@emotion/styled";
+import type { Ref } from "react";
 
-import BasicButton from "./BasicButton";
+import { tv } from "tailwind-variants";
 
-export const SelectFileButton = styled(BasicButton)`
-  color: ${({ theme }) => theme.col.gray};
-  background-color: transparent;
-  font-weight: 300;
-  border: none;
-  font-size: ${({ theme }) => theme.font.tiny};
-  display: flex;
-  align-items: center;
-  gap: 5px;
+import BasicButton, { type BasicButtonProps } from "./BasicButton";
 
-  &:hover {
-    text-decoration: underline;
-  }
-`;
+const selectFileButton = tv({
+  base: [
+    "flex items-center",
+    "gap-[5px]",
+    "bg-transparent",
+    "border-0",
+    "text-[11px]",
+    "text-gray-500",
+    "font-light",
+    "hover:underline",
+  ],
+});
+
+export const SelectFileButton = ({
+  className,
+  ...props
+}: BasicButtonProps & { ref?: Ref<HTMLButtonElement> }) => (
+  <BasicButton className={selectFileButton({ className })} {...props} />
+);

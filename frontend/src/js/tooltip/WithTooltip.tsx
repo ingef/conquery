@@ -1,30 +1,9 @@
-import { css, useTheme } from "@emotion/react";
+import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import Tippy, { type TippyProps } from "@tippyjs/react";
 import { memo, type ReactElement, type Ref, useMemo } from "react";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light.css";
-
-/* !important: to override inline styles by tippyjs/react */
-export const tippyjsReactOverrides = css`
-  div[data-tippy-root] {
-    max-width: 700px;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.18);
-    border-radius: 3px;
-
-    > div {
-      box-shadow: none;
-      max-width: inherit !important;
-      width: 100%;
-      padding: 0;
-    }
-
-    .tippy-content {
-      padding: 0px;
-      box-shadow: none;
-    }
-  }
-`;
 
 const Text = styled("div")<{ wide?: boolean }>`
   max-width: ${({ wide }) => (wide ? "700px" : "400px")};

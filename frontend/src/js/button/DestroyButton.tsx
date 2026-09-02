@@ -1,16 +1,20 @@
-import styled from "@emotion/styled";
+import type { ComponentProps } from "react";
+
+import { tv } from "tailwind-variants";
 
 import { TransparentButton } from "./TransparentButton";
 
-export const DestroyButton = styled(TransparentButton)`
-  color: ${({ theme }) => theme.col.red};
-  border: 2px solid ${({ theme }) => theme.col.red};
+const destroyButton = tv({
+  base: [
+    "text-red hover:text-white active:text-white focus:text-white",
+    "border-2 border-red",
+    "hover:bg-red active:bg-red focus:bg-red",
+  ],
+});
 
-  &:hover,
-  &:active,
-  &:focus {
-    color: white;
-    background-color: ${({ theme }) => theme.col.red};
-    border: 2px solid ${({ theme }) => theme.col.red};
-  }
-`;
+export const DestroyButton = ({
+  className,
+  ...props
+}: ComponentProps<typeof TransparentButton>) => (
+  <TransparentButton className={destroyButton({ className })} {...props} />
+);

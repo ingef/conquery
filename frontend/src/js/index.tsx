@@ -7,7 +7,6 @@ import "../index.css";
 
 import AppRoot from "./AppRoot";
 import type { StateT } from "./app/reducers";
-import GlobalStyles from "./GlobalStyles";
 import { makeStore } from "./store";
 
 // TODO: OG image required?
@@ -23,7 +22,6 @@ const renderRoot = (theme: Theme) => {
 
   return root.render(
     <ThemeProvider theme={theme}>
-      <GlobalStyles />
       <AppRoot store={store} />
     </ThemeProvider>,
   );

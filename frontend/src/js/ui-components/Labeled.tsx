@@ -1,6 +1,5 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
 import type { ReactNode, Ref } from "react";
+import { tv } from "tailwind-variants";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
 import { exists } from "../common/helpers/exists";
@@ -8,16 +7,11 @@ import InfoTooltip from "../tooltip/InfoTooltip";
 
 import Label from "./Label";
 
-const Root = styled("label")<{ fullWidth?: boolean }>`
-  ${({ fullWidth }) =>
-    fullWidth &&
-    css`
-      width: 100%;
-      input {
-        width: 100%;
-      }
-    `};
-`;
+const root = tv({
+  variants: {
+    fullWidth: { true: "w-full [&_input]:w-full" },
+  },
+});
 
 interface Props {
   label: ReactNode;
@@ -44,10 +38,9 @@ const Labeled = ({
   children,
 }: Props & { ref?: Ref<HTMLLabelElement> }) => {
   return (
-    <Root
+    <label
       ref={ref}
-      className={className}
-      fullWidth={fullWidth}
+      className={root({ fullWidth, className })}
       htmlFor={htmlFor}
     >
       <Label fullWidth={fullWidth} tiny={tinyLabel} large={largeLabel}>
@@ -56,7 +49,7 @@ const Labeled = ({
         {exists(tooltip) && <InfoTooltip text={tooltip} />}
       </Label>
       {children}
-    </Root>
+    </label>
   );
 };
 

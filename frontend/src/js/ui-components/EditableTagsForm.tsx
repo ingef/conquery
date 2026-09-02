@@ -1,7 +1,7 @@
-import styled from "@emotion/styled";
 import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { type FormEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { SelectOptionT } from "../api/types";
 import IconButton from "../button/IconButton";
@@ -10,20 +10,17 @@ import WithTooltip from "../tooltip/WithTooltip";
 
 import InputMultiSelect from "./InputMultiSelect/InputMultiSelect";
 
-const Form = styled("form")`
-  display: flex;
-  align-items: flex-start;
-`;
+const form = tv({
+  base: "flex items-start",
+});
 
-const SxIconButton = styled(IconButton)`
-  padding: 7px 10px;
-  margin-left: 3px;
-`;
+const saveButton = tv({
+  base: ["ml-[3px]", "px-[10px] py-[7px]"],
+});
 
-const SxInputMultiSelect = styled(InputMultiSelect)`
-  z-index: 2;
-  flex-grow: 1;
-`;
+const multiSelect = tv({
+  base: ["z-2", "grow"],
+});
 
 const EditableTagsForm = ({
   className,
@@ -60,8 +57,9 @@ const EditableTagsForm = ({
   }
 
   return (
-    <Form ref={ref} className={className} onSubmit={submit}>
-      <SxInputMultiSelect
+    <form ref={ref} className={form({ className })} onSubmit={submit}>
+      <InputMultiSelect
+        className={multiSelect()}
         creatable
         autoFocus
         label={label}
@@ -74,14 +72,15 @@ const EditableTagsForm = ({
         placeholder={t("inputMultiSelect.tagPlaceholder")}
       />
       <WithTooltip text={t("common.save")}>
-        <SxIconButton
+        <IconButton
+          className={saveButton()}
           type="submit"
           frame
           disabled={!!loading}
           icon={loading ? faSpinner : faCheck}
         />
       </WithTooltip>
-    </Form>
+    </form>
   );
 };
 

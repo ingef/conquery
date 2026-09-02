@@ -1,22 +1,19 @@
-import styled from "@emotion/styled";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
 
-const Root = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 3px 10px;
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
+const root = tv({
+  base: [
+    "flex flex-row items-center",
+    "px-[10px] py-[3px]",
+    "border border-gray-500",
+    "rounded",
+  ],
+});
 
-const Text = styled("p")`
-  margin: 0;
-  line-height: 1;
-`;
+const text = tv({ base: ["m-0", "leading-none"] });
 
 const TooManyValues = ({
   count,
@@ -28,8 +25,8 @@ const TooManyValues = ({
   const { t } = useTranslation();
 
   return (
-    <Root>
-      <Text>{t("queryNodeEditor.tooManyValues", { count })}</Text>
+    <div className={root()}>
+      <p className={text()}>{t("queryNodeEditor.tooManyValues", { count })}</p>
       <IconButton
         icon={faTimes}
         tiny
@@ -37,7 +34,7 @@ const TooManyValues = ({
         aria-label={t("common.clearValue")}
         onClick={onClear}
       />
-    </Root>
+    </div>
   );
 };
 

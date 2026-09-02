@@ -1,9 +1,8 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { createRef, type ReactNode, useMemo } from "react";
 import type ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
 import {
@@ -14,68 +13,68 @@ import {
   parseDateToState,
 } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
-import { Icon } from "../icon/FaIcon";
+import FaIcon from "../icon/FaIcon";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
 import InputDate from "./InputDate/InputDate";
 import Label from "./Label";
 import Labeled from "./Labeled";
 
-const Root = styled("div")<{ center?: boolean }>`
-  text-align: ${({ center }) => (center ? "center" : "left")};
-`;
-const Pickers = styled("div")<{ inline?: boolean; center?: boolean }>`
-  display: flex;
-  flex-direction: ${({ inline }) => (inline ? "row" : "column")};
-  justify-content: ${({ center }) => (center ? "center" : "flex-start")};
-`;
+const root = tv({
+  variants: {
+    center: {
+      true: "text-center",
+      false: "text-left",
+    },
+  },
+});
 
-const StyledLabel = styled(Label)<{ large?: boolean }>`
-  ${({ theme, large }) =>
-    large &&
-    css`
-      font-size: ${theme.font.md};
-    `}
-`;
+const pickers = tv({
+  base: "flex",
+  variants: {
+    inline: {
+      true: "flex-row",
+      false: "flex-col",
+    },
+    center: {
+      true: "justify-center",
+      false: "justify-start",
+    },
+  },
+});
 
-const SxLabeled = styled(Labeled)`
-  &:first-of-type {
-    margin-right: 10px;
-  }
-`;
+const labeled = tv({
+  base: "first-of-type:mr-[10px]",
+});
 
-const CustomTooltip = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 8px 14px;
+const customTooltip = tv({
+  base: [
+    "flex flex-col",
+    "gap-2",
+    "px-[14px] py-2",
+    "text-base",
+    "font-normal",
+    "[&_table]:mt-[5px] [&_table]:w-full",
+    "[&_table]:border [&_th]:border [&_td]:border",
+    "[&_table]:border-gray-100 [&_th]:border-gray-100 [&_td]:border-gray-100",
+    "[&_table]:border-collapse [&_th]:border-collapse [&_td]:border-collapse",
+    "[&_td]:px-[5px] [&_td]:py-[2px]",
+    "[&_td]:leading-[1.2]",
+  ],
+});
 
-  font-size: ${({ theme }) => theme.font.md};
-  font-weight: 400;
-  table {
-    margin-top: 5px;
-    width: 100%;
-  }
-  table,
-  th,
-  td {
-    border: 1px solid ${({ theme }) => theme.col.grayLight};
-    border-collapse: collapse;
-  }
-  td {
-    padding: 2px 5px;
-    line-height: 1.2;
-  }
-`;
+const tooltipMain = tv({
+  base: "text-base",
+});
 
-const TooltipMain = styled("div")`
-  font-size: ${({ theme }) => theme.font.md};
-`;
-
-const TooltipTutorial = styled("div")<{ hasMain?: boolean }>`
-  font-size: ${({ theme, hasMain }) =>
-    hasMain ? theme.font.sm : theme.font.md};
-`;
+const tooltipTutorial = tv({
+  variants: {
+    hasMain: {
+      true: "text-sm",
+      false: "text-base",
+    },
+  },
+});
 
 function getDisplayDate(
   what: "min" | "max",
@@ -171,34 +170,36 @@ const InputDateRange = ({
     if (!label) return null;
 
     return (
-      <StyledLabel large={large}>
-        <Icon icon={faCalendar} left gray />
+      <Label large={large}>
+        <FaIcon icon={faCalendar} left gray />
         {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
         {label}
         <InfoTooltip
           html={
-            <CustomTooltip>
-              {exists(tooltip) && <TooltipMain>{tooltip}</TooltipMain>}
-              <TooltipTutorial
-                hasMain={exists(tooltip)}
+            <div className={customTooltip()}>
+              {exists(tooltip) && (
+                <div className={tooltipMain()}>{tooltip}</div>
+              )}
+              <div
+                className={tooltipTutorial({ hasMain: exists(tooltip) })}
                 // biome-ignore lint/security/noDangerouslySetInnerHtml: i18n text with markup
                 dangerouslySetInnerHTML={{
                   __html: t("inputDateRange.tooltip.possiblePattern"),
                 }}
               />
-            </CustomTooltip>
+            </div>
           }
         />
         {labelSuffix && labelSuffix}
-      </StyledLabel>
+      </Label>
     );
   }, [t, label, labelSuffix, large, tooltip, indexPrefix]);
 
   return (
-    <Root center={center}>
+    <div className={root({ center: !!center })}>
       {labelWithSuffix}
-      <Pickers inline={inline} center={center}>
-        <SxLabeled label={t("inputDateRange.from")}>
+      <div className={pickers({ inline: !!inline, center: !!center })}>
+        <Labeled className={labeled()} label={t("inputDateRange.from")}>
           <InputDate
             value={min}
             dateFormat={displayDateFormat}
@@ -215,8 +216,8 @@ const InputDateRange = ({
               autoFocus,
             }}
           />
-        </SxLabeled>
-        <SxLabeled label={t("inputDateRange.to")}>
+        </Labeled>
+        <Labeled className={labeled()} label={t("inputDateRange.to")}>
           <InputDate
             ref={maxRef}
             value={max}
@@ -230,9 +231,9 @@ const InputDateRange = ({
             }
             onBlur={(e) => applyDate("max", e.target.value, displayDateFormat)}
           />
-        </SxLabeled>
-      </Pickers>
-    </Root>
+        </Labeled>
+      </div>
+    </div>
   );
 };
 

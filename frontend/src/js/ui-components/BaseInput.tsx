@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faCheck,
   faExclamationTriangle,
@@ -11,6 +10,7 @@ import {
   useCallback,
 } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { CurrencyConfigT } from "../api/types";
 import IconButton from "../button/IconButton";
@@ -21,56 +21,41 @@ import WithTooltip from "../tooltip/WithTooltip";
 
 import CurrencyInput from "./CurrencyInput";
 
-const Root = styled("div")`
-  position: relative;
-`;
+const root = tv({ base: "relative" });
 
-const Input = styled("input")<{ large?: boolean; disabled?: boolean }>`
-  outline: 0;
-  width: 100%;
-  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
+const input = tv({
+  base: [
+    "outline-0",
+    "w-full",
+    "border border-gray-400",
+    "rounded",
+    "py-[6px] pr-[30px] pl-[10px]",
+    "text-sm",
+    "font-normal",
+  ],
+  variants: {
+    large: { true: "py-[10px] pr-[30px] pl-[14px] text-xl" },
+    disabled: { true: "opacity-50" },
+  },
+});
 
-  border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
-  padding: ${({ large }) =>
-    large ? "10px 30px 10px 14px" : "6px 30px 6px 10px"};
-  font-size: ${({ theme, large }) => (large ? theme.font.lg : theme.font.sm)};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  font-weight: 400;
-`;
+const greenIcon = tv({
+  base: ["absolute top-2 right-[35px]", "opacity-80", "text-green"],
+});
 
-const SignalIcon = styled(FaIcon)`
-  position: absolute;
-  top: 8px;
-  right: 35px;
-  opacity: 0.8;
-`;
+const redIcon = tv({ base: ["opacity-80", "text-red"] });
 
-const GreenIcon = styled(SignalIcon)`
-  color: ${({ theme }) => theme.col.green};
-`;
-const RedIcon = styled(FaIcon)`
-  color: ${({ theme }) => theme.col.red};
-  opacity: 0.8;
-`;
-const AbsoluteWrap = styled("div")`
-  position: absolute;
-  top: 5px;
-  right: 35px;
-`;
+const absoluteWrap = tv({ base: "absolute top-[5px] right-[35px]" });
 
-const ClearZoneIconButton = styled(IconButton)`
-  position: absolute;
-  top: 0;
-  right: 10px;
-  cursor: pointer;
-  height: 100%;
-  display: flex;
-  align-items: center;
-
-  &:hover {
-    color: ${({ theme }) => theme.col.red};
-  }
-`;
+const clearZoneIconButton = tv({
+  base: [
+    "absolute top-0 right-[10px]",
+    "h-full",
+    "flex items-center",
+    "cursor-pointer",
+    "hover:text-red",
+  ],
+});
 
 interface InputProps {
   autoFocus?: boolean;
@@ -160,7 +145,7 @@ const BaseInput = ({
   const isCurrencyInput = money && !!currencyConfig;
 
   return (
-    <Root className={className}>
+    <div className={root({ className })}>
       {isCurrencyInput ? (
         <CurrencyInput
           currencyConfig={currencyConfig}
@@ -170,7 +155,8 @@ const BaseInput = ({
           onChange={safeOnChange}
         />
       ) : (
-        <Input
+        <input
+          className={input({ large, disabled })}
           placeholder={placeholder}
           type={inputType}
           ref={ref}
@@ -184,7 +170,6 @@ const BaseInput = ({
             safeOnChange(value);
           }}
           value={exists(value) ? value : ""}
-          large={large}
           disabled={disabled}
           onFocus={onFocus}
           onBlur={onBlur}
@@ -201,15 +186,22 @@ const BaseInput = ({
       )}
       {exists(value) && !isEmpty(value) && (
         <>
-          {valid && !invalid && <GreenIcon icon={faCheck} large={large} />}
+          {valid && !invalid && (
+            <FaIcon icon={faCheck} large={large} className={greenIcon()} />
+          )}
           {invalid && (
             <WithTooltip text={invalidText}>
-              <AbsoluteWrap>
-                <RedIcon icon={faExclamationTriangle} large={large} />
-              </AbsoluteWrap>
+              <div className={absoluteWrap()}>
+                <FaIcon
+                  icon={faExclamationTriangle}
+                  large={large}
+                  className={redIcon()}
+                />
+              </div>
             </WithTooltip>
           )}
-          <ClearZoneIconButton
+          <IconButton
+            className={clearZoneIconButton()}
             tiny
             icon={faTimes}
             tabIndex={-1}
@@ -220,7 +212,7 @@ const BaseInput = ({
           />
         </>
       )}
-    </Root>
+    </div>
   );
 };
 

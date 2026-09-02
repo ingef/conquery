@@ -1,22 +1,28 @@
-import styled from "@emotion/styled";
 import { useEffect, useState } from "react";
-import { NumericFormat } from "react-number-format";
+import {
+  type InputAttributes,
+  NumericFormat,
+  type NumericFormatProps,
+} from "react-number-format";
+import { tv } from "tailwind-variants";
 
 import type { CurrencyConfigT } from "../api/types";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 
-const SxNumberFormat = styled(NumericFormat)<{ large?: boolean }>`
-  outline: 0;
-  min-width: 170px;
-
-  border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
-  font-size: ${({ theme }) => theme.font.md};
-  padding: ${({ large }) =>
-    large ? "10px 30px 10px 14px" : "8px 30px 8px 10px"};
-  font-size: ${({ theme, large }) => (large ? theme.font.lg : theme.font.sm)};
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
+const numberFormat = tv({
+  base: [
+    "outline-0",
+    "min-w-[170px]",
+    "border border-gray-400",
+    "rounded",
+    "py-2 pr-[30px] pl-[10px]",
+    "text-sm",
+  ],
+  variants: {
+    large: { true: "py-[10px] pr-[30px] pl-[14px] text-xl" },
+  },
+});
 
 const CurrencyInput = ({
   currencyConfig,
@@ -46,25 +52,27 @@ const CurrencyInput = ({
       setNumberFormatValue("");
     }
   }, [value]);
-  return (
-    <SxNumberFormat
-      {...currencyConfig}
-      suffix={` ${currencyConfig?.unit}`}
-      placeholder={placeholder}
-      type="text"
-      value={numberFormatValue}
-      large={large}
-      onValueChange={(values) => {
-        if (exists(values.floatValue) && !Number.isNaN(values.floatValue)) {
-          setNumberFormatValue(values.floatValue);
-          onChange(parseInt((values.floatValue * factor).toFixed(0), 10));
-        } else {
-          setNumberFormatValue("");
-          onChange(null);
-        }
-      }}
-    />
-  );
+  // typed up front with an explicit base type: the polymorphic NumericFormat
+  // props are otherwise too complex a union for tsc
+  const props: NumericFormatProps = {
+    ...currencyConfig,
+    className: numberFormat({ large }),
+    suffix: ` ${currencyConfig?.unit}`,
+    placeholder,
+    type: "text",
+    value: numberFormatValue,
+    onValueChange: (values) => {
+      if (exists(values.floatValue) && !Number.isNaN(values.floatValue)) {
+        setNumberFormatValue(values.floatValue);
+        onChange(parseInt((values.floatValue * factor).toFixed(0), 10));
+      } else {
+        setNumberFormatValue("");
+        onChange(null);
+      }
+    },
+  };
+
+  return <NumericFormat<InputAttributes> {...props} />;
 };
 
 export default CurrencyInput;

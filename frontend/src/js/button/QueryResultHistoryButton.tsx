@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { faListUl, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -7,11 +6,6 @@ import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import { openHistory, useNewHistorySession } from "../entity-history/actions";
 import IconButton from "./IconButton";
-
-const SxIconButton = styled(IconButton)`
-  white-space: nowrap;
-  height: 35px;
-`;
 
 export const QueryResultHistoryButton = ({
   url,
@@ -32,7 +26,8 @@ export const QueryResultHistoryButton = ({
   const newHistorySession = useNewHistorySession();
 
   return (
-    <SxIconButton
+    <IconButton
+      className="h-[35px] whitespace-nowrap"
       icon={isLoading ? faSpinner : faListUl}
       frame
       onClick={async () => {
@@ -41,6 +36,6 @@ export const QueryResultHistoryButton = ({
       }}
     >
       {t("history.history")}
-    </SxIconButton>
+    </IconButton>
   );
 };

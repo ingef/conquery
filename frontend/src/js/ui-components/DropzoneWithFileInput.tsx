@@ -1,10 +1,9 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
 import { faFileImport } from "@fortawesome/free-solid-svg-icons";
 import { type ReactNode, type Ref, useRef, useState } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import { SelectFileButton } from "../button/SelectFileButton";
 import FaIcon from "../icon/FaIcon";
@@ -20,35 +19,32 @@ export interface DragItemFile {
   files: File[];
 }
 
-const FileInput = styled("input")`
-  display: none;
-`;
+const dropzone = tv({
+  base: [
+    "relative",
+    "cursor-pointer",
+    "transition-shadow duration-100",
+    "hover:shadow-[0_0_5px_0_rgba(0,0,0,0.2)]",
+  ],
+  variants: {
+    isInitial: { true: "cursor-[initial]" },
+    tight: { true: "p-[5px]" },
+  },
+});
 
-const SxDropzone = styled(Dropzone)<{ isInitial?: boolean; tight?: boolean }>`
-  cursor: ${({ isInitial }) => (isInitial ? "initial" : "pointer")};
-  transition: box-shadow ${({ theme }) => theme.transitionTime};
-  position: relative;
-  ${({ tight }) =>
-    tight &&
-    css`
-      padding: 5px;
-    `}
+const selectFileButton = tv({
+  base: "absolute",
+  variants: {
+    outside: {
+      true: "-top-[26px] -right-[12px]",
+      false: "top-[3px] right-0",
+    },
+  },
+});
 
-  &:hover {
-    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
-  }
-`;
-
-const SxSelectFileButton = styled(SelectFileButton)<{ outside?: boolean }>`
-  position: absolute;
-  top: ${({ outside }) => (outside ? "-26px" : "3px")};
-  right: ${({ outside }) => (outside ? "-12px" : "0")};
-`;
-
-const SxFaIcon = styled(FaIcon)`
-  height: 10px;
-  padding-right: 3px;
-`;
+const importIcon = tv({
+  base: ["h-[10px]", "pr-[3px]"],
+});
 
 interface PropsT<DroppableObject> {
   children: (args: ChildArgs<DroppableObject>) => ReactNode;
@@ -116,8 +112,7 @@ const DropzoneWithFileInput = <
   }
 
   return (
-    <SxDropzone
-      tight={tight}
+    <Dropzone
       acceptedDropTypes={dropTypes}
       onClick={() => {
         if (disableClick) return;
@@ -136,8 +131,7 @@ const DropzoneWithFileInput = <
 
         onDrop(item as DroppableObject | DragItemFile, monitor);
       }}
-      isInitial={isInitial}
-      className={className}
+      className={dropzone({ isInitial, tight, className })}
       ref={ref}
     >
       {(args) => (
@@ -151,16 +145,17 @@ const DropzoneWithFileInput = <
             />
           )}
           {showImportButton && onImportLines && (
-            <SxSelectFileButton
-              outside={importButtonOutside}
+            <SelectFileButton
+              className={selectFileButton({ outside: !!importButtonOutside })}
               onClick={() => setImportModalOpen(true)}
             >
-              <SxFaIcon icon={faFileImport} gray />
+              <FaIcon icon={faFileImport} gray className={importIcon()} />
               {t("common.import")}
-            </SxSelectFileButton>
+            </SelectFileButton>
           )}
           {onSelectFile && (
-            <FileInput
+            <input
+              className="hidden"
               ref={fileInputRef}
               type="file"
               accept={accept}
@@ -178,7 +173,7 @@ const DropzoneWithFileInput = <
           {children(args as ChildArgs<DroppableObject>)}
         </>
       )}
-    </SxDropzone>
+    </Dropzone>
   );
 };
 

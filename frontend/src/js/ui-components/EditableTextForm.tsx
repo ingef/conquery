@@ -1,29 +1,23 @@
-import styled from "@emotion/styled";
 import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { type FormEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import WithTooltip from "../tooltip/WithTooltip";
 
-const Input = styled("input")`
-  font-size: ${({ theme }) => theme.font.sm};
-  padding: 0 8px;
-  height: 28px;
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
+const input = tv({
+  base: ["h-[28px]", "px-2", "rounded", "border border-gray-500", "text-sm"],
+});
 
-const Form = styled("form")`
-  display: flex;
-  align-items: center;
-`;
+const form = tv({
+  base: "flex items-center",
+});
 
-const SxIconButton = styled(IconButton)`
-  padding: 6px 10px;
-  margin-left: 3px;
-`;
+const saveButton = tv({
+  base: ["ml-[3px]", "px-[10px] py-[6px]"],
+});
 
 const EditableTextForm = ({
   className,
@@ -56,8 +50,9 @@ const EditableTextForm = ({
   useClickOutside(ref, saveOnClickoutside ? () => onSubmit(value) : onCancel);
 
   return (
-    <Form ref={ref} className={className} onSubmit={onSubmitForm}>
-      <Input
+    <form ref={ref} className={form({ className })} onSubmit={onSubmitForm}>
+      <input
+        className={input()}
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -73,7 +68,8 @@ const EditableTextForm = ({
       />
       {!saveOnClickoutside && (
         <WithTooltip text={t("common.save")}>
-          <SxIconButton
+          <IconButton
+            className={saveButton()}
             type="submit"
             frame
             disabled={loading}
@@ -81,7 +77,7 @@ const EditableTextForm = ({
           />
         </WithTooltip>
       )}
-    </Form>
+    </form>
   );
 };
 

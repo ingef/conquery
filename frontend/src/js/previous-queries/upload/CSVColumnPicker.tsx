@@ -12,8 +12,7 @@ import { saveAs } from "file-saver";
 import type { TFunction } from "i18next";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-import tw from "tailwind-styled-components";
+import { tv } from "tailwind-variants";
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
 import IconButton from "../../button/IconButton";
 import PrimaryButton from "../../button/PrimaryButton";
@@ -32,13 +31,9 @@ const Row = styled("div")`
   margin-bottom: 15px;
 `;
 
-const Td = tw("td")`
-  text-xs
-  text-ellipsis
-  overflow-hidden
-  whitespace-nowrap
-  min-w-[150px]
-`;
+const td = tv({
+  base: "min-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap text-xs",
+});
 const Th = styled("th")`
   font-size: ${({ theme }) => theme.font.xs};
   vertical-align: top;
@@ -230,18 +225,18 @@ const CSVPreviewTable = ({
           csv.slice(1, 6).map((row, j) => (
             <tr key={j}>
               {row.map((cell, i) => (
-                <Td key={cell + i}>
+                <td key={cell + i} className={td()}>
                   <Padded>{cell}</Padded>
-                </Td>
+                </td>
               ))}
             </tr>
           ))}
         {csv.length > 6 && (
           <tr>
             {new Array(csv[0].length).fill(null).map((_, j) => (
-              <Td key={j}>
+              <td key={j} className={td()}>
                 <Padded>...</Padded>
-              </Td>
+              </td>
             ))}
           </tr>
         )}
