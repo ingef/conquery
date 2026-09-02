@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faBullseye,
@@ -8,15 +7,12 @@ import {
 import { type Dispatch, memo, type SetStateAction, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { tv } from "tailwind-variants";
+
 import IconButton from "../button/IconButton";
 import WithTooltip from "../tooltip/WithTooltip";
 
-const Root = styled("div")`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-
+const root = tv({ base: "flex flex-col items-center" });
 export type DetailLevel = "summary" | "detail" | "full";
 
 interface Props {
@@ -57,7 +53,7 @@ export const DetailControl = memo(
   ({ className, detailLevel, setDetailLevel }: Props) => {
     const navOptions = useButtonConfig();
     return (
-      <Root className={className}>
+      <div className={root({ className })}>
         {navOptions.map(({ value, icon, tooltip }) => {
           const selected = value === detailLevel;
 
@@ -72,7 +68,7 @@ export const DetailControl = memo(
             </WithTooltip>
           );
         })}
-      </Root>
+      </div>
     );
   },
 );

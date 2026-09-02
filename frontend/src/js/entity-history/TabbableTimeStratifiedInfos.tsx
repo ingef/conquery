@@ -1,5 +1,5 @@
-import styled from "@emotion/styled";
 import { useMemo, useState } from "react";
+import { tv } from "tailwind-variants";
 
 import type { TimeStratifiedInfo } from "../api/types";
 import SmallTabNavigation from "../small-tab-navigation/SmallTabNavigation";
@@ -8,13 +8,9 @@ import { TimeStratifiedChart } from "./TimeStratifiedChart";
 import { TimeStratifiedConceptChart } from "./TimeStratifiedConceptChart";
 import { isConceptColumn, isMoneyColumn } from "./timeline/util/util";
 
-const Container = styled("div")`
-  align-self: flex-start;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  overflow-x: hidden;
-`;
+const container = tv({
+  base: ["self-start", "flex flex-col items-end", "overflow-x-hidden"],
+});
 
 export const TabbableTimeStratifiedInfos = ({
   infos,
@@ -54,7 +50,7 @@ export const TabbableTimeStratifiedInfos = ({
   }, [infos, activeTab]);
 
   return (
-    <Container>
+    <div className={container()}>
       <SmallTabNavigation
         options={options}
         selectedTab={activeTab}
@@ -66,6 +62,6 @@ export const TabbableTimeStratifiedInfos = ({
       {data && type === "concept" && (
         <TimeStratifiedConceptChart timeStratifiedInfo={data} />
       )}
-    </Container>
+    </div>
   );
 };

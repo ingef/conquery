@@ -1,51 +1,29 @@
-import styled from "@emotion/styled";
 import { faListUl, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 import type { StateT } from "../../app/reducers";
 import FaIcon from "../../icon/FaIcon";
 import type { EntityHistoryStateT } from "../reducer";
 
-const Root = styled("div")`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  width: 100%;
-  font-weight: 400;
-  color: ${({ theme }) => theme.col.gray};
-`;
+const root = tv({
+  base: [
+    "flex flex-col items-center justify-center",
+    "p-5",
+    "w-full",
+    "font-normal",
+    "text-gray-500",
+  ],
+});
 
-const Message = styled("p")`
-  color: ${({ theme }) => theme.col.black};
-  font-size: ${({ theme }) => theme.font.lg};
-  margin: 10px 0 0;
-  font-weight: 400;
-`;
+const message = tv({
+  base: ["mt-[10px]", "text-xl", "font-normal", "text-gray-800"],
+});
 
-const BigIcon = styled(FaIcon)`
-  font-size: 120px;
-  color: ${({ theme }) => theme.col.grayLight};
-`;
-
-const Headline = styled("h2")`
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.huge};
-  line-height: 1.3;
-`;
-
-const Row = styled("div")`
-  display: flex;
-  gap: 30px;
-  align-items: center;
-`;
-
-const Description = styled("p")`
-  font-size: ${({ theme }) => theme.font.lg};
-  margin: 0;
-`;
+const bigIcon = tv({
+  base: ["text-[120px]", "text-gray-100"],
+});
 
 export const TimelineEmptyPlaceholder = ({
   className,
@@ -63,7 +41,8 @@ export const TimelineEmptyPlaceholder = ({
     (state) => state.entityHistory.currentEntityId,
   );
 
-  const message = useMemo(() => {
+  // named messageHtml: the tv const `message` would be shadowed otherwise
+  const messageHtml = useMemo(() => {
     if (searchTerm) {
       return t("history.emptyTimeline.descriptionWithSearchTerm", {
         searchTerm,
@@ -78,16 +57,24 @@ export const TimelineEmptyPlaceholder = ({
   }, [ids, id, t, searchTerm]);
 
   return (
-    <Root className={className}>
-      <Row>
-        <BigIcon icon={searchTerm ? faMagnifyingGlass : faListUl} />
+    <div className={root({ className })}>
+      <div className="flex items-center gap-[30px]">
+        <FaIcon
+          className={bigIcon()}
+          icon={searchTerm ? faMagnifyingGlass : faListUl}
+        />
         <div>
-          <Headline>{t("history.emptyTimeline.headline")}</Headline>
-          <Description>{t("history.emptyTimeline.description")}</Description>
-          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: message is our own i18n text */}
-          <Message dangerouslySetInnerHTML={{ __html: message }} />
+          <h2 className="text-2xl leading-[1.3]">
+            {t("history.emptyTimeline.headline")}
+          </h2>
+          <p className="text-xl">{t("history.emptyTimeline.description")}</p>
+          <p
+            className={message()}
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: messageHtml is our own i18n text
+            dangerouslySetInnerHTML={{ __html: messageHtml }}
+          />
         </div>
-      </Row>
-    </Root>
+      </div>
+    </div>
   );
 };

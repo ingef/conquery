@@ -1,7 +1,7 @@
-import styled from "@emotion/styled";
 import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
 import { Fragment, memo } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type {
   ColumnDescriptionSemanticConceptColumn,
@@ -16,61 +16,43 @@ import { ConceptBubble } from "../ConceptBubble";
 import { SmallHeading } from "./SmallHeading";
 import { formatCurrency, isConceptColumn, isMoneyColumn } from "./util/util";
 
-const Root = styled("div")`
-  font-size: ${({ theme }) => theme.font.xs};
-  padding: 0 10px 0 0;
-`;
-const StickyWrap = styled("div")`
-  position: sticky;
-  top: 0;
-  left: 0;
-  padding: 6px 10px;
-  cursor: pointer;
-  display: grid;
-  grid-template-columns: 16px 1fr;
-  gap: 8px 0;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid transparent;
-  &:hover {
-    border: 1px solid ${({ theme }) => theme.col.blueGray};
-  }
-`;
+const stickyWrap = tv({
+  base: [
+    "sticky top-0 left-0",
+    "px-[10px] py-[6px]",
+    "cursor-pointer",
+    "grid grid-cols-[16px_1fr]",
+    "gap-x-0 gap-y-2",
+    "rounded",
+    "border border-transparent hover:border-primary-200",
+  ],
+});
 
-const Col = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-`;
+const infoGrid = tv({
+  base: [
+    "grid grid-cols-[auto_minmax(min-content,25px)]",
+    "gap-x-[10px] gap-y-0",
+  ],
+});
 
-const Grid = styled("div")`
-  display: grid;
-  grid-template-columns: auto minmax(min-content, 25px);
-  gap: 0px 10px;
-`;
+const conceptRow = tv({
+  base: ["col-span-2", "flex flex-wrap items-center", "gap-1"],
+});
 
-const ConceptRow = styled("div")`
-  grid-column: span 2;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-`;
+// named valueCell: `value` is shadowed by destructured data entries below
+const valueCell = tv({
+  base: ["text-sm", "font-normal", "justify-self-end", "w-full", "text-right"],
+});
 
-const Value = styled("div")`
-  font-size: ${({ theme }) => theme.font.sm};
-  font-weight: 400;
-  justify-self: end;
-  width: 100%;
-  text-align: right;
-`;
-
-const Label = styled("div")`
-  font-size: ${({ theme }) => theme.font.sm};
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
+const labelText = tv({
+  base: [
+    "text-sm",
+    "max-w-full",
+    "whitespace-nowrap",
+    "overflow-hidden",
+    "text-ellipsis",
+  ],
+});
 
 type YearValue = TimeStratifiedInfo["years"][number]["values"][string];
 type Column = TimeStratifiedInfo["columns"][number];
@@ -117,14 +99,16 @@ const ConceptValues = ({
 
   return (
     <>
-      <Label style={{ gridColumn: "span 2" }}>{label}</Label>
-      <ConceptRow>
+      <div className={labelText()} style={{ gridColumn: "span 2" }}>
+        {label}
+      </div>
+      <div className={conceptRow()}>
         {concepts.map((concept) => (
           <WithTooltip key={concept.label} text={concept.description}>
             <ConceptBubble>{concept.label}</ConceptBubble>
           </WithTooltip>
         ))}
-      </ConceptRow>
+      </div>
     </>
   );
 };
@@ -153,10 +137,10 @@ const TimeStratifiedInfos = ({
     );
 
   return (
-    <Col>
+    <div className="flex flex-col gap-[6px]">
       {infos.map(({ info, yearInfo }) => {
         return (
-          <Grid key={info.label}>
+          <div className={infoGrid()} key={info.label}>
             {Object.entries(yearInfo.values)
               .sort(
                 ([l1], [l2]) =>
@@ -186,17 +170,17 @@ const TimeStratifiedInfos = ({
 
                 return (
                   <Fragment key={label}>
-                    <Label>{label}</Label>
-                    <Value title={String(valueFormatted)}>
+                    <div className={labelText()}>{label}</div>
+                    <div className={valueCell()} title={String(valueFormatted)}>
                       {valueFormatted}
-                    </Value>
+                    </div>
                   </Fragment>
                 );
               })}
-          </Grid>
+          </div>
         );
       })}
-    </Col>
+    </div>
   );
 };
 
@@ -216,8 +200,10 @@ const YearHead = ({
   const { t } = useTranslation();
 
   return (
-    <Root>
-      <StickyWrap onClick={onClick}>
+    <div className="pr-[10px] text-xs">
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: TODO make this a button */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO make this a button */}
+      <div className={stickyWrap()} onClick={onClick}>
         <FaIcon large gray icon={isOpen ? faCaretDown : faCaretRight} />
         <div>
           <SmallHeading>{year}</SmallHeading>
@@ -230,8 +216,8 @@ const YearHead = ({
           year={year}
           timeStratifiedInfos={timeStratifiedInfos}
         />
-      </StickyWrap>
-    </Root>
+      </div>
+    </div>
   );
 };
 

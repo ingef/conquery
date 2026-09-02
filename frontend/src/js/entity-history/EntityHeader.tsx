@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
@@ -9,44 +9,29 @@ import { Heading3 } from "../headings/Headings";
 
 import type { EntityId } from "./reducer";
 
-const Root = styled("div")`
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  padding-left: 10px;
-  justify-content: space-between;
-  width: 100%;
-`;
-const Flex = styled("div")`
-  display: flex;
-  align-items: center;
-  gap: 30px;
-`;
-const Buttons = styled("div")`
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  grid-auto-flow: column;
-  gap: 5px;
-`;
+const root = tv({
+  base: [
+    "flex items-center justify-between",
+    "gap-[30px]",
+    "w-full",
+    "pl-[10px]",
+  ],
+});
 
-const SxHeading3 = styled(Heading3)<{ blurred?: boolean }>`
-  flex-shrink: 0;
-  margin: 0;
-  ${({ blurred }) => blurred && "filter: blur(6px);"}
-`;
-const Subtitle = styled("div")`
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.gray};
-  margin-top: 5px;
-`;
-const EntityBadge = styled("div")`
-  display: flex;
-  gap: 5px;
-`;
-const Avatar = styled(SxHeading3)`
-  color: ${({ theme }) => theme.col.gray};
-  font-weight: 300;
-`;
+const buttons = tv({
+  base: ["grid grid-rows-[1fr_1fr] grid-flow-col", "gap-[5px]"],
+});
+
+const entityId = tv({
+  base: ["shrink-0", "m-0"],
+  variants: {
+    blurred: { true: "blur-[6px]" },
+  },
+});
+
+const avatar = tv({
+  base: ["shrink-0", "m-0", "text-gray-500", "font-light"],
+});
 
 export const EntityHeader = ({
   blurred,
@@ -83,19 +68,21 @@ export const EntityHeader = ({
   };
 
   return (
-    <Root className={className}>
-      <Flex>
+    <div className={root({ className })}>
+      <div className="flex items-center gap-[30px]">
         <div>
-          <EntityBadge>
-            <Avatar>#{currentEntityIndex + 1}</Avatar>
-            <SxHeading3 blurred={blurred}>{currentEntityId.id}</SxHeading3>
-          </EntityBadge>
-          <Subtitle>
+          <div className="flex gap-[5px]">
+            <Heading3 className={avatar()}>#{currentEntityIndex + 1}</Heading3>
+            <Heading3 className={entityId({ blurred })}>
+              {currentEntityId.id}
+            </Heading3>
+          </div>
+          <div className="mt-[5px] text-xs text-gray-500">
             {totalEvents} {t("history.events", { count: totalEvents })}
-          </Subtitle>
+          </div>
         </div>
-      </Flex>
-      <Buttons>
+      </div>
+      <div className={buttons()}>
         {entityStatusOptions.map((option, i) => (
           <span key={option.label + i}>
             <BadgeToggleButton
@@ -107,7 +94,7 @@ export const EntityHeader = ({
             </BadgeToggleButton>
           </span>
         ))}
-      </Buttons>
-    </Root>
+      </div>
+    </div>
   );
 };

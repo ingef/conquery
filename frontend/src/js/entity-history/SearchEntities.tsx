@@ -1,8 +1,8 @@
-import styled from "@emotion/styled";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import {
   usePostPrefixForSuggestions,
@@ -204,25 +204,18 @@ const useSubmitSearch = ({
   };
 };
 
-const Root = styled("div")`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  padding: 10px 12px;
+const root = tv({
+  base: [
+    "flex flex-col items-center",
+    "gap-[14px]",
+    "px-3 py-[10px]",
+    "[&>div]:w-full",
+  ],
+});
 
-  > div {
-    width: 100%;
-  }
-`;
-
-const SxPrimaryButton = styled(PrimaryButton)`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-`;
+const submitButton = tv({
+  base: ["flex items-center justify-center", "w-full", "gap-[14px]"],
+});
 
 const noop = () => {};
 
@@ -245,7 +238,7 @@ export const SearchEntitiesComponent = ({
   if (searchFilters.length === 0) return null;
 
   return (
-    <Root>
+    <div className={root()}>
       <TableFilters
         filters={searchFilters}
         excludeTable={false}
@@ -253,13 +246,14 @@ export const SearchEntitiesComponent = ({
         onSwitchFilterMode={noop}
         onLoadFilterSuggestions={loadFilterSuggestions}
       />
-      <SxPrimaryButton
+      <PrimaryButton
+        className={submitButton()}
         onClick={onSubmitSearch}
         disabled={!hasFiltersSet || loading}
       >
         {loading && <FaIcon white icon={faSpinner} />}
         {t("history.searchEntitiesButton")}
-      </SxPrimaryButton>
-    </Root>
+      </PrimaryButton>
+    </div>
   );
 };
