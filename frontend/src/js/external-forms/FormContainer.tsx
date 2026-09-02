@@ -1,16 +1,9 @@
-import styled from "@emotion/styled";
 import { type ComponentProps, memo } from "react";
 
 import { exists } from "../common/helpers/exists";
 import type { Form as FormType } from "./config-types";
 import FormConfigLoader from "./FormConfigLoader";
 import Form from "./form/Form";
-
-const Root = styled("div")`
-  flex-grow: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-`;
 
 const FormContainer = ({
   config,
@@ -19,13 +12,13 @@ const FormContainer = ({
   config: FormType | null;
 }) => {
   return (
-    <Root>
+    <div className="grow overflow-y-auto [-webkit-overflow-scrolling:touch]">
       {exists(config) && (
         <FormConfigLoader datasetOptions={props.datasetOptions}>
           {() => <Form config={config} {...props} />}
         </FormConfigLoader>
       )}
-    </Root>
+    </div>
   );
 };
 

@@ -1,5 +1,5 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
+import type { ComponentProps } from "react";
+import { tv } from "tailwind-variants";
 
 import type { Headline as HeadlineField } from "../config-types";
 
@@ -16,49 +16,49 @@ export const getHeadlineFieldAs = (headline: HeadlineField) => {
   return HEADLINE_DOM[headline.style.size];
 };
 
-export const Headline = styled("h3")<{ size?: "h1" | "h2" | "h3" }>`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: ${({ theme, size }) =>
-    size === "h3"
-      ? theme.font.sm
-      : size === "h2"
-        ? theme.font.md
-        : theme.font.lg};
-  line-height: 1;
-  color: ${({ theme }) => theme.col.black};
-  font-weight: ${({ size }) => (size === "h3" ? "700" : "400")};
+const headline = tv({
+  base: [
+    "relative",
+    "flex items-center",
+    "gap-[10px]",
+    "leading-none",
+    "text-gray-800",
+    // wins over the size margins: :first-child raises specificity
+    "first:mt-0",
+  ],
+  variants: {
+    size: {
+      h1: ["text-xl", "font-normal", "mt-5 mb-[5px] ml-0"],
+      h2: ["text-base", "font-normal", "mt-[10px] mb-[3px] ml-[10px]"],
+      h3: ["text-sm", "font-bold", "mt-[10px] mb-[3px] ml-[10px]"],
+    },
+  },
+  defaultVariants: { size: "h1" },
+});
 
-  &:first-child {
-    margin-top: 0;
-  }
+export const Headline = ({
+  as: Component = "h3",
+  size,
+  className,
+  ...props
+}: ComponentProps<"h3"> & {
+  as?: "h3" | "h4" | "h5";
+  size?: "h1" | "h2" | "h3";
+}) => <Component className={headline({ size, className })} {...props} />;
 
-  position: relative;
+const headlineIndex = tv({
+  base: [
+    "flex items-center justify-center",
+    "px-[10px]",
+    "text-xl",
+    "border-r-[3px] border-gray-400",
+    "text-gray-400",
+  ],
+});
 
-  ${({ size }) =>
-    (!size || size === "h1") &&
-    css`
-      margin: 20px 0 5px;
-      margin-left: 0;
-    `};
-
-  ${({ size }) =>
-    (size === "h2" || size === "h3") &&
-    css`
-      border-left: 0;
-      padding-left: 0;
-      margin: 10px 0 3px;
-      margin-left: 10px;
-    `};
-`;
-
-export const HeadlineIndex = styled("span")`
-  padding: 0 10px;
-  font-size: ${({ theme }) => theme.font.lg};
-  border-right: 3px solid ${({ theme }) => theme.col.grayMediumLight};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ theme }) => theme.col.grayMediumLight};
-`;
+export const HeadlineIndex = ({
+  className,
+  ...props
+}: ComponentProps<"span">) => (
+  <span className={headlineIndex({ className })} {...props} />
+);

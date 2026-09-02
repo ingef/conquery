@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { useCallback, useRef } from "react";
 
 import { DNDType } from "../../common/constants/dndTypes";
@@ -9,10 +8,6 @@ import Dropzone from "../../ui-components/Dropzone";
 import Label from "../../ui-components/Label";
 
 import ValidatedFormQueryResult from "./ValidatedFormQueryResult";
-
-const SxDropzone = styled(Dropzone)`
-  justify-content: flex-start;
-`;
 
 const DROP_TYPES = [
   DNDType.PREVIOUS_QUERY,
@@ -58,7 +53,8 @@ const FormQueryDropzone = ({
         {label}
         {exists(tooltip) && <InfoTooltip text={tooltip} />}
       </Label>
-      <SxDropzone
+      <Dropzone
+        className="justify-start"
         onDrop={(item) => onDrop(item as DragItemQuery)}
         acceptedDropTypes={DROP_TYPES}
       >
@@ -70,7 +66,7 @@ const FormQueryDropzone = ({
             onDelete={onDelete}
           />
         )}
-      </SxDropzone>
+      </Dropzone>
     </div>
   );
 };

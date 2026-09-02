@@ -1,9 +1,10 @@
-import styled from "@emotion/styled";
+import type { ComponentProps } from "react";
+import { tv } from "tailwind-variants";
 
-export const Description = styled("p")`
-  font-size: 14px;
-  margin: 0 10px 10px;
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
+const description = tv({
+  base: ["mx-[10px] mb-[10px] last:mb-0", "text-sm"],
+});
+
+export const Description = ({ className, ...props }: ComponentProps<"p">) => (
+  <p className={description({ className })} {...props} />
+);

@@ -1,7 +1,7 @@
-import styled from "@emotion/styled";
 import { t } from "i18next";
 import RcTable from "rc-table";
 import { useHotkeys } from "react-hotkeys-hook";
+import { tv } from "tailwind-variants";
 import type { PreviewStatistics } from "../api/types";
 import Modal from "../modal/Modal";
 import Diagram from "./Diagram";
@@ -13,19 +13,9 @@ interface DiagramModalProps {
   onClose: () => void;
 }
 
-const Horizontal = styled("div")`
-  display: inline-flex;
-`;
-
-const SxDiagram = styled(Diagram)`
-  width: 70vw;
-  height: 70vh;
-  margin-right: 15px;
-`;
-
-const StyledRcTable = styled(RcTable)`
-  margin: auto;
-`;
+const diagram = tv({
+  base: ["h-[70vh] w-[70vw]", "mr-[15px]"],
+});
 
 export default function DiagramModal({
   statistic,
@@ -39,11 +29,12 @@ export default function DiagramModal({
 
   return (
     <Modal onClose={onClose}>
-      <Horizontal>
-        <SxDiagram stat={statistic} />
+      <div className="inline-flex">
+        <Diagram className={diagram()} stat={statistic} />
         {previewStatsIsBarStats(statistic) &&
           Object.keys(statistic.extras).length > 0 && (
-            <StyledRcTable
+            <RcTable
+              className="m-auto"
               columns={[
                 {
                   title: t("preview.name"),
@@ -63,7 +54,7 @@ export default function DiagramModal({
               components={components}
             />
           )}
-      </Horizontal>
+      </div>
     </Modal>
   );
 }

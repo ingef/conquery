@@ -1,19 +1,13 @@
-import styled from "@emotion/styled";
+import { tv } from "tailwind-variants";
 import type { PreviewStatisticsResponse } from "../api/types";
 import TooltipEntries from "../tooltip/TooltipEntries";
 
-const Root = styled("div")`
-  padding: 10px;
-  align-self: right;
-  margin-left: auto;
-`;
+// the old styles also declared `align-self: right` — an invalid value, never applied
+const root = tv({ base: ["ml-auto", "p-[10px]"] });
 
-const SxTooltipEntries = styled(TooltipEntries)`
-  display: flex;
-  flex-direction: row;
-  gap: 12px 12px;
-  margin: auto;
-`;
+const tooltipEntries = tv({
+  base: ["flex flex-row", "gap-3", "m-auto"],
+});
 
 export type HeadlineStatsProps = {
   statistics: PreviewStatisticsResponse | null;
@@ -25,13 +19,14 @@ export default function HeadlineStats({
   idLabel,
 }: HeadlineStatsProps) {
   return (
-    <Root>
-      <SxTooltipEntries
+    <div className={root()}>
+      <TooltipEntries
+        className={tooltipEntries()}
         matchingEntities={statistics?.entities}
         matchingEntries={statistics?.total}
         dateRange={statistics?.dateRange}
         idLabel={idLabel}
       />
-    </Root>
+    </div>
   );
 }

@@ -1,7 +1,7 @@
-import styled from "@emotion/styled";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
@@ -14,31 +14,17 @@ import { setExternalForm } from "./actions";
 import type { Form } from "./config-types";
 import { selectActiveFormType, selectAvailableForms } from "./stateSelectors";
 
-const Root = styled("div")`
-  flex-shrink: 0;
-  padding: 8px 20px 10px 10px;
-  box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.3);
-  box-sizing: border-box;
-  background-color: ${({ theme }) => theme.col.bg};
-  position: relative;
-  z-index: 2;
-`;
-
-const Row = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-`;
-
-const SxInputSelect = styled(InputSelect)`
-  flex-grow: 1;
-`;
-
-const SxIconButton = styled(IconButton)`
-  flex-shrink: 0;
-  margin-left: 10px;
-  padding: 7px 10px;
-`;
+const root = tv({
+  base: [
+    "relative",
+    "z-2",
+    "shrink-0",
+    "box-border",
+    "pt-2 pr-5 pb-[10px] pl-[10px]",
+    "bg-bg-50",
+    "shadow-[0_0_3px_0_rgba(0,0,0,0.3)]",
+  ],
+});
 
 const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
   const language = useActiveLang();
@@ -69,9 +55,10 @@ const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
     .sort((a, b) => (a.label < b.label ? -1 : 1));
 
   return (
-    <Root>
-      <Row>
-        <SxInputSelect
+    <div className={root()}>
+      <div className="flex flex-row items-end">
+        <InputSelect
+          className="grow"
           dataTestId="form-select"
           label={t("externalForms.forms")}
           options={options}
@@ -90,11 +77,15 @@ const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
           confirmationText={t("externalForms.common.clearConfirm")}
         >
           <WithTooltip text={t("externalForms.common.clear")}>
-            <SxIconButton frame icon={faTrash} />
+            <IconButton
+              className="ml-[10px] shrink-0 px-[10px] py-[7px]"
+              frame
+              icon={faTrash}
+            />
           </WithTooltip>
         </ConfirmableTooltip>
-      </Row>
-    </Root>
+      </div>
+    </div>
   );
 };
 

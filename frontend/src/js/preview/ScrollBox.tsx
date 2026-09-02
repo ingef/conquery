@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import {
   type HTMLAttributes,
@@ -7,29 +6,28 @@ import {
   useRef,
   useState,
 } from "react";
+import { tv } from "tailwind-variants";
 import IconButton from "../button/IconButton";
 
-const Root = styled("div")`
-  overflow: auto;
-`;
-const ScrollTopButton = styled(IconButton)`
-  position: absolute;
-  right: 30px;
-  bottom: 30px;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  justify-content: center;
-  border-radius: 50%;
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  background: white;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
-  z-index: 3;
-`;
+const root = tv({ base: "overflow-auto" });
+
+const scrollTopButton = tv({
+  base: [
+    "absolute right-[30px] bottom-[30px]",
+    "z-3",
+    "flex justify-center",
+    "h-[50px] w-[50px]",
+    "rounded-full",
+    "border border-gray-500",
+    "bg-white",
+    "shadow-[0_0_5px_0_rgba(0,0,0,0.2)]",
+  ],
+});
 
 export default function ScrollBox({
   threshold = 0,
   children,
+  className,
   ...props
 }: PropsWithChildren<{ threshold?: number }> & HTMLAttributes<HTMLDivElement>) {
   const scrollBoxRef = useRef<HTMLDivElement>(null);
@@ -49,9 +47,10 @@ export default function ScrollBox({
   }, [threshold]);
 
   return (
-    <Root ref={scrollBoxRef} {...props}>
+    <div ref={scrollBoxRef} className={root({ className })} {...props}>
       {showButton && (
-        <ScrollTopButton
+        <IconButton
+          className={scrollTopButton()}
           icon={faArrowUp}
           bgHover={true}
           onClick={() =>
@@ -60,6 +59,6 @@ export default function ScrollBox({
         />
       )}
       {children}
-    </Root>
+    </div>
   );
 }
