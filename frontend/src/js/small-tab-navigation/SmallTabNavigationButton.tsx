@@ -11,6 +11,16 @@ const bottomBorder = [
   "after:h-[3px]",
 ];
 
+// tailwind only generates classes it finds literally in the source,
+// so this cannot be derived from `bottomBorder` at runtime
+const bottomBorderOnHover = [
+  "hover:after:content-['']",
+  "hover:after:absolute",
+  "hover:after:inset-x-0",
+  "hover:after:bottom-0",
+  "hover:after:h-[3px]",
+];
+
 const button = tv({
   base: [
     "relative",
@@ -69,7 +79,7 @@ const button = tv({
       selected: false,
       class: [
         "text-gray-500",
-        ...bottomBorder.map((c) => `hover:${c}`),
+        ...bottomBorderOnHover,
         "hover:after:bg-gray-100",
       ],
     },
