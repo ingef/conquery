@@ -39,11 +39,12 @@ const root = tv({
   base: ["flex flex-col items-start", "shrink-0", "h-full", "overflow-hidden"],
 });
 
-// hidden until the surrounding folder dropzone (group/folder) is hovered
+// shown while the surrounding folder dropzone (group/folder) is hovered;
+// invisible rather than hidden, so it keeps its layout and its tooltip stays anchored
 const deleteButton = tv({
   base: [
     "absolute top-0 right-0",
-    "hidden group-hover/folder:block",
+    "invisible group-hover/folder:visible",
     "bg-bg-50",
     "px-2 py-[2px]",
     "opacity-100",
