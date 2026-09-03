@@ -35,7 +35,12 @@ const Demo = () => {
         <Icon icon={faFolder} />
         folders
       </ToggleButton>
-      <ToggleButton size="sm" danger isSelected={negated} onChange={setNegated}>
+      <ToggleButton
+        size="sm"
+        highlight="danger"
+        isSelected={negated}
+        onChange={setNegated}
+      >
         <Icon icon={faBan} />
         negate
       </ToggleButton>

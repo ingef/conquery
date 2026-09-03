@@ -42,7 +42,7 @@ const QueryGroupActions = ({
           <ToggleButton
             intent="tertiary"
             size="sm"
-            danger
+            highlight="danger"
             isSelected={excludeActive}
             onChange={onExcludeClick}
           >
@@ -52,13 +52,15 @@ const QueryGroupActions = ({
           <Tooltip>{t("help.queryEditorExclude")}</Tooltip>
         </TooltipTrigger>
         <TooltipTrigger delay={tooltipDelay.long}>
-          <Button intent="tertiary" size="sm" onPress={onDateClick}>
-            <Icon
-              icon={faCalendar}
-              className={dateActive ? "text-primary-500" : undefined}
-            />
+          <ToggleButton
+            intent="tertiary"
+            size="sm"
+            isSelected={dateActive}
+            onChange={onDateClick}
+          >
+            <Icon icon={faCalendar} />
             {t("queryEditor.date")}
-          </Button>
+          </ToggleButton>
           <Tooltip>{t("help.queryEditorDate")}</Tooltip>
         </TooltipTrigger>
       </div>

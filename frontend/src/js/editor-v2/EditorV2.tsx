@@ -102,10 +102,6 @@ const useResetOnDatasetChange = (onReset: () => void) => {
   }, [datasetId, onReset]);
 };
 
-// an action's icon shows in the primary color while its setting is in effect
-const stateIcon = (active: boolean) =>
-  active ? "text-primary-500" : undefined;
-
 export function EditorV2({
   featureDates,
   featureNegate,
@@ -302,40 +298,36 @@ export function EditorV2({
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.editQueryNode.keyname}
                 >
-                  <Button
+                  <ToggleButton
                     intent="tertiary"
                     size="sm"
                     isDisabled={
                       !selectedNode?.data ||
                       !nodeIsConceptQueryNode(selectedNode.data)
                     }
-                    onPress={() => {
+                    isSelected={selectedNodeActive}
+                    onChange={() => {
                       onOpenQueryNodeEditor();
                     }}
                   >
-                    <Icon
-                      icon={faEdit}
-                      className={stateIcon(selectedNodeActive)}
-                    />
+                    <Icon icon={faEdit} />
                     {t("editorV2.edit")}
-                  </Button>
+                  </ToggleButton>
                 </KeyboardShortcutTooltip>
               )}
               {featureDates && selectedNode && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.editDates.keyname}>
-                  <Button
+                  <ToggleButton
                     intent="tertiary"
                     size="sm"
-                    onPress={() => {
+                    isSelected={!!selectedNode.dates?.restriction}
+                    onChange={() => {
                       onOpen();
                     }}
                   >
-                    <Icon
-                      icon={faCalendar}
-                      className={stateIcon(!!selectedNode.dates?.restriction)}
-                    />
+                    <Icon icon={faCalendar} />
                     {t("editorV2.dates")}
-                  </Button>
+                  </ToggleButton>
                 </KeyboardShortcutTooltip>
               )}
               {featureNegate && selectedNode && (
@@ -343,7 +335,7 @@ export function EditorV2({
                   <ToggleButton
                     intent="tertiary"
                     size="sm"
-                    danger
+                    highlight="danger"
                     isSelected={!!selectedNode.negation}
                     onChange={onNegateClick}
                   >
