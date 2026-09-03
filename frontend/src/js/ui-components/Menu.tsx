@@ -1,10 +1,13 @@
 import {
+  type PopoverProps,
   Menu as RacMenu,
   MenuItem as RacMenuItem,
   type MenuItemProps as RacMenuItemProps,
   type MenuProps as RacMenuProps,
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
+
+import { Popover } from "./Popover";
 
 const menu = tv({
   base: [
@@ -46,27 +49,33 @@ export const menuItemIcon = tv({
 });
 
 /**
- * A list of actions or links in a Popover, composed the way react-aria does it:
+ * A list of actions or links that opens next to its trigger, composed the way
+ * react-aria does it. The popover is part of the Menu:
  *
  *   <MenuTrigger>
  *     <IconButton … />
- *     <Popover>
- *       <Menu aria-label="…" onAction={(key) => …}>
- *         <MenuItem id="…">…</MenuItem>
- *         <MenuItem href="…">…</MenuItem>
- *       </Menu>
- *     </Popover>
+ *     <Menu aria-label="…" onAction={(key) => …}>
+ *       <MenuItem id="…">…</MenuItem>
+ *       <MenuItem href="…">…</MenuItem>
+ *     </Menu>
  *   </MenuTrigger>
  *
  * MenuTrigger comes from react-aria-components; buttons built on BasicButton
  * are its trigger without further wiring. Items focus on hover, arrow keys
- * move between them, the menu closes after an action.
+ * move between them, the menu closes after an action. `placement` positions
+ * the menu relative to the trigger (default below, start-aligned).
  */
 export const Menu = ({
   className,
+  placement,
   ...props
-}: Omit<RacMenuProps<object>, "className"> & { className?: string }) => (
-  <RacMenu className={menu({ className })} {...props} />
+}: Omit<RacMenuProps<object>, "className"> & {
+  className?: string;
+  placement?: PopoverProps["placement"];
+}) => (
+  <Popover placement={placement}>
+    <RacMenu className={menu({ className })} {...props} />
+  </Popover>
 );
 
 export const MenuItem = ({

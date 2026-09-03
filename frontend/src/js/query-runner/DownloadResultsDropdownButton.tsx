@@ -10,7 +10,6 @@ import DownloadButton, { getFileIcon } from "../button/DownloadButton";
 import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
 import { Menu, MenuItem, menuItemIcon } from "../ui-components/Menu";
-import { Popover } from "../ui-components/Popover";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { getUserSettings, storeUserSettings } from "../user/userSettings";
 
@@ -116,38 +115,36 @@ const DownloadResultsDropdownButton = ({
             bgHover
             icon={tiny ? faDownload : faCaretDown}
           />
-          <Popover containerPadding={20}>
-            <Menu
-              aria-label={t("previousQuery.downloadResults")}
-              onAction={(key) => {
-                const chosen = resultUrls.find(({ url }) => url === key);
-                if (chosen) {
-                  setFileChoice({
-                    label: chosen.label,
-                    ending: getEnding(chosen.url),
-                  });
-                }
-              }}
-            >
-              {resultUrls.map((resultUrl) => {
-                const { icon, color } = getFileIcon(resultUrl.url);
+          <Menu
+            aria-label={t("previousQuery.downloadResults")}
+            onAction={(key) => {
+              const chosen = resultUrls.find(({ url }) => url === key);
+              if (chosen) {
+                setFileChoice({
+                  label: chosen.label,
+                  ending: getEnding(chosen.url),
+                });
+              }
+            }}
+          >
+            {resultUrls.map((resultUrl) => {
+              const { icon, color } = getFileIcon(resultUrl.url);
 
-                return (
-                  <MenuItem
-                    key={resultUrl.url}
-                    id={resultUrl.url}
-                    href={`${resultUrl.url}?access_token=${encodeURIComponent(authToken)}`}
-                    textValue={resultUrl.label}
-                  >
-                    <span className={menuItemIcon()}>
-                      <FaIcon large icon={icon} style={{ color }} />
-                    </span>
-                    {truncate(resultUrl.label)}
-                  </MenuItem>
-                );
-              })}
-            </Menu>
-          </Popover>
+              return (
+                <MenuItem
+                  key={resultUrl.url}
+                  id={resultUrl.url}
+                  href={`${resultUrl.url}?access_token=${encodeURIComponent(authToken)}`}
+                  textValue={resultUrl.label}
+                >
+                  <span className={menuItemIcon()}>
+                    <FaIcon large icon={icon} style={{ color }} />
+                  </span>
+                  {truncate(resultUrl.label)}
+                </MenuItem>
+              );
+            })}
+          </Menu>
         </MenuTrigger>
         <Tooltip>{tooltip}</Tooltip>
       </TooltipTrigger>

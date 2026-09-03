@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import FaIcon from "../icon/FaIcon";
 
 import { Menu, MenuItem, menuItemIcon } from "./Menu";
-import { Popover } from "./Popover";
 
 /**
  * Asks for confirmation before calling onConfirm: a menu with a single item.
@@ -17,7 +16,7 @@ export const ConfirmMenu = ({
   children,
   confirmationIcon,
   confirmationText,
-  placement = "bottom",
+  placement,
   onConfirm,
   red,
 }: {
@@ -34,16 +33,14 @@ export const ConfirmMenu = ({
   return (
     <MenuTrigger>
       {children}
-      <Popover placement={placement} offset={5}>
-        <Menu aria-label={label} onAction={onConfirm}>
-          <MenuItem id="confirm" danger={red} data-test-id="confirm">
-            <span className={menuItemIcon()}>
-              <FaIcon icon={confirmationIcon || faCheck} />
-            </span>
-            {label}
-          </MenuItem>
-        </Menu>
-      </Popover>
+      <Menu aria-label={label} placement={placement} onAction={onConfirm}>
+        <MenuItem id="confirm" danger={red} data-test-id="confirm">
+          <span className={menuItemIcon()}>
+            <FaIcon icon={confirmationIcon || faCheck} />
+          </span>
+          {label}
+        </MenuItem>
+      </Menu>
     </MenuTrigger>
   );
 };
