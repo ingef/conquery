@@ -82,6 +82,7 @@ const DisclosureField = ({
         </div>
         {field.creatable && canRemove && (
           <Button
+            size="sm"
             intent="tertiary"
             onPress={() => remove(index)}
             className="absolute right-0 top-1/2 -translate-y-1/2"

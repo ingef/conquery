@@ -32,12 +32,12 @@ const input = tv({
     "w-full",
     "border border-gray-400",
     "rounded",
-    "py-[6px] pr-[30px] pl-[10px]",
+    "h-[30px] pr-[30px] pl-[10px]",
     "text-sm",
     "font-normal",
   ],
   variants: {
-    large: { true: "py-[10px] pr-[30px] pl-[14px] text-xl" },
+    large: { true: "h-9 pr-[30px] pl-[14px] text-base" },
     disabled: { true: "opacity-50" },
   },
 });

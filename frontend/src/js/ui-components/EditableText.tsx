@@ -67,7 +67,7 @@ const EditableText = ({
         <Button
           aria-label={tooltip}
           intent="tertiary"
-          size={large ? "lg" : "sm"}
+          size={large ? "md" : "sm"}
           onPress={onToggleEdit}
           className={editButton({ large: !!large })}
         >

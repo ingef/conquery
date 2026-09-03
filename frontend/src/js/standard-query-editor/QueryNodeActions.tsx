@@ -51,6 +51,7 @@ const QueryNodeActions = (props: Props) => {
     <div className="flex flex-col items-center justify-start">
       <TooltipTrigger>
         <Button
+          size="sm"
           aria-label={t("queryEditor.removeNode")}
           intent="tertiary"
           onPress={() => {
