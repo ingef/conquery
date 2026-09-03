@@ -74,7 +74,7 @@ const SearchBar = ({
           <IconButton
             className={searchButton()}
             icon={faSearch}
-            aria-hidden="true"
+            aria-label={placeholder}
             onClick={() => onSearch(localSearchTerm)}
           />
         </div>

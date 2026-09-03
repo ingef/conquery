@@ -20,7 +20,7 @@ const QueryClearButton = ({ className }: { className?: string }) => {
           confirmationText={t(`queryEditor.clearConfirm`)}
           onConfirm={onClearQuery}
         >
-          <IconButton tiny icon={faTrash} tabIndex={-1} />
+          <IconButton tiny icon={faTrash} excludeFromTabOrder />
         </ConfirmableTooltip>
         <Tooltip>{t("queryEditor.clear")}</Tooltip>
       </TooltipTrigger>

@@ -1,9 +1,20 @@
-import type { ButtonHTMLAttributes, Ref } from "react";
-import { mergeProps, useFocusable, useObjectRef } from "react-aria";
+import type { CSSProperties, ReactNode, Ref } from "react";
+import {
+  Button as RacButton,
+  type ButtonProps as RacButtonProps,
+} from "react-aria-components";
 import { tv } from "tailwind-variants";
 
 export interface BasicButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement> {
+  extends Omit<
+    RacButtonProps,
+    "className" | "style" | "children" | "isDisabled"
+  > {
+  className?: string;
+  style?: CSSProperties;
+  children?: ReactNode;
+  /** maps to react-aria's `isDisabled` */
+  disabled?: boolean;
   bare?: boolean;
   tiny?: boolean;
   small?: boolean;
@@ -33,6 +44,9 @@ const button = tv({
   },
 });
 
+// react-aria's Button is the trigger that TooltipTrigger, MenuTrigger and
+// friends expect. `onClick` is react-aria's alias for `onPress` and receives
+// a mouse event; react-aria prefers `onPress`.
 const BasicButton = ({
   ref,
   className,
@@ -44,29 +58,21 @@ const BasicButton = ({
   secondary,
   disabled,
   ...props
-}: BasicButtonProps & { ref?: Ref<HTMLButtonElement> }) => {
-  const domRef = useObjectRef(ref);
-  // A surrounding TooltipTrigger hands its hover/focus props to the
-  // nearest focusable element: this makes every button a tooltip trigger.
-  const { focusableProps } = useFocusable({ isDisabled: disabled }, domRef);
-
-  return (
-    <button
-      type="button"
-      className={button({
-        bare,
-        tiny,
-        small,
-        large,
-        active,
-        secondary,
-        className,
-      })}
-      disabled={disabled}
-      {...mergeProps(focusableProps, props)}
-      ref={domRef}
-    />
-  );
-};
+}: BasicButtonProps & { ref?: Ref<HTMLButtonElement> }) => (
+  <RacButton
+    className={button({
+      bare,
+      tiny,
+      small,
+      large,
+      active,
+      secondary,
+      className,
+    })}
+    isDisabled={disabled}
+    {...props}
+    ref={ref}
+  />
+);
 
 export default BasicButton;

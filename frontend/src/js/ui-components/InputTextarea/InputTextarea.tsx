@@ -74,8 +74,7 @@ export const InputTextarea = ({
             className={clearZoneIconButton()}
             tiny
             icon={faTimes}
-            tabIndex={-1}
-            title={t("common.clearValue")}
+            excludeFromTabOrder
             aria-label={t("common.clearValue")}
             onClick={() => onChange(null)}
           />

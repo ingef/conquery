@@ -30,7 +30,6 @@ const TooManyValues = ({
       <IconButton
         icon={faTimes}
         tiny
-        title={t("common.clearValue")}
         aria-label={t("common.clearValue")}
         onClick={onClear}
       />
