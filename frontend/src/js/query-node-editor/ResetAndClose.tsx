@@ -30,7 +30,7 @@ const ResetAndClose = ({
         />
       )}
       <TooltipTrigger>
-        <Button intent="secondary" size="sm" onPress={onClose}>
+        <Button intent="secondary" onPress={onClose}>
           {t("common.save")}
         </Button>
         <Tooltip>{t("common.saveAndCloseEsc")}</Tooltip>

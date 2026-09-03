@@ -94,7 +94,7 @@ const Modal = ({
           <Heading3>{headline}</Heading3>
           {doneButton && (
             <TooltipTrigger>
-              <Button intent="secondary" size="sm" onPress={onClose}>
+              <Button intent="secondary" onPress={onClose}>
                 {t("common.done")}
               </Button>
               <Tooltip>{t("common.closeEsc")}</Tooltip>
