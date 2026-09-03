@@ -43,12 +43,13 @@ export function getFileIcon(url: string): FileIcon {
   return { icon: faFileDownload };
 }
 
-interface Props extends Omit<ButtonProps, "children" | "className"> {
+interface Props {
   resultUrl: ResultUrlWithLabel;
   className?: string;
   children?: ReactNode;
   simpleIcon?: boolean;
   showColoredIcon?: boolean;
+  size?: ButtonProps["size"];
 }
 
 const DownloadButton = ({
@@ -58,7 +59,7 @@ const DownloadButton = ({
   className,
   children,
   showColoredIcon,
-  ...restProps
+  size,
 }: Props & { ref?: Ref<HTMLAnchorElement> }) => {
   const { authToken } = useContext(AuthTokenContext);
 
@@ -68,7 +69,7 @@ const DownloadButton = ({
 
   return (
     <a href={href} className={link({ className })} ref={ref}>
-      <Button intent="tertiary" {...restProps}>
+      <Button intent="tertiary" size={size}>
         <Icon
           icon={simpleIcon ? faDownload : icon}
           style={{ color: showColoredIcon ? color : undefined }}

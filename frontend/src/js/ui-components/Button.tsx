@@ -13,7 +13,7 @@ import { tv } from "tailwind-variants";
 
 import { Icon } from "./Icon";
 
-const button = tv({
+export const buttonStyle = tv({
   base: [
     "inline-flex items-center justify-center",
     "shrink-0",
@@ -23,7 +23,6 @@ const button = tv({
     "cursor-pointer",
     "transition-[color,background-color,border-color,opacity] duration-100",
     "disabled:cursor-not-allowed disabled:opacity-40",
-    "aria-pressed:text-primary-500",
   ],
   variants: {
     intent: {
@@ -39,11 +38,9 @@ const button = tv({
         "bg-transparent text-gray-800 border-transparent",
         "hover:bg-gray-50",
       ],
-      // reads as a text link and sits in flowing text: no box, no padding,
-      // no fixed height, the surrounding text's size and line-height
+      // reads as a text link, see the compound variant for how it flows with text
       link: [
-        "bg-transparent border-transparent px-0",
-        "h-auto leading-[inherit] text-[length:inherit] align-baseline",
+        "bg-transparent border-transparent",
         "text-gray-500",
         "hover:text-gray-800 hover:underline",
       ],
@@ -57,17 +54,22 @@ const button = tv({
     // an icon-only button is a square
     iconOnly: { true: "px-0" },
     // a destructive or warning action, in the look of its intent
-    danger: { true: "aria-pressed:text-red" },
+    danger: { true: "" },
   },
   compoundVariants: [
-    { danger: true, intent: "primary", class: "bg-red border-red" },
+    // a link sits in flowing text: no box, no padding, no fixed height,
+    // the surrounding text's size and line-height (after the size variant)
+    {
+      intent: "link",
+      class:
+        "h-auto px-0 leading-[inherit] text-[length:inherit] align-baseline",
+    },
     {
       danger: true,
       intent: "secondary",
       class: "text-red border-red hover:bg-red hover:text-white",
     },
     { danger: true, intent: "tertiary", class: "text-red hover:text-red" },
-    { danger: true, intent: "link", class: "text-red hover:text-red" },
     { iconOnly: true, size: "sm", class: "w-6" },
     { iconOnly: true, size: "md", class: "w-[30px]" },
     { iconOnly: true, size: "lg", class: "w-9" },
@@ -75,17 +77,24 @@ const button = tv({
   defaultVariants: { intent: "secondary", size: "md" },
 });
 
-export interface ButtonProps
+interface CommonProps
   extends Omit<RacButtonProps, "className" | "style" | "children" | "onClick"> {
-  /** what the button does in its context; the look follows */
-  intent?: "primary" | "secondary" | "tertiary" | "link";
-  /** a destructive or warning action: red, in the look of the intent */
-  danger?: boolean;
   size?: "sm" | "md" | "lg";
   style?: CSSProperties;
   children?: ReactNode;
   ref?: Ref<HTMLButtonElement>;
 }
+
+/** what the button does in its context; the look follows */
+export type ButtonProps = CommonProps &
+  (
+    | {
+        intent?: "secondary" | "tertiary";
+        /** a destructive or warning action: red, in the look of the intent */
+        danger?: boolean;
+      }
+    | { intent: "primary" | "link"; danger?: never }
+  );
 
 const isIconOnly = (children: ReactNode) => {
   const items = Children.toArray(children);
@@ -106,9 +115,9 @@ const isIconOnly = (children: ReactNode) => {
  *   <Button intent="tertiary" aria-label="Delete"><Icon icon={faTrash} /></Button>
  *
  * A button whose only children are icons is square; give it an `aria-label`.
- * A pressed state (toggles) is `aria-pressed`, which colors the button.
  * `link` is for a button that reads as a text link and sits in flowing text.
- * `danger` turns any intent red for destructive or warning actions.
+ * `danger` turns a secondary or tertiary button red for destructive or
+ * warning actions. Something that is on or off is a ToggleButton.
  *
  * There is no className: layout belongs to the parent (a `grid` wrapper
  * stretches a button to full width), and anything that needs another look is
@@ -122,7 +131,7 @@ export const Button = ({
   ...props
 }: ButtonProps) => (
   <RacButton
-    className={button({
+    className={buttonStyle({
       intent,
       size,
       danger,

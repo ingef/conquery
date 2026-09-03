@@ -1,71 +1,70 @@
-import { Focusable } from "react-aria-components";
+import { Children, isValidElement, type ReactNode, type Ref } from "react";
+import {
+  ToggleButton as RacToggleButton,
+  type ToggleButtonProps as RacToggleButtonProps,
+} from "react-aria-components";
 import { tv } from "tailwind-variants";
 
-import { Tooltip, TooltipTrigger } from "./Tooltip";
+import { buttonStyle } from "./Button";
+import { Icon } from "./Icon";
 
-const root = tv({ base: ["m-0", "flex flex-wrap items-center"] });
-
-const option = tv({
-  base: [
-    "inline-block",
-    "px-2 py-1",
-    "-ml-px mb-[2px]",
-    "cursor-pointer",
-    "border border-gray-500",
-    "text-xs",
-    "transition-[color,background-color] duration-100",
-  ],
+// selected: the primary color, or red for a warning toggle
+const toggleStyle = tv({
+  extend: buttonStyle,
   variants: {
-    active: {
-      true: ["text-gray-800", "bg-white hover:bg-white"],
-      false: ["text-gray-500", "bg-gray-50 hover:bg-bg-50"],
+    danger: {
+      true: "data-selected:text-red",
+      false: "data-selected:text-primary-500",
     },
-    isFirst: { true: ["ml-0", "rounded-l-[2px]"] },
-    isLast: { true: "rounded-r-[2px]" },
   },
 });
 
-interface OptionsT {
-  label: string;
-  value: string;
-  description?: string;
+interface CommonProps
+  extends Omit<RacToggleButtonProps, "className" | "style" | "children"> {
+  size?: "sm" | "md" | "lg";
+  children?: ReactNode;
+  ref?: Ref<HTMLButtonElement>;
 }
 
-const ToggleButton = ({
-  options,
-  value: inputValue,
-  onChange,
-  className,
-}: {
-  className?: string;
-  options: OptionsT[];
-  value: string;
-  onChange: (value: string) => void;
-}) => {
+export type ToggleButtonProps = CommonProps & {
+  intent?: "secondary" | "tertiary";
+  /** a warning state: red while selected */
+  danger?: boolean;
+};
+
+const isIconOnly = (children: ReactNode) => {
+  const items = Children.toArray(children);
   return (
-    <div className={root({ className })}>
-      {options.map(({ value, label, description }, i) => (
-        <TooltipTrigger key={value}>
-          <Focusable>
-            <button
-              type="button"
-              className={option({
-                isFirst: i === 0,
-                isLast: i === options.length - 1,
-                active: inputValue === value,
-              })}
-              onClick={() => {
-                if (value !== inputValue) onChange(value);
-              }}
-            >
-              {label}
-            </button>
-          </Focusable>
-          <Tooltip>{description}</Tooltip>
-        </TooltipTrigger>
-      ))}
-    </div>
+    items.length > 0 &&
+    items.every((child) => isValidElement(child) && child.type === Icon)
   );
 };
 
-export default ToggleButton;
+/**
+ * A button that is on or off, in Button's look. react-aria's ToggleButton
+ * underneath: `isSelected` / `onChange`, and it works inside a
+ * ToggleButtonGroup and as a tooltip trigger.
+ *
+ *   <ToggleButton isSelected={pinned} onChange={setPinned} aria-label="Pin">
+ *     <Icon icon={faThumbtack} />
+ *   </ToggleButton>
+ */
+export const ToggleButton = ({
+  intent = "tertiary",
+  size,
+  danger = false,
+  children,
+  ...props
+}: ToggleButtonProps) => (
+  <RacToggleButton
+    className={toggleStyle({
+      intent,
+      size,
+      danger,
+      iconOnly: isIconOnly(children),
+    })}
+    {...props}
+  >
+    {children}
+  </RacToggleButton>
+);

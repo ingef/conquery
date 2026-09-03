@@ -22,7 +22,7 @@ import {
 import DropzoneWithFileInput, {
   type DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
-import ToggleButton from "../../ui-components/ToggleButton";
+import ToggleButtonGroup from "../../ui-components/ToggleButtonGroup";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 import { Description } from "../form-components/Description";
@@ -362,7 +362,7 @@ const FormConceptGroup = (props: Props) => {
                 <Description className={connectorDescription()}>
                   {t("externalForms.common.connectedWith")}:
                 </Description>
-                <ToggleButton
+                <ToggleButtonGroup
                   value={props.value[i].connector}
                   onChange={(val) => {
                     props.onChange(

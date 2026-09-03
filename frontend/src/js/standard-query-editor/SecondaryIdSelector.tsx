@@ -3,14 +3,13 @@ import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { SecondaryId } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { Icon } from "../ui-components/Icon";
 import InfoTooltip from "../ui-components/InfoTooltip";
-import ToggleButton from "../ui-components/ToggleButton";
+import ToggleButtonGroup from "../ui-components/ToggleButtonGroup";
 
 import { setSelectedSecondaryId } from "./actions";
 import type { StandardQueryStateT } from "./queryReducer";
@@ -167,7 +166,7 @@ const SecondaryIdSelectorUI = memo(
           {t("queryEditor.secondaryId")}
           <InfoTooltip text={t("queryEditor.secondaryIdTooltip")} />
         </h3>
-        <ToggleButton
+        <ToggleButtonGroup
           value={value || "standard"}
           onChange={onChange}
           options={options}
