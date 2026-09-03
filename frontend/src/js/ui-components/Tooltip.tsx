@@ -81,7 +81,7 @@ export const Tooltip = ({
   children,
   className,
   wide,
-  offset = 8,
+  offset = 10,
   ...props
 }: Omit<RacTooltipProps, "className" | "children"> & {
   children?: ReactNode;
@@ -97,8 +97,9 @@ export const Tooltip = ({
       {...props}
     >
       <OverlayArrow className={arrow()}>
-        <svg width={8} height={8} viewBox="0 0 8 8" aria-hidden="true">
-          <path d="M0 0 L4 4 L8 0" />
+        {/* square canvas so the rotation for left/right keeps it in place; the triangle fills the top half */}
+        <svg width={16} height={16} viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M0 0 L8 8 L16 0" />
         </svg>
       </OverlayArrow>
       {children}
