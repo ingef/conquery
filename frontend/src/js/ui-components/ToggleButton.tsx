@@ -8,13 +8,13 @@ import { tv } from "tailwind-variants";
 import { buttonStyle } from "./Button";
 import { Icon } from "./Icon";
 
-// selected: the primary color, or red for a warning toggle
+// while selected, the button shows its highlight color
 const toggleStyle = tv({
   extend: buttonStyle,
   variants: {
-    danger: {
-      true: "data-selected:text-red",
-      false: "data-selected:text-primary-500",
+    highlight: {
+      primary: "data-selected:text-primary-500",
+      danger: "data-selected:text-red",
     },
   },
 });
@@ -26,11 +26,12 @@ interface CommonProps
   ref?: Ref<HTMLButtonElement>;
 }
 
-export type ToggleButtonProps = CommonProps & {
+export interface ToggleButtonProps extends CommonProps {
+  /** Button's intents that can be switched on and off */
   intent?: "secondary" | "tertiary";
-  /** a warning state: red while selected */
-  danger?: boolean;
-};
+  /** how it shows while selected: the primary color, or red for a warning state */
+  highlight?: "primary" | "danger";
+}
 
 const isIconOnly = (children: ReactNode) => {
   const items = Children.toArray(children);
@@ -41,9 +42,10 @@ const isIconOnly = (children: ReactNode) => {
 };
 
 /**
- * A button that is on or off, in Button's look. react-aria's ToggleButton
- * underneath: `isSelected` / `onChange`, and it works inside a
- * ToggleButtonGroup and as a tooltip trigger.
+ * A button whose look reflects a state that is on or off, in Button's look.
+ * react-aria's ToggleButton underneath: `isSelected` / `onChange`, and it
+ * works inside a ToggleButtonGroup and as a tooltip trigger. Pressing may
+ * flip the state or open an editor for it.
  *
  *   <ToggleButton isSelected={pinned} onChange={setPinned} aria-label="Pin">
  *     <Icon icon={faThumbtack} />
@@ -52,7 +54,7 @@ const isIconOnly = (children: ReactNode) => {
 export const ToggleButton = ({
   intent = "tertiary",
   size,
-  danger = false,
+  highlight = "primary",
   children,
   ...props
 }: ToggleButtonProps) => (
@@ -60,7 +62,7 @@ export const ToggleButton = ({
     className={toggleStyle({
       intent,
       size,
-      danger,
+      highlight,
       iconOnly: isIconOnly(children),
     })}
     {...props}
