@@ -29,12 +29,13 @@ const dropzone = tv({
   },
 });
 
+// a small text link at the dropzone's top right corner, or above it
 const importButton = tv({
-  base: "absolute",
+  base: "absolute text-xs",
   variants: {
     outside: {
-      true: "-top-[30px] -right-[12px]",
-      false: "top-[3px] right-0",
+      true: "-top-[30px] right-0",
+      false: "top-[3px] right-2",
     },
   },
 });
