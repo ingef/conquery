@@ -45,7 +45,6 @@ const InputCheckbox = ({
   label: labelText,
   className,
   tooltip,
-  tooltipLazy,
   infoTooltip,
   value,
   onChange,
@@ -54,7 +53,6 @@ const InputCheckbox = ({
   label: string;
   className?: string;
   tooltip?: string;
-  tooltipLazy?: boolean;
   infoTooltip?: string;
   value?: boolean;
   onChange: (checked: boolean) => void;
@@ -68,7 +66,7 @@ const InputCheckbox = ({
       if (!disabled) onChange(!value);
     }}
   >
-    <TooltipTrigger delay={tooltipLazy ? 1500 : undefined}>
+    <TooltipTrigger>
       <TooltipTarget
         as="div"
         excludeFromTabOrder

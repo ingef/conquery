@@ -107,7 +107,7 @@ const QueryGroup = ({
   return (
     <div className="max-w-[250px] text-sm">
       {/* block! overrides tippy's inline-block wrapper */}
-      <TooltipTrigger delay={1500}>
+      <TooltipTrigger>
         <TooltipTarget as="div" excludeFromTabOrder>
           <QueryEditorDropzone
             key={group.elements.length + 1}

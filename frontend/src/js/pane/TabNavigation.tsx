@@ -63,7 +63,7 @@ const TabNavigation = ({
       {tabs.map(({ key, label, tooltip, loading }) => {
         return (
           <HoverNavigatable key={key} triggerNavigate={createClickHandler(key)}>
-            <TooltipTrigger delay={1500}>
+            <TooltipTrigger>
               <Focusable>
                 <button
                   type="button"
