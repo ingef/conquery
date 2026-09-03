@@ -4,8 +4,8 @@ import type { DropTargetMonitor } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
+import { Button } from "./Button";
 
-import { SelectFileButton } from "../button/SelectFileButton";
 import Dropzone, {
   type ChildArgs,
   type PossibleDroppableObject,
@@ -32,7 +32,12 @@ const dropzone = tv({
 });
 
 const selectFileButton = tv({
-  base: "absolute",
+  base: [
+    "absolute",
+    "h-auto px-0",
+    "text-[11px] text-gray-500 font-light",
+    "hover:underline hover:bg-transparent",
+  ],
   variants: {
     outside: {
       true: "-top-[26px] -right-[12px]",
@@ -144,16 +149,18 @@ const DropzoneWithFileInput = <
             />
           )}
           {showImportButton && onImportLines && (
-            <SelectFileButton
+            <Button
+              intent="tertiary"
+              size="sm"
               className={selectFileButton({ outside: !!importButtonOutside })}
-              onClick={() => setImportModalOpen(true)}
+              onPress={() => setImportModalOpen(true)}
             >
               <Icon
                 icon={faFileImport}
                 className={[importIcon(), "text-gray-500"]}
               />
               {t("common.import")}
-            </SelectFileButton>
+            </Button>
           )}
           {onSelectFile && (
             <input

@@ -1,9 +1,7 @@
 import { faInfoCircle, faTrash } from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
-
 import IconButton from "../button/IconButton";
-import PrimaryButton from "../button/PrimaryButton";
-import { TransparentButton } from "../button/TransparentButton";
+import { Button } from "./Button";
 import { Icon } from "./Icon";
 
 import {
@@ -29,15 +27,17 @@ export const OnButtons: Story = {
         <Tooltip>Delete</Tooltip>
       </TooltipTrigger>
       <TooltipTrigger>
-        <TransparentButton>Cancel</TransparentButton>
+        <Button intent="secondary">Cancel</Button>
         <Tooltip>Discards your changes</Tooltip>
       </TooltipTrigger>
       <TooltipTrigger>
-        <PrimaryButton>Save</PrimaryButton>
+        <Button intent="primary">Save</Button>
         <Tooltip>Saves and closes the editor</Tooltip>
       </TooltipTrigger>
       <TooltipTrigger>
-        <PrimaryButton disabled>Disabled</PrimaryButton>
+        <Button intent="primary" isDisabled>
+          Disabled
+        </Button>
         <Tooltip>Disabled buttons show no tooltip</Tooltip>
       </TooltipTrigger>
     </div>
@@ -49,7 +49,9 @@ export const Placements: Story = {
     <div className="flex items-center gap-4">
       {(["top", "bottom", "left", "right"] as const).map((placement) => (
         <TooltipTrigger key={placement}>
-          <TransparentButton small>{placement}</TransparentButton>
+          <Button intent="secondary" size="sm">
+            {placement}
+          </Button>
           <Tooltip placement={placement}>Placed at {placement}</Tooltip>
         </TooltipTrigger>
       ))}
@@ -67,7 +69,7 @@ export const Timing: Story = {
         </Tooltip>
       </TooltipTrigger>
       <TooltipTrigger delay={tooltipDelay.long}>
-        <TransparentButton>Further info</TransparentButton>
+        <Button intent="secondary">Further info</Button>
         <Tooltip>Explains a larger surface: long warm-up</Tooltip>
       </TooltipTrigger>
       <TooltipTrigger delay={tooltipDelay.immediate}>
@@ -83,7 +85,7 @@ export const Timing: Story = {
 export const RichContent: Story = {
   render: () => (
     <TooltipTrigger>
-      <TransparentButton>Rich content</TransparentButton>
+      <Button intent="secondary">Rich content</Button>
       <Tooltip wide>
         <h3>Headline</h3>
         <p>

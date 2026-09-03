@@ -2,13 +2,11 @@ import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import type { SelectOptionT } from "../../api/types";
-import PrimaryButton from "../../button/PrimaryButton";
-import { TransparentButton } from "../../button/TransparentButton";
 import { exists } from "../../common/helpers/exists";
 import { useActiveLang } from "../../localization/useActiveLang";
 import Modal from "../../modal/Modal";
+import { Button } from "../../ui-components/Button";
 import InputCheckbox from "../../ui-components/InputCheckbox";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
 import { useVisibleConceptListFields } from "../stateSelectors";
@@ -163,12 +161,16 @@ const FormConceptCopyModal = ({
         )}
       </div>
       <div className={buttons()}>
-        <TransparentButton onClick={onClose}>
+        <Button intent="secondary" onPress={onClose}>
           {t("common.cancel")}
-        </TransparentButton>
-        <PrimaryButton onClick={onSubmit} disabled={isAcceptDisabled}>
+        </Button>
+        <Button
+          intent="primary"
+          onPress={onSubmit}
+          isDisabled={isAcceptDisabled}
+        >
           {t("externalForms.copyModal.accept")}
-        </PrimaryButton>
+        </Button>
       </div>
     </Modal>
   );

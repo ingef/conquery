@@ -1,0 +1,84 @@
+import { faCheck, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import type { Meta, StoryObj } from "@storybook/react";
+import { useState } from "react";
+
+import { Button } from "./Button";
+import { Icon } from "./Icon";
+import { Tooltip, TooltipTrigger } from "./Tooltip";
+
+export default {
+  title: "UiComponents/Button",
+  component: Button,
+  parameters: { layout: "centered" },
+} as Meta<typeof Button>;
+
+type Story = StoryObj<typeof Button>;
+
+const intents = ["primary", "secondary", "tertiary", "danger"] as const;
+const sizes = ["sm", "md", "lg"] as const;
+
+export const Intents: Story = {
+  render: () => (
+    <div className="flex items-center gap-3">
+      {intents.map((intent) => (
+        <Button key={intent} intent={intent}>
+          {intent}
+        </Button>
+      ))}
+      <Button intent="primary" isDisabled>
+        disabled
+      </Button>
+    </div>
+  ),
+};
+
+export const Sizes: Story = {
+  render: () => (
+    <div className="flex flex-col gap-3">
+      {sizes.map((size) => (
+        <div key={size} className="flex items-center gap-3">
+          <Button size={size}>{size}</Button>
+          <Button size={size}>
+            <Icon icon={faPlus} />
+            with icon
+          </Button>
+          <Button size={size} aria-label="Delete">
+            <Icon icon={faTrash} />
+          </Button>
+          <Button size={size} intent="tertiary" aria-label="Delete">
+            <Icon icon={faTrash} />
+          </Button>
+        </div>
+      ))}
+    </div>
+  ),
+};
+
+const Pressed = () => {
+  const [pressed, setPressed] = useState(true);
+  return (
+    <div className="flex items-center gap-3">
+      <Button
+        intent="tertiary"
+        aria-pressed={pressed}
+        onPress={() => setPressed((p) => !p)}
+      >
+        <Icon icon={faCheck} />
+        toggle me
+      </Button>
+      <TooltipTrigger>
+        <Button
+          intent="tertiary"
+          aria-pressed={pressed}
+          aria-label="Toggle"
+          onPress={() => setPressed((p) => !p)}
+        >
+          <Icon icon={faCheck} />
+        </Button>
+        <Tooltip>A pressed icon button</Tooltip>
+      </TooltipTrigger>
+    </div>
+  );
+};
+
+export const PressedState: Story = { render: () => <Pressed /> };
