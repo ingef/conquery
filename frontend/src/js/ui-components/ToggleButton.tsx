@@ -7,6 +7,7 @@ import { tv } from "tailwind-variants";
 
 import { buttonStyle } from "./Button";
 import { Icon } from "./Icon";
+import { useToggleButtonGroup } from "./ToggleButtonGroup";
 
 // while selected, the button is bold and shows its highlight color
 const toggleStyle = tv({
@@ -17,7 +18,31 @@ const toggleStyle = tv({
       primary: "data-selected:text-primary-500",
       danger: "data-selected:text-red",
     },
+    // a segment of a segmented control: bordered, recessed while off, white
+    // while on, joined to its neighbors along the group's orientation
+    segmented: {
+      true: [
+        "rounded-none",
+        "border-gray-500",
+        "bg-gray-50 text-gray-500",
+        "hover:bg-white",
+        "data-selected:bg-white",
+      ],
+    },
+    orientation: { horizontal: "", vertical: "" },
   },
+  compoundVariants: [
+    {
+      segmented: true,
+      orientation: "horizontal",
+      class: "first:rounded-l last:rounded-r not-first:-ml-px",
+    },
+    {
+      segmented: true,
+      orientation: "vertical",
+      class: "first:rounded-t last:rounded-b not-first:-mt-px",
+    },
+  ],
 });
 
 interface CommonProps
@@ -45,8 +70,9 @@ const isIconOnly = (children: ReactNode) => {
 /**
  * A button whose look reflects a state that is on or off, in Button's look.
  * react-aria's ToggleButton underneath: `isSelected` / `onChange`, and it
- * works inside a ToggleButtonGroup and as a tooltip trigger. Pressing may
- * flip the state or open an editor for it.
+ * works as a tooltip trigger. Inside a ToggleButtonGroup it is keyed by `id`,
+ * takes the group's size unless it has its own, and joins a segmented group
+ * as one of its segments. Pressing may flip the state or open an editor for it.
  *
  *   <ToggleButton isSelected={pinned} onChange={setPinned} aria-label="Pin">
  *     <Icon icon={faThumbtack} />
@@ -58,16 +84,21 @@ export const ToggleButton = ({
   highlight = "primary",
   children,
   ...props
-}: ToggleButtonProps) => (
-  <RacToggleButton
-    className={toggleStyle({
-      intent,
-      size,
-      highlight,
-      iconOnly: isIconOnly(children),
-    })}
-    {...props}
-  >
-    {children}
-  </RacToggleButton>
-);
+}: ToggleButtonProps) => {
+  const group = useToggleButtonGroup();
+  return (
+    <RacToggleButton
+      className={toggleStyle({
+        intent,
+        size: size ?? group?.size,
+        highlight,
+        iconOnly: isIconOnly(children),
+        segmented: group?.segmented,
+        orientation: group?.orientation,
+      })}
+      {...props}
+    >
+      {children}
+    </RacToggleButton>
+  );
+};
