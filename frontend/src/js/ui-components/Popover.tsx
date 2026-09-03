@@ -23,14 +23,14 @@ const dialog = tv({ base: "outline-none" });
  * Click-triggered overlay, composed the way react-aria does it:
  *
  *   <DialogTrigger>
- *     <Pressable><IconButton … /></Pressable>
+ *     <IconButton … />
  *     <Popover>
  *       <Dialog aria-label="…">{({ close }) => …}</Dialog>
  *     </Popover>
  *   </DialogTrigger>
  *
- * DialogTrigger and Pressable come from react-aria-components. Pressable is
- * needed until Button itself is a react-aria Button.
+ * DialogTrigger comes from react-aria-components; buttons built on
+ * BasicButton are its trigger without further wiring.
  */
 export const Popover = ({
   className,

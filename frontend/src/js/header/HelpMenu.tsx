@@ -4,7 +4,7 @@ import {
   faPaperPlane,
   faQuestion,
 } from "@fortawesome/free-solid-svg-icons";
-import { DialogTrigger, Pressable } from "react-aria-components";
+import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
@@ -25,14 +25,12 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
 
   return (
     <DialogTrigger>
-      <Pressable>
-        <IconButton
-          className="px-3 py-[7px]"
-          icon={faQuestion}
-          frame
-          data-test-id="help-menu"
-        />
-      </Pressable>
+      <IconButton
+        className="px-3 py-[7px]"
+        icon={faQuestion}
+        frame
+        data-test-id="help-menu"
+      />
       <Popover placement="bottom end" offset={5}>
         <Dialog aria-label={t("common.help")}>
           {({ close }) => (
