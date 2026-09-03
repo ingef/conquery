@@ -36,7 +36,12 @@ const LogoutButton = () => {
 
   return (
     <TooltipTrigger>
-      <IconButton small frame icon={faSignOutAlt} onClick={onLogout} />
+      <IconButton
+        className="p-[7px]"
+        frame
+        icon={faSignOutAlt}
+        onClick={onLogout}
+      />
       <Tooltip>{t("common.logout")}</Tooltip>
     </TooltipTrigger>
   );

@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -85,7 +85,7 @@ const QueryNodeActions = (props: Props) => {
             aria-label={t("queryEditor.loadingPreviousQuery")}
             excludeFromTabOrder
           >
-            <FaIcon className="mt-[7px] mb-1 mx-[6px]" icon={faSpinner} />
+            <Icon icon={faSpinner} className="mt-[7px] mb-1 mx-[6px]" />
           </TooltipTarget>
           <Tooltip>{t("queryEditor.loadingPreviousQuery")}</Tooltip>
         </TooltipTrigger>

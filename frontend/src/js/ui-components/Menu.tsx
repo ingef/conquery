@@ -38,14 +38,8 @@ const menuItem = tv({
     "transition-[opacity,background-color] duration-100",
   ],
   variants: {
-    // the svg selector beats the colour FaIcon still sets on itself
-    danger: { true: "text-red [&_svg]:text-red" },
+    danger: { true: "text-red" },
   },
-});
-
-/** Fixed-width box so icons of different widths keep the labels aligned. */
-export const menuItemIcon = tv({
-  base: ["inline-flex justify-center", "w-4 shrink-0"],
 });
 
 /**

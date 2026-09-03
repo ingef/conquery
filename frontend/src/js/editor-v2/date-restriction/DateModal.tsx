@@ -8,8 +8,8 @@ import { tv } from "tailwind-variants";
 import type { DateRangeT } from "../../api/types";
 import IconButton from "../../button/IconButton";
 import type { DateStringMinMax } from "../../common/helpers/dateHelper";
-import FaIcon from "../../icon/FaIcon";
 import Modal from "../../modal/Modal";
+import { Icon } from "../../ui-components/Icon";
 import InputCheckbox from "../../ui-components/InputCheckbox";
 import InputDateRange from "../../ui-components/InputDateRange";
 
@@ -99,7 +99,7 @@ export const DateModal = ({
         />
         <div>
           <p className={sectionHeadline()}>
-            <FaIcon icon={faCalendarMinus} red />
+            <Icon icon={faCalendarMinus} className="text-red" />
             {t("queryNodeEditor.excludeTimestamps")}
             <InputCheckbox
               label=""

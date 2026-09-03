@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { ConceptIdT, ConceptT } from "../api/types";
 import IconButton from "../button/IconButton";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
 import ConceptTreeNode from "./ConceptTreeNode";
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
 import type { SearchT } from "./reducer";
@@ -46,7 +46,7 @@ const ConceptTree = ({
     return (
       <p className={message()} style={{ paddingLeft: 24 + depth * 15 }}>
         <span className="mr-[6px]">
-          <FaIcon icon={faSpinner} />
+          <Icon icon={faSpinner} />
         </span>
         <span>{label}</span>
       </p>

@@ -4,9 +4,9 @@ import type { ReactNode } from "react";
 import { MenuTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "./Icon";
 
-import { Menu, MenuItem, menuItemIcon } from "./Menu";
+import { Menu, MenuItem } from "./Menu";
 
 /**
  * Asks for confirmation before calling onConfirm: a menu with a single item.
@@ -35,9 +35,7 @@ export const ConfirmMenu = ({
       {children}
       <Menu aria-label={label} placement={placement} onAction={onConfirm}>
         <MenuItem id="confirm" danger={red} data-test-id="confirm">
-          <span className={menuItemIcon()}>
-            <FaIcon icon={confirmationIcon || faCheck} />
-          </span>
+          <Icon icon={confirmationIcon || faCheck} />
           {label}
         </MenuItem>
       </Menu>

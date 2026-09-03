@@ -11,7 +11,7 @@ import type { DateRangeT } from "../api/types";
 import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 import { formatDate, parseDate } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
 
 const dateText = tv({
   base: [
@@ -35,7 +35,7 @@ const text = tv({
 });
 
 const icon = tv({
-  base: ["text-[30px]", "text-gray-400", "justify-self-center"],
+  base: ["size-[30px]", "text-gray-400", "justify-self-center"],
 });
 
 const numberText = tv({
@@ -93,7 +93,7 @@ const MatchingStats = (props: Props) => {
     <div {...rest}>
       {idLabel && (
         <>
-          <FaIcon className={icon()} icon={faMicroscope} />
+          <Icon icon={faMicroscope} className={icon()} />
           <div className="shrink-0">
             <p className={dateText()}>{idLabel}</p>
             <p className={text({ zero: isZero })}>
@@ -102,7 +102,7 @@ const MatchingStats = (props: Props) => {
           </div>
         </>
       )}
-      <FaIcon className={icon()} icon={faHashtag} />
+      <Icon icon={faHashtag} className={icon()} />
       <div className="shrink-0">
         <p className={numberText({ zero: isZero })}>
           {exists(matchingEntries) ? (
@@ -122,7 +122,7 @@ const MatchingStats = (props: Props) => {
           )}
         </p>
       </div>
-      <FaIcon className={icon()} icon={faUser} />
+      <Icon icon={faUser} className={icon()} />
       <div className="shrink-0">
         <p className={numberText({ zero: isZeroEntities })}>
           {exists(matchingEntities) ? (
@@ -142,7 +142,7 @@ const MatchingStats = (props: Props) => {
           )}
         </p>
       </div>
-      <FaIcon className={icon()} icon={faArrowsLeftRightToLine} />
+      <Icon icon={faArrowsLeftRightToLine} className={icon()} />
       <div className="shrink-0">
         <p className={dateText()}>
           {fromDate}

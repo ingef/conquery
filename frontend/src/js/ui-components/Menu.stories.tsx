@@ -9,10 +9,9 @@ import { MenuTrigger } from "react-aria-components";
 
 import IconButton from "../button/IconButton";
 import { TransparentButton } from "../button/TransparentButton";
-import FaIcon from "../icon/FaIcon";
-
 import { ConfirmMenu } from "./ConfirmMenu";
-import { Menu, MenuItem, menuItemIcon } from "./Menu";
+import { Icon } from "./Icon";
+import { Menu, MenuItem } from "./Menu";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 export default {
@@ -29,28 +28,17 @@ export const Default: Story = {
       <IconButton frame icon={faEllipsisV} />
       <Menu aria-label="Actions" onAction={(key) => console.log(key)}>
         <MenuItem id="contact" href="mailto:someone@example.com">
-          <span className={menuItemIcon()}>
-            <FaIcon icon={faPaperPlane} />
-          </span>
-          A link item
+          <Icon icon={faPaperPlane} />A link item
         </MenuItem>
         <MenuItem id="manual">
-          <span className={menuItemIcon()}>
-            <FaIcon icon={faBook} />
-          </span>
+          <Icon icon={faBook} />
           An action item
         </MenuItem>
         <MenuItem id="disabled" isDisabled>
-          <span className={menuItemIcon()}>
-            <FaIcon icon={faTrash} />
-          </span>
-          A disabled item
+          <Icon icon={faTrash} />A disabled item
         </MenuItem>
         <MenuItem id="delete" danger>
-          <span className={menuItemIcon()}>
-            <FaIcon icon={faTrash} />
-          </span>
-          A dangerous item
+          <Icon icon={faTrash} />A dangerous item
         </MenuItem>
       </Menu>
     </MenuTrigger>

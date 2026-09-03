@@ -8,7 +8,7 @@ import {
   parseDateToState,
 } from "../../../common/helpers/dateHelper";
 import { exists } from "../../../common/helpers/exists";
-import FaIcon from "../../../icon/FaIcon";
+import { Icon } from "../../../ui-components/Icon";
 import InfoTooltip from "../../../ui-components/InfoTooltip";
 import InputDate from "../../../ui-components/InputDate/InputDate";
 import Label from "../../../ui-components/Label";
@@ -50,7 +50,7 @@ export const DateField = ({
         return (
           <div>
             <Label>
-              <FaIcon icon={faCalendar} left gray />
+              <Icon icon={faCalendar} className="mr-[10px] text-gray-500" />
               {field.label[locale]}
               {field.tooltip && <InfoTooltip text={field.tooltip[locale]} />}
             </Label>

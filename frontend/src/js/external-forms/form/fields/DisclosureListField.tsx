@@ -4,7 +4,6 @@ import {
   faChevronRight,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { type ComponentProps, useEffect, useState } from "react";
 import { useFieldArray } from "react-hook-form";
 import { tv } from "tailwind-variants";
@@ -12,7 +11,7 @@ import IconButton from "../../../button/IconButton";
 import { TransparentButton } from "../../../button/TransparentButton";
 import { exists } from "../../../common/helpers/exists";
 import { usePrevious } from "../../../common/helpers/usePrevious";
-import FaIcon from "../../../icon/FaIcon";
+import { Icon } from "../../../ui-components/Icon";
 import InfoTooltip from "../../../ui-components/InfoTooltip";
 import type { DisclosureListField as DisclosureListFieldT } from "../../config-types";
 import {
@@ -75,7 +74,7 @@ const DisclosureField = ({
       <summary className={summary()}>
         <div className="flex items-center gap-3">
           <span className="w-5">
-            <FaIcon icon={isOpen ? faChevronDown : faChevronRight} />
+            <Icon icon={isOpen ? faChevronDown : faChevronRight} />
           </span>
           {field.label[locale]}
           {exists(field.tooltip) && (
@@ -241,7 +240,7 @@ export const DisclosureListField = ({
             );
           }}
         >
-          <FontAwesomeIcon icon={faAdd} />
+          <Icon icon={faAdd} />
           {field.createNewLabel ? field.createNewLabel[locale] : undefined}
         </TransparentButton>
       )}
