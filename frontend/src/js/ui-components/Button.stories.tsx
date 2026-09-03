@@ -14,7 +14,7 @@ export default {
 
 type Story = StoryObj<typeof Button>;
 
-const intents = ["primary", "secondary", "tertiary", "danger"] as const;
+const intents = ["primary", "secondary", "tertiary", "danger", "link"] as const;
 const sizes = ["sm", "md", "lg"] as const;
 
 export const Intents: Story = {
