@@ -1,23 +1,19 @@
-import styled from "@emotion/styled";
-import { forwardRef, type ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
+import { tv } from "tailwind-variants";
 
 import { Heading4 } from "../headings/Headings";
 
-const Root = styled("div")`
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  min-width: 220px;
-`;
+const root = tv({
+  base: ["shrink-0", "flex flex-col", "min-w-[220px]"],
+});
 
-const Content = styled("div")`
-  flex-grow: 1;
-  padding: 3px 10px;
-`;
+const content = tv({
+  base: ["grow", "px-[10px] py-[3px]"],
+});
 
-const Headline = styled(Heading4)`
-  margin: 14px 10px 0;
-`;
+const headlineHeading = tv({
+  base: ["mx-[10px] mt-[14px]"],
+});
 
 interface PropsT {
   className?: string;
@@ -25,13 +21,16 @@ interface PropsT {
   headline?: string;
 }
 
-const ContentCell = forwardRef<HTMLDivElement, PropsT>(
-  ({ className, headline, children }, ref) => (
-    <Root ref={ref} className={className}>
-      {headline && <Headline>{headline}</Headline>}
-      <Content>{children}</Content>
-    </Root>
-  ),
+const ContentCell = ({
+  ref,
+  className,
+  headline,
+  children,
+}: PropsT & { ref?: Ref<HTMLDivElement> }) => (
+  <div ref={ref} className={root({ className })}>
+    {headline && <Heading4 className={headlineHeading()}>{headline}</Heading4>}
+    <div className={content()}>{children}</div>
+  </div>
 );
 
 export default ContentCell;

@@ -1,19 +1,16 @@
-import styled from "@emotion/styled";
 import { memo } from "react";
+import { tv } from "tailwind-variants";
 
-const Bar = styled("div")`
-  width: 100%;
-  height: 7px;
-  background-color: #ccc;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.1);
-`;
+const bar = tv({
+  base: [
+    "h-[7px] w-full",
+    "rounded",
+    "bg-[#ccc]",
+    "shadow-[0_0_3px_0_rgba(0,0,0,0.1)]",
+  ],
+});
 
-const BarProgress = styled("div")`
-  height: 100%;
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
+const barProgress = tv({ base: ["h-full", "rounded", "bg-primary-500"] });
 
 interface Props {
   className?: string;
@@ -22,9 +19,9 @@ interface Props {
 
 const ProgressBar = ({ className, donePercent }: Props) => {
   return (
-    <Bar className={className}>
-      <BarProgress style={{ width: `${donePercent}%` }} />
-    </Bar>
+    <div className={bar({ className })}>
+      <div className={barProgress()} style={{ width: `${donePercent}%` }} />
+    </div>
   );
 };
 

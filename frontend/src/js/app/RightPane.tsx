@@ -1,28 +1,25 @@
-import styled from "@emotion/styled";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-
+import { tv } from "tailwind-variants";
 import { EditorV2 } from "../editor-v2/EditorV2";
+import { isEditorV2Enabled } from "../environment";
 import { ResetableErrorBoundary } from "../error-fallback/ResetableErrorBoundary";
 import FormsTab from "../external-forms/FormsTab";
 import Pane from "../pane/Pane";
 import type { TabNavigationTab } from "../pane/TabNavigation";
 import StandardQueryEditorTab from "../standard-query-editor/StandardQueryEditorTab";
-
 import type { StateT } from "./reducers";
 
-const Tab = styled("div")<{ isActive: boolean }>`
-  height: 100%;
-  flex-grow: 1;
-  flex-direction: column;
-
-  display: ${({ isActive }) => (isActive ? "flex" : "none")};
-`;
-
-const SxPane = styled(Pane)`
-  background-color: ${({ theme }) => theme.col.bgAlt};
-`;
+const tab = tv({
+  base: ["h-full", "grow", "flex-col"],
+  variants: {
+    isActive: {
+      true: "flex",
+      false: "hidden",
+    },
+  },
+});
 
 const RightPane = () => {
   const { t } = useTranslation();
@@ -37,11 +34,15 @@ const RightPane = () => {
         label: t("rightPane.queryEditor"),
         tooltip: t("help.tabQueryEditor"),
       },
-      {
-        key: "editorV2",
-        label: t("rightPane.editorV2"),
-        tooltip: t("help.tabEditorV2"),
-      },
+      ...(isEditorV2Enabled
+        ? [
+            {
+              key: "editorV2",
+              label: t("rightPane.editorV2"),
+              tooltip: t("help.tabEditorV2"),
+            },
+          ]
+        : []),
       {
         key: "externalForms",
         label: t("rightPane.externalForms"),
@@ -52,27 +53,38 @@ const RightPane = () => {
   );
 
   return (
-    <SxPane right tabs={tabs} dataTestId="right-pane">
-      <Tab key={tabs[0].key} isActive={activeTab === tabs[0].key}>
+    <Pane className="bg-bg-100" right tabs={tabs} dataTestId="right-pane">
+      <div
+        key="queryEditor"
+        className={tab({ isActive: activeTab === "queryEditor" })}
+      >
         <StandardQueryEditorTab />
-      </Tab>
-      <Tab key={tabs[1].key} isActive={activeTab === tabs[1].key}>
-        <EditorV2
-          featureDates
-          featureNegate
-          featureExpand
-          featureConnectorRotate
-          featureQueryNodeEdit
-          featureContentInfos
-          featureTimebasedQueries
-        />
-      </Tab>
-      <Tab key={tabs[2].key} isActive={activeTab === tabs[2].key}>
+      </div>
+      {isEditorV2Enabled && (
+        <div
+          key="editorV2"
+          className={tab({ isActive: activeTab === "editorV2" })}
+        >
+          <EditorV2
+            featureDates
+            featureNegate
+            featureExpand
+            featureConnectorRotate
+            featureQueryNodeEdit
+            featureContentInfos
+            featureTimebasedQueries
+          />
+        </div>
+      )}
+      <div
+        key="externalForms"
+        className={tab({ isActive: activeTab === "externalForms" })}
+      >
         <ResetableErrorBoundary>
           <FormsTab />
         </ResetableErrorBoundary>
-      </Tab>
-    </SxPane>
+      </div>
+    </Pane>
   );
 };
 

@@ -1,36 +1,33 @@
-import styled from "@emotion/styled";
 import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
-import type { FC, ReactElement } from "react";
+import type { ReactElement } from "react";
+import { tv } from "tailwind-variants";
 
 import FaIcon from "../icon/FaIcon";
 
 import WithTooltip from "./WithTooltip";
 
-interface PropsT {
+const icon = tv({
+  base: ["transition-all duration-100", "hover:text-gray-800"],
+});
+
+const spanContainer = tv({ base: ["inline-block", "px-[7px]"] });
+
+const InfoTooltip = ({
+  className,
+  text,
+  html,
+  wide,
+}: {
   text?: string;
   html?: ReactElement;
   className?: string;
   wide?: boolean;
-}
-
-const SxFaIcon = styled(FaIcon)`
-  transition: ${({ theme }) => theme.transitionTime};
-  &:hover {
-    color: ${({ theme }) => theme.col.black};
-  }
-`;
-
-const SpanContainer = styled("span")`
-  display: inline-block;
-  padding: 0 7px;
-`;
-
-const InfoTooltip: FC<PropsT> = ({ className, text, html, wide }) => {
+}) => {
   return (
     <WithTooltip text={text} html={html} wide={wide}>
-      <SpanContainer className={className}>
-        <SxFaIcon gray icon={faQuestionCircle} />
-      </SpanContainer>
+      <span className={spanContainer({ className })}>
+        <FaIcon className={icon()} gray icon={faQuestionCircle} />
+      </span>
     </WithTooltip>
   );
 };

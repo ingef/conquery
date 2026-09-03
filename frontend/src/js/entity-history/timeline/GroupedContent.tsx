@@ -1,7 +1,10 @@
-import { css, type Theme } from "@emotion/react";
-import styled from "@emotion/styled";
 import { memo, type ReactNode, useMemo } from "react";
-import { NumericFormat } from "react-number-format";
+import {
+  type InputAttributes,
+  NumericFormat,
+  type NumericFormatProps,
+} from "react-number-format";
+import { tv } from "tailwind-variants";
 
 import type {
   ColumnDescription,
@@ -22,16 +25,17 @@ import {
   isVisibleColumn,
 } from "./util/util";
 
-const Grid = styled("div")`
-  display: inline-grid;
-  gap: 5px 10px;
-`;
+const grid = tv({
+  base: ["inline-grid", "gap-x-[10px] gap-y-[5px]"],
+});
 
-const ExtraArea = styled("div")`
-  padding: 8px 15px 12px 49px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-`;
+const extraArea = tv({
+  base: [
+    "pt-2 pr-[15px] pb-3 pl-[49px]",
+    "overflow-x-auto",
+    "[-webkit-overflow-scrolling:touch]",
+  ],
+});
 
 const getColumnDescriptionContentType = (
   columnDescription?: ColumnDescription,
@@ -95,8 +99,9 @@ const GroupedContent = ({
   }
 
   return (
-    <ExtraArea>
-      <Grid
+    <div className={extraArea()}>
+      <div
+        className={grid()}
         style={{
           gridTemplateColumns: `repeat(${differencesKeys.length}, auto)`,
         }}
@@ -115,24 +120,15 @@ const GroupedContent = ({
             />
           )),
         )}
-      </Grid>
-    </ExtraArea>
+      </div>
+    </div>
   );
 };
 
-const cellStyles = (theme: Theme) => css`
-  white-space: nowrap;
-  font-size: ${theme.font.sm};
-`;
-const CellWrap = styled("span")`
-  ${({ theme }) => cellStyles(theme)};
-`;
-const SxConceptName = styled(ConceptName)`
-  ${({ theme }) => cellStyles(theme)};
-`;
-const SxNumericFormat = styled(NumericFormat)`
-  ${({ theme }) => cellStyles(theme)};
-`;
+// named cellText, not cell: the Cell component's `cell` prop would shadow it
+const cellText = tv({
+  base: ["whitespace-nowrap", "text-sm"],
+});
 
 const Cell = memo(
   ({
@@ -148,18 +144,21 @@ const Cell = memo(
   }) => {
     if (isDateColumn(columnDescription)) {
       return (cell as DateRow).from === (cell as DateRow).to ? (
-        <CellWrap>{formatHistoryDayRange((cell as DateRow).from)}</CellWrap>
+        <span className={cellText()}>
+          {formatHistoryDayRange((cell as DateRow).from)}
+        </span>
       ) : (
-        <CellWrap>
+        <span className={cellText()}>
           {formatHistoryDayRange((cell as DateRow).from)} -{" "}
           {formatHistoryDayRange((cell as DateRow).to)}
-        </CellWrap>
+        </span>
       );
     }
 
     if (isConceptColumn(columnDescription)) {
       return (
-        <SxConceptName
+        <ConceptName
+          className={cellText()}
           rootConceptId={rootConceptIdsByColumn[columnDescription.label]}
           conceptId={cell as string}
           title={columnDescription.defaultLabel}
@@ -168,16 +167,18 @@ const Cell = memo(
     }
 
     if (isMoneyColumn(columnDescription)) {
-      return (
-        <SxNumericFormat
-          {...currencyConfig}
-          displayType="text"
-          value={parseFloat(cell as string)}
-        />
-      );
+      // typed up front with an explicit base type: the polymorphic NumericFormat
+      // props are otherwise too complex a union for tsc
+      const numericFormatProps: NumericFormatProps<InputAttributes> = {
+        ...currencyConfig,
+        className: cellText(),
+        displayType: "text",
+        value: parseFloat(cell as string),
+      };
+      return <NumericFormat<InputAttributes> {...numericFormatProps} />;
     }
 
-    return <CellWrap>{cell as ReactNode}</CellWrap>;
+    return <span className={cellText()}>{cell as ReactNode}</span>;
   },
 );
 

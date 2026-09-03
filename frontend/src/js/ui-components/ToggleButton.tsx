@@ -1,55 +1,28 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
-import type { FC } from "react";
+import { tv } from "tailwind-variants";
 
 import WithTooltip from "../tooltip/WithTooltip";
 
-const Root = styled("div")`
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-`;
+const root = tv({ base: ["m-0", "flex flex-wrap items-center"] });
 
-const Option = styled("span")<{
-  active?: boolean;
-  isFirst?: boolean;
-  isLast?: boolean;
-}>`
-  font-size: ${({ theme }) => theme.font.xs};
-  display: inline-block;
-  padding: 4px 8px;
-  cursor: pointer;
-  transition:
-    color ${({ theme }) => theme.transitionTime},
-    background-color ${({ theme }) => theme.transitionTime};
-  color: ${({ theme, active }) => (active ? theme.col.black : theme.col.gray)};
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  background-color: ${({ theme, active }) =>
-    active ? "white" : theme.col.grayVeryLight};
-
-  margin-left: -1px;
-  margin-bottom: 2px;
-
-  &:hover {
-    background-color: ${({ theme, active }) =>
-      active ? "white" : theme.col.bg};
-  }
-
-  ${({ isFirst }) =>
-    isFirst &&
-    css`
-      margin-left: 0;
-      border-top-left-radius: 2px;
-      border-bottom-left-radius: 2px;
-    `}
-  ${({ isLast }) =>
-    isLast &&
-    css`
-      border-top-right-radius: 2px;
-      border-bottom-right-radius: 2px;
-    `}
-`;
+const option = tv({
+  base: [
+    "inline-block",
+    "px-2 py-1",
+    "-ml-px mb-[2px]",
+    "cursor-pointer",
+    "border border-gray-500",
+    "text-xs",
+    "transition-[color,background-color] duration-100",
+  ],
+  variants: {
+    active: {
+      true: ["text-gray-800", "bg-white hover:bg-white"],
+      false: ["text-gray-500", "bg-gray-50 hover:bg-bg-50"],
+    },
+    isFirst: { true: ["ml-0", "rounded-l-[2px]"] },
+    isLast: { true: "rounded-r-[2px]" },
+  },
+});
 
 interface OptionsT {
   label: string;
@@ -57,36 +30,37 @@ interface OptionsT {
   description?: string;
 }
 
-interface PropsT {
-  className?: string;
-  options: OptionsT[];
-  value: string;
-  onChange: (value: string) => void;
-}
-
-const ToggleButton: FC<PropsT> = ({
+const ToggleButton = ({
   options,
   value: inputValue,
   onChange,
   className,
+}: {
+  className?: string;
+  options: OptionsT[];
+  value: string;
+  onChange: (value: string) => void;
 }) => {
   return (
-    <Root className={className}>
+    <div className={root({ className })}>
       {options.map(({ value, label, description }, i) => (
         <WithTooltip key={value} text={description}>
-          <Option
-            isFirst={i === 0}
-            isLast={i === options.length - 1}
-            active={inputValue === value}
+          <button
+            type="button"
+            className={option({
+              isFirst: i === 0,
+              isLast: i === options.length - 1,
+              active: inputValue === value,
+            })}
             onClick={() => {
               if (value !== inputValue) onChange(value);
             }}
           >
             {label}
-          </Option>
+          </button>
         </WithTooltip>
       ))}
-    </Root>
+    </div>
   );
 };
 

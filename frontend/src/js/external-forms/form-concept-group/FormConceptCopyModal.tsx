@@ -1,7 +1,7 @@
-import styled from "@emotion/styled";
 import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { SelectOptionT } from "../../api/types";
 import PrimaryButton from "../../button/PrimaryButton";
@@ -15,28 +15,18 @@ import { useVisibleConceptListFields } from "../stateSelectors";
 
 import type { FormConceptGroupT } from "./formConceptGroupState";
 
-const Buttons = styled("div")`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin-top: 20px;
-`;
+const buttons = tv({
+  base: ["flex items-center justify-between", "w-full", "mt-5"],
+});
 
-const Options = styled("div")`
-  padding: 8px 0 0 28px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  max-height: 345px;
-`;
-
-const SelectAllCheckbox = styled(InputCheckbox)`
-  margin: 10px 0 0 8px;
-`;
-
-const SxInputCheckbox = styled(InputCheckbox)`
-  margin: 5px 0;
-`;
+const options = tv({
+  base: [
+    "pt-2 pl-[28px]",
+    "max-h-[345px]",
+    "overflow-y-auto",
+    "[-webkit-overflow-scrolling:touch]",
+  ],
+});
 
 const FormConceptCopyModal = ({
   targetFieldname,
@@ -153,15 +143,17 @@ const FormConceptCopyModal = ({
         }}
         value={selectedOption}
       />
-      <SelectAllCheckbox
+      <InputCheckbox
+        className="mt-[10px] ml-2"
         label={t("externalForms.copyModal.selectAll")}
         value={allConceptsSelected}
         onChange={onToggleAllConcepts}
       />
-      <Options>
+      <div className={options()}>
         {Object.keys(valuesChecked).map((idx) =>
           idxHasConcepts(idx) ? (
-            <SxInputCheckbox
+            <InputCheckbox
+              className="my-[5px]"
               key={idx}
               label={getLabelFromIdx(idx)}
               value={valuesChecked[idx]}
@@ -169,15 +161,15 @@ const FormConceptCopyModal = ({
             />
           ) : null,
         )}
-      </Options>
-      <Buttons>
+      </div>
+      <div className={buttons()}>
         <TransparentButton onClick={onClose}>
           {t("common.cancel")}
         </TransparentButton>
         <PrimaryButton onClick={onSubmit} disabled={isAcceptDisabled}>
           {t("externalForms.copyModal.accept")}
         </PrimaryButton>
-      </Buttons>
+      </div>
     </Modal>
   );
 };

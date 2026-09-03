@@ -1,5 +1,5 @@
-import styled from "@emotion/styled";
 import { useHotkeys } from "react-hotkeys-hook";
+import { tv } from "tailwind-variants";
 
 import { exists } from "../common/helpers/exists";
 import WithTooltip from "../tooltip/WithTooltip";
@@ -11,30 +11,16 @@ import QueryRunningProgress from "./QueryRunningProgress";
 import { QueryRunningSpinner } from "./QueryRunningSpinner";
 import type { QueryRunnerStateT } from "./reducer";
 
-const Root = styled("div")`
-  flex-shrink: 0;
-  padding: 10px 20px 10px 10px;
-  border-top: 1px solid ${({ theme }) => theme.col.grayLight};
-  background-color: ${({ theme }) => theme.col.bg};
-  display: flex;
-  align-items: center;
-  width: 100%;
-`;
-
-const Left = styled("div")`
-  flex-grow: 1;
-`;
-const Right = styled("div")`
-  flex-grow: 2;
-  padding-left: 20px;
-`;
-
-const LoadingGroup = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-`;
+const root = tv({
+  base: [
+    "flex items-center",
+    "w-full",
+    "shrink-0",
+    "py-[10px] pr-5 pl-[10px]",
+    "border-t border-gray-100",
+    "bg-bg-50",
+  ],
+});
 
 const QueryRunner = ({
   queryRunner,
@@ -63,8 +49,8 @@ const QueryRunner = ({
   }, [disabled, btnAction]);
 
   return (
-    <Root data-test-id="query-runner">
-      <Left>
+    <div className={root()} data-test-id="query-runner">
+      <div className="grow">
         <WithTooltip text={buttonTooltip}>
           <QueryRunnerButton
             onClick={btnAction}
@@ -73,13 +59,13 @@ const QueryRunner = ({
             disabled={disabled}
           />
         </WithTooltip>
-      </Left>
-      <Right>
-        <LoadingGroup>
+      </div>
+      <div className="grow-[2] pl-5">
+        <div className="flex flex-row items-center justify-end">
           {exists(progress) && <QueryRunningProgress progress={progress} />}
           {isQueryRunning && <QueryRunningSpinner />}
           {!!queryRunner && <QueryRunnerInfo queryRunner={queryRunner} />}
-        </LoadingGroup>
+        </div>
         {!!queryRunner &&
           !!queryRunner.queryResult &&
           !queryRunner.queryResult.error &&
@@ -93,10 +79,11 @@ const QueryRunner = ({
               resultUrls={queryRunner.queryResult.resultUrls}
               resultColumns={queryRunner.queryResult.resultColumns}
               queryType={queryRunner.queryResult.queryType}
+              previewAvailable={queryRunner.queryResult.previewAvailable}
             />
           )}
-      </Right>
-    </Root>
+      </div>
+    </div>
   );
 };
 

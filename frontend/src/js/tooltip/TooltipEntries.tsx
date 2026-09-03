@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faArrowsLeftRightToLine,
   faHashtag,
@@ -7,69 +6,56 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import type { HTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 import type { DateRangeT } from "../api/types";
 import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 import { formatDate, parseDate } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 
-const Root = styled("div")``;
+const dateText = tv({
+  base: [
+    "m-0",
+    "pr-2",
+    "font-bold",
+    "text-sm",
+    "flex items-center",
+    "whitespace-nowrap",
+  ],
+});
 
-const DateText = styled("p")`
-  margin: 0;
-  padding-right: 8px;
-  font-weight: 700;
-  font-size: ${({ theme }) => theme.font.sm};
-  display: flex;
-  align-items: center;
-  white-space: nowrap;
-`;
+const text = tv({
+  base: ["m-0", "text-xs", "uppercase", "font-normal"],
+  variants: {
+    zero: {
+      true: "text-red",
+      false: "text-gray-500",
+    },
+  },
+});
 
-const Text = styled("p")<{ zero?: boolean }>`
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme, zero }) => (zero ? theme.col.red : theme.col.gray)};
-  text-transform: uppercase;
-  font-weight: 400;
-`;
+const icon = tv({
+  base: ["text-[30px]", "text-gray-400", "justify-self-center"],
+});
 
-const StyledFaIcon = styled(FaIcon)`
-  font-size: 30px;
-  color: ${({ theme }) => theme.col.grayMediumLight};
-  justify-self: center;
-`;
+const numberText = tv({
+  base: ["font-bold", "m-0", "text-xl", "leading-none"],
+  variants: {
+    zero: { true: "text-red" },
+  },
+});
 
-const Info = styled("div")`
-  flex-shrink: 0;
-`;
+const digits = tv({
+  base: [
+    "after:text-gray-500",
+    "after:content-['.']",
+    "last-of-type:after:content-['']",
+  ],
+});
 
-const NumberText = styled("p")<{ zero?: boolean }>`
-  font-weight: 700;
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.lg};
-  color: ${({ theme, zero }) => (zero ? theme.col.red : "inherit")};
-  line-height: 1;
-`;
-
-const Digits = styled("span")`
-  &:after {
-    color: ${({ theme }) => theme.col.gray};
-    content: ".";
-  }
-  &:last-of-type {
-    &:after {
-      content: "";
-    }
-  }
-`;
-
-const Suffix = styled("span")`
-  color: ${({ theme }) => theme.col.gray};
-  font-weight: 400;
-  text-transform: uppercase;
-  font-size: ${({ theme }) => theme.font.xs};
-  margin-left: 5px;
-`;
+const suffix = tv({
+  base: ["text-gray-500", "font-normal", "uppercase", "text-xs", "ml-[5px]"],
+});
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
   matchingEntries?: number | null;
@@ -80,7 +66,8 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
 
 const TooltipEntries = (props: Props) => {
   const { t } = useTranslation();
-  const { matchingEntries, matchingEntities, dateRange, idLabel } = props;
+  const { matchingEntries, matchingEntities, dateRange, idLabel, ...rest } =
+    props;
 
   const isZero = props.matchingEntries === 0;
   const isZeroEntities = props.matchingEntities === 0;
@@ -103,64 +90,70 @@ const TooltipEntries = (props: Props) => {
     : "- - - - - - -";
 
   return (
-    <Root {...props}>
+    <div {...rest}>
       {idLabel && (
         <>
-          <StyledFaIcon icon={faMicroscope} />
-          <Info>
-            <DateText>{idLabel}</DateText>
-            <Text zero={isZero}>{t("queryEditor.secondaryId")}</Text>
-          </Info>
+          <FaIcon className={icon()} icon={faMicroscope} />
+          <div className="shrink-0">
+            <p className={dateText()}>{idLabel}</p>
+            <p className={text({ zero: isZero })}>
+              {t("queryEditor.secondaryId")}
+            </p>
+          </div>
         </>
       )}
-      <StyledFaIcon icon={faHashtag} />
-      <Info>
-        <NumberText zero={isZero}>
+      <FaIcon className={icon()} icon={faHashtag} />
+      <div className="shrink-0">
+        <p className={numberText({ zero: isZero })}>
           {exists(matchingEntries) ? (
             numberToThreeDigitArray(matchingEntries).map((threeDigits, i) => (
-              <Digits key={i}>{threeDigits}</Digits>
+              <span className={digits()} key={i}>
+                {threeDigits}
+              </span>
             ))
           ) : (
-            <Digits>-</Digits>
+            <span className={digits()}>-</span>
           )}
-        </NumberText>
-        <Text zero={isZero}>
+        </p>
+        <p className={text({ zero: isZero })}>
           {t(
             "tooltip.entriesFound",
             { count: matchingEntries || 2 }, // For pluralization
           )}
-        </Text>
-      </Info>
-      <StyledFaIcon icon={faUser} />
-      <Info>
-        <NumberText zero={isZeroEntities}>
+        </p>
+      </div>
+      <FaIcon className={icon()} icon={faUser} />
+      <div className="shrink-0">
+        <p className={numberText({ zero: isZeroEntities })}>
           {exists(matchingEntities) ? (
             numberToThreeDigitArray(matchingEntities).map((threeDigits, i) => (
-              <Digits key={i}>{threeDigits}</Digits>
+              <span className={digits()} key={i}>
+                {threeDigits}
+              </span>
             ))
           ) : (
-            <Digits>-</Digits>
+            <span className={digits()}>-</span>
           )}
-        </NumberText>
-        <Text zero={isZeroEntities}>
+        </p>
+        <p className={text({ zero: isZeroEntities })}>
           {t(
             "tooltip.entitiesFound",
             { count: matchingEntities || 2 }, // For pluralization
           )}
-        </Text>
-      </Info>
-      <StyledFaIcon icon={faArrowsLeftRightToLine} />
-      <Info>
-        <DateText>
+        </p>
+      </div>
+      <FaIcon className={icon()} icon={faArrowsLeftRightToLine} />
+      <div className="shrink-0">
+        <p className={dateText()}>
           {fromDate}
-          <Suffix>{`${t("tooltip.date.from")}`}</Suffix>
-        </DateText>
-        <DateText>
+          <span className={suffix()}>{`${t("tooltip.date.from")}`}</span>
+        </p>
+        <p className={dateText()}>
           {toDate}
-          <Suffix>{`${t("tooltip.date.to")}`}</Suffix>
-        </DateText>
-      </Info>
-    </Root>
+          <span className={suffix()}>{`${t("tooltip.date.to")}`}</span>
+        </p>
+      </div>
+    </div>
   );
 };
 

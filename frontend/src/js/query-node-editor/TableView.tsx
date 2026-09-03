@@ -1,5 +1,4 @@
-import styled from "@emotion/styled";
-import { type FC, memo, useCallback } from "react";
+import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
@@ -19,17 +18,19 @@ import DateColumnSelect from "./DateColumnSelect";
 import TableFilters from "./TableFilters";
 import TableSelects from "./TableSelects";
 
-const Column = styled("div")`
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-`;
+const TableView = ({
+  node,
+  tableIdx,
+  allowlistedSelects,
+  blocklistedSelects,
 
-const MaximizedCell = styled(ContentCell)`
-  flex-grow: 1;
-`;
+  onSelectTableSelects,
+  onSetDateColumn,
 
-interface PropsT {
+  onSetFilterValue,
+  onSwitchFilterMode,
+  onLoadFilterSuggestions,
+}: {
   node: ConceptQueryNodeType;
   tableIdx: number;
   blocklistedSelects?: SelectorResultType[];
@@ -53,20 +54,6 @@ interface PropsT {
     filterIdx: number,
     config?: { returnOnly?: boolean },
   ) => Promise<PostFilterSuggestionsResponseT | null>;
-}
-
-const TableView: FC<PropsT> = ({
-  node,
-  tableIdx,
-  allowlistedSelects,
-  blocklistedSelects,
-
-  onSelectTableSelects,
-  onSetDateColumn,
-
-  onSetFilterValue,
-  onSwitchFilterMode,
-  onLoadFilterSuggestions,
 }) => {
   const { t } = useTranslation();
 
@@ -119,7 +106,7 @@ const TableView: FC<PropsT> = ({
   );
 
   return (
-    <Column>
+    <div className="flex grow flex-col">
       {displaySelects && (
         <ContentCell headline={t("queryNodeEditor.selects")}>
           {table.selects && table.selects.length > 0 && (
@@ -142,7 +129,7 @@ const TableView: FC<PropsT> = ({
         </ContentCell>
       )}
       {displayFilters && (
-        <MaximizedCell headline={t("queryNodeEditor.filters")}>
+        <ContentCell className="grow" headline={t("queryNodeEditor.filters")}>
           <TableFilters
             key={tableIdx}
             filters={table.filters}
@@ -151,9 +138,9 @@ const TableView: FC<PropsT> = ({
             onSwitchFilterMode={setFilterMode}
             onLoadFilterSuggestions={loadFilterSuggestions}
           />
-        </MaximizedCell>
+        </ContentCell>
       )}
-    </Column>
+    </div>
   );
 };
 

@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faCheck,
   faExclamationTriangle,
@@ -6,11 +5,12 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import {
   type FocusEvent,
-  forwardRef,
   type KeyboardEvent,
+  type Ref,
   useCallback,
 } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { CurrencyConfigT } from "../api/types";
 import IconButton from "../button/IconButton";
@@ -21,56 +21,41 @@ import WithTooltip from "../tooltip/WithTooltip";
 
 import CurrencyInput from "./CurrencyInput";
 
-const Root = styled("div")`
-  position: relative;
-`;
+const root = tv({ base: "relative" });
 
-const Input = styled("input")<{ large?: boolean; disabled?: boolean }>`
-  outline: 0;
-  width: 100%;
-  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
+const input = tv({
+  base: [
+    "outline-0",
+    "w-full",
+    "border border-gray-400",
+    "rounded",
+    "py-[6px] pr-[30px] pl-[10px]",
+    "text-sm",
+    "font-normal",
+  ],
+  variants: {
+    large: { true: "py-[10px] pr-[30px] pl-[14px] text-xl" },
+    disabled: { true: "opacity-50" },
+  },
+});
 
-  border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
-  padding: ${({ large }) =>
-    large ? "10px 30px 10px 14px" : "6px 30px 6px 10px"};
-  font-size: ${({ theme, large }) => (large ? theme.font.lg : theme.font.sm)};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  font-weight: 400;
-`;
+const greenIcon = tv({
+  base: ["absolute top-2 right-[35px]", "opacity-80", "text-green"],
+});
 
-const SignalIcon = styled(FaIcon)`
-  position: absolute;
-  top: 8px;
-  right: 35px;
-  opacity: 0.8;
-`;
+const redIcon = tv({ base: ["opacity-80", "text-red"] });
 
-const GreenIcon = styled(SignalIcon)`
-  color: ${({ theme }) => theme.col.green};
-`;
-const RedIcon = styled(FaIcon)`
-  color: ${({ theme }) => theme.col.red};
-  opacity: 0.8;
-`;
-const AbsoluteWrap = styled("div")`
-  position: absolute;
-  top: 5px;
-  right: 35px;
-`;
+const absoluteWrap = tv({ base: "absolute top-[5px] right-[35px]" });
 
-const ClearZoneIconButton = styled(IconButton)`
-  position: absolute;
-  top: 0;
-  right: 10px;
-  cursor: pointer;
-  height: 100%;
-  display: flex;
-  align-items: center;
-
-  &:hover {
-    color: ${({ theme }) => theme.col.red};
-  }
-`;
+const clearZoneIconButton = tv({
+  base: [
+    "absolute top-0 right-[10px]",
+    "h-full",
+    "flex items-center",
+    "cursor-pointer",
+    "hover:text-red",
+  ],
+});
 
 interface InputProps {
   autoFocus?: boolean;
@@ -121,111 +106,114 @@ const usePatternMatching = ({ pattern }: { pattern?: string }) => {
   return pattern ? { onKeyPress } : {};
 };
 
-const BaseInput = forwardRef<HTMLInputElement, Props>(
-  (
-    {
-      className,
-      inputProps = {},
-      currencyConfig,
-      money,
-      value,
-      onChange,
-      onFocus,
-      onBlur,
-      onClick,
-      placeholder,
-      large,
-      inputType,
-      valid,
-      invalid,
-      invalidText,
-      disabled,
-    },
-    ref,
-  ) => {
-    const { t } = useTranslation();
+const BaseInput = ({
+  ref,
+  className,
+  inputProps = {},
+  currencyConfig,
+  money,
+  value,
+  onChange,
+  onFocus,
+  onBlur,
+  onClick,
+  placeholder,
+  large,
+  inputType,
+  valid,
+  invalid,
+  invalidText,
+  disabled,
+}: Props & { ref?: Ref<HTMLInputElement> }) => {
+  const { t } = useTranslation();
 
-    const patternMatchingProps = usePatternMatching({
-      pattern: inputProps.pattern,
-    });
+  const patternMatchingProps = usePatternMatching({
+    pattern: inputProps.pattern,
+  });
 
-    function safeOnChange(val: string | number | null) {
-      if (
-        (typeof val === "string" && val.length === 0) ||
-        (typeof val === "number" && Number.isNaN(val))
-      ) {
-        onChange(null);
-      } else {
-        onChange(val);
-      }
+  function safeOnChange(val: string | number | null) {
+    if (
+      (typeof val === "string" && val.length === 0) ||
+      (typeof val === "number" && Number.isNaN(val))
+    ) {
+      onChange(null);
+    } else {
+      onChange(val);
     }
+  }
 
-    const isCurrencyInput = money && !!currencyConfig;
+  const isCurrencyInput = money && !!currencyConfig;
 
-    return (
-      <Root className={className}>
-        {isCurrencyInput ? (
-          <CurrencyInput
-            currencyConfig={currencyConfig}
-            placeholder={placeholder}
-            large={large}
-            value={value as number | null}
-            onChange={safeOnChange}
-          />
-        ) : (
-          <Input
-            placeholder={placeholder}
-            type={inputType}
-            ref={ref}
-            onChange={(e) => {
-              let value: string | number | null = e.target.value;
+  return (
+    <div className={root({ className })}>
+      {isCurrencyInput ? (
+        <CurrencyInput
+          currencyConfig={currencyConfig}
+          placeholder={placeholder}
+          large={large}
+          value={value as number | null}
+          onChange={safeOnChange}
+        />
+      ) : (
+        <input
+          className={input({ large, disabled })}
+          placeholder={placeholder}
+          type={inputType}
+          ref={ref}
+          onChange={(e) => {
+            let value: string | number | null = e.target.value;
 
-              if (inputType === "number") {
-                value = parseFloat(value);
-              }
-
-              safeOnChange(value);
-            }}
-            value={exists(value) ? value : ""}
-            large={large}
-            disabled={disabled}
-            onFocus={onFocus}
-            onBlur={onBlur}
-            onClick={onClick}
-            onWheel={
-              (e) =>
-                (
-                  e.target as HTMLElement
-                ).blur() /* to disable scrolling for number */
+            if (inputType === "number") {
+              value = parseFloat(value);
             }
-            {...inputProps}
-            {...patternMatchingProps}
+
+            safeOnChange(value);
+          }}
+          value={exists(value) ? value : ""}
+          disabled={disabled}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          onClick={onClick}
+          onWheel={
+            (e) =>
+              (
+                e.target as HTMLElement
+              ).blur() /* to disable scrolling for number */
+          }
+          {...inputProps}
+          {...patternMatchingProps}
+        />
+      )}
+      {exists(value) && !isEmpty(value) && (
+        <>
+          {valid && !invalid && (
+            <FaIcon icon={faCheck} large={large} className={greenIcon()} />
+          )}
+          {invalid && (
+            <WithTooltip text={invalidText}>
+              <div className={absoluteWrap()}>
+                <FaIcon
+                  icon={faExclamationTriangle}
+                  large={large}
+                  className={redIcon()}
+                />
+              </div>
+            </WithTooltip>
+          )}
+          <IconButton
+            className={clearZoneIconButton()}
+            tiny
+            icon={faTimes}
+            tabIndex={-1}
+            disabled={disabled}
+            title={t("common.clearValue")}
+            aria-label={t("common.clearValue")}
+            onClick={() => onChange(null)}
           />
-        )}
-        {exists(value) && !isEmpty(value) && (
-          <>
-            {valid && !invalid && <GreenIcon icon={faCheck} large={large} />}
-            {invalid && (
-              <WithTooltip text={invalidText}>
-                <AbsoluteWrap>
-                  <RedIcon icon={faExclamationTriangle} large={large} />
-                </AbsoluteWrap>
-              </WithTooltip>
-            )}
-            <ClearZoneIconButton
-              tiny
-              icon={faTimes}
-              tabIndex={-1}
-              disabled={disabled}
-              title={t("common.clearValue")}
-              aria-label={t("common.clearValue")}
-              onClick={() => onChange(null)}
-            />
-          </>
-        )}
-      </Root>
-    );
-  },
-);
+        </>
+      )}
+    </div>
+  );
+};
 
 export default BaseInput;

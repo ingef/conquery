@@ -1,106 +1,151 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
+import type { ComponentProps } from "react";
+import { tv } from "tailwind-variants";
 
 import IconButton from "../../button/IconButton";
 
 import SelectListOption from "./SelectListOption";
 
-export const Control = styled("div")<{ disabled?: boolean }>`
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  border-radius: 4px;
-  display: flex;
-  align-items: flex-start;
-  overflow: hidden;
-  padding: 4px 3px 4px 8px;
-  background-color: white;
-  ${({ disabled }) =>
-    disabled &&
-    css`
-      cursor: not-allowed;
-    `}
+const control = tv({
+  base: [
+    "flex items-start",
+    "overflow-hidden",
+    "rounded-[4px]",
+    "border border-gray-500",
+    "bg-white",
+    "py-1 pr-[3px] pl-2",
+    "focus:outline focus:outline-1 focus:outline-black",
+  ],
+  variants: {
+    disabled: { true: "cursor-not-allowed" },
+  },
+});
 
-  &:focus {
-    outline: 1px solid black;
-  }
-`;
+export const Control = ({
+  className,
+  disabled,
+  ...props
+}: ComponentProps<"div"> & { disabled?: boolean }) => (
+  <div className={control({ disabled, className })} {...props} />
+);
 
-export const SelectContainer = styled("div")`
-  width: 100%;
-  position: relative;
-`;
+const selectContainer = tv({ base: ["relative", "w-full"] });
 
-export const ItemsInputContainer = styled("div")`
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px;
-  width: 100%;
-`;
+export const SelectContainer = ({
+  className,
+  ...props
+}: ComponentProps<"div">) => (
+  <div className={selectContainer({ className })} {...props} />
+);
 
-export const MenuContainer = styled("div")`
-  position: absolute;
-  width: 100%;
-  z-index: 3;
-  margin-top: 3px;
-  padding-bottom: 10px;
-`;
+const itemsInputContainer = tv({
+  base: ["flex flex-wrap items-center", "gap-1", "w-full"],
+});
 
-export const Menu = styled("div")`
-  width: 100%;
-  border-radius: 4px;
-  box-shadow:
-    0 0 0 1px hsl(0deg 0% 0% / 10%),
-    0 4px 11px hsl(0deg 0% 0% / 10%);
-  background-color: ${({ theme }) => theme.col.bg};
-`;
+export const ItemsInputContainer = ({
+  className,
+  ...props
+}: ComponentProps<"div">) => (
+  <div className={itemsInputContainer({ className })} {...props} />
+);
 
-export const List = styled("div")<{ small?: boolean }>`
-  padding: 3px;
-  max-height: ${({ small }) =>
-    small
-      ? "140px"
-      : "300px"}; /* remove this once we use usePopper / portals for this */
-  overflow-y: auto;
-  --webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-`;
+const menuContainer = tv({
+  base: ["absolute", "z-3", "w-full", "mt-[3px]", "pb-[10px]"],
+});
 
-export const Input = styled("input")`
-  border: 0;
-  height: 20px;
-  outline: none;
-  flex-grow: 1;
-  width: 0; /* to fix default width */
-  font-weight: 400;
-  font-size: ${({ theme }) => theme.font.sm};
-  ${({ disabled }) =>
-    disabled &&
-    css`
-      cursor: not-allowed;
-      pointer-events: none;
-      &:placehoder {
-        opacity: 0.5;
-      }
-    `}
-`;
+export const MenuContainer = ({
+  className,
+  ...props
+}: ComponentProps<"div">) => (
+  <div className={menuContainer({ className })} {...props} />
+);
 
-export const DropdownToggleButton = styled(IconButton)`
-  padding: 2px 4px 2px 6px;
-`;
+const menu = tv({
+  base: [
+    "w-full",
+    "rounded-[4px]",
+    "shadow-[0_0_0_1px_hsl(0deg_0%_0%/10%),0_4px_11px_hsl(0deg_0%_0%/10%)]",
+    "bg-bg-50",
+  ],
+});
 
-export const ResetButton = styled(IconButton)`
-  padding: 2px 8px;
-  width: 26px;
-`;
+export const Menu = ({ className, ...props }: ComponentProps<"div">) => (
+  <div className={menu({ className })} {...props} />
+);
 
-export const VerticalSeparator = styled("div")`
-  width: 1px;
-  margin: 3px 0;
-  background-color: ${({ theme }) => theme.col.grayLight};
-  align-self: stretch;
-  flex-shrink: 0;
-`;
+const list = tv({
+  base: [
+    "p-[3px]",
+    // remove the max-height once we use usePopper / portals for this
+    "max-h-[300px]",
+    "overflow-y-auto",
+    "[-webkit-overflow-scrolling:touch]",
+    "overscroll-contain",
+  ],
+  variants: {
+    small: { true: "max-h-[140px]" },
+  },
+});
 
-export const SxSelectListOption = styled(SelectListOption)`
-  margin-bottom: 2px;
-`;
+export const List = ({
+  className,
+  small,
+  ...props
+}: ComponentProps<"div"> & { small?: boolean }) => (
+  <div className={list({ small, className })} {...props} />
+);
+
+const input = tv({
+  base: [
+    "grow",
+    "w-0", // to fix default width
+    "h-5",
+    "border-0",
+    "outline-none",
+    "text-sm",
+    "font-normal",
+    "disabled:cursor-not-allowed disabled:pointer-events-none",
+    "disabled:placeholder:opacity-50",
+  ],
+});
+
+export const Input = ({ className, ...props }: ComponentProps<"input">) => (
+  <input className={input({ className })} {...props} />
+);
+
+const dropdownToggleButton = tv({ base: "py-[2px] pr-1 pl-[6px]" });
+
+export const DropdownToggleButton = ({
+  className,
+  ...props
+}: ComponentProps<typeof IconButton>) => (
+  <IconButton className={dropdownToggleButton({ className })} {...props} />
+);
+
+const resetButton = tv({ base: ["w-[26px]", "px-2 py-[2px]"] });
+
+export const ResetButton = ({
+  className,
+  ...props
+}: ComponentProps<typeof IconButton>) => (
+  <IconButton className={resetButton({ className })} {...props} />
+);
+
+const verticalSeparator = tv({
+  base: ["self-stretch", "shrink-0", "w-px", "my-[3px]", "bg-gray-100"],
+});
+
+export const VerticalSeparator = ({
+  className,
+  ...props
+}: ComponentProps<"div">) => (
+  <div className={verticalSeparator({ className })} {...props} />
+);
+
+const sxSelectListOption = tv({ base: "mb-[2px]" });
+
+export const SxSelectListOption = ({
+  className,
+  ...props
+}: ComponentProps<typeof SelectListOption>) => (
+  <SelectListOption className={sxSelectListOption({ className })} {...props} />
+);

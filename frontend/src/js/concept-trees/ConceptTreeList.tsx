@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
-import tw from "tailwind-styled-components";
+import { tv } from "tailwind-variants";
 import type { DatasetT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useLoadTree } from "./actions";
@@ -12,21 +12,22 @@ import type { SearchT, TreesT } from "./reducer";
 import { useAreTreesAvailable } from "./selectors";
 import { useRootConceptIds } from "./useRootConceptIds";
 
-/**
-  @param show For historic reasons, it was necessary to only hide / show the concept tree list,
-  instead of mounting / unmounting it. Maybe we can remove this in the future.
-*/
-const Root = tw("div")<{ $show?: boolean }>`
-  grow
-  shrink-0
-  basis-0
-  px-[10px]
-  overflow-y-auto
-  whitespace-nowrap
-  mb-[10px]
-
-  ${({ $show }) => ($show ? "block" : "hidden")}
-`;
+// For historic reasons, the concept tree list is only hidden / shown instead of
+// mounted / unmounted. Maybe we can remove this in the future.
+const root = tv({
+  base: [
+    "grow shrink-0 basis-0",
+    "mb-[10px]",
+    "px-[10px]",
+    "overflow-y-auto",
+    "whitespace-nowrap",
+  ],
+  variants: {
+    show: {
+      false: "hidden",
+    },
+  },
+});
 
 const ConceptTreeList = ({
   datasetId,
@@ -68,7 +69,7 @@ const ConceptTreeList = ({
   if (search.loading) return null;
 
   return (
-    <Root $show={activeTab === "conceptTrees"}>
+    <div className={root({ show: activeTab === "conceptTrees" })}>
       {loading && <ConceptTreesLoading />}
       {!loading && !areTreesAvailable && !areDatasetsPristineOrLoading && (
         <EmptyConceptTreeList />
@@ -84,7 +85,7 @@ const ConceptTreeList = ({
             conceptId={conceptId}
           />
         ))}
-    </Root>
+    </div>
   );
 };
 

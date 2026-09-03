@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import { exists } from "../../common/helpers/exists";
 import Modal from "../../modal/Modal";
@@ -9,39 +9,24 @@ import InputSelect from "../../ui-components/InputSelect/InputSelect";
 import type { TimeOperator, TimeTimestamp, TreeChildrenTime } from "../types";
 import { useGetNodeLabel } from "../util";
 
-const Content = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  min-width: 350px;
-`;
+const content = tv({
+  base: ["flex flex-col", "gap-[15px]", "min-w-[350px]"],
+});
 
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
-  gap: 15px;
-`;
+const row = tv({
+  base: ["flex items-center", "gap-[15px]"],
+});
 
-const SxBaseInput = styled(BaseInput)`
-  width: 100px;
-`;
+const inputSelect = tv({
+  base: ["min-w-[150px]", "basis-0"],
+  variants: {
+    disabled: { true: "opacity-50" },
+  },
+});
 
-const SxInputSelect = styled(InputSelect)<{ disabled?: boolean }>`
-  min-width: 150px;
-  flex-basis: 0;
-  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
-`;
-
-const DateRangeFrom = styled("span")`
-  white-space: nowrap;
-`;
-
-const ConceptName = styled("span")`
-  white-space: nowrap;
-  font-weight: bold;
-  color: ${({ theme }) => theme.col.blueGrayDark};
-  flex-grow: 1;
-`;
+const conceptName = tv({
+  base: ["grow", "whitespace-nowrap", "font-bold", "text-primary-500"],
+});
 
 export const TimeConnectionModal = memo(
   ({
@@ -118,9 +103,10 @@ export const TimeConnectionModal = memo(
 
     return (
       <Modal onClose={onClose} headline={t("editorV2.editTimeConnection")}>
-        <Content>
-          <Row>
-            <SxInputSelect
+        <div className={content()}>
+          <div className={row()}>
+            <InputSelect
+              className={inputSelect()}
               options={TIMESTAMP_OPTIONS}
               value={TIMESTAMP_OPTIONS.find((o) => o.value === aTimestamp)!}
               onChange={(opt) => {
@@ -129,11 +115,14 @@ export const TimeConnectionModal = memo(
                 }
               }}
             />
-            <DateRangeFrom>{t("editorV2.dateRangeFrom")}</DateRangeFrom>
-            <ConceptName>{a}</ConceptName>
-          </Row>
-          <Row>
-            <SxBaseInput
+            <span className="whitespace-nowrap">
+              {t("editorV2.dateRangeFrom")}
+            </span>
+            <span className={conceptName()}>{a}</span>
+          </div>
+          <div className={row()}>
+            <BaseInput
+              className="w-[100px]"
               inputType="number"
               placeholder={operator === "WHILE" ? "0" : "1"}
               inputProps={{
@@ -149,7 +138,8 @@ export const TimeConnectionModal = memo(
               }}
             />
             <span>–</span>
-            <SxBaseInput
+            <BaseInput
+              className="w-[100px]"
               inputType="number"
               placeholder={operator === "WHILE" ? "0" : "∞"}
               inputProps={{
@@ -164,7 +154,8 @@ export const TimeConnectionModal = memo(
                 });
               }}
             />
-            <SxInputSelect
+            <InputSelect
+              className={inputSelect({ disabled: operator === "WHILE" })}
               options={INTERVAL_OPTIONS}
               value={!interval ? INTERVAL_OPTIONS[0] : INTERVAL_OPTIONS[1]}
               disabled={operator === "WHILE"}
@@ -176,7 +167,8 @@ export const TimeConnectionModal = memo(
                 }
               }}
             />
-            <SxInputSelect
+            <InputSelect
+              className={inputSelect()}
               options={OPERATOR_OPTIONS}
               value={OPERATOR_OPTIONS.find((o) => o.value === operator)!}
               onChange={(opt) => {
@@ -189,9 +181,10 @@ export const TimeConnectionModal = memo(
                 }
               }}
             />
-          </Row>
-          <Row>
-            <SxInputSelect
+          </div>
+          <div className={row()}>
+            <InputSelect
+              className={inputSelect()}
               options={TIMESTAMP_OPTIONS}
               value={TIMESTAMP_OPTIONS.find((o) => o.value === bTimestamp)!}
               onChange={(opt) => {
@@ -200,10 +193,12 @@ export const TimeConnectionModal = memo(
                 }
               }}
             />
-            <DateRangeFrom>{t("editorV2.dateRangeFrom")}</DateRangeFrom>
-            <ConceptName>{b}</ConceptName>
-          </Row>
-        </Content>
+            <span className="whitespace-nowrap">
+              {t("editorV2.dateRangeFrom")}
+            </span>
+            <span className={conceptName()}>{b}</span>
+          </div>
+        </div>
       </Modal>
     );
   },

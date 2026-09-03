@@ -1,57 +1,58 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
-import { forwardRef, memo } from "react";
+import { type ComponentProps, memo, type Ref } from "react";
 import ReactMarkdown from "react-markdown";
+import { tv } from "tailwind-variants";
 
 import type { SelectOptionT } from "../../api/types";
 
-const Container = styled("div")<StyleProps>`
-  padding: 3px 8px;
-  cursor: pointer;
-  color: ${({ theme }) => theme.col.black};
-  font-size: ${({ theme }) => theme.font.md};
-  font-weight: 300;
-
-  transition: background-color ${({ theme }) => theme.transitionTime};
-
-  ${({ active, theme }) =>
-    active &&
-    css`
-      background-color: ${theme.col.blueGrayVeryLight};
-    `};
-
-  opacity: ${({ disabled }) => (disabled ? 0.4 : 1)};
-  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
-
-  /* to style react-markdown */
-  p {
-    margin: 0;
-  }
-`;
+const container = tv({
+  base: [
+    "px-2 py-[3px]",
+    "cursor-pointer",
+    "text-gray-800",
+    "text-base",
+    "font-light",
+    "transition-[background-color] duration-100",
+    // to style react-markdown
+    "[&_p]:m-0",
+  ],
+  variants: {
+    active: { true: "bg-primary-50" },
+    disabled: { true: "cursor-not-allowed opacity-40" },
+  },
+});
 
 interface StyleProps {
   active?: boolean;
   disabled?: boolean;
 }
 
-interface Props extends StyleProps {
+interface Props extends StyleProps, Omit<ComponentProps<"div">, "ref"> {
   option: SelectOptionT;
 }
 
-const SelectListOption = forwardRef<HTMLDivElement, Props>(
-  ({ option, ...props }, ref) => {
-    const label = option.label || String(option.value);
+const SelectListOption = ({
+  ref,
+  option,
+  active,
+  disabled: _disabled, // the option decides, see below
+  className,
+  ...props
+}: Props & { ref?: Ref<HTMLDivElement> }) => {
+  const label = option.label || String(option.value);
 
-    return (
-      <Container {...props} disabled={option.disabled} ref={ref}>
-        {option.displayLabel ? (
-          option.displayLabel
-        ) : (
-          <ReactMarkdown>{label}</ReactMarkdown>
-        )}
-      </Container>
-    );
-  },
-);
+  return (
+    <div
+      {...props}
+      className={container({ active, disabled: option.disabled, className })}
+      ref={ref}
+    >
+      {option.displayLabel ? (
+        option.displayLabel
+      ) : (
+        <ReactMarkdown>{label}</ReactMarkdown>
+      )}
+    </div>
+  );
+};
 
 export default memo(SelectListOption);

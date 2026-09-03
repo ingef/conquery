@@ -1,58 +1,27 @@
-import { css, useTheme } from "@emotion/react";
-import styled from "@emotion/styled";
 import Tippy, { type TippyProps } from "@tippyjs/react";
-import { forwardRef, memo, type ReactElement, useMemo } from "react";
+import { memo, type ReactElement, type Ref, useMemo } from "react";
+import { tv } from "tailwind-variants";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light.css";
 
-/* !important: to override inline styles by tippyjs/react */
-export const tippyjsReactOverrides = css`
-  div[data-tippy-root] {
-    max-width: 700px;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.18);
-    border-radius: 3px;
-
-    > div {
-      box-shadow: none;
-      max-width: inherit !important;
-      width: 100%;
-      padding: 0;
-    }
-
-    .tippy-content {
-      padding: 0px;
-      box-shadow: none;
-    }
-  }
-`;
-
-const Text = styled("div")<{ wide?: boolean }>`
-  max-width: ${({ wide }) => (wide ? "700px" : "400px")};
-  text-align: left;
-  font-size: 16px;
-  font-weight: 400;
-  padding: 8px 14px;
-  p,
-  h3,
-  h4 {
-    color: ${({ theme }) => theme.col.black};
-    line-height: 1.3;
-    margin: 8px 0 0;
-  }
-  p,
-  h3,
-  li {
-    font-size: ${({ theme }) => theme.font.sm};
-  }
-  ul {
-    margin: 6px 0;
-    padding-left: 16px;
-  }
-  li {
-    line-height: 1.3;
-    margin-bottom: 5px;
-  }
-`;
+const text = tv({
+  base: [
+    "max-w-[400px]",
+    "text-left",
+    "text-base",
+    "font-normal",
+    "px-[14px] py-2",
+    "[&_p]:text-gray-800 [&_h3]:text-gray-800 [&_h4]:text-gray-800",
+    "[&_p]:leading-[1.3] [&_h3]:leading-[1.3] [&_h4]:leading-[1.3]",
+    "[&_p]:mt-2 [&_h3]:mt-2 [&_h4]:mt-2",
+    "[&_p]:text-sm [&_h3]:text-sm [&_li]:text-sm",
+    "[&_ul]:my-[6px] [&_ul]:pl-4",
+    "[&_li]:leading-[1.3] [&_li]:mb-[5px]",
+  ],
+  variants: {
+    wide: { true: "max-w-[700px]" },
+  },
+});
 
 interface Props {
   className?: string;
@@ -76,68 +45,61 @@ interface Props {
 // Show and hide duration
 const shortDuration = [100, 100] as [number, number];
 
-const WithTooltip = forwardRef<HTMLElement, Props>(
-  (
-    {
-      className,
-      children,
-      text,
-      html,
-      lazy,
-      wide,
-      placement,
-      interactive,
-      trigger,
-      arrow,
-      offset,
-      hideOnClick,
-      popperOptions,
-    },
-    ref,
-  ) => {
-    const theme = useTheme();
-
-    const content = useMemo(() => {
-      return text ? (
-        <Text
-          theme={theme}
-          wide={wide}
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: tooltip text is concept metadata from the backend
-          dangerouslySetInnerHTML={{ __html: text }}
-        />
-      ) : (
-        html
-      );
-    }, [theme, wide, text, html]);
-
-    const delay = useMemo(
-      () => (lazy ? ([1000, 0] as [number, number]) : 0),
-      [lazy],
+const WithTooltip = ({
+  ref,
+  className,
+  children,
+  text: textProp,
+  html,
+  lazy,
+  wide,
+  placement,
+  interactive,
+  trigger,
+  arrow,
+  offset,
+  hideOnClick,
+  popperOptions,
+}: Props & { ref?: Ref<HTMLElement> }) => {
+  const content = useMemo(() => {
+    return textProp ? (
+      <div
+        className={text({ wide })}
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: tooltip text is concept metadata from the backend
+        dangerouslySetInnerHTML={{ __html: textProp }}
+      />
+    ) : (
+      html
     );
+  }, [wide, textProp, html]);
 
-    if (!text && !html) return <>{children}</>;
+  const delay = useMemo(
+    () => (lazy ? ([1000, 0] as [number, number]) : 0),
+    [lazy],
+  );
 
-    return (
-      <Tippy
-        className={className}
-        duration={shortDuration}
-        content={content}
-        placement={placement}
-        theme="light"
-        delay={delay}
-        interactive={interactive}
-        trigger={trigger}
-        arrow={arrow}
-        offset={offset}
-        ref={ref}
-        zIndex={9999}
-        popperOptions={popperOptions}
-        hideOnClick={hideOnClick}
-      >
-        {children}
-      </Tippy>
-    );
-  },
-);
+  if (!textProp && !html) return <>{children}</>;
+
+  return (
+    <Tippy
+      className={className}
+      duration={shortDuration}
+      content={content}
+      placement={placement}
+      theme="light"
+      delay={delay}
+      interactive={interactive}
+      trigger={trigger}
+      arrow={arrow}
+      offset={offset}
+      ref={ref}
+      zIndex={9999}
+      popperOptions={popperOptions}
+      hideOnClick={hideOnClick}
+    >
+      {children}
+    </Tippy>
+  );
+};
 
 export default memo(WithTooltip);

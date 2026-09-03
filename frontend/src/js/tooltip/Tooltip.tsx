@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faThumbtack,
   type IconDefinition,
@@ -9,6 +8,7 @@ import Markdown from "react-markdown";
 import { useDispatch, useSelector } from "react-redux";
 import remarkFlexibleMarkers from "remark-flexible-markers";
 import remarkGfm from "remark-gfm";
+import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import { Highlighter } from "../common/components/Highlighter";
@@ -19,108 +19,72 @@ import type { AdditionalInfosType } from "./reducer";
 import TooltipEntries from "./TooltipEntries";
 import { TooltipHeader } from "./TooltipHeader";
 
-const Root = styled("div")`
-  width: 100%;
-  height: 100%;
-  padding: 40px 0 10px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  background: ${({ theme }) => theme.col.bgAlt};
-`;
+const root = tv({
+  base: [
+    "h-full w-full",
+    "pt-[40px] pb-[10px]",
+    "relative",
+    "flex flex-col",
+    "bg-bg-100",
+  ],
+});
 
-const Content = styled("div")`
-  padding: 18px 20px 10px;
-  width: 100%;
-  flex-grow: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overflow-x: hidden;
-`;
-const Head = styled("div")`
-  padding: 10px 20px;
-  background-color: white;
-  margin: 20px -20px;
-  box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.2);
-`;
+const content = tv({
+  base: [
+    "px-5 pt-[18px] pb-[10px]",
+    "w-full",
+    "grow",
+    "overflow-y-auto overflow-x-hidden",
+    "[-webkit-overflow-scrolling:touch]",
+  ],
+});
 
-const StyledFaIcon = styled(FaIcon)`
-  margin-top: 1px;
-  color: ${({ theme }) => theme.col.blueGrayDark};
-`;
-const TackIconButton = styled(IconButton)`
-  display: inline-flex; // To remove some height that seemed to be added
-  margin-left: 5px;
-`;
-const TypeIcon = styled(StyledFaIcon)`
-  margin-right: 6px;
-`;
-const PinnedLabel = styled("p")`
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  margin: 0;
-  line-height: 1.2;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
-const Label = styled("span")`
-  flex-grow: 1;
-`;
-const Description = styled("p")`
-  margin: 5px 0 2px;
-  font-size: ${({ theme }) => theme.font.xs};
-  line-height: 1.3;
-  text-transform: uppercase;
-`;
+const head = tv({
+  base: [
+    "px-5 py-[10px]",
+    "bg-white",
+    "my-5 -mx-5",
+    "shadow-[0_0_3px_0_rgba(0,0,0,0.2)]",
+  ],
+});
 
-const Infos = styled("div")`
-  width: 100%;
-  overflow-x: auto;
-`;
+const typeIcon = tv({ base: ["mt-px", "mr-[6px]", "text-primary-500"] });
 
-const IndentRoot = styled("div")`
-  padding-left: 15px;
-  margin: 5px 0 12px;
-`;
+const tackButton = tv({
+  // inline-flex to remove some height that seemed to be added
+  base: ["inline-flex", "ml-[5px]"],
+});
 
-const PieceOfInfo = styled("div")`
-  margin-bottom: 15px;
+const pinnedLabel = tv({
+  base: ["flex flex-row items-start", "m-0", "leading-[1.2]", "text-sm"],
+});
 
-  /* Markdown */
-  font-size: ${({ theme }) => theme.font.xs};
+const descriptionText = tv({
+  base: ["mt-[5px] mb-[2px]", "text-xs", "leading-[1.3]", "uppercase"],
+});
 
-  a {
-    text-decoration: underline;
-  }
+const indentRoot = tv({ base: ["pl-[15px]", "mt-[5px] mb-3"] });
 
-  p {
-    line-height: 1.3;
-    margin: 5px 0;
-  }
+const pieceOfInfo = tv({
+  base: [
+    "mb-[15px]",
+    // Markdown
+    "text-xs",
+    "[&_a]:underline",
+    "[&_p]:leading-[1.3] [&_p]:my-[5px]",
+    "[&_table]:border-collapse",
+    "[&_td]:border [&_td]:border-gray-500 [&_td]:p-[5px]",
+    "[&_th]:border [&_th]:border-gray-500 [&_th]:p-[5px]",
+  ],
+});
 
-  table {
-    border-collapse: collapse;
-  }
-  td,
-  th {
-    border: 1px solid ${({ theme }) => theme.col.gray};
-    padding: 5px;
-  }
-`;
+const infoHeadline = tv({
+  base: ["m-0", "text-xs", "font-bold", "leading-[1.3]"],
+});
 
-const InfoHeadline = styled("h4")`
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.xs};
-  font-weight: 700;
-  line-height: 1.3;
-`;
-
-const SxTooltipEntries = styled(TooltipEntries)`
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px 12px;
-  align-items: center;
-`;
+const tooltipEntries = tv({
+  base: ["grid grid-cols-[auto_1fr]", "gap-3", "items-center"],
+});
 
 const HighlightedText = ({
   text,
@@ -148,17 +112,17 @@ const ConceptLabel = ({
   const { t } = useTranslation();
 
   return (
-    <PinnedLabel>
-      {conceptIcon && <TypeIcon icon={conceptIcon} />}
-      <Label>
+    <p className={pinnedLabel()}>
+      {conceptIcon && <FaIcon className={typeIcon()} icon={conceptIcon} />}
+      <span className="grow">
         {label ? (
           <HighlightedText words={words} text={label} />
         ) : (
           t("tooltip.placeholder")
         )}
-      </Label>
+      </span>
       {tackIcon}
-    </PinnedLabel>
+    </p>
   );
 };
 
@@ -210,21 +174,23 @@ const Tooltip = () => {
   const differentRootLabel = !!rootLabel && rootLabel !== label;
 
   return (
-    <Root>
+    <div className={root()}>
       <TooltipHeader />
-      <Content>
-        <SxTooltipEntries
+      <div className={content()}>
+        <TooltipEntries
+          className={tooltipEntries()}
           matchingEntries={matchingEntries}
           matchingEntities={matchingEntities}
           dateRange={dateRange}
         />
-        <Head>
+        <div className={head()}>
           <ConceptLabel
             label={mainLabel}
             conceptIcon={mainIcon}
             tackIcon={
               toggleAdditionalInfos && (
-                <TackIconButton
+                <IconButton
+                  className={tackButton()}
                   bare
                   active
                   onClick={onToggleAdditionalInfos}
@@ -234,30 +200,30 @@ const Tooltip = () => {
             }
           />
           {differentRootLabel && (
-            <IndentRoot>
+            <div className={indentRoot()}>
               <ConceptLabel label={label} conceptIcon={icon} />
-            </IndentRoot>
+            </div>
           )}
           {description && (
-            <Description>
+            <p className={descriptionText()}>
               <HighlightedText words={words} text={description} />
-            </Description>
+            </p>
           )}
-        </Head>
-        <Infos>
+        </div>
+        <div className="w-full overflow-x-auto">
           {infos?.map((info, i) => (
-            <PieceOfInfo key={info.key + i}>
-              <InfoHeadline>
+            <div className={pieceOfInfo()} key={info.key + i}>
+              <h4 className={infoHeadline()}>
                 <HighlightedText words={words} text={info.key} />
-              </InfoHeadline>
+              </h4>
               <Markdown remarkPlugins={[remarkGfm, remarkFlexibleMarkers]}>
                 {mark(info.value, highlightRegex)}
               </Markdown>
-            </PieceOfInfo>
+            </div>
           ))}
-        </Infos>
-      </Content>
-    </Root>
+        </div>
+      </div>
+    </div>
   );
 };
 

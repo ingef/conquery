@@ -1,6 +1,5 @@
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { useKeycloak } from "@react-keycloak-fork/web";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
@@ -10,11 +9,7 @@ import { clearIndexedDBCache } from "../common/helpers/indexedDBCache";
 import { isIDPEnabled } from "../environment";
 import WithTooltip from "../tooltip/WithTooltip";
 
-interface PropsT {
-  className?: string;
-}
-
-const LogoutButton: FC<PropsT> = ({ className }) => {
+const LogoutButton = ({ className }: { className?: string }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { keycloak } = useKeycloak();

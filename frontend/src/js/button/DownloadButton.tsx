@@ -1,5 +1,3 @@
-import { useTheme } from "@emotion/react";
-import styled from "@emotion/styled";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
   faDownload,
@@ -10,41 +8,30 @@ import {
   faFileExcel,
   faFilePdf,
 } from "@fortawesome/free-solid-svg-icons";
-import { forwardRef, type ReactNode, useContext, useMemo } from "react";
-
+import { type ReactNode, type Ref, useContext } from "react";
+import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { getEnding } from "../query-runner/DownloadResultsDropdownButton";
 
 import IconButton, { type IconButtonPropsT } from "./IconButton";
 
-const SxIconButton = styled(IconButton)`
-  white-space: nowrap;
-`;
-
-const Link = styled("a")`
-  line-height: 1;
-`;
+const link = tv({ base: "leading-none" });
 
 interface FileIcon {
   icon: IconProp;
   color?: string;
 }
 
-function useFileIcon(url: string): FileIcon {
-  const theme = useTheme();
+const fileTypeToFileIcon: Record<string, FileIcon> = {
+  ZIP: { icon: faFileArchive, color: "var(--color-filetype-zip)" },
+  XLSX: { icon: faFileExcel, color: "var(--color-filetype-xlsx)" },
+  PDF: { icon: faFilePdf, color: "var(--color-filetype-pdf)" },
+  CSV: { icon: faFileCsv, color: "var(--color-filetype-csv)" },
+  JSON: { icon: faFileCode, color: "var(--color-filetype-json)" },
+};
 
-  const fileTypeToFileIcon: Record<string, FileIcon> = useMemo(
-    () => ({
-      ZIP: { icon: faFileArchive, color: theme.col.fileTypes.zip },
-      XLSX: { icon: faFileExcel, color: theme.col.fileTypes.xlsx },
-      PDF: { icon: faFilePdf, color: theme.col.fileTypes.pdf },
-      CSV: { icon: faFileCsv, color: theme.col.fileTypes.csv },
-      JSON: { icon: faFileCode, color: theme.col.fileTypes.json },
-    }),
-    [theme],
-  );
-
+function getFileIcon(url: string): FileIcon {
   if (url.includes(".")) {
     const ext = getEnding(url);
 
@@ -65,41 +52,36 @@ interface Props extends Omit<IconButtonPropsT, "icon" | "onClick"> {
   showColoredIcon?: boolean;
 }
 
-const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
-  (
-    {
-      simpleIcon,
-      resultUrl,
-      className,
-      children,
-      onClick,
-      showColoredIcon,
-      ...restProps
-    },
-    ref,
-  ) => {
-    const { authToken } = useContext(AuthTokenContext);
+const DownloadButton = ({
+  ref,
+  simpleIcon,
+  resultUrl,
+  className,
+  children,
+  onClick,
+  showColoredIcon,
+  ...restProps
+}: Props & { ref?: Ref<HTMLAnchorElement> }) => {
+  const { authToken } = useContext(AuthTokenContext);
 
-    const href = `${resultUrl.url}?access_token=${encodeURIComponent(
-      authToken,
-    )}`;
+  const href = `${resultUrl.url}?access_token=${encodeURIComponent(authToken)}`;
 
-    const { icon, color } = useFileIcon(resultUrl.url);
+  const { icon, color } = getFileIcon(resultUrl.url);
 
-    return (
-      <Link href={href} className={className} ref={ref}>
-        <SxIconButton
-          {...restProps}
-          large
-          icon={simpleIcon ? faDownload : icon}
-          onClick={onClick}
-          iconColor={showColoredIcon ? color : undefined}
-        >
-          {children}
-        </SxIconButton>
-      </Link>
-    );
-  },
-);
+  return (
+    <a href={href} className={link({ className })} ref={ref}>
+      <IconButton
+        {...restProps}
+        className="whitespace-nowrap"
+        large
+        icon={simpleIcon ? faDownload : icon}
+        onClick={onClick}
+        iconColor={showColoredIcon ? color : undefined}
+      >
+        {children}
+      </IconButton>
+    </a>
+  );
+};
 
 export default DownloadButton;

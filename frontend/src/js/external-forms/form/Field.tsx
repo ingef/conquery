@@ -17,6 +17,7 @@ import type { DynamicFormValues } from "./Form";
 import { CheckboxField } from "./fields/CheckboxField";
 import { ConceptListField } from "./fields/ConceptListField";
 import { DatasetSelectField } from "./fields/DatasetSelectField";
+import { DateField } from "./fields/DateField";
 import { DateRangeField } from "./fields/DateRangeField";
 import { DisclosureListField } from "./fields/DisclosureListField";
 import { GroupField } from "./fields/GroupField";
@@ -82,6 +83,14 @@ const Field = ({
     case "NUMBER":
       return (
         <NumberField
+          field={field}
+          defaultValue={defaultValue}
+          commonProps={commonProps}
+        />
+      );
+    case "DATE":
+      return (
+        <DateField
           field={field}
           defaultValue={defaultValue}
           commonProps={commonProps}

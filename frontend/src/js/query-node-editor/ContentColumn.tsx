@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
-import { type FC, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import type {
@@ -22,29 +22,34 @@ import ContentCell from "./ContentCell";
 import NodeSelects from "./NodeSelects";
 import TableView from "./TableView";
 
-const Column = styled("div")`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-`;
+// mb-0 overrides the h3 base margin from index.css
+const sectionHeading = tv({
+  base: ["mx-[10px] mt-[10px] mb-0"],
+});
 
-const SectionHeading = styled(Heading3)`
-  margin: 10px 10px 0;
-`;
+const contentCellGroup = tv({
+  base: [
+    "pb-[10px]",
+    "mb-[10px]",
+    "border-b border-gray-100",
+    "last-of-type:border-b-0 last-of-type:pb-0 last-of-type:mb-0",
+  ],
+});
 
-const ContentCellGroup = styled(ContentCell)`
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
-
-  &:last-of-type {
-    border-bottom: none;
-    padding-bottom: 0;
-    margin-bottom: 0;
-  }
-`;
-
-interface PropsT {
+const ContentColumn = ({
+  node,
+  selectedTableIdx,
+  blocklistedSelects,
+  allowlistedSelects,
+  onLoadFilterSuggestions,
+  onSetDateColumn,
+  onSetFilterValue,
+  onSwitchFilterMode,
+  onSelectSelects,
+  onSelectTableSelects,
+  onToggleTimestamps,
+  onToggleSecondaryIdExclude,
+}: {
   node: StandardQueryNodeT;
   selectedTableIdx: number | null;
   blocklistedSelects?: SelectorResultType[];
@@ -70,21 +75,6 @@ interface PropsT {
     config?: { returnOnly?: boolean },
   ) => Promise<PostFilterSuggestionsResponseT | null>;
   onSetDateColumn: (tableIdx: number, value: string) => void;
-}
-
-const ContentColumn: FC<PropsT> = ({
-  node,
-  selectedTableIdx,
-  blocklistedSelects,
-  allowlistedSelects,
-  onLoadFilterSuggestions,
-  onSetDateColumn,
-  onSetFilterValue,
-  onSwitchFilterMode,
-  onSelectSelects,
-  onSelectTableSelects,
-  onToggleTimestamps,
-  onToggleSecondaryIdExclude,
 }) => {
   const { t } = useTranslation();
 
@@ -103,9 +93,11 @@ const ContentColumn: FC<PropsT> = ({
   }, [selectedTableIdx]);
 
   return (
-    <Column>
-      <ContentCellGroup>
-        <SectionHeading>{t("queryNodeEditor.properties")}</SectionHeading>
+    <div className="flex w-full flex-col">
+      <ContentCell className={contentCellGroup()}>
+        <Heading3 className={sectionHeading()}>
+          {t("queryNodeEditor.properties")}
+        </Heading3>
         {(onToggleSecondaryIdExclude || onToggleTimestamps) && (
           <CommonNodeSettings
             excludeFromSecondaryId={node.excludeFromSecondaryId}
@@ -122,20 +114,21 @@ const ContentColumn: FC<PropsT> = ({
             allowlistedSelects={allowlistedSelects}
           />
         )}
-      </ContentCellGroup>
+      </ContentCell>
       {tables.map((table, idx) => {
         if (table.exclude) {
           return null;
         }
 
         return (
-          <ContentCellGroup
+          <ContentCell
+            className={contentCellGroup()}
             key={table.id}
             ref={(instance) => {
               itemsRef.current[idx] = instance;
             }}
           >
-            <SectionHeading>{table.label}</SectionHeading>
+            <Heading3 className={sectionHeading()}>{table.label}</Heading3>
             <TableView
               node={
                 node as ConceptQueryNodeType /* otherwise there won't be tables */
@@ -149,10 +142,10 @@ const ContentColumn: FC<PropsT> = ({
               onSwitchFilterMode={onSwitchFilterMode}
               onLoadFilterSuggestions={onLoadFilterSuggestions}
             />
-          </ContentCellGroup>
+          </ContentCell>
         );
       })}
-    </Column>
+    </div>
   );
 };
 

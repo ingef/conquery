@@ -1,20 +1,41 @@
-import styled from "@emotion/styled";
+import type { ComponentProps } from "react";
+import { tv } from "tailwind-variants";
 
-const Label = styled("span")<{
+const label = tv({
+  base: [
+    "flex items-center",
+    "mx-0 mt-[6px] mb-[3px]",
+    "w-[inherit]",
+    "text-sm",
+    "font-normal",
+    "text-gray-800",
+  ],
+  variants: {
+    // later wins when both are set
+    tiny: { true: "text-xs" },
+    large: { true: "text-base" },
+    disabled: { true: "text-gray-500" },
+    fullWidth: { true: "w-full" },
+  },
+});
+
+const Label = ({
+  className,
+  tiny,
+  large,
+  disabled,
+  fullWidth,
+  ...props
+}: ComponentProps<"span"> & {
   tiny?: boolean;
   large?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
-}>`
-  font-weight: 400;
-  font-size: ${({ theme, tiny, large }) =>
-    large ? theme.font.md : tiny ? theme.font.xs : theme.font.sm};
-  display: flex;
-  align-items: center;
-  margin: 6px 0 3px;
-  color: ${({ theme, disabled }) =>
-    disabled ? theme.col.gray : theme.col.black};
-  width: ${({ fullWidth }) => (fullWidth ? "100%" : "inherit")};
-`;
+}) => (
+  <span
+    className={label({ tiny, large, disabled, fullWidth, className })}
+    {...props}
+  />
+);
 
 export default Label;

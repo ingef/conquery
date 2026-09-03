@@ -1,8 +1,7 @@
-import styled from "@emotion/styled";
 import { faCheckSquare, faSquare } from "@fortawesome/free-regular-svg-icons";
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
 import type { NodeResetConfig } from "../model/node";
@@ -10,56 +9,45 @@ import { tableHasFilterValues, tableIsDisabled } from "../model/table";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
 import WithTooltip from "../tooltip/WithTooltip";
 
-const Container = styled("div")<{ disabled?: boolean }>`
-  font-size: ${({ theme }) => theme.font.md};
-  line-height: 21px;
-  padding: 8px 15px;
-  font-weight: 700;
-  color: ${({ theme, disabled }) =>
-    disabled ? theme.col.gray : theme.col.black};
-  width: 100%;
-  text-align: left;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  background-color: transparent;
-  cursor: pointer;
+const container = tv({
+  base: [
+    "flex flex-row items-center justify-between",
+    "w-full",
+    "bg-transparent",
+    "px-[15px] py-2",
+    "text-base",
+    "leading-[21px]",
+    "font-bold",
+    "text-left",
+    "cursor-pointer",
+    "hover:underline",
+  ],
+  variants: {
+    disabled: {
+      true: "text-gray-500",
+      false: "text-gray-800",
+    },
+  },
+});
 
-  &:hover {
-    text-decoration: underline;
-  }
-`;
+const toggleButton = tv({
+  base: [
+    "p-0",
+    "text-xl",
+    "leading-[20px]",
+    "[&_svg]:text-xl [&_svg]:leading-[20px]",
+  ],
+});
 
-const SxWithTooltip = styled(WithTooltip)`
-  display: flex !important;
-`;
-
-const SxIconButton = styled(IconButton)`
-  font-size: ${({ theme }) => theme.font.lg};
-  line-height: ${({ theme }) => theme.font.lg};
-  padding: 0;
-
-  svg {
-    font-size: ${({ theme }) => theme.font.lg};
-    line-height: ${({ theme }) => theme.font.lg};
-  }
-`;
-const ResetButton = styled(IconButton)`
-  padding: 0;
-`;
-
-const Label = styled("span")`
-  padding-left: 10px;
-  line-height: ${({ theme }) => theme.font.lg};
-`;
-
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
-`;
-
-interface PropsT {
+const MenuColumnItem = ({
+  table,
+  isOnlyOneTableIncluded,
+  blocklistedTables,
+  allowlistedTables,
+  onClick,
+  onToggleTable,
+  onResetTable,
+}: {
   table: TableWithFilterValueT;
   isActive: boolean;
   isOnlyOneTableIncluded: boolean;
@@ -68,16 +56,6 @@ interface PropsT {
   onClick: () => void;
   onToggleTable: (value: boolean) => void;
   onResetTable: (config: NodeResetConfig) => void;
-}
-
-const MenuColumnItem: FC<PropsT> = ({
-  table,
-  isOnlyOneTableIncluded,
-  blocklistedTables,
-  allowlistedTables,
-  onClick,
-  onToggleTable,
-  onResetTable,
 }) => {
   const { t } = useTranslation();
   const isDisabled = tableIsDisabled(
@@ -92,9 +70,12 @@ const MenuColumnItem: FC<PropsT> = ({
   const isFilterActive = tableHasFilterValues(table);
 
   return (
-    <Container disabled={isDisabled} onClick={onClick}>
-      <Row>
-        <SxIconButton
+    // biome-ignore lint/a11y/useKeyWithClickEvents: TODO make the table row a real button
+    // biome-ignore lint/a11y/noStaticElementInteractions: see above
+    <div className={container({ disabled: isDisabled })} onClick={onClick}>
+      <div className="flex items-center">
+        <IconButton
+          className={toggleButton()}
           icon={includable ? faSquare : faCheckSquare}
           disabled={isDisabled || (!includable && !excludable)}
           onClick={(event) => {
@@ -110,11 +91,15 @@ const MenuColumnItem: FC<PropsT> = ({
             }
           }}
         />
-        <Label>{table.label}</Label>
-      </Row>
+        <span className="pl-[10px] leading-[20px]">{table.label}</span>
+      </div>
       {isFilterActive && (
-        <SxWithTooltip text={t("queryNodeEditor.clearSettings")}>
-          <ResetButton
+        <WithTooltip
+          className="flex!"
+          text={t("queryNodeEditor.clearSettings")}
+        >
+          <IconButton
+            className="p-0"
             icon={faFilter}
             active
             onClick={(event) => {
@@ -128,9 +113,9 @@ const MenuColumnItem: FC<PropsT> = ({
               onResetTable({ useDefaults: false });
             }}
           />
-        </SxWithTooltip>
+        </WithTooltip>
       )}
-    </Container>
+    </div>
   );
 };
 

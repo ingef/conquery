@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faEuroSign,
   faFingerprint,
@@ -10,12 +9,6 @@ import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
 import WithTooltip from "../tooltip/WithTooltip";
-
-const Root = styled("div")`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
 
 export type ContentType =
   | "groupId"
@@ -61,7 +54,7 @@ const ContentControl = ({ value, onChange }: Props) => {
   );
 
   return (
-    <Root>
+    <div className="flex flex-col items-center">
       {options.map((option) => {
         const active = value[option.key];
         return (
@@ -77,7 +70,7 @@ const ContentControl = ({ value, onChange }: Props) => {
           </WithTooltip>
         );
       })}
-    </Root>
+    </div>
   );
 };
 

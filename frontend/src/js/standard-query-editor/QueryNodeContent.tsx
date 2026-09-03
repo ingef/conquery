@@ -1,51 +1,47 @@
-import styled from "@emotion/styled";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import ErrorMessage from "../error-message/ErrorMessage";
 import WithTooltip from "../tooltip/WithTooltip";
 
-const Label = styled("p")`
-  margin: 0;
-  word-break: break-word;
-  line-height: 1.2;
-  font-size: ${({ theme }) => theme.font.md};
-`;
-const Description = styled("p")`
-  margin: 3px 0 0;
-  word-break: break-word;
-  line-height: 1.2;
-  text-transform: uppercase;
-  font-size: ${({ theme }) => theme.font.xs};
-`;
+// tv consts named *Text to not shadow the label/description props
+const labelText = tv({
+  base: ["[word-break:break-word]", "leading-[1.2]", "text-base"],
+});
 
-const PreviousQueryLabel = styled("p")`
-  margin: 0 0 3px;
-  line-height: 1.2;
-  font-size: ${({ theme }) => theme.font.xs};
-  text-transform: uppercase;
-  font-weight: 700;
-  color: ${({ theme }) => theme.col.blueGrayDark};
-`;
+const descriptionText = tv({
+  base: [
+    "mt-[3px]",
+    "[word-break:break-word]",
+    "leading-[1.2]",
+    "uppercase",
+    "text-xs",
+  ],
+});
 
-const StyledErrorMessage = styled(ErrorMessage)`
-  margin: 0;
-`;
+const previousQueryLabel = tv({
+  base: [
+    "mb-[3px]",
+    "leading-[1.2]",
+    "text-xs",
+    "uppercase",
+    "font-bold",
+    "text-primary-500",
+  ],
+});
 
-const RootNode = styled("p")`
-  margin: 0 0 4px;
-  line-height: 1;
-  text-transform: uppercase;
-  font-weight: 700;
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.blueGrayDark};
-  word-break: break-word;
-`;
-
-const Node = styled("div")`
-  flex-grow: 1;
-  padding-top: 2px;
-`;
+const rootNode = tv({
+  base: [
+    "mb-1",
+    "leading-none",
+    "uppercase",
+    "font-bold",
+    "text-xs",
+    "text-primary-500",
+    "[word-break:break-word]",
+  ],
+});
 
 interface Props {
   tooltipText?: string;
@@ -68,22 +64,22 @@ const QueryNodeContent = ({
 
   return (
     <WithTooltip text={tooltipText}>
-      <Node>
+      <div className="grow pt-[2px]">
         {!isConceptQueryNode && (
-          <PreviousQueryLabel>
+          <p className={previousQueryLabel()}>
             {t("queryEditor.previousQuery")}
-          </PreviousQueryLabel>
+          </p>
         )}
         {error ? (
-          <StyledErrorMessage message={error} />
+          <ErrorMessage className="m-0" message={error} />
         ) : (
           <>
-            {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-            <Label>{label}</Label>
-            {description && <Description>{description}</Description>}
+            {rootNodeLabel && <p className={rootNode()}>{rootNodeLabel}</p>}
+            <p className={labelText()}>{label}</p>
+            {description && <p className={descriptionText()}>{description}</p>}
           </>
         )}
-      </Node>
+      </div>
     </WithTooltip>
   );
 };

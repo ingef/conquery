@@ -1,7 +1,7 @@
-import styled from "@emotion/styled";
 import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { type FC, type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { SelectOptionT } from "../api/types";
 import IconButton from "../button/IconButton";
@@ -10,32 +10,19 @@ import WithTooltip from "../tooltip/WithTooltip";
 
 import InputMultiSelect from "./InputMultiSelect/InputMultiSelect";
 
-interface PropsT {
-  className?: string;
-  tags?: string[];
-  loading?: boolean;
-  label?: string;
-  onSubmit: (tags: string[]) => void;
-  onCancel?: () => void;
-  availableTags: string[];
-}
+const form = tv({
+  base: "flex items-start",
+});
 
-const Form = styled("form")`
-  display: flex;
-  align-items: flex-start;
-`;
+const saveButton = tv({
+  base: ["ml-[3px]", "px-[10px] py-[7px]"],
+});
 
-const SxIconButton = styled(IconButton)`
-  padding: 7px 10px;
-  margin-left: 3px;
-`;
+const multiSelect = tv({
+  base: ["z-2", "grow"],
+});
 
-const SxInputMultiSelect = styled(InputMultiSelect)`
-  z-index: 2;
-  flex-grow: 1;
-`;
-
-const EditableTagsForm: FC<PropsT> = ({
+const EditableTagsForm = ({
   className,
   tags,
   loading,
@@ -43,6 +30,14 @@ const EditableTagsForm: FC<PropsT> = ({
   onCancel,
   label,
   availableTags,
+}: {
+  className?: string;
+  tags?: string[];
+  loading?: boolean;
+  label?: string;
+  onSubmit: (tags: string[]) => void;
+  onCancel?: () => void;
+  availableTags: string[];
 }) => {
   const { t } = useTranslation();
   const ref = useRef(null);
@@ -62,8 +57,9 @@ const EditableTagsForm: FC<PropsT> = ({
   }
 
   return (
-    <Form ref={ref} className={className} onSubmit={submit}>
-      <SxInputMultiSelect
+    <form ref={ref} className={form({ className })} onSubmit={submit}>
+      <InputMultiSelect
+        className={multiSelect()}
         creatable
         autoFocus
         label={label}
@@ -76,14 +72,15 @@ const EditableTagsForm: FC<PropsT> = ({
         placeholder={t("inputMultiSelect.tagPlaceholder")}
       />
       <WithTooltip text={t("common.save")}>
-        <SxIconButton
+        <IconButton
+          className={saveButton()}
           type="submit"
           frame
           disabled={!!loading}
           icon={loading ? faSpinner : faCheck}
         />
       </WithTooltip>
-    </Form>
+    </form>
   );
 };
 

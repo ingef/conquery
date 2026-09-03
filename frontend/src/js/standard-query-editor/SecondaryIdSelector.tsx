@@ -1,8 +1,8 @@
-import styled from "@emotion/styled";
 import { faMicroscope } from "@fortawesome/free-solid-svg-icons";
-import { type FC, memo, useCallback, useEffect, useMemo, useRef } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import type { SecondaryId } from "../api/types";
 import type { StateT } from "../app/reducers";
@@ -16,22 +16,27 @@ import { setSelectedSecondaryId } from "./actions";
 import type { StandardQueryStateT } from "./queryReducer";
 import type { SelectedSecondaryIdStateT } from "./selectedSecondaryIdReducer";
 
-const Headline = styled.h3<{ active?: boolean }>`
-  font-size: ${({ theme }) => theme.font.sm};
-  margin: 0;
-  text-transform: uppercase;
-  transition: color ${({ theme }) => theme.transitionTime};
-  color: ${({ theme, active }) =>
-    active ? theme.col.blueGrayDark : theme.col.gray};
-`;
+const headline = tv({
+  base: ["m-0", "text-sm", "uppercase", "transition-[color] duration-100"],
+  variants: {
+    active: {
+      true: "text-primary-500",
+      false: "text-gray-500",
+    },
+  },
+});
 
-const SxFaIcon = styled(FaIcon)<{ active?: boolean }>`
-  transition: color ${({ theme }) => theme.transitionTime};
-  color: ${({ theme, active }) =>
-    active ? theme.col.blueGrayDark : theme.col.gray};
-`;
+const headlineIcon = tv({
+  base: "transition-[color] duration-100",
+  variants: {
+    active: {
+      true: "text-primary-500",
+      false: "text-gray-500",
+    },
+  },
+});
 
-const SecondaryIdSelector: FC = () => {
+const SecondaryIdSelector = () => {
   const { t } = useTranslation();
   const query = useSelector<StateT, StandardQueryStateT>(
     (state) => state.queryEditor.query,
@@ -154,11 +159,15 @@ const SecondaryIdSelectorUI = memo(
 
     return (
       <div>
-        <Headline active={!!value}>
-          <SxFaIcon active={!!value} left icon={faMicroscope} />
+        <h3 className={headline({ active: !!value })}>
+          <FaIcon
+            className={headlineIcon({ active: !!value })}
+            left
+            icon={faMicroscope}
+          />
           {t("queryEditor.secondaryId")}
           <InfoTooltip text={t("queryEditor.secondaryIdTooltip")} />
-        </Headline>
+        </h3>
         <ToggleButton
           value={value || "standard"}
           onChange={onChange}

@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
 import { faCaretDown, faDownload } from "@fortawesome/free-solid-svg-icons";
 import { memo, useEffect, useMemo, useState } from "react";
+import { tv } from "tailwind-variants";
 
 import type { ResultUrlWithLabel } from "../api/types";
 import DownloadButton from "../button/DownloadButton";
@@ -8,40 +8,29 @@ import IconButton from "../button/IconButton";
 import WithTooltip from "../tooltip/WithTooltip";
 import { getUserSettings, storeUserSettings } from "../user/userSettings";
 
-const Frame = styled("div")<{ noborder?: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: ${({ noborder, theme }) =>
-    noborder ? "none" : `1px solid ${theme.col.gray}`};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  transition: opacity ${({ theme }) => theme.transitionTime};
-`;
+const frame = tv({
+  base: [
+    "flex items-center justify-center",
+    "rounded",
+    "border border-gray-500",
+    "transition-opacity duration-100",
+  ],
+  variants: {
+    noborder: { true: "border-none" },
+  },
+});
 
-const List = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  padding: 8px;
-  overflow-y: auto;
-  max-height: 60vh;
-`;
+const list = tv({
+  base: ["flex flex-col", "gap-px", "p-2", "max-h-[60vh]", "overflow-y-auto"],
+});
 
-const SxDownloadButton = styled(DownloadButton)`
-  button {
-    width: 100%;
-    padding: 8px 14px;
-  }
-`;
-const SxIconButton = styled(IconButton)`
-  padding: 9px 8px;
-`;
+const downloadButton = tv({
+  base: ["[&_button]:w-full", "[&_button]:px-[14px] [&_button]:py-2"],
+});
 
-const Separator = styled("div")`
-  width: 1px;
-  height: 33px;
-  background-color: ${({ theme }) => theme.col.gray};
-`;
+const dropdownOpenButton = tv({ base: "px-2 py-[9px]" });
+
+const separator = tv({ base: ["h-[33px] w-px", "bg-gray-500"] });
 
 const popperOptions = {
   modifiers: [
@@ -114,12 +103,13 @@ const DownloadResultsDropdownButton = ({
 
   const dropdown = useMemo(() => {
     return (
-      <List>
+      <div className={list()}>
         {resultUrls.map((resultUrl) => {
           const ending = getEnding(resultUrl.url);
 
           return (
-            <SxDownloadButton
+            <DownloadButton
+              className={downloadButton()}
               key={resultUrl.url}
               resultUrl={resultUrl}
               onClick={() => setFileChoice({ label: resultUrl.label, ending })}
@@ -127,21 +117,26 @@ const DownloadResultsDropdownButton = ({
               showColoredIcon
             >
               {truncate(resultUrl.label)}
-            </SxDownloadButton>
+            </DownloadButton>
           );
         })}
-      </List>
+      </div>
     );
   }, [resultUrls]);
 
   return (
-    <Frame noborder={tiny}>
+    <div className={frame({ noborder: tiny })}>
       {!tiny && (
         <>
-          <SxDownloadButton bgHover resultUrl={urlChoice} showColoredIcon>
+          <DownloadButton
+            className={downloadButton()}
+            bgHover
+            resultUrl={urlChoice}
+            showColoredIcon
+          >
             {truncChosenLabel}
-          </SxDownloadButton>
-          <Separator />
+          </DownloadButton>
+          <div className={separator()} />
         </>
       )}
       <WithTooltip text={tooltip} hideOnClick>
@@ -152,10 +147,14 @@ const DownloadResultsDropdownButton = ({
           trigger="click"
           popperOptions={popperOptions}
         >
-          <SxIconButton bgHover icon={tiny ? faDownload : faCaretDown} />
+          <IconButton
+            className={dropdownOpenButton()}
+            bgHover
+            icon={tiny ? faDownload : faCaretDown}
+          />
         </WithTooltip>
       </WithTooltip>
-    </Frame>
+    </div>
   );
 };
 

@@ -1,21 +1,15 @@
-import styled from "@emotion/styled";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { QueryRunnerStateT } from "./reducer";
 
-const Status = styled("p")<{ success?: boolean; error?: boolean }>`
-  font-weight: 400;
-  margin: 0 10px;
-  font-size: ${({ theme }) => theme.font.sm};
-  color: ${({ theme, success, error }) =>
-    success ? theme.col.green : error ? theme.col.red : "initial"};
-`;
-
-interface PropsT {
-  className?: string;
-  queryRunner: QueryRunnerStateT;
-}
+const status = tv({
+  base: ["mx-[10px] my-0", "text-sm", "font-normal"],
+  variants: {
+    success: { true: "text-green" },
+    error: { true: "text-red" },
+  },
+});
 
 const useMessage = (queryRunner: QueryRunnerStateT) => {
   const { t } = useTranslation();
@@ -42,7 +36,13 @@ const useMessage = (queryRunner: QueryRunnerStateT) => {
   return null;
 };
 
-const QueryRunnerInfo: FC<PropsT> = ({ queryRunner, className }) => {
+const QueryRunnerInfo = ({
+  queryRunner,
+  className,
+}: {
+  className?: string;
+  queryRunner: QueryRunnerStateT;
+}) => {
   const message = useMessage(queryRunner);
 
   const { queryResult } = queryRunner;
@@ -55,13 +55,15 @@ const QueryRunnerInfo: FC<PropsT> = ({ queryRunner, className }) => {
   }
 
   return (
-    <Status
-      className={className}
-      success={message.type === "success"}
-      error={message.type === "error"}
+    <p
+      className={status({
+        success: message.type === "success",
+        error: message.type === "error",
+        className,
+      })}
     >
       {message.value}
-    </Status>
+    </p>
   );
 };
 

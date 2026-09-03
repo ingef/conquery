@@ -1,5 +1,6 @@
-import styled from "@emotion/styled";
-import { type ButtonHTMLAttributes, forwardRef } from "react";
+import type { ButtonHTMLAttributes, Ref } from "react";
+
+import { tv } from "tailwind-variants";
 
 export interface BasicButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -9,40 +10,54 @@ export interface BasicButtonProps
   large?: boolean;
   active?: boolean;
   secondary?: boolean;
-  autoFocus?: boolean; // Should actually be within the extends, not sure why I had to declare this.
 }
 
-const Button = styled("button")<BasicButtonProps>`
-  cursor: pointer;
-  font-weight: ${({ active, secondary }) =>
-    active || secondary ? "700" : "400"};
-  padding: ${({ small, tiny, bare, large }) =>
-    bare
-      ? "0"
-      : tiny
-        ? "4px 6px"
-        : small
-          ? "6px 8px"
-          : large
-            ? "12px 18px"
-            : "8px 15px"};
-  font-size: ${({ theme, small, tiny, large }) =>
-    tiny || small ? theme.font.xs : large ? theme.font.lg : theme.font.sm};
-  transition: all 0.2s;
-  border-radius: ${({ theme }) => theme.borderRadius};
+const button = tv({
+  base: [
+    "cursor-pointer",
+    "rounded",
+    "px-[15px] py-2",
+    "text-sm",
+    "font-normal",
+    "transition-all duration-200",
+    "disabled:cursor-not-allowed disabled:opacity-40",
+  ],
+  variants: {
+    active: { true: "font-bold" },
+    secondary: { true: "font-bold" },
+    // later wins when several are set
+    large: { true: "px-[18px] py-3 text-xl" },
+    small: { true: "px-2 py-[6px] text-xs" },
+    tiny: { true: "px-[6px] py-1 text-xs" },
+    bare: { true: "p-0" },
+  },
+});
 
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.4;
-  }
-`;
-
-const BasicButton = forwardRef<HTMLButtonElement, BasicButtonProps>(
-  ({ children, ...props }, ref) => (
-    <Button type="button" {...props} ref={ref}>
-      {children}
-    </Button>
-  ),
+const BasicButton = ({
+  ref,
+  className,
+  bare,
+  tiny,
+  small,
+  large,
+  active,
+  secondary,
+  ...props
+}: BasicButtonProps & { ref?: Ref<HTMLButtonElement> }) => (
+  <button
+    type="button"
+    className={button({
+      bare,
+      tiny,
+      small,
+      large,
+      active,
+      secondary,
+      className,
+    })}
+    {...props}
+    ref={ref}
+  />
 );
 
 export default BasicButton;

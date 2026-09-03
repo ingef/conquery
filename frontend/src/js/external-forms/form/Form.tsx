@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { memo } from "react";
 import type { UseFormReturn } from "react-hook-form";
 
@@ -9,10 +8,6 @@ import FormHeader from "../FormHeader";
 import { getFieldKey, getH1Index } from "../helper";
 
 import Field from "./Field";
-
-const SxFormHeader = styled(FormHeader)`
-  margin: 5px 0 15px;
-`;
 
 interface Props {
   config: FormType;
@@ -30,7 +25,8 @@ const Form = memo(({ config, datasetOptions, methods }: Props) => {
   return (
     <div className="w-full flex flex-col gap-2">
       {config.description?.[activeLang] && (
-        <SxFormHeader
+        <FormHeader
+          className="mt-[5px] mb-[15px]"
           description={config.description[activeLang]!}
           manualUrl={config.manualUrl}
         />

@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -18,10 +17,6 @@ import { useLoadQueries } from "../list/actions";
 
 import type { QueryToUploadT } from "./CSVColumnPicker";
 import UploadQueryResultsModal from "./UploadQueryResultsModal";
-
-const SxIconButton = styled(IconButton)`
-  padding: 9px 6px;
-`;
 
 const UploadQueryResults = ({
   className,
@@ -82,7 +77,8 @@ const UploadQueryResults = ({
   return (
     <div className={className}>
       <WithTooltip text={t("uploadQueryResults.uploadResults")}>
-        <SxIconButton
+        <IconButton
+          className="px-[6px] py-[9px]"
           frame
           icon={faUpload}
           onClick={() => setIsModalOpen(true)}

@@ -1,5 +1,3 @@
-import styled from "@emotion/styled";
-
 import type { ConceptElementT, ConceptIdT, ConceptT } from "../api/types";
 import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 import { resetSelects } from "../model/select";
@@ -10,10 +8,6 @@ import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
 import { getConceptById } from "./globalTreeStoreHelper";
 import type { SearchT } from "./reducer";
 import { isNodeInSearchResult } from "./selectors";
-
-const Root = styled("div")`
-  font-size: ${({ theme }) => theme.font.sm};
-`;
 
 const ConceptTreeNode = ({
   data,
@@ -52,7 +46,7 @@ const ConceptTreeNode = ({
   ) as ConceptElementT;
 
   return (
-    <Root>
+    <div className="text-sm">
       <ConceptTreeNodeTextContainer
         node={{
           label: data.label,
@@ -117,7 +111,7 @@ const ConceptTreeNode = ({
             />
           ) : null;
         })}
-    </Root>
+    </div>
   );
 };
 

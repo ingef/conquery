@@ -1,43 +1,32 @@
-import styled from "@emotion/styled";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { memo, useEffect, useState } from "react";
+import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
 import { exists } from "../common/helpers/exists";
 import BaseInput from "../ui-components/BaseInput";
 
-const InputContainer = styled("div")`
-  flex-grow: 1;
-  position: relative;
-`;
+const inputContainer = tv({ base: ["relative", "grow"] });
 
-const SxBaseInput = styled(BaseInput)`
-  width: 100%;
-  input {
-    padding-right: 60px;
-    height: 34px;
-    width: 100%;
-    &::placeholder {
-      color: ${({ theme }) => theme.col.grayMediumLight};
-      opacity: 1;
-    }
-  }
-`;
+const baseInput = tv({
+  base: [
+    "w-full",
+    "[&_input]:h-[34px] [&_input]:w-full",
+    "[&_input]:pr-[60px]",
+    "[&_input]:placeholder:text-gray-400",
+    "[&_input]:placeholder:opacity-100",
+  ],
+});
 
-const Right = styled("div")`
-  position: absolute;
-  top: 0px;
-  right: 30px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: 34px;
-`;
+const right = tv({
+  base: [
+    "absolute top-0 right-[30px]",
+    "flex flex-row items-center",
+    "h-[34px]",
+  ],
+});
 
-const StyledIconButton = styled(IconButton)`
-  padding: 8px 10px;
-  color: ${({ theme }) => theme.col.gray};
-`;
+const searchButton = tv({ base: ["px-[10px] py-2", "text-gray-500"] });
 
 interface Props {
   className?: string;
@@ -61,8 +50,9 @@ const SearchBar = ({
   }, [searchTerm]);
 
   return (
-    <InputContainer className={className}>
-      <SxBaseInput
+    <div className={inputContainer({ className })}>
+      <BaseInput
+        className={baseInput()}
         inputType="text"
         placeholder={placeholder}
         value={localSearchTerm || ""}
@@ -80,15 +70,16 @@ const SearchBar = ({
         }}
       />
       {exists(localSearchTerm) && (
-        <Right>
-          <StyledIconButton
+        <div className={right()}>
+          <IconButton
+            className={searchButton()}
             icon={faSearch}
             aria-hidden="true"
             onClick={() => onSearch(localSearchTerm)}
           />
-        </Right>
+        </div>
       )}
-    </InputContainer>
+    </div>
   );
 };
 

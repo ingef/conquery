@@ -419,6 +419,7 @@ export interface GetQueryResponseDoneT {
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
   requiredTime: number; // In ms, unused at the moment
   containsDates: boolean;
+  previewAvailable: boolean; // Whether /queries/{id}/statistics can be requested (not the case for most forms)
 }
 
 export interface GetQueryRunningResponseT {
@@ -540,7 +541,8 @@ export interface HistorySources {
 
 export type GetEntityHistoryDefaultParamsResponse = HistorySources & {
   searchConcept: string | null; // concept id
-  searchFilters?: string[]; // allowlisted filter ids within the searchConcept
+  searchConnector: string | null; // connector id within the searchConcept, the table that holds the searchFilters
+  searchFilters?: string[]; // allowlisted filter ids within the searchConnector
 };
 
 export interface EntityInfo {

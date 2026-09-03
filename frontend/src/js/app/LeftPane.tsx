@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -10,10 +9,6 @@ import Pane from "../pane/Pane";
 import ProjectItemsTab from "../previous-queries/list/ProjectItemsTab";
 
 import type { StateT } from "./reducers";
-
-const SxConceptTreeSearchBox = styled(ConceptTreeSearchBox)`
-  margin: 8px 10px 5px;
-`;
 
 const LeftPane = () => {
   const { t } = useTranslation();
@@ -50,7 +45,7 @@ const LeftPane = () => {
       dataTestId="left-pane"
     >
       {activeTab === "conceptTrees" && areTreesAvailable && (
-        <SxConceptTreeSearchBox />
+        <ConceptTreeSearchBox className="mx-[10px] mt-2 mb-[5px]" />
       )}
       <ConceptTreeList datasetId={selectedDatasetId} />
       {activeTab === "previousQueries" && (

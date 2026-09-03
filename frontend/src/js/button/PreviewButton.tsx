@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faMagnifyingGlass,
   faSpinner,
@@ -6,17 +5,19 @@ import {
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import { openPreview, useLoadPreviewData } from "../preview/actions";
 import IconButton, { type IconButtonPropsT } from "./IconButton";
 
-const Button = styled(IconButton)`
-  white-space: nowrap;
-  height: 35px;
-  padding: 5px 12px;
-`;
+const previewButton = tv({
+  base: ["whitespace-nowrap", "h-[35px]", "px-3 py-[5px]"],
+});
 
-const PreviewButton = (buttonProps: Partial<IconButtonPropsT>) => {
+const PreviewButton = ({
+  className,
+  ...buttonProps
+}: Partial<IconButtonPropsT>) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
@@ -32,7 +33,8 @@ const PreviewButton = (buttonProps: Partial<IconButtonPropsT>) => {
   );
 
   return (
-    <Button
+    <IconButton
+      className={previewButton({ className })}
       frame
       icon={icon}
       onClick={async () => {
@@ -48,7 +50,7 @@ const PreviewButton = (buttonProps: Partial<IconButtonPropsT>) => {
       {...buttonProps}
     >
       {t("preview.preview")}
-    </Button>
+    </IconButton>
   );
 };
 

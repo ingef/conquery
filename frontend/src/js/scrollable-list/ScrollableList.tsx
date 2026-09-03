@@ -1,6 +1,5 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
 import type { ReactNode } from "react";
+import { tv } from "tailwind-variants";
 import { IncrementalList } from "../common/components/IncrementalList";
 
 interface PropsType {
@@ -10,39 +9,30 @@ interface PropsType {
   dataTestId?: string;
 }
 
-// With the number of visible items specified here,
-// make an additional element half-visible at the end to indicate
-// that the list is scrollable
-const Root = styled("div")<{ maxVisibleItems: number; fullWidth?: boolean }>`
-  max-height: ${({ maxVisibleItems }) => (maxVisibleItems + 0.5) * 34}px;
+const root = tv({
+  base: [
+    "overflow-y-auto",
+    "[-webkit-overflow-scrolling:touch]",
+    "max-w-[340px]",
+    "rounded-[2px]",
+    "border border-gray-400",
+    "text-gray-800",
+  ],
+  variants: {
+    fullWidth: { true: "w-full max-w-full" },
+  },
+});
 
-  overflow-x: none;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  max-width: 340px;
-  border-radius: 2px;
-  border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
-  color: ${({ theme }) => theme.col.black};
-
-  ${({ fullWidth }) =>
-    fullWidth &&
-    css`
-      width: 100%;
-      max-width: 100%;
-    `};
-`;
-
-const Item = styled("div")`
-  line-height: 24px;
-  padding-left: 10px;
-  padding-right: 10px;
-  border-bottom: 1px solid ${({ theme }) => theme.col.grayVeryLight};
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
+const item = tv({
+  base: [
+    "max-w-full",
+    "px-[10px]",
+    "border-b border-gray-50",
+    "overflow-hidden text-ellipsis whitespace-nowrap",
+    "text-sm",
+    "leading-6",
+  ],
+});
 
 const ScrollableList = ({
   items,
@@ -52,23 +42,26 @@ const ScrollableList = ({
 }: PropsType) => {
   const renderItem = (index: number) => {
     return (
-      <Item key={index} className="scrollable-list-item">
+      <div key={index} className={item({ className: "scrollable-list-item" })}>
         {items[index]}
-      </Item>
+      </div>
     );
   };
 
   return (
-    <Root
-      maxVisibleItems={maxVisibleItems}
-      fullWidth={!!fullWidth}
+    <div
+      className={root({ fullWidth: !!fullWidth })}
+      // With the number of visible items specified here,
+      // make an additional element half-visible at the end to indicate
+      // that the list is scrollable
+      style={{ maxHeight: (maxVisibleItems + 0.5) * 34 }}
       data-test-id={dataTestId}
     >
       <IncrementalList
         renderItem={renderItem}
         length={items ? items.length : 0}
       />
-    </Root>
+    </div>
   );
 };
 

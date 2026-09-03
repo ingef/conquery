@@ -1,5 +1,3 @@
-import styled from "@emotion/styled";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import Modal from "../../modal/Modal";
@@ -9,17 +7,13 @@ import { isFormConfig } from "./helpers";
 import type { ProjectItemT } from "./ProjectItem";
 import { useFolders } from "./selector";
 
-const SxEditableTagsForm = styled(EditableTagsForm)`
-  min-width: 300px;
-  max-width: 500px;
-`;
-
-interface PropsT {
+const EditProjectItemFoldersModal = ({
+  item,
+  onClose,
+}: {
   item: ProjectItemT;
   onClose: () => void;
-}
-
-const EditProjectItemFoldersModal: FC<PropsT> = ({ item, onClose }) => {
+}) => {
   const { t } = useTranslation();
   const folders = useFolders();
   const { loading: queryLoading, updateQuery } = useUpdateQuery();
@@ -43,7 +37,8 @@ const EditProjectItemFoldersModal: FC<PropsT> = ({ item, onClose }) => {
       headline={t("editPreviousQueryFoldersModal.headline")}
       subtitle={item.label}
     >
-      <SxEditableTagsForm
+      <EditableTagsForm
+        className="min-w-[300px] max-w-[500px]"
         tags={item.tags}
         loading={loading}
         onSubmit={onSubmit}

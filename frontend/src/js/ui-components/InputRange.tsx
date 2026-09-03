@@ -1,5 +1,5 @@
-import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { CurrencyConfigT } from "../api/types";
 import { exists } from "../common/helpers/exists";
@@ -8,22 +8,11 @@ import InputPlain from "./InputPlain/InputPlain";
 import InputRangeHeader from "./InputRangeHeader";
 import ToggleButton from "./ToggleButton";
 
-const Container = styled("div")`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  margin-top: -3px;
-`;
+const container = tv({ base: ["flex flex-row", "w-full", "-mt-[3px]"] });
 
-const SxInputPlain = styled(InputPlain)`
-  input {
-    width: 100%;
-    min-width: 50px;
-  }
-  &:last-of-type {
-    padding-left: 5px;
-  }
-`;
+const rangeInput = tv({
+  base: ["[&_input]:w-full [&_input]:min-w-[50px]", "last-of-type:pl-[5px]"],
+});
 
 interface ValueT {
   min?: number | null;
@@ -138,10 +127,11 @@ const InputRange = ({
           { value: "exact", label: t("inputRange.exact") },
         ]}
       />
-      <Container>
+      <div className={container()}>
         {isRangeMode ? (
           <>
-            <SxInputPlain
+            <InputPlain
+              className={rangeInput()}
               inputType="number"
               currencyConfig={currencyConfig}
               money={moneyRange}
@@ -153,7 +143,8 @@ const InputRange = ({
               onChange={(value) => onChangeValue("min", value as number | null)}
               inputProps={inputProps}
             />
-            <SxInputPlain
+            <InputPlain
+              className={rangeInput()}
               inputType="number"
               currencyConfig={currencyConfig}
               money={moneyRange}
@@ -180,7 +171,7 @@ const InputRange = ({
             inputProps={inputProps}
           />
         )}
-      </Container>
+      </div>
     </div>
   );
 };

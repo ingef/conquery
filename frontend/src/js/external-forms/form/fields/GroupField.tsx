@@ -1,16 +1,9 @@
-import styled from "@emotion/styled";
 import type { ComponentProps } from "react";
 import type { Group } from "../../config-types";
 import { Description } from "../../form-components/Description";
 import { Headline } from "../../form-components/Headline";
 import { getFieldKey } from "../../helper";
 import Field from "../Field";
-
-const GroupContainer = styled("div")`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-`;
 
 export const GroupField = ({
   field,
@@ -25,7 +18,8 @@ export const GroupField = ({
       {field.description && (
         <Description>{field.description[commonProps.locale]}</Description>
       )}
-      <GroupContainer
+      <div
+        className="flex flex-row flex-wrap"
         style={{
           display: field.style?.display || "flex",
           gap: field.style?.display === "grid" ? "7px 12px" : "7px 8px",
@@ -37,7 +31,7 @@ export const GroupField = ({
 
           return <Field key={key} field={f} {...commonProps} />;
         })}
-      </GroupContainer>
+      </div>
     </>
   );
 };

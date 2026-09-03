@@ -1,15 +1,15 @@
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectedDateColumnT } from "../standard-query-editor/types";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 
-interface PropsT {
+const DateColumnSelect = ({
+  dateColumn,
+  onSelectDateColumn,
+}: {
   dateColumn: SelectedDateColumnT;
   onSelectDateColumn: (dateColumn: string) => void;
-}
-
-const DateColumnSelect: FC<PropsT> = ({ dateColumn, onSelectDateColumn }) => {
+}) => {
   const { t } = useTranslation();
 
   return (

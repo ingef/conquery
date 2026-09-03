@@ -15,6 +15,7 @@
     },
     "timeMode": "ABSOLUTE",
     "dateRange": { "min": "2019-01-01", "max": "2019-12-31" },
+    "referenceDate": "2019-06-15",
     "features": [
       {
         "concepts": [

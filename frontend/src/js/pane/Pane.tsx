@@ -1,22 +1,13 @@
-import styled from "@emotion/styled";
+import { tv } from "tailwind-variants";
 
 import PaneTabNavigation from "./PaneTabNavigation";
 import type { TabNavigationTab } from "./TabNavigation";
 
-const Root = styled("div")`
-  width: 100%;
-  height: 100%;
+const root = tv({ base: ["h-full w-full", "pt-[40px]"] });
 
-  padding: 40px 0 0;
-`;
-
-const Container = styled("div")`
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-`;
+const container = tv({
+  base: ["relative", "flex flex-col", "h-full", "overflow-hidden"],
+});
 
 interface Props {
   tabs: TabNavigationTab[];
@@ -31,18 +22,18 @@ const Pane = ({ tabs, left, children, className, dataTestId }: Props) => {
   const paneType = left ? "left" : "right";
 
   return (
-    <Root className={className}>
-      <Container>
+    <div className={root({ className })}>
+      <div className={container()}>
         <PaneTabNavigation
           tabs={tabs}
           paneType={paneType}
           dataTestId={dataTestId}
         />
-        <Container data-test-id={`${dataTestId}-container`}>
+        <div className={container()} data-test-id={`${dataTestId}-container`}>
           {children}
-        </Container>
-      </Container>
-    </Root>
+        </div>
+      </div>
+    </div>
   );
 };
 

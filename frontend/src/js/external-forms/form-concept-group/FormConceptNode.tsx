@@ -1,11 +1,11 @@
-import styled from "@emotion/styled";
 import {
   faCompressArrowsAlt,
   faExpandArrowsAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useRef } from "react";
+import { useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import { getWidthAndHeight } from "../../app/DndProvider";
 import IconButton from "../../button/IconButton";
@@ -15,60 +15,64 @@ import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import WithTooltip from "../../tooltip/WithTooltip";
 
-const Root = styled("div")<{
-  active?: boolean;
-}>`
-  padding: 5px 10px;
-  cursor: pointer;
-  max-width: 200px;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  transition: background-color ${({ theme }) => theme.transitionTime};
-  border: ${({ theme, active }) =>
-    active
-      ? `2px solid ${theme.col.blueGrayDark}`
-      : `1px solid ${theme.col.grayMediumLight}`};
-  &:hover {
-    background-color: ${({ theme }) => theme.col.bgAlt};
-  }
-  display: grid;
-  grid-template-columns: 1fr auto;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
+const node = tv({
+  base: [
+    "grid grid-cols-[1fr_auto]",
+    "max-w-[200px]",
+    "px-[10px] py-[5px]",
+    "cursor-pointer",
+    "rounded",
+    "hover:bg-bg-100",
+    "transition-[background-color] duration-100",
+    "text-sm",
+  ],
+  variants: {
+    active: {
+      true: "border-2 border-primary-500",
+      false: "border border-gray-400",
+    },
+  },
+});
 
-const Label = styled("p")`
-  margin: 0;
-  word-break: break-word;
-  line-height: 1.2;
-  font-size: ${({ theme }) => theme.font.md};
-`;
+const labelText = tv({
+  base: ["m-0", "[word-break:break-word]", "leading-[1.2]", "text-base"],
+});
 
-const Description = styled("div")`
-  margin: 3px 0 0;
-  word-break: break-word;
-  line-height: 1.2;
-  text-transform: uppercase;
-  font-size: ${({ theme }) => theme.font.xs};
-`;
+const descriptionText = tv({
+  base: [
+    "mt-[3px]",
+    "[word-break:break-word]",
+    "leading-[1.2]",
+    "uppercase",
+    "text-xs",
+  ],
+});
 
-const Right = styled("div")`
-  margin-left: 10px;
-`;
+const rootNode = tv({
+  base: [
+    "mb-1",
+    "leading-none",
+    "uppercase",
+    "font-bold",
+    "text-xs",
+    "text-primary-500",
+    "[word-break:break-word]",
+  ],
+});
 
-const SxIconButton = styled(IconButton)`
-  padding: 0 6px;
-`;
-
-const RootNode = styled("p")`
-  margin: 0 0 4px;
-  line-height: 1;
-  text-transform: uppercase;
-  font-weight: 700;
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.blueGrayDark};
-  word-break: break-word;
-`;
-
-interface PropsT {
+// generalized node to handle concepts queried in forms
+const FormConceptNode = ({
+  valueIdx,
+  conceptIdx,
+  conceptNode,
+  onClick,
+  hasNonDefaultSettings,
+  hasFilterValues,
+  expand,
+  deleteFromOtherField,
+  fieldName,
+  rowPrefixFieldname,
+}: {
   valueIdx: number;
   conceptIdx: number;
   conceptNode: DragItemConceptTreeNode;
@@ -84,20 +88,6 @@ interface PropsT {
   deleteFromOtherField: () => void;
   fieldName: string;
   rowPrefixFieldname?: string;
-}
-
-// generalized node to handle concepts queried in forms
-const FormConceptNode: FC<PropsT> = ({
-  valueIdx,
-  conceptIdx,
-  conceptNode,
-  onClick,
-  hasNonDefaultSettings,
-  hasFilterValues,
-  expand,
-  deleteFromOtherField,
-  fieldName,
-  rowPrefixFieldname,
 }) => {
   const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(conceptNode);
@@ -139,30 +129,35 @@ const FormConceptNode: FC<PropsT> = ({
       canDrop={(item) => canNodeBeDropped(conceptNode, item)}
       highlightDroppable
     >
-      <Root
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO make this a button */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: see above */}
+      <div
+        className={node({ active: hasNonDefaultSettings || hasFilterValues })}
         ref={(instance) => {
           ref.current = instance;
           drag(instance);
         }}
-        active={hasNonDefaultSettings || hasFilterValues}
         onClick={onClick}
       >
         <div>
           <WithTooltip text={tooltipText}>
             {/* biome-ignore lint/complexity/noUselessFragments: WithTooltip takes a single child */}
             <>
-              {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-              <Label>{conceptNode?.label}</Label>
+              {rootNodeLabel && <p className={rootNode()}>{rootNodeLabel}</p>}
+              <p className={labelText()}>{conceptNode?.label}</p>
               {conceptNode && !!conceptNode.description && (
-                <Description>{conceptNode.description}</Description>
+                <div className={descriptionText()}>
+                  {conceptNode.description}
+                </div>
               )}
             </>
           </WithTooltip>
         </div>
-        <Right>
+        <div className="ml-[10px]">
           {expand?.expandable && (
             <WithTooltip text={t("externalForms.common.concept.expand")}>
-              <SxIconButton
+              <IconButton
+                className="px-[6px] py-0"
                 icon={expand.active ? faCompressArrowsAlt : faExpandArrowsAlt}
                 tiny
                 onClick={(e) => {
@@ -172,8 +167,8 @@ const FormConceptNode: FC<PropsT> = ({
               />
             </WithTooltip>
           )}
-        </Right>
-      </Root>
+        </div>
+      </div>
     </HoverNavigatable>
   );
 };

@@ -1,34 +1,30 @@
-import styled from "@emotion/styled";
 import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
-import tw from "tailwind-styled-components";
+import { tv } from "tailwind-variants";
 import IconButton from "../button/IconButton";
 import { toggleDisplayTooltip } from "./actions";
 
-const Header = tw("h2")`
-  bg-white
-  h-[40px]
-  shrink-0
-  flex items-center
-  px-5
-  pt-1
-  text-sm
-  tracking-[1px]
-  uppercase
-  text-primary-500
-  border-b border-gray-100
-  font-bold
-`;
+const header = tv({
+  base: [
+    "flex items-center",
+    "h-[40px]",
+    "shrink-0",
+    "border-b border-gray-100",
+    "bg-white",
+    "px-5 pt-1",
+    "text-sm",
+    "font-bold",
+    "uppercase",
+    "tracking-[1px]",
+    "text-primary-500",
+  ],
+});
 
-const StyledIconButton = styled(IconButton)`
-  position: absolute;
-  top: 40px;
-  height: 39px;
-  right: 0;
-  border-radius: 0;
-`;
+const toggleButton = tv({
+  base: ["absolute top-[40px] right-0", "h-[39px]", "rounded-none"],
+});
 
 export const TooltipHeader = memo(() => {
   const { t } = useTranslation();
@@ -38,12 +34,13 @@ export const TooltipHeader = memo(() => {
 
   return (
     <>
-      <StyledIconButton
+      <IconButton
+        className={toggleButton()}
         bgHover
         onClick={onToggleDisplayTooltip}
         icon={faAngleLeft}
       />
-      <Header>{t("tooltip.headline")}</Header>
+      <h2 className={header()}>{t("tooltip.headline")}</h2>
     </>
   );
 });

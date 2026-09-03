@@ -1,44 +1,32 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
 import { exists } from "../common/helpers/exists";
-import { Icon } from "../icon/FaIcon";
+import FaIcon from "../icon/FaIcon";
 
-const Container = styled("div")`
-  display: grid;
-  grid-template-columns: 110px 30px auto auto auto auto 1fr;
-  align-items: flex-start;
-  gap: 0 8px;
-  padding: 3px 0;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
+const container = tv({
+  base: [
+    "grid grid-cols-[110px_30px_auto_auto_auto_auto_1fr]",
+    "items-start",
+    "gap-x-2",
+    "py-[3px]",
+    "text-sm",
+  ],
+});
 
-const Text = styled("span")<{ bold?: boolean }>`
-  margin: 0;
-  color: ${({ theme }) => theme.col.gray};
-  ${({ bold, theme }) =>
-    bold &&
-    css`
-      color: ${theme.col.black};
-      font-weight: 400;
-    `};
-`;
+const text = tv({
+  base: ["m-0", "text-gray-500"],
+  variants: {
+    bold: { true: "text-gray-800 font-normal" },
+  },
+});
 
-const SxIndexPrefix = styled(IndexPrefix)`
-  margin-right: 0;
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
-  color: white;
-  font-weight: 700;
-`;
-const Right = styled("div")`
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-`;
+const indexPrefix = tv({
+  base: ["mr-0", "bg-primary-500", "text-white", "font-bold"],
+});
 
 export const DropdownOption = memo(
   ({
@@ -56,33 +44,35 @@ export const DropdownOption = memo(
     const hasDifferentFilterLabel = exists(filterLabel) && exists(filterIdx);
 
     return (
-      <Container>
-        <Text>
+      <div className={container()}>
+        <span className={text()}>
           {hasDifferentFilterLabel
             ? t("uploadConceptListModal.filterValuesFrom")
             : t("uploadConceptListModal.conceptValuesFrom")}
-        </Text>
-        <Right>
+        </span>
+        <div className="flex items-center justify-end">
           {hasDifferentFilterLabel ? (
-            <SxIndexPrefix># {filterIdx}</SxIndexPrefix>
+            <IndexPrefix className={indexPrefix()}># {filterIdx}</IndexPrefix>
           ) : (
-            <Icon
+            <FaIcon
               icon={faFolder}
               active={!hasDifferentFilterLabel}
               gray={hasDifferentFilterLabel}
             />
           )}
-        </Right>
-        <Text bold={!hasDifferentFilterLabel}>{conceptLabel}</Text>
+        </div>
+        <span className={text({ bold: !hasDifferentFilterLabel })}>
+          {conceptLabel}
+        </span>
         {hasDifferentFilterLabel && (
           <>
-            <Text>&gt;</Text>
-            <Text>{connectorLabel}</Text>
-            <Text>&gt;</Text>
-            <Text bold>{filterLabel}</Text>
+            <span className={text()}>&gt;</span>
+            <span className={text()}>{connectorLabel}</span>
+            <span className={text()}>&gt;</span>
+            <span className={text({ bold: true })}>{filterLabel}</span>
           </>
         )}
-      </Container>
+      </div>
     );
   },
 );

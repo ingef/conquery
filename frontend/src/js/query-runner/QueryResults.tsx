@@ -1,8 +1,7 @@
-import styled from "@emotion/styled";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import type { ColumnDescription, ResultUrlWithLabel } from "../api/types";
 import type { StateT } from "../app/reducers";
@@ -14,42 +13,32 @@ import FaIcon from "../icon/FaIcon";
 import { canViewEntityPreview, canViewQueryPreview } from "../user/selectors";
 import DownloadResultsDropdownButton from "./DownloadResultsDropdownButton";
 
-const Root = styled("div")`
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 7px;
-`;
+const root = tv({
+  base: ["flex items-center justify-end", "gap-[7px]"],
+});
 
-const Text = styled("p")`
-  margin: 0;
-  line-height: 1;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
+const text = tv({
+  base: ["m-0", "leading-none", "text-sm"],
+});
 
-const LgText = styled(Text)`
-  font-size: ${({ theme }) => theme.font.lg};
-  white-space: nowrap;
-`;
+const lgText = tv({
+  base: ["m-0", "leading-none", "text-xl", "whitespace-nowrap"],
+});
 
-const Bold = styled("span")`
-  font-weight: 700;
-`;
-
-interface PropsT {
-  resultLabel: string;
-  resultUrls: ResultUrlWithLabel[];
-  resultCount?: number | null; // For forms, won't usually have a count
-  resultColumns?: ColumnDescription[] | null; // For forms, won't usually have resultColumns
-  queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
-}
-
-const QueryResults: FC<PropsT> = ({
+const QueryResults = ({
   resultLabel,
   resultUrls,
   resultCount,
   resultColumns,
   queryType,
+  previewAvailable,
+}: {
+  resultLabel: string;
+  resultUrls: ResultUrlWithLabel[];
+  resultCount?: number | null; // For forms, won't usually have a count
+  resultColumns?: ColumnDescription[] | null; // For forms, won't usually have resultColumns
+  queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
+  previewAvailable?: boolean; // Backend decides, e.g. most forms have no preview
 }) => {
   const { t } = useTranslation();
   const csvUrl = resultUrls.find(({ url }) => url.endsWith("csv"));
@@ -57,21 +46,21 @@ const QueryResults: FC<PropsT> = ({
   const canViewPreview = useSelector<StateT, boolean>(canViewQueryPreview);
 
   return (
-    <Root>
+    <div className={root()}>
       {isEmpty(resultCount) ? (
-        <Text>
+        <p className={text()}>
           <FaIcon icon={faCheck} left />
           {t("queryRunner.endSuccess")}
-        </Text>
+        </p>
       ) : (
-        <LgText>
-          <Bold>{resultCount}</Bold>{" "}
+        <p className={lgText()}>
+          <span className="font-bold">{resultCount}</span>{" "}
           {queryType === "SECONDARY_ID_QUERY"
             ? t("queryRunner.resultCountSecondaryIdQuery")
             : t("queryRunner.resultCount")}
-        </LgText>
+        </p>
       )}
-      {canViewPreview && <PreviewButton />}
+      {canViewPreview && previewAvailable && <PreviewButton />}
       {!!csvUrl && canViewHistory && exists(resultColumns) && (
         <QueryResultHistoryButton
           columns={resultColumns}
@@ -82,7 +71,7 @@ const QueryResults: FC<PropsT> = ({
       {resultUrls.length > 0 && (
         <DownloadResultsDropdownButton resultUrls={resultUrls} />
       )}
-    </Root>
+    </div>
   );
 };
 

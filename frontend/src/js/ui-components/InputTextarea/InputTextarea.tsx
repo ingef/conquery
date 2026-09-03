@@ -1,37 +1,30 @@
-import styled from "@emotion/styled";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import {
-  type DetailedHTMLProps,
-  forwardRef,
-  type TextareaHTMLAttributes,
-} from "react";
+import type { DetailedHTMLProps, Ref, TextareaHTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import IconButton from "../../button/IconButton";
 import Labeled from "../Labeled";
 
-const Root = styled("div")`
-  position: relative;
-`;
+const textarea = tv({
+  base: [
+    "outline-0",
+    "w-full",
+    "rounded",
+    "border border-gray-400",
+    "py-[6px] pr-[30px] pl-[10px]",
+    "text-sm",
+  ],
+});
 
-const Textarea = styled("textarea")`
-  outline: 0;
-  width: 100%;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
-  padding: 6px 30px 6px 10px;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
-
-const ClearZoneIconButton = styled(IconButton)`
-  position: absolute;
-  top: 0;
-  right: 10px;
-  height: 30px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-`;
+const clearZoneIconButton = tv({
+  base: [
+    "absolute top-0 right-[10px]",
+    "h-[30px]",
+    "flex items-center",
+    "cursor-pointer",
+  ],
+});
 
 interface OtherProps {
   label: string;
@@ -47,10 +40,15 @@ type InputTextareaProps = DetailedHTMLProps<
   HTMLTextAreaElement
 >;
 
-export const InputTextarea = forwardRef<
-  HTMLTextAreaElement,
-  InputTextareaProps & OtherProps
->(({ label, className, indexPrefix, tooltip, onChange, ...props }, ref) => {
+export const InputTextarea = ({
+  ref,
+  label,
+  className,
+  indexPrefix,
+  tooltip,
+  onChange,
+  ...props
+}: InputTextareaProps & OtherProps & { ref?: Ref<HTMLTextAreaElement> }) => {
   const { t } = useTranslation();
 
   return (
@@ -61,9 +59,10 @@ export const InputTextarea = forwardRef<
       fullWidth
       tooltip={tooltip}
     >
-      <Root>
-        <Textarea
+      <div className="relative">
+        <textarea
           ref={ref}
+          className={textarea()}
           {...props}
           onChange={({ target: { value } }) =>
             value.length === 0 ? onChange(null) : onChange(value)
@@ -71,7 +70,8 @@ export const InputTextarea = forwardRef<
           value={props.value || ""}
         />
         {props.value && (
-          <ClearZoneIconButton
+          <IconButton
+            className={clearZoneIconButton()}
             tiny
             icon={faTimes}
             tabIndex={-1}
@@ -80,7 +80,7 @@ export const InputTextarea = forwardRef<
             onClick={() => onChange(null)}
           />
         )}
-      </Root>
+      </div>
     </Labeled>
   );
-});
+};

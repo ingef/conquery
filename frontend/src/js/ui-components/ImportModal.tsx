@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { faFile, faPaste } from "@fortawesome/free-solid-svg-icons";
 import {
   type ChangeEvent,
@@ -10,6 +9,7 @@ import {
 import { NativeTypes } from "react-dnd-html5-backend";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
 import PrimaryButton from "../button/PrimaryButton";
@@ -20,32 +20,21 @@ import DropzoneWithFileInput, {
   type DragItemFile,
 } from "./DropzoneWithFileInput";
 
-const Content = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
+const content = tv({
+  base: ["flex flex-col", "gap-5"],
+});
 
-const Row = styled("div")`
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-`;
+const row = tv({
+  base: ["flex items-center justify-end", "gap-[10px]"],
+});
 
-const Textarea = styled("textarea")`
-  font-family: monospace;
-  width: 100%;
-`;
+const textarea = tv({
+  base: ["font-mono", "w-full"],
+});
 
-const HiddenFileInput = styled("input")`
-  display: none;
-`;
-
-const Subtitle = styled(`p`)`
-  margin: 0;
-  max-width: 600px;
-`;
+const subtitle = tv({
+  base: ["m-0", "max-w-[600px]"],
+});
 
 const acceptedDropTypes = [NativeTypes.FILE];
 
@@ -161,10 +150,13 @@ export const ImportModal = ({
       subtitle={t("importModal.subtitle")}
       onClose={onClose}
     >
-      <Content>
+      <div className={content()}>
         {description && (
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: description is our own i18n text
-          <Subtitle dangerouslySetInnerHTML={{ __html: description }} />
+          <p
+            className={subtitle()}
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: description is our own i18n text
+            dangerouslySetInnerHTML={{ __html: description }}
+          />
         )}
         <DropzoneWithFileInput
           onDrop={onDrop}
@@ -173,7 +165,8 @@ export const ImportModal = ({
           accept="text/plain,text/csv"
         >
           {() => (
-            <Textarea
+            <textarea
+              className={textarea()}
               rows={15}
               value={textInput}
               onChange={onChange}
@@ -181,7 +174,7 @@ export const ImportModal = ({
             />
           )}
         </DropzoneWithFileInput>
-        <Row>
+        <div className={row()}>
           <IconButton icon={faFile} onClick={onOpenFileDialog}>
             {t("common.openFileDialog")}
           </IconButton>
@@ -196,8 +189,9 @@ export const ImportModal = ({
           >
             {t("importModal.submit")}
           </PrimaryButton>
-        </Row>
-        <HiddenFileInput
+        </div>
+        <input
+          className="hidden"
           type="file"
           ref={fileInputRef}
           accept="text/plain,text/csv"
@@ -211,7 +205,7 @@ export const ImportModal = ({
             }
           }}
         />
-      </Content>
+      </div>
     </Modal>,
     document.getElementById("root")!,
   );

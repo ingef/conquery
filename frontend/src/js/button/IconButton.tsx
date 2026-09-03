@@ -1,92 +1,45 @@
-import styled from "@emotion/styled";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { forwardRef, memo, useMemo } from "react";
-
-import FaIcon, { type FaIconPropsT, type IconStyleProps } from "../icon/FaIcon";
+import { memo, type Ref, useMemo } from "react";
+import { tv } from "tailwind-variants";
+import FaIcon, { type IconStyleProps } from "../icon/FaIcon";
 
 import BasicButton, { type BasicButtonProps } from "./BasicButton";
 
-interface StyledFaIconProps extends FaIconPropsT {
-  tight?: boolean;
-  red?: boolean;
-  secondary?: boolean;
-  hasChildren: boolean;
-  iconColor?: string;
-}
+const iconButton = tv({
+  base: [
+    "inline-flex items-center",
+    "gap-[10px]",
+    "rounded",
+    "bg-transparent",
+    "text-sm",
+    "text-gray-800",
+    "opacity-75 hover:opacity-100 disabled:hover:opacity-40",
+    "transition-[opacity,background-color] duration-100",
+  ],
+  variants: {
+    // later wins when several are set
+    secondary: { true: "text-orange" },
+    active: { true: "text-primary-500" },
+    red: { true: "text-red" },
+    frame: { true: "opacity-100 border border-gray-500 hover:bg-bg-100" },
+    bgHover: { true: "hover:bg-bg-100" },
+    tight: { true: "gap-[5px]" },
+    large: { true: "text-base" },
+  },
+});
 
-const SxFaIcon = styled(FaIcon)<StyledFaIconProps>`
-  color: ${({ theme, active, red, secondary, light, iconColor }) =>
-    iconColor
-      ? iconColor
-      : red
-        ? theme.col.red
-        : active
-          ? theme.col.blueGrayDark
-          : light
-            ? theme.col.gray
-            : secondary
-              ? theme.col.orange
-              : theme.col.black};
-  font-size: ${({ theme, large, small }) =>
-    large ? theme.font.md : small ? theme.font.xs : theme.font.sm};
-`;
-
-const FixedIconContainer = styled("span")`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  display: inline-block;
-`;
-
-const SxBasicButton = styled(BasicButton)<{
-  frame?: boolean;
-  active?: boolean;
-  secondary?: boolean;
-  tight?: boolean;
-  bgHover?: boolean;
-  red?: boolean;
-  large?: boolean;
-}>`
-  background-color: transparent;
-  color: ${({ theme, active, secondary, red }) =>
-    red
-      ? theme.col.red
-      : active
-        ? theme.col.blueGrayDark
-        : secondary
-          ? theme.col.orange
-          : theme.col.black};
-  opacity: ${({ frame }) => (frame ? 1 : 0.75)};
-  transition:
-    opacity ${({ theme }) => theme.transitionTime},
-    background-color ${({ theme }) => theme.transitionTime};
-
-  border-radius: ${({ theme }) => theme.borderRadius};
-  border: ${({ theme, frame }) =>
-    frame ? `1px solid ${theme.col.gray}` : "none"};
-  display: inline-flex;
-  align-items: center;
-  gap: ${({ tight }) => (tight ? "5px" : "10px")};
-  font-size: ${({ theme, large }) => (large ? theme.font.md : theme.font.sm)};
-  &:hover {
-    opacity: 1;
-
-    background-color: ${({ frame, bgHover, theme }) =>
-      frame || bgHover ? theme.col.bgAlt : " inherit"};
-  }
-
-  &:disabled {
-    &:hover {
-      opacity: 0.4;
-    }
-  }
-`;
-
-const Children = styled("span")`
-  display: flex;
-  align-items: center;
-  gap: 5px;
-`;
+const buttonIcon = tv({
+  base: "text-sm",
+  variants: {
+    // later wins when several are set
+    secondary: { true: "text-orange" },
+    light: { true: "text-gray-500" },
+    active: { true: "text-primary-500" },
+    red: { true: "text-red" },
+    small: { true: "text-xs" },
+    large: { true: "text-base" },
+  },
+});
 
 export interface IconButtonPropsT extends BasicButtonProps {
   iconProps?: IconStyleProps;
@@ -107,84 +60,93 @@ export interface IconButtonPropsT extends BasicButtonProps {
 }
 
 // A button that is prefixed by an icon
-const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
-  (
-    {
-      icon,
-      active,
-      red,
-      large,
-      left,
-      children,
-      tight,
-      iconProps,
-      small,
-      secondary,
-      light,
-      fixedIconWidth,
-      bgHover,
-      iconColor,
-      ...restProps
-    },
-    ref,
-  ) => {
-    const iconElement = useMemo(() => {
-      const iconEl = (
-        <SxFaIcon
-          main
-          left={left}
-          large={large}
-          active={active}
-          red={red}
-          secondary={secondary}
-          icon={icon}
-          hasChildren={!!children}
-          tight={tight}
-          small={small}
-          light={light}
-          iconColor={iconColor}
-          {...iconProps}
-        />
-      );
-
-      return fixedIconWidth ? (
-        <FixedIconContainer style={{ width: fixedIconWidth }}>
-          {iconEl}
-        </FixedIconContainer>
-      ) : (
-        iconEl
-      );
-    }, [
-      icon,
-      active,
-      red,
-      large,
-      left,
-      children,
-      tight,
-      iconProps,
-      small,
-      secondary,
-      light,
-      fixedIconWidth,
-      iconColor,
-    ]);
-    return (
-      <SxBasicButton
-        active={active}
-        secondary={secondary}
-        tight={tight}
-        bgHover={bgHover}
-        red={red}
-        large={large}
-        {...restProps}
-        ref={ref}
-      >
-        {iconElement}
-        {children && <Children>{children}</Children>}
-      </SxBasicButton>
+const IconButton = ({
+  ref,
+  icon,
+  active,
+  red,
+  large,
+  left,
+  children,
+  tight,
+  iconProps,
+  small,
+  secondary,
+  light,
+  fixedIconWidth,
+  bgHover,
+  iconColor,
+  frame,
+  className,
+  ...restProps
+}: IconButtonPropsT & { ref?: Ref<HTMLButtonElement> }) => {
+  const iconElement = useMemo(() => {
+    const iconEl = (
+      <FaIcon
+        left={left}
+        icon={icon}
+        {...iconProps}
+        className={buttonIcon({
+          secondary,
+          light,
+          active,
+          red,
+          small,
+          large,
+        })}
+        style={
+          iconColor
+            ? { color: iconColor, ...iconProps?.style }
+            : iconProps?.style
+        }
+      />
     );
-  },
-);
+
+    return fixedIconWidth ? (
+      <span className="inline-block" style={{ width: fixedIconWidth }}>
+        {iconEl}
+      </span>
+    ) : (
+      iconEl
+    );
+  }, [
+    icon,
+    active,
+    red,
+    large,
+    left,
+    iconProps,
+    small,
+    secondary,
+    light,
+    fixedIconWidth,
+    iconColor,
+  ]);
+
+  return (
+    <BasicButton
+      active={active}
+      secondary={secondary}
+      large={large}
+      {...restProps}
+      className={iconButton({
+        secondary,
+        active,
+        red,
+        frame,
+        bgHover,
+        tight,
+        large,
+        className,
+      })}
+      ref={ref}
+    >
+      {iconElement}
+      {children && (
+        <span className="flex items-center gap-[5px]">{children}</span>
+      )}
+    </BasicButton>
+  );
+};
 
 export default memo(IconButton);
