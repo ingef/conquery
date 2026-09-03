@@ -4,7 +4,8 @@ import type { CurrencyConfigT } from "../api/types";
 import { exists } from "../common/helpers/exists";
 import InputPlain from "./InputPlain/InputPlain";
 import InputRangeHeader from "./InputRangeHeader";
-import ToggleButtonGroup from "./ToggleButtonGroup";
+import { ToggleButton } from "./ToggleButton";
+import { ToggleButtonGroup } from "./ToggleButtonGroup";
 
 const container = tv({ base: ["flex flex-row", "w-full", "-mt-[3px]"] });
 
@@ -118,13 +119,19 @@ const InputRange = ({
         tooltip={tooltip}
       />
       <ToggleButtonGroup
-        value={mode || "range"}
-        onChange={(mode) => onSwitchMode(mode as ModeT)}
-        options={[
-          { value: "range", label: t("inputRange.range") },
-          { value: "exact", label: t("inputRange.exact") },
-        ]}
-      />
+        segmented
+        size="sm"
+        selectionMode="single"
+        disallowEmptySelection
+        selectedKeys={[mode || "range"]}
+        onSelectionChange={(keys) => {
+          const [key] = keys;
+          if (key === "range" || key === "exact") onSwitchMode(key);
+        }}
+      >
+        <ToggleButton id="range">{t("inputRange.range")}</ToggleButton>
+        <ToggleButton id="exact">{t("inputRange.exact")}</ToggleButton>
+      </ToggleButtonGroup>
       <div className={container()}>
         {isRangeMode ? (
           <>

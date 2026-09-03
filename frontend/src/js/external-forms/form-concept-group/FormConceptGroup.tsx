@@ -22,7 +22,8 @@ import {
 import DropzoneWithFileInput, {
   type DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
-import ToggleButtonGroup from "../../ui-components/ToggleButtonGroup";
+import { ToggleButton } from "../../ui-components/ToggleButton";
+import { ToggleButtonGroup } from "../../ui-components/ToggleButtonGroup";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 import { Description } from "../form-components/Description";
@@ -363,19 +364,22 @@ const FormConceptGroup = (props: Props) => {
                   {t("externalForms.common.connectedWith")}:
                 </Description>
                 <ToggleButtonGroup
-                  value={props.value[i].connector}
-                  onChange={(val) => {
+                  segmented
+                  size="sm"
+                  selectionMode="single"
+                  disallowEmptySelection
+                  selectedKeys={[props.value[i].connector]}
+                  onSelectionChange={(keys) => {
+                    const [connector] = keys;
+                    if (typeof connector !== "string") return;
                     props.onChange(
-                      setValueProperties(props.value, i, {
-                        connector: val,
-                      }),
+                      setValueProperties(props.value, i, { connector }),
                     );
                   }}
-                  options={[
-                    { value: "OR", label: t("common.or") },
-                    { value: "AND", label: t("common.and") },
-                  ]}
-                />
+                >
+                  <ToggleButton id="OR">{t("common.or")}</ToggleButton>
+                  <ToggleButton id="AND">{t("common.and")}</ToggleButton>
+                </ToggleButtonGroup>
               </div>
             )}
             <DynamicInputGroup

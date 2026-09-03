@@ -9,7 +9,9 @@ import { exists } from "../common/helpers/exists";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { Icon } from "../ui-components/Icon";
 import InfoTooltip from "../ui-components/InfoTooltip";
-import ToggleButtonGroup from "../ui-components/ToggleButtonGroup";
+import { ToggleButton } from "../ui-components/ToggleButton";
+import { ToggleButtonGroup } from "../ui-components/ToggleButtonGroup";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { setSelectedSecondaryId } from "./actions";
 import type { StandardQueryStateT } from "./queryReducer";
@@ -150,7 +152,7 @@ const SecondaryIdSelectorUI = memo(
     value,
     onChange,
   }: {
-    options: { label: string; value: string }[];
+    options: { label: string; value: string; description?: string }[];
     value: string | null;
     onChange: (value: string) => void;
   }) => {
@@ -167,10 +169,23 @@ const SecondaryIdSelectorUI = memo(
           <InfoTooltip text={t("queryEditor.secondaryIdTooltip")} />
         </h3>
         <ToggleButtonGroup
-          value={value || "standard"}
-          onChange={onChange}
-          options={options}
-        />
+          segmented
+          size="sm"
+          selectionMode="single"
+          disallowEmptySelection
+          selectedKeys={[value || "standard"]}
+          onSelectionChange={(keys) => {
+            const [key] = keys;
+            if (typeof key === "string") onChange(key);
+          }}
+        >
+          {options.map(({ value: id, label, description }) => (
+            <TooltipTrigger key={id}>
+              <ToggleButton id={id}>{label}</ToggleButton>
+              <Tooltip>{description}</Tooltip>
+            </TooltipTrigger>
+          ))}
+        </ToggleButtonGroup>
       </div>
     );
   },
