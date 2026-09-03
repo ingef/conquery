@@ -35,25 +35,21 @@ const ErrorFallback = ({
       {allowFullRefresh && (
         <>
           <p className={description()}>{t("error.reloadDescription")}</p>
-          <Button
-            intent="secondary"
-            className={reloadButton()}
-            onPress={() => window.location.reload()}
-          >
-            {t("error.reload")}
-          </Button>
+          <div className={reloadButton()}>
+            <Button intent="secondary" onPress={() => window.location.reload()}>
+              {t("error.reload")}
+            </Button>
+          </div>
         </>
       )}
       {onReset && (
         <>
           <p className={description()}>{t("error.resetDescription")}</p>
-          <Button
-            intent="secondary"
-            className={reloadButton()}
-            onPress={onReset}
-          >
-            {t("error.reset")}
-          </Button>
+          <div className={reloadButton()}>
+            <Button intent="secondary" onPress={onReset}>
+              {t("error.reset")}
+            </Button>
+          </div>
         </>
       )}
     </div>

@@ -1,10 +1,8 @@
-import { faCheck, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
-import { useState } from "react";
 
 import { Button } from "./Button";
 import { Icon } from "./Icon";
-import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 export default {
   title: "UiComponents/Button",
@@ -14,7 +12,7 @@ export default {
 
 type Story = StoryObj<typeof Button>;
 
-const intents = ["primary", "secondary", "tertiary", "danger", "link"] as const;
+const intents = ["primary", "secondary", "tertiary", "link"] as const;
 const sizes = ["sm", "md", "lg"] as const;
 
 export const Intents: Story = {
@@ -27,6 +25,35 @@ export const Intents: Story = {
       ))}
       <Button intent="primary" isDisabled>
         disabled
+      </Button>
+    </div>
+  ),
+};
+
+export const LinkInText: Story = {
+  render: () => (
+    <p className="max-w-[320px] text-sm">
+      A link button sits in flowing text, takes the text's size and line height,
+      and wraps with it: <Button intent="link">import a list</Button> or{" "}
+      <Button intent="link">
+        <Icon icon={faPlus} />
+        add one by hand
+      </Button>
+      .
+    </p>
+  ),
+};
+
+export const Danger: Story = {
+  render: () => (
+    <div className="flex items-center gap-3">
+      <Button intent="secondary" danger>
+        <Icon icon={faTrash} />
+        secondary
+      </Button>
+      <Button intent="tertiary" danger>
+        <Icon icon={faTrash} />
+        tertiary
       </Button>
     </div>
   ),
@@ -53,32 +80,3 @@ export const Sizes: Story = {
     </div>
   ),
 };
-
-const Pressed = () => {
-  const [pressed, setPressed] = useState(true);
-  return (
-    <div className="flex items-center gap-3">
-      <Button
-        intent="tertiary"
-        aria-pressed={pressed}
-        onPress={() => setPressed((p) => !p)}
-      >
-        <Icon icon={faCheck} />
-        toggle me
-      </Button>
-      <TooltipTrigger>
-        <Button
-          intent="tertiary"
-          aria-pressed={pressed}
-          aria-label="Toggle"
-          onPress={() => setPressed((p) => !p)}
-        >
-          <Icon icon={faCheck} />
-        </Button>
-        <Tooltip>A pressed icon button</Tooltip>
-      </TooltipTrigger>
-    </div>
-  );
-};
-
-export const PressedState: Story = { render: () => <Pressed /> };

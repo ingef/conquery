@@ -81,14 +81,11 @@ const DisclosureField = ({
           )}
         </div>
         {field.creatable && canRemove && (
-          <Button
-            size="sm"
-            intent="tertiary"
-            onPress={() => remove(index)}
-            className="absolute right-0 top-1/2 -translate-y-1/2"
-          >
-            <Icon icon={faTimes} />
-          </Button>
+          <div className="absolute right-0 top-1/2 -translate-y-1/2">
+            <Button size="sm" intent="tertiary" onPress={() => remove(index)}>
+              <Icon icon={faTimes} />
+            </Button>
+          </div>
         )}
       </summary>
       <div className="flex flex-col gap-2 bg-bg-50 border-t border-gray-300 p-3">
@@ -224,28 +221,29 @@ export const DisclosureListField = ({
         />
       ))}
       {field.creatable && (
-        <Button
-          intent="secondary"
-          className="w-full"
-          size="sm"
-          onPress={() => {
-            append(
-              Object.fromEntries(
-                field.fields.filter(isFormFieldWithValue).map((f) => [
-                  f.name,
-                  getInitialValue(f, {
-                    activeLang: locale,
-                    availableDatasets: commonProps.availableDatasets,
-                    datasetId,
-                  }),
-                ]),
-              ),
-            );
-          }}
-        >
-          <Icon icon={faAdd} />
-          {field.createNewLabel ? field.createNewLabel[locale] : undefined}
-        </Button>
+        <div className="grid">
+          <Button
+            intent="secondary"
+            size="sm"
+            onPress={() => {
+              append(
+                Object.fromEntries(
+                  field.fields.filter(isFormFieldWithValue).map((f) => [
+                    f.name,
+                    getInitialValue(f, {
+                      activeLang: locale,
+                      availableDatasets: commonProps.availableDatasets,
+                      datasetId,
+                    }),
+                  ]),
+                ),
+              );
+            }}
+          >
+            <Icon icon={faAdd} />
+            {field.createNewLabel ? field.createNewLabel[locale] : undefined}
+          </Button>
+        </div>
       )}
     </div>
   );

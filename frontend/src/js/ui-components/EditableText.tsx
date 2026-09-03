@@ -7,7 +7,9 @@ import EditableTextForm from "./EditableTextForm";
 import { Icon } from "./Icon";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
+// a flex wrapper, so the button does not sit on a text baseline and grow the row
 const editButton = tv({
+  base: "flex shrink-0",
   variants: {
     large: {
       true: "mr-[10px]",
@@ -63,18 +65,19 @@ const EditableText = ({
     />
   ) : (
     <div className={text({ className })}>
-      <TooltipTrigger>
-        <Button
-          aria-label={tooltip}
-          intent="tertiary"
-          size={large ? "md" : "sm"}
-          onPress={onToggleEdit}
-          className={editButton({ large: !!large })}
-        >
-          <Icon icon={faPen} />
-        </Button>
-        <Tooltip>{tooltip}</Tooltip>
-      </TooltipTrigger>
+      <span className={editButton({ large: !!large })}>
+        <TooltipTrigger>
+          <Button
+            aria-label={tooltip}
+            intent="tertiary"
+            size={large ? "md" : "sm"}
+            onPress={onToggleEdit}
+          >
+            <Icon icon={faPen} />
+          </Button>
+          <Tooltip>{tooltip}</Tooltip>
+        </TooltipTrigger>
+      </span>
       <HighlightableLabel className={label()} isHighlighted={isHighlighted}>
         {highlightedWords && highlightedWords.length > 0 ? (
           <Highlighter

@@ -8,15 +8,11 @@ import { Icon } from "./Icon";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 const input = tv({
-  base: ["h-[28px]", "px-2", "rounded", "border border-gray-500", "text-sm"],
+  base: ["h-[30px]", "px-2", "rounded", "border border-gray-500", "text-sm"],
 });
 
 const form = tv({
   base: "flex items-center",
-});
-
-const saveButton = tv({
-  base: "ml-[3px]",
 });
 
 const EditableTextForm = ({
@@ -67,18 +63,19 @@ const EditableTextForm = ({
         }}
       />
       {!saveOnClickoutside && (
-        <TooltipTrigger>
-          <Button
-            aria-label={t("common.save")}
-            intent="secondary"
-            type="submit"
-            isDisabled={loading}
-            className={saveButton()}
-          >
-            <Icon icon={loading ? faSpinner : faCheck} />
-          </Button>
-          <Tooltip>{t("common.save")}</Tooltip>
-        </TooltipTrigger>
+        <div className="ml-[3px]">
+          <TooltipTrigger>
+            <Button
+              aria-label={t("common.save")}
+              intent="secondary"
+              type="submit"
+              isDisabled={loading}
+            >
+              <Icon icon={loading ? faSpinner : faCheck} />
+            </Button>
+            <Tooltip>{t("common.save")}</Tooltip>
+          </TooltipTrigger>
+        </div>
       )}
     </form>
   );

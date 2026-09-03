@@ -83,7 +83,7 @@ const ConceptTreeSearchBox = ({ className }: { className?: string }) => {
                 duration: (search.duration / 1000.0).toFixed(2),
               })}
             </p>
-            <div>
+            <div className="my-[3px] flex items-center gap-[5px]">
               <span className={displaying()}>
                 {showMismatches
                   ? t("conceptTreeList.showingMismatches")
@@ -91,7 +91,6 @@ const ConceptTreeSearchBox = ({ className }: { className?: string }) => {
               </span>
               <Button
                 intent="secondary"
-                className="my-[3px] ml-[5px]"
                 size="sm"
                 onPress={onToggleShowMismatches}
               >

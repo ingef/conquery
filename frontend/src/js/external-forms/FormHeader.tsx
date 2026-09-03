@@ -28,8 +28,8 @@ const FormHeader = ({
     <div className={root({ className })}>
       <p className={description()}>{descriptionText}</p>
       {manualUrl && (
-        <a href={manualUrl} target="_blank" rel="noreferrer">
-          <Button intent="secondary" className="w-full justify-center">
+        <a href={manualUrl} target="_blank" rel="noreferrer" className="grid">
+          <Button intent="secondary">
             <Icon icon={faBook} />
             {t("externalForms.manualButton")}
           </Button>

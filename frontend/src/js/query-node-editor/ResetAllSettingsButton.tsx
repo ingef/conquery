@@ -17,7 +17,7 @@ const ResetAllSettingsButton = ({
   const confirmationText = t("queryNodeEditor.clearAllSettingsConfirm");
 
   const trigger = (
-    <Button intent="tertiary" aria-pressed>
+    <Button intent="tertiary">
       <Icon icon={faTrash} />
       {compact ? null : text}
     </Button>

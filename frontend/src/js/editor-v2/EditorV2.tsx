@@ -24,6 +24,7 @@ import { Button } from "../ui-components/Button";
 import { ConfirmMenu } from "../ui-components/ConfirmMenu";
 import Dropzone from "../ui-components/Dropzone";
 import { Icon } from "../ui-components/Icon";
+import { ToggleButton } from "../ui-components/ToggleButton";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { EDITOR_DROP_TYPES, HOTKEYS } from "./config";
 import { useConnectorEditing } from "./connector-update/useConnectorRotation";
@@ -297,52 +298,47 @@ export function EditorV2({
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.editQueryNode.keyname}
                 >
-                  <Button
+                  <ToggleButton
                     intent="tertiary"
-                    size="sm"
                     isDisabled={
                       !selectedNode?.data ||
                       !nodeIsConceptQueryNode(selectedNode.data)
                     }
-                    aria-pressed={selectedNodeActive}
-                    onPress={() => {
+                    isSelected={selectedNodeActive}
+                    onChange={() => {
                       onOpenQueryNodeEditor();
                     }}
                   >
                     <Icon icon={faEdit} />
                     {t("editorV2.edit")}
-                  </Button>
+                  </ToggleButton>
                 </KeyboardShortcutTooltip>
               )}
               {featureDates && selectedNode && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.editDates.keyname}>
-                  <Button
+                  <ToggleButton
                     intent="tertiary"
-                    size="sm"
-                    aria-pressed={!!selectedNode.dates?.restriction}
-                    onPress={() => {
+                    isSelected={!!selectedNode.dates?.restriction}
+                    onChange={() => {
                       onOpen();
                     }}
                   >
                     <Icon icon={faCalendar} />
                     {t("editorV2.dates")}
-                  </Button>
+                  </ToggleButton>
                 </KeyboardShortcutTooltip>
               )}
               {featureNegate && selectedNode && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.negate.keyname}>
-                  <Button
+                  <ToggleButton
                     intent="tertiary"
-                    size="sm"
-                    aria-pressed={selectedNode.negation}
-                    onPress={() => {
-                      onNegateClick();
-                    }}
-                    className="aria-pressed:text-red"
+                    highlight="danger"
+                    isSelected={!!selectedNode.negation}
+                    onChange={onNegateClick}
                   >
                     <Icon icon={faBan} />
                     {t("editorV2.negate")}
-                  </Button>
+                  </ToggleButton>
                 </KeyboardShortcutTooltip>
               )}
               {featureConnectorRotate && selectedNode && connection && (
@@ -351,7 +347,6 @@ export function EditorV2({
                 >
                   <Button
                     intent="tertiary"
-                    size="sm"
                     isDisabled={!selectedNode?.children}
                     onPress={() => {
                       onRotateConnector();
@@ -368,7 +363,6 @@ export function EditorV2({
                 >
                   <Button
                     intent="tertiary"
-                    size="sm"
                     onPress={() => {
                       onOpenTimeModal();
                     }}
@@ -382,7 +376,6 @@ export function EditorV2({
                 <KeyboardShortcutTooltip keyname={HOTKEYS.expand.keyname}>
                   <Button
                     intent="tertiary"
-                    size="sm"
                     onPress={() => {
                       onExpand();
                     }}
@@ -398,7 +391,6 @@ export function EditorV2({
                 <KeyboardShortcutTooltip keyname={HOTKEYS.flip.keyname}>
                   <Button
                     intent="tertiary"
-                    size="sm"
                     isDisabled={!selectedNode?.children}
                     onPress={() => {
                       onFlip();
@@ -415,7 +407,6 @@ export function EditorV2({
                 >
                   <Button
                     intent="tertiary"
-                    size="sm"
                     onPress={() => {
                       onDelete();
                     }}
@@ -425,21 +416,19 @@ export function EditorV2({
                   </Button>
                 </KeyboardShortcutTooltip>
               )}
-              <TooltipTrigger>
-                <ConfirmMenu
-                  onConfirm={onReset}
-                  confirmationText={t("editorV2.clearConfirm")}
-                >
-                  <Button
-                    aria-label={t("editorV2.clear")}
-                    intent="tertiary"
-                    className="ml-5"
+              <div className="ml-5">
+                <TooltipTrigger>
+                  <ConfirmMenu
+                    onConfirm={onReset}
+                    confirmationText={t("editorV2.clearConfirm")}
                   >
-                    <Icon icon={faTrash} />
-                  </Button>
-                </ConfirmMenu>
-                <Tooltip>{t("editorV2.clear")}</Tooltip>
-              </TooltipTrigger>
+                    <Button aria-label={t("editorV2.clear")} intent="tertiary">
+                      <Icon icon={faTrash} />
+                    </Button>
+                  </ConfirmMenu>
+                  <Tooltip>{t("editorV2.clear")}</Tooltip>
+                </TooltipTrigger>
+              </div>
             </div>
           </div>
         )}

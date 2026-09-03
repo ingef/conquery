@@ -1,9 +1,8 @@
 import { faPlay, faSpinner, faStop } from "@fortawesome/free-solid-svg-icons";
 import type { Ref } from "react";
+import { Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
 
 const left = tv({
@@ -25,7 +24,7 @@ const runnerLabel = tv({
   base: [
     "px-[15px]",
     "bg-white group-hover/runner:bg-gray-50",
-    "text-gray-800",
+    "text-gray-800 font-medium",
     "self-stretch",
     "flex items-center",
     "whitespace-nowrap",
@@ -33,8 +32,19 @@ const runnerLabel = tv({
   ],
 });
 
+// two-tone: the icon part is filled, the label part stays white
 const button = tv({
-  base: ["group/runner", "p-0", "overflow-hidden", "border-primary-500"],
+  base: [
+    "group/runner",
+    "inline-flex items-center",
+    "h-[30px]",
+    "overflow-hidden",
+    "rounded",
+    "border border-primary-500",
+    "text-sm",
+    "cursor-pointer",
+    "disabled:cursor-not-allowed disabled:opacity-40",
+  ],
 });
 
 function getIcon(loading: boolean, running: boolean) {
@@ -63,8 +73,7 @@ const QueryRunnerButton = ({
 
   return (
     <div className="flex" ref={ref}>
-      <Button
-        intent="secondary"
+      <RacButton
         className={button()}
         onPress={onClick}
         isDisabled={disabled}
@@ -77,7 +86,7 @@ const QueryRunnerButton = ({
           />
         </span>
         <span className={runnerLabel()}>{label}</span>
-      </Button>
+      </RacButton>
     </div>
   );
 };

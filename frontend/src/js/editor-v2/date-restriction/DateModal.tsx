@@ -22,10 +22,6 @@ const sectionHeadline = tv({
   ],
 });
 
-const resetAll = tv({
-  base: ["ml-5", "text-primary-500", "font-bold"],
-});
-
 export const DateModal = ({
   onClose,
   dateRange = {},
@@ -53,15 +49,12 @@ export const DateModal = ({
 
   const labelSuffix = useMemo(() => {
     return hasActiveDate ? (
-      <Button
-        intent="tertiary"
-        size="sm"
-        onPress={onResetDates}
-        className={resetAll()}
-      >
-        <Icon icon={faUndo} />
-        {t("queryNodeEditor.reset")}
-      </Button>
+      <span className="ml-5">
+        <Button intent="link" onPress={onResetDates}>
+          <Icon icon={faUndo} />
+          {t("queryNodeEditor.reset")}
+        </Button>
+      </span>
     ) : null;
   }, [t, hasActiveDate, onResetDates]);
 

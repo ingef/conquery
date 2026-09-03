@@ -33,7 +33,6 @@ export const QueryResultHistoryButton = ({
         await newHistorySession(getAuthorizedUrl(url), columns, label);
         dispatch(openHistory());
       }}
-      className="whitespace-nowrap"
     >
       <Icon icon={isLoading ? faSpinner : faListUl} />
       {t("history.history")}

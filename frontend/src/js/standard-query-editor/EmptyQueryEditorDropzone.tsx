@@ -24,7 +24,7 @@ const textInitial = tv({
 });
 
 const arrowRight = tv({
-  base: ["[grid-area:arrow]", "text-[140px]", "text-gray-100"],
+  base: ["[grid-area:arrow]", "size-[140px]", "text-gray-100"],
 });
 
 const headline = tv({

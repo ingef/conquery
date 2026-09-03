@@ -529,7 +529,8 @@
       "importPlaceholder": "{{idkind}};A0123456788;interesting;\n{{idkind}};A0123456789;;not interesting",
       "error": "Couldn't load history for this file."
     },
-    "searchResultLabel": "Found IDs"
+    "searchResultLabel": "Found IDs",
+    "toolbar": "Toolbar"
   },
   "importModal": {
     "headline": "Import codes",

@@ -212,10 +212,6 @@ const root = tv({
   ],
 });
 
-const submitButton = tv({
-  base: ["flex items-center justify-center", "w-full", "gap-[14px]"],
-});
-
 const noop = () => {};
 
 export const SearchEntitiesComponent = ({
@@ -245,15 +241,16 @@ export const SearchEntitiesComponent = ({
         onSwitchFilterMode={noop}
         onLoadFilterSuggestions={loadFilterSuggestions}
       />
-      <Button
-        intent="primary"
-        className={submitButton()}
-        onPress={onSubmitSearch}
-        isDisabled={!hasFiltersSet || loading}
-      >
-        {loading && <Icon icon={faSpinner} className="text-white" />}
-        {t("history.searchEntitiesButton")}
-      </Button>
+      <div className="grid">
+        <Button
+          intent="primary"
+          onPress={onSubmitSearch}
+          isDisabled={!hasFiltersSet || loading}
+        >
+          {loading && <Icon icon={faSpinner} className="text-white" />}
+          {t("history.searchEntitiesButton")}
+        </Button>
+      </div>
     </div>
   );
 };

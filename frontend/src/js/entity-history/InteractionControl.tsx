@@ -3,7 +3,6 @@ import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
-
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const InteractionControl = ({
@@ -19,8 +18,8 @@ const InteractionControl = ({
     <div className="flex flex-col items-center">
       <TooltipTrigger>
         <Button
-          aria-label={t("history.closeAll")}
           intent="tertiary"
+          aria-label={t("history.closeAll")}
           onPress={onCloseAll}
         >
           <Icon icon={faHome} />
@@ -29,8 +28,8 @@ const InteractionControl = ({
       </TooltipTrigger>
       <TooltipTrigger>
         <Button
-          aria-label={t("history.openAll")}
           intent="tertiary"
+          aria-label={t("history.openAll")}
           onPress={onOpenAll}
         >
           <Icon icon={faChevronRight} />

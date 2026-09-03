@@ -59,8 +59,9 @@ const ConceptTree = ({
       >
         <Button
           intent="tertiary"
+          size="sm"
+          danger
           onPress={() => onLoadTree(conceptId)}
-          className="text-red"
         >
           <Icon icon={faRedo} />
         </Button>

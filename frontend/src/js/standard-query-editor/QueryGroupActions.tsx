@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
+import { ToggleButton } from "../ui-components/ToggleButton";
 
 import {
   Tooltip,
@@ -16,19 +17,6 @@ import {
 const actions = tv({
   base: ["mb-[6px]", "h-[18px]", "text-left"],
 });
-
-const dateButton = tv({
-  base: "mr-[5px]",
-  variants: {
-    active: {
-      true: "underline",
-      false: "no-underline",
-    },
-  },
-});
-
-// excluding is a warning state: pressed shows red, not the usual primary
-const excludeButton = tv({ base: ["mr-[5px]", "aria-pressed:text-red"] });
 
 interface PropsT {
   excludeActive: boolean;
@@ -49,31 +37,30 @@ const QueryGroupActions = ({
 
   return (
     <div className={actions()}>
-      <div>
+      <div className="flex items-center gap-[5px]">
         <TooltipTrigger delay={tooltipDelay.long}>
-          <Button
+          <ToggleButton
             intent="tertiary"
             size="sm"
-            aria-pressed={excludeActive}
-            onPress={onExcludeClick}
-            className={excludeButton()}
+            highlight="danger"
+            isSelected={excludeActive}
+            onChange={onExcludeClick}
           >
             <Icon icon={faBan} />
             {t("queryEditor.exclude")}
-          </Button>
+          </ToggleButton>
           <Tooltip>{t("help.queryEditorExclude")}</Tooltip>
         </TooltipTrigger>
         <TooltipTrigger delay={tooltipDelay.long}>
-          <Button
+          <ToggleButton
             intent="tertiary"
             size="sm"
-            aria-pressed={dateActive}
-            onPress={onDateClick}
-            className={dateButton({ active: dateActive })}
+            isSelected={dateActive}
+            onChange={onDateClick}
           >
             <Icon icon={faCalendar} />
             {t("queryEditor.date")}
-          </Button>
+          </ToggleButton>
           <Tooltip>{t("help.queryEditorDate")}</Tooltip>
         </TooltipTrigger>
       </div>
