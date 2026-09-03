@@ -3,7 +3,12 @@ import { tv } from "tailwind-variants";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 import InfoTooltip from "./InfoTooltip";
-import { Tooltip, TooltipTarget, TooltipTrigger } from "./Tooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+  tooltipDelay,
+} from "./Tooltip";
 
 const row = tv({
   base: ["flex flex-row items-center", "cursor-pointer"],
@@ -66,7 +71,7 @@ const InputCheckbox = ({
       if (!disabled) onChange(!value);
     }}
   >
-    <TooltipTrigger>
+    <TooltipTrigger delay={tooltipDelay.info}>
       <TooltipTarget
         as="div"
         excludeFromTabOrder

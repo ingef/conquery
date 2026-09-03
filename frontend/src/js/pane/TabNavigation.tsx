@@ -3,7 +3,11 @@ import { Focusable } from "react-aria-components";
 import { tv } from "tailwind-variants";
 import FaIcon from "../icon/FaIcon";
 import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
-import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  tooltipDelay,
+} from "../ui-components/Tooltip";
 
 const root = tv({
   base: ["flex items-start", "border-b border-gray-100", "bg-white", "px-5"],
@@ -63,7 +67,7 @@ const TabNavigation = ({
       {tabs.map(({ key, label, tooltip, loading }) => {
         return (
           <HoverNavigatable key={key} triggerNavigate={createClickHandler(key)}>
-            <TooltipTrigger>
+            <TooltipTrigger delay={tooltipDelay.info}>
               <Focusable>
                 <button
                   type="button"

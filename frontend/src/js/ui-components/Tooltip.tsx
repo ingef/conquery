@@ -35,6 +35,16 @@ const tooltip = tv({
   },
 });
 
+/** Warm-up in ms before a tooltip opens, by what the tooltip is for. */
+export const tooltipDelay = {
+  /** the tooltip is the only affordance: help icons, validation icons */
+  help: 0,
+  /** names a control, mostly icon-only buttons */
+  control: 300,
+  /** further information on larger surfaces: tabs, dropzones, settings */
+  info: 1500,
+} as const;
+
 const arrow = tv({
   base: [
     "*:block",
@@ -57,12 +67,11 @@ const arrow = tv({
  * Other elements need a TooltipTarget (or react-aria's Focusable for native buttons).
  *
  * Timing follows Spectrum's tooltip guideline: tooltips wait for a global
- * warm-up, after which neighbouring tooltips open immediately. The warm-up
- * is short because most triggers are icon-only buttons. Help icons, where
- * the tooltip is the sole affordance, open right away with `delay={0}`.
+ * warm-up, after which neighbouring tooltips open immediately. Pick the
+ * delay from `tooltipDelay`.
  */
 export const TooltipTrigger = ({
-  delay = 300,
+  delay = tooltipDelay.control,
   ...props
 }: TooltipTriggerComponentProps) => (
   <RacTooltipTrigger delay={delay} {...props} />

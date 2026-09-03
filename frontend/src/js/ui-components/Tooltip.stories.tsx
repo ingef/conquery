@@ -6,7 +6,12 @@ import PrimaryButton from "../button/PrimaryButton";
 import { TransparentButton } from "../button/TransparentButton";
 import FaIcon from "../icon/FaIcon";
 
-import { Tooltip, TooltipTarget, TooltipTrigger } from "./Tooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+  tooltipDelay,
+} from "./Tooltip";
 
 export default {
   title: "UiComponents/Tooltip",
@@ -56,14 +61,16 @@ export const Timing: Story = {
   render: () => (
     <div className="flex items-center gap-4 text-sm">
       <TooltipTrigger>
-        <TransparentButton>Warm-up</TransparentButton>
-        <Tooltip>Waits for the warm-up, then neighbours open instantly</Tooltip>
-      </TooltipTrigger>
-      <TooltipTrigger>
         <IconButton frame icon={faTrash} />
-        <Tooltip>Icon-only buttons wait too</Tooltip>
+        <Tooltip>
+          Names a control: short warm-up, neighbours open instantly
+        </Tooltip>
       </TooltipTrigger>
-      <TooltipTrigger delay={0}>
+      <TooltipTrigger delay={tooltipDelay.info}>
+        <TransparentButton>Further info</TransparentButton>
+        <Tooltip>Explains a larger surface: long warm-up</Tooltip>
+      </TooltipTrigger>
+      <TooltipTrigger delay={tooltipDelay.help}>
         <TooltipTarget role="img" aria-label="Info">
           <FaIcon gray icon={faInfoCircle} />
         </TooltipTarget>
@@ -95,7 +102,7 @@ export const RichContent: Story = {
 export const OnStaticContent: Story = {
   render: () => (
     <div className="flex items-center gap-4 text-sm">
-      <TooltipTrigger delay={0}>
+      <TooltipTrigger delay={tooltipDelay.help}>
         <TooltipTarget role="img" aria-label="Info">
           <FaIcon gray icon={faInfoCircle} />
         </TooltipTarget>

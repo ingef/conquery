@@ -21,7 +21,11 @@ import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import { ConfirmableTooltip } from "../ui-components/ConfirmableTooltip";
-import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  tooltipDelay,
+} from "../ui-components/Tooltip";
 import { closeHistory, resetHistory, useUpdateHistorySession } from "./actions";
 import { EntityIdsList } from "./EntityIdsList";
 import type { EntityIdsStatus } from "./History";
@@ -180,7 +184,7 @@ export const Navigation = memo(
         <div className={entityIdNav()}>
           {!empty && (
             <div className="flex">
-              <TooltipTrigger>
+              <TooltipTrigger delay={tooltipDelay.info}>
                 <IconButton
                   className={fullWidthIconButton()}
                   icon={faArrowUp}
@@ -209,7 +213,7 @@ export const Navigation = memo(
           {!empty && (
             <>
               <div className="flex">
-                <TooltipTrigger>
+                <TooltipTrigger delay={tooltipDelay.info}>
                   <IconButton
                     className={fullWidthIconButton()}
                     icon={faArrowDown}

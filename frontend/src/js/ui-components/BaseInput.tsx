@@ -18,7 +18,12 @@ import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 import CurrencyInput from "./CurrencyInput";
-import { Tooltip, TooltipTarget, TooltipTrigger } from "./Tooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+  tooltipDelay,
+} from "./Tooltip";
 
 const root = tv({ base: "relative" });
 
@@ -189,7 +194,7 @@ const BaseInput = ({
             <FaIcon icon={faCheck} large={large} className={greenIcon()} />
           )}
           {invalid && (
-            <TooltipTrigger delay={0}>
+            <TooltipTrigger delay={tooltipDelay.help}>
               <TooltipTarget
                 as="div"
                 role="img"

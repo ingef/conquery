@@ -11,6 +11,7 @@ import {
   Tooltip,
   TooltipTarget,
   TooltipTrigger,
+  tooltipDelay,
 } from "../ui-components/Tooltip";
 
 import { useSelectDataset } from "./actions";
@@ -100,7 +101,7 @@ const DatasetSelectorUI = memo(
     const { t } = useTranslation();
 
     return (
-      <TooltipTrigger>
+      <TooltipTrigger delay={tooltipDelay.info}>
         <TooltipTarget
           as="div"
           excludeFromTabOrder
