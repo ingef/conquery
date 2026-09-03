@@ -67,7 +67,7 @@ const ContentControl = ({ value, onChange }: Props) => {
                 onChange({ ...value, [option.key]: !value[option.key] });
               }}
             />
-            <Tooltip>{option.tooltip}</Tooltip>
+            <Tooltip placement="right">{option.tooltip}</Tooltip>
           </TooltipTrigger>
         );
       })}

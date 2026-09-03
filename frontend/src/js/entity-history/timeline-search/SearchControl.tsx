@@ -20,7 +20,7 @@ const SearchControl = () => {
           onClick={toggleSearchVisible}
           icon={faSearch}
         />
-        <Tooltip>{t("history.search")}</Tooltip>
+        <Tooltip placement="right">{t("history.search")}</Tooltip>
       </TooltipTrigger>
     </div>
   );

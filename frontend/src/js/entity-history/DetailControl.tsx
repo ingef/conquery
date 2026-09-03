@@ -65,7 +65,7 @@ export const DetailControl = memo(
                 icon={icon}
                 active={selected}
               />
-              <Tooltip>{tooltip}</Tooltip>
+              <Tooltip placement="right">{tooltip}</Tooltip>
             </TooltipTrigger>
           );
         })}

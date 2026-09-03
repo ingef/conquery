@@ -18,11 +18,11 @@ const InteractionControl = ({
     <div className="flex flex-col items-center">
       <TooltipTrigger>
         <IconButton onClick={onCloseAll} icon={faHome} />
-        <Tooltip>{t("history.closeAll")}</Tooltip>
+        <Tooltip placement="right">{t("history.closeAll")}</Tooltip>
       </TooltipTrigger>
       <TooltipTrigger>
         <IconButton onClick={onOpenAll} icon={faChevronRight} />
-        <Tooltip>{t("history.openAll")}</Tooltip>
+        <Tooltip placement="right">{t("history.openAll")}</Tooltip>
       </TooltipTrigger>
     </div>
   );

@@ -22,7 +22,7 @@ const VisibilityControl = ({
           onClick={toggleBlurred}
           icon={blurred ? faEyeSlash : faEye}
         />
-        <Tooltip>{t("history.blurred")}</Tooltip>
+        <Tooltip placement="right">{t("history.blurred")}</Tooltip>
       </TooltipTrigger>
     </div>
   );

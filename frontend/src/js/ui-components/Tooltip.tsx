@@ -69,6 +69,10 @@ const arrow = tv({
  * Timing follows Spectrum's tooltip guideline: tooltips wait for a global
  * warm-up, after which neighbouring tooltips open immediately. Pick the
  * delay from `tooltipDelay`.
+ *
+ * A tooltip stays open while the pointer is over it (react-aria keeps it
+ * hoverable, WCAG 1.4.13). In a vertical stack of triggers a tooltip on top
+ * would cover the neighbour above, so place those to the side.
  */
 export const TooltipTrigger = ({
   delay = tooltipDelay.short,
