@@ -300,7 +300,6 @@ export function EditorV2({
                 >
                   <ToggleButton
                     intent="tertiary"
-                    size="sm"
                     isDisabled={
                       !selectedNode?.data ||
                       !nodeIsConceptQueryNode(selectedNode.data)
@@ -319,7 +318,6 @@ export function EditorV2({
                 <KeyboardShortcutTooltip keyname={HOTKEYS.editDates.keyname}>
                   <ToggleButton
                     intent="tertiary"
-                    size="sm"
                     isSelected={!!selectedNode.dates?.restriction}
                     onChange={() => {
                       onOpen();
@@ -334,7 +332,6 @@ export function EditorV2({
                 <KeyboardShortcutTooltip keyname={HOTKEYS.negate.keyname}>
                   <ToggleButton
                     intent="tertiary"
-                    size="sm"
                     highlight="danger"
                     isSelected={!!selectedNode.negation}
                     onChange={onNegateClick}
@@ -350,7 +347,6 @@ export function EditorV2({
                 >
                   <Button
                     intent="tertiary"
-                    size="sm"
                     isDisabled={!selectedNode?.children}
                     onPress={() => {
                       onRotateConnector();
@@ -367,7 +363,6 @@ export function EditorV2({
                 >
                   <Button
                     intent="tertiary"
-                    size="sm"
                     onPress={() => {
                       onOpenTimeModal();
                     }}
@@ -381,7 +376,6 @@ export function EditorV2({
                 <KeyboardShortcutTooltip keyname={HOTKEYS.expand.keyname}>
                   <Button
                     intent="tertiary"
-                    size="sm"
                     onPress={() => {
                       onExpand();
                     }}
@@ -397,7 +391,6 @@ export function EditorV2({
                 <KeyboardShortcutTooltip keyname={HOTKEYS.flip.keyname}>
                   <Button
                     intent="tertiary"
-                    size="sm"
                     isDisabled={!selectedNode?.children}
                     onPress={() => {
                       onFlip();
@@ -414,7 +407,6 @@ export function EditorV2({
                 >
                   <Button
                     intent="tertiary"
-                    size="sm"
                     onPress={() => {
                       onDelete();
                     }}
