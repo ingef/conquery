@@ -13,7 +13,7 @@ export interface BasicButtonProps
   className?: string;
   style?: CSSProperties;
   children?: ReactNode;
-  /** HTML name kept for now, mapped to react-aria's `isDisabled` */
+  /** maps to react-aria's `isDisabled` */
   disabled?: boolean;
   bare?: boolean;
   tiny?: boolean;
@@ -44,9 +44,9 @@ const button = tv({
   },
 });
 
-// react-aria's Button is the trigger that TooltipTrigger, DialogTrigger and
-// friends expect, so every button built on this one works inside them as is.
-// `onClick` is react-aria's alias for `onPress` and receives a mouse event.
+// react-aria's Button is the trigger that TooltipTrigger, MenuTrigger and
+// friends expect. `onClick` is react-aria's alias for `onPress` and receives
+// a mouse event; react-aria prefers `onPress`.
 const BasicButton = ({
   ref,
   className,
