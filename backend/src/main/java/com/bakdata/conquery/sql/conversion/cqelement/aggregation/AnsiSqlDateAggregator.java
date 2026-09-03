@@ -6,7 +6,6 @@ import static org.jooq.impl.DSL.inline;
 import java.sql.Date;
 import java.util.List;
 
-import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
@@ -19,6 +18,7 @@ import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
+import com.bakdata.conquery.models.query.DateAggregationAction;
 import lombok.Data;
 import org.jooq.Field;
 

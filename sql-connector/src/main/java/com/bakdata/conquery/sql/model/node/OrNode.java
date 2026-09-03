@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.model.node;
 
 import java.util.List;
 
+import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.sql.model.internal.ModelNormalization;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;

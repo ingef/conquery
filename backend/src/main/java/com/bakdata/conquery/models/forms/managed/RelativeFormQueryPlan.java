@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
+import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.DateAggregator;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
