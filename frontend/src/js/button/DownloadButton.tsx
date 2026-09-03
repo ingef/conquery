@@ -13,7 +13,7 @@ import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { getEnding } from "../query-runner/DownloadResultsDropdownButton";
-import { Button, type ButtonProps } from "../ui-components/Button";
+import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
 
 const link = tv({ base: "leading-none" });
@@ -49,7 +49,6 @@ interface Props {
   children?: ReactNode;
   simpleIcon?: boolean;
   showColoredIcon?: boolean;
-  size?: ButtonProps["size"];
 }
 
 const DownloadButton = ({
@@ -59,7 +58,6 @@ const DownloadButton = ({
   className,
   children,
   showColoredIcon,
-  size,
 }: Props & { ref?: Ref<HTMLAnchorElement> }) => {
   const { authToken } = useContext(AuthTokenContext);
 
@@ -69,7 +67,7 @@ const DownloadButton = ({
 
   return (
     <a href={href} className={link({ className })} ref={ref}>
-      <Button intent="tertiary" size={size}>
+      <Button intent="link">
         <Icon
           icon={simpleIcon ? faDownload : icon}
           style={{ color: showColoredIcon ? color : undefined }}
