@@ -10,7 +10,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ToggleButton } from "react-aria-components";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -42,19 +41,6 @@ import { TimeConnectionModal } from "./time-connection/TimeConnectionModal";
 import { useTimeConnectionEditing } from "./time-connection/useTimeConnectionEditing";
 import type { Tree, TreeChildrenTime } from "./types";
 import { findNodeById, useGetTranslatedConnection } from "./util";
-
-// negating is a warning state: selected shows red, not the usual primary
-const negateToggle = tv({
-  base: [
-    "inline-flex items-center gap-[5px]",
-    "h-6 px-2",
-    "rounded border border-transparent",
-    "text-xs text-gray-800",
-    "cursor-pointer",
-    "hover:bg-gray-50",
-    "data-selected:text-red",
-  ],
-});
 
 const main = tv({
   base: [
@@ -345,14 +331,16 @@ export function EditorV2({
               )}
               {featureNegate && selectedNode && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.negate.keyname}>
-                  <ToggleButton
-                    className={negateToggle()}
-                    isSelected={!!selectedNode.negation}
-                    onChange={onNegateClick}
+                  <Button
+                    intent="tertiary"
+                    size="sm"
+                    danger={!!selectedNode.negation}
+                    aria-pressed={!!selectedNode.negation}
+                    onPress={onNegateClick}
                   >
                     <Icon icon={faBan} />
                     {t("editorV2.negate")}
-                  </ToggleButton>
+                  </Button>
                 </KeyboardShortcutTooltip>
               )}
               {featureConnectorRotate && selectedNode && connection && (

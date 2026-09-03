@@ -34,7 +34,7 @@ const DeleteModal = ({
               {t("common.cancel")}
             </Button>
           </div>
-          <Button intent="danger" onPress={onDelete}>
+          <Button intent="secondary" danger onPress={onDelete}>
             {t("common.delete")}
           </Button>
         </div>

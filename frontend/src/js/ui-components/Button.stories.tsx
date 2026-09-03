@@ -14,7 +14,7 @@ export default {
 
 type Story = StoryObj<typeof Button>;
 
-const intents = ["primary", "secondary", "tertiary", "danger", "link"] as const;
+const intents = ["primary", "secondary", "tertiary", "link"] as const;
 const sizes = ["sm", "md", "lg"] as const;
 
 export const Intents: Story = {
@@ -27,6 +27,23 @@ export const Intents: Story = {
       ))}
       <Button intent="primary" isDisabled>
         disabled
+      </Button>
+    </div>
+  ),
+};
+
+export const Danger: Story = {
+  render: () => (
+    <div className="flex items-center gap-3">
+      {intents.map((intent) => (
+        <Button key={intent} intent={intent} danger>
+          <Icon icon={faTrash} />
+          {intent}
+        </Button>
+      ))}
+      <Button intent="tertiary" danger aria-pressed>
+        <Icon icon={faTrash} />
+        pressed
       </Button>
     </div>
   ),

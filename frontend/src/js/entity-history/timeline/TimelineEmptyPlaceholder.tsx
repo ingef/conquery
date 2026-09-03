@@ -22,7 +22,7 @@ const message = tv({
 });
 
 const bigIcon = tv({
-  base: ["text-[120px]", "text-gray-100"],
+  base: ["size-[120px]", "text-gray-100"],
 });
 
 export const TimelineEmptyPlaceholder = ({

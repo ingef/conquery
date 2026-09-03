@@ -19,7 +19,7 @@ const button = tv({
     "shrink-0",
     "rounded",
     "border",
-    "leading-none font-normal whitespace-nowrap",
+    "leading-none font-medium whitespace-nowrap",
     "cursor-pointer",
     "transition-[color,background-color,border-color,opacity] duration-100",
     "disabled:cursor-not-allowed disabled:opacity-40",
@@ -39,10 +39,6 @@ const button = tv({
         "bg-transparent text-gray-800 border-transparent",
         "hover:bg-gray-50",
       ],
-      danger: [
-        "bg-transparent text-red border-red",
-        "hover:bg-red hover:text-white",
-      ],
       // reads as a text link, aligns with text: no padding, no box
       link: [
         "bg-transparent border-transparent px-0",
@@ -58,8 +54,18 @@ const button = tv({
     },
     // an icon-only button is a square
     iconOnly: { true: "px-0" },
+    // a destructive or warning action, in the look of its intent
+    danger: { true: "aria-pressed:text-red" },
   },
   compoundVariants: [
+    { danger: true, intent: "primary", class: "bg-red border-red" },
+    {
+      danger: true,
+      intent: "secondary",
+      class: "text-red border-red hover:bg-red hover:text-white",
+    },
+    { danger: true, intent: "tertiary", class: "text-red hover:text-red" },
+    { danger: true, intent: "link", class: "text-red hover:text-red" },
     { iconOnly: true, size: "sm", class: "w-6" },
     { iconOnly: true, size: "md", class: "w-[30px]" },
     { iconOnly: true, size: "lg", class: "w-9" },
@@ -70,7 +76,9 @@ const button = tv({
 export interface ButtonProps
   extends Omit<RacButtonProps, "className" | "style" | "children" | "onClick"> {
   /** what the button does in its context; the look follows */
-  intent?: "primary" | "secondary" | "tertiary" | "danger" | "link";
+  intent?: "primary" | "secondary" | "tertiary" | "link";
+  /** a destructive or warning action: red, in the look of the intent */
+  danger?: boolean;
   size?: "sm" | "md" | "lg";
   style?: CSSProperties;
   children?: ReactNode;
@@ -97,15 +105,27 @@ const isIconOnly = (children: ReactNode) => {
  *
  * A button whose only children are icons is square; give it an `aria-label`.
  * A pressed state (toggles) is `aria-pressed`, which colors the button.
- * `link` is for a button that reads as a text link.
+ * `link` is for a button that reads as a text link. `danger` turns any intent
+ * red for destructive or warning actions.
  *
  * There is no className: layout belongs to the parent (a `grid` wrapper
  * stretches a button to full width), and anything that needs another look is
  * not this button but a react-aria Button styled where it lives.
  */
-export const Button = ({ intent, size, children, ...props }: ButtonProps) => (
+export const Button = ({
+  intent,
+  size,
+  danger,
+  children,
+  ...props
+}: ButtonProps) => (
   <RacButton
-    className={button({ intent, size, iconOnly: isIconOnly(children) })}
+    className={button({
+      intent,
+      size,
+      danger,
+      iconOnly: isIconOnly(children),
+    })}
     {...props}
   >
     {children}

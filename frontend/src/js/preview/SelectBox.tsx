@@ -42,7 +42,7 @@ const listItem = tv({
 });
 
 const arrow = tv({
-  base: ["mt-[5px]", "text-[17px]", "text-gray-500", "cursor-pointer"],
+  base: ["mt-[5px]", "size-[17px]", "text-gray-500", "cursor-pointer"],
 });
 
 export default function SelectBox<T extends SelectItem>({
