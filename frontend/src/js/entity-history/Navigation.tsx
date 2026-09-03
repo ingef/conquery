@@ -159,7 +159,6 @@ export const Navigation = memo(
           {!empty && (
             <ConfirmPopover
               onConfirm={onReset}
-              placement="bottom"
               confirmationText={t("history.settings.resetConfirm")}
             >
               <IconButton
