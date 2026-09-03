@@ -67,7 +67,7 @@ const ownerName = tv({
 const tooltipText = tv({ base: ["flex flex-col items-start", "font-normal"] });
 
 const labelRow = tv({
-  base: ["flex justify-between", "w-full", "leading-6", "my-[2px]"],
+  base: ["flex justify-between", "w-full", "leading-6"],
 });
 
 const content = tv({
