@@ -2,7 +2,8 @@ import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import { exists } from "../../../common/helpers/exists";
 import { nodeIsInvalid } from "../../../model/node";
-import ToggleButtonGroup from "../../../ui-components/ToggleButtonGroup";
+import { ToggleButton } from "../../../ui-components/ToggleButton";
+import { ToggleButtonGroup } from "../../../ui-components/ToggleButtonGroup";
 import type { ConceptListField as ConceptListFieldT } from "../../config-types";
 import FormConceptGroup from "../../form-concept-group/FormConceptGroup";
 import type { FormConceptGroupT } from "../../form-concept-group/formConceptGroupState";
@@ -77,30 +78,41 @@ export const ConceptListField = ({
           renderRowPrefix={
             exists(field.rowPrefixField)
               ? ({ value: fieldValue, onChange, row, i }) => (
-                  <ToggleButtonGroup
-                    className="mb-[5px]"
-                    options={field.rowPrefixField!.options.map((option) => ({
-                      label: option.label[locale] || "",
-                      value: option.value,
-                    }))}
-                    value={
-                      /* Because we're essentially adding an extra dynamic field to FormConceptGroupT
+                  <div className="mb-[5px]">
+                    <ToggleButtonGroup
+                      segmented
+                      size="sm"
+                      selectionMode="single"
+                      disallowEmptySelection
+                      selectedKeys={
+                        /* Because we're essentially adding an extra dynamic field to FormConceptGroupT
                             with the key `field.rowPrefixField.name` */
-                      (row as unknown as Record<string, string>)[
-                        field.rowPrefixField!.name
-                      ]
-                    }
-                    onChange={(value) =>
-                      onChange([
-                        ...fieldValue.slice(0, i),
-                        {
-                          ...fieldValue[i],
-                          [field.rowPrefixField!.name]: value,
-                        },
-                        ...fieldValue.slice(i + 1),
-                      ])
-                    }
-                  />
+                        [
+                          (row as unknown as Record<string, string>)[
+                            field.rowPrefixField!.name
+                          ],
+                        ]
+                      }
+                      onSelectionChange={(keys) => {
+                        const [key] = keys;
+                        if (typeof key !== "string") return;
+                        onChange([
+                          ...fieldValue.slice(0, i),
+                          {
+                            ...fieldValue[i],
+                            [field.rowPrefixField!.name]: key,
+                          },
+                          ...fieldValue.slice(i + 1),
+                        ]);
+                      }}
+                    >
+                      {field.rowPrefixField!.options.map((option) => (
+                        <ToggleButton key={option.value} id={option.value}>
+                          {option.label[locale] || ""}
+                        </ToggleButton>
+                      ))}
+                    </ToggleButtonGroup>
+                  </div>
                 )
               : undefined
           }
