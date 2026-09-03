@@ -6,8 +6,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 
-import IconButton from "../button/IconButton";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 export type ContentType =
@@ -59,14 +60,19 @@ const ContentControl = ({ value, onChange }: Props) => {
         const active = value[option.key];
         return (
           <TooltipTrigger key={option.key}>
-            <IconButton
-              icon={option.icon}
-              active={active}
-              light={!active}
-              onClick={() => {
+            <Button
+              aria-label={option.tooltip}
+              intent="tertiary"
+              aria-pressed={active}
+              onPress={() => {
                 onChange({ ...value, [option.key]: !value[option.key] });
               }}
-            />
+            >
+              <Icon
+                icon={option.icon}
+                className={!active ? "text-gray-500" : undefined}
+              />
+            </Button>
             <Tooltip placement="right">{option.tooltip}</Tooltip>
           </TooltipTrigger>
         );

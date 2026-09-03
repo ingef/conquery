@@ -2,11 +2,10 @@ import { faListUl } from "@fortawesome/free-solid-svg-icons";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
-
 import { openHistory } from "../entity-history/actions";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
-
-import IconButton from "./IconButton";
 
 export const HistoryButton = () => {
   const { t } = useTranslation();
@@ -18,7 +17,13 @@ export const HistoryButton = () => {
 
   return (
     <TooltipTrigger>
-      <IconButton className="p-[7px]" frame icon={faListUl} onClick={onClick} />
+      <Button
+        aria-label={t("history.history")}
+        intent="secondary"
+        onPress={onClick}
+      >
+        <Icon icon={faListUl} />
+      </Button>
       <Tooltip>{t("history.history")}</Tooltip>
     </TooltipTrigger>
   );

@@ -10,8 +10,8 @@ import remarkFlexibleMarkers from "remark-flexible-markers";
 import remarkGfm from "remark-gfm";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
 import { Highlighter } from "../common/components/Highlighter";
+import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
 import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import InfoPaneCollapsed from "./InfoPaneCollapsed";
@@ -50,10 +50,7 @@ const head = tv({
 
 const typeIcon = tv({ base: ["mt-px", "mr-[6px]", "text-primary-500"] });
 
-const tackButton = tv({
-  // inline-flex to remove some height that seemed to be added
-  base: ["inline-flex", "ml-[5px]"],
-});
+const tackButton = tv({ base: "ml-[5px]" });
 
 const pinnedLabel = tv({
   base: ["flex flex-row items-start", "m-0", "leading-[1.2]", "text-sm"],
@@ -187,13 +184,15 @@ const InfoPane = () => {
             conceptIcon={mainIcon}
             tackIcon={
               toggleAdditionalInfos && (
-                <IconButton
+                <Button
+                  intent="tertiary"
+                  size="sm"
+                  aria-pressed
+                  onPress={onToggleAdditionalInfos}
                   className={tackButton()}
-                  bare
-                  active
-                  onClick={onToggleAdditionalInfos}
-                  icon={faThumbtack}
-                />
+                >
+                  <Icon icon={faThumbtack} />
+                </Button>
               )
             }
           />

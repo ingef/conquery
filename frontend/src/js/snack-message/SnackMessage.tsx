@@ -1,9 +1,11 @@
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { memo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import { useClickOutside } from "../common/helpers/useClickOutside";
+import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
 import { resetMessage as resetMessageAction } from "./actions";
 import type { SnackMessageStateT } from "./reducer";
@@ -34,6 +36,7 @@ export const SnackMessage = memo(function SnackMessageComponent() {
   const { message, type } = useSelector<StateT, SnackMessageStateT>(
     (state) => state.snackMessage,
   );
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const resetMessage = () => dispatch(resetMessageAction());
 
@@ -50,13 +53,14 @@ export const SnackMessage = memo(function SnackMessageComponent() {
           <div className="relative py-3 pr-10 pl-5">
             {/* biome-ignore lint/security/noDangerouslySetInnerHtml: messages are our own i18n text */}
             <div dangerouslySetInnerHTML={{ __html: message }} />
-            <button
-              type="button"
+            <Button
+              intent="tertiary"
+              aria-label={t("common.close")}
               className={clearZone()}
-              onClick={resetMessage}
+              onPress={resetMessage}
             >
               <Icon icon={faTimes} className="text-white" />
-            </button>
+            </Button>
           </div>
         </div>
       )}

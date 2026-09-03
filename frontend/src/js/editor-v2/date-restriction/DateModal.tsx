@@ -4,11 +4,10 @@ import { useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import type { DateRangeT } from "../../api/types";
-import IconButton from "../../button/IconButton";
 import type { DateStringMinMax } from "../../common/helpers/dateHelper";
 import Modal from "../../modal/Modal";
+import { Button } from "../../ui-components/Button";
 import { Icon } from "../../ui-components/Icon";
 import InputCheckbox from "../../ui-components/InputCheckbox";
 import InputDateRange from "../../ui-components/InputDateRange";
@@ -54,14 +53,15 @@ export const DateModal = ({
 
   const labelSuffix = useMemo(() => {
     return hasActiveDate ? (
-      <IconButton
+      <Button
+        intent="tertiary"
+        size="sm"
+        onPress={onResetDates}
         className={resetAll()}
-        bare
-        onClick={onResetDates}
-        icon={faUndo}
       >
+        <Icon icon={faUndo} />
         {t("queryNodeEditor.reset")}
-      </IconButton>
+      </Button>
     ) : null;
   }, [t, hasActiveDate, onResetDates]);
 

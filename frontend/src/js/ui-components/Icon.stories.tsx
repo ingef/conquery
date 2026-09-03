@@ -9,7 +9,6 @@ import {
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
-import IconButton from "../button/IconButton";
 import { Button } from "./Button";
 
 import { Icon } from "./Icon";
@@ -81,9 +80,10 @@ export const InheritsColor: Story = {
       <Button intent="primary">
         <Icon icon={faCheck} /> inside a button
       </Button>
-      <IconButton frame icon={faTrash} red>
+      <Button intent="secondary" className="text-red">
+        <Icon icon={faTrash} />
         red icon button
-      </IconButton>
+      </Button>
     </div>
   ),
 };

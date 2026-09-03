@@ -2,9 +2,9 @@ import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { memo, type Ref } from "react";
 import ReactMarkdown from "react-markdown";
 import { tv } from "tailwind-variants";
-
 import type { SelectOptionT } from "../../api/types";
-import IconButton from "../../button/IconButton";
+import { Button } from "../Button";
+import { Icon } from "../Icon";
 
 const container = tv({
   base: [
@@ -19,8 +19,6 @@ const container = tv({
     "[&_p]:m-0",
   ],
 });
-
-const removeButton = tv({ base: "py-px pr-[2px] pl-[5px]" });
 
 const SelectedItem = ({
   ref,
@@ -52,15 +50,16 @@ const SelectedItem = ({
   return (
     <div className={container()} ref={ref} {...selectedItemProps}>
       <ReactMarkdown>{String(label)}</ReactMarkdown>
-      <IconButton
-        className={removeButton()}
-        icon={faTimes}
-        disabled={disabled}
-        onClick={(e) => {
-          e.stopPropagation(); // otherwise the click handler on the Container overrides this
+      <Button
+        intent="tertiary"
+        isDisabled={disabled}
+        onPress={() => {
+          // otherwise the click handler on the Container overrides this
           removeSelectedItem(item);
         }}
-      />
+      >
+        <Icon icon={faTimes} />
+      </Button>
     </div>
   );
 };

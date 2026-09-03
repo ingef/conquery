@@ -3,8 +3,9 @@ import { faBan, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 
-import IconButton from "../button/IconButton";
 import {
   Tooltip,
   TooltipTrigger,
@@ -17,7 +18,7 @@ const actions = tv({
 });
 
 const dateButton = tv({
-  base: ["mr-[5px]", "px-[3px] py-0"],
+  base: "mr-[5px]",
   variants: {
     active: {
       true: "underline",
@@ -26,16 +27,8 @@ const dateButton = tv({
   },
 });
 
-const excludeButton = tv({
-  base: ["mr-[5px]", "px-[3px] py-0", "hover:opacity-70"],
-  variants: {
-    active: {
-      // beats IconButton's own colors (incl. its red flag) via merge
-      true: ["text-red hover:text-red", "[&_svg]:text-red"],
-      false: ["text-gray-800 hover:text-gray-800", "[&_svg]:text-gray-800"],
-    },
-  },
-});
+// excluding is a warning state: pressed shows red, not the usual primary
+const excludeButton = tv({ base: ["mr-[5px]", "aria-pressed:text-red"] });
 
 interface PropsT {
   excludeActive: boolean;
@@ -58,34 +51,42 @@ const QueryGroupActions = ({
     <div className={actions()}>
       <div>
         <TooltipTrigger delay={tooltipDelay.long}>
-          <IconButton
-            className={excludeButton({ active: excludeActive })}
-            red
-            tight
-            active={excludeActive}
-            icon={faBan}
-            onClick={onExcludeClick}
+          <Button
+            intent="tertiary"
+            size="sm"
+            aria-pressed={excludeActive}
+            onPress={onExcludeClick}
+            className={excludeButton()}
           >
+            <Icon icon={faBan} />
             {t("queryEditor.exclude")}
-          </IconButton>
+          </Button>
           <Tooltip>{t("help.queryEditorExclude")}</Tooltip>
         </TooltipTrigger>
         <TooltipTrigger delay={tooltipDelay.long}>
-          <IconButton
+          <Button
+            intent="tertiary"
+            size="sm"
+            aria-pressed={dateActive}
+            onPress={onDateClick}
             className={dateButton({ active: dateActive })}
-            active={dateActive}
-            tight
-            icon={faCalendar}
-            onClick={onDateClick}
           >
+            <Icon icon={faCalendar} />
             {t("queryEditor.date")}
-          </IconButton>
+          </Button>
           <Tooltip>{t("help.queryEditorDate")}</Tooltip>
         </TooltipTrigger>
       </div>
       <div className="absolute top-[5px] right-[7px]">
         <TooltipTrigger>
-          <IconButton tiny icon={faTimes} onClick={onDeleteGroup} />
+          <Button
+            aria-label={t("queryEditor.removeColumn")}
+            intent="tertiary"
+            size="sm"
+            onPress={onDeleteGroup}
+          >
+            <Icon icon={faTimes} />
+          </Button>
           <Tooltip>{t("queryEditor.removeColumn")}</Tooltip>
         </TooltipTrigger>
       </div>

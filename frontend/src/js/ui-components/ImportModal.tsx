@@ -4,14 +4,13 @@ import { NativeTypes } from "react-dnd-html5-backend";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-import IconButton from "../button/IconButton";
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
 import Modal from "../modal/Modal";
 import { Button } from "./Button";
-
 import DropzoneWithFileInput, {
   type DragItemFile,
 } from "./DropzoneWithFileInput";
+import { Icon } from "./Icon";
 
 const content = tv({
   base: ["flex flex-col", "gap-5"],
@@ -164,13 +163,15 @@ export const ImportModal = ({
           )}
         </DropzoneWithFileInput>
         <div className={row()}>
-          <IconButton icon={faFile} onClick={onOpenFileDialog}>
+          <Button intent="tertiary" onPress={onOpenFileDialog}>
+            <Icon icon={faFile} />
             {t("common.openFileDialog")}
-          </IconButton>
+          </Button>
           {canReadClipboard && (
-            <IconButton icon={faPaste} onClick={onPasteClick}>
+            <Button intent="tertiary" onPress={onPasteClick}>
+              <Icon icon={faPaste} />
               {t("importModal.paste")}
-            </IconButton>
+            </Button>
           )}
           <Button
             intent="primary"

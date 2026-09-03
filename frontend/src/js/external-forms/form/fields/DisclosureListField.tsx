@@ -7,7 +7,6 @@ import {
 import { type ComponentProps, useEffect, useState } from "react";
 import { useFieldArray } from "react-hook-form";
 import { tv } from "tailwind-variants";
-import IconButton from "../../../button/IconButton";
 import { exists } from "../../../common/helpers/exists";
 import { usePrevious } from "../../../common/helpers/usePrevious";
 import { Button } from "../../../ui-components/Button";
@@ -82,11 +81,13 @@ const DisclosureField = ({
           )}
         </div>
         {field.creatable && canRemove && (
-          <IconButton
+          <Button
+            intent="tertiary"
+            onPress={() => remove(index)}
             className="absolute right-0 top-1/2 -translate-y-1/2"
-            icon={faTimes}
-            onClick={() => remove(index)}
-          />
+          >
+            <Icon icon={faTimes} />
+          </Button>
         )}
       </summary>
       <div className="flex flex-col gap-2 bg-bg-50 border-t border-gray-300 p-3">

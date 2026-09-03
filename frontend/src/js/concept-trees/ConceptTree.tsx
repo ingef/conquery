@@ -6,7 +6,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { ConceptIdT, ConceptT } from "../api/types";
-import IconButton from "../button/IconButton";
+import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
 import ConceptTreeNode from "./ConceptTreeNode";
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
@@ -57,12 +57,13 @@ const ConceptTree = ({
         className={message({ error: true })}
         style={{ paddingLeft: 12 + depth * 15 }}
       >
-        <IconButton
-          className="py-0 pr-[7px] pl-3"
-          red
-          icon={faRedo}
-          onClick={() => onLoadTree(conceptId)}
-        />
+        <Button
+          intent="tertiary"
+          onPress={() => onLoadTree(conceptId)}
+          className="text-red"
+        >
+          <Icon icon={faRedo} />
+        </Button>
         {t("conceptTreeList.error", { tree: label })}
       </p>
     );

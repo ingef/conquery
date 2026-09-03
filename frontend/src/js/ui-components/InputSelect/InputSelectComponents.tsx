@@ -1,7 +1,6 @@
 import type { ComponentProps } from "react";
 import { tv } from "tailwind-variants";
-
-import IconButton from "../../button/IconButton";
+import { Button } from "../Button";
 
 import SelectListOption from "./SelectListOption";
 
@@ -112,22 +111,18 @@ export const Input = ({ className, ...props }: ComponentProps<"input">) => (
   <input className={input({ className })} {...props} />
 );
 
-const dropdownToggleButton = tv({ base: "py-[2px] pr-1 pl-[6px]" });
-
 export const DropdownToggleButton = ({
   className,
   ...props
-}: ComponentProps<typeof IconButton>) => (
-  <IconButton className={dropdownToggleButton({ className })} {...props} />
+}: ComponentProps<typeof Button>) => (
+  <Button intent="tertiary" size="sm" {...props} className={className} />
 );
-
-const resetButton = tv({ base: ["w-[26px]", "px-2 py-[2px]"] });
 
 export const ResetButton = ({
   className,
   ...props
-}: ComponentProps<typeof IconButton>) => (
-  <IconButton className={resetButton({ className })} {...props} />
+}: ComponentProps<typeof Button>) => (
+  <Button intent="tertiary" size="sm" {...props} className={className} />
 );
 
 const verticalSeparator = tv({

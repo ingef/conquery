@@ -4,12 +4,13 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
 import type { DateStringMinMax } from "../common/helpers/dateHelper";
 import Modal from "../modal/Modal";
 import { nodeIsConceptQueryNode } from "../model/node";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type { QueryGroupType } from "../standard-query-editor/types";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 import InputDateRange from "../ui-components/InputDateRange";
 
 import {
@@ -81,14 +82,15 @@ const QueryGroupModal = ({
 
   const labelSuffix = useMemo(() => {
     return hasActiveDate ? (
-      <IconButton
+      <Button
+        intent="tertiary"
+        size="sm"
+        onPress={onResetAllDates}
         className={resetAll()}
-        bare
-        onClick={onResetAllDates}
-        icon={faUndo}
       >
+        <Icon icon={faUndo} />
         {t("queryNodeEditor.reset")}
-      </IconButton>
+      </Button>
     ) : null;
   }, [t, hasActiveDate, onResetAllDates]);
 

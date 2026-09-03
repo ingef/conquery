@@ -2,7 +2,6 @@ import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-
 import { usePostQueryUpload } from "../../api/api";
 import type {
   DatasetT,
@@ -10,8 +9,9 @@ import type {
   UploadQueryResponseT,
 } from "../../api/types";
 import type { StateT } from "../../app/reducers";
-import IconButton from "../../button/IconButton";
 import { setMessage } from "../../snack-message/actions";
+import { Button } from "../../ui-components/Button";
+import { Icon } from "../../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import { useLoadQueries } from "../list/actions";
 
@@ -77,12 +77,13 @@ const UploadQueryResults = ({
   return (
     <div className={className}>
       <TooltipTrigger>
-        <IconButton
-          className="px-[6px] py-[9px]"
-          frame
-          icon={faUpload}
-          onClick={() => setIsModalOpen(true)}
-        />
+        <Button
+          aria-label={t("uploadQueryResults.uploadResults")}
+          intent="secondary"
+          onPress={() => setIsModalOpen(true)}
+        >
+          <Icon icon={faUpload} />
+        </Button>
         <Tooltip>{t("uploadQueryResults.uploadResults")}</Tooltip>
       </TooltipTrigger>
       {isModalOpen && (

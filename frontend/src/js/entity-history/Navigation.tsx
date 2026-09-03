@@ -16,11 +16,11 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
+import { Button } from "../ui-components/Button";
 import { ConfirmMenu } from "../ui-components/ConfirmMenu";
+import { Icon } from "../ui-components/Icon";
 import {
   Tooltip,
   TooltipTrigger,
@@ -61,11 +61,11 @@ const loadHistoryDropzone = tv({
   ],
 });
 
-const containedIconButton = tv({
+const containedButton = tv({
   base: ["grow", "justify-center"],
 });
 
-const fullWidthIconButton = tv({
+const fullWidthButton = tv({
   base: ["w-full", "justify-center"],
 });
 
@@ -146,14 +146,14 @@ export const Navigation = memo(
       >
         <div className={row()}>
           <TooltipTrigger>
-            <IconButton
-              className={containedIconButton()}
-              frame
-              icon={faChevronLeft}
-              onClick={onCloseHistory}
+            <Button
+              intent="secondary"
+              onPress={onCloseHistory}
+              className={containedButton()}
             >
+              <Icon icon={faChevronLeft} />
               {t("common.back")}
-            </IconButton>
+            </Button>
             <Tooltip>{backButtonWarning}</Tooltip>
           </TooltipTrigger>
           {!empty && (
@@ -161,13 +161,10 @@ export const Navigation = memo(
               onConfirm={onReset}
               confirmationText={t("history.settings.resetConfirm")}
             >
-              <IconButton
-                className={containedIconButton()}
-                frame
-                icon={faTrash}
-              >
+              <Button intent="secondary" className={containedButton()}>
+                <Icon icon={faTrash} />
                 {t("history.settings.reset")}
-              </IconButton>
+              </Button>
             </ConfirmMenu>
           )}
         </div>
@@ -184,11 +181,14 @@ export const Navigation = memo(
           {!empty && (
             <div className="flex">
               <TooltipTrigger delay={tooltipDelay.long}>
-                <IconButton
-                  className={fullWidthIconButton()}
-                  icon={faArrowUp}
-                  onClick={goToPrev}
-                />
+                <Button
+                  aria-label={`${t("history.prevButtonLabel")} (shift + ⬆)`}
+                  intent="tertiary"
+                  onPress={goToPrev}
+                  className={fullWidthButton()}
+                >
+                  <Icon icon={faArrowUp} />
+                </Button>
                 <Tooltip>{`${t("history.prevButtonLabel")} (shift + ⬆)`}</Tooltip>
               </TooltipTrigger>
             </div>
@@ -213,25 +213,27 @@ export const Navigation = memo(
             <>
               <div className="flex">
                 <TooltipTrigger delay={tooltipDelay.long}>
-                  <IconButton
-                    className={fullWidthIconButton()}
-                    icon={faArrowDown}
-                    onClick={goToNext}
-                  />
+                  <Button
+                    aria-label={`${t("history.nextButtonLabel")} (shift + ⬇)`}
+                    intent="tertiary"
+                    onPress={goToNext}
+                    className={fullWidthButton()}
+                  >
+                    <Icon icon={faArrowDown} />
+                  </Button>
                   <Tooltip>{`${t("history.nextButtonLabel")} (shift + ⬇)`}</Tooltip>
                 </TooltipTrigger>
               </div>
               <div className="flex" style={{ marginTop: "10px" }}>
                 <TooltipTrigger>
-                  <IconButton
-                    className={fullWidthIconButton()}
-                    style={{ backgroundColor: "white" }}
-                    frame
-                    icon={faDownload}
-                    onClick={onDownload}
+                  <Button
+                    intent="secondary"
+                    onPress={onDownload}
+                    className={[fullWidthButton(), "bg-white"]}
                   >
+                    <Icon icon={faDownload} />
                     CSV
-                  </IconButton>
+                  </Button>
                   <Tooltip>{t("history.downloadButtonLabel")}</Tooltip>
                 </TooltipTrigger>
               </div>

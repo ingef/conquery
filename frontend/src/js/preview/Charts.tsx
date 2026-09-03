@@ -3,7 +3,8 @@ import { t } from "i18next";
 import { useHotkeys } from "react-hotkeys-hook";
 import { tv } from "tailwind-variants";
 import type { PreviewStatistics } from "../api/types";
-import IconButton from "../button/IconButton";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 import Diagram from "./Diagram";
 
 const diagram = tv({
@@ -74,20 +75,24 @@ export default function Charts({
         })}
       </div>
       <div className={directionSelector()}>
-        <IconButton
-          icon={faArrowLeft}
-          onClick={() => updatePage(-1)}
-          disabled={page === 0}
-        />
+        <Button
+          intent="tertiary"
+          onPress={() => updatePage(-1)}
+          isDisabled={page === 0}
+        >
+          <Icon icon={faArrowLeft} />
+        </Button>
         <span>
           {t("preview.page")} {page + 1}/
           {Math.ceil(statistics.length / DIAGRAMS_PER_PAGE)}
         </span>
-        <IconButton
-          icon={faArrowRight}
-          onClick={() => updatePage(1)}
-          disabled={page === maxPage - 1}
-        />
+        <Button
+          intent="tertiary"
+          onPress={() => updatePage(1)}
+          isDisabled={page === maxPage - 1}
+        >
+          <Icon icon={faArrowRight} />
+        </Button>
       </div>
     </div>
   );

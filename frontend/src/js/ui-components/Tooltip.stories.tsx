@@ -1,6 +1,5 @@
 import { faInfoCircle, faTrash } from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
-import IconButton from "../button/IconButton";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
 
@@ -23,7 +22,9 @@ export const OnButtons: Story = {
   render: () => (
     <div className="flex items-center gap-4">
       <TooltipTrigger>
-        <IconButton frame icon={faTrash} />
+        <Button intent="secondary">
+          <Icon icon={faTrash} />
+        </Button>
         <Tooltip>Delete</Tooltip>
       </TooltipTrigger>
       <TooltipTrigger>
@@ -63,7 +64,9 @@ export const Timing: Story = {
   render: () => (
     <div className="flex items-center gap-4 text-sm">
       <TooltipTrigger>
-        <IconButton frame icon={faTrash} />
+        <Button intent="secondary">
+          <Icon icon={faTrash} />
+        </Button>
         <Tooltip>
           Names a control: short warm-up, neighbors open instantly
         </Tooltip>

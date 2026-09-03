@@ -3,12 +3,12 @@ import { type Dispatch, memo, type SetStateAction, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
 import ProgressBar from "../common/components/ProgressBar";
 import { Heading3 } from "../headings/Headings";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { SettingsModal } from "./SettingsModal";
@@ -88,10 +88,13 @@ export const NavigationHeader = memo(
             <p className={specialText()}>{t("history.history")}</p>
           </div>
           <TooltipTrigger>
-            <IconButton
-              icon={faSliders}
-              onClick={() => setSettingsModalOpen(true)}
-            />
+            <Button
+              aria-label={t("history.settings.headline")}
+              intent="tertiary"
+              onPress={() => setSettingsModalOpen(true)}
+            >
+              <Icon icon={faSliders} />
+            </Button>
             <Tooltip>{t("history.settings.headline")}</Tooltip>
           </TooltipTrigger>
         </div>

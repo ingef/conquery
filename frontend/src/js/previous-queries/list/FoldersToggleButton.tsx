@@ -1,7 +1,8 @@
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
+import { Button } from "../../ui-components/Button";
+import { Icon } from "../../ui-components/Icon";
 
-import IconButton from "../../button/IconButton";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 
 const FoldersToggleButton = ({
@@ -15,13 +16,15 @@ const FoldersToggleButton = ({
 
   return (
     <TooltipTrigger>
-      <IconButton
-        className="mr-[5px] px-[6px] py-[9px]"
-        onClick={onClick}
-        icon={faFolder}
-        active={active}
-        frame
-      />
+      <Button
+        aria-label={t("previousQueriesFolderButton.tooltip")}
+        intent="secondary"
+        onPress={onClick}
+        aria-pressed={active}
+        className="mr-[5px]"
+      >
+        <Icon icon={faFolder} />
+      </Button>
       <Tooltip>{t("previousQueriesFolderButton.tooltip")}</Tooltip>
     </TooltipTrigger>
   );

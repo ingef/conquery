@@ -2,11 +2,11 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
 import { useActiveLang } from "../localization/useActiveLang";
+import { Button } from "../ui-components/Button";
 import { ConfirmMenu } from "../ui-components/ConfirmMenu";
+import { Icon } from "../ui-components/Icon";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
@@ -77,11 +77,13 @@ const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
             onConfirm={onReset}
             confirmationText={t("externalForms.common.clearConfirm")}
           >
-            <IconButton
-              className="ml-[10px] shrink-0 px-[10px] py-[7px]"
-              frame
-              icon={faTrash}
-            />
+            <Button
+              aria-label={t("externalForms.common.clear")}
+              intent="secondary"
+              className="ml-[10px] shrink-0"
+            >
+              <Icon icon={faTrash} />
+            </Button>
           </ConfirmMenu>
           <Tooltip>{t("externalForms.common.clear")}</Tooltip>
         </TooltipTrigger>
