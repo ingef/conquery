@@ -1,6 +1,6 @@
 import { faEllipsisV, faTrash } from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
-import { DialogTrigger, Pressable } from "react-aria-components";
+import { DialogTrigger } from "react-aria-components";
 
 import IconButton from "../button/IconButton";
 import { TransparentButton } from "../button/TransparentButton";
@@ -20,9 +20,7 @@ type Story = StoryObj<typeof Popover>;
 export const Default: Story = {
   render: () => (
     <DialogTrigger>
-      <Pressable>
-        <IconButton frame icon={faEllipsisV} />
-      </Pressable>
+      <IconButton frame icon={faEllipsisV} />
       <Popover>
         <Dialog aria-label="Actions">
           {({ close }) => (

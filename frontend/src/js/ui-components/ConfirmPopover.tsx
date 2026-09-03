@@ -1,7 +1,7 @@
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
-import type { ComponentProps } from "react";
-import { DialogTrigger, Pressable } from "react-aria-components";
+import type { ReactNode } from "react";
+import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
@@ -13,7 +13,7 @@ const confirmButton = tv({ base: ["w-full", "px-[14px] py-2"] });
 
 /**
  * Asks for confirmation in a popover before calling onConfirm.
- * The child is the trigger, a button.
+ * The child is the trigger: a button built on BasicButton.
  */
 export const ConfirmPopover = ({
   children,
@@ -23,7 +23,7 @@ export const ConfirmPopover = ({
   onConfirm,
   red,
 }: {
-  children: ComponentProps<typeof Pressable>["children"];
+  children: ReactNode;
   confirmationText?: string;
   confirmationIcon?: IconProp;
   placement?: "top" | "bottom" | "left" | "right";
@@ -35,7 +35,7 @@ export const ConfirmPopover = ({
 
   return (
     <DialogTrigger>
-      <Pressable>{children}</Pressable>
+      {children}
       <Popover placement={placement} offset={5}>
         <Dialog aria-label={label}>
           {({ close }) => (

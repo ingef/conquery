@@ -1,6 +1,6 @@
 import { faCaretDown, faDownload } from "@fortawesome/free-solid-svg-icons";
 import { memo, useEffect, useMemo, useState } from "react";
-import { DialogTrigger, Pressable } from "react-aria-components";
+import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
@@ -111,13 +111,11 @@ const DownloadResultsDropdownButton = ({
       )}
       <TooltipTrigger>
         <DialogTrigger>
-          <Pressable>
-            <IconButton
-              className={dropdownOpenButton()}
-              bgHover
-              icon={tiny ? faDownload : faCaretDown}
-            />
-          </Pressable>
+          <IconButton
+            className={dropdownOpenButton()}
+            bgHover
+            icon={tiny ? faDownload : faCaretDown}
+          />
           <Popover containerPadding={20}>
             <Dialog aria-label={t("previousQuery.downloadResults")}>
               {({ close }) => (
