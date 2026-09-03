@@ -93,7 +93,7 @@ export default function Preview() {
     <div className={fullScreen()}>
       <ScrollBox className={scrollBox()}>
         <div className={headline()}>
-          <Button intent="secondary" size="sm" onPress={onClose}>
+          <Button intent="secondary" onPress={onClose}>
             {t("common.back")}
           </Button>
           Ergebnisvorschau
