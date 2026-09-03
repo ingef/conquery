@@ -190,7 +190,7 @@ const Folders = ({ className }: { className?: string }) => {
         ref={parentRef}
       >
         <Button
-          intent="secondary"
+          intent="tertiary"
           size="sm"
           onPress={() => setShowAddFolderModal(true)}
           className="text-left"

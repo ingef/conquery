@@ -12,7 +12,8 @@ const control = tv({
     "rounded-[4px]",
     "border border-gray-500",
     "bg-white",
-    "pr-[3px] pl-2",
+    // one line of chips sits centered in the 30 px, wrapped lines keep off the edges
+    "py-[3px] pr-[3px] pl-2",
     "focus:outline focus:outline-1 focus:outline-black",
   ],
   variants: {
