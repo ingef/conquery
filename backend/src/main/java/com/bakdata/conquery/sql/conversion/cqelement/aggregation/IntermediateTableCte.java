@@ -4,6 +4,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 import java.sql.Date;
 import java.util.List;
 
+import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;

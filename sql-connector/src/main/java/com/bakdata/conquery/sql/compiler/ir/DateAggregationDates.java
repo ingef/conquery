@@ -1,14 +1,11 @@
-package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
+package com.bakdata.conquery.sql.compiler.ir;
 
 import java.sql.Date;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
-import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.AccessLevel;
@@ -17,34 +14,34 @@ import lombok.Getter;
 import org.jooq.Field;
 
 /**
- * {@link DateAggregationDates} keep track of all validity dates of list of {@link QueryStep}s that need to be aggregated.
+ * Validity-date inputs carried between query steps while the compiler prepares date aggregation.
  */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class DateAggregationDates {
+public final class DateAggregationDates implements Qualifiable<DateAggregationDates> {
 
 	private final List<ColumnDateRange> validityDates;
 
-	public static DateAggregationDates forValidityDates(final List<Optional<ColumnDateRange>> validityDates) {
-		final List<ColumnDateRange> filtered = validityDates.stream()
-															.filter(Optional::isPresent)
-															.map(Optional::get)
-															.toList();
+	public static DateAggregationDates forValidityDates(List<Optional<ColumnDateRange>> validityDates) {
+		List<ColumnDateRange> filtered = validityDates.stream()
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.toList();
 		return new DateAggregationDates(filtered);
 	}
 
 	public static DateAggregationDates forSingleStep(QueryStep queryStep) {
 		List<ColumnDateRange> validityDates = queryStep.getSelects()
-													   .getValidityDate()
-													   .map(List::of)
-													   .orElse(Collections.emptyList());
+				.getValidityDate()
+				.map(List::of)
+				.orElse(Collections.emptyList());
 		return new DateAggregationDates(validityDates);
 	}
 
 	public static DateAggregationDates forSteps(List<QueryStep> querySteps) {
-		final List<ColumnDateRange> validityDates = querySteps.stream()
-															  .flatMap(queryStep -> queryStep.getQualifiedSelects().getValidityDate().stream())
-															  .toList();
+		List<ColumnDateRange> validityDates = querySteps.stream()
+				.flatMap(queryStep -> queryStep.getQualifiedSelects().getValidityDate().stream())
+				.toList();
 		return new DateAggregationDates(validityDates);
 	}
 
@@ -62,16 +59,16 @@ public class DateAggregationDates {
 
 	public List<SqlSelect> allStartsAndEnds() {
 		return this.validityDates.stream()
-								 .flatMap(validityDate -> validityDate.toFields().stream())
-								 .map(FieldWrapper::new)
-								 .collect(Collectors.toList());
+				.flatMap(validityDate -> validityDate.toFields().stream())
+				.<SqlSelect>map(FieldWrapper::new)
+				.toList();
 	}
 
+	@Override
 	public DateAggregationDates qualify(String qualifier) {
 		List<ColumnDateRange> qualified = this.validityDates.stream()
-															.map(validityDate -> validityDate.qualify(qualifier))
-															.toList();
-		// validity dates will already be numerated, no we don't need no apply a counter again
+				.map(validityDate -> validityDate.qualify(qualifier))
+				.toList();
 		return new DateAggregationDates(qualified);
 	}
 
