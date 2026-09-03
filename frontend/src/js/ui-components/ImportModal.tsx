@@ -75,9 +75,7 @@ export const ImportModal = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const onSubmitClick = (
-    e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>,
-  ) => {
+  const onSubmitClick = (e: MouseEvent<Element, globalThis.MouseEvent>) => {
     e.stopPropagation();
 
     const lines = textInput
