@@ -67,18 +67,24 @@ const arrow = tv({
  * Other elements need a TooltipTarget (or react-aria's Focusable for native buttons).
  *
  * Timing follows Spectrum's tooltip guideline: tooltips wait for a global
- * warm-up, after which neighbouring tooltips open immediately. Pick the
- * delay from `tooltipDelay`.
+ * warm-up, after which neighboring tooltips open immediately. Pick the
+ * delay from `tooltipDelay`. A tooltip closes 300 ms after the pointer has
+ * left, enough to move onto the tooltip itself.
+ *
+ * The tooltip is anchored to the trigger and follows it while open; a trigger
+ * that leaves the layout (`hidden`) sends it to the page's corner, so hide a
+ * hover-revealed trigger with `invisible`.
  *
  * A tooltip stays open while the pointer is over it (react-aria keeps it
  * hoverable, WCAG 1.4.13). In a vertical stack of triggers a tooltip on top
- * would cover the neighbour above, so place those to the side.
+ * would cover the neighbor above, so place those to the side.
  */
 export const TooltipTrigger = ({
   delay = tooltipDelay.short,
+  closeDelay = 300,
   ...props
 }: TooltipTriggerComponentProps) => (
-  <RacTooltipTrigger delay={delay} {...props} />
+  <RacTooltipTrigger delay={delay} closeDelay={closeDelay} {...props} />
 );
 
 export const Tooltip = ({

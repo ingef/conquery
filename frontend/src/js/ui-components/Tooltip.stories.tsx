@@ -63,7 +63,7 @@ export const Timing: Story = {
       <TooltipTrigger>
         <IconButton frame icon={faTrash} />
         <Tooltip>
-          Names a control: short warm-up, neighbours open instantly
+          Names a control: short warm-up, neighbors open instantly
         </Tooltip>
       </TooltipTrigger>
       <TooltipTrigger delay={tooltipDelay.long}>
