@@ -1,14 +1,11 @@
-package com.bakdata.conquery.sql.conversion.model;
+package com.bakdata.conquery.sql.compiler.ir;
 
 import java.util.Map;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-/**
- * SqlTables provide a mapping from {@link CteStep}s to their respective table names/cte names and from a {@link CteStep} to the respective preceding step
- * in the generated SQL query.
- */
+/** Resolves CTE graph steps to their generated table names and predecessor tables. */
 @RequiredArgsConstructor
 public class SqlTables {
 
@@ -17,24 +14,17 @@ public class SqlTables {
 	private final Map<CteStep, String> cteNameMap;
 	private final Map<CteStep, CteStep> predecessorMap;
 
-	/**
-	 * @return The CTE name for a {@link CteStep}.
-	 */
+	/** Returns the generated CTE name for the supplied step. */
 	public String cteName(CteStep cteStep) {
 		return cteNameMap.get(cteStep);
 	}
 
-	/**
-	 * @return True if the given {@link CteStep} is part of these {@link SqlTables}.
-	 */
+	/** Returns whether the supplied step participates in this CTE graph. */
 	public boolean isRequiredStep(CteStep cteStep) {
 		return cteNameMap.containsKey(cteStep);
 	}
 
-	/**
-	 * @return The name of the table the given {@link CteStep} will select from. If their exists no mapped preceding {@link CteStep} for the given
-	 * {@link CteStep}, the root table is returned.
-	 */
+	/** Returns the predecessor CTE name, or the root table when the step has no mapped predecessor. */
 	public String getPredecessor(CteStep cteStep) {
 		CteStep predecessor = predecessorMap.get(cteStep);
 		if (predecessor == null) {
@@ -42,5 +32,4 @@ public class SqlTables {
 		}
 		return cteNameMap.get(predecessor);
 	}
-
 }

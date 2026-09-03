@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
-import com.bakdata.conquery.sql.conversion.model.CteStep;
+import com.bakdata.conquery.sql.compiler.ir.CteStep;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.google.common.base.Preconditions;
 import lombok.Data;
@@ -49,7 +49,11 @@ class TablePath {
 		String connectorName = context.getNameGenerator().conceptConnectorName(cqConcept, cqTable.getConnector().resolve(), context.getSqlPrintSettings()
 																																 .getLocale());
 		TablePathInfo tableInfo = collectConnectorTables(cqConcept, cqTable, context);
-		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), connectorName, context.getNameGenerator());
+		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(
+				tableInfo.getMappings().keySet(),
+				connectorName,
+				context.getNameGenerator()::cteStepName
+		);
 
 		return new ConnectorSqlTables(
 				cqTable.getConnector().resolve(),
@@ -66,7 +70,11 @@ class TablePath {
 
 		TablePathInfo tableInfo = collectConceptTables(predecessor);
 		String conceptName = context.getNameGenerator().conceptName(cqConcept, context.getSqlPrintSettings().getLocale());
-		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(tableInfo.getMappings().keySet(), conceptName, context.getNameGenerator());
+		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(
+				tableInfo.getMappings().keySet(),
+				conceptName,
+				context.getNameGenerator()::cteStepName
+		);
 		List<ConnectorSqlTables> connectorSqlTables = this.connectorTableMap.values().stream().toList();
 
 		return new ConceptSqlTables(

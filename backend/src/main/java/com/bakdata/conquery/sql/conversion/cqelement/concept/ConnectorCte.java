@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 
 abstract class ConnectorCte {
 

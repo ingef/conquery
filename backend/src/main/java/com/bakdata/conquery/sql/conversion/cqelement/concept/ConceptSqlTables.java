@@ -3,8 +3,8 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 import java.util.List;
 import java.util.Map;
 
-import com.bakdata.conquery.sql.conversion.model.CteStep;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.CteStep;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import lombok.Getter;
 
 @Getter

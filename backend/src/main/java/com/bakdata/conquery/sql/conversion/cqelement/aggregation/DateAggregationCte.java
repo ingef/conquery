@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 import java.util.List;
 
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 
 /**
  * Base class for a CTE that is part of the date aggregation process.
