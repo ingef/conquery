@@ -6,9 +6,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { MenuTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-
 import { useAbout } from "../app/About";
-import IconButton from "../button/IconButton";
+import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
 import { Menu, MenuItem } from "../ui-components/Menu";
 
@@ -23,12 +22,9 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
 
   return (
     <MenuTrigger>
-      <IconButton
-        className="p-[7px]"
-        icon={faQuestion}
-        frame
-        data-test-id="help-menu"
-      />
+      <Button intent="secondary" data-test-id="help-menu">
+        <Icon icon={faQuestion} />
+      </Button>
       <Menu
         aria-label={t("common.help")}
         placement="bottom end"

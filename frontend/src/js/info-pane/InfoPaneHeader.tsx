@@ -3,7 +3,8 @@ import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { tv } from "tailwind-variants";
-import IconButton from "../button/IconButton";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 import { toggleInfoPane } from "./actions";
 
 const header = tv({
@@ -34,12 +35,13 @@ export const InfoPaneHeader = memo(() => {
 
   return (
     <>
-      <IconButton
+      <Button
+        intent="tertiary"
+        onPress={onToggleInfoPane}
         className={toggleButton()}
-        bgHover
-        onClick={onToggleInfoPane}
-        icon={faAngleLeft}
-      />
+      >
+        <Icon icon={faAngleLeft} />
+      </Button>
       <h2 className={header()}>{t("infoPane.headline")}</h2>
     </>
   );

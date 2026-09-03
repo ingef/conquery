@@ -3,14 +3,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { StateT } from "../../app/reducers";
-import IconButton from "../../button/IconButton";
 import { DNDType } from "../../common/constants/dndTypes";
 import { useResizeObserver } from "../../common/helpers/useResizeObserver";
 import type { DragItemFormConfig } from "../../external-forms/types";
 import type { DragItemQuery } from "../../standard-query-editor/types";
+import { Button } from "../../ui-components/Button";
 import Dropzone from "../../ui-components/Dropzone";
+import { Icon } from "../../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import {
   removeFolderFromFilter,
@@ -46,8 +46,6 @@ const deleteButton = tv({
     "absolute top-0 right-0",
     "invisible group-hover/folder:visible",
     "bg-bg-50",
-    "px-2 py-[2px]",
-    "opacity-100",
     "rounded-none",
   ],
 });
@@ -191,15 +189,15 @@ const Folders = ({ className }: { className?: string }) => {
         className="mb-3 flex w-full min-w-[100px] items-start"
         ref={parentRef}
       >
-        <IconButton
-          className="px-[6px] py-1 text-left"
-          icon={faPlus}
-          frame
-          tight
-          onClick={() => setShowAddFolderModal(true)}
+        <Button
+          intent="secondary"
+          size="sm"
+          onPress={() => setShowAddFolderModal(true)}
+          className="text-left"
         >
+          <Icon icon={faPlus} />
           {isNarrow ? t("folders.addShort") : t("folders.add")}
-        </IconButton>
+        </Button>
       </div>
       {showAddFolderModal && (
         <AddFolderModal
@@ -266,14 +264,16 @@ const Folders = ({ className }: { className?: string }) => {
                     resultWords={searchResultWords}
                   />
                   <TooltipTrigger>
-                    <IconButton
-                      className={deleteButton()}
-                      icon={faTimes}
-                      onClick={(e) => {
+                    <Button
+                      aria-label={t("common.delete")}
+                      intent="tertiary"
+                      onPress={() => {
                         setFolderToDelete(folder);
-                        e.stopPropagation();
                       }}
-                    />
+                      className={deleteButton()}
+                    >
+                      <Icon icon={faTimes} />
+                    </Button>
                     <Tooltip>{t("common.delete")}</Tooltip>
                   </TooltipTrigger>
                 </>

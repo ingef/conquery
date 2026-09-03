@@ -47,7 +47,7 @@ const menuItem = tv({
  * react-aria does it. The popover is part of the Menu:
  *
  *   <MenuTrigger>
- *     <IconButton … />
+ *     <Button … />
  *     <Menu aria-label="…" onAction={(key) => …}>
  *       <MenuItem id="…">…</MenuItem>
  *       <MenuItem href="…">…</MenuItem>

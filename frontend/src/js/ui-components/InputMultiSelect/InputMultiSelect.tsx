@@ -321,21 +321,20 @@ const InputMultiSelect = ({
         {loading && <Icon icon={faSpinner} className="mx-[6px] my-[3px]" />}
         {!loading && (inputValue.length > 0 || selectedItems.length > 0) && (
           <ResetButton
-            icon={faTimes}
-            disabled={disabled}
-            onClick={() => {
+            isDisabled={disabled}
+            onPress={() => {
               setInputValue("");
               resetMultiSelectState();
               resetComboboxState();
             }}
-          />
+          >
+            <Icon icon={faTimes} />
+          </ResetButton>
         )}
         <VerticalSeparator />
-        <DropdownToggleButton
-          disabled={disabled}
-          {...getToggleButtonProps()}
-          icon={faChevronDown}
-        />
+        <DropdownToggleButton isDisabled={disabled} {...getToggleButtonProps()}>
+          <Icon icon={faChevronDown} />
+        </DropdownToggleButton>
       </Control>
       {isOpen ? (
         <MenuContainer ref={menuContainerRef}>

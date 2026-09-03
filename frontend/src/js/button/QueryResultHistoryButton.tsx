@@ -5,7 +5,8 @@ import type { ColumnDescription } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import { openHistory, useNewHistorySession } from "../entity-history/actions";
-import IconButton from "./IconButton";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 
 export const QueryResultHistoryButton = ({
   url,
@@ -26,16 +27,16 @@ export const QueryResultHistoryButton = ({
   const newHistorySession = useNewHistorySession();
 
   return (
-    <IconButton
-      className="h-[35px] whitespace-nowrap"
-      icon={isLoading ? faSpinner : faListUl}
-      frame
-      onClick={async () => {
+    <Button
+      intent="secondary"
+      onPress={async () => {
         await newHistorySession(getAuthorizedUrl(url), columns, label);
         dispatch(openHistory());
       }}
+      className="whitespace-nowrap"
     >
+      <Icon icon={isLoading ? faSpinner : faListUl} />
       {t("history.history")}
-    </IconButton>
+    </Button>
   );
 };

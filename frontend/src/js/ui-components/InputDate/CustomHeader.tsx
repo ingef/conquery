@@ -6,9 +6,9 @@ import { useState } from "react";
 import type { ReactDatePickerCustomHeaderProps } from "react-datepicker";
 import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../../api/types";
-import IconButton from "../../button/IconButton";
 import { useMonthName, useMonthNames } from "../../common/helpers/dateHelper";
 import { Button } from "../Button";
+import { Icon } from "../Icon";
 import { List, Menu } from "../InputSelect/InputSelectComponents";
 
 const root = tv({
@@ -146,21 +146,25 @@ export const CustomHeader = ({
 }: ReactDatePickerCustomHeaderProps) => {
   return (
     <div className={root()}>
-      <IconButton
-        icon={faChevronLeft}
-        onClick={decreaseMonth}
-        disabled={prevMonthButtonDisabled}
-      />
+      <Button
+        intent="tertiary"
+        onPress={decreaseMonth}
+        isDisabled={prevMonthButtonDisabled}
+      >
+        <Icon icon={faChevronLeft} />
+      </Button>
       <YearMonthSelect
         date={date}
         changeYear={changeYear}
         changeMonth={changeMonth}
       />
-      <IconButton
-        icon={faChevronRight}
-        onClick={increaseMonth}
-        disabled={nextMonthButtonDisabled}
-      />
+      <Button
+        intent="tertiary"
+        onPress={increaseMonth}
+        isDisabled={nextMonthButtonDisabled}
+      >
+        <Icon icon={faChevronRight} />
+      </Button>
     </div>
   );
 };

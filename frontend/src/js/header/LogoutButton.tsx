@@ -2,11 +2,11 @@ import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { useKeycloak } from "@react-keycloak-fork/web";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-
 import { deleteStoredAuthToken } from "../authorization/helper";
-import IconButton from "../button/IconButton";
 import { clearIndexedDBCache } from "../common/helpers/indexedDBCache";
 import { isIDPEnabled } from "../environment";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const LogoutButton = () => {
@@ -36,12 +36,13 @@ const LogoutButton = () => {
 
   return (
     <TooltipTrigger>
-      <IconButton
-        className="p-[7px]"
-        frame
-        icon={faSignOutAlt}
-        onClick={onLogout}
-      />
+      <Button
+        aria-label={t("common.logout")}
+        intent="secondary"
+        onPress={onLogout}
+      >
+        <Icon icon={faSignOutAlt} />
+      </Button>
       <Tooltip>{t("common.logout")}</Tooltip>
     </TooltipTrigger>
   );

@@ -11,11 +11,10 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import type { CurrencyConfigT } from "../api/types";
-import IconButton from "../button/IconButton";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
+import { Button } from "./Button";
 import CurrencyInput from "./CurrencyInput";
 import { Icon } from "./Icon";
 import {
@@ -205,15 +204,17 @@ const BaseInput = ({
               <Tooltip>{invalidText}</Tooltip>
             </TooltipTrigger>
           )}
-          <IconButton
-            className={clearZoneIconButton()}
-            tiny
-            icon={faTimes}
+          <Button
+            intent="tertiary"
+            size="sm"
             excludeFromTabOrder
-            disabled={disabled}
+            isDisabled={disabled}
             aria-label={t("common.clearValue")}
-            onClick={() => onChange(null)}
-          />
+            onPress={() => onChange(null)}
+            className={clearZoneIconButton()}
+          >
+            <Icon icon={faTimes} />
+          </Button>
         </>
       )}
     </div>

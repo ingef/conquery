@@ -17,13 +17,13 @@ import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel, SecondaryId } from "../../api/types";
 import type { StateT } from "../../app/reducers";
 import DownloadButton from "../../button/DownloadButton";
-import IconButton from "../../button/IconButton";
 import { Highlighter } from "../../common/components/Highlighter";
 import { formatDate } from "../../common/helpers/dateHelper";
 import { exists } from "../../common/helpers/exists";
 import { useFormLabelByType } from "../../external-forms/stateSelectors";
 import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
+import { Button } from "../../ui-components/Button";
 import { Icon } from "../../ui-components/Icon";
 import {
   Tooltip,
@@ -139,13 +139,15 @@ const ShareButton = ({
   const { t } = useTranslation();
   return (
     <TooltipTrigger>
-      <IconButton
-        icon={isShared ? faUser : faUserRegular}
-        bare
+      <Button
+        intent="tertiary"
+        size="sm"
         aria-label={isShared ? t("common.shared") : t("common.share")}
         data-test-id="share"
-        onClick={onClick}
-      />
+        onPress={onClick}
+      >
+        <Icon icon={isShared ? faUser : faUserRegular} />
+      </Button>
       <Tooltip>
         {
           <div className={tooltipText()}>
@@ -184,8 +186,6 @@ const ResultsLabel = ({
     <TooltipTrigger>
       <DownloadButton
         className={downloadButton()}
-        tight
-        bare
         simpleIcon
         resultUrl={resultUrl}
       >
@@ -265,14 +265,17 @@ const ProjectItem = ({
         <div className={topInfos()}>
           <div className="flex items-center">
             <TooltipTrigger>
-              <IconButton
+              <Button
+                intent="tertiary"
+                size="sm"
+                onPress={onIndicateEditFolders}
+                isDisabled={!mayEdit}
                 className="mr-[10px]"
-                icon={folders.length === 0 ? faFolderRegular : faFolder}
-                tight
-                bare
-                onClick={onIndicateEditFolders}
-                disabled={!mayEdit}
-              />
+              >
+                <Icon
+                  icon={folders.length === 0 ? faFolderRegular : faFolder}
+                />
+              </Button>
               <Tooltip>{<FoldersTooltip folders={folders} />}</Tooltip>
             </TooltipTrigger>
             <div className="flex items-center gap-2">
@@ -295,7 +298,14 @@ const ProjectItem = ({
             {executedAt}
             {secondaryId && (
               <TooltipTrigger>
-                <IconButton icon={faMicroscope} bare onClick={() => {}} />
+                <Button
+                  aria-label={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}
+                  intent="tertiary"
+                  size="sm"
+                  onPress={() => {}}
+                >
+                  <Icon icon={faMicroscope} />
+                </Button>
                 <Tooltip>{`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}</Tooltip>
               </TooltipTrigger>
             )}
