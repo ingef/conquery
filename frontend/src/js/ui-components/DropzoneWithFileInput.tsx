@@ -6,12 +6,11 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import { SelectFileButton } from "../button/SelectFileButton";
-import FaIcon from "../icon/FaIcon";
-
 import Dropzone, {
   type ChildArgs,
   type PossibleDroppableObject,
 } from "./Dropzone";
+import { Icon } from "./Icon";
 import { ImportModal } from "./ImportModal";
 
 export interface DragItemFile {
@@ -149,7 +148,10 @@ const DropzoneWithFileInput = <
               className={selectFileButton({ outside: !!importButtonOutside })}
               onClick={() => setImportModalOpen(true)}
             >
-              <FaIcon icon={faFileImport} gray className={importIcon()} />
+              <Icon
+                icon={faFileImport}
+                className={[importIcon(), "text-gray-500"]}
+              />
               {t("common.import")}
             </SelectFileButton>
           )}

@@ -4,9 +4,9 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
-import FaIcon from "../../icon/FaIcon";
 import Modal from "../../modal/Modal";
 import DropzoneWithFileInput from "../../ui-components/DropzoneWithFileInput";
+import { Icon } from "../../ui-components/Icon";
 import InfoTooltip from "../../ui-components/InfoTooltip";
 
 import CSVColumnPicker, { type QueryToUploadT } from "./CSVColumnPicker";
@@ -60,7 +60,7 @@ const UploadQueryResultsModal = ({
       <div>
         {fullUploadSuccess ? (
           <div className="my-[25px]">
-            <FaIcon className={successIcon()} icon={faCheckCircle} />
+            <Icon icon={faCheckCircle} className={successIcon()} />
             <p className="m-0">
               {t("uploadQueryResultsModal.uploadSucceeded", {
                 count: uploadResult?.resolved || 0,

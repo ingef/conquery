@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import { useClickOutside } from "../common/helpers/useClickOutside";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
 import { resetMessage as resetMessageAction } from "./actions";
 import type { SnackMessageStateT } from "./reducer";
 
@@ -55,7 +55,7 @@ export const SnackMessage = memo(function SnackMessageComponent() {
               className={clearZone()}
               onClick={resetMessage}
             >
-              <FaIcon white large icon={faTimes} />
+              <Icon icon={faTimes} className="text-white" />
             </button>
           </div>
         </div>

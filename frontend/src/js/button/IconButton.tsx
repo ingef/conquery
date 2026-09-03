@@ -1,7 +1,8 @@
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { memo, type Ref, useMemo } from "react";
+import { memo, type Ref } from "react";
 import { tv } from "tailwind-variants";
-import FaIcon, { type IconStyleProps } from "../icon/FaIcon";
+
+import { Icon } from "../ui-components/Icon";
 
 import BasicButton, { type BasicButtonProps } from "./BasicButton";
 
@@ -18,7 +19,6 @@ const iconButton = tv({
   ],
   variants: {
     // later wins when several are set
-    secondary: { true: "text-orange" },
     active: { true: "text-primary-500" },
     red: { true: "text-red" },
     frame: { true: "opacity-100 border border-gray-500 hover:bg-bg-100" },
@@ -28,33 +28,22 @@ const iconButton = tv({
   },
 });
 
+// The button's text color reaches the icon; this is the exception.
 const buttonIcon = tv({
-  base: "text-sm",
   variants: {
-    // later wins when several are set
-    secondary: { true: "text-orange" },
     light: { true: "text-gray-500" },
-    active: { true: "text-primary-500" },
-    red: { true: "text-red" },
-    small: { true: "text-xs" },
-    large: { true: "text-base" },
   },
 });
 
-export interface IconButtonPropsT extends BasicButtonProps {
-  iconProps?: IconStyleProps;
+export interface IconButtonPropsT extends Omit<BasicButtonProps, "small"> {
+  icon: IconProp;
   active?: boolean;
   large?: boolean;
-  small?: boolean;
-  icon: IconProp;
-  secondary?: boolean;
   tight?: boolean;
   red?: boolean;
-  left?: boolean;
   frame?: boolean;
   bare?: boolean;
   light?: boolean;
-  fixedIconWidth?: number;
   bgHover?: boolean;
   iconColor?: string;
 }
@@ -66,87 +55,39 @@ const IconButton = ({
   active,
   red,
   large,
-  left,
   children,
   tight,
-  iconProps,
-  small,
-  secondary,
   light,
-  fixedIconWidth,
   bgHover,
   iconColor,
   frame,
   className,
   ...restProps
-}: IconButtonPropsT & { ref?: Ref<HTMLButtonElement> }) => {
-  const iconElement = useMemo(() => {
-    const iconEl = (
-      <FaIcon
-        left={left}
-        icon={icon}
-        {...iconProps}
-        className={buttonIcon({
-          secondary,
-          light,
-          active,
-          red,
-          small,
-          large,
-        })}
-        style={
-          iconColor
-            ? { color: iconColor, ...iconProps?.style }
-            : iconProps?.style
-        }
-      />
-    );
-
-    return fixedIconWidth ? (
-      <span className="inline-block" style={{ width: fixedIconWidth }}>
-        {iconEl}
-      </span>
-    ) : (
-      iconEl
-    );
-  }, [
-    icon,
-    active,
-    red,
-    large,
-    left,
-    iconProps,
-    small,
-    secondary,
-    light,
-    fixedIconWidth,
-    iconColor,
-  ]);
-
-  return (
-    <BasicButton
-      active={active}
-      secondary={secondary}
-      large={large}
-      {...restProps}
-      className={iconButton({
-        secondary,
-        active,
-        red,
-        frame,
-        bgHover,
-        tight,
-        large,
-        className,
-      })}
-      ref={ref}
-    >
-      {iconElement}
-      {children && (
-        <span className="flex items-center gap-[5px]">{children}</span>
-      )}
-    </BasicButton>
-  );
-};
+}: IconButtonPropsT & { ref?: Ref<HTMLButtonElement> }) => (
+  <BasicButton
+    active={active}
+    large={large}
+    {...restProps}
+    className={iconButton({
+      active,
+      red,
+      frame,
+      bgHover,
+      tight,
+      large,
+      className,
+    })}
+    ref={ref}
+  >
+    <Icon
+      icon={icon}
+      className={buttonIcon({ light })}
+      style={iconColor ? { color: iconColor } : undefined}
+    />
+    {children && (
+      <span className="flex items-center gap-[5px]">{children}</span>
+    )}
+  </BasicButton>
+);
 
 export default memo(IconButton);

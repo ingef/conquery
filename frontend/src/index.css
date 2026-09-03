@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* into a layer so tailwind utilities can size icons */
+@import "@fortawesome/fontawesome-svg-core/styles.css" layer(base);
 
 @theme {
   --color-primary-50: #dadedb;

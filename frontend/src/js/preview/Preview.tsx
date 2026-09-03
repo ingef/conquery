@@ -8,7 +8,7 @@ import { tv } from "tailwind-variants";
 import type { PreviewStatistics, SecondaryId } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { TransparentButton } from "../button/TransparentButton";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
 import { closePreview } from "./actions";
 import Charts from "./Charts";
 import DiagramModal from "./DiagramModal";
@@ -56,9 +56,7 @@ const chartLoadingBlocker = tv({
   ],
 });
 
-// the old styles also set `width: 30px`, but FaIcon forces `width: initial
-// !important`, so it never applied — only the height did
-const spinnerIcon = tv({ base: "h-[30px]" });
+const spinnerIcon = tv({ base: "size-[30px]" });
 
 const selectBox = tv({
   base: ["rounded", "bg-white", "shadow-[0_0_5px_0_rgba(0,0,0,0.2)]"],
@@ -126,7 +124,7 @@ export default function Preview() {
           />
         ) : (
           <div className={chartLoadingBlocker()}>
-            <FaIcon className={spinnerIcon()} icon={faSpinner} />
+            <Icon icon={faSpinner} className={spinnerIcon()} />
           </div>
         )}
         {popOver && (

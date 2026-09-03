@@ -70,7 +70,6 @@ const EditableText = ({
           bare
           icon={faPen}
           onClick={onToggleEdit}
-          small
           large={large}
         />
         <Tooltip>{tooltip}</Tooltip>

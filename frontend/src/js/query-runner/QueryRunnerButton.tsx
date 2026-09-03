@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import BasicButton from "../button/BasicButton";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
 
 const left = tv({
   base: ["px-[15px]", "transition-[color,background-color] duration-100"],
@@ -75,7 +75,10 @@ const QueryRunnerButton = ({
         data-test-id="query-runner-button"
       >
         <span className={left({ running: isQueryRunning })}>
-          <FaIcon white={!isQueryRunning} icon={icon} />
+          <Icon
+            icon={icon}
+            className={[!isQueryRunning ? "text-white" : undefined]}
+          />
         </span>
         <span className={runnerLabel()}>{label}</span>
       </BasicButton>

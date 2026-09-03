@@ -1,7 +1,7 @@
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { tv } from "tailwind-variants";
 import { exists } from "../common/helpers/exists";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "./Icon";
 import InfoTooltip from "./InfoTooltip";
 import {
   Tooltip,
@@ -79,7 +79,7 @@ const InputCheckbox = ({
       >
         {!!value && (
           <div className={checkmark()}>
-            <FaIcon icon={faCheck} className={checkmarkIcon()} />
+            <Icon icon={faCheck} className={checkmarkIcon()} />
           </div>
         )}
       </TooltipTarget>

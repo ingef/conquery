@@ -14,7 +14,6 @@ import type { StateT } from "../app/reducers";
 import PrimaryButton from "../button/PrimaryButton";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { useDatasetId } from "../dataset/selectors";
-import FaIcon from "../icon/FaIcon";
 import { isMultiSelectFilter, resetFilters } from "../model/filter";
 import { nodeIsElement } from "../model/node";
 import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
@@ -23,6 +22,7 @@ import type {
   BigMultiSelectFilterWithValueType,
   MultiSelectFilterWithValueType,
 } from "../standard-query-editor/types";
+import { Icon } from "../ui-components/Icon";
 
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { useDefaultStatusOptions } from "./useDefaultStatusOptions";
@@ -251,7 +251,7 @@ export const SearchEntitiesComponent = ({
         onClick={onSubmitSearch}
         disabled={!hasFiltersSet || loading}
       >
-        {loading && <FaIcon white icon={faSpinner} />}
+        {loading && <Icon icon={faSpinner} className="text-white" />}
         {t("history.searchEntitiesButton")}
       </PrimaryButton>
     </div>

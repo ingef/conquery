@@ -18,7 +18,7 @@ export const HistoryButton = () => {
 
   return (
     <TooltipTrigger>
-      <IconButton small frame icon={faListUl} onClick={onClick} />
+      <IconButton className="p-[7px]" frame icon={faListUl} onClick={onClick} />
       <Tooltip>{t("history.history")}</Tooltip>
     </TooltipTrigger>
   );

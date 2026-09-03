@@ -1,8 +1,8 @@
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { Focusable } from "react-aria-components";
 import { tv } from "tailwind-variants";
-import FaIcon from "../icon/FaIcon";
 import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
+import { Icon } from "../ui-components/Icon";
 import {
   Tooltip,
   TooltipTrigger,
@@ -75,7 +75,7 @@ const TabNavigation = ({
                   onClick={createClickHandler(key)}
                 >
                   {label}
-                  {loading && <FaIcon className="ml-[5px]" icon={faSpinner} />}
+                  {loading && <Icon icon={faSpinner} className="ml-[5px]" />}
                 </button>
               </Focusable>
               <Tooltip>{tooltip}</Tooltip>

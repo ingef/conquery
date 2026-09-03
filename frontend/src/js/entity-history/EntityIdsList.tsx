@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { tv } from "tailwind-variants";
 
 import { IncrementalList } from "../common/components/IncrementalList";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
 import type { useUpdateHistorySession } from "./actions";
 import type { EntityIdsStatus } from "./History";
 import type { EntityId } from "./reducer";
@@ -91,7 +91,7 @@ export const EntityIdsList = ({
           <span className="font-light text-gray-500">({entityId.kind})</span>
         </div>
         {loadingId === entityId.id && (
-          <FaIcon className="mx-[6px] my-[3px]" icon={faSpinner} />
+          <Icon icon={faSpinner} className="mx-[6px] my-[3px]" />
         )}
         <div className="ml-auto flex items-center gap-[2px]">
           {entityIdsStatus[entityId.id] &&

@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import IconButton from "../button/IconButton";
 import PrimaryButton from "../button/PrimaryButton";
 import { TransparentButton } from "../button/TransparentButton";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "./Icon";
 
 import {
   Tooltip,
@@ -72,7 +72,7 @@ export const Timing: Story = {
       </TooltipTrigger>
       <TooltipTrigger delay={tooltipDelay.immediate}>
         <TooltipTarget role="img" aria-label="Info">
-          <FaIcon gray icon={faInfoCircle} />
+          <Icon icon={faInfoCircle} className="text-gray-500" />
         </TooltipTarget>
         <Tooltip>Help icons open immediately</Tooltip>
       </TooltipTrigger>
@@ -104,7 +104,7 @@ export const OnStaticContent: Story = {
     <div className="flex items-center gap-4 text-sm">
       <TooltipTrigger delay={tooltipDelay.immediate}>
         <TooltipTarget role="img" aria-label="Info">
-          <FaIcon gray icon={faInfoCircle} />
+          <Icon icon={faInfoCircle} className="text-gray-500" />
         </TooltipTarget>
         <Tooltip>An icon that is reachable with the keyboard</Tooltip>
       </TooltipTrigger>

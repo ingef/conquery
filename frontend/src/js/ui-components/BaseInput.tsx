@@ -16,8 +16,8 @@ import type { CurrencyConfigT } from "../api/types";
 import IconButton from "../button/IconButton";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
-import FaIcon from "../icon/FaIcon";
 import CurrencyInput from "./CurrencyInput";
+import { Icon } from "./Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -190,9 +190,7 @@ const BaseInput = ({
       )}
       {exists(value) && !isEmpty(value) && (
         <>
-          {valid && !invalid && (
-            <FaIcon icon={faCheck} large={large} className={greenIcon()} />
-          )}
+          {valid && !invalid && <Icon icon={faCheck} className={greenIcon()} />}
           {invalid && (
             <TooltipTrigger delay={tooltipDelay.immediate}>
               <TooltipTarget
@@ -202,11 +200,7 @@ const BaseInput = ({
                 excludeFromTabOrder
                 className={absoluteWrap()}
               >
-                <FaIcon
-                  icon={faExclamationTriangle}
-                  large={large}
-                  className={redIcon()}
-                />
+                <Icon icon={faExclamationTriangle} className={redIcon()} />
               </TooltipTarget>
               <Tooltip>{invalidText}</Tooltip>
             </TooltipTrigger>

@@ -12,7 +12,7 @@ import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import { Highlighter } from "../common/components/Highlighter";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
 import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import InfoPaneCollapsed from "./InfoPaneCollapsed";
 import { InfoPaneHeader } from "./InfoPaneHeader";
@@ -113,7 +113,7 @@ const ConceptLabel = ({
 
   return (
     <p className={pinnedLabel()}>
-      {conceptIcon && <FaIcon className={typeIcon()} icon={conceptIcon} />}
+      {conceptIcon && <Icon icon={conceptIcon} className={typeIcon()} />}
       <span className="grow">
         {label ? (
           <HighlightedText words={words} text={label} />

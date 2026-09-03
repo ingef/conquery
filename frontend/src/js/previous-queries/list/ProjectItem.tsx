@@ -22,9 +22,9 @@ import { Highlighter } from "../../common/components/Highlighter";
 import { formatDate } from "../../common/helpers/dateHelper";
 import { exists } from "../../common/helpers/exists";
 import { useFormLabelByType } from "../../external-forms/stateSelectors";
-import FaIcon from "../../icon/FaIcon";
 import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
+import { Icon } from "../../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -185,7 +185,6 @@ const ResultsLabel = ({
       <DownloadButton
         className={downloadButton()}
         tight
-        small
         bare
         simpleIcon
         resultUrl={resultUrl}
@@ -270,7 +269,6 @@ const ProjectItem = ({
                 className="mr-[10px]"
                 icon={folders.length === 0 ? faFolderRegular : faFolder}
                 tight
-                small
                 bare
                 onClick={onIndicateEditFolders}
                 disabled={!mayEdit}
@@ -286,7 +284,7 @@ const ProjectItem = ({
                     aria-label={t("previousQuery.hasNoDates")}
                     excludeFromTabOrder
                   >
-                    <FaIcon className="opacity-70" red icon={faCalendar} />
+                    <Icon icon={faCalendar} className="opacity-70 text-red" />
                   </TooltipTarget>
                   <Tooltip>{t("previousQuery.hasNoDates")}</Tooltip>
                 </TooltipTrigger>

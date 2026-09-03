@@ -7,7 +7,7 @@ import { usePostLogin } from "../api/api";
 import { useAppTheme } from "../app-theme-context";
 import PrimaryButton from "../button/PrimaryButton";
 import ErrorMessage from "../error-message/ErrorMessage";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
 import InputPlain from "../ui-components/InputPlain/InputPlain";
 
 import { AuthTokenContext } from "./AuthTokenProvider";
@@ -121,11 +121,9 @@ const LoginPage = () => {
             large
             type="submit"
           >
-            <FaIcon
-              className="mr-[10px]"
-              large
-              white
+            <Icon
               icon={loading ? faSpinner : faCheck}
+              className="mr-[10px] text-white"
             />
             {t("login.submit")}
           </PrimaryButton>

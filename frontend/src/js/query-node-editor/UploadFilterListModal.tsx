@@ -8,9 +8,9 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { PostFilterResolveResponseT } from "../api/types";
 import PrimaryButton from "../button/PrimaryButton";
-import FaIcon from "../icon/FaIcon";
 import Modal from "../modal/Modal";
 import ScrollableList from "../scrollable-list/ScrollableList";
+import { Icon } from "../ui-components/Icon";
 import InputCheckbox from "../ui-components/InputCheckbox";
 
 const root = tv({
@@ -79,12 +79,12 @@ const UploadFilterListModal = ({
       headline={t("uploadFilterListModal.headline")}
     >
       <div className={root()}>
-        {loading && <FaIcon center icon={faSpinner} />}
+        {loading && <Icon icon={faSpinner} className="text-center" />}
         {error && (
           <p>
-            <FaIcon
-              className={bigIcon({ kind: "error" })}
+            <Icon
               icon={faExclamationCircle}
+              className={bigIcon({ kind: "error" })}
             />
             {t("uploadConceptListModal.error")}
           </p>
@@ -92,9 +92,9 @@ const UploadFilterListModal = ({
         {hasUnresolvedItems && (
           <div className="flex flex-col gap-[5px]">
             <p className={msg()}>
-              <FaIcon
-                className={bigIcon({ kind: "error" })}
+              <Icon
                 icon={faExclamationCircle}
+                className={bigIcon({ kind: "error" })}
               />
               <span
                 // biome-ignore lint/security/noDangerouslySetInnerHtml: i18n text with markup
@@ -115,9 +115,9 @@ const UploadFilterListModal = ({
         <div className="flex flex-col gap-[5px]">
           {hasResolvedItems && (
             <p className={msg()}>
-              <FaIcon
-                className={bigIcon({ kind: "success" })}
+              <Icon
                 icon={faCheckCircle}
+                className={bigIcon({ kind: "success" })}
               />
               {t("uploadConceptListModal.resolvedCodes", {
                 count: resolvedItemsCount,

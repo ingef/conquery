@@ -7,7 +7,7 @@ import type { Ref } from "react";
 import { tv } from "tailwind-variants";
 import { Highlighter } from "../common/components/Highlighter";
 
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
 
 // Root with transparent background.
 // relative: needed to fix a drag & drop issue in Safari
@@ -114,20 +114,34 @@ const ConceptTreeNodeText = ({
         {hasChildren && (
           <>
             <span className={caretIconContainer()}>
-              <FaIcon
-                disabled={disabled}
-                active
+              <Icon
                 icon={isOpen ? faCaretDown : faCaretRight}
+                className={[
+                  "text-primary-500",
+                  disabled ? "text-gray-400 cursor-not-allowed" : undefined,
+                ]}
               />
             </span>
             <span className={folderIconContainer()}>
-              <FaIcon active disabled={disabled} icon={icon} />
+              <Icon
+                icon={icon}
+                className={[
+                  "text-primary-500",
+                  disabled ? "text-gray-400 cursor-not-allowed" : undefined,
+                ]}
+              />
             </span>
           </>
         )}
         {!hasChildren && (
           <span className={dashIconContainer()}>
-            <FaIcon disabled={disabled} large active icon={icon} />
+            <Icon
+              icon={icon}
+              className={[
+                "text-primary-500",
+                disabled ? "text-gray-400 cursor-not-allowed" : undefined,
+              ]}
+            />
           </span>
         )}
         {resultCount && <span className={resultsNumber()}>{resultCount}</span>}

@@ -8,8 +8,8 @@ import type { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import DownloadButton, { getFileIcon } from "../button/DownloadButton";
 import IconButton from "../button/IconButton";
-import FaIcon from "../icon/FaIcon";
-import { Menu, MenuItem, menuItemIcon } from "../ui-components/Menu";
+import { Icon } from "../ui-components/Icon";
+import { Menu, MenuItem } from "../ui-components/Menu";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { getUserSettings, storeUserSettings } from "../user/userSettings";
 
@@ -137,9 +137,7 @@ const DownloadResultsDropdownButton = ({
                   href={`${resultUrl.url}?access_token=${encodeURIComponent(authToken)}`}
                   textValue={resultUrl.label}
                 >
-                  <span className={menuItemIcon()}>
-                    <FaIcon large icon={icon} style={{ color }} />
-                  </span>
+                  <Icon icon={icon} style={{ color }} />
                   {truncate(resultUrl.label)}
                 </MenuItem>
               );
