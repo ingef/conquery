@@ -52,12 +52,24 @@ export const Placements: Story = {
   ),
 };
 
-export const Delayed: Story = {
+export const Timing: Story = {
   render: () => (
-    <TooltipTrigger delay={1500}>
-      <TransparentButton>Hover and wait</TransparentButton>
-      <Tooltip>Appears after 1.5 seconds</Tooltip>
-    </TooltipTrigger>
+    <div className="flex items-center gap-4 text-sm">
+      <TooltipTrigger>
+        <TransparentButton>Warm-up</TransparentButton>
+        <Tooltip>Waits for the warm-up, then neighbours open instantly</Tooltip>
+      </TooltipTrigger>
+      <TooltipTrigger>
+        <IconButton frame icon={faTrash} />
+        <Tooltip>Icon-only buttons wait too</Tooltip>
+      </TooltipTrigger>
+      <TooltipTrigger delay={0}>
+        <TooltipTarget role="img" aria-label="Info">
+          <FaIcon gray icon={faInfoCircle} />
+        </TooltipTarget>
+        <Tooltip>Help icons open immediately</Tooltip>
+      </TooltipTrigger>
+    </div>
   ),
 };
 
@@ -83,7 +95,7 @@ export const RichContent: Story = {
 export const OnStaticContent: Story = {
   render: () => (
     <div className="flex items-center gap-4 text-sm">
-      <TooltipTrigger>
+      <TooltipTrigger delay={0}>
         <TooltipTarget role="img" aria-label="Info">
           <FaIcon gray icon={faInfoCircle} />
         </TooltipTarget>
