@@ -7,8 +7,8 @@ import { tv } from "tailwind-variants";
 import type { SecondaryId } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
-import FaIcon from "../icon/FaIcon";
 import { nodeIsConceptQueryNode } from "../model/node";
+import { Icon } from "../ui-components/Icon";
 import InfoTooltip from "../ui-components/InfoTooltip";
 import ToggleButton from "../ui-components/ToggleButton";
 
@@ -160,10 +160,9 @@ const SecondaryIdSelectorUI = memo(
     return (
       <div>
         <h3 className={headline({ active: !!value })}>
-          <FaIcon
-            className={headlineIcon({ active: !!value })}
-            left
+          <Icon
             icon={faMicroscope}
+            className={[headlineIcon({ active: !!value }), "mr-[10px]"]}
           />
           {t("queryEditor.secondaryId")}
           <InfoTooltip text={t("queryEditor.secondaryIdTooltip")} />

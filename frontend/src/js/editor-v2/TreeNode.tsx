@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import { DNDType } from "../common/constants/dndTypes";
-import FaIcon from "../icon/FaIcon";
 import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { getRootNodeLabel } from "../standard-query-editor/helper";
 import type {
@@ -16,6 +15,7 @@ import Dropzone, {
   type DropzoneProps,
   type PossibleDroppableObject,
 } from "../ui-components/Dropzone";
+import { Icon } from "../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -301,7 +301,10 @@ export function TreeNode({
                 )}
                 {tree.dates?.excluded && (
                   <div className={dates()}>
-                    <FaIcon red icon={faCalendarMinus} left />
+                    <Icon
+                      icon={faCalendarMinus}
+                      className="mr-[10px] text-red"
+                    />
                     {t("editorV2.datesExcluded")}
                   </div>
                 )}

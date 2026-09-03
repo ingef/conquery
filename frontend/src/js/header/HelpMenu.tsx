@@ -9,8 +9,8 @@ import { useTranslation } from "react-i18next";
 
 import { useAbout } from "../app/About";
 import IconButton from "../button/IconButton";
-import FaIcon from "../icon/FaIcon";
-import { Menu, MenuItem, menuItemIcon } from "../ui-components/Menu";
+import { Icon } from "../ui-components/Icon";
+import { Menu, MenuItem } from "../ui-components/Menu";
 
 interface Props {
   contactEmail?: string;
@@ -24,7 +24,7 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
   return (
     <MenuTrigger>
       <IconButton
-        className="px-3 py-[7px]"
+        className="p-[7px]"
         icon={faQuestion}
         frame
         data-test-id="help-menu"
@@ -42,9 +42,7 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
           rel="noopener noreferrer"
           data-test-id="help-email"
         >
-          <span className={menuItemIcon()}>
-            <FaIcon icon={faPaperPlane} />
-          </span>
+          <Icon icon={faPaperPlane} />
           {t("common.contact")}
         </MenuItem>
         <MenuItem
@@ -54,15 +52,11 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
           rel="noopener noreferrer"
           data-test-id="help-manual"
         >
-          <span className={menuItemIcon()}>
-            <FaIcon icon={faBook} />
-          </span>
+          <Icon icon={faBook} />
           {t("common.manual")}
         </MenuItem>
         <MenuItem id="version">
-          <span className={menuItemIcon()}>
-            <FaIcon icon={faInfoCircle} />
-          </span>
+          <Icon icon={faInfoCircle} />
           {t("common.version")}
         </MenuItem>
       </Menu>

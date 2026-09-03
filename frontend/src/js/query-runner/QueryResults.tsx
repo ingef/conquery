@@ -9,7 +9,7 @@ import PreviewButton from "../button/PreviewButton";
 import { QueryResultHistoryButton } from "../button/QueryResultHistoryButton";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
 import { canViewEntityPreview, canViewQueryPreview } from "../user/selectors";
 import DownloadResultsDropdownButton from "./DownloadResultsDropdownButton";
 
@@ -49,7 +49,7 @@ const QueryResults = ({
     <div className={root()}>
       {isEmpty(resultCount) ? (
         <p className={text()}>
-          <FaIcon icon={faCheck} left />
+          <Icon icon={faCheck} className="mr-[10px]" />
           {t("queryRunner.endSuccess")}
         </p>
       ) : (

@@ -2,7 +2,7 @@ import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
 import type { ReactElement } from "react";
 import { tv } from "tailwind-variants";
 
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "./Icon";
 
 import {
   Tooltip,
@@ -35,7 +35,7 @@ const InfoTooltip = ({
         aria-label="Info"
         className={spanContainer({ className })}
       >
-        <FaIcon className={icon()} gray icon={faQuestionCircle} />
+        <Icon icon={faQuestionCircle} className={[icon(), "text-gray-500"]} />
       </TooltipTarget>
       <Tooltip wide={wide}>
         {text ? (

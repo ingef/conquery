@@ -13,7 +13,7 @@ import type {
 } from "../../api/types";
 import { Highlighter } from "../../common/components/Highlighter";
 import { exists } from "../../common/helpers/exists";
-import FaIcon from "../../icon/FaIcon";
+import { Icon } from "../../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -74,8 +74,7 @@ const rawDataBadge = tv({
 });
 
 const bucketIcon = tv({
-  // w-6! beats FaIcon's own w-[initial]! via merge, like the old !important did
-  base: ["w-6!", "text-center", "mx-[5px] my-2", "text-base"],
+  base: ["w-6", "mx-[5px] my-2"],
 });
 
 const bullet = tv({
@@ -150,11 +149,9 @@ const EventCard = ({
                 aria-label={moneyTooltip}
                 excludeFromTabOrder
               >
-                <FaIcon
-                  className={bucketIcon()}
+                <Icon
                   icon={faEuroSign}
-                  active
-                  large
+                  className={[bucketIcon(), "text-primary-500"]}
                 />
               </TooltipTarget>
               <Tooltip>{moneyTooltip}</Tooltip>
@@ -198,7 +195,10 @@ const EventCard = ({
                 aria-label={restTooltip}
                 excludeFromTabOrder
               >
-                <FaIcon className={bucketIcon()} icon={faInfo} active large />
+                <Icon
+                  icon={faInfo}
+                  className={[bucketIcon(), "text-primary-500"]}
+                />
               </TooltipTarget>
               <Tooltip>{restTooltip}</Tooltip>
             </TooltipTrigger>
@@ -229,11 +229,9 @@ const EventCard = ({
                 aria-label={groupableIdsTooltip}
                 excludeFromTabOrder
               >
-                <FaIcon
-                  className={bucketIcon()}
+                <Icon
                   icon={faFingerprint}
-                  active
-                  large
+                  className={[bucketIcon(), "text-primary-500"]}
                 />
               </TooltipTarget>
               <Tooltip>{groupableIdsTooltip}</Tooltip>

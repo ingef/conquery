@@ -9,7 +9,7 @@ import type {
 } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
-import FaIcon from "../../icon/FaIcon";
+import { Icon } from "../../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -211,7 +211,10 @@ const YearHead = ({
       {/* biome-ignore lint/a11y/noStaticElementInteractions: TODO make this a button */}
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO make this a button */}
       <div className={stickyWrap()} onClick={onClick}>
-        <FaIcon large gray icon={isOpen ? faCaretDown : faCaretRight} />
+        <Icon
+          icon={isOpen ? faCaretDown : faCaretRight}
+          className="text-gray-500"
+        />
         <div>
           <SmallHeading>{year}</SmallHeading>
           <div>

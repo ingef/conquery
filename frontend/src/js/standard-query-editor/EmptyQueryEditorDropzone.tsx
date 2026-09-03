@@ -9,7 +9,7 @@ import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
 
 const textInitial = tv({
   base: [
@@ -54,28 +54,28 @@ export const EmptyQueryEditorDropzone = memo(() => {
   return (
     <div className={textInitial()} data-test-id="text-initial">
       <h2 className={headline()}>{t("dropzone.explanation")}</h2>
-      <FaIcon className={arrowRight()} icon={faArrowRight} />
+      <Icon icon={faArrowRight} className={arrowRight()} />
       <div className="[grid-area:description]">
         <p>{t("dropzone.dropIntoThisArea")}</p>
         <div className={grid()}>
           <div className={row()}>
             <div className={iconInABox()}>
-              <FaIcon icon={faFolder} active />
+              <Icon icon={faFolder} className="text-primary-500" />
             </div>
             <div className={iconInABox()}>
-              <FaIcon icon={faMinus} active />
+              <Icon icon={faMinus} className="text-primary-500" />
             </div>
           </div>
           {t("dropzone.aConcept")}
           <div className={row()}>
             <div className={iconInABox()}>
-              <FaIcon icon={faDiagramProject} active />
+              <Icon icon={faDiagramProject} className="text-primary-500" />
             </div>
           </div>
           {t("dropzone.aQuery")}
           <div className={row()}>
             <div className={iconInABox()}>
-              <FaIcon icon={faFile} active />
+              <Icon icon={faFile} className="text-primary-500" />
             </div>
           </div>
           {t("dropzone.aConceptList")}

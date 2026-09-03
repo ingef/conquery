@@ -12,8 +12,8 @@ import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import { getFileRows } from "../../common/helpers/fileHelper";
 import { useDebounce } from "../../common/helpers/useDebounce";
-import FaIcon from "../../icon/FaIcon";
 import DropzoneWithFileInput from "../DropzoneWithFileInput";
+import { Icon } from "../Icon";
 import InfoTooltip from "../InfoTooltip";
 import {
   Control,
@@ -318,7 +318,7 @@ const InputMultiSelect = ({
             }}
           />
         </ItemsInputContainer>
-        {loading && <FaIcon className="mx-[6px] my-[3px]" icon={faSpinner} />}
+        {loading && <Icon icon={faSpinner} className="mx-[6px] my-[3px]" />}
         {!loading && (inputValue.length > 0 || selectedItems.length > 0) && (
           <ResetButton
             icon={faTimes}

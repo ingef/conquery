@@ -4,7 +4,7 @@ import { tv } from "tailwind-variants";
 import type { ConceptIdT, ConceptT } from "../../api/types";
 import { Highlighter } from "../../common/components/Highlighter";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
-import FaIcon from "../../icon/FaIcon";
+import { Icon } from "../../ui-components/Icon";
 import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 
 const conceptRoot = tv({
@@ -92,7 +92,7 @@ const ConceptName = ({ className, title, rootConceptId, conceptId }: Props) => {
 
   return (
     <div title={title} className={conceptRoot({ className })}>
-      <FaIcon icon={faFolder} active />
+      <Icon icon={faFolder} className="text-primary-500" />
       <span>
         {rootConcept && (
           <RootConceptLabel rootConcept={rootConcept} searchTerm={searchTerm} />
