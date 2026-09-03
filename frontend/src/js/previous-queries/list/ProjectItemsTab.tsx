@@ -76,9 +76,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
           onClick={onToggleFoldersOpen}
         />
         <ProjectItemsSearchBox className="grow" />
-        {hasPermissionToUpload && (
-          <UploadQueryResults className="ml-[5px]" datasetId={datasetId} />
-        )}
+        {hasPermissionToUpload && <UploadQueryResults datasetId={datasetId} />}
       </div>
       <div className={foldersAndQueries()}>
         <Group orientation="horizontal">
