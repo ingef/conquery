@@ -6,12 +6,13 @@ import SelectListOption from "./SelectListOption";
 
 const control = tv({
   base: [
-    "flex items-start",
+    "flex items-center",
+    "min-h-[30px]",
     "overflow-hidden",
     "rounded-[4px]",
     "border border-gray-500",
     "bg-white",
-    "py-1 pr-[3px] pl-2",
+    "pr-[3px] pl-2",
     "focus:outline focus:outline-1 focus:outline-black",
   ],
   variants: {

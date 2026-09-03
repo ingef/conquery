@@ -265,6 +265,7 @@ const Folders = ({ className }: { className?: string }) => {
                   />
                   <TooltipTrigger>
                     <Button
+                      size="sm"
                       aria-label={t("common.delete")}
                       intent="tertiary"
                       onPress={() => {

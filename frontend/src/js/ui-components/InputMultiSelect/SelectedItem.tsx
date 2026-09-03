@@ -51,6 +51,7 @@ const SelectedItem = ({
     <div className={container()} ref={ref} {...selectedItemProps}>
       <ReactMarkdown>{String(label)}</ReactMarkdown>
       <Button
+        size="sm"
         intent="tertiary"
         isDisabled={disabled}
         onPress={() => {

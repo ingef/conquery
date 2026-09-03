@@ -94,6 +94,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>({
               )}
               <div className={listItem()}>
                 <Button
+                  size="sm"
                   intent="tertiary"
                   onPress={() => onDelete(i)}
                   className="absolute top-0 right-0"

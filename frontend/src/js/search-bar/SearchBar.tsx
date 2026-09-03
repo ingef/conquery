@@ -11,7 +11,7 @@ const inputContainer = tv({ base: ["relative", "grow"] });
 const baseInput = tv({
   base: [
     "w-full",
-    "[&_input]:h-[34px] [&_input]:w-full",
+    "[&_input]:h-[30px] [&_input]:w-full",
     "[&_input]:pr-[60px]",
     "[&_input]:placeholder:text-gray-400",
     "[&_input]:placeholder:opacity-100",
@@ -22,7 +22,7 @@ const right = tv({
   base: [
     "absolute top-0 right-[30px]",
     "flex flex-row items-center",
-    "h-[34px]",
+    "h-[30px]",
   ],
 });
 
