@@ -14,7 +14,6 @@ import {
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import {
   usePostConceptsListToResolve,
   usePostFilterValuesResolve,
@@ -29,10 +28,10 @@ import type {
   SelectOptionT,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
-import PrimaryButton from "../button/PrimaryButton";
 import Modal from "../modal/Modal";
 import { nodeIsElement } from "../model/node";
 import ScrollableList from "../scrollable-list/ScrollableList";
+import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
 import InputCheckbox from "../ui-components/InputCheckbox";
 import InputPlain from "../ui-components/InputPlain/InputPlain";
@@ -571,7 +570,8 @@ const UploadConceptListModal = ({
                     label={t("uploadConceptListModal.includeUnresolved")}
                   />
                 )}
-                <PrimaryButton
+                <Button
+                  intent="primary"
                   className="shrink-0"
                   type="submit"
                   data-test-id="insert"
@@ -579,7 +579,7 @@ const UploadConceptListModal = ({
                   {mustIncludeUnresolved
                     ? t("uploadConceptListModal.insertRegardless")
                     : t("uploadConceptListModal.insertNode")}
-                </PrimaryButton>
+                </Button>
               </form>
             </>
           )}

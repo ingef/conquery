@@ -5,11 +5,10 @@ import {
 import { useState } from "react";
 import type { ReactDatePickerCustomHeaderProps } from "react-datepicker";
 import { tv } from "tailwind-variants";
-
 import type { SelectOptionT } from "../../api/types";
 import IconButton from "../../button/IconButton";
-import { TransparentButton } from "../../button/TransparentButton";
 import { useMonthName, useMonthNames } from "../../common/helpers/dateHelper";
+import { Button } from "../Button";
 import { List, Menu } from "../InputSelect/InputSelectComponents";
 
 const root = tv({
@@ -54,17 +53,18 @@ const SelectMenu = ({
       <Menu>
         <List className={optionList({ layout })}>
           {options.map((option) => (
-            <TransparentButton
-              small
+            <Button
+              intent="secondary"
+              size="sm"
               key={option.value}
-              active={
+              aria-pressed={
                 option.value === date.getFullYear() ||
                 option.value === date.getMonth()
               }
-              onClick={() => onSelect(option.value as number)}
+              onPress={() => onSelect(option.value as number)}
             >
               {option.label}
-            </TransparentButton>
+            </Button>
           ))}
         </List>
       </Menu>

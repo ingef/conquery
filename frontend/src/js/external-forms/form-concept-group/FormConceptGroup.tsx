@@ -1,10 +1,8 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import { usePostPrefixForSuggestions } from "../../api/api";
 import type { SelectorResultType } from "../../api/types";
-import { TransparentButton } from "../../button/TransparentButton";
 import { DNDType } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";
 import {
@@ -16,6 +14,7 @@ import {
   nodeHasNonDefaultSettings,
 } from "../../model/node";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
+import { Button } from "../../ui-components/Button";
 import {
   isMovedObject,
   type PossibleDroppableObject,
@@ -309,13 +308,14 @@ const FormConceptGroup = (props: Props) => {
           <>
             {props.label}
             {allowExtendedCopying && (
-              <TransparentButton
+              <Button
+                intent="secondary"
                 className="ml-[10px] shrink-0"
-                tiny
-                onClick={() => setIsCopyModalOpen(true)}
+                size="sm"
+                onPress={() => setIsCopyModalOpen(true)}
               >
                 {t("externalForms.common.concept.copyFrom")}
-              </TransparentButton>
+              </Button>
             )}
           </>
         }

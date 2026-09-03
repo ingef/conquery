@@ -14,11 +14,10 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
 import IconButton from "../../button/IconButton";
-import PrimaryButton from "../../button/PrimaryButton";
-import { TransparentButton } from "../../button/TransparentButton";
 import { parseCSV, toCSV } from "../../file/csv";
 import { useActiveLang } from "../../localization/useActiveLang";
 import ScrollableList from "../../scrollable-list/ScrollableList";
+import { Button } from "../../ui-components/Button";
 import { Icon } from "../../ui-components/Icon";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
@@ -350,20 +349,25 @@ const CSVColumnPicker = ({
         {uploadResult &&
           (uploadResult.unreadableDate.length > 0 ||
             uploadResult.unresolvedId.length > 0) && (
-            <TransparentButton className="mr-auto" onClick={downloadUnresolved}>
-              <Icon icon={faDownload} />{" "}
+            <Button
+              intent="secondary"
+              className="mr-auto"
+              onPress={downloadUnresolved}
+            >
+              <Icon icon={faDownload} />
               {t("uploadQueryResultsModal.downloadUnresolved", {
                 count:
                   uploadResult.unreadableDate.length +
                   uploadResult.unresolvedId.length,
               })}
-            </TransparentButton>
+            </Button>
           )}
         {uploadResult && (
-          <PrimaryButton
+          <Button
+            intent="primary"
             className="ml-[10px]"
-            disabled={uploadDisabled}
-            onClick={uploadQuery}
+            isDisabled={uploadDisabled}
+            onPress={uploadQuery}
           >
             {loading ? (
               <Icon icon={faSpinner} className="text-white" />
@@ -371,21 +375,23 @@ const CSVColumnPicker = ({
               <Icon icon={faUpload} className="mr-[10px] text-white" />
             )}{" "}
             {t("uploadQueryResultsModal.uploadAgain")}
-          </PrimaryButton>
+          </Button>
         )}
         {uploadResult ? (
-          <TransparentButton
+          <Button
+            intent="secondary"
             className="ml-[10px]"
-            disabled={loading}
-            onClick={onCancel}
+            isDisabled={loading}
+            onPress={onCancel}
           >
             {t("common.done")}
-          </TransparentButton>
+          </Button>
         ) : (
-          <PrimaryButton
+          <Button
+            intent="primary"
             className="ml-[10px]"
-            disabled={uploadDisabled}
-            onClick={uploadQuery}
+            isDisabled={uploadDisabled}
+            onPress={uploadQuery}
           >
             {loading ? (
               <Icon icon={faSpinner} className="text-white" />
@@ -393,7 +399,7 @@ const CSVColumnPicker = ({
               <Icon icon={faUpload} className="mr-[10px] text-white" />
             )}{" "}
             {t("uploadQueryResultsModal.upload")}
-          </PrimaryButton>
+          </Button>
         )}
       </div>
     </div>

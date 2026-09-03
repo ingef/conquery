@@ -6,9 +6,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
 import { MenuTrigger } from "react-aria-components";
-
 import IconButton from "../button/IconButton";
-import { TransparentButton } from "../button/TransparentButton";
+import { Button } from "./Button";
 import { ConfirmMenu } from "./ConfirmMenu";
 import { Icon } from "./Icon";
 import { Menu, MenuItem } from "./Menu";
@@ -49,7 +48,7 @@ export const Confirm: Story = {
   render: () => (
     <div className="flex items-center gap-4">
       <ConfirmMenu confirmationText="Really clear?" onConfirm={() => {}}>
-        <TransparentButton>Clear</TransparentButton>
+        <Button intent="secondary">Clear</Button>
       </ConfirmMenu>
       <ConfirmMenu
         red

@@ -4,10 +4,9 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { PreviewStatistics, SecondaryId } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { TransparentButton } from "../button/TransparentButton";
+import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
 import { closePreview } from "./actions";
 import Charts from "./Charts";
@@ -94,9 +93,9 @@ export default function Preview() {
     <div className={fullScreen()}>
       <ScrollBox className={scrollBox()}>
         <div className={headline()}>
-          <TransparentButton small onClick={onClose}>
+          <Button intent="secondary" size="sm" onPress={onClose}>
             {t("common.back")}
-          </TransparentButton>
+          </Button>
           Ergebnisvorschau
           <SelectBox
             className={selectBox()}

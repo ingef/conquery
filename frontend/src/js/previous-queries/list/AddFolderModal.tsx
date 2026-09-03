@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-
-import PrimaryButton from "../../button/PrimaryButton";
-import { TransparentButton } from "../../button/TransparentButton";
 import Modal from "../../modal/Modal";
+import { Button } from "../../ui-components/Button";
 import InputPlain from "../../ui-components/InputPlain/InputPlain";
 
 interface Props {
@@ -34,16 +32,17 @@ const AddFolderModal = ({ onClose, onSubmit, isValidName }: Props) => {
             inputProps={{ autoFocus: true }}
           />
           <div className="mt-5 flex w-full items-center justify-between">
-            <TransparentButton onClick={onClose}>
+            <Button intent="secondary" onPress={onClose}>
               {t("common.cancel")}
-            </TransparentButton>
-            <PrimaryButton
+            </Button>
+            <Button
+              intent="primary"
               className="ml-5"
               type="submit"
-              disabled={!isValidName(folderName)}
+              isDisabled={!isValidName(folderName)}
             >
               {t("common.create")}
-            </PrimaryButton>
+            </Button>
           </div>
         </form>
       </div>

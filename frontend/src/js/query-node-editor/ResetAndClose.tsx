@@ -1,8 +1,7 @@
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-
-import { TransparentButton } from "../button/TransparentButton";
 import type { NodeResetConfig } from "../model/node";
+import { Button } from "../ui-components/Button";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import ResetAllSettingsButton from "./ResetAllSettingsButton";
@@ -31,9 +30,9 @@ const ResetAndClose = ({
         />
       )}
       <TooltipTrigger>
-        <TransparentButton small onClick={onClose}>
+        <Button intent="secondary" size="sm" onPress={onClose}>
           {t("common.save")}
-        </TransparentButton>
+        </Button>
         <Tooltip>{t("common.saveAndCloseEsc")}</Tooltip>
       </TooltipTrigger>
     </div>

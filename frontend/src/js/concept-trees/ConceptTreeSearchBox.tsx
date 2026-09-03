@@ -2,12 +2,11 @@ import { useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { StateT } from "../app/reducers";
-import { TransparentButton } from "../button/TransparentButton";
 import AnimatedDots from "../common/components/AnimatedDots";
 import ConceptTreesOpenButtons from "../concept-trees-open/ConceptTreesOpenButtons";
 import SearchBar from "../search-bar/SearchBar";
+import { Button } from "../ui-components/Button";
 
 import {
   clearSearchQuery,
@@ -90,15 +89,16 @@ const ConceptTreeSearchBox = ({ className }: { className?: string }) => {
                   ? t("conceptTreeList.showingMismatches")
                   : t("conceptTreeList.showingMatchesOnly")}
               </span>
-              <TransparentButton
+              <Button
+                intent="secondary"
                 className="my-[3px] ml-[5px]"
-                tiny
-                onClick={onToggleShowMismatches}
+                size="sm"
+                onPress={onToggleShowMismatches}
               >
                 {showMismatches
                   ? t("conceptTreeList.showMatchesOnly")
                   : t("conceptTreeList.showMismatches")}
-              </TransparentButton>
+              </Button>
             </div>
           </div>
         )

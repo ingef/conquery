@@ -1,9 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import PrimaryButton from "../button/PrimaryButton";
-import { TransparentButton } from "../button/TransparentButton";
 import Modal from "../modal/Modal";
+import { Button } from "../ui-components/Button";
 
 const description = tv({
   base: ["max-w-[400px]", "mb-5"],
@@ -36,12 +34,12 @@ const ExpandPreviousQueryModal = ({
           {t("expandPreviousQueryModal.description")}
         </p>
         <div className="flex items-center justify-between">
-          <TransparentButton onClick={onClose} type="button">
+          <Button intent="secondary" onPress={onClose} type="button">
             {t("common.cancel")}
-          </TransparentButton>
-          <PrimaryButton autoFocus onClick={onAccept} type="submit">
+          </Button>
+          <Button intent="primary" autoFocus onPress={onAccept} type="submit">
             {t("expandPreviousQueryModal.submit")}
-          </PrimaryButton>
+          </Button>
         </div>
       </form>
     </Modal>

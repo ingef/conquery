@@ -2,10 +2,9 @@ import { type ReactNode, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import { TransparentButton } from "../button/TransparentButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import { Heading3 } from "../headings/Headings";
+import { Button } from "../ui-components/Button";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const root = tv({
@@ -95,9 +94,9 @@ const Modal = ({
           <Heading3>{headline}</Heading3>
           {doneButton && (
             <TooltipTrigger>
-              <TransparentButton small onClick={onClose}>
+              <Button intent="secondary" size="sm" onPress={onClose}>
                 {t("common.done")}
-              </TransparentButton>
+              </Button>
               <Tooltip>{t("common.closeEsc")}</Tooltip>
             </TooltipTrigger>
           )}

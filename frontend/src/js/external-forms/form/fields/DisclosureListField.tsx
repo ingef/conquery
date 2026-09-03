@@ -8,9 +8,9 @@ import { type ComponentProps, useEffect, useState } from "react";
 import { useFieldArray } from "react-hook-form";
 import { tv } from "tailwind-variants";
 import IconButton from "../../../button/IconButton";
-import { TransparentButton } from "../../../button/TransparentButton";
 import { exists } from "../../../common/helpers/exists";
 import { usePrevious } from "../../../common/helpers/usePrevious";
+import { Button } from "../../../ui-components/Button";
 import { Icon } from "../../../ui-components/Icon";
 import InfoTooltip from "../../../ui-components/InfoTooltip";
 import type { DisclosureListField as DisclosureListFieldT } from "../../config-types";
@@ -222,10 +222,11 @@ export const DisclosureListField = ({
         />
       ))}
       {field.creatable && (
-        <TransparentButton
-          className="w-full flex items-center justify-center gap-2"
-          small
-          onClick={() => {
+        <Button
+          intent="secondary"
+          className="w-full"
+          size="sm"
+          onPress={() => {
             append(
               Object.fromEntries(
                 field.fields.filter(isFormFieldWithValue).map((f) => [
@@ -242,7 +243,7 @@ export const DisclosureListField = ({
         >
           <Icon icon={faAdd} />
           {field.createNewLabel ? field.createNewLabel[locale] : undefined}
-        </TransparentButton>
+        </Button>
       )}
     </div>
   );

@@ -5,8 +5,8 @@ import { useNavigate } from "react-router";
 import { tv } from "tailwind-variants";
 import { usePostLogin } from "../api/api";
 import { useAppTheme } from "../app-theme-context";
-import PrimaryButton from "../button/PrimaryButton";
 import ErrorMessage from "../error-message/ErrorMessage";
+import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
 import InputPlain from "../ui-components/InputPlain/InputPlain";
 
@@ -115,18 +115,16 @@ const LoginPage = () => {
               disabled: loading,
             }}
           />
-          <PrimaryButton
+          <Button
+            intent="primary"
             className={submitButton()}
-            disabled={!user || !password}
-            large
+            isDisabled={!user || !password}
+            size="lg"
             type="submit"
           >
-            <Icon
-              icon={loading ? faSpinner : faCheck}
-              className="mr-[10px] text-white"
-            />
+            <Icon icon={loading ? faSpinner : faCheck} className="text-white" />
             {t("login.submit")}
-          </PrimaryButton>
+          </Button>
         </form>
       </div>
     </div>

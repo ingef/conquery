@@ -7,9 +7,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { PostFilterResolveResponseT } from "../api/types";
-import PrimaryButton from "../button/PrimaryButton";
 import Modal from "../modal/Modal";
 import ScrollableList from "../scrollable-list/ScrollableList";
+import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
 import InputCheckbox from "../ui-components/InputCheckbox";
 
@@ -132,15 +132,16 @@ const UploadFilterListModal = ({
             />
           )}
         </div>
-        <PrimaryButton
-          disabled={loading || nothingToInsert}
-          onClick={() => {
+        <Button
+          intent="primary"
+          isDisabled={loading || nothingToInsert}
+          onPress={() => {
             onSubmit(resolved, { includeUnresolved });
             onClose();
           }}
         >
           {t("uploadConceptListModal.insertNode")}
-        </PrimaryButton>
+        </Button>
       </div>
     </Modal>
   );

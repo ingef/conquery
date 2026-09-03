@@ -3,10 +3,10 @@ import { useHotkeys } from "react-hotkeys-hook";
 
 import { tv } from "tailwind-variants";
 
-import BasicButton from "./BasicButton";
+import { Button } from "../ui-components/Button";
 
 const badgeToggleButton = tv({
-  base: ["rounded", "px-1 py-px", "text-sm", "font-bold", "whitespace-nowrap"],
+  base: ["h-auto px-1 py-px", "text-sm", "font-bold"],
   variants: {
     active: {
       true: [
@@ -51,13 +51,16 @@ export const BadgeToggleButton = ({
   useHotkeys(hotkey || "", onClick, { enabled: !!hotkey }, [hotkey, onClick]);
 
   return (
-    <BasicButton
+    <Button
+      intent="tertiary"
+      size="sm"
+      aria-pressed={!!active}
       className={badgeToggleButton({ active: !!active, className })}
-      onClick={onClick}
+      onPress={onClick}
     >
       {!active && "+ "}
       {children}
       {hotkey && <span className={superScript()}>{hotkey}</span>}
-    </BasicButton>
+    </Button>
   );
 };
