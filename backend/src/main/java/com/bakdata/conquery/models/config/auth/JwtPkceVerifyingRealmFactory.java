@@ -167,6 +167,11 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 			@NotEmpty String issuer) {
 	}
 
+    /**
+     * State container for auth flow
+     * @param callbackUri The URI the IDP should return the user to, after successful authentication
+     * @param returnUri The URI the user tried to access, that triggered this auth-flow
+     */
 	record PendingAuthorizationRequest(URI callbackUri, URI returnUri) {
 	}
 
@@ -366,7 +371,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 			return null;
 		}
 
-		// Build the callback URI without the query added by the IDP and compare it to the URI used to initiate this authorization request.
+		// Rebuild the callback URI without the query added by the IDP and compare it to the URI used to initiate this authorization request.
 		final URI callbackUri =
 				UriBuilder.fromUri(RequestHelper.getRequestURL(request)).replacePath(request.getUriInfo().getAbsolutePath().getPath()).replaceQuery("").build();
 		final PendingAuthorizationRequest authorizationRequest = validateAndConsumeAuthorizationRequest(
@@ -438,6 +443,12 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		return state;
 	}
 
+    /**
+     * Checks for the state existence and matches it's removes/consumes it
+     * @param state state identifier
+     * @param callbackUri URI of the current request
+     * @return The actual state for the auth-flow
+     */
 	PendingAuthorizationRequest validateAndConsumeAuthorizationRequest(String state, URI callbackUri) {
 		if (state == null) {
 			throw new BadRequestException("Authorization callback is missing its state");
@@ -451,7 +462,12 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	}
 
 	static URI toRootRelativeUri(URI requestUri) {
-		if (requestUri == null || !requestUri.isAbsolute()) {
+
+        if (requestUri == null) {
+            throw new BadRequestException("Request URI was not provided");
+        }
+
+		if (!requestUri.isAbsolute()) {
 			throw new BadRequestException("Request URI must be absolute");
 		}
 
