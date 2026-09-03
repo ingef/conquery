@@ -1,34 +1,39 @@
 import { faCaretDown, faDownload } from "@fortawesome/free-solid-svg-icons";
 import { memo, useContext, useEffect, useMemo, useState } from "react";
-import { MenuTrigger } from "react-aria-components";
+import { MenuTrigger, Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
-import DownloadButton, { getFileIcon } from "../button/DownloadButton";
-import { Button } from "../ui-components/Button";
+import { getFileIcon } from "../button/DownloadButton";
 import { Icon } from "../ui-components/Icon";
 import { Menu, MenuItem } from "../ui-components/Menu";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { getUserSettings, storeUserSettings } from "../user/userSettings";
 
+// a split button: the chosen format downloads, the caret opens the list
 const frame = tv({
-  base: [
-    "flex items-center justify-center",
-    "rounded",
-    "border border-gray-500",
-    "transition-opacity duration-100",
-  ],
+  base: ["inline-flex items-stretch", "h-[30px]", "rounded", "overflow-hidden"],
   variants: {
-    noborder: { true: "border-none" },
+    bordered: { true: "border border-gray-500" },
   },
 });
 
-const downloadButton = tv({
-  base: ["[&_button]:w-full", "[&_button]:px-[14px] [&_button]:py-2"],
+const part = tv({
+  base: [
+    "inline-flex items-center",
+    "gap-[10px]",
+    "h-full",
+    "text-sm font-medium text-gray-800 whitespace-nowrap",
+    "cursor-pointer",
+    "hover:bg-gray-50",
+  ],
+  variants: {
+    caret: { true: "px-2", false: "px-[14px]" },
+  },
 });
 
-const separator = tv({ base: ["h-[33px] w-px", "bg-gray-500"] });
+const separator = tv({ base: ["w-px self-stretch", "bg-gray-500"] });
 
 interface FileChoice {
   label: string;
@@ -91,24 +96,28 @@ const DownloadResultsDropdownButton = ({
   }, [fileChoice]);
 
   return (
-    <div className={frame({ noborder: tiny })}>
+    <div className={frame({ bordered: !tiny })}>
       {!tiny && (
         <>
-          <DownloadButton
-            className={downloadButton()}
-            resultUrl={urlChoice}
-            showColoredIcon
+          <a
+            href={`${urlChoice.url}?access_token=${encodeURIComponent(authToken)}`}
           >
-            {truncChosenLabel}
-          </DownloadButton>
+            <RacButton className={part({ caret: false })}>
+              <Icon
+                icon={getFileIcon(urlChoice.url).icon}
+                style={{ color: getFileIcon(urlChoice.url).color }}
+              />
+              {truncChosenLabel}
+            </RacButton>
+          </a>
           <div className={separator()} />
         </>
       )}
       <TooltipTrigger>
         <MenuTrigger>
-          <Button aria-label={tooltip} intent="tertiary">
+          <RacButton aria-label={tooltip} className={part({ caret: true })}>
             <Icon icon={tiny ? faDownload : faCaretDown} />
-          </Button>
+          </RacButton>
           <Menu
             aria-label={t("previousQuery.downloadResults")}
             onAction={(key) => {

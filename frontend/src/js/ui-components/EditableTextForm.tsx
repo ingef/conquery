@@ -8,7 +8,7 @@ import { Icon } from "./Icon";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 const input = tv({
-  base: ["h-[28px]", "px-2", "rounded", "border border-gray-500", "text-sm"],
+  base: ["h-[30px]", "px-2", "rounded", "border border-gray-500", "text-sm"],
 });
 
 const form = tv({

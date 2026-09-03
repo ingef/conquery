@@ -12,7 +12,7 @@ import InfoTooltip from "../../ui-components/InfoTooltip";
 import CSVColumnPicker, { type QueryToUploadT } from "./CSVColumnPicker";
 
 const successIcon = tv({
-  base: ["block", "mx-auto mb-[10px]", "text-[40px]", "text-green"],
+  base: ["block", "mx-auto mb-[10px]", "size-10", "text-green"],
 });
 
 const dropzone = tv({

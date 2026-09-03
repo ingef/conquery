@@ -66,7 +66,8 @@ const QueryNodeActions = (props: Props) => {
         <TooltipTrigger>
           <Button
             aria-label={t("queryNodeEditor.excludingTimestamps")}
-            intent="danger"
+            intent="tertiary"
+            danger
             size="sm"
             onPress={() => {
               props.onToggleTimestamps(props.andIdx, props.orIdx);

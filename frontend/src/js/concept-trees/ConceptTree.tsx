@@ -57,7 +57,12 @@ const ConceptTree = ({
         className={message({ error: true })}
         style={{ paddingLeft: 12 + depth * 15 }}
       >
-        <Button intent="danger" size="sm" onPress={() => onLoadTree(conceptId)}>
+        <Button
+          intent="tertiary"
+          size="sm"
+          danger
+          onPress={() => onLoadTree(conceptId)}
+        >
           <Icon icon={faRedo} />
         </Button>
         {t("conceptTreeList.error", { tree: label })}

@@ -24,7 +24,7 @@ const runnerLabel = tv({
   base: [
     "px-[15px]",
     "bg-white group-hover/runner:bg-gray-50",
-    "text-gray-800",
+    "text-gray-800 font-medium",
     "self-stretch",
     "flex items-center",
     "whitespace-nowrap",
