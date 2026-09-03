@@ -142,7 +142,7 @@ const ShareButton = ({
       <IconButton
         icon={isShared ? faUser : faUserRegular}
         bare
-        title="share"
+        aria-label={isShared ? t("common.shared") : t("common.share")}
         data-test-id="share"
         onClick={onClick}
       />

@@ -40,7 +40,7 @@ export const DeleteProjectItemButton = ({ item }: { item: ProjectItemT }) => {
         <IconButton
           icon={faTimes}
           bare
-          title="delete"
+          aria-label={t("common.delete")}
           data-test-id="project-item-delete-button"
         />
       </ConfirmableTooltip>

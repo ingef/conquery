@@ -215,9 +215,8 @@ const BaseInput = ({
             className={clearZoneIconButton()}
             tiny
             icon={faTimes}
-            tabIndex={-1}
+            excludeFromTabOrder
             disabled={disabled}
-            title={t("common.clearValue")}
             aria-label={t("common.clearValue")}
             onClick={() => onChange(null)}
           />
