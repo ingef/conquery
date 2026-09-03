@@ -45,7 +45,7 @@ import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.preview.EntityPreviewExecution;
 import com.bakdata.conquery.models.query.preview.EntityPreviewForm;
-import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
+import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.resultinfo.printers.JavaResultPrinters;

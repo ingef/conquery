@@ -13,7 +13,7 @@ import java.util.Optional;
 import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.sql.model.node.AndNode;
 import com.bakdata.conquery.sql.model.node.ConceptNode;
-import com.bakdata.conquery.sql.model.node.DateAggregationAction;
+import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.sql.model.node.QueryNode;
 import com.bakdata.conquery.sql.model.range.DateRange;
 import com.bakdata.conquery.sql.model.result.ResultColumn;
