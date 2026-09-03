@@ -9,8 +9,8 @@ import { type Key, ToggleButtonGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { Icon } from "../ui-components/Icon";
+import { ToggleButton } from "../ui-components/ToggleButton";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
-import { SidebarToggle } from "./SidebarControl";
 
 const root = tv({ base: "flex flex-col items-center" });
 
@@ -70,9 +70,9 @@ export const DetailControl = memo(
       >
         {navOptions.map(({ value, icon, tooltip }) => (
           <TooltipTrigger key={value}>
-            <SidebarToggle id={value} aria-label={tooltip}>
+            <ToggleButton id={value} aria-label={tooltip}>
               <Icon icon={icon} />
-            </SidebarToggle>
+            </ToggleButton>
             <Tooltip placement="right">{tooltip}</Tooltip>
           </TooltipTrigger>
         ))}

@@ -8,8 +8,8 @@ import { memo, useMemo, useState } from "react";
 import { ToggleButtonGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { Icon } from "../ui-components/Icon";
+import { ToggleButton } from "../ui-components/ToggleButton";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
-import { SidebarToggle } from "./SidebarControl";
 
 export type ContentType =
   | "groupId"
@@ -69,12 +69,9 @@ const ContentControl = ({ value, onChange }: Props) => {
     >
       {options.map((option) => (
         <TooltipTrigger key={option.key}>
-          <SidebarToggle id={option.key} aria-label={option.tooltip}>
-            <Icon
-              icon={option.icon}
-              className={!value[option.key] ? "text-gray-500" : undefined}
-            />
-          </SidebarToggle>
+          <ToggleButton id={option.key} aria-label={option.tooltip}>
+            <Icon icon={option.icon} />
+          </ToggleButton>
           <Tooltip placement="right">{option.tooltip}</Tooltip>
         </TooltipTrigger>
       ))}
