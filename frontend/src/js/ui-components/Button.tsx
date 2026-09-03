@@ -39,9 +39,11 @@ const button = tv({
         "bg-transparent text-gray-800 border-transparent",
         "hover:bg-gray-50",
       ],
-      // reads as a text link, aligns with text: no padding, no box
+      // reads as a text link and sits in flowing text: no box, no padding,
+      // no fixed height, the surrounding text's size and line-height
       link: [
         "bg-transparent border-transparent px-0",
+        "h-auto leading-[inherit] text-[length:inherit] align-baseline",
         "text-gray-500",
         "hover:text-gray-800 hover:underline",
       ],
@@ -105,8 +107,8 @@ const isIconOnly = (children: ReactNode) => {
  *
  * A button whose only children are icons is square; give it an `aria-label`.
  * A pressed state (toggles) is `aria-pressed`, which colors the button.
- * `link` is for a button that reads as a text link. `danger` turns any intent
- * red for destructive or warning actions.
+ * `link` is for a button that reads as a text link and sits in flowing text.
+ * `danger` turns any intent red for destructive or warning actions.
  *
  * There is no className: layout belongs to the parent (a `grid` wrapper
  * stretches a button to full width), and anything that needs another look is
