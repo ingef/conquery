@@ -184,7 +184,7 @@ export const Navigation = memo(
         <div className={entityIdNav()}>
           {!empty && (
             <div className="flex">
-              <TooltipTrigger delay={tooltipDelay.info}>
+              <TooltipTrigger delay={tooltipDelay.long}>
                 <IconButton
                   className={fullWidthIconButton()}
                   icon={faArrowUp}
@@ -213,7 +213,7 @@ export const Navigation = memo(
           {!empty && (
             <>
               <div className="flex">
-                <TooltipTrigger delay={tooltipDelay.info}>
+                <TooltipTrigger delay={tooltipDelay.long}>
                   <IconButton
                     className={fullWidthIconButton()}
                     icon={faArrowDown}

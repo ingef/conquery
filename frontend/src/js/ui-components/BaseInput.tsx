@@ -194,7 +194,7 @@ const BaseInput = ({
             <FaIcon icon={faCheck} large={large} className={greenIcon()} />
           )}
           {invalid && (
-            <TooltipTrigger delay={tooltipDelay.help}>
+            <TooltipTrigger delay={tooltipDelay.immediate}>
               <TooltipTarget
                 as="div"
                 role="img"

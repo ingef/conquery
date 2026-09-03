@@ -35,14 +35,14 @@ const tooltip = tv({
   },
 });
 
-/** Warm-up in ms before a tooltip opens, by what the tooltip is for. */
+/** Warm-up in ms before a tooltip opens. */
 export const tooltipDelay = {
   /** the tooltip is the only affordance: help icons, validation icons */
-  help: 0,
-  /** names a control, mostly icon-only buttons */
-  control: 300,
+  immediate: 0,
+  /** default: names a control, mostly icon-only buttons */
+  short: 300,
   /** further information on larger surfaces: tabs, dropzones, settings */
-  info: 1500,
+  long: 1500,
 } as const;
 
 const arrow = tv({
@@ -71,7 +71,7 @@ const arrow = tv({
  * delay from `tooltipDelay`.
  */
 export const TooltipTrigger = ({
-  delay = tooltipDelay.control,
+  delay = tooltipDelay.short,
   ...props
 }: TooltipTriggerComponentProps) => (
   <RacTooltipTrigger delay={delay} {...props} />

@@ -71,7 +71,7 @@ const InputCheckbox = ({
       if (!disabled) onChange(!value);
     }}
   >
-    <TooltipTrigger delay={tooltipDelay.info}>
+    <TooltipTrigger delay={tooltipDelay.long}>
       <TooltipTarget
         as="div"
         excludeFromTabOrder

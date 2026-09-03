@@ -29,7 +29,7 @@ const InfoTooltip = ({
   wide?: boolean;
 }) => {
   return (
-    <TooltipTrigger delay={tooltipDelay.help}>
+    <TooltipTrigger delay={tooltipDelay.immediate}>
       <TooltipTarget
         role="img"
         aria-label="Info"
