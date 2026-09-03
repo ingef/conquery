@@ -57,12 +57,15 @@ const arrow = tv({
  * Other elements need a TooltipTarget (or react-aria's Focusable for native buttons).
  *
  * Timing follows Spectrum's tooltip guideline: tooltips wait for a global
- * warm-up (react-aria's default), after which neighbouring tooltips open
- * immediately. Only help icons, where the tooltip is the sole affordance,
- * open right away with `delay={0}`.
+ * warm-up, after which neighbouring tooltips open immediately. The warm-up
+ * is short because most triggers are icon-only buttons. Help icons, where
+ * the tooltip is the sole affordance, open right away with `delay={0}`.
  */
-export const TooltipTrigger = (props: TooltipTriggerComponentProps) => (
-  <RacTooltipTrigger {...props} />
+export const TooltipTrigger = ({
+  delay = 300,
+  ...props
+}: TooltipTriggerComponentProps) => (
+  <RacTooltipTrigger delay={delay} {...props} />
 );
 
 export const Tooltip = ({
