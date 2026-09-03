@@ -3,7 +3,6 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import {
   usePostPrefixForSuggestions,
   usePostResolveEntities,
@@ -11,7 +10,6 @@ import {
 import { transformFilterValueToApi } from "../api/apiHelper";
 import type { TableT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import PrimaryButton from "../button/PrimaryButton";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { useDatasetId } from "../dataset/selectors";
 import { isMultiSelectFilter, resetFilters } from "../model/filter";
@@ -22,6 +20,7 @@ import type {
   BigMultiSelectFilterWithValueType,
   MultiSelectFilterWithValueType,
 } from "../standard-query-editor/types";
+import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
 
 import type { LoadingPayload } from "./LoadHistoryDropzone";
@@ -246,14 +245,15 @@ export const SearchEntitiesComponent = ({
         onSwitchFilterMode={noop}
         onLoadFilterSuggestions={loadFilterSuggestions}
       />
-      <PrimaryButton
+      <Button
+        intent="primary"
         className={submitButton()}
-        onClick={onSubmitSearch}
-        disabled={!hasFiltersSet || loading}
+        onPress={onSubmitSearch}
+        isDisabled={!hasFiltersSet || loading}
       >
         {loading && <Icon icon={faSpinner} className="text-white" />}
         {t("history.searchEntitiesButton")}
-      </PrimaryButton>
+      </Button>
     </div>
   );
 };

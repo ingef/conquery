@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import { TransparentButton } from "../button/TransparentButton";
+import { Button } from "../ui-components/Button";
 
 const root = tv({
   base: [
@@ -36,20 +35,25 @@ const ErrorFallback = ({
       {allowFullRefresh && (
         <>
           <p className={description()}>{t("error.reloadDescription")}</p>
-          <TransparentButton
+          <Button
+            intent="secondary"
             className={reloadButton()}
-            onClick={() => window.location.reload()}
+            onPress={() => window.location.reload()}
           >
             {t("error.reload")}
-          </TransparentButton>
+          </Button>
         </>
       )}
       {onReset && (
         <>
           <p className={description()}>{t("error.resetDescription")}</p>
-          <TransparentButton className={reloadButton()} onClick={onReset}>
+          <Button
+            intent="secondary"
+            className={reloadButton()}
+            onPress={onReset}
+          >
             {t("error.reset")}
-          </TransparentButton>
+          </Button>
         </>
       )}
     </div>
