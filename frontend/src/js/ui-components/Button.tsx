@@ -62,7 +62,7 @@ export const buttonStyle = tv({
     {
       intent: "link",
       class:
-        "h-auto px-0 leading-[inherit] text-[length:inherit] align-baseline",
+        "h-auto px-0 gap-1 leading-[inherit] text-[length:inherit] align-baseline",
     },
     {
       danger: true,
