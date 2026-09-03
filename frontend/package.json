@@ -30,7 +30,6 @@
     "@paralleldrive/cuid2": "^3.3.0",
     "@react-keycloak-fork/web": "^4.0.3",
     "@redux-devtools/extension": "^4.0.0",
-    "@tippyjs/react": "^4.2.6",
     "apache-arrow": "^21.2.0",
     "axios": "^1.19.0",
     "chance": "^1.1.13",
@@ -72,7 +71,6 @@
     "remark-gfm": "^4.0.1",
     "resize-observer-polyfill": "^1.5.1",
     "tailwind-variants": "^3.3.1",
-    "tippy.js": "^6.3.7",
     "typesafe-actions": "^5.1.0"
   },
   "devDependencies": {

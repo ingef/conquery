@@ -53,7 +53,8 @@ describe("Run query", () => {
         cy.get('[data-test-id="project-items-list"]').as("executionList");
 
         cy.get('@executionList').find('[data-test-id="project-item-delete-button"]').click();
-        cy.get('@executionList').contains('Anfrage jetzt löschen').click();
+        // the confirmation menu renders in a portal, outside the list
+        cy.contains('Anfrage jetzt löschen').click();
 
         cy.get('@leftPaneContainer').contains('Keine Anfragen / Formulare gefunden')
     });
@@ -158,7 +159,7 @@ describe("Reference list", () => {
 
         // Clear editor
         cy.get('@queryEditor').find('svg[data-icon="trash"]').click()
-        cy.get('@queryEditor').find('button[data-test-id="confirm"]').click()
+        cy.get('[data-test-id="confirm"]').click()
         cy.get('@queryEditor').find('[data-test-id="text-initial"]')
     })
 

@@ -134,6 +134,7 @@
   },
   "common": {
     "version": "Version",
+    "help": "Help",
     "manual": "Manual",
     "contact": "Contact",
     "confirm": "Confirm",

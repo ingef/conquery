@@ -6,7 +6,7 @@ import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import { useActiveLang } from "../localization/useActiveLang";
-import { ConfirmableTooltip } from "../ui-components/ConfirmableTooltip";
+import { ConfirmMenu } from "../ui-components/ConfirmMenu";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
@@ -73,7 +73,7 @@ const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
           }}
         />
         <TooltipTrigger>
-          <ConfirmableTooltip
+          <ConfirmMenu
             onConfirm={onReset}
             confirmationText={t("externalForms.common.clearConfirm")}
           >
@@ -82,7 +82,7 @@ const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
               frame
               icon={faTrash}
             />
-          </ConfirmableTooltip>
+          </ConfirmMenu>
           <Tooltip>{t("externalForms.common.clear")}</Tooltip>
         </TooltipTrigger>
       </div>

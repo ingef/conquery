@@ -2,7 +2,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import { ConfirmableTooltip } from "../ui-components/ConfirmableTooltip";
+import { ConfirmMenu } from "../ui-components/ConfirmMenu";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const ResetAllSettingsButton = ({
@@ -22,21 +22,17 @@ const ResetAllSettingsButton = ({
     </IconButton>
   );
 
-  // tippy needs the button itself as its child, the tooltip goes around both
   return compact ? (
     <TooltipTrigger>
-      <ConfirmableTooltip
-        onConfirm={onClick}
-        confirmationText={confirmationText}
-      >
+      <ConfirmMenu onConfirm={onClick} confirmationText={confirmationText}>
         {trigger}
-      </ConfirmableTooltip>
+      </ConfirmMenu>
       <Tooltip className="whitespace-nowrap">{text}</Tooltip>
     </TooltipTrigger>
   ) : (
-    <ConfirmableTooltip onConfirm={onClick} confirmationText={confirmationText}>
+    <ConfirmMenu onConfirm={onClick} confirmationText={confirmationText}>
       {trigger}
-    </ConfirmableTooltip>
+    </ConfirmMenu>
   );
 };
 
