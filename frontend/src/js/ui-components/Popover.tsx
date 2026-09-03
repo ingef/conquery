@@ -17,11 +17,13 @@ const popover = tv({
 
 /**
  * Container for click-triggered overlays, positioned next to its trigger and
- * dismissed on Escape or a click outside. Holds a Menu (see Menu.tsx).
+ * dismissed on Escape or a click outside. Menu renders it itself, so callers
+ * don't need it; it is exported for further overlay components.
  */
 export const Popover = ({
   className,
+  offset = 5,
   ...props
 }: Omit<RacPopoverProps, "className"> & { className?: string }) => (
-  <RacPopover className={popover({ className })} {...props} />
+  <RacPopover offset={offset} className={popover({ className })} {...props} />
 );

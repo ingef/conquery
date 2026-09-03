@@ -13,7 +13,6 @@ import FaIcon from "../icon/FaIcon";
 
 import { ConfirmMenu } from "./ConfirmMenu";
 import { Menu, MenuItem, menuItemIcon } from "./Menu";
-import { Popover } from "./Popover";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 export default {
@@ -28,34 +27,32 @@ export const Default: Story = {
   render: () => (
     <MenuTrigger>
       <IconButton frame icon={faEllipsisV} />
-      <Popover>
-        <Menu aria-label="Actions" onAction={(key) => console.log(key)}>
-          <MenuItem id="contact" href="mailto:someone@example.com">
-            <span className={menuItemIcon()}>
-              <FaIcon icon={faPaperPlane} />
-            </span>
-            A link item
-          </MenuItem>
-          <MenuItem id="manual">
-            <span className={menuItemIcon()}>
-              <FaIcon icon={faBook} />
-            </span>
-            An action item
-          </MenuItem>
-          <MenuItem id="disabled" isDisabled>
-            <span className={menuItemIcon()}>
-              <FaIcon icon={faTrash} />
-            </span>
-            A disabled item
-          </MenuItem>
-          <MenuItem id="delete" danger>
-            <span className={menuItemIcon()}>
-              <FaIcon icon={faTrash} />
-            </span>
-            A dangerous item
-          </MenuItem>
-        </Menu>
-      </Popover>
+      <Menu aria-label="Actions" onAction={(key) => console.log(key)}>
+        <MenuItem id="contact" href="mailto:someone@example.com">
+          <span className={menuItemIcon()}>
+            <FaIcon icon={faPaperPlane} />
+          </span>
+          A link item
+        </MenuItem>
+        <MenuItem id="manual">
+          <span className={menuItemIcon()}>
+            <FaIcon icon={faBook} />
+          </span>
+          An action item
+        </MenuItem>
+        <MenuItem id="disabled" isDisabled>
+          <span className={menuItemIcon()}>
+            <FaIcon icon={faTrash} />
+          </span>
+          A disabled item
+        </MenuItem>
+        <MenuItem id="delete" danger>
+          <span className={menuItemIcon()}>
+            <FaIcon icon={faTrash} />
+          </span>
+          A dangerous item
+        </MenuItem>
+      </Menu>
     </MenuTrigger>
   ),
 };
