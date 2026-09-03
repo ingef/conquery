@@ -1,0 +1,138 @@
+import type { ElementType, HTMLAttributes, ReactNode, Ref } from "react";
+import { mergeProps, useFocusable, useObjectRef } from "react-aria";
+import {
+  OverlayArrow,
+  Tooltip as RacTooltip,
+  type TooltipProps as RacTooltipProps,
+  TooltipTrigger as RacTooltipTrigger,
+  type TooltipTriggerComponentProps,
+} from "react-aria-components";
+import { tv } from "tailwind-variants";
+
+const tooltip = tv({
+  base: [
+    "z-[9999]",
+    "max-w-[400px]",
+    "rounded",
+    "bg-white",
+    "shadow-[0_0_8px_rgba(0,0,0,0.18)]",
+    "px-[14px] py-2",
+    "text-left",
+    "text-base",
+    "font-normal",
+    "text-gray-800",
+    "data-entering:animate-fade-in",
+    "data-exiting:animate-fade-out",
+    // rich content
+    "[&_p]:text-sm [&_h3]:text-sm [&_li]:text-sm",
+    "[&_p]:leading-[1.3] [&_h3]:leading-[1.3] [&_h4]:leading-[1.3]",
+    "[&_p]:mt-2 [&_h3]:mt-2 [&_h4]:mt-2",
+    "[&_ul]:my-[6px] [&_ul]:pl-4",
+    "[&_li]:leading-[1.3] [&_li]:mb-[5px]",
+  ],
+  variants: {
+    wide: { true: "max-w-[700px]" },
+  },
+});
+
+/** Warm-up in ms before a tooltip opens. */
+export const tooltipDelay = {
+  /** the tooltip is the only affordance: help icons, validation icons */
+  immediate: 0,
+  /** default: names a control, mostly icon-only buttons */
+  short: 300,
+  /** further information on larger surfaces: tabs, dropzones, settings */
+  long: 1500,
+} as const;
+
+const arrow = tv({
+  base: [
+    "*:block",
+    "*:fill-white",
+    "data-[placement=bottom]:*:rotate-180",
+    "data-[placement=left]:*:-rotate-90",
+    "data-[placement=right]:*:rotate-90",
+  ],
+});
+
+/**
+ * Wraps a trigger element and its Tooltip:
+ *
+ *   <TooltipTrigger>
+ *     <IconButton … />
+ *     <Tooltip>{text}</Tooltip>
+ *   </TooltipTrigger>
+ *
+ * Buttons based on BasicButton attach themselves to the trigger.
+ * Other elements need a TooltipTarget (or react-aria's Focusable for native buttons).
+ *
+ * Timing follows Spectrum's tooltip guideline: tooltips wait for a global
+ * warm-up, after which neighboring tooltips open immediately. Pick the
+ * delay from `tooltipDelay`. A tooltip closes 300 ms after the pointer has
+ * left, enough to move onto the tooltip itself.
+ *
+ * The tooltip is anchored to the trigger and follows it while open; a trigger
+ * that leaves the layout (`hidden`) sends it to the page's corner, so hide a
+ * hover-revealed trigger with `invisible`.
+ *
+ * A tooltip stays open while the pointer is over it (react-aria keeps it
+ * hoverable, WCAG 1.4.13). In a vertical stack of triggers a tooltip on top
+ * would cover the neighbor above, so place those to the side.
+ */
+export const TooltipTrigger = ({
+  delay = tooltipDelay.short,
+  closeDelay = 300,
+  ...props
+}: TooltipTriggerComponentProps) => (
+  <RacTooltipTrigger delay={delay} closeDelay={closeDelay} {...props} />
+);
+
+export const Tooltip = ({
+  children,
+  className,
+  wide,
+  offset = 10,
+  ...props
+}: Omit<RacTooltipProps, "className" | "children"> & {
+  children?: ReactNode;
+  className?: string;
+  wide?: boolean;
+}) => {
+  if (!children) return null;
+
+  return (
+    <RacTooltip
+      offset={offset}
+      className={tooltip({ wide, className })}
+      {...props}
+    >
+      <OverlayArrow className={arrow()}>
+        {/* square canvas so the rotation for left/right keeps it in place; the triangle fills the top half */}
+        <svg width={16} height={16} viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M0 0 L8 8 L16 0" />
+        </svg>
+      </OverlayArrow>
+      {children}
+    </RacTooltip>
+  );
+};
+
+/**
+ * Makes a non-button element the element a TooltipTrigger attaches to.
+ * Static content stays out of the tab order with `excludeFromTabOrder`.
+ */
+export const TooltipTarget = ({
+  as: Tag = "span",
+  ref,
+  excludeFromTabOrder,
+  ...props
+}: HTMLAttributes<HTMLElement> & {
+  as?: ElementType;
+  ref?: Ref<HTMLElement>;
+  excludeFromTabOrder?: boolean;
+}) => {
+  const domRef = useObjectRef(ref);
+  const { focusableProps } = useFocusable({ excludeFromTabOrder }, domRef);
+
+  return <Tag ref={domRef} {...mergeProps(focusableProps, props)} />;
+};

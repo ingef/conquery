@@ -25,7 +25,11 @@ import { useFormLabelByType } from "../../external-forms/stateSelectors";
 import FaIcon from "../../icon/FaIcon";
 import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
-import WithTooltip from "../../ui-components/WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../../ui-components/Tooltip";
 import { useUpdateFormConfig, useUpdateQuery } from "./actions";
 import { DeleteProjectItemButton } from "./DeleteProjectItemButton";
 import { isFormConfig } from "./helpers";
@@ -60,14 +64,7 @@ const ownerName = tv({
   base: ["shrink-0", "pl-[5px]", "text-gray-500", "text-xs"],
 });
 
-const tooltipText = tv({
-  base: [
-    "flex flex-col items-start",
-    "px-[14px] py-2",
-    "font-normal",
-    "text-base",
-  ],
-});
+const tooltipText = tv({ base: ["flex flex-col items-start", "font-normal"] });
 
 const labelRow = tv({
   base: ["flex justify-between", "w-full", "leading-6", "my-[2px]"],
@@ -141,13 +138,7 @@ const ShareButton = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <WithTooltip
-      html={
-        <div className={tooltipText()}>
-          {isShared ? t("common.shared") : t("common.share")}
-        </div>
-      }
-    >
+    <TooltipTrigger>
       <IconButton
         icon={isShared ? faUser : faUserRegular}
         bare
@@ -155,7 +146,14 @@ const ShareButton = ({
         data-test-id="share"
         onClick={onClick}
       />
-    </WithTooltip>
+      <Tooltip>
+        {
+          <div className={tooltipText()}>
+            {isShared ? t("common.shared") : t("common.share")}
+          </div>
+        }
+      </Tooltip>
+    </TooltipTrigger>
   );
 };
 
@@ -183,7 +181,7 @@ const ResultsLabel = ({
   const { t } = useTranslation();
   if (!resultUrl) return <span className="whitespace-nowrap">{label}</span>;
   return (
-    <WithTooltip text={t("previousQuery.downloadResults")}>
+    <TooltipTrigger>
       <DownloadButton
         className={downloadButton()}
         tight
@@ -194,7 +192,8 @@ const ResultsLabel = ({
       >
         {label}
       </DownloadButton>
-    </WithTooltip>
+      <Tooltip>{t("previousQuery.downloadResults")}</Tooltip>
+    </TooltipTrigger>
   );
 };
 
@@ -266,7 +265,7 @@ const ProjectItem = ({
       <div className={content({ own: !!item.own, system: isSystem })}>
         <div className={topInfos()}>
           <div className="flex items-center">
-            <WithTooltip html={<FoldersTooltip folders={folders} />}>
+            <TooltipTrigger>
               <IconButton
                 className="mr-[10px]"
                 icon={folders.length === 0 ? faFolderRegular : faFolder}
@@ -276,24 +275,31 @@ const ProjectItem = ({
                 onClick={onIndicateEditFolders}
                 disabled={!mayEdit}
               />
-            </WithTooltip>
+              <Tooltip>{<FoldersTooltip folders={folders} />}</Tooltip>
+            </TooltipTrigger>
             <div className="flex items-center gap-2">
               <ResultsLabel label={topLeftLabel} resultUrl={resultUrl} />
               {hasNoDates && (
-                <WithTooltip text={t("previousQuery.hasNoDates")}>
-                  <FaIcon className="opacity-70" red icon={faCalendar} />
-                </WithTooltip>
+                <TooltipTrigger>
+                  <TooltipTarget
+                    role="img"
+                    aria-label={t("previousQuery.hasNoDates")}
+                    excludeFromTabOrder
+                  >
+                    <FaIcon className="opacity-70" red icon={faCalendar} />
+                  </TooltipTarget>
+                  <Tooltip>{t("previousQuery.hasNoDates")}</Tooltip>
+                </TooltipTrigger>
               )}
             </div>
           </div>
           <div className="ml-[5px] flex shrink-0 items-center gap-[10px]">
             {executedAt}
             {secondaryId && (
-              <WithTooltip
-                text={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}
-              >
+              <TooltipTrigger>
                 <IconButton icon={faMicroscope} bare onClick={() => {}} />
-              </WithTooltip>
+                <Tooltip>{`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}</Tooltip>
+              </TooltipTrigger>
             )}
             {item.own && (
               <ShareButton isShared={!!isShared} onClick={onIndicateShare} />

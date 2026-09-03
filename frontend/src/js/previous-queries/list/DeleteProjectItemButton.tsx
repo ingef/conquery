@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import IconButton from "../../button/IconButton";
 import { ConfirmableTooltip } from "../../ui-components/ConfirmableTooltip";
-import WithTooltip from "../../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import { useRemoveFormConfig, useRemoveQuery } from "./actions";
 import { isFormConfig } from "./helpers";
 import type { ProjectItemT } from "./ProjectItem";
@@ -31,19 +31,20 @@ export const DeleteProjectItemButton = ({ item }: { item: ProjectItemT }) => {
   );
 
   return (
-    <ConfirmableTooltip
-      red
-      onConfirm={onDelete}
-      confirmationText={confirmationText}
-    >
-      <WithTooltip text={t("common.delete")}>
+    <TooltipTrigger>
+      <ConfirmableTooltip
+        red
+        onConfirm={onDelete}
+        confirmationText={confirmationText}
+      >
         <IconButton
           icon={faTimes}
           bare
           title="delete"
           data-test-id="project-item-delete-button"
         />
-      </WithTooltip>
-    </ConfirmableTooltip>
+      </ConfirmableTooltip>
+      <Tooltip>{t("common.delete")}</Tooltip>
+    </TooltipTrigger>
   );
 };

@@ -24,7 +24,7 @@ import type {
 } from "../standard-query-editor/types";
 import { ConfirmableTooltip } from "../ui-components/ConfirmableTooltip";
 import Dropzone from "../ui-components/Dropzone";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { EDITOR_DROP_TYPES, HOTKEYS } from "./config";
 import { useConnectorEditing } from "./connector-update/useConnectorRotation";
 import { DateModal } from "./date-restriction/DateModal";
@@ -431,17 +431,18 @@ export function EditorV2({
                   </IconButton>
                 </KeyboardShortcutTooltip>
               )}
-              <ConfirmableTooltip
-                onConfirm={onReset}
-                confirmationText={t("editorV2.clearConfirm")}
-              >
-                <WithTooltip text={t("editorV2.clear")}>
+              <TooltipTrigger>
+                <ConfirmableTooltip
+                  onConfirm={onReset}
+                  confirmationText={t("editorV2.clearConfirm")}
+                >
                   <IconButton
                     style={{ marginLeft: "20px", height: "32.5px" }}
                     icon={faTrash}
                   />
-                </WithTooltip>
-              </ConfirmableTooltip>
+                </ConfirmableTooltip>
+                <Tooltip>{t("editorV2.clear")}</Tooltip>
+              </TooltipTrigger>
             </div>
           </div>
         )}

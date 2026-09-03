@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
+import { Focusable } from "react-aria-components";
 
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import SmallTabNavigationButton from "./SmallTabNavigationButton";
 
@@ -31,18 +32,21 @@ const SmallTabNavigation = ({
         const selected = option.value === selectedTab;
 
         return (
-          <WithTooltip key={option.value} text={option.tooltip}>
-            <SmallTabNavigationButton
-              variant={variant}
-              key={option.value}
-              value={option.value}
-              size={size}
-              isSelected={selected}
-              onClick={() => onSelectTab(option.value)}
-            >
-              {option.label({ selected })}
-            </SmallTabNavigationButton>
-          </WithTooltip>
+          <TooltipTrigger key={option.value}>
+            <Focusable>
+              <SmallTabNavigationButton
+                variant={variant}
+                key={option.value}
+                value={option.value}
+                size={size}
+                isSelected={selected}
+                onClick={() => onSelectTab(option.value)}
+              >
+                {option.label({ selected })}
+              </SmallTabNavigationButton>
+            </Focusable>
+            <Tooltip>{option.tooltip}</Tooltip>
+          </TooltipTrigger>
         );
       })}
     </div>

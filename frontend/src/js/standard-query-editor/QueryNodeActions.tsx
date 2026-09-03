@@ -11,7 +11,11 @@ import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
-import WithTooltip from "../ui-components/WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../ui-components/Tooltip";
 
 const actionButton = tv({
   base: "px-[6px] py-1",
@@ -49,7 +53,7 @@ const QueryNodeActions = (props: Props) => {
 
   return (
     <div className="flex flex-col items-center justify-start">
-      <WithTooltip text={t("queryEditor.removeNode")}>
+      <TooltipTrigger>
         <IconButton
           className={actionButton()}
           icon={faTimes}
@@ -58,9 +62,10 @@ const QueryNodeActions = (props: Props) => {
             props.onDeleteNode(props.andIdx, props.orIdx);
           }}
         />
-      </WithTooltip>
+        <Tooltip>{t("queryEditor.removeNode")}</Tooltip>
+      </TooltipTrigger>
       {props.excludeTimestamps && (
-        <WithTooltip text={t("queryNodeEditor.excludingTimestamps")}>
+        <TooltipTrigger>
           <IconButton
             className={actionButton()}
             red
@@ -70,15 +75,23 @@ const QueryNodeActions = (props: Props) => {
               props.onToggleTimestamps(props.andIdx, props.orIdx);
             }}
           />
-        </WithTooltip>
+          <Tooltip>{t("queryNodeEditor.excludingTimestamps")}</Tooltip>
+        </TooltipTrigger>
       )}
       {!props.error && !!props.previousQueryLoading && (
-        <WithTooltip text={t("queryEditor.loadingPreviousQuery")}>
-          <FaIcon className="mt-[7px] mb-1 mx-[6px]" icon={faSpinner} />
-        </WithTooltip>
+        <TooltipTrigger>
+          <TooltipTarget
+            role="img"
+            aria-label={t("queryEditor.loadingPreviousQuery")}
+            excludeFromTabOrder
+          >
+            <FaIcon className="mt-[7px] mb-1 mx-[6px]" icon={faSpinner} />
+          </TooltipTarget>
+          <Tooltip>{t("queryEditor.loadingPreviousQuery")}</Tooltip>
+        </TooltipTrigger>
       )}
       {!props.error && props.isExpandable && !props.previousQueryLoading && (
-        <WithTooltip text={t("queryEditor.expand")}>
+        <TooltipTrigger>
           <IconButton
             className={actionButton()}
             icon={faExpandArrowsAlt}
@@ -87,16 +100,11 @@ const QueryNodeActions = (props: Props) => {
               props.onExpandClick();
             }}
           />
-        </WithTooltip>
+          <Tooltip>{t("queryEditor.expand")}</Tooltip>
+        </TooltipTrigger>
       )}
       {props.hasActiveSecondaryId && (
-        <WithTooltip
-          text={
-            props.excludeFromSecondaryId
-              ? t("queryNodeEditor.excludingFromSecondaryId")
-              : t("queryEditor.hasSecondaryId")
-          }
-        >
+        <TooltipTrigger>
           <div className="relative">
             <IconButton
               className={actionButton()}
@@ -109,7 +117,12 @@ const QueryNodeActions = (props: Props) => {
             />
             {props.excludeFromSecondaryId && <div className={crossedOut()} />}
           </div>
-        </WithTooltip>
+          <Tooltip>
+            {props.excludeFromSecondaryId
+              ? t("queryNodeEditor.excludingFromSecondaryId")
+              : t("queryEditor.hasSecondaryId")}
+          </Tooltip>
+        </TooltipTrigger>
       )}
     </div>
   );

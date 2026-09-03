@@ -18,7 +18,12 @@ import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 import CurrencyInput from "./CurrencyInput";
-import WithTooltip from "./WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+  tooltipDelay,
+} from "./Tooltip";
 
 const root = tv({ base: "relative" });
 
@@ -189,15 +194,22 @@ const BaseInput = ({
             <FaIcon icon={faCheck} large={large} className={greenIcon()} />
           )}
           {invalid && (
-            <WithTooltip text={invalidText}>
-              <div className={absoluteWrap()}>
+            <TooltipTrigger delay={tooltipDelay.immediate}>
+              <TooltipTarget
+                as="div"
+                role="img"
+                aria-label={invalidText}
+                excludeFromTabOrder
+                className={absoluteWrap()}
+              >
                 <FaIcon
                   icon={faExclamationTriangle}
                   large={large}
                   className={redIcon()}
                 />
-              </div>
-            </WithTooltip>
+              </TooltipTarget>
+              <Tooltip>{invalidText}</Tooltip>
+            </TooltipTrigger>
           )}
           <IconButton
             className={clearZoneIconButton()}

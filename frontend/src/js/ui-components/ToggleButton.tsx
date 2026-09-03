@@ -1,6 +1,7 @@
+import { Focusable } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
-import WithTooltip from "./WithTooltip";
+import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 const root = tv({ base: ["m-0", "flex flex-wrap items-center"] });
 
@@ -44,21 +45,24 @@ const ToggleButton = ({
   return (
     <div className={root({ className })}>
       {options.map(({ value, label, description }, i) => (
-        <WithTooltip key={value} text={description}>
-          <button
-            type="button"
-            className={option({
-              isFirst: i === 0,
-              isLast: i === options.length - 1,
-              active: inputValue === value,
-            })}
-            onClick={() => {
-              if (value !== inputValue) onChange(value);
-            }}
-          >
-            {label}
-          </button>
-        </WithTooltip>
+        <TooltipTrigger key={value}>
+          <Focusable>
+            <button
+              type="button"
+              className={option({
+                isFirst: i === 0,
+                isLast: i === options.length - 1,
+                active: inputValue === value,
+              })}
+              onClick={() => {
+                if (value !== inputValue) onChange(value);
+              }}
+            >
+              {label}
+            </button>
+          </Focusable>
+          <Tooltip>{description}</Tooltip>
+        </TooltipTrigger>
       ))}
     </div>
   );

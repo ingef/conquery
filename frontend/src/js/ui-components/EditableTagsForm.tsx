@@ -7,7 +7,7 @@ import type { SelectOptionT } from "../api/types";
 import IconButton from "../button/IconButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import InputMultiSelect from "./InputMultiSelect/InputMultiSelect";
-import WithTooltip from "./WithTooltip";
+import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 const form = tv({
   base: "flex items-start",
@@ -70,7 +70,7 @@ const EditableTagsForm = ({
         onChange={setValues}
         placeholder={t("inputMultiSelect.tagPlaceholder")}
       />
-      <WithTooltip text={t("common.save")}>
+      <TooltipTrigger>
         <IconButton
           className={saveButton()}
           type="submit"
@@ -78,7 +78,8 @@ const EditableTagsForm = ({
           disabled={!!loading}
           icon={loading ? faSpinner : faCheck}
         />
-      </WithTooltip>
+        <Tooltip>{t("common.save")}</Tooltip>
+      </TooltipTrigger>
     </form>
   );
 };

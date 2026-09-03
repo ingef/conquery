@@ -3,7 +3,7 @@ import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const InteractionControl = ({
   onCloseAll,
@@ -16,12 +16,14 @@ const InteractionControl = ({
 
   return (
     <div className="flex flex-col items-center">
-      <WithTooltip text={t("history.closeAll")}>
+      <TooltipTrigger>
         <IconButton onClick={onCloseAll} icon={faHome} />
-      </WithTooltip>
-      <WithTooltip text={t("history.openAll")}>
+        <Tooltip placement="right">{t("history.closeAll")}</Tooltip>
+      </TooltipTrigger>
+      <TooltipTrigger>
         <IconButton onClick={onOpenAll} icon={faChevronRight} />
-      </WithTooltip>
+        <Tooltip placement="right">{t("history.openAll")}</Tooltip>
+      </TooltipTrigger>
     </div>
   );
 };

@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const root = tv({ base: "flex flex-col items-center" });
 export type DetailLevel = "summary" | "detail" | "full";
@@ -58,14 +58,15 @@ export const DetailControl = memo(
           const selected = value === detailLevel;
 
           return (
-            <WithTooltip key={value} text={tooltip}>
+            <TooltipTrigger key={value}>
               <IconButton
                 key={value}
                 onClick={() => setDetailLevel(value as DetailLevel)}
                 icon={icon}
                 active={selected}
               />
-            </WithTooltip>
+              <Tooltip placement="right">{tooltip}</Tooltip>
+            </TooltipTrigger>
           );
         })}
       </div>

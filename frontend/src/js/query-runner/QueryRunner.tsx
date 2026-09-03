@@ -2,7 +2,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { tv } from "tailwind-variants";
 
 import { exists } from "../common/helpers/exists";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import QueryResults from "./QueryResults";
 import QueryRunnerButton from "./QueryRunnerButton";
@@ -51,14 +51,15 @@ const QueryRunner = ({
   return (
     <div className={root()} data-test-id="query-runner">
       <div className="grow">
-        <WithTooltip text={buttonTooltip}>
+        <TooltipTrigger>
           <QueryRunnerButton
             onClick={btnAction}
             isStartStopLoading={isStartStopLoading}
             isQueryRunning={isQueryRunning}
             disabled={disabled}
           />
-        </WithTooltip>
+          <Tooltip>{buttonTooltip}</Tooltip>
+        </TooltipTrigger>
       </div>
       <div className="grow-[2] pl-5">
         <div className="flex flex-row items-center justify-end">

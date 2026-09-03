@@ -39,6 +39,18 @@
 
   --animate-spin-fast: spin 0.5s linear infinite;
   --animate-blink: blink 1s linear infinite;
+  --animate-fade-in: fade-in 0.1s ease-out;
+  --animate-fade-out: fade-out 0.1s ease-in forwards;
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
   @keyframes blink {
     50% {
       color: transparent;

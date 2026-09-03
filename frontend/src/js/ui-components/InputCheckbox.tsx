@@ -3,7 +3,12 @@ import { tv } from "tailwind-variants";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 import InfoTooltip from "./InfoTooltip";
-import WithTooltip from "./WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+  tooltipDelay,
+} from "./Tooltip";
 
 const row = tv({
   base: ["flex flex-row items-center", "cursor-pointer"],
@@ -45,7 +50,6 @@ const InputCheckbox = ({
   label: labelText,
   className,
   tooltip,
-  tooltipLazy,
   infoTooltip,
   value,
   onChange,
@@ -54,7 +58,6 @@ const InputCheckbox = ({
   label: string;
   className?: string;
   tooltip?: string;
-  tooltipLazy?: boolean;
   infoTooltip?: string;
   value?: boolean;
   onChange: (checked: boolean) => void;
@@ -68,15 +71,20 @@ const InputCheckbox = ({
       if (!disabled) onChange(!value);
     }}
   >
-    <WithTooltip text={tooltip} lazy={tooltipLazy}>
-      <div className={container({ disabled })}>
+    <TooltipTrigger delay={tooltipDelay.long}>
+      <TooltipTarget
+        as="div"
+        excludeFromTabOrder
+        className={container({ disabled })}
+      >
         {!!value && (
           <div className={checkmark()}>
             <FaIcon icon={faCheck} className={checkmarkIcon()} />
           </div>
         )}
-      </div>
-    </WithTooltip>
+      </TooltipTarget>
+      <Tooltip>{tooltip}</Tooltip>
+    </TooltipTrigger>
     <span className={label()}>{labelText}</span>
     {exists(infoTooltip) && <InfoTooltip text={infoTooltip} />}
   </div>

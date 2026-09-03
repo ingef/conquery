@@ -2,7 +2,7 @@ import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import IconButton from "../../button/IconButton";
-import WithTooltip from "../../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import { useTimelineSearch } from "./timelineSearchState";
 
 const SearchControl = () => {
@@ -13,14 +13,15 @@ const SearchControl = () => {
 
   return (
     <div className="flex flex-col items-center">
-      <WithTooltip text={t("history.search")}>
+      <TooltipTrigger>
         <IconButton
           className="px-[10px] py-2"
           active={searchVisible}
           onClick={toggleSearchVisible}
           icon={faSearch}
         />
-      </WithTooltip>
+        <Tooltip placement="right">{t("history.search")}</Tooltip>
+      </TooltipTrigger>
     </div>
   );
 };

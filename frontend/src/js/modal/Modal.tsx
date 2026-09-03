@@ -6,7 +6,7 @@ import { tv } from "tailwind-variants";
 import { TransparentButton } from "../button/TransparentButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import { Heading3 } from "../headings/Headings";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const root = tv({
   base: [
@@ -94,11 +94,12 @@ const Modal = ({
         <div className="flex items-start justify-between">
           <Heading3>{headline}</Heading3>
           {doneButton && (
-            <WithTooltip text={t("common.closeEsc")}>
+            <TooltipTrigger>
               <TransparentButton small onClick={onClose}>
                 {t("common.done")}
               </TransparentButton>
-            </WithTooltip>
+              <Tooltip>{t("common.closeEsc")}</Tooltip>
+            </TooltipTrigger>
           )}
         </div>
         {subtitleProp && <p className={subtitle()}>{subtitleProp}</p>}

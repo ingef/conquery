@@ -3,10 +3,10 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import { KeyboardKey } from "../common/components/KeyboardKey";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const keyTooltip = tv({
-  base: ["flex items-center", "gap-[5px]", "px-[15px] py-2"],
+  base: ["flex items-center", "gap-[5px]"],
 });
 
 export const KeyboardShortcutTooltip = ({
@@ -20,8 +20,9 @@ export const KeyboardShortcutTooltip = ({
   const keynames = keyname.split("+");
 
   return (
-    <WithTooltip
-      html={
+    <TooltipTrigger>
+      {children}
+      <Tooltip>
         <div className={keyTooltip()}>
           {t("common.shortcut")}:{" "}
           <div className="flex items-center gap-[2px]">
@@ -33,9 +34,7 @@ export const KeyboardShortcutTooltip = ({
             ))}
           </div>
         </div>
-      }
-    >
-      {children}
-    </WithTooltip>
+      </Tooltip>
+    </TooltipTrigger>
   );
 };

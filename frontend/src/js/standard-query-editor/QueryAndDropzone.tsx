@@ -2,7 +2,12 @@ import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PreviousQueryT } from "../previous-queries/list/reducer";
-import WithTooltip from "../ui-components/WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+  tooltipDelay,
+} from "../ui-components/Tooltip";
 
 import QueryEditorDropzone from "./QueryEditorDropzone";
 import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
@@ -24,15 +29,18 @@ const QueryAndDropzone = ({
 
   return (
     <div className="pt-[70px]">
-      <WithTooltip className="block!" text={t("help.editorDropzoneAnd")} lazy>
-        <QueryEditorDropzone
-          isAnd
-          onDropNode={onDropAndNode}
-          onDropFile={onDropFile}
-          onImportLines={onImportLines}
-          onLoadPreviousQuery={onLoadQuery}
-        />
-      </WithTooltip>
+      <TooltipTrigger delay={tooltipDelay.long}>
+        <TooltipTarget as="div" excludeFromTabOrder>
+          <QueryEditorDropzone
+            isAnd
+            onDropNode={onDropAndNode}
+            onDropFile={onDropFile}
+            onImportLines={onImportLines}
+            onLoadPreviousQuery={onLoadQuery}
+          />
+        </TooltipTarget>
+        <Tooltip>{t("help.editorDropzoneAnd")}</Tooltip>
+      </TooltipTrigger>
     </div>
   );
 };

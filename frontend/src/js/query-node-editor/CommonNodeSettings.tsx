@@ -25,7 +25,6 @@ const CommonNodeSettings = ({
           <InputCheckbox
             label={t("queryNodeEditor.excludeTimestamps")}
             tooltip={t("help.excludeTimestamps")}
-            tooltipLazy
             value={excludeTimestamps}
             onChange={onToggleTimestamps}
           />
@@ -36,7 +35,6 @@ const CommonNodeSettings = ({
           <InputCheckbox
             label={t("queryNodeEditor.excludeFromSecondaryId")}
             tooltip={t("help.excludeFromSecondaryId")}
-            tooltipLazy
             value={excludeFromSecondaryId}
             onChange={onToggleSecondaryIdExclude}
           />

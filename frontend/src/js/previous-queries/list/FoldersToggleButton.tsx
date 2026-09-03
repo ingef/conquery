@@ -2,24 +2,19 @@ import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../../button/IconButton";
-import WithTooltip from "../../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 
 const FoldersToggleButton = ({
-  className,
   active,
   onClick,
 }: {
-  className?: string;
   active?: boolean;
   onClick: () => void;
 }) => {
   const { t } = useTranslation();
 
   return (
-    <WithTooltip
-      text={t("previousQueriesFolderButton.tooltip")}
-      className={className}
-    >
+    <TooltipTrigger>
       <IconButton
         className="mr-[5px] px-[6px] py-[9px]"
         onClick={onClick}
@@ -27,7 +22,8 @@ const FoldersToggleButton = ({
         active={active}
         frame
       />
-    </WithTooltip>
+      <Tooltip>{t("previousQueriesFolderButton.tooltip")}</Tooltip>
+    </TooltipTrigger>
   );
 };
 export default FoldersToggleButton;

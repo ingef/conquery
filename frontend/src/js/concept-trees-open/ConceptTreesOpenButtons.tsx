@@ -8,7 +8,7 @@ import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import { clearSearchQuery } from "../concept-trees/actions";
 import { useRootConceptIds } from "../concept-trees/useRootConceptIds";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { closeAllConceptOpen, resetAllConceptOpen } from "./actions";
 import type { ConceptTreesOpenStateT } from "./reducer";
@@ -71,15 +71,16 @@ const ConceptTreesOpenButtonsView = memo(
 
     return (
       <div className={row({ className })}>
-        <WithTooltip text={t("conceptTreesOpen.resetAll")}>
+        <TooltipTrigger>
           <IconButton
             className="px-[6px] py-[9px]"
             frame
             icon={faHome}
             onClick={onResetAllConceptOpen}
           />
-        </WithTooltip>
-        <WithTooltip text={t("conceptTreesOpen.closeAll")}>
+          <Tooltip>{t("conceptTreesOpen.resetAll")}</Tooltip>
+        </TooltipTrigger>
+        <TooltipTrigger>
           <IconButton
             className="px-[6px] py-[9px]"
             disabled={isCloseAllDisabled}
@@ -87,7 +88,8 @@ const ConceptTreesOpenButtonsView = memo(
             icon={faFolderMinus}
             onClick={onCloseAllConceptOpen}
           />
-        </WithTooltip>
+          <Tooltip>{t("conceptTreesOpen.closeAll")}</Tooltip>
+        </TooltipTrigger>
       </div>
     );
   },

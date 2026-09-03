@@ -10,7 +10,11 @@ import type {
 import { exists } from "../../common/helpers/exists";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
 import FaIcon from "../../icon/FaIcon";
-import WithTooltip from "../../ui-components/WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../../ui-components/Tooltip";
 import { ConceptBubble } from "../ConceptBubble";
 
 import { SmallHeading } from "./SmallHeading";
@@ -104,9 +108,12 @@ const ConceptValues = ({
       </div>
       <div className={conceptRow()}>
         {concepts.map((concept) => (
-          <WithTooltip key={concept.label} text={concept.description}>
-            <ConceptBubble>{concept.label}</ConceptBubble>
-          </WithTooltip>
+          <TooltipTrigger key={concept.label}>
+            <TooltipTarget as={ConceptBubble} excludeFromTabOrder>
+              {concept.label}
+            </TooltipTarget>
+            <Tooltip>{concept.description}</Tooltip>
+          </TooltipTrigger>
         ))}
       </div>
     </>
