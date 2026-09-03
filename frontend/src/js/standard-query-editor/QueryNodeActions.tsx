@@ -113,6 +113,7 @@ const QueryNodeActions = (props: Props) => {
                   : t("queryEditor.hasSecondaryId")
               }
               intent="tertiary"
+              size="sm"
               data-test-id="secondary-id-toggle"
               onPress={() => {
                 props.onToggleSecondaryIdExclude(props.andIdx, props.orIdx);
