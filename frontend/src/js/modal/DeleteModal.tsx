@@ -29,9 +29,11 @@ const DeleteModal = ({
       <div className="max-w-[400px]">
         {description && <p className="mb-5">{description}</p>}
         <div className={buttons()}>
-          <Button intent="secondary" className="mx-[10px]" onPress={onClose}>
-            {t("common.cancel")}
-          </Button>
+          <div className="mx-[10px]">
+            <Button intent="secondary" onPress={onClose}>
+              {t("common.cancel")}
+            </Button>
+          </div>
           <Button intent="danger" onPress={onDelete}>
             {t("common.delete")}
           </Button>

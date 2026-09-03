@@ -1,9 +1,9 @@
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { memo, useEffect, useState } from "react";
+import { Button as RacButton } from "react-aria-components";
 import { tv } from "tailwind-variants";
 import { exists } from "../common/helpers/exists";
 import BaseInput from "../ui-components/BaseInput";
-import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
 
 const inputContainer = tv({ base: ["relative", "grow"] });
@@ -26,7 +26,14 @@ const right = tv({
   ],
 });
 
-const searchButton = tv({ base: "text-gray-500" });
+const searchButton = tv({
+  base: [
+    "inline-flex items-center justify-center",
+    "size-[30px]",
+    "text-gray-500 hover:text-gray-800",
+    "cursor-pointer",
+  ],
+});
 
 interface Props {
   className?: string;
@@ -71,14 +78,13 @@ const SearchBar = ({
       />
       {exists(localSearchTerm) && (
         <div className={right()}>
-          <Button
-            intent="tertiary"
+          <RacButton
             aria-label={placeholder}
             onPress={() => onSearch(localSearchTerm)}
             className={searchButton()}
           >
             <Icon icon={faSearch} />
-          </Button>
+          </RacButton>
         </div>
       )}
     </div>

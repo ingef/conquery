@@ -263,14 +263,13 @@ const ProjectItem = ({
       )}
       <div className={content({ own: !!item.own, system: isSystem })}>
         <div className={topInfos()}>
-          <div className="flex items-center">
+          <div className="flex items-center gap-[10px]">
             <TooltipTrigger>
               <Button
                 intent="tertiary"
                 size="sm"
                 onPress={onIndicateEditFolders}
                 isDisabled={!mayEdit}
-                className="mr-[10px]"
               >
                 <Icon
                   icon={folders.length === 0 ? faFolderRegular : faFolder}

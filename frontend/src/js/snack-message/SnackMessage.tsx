@@ -1,11 +1,11 @@
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { memo, useRef } from "react";
+import { Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import { useClickOutside } from "../common/helpers/useClickOutside";
-import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
 import { resetMessage as resetMessageAction } from "./actions";
 import type { SnackMessageStateT } from "./reducer";
@@ -28,7 +28,12 @@ const root = tv({
 });
 
 const clearZone = tv({
-  base: ["absolute top-3 right-4", "z-11", "opacity-80 hover:opacity-100"],
+  base: [
+    "absolute top-3 right-4",
+    "z-11",
+    "opacity-80 hover:opacity-100",
+    "cursor-pointer",
+  ],
 });
 
 export const SnackMessage = memo(function SnackMessageComponent() {
@@ -53,14 +58,13 @@ export const SnackMessage = memo(function SnackMessageComponent() {
           <div className="relative py-3 pr-10 pl-5">
             {/* biome-ignore lint/security/noDangerouslySetInnerHtml: messages are our own i18n text */}
             <div dangerouslySetInnerHTML={{ __html: message }} />
-            <Button
-              intent="tertiary"
+            <RacButton
               aria-label={t("common.close")}
               className={clearZone()}
               onPress={resetMessage}
             >
               <Icon icon={faTimes} className="text-white" />
-            </Button>
+            </RacButton>
           </div>
         </div>
       )}

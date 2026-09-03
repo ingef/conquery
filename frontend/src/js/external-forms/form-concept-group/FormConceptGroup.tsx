@@ -308,14 +308,15 @@ const FormConceptGroup = (props: Props) => {
           <>
             {props.label}
             {allowExtendedCopying && (
-              <Button
-                intent="secondary"
-                className="ml-[10px] shrink-0"
-                size="sm"
-                onPress={() => setIsCopyModalOpen(true)}
-              >
-                {t("externalForms.common.concept.copyFrom")}
-              </Button>
+              <span className="ml-[10px]">
+                <Button
+                  intent="secondary"
+                  size="sm"
+                  onPress={() => setIsCopyModalOpen(true)}
+                >
+                  {t("externalForms.common.concept.copyFrom")}
+                </Button>
+              </span>
             )}
           </>
         }

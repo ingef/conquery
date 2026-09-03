@@ -63,18 +63,19 @@ const EditableText = ({
     />
   ) : (
     <div className={text({ className })}>
-      <TooltipTrigger>
-        <Button
-          aria-label={tooltip}
-          intent="tertiary"
-          size={large ? "md" : "sm"}
-          onPress={onToggleEdit}
-          className={editButton({ large: !!large })}
-        >
-          <Icon icon={faPen} />
-        </Button>
-        <Tooltip>{tooltip}</Tooltip>
-      </TooltipTrigger>
+      <span className={editButton({ large: !!large })}>
+        <TooltipTrigger>
+          <Button
+            aria-label={tooltip}
+            intent="tertiary"
+            size={large ? "md" : "sm"}
+            onPress={onToggleEdit}
+          >
+            <Icon icon={faPen} />
+          </Button>
+          <Tooltip>{tooltip}</Tooltip>
+        </TooltipTrigger>
+      </span>
       <HighlightableLabel className={label()} isHighlighted={isHighlighted}>
         {highlightedWords && highlightedWords.length > 0 ? (
           <Highlighter

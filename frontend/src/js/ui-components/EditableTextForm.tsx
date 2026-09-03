@@ -15,10 +15,6 @@ const form = tv({
   base: "flex items-center",
 });
 
-const saveButton = tv({
-  base: "ml-[3px]",
-});
-
 const EditableTextForm = ({
   className,
   text,
@@ -67,18 +63,19 @@ const EditableTextForm = ({
         }}
       />
       {!saveOnClickoutside && (
-        <TooltipTrigger>
-          <Button
-            aria-label={t("common.save")}
-            intent="secondary"
-            type="submit"
-            isDisabled={loading}
-            className={saveButton()}
-          >
-            <Icon icon={loading ? faSpinner : faCheck} />
-          </Button>
-          <Tooltip>{t("common.save")}</Tooltip>
-        </TooltipTrigger>
+        <div className="ml-[3px]">
+          <TooltipTrigger>
+            <Button
+              aria-label={t("common.save")}
+              intent="secondary"
+              type="submit"
+              isDisabled={loading}
+            >
+              <Icon icon={loading ? faSpinner : faCheck} />
+            </Button>
+            <Tooltip>{t("common.save")}</Tooltip>
+          </TooltipTrigger>
+        </div>
       )}
     </form>
   );

@@ -13,10 +13,6 @@ const form = tv({
   base: "flex items-start",
 });
 
-const saveButton = tv({
-  base: "ml-[3px]",
-});
-
 const multiSelect = tv({
   base: ["z-2", "grow"],
 });
@@ -70,18 +66,19 @@ const EditableTagsForm = ({
         onChange={setValues}
         placeholder={t("inputMultiSelect.tagPlaceholder")}
       />
-      <TooltipTrigger>
-        <Button
-          aria-label={t("common.save")}
-          intent="secondary"
-          type="submit"
-          isDisabled={!!loading}
-          className={saveButton()}
-        >
-          <Icon icon={loading ? faSpinner : faCheck} />
-        </Button>
-        <Tooltip>{t("common.save")}</Tooltip>
-      </TooltipTrigger>
+      <div className="ml-[3px]">
+        <TooltipTrigger>
+          <Button
+            aria-label={t("common.save")}
+            intent="secondary"
+            type="submit"
+            isDisabled={!!loading}
+          >
+            <Icon icon={loading ? faSpinner : faCheck} />
+          </Button>
+          <Tooltip>{t("common.save")}</Tooltip>
+        </TooltipTrigger>
+      </div>
     </form>
   );
 };

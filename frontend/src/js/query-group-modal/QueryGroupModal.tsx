@@ -2,7 +2,6 @@ import { faUndo } from "@fortawesome/free-solid-svg-icons";
 import { Fragment, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import type { DateStringMinMax } from "../common/helpers/dateHelper";
 import Modal from "../modal/Modal";
@@ -17,10 +16,6 @@ import {
   queryGroupModalResetAllDates,
   queryGroupModalSetDate,
 } from "./actions";
-
-const resetAll = tv({
-  base: ["text-primary-500", "font-bold", "ml-5"],
-});
 
 function findGroup(query: StandardQueryStateT, andIdx: number) {
   if (!query[andIdx]) return null;
@@ -82,15 +77,12 @@ const QueryGroupModal = ({
 
   const labelSuffix = useMemo(() => {
     return hasActiveDate ? (
-      <Button
-        intent="tertiary"
-        size="sm"
-        onPress={onResetAllDates}
-        className={resetAll()}
-      >
-        <Icon icon={faUndo} />
-        {t("queryNodeEditor.reset")}
-      </Button>
+      <span className="ml-5">
+        <Button intent="link" onPress={onResetAllDates}>
+          <Icon icon={faUndo} />
+          {t("queryNodeEditor.reset")}
+        </Button>
+      </span>
     ) : null;
   }, [t, hasActiveDate, onResetAllDates]);
 

@@ -93,14 +93,15 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>({
                 />
               )}
               <div className={listItem()}>
-                <Button
-                  size="sm"
-                  intent="tertiary"
-                  onPress={() => onDelete(i)}
-                  className="absolute top-0 right-0"
-                >
-                  <Icon icon={faTimes} />
-                </Button>
+                <div className="absolute top-0 right-0">
+                  <Button
+                    size="sm"
+                    intent="tertiary"
+                    onPress={() => onDelete(i)}
+                  >
+                    <Icon icon={faTimes} />
+                  </Button>
+                </div>
                 {item}
               </div>
             </div>

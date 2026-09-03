@@ -146,18 +146,19 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
             label={groupsLabel}
             options={userGroupOptions}
           />
-          <TooltipTrigger>
-            <Button
-              aria-label={shareLabel}
-              intent="secondary"
-              type="submit"
-              isDisabled={buttonDisabled}
-              className="ml-[3px]"
-            >
-              <Icon icon={loading ? faSpinner : faCheck} />
-            </Button>
-            <Tooltip>{shareLabel}</Tooltip>
-          </TooltipTrigger>
+          <div className="ml-[3px]">
+            <TooltipTrigger>
+              <Button
+                aria-label={shareLabel}
+                intent="secondary"
+                type="submit"
+                isDisabled={buttonDisabled}
+              >
+                <Icon icon={loading ? faSpinner : faCheck} />
+              </Button>
+              <Tooltip>{shareLabel}</Tooltip>
+            </TooltipTrigger>
+          </div>
         </div>
       </form>
     </Modal>

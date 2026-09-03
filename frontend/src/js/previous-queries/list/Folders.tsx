@@ -46,7 +46,6 @@ const deleteButton = tv({
     "absolute top-0 right-0",
     "invisible group-hover/folder:visible",
     "bg-bg-50",
-    "rounded-none",
   ],
 });
 
@@ -193,7 +192,6 @@ const Folders = ({ className }: { className?: string }) => {
           intent="tertiary"
           size="sm"
           onPress={() => setShowAddFolderModal(true)}
-          className="text-left"
         >
           <Icon icon={faPlus} />
           {isNarrow ? t("folders.addShort") : t("folders.add")}
@@ -264,17 +262,18 @@ const Folders = ({ className }: { className?: string }) => {
                     resultWords={searchResultWords}
                   />
                   <TooltipTrigger>
-                    <Button
-                      size="sm"
-                      aria-label={t("common.delete")}
-                      intent="tertiary"
-                      onPress={() => {
-                        setFolderToDelete(folder);
-                      }}
-                      className={deleteButton()}
-                    >
-                      <Icon icon={faTimes} />
-                    </Button>
+                    <div className={deleteButton()}>
+                      <Button
+                        size="sm"
+                        aria-label={t("common.delete")}
+                        intent="tertiary"
+                        onPress={() => {
+                          setFolderToDelete(folder);
+                        }}
+                      >
+                        <Icon icon={faTimes} />
+                      </Button>
+                    </div>
                     <Tooltip>{t("common.delete")}</Tooltip>
                   </TooltipTrigger>
                 </>

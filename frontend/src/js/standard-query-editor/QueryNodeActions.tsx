@@ -66,11 +66,11 @@ const QueryNodeActions = (props: Props) => {
         <TooltipTrigger>
           <Button
             aria-label={t("queryNodeEditor.excludingTimestamps")}
-            intent="tertiary"
+            intent="danger"
+            size="sm"
             onPress={() => {
               props.onToggleTimestamps(props.andIdx, props.orIdx);
             }}
-            className="text-red"
           >
             <Icon icon={faCalendar} />
           </Button>

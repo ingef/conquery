@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
+import { Button as RacButton } from "react-aria-components";
 import { tv } from "tailwind-variants";
-import { Button } from "../Button";
 
 import SelectListOption from "./SelectListOption";
 
@@ -114,19 +114,32 @@ export const Input = ({ className, ...props }: ComponentProps<"input">) => (
   <input className={input({ className })} {...props} />
 );
 
+// the select box's own small square buttons
+const adornment = tv({
+  base: [
+    "inline-flex items-center justify-center",
+    "size-6 shrink-0",
+    "rounded",
+    "text-gray-800",
+    "cursor-pointer",
+    "hover:bg-gray-50",
+    "disabled:cursor-not-allowed disabled:opacity-40",
+  ],
+});
+
 export const DropdownToggleButton = ({
   className,
   ...props
-}: ComponentProps<typeof Button>) => (
-  <Button intent="tertiary" size="sm" {...props} className={className} />
-);
+}: Omit<ComponentProps<typeof RacButton>, "className"> & {
+  className?: string;
+}) => <RacButton {...props} className={adornment({ className })} />;
 
 export const ResetButton = ({
   className,
   ...props
-}: ComponentProps<typeof Button>) => (
-  <Button intent="tertiary" size="sm" {...props} className={className} />
-);
+}: Omit<ComponentProps<typeof RacButton>, "className"> & {
+  className?: string;
+}) => <RacButton {...props} className={adornment({ className })} />;
 
 const verticalSeparator = tv({
   base: ["self-stretch", "shrink-0", "w-px", "my-[3px]", "bg-gray-100"],

@@ -5,14 +5,18 @@ import {
   faCircleDot,
 } from "@fortawesome/free-solid-svg-icons";
 import { type Dispatch, memo, type SetStateAction, useMemo } from "react";
+import { type Key, ToggleButtonGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
-
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
+import { SidebarToggle } from "./SidebarControl";
 
 const root = tv({ base: "flex flex-col items-center" });
+
+const detailLevels: DetailLevel[] = ["summary", "detail", "full"];
+const isDetailLevel = (key: Key): key is DetailLevel =>
+  detailLevels.some((level) => level === key);
 export type DetailLevel = "summary" | "detail" | "full";
 
 interface Props {
@@ -53,26 +57,26 @@ export const DetailControl = memo(
   ({ className, detailLevel, setDetailLevel }: Props) => {
     const navOptions = useButtonConfig();
     return (
-      <div className={root({ className })}>
-        {navOptions.map(({ value, icon, tooltip }) => {
-          const selected = value === detailLevel;
-
-          return (
-            <TooltipTrigger key={value}>
-              <Button
-                aria-label={tooltip}
-                intent="tertiary"
-                key={value}
-                onPress={() => setDetailLevel(value as DetailLevel)}
-                aria-pressed={selected}
-              >
-                <Icon icon={icon} />
-              </Button>
-              <Tooltip placement="right">{tooltip}</Tooltip>
-            </TooltipTrigger>
-          );
-        })}
-      </div>
+      <ToggleButtonGroup
+        className={root({ className })}
+        orientation="vertical"
+        selectionMode="single"
+        disallowEmptySelection
+        selectedKeys={[detailLevel]}
+        onSelectionChange={(keys) => {
+          const [key] = keys;
+          if (key !== undefined && isDetailLevel(key)) setDetailLevel(key);
+        }}
+      >
+        {navOptions.map(({ value, icon, tooltip }) => (
+          <TooltipTrigger key={value}>
+            <SidebarToggle id={value} aria-label={tooltip}>
+              <Icon icon={icon} />
+            </SidebarToggle>
+            <Tooltip placement="right">{tooltip}</Tooltip>
+          </TooltipTrigger>
+        ))}
+      </ToggleButtonGroup>
     );
   },
 );

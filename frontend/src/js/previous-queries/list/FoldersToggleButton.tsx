@@ -21,7 +21,6 @@ const FoldersToggleButton = ({
         intent="secondary"
         onPress={onClick}
         aria-pressed={active}
-        className="mr-[5px]"
       >
         <Icon icon={faFolder} />
       </Button>
