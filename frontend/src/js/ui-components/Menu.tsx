@@ -35,7 +35,8 @@ const menuItem = tv({
     "transition-[opacity,background-color] duration-100",
   ],
   variants: {
-    danger: { true: "text-red" },
+    // the svg selector beats the colour FaIcon still sets on itself
+    danger: { true: "text-red [&_svg]:text-red" },
   },
 });
 
