@@ -1,4 +1,3 @@
-import { faFileImport } from "@fortawesome/free-solid-svg-icons";
 import { type ReactNode, type Ref, useRef, useState } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
@@ -10,7 +9,6 @@ import Dropzone, {
   type ChildArgs,
   type PossibleDroppableObject,
 } from "./Dropzone";
-import { Icon } from "./Icon";
 import { ImportModal } from "./ImportModal";
 
 export interface DragItemFile {
@@ -31,23 +29,14 @@ const dropzone = tv({
   },
 });
 
-const selectFileButton = tv({
-  base: [
-    "absolute",
-    "h-auto px-0",
-    "text-[11px] text-gray-500 font-light",
-    "hover:underline hover:bg-transparent",
-  ],
+const importButton = tv({
+  base: "absolute",
   variants: {
     outside: {
-      true: "-top-[26px] -right-[12px]",
+      true: "-top-[30px] -right-[12px]",
       false: "top-[3px] right-0",
     },
   },
-});
-
-const importIcon = tv({
-  base: ["h-[10px]", "pr-[3px]"],
 });
 
 interface PropsT<DroppableObject> {
@@ -150,15 +139,10 @@ const DropzoneWithFileInput = <
           )}
           {showImportButton && onImportLines && (
             <Button
-              intent="tertiary"
-              size="sm"
-              className={selectFileButton({ outside: !!importButtonOutside })}
+              intent="link"
+              className={importButton({ outside: !!importButtonOutside })}
               onPress={() => setImportModalOpen(true)}
             >
-              <Icon
-                icon={faFileImport}
-                className={[importIcon(), "text-gray-500"]}
-              />
               {t("common.import")}
             </Button>
           )}

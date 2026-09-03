@@ -43,6 +43,12 @@ const button = tv({
         "bg-transparent text-red border-red",
         "hover:bg-red hover:text-white",
       ],
+      // reads as a text link, aligns with text: no padding, no box
+      link: [
+        "bg-transparent border-transparent px-0",
+        "text-gray-500",
+        "hover:text-gray-800 hover:underline",
+      ],
     },
     // every size is a fixed height, so text and icon-only buttons line up
     size: {
@@ -64,7 +70,7 @@ const button = tv({
 export interface ButtonProps
   extends Omit<RacButtonProps, "className" | "style" | "children" | "onClick"> {
   /** what the button does in its context; the look follows */
-  intent?: "primary" | "secondary" | "tertiary" | "danger";
+  intent?: "primary" | "secondary" | "tertiary" | "danger" | "link";
   size?: "sm" | "md" | "lg";
   className?: string;
   style?: CSSProperties;
@@ -92,6 +98,7 @@ const isIconOnly = (children: ReactNode) => {
  *
  * A button whose only children are icons is square; give it an `aria-label`.
  * A pressed state (toggles) is `aria-pressed`, which colors the button.
+ * `link` is for a button that reads as a text link.
  */
 export const Button = ({
   intent,
