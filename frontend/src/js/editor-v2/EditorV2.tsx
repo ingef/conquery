@@ -431,18 +431,18 @@ export function EditorV2({
                   </IconButton>
                 </KeyboardShortcutTooltip>
               )}
-              <ConfirmableTooltip
-                onConfirm={onReset}
-                confirmationText={t("editorV2.clearConfirm")}
-              >
-                <TooltipTrigger>
+              <TooltipTrigger>
+                <ConfirmableTooltip
+                  onConfirm={onReset}
+                  confirmationText={t("editorV2.clearConfirm")}
+                >
                   <IconButton
                     style={{ marginLeft: "20px", height: "32.5px" }}
                     icon={faTrash}
                   />
-                  <Tooltip>{t("editorV2.clear")}</Tooltip>
-                </TooltipTrigger>
-              </ConfirmableTooltip>
+                </ConfirmableTooltip>
+                <Tooltip>{t("editorV2.clear")}</Tooltip>
+              </TooltipTrigger>
             </div>
           </div>
         )}

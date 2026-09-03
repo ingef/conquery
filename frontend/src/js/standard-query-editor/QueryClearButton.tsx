@@ -15,15 +15,15 @@ const QueryClearButton = ({ className }: { className?: string }) => {
 
   return (
     <div className={className}>
-      <ConfirmableTooltip
-        confirmationText={t(`queryEditor.clearConfirm`)}
-        onConfirm={onClearQuery}
-      >
-        <TooltipTrigger>
+      <TooltipTrigger>
+        <ConfirmableTooltip
+          confirmationText={t(`queryEditor.clearConfirm`)}
+          onConfirm={onClearQuery}
+        >
           <IconButton tiny icon={faTrash} tabIndex={-1} />
-          <Tooltip>{t("queryEditor.clear")}</Tooltip>
-        </TooltipTrigger>
-      </ConfirmableTooltip>
+        </ConfirmableTooltip>
+        <Tooltip>{t("queryEditor.clear")}</Tooltip>
+      </TooltipTrigger>
     </div>
   );
 };
