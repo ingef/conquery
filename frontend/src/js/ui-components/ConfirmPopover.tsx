@@ -19,7 +19,7 @@ export const ConfirmPopover = ({
   children,
   confirmationIcon,
   confirmationText,
-  placement = "top",
+  placement = "bottom",
   onConfirm,
   red,
 }: {

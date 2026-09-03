@@ -57,7 +57,7 @@ export const Confirm: Story = {
       </ConfirmPopover>
       <ConfirmPopover
         red
-        placement="bottom"
+        placement="top"
         confirmationText="Delete for good"
         onConfirm={() => {}}
       >
