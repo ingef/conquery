@@ -32,6 +32,20 @@ export const Intents: Story = {
   ),
 };
 
+export const LinkInText: Story = {
+  render: () => (
+    <p className="max-w-[320px] text-sm">
+      A link button sits in flowing text, takes the text's size and line height,
+      and wraps with it: <Button intent="link">import a list</Button> or{" "}
+      <Button intent="link">
+        <Icon icon={faPlus} />
+        add one by hand
+      </Button>
+      .
+    </p>
+  ),
+};
+
 export const Danger: Story = {
   render: () => (
     <div className="flex items-center gap-3">
