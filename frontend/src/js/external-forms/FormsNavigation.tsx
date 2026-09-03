@@ -72,19 +72,19 @@ const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
             }
           }}
         />
-        <ConfirmableTooltip
-          onConfirm={onReset}
-          confirmationText={t("externalForms.common.clearConfirm")}
-        >
-          <TooltipTrigger>
+        <TooltipTrigger>
+          <ConfirmableTooltip
+            onConfirm={onReset}
+            confirmationText={t("externalForms.common.clearConfirm")}
+          >
             <IconButton
               className="ml-[10px] shrink-0 px-[10px] py-[7px]"
               frame
               icon={faTrash}
             />
-            <Tooltip>{t("externalForms.common.clear")}</Tooltip>
-          </TooltipTrigger>
-        </ConfirmableTooltip>
+          </ConfirmableTooltip>
+          <Tooltip>{t("externalForms.common.clear")}</Tooltip>
+        </TooltipTrigger>
       </div>
     </div>
   );

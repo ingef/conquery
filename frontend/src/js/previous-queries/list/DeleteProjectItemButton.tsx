@@ -31,20 +31,20 @@ export const DeleteProjectItemButton = ({ item }: { item: ProjectItemT }) => {
   );
 
   return (
-    <ConfirmableTooltip
-      red
-      onConfirm={onDelete}
-      confirmationText={confirmationText}
-    >
-      <TooltipTrigger>
+    <TooltipTrigger>
+      <ConfirmableTooltip
+        red
+        onConfirm={onDelete}
+        confirmationText={confirmationText}
+      >
         <IconButton
           icon={faTimes}
           bare
           title="delete"
           data-test-id="project-item-delete-button"
         />
-        <Tooltip>{t("common.delete")}</Tooltip>
-      </TooltipTrigger>
-    </ConfirmableTooltip>
+      </ConfirmableTooltip>
+      <Tooltip>{t("common.delete")}</Tooltip>
+    </TooltipTrigger>
   );
 };
