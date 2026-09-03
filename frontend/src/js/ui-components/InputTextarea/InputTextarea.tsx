@@ -2,8 +2,9 @@ import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import type { DetailedHTMLProps, Ref, TextareaHTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
+import { Button } from "../Button";
+import { Icon } from "../Icon";
 
-import IconButton from "../../button/IconButton";
 import Labeled from "../Labeled";
 
 const textarea = tv({
@@ -70,14 +71,16 @@ export const InputTextarea = ({
           value={props.value || ""}
         />
         {props.value && (
-          <IconButton
-            className={clearZoneIconButton()}
-            tiny
-            icon={faTimes}
+          <Button
+            intent="tertiary"
+            size="sm"
             excludeFromTabOrder
             aria-label={t("common.clearValue")}
-            onClick={() => onChange(null)}
-          />
+            onPress={() => onChange(null)}
+            className={clearZoneIconButton()}
+          >
+            <Icon icon={faTimes} />
+          </Button>
         )}
       </div>
     </Labeled>

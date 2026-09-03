@@ -3,11 +3,11 @@ import { useCombobox } from "downshift";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { mergeRefs } from "react-merge-refs";
-
 import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import { useClickOutside } from "../../common/helpers/useClickOutside";
 import { usePrevious } from "../../common/helpers/usePrevious";
+import { Icon } from "../Icon";
 import InfoTooltip from "../InfoTooltip";
 import Labeled from "../Labeled";
 import SelectEmptyPlaceholder from "../SelectEmptyPlaceholder";
@@ -269,23 +269,25 @@ const InputSelect = ({
         </ItemsInputContainer>
         {clearable && (inputValue.length > 0 || exists(selectedItem)) && (
           <ResetButton
-            icon={faTimes}
-            disabled={disabled}
-            onClick={() => {
+            isDisabled={disabled}
+            onPress={() => {
               resetComboboxState();
               if (clearable) {
                 onChange(null);
               }
             }}
-          />
+          >
+            <Icon icon={faTimes} />
+          </ResetButton>
         )}
         <VerticalSeparator />
         <DropdownToggleButton
-          disabled={disabled}
+          isDisabled={disabled}
           data-test-id="selection-dropdown"
           {...getToggleButtonProps()}
-          icon={faChevronDown}
-        />
+        >
+          <Icon icon={faChevronDown} />
+        </DropdownToggleButton>
       </Control>
       {isOpen ? (
         <MenuContainer ref={menuContainerRef}>

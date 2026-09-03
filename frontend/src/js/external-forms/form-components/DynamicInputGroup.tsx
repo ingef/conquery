@@ -1,9 +1,8 @@
 import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 import type { ReactNode } from "react";
-
 import { tv } from "tailwind-variants";
-
-import IconButton from "../../button/IconButton";
+import { Button } from "../../ui-components/Button";
+import { Icon } from "../../ui-components/Icon";
 
 interface PropsT {
   className?: string;
@@ -19,7 +18,7 @@ const container = tv({
 });
 
 const removeButton = tv({
-  base: ["absolute -top-[7px] -right-[7px]", "z-1", "bg-white", "opacity-100"],
+  base: ["absolute -top-[7px] -right-[7px]", "z-1", "bg-white"],
 });
 
 const groupItem = tv({
@@ -52,18 +51,21 @@ const DynamicInputGroup = ({
             you can also just delete the following constraint:
            */}
           {limit !== 1 && (
-            <IconButton
+            <Button
+              intent="tertiary"
+              size="sm"
+              onPress={() => onRemoveClick(idx)}
               className={removeButton()}
-              bgHover
-              tiny
-              icon={faTimes}
-              onClick={() => onRemoveClick(idx)}
-            />
+            >
+              <Icon icon={faTimes} />
+            </Button>
           )}
         </div>
       ))}
       {limitNotReached && (
-        <IconButton bgHover icon={faPlus} tiny onClick={onAddClick} />
+        <Button intent="tertiary" size="sm" onPress={onAddClick}>
+          <Icon icon={faPlus} />
+        </Button>
       )}
     </div>
   );

@@ -1,14 +1,13 @@
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { tv } from "tailwind-variants";
-
-import IconButton from "../button/IconButton";
 import { Highlighter } from "../common/components/Highlighter";
 import HighlightableLabel from "../highlightable-label/HighlightableLabel";
+import { Button } from "./Button";
 import EditableTextForm from "./EditableTextForm";
+import { Icon } from "./Icon";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 const editButton = tv({
-  base: ["px-0 py-[2px]"],
   variants: {
     large: {
       true: "mr-[10px]",
@@ -65,13 +64,15 @@ const EditableText = ({
   ) : (
     <div className={text({ className })}>
       <TooltipTrigger>
-        <IconButton
+        <Button
+          aria-label={tooltip}
+          intent="tertiary"
+          size={large ? "md" : "sm"}
+          onPress={onToggleEdit}
           className={editButton({ large: !!large })}
-          bare
-          icon={faPen}
-          onClick={onToggleEdit}
-          large={large}
-        />
+        >
+          <Icon icon={faPen} />
+        </Button>
         <Tooltip>{tooltip}</Tooltip>
       </TooltipTrigger>
       <HighlightableLabel className={label()} isHighlighted={isHighlighted}>

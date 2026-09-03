@@ -3,11 +3,11 @@ import { memo, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
 import { clearSearchQuery } from "../concept-trees/actions";
 import { useRootConceptIds } from "../concept-trees/useRootConceptIds";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { closeAllConceptOpen, resetAllConceptOpen } from "./actions";
@@ -72,22 +72,24 @@ const ConceptTreesOpenButtonsView = memo(
     return (
       <div className={row({ className })}>
         <TooltipTrigger>
-          <IconButton
-            className="px-[6px] py-[9px]"
-            frame
-            icon={faHome}
-            onClick={onResetAllConceptOpen}
-          />
+          <Button
+            aria-label={t("conceptTreesOpen.resetAll")}
+            intent="secondary"
+            onPress={onResetAllConceptOpen}
+          >
+            <Icon icon={faHome} />
+          </Button>
           <Tooltip>{t("conceptTreesOpen.resetAll")}</Tooltip>
         </TooltipTrigger>
         <TooltipTrigger>
-          <IconButton
-            className="px-[6px] py-[9px]"
-            disabled={isCloseAllDisabled}
-            frame
-            icon={faFolderMinus}
-            onClick={onCloseAllConceptOpen}
-          />
+          <Button
+            aria-label={t("conceptTreesOpen.closeAll")}
+            intent="secondary"
+            isDisabled={isCloseAllDisabled}
+            onPress={onCloseAllConceptOpen}
+          >
+            <Icon icon={faFolderMinus} />
+          </Button>
           <Tooltip>{t("conceptTreesOpen.closeAll")}</Tooltip>
         </TooltipTrigger>
       </div>

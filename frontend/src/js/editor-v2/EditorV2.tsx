@@ -13,8 +13,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import IconButton from "../button/IconButton";
 import { useDatasetId } from "../dataset/selectors";
 import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { EmptyQueryEditorDropzone } from "../standard-query-editor/EmptyQueryEditorDropzone";
@@ -22,8 +20,10 @@ import type {
   DragItemConceptTreeNode,
   DragItemQuery,
 } from "../standard-query-editor/types";
+import { Button } from "../ui-components/Button";
 import { ConfirmMenu } from "../ui-components/ConfirmMenu";
 import Dropzone from "../ui-components/Dropzone";
+import { Icon } from "../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { EDITOR_DROP_TYPES, HOTKEYS } from "./config";
 import { useConnectorEditing } from "./connector-update/useConnectorRotation";
@@ -50,10 +50,6 @@ const main = tv({
     "flex flex-col",
     "gap-[10px]",
   ],
-});
-
-const actionIconButton = tv({
-  base: ["flex items-center", "gap-[5px]"],
 });
 
 const useEditorState = () => {
@@ -301,134 +297,132 @@ export function EditorV2({
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.editQueryNode.keyname}
                 >
-                  <IconButton
-                    icon={faEdit}
-                    tight
-                    disabled={
+                  <Button
+                    intent="tertiary"
+                    size="sm"
+                    isDisabled={
                       !selectedNode?.data ||
                       !nodeIsConceptQueryNode(selectedNode.data)
                     }
-                    active={selectedNodeActive}
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    aria-pressed={selectedNodeActive}
+                    onPress={() => {
                       onOpenQueryNodeEditor();
                     }}
                   >
+                    <Icon icon={faEdit} />
                     {t("editorV2.edit")}
-                  </IconButton>
+                  </Button>
                 </KeyboardShortcutTooltip>
               )}
               {featureDates && selectedNode && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.editDates.keyname}>
-                  <IconButton
-                    icon={faCalendar}
-                    tight
-                    active={!!selectedNode.dates?.restriction}
-                    onClick={(e) => {
-                      e.stopPropagation();
+                  <Button
+                    intent="tertiary"
+                    size="sm"
+                    aria-pressed={!!selectedNode.dates?.restriction}
+                    onPress={() => {
                       onOpen();
                     }}
                   >
+                    <Icon icon={faCalendar} />
                     {t("editorV2.dates")}
-                  </IconButton>
+                  </Button>
                 </KeyboardShortcutTooltip>
               )}
               {featureNegate && selectedNode && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.negate.keyname}>
-                  <IconButton
-                    icon={faBan}
-                    tight
-                    active={selectedNode.negation}
-                    red={selectedNode.negation}
-                    onClick={(e) => {
-                      e.stopPropagation();
+                  <Button
+                    intent="tertiary"
+                    size="sm"
+                    aria-pressed={selectedNode.negation}
+                    onPress={() => {
                       onNegateClick();
                     }}
+                    className="aria-pressed:text-red"
                   >
+                    <Icon icon={faBan} />
                     {t("editorV2.negate")}
-                  </IconButton>
+                  </Button>
                 </KeyboardShortcutTooltip>
               )}
               {featureConnectorRotate && selectedNode && connection && (
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.rotateConnector.keyname}
                 >
-                  <IconButton
-                    className={actionIconButton()}
-                    icon={faCircleNodes}
-                    tight
-                    disabled={!selectedNode?.children}
-                    onClick={(e) => {
-                      e.stopPropagation();
+                  <Button
+                    intent="tertiary"
+                    size="sm"
+                    isDisabled={!selectedNode?.children}
+                    onPress={() => {
                       onRotateConnector();
                     }}
                   >
+                    <Icon icon={faCircleNodes} />
                     <Connector>{connection}</Connector>
-                  </IconButton>
+                  </Button>
                 </KeyboardShortcutTooltip>
               )}
               {selectedNode?.children?.connection === "time" && (
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.editTimeConnection.keyname}
                 >
-                  <IconButton
-                    className={actionIconButton()}
-                    icon={faHourglass}
-                    tight
-                    onClick={(e) => {
-                      e.stopPropagation();
+                  <Button
+                    intent="tertiary"
+                    size="sm"
+                    onPress={() => {
                       onOpenTimeModal();
                     }}
                   >
+                    <Icon icon={faHourglass} />
                     <span>{t("editorV2.timeConnection")}</span>
-                  </IconButton>
+                  </Button>
                 </KeyboardShortcutTooltip>
               )}
               {canExpand && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.expand.keyname}>
-                  <IconButton
-                    icon={faExpandArrowsAlt}
-                    tight
-                    onClick={(e) => {
-                      e.stopPropagation();
+                  <Button
+                    intent="tertiary"
+                    size="sm"
+                    onPress={() => {
                       onExpand();
                     }}
                   >
+                    <Icon icon={faExpandArrowsAlt} />
                     {t("editorV2.expand")}
-                  </IconButton>
+                  </Button>
                 </KeyboardShortcutTooltip>
               )}
             </div>
             <div className="flex items-center">
               {selectedNode && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.flip.keyname}>
-                  <IconButton
-                    icon={faRefresh}
-                    tight
-                    disabled={!selectedNode?.children}
-                    onClick={(e) => {
-                      e.stopPropagation();
+                  <Button
+                    intent="tertiary"
+                    size="sm"
+                    isDisabled={!selectedNode?.children}
+                    onPress={() => {
                       onFlip();
                     }}
                   >
+                    <Icon icon={faRefresh} />
                     {t("editorV2.flip")}
-                  </IconButton>
+                  </Button>
                 </KeyboardShortcutTooltip>
               )}
               {selectedNode && (
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.delete.keyname.join(" | ")}
                 >
-                  <IconButton
-                    icon={faTrashCan}
-                    tight
-                    onClick={(e) => {
-                      e.stopPropagation();
+                  <Button
+                    intent="tertiary"
+                    size="sm"
+                    onPress={() => {
                       onDelete();
                     }}
                   >
+                    <Icon icon={faTrashCan} />
                     {t("editorV2.delete")}
-                  </IconButton>
+                  </Button>
                 </KeyboardShortcutTooltip>
               )}
               <TooltipTrigger>
@@ -436,10 +430,13 @@ export function EditorV2({
                   onConfirm={onReset}
                   confirmationText={t("editorV2.clearConfirm")}
                 >
-                  <IconButton
-                    style={{ marginLeft: "20px", height: "32.5px" }}
-                    icon={faTrash}
-                  />
+                  <Button
+                    aria-label={t("editorV2.clear")}
+                    intent="tertiary"
+                    className="ml-5"
+                  >
+                    <Icon icon={faTrash} />
+                  </Button>
                 </ConfirmMenu>
                 <Tooltip>{t("editorV2.clear")}</Tooltip>
               </TooltipTrigger>

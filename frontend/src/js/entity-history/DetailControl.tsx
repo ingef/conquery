@@ -6,10 +6,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { type Dispatch, memo, type SetStateAction, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-
 import { tv } from "tailwind-variants";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 
-import IconButton from "../button/IconButton";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const root = tv({ base: "flex flex-col items-center" });
@@ -59,12 +59,15 @@ export const DetailControl = memo(
 
           return (
             <TooltipTrigger key={value}>
-              <IconButton
+              <Button
+                aria-label={tooltip}
+                intent="tertiary"
                 key={value}
-                onClick={() => setDetailLevel(value as DetailLevel)}
-                icon={icon}
-                active={selected}
-              />
+                onPress={() => setDetailLevel(value as DetailLevel)}
+                aria-pressed={selected}
+              >
+                <Icon icon={icon} />
+              </Button>
               <Tooltip placement="right">{tooltip}</Tooltip>
             </TooltipTrigger>
           );

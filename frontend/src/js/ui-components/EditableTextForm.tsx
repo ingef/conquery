@@ -2,9 +2,9 @@ import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { type FormEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import IconButton from "../button/IconButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
+import { Button } from "./Button";
+import { Icon } from "./Icon";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 const input = tv({
@@ -16,7 +16,7 @@ const form = tv({
 });
 
 const saveButton = tv({
-  base: ["ml-[3px]", "px-[10px] py-[6px]"],
+  base: "ml-[3px]",
 });
 
 const EditableTextForm = ({
@@ -68,13 +68,15 @@ const EditableTextForm = ({
       />
       {!saveOnClickoutside && (
         <TooltipTrigger>
-          <IconButton
-            className={saveButton()}
+          <Button
+            aria-label={t("common.save")}
+            intent="secondary"
             type="submit"
-            frame
-            disabled={loading}
-            icon={loading ? faSpinner : faCheck}
-          />
+            isDisabled={loading}
+            className={saveButton()}
+          >
+            <Icon icon={loading ? faSpinner : faCheck} />
+          </Button>
           <Tooltip>{t("common.save")}</Tooltip>
         </TooltipTrigger>
       )}

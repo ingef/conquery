@@ -59,7 +59,7 @@ const arrow = tv({
  * Wraps a trigger element and its Tooltip:
  *
  *   <TooltipTrigger>
- *     <IconButton … />
+ *     <Button … />
  *     <Tooltip>{text}</Tooltip>
  *   </TooltipTrigger>
  *

@@ -7,7 +7,8 @@ import {
   useState,
 } from "react";
 import { tv } from "tailwind-variants";
-import IconButton from "../button/IconButton";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 
 const root = tv({ base: "overflow-auto" });
 
@@ -49,14 +50,15 @@ export default function ScrollBox({
   return (
     <div ref={scrollBoxRef} className={root({ className })} {...props}>
       {showButton && (
-        <IconButton
-          className={scrollTopButton()}
-          icon={faArrowUp}
-          bgHover={true}
-          onClick={() =>
+        <Button
+          intent="tertiary"
+          onPress={() =>
             scrollBoxRef.current?.scrollTo({ top: 0, behavior: "smooth" })
           }
-        />
+          className={scrollTopButton()}
+        >
+          <Icon icon={faArrowUp} />
+        </Button>
       )}
       {children}
     </div>

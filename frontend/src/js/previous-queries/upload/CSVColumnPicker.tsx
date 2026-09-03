@@ -13,7 +13,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
-import IconButton from "../../button/IconButton";
 import { parseCSV, toCSV } from "../../file/csv";
 import { useActiveLang } from "../../localization/useActiveLang";
 import ScrollableList from "../../scrollable-list/ScrollableList";
@@ -259,7 +258,13 @@ const CSVColumnPicker = ({
             <code>{csv.length} Zeilen</code>
           </div>
           <TooltipTrigger>
-            <IconButton frame icon={faTrash} onClick={onReset} />
+            <Button
+              aria-label={t("common.clear")}
+              intent="secondary"
+              onPress={onReset}
+            >
+              <Icon icon={faTrash} />
+            </Button>
             <Tooltip>{t("common.clear")}</Tooltip>
           </TooltipTrigger>
         </div>

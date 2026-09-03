@@ -9,7 +9,7 @@ import {
   Button as RacButton,
   type ButtonProps as RacButtonProps,
 } from "react-aria-components";
-import { tv } from "tailwind-variants";
+import { type ClassValue, tv } from "tailwind-variants";
 
 import { Icon } from "./Icon";
 
@@ -72,7 +72,7 @@ export interface ButtonProps
   /** what the button does in its context; the look follows */
   intent?: "primary" | "secondary" | "tertiary" | "danger" | "link";
   size?: "sm" | "md" | "lg";
-  className?: string;
+  className?: ClassValue;
   style?: CSSProperties;
   children?: ReactNode;
   ref?: Ref<HTMLButtonElement>;

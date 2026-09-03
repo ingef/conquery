@@ -21,7 +21,7 @@ const wrap = tv({
 });
 
 const logo = tv({
-  base: ["h-[35px]", "bg-no-repeat", "[background-position-y:50%]"],
+  base: ["h-9", "bg-no-repeat", "[background-position-y:50%]"],
 });
 
 const headline = tv({

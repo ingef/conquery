@@ -3,11 +3,10 @@ import { memo, useContext, useEffect, useMemo, useState } from "react";
 import { MenuTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import type { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import DownloadButton, { getFileIcon } from "../button/DownloadButton";
-import IconButton from "../button/IconButton";
+import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
 import { Menu, MenuItem } from "../ui-components/Menu";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
@@ -28,8 +27,6 @@ const frame = tv({
 const downloadButton = tv({
   base: ["[&_button]:w-full", "[&_button]:px-[14px] [&_button]:py-2"],
 });
-
-const dropdownOpenButton = tv({ base: "px-2 py-[9px]" });
 
 const separator = tv({ base: ["h-[33px] w-px", "bg-gray-500"] });
 
@@ -99,7 +96,6 @@ const DownloadResultsDropdownButton = ({
         <>
           <DownloadButton
             className={downloadButton()}
-            bgHover
             resultUrl={urlChoice}
             showColoredIcon
           >
@@ -110,11 +106,9 @@ const DownloadResultsDropdownButton = ({
       )}
       <TooltipTrigger>
         <MenuTrigger>
-          <IconButton
-            className={dropdownOpenButton()}
-            bgHover
-            icon={tiny ? faDownload : faCaretDown}
-          />
+          <Button aria-label={tooltip} intent="tertiary">
+            <Icon icon={tiny ? faDownload : faCaretDown} />
+          </Button>
           <Menu
             aria-label={t("previousQuery.downloadResults")}
             onAction={(key) => {

@@ -2,11 +2,11 @@ import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-
 import type { SelectOptionT, UserGroupT } from "../../api/types";
 import type { StateT } from "../../app/reducers";
-import IconButton from "../../button/IconButton";
 import Modal from "../../modal/Modal";
+import { Button } from "../../ui-components/Button";
+import { Icon } from "../../ui-components/Icon";
 import InputMultiSelect from "../../ui-components/InputMultiSelect/InputMultiSelect";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import {
@@ -147,13 +147,15 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
             options={userGroupOptions}
           />
           <TooltipTrigger>
-            <IconButton
-              className="ml-[3px] px-[10px] py-[7px]"
+            <Button
+              aria-label={shareLabel}
+              intent="secondary"
               type="submit"
-              frame
-              disabled={buttonDisabled}
-              icon={loading ? faSpinner : faCheck}
-            />
+              isDisabled={buttonDisabled}
+              className="ml-[3px]"
+            >
+              <Icon icon={loading ? faSpinner : faCheck} />
+            </Button>
             <Tooltip>{shareLabel}</Tooltip>
           </TooltipTrigger>
         </div>

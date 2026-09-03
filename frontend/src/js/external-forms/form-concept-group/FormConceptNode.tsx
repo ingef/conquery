@@ -6,13 +6,13 @@ import { useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import { getWidthAndHeight } from "../../app/DndProvider";
-import IconButton from "../../button/IconButton";
 import { canNodeBeDropped } from "../../model/node";
 import { HoverNavigatable } from "../../small-tab-navigation/HoverNavigatable";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
+import { Button } from "../../ui-components/Button";
+import { Icon } from "../../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -160,15 +160,18 @@ const FormConceptNode = ({
         <div className="ml-[10px]">
           {expand?.expandable && (
             <TooltipTrigger>
-              <IconButton
-                className="px-[6px] py-0"
-                icon={expand.active ? faCompressArrowsAlt : faExpandArrowsAlt}
-                tiny
-                onClick={(e) => {
-                  e.stopPropagation();
+              <Button
+                aria-label={t("externalForms.common.concept.expand")}
+                intent="tertiary"
+                size="sm"
+                onPress={() => {
                   expand.onClick();
                 }}
-              />
+              >
+                <Icon
+                  icon={expand.active ? faCompressArrowsAlt : faExpandArrowsAlt}
+                />
+              </Button>
               <Tooltip>{t("externalForms.common.concept.expand")}</Tooltip>
             </TooltipTrigger>
           )}

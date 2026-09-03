@@ -20,7 +20,7 @@ const numberFormat = tv({
     "text-sm",
   ],
   variants: {
-    large: { true: "py-[10px] pr-[30px] pl-[14px] text-xl" },
+    large: { true: "h-9 pr-[30px] pl-[14px] text-base" },
   },
 });
 

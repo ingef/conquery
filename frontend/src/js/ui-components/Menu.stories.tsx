@@ -6,7 +6,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
 import { MenuTrigger } from "react-aria-components";
-import IconButton from "../button/IconButton";
 import { Button } from "./Button";
 import { ConfirmMenu } from "./ConfirmMenu";
 import { Icon } from "./Icon";
@@ -24,7 +23,9 @@ type Story = StoryObj<typeof Menu>;
 export const Default: Story = {
   render: () => (
     <MenuTrigger>
-      <IconButton frame icon={faEllipsisV} />
+      <Button intent="secondary">
+        <Icon icon={faEllipsisV} />
+      </Button>
       <Menu aria-label="Actions" onAction={(key) => console.log(key)}>
         <MenuItem id="contact" href="mailto:someone@example.com">
           <Icon icon={faPaperPlane} />A link item
@@ -56,7 +57,9 @@ export const Confirm: Story = {
         confirmationText="Delete for good"
         onConfirm={() => {}}
       >
-        <IconButton frame icon={faTrash} />
+        <Button intent="secondary">
+          <Icon icon={faTrash} />
+        </Button>
       </ConfirmMenu>
     </div>
   ),
@@ -66,7 +69,9 @@ export const WithTooltipOnTrigger: Story = {
   render: () => (
     <TooltipTrigger>
       <ConfirmMenu confirmationText="Really delete?" onConfirm={() => {}}>
-        <IconButton frame icon={faTrash} />
+        <Button intent="secondary">
+          <Icon icon={faTrash} />
+        </Button>
       </ConfirmMenu>
       <Tooltip>Delete</Tooltip>
     </TooltipTrigger>

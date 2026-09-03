@@ -11,8 +11,9 @@ import {
 import { useHotkeys } from "react-hotkeys-hook";
 import { useSelector } from "react-redux";
 import type { GetFrontendConfigResponseT } from "../api/types";
-import IconButton from "../button/IconButton";
 import Modal from "../modal/Modal";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 import type { StateT } from "./reducers";
 
 const initialState = {
@@ -90,9 +91,10 @@ export const About = memo(() => {
             {frontendGitDescribe} – {frontendTimestamp}
           </code>
         </div>
-        <IconButton frame icon={faCopy} onClick={copyVersionToClipboard}>
+        <Button intent="secondary" onPress={copyVersionToClipboard}>
+          <Icon icon={faCopy} />
           Copy version info
-        </IconButton>
+        </Button>
       </div>
     </Modal>
   );

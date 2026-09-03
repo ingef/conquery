@@ -1,17 +1,17 @@
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { memo, useEffect, useState } from "react";
 import { tv } from "tailwind-variants";
-
-import IconButton from "../button/IconButton";
 import { exists } from "../common/helpers/exists";
 import BaseInput from "../ui-components/BaseInput";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 
 const inputContainer = tv({ base: ["relative", "grow"] });
 
 const baseInput = tv({
   base: [
     "w-full",
-    "[&_input]:h-[34px] [&_input]:w-full",
+    "[&_input]:h-[30px] [&_input]:w-full",
     "[&_input]:pr-[60px]",
     "[&_input]:placeholder:text-gray-400",
     "[&_input]:placeholder:opacity-100",
@@ -22,11 +22,11 @@ const right = tv({
   base: [
     "absolute top-0 right-[30px]",
     "flex flex-row items-center",
-    "h-[34px]",
+    "h-[30px]",
   ],
 });
 
-const searchButton = tv({ base: ["px-[10px] py-2", "text-gray-500"] });
+const searchButton = tv({ base: "text-gray-500" });
 
 interface Props {
   className?: string;
@@ -71,12 +71,14 @@ const SearchBar = ({
       />
       {exists(localSearchTerm) && (
         <div className={right()}>
-          <IconButton
-            className={searchButton()}
-            icon={faSearch}
+          <Button
+            intent="tertiary"
             aria-label={placeholder}
-            onClick={() => onSearch(localSearchTerm)}
-          />
+            onPress={() => onSearch(localSearchTerm)}
+            className={searchButton()}
+          >
+            <Icon icon={faSearch} />
+          </Button>
         </div>
       )}
     </div>

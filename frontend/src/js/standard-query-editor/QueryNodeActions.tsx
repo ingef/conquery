@@ -8,18 +8,14 @@ import {
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
+import { Button } from "../ui-components/Button";
 
-import IconButton from "../button/IconButton";
 import { Icon } from "../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
   TooltipTrigger,
 } from "../ui-components/Tooltip";
-
-const actionButton = tv({
-  base: "px-[6px] py-1",
-});
 
 const crossedOut = tv({
   base: [
@@ -54,27 +50,30 @@ const QueryNodeActions = (props: Props) => {
   return (
     <div className="flex flex-col items-center justify-start">
       <TooltipTrigger>
-        <IconButton
-          className={actionButton()}
-          icon={faTimes}
-          onClick={(e) => {
-            e.stopPropagation();
+        <Button
+          size="sm"
+          aria-label={t("queryEditor.removeNode")}
+          intent="tertiary"
+          onPress={() => {
             props.onDeleteNode(props.andIdx, props.orIdx);
           }}
-        />
+        >
+          <Icon icon={faTimes} />
+        </Button>
         <Tooltip>{t("queryEditor.removeNode")}</Tooltip>
       </TooltipTrigger>
       {props.excludeTimestamps && (
         <TooltipTrigger>
-          <IconButton
-            className={actionButton()}
-            red
-            icon={faCalendar}
-            onClick={(e) => {
-              e.stopPropagation();
+          <Button
+            aria-label={t("queryNodeEditor.excludingTimestamps")}
+            intent="tertiary"
+            onPress={() => {
               props.onToggleTimestamps(props.andIdx, props.orIdx);
             }}
-          />
+            className="text-red"
+          >
+            <Icon icon={faCalendar} />
+          </Button>
           <Tooltip>{t("queryNodeEditor.excludingTimestamps")}</Tooltip>
         </TooltipTrigger>
       )}
@@ -92,29 +91,36 @@ const QueryNodeActions = (props: Props) => {
       )}
       {!props.error && props.isExpandable && !props.previousQueryLoading && (
         <TooltipTrigger>
-          <IconButton
-            className={actionButton()}
-            icon={faExpandArrowsAlt}
-            onClick={(e) => {
-              e.stopPropagation();
+          <Button
+            aria-label={t("queryEditor.expand")}
+            intent="tertiary"
+            onPress={() => {
               props.onExpandClick();
             }}
-          />
+          >
+            <Icon icon={faExpandArrowsAlt} />
+          </Button>
           <Tooltip>{t("queryEditor.expand")}</Tooltip>
         </TooltipTrigger>
       )}
       {props.hasActiveSecondaryId && (
         <TooltipTrigger>
           <div className="relative">
-            <IconButton
-              className={actionButton()}
-              icon={faMicroscope}
+            <Button
+              aria-label={
+                props.excludeFromSecondaryId
+                  ? t("queryNodeEditor.excludingFromSecondaryId")
+                  : t("queryEditor.hasSecondaryId")
+              }
+              intent="tertiary"
+              size="sm"
               data-test-id="secondary-id-toggle"
-              onClick={(e) => {
-                e.stopPropagation();
+              onPress={() => {
                 props.onToggleSecondaryIdExclude(props.andIdx, props.orIdx);
               }}
-            />
+            >
+              <Icon icon={faMicroscope} />
+            </Button>
             {props.excludeFromSecondaryId && <div className={crossedOut()} />}
           </div>
           <Tooltip>
