@@ -7,6 +7,7 @@ import { tableHasFilterValues, tableIsDisabled } from "../model/table";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
 import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
+import { ToggleButton } from "../ui-components/ToggleButton";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const container = tv({
@@ -90,11 +91,11 @@ const MenuColumnItem = ({
       </div>
       {isFilterActive && (
         <TooltipTrigger>
-          <Button
+          <ToggleButton
             aria-label={t("queryNodeEditor.clearSettings")}
             intent="tertiary"
-            aria-pressed
-            onPress={() => {
+            isSelected
+            onChange={() => {
               // To prevent selecting the table as well, see above
 
               if (isDisabled) {
@@ -105,7 +106,7 @@ const MenuColumnItem = ({
             }}
           >
             <Icon icon={faFilter} />
-          </Button>
+          </ToggleButton>
           <Tooltip>{t("queryNodeEditor.clearSettings")}</Tooltip>
         </TooltipTrigger>
       )}

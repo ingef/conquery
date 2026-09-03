@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
+import { ToggleButton } from "../ui-components/ToggleButton";
 
 import {
   Tooltip,
@@ -38,26 +39,24 @@ const QueryGroupActions = ({
     <div className={actions()}>
       <div className="flex items-center gap-[5px]">
         <TooltipTrigger delay={tooltipDelay.long}>
-          <Button
+          <ToggleButton
             intent="tertiary"
             size="sm"
-            danger={excludeActive}
-            aria-pressed={excludeActive}
-            onPress={onExcludeClick}
+            danger
+            isSelected={excludeActive}
+            onChange={onExcludeClick}
           >
             <Icon icon={faBan} />
             {t("queryEditor.exclude")}
-          </Button>
+          </ToggleButton>
           <Tooltip>{t("help.queryEditorExclude")}</Tooltip>
         </TooltipTrigger>
         <TooltipTrigger delay={tooltipDelay.long}>
-          <Button
-            intent="tertiary"
-            size="sm"
-            aria-pressed={dateActive}
-            onPress={onDateClick}
-          >
-            <Icon icon={faCalendar} />
+          <Button intent="tertiary" size="sm" onPress={onDateClick}>
+            <Icon
+              icon={faCalendar}
+              className={dateActive ? "text-primary-500" : undefined}
+            />
             {t("queryEditor.date")}
           </Button>
           <Tooltip>{t("help.queryEditorDate")}</Tooltip>

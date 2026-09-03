@@ -2,7 +2,7 @@ import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import { exists } from "../../../common/helpers/exists";
 import { nodeIsInvalid } from "../../../model/node";
-import ToggleButton from "../../../ui-components/ToggleButton";
+import ToggleButtonGroup from "../../../ui-components/ToggleButtonGroup";
 import type { ConceptListField as ConceptListFieldT } from "../../config-types";
 import FormConceptGroup from "../../form-concept-group/FormConceptGroup";
 import type { FormConceptGroupT } from "../../form-concept-group/formConceptGroupState";
@@ -77,7 +77,7 @@ export const ConceptListField = ({
           renderRowPrefix={
             exists(field.rowPrefixField)
               ? ({ value: fieldValue, onChange, row, i }) => (
-                  <ToggleButton
+                  <ToggleButtonGroup
                     className="mb-[5px]"
                     options={field.rowPrefixField!.options.map((option) => ({
                       label: option.label[locale] || "",

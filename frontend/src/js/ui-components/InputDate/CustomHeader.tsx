@@ -10,6 +10,7 @@ import { useMonthName, useMonthNames } from "../../common/helpers/dateHelper";
 import { Button } from "../Button";
 import { Icon } from "../Icon";
 import { List, Menu } from "../InputSelect/InputSelectComponents";
+import { ToggleButton } from "../ToggleButton";
 
 const root = tv({
   base: "flex items-center justify-between",
@@ -53,18 +54,18 @@ const SelectMenu = ({
       <Menu>
         <List className={optionList({ layout })}>
           {options.map((option) => (
-            <Button
+            <ToggleButton
               intent="secondary"
               size="sm"
               key={option.value}
-              aria-pressed={
+              isSelected={
                 option.value === date.getFullYear() ||
                 option.value === date.getMonth()
               }
               onPress={() => onSelect(option.value as number)}
             >
               {option.label}
-            </Button>
+            </ToggleButton>
           ))}
         </List>
       </Menu>
