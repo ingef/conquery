@@ -23,7 +23,8 @@ const menuItem = tv({
     "gap-[10px]",
     "rounded",
     "px-[15px] py-2",
-    "text-sm",
+    // explicit: through the portal an item would inherit body's line-height and light weight
+    "text-sm leading-none font-normal",
     "text-gray-800",
     "whitespace-nowrap",
     "cursor-pointer",
