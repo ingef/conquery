@@ -20,7 +20,7 @@ import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
-import { ConfirmPopover } from "../ui-components/ConfirmPopover";
+import { ConfirmMenu } from "../ui-components/ConfirmMenu";
 import {
   Tooltip,
   TooltipTrigger,
@@ -157,7 +157,7 @@ export const Navigation = memo(
             <Tooltip>{backButtonWarning}</Tooltip>
           </TooltipTrigger>
           {!empty && (
-            <ConfirmPopover
+            <ConfirmMenu
               onConfirm={onReset}
               confirmationText={t("history.settings.resetConfirm")}
             >
@@ -168,7 +168,7 @@ export const Navigation = memo(
               >
                 {t("history.settings.reset")}
               </IconButton>
-            </ConfirmPopover>
+            </ConfirmMenu>
           )}
         </div>
         {!empty && (

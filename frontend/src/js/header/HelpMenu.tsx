@@ -4,15 +4,14 @@ import {
   faPaperPlane,
   faQuestion,
 } from "@fortawesome/free-solid-svg-icons";
-import { DialogTrigger } from "react-aria-components";
+import { MenuTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import { tv } from "tailwind-variants";
 
 import { useAbout } from "../app/About";
 import IconButton from "../button/IconButton";
-import { Dialog, Popover } from "../ui-components/Popover";
-
-const list = tv({ base: ["flex flex-col", "gap-[2px]", "p-2"] });
+import FaIcon from "../icon/FaIcon";
+import { Menu, MenuItem, menuItemIcon } from "../ui-components/Menu";
+import { Popover } from "../ui-components/Popover";
 
 interface Props {
   contactEmail?: string;
@@ -24,7 +23,7 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
   const { setOpen } = useAbout();
 
   return (
-    <DialogTrigger>
+    <MenuTrigger>
       <IconButton
         className="px-3 py-[7px]"
         icon={faQuestion}
@@ -32,56 +31,43 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
         data-test-id="help-menu"
       />
       <Popover placement="bottom end" offset={5}>
-        <Dialog aria-label={t("common.help")}>
-          {({ close }) => (
-            <div className={list()}>
-              <a
-                href={`mailto:${contactEmail}`}
-                rel="noopener noreferrer"
-                data-test-id="help-email"
-              >
-                <IconButton
-                  className="w-full"
-                  bgHover
-                  fixedIconWidth={14}
-                  icon={faPaperPlane}
-                  onClick={close}
-                >
-                  {t("common.contact")}
-                </IconButton>
-              </a>
-              <a
-                href={manualUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-test-id="help-manual"
-              >
-                <IconButton
-                  className="w-full"
-                  bgHover
-                  fixedIconWidth={14}
-                  icon={faBook}
-                  onClick={close}
-                >
-                  {t("common.manual")}
-                </IconButton>
-              </a>
-              <IconButton
-                className="w-full"
-                bgHover
-                fixedIconWidth={14}
-                icon={faInfoCircle}
-                onClick={() => {
-                  close();
-                  setOpen(true);
-                }}
-              >
-                {t("common.version")}
-              </IconButton>
-            </div>
-          )}
-        </Dialog>
+        <Menu
+          aria-label={t("common.help")}
+          onAction={(key) => {
+            if (key === "version") setOpen(true);
+          }}
+        >
+          <MenuItem
+            id="contact"
+            href={`mailto:${contactEmail}`}
+            rel="noopener noreferrer"
+            data-test-id="help-email"
+          >
+            <span className={menuItemIcon()}>
+              <FaIcon icon={faPaperPlane} />
+            </span>
+            {t("common.contact")}
+          </MenuItem>
+          <MenuItem
+            id="manual"
+            href={manualUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-test-id="help-manual"
+          >
+            <span className={menuItemIcon()}>
+              <FaIcon icon={faBook} />
+            </span>
+            {t("common.manual")}
+          </MenuItem>
+          <MenuItem id="version">
+            <span className={menuItemIcon()}>
+              <FaIcon icon={faInfoCircle} />
+            </span>
+            {t("common.version")}
+          </MenuItem>
+        </Menu>
       </Popover>
-    </DialogTrigger>
+    </MenuTrigger>
   );
 };

@@ -1,13 +1,16 @@
 import { faCaretDown, faDownload } from "@fortawesome/free-solid-svg-icons";
-import { memo, useEffect, useMemo, useState } from "react";
-import { DialogTrigger } from "react-aria-components";
+import { memo, useContext, useEffect, useMemo, useState } from "react";
+import { MenuTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import type { ResultUrlWithLabel } from "../api/types";
-import DownloadButton from "../button/DownloadButton";
+import { AuthTokenContext } from "../authorization/AuthTokenProvider";
+import DownloadButton, { getFileIcon } from "../button/DownloadButton";
 import IconButton from "../button/IconButton";
-import { Dialog, Popover } from "../ui-components/Popover";
+import FaIcon from "../icon/FaIcon";
+import { Menu, MenuItem, menuItemIcon } from "../ui-components/Menu";
+import { Popover } from "../ui-components/Popover";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { getUserSettings, storeUserSettings } from "../user/userSettings";
 
@@ -21,10 +24,6 @@ const frame = tv({
   variants: {
     noborder: { true: "border-none" },
   },
-});
-
-const list = tv({
-  base: ["flex flex-col", "gap-px", "p-2", "max-h-[60vh]", "overflow-y-auto"],
 });
 
 const downloadButton = tv({
@@ -74,6 +73,7 @@ const DownloadResultsDropdownButton = ({
   tooltip?: string;
 }) => {
   const { t } = useTranslation();
+  const { authToken } = useContext(AuthTokenContext);
   const [fileChoice, setFileChoice] = useState<FileChoice>(() => {
     const initial = getInitialEndingChoice(resultUrls);
     return { label: initial.label, ending: getEnding(initial.url) };
@@ -110,40 +110,45 @@ const DownloadResultsDropdownButton = ({
         </>
       )}
       <TooltipTrigger>
-        <DialogTrigger>
+        <MenuTrigger>
           <IconButton
             className={dropdownOpenButton()}
             bgHover
             icon={tiny ? faDownload : faCaretDown}
           />
           <Popover containerPadding={20}>
-            <Dialog aria-label={t("previousQuery.downloadResults")}>
-              {({ close }) => (
-                <div className={list()}>
-                  {resultUrls.map((resultUrl) => {
-                    const ending = getEnding(resultUrl.url);
+            <Menu
+              aria-label={t("previousQuery.downloadResults")}
+              onAction={(key) => {
+                const chosen = resultUrls.find(({ url }) => url === key);
+                if (chosen) {
+                  setFileChoice({
+                    label: chosen.label,
+                    ending: getEnding(chosen.url),
+                  });
+                }
+              }}
+            >
+              {resultUrls.map((resultUrl) => {
+                const { icon, color } = getFileIcon(resultUrl.url);
 
-                    return (
-                      <DownloadButton
-                        className={downloadButton()}
-                        key={resultUrl.url}
-                        resultUrl={resultUrl}
-                        onClick={() => {
-                          setFileChoice({ label: resultUrl.label, ending });
-                          close();
-                        }}
-                        bgHover
-                        showColoredIcon
-                      >
-                        {truncate(resultUrl.label)}
-                      </DownloadButton>
-                    );
-                  })}
-                </div>
-              )}
-            </Dialog>
+                return (
+                  <MenuItem
+                    key={resultUrl.url}
+                    id={resultUrl.url}
+                    href={`${resultUrl.url}?access_token=${encodeURIComponent(authToken)}`}
+                    textValue={resultUrl.label}
+                  >
+                    <span className={menuItemIcon()}>
+                      <FaIcon large icon={icon} style={{ color }} />
+                    </span>
+                    {truncate(resultUrl.label)}
+                  </MenuItem>
+                );
+              })}
+            </Menu>
           </Popover>
-        </DialogTrigger>
+        </MenuTrigger>
         <Tooltip>{tooltip}</Tooltip>
       </TooltipTrigger>
     </div>
