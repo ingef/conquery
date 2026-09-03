@@ -30,10 +30,10 @@ import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPac
 import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.CteStep;
+import com.bakdata.conquery.sql.compiler.ir.CteStep;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
@@ -154,7 +154,11 @@ public class DaterangeSelectUtil {
 		else {
 			predecessorMapping.put(INTERVAL_PACKING_SELECTS, INTERVAL_COMPLETE);
 		}
-		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(predecessorMapping.keySet(), alias, context.getNameGenerator());
+		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(
+				predecessorMapping.keySet(),
+				alias,
+				context.getNameGenerator()::cteStepName
+		);
 		return new SqlTables(preprocessingCteName, cteNameMap, predecessorMapping);
 	}
 

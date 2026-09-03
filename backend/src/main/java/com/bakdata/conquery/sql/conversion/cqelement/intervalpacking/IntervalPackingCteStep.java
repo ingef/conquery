@@ -6,9 +6,9 @@ import java.util.Set;
 
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
-import com.bakdata.conquery.sql.conversion.model.CteStep;
+import com.bakdata.conquery.sql.compiler.ir.CteStep;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -35,7 +35,11 @@ public enum IntervalPackingCteStep implements CteStep {
 									 ? Set.of(INTERVAL_COMPLETE)
 									 : Set.of(values());
 
-		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(requiredSteps, rootTable, context.getNameGenerator());
+		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(
+				requiredSteps,
+				rootTable,
+				context.getNameGenerator()::cteStepName
+		);
 		Map<CteStep, CteStep> predecessorMap = CteStep.getDefaultPredecessorMap(requiredSteps);
 
 		return new SqlTables(rootTable, cteNameMap, predecessorMap);

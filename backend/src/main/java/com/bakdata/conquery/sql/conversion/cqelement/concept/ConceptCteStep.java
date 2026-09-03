@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.Set;
 
-import com.bakdata.conquery.sql.conversion.model.CteStep;
+import com.bakdata.conquery.sql.compiler.ir.CteStep;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

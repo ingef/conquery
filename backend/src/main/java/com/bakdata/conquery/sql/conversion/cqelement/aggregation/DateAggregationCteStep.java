@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.bakdata.conquery.sql.conversion.model.CteStep;
+import com.bakdata.conquery.sql.compiler.ir.CteStep;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -80,7 +80,7 @@ enum DateAggregationCteStep implements CteStep {
 
 	private static SqlTables createTables(List<? extends CteStep> requiredSteps, QueryStep joinedTable, NameGenerator nameGenerator) {
 		Set<? extends CteStep> asSet = new HashSet<>(requiredSteps);
-		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(asSet, joinedTable.getCteName(), nameGenerator);
+		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(asSet, joinedTable.getCteName(), nameGenerator::cteStepName);
 		Map<CteStep, CteStep> predecessorMap = CteStep.getDefaultPredecessorMap(asSet);
 		return new SqlTables(joinedTable.getCteName(), cteNameMap, predecessorMap);
 	}
