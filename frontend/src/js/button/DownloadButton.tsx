@@ -31,7 +31,7 @@ const fileTypeToFileIcon: Record<string, FileIcon> = {
   JSON: { icon: faFileCode, color: "var(--color-filetype-json)" },
 };
 
-function getFileIcon(url: string): FileIcon {
+export function getFileIcon(url: string): FileIcon {
   if (url.includes(".")) {
     const ext = getEnding(url);
 

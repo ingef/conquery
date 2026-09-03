@@ -2,7 +2,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import { ConfirmPopover } from "../ui-components/ConfirmPopover";
+import { ConfirmMenu } from "../ui-components/ConfirmMenu";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const ResetAllSettingsButton = ({
@@ -24,15 +24,15 @@ const ResetAllSettingsButton = ({
 
   return compact ? (
     <TooltipTrigger>
-      <ConfirmPopover onConfirm={onClick} confirmationText={confirmationText}>
+      <ConfirmMenu onConfirm={onClick} confirmationText={confirmationText}>
         {trigger}
-      </ConfirmPopover>
+      </ConfirmMenu>
       <Tooltip className="whitespace-nowrap">{text}</Tooltip>
     </TooltipTrigger>
   ) : (
-    <ConfirmPopover onConfirm={onClick} confirmationText={confirmationText}>
+    <ConfirmMenu onConfirm={onClick} confirmationText={confirmationText}>
       {trigger}
-    </ConfirmPopover>
+    </ConfirmMenu>
   );
 };
 

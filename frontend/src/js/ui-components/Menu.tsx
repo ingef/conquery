@@ -1,0 +1,77 @@
+import {
+  Menu as RacMenu,
+  MenuItem as RacMenuItem,
+  type MenuItemProps as RacMenuItemProps,
+  type MenuProps as RacMenuProps,
+} from "react-aria-components";
+import { tv } from "tailwind-variants";
+
+const menu = tv({
+  base: [
+    "flex flex-col",
+    "gap-[2px]",
+    "p-2",
+    "max-h-[60vh]",
+    "overflow-y-auto",
+    "outline-none",
+  ],
+});
+
+const menuItem = tv({
+  base: [
+    "flex items-center",
+    "gap-[10px]",
+    "rounded",
+    "px-[15px] py-2",
+    "text-sm",
+    "text-gray-800",
+    "whitespace-nowrap",
+    "cursor-pointer",
+    "outline-none",
+    "opacity-75",
+    "data-focused:opacity-100 data-focused:bg-gray-50",
+    "data-disabled:cursor-not-allowed data-disabled:opacity-40",
+    "transition-[opacity,background-color] duration-100",
+  ],
+  variants: {
+    danger: { true: "text-red" },
+  },
+});
+
+/** Fixed-width box so icons of different widths keep the labels aligned. */
+export const menuItemIcon = tv({
+  base: ["inline-flex justify-center", "w-4 shrink-0"],
+});
+
+/**
+ * A list of actions or links in a Popover, composed the way react-aria does it:
+ *
+ *   <MenuTrigger>
+ *     <IconButton … />
+ *     <Popover>
+ *       <Menu aria-label="…" onAction={(key) => …}>
+ *         <MenuItem id="…">…</MenuItem>
+ *         <MenuItem href="…">…</MenuItem>
+ *       </Menu>
+ *     </Popover>
+ *   </MenuTrigger>
+ *
+ * MenuTrigger comes from react-aria-components; buttons built on BasicButton
+ * are its trigger without further wiring. Items focus on hover, arrow keys
+ * move between them, the menu closes after an action.
+ */
+export const Menu = ({
+  className,
+  ...props
+}: Omit<RacMenuProps<object>, "className"> & { className?: string }) => (
+  <RacMenu className={menu({ className })} {...props} />
+);
+
+export const MenuItem = ({
+  className,
+  danger,
+  ...props
+}: Omit<RacMenuItemProps, "className"> & {
+  className?: string;
+  danger?: boolean;
+}) => <RacMenuItem className={menuItem({ danger, className })} {...props} />;

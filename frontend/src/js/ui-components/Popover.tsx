@@ -1,6 +1,4 @@
 import {
-  type DialogProps,
-  Dialog as RacDialog,
   Popover as RacPopover,
   type PopoverProps as RacPopoverProps,
 } from "react-aria-components";
@@ -17,28 +15,13 @@ const popover = tv({
   ],
 });
 
-const dialog = tv({ base: "outline-none" });
-
 /**
- * Click-triggered overlay, composed the way react-aria does it:
- *
- *   <DialogTrigger>
- *     <IconButton … />
- *     <Popover>
- *       <Dialog aria-label="…">{({ close }) => …}</Dialog>
- *     </Popover>
- *   </DialogTrigger>
- *
- * DialogTrigger comes from react-aria-components; buttons built on
- * BasicButton are its trigger without further wiring.
+ * Container for click-triggered overlays, positioned next to its trigger and
+ * dismissed on Escape or a click outside. Holds a Menu (see Menu.tsx).
  */
 export const Popover = ({
   className,
   ...props
 }: Omit<RacPopoverProps, "className"> & { className?: string }) => (
   <RacPopover className={popover({ className })} {...props} />
-);
-
-export const Dialog = ({ className, ...props }: DialogProps) => (
-  <RacDialog className={dialog({ className })} {...props} />
 );
