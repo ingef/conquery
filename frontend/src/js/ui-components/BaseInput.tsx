@@ -9,12 +9,12 @@ import {
   type Ref,
   useCallback,
 } from "react";
+import { Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { CurrencyConfigT } from "../api/types";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
-import { Button } from "./Button";
 import CurrencyInput from "./CurrencyInput";
 import { Icon } from "./Icon";
 import {
@@ -50,13 +50,14 @@ const redIcon = tv({ base: ["opacity-80", "text-red"] });
 
 const absoluteWrap = tv({ base: "absolute top-[5px] right-[35px]" });
 
-const clearZoneIconButton = tv({
+const clearButton = tv({
   base: [
     "absolute top-0 right-[10px]",
-    "h-full",
+    "h-full px-1",
     "flex items-center",
+    "text-gray-800 hover:text-red",
     "cursor-pointer",
-    "hover:text-red",
+    "disabled:cursor-not-allowed disabled:opacity-40",
   ],
 });
 
@@ -204,17 +205,15 @@ const BaseInput = ({
               <Tooltip>{invalidText}</Tooltip>
             </TooltipTrigger>
           )}
-          <Button
-            intent="tertiary"
-            size="sm"
+          <RacButton
+            className={clearButton()}
             excludeFromTabOrder
             isDisabled={disabled}
             aria-label={t("common.clearValue")}
             onPress={() => onChange(null)}
-            className={clearZoneIconButton()}
           >
             <Icon icon={faTimes} />
-          </Button>
+          </RacButton>
         </>
       )}
     </div>

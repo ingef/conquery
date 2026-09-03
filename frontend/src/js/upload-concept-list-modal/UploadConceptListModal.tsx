@@ -570,12 +570,7 @@ const UploadConceptListModal = ({
                     label={t("uploadConceptListModal.includeUnresolved")}
                   />
                 )}
-                <Button
-                  intent="primary"
-                  className="shrink-0"
-                  type="submit"
-                  data-test-id="insert"
-                >
+                <Button intent="primary" type="submit" data-test-id="insert">
                   {mustIncludeUnresolved
                     ? t("uploadConceptListModal.insertRegardless")
                     : t("uploadConceptListModal.insertNode")}

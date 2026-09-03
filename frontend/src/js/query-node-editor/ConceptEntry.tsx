@@ -62,7 +62,6 @@ const ConceptEntry = ({
           intent="tertiary"
           size="sm"
           onPress={() => onRemoveConcept(conceptId)}
-          className="shrink-0"
         >
           <Icon icon={faTrashCan} />
         </Button>

@@ -1,10 +1,9 @@
 import { faChevronRight, faHome } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
-
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
+import { SidebarAction } from "./SidebarControl";
 
 const InteractionControl = ({
   onCloseAll,
@@ -18,23 +17,15 @@ const InteractionControl = ({
   return (
     <div className="flex flex-col items-center">
       <TooltipTrigger>
-        <Button
-          aria-label={t("history.closeAll")}
-          intent="tertiary"
-          onPress={onCloseAll}
-        >
+        <SidebarAction aria-label={t("history.closeAll")} onPress={onCloseAll}>
           <Icon icon={faHome} />
-        </Button>
+        </SidebarAction>
         <Tooltip placement="right">{t("history.closeAll")}</Tooltip>
       </TooltipTrigger>
       <TooltipTrigger>
-        <Button
-          aria-label={t("history.openAll")}
-          intent="tertiary"
-          onPress={onOpenAll}
-        >
+        <SidebarAction aria-label={t("history.openAll")} onPress={onOpenAll}>
           <Icon icon={faChevronRight} />
-        </Button>
+        </SidebarAction>
         <Tooltip placement="right">{t("history.openAll")}</Tooltip>
       </TooltipTrigger>
     </div>

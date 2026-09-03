@@ -50,10 +50,14 @@ const head = tv({
 
 const typeIcon = tv({ base: ["mt-px", "mr-[6px]", "text-primary-500"] });
 
-const tackButton = tv({ base: "ml-[5px]" });
-
 const pinnedLabel = tv({
-  base: ["flex flex-row items-start", "m-0", "leading-[1.2]", "text-sm"],
+  base: [
+    "flex flex-row items-start",
+    "gap-[5px]",
+    "m-0",
+    "leading-[1.2]",
+    "text-sm",
+  ],
 });
 
 const descriptionText = tv({
@@ -189,7 +193,6 @@ const InfoPane = () => {
                   size="sm"
                   aria-pressed
                   onPress={onToggleAdditionalInfos}
-                  className={tackButton()}
                 >
                   <Icon icon={faThumbtack} />
                 </Button>

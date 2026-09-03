@@ -72,21 +72,22 @@ const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
             }
           }}
         />
-        <TooltipTrigger>
-          <ConfirmMenu
-            onConfirm={onReset}
-            confirmationText={t("externalForms.common.clearConfirm")}
-          >
-            <Button
-              aria-label={t("externalForms.common.clear")}
-              intent="secondary"
-              className="ml-[10px] shrink-0"
+        <div className="ml-[10px]">
+          <TooltipTrigger>
+            <ConfirmMenu
+              onConfirm={onReset}
+              confirmationText={t("externalForms.common.clearConfirm")}
             >
-              <Icon icon={faTrash} />
-            </Button>
-          </ConfirmMenu>
-          <Tooltip>{t("externalForms.common.clear")}</Tooltip>
-        </TooltipTrigger>
+              <Button
+                aria-label={t("externalForms.common.clear")}
+                intent="secondary"
+              >
+                <Icon icon={faTrash} />
+              </Button>
+            </ConfirmMenu>
+            <Tooltip>{t("externalForms.common.clear")}</Tooltip>
+          </TooltipTrigger>
+        </div>
       </div>
     </div>
   );

@@ -6,8 +6,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { Button as RacButton } from "react-aria-components";
 import { tv } from "tailwind-variants";
-import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
 
 const root = tv({ base: "overflow-auto" });
@@ -18,9 +18,12 @@ const scrollTopButton = tv({
     "z-3",
     "flex justify-center",
     "h-[50px] w-[50px]",
+    "items-center",
     "rounded-full",
     "border border-gray-500",
-    "bg-white",
+    "bg-white hover:bg-gray-50",
+    "text-gray-800",
+    "cursor-pointer",
     "shadow-[0_0_5px_0_rgba(0,0,0,0.2)]",
   ],
 });
@@ -50,15 +53,14 @@ export default function ScrollBox({
   return (
     <div ref={scrollBoxRef} className={root({ className })} {...props}>
       {showButton && (
-        <Button
-          intent="tertiary"
+        <RacButton
+          className={scrollTopButton()}
           onPress={() =>
             scrollBoxRef.current?.scrollTo({ top: 0, behavior: "smooth" })
           }
-          className={scrollTopButton()}
         >
           <Icon icon={faArrowUp} />
-        </Button>
+        </RacButton>
       )}
       {children}
     </div>

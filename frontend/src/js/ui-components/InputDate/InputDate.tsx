@@ -1,7 +1,7 @@
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { type Ref, useRef } from "react";
+import { Button as RacButton } from "react-aria-components";
 import ReactDatePicker from "react-datepicker";
-import { Button } from "../Button";
 import { Icon } from "../Icon";
 import "react-datepicker/dist/react-datepicker.css";
 import { mergeRefs } from "react-merge-refs";
@@ -19,7 +19,13 @@ const root = tv({
 });
 
 const calendarButton = tv({
-  base: "absolute top-0 left-0",
+  base: [
+    "absolute top-0 left-0",
+    "h-[30px] px-[10px]",
+    "flex items-center",
+    "text-gray-800",
+    "cursor-pointer",
+  ],
 });
 
 const baseInput = tv({
@@ -69,13 +75,12 @@ const InputDate = ({
           },
         }}
       />
-      <Button
-        intent="tertiary"
-        onPress={() => datePickerRef.current?.setOpen(true)}
+      <RacButton
         className={calendarButton()}
+        onPress={() => datePickerRef.current?.setOpen(true)}
       >
         <Icon icon={faCalendar} />
-      </Button>
+      </RacButton>
       <ReactDatePicker
         ref={mergeRefs([datePickerRef, ref])}
         portalId="datepicker-portal"

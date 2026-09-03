@@ -9,7 +9,7 @@ import {
   Button as RacButton,
   type ButtonProps as RacButtonProps,
 } from "react-aria-components";
-import { type ClassValue, tv } from "tailwind-variants";
+import { tv } from "tailwind-variants";
 
 import { Icon } from "./Icon";
 
@@ -72,7 +72,6 @@ export interface ButtonProps
   /** what the button does in its context; the look follows */
   intent?: "primary" | "secondary" | "tertiary" | "danger" | "link";
   size?: "sm" | "md" | "lg";
-  className?: ClassValue;
   style?: CSSProperties;
   children?: ReactNode;
   ref?: Ref<HTMLButtonElement>;
@@ -99,21 +98,14 @@ const isIconOnly = (children: ReactNode) => {
  * A button whose only children are icons is square; give it an `aria-label`.
  * A pressed state (toggles) is `aria-pressed`, which colors the button.
  * `link` is for a button that reads as a text link.
+ *
+ * There is no className: layout belongs to the parent (a `grid` wrapper
+ * stretches a button to full width), and anything that needs another look is
+ * not this button but a react-aria Button styled where it lives.
  */
-export const Button = ({
-  intent,
-  size,
-  className,
-  children,
-  ...props
-}: ButtonProps) => (
+export const Button = ({ intent, size, children, ...props }: ButtonProps) => (
   <RacButton
-    className={button({
-      intent,
-      size,
-      iconOnly: isIconOnly(children),
-      className,
-    })}
+    className={button({ intent, size, iconOnly: isIconOnly(children) })}
     {...props}
   >
     {children}

@@ -1,26 +1,22 @@
 import type { ReactNode } from "react";
+import { ToggleButton } from "react-aria-components";
 import { useHotkeys } from "react-hotkeys-hook";
-
 import { tv } from "tailwind-variants";
 
-import { Button } from "../ui-components/Button";
-
+// a chip that toggles: dotted while off, solid in the primary color while on
 const badgeToggleButton = tv({
-  base: ["h-auto px-1 py-px", "text-sm", "font-bold"],
-  variants: {
-    active: {
-      true: [
-        "border-2 border-primary-500",
-        "bg-white hover:bg-gray-50",
-        "text-primary-500",
-      ],
-      false: [
-        "border-2 border-dotted border-gray-100",
-        "hover:bg-bg-50",
-        "text-gray-500",
-      ],
-    },
-  },
+  base: [
+    "inline-flex items-center",
+    "rounded",
+    "px-1 py-px",
+    "border-2 border-dotted border-gray-100",
+    "text-sm font-bold text-gray-500 whitespace-nowrap",
+    "cursor-pointer",
+    "hover:bg-bg-50",
+    "data-selected:border-solid data-selected:border-primary-500",
+    "data-selected:bg-white data-selected:hover:bg-gray-50",
+    "data-selected:text-primary-500",
+  ],
 });
 
 const superScript = tv({
@@ -51,16 +47,14 @@ export const BadgeToggleButton = ({
   useHotkeys(hotkey || "", onClick, { enabled: !!hotkey }, [hotkey, onClick]);
 
   return (
-    <Button
-      intent="tertiary"
-      size="sm"
-      aria-pressed={!!active}
-      className={badgeToggleButton({ active: !!active, className })}
-      onPress={onClick}
+    <ToggleButton
+      className={badgeToggleButton({ className })}
+      isSelected={!!active}
+      onChange={onClick}
     >
       {!active && "+ "}
       {children}
       {hotkey && <span className={superScript()}>{hotkey}</span>}
-    </Button>
+    </ToggleButton>
   );
 };

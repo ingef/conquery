@@ -350,27 +350,24 @@ const CSVColumnPicker = ({
           )}
         </div>
       )}
-      <div className="mt-3 flex items-end justify-end">
+      <div className="mt-3 flex items-end justify-end gap-[10px]">
         {uploadResult &&
           (uploadResult.unreadableDate.length > 0 ||
             uploadResult.unresolvedId.length > 0) && (
-            <Button
-              intent="secondary"
-              className="mr-auto"
-              onPress={downloadUnresolved}
-            >
-              <Icon icon={faDownload} />
-              {t("uploadQueryResultsModal.downloadUnresolved", {
-                count:
-                  uploadResult.unreadableDate.length +
-                  uploadResult.unresolvedId.length,
-              })}
-            </Button>
+            <div className="mr-auto">
+              <Button intent="secondary" onPress={downloadUnresolved}>
+                <Icon icon={faDownload} />
+                {t("uploadQueryResultsModal.downloadUnresolved", {
+                  count:
+                    uploadResult.unreadableDate.length +
+                    uploadResult.unresolvedId.length,
+                })}
+              </Button>
+            </div>
           )}
         {uploadResult && (
           <Button
             intent="primary"
-            className="ml-[10px]"
             isDisabled={uploadDisabled}
             onPress={uploadQuery}
           >
@@ -383,18 +380,12 @@ const CSVColumnPicker = ({
           </Button>
         )}
         {uploadResult ? (
-          <Button
-            intent="secondary"
-            className="ml-[10px]"
-            isDisabled={loading}
-            onPress={onCancel}
-          >
+          <Button intent="secondary" isDisabled={loading} onPress={onCancel}>
             {t("common.done")}
           </Button>
         ) : (
           <Button
             intent="primary"
-            className="ml-[10px]"
             isDisabled={uploadDisabled}
             onPress={uploadQuery}
           >

@@ -80,7 +80,7 @@ export const InheritsColor: Story = {
       <Button intent="primary">
         <Icon icon={faCheck} /> inside a button
       </Button>
-      <Button intent="secondary" className="text-red">
+      <Button intent="danger">
         <Icon icon={faTrash} />
         red icon button
       </Button>

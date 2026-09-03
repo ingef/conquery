@@ -18,7 +18,7 @@ const container = tv({
 });
 
 const removeButton = tv({
-  base: ["absolute -top-[7px] -right-[7px]", "z-1", "bg-white"],
+  base: ["absolute -top-[7px] -right-[7px]", "z-1", "rounded bg-white"],
 });
 
 const groupItem = tv({
@@ -51,14 +51,15 @@ const DynamicInputGroup = ({
             you can also just delete the following constraint:
            */}
           {limit !== 1 && (
-            <Button
-              intent="tertiary"
-              size="sm"
-              onPress={() => onRemoveClick(idx)}
-              className={removeButton()}
-            >
-              <Icon icon={faTimes} />
-            </Button>
+            <div className={removeButton()}>
+              <Button
+                intent="tertiary"
+                size="sm"
+                onPress={() => onRemoveClick(idx)}
+              >
+                <Icon icon={faTimes} />
+              </Button>
+            </div>
           )}
         </div>
       ))}

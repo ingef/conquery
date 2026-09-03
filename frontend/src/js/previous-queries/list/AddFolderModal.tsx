@@ -31,13 +31,12 @@ const AddFolderModal = ({ onClose, onSubmit, isValidName }: Props) => {
             onChange={(value) => setFolderName((value as string | null) || "")}
             inputProps={{ autoFocus: true }}
           />
-          <div className="mt-5 flex w-full items-center justify-between">
+          <div className="mt-5 flex w-full items-center justify-between gap-5">
             <Button intent="secondary" onPress={onClose}>
               {t("common.cancel")}
             </Button>
             <Button
               intent="primary"
-              className="ml-5"
               type="submit"
               isDisabled={!isValidName(folderName)}
             >

@@ -42,9 +42,7 @@ const form = tv({
   ],
 });
 
-const submitButton = tv({
-  base: ["flex items-center justify-center", "mt-[35px]", "w-[255px]"],
-});
+const submitButton = tv({ base: ["grid", "mt-[35px]", "w-[255px]"] });
 
 const LoginPage = () => {
   const [user, setUser] = useState("");
@@ -115,16 +113,20 @@ const LoginPage = () => {
               disabled: loading,
             }}
           />
-          <Button
-            intent="primary"
-            className={submitButton()}
-            isDisabled={!user || !password}
-            size="lg"
-            type="submit"
-          >
-            <Icon icon={loading ? faSpinner : faCheck} className="text-white" />
-            {t("login.submit")}
-          </Button>
+          <div className={submitButton()}>
+            <Button
+              intent="primary"
+              isDisabled={!user || !password}
+              size="lg"
+              type="submit"
+            >
+              <Icon
+                icon={loading ? faSpinner : faCheck}
+                className="text-white"
+              />
+              {t("login.submit")}
+            </Button>
+          </div>
         </form>
       </div>
     </div>

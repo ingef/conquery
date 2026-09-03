@@ -68,7 +68,7 @@ const DownloadButton = ({
 
   return (
     <a href={href} className={link({ className })} ref={ref}>
-      <Button intent="tertiary" className="whitespace-nowrap" {...restProps}>
+      <Button intent="tertiary" {...restProps}>
         <Icon
           icon={simpleIcon ? faDownload : icon}
           style={{ color: showColoredIcon ? color : undefined }}

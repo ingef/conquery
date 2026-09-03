@@ -5,11 +5,11 @@ import {
   faInfo,
 } from "@fortawesome/free-solid-svg-icons";
 import { memo, useMemo, useState } from "react";
+import { ToggleButtonGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
-
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
+import { SidebarToggle } from "./SidebarControl";
 
 export type ContentType =
   | "groupId"
@@ -55,29 +55,30 @@ const ContentControl = ({ value, onChange }: Props) => {
   );
 
   return (
-    <div className="flex flex-col items-center">
-      {options.map((option) => {
-        const active = value[option.key];
-        return (
-          <TooltipTrigger key={option.key}>
-            <Button
-              aria-label={option.tooltip}
-              intent="tertiary"
-              aria-pressed={active}
-              onPress={() => {
-                onChange({ ...value, [option.key]: !value[option.key] });
-              }}
-            >
-              <Icon
-                icon={option.icon}
-                className={!active ? "text-gray-500" : undefined}
-              />
-            </Button>
-            <Tooltip placement="right">{option.tooltip}</Tooltip>
-          </TooltipTrigger>
-        );
-      })}
-    </div>
+    <ToggleButtonGroup
+      className="flex flex-col items-center"
+      orientation="vertical"
+      selectionMode="multiple"
+      selectedKeys={options.filter((o) => value[o.key]).map((o) => o.key)}
+      onSelectionChange={(keys) =>
+        onChange({
+          ...value,
+          ...Object.fromEntries(options.map((o) => [o.key, keys.has(o.key)])),
+        })
+      }
+    >
+      {options.map((option) => (
+        <TooltipTrigger key={option.key}>
+          <SidebarToggle id={option.key} aria-label={option.tooltip}>
+            <Icon
+              icon={option.icon}
+              className={!value[option.key] ? "text-gray-500" : undefined}
+            />
+          </SidebarToggle>
+          <Tooltip placement="right">{option.tooltip}</Tooltip>
+        </TooltipTrigger>
+      ))}
+    </ToggleButtonGroup>
   );
 };
 

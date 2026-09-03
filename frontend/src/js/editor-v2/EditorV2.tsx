@@ -10,6 +10,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ToggleButton } from "react-aria-components";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -41,6 +42,19 @@ import { TimeConnectionModal } from "./time-connection/TimeConnectionModal";
 import { useTimeConnectionEditing } from "./time-connection/useTimeConnectionEditing";
 import type { Tree, TreeChildrenTime } from "./types";
 import { findNodeById, useGetTranslatedConnection } from "./util";
+
+// negating is a warning state: selected shows red, not the usual primary
+const negateToggle = tv({
+  base: [
+    "inline-flex items-center gap-[5px]",
+    "h-6 px-2",
+    "rounded border border-transparent",
+    "text-xs text-gray-800",
+    "cursor-pointer",
+    "hover:bg-gray-50",
+    "data-selected:text-red",
+  ],
+});
 
 const main = tv({
   base: [
@@ -331,18 +345,14 @@ export function EditorV2({
               )}
               {featureNegate && selectedNode && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.negate.keyname}>
-                  <Button
-                    intent="tertiary"
-                    size="sm"
-                    aria-pressed={selectedNode.negation}
-                    onPress={() => {
-                      onNegateClick();
-                    }}
-                    className="aria-pressed:text-red"
+                  <ToggleButton
+                    className={negateToggle()}
+                    isSelected={!!selectedNode.negation}
+                    onChange={onNegateClick}
                   >
                     <Icon icon={faBan} />
                     {t("editorV2.negate")}
-                  </Button>
+                  </ToggleButton>
                 </KeyboardShortcutTooltip>
               )}
               {featureConnectorRotate && selectedNode && connection && (
@@ -425,21 +435,19 @@ export function EditorV2({
                   </Button>
                 </KeyboardShortcutTooltip>
               )}
-              <TooltipTrigger>
-                <ConfirmMenu
-                  onConfirm={onReset}
-                  confirmationText={t("editorV2.clearConfirm")}
-                >
-                  <Button
-                    aria-label={t("editorV2.clear")}
-                    intent="tertiary"
-                    className="ml-5"
+              <div className="ml-5">
+                <TooltipTrigger>
+                  <ConfirmMenu
+                    onConfirm={onReset}
+                    confirmationText={t("editorV2.clearConfirm")}
                   >
-                    <Icon icon={faTrash} />
-                  </Button>
-                </ConfirmMenu>
-                <Tooltip>{t("editorV2.clear")}</Tooltip>
-              </TooltipTrigger>
+                    <Button aria-label={t("editorV2.clear")} intent="tertiary">
+                      <Icon icon={faTrash} />
+                    </Button>
+                  </ConfirmMenu>
+                  <Tooltip>{t("editorV2.clear")}</Tooltip>
+                </TooltipTrigger>
+              </div>
             </div>
           </div>
         )}

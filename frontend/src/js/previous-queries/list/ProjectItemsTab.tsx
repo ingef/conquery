@@ -70,7 +70,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
 
   return (
     <>
-      <div className="mx-[10px] mt-2 flex items-start">
+      <div className="mx-[10px] mt-2 flex items-start gap-[5px]">
         <FoldersToggleButton
           active={areFoldersOpen}
           onClick={onToggleFoldersOpen}
