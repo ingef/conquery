@@ -47,7 +47,7 @@
     "mustache": "^4.2.0",
     "rc-table": "^7.55.1",
     "react": "^19.2.8",
-    "react-aria": "^3.51.0",
+    "react-aria": "3.51.0",
     "react-aria-components": "^1.20.0",
     "react-chartjs-2": "^5.3.1",
     "react-datepicker": "^9.1.0",
