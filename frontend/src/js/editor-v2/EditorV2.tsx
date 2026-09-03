@@ -102,6 +102,10 @@ const useResetOnDatasetChange = (onReset: () => void) => {
   }, [datasetId, onReset]);
 };
 
+// an action's icon shows in the primary color while its setting is in effect
+const stateIcon = (active: boolean) =>
+  active ? "text-primary-500" : undefined;
+
 export function EditorV2({
   featureDates,
   featureNegate,
@@ -311,9 +315,7 @@ export function EditorV2({
                   >
                     <Icon
                       icon={faEdit}
-                      className={
-                        selectedNodeActive ? "text-primary-500" : undefined
-                      }
+                      className={stateIcon(selectedNodeActive)}
                     />
                     {t("editorV2.edit")}
                   </Button>
@@ -330,11 +332,7 @@ export function EditorV2({
                   >
                     <Icon
                       icon={faCalendar}
-                      className={
-                        selectedNode.dates?.restriction
-                          ? "text-primary-500"
-                          : undefined
-                      }
+                      className={stateIcon(!!selectedNode.dates?.restriction)}
                     />
                     {t("editorV2.dates")}
                   </Button>
