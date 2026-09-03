@@ -8,9 +8,10 @@ import { tv } from "tailwind-variants";
 import { buttonStyle } from "./Button";
 import { Icon } from "./Icon";
 
-// while selected, the button shows its highlight color
+// while selected, the button is bold and shows its highlight color
 const toggleStyle = tv({
   extend: buttonStyle,
+  base: "data-selected:font-bold",
   variants: {
     highlight: {
       primary: "data-selected:text-primary-500",
