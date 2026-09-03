@@ -8,6 +8,7 @@ import {
   Tooltip,
   TooltipTarget,
   TooltipTrigger,
+  tooltipDelay,
 } from "../ui-components/Tooltip";
 
 import QueryEditorDropzone from "./QueryEditorDropzone";
@@ -107,7 +108,7 @@ const QueryGroup = ({
   return (
     <div className="max-w-[250px] text-sm">
       {/* block! overrides tippy's inline-block wrapper */}
-      <TooltipTrigger>
+      <TooltipTrigger delay={tooltipDelay.info}>
         <TooltipTarget as="div" excludeFromTabOrder>
           <QueryEditorDropzone
             key={group.elements.length + 1}

@@ -6,6 +6,7 @@ import {
   Tooltip,
   TooltipTarget,
   TooltipTrigger,
+  tooltipDelay,
 } from "../ui-components/Tooltip";
 
 import QueryEditorDropzone from "./QueryEditorDropzone";
@@ -28,7 +29,7 @@ const QueryAndDropzone = ({
 
   return (
     <div className="pt-[70px]">
-      <TooltipTrigger>
+      <TooltipTrigger delay={tooltipDelay.info}>
         <TooltipTarget as="div" excludeFromTabOrder>
           <QueryEditorDropzone
             isAnd

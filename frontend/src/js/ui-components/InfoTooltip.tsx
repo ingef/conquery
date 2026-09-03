@@ -4,7 +4,12 @@ import { tv } from "tailwind-variants";
 
 import FaIcon from "../icon/FaIcon";
 
-import { Tooltip, TooltipTarget, TooltipTrigger } from "./Tooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+  tooltipDelay,
+} from "./Tooltip";
 
 const icon = tv({
   base: ["transition-all duration-100", "hover:text-gray-800"],
@@ -24,7 +29,7 @@ const InfoTooltip = ({
   wide?: boolean;
 }) => {
   return (
-    <TooltipTrigger delay={0}>
+    <TooltipTrigger delay={tooltipDelay.help}>
       <TooltipTarget
         role="img"
         aria-label="Info"
