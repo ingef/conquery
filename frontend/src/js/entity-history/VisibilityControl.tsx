@@ -2,8 +2,8 @@ import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Icon } from "../ui-components/Icon";
+import { ToggleButton } from "../ui-components/ToggleButton";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
-import { SidebarToggle } from "./SidebarControl";
 
 const VisibilityControl = ({
   blurred,
@@ -17,13 +17,13 @@ const VisibilityControl = ({
   return (
     <div className="flex flex-col items-center">
       <TooltipTrigger>
-        <SidebarToggle
+        <ToggleButton
           aria-label={t("history.blurred")}
           isSelected={!!blurred}
           onChange={toggleBlurred}
         >
           <Icon icon={blurred ? faEyeSlash : faEye} />
-        </SidebarToggle>
+        </ToggleButton>
         <Tooltip placement="right">{t("history.blurred")}</Tooltip>
       </TooltipTrigger>
     </div>

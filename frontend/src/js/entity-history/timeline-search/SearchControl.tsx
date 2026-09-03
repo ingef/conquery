@@ -2,8 +2,8 @@ import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Icon } from "../../ui-components/Icon";
+import { ToggleButton } from "../../ui-components/ToggleButton";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
-import { SidebarToggle } from "../SidebarControl";
 import { useTimelineSearch } from "./timelineSearchState";
 
 const SearchControl = () => {
@@ -14,13 +14,13 @@ const SearchControl = () => {
   return (
     <div className="flex flex-col items-center">
       <TooltipTrigger>
-        <SidebarToggle
+        <ToggleButton
           aria-label={t("history.search")}
           isSelected={searchVisible}
           onChange={setSearchVisible}
         >
           <Icon icon={faSearch} />
-        </SidebarToggle>
+        </ToggleButton>
         <Tooltip placement="right">{t("history.search")}</Tooltip>
       </TooltipTrigger>
     </div>
