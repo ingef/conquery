@@ -101,7 +101,7 @@ const DatasetSelectorUI = memo(
     const { t } = useTranslation();
 
     return (
-      <TooltipTrigger delay={tooltipDelay.info}>
+      <TooltipTrigger delay={tooltipDelay.long}>
         <TooltipTarget
           as="div"
           excludeFromTabOrder

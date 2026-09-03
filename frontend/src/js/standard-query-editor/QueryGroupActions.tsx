@@ -57,7 +57,7 @@ const QueryGroupActions = ({
   return (
     <div className={actions()}>
       <div>
-        <TooltipTrigger delay={tooltipDelay.info}>
+        <TooltipTrigger delay={tooltipDelay.long}>
           <IconButton
             className={excludeButton({ active: excludeActive })}
             red
@@ -70,7 +70,7 @@ const QueryGroupActions = ({
           </IconButton>
           <Tooltip>{t("help.queryEditorExclude")}</Tooltip>
         </TooltipTrigger>
-        <TooltipTrigger delay={tooltipDelay.info}>
+        <TooltipTrigger delay={tooltipDelay.long}>
           <IconButton
             className={dateButton({ active: dateActive })}
             active={dateActive}

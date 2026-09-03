@@ -66,11 +66,11 @@ export const Timing: Story = {
           Names a control: short warm-up, neighbours open instantly
         </Tooltip>
       </TooltipTrigger>
-      <TooltipTrigger delay={tooltipDelay.info}>
+      <TooltipTrigger delay={tooltipDelay.long}>
         <TransparentButton>Further info</TransparentButton>
         <Tooltip>Explains a larger surface: long warm-up</Tooltip>
       </TooltipTrigger>
-      <TooltipTrigger delay={tooltipDelay.help}>
+      <TooltipTrigger delay={tooltipDelay.immediate}>
         <TooltipTarget role="img" aria-label="Info">
           <FaIcon gray icon={faInfoCircle} />
         </TooltipTarget>
@@ -102,7 +102,7 @@ export const RichContent: Story = {
 export const OnStaticContent: Story = {
   render: () => (
     <div className="flex items-center gap-4 text-sm">
-      <TooltipTrigger delay={tooltipDelay.help}>
+      <TooltipTrigger delay={tooltipDelay.immediate}>
         <TooltipTarget role="img" aria-label="Info">
           <FaIcon gray icon={faInfoCircle} />
         </TooltipTarget>

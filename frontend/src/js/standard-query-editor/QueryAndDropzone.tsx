@@ -29,7 +29,7 @@ const QueryAndDropzone = ({
 
   return (
     <div className="pt-[70px]">
-      <TooltipTrigger delay={tooltipDelay.info}>
+      <TooltipTrigger delay={tooltipDelay.long}>
         <TooltipTarget as="div" excludeFromTabOrder>
           <QueryEditorDropzone
             isAnd
