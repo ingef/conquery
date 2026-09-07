@@ -1,8 +1,9 @@
-package com.bakdata.conquery.sql.conversion.model.filter;
+package com.bakdata.conquery.sql.compiler.ir.condition;
 
 import lombok.Value;
 import org.jooq.Condition;
 
+/** Adapts an arbitrary jOOQ condition to the compiler's composable condition abstraction. */
 @Value
 public class ConditionWrappingWhereCondition implements WhereCondition {
 
@@ -12,5 +13,4 @@ public class ConditionWrappingWhereCondition implements WhereCondition {
 	public Condition condition() {
 		return condition;
 	}
-
 }

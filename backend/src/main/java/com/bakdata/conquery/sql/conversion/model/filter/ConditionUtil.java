@@ -4,6 +4,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.IRange;
+import com.bakdata.conquery.sql.compiler.ir.condition.ConditionWrappingWhereCondition;
+import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
 import lombok.experimental.UtilityClass;
 import org.jooq.Condition;
 import org.jooq.Field;

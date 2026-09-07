@@ -35,8 +35,8 @@ import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
+import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
+import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
 import org.jooq.Condition;
 import org.jooq.Field;
 

@@ -1,9 +1,10 @@
-package com.bakdata.conquery.sql.conversion.model.filter;
+package com.bakdata.conquery.sql.compiler.ir.condition;
 
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.impl.DSL;
 
+/** Logical negation of another compiler condition. */
 @RequiredArgsConstructor
 public class InvertedCondition implements WhereCondition {
 
@@ -18,5 +19,4 @@ public class InvertedCondition implements WhereCondition {
 	public WhereCondition negate() {
 		return filterCondition;
 	}
-
 }

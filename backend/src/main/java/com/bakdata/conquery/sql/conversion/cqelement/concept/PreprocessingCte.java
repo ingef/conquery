@@ -10,7 +10,7 @@ import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
+import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import org.jooq.Condition;
 import org.jooq.Record;
