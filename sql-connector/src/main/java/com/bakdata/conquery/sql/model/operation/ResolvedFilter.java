@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.model.operation;
 
+import jakarta.validation.constraints.NotBlank;
+
 /**
  * Marker for an immutable, validated filter operation.
  *
@@ -7,4 +9,8 @@ package com.bakdata.conquery.sql.model.operation;
  * repository identifiers.</p>
  */
 public interface ResolvedFilter {
+
+	/** Stable technical name used to derive internal SQL aliases; it is not a presentation label. */
+	@NotBlank
+	String name();
 }

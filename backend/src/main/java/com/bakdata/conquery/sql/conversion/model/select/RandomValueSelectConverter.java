@@ -18,7 +18,7 @@ public class RandomValueSelectConverter implements SelectConverter<RandomValueSe
 		String columnName = select.getColumn().getColumn();
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(rootTableName, columnName, Object.class);
 
-		String alias = selectContext.getNameGenerator().selectName(select);
+		String alias = selectContext.getNameGenerator().legacyOperationName(select.getName());
 		Field<?> qualifiedRootSelect = rootSelect.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
 		Field<?> firstAggregation = selectContext.getFunctionProvider().random(qualifiedRootSelect).as(alias);
 		FieldWrapper<?> firstAggregationSqlSelect = new FieldWrapper<>(firstAggregation, columnName);

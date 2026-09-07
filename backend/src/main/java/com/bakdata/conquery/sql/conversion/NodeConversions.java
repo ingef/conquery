@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import lombok.NonNull;
 import org.jooq.DSLContext;
 
@@ -21,7 +21,7 @@ public class NodeConversions implements NodeConversionDispatcher {
 	private final Conversions<Object, ConversionContext, ConversionContext> conversions;
 	private final IdColumnConfig idColumns;
 	private final LegacyCompilerDialect dialect;
-	private final NameGenerator nameGenerator;
+	private final SqlNameGenerator nameGenerator;
 	private final Clock clock;
 	@NonNull
 	private final String defaultPrimaryColumn;
@@ -36,7 +36,7 @@ public class NodeConversions implements NodeConversionDispatcher {
 		this.conversions = new Conversions<>(compilerDialect.getNodeConverters(dslContext));
 		this.idColumns = idColumns;
 		this.dialect = compilerDialect;
-		this.nameGenerator = new NameGenerator(compilerDialect.getNameMaxLength());
+		this.nameGenerator = new SqlNameGenerator(compilerDialect.getNameMaxLength());
 		this.clock = clock;
 		this.defaultPrimaryColumn = defaultPrimaryColumn;
 	}

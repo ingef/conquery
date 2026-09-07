@@ -65,7 +65,7 @@ public class DistinctSelectConverter implements SelectConverter<DistinctSelect> 
 	@Override
 	public ConnectorSqlSelects connectorSelect(DistinctSelect distinctSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
-		String alias = selectContext.getNameGenerator().selectName(distinctSelect);
+		String alias = selectContext.getNameGenerator().legacyOperationName(distinctSelect.getName());
 
 		ConnectorSqlTables tables = selectContext.getTables();
 		SingleColumnSqlSelect preprocessingSelect = MappableSingleColumnSelect.getSubstringSelect(distinctSelect.getColumn().get(), distinctSelect.getSubstringRange(), selectContext, alias);

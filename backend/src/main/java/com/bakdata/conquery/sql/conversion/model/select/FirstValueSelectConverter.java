@@ -10,7 +10,7 @@ public class FirstValueSelectConverter implements SelectConverter<FirstValueSele
 	public ConnectorSqlSelects connectorSelect(FirstValueSelect select, SelectContext<ConnectorSqlTables> selectContext) {
 		return ValueSelectUtil.createValueSelect(
 				select.getColumn().resolve(),
-				selectContext.getNameGenerator().selectName(select),
+				selectContext.getNameGenerator().legacyOperationName(select.getName()),
 				Field::asc,
 				select.getSubstringRange(),
 				selectContext

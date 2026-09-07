@@ -18,7 +18,7 @@ public class ClickhouseDistinctSelectConverter implements SelectConverter<Distin
 	@Override
 	public ConnectorSqlSelects connectorSelect(DistinctSelect distinctSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
-		String alias = selectContext.getNameGenerator().selectName(distinctSelect);
+		String alias = selectContext.getNameGenerator().legacyOperationName(distinctSelect.getName());
 
 		ConnectorSqlTables tables = selectContext.getTables();
 		SingleColumnSqlSelect preprocessingSelect =

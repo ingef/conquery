@@ -46,8 +46,10 @@ class TablePath {
 
 	private static ConnectorSqlTables createConnectorTables(CQConcept cqConcept, CQTable cqTable, ConversionContext context) {
 
-		String connectorName = context.getNameGenerator().conceptConnectorName(cqConcept, cqTable.getConnector().resolve(), context.getSqlPrintSettings()
-																																 .getLocale());
+		String connectorName = context.getNameGenerator().legacyConceptConnectorName(
+				cqConcept.userLabel(context.getSqlPrintSettings().getLocale()),
+				cqTable.getConnector().resolve().getName()
+		);
 		TablePathInfo tableInfo = collectConnectorTables(cqConcept, cqTable, context);
 		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(
 				tableInfo.getMappings().keySet(),
@@ -69,7 +71,7 @@ class TablePath {
 	public ConceptSqlTables createConceptTables(QueryStep predecessor) {
 
 		TablePathInfo tableInfo = collectConceptTables(predecessor);
-		String conceptName = context.getNameGenerator().conceptName(cqConcept, context.getSqlPrintSettings().getLocale());
+		String conceptName = context.getNameGenerator().legacyConceptName(cqConcept.userLabel(context.getSqlPrintSettings().getLocale()));
 		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(
 				tableInfo.getMappings().keySet(),
 				conceptName,
