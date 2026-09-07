@@ -1,5 +1,9 @@
 package com.bakdata.conquery.sql.conquery;
 
+import java.sql.Date;
+import java.util.*;
+import jakarta.validation.constraints.NotBlank;
+
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -18,16 +22,12 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
-
-import java.sql.Date;
-import java.util.*;
 
 import static org.jooq.impl.DSL.*;
 
@@ -263,6 +263,18 @@ public class SqlMatchingStats {
 
 			Field<Date>[] validityDates = collectValidityDateFields(connector);
 
+			Name tableName = name(connector.getResolvedTable().getName());
+
+			Condition condition = noCondition();
+
+			if (connector.getColumn() != null) {
+				condition = field(name(tableName, name(connector.getColumn().getColumn()))).isNotNull();
+			}
+
+			if (connector.getCondition() != null) {
+				condition = condition.and(connector.getCondition().convertToSqlCondition(context).condition());
+			}
+
 			SelectConditionStep<? extends Record> connectorTable =
 					dslContext.select(
 									TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), defaultPrimaryColumn).as(PID_FIELD),
@@ -270,11 +282,11 @@ public class SqlMatchingStats {
 									least(positiveInfinity, validityDates).as(LB_FIELD),
 									greatest(negativeInfinity, validityDates).as(UB_FIELD),
 									CONCEPT_ID_FIELD)
-							.from(table(name(connector.getResolvedTable().getName())))
+							.from(table(tableName))
 							.leftJoin(idsTableName(concept.getName()))
 							// join onto the concept-ids table to assign the most specific id.
 							.on(getJoinConditions(concept, context))
-							.where(connector.getCondition() != null ? connector.getCondition().convertToSqlCondition(context).condition() : noCondition());
+							.where(condition);
 
 			connectorTables.add(connectorTable);
 		}
