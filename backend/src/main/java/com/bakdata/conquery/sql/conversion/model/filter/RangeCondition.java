@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.filter;
 
 import com.bakdata.conquery.models.common.IRange;
+import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;

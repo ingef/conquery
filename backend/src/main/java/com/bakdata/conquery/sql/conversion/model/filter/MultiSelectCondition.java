@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.model.filter;
 
+import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
