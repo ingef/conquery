@@ -142,7 +142,7 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 
 		Map<String, SingleColumnSqlSelect> rootSelects = createFlagRootSelectMap(flagSelect, connectorTables.getRootTable());
 
-		String alias = selectContext.getNameGenerator().selectName(flagSelect);
+		String alias = selectContext.getNameGenerator().legacyOperationName(flagSelect.getName());
 		FieldWrapper<?> flagAggregation = createFlagSelect(alias, connectorTables, functionProvider, rootSelects);
 
 		ExtractingSqlSelect<?> finalSelect = flagAggregation.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));

@@ -32,7 +32,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 	public ConnectorSqlSelects connectorSelect(DateDistanceSelect select, SelectContext<ConnectorSqlTables> selectContext) {
 
 		Column column = select.getColumn().resolve();
-		String alias = selectContext.getNameGenerator().selectName(select);
+		String alias = selectContext.getNameGenerator().legacyOperationName(select.getName());
 		ConnectorSqlTables tables = selectContext.getTables();
 
 		Field<Integer> dateDistanceCalculation = createDateDistanceCalculation(column, select.getTimeUnit(), tables, selectContext.getConversionContext());

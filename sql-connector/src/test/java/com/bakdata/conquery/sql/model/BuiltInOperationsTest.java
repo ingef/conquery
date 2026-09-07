@@ -45,18 +45,19 @@ class BuiltInOperationsTest {
 	@Test
 	void shouldRepresentStandardFiltersWithResolvedInputs() {
 		ResolvedFilter values = new BuiltInFilters.StringValues(
-				CODE, Set.of("A", "B"), Optional.of(SubstringRange.between(0, 3))
+				"values", CODE, Set.of("A", "B"), Optional.of(SubstringRange.between(0, 3))
 		);
-		ResolvedFilter number = new BuiltInFilters.NumericColumnRange(AMOUNT, NumberRange.closed(1, 10));
+		ResolvedFilter number = new BuiltInFilters.NumericColumnRange("number", AMOUNT, NumberRange.closed(1, 10));
 		ResolvedFilter aggregation = new BuiltInFilters.AggregationRange(
+				"aggregation",
 				new BuiltInAggregations.Sum(AMOUNT, Optional.empty(), List.of()),
 				NumberRange.atLeast(BigDecimal.TEN)
 		);
 		ResolvedFilter distance = new BuiltInFilters.DateDistanceRange(
-				START, ChronoUnit.YEARS, LocalDate.of(2026, 8, 27), NumberRange.atMost(65)
+				"distance", START, ChronoUnit.YEARS, LocalDate.of(2026, 8, 27), NumberRange.atMost(65)
 		);
 		ResolvedFilter flags = new BuiltInFilters.Flags(
-				Map.of("A", FLAG_A, "B", FLAG_B), Set.of("A")
+				"flags", Map.of("A", FLAG_A, "B", FLAG_B), Set.of("A")
 		);
 
 		assertValid(values);
@@ -74,19 +75,21 @@ class BuiltInOperationsTest {
 	@Test
 	void shouldRepresentStandardSelectsWithResolvedInputs() {
 		List<ResolvedSelect> selects = List.of(
-				new BuiltInSelects.Aggregation(new BuiltInAggregations.Count(CODE, List.of(CODE))),
-				new BuiltInSelects.Aggregation(new BuiltInAggregations.CountQuarters(new DateColumns.Pair(START, END))),
-				new BuiltInSelects.Aggregation(new BuiltInAggregations.DurationSum(new DateColumns.Pair(START, END), List.of(CODE))),
-				new BuiltInSelects.Aggregation(new BuiltInAggregations.Flags(Map.of("A", FLAG_A, "B", FLAG_B))),
-				new BuiltInSelects.Values(
-						CODE, BuiltInSelects.ValueOperation.DISTINCT, Optional.of(SubstringRange.between(0, 3))
+				new BuiltInSelects.Aggregation("count", new BuiltInAggregations.Count(CODE, List.of(CODE))),
+				new BuiltInSelects.Aggregation("quarters", new BuiltInAggregations.CountQuarters(new DateColumns.Pair(START, END))),
+				new BuiltInSelects.Aggregation(
+						"duration", new BuiltInAggregations.DurationSum(new DateColumns.Pair(START, END), List.of(CODE))
 				),
-				new BuiltInSelects.DateUnion(new DateColumns.Pair(START, END)),
-				new BuiltInSelects.DateDistance(START, ChronoUnit.DAYS, LocalDate.of(2026, 8, 27)),
-				new BuiltInSelects.ConceptValues(List.of(CODE)),
-				new BuiltInSelects.EventDateUnion(),
-				new BuiltInSelects.EventDurationSum(),
-				new BuiltInSelects.Exists()
+				new BuiltInSelects.Aggregation("flags", new BuiltInAggregations.Flags(Map.of("A", FLAG_A, "B", FLAG_B))),
+				new BuiltInSelects.Values(
+						"values", CODE, BuiltInSelects.ValueOperation.DISTINCT, Optional.of(SubstringRange.between(0, 3))
+				),
+				new BuiltInSelects.DateUnion("date-union", new DateColumns.Pair(START, END)),
+				new BuiltInSelects.DateDistance("date-distance", START, ChronoUnit.DAYS, LocalDate.of(2026, 8, 27)),
+				new BuiltInSelects.ConceptValues("concept-values", List.of(CODE)),
+				new BuiltInSelects.EventDateUnion("event-date-union"),
+				new BuiltInSelects.EventDurationSum("event-duration-sum"),
+				new BuiltInSelects.Exists("exists")
 		);
 
 		selects.forEach(ValidationTestSupport::assertValid);
@@ -139,16 +142,22 @@ class BuiltInOperationsTest {
 	void shouldRejectInvalidColumnTypes() {
 		assertInvalid(new BuiltInAggregations.Sum(CODE, Optional.empty(), List.of()));
 		assertInvalid(new BuiltInFilters.DateDistanceRange(
-						CODE, ChronoUnit.DAYS, LocalDate.of(2026, 8, 27), NumberRange.unbounded()
+						"distance", CODE, ChronoUnit.DAYS, LocalDate.of(2026, 8, 27), NumberRange.unbounded()
 		));
 		assertInvalid(new BuiltInSelects.Values(
-						AMOUNT, BuiltInSelects.ValueOperation.FIRST, Optional.of(SubstringRange.from(1))
+						"values", AMOUNT, BuiltInSelects.ValueOperation.FIRST, Optional.of(SubstringRange.from(1))
 		));
 	}
 
 	@Test
+	void shouldRejectBlankOperationNames() {
+		assertInvalid(new BuiltInSelects.Exists(" "));
+		assertInvalid(new BuiltInFilters.StringValues(" ", CODE, Set.of("A")));
+	}
+
+	@Test
 	void shouldRejectUnknownSelectedFlags() {
-		assertInvalid(new BuiltInFilters.Flags(Map.of("A", FLAG_A), Set.of("missing")));
+		assertInvalid(new BuiltInFilters.Flags("flags", Map.of("A", FLAG_A), Set.of("missing")));
 	}
 
 	@Test

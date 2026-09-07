@@ -51,7 +51,7 @@ public class EventDurationSumSelectConverter implements SelectConverter<EventDur
 		ColumnDateRange asDualColumn = selectContext.getFunctionProvider().toDualColumn(qualified);
 
 		SqlFunctionProvider functionProvider = selectContext.getFunctionProvider();
-		String alias = selectContext.getNameGenerator().selectName(select);
+		String alias = selectContext.getNameGenerator().legacyOperationName(select.getName());
 
 		Field<BigDecimal> durationSum = DSL.sum(
 												   DSL.when(containsInfinityDate(asDualColumn, functionProvider), DSL.inline(null, Integer.class))

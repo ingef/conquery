@@ -13,6 +13,7 @@ import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.validation.AllowedColumnTypes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -29,10 +30,14 @@ public final class BuiltInSelects {
 		RANDOM
 	}
 
-	public record Aggregation(@NotNull @Valid ResolvedAggregation aggregation) implements ResolvedSelect {
+	public record Aggregation(
+			@NotBlank String name,
+			@NotNull @Valid ResolvedAggregation aggregation
+	) implements ResolvedSelect {
 	}
 
 	public record Values(
+			@NotBlank String name,
 			@NotNull @Valid ResolvedColumn column,
 			@NotNull ValueOperation operation,
 			@NotNull Optional<@Valid SubstringRange> substring
@@ -44,11 +49,15 @@ public final class BuiltInSelects {
 		}
 	}
 
-	public record DateUnion(@NotNull @Valid DateColumns dates) implements ResolvedSelect {
+	public record DateUnion(
+			@NotBlank String name,
+			@NotNull @Valid DateColumns dates
+	) implements ResolvedSelect {
 	}
 
 	/** Selects the distance to an end date that was frozen while resolving the query. */
 	public record DateDistance(
+			@NotBlank String name,
 			@NotNull @Valid @AllowedColumnTypes({ColumnType.DATE, ColumnType.DATE_RANGE}) ResolvedColumn column,
 			@NotNull ChronoUnit unit,
 			@NotNull LocalDate endDate
@@ -57,6 +66,7 @@ public final class BuiltInSelects {
 
 	/** Aggregates the resolved concept-value columns across connector tables. */
 	public record ConceptValues(
+			@NotBlank String name,
 			@NotEmpty List<@NotNull @Valid ResolvedColumn> columns
 	) implements ResolvedSelect {
 
@@ -65,12 +75,12 @@ public final class BuiltInSelects {
 		}
 	}
 
-	public record EventDateUnion() implements ResolvedSelect {
+	public record EventDateUnion(@NotBlank String name) implements ResolvedSelect {
 	}
 
-	public record EventDurationSum() implements ResolvedSelect {
+	public record EventDurationSum(@NotBlank String name) implements ResolvedSelect {
 	}
 
-	public record Exists() implements ResolvedSelect {
+	public record Exists(@NotBlank String name) implements ResolvedSelect {
 	}
 }

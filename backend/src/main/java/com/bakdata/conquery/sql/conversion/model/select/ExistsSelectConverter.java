@@ -24,7 +24,7 @@ public class ExistsSelectConverter implements SelectConverter<ExistsSelect> {
 	}
 
 	private static ExistsSqlSelect createExistsSelect(ExistsSelect select, SelectContext<?> selectContext) {
-		String alias = selectContext.getNameGenerator().selectName(select);
+		String alias = selectContext.getNameGenerator().legacyOperationName(select.getName());
 		return ExistsSqlSelect.withAlias(alias);
 	}
 }

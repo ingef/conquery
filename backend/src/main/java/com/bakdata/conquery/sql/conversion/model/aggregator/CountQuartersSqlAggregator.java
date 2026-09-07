@@ -108,7 +108,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 				buildSqlSelect(countQuartersSelect.getColumn(),
 							   countQuartersSelect.getStartColumn(),
 							   countQuartersSelect.getEndColumn(),
-							   selectContext.getNameGenerator().selectName(countQuartersSelect),
+							   selectContext.getNameGenerator().legacyOperationName(countQuartersSelect.getName()),
 							   selectContext.getTables(),
 							   selectContext.getFunctionProvider(),
 							   selectContext.getCompilerDialect().getStratificationFunctions()
@@ -131,7 +131,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 				buildSqlSelect(countQuartersFilter.getColumn(),
 							   countQuartersFilter.getStartColumn(),
 							   countQuartersFilter.getEndColumn(),
-							   filterContext.getNameGenerator().selectName(countQuartersFilter),
+							   filterContext.getNameGenerator().legacyOperationName(countQuartersFilter.getName()),
 							   filterContext.getTables(),
 							   filterContext.getFunctionProvider(),
 							   filterContext.getCompilerDialect().getStratificationFunctions()

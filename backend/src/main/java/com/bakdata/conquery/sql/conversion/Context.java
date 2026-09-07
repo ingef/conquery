@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.conversion;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 
 /**
  * Marker for a conversion context.
@@ -14,7 +14,7 @@ public interface Context {
 
 	LegacyCompilerDialect getCompilerDialect();
 
-	default NameGenerator getNameGenerator() {
+	default SqlNameGenerator getNameGenerator() {
 		return getConversionContext().getNameGenerator();
 	}
 	

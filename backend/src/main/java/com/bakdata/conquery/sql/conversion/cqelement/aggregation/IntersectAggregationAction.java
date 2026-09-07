@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
@@ -24,7 +24,7 @@ class IntersectAggregationAction implements SqlAggregationAction {
 	private final QueryStep joinedStep;
 
 	@Override
-	public SqlTables tableNames(NameGenerator nameGenerator) {
+	public SqlTables tableNames(SqlNameGenerator nameGenerator) {
 		return DateAggregationCteStep.createIntersectTables(this.joinedStep, nameGenerator);
 	}
 

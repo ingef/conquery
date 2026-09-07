@@ -51,7 +51,7 @@ public class DaterangeSelectUtil {
 			AggregationFunction aggregationFunction,
 			SelectContext<ConnectorSqlTables> context
 	) {
-		String alias = context.getNameGenerator().selectName(select);
+		String alias = context.getNameGenerator().legacyOperationName(select.getName());
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 
 		ColumnDateRange daterange = functionProvider.forArbitraryDateRange(select).as(alias);
@@ -93,7 +93,7 @@ public class DaterangeSelectUtil {
 			Function<Field<?>, WhereCondition> filterFunction,
 			FilterContext<?> context
 	) {
-		String alias = context.getNameGenerator().selectName((LabeledNamespaceIdentifiable<?>) filter);
+		String alias = context.getNameGenerator().legacyOperationName(((LabeledNamespaceIdentifiable<?>) filter).getName());
 		SqlFunctionProvider functionProvider = context.getCompilerDialect().getFunctionProvider();
 
 		ColumnDateRange daterange = functionProvider.forArbitraryDateRange(filter).as(alias);

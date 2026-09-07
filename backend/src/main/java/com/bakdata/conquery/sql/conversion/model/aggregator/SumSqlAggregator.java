@@ -15,7 +15,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.compiler.ir.CteStep;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.conversion.model.NumberMapUtil;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
@@ -87,8 +87,8 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	@Override
 	public ConnectorSqlSelects connectorSelect(SumSelect sumSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
-		NameGenerator nameGenerator = selectContext.getNameGenerator();
-		String alias = nameGenerator.selectName(sumSelect);
+		SqlNameGenerator nameGenerator = selectContext.getNameGenerator();
+		String alias = nameGenerator.legacyOperationName(sumSelect.getName());
 
 		Column sumColumn = sumSelect.getColumn().resolve();
 		Column subtractColumn = sumSelect.getSubtractColumn() != null ? sumSelect.getSubtractColumn().resolve() : null;
@@ -126,7 +126,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 			String alias,
 			SqlIdColumns ids,
 			ConnectorSqlTables tables,
-			NameGenerator nameGenerator
+			SqlNameGenerator nameGenerator
 	) {
 		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
 
@@ -211,7 +211,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 			List<ExtractingSqlSelect<?>> distinctByRootSelects,
 			String alias,
 			SqlTables connectorTables,
-			NameGenerator nameGenerator
+			SqlNameGenerator nameGenerator
 	) {
 		String predecessor = connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
 		SqlIdColumns qualifiedIds = ids.qualify(predecessor);
@@ -246,7 +246,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 			QueryStep rowNumberCte,
 			FieldWrapper<BigDecimal> sumSelect,
 			String alias,
-			NameGenerator nameGenerator
+			SqlNameGenerator nameGenerator
 	) {
 		SqlIdColumns ids = rowNumberCte.getQualifiedSelects().getIds();
 
@@ -274,7 +274,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		Column sumColumn = sumFilter.getColumn().resolve();
 		Column subtractColumn = sumFilter.getSubtractColumn() != null ? sumFilter.getSubtractColumn().resolve() : null;
 		List<Column> distinctByColumns = sumFilter.getDistinctByColumn().stream().map(ColumnId::resolve).toList();
-		String alias = filterContext.getNameGenerator().selectName(sumFilter);
+		String alias = filterContext.getNameGenerator().legacyOperationName(sumFilter.getName());
 		ConnectorSqlTables tables = filterContext.getTables();
 
 		CommonAggregationSelect<BigDecimal> sumAggregationSelect;

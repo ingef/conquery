@@ -16,7 +16,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.compiler.ir.CteStep;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
@@ -77,8 +77,8 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 			connectors = selectContext.getTables().getConnectorTables().stream().map(ConnectorSqlTables::getConnector).toList();
 		}
 
-		NameGenerator nameGenerator = selectContext.getNameGenerator();
-		String alias = nameGenerator.selectName(select);
+		SqlNameGenerator nameGenerator = selectContext.getNameGenerator();
+		String alias = nameGenerator.legacyOperationName(select.getName());
 		QueryStep unionStep = createUnionConnectorConnectorsStep(connectors, select, alias, selectContext);
 
 		FieldWrapper<String> conceptColumnSelect = createConnectorColumnStringAgg(selectContext, unionStep, alias);

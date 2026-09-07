@@ -10,7 +10,7 @@ public class LastValueSelectConverter implements SelectConverter<LastValueSelect
 	public ConnectorSqlSelects connectorSelect(LastValueSelect select, SelectContext<ConnectorSqlTables> selectContext) {
 		return ValueSelectUtil.createValueSelect(
 				select.getColumn().resolve(),
-				selectContext.getNameGenerator().selectName(select),
+				selectContext.getNameGenerator().legacyOperationName(select.getName()),
 				Field::desc, select.getSubstringRange(), selectContext
 		);
 	}

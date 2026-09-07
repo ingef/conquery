@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.bakdata.conquery.sql.compiler.ir.CteStep;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import lombok.Getter;
@@ -60,15 +60,15 @@ enum DateAggregationCteStep implements CteStep {
 		return createCtes(INVERT_STEPS);
 	}
 
-	public static SqlTables createMergeTables(QueryStep joinedTable, NameGenerator nameGenerator) {
+	public static SqlTables createMergeTables(QueryStep joinedTable, SqlNameGenerator nameGenerator) {
 		return createTables(MERGE_STEPS, joinedTable, nameGenerator);
 	}
 
-	public static SqlTables createIntersectTables(QueryStep joinedTable, NameGenerator nameGenerator) {
+	public static SqlTables createIntersectTables(QueryStep joinedTable, SqlNameGenerator nameGenerator) {
 		return createTables(INTERSECT_STEPS, joinedTable, nameGenerator);
 	}
 
-	public static SqlTables createInvertTables(QueryStep joinedTable, NameGenerator nameGenerator) {
+	public static SqlTables createInvertTables(QueryStep joinedTable, SqlNameGenerator nameGenerator) {
 		return createTables(INVERT_STEPS, joinedTable, nameGenerator);
 	}
 
@@ -78,7 +78,7 @@ enum DateAggregationCteStep implements CteStep {
 							.toList();
 	}
 
-	private static SqlTables createTables(List<? extends CteStep> requiredSteps, QueryStep joinedTable, NameGenerator nameGenerator) {
+	private static SqlTables createTables(List<? extends CteStep> requiredSteps, QueryStep joinedTable, SqlNameGenerator nameGenerator) {
 		Set<? extends CteStep> asSet = new HashSet<>(requiredSteps);
 		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(asSet, joinedTable.getCteName(), nameGenerator::cteStepName);
 		Map<CteStep, CteStep> predecessorMap = CteStep.getDefaultPredecessorMap(asSet);

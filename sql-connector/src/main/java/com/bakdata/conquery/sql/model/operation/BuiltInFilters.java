@@ -13,6 +13,7 @@ import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.validation.AllowedColumnTypes;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -23,6 +24,7 @@ public final class BuiltInFilters {
 	}
 
 	public record StringValues(
+			@NotBlank String name,
 			@NotNull @Valid @AllowedColumnTypes(ColumnType.STRING) ResolvedColumn column,
 			@NotEmpty Set<@NotNull String> values,
 			@NotNull Optional<@Valid SubstringRange> substring
@@ -32,12 +34,13 @@ public final class BuiltInFilters {
 			values = ModelNormalization.immutableCopy(values);
 		}
 
-		public StringValues(ResolvedColumn column, Set<String> values) {
-			this(column, values, Optional.empty());
+		public StringValues(String name, ResolvedColumn column, Set<String> values) {
+			this(name, column, values, Optional.empty());
 		}
 	}
 
 	public record NumericColumnRange(
+			@NotBlank String name,
 			@NotNull @Valid @AllowedColumnTypes({ColumnType.INTEGER, ColumnType.REAL, ColumnType.DECIMAL, ColumnType.MONEY})
 			ResolvedColumn column,
 			@NotNull @Valid NumberRange range
@@ -45,6 +48,7 @@ public final class BuiltInFilters {
 	}
 
 	public record AggregationRange(
+			@NotBlank String name,
 			@NotNull @Valid ResolvedAggregation aggregation,
 			@NotNull @Valid NumberRange range
 	) implements ResolvedFilter {
@@ -52,6 +56,7 @@ public final class BuiltInFilters {
 
 	/** Filters by distance to an end date that was frozen while resolving the query. */
 	public record DateDistanceRange(
+			@NotBlank String name,
 			@NotNull @Valid @AllowedColumnTypes(ColumnType.DATE) ResolvedColumn column,
 			@NotNull ChronoUnit unit,
 			@NotNull LocalDate endDate,
@@ -60,6 +65,7 @@ public final class BuiltInFilters {
 	}
 
 	public record Flags(
+			@NotBlank String name,
 			@NotNull @Valid BuiltInAggregations.Flags availableFlags,
 			@NotEmpty Set<@NotNull String> selectedFlags
 	) implements ResolvedFilter {
@@ -68,8 +74,8 @@ public final class BuiltInFilters {
 			selectedFlags = ModelNormalization.immutableCopy(selectedFlags);
 		}
 
-		public Flags(java.util.Map<String, ResolvedColumn> availableFlags, Set<String> selectedFlags) {
-			this(new BuiltInAggregations.Flags(availableFlags), selectedFlags);
+		public Flags(String name, java.util.Map<String, ResolvedColumn> availableFlags, Set<String> selectedFlags) {
+			this(name, new BuiltInAggregations.Flags(availableFlags), selectedFlags);
 		}
 
 		@AssertTrue(message = "selectedFlags must be defined by availableFlags")
