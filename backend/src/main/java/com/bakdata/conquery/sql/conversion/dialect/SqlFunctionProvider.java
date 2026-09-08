@@ -87,12 +87,6 @@ public interface SqlFunctionProvider {
 	}
 
 	/**
-	 * A date restriction condition is true if holds: dateRestrictionStart < daterangeEnd and dateRestrictionEnd > daterangeStart. The ends of both ranges are
-	 * exclusive.
-	 */
-	Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange daterange);
-
-	/**
 	 * Creates a {@link ColumnDateRange} as a SQL representation of the {@link CDateRange}.
 	 */
 	ColumnDateRange forCDateRange(CDateRange daterange);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.bakdata.conquery.sql.compiler.ir.condition.DateRestrictionCondition;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
@@ -90,7 +91,7 @@ class PreprocessingCte extends ConnectorCte {
 				"Stratification table must provide a stratification date"
 		));
 		// Both expressions are available from the joined source tables; do not reference aliases produced by this SELECT.
-		conditions.add(functionProvider.dateRestriction(stratificationDate, tableContext.getRawValidityDate()));
+		conditions.add(new DateRestrictionCondition(stratificationDate, tableContext.getRawValidityDate()).condition());
 
 		Table<Record> connectorTable = DSL.table(DSL.name(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING)));
 		TableLike<Record> joinedTable = functionProvider.innerJoin(connectorTable, stratificationTable, idConditions);

@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColum
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.sql.compiler.ir.condition.DateRestrictionCondition;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
@@ -235,7 +236,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		if (context.getDateRestrictionRange() != null) {
 			ColumnDateRange dateRestriction = functionProvider.forCDateRange(context.getDateRestrictionRange());
-			conditions.add(ConditionUtil.wrap(functionProvider.dateRestriction(dateRestriction, validityDate)));
+			conditions.add(new DateRestrictionCondition(dateRestriction, validityDate));
 		}
 
 		return new SqlFilters(

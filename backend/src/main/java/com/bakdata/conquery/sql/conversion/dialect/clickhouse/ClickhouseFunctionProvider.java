@@ -50,15 +50,6 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
     }
 
     @Override
-    public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange daterange) {
-        Condition dateRestrictionStartsBeforeDate = dateRestriction.getStart().lessThan(daterange.getEnd());
-        Condition dateRestrictionEndsAfterDate = dateRestriction.getEnd().greaterThan(daterange.getStart());
-
-        return condition(dateRestrictionStartsBeforeDate.and(dateRestrictionEndsAfterDate));
-    }
-
-
-    @Override
     public ColumnDateRange forCDateRange(CDateRange daterange) {
 
         Field<Date> startDateExpression = getMinDateExpression();
