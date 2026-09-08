@@ -11,13 +11,17 @@ import static org.jooq.impl.DSL.not;
 
 import java.util.List;
 
+import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
 
 class WhereConditionTest {
 
 	private static final Field<Boolean> FIRST_FLAG = field(name("first_flag"), Boolean.class);
 	private static final Field<Boolean> SECOND_FLAG = field(name("second_flag"), Boolean.class);
+	private static final Field<String> VALUE = field(name("value"), String.class);
 
 	@Test
 	void shouldComposeAndInvertConditions() {
@@ -39,6 +43,20 @@ class WhereConditionTest {
 	}
 
 	@Test
+	void shouldMatchSelectedStringValuesWithoutADialectService() {
+		assertConditionEquals(VALUE.eq("A"), new StringValuesCondition(VALUE, new String[]{"A"}).condition());
+		assertConditionEquals(VALUE.in("A", "B"), new StringValuesCondition(VALUE, new String[]{"A", "B"}).condition());
+		assertConditionEquals(VALUE.isNull(), new StringValuesCondition(VALUE, new String[]{null, ""}).condition());
+	}
+
+	@Test
+	void shouldIncludeNullValuesWhenNegatingAStringValueCondition() {
+		WhereCondition condition = new StringValuesCondition(VALUE, new String[]{"A"});
+
+		assertConditionEquals(not(VALUE.eq("A")).or(VALUE.isNull()), condition.negate().condition());
+	}
+
+	@Test
 	void shouldGroupConditionsByCompilationPhase() {
 		WhereCondition condition = new ConditionWrappingWhereCondition(FIRST_FLAG.isTrue());
 		WhereClauses clauses = WhereClauses.builder()
@@ -53,5 +71,12 @@ class WhereConditionTest {
 		assertTrue(WhereClauses.empty().getPreprocessingConditions().isEmpty());
 		assertTrue(WhereClauses.empty().getEventFilters().isEmpty());
 		assertTrue(WhereClauses.empty().getGroupFilters().isEmpty());
+	}
+
+	private static void assertConditionEquals(Condition expected, Condition actual) {
+		assertEquals(
+				DSL.using(SQLDialect.POSTGRES).renderInlined(expected),
+				DSL.using(SQLDialect.POSTGRES).renderInlined(actual)
+		);
 	}
 }

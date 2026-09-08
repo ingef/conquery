@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.model.filter;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
+import com.bakdata.conquery.sql.compiler.ir.condition.StringValuesCondition;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
@@ -23,10 +24,9 @@ abstract class AbstractSelectFilterConverter<F extends SelectFilter<T>, T> imple
 				String.class
 		);
 
-		WhereCondition condition = new MultiSelectCondition(
+		WhereCondition condition = new StringValuesCondition(
 				rootSelect.select(),
-				getValues(filterContext),
-				filterContext.getFunctionProvider()
+				getValues(filterContext)
 		);
 
 		return new SqlFilters(
@@ -43,7 +43,7 @@ abstract class AbstractSelectFilterConverter<F extends SelectFilter<T>, T> imple
 		String tableName = column.getTable().getName();
 		String columnName = column.getName();
 		Field<String> field = DSL.field(DSL.name(tableName, columnName), String.class);
-		return new MultiSelectCondition(field, getValues(filterContext), filterContext.getFunctionProvider()).condition();
+		return new StringValuesCondition(field, getValues(filterContext)).condition();
 	}
 
 	protected abstract String[] getValues(FilterContext<T> filterContext);
