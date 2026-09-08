@@ -9,10 +9,12 @@ import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.not;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.List;
 
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.model.range.NumberRange;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
@@ -70,6 +72,28 @@ class WhereConditionTest {
 				.and(DATE_RESTRICTION.getEnd().greaterThan(VALIDITY_DATE.getStart()));
 
 		assertConditionEquals(expected, new DateRestrictionCondition(DATE_RESTRICTION, VALIDITY_DATE).condition());
+	}
+
+	@Test
+	void shouldMatchInclusiveRangeBounds() {
+		Field<BigDecimal> value = field(name("number"), BigDecimal.class);
+
+		assertConditionEquals(
+				value.greaterOrEqual(BigDecimal.ONE).and(value.lessOrEqual(BigDecimal.TEN)),
+				new InclusiveRangeCondition<>(value, NumberRange.closed(1, 10)).condition()
+		);
+		assertConditionEquals(
+				value.greaterOrEqual(BigDecimal.ONE),
+				new InclusiveRangeCondition<>(value, NumberRange.atLeast(1)).condition()
+		);
+		assertConditionEquals(
+				value.lessOrEqual(BigDecimal.TEN),
+				new InclusiveRangeCondition<>(value, NumberRange.atMost(10)).condition()
+		);
+		assertConditionEquals(
+				DSL.noCondition(),
+				new InclusiveRangeCondition<>(value, NumberRange.unbounded()).condition()
+		);
 	}
 
 	@Test

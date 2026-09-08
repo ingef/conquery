@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColum
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.sql.compiler.ir.condition.ConditionWrappingWhereCondition;
 import com.bakdata.conquery.sql.compiler.ir.condition.DateRestrictionCondition;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
@@ -31,7 +32,6 @@ import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.*;
-import com.bakdata.conquery.sql.conversion.model.filter.ConditionUtil;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
@@ -185,7 +185,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		return new SqlFilters(ConnectorSqlSelects.none(),
 				WhereClauses.builder()
 						.preprocessingConditions(conditions)
-						.preprocessingCondition(ConditionUtil.wrap(validityDateFilter))
+						.preprocessingCondition(new ConditionWrappingWhereCondition(validityDateFilter))
 						.build()
 		);
 	}

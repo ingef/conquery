@@ -1,12 +1,24 @@
 package com.bakdata.conquery.models.common;
 
+import java.util.Optional;
+
 import lombok.NonNull;
 
-public interface IRange<VALUE extends Comparable, CLASS extends IRange<VALUE, CLASS>> {
+public interface IRange<VALUE extends Comparable<? super VALUE>, CLASS extends IRange<VALUE, CLASS>> extends InclusiveRange<VALUE> {
 
 	VALUE getMin();
 
 	VALUE getMax();
+
+	@Override
+	default Optional<VALUE> minimum() {
+		return Optional.ofNullable(getMin());
+	}
+
+	@Override
+	default Optional<VALUE> maximum() {
+		return Optional.ofNullable(getMax());
+	}
 
 	boolean contains(VALUE value);
 
