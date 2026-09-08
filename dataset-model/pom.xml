@@ -13,4 +13,11 @@
 
     <artifactId>dataset-model</artifactId>
     <name>Conquery Dataset Model</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+    </dependencies>
 </project>
