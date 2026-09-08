@@ -11,6 +11,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.sql.compiler.ir.condition.DateRestrictionCondition;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
@@ -156,7 +157,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 		final ColumnDateRange validityDate = functionProvider.forValidityDate(cqTable.findValidityDate());
 		final List<Condition> joinConditions = Stream.concat(
 				ids.join(convertedPrerequisite.getQualifiedSelects().getIds()).stream(),
-				Stream.of(functionProvider.dateRestriction(functionProvider.forCDateRange(dateRestriction), validityDate))
+				Stream.of(new DateRestrictionCondition(functionProvider.forCDateRange(dateRestriction), validityDate).condition())
 		).toList();
 
 		return functionProvider.innerJoin(connectorTable, convertedPrerequisiteTable, joinConditions);

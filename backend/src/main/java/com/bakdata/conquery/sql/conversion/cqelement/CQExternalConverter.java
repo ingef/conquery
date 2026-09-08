@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.sql.compiler.ir.condition.DateRestrictionCondition;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
@@ -51,7 +52,9 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 
 		return QueryStep.builder()
 				.predecessors(List.of(allStep))
-				.conditions(List.of(functionProvider.dateRestriction(functionProvider.forCDateRange(context.getDateRestrictionRange()), maybeValidityDate.get())))
+				.conditions(List.of(new DateRestrictionCondition(
+						functionProvider.forCDateRange(context.getDateRestrictionRange()), maybeValidityDate.get()
+				).condition()))
 				.selects(allStep.getQualifiedSelects())
 				.fromTable(table(name(allStep.getCteName())))
 				.cteName(CQ_EXTERNAL_IDS_CTE_NAME + "_date_restriction")
