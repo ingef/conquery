@@ -264,10 +264,6 @@ public interface SqlFunctionProvider {
 		return function("greatest", fieldArray[0].getType(), fieldArray);
 	}
 
-	default Condition in(Field<String> column, String[] values) {
-		return column.in(values);
-	}
-
 	default TableOnConditionStep<Record> innerJoin(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions) {
 		return leftPart.innerJoin(rightPart).on(joinConditions.toArray(Condition[]::new));
 	}
