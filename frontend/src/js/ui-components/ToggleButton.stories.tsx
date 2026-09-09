@@ -129,25 +129,3 @@ export const IconOnlyWithTooltip: Story = {
     </Row>
   ),
 };
-
-const OpensAnEditor = () => {
-  const [restriction, setRestriction] = useState<string | null>(null);
-  return (
-    <Row label="pressing opens an editor">
-      <ToggleButton
-        isSelected={restriction !== null}
-        onChange={() =>
-          setRestriction((current) =>
-            current === null ? window.prompt("Date restriction") : null,
-          )
-        }
-      >
-        <Icon icon={faCalendar} />
-        {restriction ?? "date"}
-      </ToggleButton>
-    </Row>
-  );
-};
-
-/** The selected look reflects a state the user set; pressing edits it. */
-export const StateWithEditor: Story = { render: () => <OpensAnEditor /> };
