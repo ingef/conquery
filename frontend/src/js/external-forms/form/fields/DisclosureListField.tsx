@@ -1,18 +1,18 @@
-import {
-  faAdd,
-  faChevronDown,
-  faChevronRight,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
-import { type ComponentProps, useEffect, useState } from "react";
+import { faAdd, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { type ComponentProps, useCallback, useEffect, useState } from "react";
+import type { Key } from "react-aria-components";
 import { useFieldArray } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { tv } from "tailwind-variants";
 import { exists } from "../../../common/helpers/exists";
 import { usePrevious } from "../../../common/helpers/usePrevious";
 import { Button } from "../../../ui-components/Button";
+import {
+  Disclosure,
+  DisclosureGroup,
+  DisclosurePanel,
+  DisclosureTitle,
+} from "../../../ui-components/Disclosure";
 import { Icon } from "../../../ui-components/Icon";
-import InfoTooltip from "../../../ui-components/InfoTooltip";
 import type { DisclosureListField as DisclosureListFieldT } from "../../config-types";
 import {
   getFieldKey,
@@ -21,69 +21,34 @@ import {
 } from "../../helper";
 import Field from "../Field";
 
-const summary = tv({
-  base: [
-    "relative",
-    "flex items-center justify-between",
-    "gap-3",
-    "cursor-pointer",
-    "bg-white",
-    "py-3 pr-10 pl-3",
-    "text-sm",
-    "font-normal",
-  ],
-});
-
 const DisclosureField = ({
+  id,
   field,
   index,
-  isOpen,
-  toggleOpen,
   remove,
   canRemove,
   commonProps,
 }: {
+  id: string;
   field: DisclosureListFieldT;
   index: number;
-  isOpen: boolean;
-  toggleOpen: () => void;
   remove: (index: number) => void;
   canRemove?: boolean;
   commonProps: Omit<ComponentProps<typeof Field>, "field">;
 }) => {
   const { t } = useTranslation();
+
   if (field.fields.length === 0) return null;
 
   const { formType, locale } = commonProps;
 
   return (
-    <details
-      className="overflow-hidden rounded-sm border border-gray-400"
-      open={isOpen}
-      onToggle={(e) => {
-        if (
-          (isOpen && e.currentTarget.open) ||
-          (!isOpen && !e.currentTarget.open)
-        ) {
-          // Without this, we're getting open/close flickering
-          return;
-        }
-
-        toggleOpen();
-      }}
-    >
-      <summary className={summary()}>
-        <div className="flex items-center gap-3">
-          <span className="w-5">
-            <Icon icon={isOpen ? faChevronDown : faChevronRight} />
-          </span>
-          {field.label[locale]}
-          {exists(field.tooltip) && (
-            <InfoTooltip text={field.tooltip[locale]} />
-          )}
-        </div>
-        {field.creatable && canRemove && (
-          <div className="absolute right-0 top-1/2 -translate-y-1/2">
+    <Disclosure id={id}>
+      <DisclosureTitle
+        info={exists(field.tooltip) ? field.tooltip[locale] : undefined}
+        actions={
+          field.creatable &&
+          canRemove && (
             <Button
               size="sm"
               intent="tertiary"
@@ -92,42 +57,49 @@ const DisclosureField = ({
             >
               <Icon icon={faTimes} />
             </Button>
-          </div>
-        )}
-      </summary>
-      <div className="flex flex-col gap-2 bg-bg-50 border-t border-gray-300 p-3">
-        {field.fields.map((f, i) => {
-          const key = getFieldKey(formType, f, i);
-          const childField = isFormFieldWithValue(f)
-            ? { ...f, name: `${field.name}[${index}].${f.name}` }
-            : f;
+          )
+        }
+      >
+        {field.label[locale]}
+      </DisclosureTitle>
+      <DisclosurePanel>
+        <div className="flex flex-col gap-2">
+          {field.fields.map((f, i) => {
+            const key = getFieldKey(formType, f, i);
+            const childField = isFormFieldWithValue(f)
+              ? { ...f, name: `${field.name}[${index}].${f.name}` }
+              : f;
 
-          return <Field key={key} field={childField} {...commonProps} />;
-        })}
-      </div>
-    </details>
+            return <Field key={key} field={childField} {...commonProps} />;
+          })}
+        </div>
+      </DisclosurePanel>
+    </Disclosure>
   );
 };
 
-const useOpenState = ({
+// which sections are open; the group keeps a single one when only one may be
+const useExpandedKeys = ({
   defaultOpen,
   onlyOneOpenAtATime = false,
 }: {
   defaultOpen?: string;
   onlyOneOpenAtATime?: boolean;
 }) => {
-  const [isOpen, setIsOpen] = useState<Record<string, boolean>>(
-    defaultOpen ? { [defaultOpen]: true } : {},
+  const [expandedKeys, setExpandedKeys] = useState<Set<Key>>(
+    () => new Set(defaultOpen ? [defaultOpen] : []),
   );
 
-  const toggleOpen = (id: string) => {
-    setIsOpen((prev) => ({
-      ...(onlyOneOpenAtATime ? {} : prev),
-      [id]: !prev[id],
-    }));
-  };
+  const open = useCallback(
+    (id: string) => {
+      setExpandedKeys((prev) =>
+        onlyOneOpenAtATime ? new Set([id]) : new Set(prev).add(id),
+      );
+    },
+    [onlyOneOpenAtATime],
+  );
 
-  return { isOpen, toggleOpen };
+  return { expandedKeys, setExpandedKeys, open };
 };
 
 export const DisclosureListField = ({
@@ -166,7 +138,7 @@ export const DisclosureListField = ({
 
   const prevFieldsLength = usePrevious(fields.length);
 
-  const { isOpen, toggleOpen } = useOpenState({
+  const { expandedKeys, setExpandedKeys, open } = useExpandedKeys({
     onlyOneOpenAtATime: field.onlyOneOpenAtATime,
     defaultOpen: field.defaultOpen ? fields[0]?.id : undefined,
   });
@@ -175,12 +147,10 @@ export const DisclosureListField = ({
     function openFirstFieldIfNecessary() {
       if (prevFieldsLength === 0 && fields.length > 0 && field.defaultOpen) {
         const id = fields[0]?.id;
-        if (id && !isOpen[id]) {
-          toggleOpen(id);
-        }
+        if (id) open(id);
       }
     },
-    [prevFieldsLength, fields, toggleOpen, isOpen, field.defaultOpen],
+    [prevFieldsLength, fields, open, field.defaultOpen],
   );
 
   useEffect(
@@ -194,19 +164,10 @@ export const DisclosureListField = ({
         commonProps.trigger();
 
         const id = fields[fields.length - 1]?.id;
-        if (id && !isOpen[id]) {
-          toggleOpen(id);
-        }
+        if (id) open(id);
       }
     },
-    [
-      prevFieldsLength,
-      fields,
-      isOpen,
-      toggleOpen,
-      field.defaultOpen,
-      commonProps,
-    ],
+    [prevFieldsLength, fields, open, field.defaultOpen, commonProps],
   );
 
   if (field.fields.length === 0) return null;
@@ -214,19 +175,24 @@ export const DisclosureListField = ({
   const { locale } = commonProps;
 
   return (
-    <div className="space-y-2">
-      {fields.map((fd, index) => (
-        <DisclosureField
-          key={fd.id}
-          field={field}
-          index={index}
-          remove={remove}
-          isOpen={isOpen[fd.id]}
-          toggleOpen={() => toggleOpen(fd.id)}
-          canRemove={fields.length > 1}
-          commonProps={commonProps}
-        />
-      ))}
+    <div className="flex flex-col gap-2">
+      <DisclosureGroup
+        allowsMultipleExpanded={!field.onlyOneOpenAtATime}
+        expandedKeys={expandedKeys}
+        onExpandedChange={setExpandedKeys}
+      >
+        {fields.map((fd, index) => (
+          <DisclosureField
+            key={fd.id}
+            id={fd.id}
+            field={field}
+            index={index}
+            remove={remove}
+            canRemove={fields.length > 1}
+            commonProps={commonProps}
+          />
+        ))}
+      </DisclosureGroup>
       {field.creatable && (
         <div className="grid">
           <Button
