@@ -1,0 +1,63 @@
+name: "CI"
+
+# Single entry point for the test workflows. The `ci` job at the end is the only
+# required status check on develop: it fails if any job failed, and skipped jobs
+# (backend-only or frontend-only changes) do not block it.
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - release
+  pull_request:
+  merge_group:
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - id: filter
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          # only pull requests are narrowed down; pushes and merge queue entries run everything
+          if [ "$EVENT" != "pull_request" ]; then
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+            echo "backend=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files=$(gh pr diff "$PR" --name-only)
+          echo "$files"
+          changed() { if echo "$files" | grep -Eq "$1"; then echo true; else echo false; fi; }
+          echo "frontend=$(changed '^(frontend/|\.github/workflows/(ci|test_frontend)\.yml$)')" >> "$GITHUB_OUTPUT"
+          echo "backend=$(changed '^(backend/|pom\.xml$|\.github/workflows/(ci|test_backend)\.yml$)')" >> "$GITHUB_OUTPUT"
+
+  frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    uses: ./.github/workflows/test_frontend.yml
+
+  backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    uses: ./.github/workflows/test_backend.yml
+
+  e2e:
+    uses: ./.github/workflows/test_cypress.yml
+
+  ci:
+    if: always()
+    needs: [changes, frontend, backend, e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - name: fail if any job failed or was cancelled
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

@@ -1,17 +1,8 @@
 name: "Test Frontend"
 
+# Called from ci.yml, which decides based on the changed paths whether this runs.
 on:
-  push:
-    branches:
-      # Always run on protected branches
-      - master
-      - develop
-      - release
-  pull_request:
-    paths:
-      - "frontend/**"
-  # merge queue: paths filters do not apply here, the job runs on every queue entry
-  merge_group:
+  workflow_call:
 
 jobs:
   test:
