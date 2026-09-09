@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
+package com.bakdata.conquery.sql.compiler.ir.aggregation;
 
 import java.sql.Date;
 import java.util.Collection;
@@ -12,30 +12,32 @@ import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
-class MergeAggregateAction implements SqlAggregationAction {
+class IntersectAggregationAction implements SqlAggregationAction {
 
 	private final QueryStep joinedStep;
 
 	@Override
 	public SqlTables tableNames(SqlNameGenerator nameGenerator) {
-		return DateAggregationCteStep.createMergeTables(this.joinedStep, nameGenerator);
+		return DateAggregationCteStep.createIntersectTables(this.joinedStep, nameGenerator);
 	}
 
 	@Override
 	public List<DateAggregationCte> dateAggregationCtes() {
-		return DateAggregationCteStep.createMergeCtes();
+		return DateAggregationCteStep.createIntersectCtes();
 	}
 
 	@Override
 	public ColumnDateRange getOverlapValidityDate(DateAggregationDates dateAggregationDates) {
 
-		Field<Date> rangeStart = FieldExpressions.least(dateAggregationDates.allStarts());
-		Field<Date> rangeEnd = FieldExpressions.greatest(dateAggregationDates.allEnds());
+		Field<Date> rangeStart = FieldExpressions.greatest(dateAggregationDates.allStarts());
+		Field<Date> rangeEnd = FieldExpressions.least(dateAggregationDates.allEnds());
 
 		return ColumnDateRange.of(
 				rangeStart.as(DateAggregationCte.RANGE_START),
@@ -45,14 +47,23 @@ class MergeAggregateAction implements SqlAggregationAction {
 
 	@Override
 	public List<SqlSelect> getIntermediateTableSelects(DateAggregationDates dateAggregationDates, List<SqlSelect> carryThroughSelects) {
-		return Stream.of(dateAggregationDates.allStartsAndEnds(), carryThroughSelects)
+
+		List<FieldWrapper<?>> nulledRangeStartAndEnd =
+				Stream.of(
+							  DSL.inline(null, Date.class).as(DateAggregationCte.RANGE_START),
+							  DSL.inline(null, Date.class).as(DateAggregationCte.RANGE_END)
+					  )
+					  .map(FieldWrapper::new)
+					  .collect(Collectors.toList());
+
+		return Stream.of(nulledRangeStartAndEnd, carryThroughSelects)
 					 .flatMap(Collection::stream)
 					 .collect(Collectors.toList());
 	}
 
 	@Override
 	public List<QueryStep> getNoOverlapSelects(DateAggregationContext dateAggregationContext) {
-		return dateAggregationContext.getSteps(DateAggregationCteStep.NODE_NO_OVERLAP);
+		return List.of(dateAggregationContext.getStep(DateAggregationCteStep.INTERMEDIATE_TABLE));
 	}
 
 	@Override
@@ -62,7 +73,7 @@ class MergeAggregateAction implements SqlAggregationAction {
 
 	@Override
 	public boolean requiresIntervalPackingAfterwards() {
-		return true;
+		return false;
 	}
 
 }

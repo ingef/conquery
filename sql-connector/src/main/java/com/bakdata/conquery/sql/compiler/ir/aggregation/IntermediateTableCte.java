@@ -1,5 +1,5 @@
 
-package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
+package com.bakdata.conquery.sql.compiler.ir.aggregation;
 
 import java.sql.Date;
 import java.util.List;

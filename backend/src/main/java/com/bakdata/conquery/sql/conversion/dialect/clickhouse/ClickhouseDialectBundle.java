@@ -31,7 +31,7 @@ public class ClickhouseDialectBundle implements DialectBundle {
 
 	public ClickhouseDialectBundle() {
 		this.functionProvider = new ClickhouseFunctionProvider();
-		this.dateAggregator = new AnsiSqlDateAggregator(this.functionProvider);
+		this.dateAggregator = new AnsiSqlDateAggregator();
 	}
 
 	@Override

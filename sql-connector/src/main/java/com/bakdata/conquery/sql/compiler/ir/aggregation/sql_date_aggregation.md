@@ -10,7 +10,7 @@ Besides that, there is also the possibility to `NEGATE` a date aggregation: this
 a node. Finally, dates of a certain node can also be `BLOCKED` which will block the upwards aggregation of a nodes'
 validity dates.
 
-The document outlines the process the [AnsiSqlDateAggregator](./AnsiSqlDateAggregator.java) employs to realise the
+The document outlines the process the [DateAggregationCompiler](./DateAggregationCompiler.java) employs to realise the
 different aggregations.
 
 Suppose we have two concepts, each containing a date range set with only unique date range values.
