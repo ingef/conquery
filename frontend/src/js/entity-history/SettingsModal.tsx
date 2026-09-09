@@ -2,8 +2,8 @@ import type { Dispatch, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../api/types";
-import Modal from "../modal/Modal";
 import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
+import { Modal, ModalBody, ModalHeader } from "../ui-components/Modal";
 
 interface Props {
   onClose: () => void;
@@ -18,18 +18,26 @@ export const SettingsModal = ({
 }: Props) => {
   const { t } = useTranslation();
   return (
-    <Modal onClose={onClose} headline={t("history.settings.headline")}>
-      <div className="w-[300px]">
-        <InputMultiSelect
-          creatable
-          label={t("history.settings.selectStatusHeadline")}
-          placeholder={t("history.settings.selectStatusPlaceholder")}
-          tooltip={t("history.settings.selectStatusTooltip")}
-          onChange={setEntityStatusOptions}
-          value={entityStatusOptions}
-          options={entityStatusOptions}
-        />
-      </div>
+    <Modal
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
+    >
+      <ModalHeader>{t("history.settings.headline")}</ModalHeader>
+      <ModalBody>
+        <div className="w-[300px]">
+          <InputMultiSelect
+            creatable
+            label={t("history.settings.selectStatusHeadline")}
+            placeholder={t("history.settings.selectStatusPlaceholder")}
+            tooltip={t("history.settings.selectStatusTooltip")}
+            onChange={setEntityStatusOptions}
+            value={entityStatusOptions}
+            options={entityStatusOptions}
+          />
+        </div>
+      </ModalBody>
     </Modal>
   );
 };

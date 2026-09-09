@@ -1,18 +1,16 @@
 import { useTranslation } from "react-i18next";
-import { tv } from "tailwind-variants";
-import Modal from "../modal/Modal";
 import { Button } from "../ui-components/Button";
-
-const description = tv({
-  base: ["max-w-[400px]", "mb-5"],
-});
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "../ui-components/Modal";
 
 const ExpandPreviousQueryModal = ({
   onClose,
   onAccept,
-  className,
 }: {
-  className?: string;
   onClose: () => void;
   onAccept: () => void;
 }) => {
@@ -20,27 +18,30 @@ const ExpandPreviousQueryModal = ({
 
   return (
     <Modal
-      className={className}
-      onClose={onClose}
-      headline={t("expandPreviousQueryModal.headline")}
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
+      <ModalHeader>{t("expandPreviousQueryModal.headline")}</ModalHeader>
       <form
+        className="flex flex-col gap-5"
         onSubmit={(e) => {
           e.preventDefault();
           onAccept();
         }}
       >
-        <p className={description()}>
-          {t("expandPreviousQueryModal.description")}
-        </p>
-        <div className="flex items-center justify-between">
-          <Button intent="secondary" onPress={onClose} type="button">
-            {t("common.cancel")}
-          </Button>
-          <Button intent="primary" autoFocus onPress={onAccept} type="submit">
+        <ModalBody>
+          <p className="max-w-[400px]">
+            {t("expandPreviousQueryModal.description")}
+          </p>
+        </ModalBody>
+        <ModalFooter>
+          <Button slot="close">{t("common.cancel")}</Button>
+          <Button intent="primary" autoFocus type="submit">
             {t("expandPreviousQueryModal.submit")}
           </Button>
-        </div>
+        </ModalFooter>
       </form>
     </Modal>
   );

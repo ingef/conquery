@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 
-import Modal from "../../modal/Modal";
 import EditableTagsForm from "../../ui-components/EditableTagsForm";
+import { Modal, ModalBody, ModalHeader } from "../../ui-components/Modal";
 import { useUpdateFormConfig, useUpdateQuery } from "./actions";
 import { isFormConfig } from "./helpers";
 import type { ProjectItemT } from "./ProjectItem";
@@ -33,17 +33,23 @@ const EditProjectItemFoldersModal = ({
 
   return (
     <Modal
-      onClose={onClose}
-      headline={t("editPreviousQueryFoldersModal.headline")}
-      subtitle={item.label}
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
-      <EditableTagsForm
-        className="min-w-[300px] max-w-[500px]"
-        tags={item.tags}
-        loading={loading}
-        onSubmit={onSubmit}
-        availableTags={folders}
-      />
+      <ModalHeader subtitle={item.label}>
+        {t("editPreviousQueryFoldersModal.headline")}
+      </ModalHeader>
+      <ModalBody>
+        <EditableTagsForm
+          className="min-w-[300px] max-w-[500px]"
+          tags={item.tags}
+          loading={loading}
+          onSubmit={onSubmit}
+          availableTags={folders}
+        />
+      </ModalBody>
     </Modal>
   );
 };

@@ -4,10 +4,10 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
-import Modal from "../../modal/Modal";
 import DropzoneWithFileInput from "../../ui-components/DropzoneWithFileInput";
 import { Icon } from "../../ui-components/Icon";
 import InfoTooltip from "../../ui-components/InfoTooltip";
+import { Modal, ModalBody, ModalHeader } from "../../ui-components/Modal";
 
 import CSVColumnPicker, { type QueryToUploadT } from "./CSVColumnPicker";
 
@@ -45,19 +45,20 @@ const UploadQueryResultsModal = ({
 
   return (
     <Modal
-      onClose={onClose}
       scrollable
-      headline={
-        <>
-          {t("uploadQueryResultsModal.headline")}
-          <InfoTooltip
-            size="wide"
-            text={t("uploadQueryResultsModal.formatInfo.text")}
-          />
-        </>
-      }
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
-      <div>
+      <ModalHeader>
+        {t("uploadQueryResultsModal.headline")}
+        <InfoTooltip
+          size="wide"
+          text={t("uploadQueryResultsModal.formatInfo.text")}
+        />
+      </ModalHeader>
+      <ModalBody>
         {fullUploadSuccess ? (
           <div className="my-[25px]">
             <Icon icon={faCheckCircle} className={successIcon()} />
@@ -99,7 +100,7 @@ const UploadQueryResultsModal = ({
             )}
           </div>
         )}
-      </div>
+      </ModalBody>
     </Modal>
   );
 };

@@ -28,7 +28,6 @@ import type {
   SelectOptionT,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
-import Modal from "../modal/Modal";
 import { nodeIsElement } from "../model/node";
 import ScrollableList from "../scrollable-list/ScrollableList";
 import { Button } from "../ui-components/Button";
@@ -36,6 +35,12 @@ import { Checkbox } from "../ui-components/Checkbox";
 import { Icon } from "../ui-components/Icon";
 import InputPlain from "../ui-components/InputPlain/InputPlain";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "../ui-components/Modal";
 import { DropdownOption } from "./DropdownOption";
 import type { UploadConceptListModalStateT } from "./reducer";
 
@@ -475,11 +480,14 @@ const UploadConceptListModal = ({
 
   return (
     <Modal
-      onClose={onClose}
-      headline={t("uploadConceptListModal.headline")}
-      dataTestId="uploadConceptListModal"
+      data-test-id="uploadConceptListModal"
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
-      <div className="pb-[10px]">
+      <ModalHeader>{t("uploadConceptListModal.headline")}</ModalHeader>
+      <ModalBody>
         <InputSelect
           className="w-[60vw] max-w-[900px]"
           label={t("uploadConceptListModal.selectConceptRootNode")}
@@ -571,16 +579,18 @@ const UploadConceptListModal = ({
                     {t("uploadConceptListModal.includeUnresolved")}
                   </Checkbox>
                 )}
-                <Button intent="primary" type="submit" data-test-id="insert">
-                  {mustIncludeUnresolved
-                    ? t("uploadConceptListModal.insertRegardless")
-                    : t("uploadConceptListModal.insertNode")}
-                </Button>
+                <ModalFooter>
+                  <Button intent="primary" type="submit" data-test-id="insert">
+                    {mustIncludeUnresolved
+                      ? t("uploadConceptListModal.insertRegardless")
+                      : t("uploadConceptListModal.insertNode")}
+                  </Button>
+                </ModalFooter>
               </form>
             </>
           )}
         </div>
-      </div>
+      </ModalBody>
     </Modal>
   );
 };

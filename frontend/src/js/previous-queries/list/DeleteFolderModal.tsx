@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 
-import DeleteModal from "../../modal/DeleteModal";
+import { DeleteModal } from "../../ui-components/DeleteModal";
 
 import { useDeleteProjectItemFolder } from "./useDeleteProjectItemFolder";
 
