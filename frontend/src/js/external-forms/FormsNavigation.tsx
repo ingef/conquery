@@ -2,13 +2,13 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
 import { useActiveLang } from "../localization/useActiveLang";
-import { ConfirmableTooltip } from "../ui-components/ConfirmableTooltip";
+import { Button } from "../ui-components/Button";
+import { ConfirmMenu } from "../ui-components/ConfirmMenu";
+import { Icon } from "../ui-components/Icon";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { setExternalForm } from "./actions";
 import type { Form } from "./config-types";
@@ -72,18 +72,22 @@ const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
             }
           }}
         />
-        <ConfirmableTooltip
-          onConfirm={onReset}
-          confirmationText={t("externalForms.common.clearConfirm")}
-        >
-          <WithTooltip text={t("externalForms.common.clear")}>
-            <IconButton
-              className="ml-[10px] shrink-0 px-[10px] py-[7px]"
-              frame
-              icon={faTrash}
-            />
-          </WithTooltip>
-        </ConfirmableTooltip>
+        <div className="ml-[10px]">
+          <TooltipTrigger>
+            <ConfirmMenu
+              onConfirm={onReset}
+              confirmationText={t("externalForms.common.clearConfirm")}
+            >
+              <Button
+                aria-label={t("externalForms.common.clear")}
+                intent="secondary"
+              >
+                <Icon icon={faTrash} />
+              </Button>
+            </ConfirmMenu>
+            <Tooltip>{t("externalForms.common.clear")}</Tooltip>
+          </TooltipTrigger>
+        </div>
       </div>
     </div>
   );

@@ -13,8 +13,8 @@ import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { getEnding } from "../query-runner/DownloadResultsDropdownButton";
-
-import IconButton, { type IconButtonPropsT } from "./IconButton";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 
 const link = tv({ base: "leading-none" });
 
@@ -31,7 +31,7 @@ const fileTypeToFileIcon: Record<string, FileIcon> = {
   JSON: { icon: faFileCode, color: "var(--color-filetype-json)" },
 };
 
-function getFileIcon(url: string): FileIcon {
+export function getFileIcon(url: string): FileIcon {
   if (url.includes(".")) {
     const ext = getEnding(url);
 
@@ -43,12 +43,11 @@ function getFileIcon(url: string): FileIcon {
   return { icon: faFileDownload };
 }
 
-interface Props extends Omit<IconButtonPropsT, "icon" | "onClick"> {
+interface Props {
   resultUrl: ResultUrlWithLabel;
   className?: string;
   children?: ReactNode;
   simpleIcon?: boolean;
-  onClick?: () => void;
   showColoredIcon?: boolean;
 }
 
@@ -58,9 +57,7 @@ const DownloadButton = ({
   resultUrl,
   className,
   children,
-  onClick,
   showColoredIcon,
-  ...restProps
 }: Props & { ref?: Ref<HTMLAnchorElement> }) => {
   const { authToken } = useContext(AuthTokenContext);
 
@@ -70,16 +67,13 @@ const DownloadButton = ({
 
   return (
     <a href={href} className={link({ className })} ref={ref}>
-      <IconButton
-        {...restProps}
-        className="whitespace-nowrap"
-        large
-        icon={simpleIcon ? faDownload : icon}
-        onClick={onClick}
-        iconColor={showColoredIcon ? color : undefined}
-      >
+      <Button intent="link">
+        <Icon
+          icon={simpleIcon ? faDownload : icon}
+          style={{ color: showColoredIcon ? color : undefined }}
+        />
         {children}
-      </IconButton>
+      </Button>
     </a>
   );
 };

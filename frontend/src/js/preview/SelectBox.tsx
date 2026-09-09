@@ -2,7 +2,7 @@ import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { type SetStateAction, useMemo, useRef, useState } from "react";
 import { tv } from "tailwind-variants";
 import { useClickOutside } from "../common/helpers/useClickOutside";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
 import { Input } from "../ui-components/InputSelect/InputSelectComponents";
 
 export interface SelectItem {
@@ -42,7 +42,7 @@ const listItem = tv({
 });
 
 const arrow = tv({
-  base: ["mt-[5px]", "text-[17px]", "text-gray-500", "cursor-pointer"],
+  base: ["mt-[5px]", "size-[17px]", "text-gray-500", "cursor-pointer"],
 });
 
 export default function SelectBox<T extends SelectItem>({
@@ -89,7 +89,7 @@ export default function SelectBox<T extends SelectItem>({
           spellCheck={false}
         />
         <div className="mr-[5px]">
-          <FaIcon className={arrow()} icon={isOpen ? faCaretUp : faCaretDown} />
+          <Icon icon={isOpen ? faCaretUp : faCaretDown} className={arrow()} />
         </div>
       </div>
       <div className={list()} ref={clickOutsideRef}>

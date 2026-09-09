@@ -1,9 +1,7 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import { DestroyButton } from "../button/DestroyButton";
-import { TransparentButton } from "../button/TransparentButton";
+import { Button } from "../ui-components/Button";
 
 import Modal from "./Modal";
 
@@ -31,10 +29,14 @@ const DeleteModal = ({
       <div className="max-w-[400px]">
         {description && <p className="mb-5">{description}</p>}
         <div className={buttons()}>
-          <TransparentButton className="mx-[10px]" onClick={onClose}>
-            {t("common.cancel")}
-          </TransparentButton>
-          <DestroyButton onClick={onDelete}>{t("common.delete")}</DestroyButton>
+          <div className="mx-[10px]">
+            <Button intent="secondary" onPress={onClose}>
+              {t("common.cancel")}
+            </Button>
+          </div>
+          <Button intent="secondary" danger onPress={onDelete}>
+            {t("common.delete")}
+          </Button>
         </div>
       </div>
     </Modal>

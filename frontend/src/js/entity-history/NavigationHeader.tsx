@@ -3,13 +3,13 @@ import { type Dispatch, memo, type SetStateAction, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
 import ProgressBar from "../common/components/ProgressBar";
 import { Heading3 } from "../headings/Headings";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { SettingsModal } from "./SettingsModal";
 
@@ -87,12 +87,16 @@ export const NavigationHeader = memo(
             </Heading3>
             <p className={specialText()}>{t("history.history")}</p>
           </div>
-          <WithTooltip text={t("history.settings.headline")}>
-            <IconButton
-              icon={faSliders}
-              onClick={() => setSettingsModalOpen(true)}
-            />
-          </WithTooltip>
+          <TooltipTrigger>
+            <Button
+              aria-label={t("history.settings.headline")}
+              intent="tertiary"
+              onPress={() => setSettingsModalOpen(true)}
+            >
+              <Icon icon={faSliders} />
+            </Button>
+            <Tooltip>{t("history.settings.headline")}</Tooltip>
+          </TooltipTrigger>
         </div>
         <div className="grid gap-x-2 grid-cols-[auto_1fr] items-center">
           <Heading3 className={heading({ end: true })}>{idsCount}</Heading3>

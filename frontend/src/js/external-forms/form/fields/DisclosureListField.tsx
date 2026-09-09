@@ -4,15 +4,13 @@ import {
   faChevronRight,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { type ComponentProps, useEffect, useState } from "react";
 import { useFieldArray } from "react-hook-form";
 import { tv } from "tailwind-variants";
-import IconButton from "../../../button/IconButton";
-import { TransparentButton } from "../../../button/TransparentButton";
 import { exists } from "../../../common/helpers/exists";
 import { usePrevious } from "../../../common/helpers/usePrevious";
-import FaIcon from "../../../icon/FaIcon";
+import { Button } from "../../../ui-components/Button";
+import { Icon } from "../../../ui-components/Icon";
 import InfoTooltip from "../../../ui-components/InfoTooltip";
 import type { DisclosureListField as DisclosureListFieldT } from "../../config-types";
 import {
@@ -75,7 +73,7 @@ const DisclosureField = ({
       <summary className={summary()}>
         <div className="flex items-center gap-3">
           <span className="w-5">
-            <FaIcon icon={isOpen ? faChevronDown : faChevronRight} />
+            <Icon icon={isOpen ? faChevronDown : faChevronRight} />
           </span>
           {field.label[locale]}
           {exists(field.tooltip) && (
@@ -83,11 +81,11 @@ const DisclosureField = ({
           )}
         </div>
         {field.creatable && canRemove && (
-          <IconButton
-            className="absolute right-0 top-1/2 -translate-y-1/2"
-            icon={faTimes}
-            onClick={() => remove(index)}
-          />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2">
+            <Button size="sm" intent="tertiary" onPress={() => remove(index)}>
+              <Icon icon={faTimes} />
+            </Button>
+          </div>
         )}
       </summary>
       <div className="flex flex-col gap-2 bg-bg-50 border-t border-gray-300 p-3">
@@ -223,27 +221,29 @@ export const DisclosureListField = ({
         />
       ))}
       {field.creatable && (
-        <TransparentButton
-          className="w-full flex items-center justify-center gap-2"
-          small
-          onClick={() => {
-            append(
-              Object.fromEntries(
-                field.fields.filter(isFormFieldWithValue).map((f) => [
-                  f.name,
-                  getInitialValue(f, {
-                    activeLang: locale,
-                    availableDatasets: commonProps.availableDatasets,
-                    datasetId,
-                  }),
-                ]),
-              ),
-            );
-          }}
-        >
-          <FontAwesomeIcon icon={faAdd} />
-          {field.createNewLabel ? field.createNewLabel[locale] : undefined}
-        </TransparentButton>
+        <div className="grid">
+          <Button
+            intent="secondary"
+            size="sm"
+            onPress={() => {
+              append(
+                Object.fromEntries(
+                  field.fields.filter(isFormFieldWithValue).map((f) => [
+                    f.name,
+                    getInitialValue(f, {
+                      activeLang: locale,
+                      availableDatasets: commonProps.availableDatasets,
+                      datasetId,
+                    }),
+                  ]),
+                ),
+              );
+            }}
+          >
+            <Icon icon={faAdd} />
+            {field.createNewLabel ? field.createNewLabel[locale] : undefined}
+          </Button>
+        </div>
       )}
     </div>
   );

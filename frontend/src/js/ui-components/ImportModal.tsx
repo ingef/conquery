@@ -1,24 +1,16 @@
 import { faFile, faPaste } from "@fortawesome/free-solid-svg-icons";
-import {
-  type ChangeEvent,
-  type MouseEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import IconButton from "../button/IconButton";
-import PrimaryButton from "../button/PrimaryButton";
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
 import Modal from "../modal/Modal";
-
+import { Button } from "./Button";
 import DropzoneWithFileInput, {
   type DragItemFile,
 } from "./DropzoneWithFileInput";
+import { Icon } from "./Icon";
 
 const content = tv({
   base: ["flex flex-col", "gap-5"],
@@ -75,11 +67,7 @@ export const ImportModal = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const onSubmitClick = (
-    e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>,
-  ) => {
-    e.stopPropagation();
-
+  const onSubmitClick = () => {
     const lines = textInput
       .split("\n")
       .map((line) => line.trim())
@@ -175,20 +163,23 @@ export const ImportModal = ({
           )}
         </DropzoneWithFileInput>
         <div className={row()}>
-          <IconButton icon={faFile} onClick={onOpenFileDialog}>
+          <Button intent="tertiary" onPress={onOpenFileDialog}>
+            <Icon icon={faFile} />
             {t("common.openFileDialog")}
-          </IconButton>
+          </Button>
           {canReadClipboard && (
-            <IconButton icon={faPaste} onClick={onPasteClick}>
+            <Button intent="tertiary" onPress={onPasteClick}>
+              <Icon icon={faPaste} />
               {t("importModal.paste")}
-            </IconButton>
+            </Button>
           )}
-          <PrimaryButton
-            disabled={textInput.length === 0}
-            onClick={onSubmitClick}
+          <Button
+            intent="primary"
+            isDisabled={textInput.length === 0}
+            onPress={onSubmitClick}
           >
             {t("importModal.submit")}
-          </PrimaryButton>
+          </Button>
         </div>
         <input
           className="hidden"

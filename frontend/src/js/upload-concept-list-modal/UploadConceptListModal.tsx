@@ -14,7 +14,6 @@ import {
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import {
   usePostConceptsListToResolve,
   usePostFilterValuesResolve,
@@ -29,11 +28,11 @@ import type {
   SelectOptionT,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
-import PrimaryButton from "../button/PrimaryButton";
-import FaIcon from "../icon/FaIcon";
 import Modal from "../modal/Modal";
 import { nodeIsElement } from "../model/node";
 import ScrollableList from "../scrollable-list/ScrollableList";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 import InputCheckbox from "../ui-components/InputCheckbox";
 import InputPlain from "../ui-components/InputPlain/InputPlain";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
@@ -494,22 +493,22 @@ const UploadConceptListModal = ({
         <div className="mt-[15px] grid gap-5">
           {error && (
             <div className="flex items-center">
-              <FaIcon
-                className={bigIcon({ kind: "error" })}
+              <Icon
                 icon={faExclamationCircle}
+                className={bigIcon({ kind: "error" })}
               />
               {t("uploadConceptListModal.error")}
             </div>
           )}
-          {loading && <FaIcon className="text-center" icon={faSpinner} />}
+          {loading && <Icon icon={faSpinner} className="text-center" />}
           {(!!resolvedConcepts || !!resolvedFilters) && (
             <>
               {hasUnresolvedItems && (
                 <div>
                   <p className="m-0">
-                    <FaIcon
-                      className={bigIcon({ kind: "error" })}
+                    <Icon
                       icon={faExclamationCircle}
+                      className={bigIcon({ kind: "error" })}
                     />
                     <span>
                       {t("uploadConceptListModal.unknownCodes", {
@@ -537,9 +536,9 @@ const UploadConceptListModal = ({
                 <div>
                   {hasResolvedItems && (
                     <>
-                      <FaIcon
-                        className={bigIcon({ kind: "success" })}
+                      <Icon
                         icon={faCheckCircle}
+                        className={bigIcon({ kind: "success" })}
                       />
                       {t("uploadConceptListModal.resolvedCodes", {
                         count: resolvedItemsCount,
@@ -571,15 +570,11 @@ const UploadConceptListModal = ({
                     label={t("uploadConceptListModal.includeUnresolved")}
                   />
                 )}
-                <PrimaryButton
-                  className="shrink-0"
-                  type="submit"
-                  data-test-id="insert"
-                >
+                <Button intent="primary" type="submit" data-test-id="insert">
                   {mustIncludeUnresolved
                     ? t("uploadConceptListModal.insertRegardless")
                     : t("uploadConceptListModal.insertNode")}
-                </PrimaryButton>
+                </Button>
               </form>
             </>
           )}

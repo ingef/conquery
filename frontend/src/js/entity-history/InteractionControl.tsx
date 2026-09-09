@@ -1,9 +1,9 @@
 import { faChevronRight, faHome } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-
-import IconButton from "../button/IconButton";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const InteractionControl = ({
   onCloseAll,
@@ -16,12 +16,26 @@ const InteractionControl = ({
 
   return (
     <div className="flex flex-col items-center">
-      <WithTooltip text={t("history.closeAll")}>
-        <IconButton onClick={onCloseAll} icon={faHome} />
-      </WithTooltip>
-      <WithTooltip text={t("history.openAll")}>
-        <IconButton onClick={onOpenAll} icon={faChevronRight} />
-      </WithTooltip>
+      <TooltipTrigger>
+        <Button
+          intent="tertiary"
+          aria-label={t("history.closeAll")}
+          onPress={onCloseAll}
+        >
+          <Icon icon={faHome} />
+        </Button>
+        <Tooltip placement="right">{t("history.closeAll")}</Tooltip>
+      </TooltipTrigger>
+      <TooltipTrigger>
+        <Button
+          intent="tertiary"
+          aria-label={t("history.openAll")}
+          onPress={onOpenAll}
+        >
+          <Icon icon={faChevronRight} />
+        </Button>
+        <Tooltip placement="right">{t("history.openAll")}</Tooltip>
+      </TooltipTrigger>
     </div>
   );
 };

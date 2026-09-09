@@ -6,8 +6,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { ConceptIdT, ConceptT } from "../api/types";
-import IconButton from "../button/IconButton";
-import FaIcon from "../icon/FaIcon";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 import ConceptTreeNode from "./ConceptTreeNode";
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
 import type { SearchT } from "./reducer";
@@ -46,7 +46,7 @@ const ConceptTree = ({
     return (
       <p className={message()} style={{ paddingLeft: 24 + depth * 15 }}>
         <span className="mr-[6px]">
-          <FaIcon icon={faSpinner} />
+          <Icon icon={faSpinner} />
         </span>
         <span>{label}</span>
       </p>
@@ -57,12 +57,14 @@ const ConceptTree = ({
         className={message({ error: true })}
         style={{ paddingLeft: 12 + depth * 15 }}
       >
-        <IconButton
-          className="py-0 pr-[7px] pl-3"
-          red
-          icon={faRedo}
-          onClick={() => onLoadTree(conceptId)}
-        />
+        <Button
+          intent="tertiary"
+          size="sm"
+          danger
+          onPress={() => onLoadTree(conceptId)}
+        >
+          <Icon icon={faRedo} />
+        </Button>
         {t("conceptTreeList.error", { tree: label })}
       </p>
     );

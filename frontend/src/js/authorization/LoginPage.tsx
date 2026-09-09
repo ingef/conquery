@@ -5,9 +5,9 @@ import { useNavigate } from "react-router";
 import { tv } from "tailwind-variants";
 import { usePostLogin } from "../api/api";
 import { useAppTheme } from "../app-theme-context";
-import PrimaryButton from "../button/PrimaryButton";
 import ErrorMessage from "../error-message/ErrorMessage";
-import FaIcon from "../icon/FaIcon";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 import InputPlain from "../ui-components/InputPlain/InputPlain";
 
 import { AuthTokenContext } from "./AuthTokenProvider";
@@ -21,7 +21,7 @@ const wrap = tv({
 });
 
 const logo = tv({
-  base: ["h-[35px]", "bg-no-repeat", "[background-position-y:50%]"],
+  base: ["h-9", "bg-no-repeat", "[background-position-y:50%]"],
 });
 
 const headline = tv({
@@ -42,9 +42,7 @@ const form = tv({
   ],
 });
 
-const submitButton = tv({
-  base: ["flex items-center justify-center", "mt-[35px]", "w-[255px]"],
-});
+const submitButton = tv({ base: ["grid", "mt-[35px]", "w-[255px]"] });
 
 const LoginPage = () => {
   const [user, setUser] = useState("");
@@ -115,20 +113,20 @@ const LoginPage = () => {
               disabled: loading,
             }}
           />
-          <PrimaryButton
-            className={submitButton()}
-            disabled={!user || !password}
-            large
-            type="submit"
-          >
-            <FaIcon
-              className="mr-[10px]"
-              large
-              white
-              icon={loading ? faSpinner : faCheck}
-            />
-            {t("login.submit")}
-          </PrimaryButton>
+          <div className={submitButton()}>
+            <Button
+              intent="primary"
+              isDisabled={!user || !password}
+              size="lg"
+              type="submit"
+            >
+              <Icon
+                icon={loading ? faSpinner : faCheck}
+                className="text-white"
+              />
+              {t("login.submit")}
+            </Button>
+          </div>
         </form>
       </div>
     </div>

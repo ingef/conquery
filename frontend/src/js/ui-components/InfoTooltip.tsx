@@ -2,9 +2,14 @@ import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
 import type { ReactElement } from "react";
 import { tv } from "tailwind-variants";
 
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "./Icon";
 
-import WithTooltip from "./WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+  tooltipDelay,
+} from "./Tooltip";
 
 const icon = tv({
   base: ["transition-all duration-100", "hover:text-gray-800"],
@@ -24,11 +29,25 @@ const InfoTooltip = ({
   wide?: boolean;
 }) => {
   return (
-    <WithTooltip text={text} html={html} wide={wide}>
-      <span className={spanContainer({ className })}>
-        <FaIcon className={icon()} gray icon={faQuestionCircle} />
-      </span>
-    </WithTooltip>
+    <TooltipTrigger delay={tooltipDelay.immediate}>
+      <TooltipTarget
+        role="img"
+        aria-label="Info"
+        className={spanContainer({ className })}
+      >
+        <Icon icon={faQuestionCircle} className={[icon(), "text-gray-500"]} />
+      </TooltipTarget>
+      <Tooltip wide={wide}>
+        {text ? (
+          <span
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: help texts come from form configs and the backend, which may use markup
+            dangerouslySetInnerHTML={{ __html: text }}
+          />
+        ) : (
+          html
+        )}
+      </Tooltip>
+    </TooltipTrigger>
   );
 };
 

@@ -10,9 +10,9 @@ import remarkFlexibleMarkers from "remark-flexible-markers";
 import remarkGfm from "remark-gfm";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
 import { Highlighter } from "../common/components/Highlighter";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
+import { ToggleButton } from "../ui-components/ToggleButton";
 import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import InfoPaneCollapsed from "./InfoPaneCollapsed";
 import { InfoPaneHeader } from "./InfoPaneHeader";
@@ -50,13 +50,14 @@ const head = tv({
 
 const typeIcon = tv({ base: ["mt-px", "mr-[6px]", "text-primary-500"] });
 
-const tackButton = tv({
-  // inline-flex to remove some height that seemed to be added
-  base: ["inline-flex", "ml-[5px]"],
-});
-
 const pinnedLabel = tv({
-  base: ["flex flex-row items-start", "m-0", "leading-[1.2]", "text-sm"],
+  base: [
+    "flex flex-row items-start",
+    "gap-[5px]",
+    "m-0",
+    "leading-[1.2]",
+    "text-sm",
+  ],
 });
 
 const descriptionText = tv({
@@ -113,7 +114,7 @@ const ConceptLabel = ({
 
   return (
     <p className={pinnedLabel()}>
-      {conceptIcon && <FaIcon className={typeIcon()} icon={conceptIcon} />}
+      {conceptIcon && <Icon icon={conceptIcon} className={typeIcon()} />}
       <span className="grow">
         {label ? (
           <HighlightedText words={words} text={label} />
@@ -187,13 +188,14 @@ const InfoPane = () => {
             conceptIcon={mainIcon}
             tackIcon={
               toggleAdditionalInfos && (
-                <IconButton
-                  className={tackButton()}
-                  bare
-                  active
-                  onClick={onToggleAdditionalInfos}
-                  icon={faThumbtack}
-                />
+                <ToggleButton
+                  intent="tertiary"
+                  size="sm"
+                  isSelected
+                  onChange={onToggleAdditionalInfos}
+                >
+                  <Icon icon={faThumbtack} />
+                </ToggleButton>
               )
             }
           />

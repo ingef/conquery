@@ -5,10 +5,11 @@ import {
   faInfo,
 } from "@fortawesome/free-solid-svg-icons";
 import { memo, useMemo, useState } from "react";
+import { ToggleButtonGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-
-import IconButton from "../button/IconButton";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Icon } from "../ui-components/Icon";
+import { ToggleButton } from "../ui-components/ToggleButton";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 export type ContentType =
   | "groupId"
@@ -54,23 +55,27 @@ const ContentControl = ({ value, onChange }: Props) => {
   );
 
   return (
-    <div className="flex flex-col items-center">
-      {options.map((option) => {
-        const active = value[option.key];
-        return (
-          <WithTooltip key={option.key} text={option.tooltip}>
-            <IconButton
-              icon={option.icon}
-              active={active}
-              light={!active}
-              onClick={() => {
-                onChange({ ...value, [option.key]: !value[option.key] });
-              }}
-            />
-          </WithTooltip>
-        );
-      })}
-    </div>
+    <ToggleButtonGroup
+      className="flex flex-col items-center"
+      orientation="vertical"
+      selectionMode="multiple"
+      selectedKeys={options.filter((o) => value[o.key]).map((o) => o.key)}
+      onSelectionChange={(keys) =>
+        onChange({
+          ...value,
+          ...Object.fromEntries(options.map((o) => [o.key, keys.has(o.key)])),
+        })
+      }
+    >
+      {options.map((option) => (
+        <TooltipTrigger key={option.key}>
+          <ToggleButton id={option.key} aria-label={option.tooltip}>
+            <Icon icon={option.icon} />
+          </ToggleButton>
+          <Tooltip placement="right">{option.tooltip}</Tooltip>
+        </TooltipTrigger>
+      ))}
+    </ToggleButtonGroup>
   );
 };
 

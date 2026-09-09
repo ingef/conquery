@@ -1,10 +1,8 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import { usePostPrefixForSuggestions } from "../../api/api";
 import type { SelectorResultType } from "../../api/types";
-import { TransparentButton } from "../../button/TransparentButton";
 import { DNDType } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";
 import {
@@ -16,6 +14,7 @@ import {
   nodeHasNonDefaultSettings,
 } from "../../model/node";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
+import { Button } from "../../ui-components/Button";
 import {
   isMovedObject,
   type PossibleDroppableObject,
@@ -23,7 +22,7 @@ import {
 import DropzoneWithFileInput, {
   type DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
-import ToggleButton from "../../ui-components/ToggleButton";
+import ToggleButtonGroup from "../../ui-components/ToggleButtonGroup";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 import { Description } from "../form-components/Description";
@@ -309,13 +308,15 @@ const FormConceptGroup = (props: Props) => {
           <>
             {props.label}
             {allowExtendedCopying && (
-              <TransparentButton
-                className="ml-[10px] shrink-0"
-                tiny
-                onClick={() => setIsCopyModalOpen(true)}
-              >
-                {t("externalForms.common.concept.copyFrom")}
-              </TransparentButton>
+              <span className="ml-[10px]">
+                <Button
+                  intent="secondary"
+                  size="sm"
+                  onPress={() => setIsCopyModalOpen(true)}
+                >
+                  {t("externalForms.common.concept.copyFrom")}
+                </Button>
+              </span>
             )}
           </>
         }
@@ -361,7 +362,7 @@ const FormConceptGroup = (props: Props) => {
                 <Description className={connectorDescription()}>
                   {t("externalForms.common.connectedWith")}:
                 </Description>
-                <ToggleButton
+                <ToggleButtonGroup
                   value={props.value[i].connector}
                   onChange={(val) => {
                     props.onChange(

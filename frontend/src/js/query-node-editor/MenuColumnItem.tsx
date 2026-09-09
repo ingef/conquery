@@ -2,12 +2,13 @@ import { faCheckSquare, faSquare } from "@fortawesome/free-regular-svg-icons";
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import IconButton from "../button/IconButton";
 import type { NodeResetConfig } from "../model/node";
 import { tableHasFilterValues, tableIsDisabled } from "../model/table";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
+import { ToggleButton } from "../ui-components/ToggleButton";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const container = tv({
   base: [
@@ -28,15 +29,6 @@ const container = tv({
       false: "text-gray-800",
     },
   },
-});
-
-const toggleButton = tv({
-  base: [
-    "p-0",
-    "text-xl",
-    "leading-[20px]",
-    "[&_svg]:text-xl [&_svg]:leading-[20px]",
-  ],
 });
 
 const MenuColumnItem = ({
@@ -74,13 +66,11 @@ const MenuColumnItem = ({
     // biome-ignore lint/a11y/noStaticElementInteractions: see above
     <div className={container({ disabled: isDisabled })} onClick={onClick}>
       <div className="flex items-center">
-        <IconButton
-          className={toggleButton()}
-          icon={includable ? faSquare : faCheckSquare}
-          disabled={isDisabled || (!includable && !excludable)}
-          onClick={(event) => {
+        <Button
+          intent="tertiary"
+          isDisabled={isDisabled || (!includable && !excludable)}
+          onPress={() => {
             // To prevent selecting the table as well, see above
-            event.stopPropagation();
 
             if (isDisabled) {
               return;
@@ -90,21 +80,23 @@ const MenuColumnItem = ({
               onToggleTable(!table.exclude);
             }
           }}
-        />
+          size="sm"
+        >
+          <Icon
+            icon={includable ? faSquare : faCheckSquare}
+            className="size-5"
+          />
+        </Button>
         <span className="pl-[10px] leading-[20px]">{table.label}</span>
       </div>
       {isFilterActive && (
-        <WithTooltip
-          className="flex!"
-          text={t("queryNodeEditor.clearSettings")}
-        >
-          <IconButton
-            className="p-0"
-            icon={faFilter}
-            active
-            onClick={(event) => {
+        <TooltipTrigger>
+          <ToggleButton
+            aria-label={t("queryNodeEditor.clearSettings")}
+            intent="tertiary"
+            isSelected
+            onChange={() => {
               // To prevent selecting the table as well, see above
-              event.stopPropagation();
 
               if (isDisabled) {
                 return;
@@ -112,8 +104,11 @@ const MenuColumnItem = ({
 
               onResetTable({ useDefaults: false });
             }}
-          />
-        </WithTooltip>
+          >
+            <Icon icon={faFilter} />
+          </ToggleButton>
+          <Tooltip>{t("queryNodeEditor.clearSettings")}</Tooltip>
+        </TooltipTrigger>
       )}
     </div>
   );

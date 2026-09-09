@@ -1,9 +1,9 @@
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-
-import IconButton from "../button/IconButton";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Icon } from "../ui-components/Icon";
+import { ToggleButton } from "../ui-components/ToggleButton";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const VisibilityControl = ({
   blurred,
@@ -16,13 +16,16 @@ const VisibilityControl = ({
 
   return (
     <div className="flex flex-col items-center">
-      <WithTooltip text={t("history.blurred")}>
-        <IconButton
-          className="px-[10px] py-2"
-          onClick={toggleBlurred}
-          icon={blurred ? faEyeSlash : faEye}
-        />
-      </WithTooltip>
+      <TooltipTrigger>
+        <ToggleButton
+          aria-label={t("history.blurred")}
+          isSelected={!!blurred}
+          onChange={toggleBlurred}
+        >
+          <Icon icon={blurred ? faEyeSlash : faEye} />
+        </ToggleButton>
+        <Tooltip placement="right">{t("history.blurred")}</Tooltip>
+      </TooltipTrigger>
     </div>
   );
 };

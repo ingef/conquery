@@ -1,11 +1,11 @@
 import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import type { ConceptIdT, ConceptT } from "../api/types";
-import IconButton from "../button/IconButton";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import AdditionalInfoHoverable from "../info-pane/AdditionalInfoHoverable";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 
 const concept = tv({
   base: [
@@ -58,12 +58,13 @@ const ConceptEntry = ({
         )}
       </div>
       {canRemoveConcepts && (
-        <IconButton
-          className="shrink-0"
-          onClick={() => onRemoveConcept(conceptId)}
-          tiny
-          icon={faTrashCan}
-        />
+        <Button
+          intent="tertiary"
+          size="sm"
+          onPress={() => onRemoveConcept(conceptId)}
+        >
+          <Icon icon={faTrashCan} />
+        </Button>
       )}
     </div>
   );

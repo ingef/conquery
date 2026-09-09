@@ -3,12 +3,12 @@ import { memo, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
 import { clearSearchQuery } from "../concept-trees/actions";
 import { useRootConceptIds } from "../concept-trees/useRootConceptIds";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { closeAllConceptOpen, resetAllConceptOpen } from "./actions";
 import type { ConceptTreesOpenStateT } from "./reducer";
@@ -71,23 +71,27 @@ const ConceptTreesOpenButtonsView = memo(
 
     return (
       <div className={row({ className })}>
-        <WithTooltip text={t("conceptTreesOpen.resetAll")}>
-          <IconButton
-            className="px-[6px] py-[9px]"
-            frame
-            icon={faHome}
-            onClick={onResetAllConceptOpen}
-          />
-        </WithTooltip>
-        <WithTooltip text={t("conceptTreesOpen.closeAll")}>
-          <IconButton
-            className="px-[6px] py-[9px]"
-            disabled={isCloseAllDisabled}
-            frame
-            icon={faFolderMinus}
-            onClick={onCloseAllConceptOpen}
-          />
-        </WithTooltip>
+        <TooltipTrigger>
+          <Button
+            aria-label={t("conceptTreesOpen.resetAll")}
+            intent="secondary"
+            onPress={onResetAllConceptOpen}
+          >
+            <Icon icon={faHome} />
+          </Button>
+          <Tooltip>{t("conceptTreesOpen.resetAll")}</Tooltip>
+        </TooltipTrigger>
+        <TooltipTrigger>
+          <Button
+            aria-label={t("conceptTreesOpen.closeAll")}
+            intent="secondary"
+            isDisabled={isCloseAllDisabled}
+            onPress={onCloseAllConceptOpen}
+          >
+            <Icon icon={faFolderMinus} />
+          </Button>
+          <Tooltip>{t("conceptTreesOpen.closeAll")}</Tooltip>
+        </TooltipTrigger>
       </div>
     );
   },

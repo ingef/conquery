@@ -9,16 +9,20 @@ import {
   type Ref,
   useCallback,
 } from "react";
+import { Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import type { CurrencyConfigT } from "../api/types";
-import IconButton from "../button/IconButton";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
-import FaIcon from "../icon/FaIcon";
 import CurrencyInput from "./CurrencyInput";
-import WithTooltip from "./WithTooltip";
+import { Icon } from "./Icon";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+  tooltipDelay,
+} from "./Tooltip";
 
 const root = tv({ base: "relative" });
 
@@ -28,12 +32,12 @@ const input = tv({
     "w-full",
     "border border-gray-400",
     "rounded",
-    "py-[6px] pr-[30px] pl-[10px]",
+    "h-[30px] pr-[30px] pl-[10px]",
     "text-sm",
     "font-normal",
   ],
   variants: {
-    large: { true: "py-[10px] pr-[30px] pl-[14px] text-xl" },
+    large: { true: "h-9 pr-[30px] pl-[14px] text-base" },
     disabled: { true: "opacity-50" },
   },
 });
@@ -46,13 +50,14 @@ const redIcon = tv({ base: ["opacity-80", "text-red"] });
 
 const absoluteWrap = tv({ base: "absolute top-[5px] right-[35px]" });
 
-const clearZoneIconButton = tv({
+const clearButton = tv({
   base: [
     "absolute top-0 right-[10px]",
-    "h-full",
+    "h-full px-1",
     "flex items-center",
+    "text-gray-800 hover:text-red",
     "cursor-pointer",
-    "hover:text-red",
+    "disabled:cursor-not-allowed disabled:opacity-40",
   ],
 });
 
@@ -185,30 +190,30 @@ const BaseInput = ({
       )}
       {exists(value) && !isEmpty(value) && (
         <>
-          {valid && !invalid && (
-            <FaIcon icon={faCheck} large={large} className={greenIcon()} />
-          )}
+          {valid && !invalid && <Icon icon={faCheck} className={greenIcon()} />}
           {invalid && (
-            <WithTooltip text={invalidText}>
-              <div className={absoluteWrap()}>
-                <FaIcon
-                  icon={faExclamationTriangle}
-                  large={large}
-                  className={redIcon()}
-                />
-              </div>
-            </WithTooltip>
+            <TooltipTrigger delay={tooltipDelay.immediate}>
+              <TooltipTarget
+                as="div"
+                role="img"
+                aria-label={invalidText}
+                excludeFromTabOrder
+                className={absoluteWrap()}
+              >
+                <Icon icon={faExclamationTriangle} className={redIcon()} />
+              </TooltipTarget>
+              <Tooltip>{invalidText}</Tooltip>
+            </TooltipTrigger>
           )}
-          <IconButton
-            className={clearZoneIconButton()}
-            tiny
-            icon={faTimes}
-            tabIndex={-1}
-            disabled={disabled}
-            title={t("common.clearValue")}
+          <RacButton
+            className={clearButton()}
+            excludeFromTabOrder
+            isDisabled={disabled}
             aria-label={t("common.clearValue")}
-            onClick={() => onChange(null)}
-          />
+            onPress={() => onChange(null)}
+          >
+            <Icon icon={faTimes} />
+          </RacButton>
         </>
       )}
     </div>

@@ -5,7 +5,7 @@ import { tv } from "tailwind-variants";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
 import { exists } from "../common/helpers/exists";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
 
 const container = tv({
   base: [
@@ -54,10 +54,12 @@ export const DropdownOption = memo(
           {hasDifferentFilterLabel ? (
             <IndexPrefix className={indexPrefix()}># {filterIdx}</IndexPrefix>
           ) : (
-            <FaIcon
+            <Icon
               icon={faFolder}
-              active={!hasDifferentFilterLabel}
-              gray={hasDifferentFilterLabel}
+              className={[
+                !hasDifferentFilterLabel ? "text-primary-500" : undefined,
+                hasDifferentFilterLabel ? "text-gray-500" : undefined,
+              ]}
             />
           )}
         </div>

@@ -1,26 +1,28 @@
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-import IconButton from "../../button/IconButton";
-import WithTooltip from "../../ui-components/WithTooltip";
+import { Icon } from "../../ui-components/Icon";
+import { ToggleButton } from "../../ui-components/ToggleButton";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import { useTimelineSearch } from "./timelineSearchState";
 
 const SearchControl = () => {
   const { t } = useTranslation();
 
   const { searchVisible, setSearchVisible } = useTimelineSearch();
-  const toggleSearchVisible = () => setSearchVisible(!searchVisible);
 
   return (
     <div className="flex flex-col items-center">
-      <WithTooltip text={t("history.search")}>
-        <IconButton
-          className="px-[10px] py-2"
-          active={searchVisible}
-          onClick={toggleSearchVisible}
-          icon={faSearch}
-        />
-      </WithTooltip>
+      <TooltipTrigger>
+        <ToggleButton
+          aria-label={t("history.search")}
+          isSelected={searchVisible}
+          onChange={setSearchVisible}
+        >
+          <Icon icon={faSearch} />
+        </ToggleButton>
+        <Tooltip placement="right">{t("history.search")}</Tooltip>
+      </TooltipTrigger>
     </div>
   );
 };

@@ -13,8 +13,12 @@ import type {
 } from "../../api/types";
 import { Highlighter } from "../../common/components/Highlighter";
 import { exists } from "../../common/helpers/exists";
-import FaIcon from "../../icon/FaIcon";
-import WithTooltip from "../../ui-components/WithTooltip";
+import { Icon } from "../../ui-components/Icon";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../../ui-components/Tooltip";
 import type { ContentFilterValue } from "../ContentControl";
 import { RowDates } from "../RowDates";
 import type { DateRow, EntityEvent } from "../reducer";
@@ -70,8 +74,7 @@ const rawDataBadge = tv({
 });
 
 const bucketIcon = tv({
-  // w-6! beats FaIcon's own w-[initial]! via merge, like the old !important did
-  base: ["w-6!", "text-center", "mx-[5px] my-2", "text-base"],
+  base: ["w-6", "mx-[5px] my-2"],
 });
 
 const bullet = tv({
@@ -140,16 +143,19 @@ const EventCard = ({
       <div className={eventItemContent()}>
         {contentFilter.money && applicableMoney.length > 0 && (
           <div className={flex()}>
-            <WithTooltip text={moneyTooltip}>
-              <span>
-                <FaIcon
-                  className={bucketIcon()}
+            <TooltipTrigger>
+              <TooltipTarget
+                role="img"
+                aria-label={moneyTooltip}
+                excludeFromTabOrder
+              >
+                <Icon
                   icon={faEuroSign}
-                  active
-                  large
+                  className={[bucketIcon(), "text-primary-500"]}
                 />
-              </span>
-            </WithTooltip>
+              </TooltipTarget>
+              <Tooltip>{moneyTooltip}</Tooltip>
+            </TooltipTrigger>
             <div className={colBucket()}>
               {applicableMoney.map((column) => (
                 <div key={column.label}>
@@ -183,11 +189,19 @@ const EventCard = ({
         )}
         {contentFilter.rest && applicableRest.length > 0 && (
           <div className={flex()}>
-            <WithTooltip text={restTooltip}>
-              <span>
-                <FaIcon className={bucketIcon()} icon={faInfo} active large />
-              </span>
-            </WithTooltip>
+            <TooltipTrigger>
+              <TooltipTarget
+                role="img"
+                aria-label={restTooltip}
+                excludeFromTabOrder
+              >
+                <Icon
+                  icon={faInfo}
+                  className={[bucketIcon(), "text-primary-500"]}
+                />
+              </TooltipTarget>
+              <Tooltip>{restTooltip}</Tooltip>
+            </TooltipTrigger>
             <div className={colBucket()}>
               {applicableRest.map((column) => (
                 <div key={column.label}>
@@ -209,16 +223,19 @@ const EventCard = ({
         )}
         {contentFilter.groupId && applicableGroupableIds.length > 0 && (
           <div className={flex()}>
-            <WithTooltip text={groupableIdsTooltip}>
-              <span>
-                <FaIcon
-                  className={bucketIcon()}
+            <TooltipTrigger>
+              <TooltipTarget
+                role="img"
+                aria-label={groupableIdsTooltip}
+                excludeFromTabOrder
+              >
+                <Icon
                   icon={faFingerprint}
-                  active
-                  large
+                  className={[bucketIcon(), "text-primary-500"]}
                 />
-              </span>
-            </WithTooltip>
+              </TooltipTarget>
+              <Tooltip>{groupableIdsTooltip}</Tooltip>
+            </TooltipTrigger>
             <div className={colBucket()}>
               {applicableGroupableIds.map((column) => (
                 <div key={column.label}>

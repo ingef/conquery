@@ -4,12 +4,11 @@ import { useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import type { DateRangeT } from "../../api/types";
-import IconButton from "../../button/IconButton";
 import type { DateStringMinMax } from "../../common/helpers/dateHelper";
-import FaIcon from "../../icon/FaIcon";
 import Modal from "../../modal/Modal";
+import { Button } from "../../ui-components/Button";
+import { Icon } from "../../ui-components/Icon";
 import InputCheckbox from "../../ui-components/InputCheckbox";
 import InputDateRange from "../../ui-components/InputDateRange";
 
@@ -21,10 +20,6 @@ const sectionHeadline = tv({
     "text-base",
     "font-normal",
   ],
-});
-
-const resetAll = tv({
-  base: ["ml-5", "text-primary-500", "font-bold"],
 });
 
 export const DateModal = ({
@@ -54,14 +49,12 @@ export const DateModal = ({
 
   const labelSuffix = useMemo(() => {
     return hasActiveDate ? (
-      <IconButton
-        className={resetAll()}
-        bare
-        onClick={onResetDates}
-        icon={faUndo}
-      >
-        {t("queryNodeEditor.reset")}
-      </IconButton>
+      <span className="ml-5">
+        <Button intent="link" onPress={onResetDates}>
+          <Icon icon={faUndo} />
+          {t("queryNodeEditor.reset")}
+        </Button>
+      </span>
     ) : null;
   }, [t, hasActiveDate, onResetDates]);
 
@@ -99,7 +92,7 @@ export const DateModal = ({
         />
         <div>
           <p className={sectionHeadline()}>
-            <FaIcon icon={faCalendarMinus} red />
+            <Icon icon={faCalendarMinus} className="text-red" />
             {t("queryNodeEditor.excludeTimestamps")}
             <InputCheckbox
               label=""

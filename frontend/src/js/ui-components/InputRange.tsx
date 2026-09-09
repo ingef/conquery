@@ -1,12 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import type { CurrencyConfigT } from "../api/types";
 import { exists } from "../common/helpers/exists";
-
 import InputPlain from "./InputPlain/InputPlain";
 import InputRangeHeader from "./InputRangeHeader";
-import ToggleButton from "./ToggleButton";
+import ToggleButtonGroup from "./ToggleButtonGroup";
 
 const container = tv({ base: ["flex flex-row", "w-full", "-mt-[3px]"] });
 
@@ -119,7 +117,7 @@ const InputRange = ({
         unit={unit}
         tooltip={tooltip}
       />
-      <ToggleButton
+      <ToggleButtonGroup
         value={mode || "range"}
         onChange={(mode) => onSwitchMode(mode as ModeT)}
         options={[

@@ -1,18 +1,20 @@
 import type { ComponentProps } from "react";
+import { Button as RacButton } from "react-aria-components";
 import { tv } from "tailwind-variants";
-
-import IconButton from "../../button/IconButton";
 
 import SelectListOption from "./SelectListOption";
 
 const control = tv({
   base: [
-    "flex items-start",
+    "flex items-center",
+    "min-h-[30px]",
     "overflow-hidden",
     "rounded-[4px]",
     "border border-gray-500",
     "bg-white",
-    "py-1 pr-[3px] pl-2",
+    // 2 px + the 24 px buttons + the border fill the 30 px exactly; wrapped
+    // lines of chips keep off the edges
+    "py-0.5 pr-[3px] pl-2",
     "focus:outline focus:outline-1 focus:outline-black",
   ],
   variants: {
@@ -112,23 +114,32 @@ export const Input = ({ className, ...props }: ComponentProps<"input">) => (
   <input className={input({ className })} {...props} />
 );
 
-const dropdownToggleButton = tv({ base: "py-[2px] pr-1 pl-[6px]" });
+// the select box's own small square buttons
+const adornment = tv({
+  base: [
+    "inline-flex items-center justify-center",
+    "size-6 shrink-0",
+    "rounded",
+    "text-gray-800",
+    "cursor-pointer",
+    "hover:bg-gray-50",
+    "disabled:cursor-not-allowed disabled:opacity-40",
+  ],
+});
 
 export const DropdownToggleButton = ({
   className,
   ...props
-}: ComponentProps<typeof IconButton>) => (
-  <IconButton className={dropdownToggleButton({ className })} {...props} />
-);
-
-const resetButton = tv({ base: ["w-[26px]", "px-2 py-[2px]"] });
+}: Omit<ComponentProps<typeof RacButton>, "className"> & {
+  className?: string;
+}) => <RacButton {...props} className={adornment({ className })} />;
 
 export const ResetButton = ({
   className,
   ...props
-}: ComponentProps<typeof IconButton>) => (
-  <IconButton className={resetButton({ className })} {...props} />
-);
+}: Omit<ComponentProps<typeof RacButton>, "className"> & {
+  className?: string;
+}) => <RacButton {...props} className={adornment({ className })} />;
 
 const verticalSeparator = tv({
   base: ["self-stretch", "shrink-0", "w-px", "my-[3px]", "bg-gray-100"],

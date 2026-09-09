@@ -1,9 +1,8 @@
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-
-import { TransparentButton } from "../button/TransparentButton";
 import type { NodeResetConfig } from "../model/node";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Button } from "../ui-components/Button";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import ResetAllSettingsButton from "./ResetAllSettingsButton";
 
@@ -23,18 +22,19 @@ const ResetAndClose = ({
   const { t } = useTranslation();
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center gap-4">
       {showClearReset && (
         <ResetAllSettingsButton
           onClick={() => onResetAllSettings({ useDefaults: false })}
           compact={isCompact}
         />
       )}
-      <WithTooltip text={t("common.saveAndCloseEsc")}>
-        <TransparentButton small onClick={onClose}>
+      <TooltipTrigger>
+        <Button intent="secondary" onPress={onClose}>
           {t("common.save")}
-        </TransparentButton>
-      </WithTooltip>
+        </Button>
+        <Tooltip>{t("common.saveAndCloseEsc")}</Tooltip>
+      </TooltipTrigger>
     </div>
   );
 };

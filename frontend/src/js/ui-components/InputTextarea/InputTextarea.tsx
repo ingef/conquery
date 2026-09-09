@@ -1,9 +1,10 @@
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import type { DetailedHTMLProps, Ref, TextareaHTMLAttributes } from "react";
+import { Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
+import { Icon } from "../Icon";
 
-import IconButton from "../../button/IconButton";
 import Labeled from "../Labeled";
 
 const textarea = tv({
@@ -17,11 +18,12 @@ const textarea = tv({
   ],
 });
 
-const clearZoneIconButton = tv({
+const clearButton = tv({
   base: [
     "absolute top-0 right-[10px]",
-    "h-[30px]",
+    "h-[30px] px-1",
     "flex items-center",
+    "text-gray-800 hover:text-red",
     "cursor-pointer",
   ],
 });
@@ -70,15 +72,14 @@ export const InputTextarea = ({
           value={props.value || ""}
         />
         {props.value && (
-          <IconButton
-            className={clearZoneIconButton()}
-            tiny
-            icon={faTimes}
-            tabIndex={-1}
-            title={t("common.clearValue")}
+          <RacButton
+            className={clearButton()}
+            excludeFromTabOrder
             aria-label={t("common.clearValue")}
-            onClick={() => onChange(null)}
-          />
+            onPress={() => onChange(null)}
+          >
+            <Icon icon={faTimes} />
+          </RacButton>
         )}
       </div>
     </Labeled>

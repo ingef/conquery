@@ -3,15 +3,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { StateT } from "../../app/reducers";
-import IconButton from "../../button/IconButton";
 import { DNDType } from "../../common/constants/dndTypes";
 import { useResizeObserver } from "../../common/helpers/useResizeObserver";
 import type { DragItemFormConfig } from "../../external-forms/types";
 import type { DragItemQuery } from "../../standard-query-editor/types";
+import { Button } from "../../ui-components/Button";
 import Dropzone from "../../ui-components/Dropzone";
-import WithTooltip from "../../ui-components/WithTooltip";
+import { Icon } from "../../ui-components/Icon";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import {
   removeFolderFromFilter,
   setFolderFilter,
@@ -39,15 +39,13 @@ const root = tv({
   base: ["flex flex-col items-start", "shrink-0", "h-full", "overflow-hidden"],
 });
 
-// hidden until the surrounding folder dropzone (group/folder) is hovered
+// shown while the surrounding folder dropzone (group/folder) is hovered;
+// invisible rather than hidden, so it keeps its layout and its tooltip stays anchored
 const deleteButton = tv({
   base: [
     "absolute top-0 right-0",
-    "hidden group-hover/folder:block",
+    "invisible group-hover/folder:visible",
     "bg-bg-50",
-    "px-2 py-[2px]",
-    "opacity-100",
-    "rounded-none",
   ],
 });
 
@@ -190,15 +188,14 @@ const Folders = ({ className }: { className?: string }) => {
         className="mb-3 flex w-full min-w-[100px] items-start"
         ref={parentRef}
       >
-        <IconButton
-          className="px-[6px] py-1 text-left"
-          icon={faPlus}
-          frame
-          tight
-          onClick={() => setShowAddFolderModal(true)}
+        <Button
+          intent="tertiary"
+          size="sm"
+          onPress={() => setShowAddFolderModal(true)}
         >
+          <Icon icon={faPlus} />
           {isNarrow ? t("folders.addShort") : t("folders.add")}
-        </IconButton>
+        </Button>
       </div>
       {showAddFolderModal && (
         <AddFolderModal
@@ -264,16 +261,21 @@ const Folders = ({ className }: { className?: string }) => {
                     resultCount={searchResult ? searchResult[folder] : null}
                     resultWords={searchResultWords}
                   />
-                  <WithTooltip text={t("common.delete")}>
-                    <IconButton
-                      className={deleteButton()}
-                      icon={faTimes}
-                      onClick={(e) => {
-                        setFolderToDelete(folder);
-                        e.stopPropagation();
-                      }}
-                    />
-                  </WithTooltip>
+                  <TooltipTrigger>
+                    <div className={deleteButton()}>
+                      <Button
+                        size="sm"
+                        aria-label={t("common.delete")}
+                        intent="tertiary"
+                        onPress={() => {
+                          setFolderToDelete(folder);
+                        }}
+                      >
+                        <Icon icon={faTimes} />
+                      </Button>
+                    </div>
+                    <Tooltip>{t("common.delete")}</Tooltip>
+                  </TooltipTrigger>
                 </>
               )}
             </Dropzone>

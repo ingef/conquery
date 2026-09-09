@@ -5,19 +5,13 @@ import {
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { tv } from "tailwind-variants";
+
 import type { StateT } from "../app/reducers";
 import { openPreview, useLoadPreviewData } from "../preview/actions";
-import IconButton, { type IconButtonPropsT } from "./IconButton";
+import { Button, type ButtonProps } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 
-const previewButton = tv({
-  base: ["whitespace-nowrap", "h-[35px]", "px-3 py-[5px]"],
-});
-
-const PreviewButton = ({
-  className,
-  ...buttonProps
-}: Partial<IconButtonPropsT>) => {
+const PreviewButton = (props: ButtonProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
@@ -33,11 +27,9 @@ const PreviewButton = ({
   );
 
   return (
-    <IconButton
-      className={previewButton({ className })}
-      frame
-      icon={icon}
-      onClick={async () => {
+    <Button
+      intent="secondary"
+      onPress={async () => {
         if (queryId) {
           setLoading(true);
           setTimeout(async () => {
@@ -47,10 +39,11 @@ const PreviewButton = ({
           });
         }
       }}
-      {...buttonProps}
+      {...props}
     >
+      <Icon icon={icon} />
       {t("preview.preview")}
-    </IconButton>
+    </Button>
   );
 };
 

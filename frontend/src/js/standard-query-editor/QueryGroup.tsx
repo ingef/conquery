@@ -4,7 +4,12 @@ import { tv } from "tailwind-variants";
 
 import type { DateRangeT, QueryT } from "../api/types";
 import type { PreviousQueryT } from "../previous-queries/list/reducer";
-import WithTooltip from "../ui-components/WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+  tooltipDelay,
+} from "../ui-components/Tooltip";
 
 import QueryEditorDropzone from "./QueryEditorDropzone";
 import QueryGroupActions from "./QueryGroupActions";
@@ -102,16 +107,18 @@ const QueryGroup = ({
 
   return (
     <div className="max-w-[250px] text-sm">
-      {/* block! overrides tippy's inline-block wrapper */}
-      <WithTooltip className="block!" text={t("help.editorDropzoneOr")} lazy>
-        <QueryEditorDropzone
-          key={group.elements.length + 1}
-          onDropNode={onDropNode}
-          onDropFile={dropFile}
-          onLoadPreviousQuery={onLoadPreviousQuery}
-          onImportLines={importLines}
-        />
-      </WithTooltip>
+      <TooltipTrigger delay={tooltipDelay.long}>
+        <TooltipTarget as="div" excludeFromTabOrder>
+          <QueryEditorDropzone
+            key={group.elements.length + 1}
+            onDropNode={onDropNode}
+            onDropFile={dropFile}
+            onLoadPreviousQuery={onLoadPreviousQuery}
+            onImportLines={importLines}
+          />
+        </TooltipTarget>
+        <Tooltip>{t("help.editorDropzoneOr")}</Tooltip>
+      </TooltipTrigger>
       <p className={queryOrConnector()}>{t("common.or")}</p>
       <div
         className={groupBox({ excluded: !!group.exclude })}

@@ -1,10 +1,10 @@
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-
-import IconButton from "../../button/IconButton";
-import { ConfirmableTooltip } from "../../ui-components/ConfirmableTooltip";
-import WithTooltip from "../../ui-components/WithTooltip";
+import { Button } from "../../ui-components/Button";
+import { ConfirmMenu } from "../../ui-components/ConfirmMenu";
+import { Icon } from "../../ui-components/Icon";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import { useRemoveFormConfig, useRemoveQuery } from "./actions";
 import { isFormConfig } from "./helpers";
 import type { ProjectItemT } from "./ProjectItem";
@@ -31,19 +31,18 @@ export const DeleteProjectItemButton = ({ item }: { item: ProjectItemT }) => {
   );
 
   return (
-    <ConfirmableTooltip
-      red
-      onConfirm={onDelete}
-      confirmationText={confirmationText}
-    >
-      <WithTooltip text={t("common.delete")}>
-        <IconButton
-          icon={faTimes}
-          bare
-          title="delete"
+    <TooltipTrigger>
+      <ConfirmMenu red onConfirm={onDelete} confirmationText={confirmationText}>
+        <Button
+          intent="tertiary"
+          size="sm"
+          aria-label={t("common.delete")}
           data-test-id="project-item-delete-button"
-        />
-      </WithTooltip>
-    </ConfirmableTooltip>
+        >
+          <Icon icon={faTimes} />
+        </Button>
+      </ConfirmMenu>
+      <Tooltip>{t("common.delete")}</Tooltip>
+    </TooltipTrigger>
   );
 };

@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import { DNDType } from "../common/constants/dndTypes";
-import FaIcon from "../icon/FaIcon";
 import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { getRootNodeLabel } from "../standard-query-editor/helper";
 import type {
@@ -16,7 +15,12 @@ import Dropzone, {
   type DropzoneProps,
   type PossibleDroppableObject,
 } from "../ui-components/Dropzone";
-import WithTooltip from "../ui-components/WithTooltip";
+import { Icon } from "../ui-components/Icon";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../ui-components/Tooltip";
 import { EDITOR_DROP_TYPES } from "./config";
 import { DateRange } from "./date-restriction/DateRange";
 import { Connector, Grid } from "./EditorLayout";
@@ -259,10 +263,10 @@ export function TreeNode({
           onDrop={() => {}}
         >
           {({ canDrop }) => (
-            <WithTooltip text={tooltipText}>
-              {/* biome-ignore lint/a11y/noStaticElementInteractions: TODO node selection area, emotion had hidden this */}
-              {/* biome-ignore lint/a11y/useKeyWithClickEvents: see above */}
-              <div
+            <TooltipTrigger>
+              <TooltipTarget
+                as="div"
+                excludeFromTabOrder
                 className={node({
                   isDragging: canDrop,
                   active,
@@ -297,7 +301,10 @@ export function TreeNode({
                 )}
                 {tree.dates?.excluded && (
                   <div className={dates()}>
-                    <FaIcon red icon={faCalendarMinus} left />
+                    <Icon
+                      icon={faCalendarMinus}
+                      className="mr-[10px] text-red"
+                    />
                     {t("editorV2.datesExcluded")}
                   </div>
                 )}
@@ -399,8 +406,9 @@ export function TreeNode({
                     </InvisibleDropzone>
                   </Grid>
                 )}
-              </div>
-            </WithTooltip>
+              </TooltipTarget>
+              <Tooltip>{tooltipText}</Tooltip>
+            </TooltipTrigger>
           )}
         </Dropzone>
         {droppable.h && (

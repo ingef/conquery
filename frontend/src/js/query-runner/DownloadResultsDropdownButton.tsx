@@ -1,47 +1,39 @@
 import { faCaretDown, faDownload } from "@fortawesome/free-solid-svg-icons";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useContext, useEffect, useMemo, useState } from "react";
+import { MenuTrigger, Button as RacButton } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import type { ResultUrlWithLabel } from "../api/types";
-import DownloadButton from "../button/DownloadButton";
-import IconButton from "../button/IconButton";
-import WithTooltip from "../ui-components/WithTooltip";
+import { AuthTokenContext } from "../authorization/AuthTokenProvider";
+import { getFileIcon } from "../button/DownloadButton";
+import { Icon } from "../ui-components/Icon";
+import { Menu, MenuItem } from "../ui-components/Menu";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { getUserSettings, storeUserSettings } from "../user/userSettings";
 
+// a split button: the chosen format downloads, the caret opens the list
 const frame = tv({
-  base: [
-    "flex items-center justify-center",
-    "rounded",
-    "border border-gray-500",
-    "transition-opacity duration-100",
-  ],
+  base: ["inline-flex items-stretch", "h-[30px]", "rounded", "overflow-hidden"],
   variants: {
-    noborder: { true: "border-none" },
+    bordered: { true: "border border-gray-500" },
   },
 });
 
-const list = tv({
-  base: ["flex flex-col", "gap-px", "p-2", "max-h-[60vh]", "overflow-y-auto"],
-});
-
-const downloadButton = tv({
-  base: ["[&_button]:w-full", "[&_button]:px-[14px] [&_button]:py-2"],
-});
-
-const dropdownOpenButton = tv({ base: "px-2 py-[9px]" });
-
-const separator = tv({ base: ["h-[33px] w-px", "bg-gray-500"] });
-
-const popperOptions = {
-  modifiers: [
-    {
-      name: "preventOverflow",
-      options: {
-        padding: 20,
-      },
-    },
+const part = tv({
+  base: [
+    "inline-flex items-center",
+    "gap-[10px]",
+    "h-full",
+    "text-sm font-medium text-gray-800 whitespace-nowrap",
+    "cursor-pointer",
+    "hover:bg-gray-50",
   ],
-};
+  variants: {
+    caret: { true: "px-2", false: "px-[14px]" },
+  },
+});
+
+const separator = tv({ base: ["w-px self-stretch", "bg-gray-500"] });
 
 interface FileChoice {
   label: string;
@@ -81,6 +73,8 @@ const DownloadResultsDropdownButton = ({
   tiny?: boolean;
   tooltip?: string;
 }) => {
+  const { t } = useTranslation();
+  const { authToken } = useContext(AuthTokenContext);
   const [fileChoice, setFileChoice] = useState<FileChoice>(() => {
     const initial = getInitialEndingChoice(resultUrls);
     return { label: initial.label, ending: getEnding(initial.url) };
@@ -101,59 +95,60 @@ const DownloadResultsDropdownButton = ({
     return truncate(fileChoice.label);
   }, [fileChoice]);
 
-  const dropdown = useMemo(() => {
-    return (
-      <div className={list()}>
-        {resultUrls.map((resultUrl) => {
-          const ending = getEnding(resultUrl.url);
-
-          return (
-            <DownloadButton
-              className={downloadButton()}
-              key={resultUrl.url}
-              resultUrl={resultUrl}
-              onClick={() => setFileChoice({ label: resultUrl.label, ending })}
-              bgHover
-              showColoredIcon
-            >
-              {truncate(resultUrl.label)}
-            </DownloadButton>
-          );
-        })}
-      </div>
-    );
-  }, [resultUrls]);
-
   return (
-    <div className={frame({ noborder: tiny })}>
+    <div className={frame({ bordered: !tiny })}>
       {!tiny && (
         <>
-          <DownloadButton
-            className={downloadButton()}
-            bgHover
-            resultUrl={urlChoice}
-            showColoredIcon
+          <a
+            href={`${urlChoice.url}?access_token=${encodeURIComponent(authToken)}`}
           >
-            {truncChosenLabel}
-          </DownloadButton>
+            <RacButton className={part({ caret: false })}>
+              <Icon
+                icon={getFileIcon(urlChoice.url).icon}
+                style={{ color: getFileIcon(urlChoice.url).color }}
+              />
+              {truncChosenLabel}
+            </RacButton>
+          </a>
           <div className={separator()} />
         </>
       )}
-      <WithTooltip text={tooltip} hideOnClick>
-        <WithTooltip
-          html={dropdown}
-          interactive
-          arrow={false}
-          trigger="click"
-          popperOptions={popperOptions}
-        >
-          <IconButton
-            className={dropdownOpenButton()}
-            bgHover
-            icon={tiny ? faDownload : faCaretDown}
-          />
-        </WithTooltip>
-      </WithTooltip>
+      <TooltipTrigger>
+        <MenuTrigger>
+          <RacButton aria-label={tooltip} className={part({ caret: true })}>
+            <Icon icon={tiny ? faDownload : faCaretDown} />
+          </RacButton>
+          <Menu
+            aria-label={t("previousQuery.downloadResults")}
+            onAction={(key) => {
+              const chosen = resultUrls.find(({ url }) => url === key);
+              if (chosen) {
+                setFileChoice({
+                  label: chosen.label,
+                  ending: getEnding(chosen.url),
+                });
+              }
+            }}
+          >
+            {resultUrls.map((resultUrl) => {
+              const { icon, color } = getFileIcon(resultUrl.url);
+
+              return (
+                <MenuItem
+                  key={resultUrl.url}
+                  id={resultUrl.url}
+                  href={`${resultUrl.url}?access_token=${encodeURIComponent(authToken)}`}
+                  textValue={resultUrl.label}
+                >
+                  <Icon icon={icon} style={{ color }} />
+                  {truncate(resultUrl.label)}
+                </MenuItem>
+              );
+            })}
+          </Menu>
+        </MenuTrigger>
+        <Tooltip>{tooltip}</Tooltip>
+      </TooltipTrigger>
     </div>
   );
 };

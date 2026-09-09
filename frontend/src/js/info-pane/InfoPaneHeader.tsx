@@ -1,9 +1,10 @@
 import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
+import { Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { tv } from "tailwind-variants";
-import IconButton from "../button/IconButton";
+import { Icon } from "../ui-components/Icon";
 import { toggleInfoPane } from "./actions";
 
 const header = tv({
@@ -22,8 +23,16 @@ const header = tv({
   ],
 });
 
+// as tall as the header it sits in
 const toggleButton = tv({
-  base: ["absolute top-[40px] right-0", "h-[39px]", "rounded-none"],
+  base: [
+    "absolute top-[40px] right-0",
+    "h-[39px] w-[30px]",
+    "flex items-center justify-center",
+    "text-gray-800",
+    "cursor-pointer",
+    "hover:bg-gray-50",
+  ],
 });
 
 export const InfoPaneHeader = memo(() => {
@@ -34,12 +43,9 @@ export const InfoPaneHeader = memo(() => {
 
   return (
     <>
-      <IconButton
-        className={toggleButton()}
-        bgHover
-        onClick={onToggleInfoPane}
-        icon={faAngleLeft}
-      />
+      <RacButton className={toggleButton()} onPress={onToggleInfoPane}>
+        <Icon icon={faAngleLeft} />
+      </RacButton>
       <h2 className={header()}>{t("infoPane.headline")}</h2>
     </>
   );

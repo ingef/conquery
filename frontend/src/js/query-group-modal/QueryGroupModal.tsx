@@ -2,24 +2,20 @@ import { faUndo } from "@fortawesome/free-solid-svg-icons";
 import { Fragment, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
 import type { DateStringMinMax } from "../common/helpers/dateHelper";
 import Modal from "../modal/Modal";
 import { nodeIsConceptQueryNode } from "../model/node";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type { QueryGroupType } from "../standard-query-editor/types";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 import InputDateRange from "../ui-components/InputDateRange";
 
 import {
   queryGroupModalResetAllDates,
   queryGroupModalSetDate,
 } from "./actions";
-
-const resetAll = tv({
-  base: ["text-primary-500", "font-bold", "ml-5"],
-});
 
 function findGroup(query: StandardQueryStateT, andIdx: number) {
   if (!query[andIdx]) return null;
@@ -81,14 +77,12 @@ const QueryGroupModal = ({
 
   const labelSuffix = useMemo(() => {
     return hasActiveDate ? (
-      <IconButton
-        className={resetAll()}
-        bare
-        onClick={onResetAllDates}
-        icon={faUndo}
-      >
-        {t("queryNodeEditor.reset")}
-      </IconButton>
+      <span className="ml-5">
+        <Button intent="link" onPress={onResetAllDates}>
+          <Icon icon={faUndo} />
+          {t("queryNodeEditor.reset")}
+        </Button>
+      </span>
     ) : null;
   }, [t, hasActiveDate, onResetAllDates]);
 

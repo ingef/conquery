@@ -13,15 +13,13 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
-import IconButton from "../../button/IconButton";
-import PrimaryButton from "../../button/PrimaryButton";
-import { TransparentButton } from "../../button/TransparentButton";
 import { parseCSV, toCSV } from "../../file/csv";
-import FaIcon from "../../icon/FaIcon";
 import { useActiveLang } from "../../localization/useActiveLang";
 import ScrollableList from "../../scrollable-list/ScrollableList";
+import { Button } from "../../ui-components/Button";
+import { Icon } from "../../ui-components/Icon";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
-import WithTooltip from "../../ui-components/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 
 const td = tv({
   base: "min-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap text-xs",
@@ -259,9 +257,16 @@ const CSVColumnPicker = ({
             <code className="font-bold">{file.name}</code>
             <code>{csv.length} Zeilen</code>
           </div>
-          <WithTooltip text={t("common.clear")}>
-            <IconButton frame icon={faTrash} onClick={onReset} />
-          </WithTooltip>
+          <TooltipTrigger>
+            <Button
+              aria-label={t("common.clear")}
+              intent="secondary"
+              onPress={onReset}
+            >
+              <Icon icon={faTrash} />
+            </Button>
+            <Tooltip>{t("common.clear")}</Tooltip>
+          </TooltipTrigger>
         </div>
         {csv.length > 0 && (
           <InputSelect
@@ -293,9 +298,9 @@ const CSVColumnPicker = ({
         <div className={partialUploadResults()}>
           <p className={msg()}>
             {uploadResult.resolved > 0 && (
-              <FaIcon
-                className={bigIcon({ kind: "success" })}
+              <Icon
                 icon={faCheckCircle}
+                className={bigIcon({ kind: "success" })}
               />
             )}
             {t("csvColumnPicker.resolved", { count: uploadResult.resolved })}
@@ -303,9 +308,9 @@ const CSVColumnPicker = ({
           {uploadResult.unreadableDate.length > 0 && (
             <>
               <p className={msg()}>
-                <FaIcon
-                  className={bigIcon({ kind: "error" })}
+                <Icon
                   icon={faExclamationCircle}
+                  className={bigIcon({ kind: "error" })}
                 />
                 {t("csvColumnPicker.unreadableDate", {
                   count: uploadResult.unreadableDate.length,
@@ -325,9 +330,9 @@ const CSVColumnPicker = ({
           {uploadResult.unresolvedId.length > 0 && (
             <>
               <p className={msg()}>
-                <FaIcon
-                  className={bigIcon({ kind: "error" })}
+                <Icon
                   icon={faExclamationCircle}
+                  className={bigIcon({ kind: "error" })}
                 />
                 {t("csvColumnPicker.unresolvedId", {
                   count: uploadResult.unresolvedId.length,
@@ -345,54 +350,52 @@ const CSVColumnPicker = ({
           )}
         </div>
       )}
-      <div className="mt-3 flex items-end justify-end">
+      <div className="mt-3 flex items-end justify-end gap-[10px]">
         {uploadResult &&
           (uploadResult.unreadableDate.length > 0 ||
             uploadResult.unresolvedId.length > 0) && (
-            <TransparentButton className="mr-auto" onClick={downloadUnresolved}>
-              <FaIcon icon={faDownload} />{" "}
-              {t("uploadQueryResultsModal.downloadUnresolved", {
-                count:
-                  uploadResult.unreadableDate.length +
-                  uploadResult.unresolvedId.length,
-              })}
-            </TransparentButton>
+            <div className="mr-auto">
+              <Button intent="secondary" onPress={downloadUnresolved}>
+                <Icon icon={faDownload} />
+                {t("uploadQueryResultsModal.downloadUnresolved", {
+                  count:
+                    uploadResult.unreadableDate.length +
+                    uploadResult.unresolvedId.length,
+                })}
+              </Button>
+            </div>
           )}
         {uploadResult && (
-          <PrimaryButton
-            className="ml-[10px]"
-            disabled={uploadDisabled}
-            onClick={uploadQuery}
+          <Button
+            intent="primary"
+            isDisabled={uploadDisabled}
+            onPress={uploadQuery}
           >
             {loading ? (
-              <FaIcon white icon={faSpinner} />
+              <Icon icon={faSpinner} className="text-white" />
             ) : (
-              <FaIcon white left icon={faUpload} />
+              <Icon icon={faUpload} className="mr-[10px] text-white" />
             )}{" "}
             {t("uploadQueryResultsModal.uploadAgain")}
-          </PrimaryButton>
+          </Button>
         )}
         {uploadResult ? (
-          <TransparentButton
-            className="ml-[10px]"
-            disabled={loading}
-            onClick={onCancel}
-          >
+          <Button intent="secondary" isDisabled={loading} onPress={onCancel}>
             {t("common.done")}
-          </TransparentButton>
+          </Button>
         ) : (
-          <PrimaryButton
-            className="ml-[10px]"
-            disabled={uploadDisabled}
-            onClick={uploadQuery}
+          <Button
+            intent="primary"
+            isDisabled={uploadDisabled}
+            onPress={uploadQuery}
           >
             {loading ? (
-              <FaIcon white icon={faSpinner} />
+              <Icon icon={faSpinner} className="text-white" />
             ) : (
-              <FaIcon left white icon={faUpload} />
+              <Icon icon={faUpload} className="mr-[10px] text-white" />
             )}{" "}
             {t("uploadQueryResultsModal.upload")}
-          </PrimaryButton>
+          </Button>
         )}
       </div>
     </div>

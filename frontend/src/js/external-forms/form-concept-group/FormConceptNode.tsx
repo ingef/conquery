@@ -6,14 +6,18 @@ import { useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import { getWidthAndHeight } from "../../app/DndProvider";
-import IconButton from "../../button/IconButton";
 import { canNodeBeDropped } from "../../model/node";
 import { HoverNavigatable } from "../../small-tab-navigation/HoverNavigatable";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
-import WithTooltip from "../../ui-components/WithTooltip";
+import { Button } from "../../ui-components/Button";
+import { Icon } from "../../ui-components/Icon";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../../ui-components/Tooltip";
 
 const node = tv({
   base: [
@@ -140,9 +144,8 @@ const FormConceptNode = ({
         onClick={onClick}
       >
         <div>
-          <WithTooltip text={tooltipText}>
-            {/* biome-ignore lint/complexity/noUselessFragments: WithTooltip takes a single child */}
-            <>
+          <TooltipTrigger>
+            <TooltipTarget as="div" excludeFromTabOrder>
               {rootNodeLabel && <p className={rootNode()}>{rootNodeLabel}</p>}
               <p className={labelText()}>{conceptNode?.label}</p>
               {conceptNode && !!conceptNode.description && (
@@ -150,22 +153,27 @@ const FormConceptNode = ({
                   {conceptNode.description}
                 </div>
               )}
-            </>
-          </WithTooltip>
+            </TooltipTarget>
+            <Tooltip>{tooltipText}</Tooltip>
+          </TooltipTrigger>
         </div>
         <div className="ml-[10px]">
           {expand?.expandable && (
-            <WithTooltip text={t("externalForms.common.concept.expand")}>
-              <IconButton
-                className="px-[6px] py-0"
-                icon={expand.active ? faCompressArrowsAlt : faExpandArrowsAlt}
-                tiny
-                onClick={(e) => {
-                  e.stopPropagation();
+            <TooltipTrigger>
+              <Button
+                aria-label={t("externalForms.common.concept.expand")}
+                intent="tertiary"
+                size="sm"
+                onPress={() => {
                   expand.onClick();
                 }}
-              />
-            </WithTooltip>
+              >
+                <Icon
+                  icon={expand.active ? faCompressArrowsAlt : faExpandArrowsAlt}
+                />
+              </Button>
+              <Tooltip>{t("externalForms.common.concept.expand")}</Tooltip>
+            </TooltipTrigger>
           )}
         </div>
       </div>
