@@ -11,23 +11,22 @@ import QueryRunningProgress from "./QueryRunningProgress";
 import { QueryRunningSpinner } from "./QueryRunningSpinner";
 import type { QueryRunnerStateT } from "./reducer";
 
-// one row of controls, as high as its content. The results can be wider than
-// their cell in a narrow pane; they then run under the run button, which
-// paints above them
+// one row of controls, as high as its content. The results keep their width
+// in a narrow pane and run out of the row on the right; the row clips them
+// itself so the pane container never gets scrollable overflow
 const root = tv({
   base: [
-    "grid grid-cols-[auto_minmax(0,1fr)] items-center",
+    "grid grid-cols-[auto_1fr] items-center",
     "gap-x-5",
+    "overflow-hidden",
     "py-[10px] pr-5 pl-[10px]",
     "border-t border-gray-100",
     "bg-bg-50",
   ],
 });
 
-const runButton = tv({ base: ["relative", "z-1"] });
-
 const status = tv({
-  base: ["flex items-center justify-end", "gap-[10px]", "min-w-0"],
+  base: ["flex items-center justify-end", "gap-[10px]"],
 });
 
 const QueryRunner = ({
@@ -58,17 +57,15 @@ const QueryRunner = ({
 
   return (
     <div className={root()} data-test-id="query-runner">
-      <div className={runButton()}>
-        <TooltipTrigger>
-          <QueryRunnerButton
-            onClick={btnAction}
-            isStartStopLoading={isStartStopLoading}
-            isQueryRunning={isQueryRunning}
-            disabled={disabled}
-          />
-          <Tooltip>{buttonTooltip}</Tooltip>
-        </TooltipTrigger>
-      </div>
+      <TooltipTrigger>
+        <QueryRunnerButton
+          onClick={btnAction}
+          isStartStopLoading={isStartStopLoading}
+          isQueryRunning={isQueryRunning}
+          disabled={disabled}
+        />
+        <Tooltip>{buttonTooltip}</Tooltip>
+      </TooltipTrigger>
       <div className={status()}>
         {exists(progress) && <QueryRunningProgress progress={progress} />}
         {isQueryRunning && <QueryRunningSpinner />}
