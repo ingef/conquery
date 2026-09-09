@@ -25,10 +25,6 @@ const root = tv({
   ],
 });
 
-const status = tv({
-  base: ["flex items-center justify-end", "gap-[10px]"],
-});
-
 const QueryRunner = ({
   queryRunner,
   startQuery,
@@ -66,7 +62,7 @@ const QueryRunner = ({
         />
         <Tooltip>{buttonTooltip}</Tooltip>
       </TooltipTrigger>
-      <div className={status()}>
+      <div className="flex items-center justify-end gap-[10px]">
         {exists(progress) && <QueryRunningProgress progress={progress} />}
         {isQueryRunning && <QueryRunningSpinner />}
         {!!queryRunner && <QueryRunnerInfo queryRunner={queryRunner} />}

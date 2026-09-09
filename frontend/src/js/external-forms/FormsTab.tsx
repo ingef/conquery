@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { tv } from "tailwind-variants";
 
 import { useGetForms } from "../api/api";
 import type { DatasetT } from "../api/types";
@@ -117,9 +116,6 @@ const useInitializeForm = ({
   return { methods, config, datasetOptions, onReset, onResetActiveForm };
 };
 
-// the form takes the height left over by the navigation and runner rows
-const root = tv({ base: ["grid grid-rows-[auto_minmax(0,1fr)_auto]"] });
-
 const FormsTab = () => {
   const datasetId = useSelector<StateT, DatasetT["id"] | null>(
     (state) => state.datasets.selectedDatasetId,
@@ -144,7 +140,8 @@ const FormsTab = () => {
 
   return (
     <FormProvider {...methods}>
-      <div className={root()}>
+      {/* the form takes the height left over by the navigation and runner rows */}
+      <div className="grid grid-rows-[auto_minmax(0,1fr)_auto]">
         <FormsNavigation onReset={onResetActiveForm} />
         <FormContainer
           methods={methods}
