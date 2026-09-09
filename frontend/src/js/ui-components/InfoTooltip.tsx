@@ -6,6 +6,7 @@ import { Icon } from "./Icon";
 
 import {
   Tooltip,
+  type TooltipSize,
   TooltipTarget,
   TooltipTrigger,
   tooltipDelay,
@@ -21,12 +22,12 @@ const InfoTooltip = ({
   className,
   text,
   html,
-  wide,
+  size,
 }: {
   text?: string;
   html?: ReactElement;
   className?: string;
-  wide?: boolean;
+  size?: TooltipSize;
 }) => {
   return (
     <TooltipTrigger delay={tooltipDelay.immediate}>
@@ -37,7 +38,7 @@ const InfoTooltip = ({
       >
         <Icon icon={faQuestionCircle} className={[icon(), "text-gray-500"]} />
       </TooltipTarget>
-      <Tooltip wide={wide}>
+      <Tooltip size={size}>
         {text ? (
           <span
             // biome-ignore lint/security/noDangerouslySetInnerHtml: help texts come from form configs and the backend, which may use markup

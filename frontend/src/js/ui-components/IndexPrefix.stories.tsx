@@ -17,7 +17,7 @@ export const Default: Story = {
 export const BeforeLabels: Story = {
   render: () => (
     <div className="flex flex-col gap-2 text-sm">
-      {["Age", "Gender", "Diagnosis"].map((label, i) => (
+      {["Age", "Gender", "Region"].map((label, i) => (
         <div key={label} className="flex items-center">
           <IndexPrefix>#{i + 1}</IndexPrefix>
           {label}

@@ -10,12 +10,12 @@ export default {
 
 type Story = StoryObj<typeof Highlighter>;
 
-const text = "Diabetes mellitus Typ 2 mit diabetischer Nephropathie";
+const text = "Population density by region and year";
 
 export const OneWord: Story = {
   render: () => (
     <p className="text-sm">
-      <Highlighter searchWords={["diab"]} textToHighlight={text} />
+      <Highlighter searchWords={["pop"]} textToHighlight={text} />
     </p>
   ),
 };
@@ -23,7 +23,7 @@ export const OneWord: Story = {
 export const SeveralWords: Story = {
   render: () => (
     <p className="text-sm">
-      <Highlighter searchWords={["typ 2", "nephro"]} textToHighlight={text} />
+      <Highlighter searchWords={["density", "year"]} textToHighlight={text} />
     </p>
   ),
 };
@@ -31,7 +31,7 @@ export const SeveralWords: Story = {
 export const NoMatch: Story = {
   render: () => (
     <p className="text-sm">
-      <Highlighter searchWords={["asthma"]} textToHighlight={text} />
+      <Highlighter searchWords={["income"]} textToHighlight={text} />
     </p>
   ),
 };

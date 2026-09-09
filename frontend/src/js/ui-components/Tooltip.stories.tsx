@@ -89,7 +89,7 @@ export const RichContent: Story = {
   render: () => (
     <TooltipTrigger>
       <Button intent="secondary">Rich content</Button>
-      <Tooltip wide>
+      <Tooltip size="wide">
         <h3>Headline</h3>
         <p>
           A wide tooltip can hold formatted content: paragraphs, headlines and

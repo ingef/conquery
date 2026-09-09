@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
 import InfoTooltip from "./InfoTooltip";
+import Label from "./Label";
 
 export default {
   title: "UiComponents/InfoTooltip",
@@ -12,28 +13,28 @@ type Story = StoryObj<typeof InfoTooltip>;
 
 export const AfterALabel: Story = {
   render: () => (
-    <span className="flex items-center text-sm">
+    <Label>
       Analysis layer
       <InfoTooltip text="Joins the concepts on the chosen id instead of the person." />
-    </span>
+    </Label>
   ),
 };
 
 export const WithMarkup: Story = {
   render: () => (
-    <span className="flex items-center text-sm">
+    <Label>
       Upload format
       <InfoTooltip
-        wide
+        size="wide"
         text="<p>One id per line.</p><ul><li><code>2020-01-01</code></li><li><code>01.01.2020</code></li></ul>"
       />
-    </span>
+    </Label>
   ),
 };
 
 export const WithElement: Story = {
   render: () => (
-    <span className="flex items-center text-sm">
+    <Label>
       Status
       <InfoTooltip
         html={
@@ -42,6 +43,6 @@ export const WithElement: Story = {
           </span>
         }
       />
-    </span>
+    </Label>
   ),
 };
