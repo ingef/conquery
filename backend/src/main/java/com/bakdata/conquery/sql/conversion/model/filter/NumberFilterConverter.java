@@ -25,7 +25,7 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), column.getName(), numberClass);
 
 		IRange<? extends Number, ?> filterValue = filterContext.getValue();
-		NumberCondition condition = new NumberCondition(rootSelect.select(), filterValue);
+		LegacyInclusiveRangeCondition condition = new LegacyInclusiveRangeCondition(rootSelect.select(), filterValue);
 
 		WhereClauses whereClauses = WhereClauses.builder().eventFilter(condition).build();
 
@@ -42,6 +42,6 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 		Field<? extends Number> field = DSL.field(DSL.name(tableName, columnName), numberClass);
 		IRange<? extends Number, ?> range = filterContext.getValue();
 
-		return new NumberCondition(field, range).condition();
+		return new LegacyInclusiveRangeCondition(field, range).condition();
 	}
 }
