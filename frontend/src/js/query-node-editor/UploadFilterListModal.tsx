@@ -10,8 +10,8 @@ import type { PostFilterResolveResponseT } from "../api/types";
 import Modal from "../modal/Modal";
 import ScrollableList from "../scrollable-list/ScrollableList";
 import { Button } from "../ui-components/Button";
+import { Checkbox } from "../ui-components/Checkbox";
 import { Icon } from "../ui-components/Icon";
-import InputCheckbox from "../ui-components/InputCheckbox";
 
 const root = tv({
   base: ["flex flex-col", "gap-[15px]", "pb-[10px]"],
@@ -125,11 +125,12 @@ const UploadFilterListModal = ({
             </p>
           )}
           {(resolved.unknownCodes?.length || 0) > 0 && (
-            <InputCheckbox
-              value={includeUnresolved}
+            <Checkbox
+              isSelected={includeUnresolved}
               onChange={setIncludeUnresolved}
-              label={t("uploadConceptListModal.includeUnresolved")}
-            />
+            >
+              {t("uploadConceptListModal.includeUnresolved")}
+            </Checkbox>
           )}
         </div>
         <Button

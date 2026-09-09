@@ -3,24 +3,13 @@ import { faUndo } from "@fortawesome/free-solid-svg-icons";
 import { useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
-import { tv } from "tailwind-variants";
 import type { DateRangeT } from "../../api/types";
 import type { DateStringMinMax } from "../../common/helpers/dateHelper";
 import Modal from "../../modal/Modal";
 import { Button } from "../../ui-components/Button";
+import { Checkbox } from "../../ui-components/Checkbox";
 import { Icon } from "../../ui-components/Icon";
-import InputCheckbox from "../../ui-components/InputCheckbox";
 import InputDateRange from "../../ui-components/InputDateRange";
-
-const sectionHeadline = tv({
-  base: [
-    "flex items-center",
-    "gap-[10px]",
-    "mb-[10px]",
-    "text-base",
-    "font-normal",
-  ],
-});
 
 export const DateModal = ({
   onClose,
@@ -91,15 +80,13 @@ export const DateModal = ({
           }}
         />
         <div>
-          <p className={sectionHeadline()}>
+          <Checkbox
+            isSelected={excludeFromDates}
+            onChange={setExcludeFromDates}
+          >
             <Icon icon={faCalendarMinus} className="text-red" />
             {t("queryNodeEditor.excludeTimestamps")}
-            <InputCheckbox
-              label=""
-              onChange={setExcludeFromDates}
-              value={excludeFromDates}
-            />
-          </p>
+          </Checkbox>
         </div>
       </div>
     </Modal>
