@@ -15,7 +15,7 @@ const root = tv({
     "absolute top-0 left-0",
     "z-3",
     "flex flex-row items-center justify-between",
-    "w-full",
+    "h-header w-full",
     "px-5",
     "bg-bg-50",
     "shadow-[0_0_1px_1px_rgba(0,0,0,0.3)]",
@@ -31,7 +31,7 @@ const overflowHidden = tv({
 });
 
 const logo = tv({
-  base: ["h-[40px]", "bg-no-repeat", "[background-position-y:50%]"],
+  base: ["h-full", "bg-no-repeat", "[background-position-y:50%]"],
 });
 
 // the second font-size of the old styles won, hence text-xs and not text-base
