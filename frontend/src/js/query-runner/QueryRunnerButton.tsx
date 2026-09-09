@@ -41,6 +41,7 @@ const button = tv({
     "overflow-hidden",
     "rounded",
     "border border-primary-500",
+    "bg-white",
     "text-sm",
     "cursor-pointer",
     "disabled:cursor-not-allowed disabled:opacity-40",

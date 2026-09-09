@@ -1,16 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
-import {
-  Tooltip,
-  TooltipTarget,
-  TooltipTrigger,
-} from "../ui-components/Tooltip";
 import type { QueryRunnerStateT } from "./reducer";
 
-// one line in the query runner's row; the tooltip carries the full text
 const status = tv({
-  base: ["m-0", "truncate", "text-sm", "font-normal"],
+  base: ["m-0", "text-right", "text-sm", "font-normal"],
   variants: {
     success: { true: "text-green" },
     error: { true: "text-red" },
@@ -61,20 +55,15 @@ const QueryRunnerInfo = ({
   }
 
   return (
-    <TooltipTrigger>
-      <TooltipTarget
-        as="p"
-        excludeFromTabOrder
-        className={status({
-          success: message.type === "success",
-          error: message.type === "error",
-          className,
-        })}
-      >
-        {message.value}
-      </TooltipTarget>
-      <Tooltip>{message.value}</Tooltip>
-    </TooltipTrigger>
+    <p
+      className={status({
+        success: message.type === "success",
+        error: message.type === "error",
+        className,
+      })}
+    >
+      {message.value}
+    </p>
   );
 };
 
