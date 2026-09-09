@@ -11,8 +11,8 @@ import type {
   ConceptIdT,
   CurrencyConfigT,
 } from "../../api/types";
-import { Highlighter } from "../../common/components/Highlighter";
 import { exists } from "../../common/helpers/exists";
+import { Highlighter } from "../../ui-components/Highlighter";
 import { Icon } from "../../ui-components/Icon";
 import {
   Tooltip,

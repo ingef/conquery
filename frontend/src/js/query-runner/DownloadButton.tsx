@@ -12,9 +12,9 @@ import { type ReactNode, type Ref, useContext } from "react";
 import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
-import { getEnding } from "../query-runner/DownloadResultsDropdownButton";
 import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
+import { getEnding } from "./DownloadResultsDropdownButton";
 
 const link = tv({ base: "leading-none" });
 

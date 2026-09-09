@@ -1,9 +1,8 @@
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useMemo } from "react";
 import { tv } from "tailwind-variants";
-
-import { IncrementalList } from "../common/components/IncrementalList";
 import { Icon } from "../ui-components/Icon";
+import { IncrementalList } from "../ui-components/IncrementalList";
 import type { useUpdateHistorySession } from "./actions";
 import type { EntityIdsStatus } from "./History";
 import type { EntityId } from "./reducer";
