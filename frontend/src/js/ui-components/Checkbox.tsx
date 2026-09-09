@@ -1,7 +1,8 @@
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import {
-  Checkbox as RacCheckbox,
-  type CheckboxProps as RacCheckboxProps,
+  CheckboxButton,
+  CheckboxField,
+  type CheckboxFieldProps,
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
@@ -15,9 +16,10 @@ import {
   tooltipDelay,
 } from "./Tooltip";
 
-// block-level: as an inline box it would sit on the parent's line box, whose
-// height then depends on the parent's font and on the baseline of the box
-const root = tv({
+// the clickable label. Block-level: as an inline box it would sit on the
+// parent's line box, whose height then depends on the parent's font and on
+// the baseline of the box
+const button = tv({
   base: [
     "group",
     "flex items-start",
@@ -51,7 +53,7 @@ const box = tv({
 const label = tv({ base: ["py-[5px]", "leading-5"] });
 
 export interface CheckboxProps
-  extends Omit<RacCheckboxProps, "className" | "style" | "children"> {
+  extends Omit<CheckboxFieldProps, "className" | "style" | "children"> {
   /** the label */
   children: string;
   /** shown on the box after a while, e.g. why it is disabled */
@@ -61,9 +63,10 @@ export interface CheckboxProps
 }
 
 /**
- * A checkbox with its label, react-aria's Checkbox underneath: `isSelected` /
- * `onChange`, `isDisabled`, keyboard and form support. The children are the
- * label text. Layout around it belongs to the parent.
+ * A checkbox with its label, react-aria's CheckboxField + CheckboxButton
+ * underneath: `isSelected` / `onChange`, `isDisabled`, keyboard and form
+ * support. The children are the label text. Layout around it belongs to the
+ * parent.
  *
  *   <Checkbox isSelected={exclude} onChange={setExclude}>
  *     {t("queryNodeEditor.excludeTimestamps")}
@@ -75,22 +78,24 @@ export const Checkbox = ({
   infoTooltip,
   ...props
 }: CheckboxProps) => (
-  <RacCheckbox className={root()} {...props}>
-    {({ isSelected }) => (
-      <>
-        <TooltipTrigger delay={tooltipDelay.long}>
-          <TooltipTarget as="span" excludeFromTabOrder className={frame()}>
-            <span className={box()}>
-              {isSelected && <Icon icon={faCheck} />}
-            </span>
-          </TooltipTarget>
-          <Tooltip>{tooltip}</Tooltip>
-        </TooltipTrigger>
-        <span className={label()}>
-          {children}
-          {exists(infoTooltip) && <InfoTooltip text={infoTooltip} />}
-        </span>
-      </>
-    )}
-  </RacCheckbox>
+  <CheckboxField {...props}>
+    <CheckboxButton className={button()}>
+      {({ isSelected }) => (
+        <>
+          <TooltipTrigger delay={tooltipDelay.long}>
+            <TooltipTarget as="span" excludeFromTabOrder className={frame()}>
+              <span className={box()}>
+                {isSelected && <Icon icon={faCheck} />}
+              </span>
+            </TooltipTarget>
+            <Tooltip>{tooltip}</Tooltip>
+          </TooltipTrigger>
+          <span className={label()}>
+            {children}
+            {exists(infoTooltip) && <InfoTooltip text={infoTooltip} />}
+          </span>
+        </>
+      )}
+    </CheckboxButton>
+  </CheckboxField>
 );
