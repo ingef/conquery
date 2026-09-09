@@ -557,7 +557,7 @@ const UploadConceptListModal = ({
                 </div>
                 {(resolvedFilters?.unknownCodes?.length || 0) > 0 && (
                   <Checkbox
-                    tooltip={
+                    infoTooltip={
                       mustIncludeUnresolved
                         ? t(
                             "uploadConceptListModal.includeUnresolvedTooltipDisabled",

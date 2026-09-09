@@ -9,12 +9,6 @@ import { tv } from "tailwind-variants";
 import { exists } from "../common/helpers/exists";
 import { Icon } from "./Icon";
 import InfoTooltip from "./InfoTooltip";
-import {
-  Tooltip,
-  TooltipTarget,
-  TooltipTrigger,
-  tooltipDelay,
-} from "./Tooltip";
 
 // the clickable label. Block-level: as an inline box it would sit on the
 // parent's line box, whose height then depends on the parent's font and on
@@ -56,9 +50,7 @@ export interface CheckboxProps
   extends Omit<CheckboxFieldProps, "className" | "style" | "children"> {
   /** the label */
   children: string;
-  /** shown on the box after a while, e.g. why it is disabled */
-  tooltip?: string;
-  /** a help icon after the label */
+  /** a help icon after the label, e.g. what selecting does or why it is disabled */
   infoTooltip?: string;
 }
 
@@ -74,7 +66,6 @@ export interface CheckboxProps
  */
 export const Checkbox = ({
   children,
-  tooltip,
   infoTooltip,
   ...props
 }: CheckboxProps) => (
@@ -82,14 +73,11 @@ export const Checkbox = ({
     <CheckboxButton className={button()}>
       {({ isSelected }) => (
         <>
-          <TooltipTrigger delay={tooltipDelay.long}>
-            <TooltipTarget as="span" excludeFromTabOrder className={frame()}>
-              <span className={box()}>
-                {isSelected && <Icon icon={faCheck} />}
-              </span>
-            </TooltipTarget>
-            <Tooltip>{tooltip}</Tooltip>
-          </TooltipTrigger>
+          <span className={frame()}>
+            <span className={box()}>
+              {isSelected && <Icon icon={faCheck} />}
+            </span>
+          </span>
           <span className={label()}>
             {children}
             {exists(infoTooltip) && <InfoTooltip text={infoTooltip} />}

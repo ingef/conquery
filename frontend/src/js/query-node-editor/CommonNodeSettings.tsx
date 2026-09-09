@@ -23,7 +23,7 @@ const CommonNodeSettings = ({
       {onToggleTimestamps && (
         <div className="mb-[10px] max-w-[300px]">
           <Checkbox
-            tooltip={t("help.excludeTimestamps")}
+            infoTooltip={t("help.excludeTimestamps")}
             isSelected={excludeTimestamps}
             onChange={onToggleTimestamps}
           >
@@ -34,7 +34,7 @@ const CommonNodeSettings = ({
       {onToggleSecondaryIdExclude && (
         <div className="mb-[10px] max-w-[300px]">
           <Checkbox
-            tooltip={t("help.excludeFromSecondaryId")}
+            infoTooltip={t("help.excludeFromSecondaryId")}
             isSelected={excludeFromSecondaryId}
             onChange={onToggleSecondaryIdExclude}
           >

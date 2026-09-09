@@ -34,16 +34,11 @@ export const Default: Story = {
 export const Disabled: Story = {
   render: () => (
     <div className="flex flex-col gap-1">
-      <Stateful
-        isDisabled
-        tooltip="All codes are unresolved, so they are included."
-      >
-        Include unresolved codes
-      </Stateful>
+      <Stateful isDisabled>Include unresolved codes</Stateful>
       <Stateful
         isDisabled
         defaultSelected
-        tooltip="All codes are unresolved, so they are included."
+        infoTooltip="All codes are unresolved, so they are included."
       >
         Include unresolved codes
       </Stateful>
