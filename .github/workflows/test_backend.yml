@@ -11,6 +11,8 @@ on:
     paths:
       - "backend/**"
       - ".github/workflows/test_backend.yml"
+  # merge queue: paths filters do not apply here, the job runs on every queue entry
+  merge_group:
 
 jobs:
   build:
