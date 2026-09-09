@@ -12,7 +12,7 @@ const FormContainer = ({
   config: FormType | null;
 }) => {
   return (
-    <div className="grow overflow-y-auto [-webkit-overflow-scrolling:touch]">
+    <div className="overflow-y-auto [-webkit-overflow-scrolling:touch]">
       {exists(config) && (
         <FormConfigLoader datasetOptions={props.datasetOptions}>
           {() => <Form config={config} {...props} />}
