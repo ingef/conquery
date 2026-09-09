@@ -28,7 +28,7 @@ public class HanaDialectBundle implements DialectBundle {
 
 	public HanaDialectBundle() {
 		this.functionProvider = new HanaSqlFunctionProvider();
-		this.dateAggregator = new AnsiSqlDateAggregator(functionProvider);
+		this.dateAggregator = new AnsiSqlDateAggregator();
 		this.dateSetParser = new HanaSqlCDateSetParser();
 	}
 

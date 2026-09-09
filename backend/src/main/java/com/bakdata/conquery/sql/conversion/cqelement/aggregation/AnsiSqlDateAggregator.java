@@ -1,34 +1,22 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.inline;
-
-import java.sql.Date;
 import java.util.List;
-import java.util.Optional;
 
-import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
-import com.bakdata.conquery.sql.compiler.ir.FieldExpressions;
-import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.compiler.ir.interval.AnsiSqlIntervalPacker;
-import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingContext;
-import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingCteStep;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
-import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.compiler.ir.Selects;
-import com.bakdata.conquery.sql.compiler.ir.SqlTables;
-import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import com.bakdata.conquery.models.query.DateAggregationAction;
-import lombok.Data;
-import org.jooq.Field;
+import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.aggregation.DateAggregationCompiler;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
+import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 
-@Data
+/**
+ * Adapts the legacy backend date-aggregation contract to the connector compiler.
+ *
+ * <p>TODO Remove this adapter when backend converters invoke {@link DateAggregationCompiler} directly.</p>
+ */
 public class AnsiSqlDateAggregator implements SqlDateAggregator {
-
-	private final SqlFunctionProvider functionProvider;
-
 
 	@Override
 	public QueryStep apply(
@@ -38,88 +26,30 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 			DateAggregationAction dateAggregationAction,
 			ConversionContext conversionContext
 	) {
-		SqlAggregationAction aggregationAction = switch (dateAggregationAction) {
-			case MERGE -> new MergeAggregateAction(joinedStep);
-			case INTERSECT -> new IntersectAggregationAction(joinedStep);
-			default -> throw new IllegalStateException("Unexpected date aggregation action: %s".formatted(dateAggregationAction));
-		};
-
-		DateAggregationContext context =
-				DateAggregationContext.builder()
-									  .sqlAggregationAction(aggregationAction)
-									  .carryThroughSelects(carryThroughSelects)
-									  .dateAggregationDates(dateAggregationDates)
-									  .dateAggregationTables(aggregationAction.tableNames(conversionContext.getNameGenerator()))
-									  .ids(joinedStep.getQualifiedSelects().getIds())
-									  .compilerDialect(conversionContext.getCompilerDialect())
-									  .build();
-
-		QueryStep finalDateAggregationStep = convertSteps(joinedStep, aggregationAction.dateAggregationCtes(), context);
-		if (!aggregationAction.requiresIntervalPackingAfterwards()) {
-			return finalDateAggregationStep;
-		}
-
-		Selects predecessorSelects = finalDateAggregationStep.getSelects();
-		SqlTables intervalPackingTables = IntervalPackingCteStep.createTables(
-				finalDateAggregationStep,
+		return DateAggregationCompiler.aggregate(
+				joinedStep,
+				carryThroughSelects,
+				dateAggregationDates,
+				dateAggregationAction,
 				conversionContext.getCompilerDialect(),
 				conversionContext.getNameGenerator()
 		);
-
-		IntervalPackingContext intervalPackingContext =
-				IntervalPackingContext.builder()
-									  .ids(predecessorSelects.getIds())
-									  .daterange(predecessorSelects.getValidityDate().get())
-									  .predecessor(Optional.of(finalDateAggregationStep))
-									  .carryThroughSelects(carryThroughSelects)
-									  .tables(intervalPackingTables)
-									  .build();
-
-		return AnsiSqlIntervalPacker.aggregateAsValidityDate(intervalPackingContext);
 	}
 
 	@Override
-	public ColumnDateRange getAggregatedValidityDate(DateAggregationDates dateAggregationDates, DateAggregationAction dateAggregationAction) {
-		//TODO(FK): i think this is only ever relevant with dateMode=Logical which i want to remove
-		Field<Date> rangeStart = FieldExpressions.least(dateAggregationDates.allStarts());
-		Field<Date> rangeEnd = FieldExpressions.greatest(dateAggregationDates.allEnds());
-
-		return ColumnDateRange.of(
-				rangeStart.as(DateAggregationCte.RANGE_START),
-				rangeEnd.as(DateAggregationCte.RANGE_END)
-		);
+	public ColumnDateRange getAggregatedValidityDate(
+			DateAggregationDates dateAggregationDates,
+			DateAggregationAction dateAggregationAction
+	) {
+		return DateAggregationCompiler.getAggregatedValidityDate(dateAggregationDates);
 	}
 
 	@Override
 	public QueryStep invertAggregatedIntervals(QueryStep baseStep, ConversionContext conversionContext) {
-
-		DateAggregationDates dateAggregationDates = DateAggregationDates.forSingleStep(baseStep);
-		if (dateAggregationDates.dateAggregationImpossible()) {
-			return baseStep;
-		}
-
-		Selects baseStepQualifiedSelects = baseStep.getQualifiedSelects();
-		SqlTables dateAggregationTables = DateAggregationCteStep.createInvertTables(baseStep, conversionContext.getNameGenerator());
-
-		DateAggregationContext context = DateAggregationContext.builder()
-															   .sqlAggregationAction(null) // when inverting, an aggregation has already been applied
-															   .carryThroughSelects(baseStepQualifiedSelects.getSqlSelects())
-															   .dateAggregationDates(dateAggregationDates)
-														   .dateAggregationTables(dateAggregationTables)
-														   .ids(baseStepQualifiedSelects.getIds())
-														   .compilerDialect(conversionContext.getCompilerDialect())
-														   .build();
-
-		return convertSteps(baseStep, DateAggregationCteStep.createInvertCtes(), context);
+		return DateAggregationCompiler.invert(
+				baseStep,
+				conversionContext.getCompilerDialect(),
+				conversionContext.getNameGenerator()
+		);
 	}
-
-	private QueryStep convertSteps(QueryStep baseStep, List<DateAggregationCte> dateAggregationCTEs, DateAggregationContext context) {
-		QueryStep finalDateAggregationStep = baseStep;
-		for (DateAggregationCte step : dateAggregationCTEs) {
-			finalDateAggregationStep = step.convert(context, finalDateAggregationStep);
-			context = context.withStep(step.getCteStep(), finalDateAggregationStep);
-		}
-		return finalDateAggregationStep;
-	}
-
 }

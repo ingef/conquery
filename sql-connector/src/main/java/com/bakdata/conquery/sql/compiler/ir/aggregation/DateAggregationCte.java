@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
+package com.bakdata.conquery.sql.compiler.ir.aggregation;
 
 import java.util.List;
 
