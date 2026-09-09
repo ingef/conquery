@@ -48,7 +48,7 @@ create 3 consecutive common table conceptConditions (CTE):
 This table generates the `previous_end` select: The `previous_end` value for each row will be the maximum `date_end`
 within the same `id` partition that occurs before the current row's `date_start`.
 
-- `partion by "id"` creates a window frame for each subject.
+- `partition by "id"` creates a window frame for each subject.
 - `order by "date_start", "date_end"`: arranges the rows in ascending order of their start dates and if start
   dates are the same, it ensures that the event with the earlier end date is considered first within the window frame.
 - `rows between unbounded preceding and preceding 1` ensures that the maximum `date_end` that occurred before

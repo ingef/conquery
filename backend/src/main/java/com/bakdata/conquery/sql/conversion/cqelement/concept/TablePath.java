@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.*;
-import static com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep.INTERVAL_COMPLETE;
+import static com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingCteStep.INTERVAL_COMPLETE;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +13,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
+import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingCteStep;
 import com.bakdata.conquery.sql.compiler.ir.CteStep;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.google.common.base.Preconditions;
