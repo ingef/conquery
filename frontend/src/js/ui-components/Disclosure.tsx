@@ -20,7 +20,8 @@ const root = tv({
 
 const title = tv({ base: ["flex items-center", "bg-white", "pr-2"] });
 
-const heading = tv({ base: ["grow", "min-w-0", "text-sm font-normal"] });
+// the base heading style gives h3 a bottom margin; the trigger sets the height
+const heading = tv({ base: ["grow", "min-w-0", "m-0", "text-sm font-normal"] });
 
 const trigger = tv({
   base: [
