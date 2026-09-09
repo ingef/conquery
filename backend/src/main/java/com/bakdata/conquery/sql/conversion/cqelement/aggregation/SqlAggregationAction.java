@@ -3,7 +3,6 @@ package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 import java.util.List;
 
 import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
@@ -20,7 +19,7 @@ interface SqlAggregationAction {
 
 	List<DateAggregationCte> dateAggregationCtes();
 
-	ColumnDateRange getOverlapValidityDate(DateAggregationDates dateAggregationDates, SqlFunctionProvider functionProvider);
+	ColumnDateRange getOverlapValidityDate(DateAggregationDates dateAggregationDates);
 
 	List<SqlSelect> getIntermediateTableSelects(DateAggregationDates dateAggregationDates, List<SqlSelect> carryThroughSelects);
 

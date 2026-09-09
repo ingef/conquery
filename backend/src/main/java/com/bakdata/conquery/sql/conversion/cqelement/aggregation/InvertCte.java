@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.QualifyingUtil;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
@@ -57,17 +57,17 @@ class InvertCte extends DateAggregationCte {
 
 	private Selects getInvertSelects(QueryStep rowNumberStep, SqlIdColumns coalescedIds, DateAggregationContext context) {
 
-		SqlFunctionProvider functionProvider = context.getFunctionProvider();
+		CompilerDialect dialect = context.getCompilerDialect();
 		ColumnDateRange validityDate = rowNumberStep.getSelects().getValidityDate().get();
 
 		Field<Date> rangeStart = coalesce(
 				QualifyingUtil.qualify(validityDate.getEnd(), ROWS_LEFT_TABLE_NAME),
-				functionProvider.getMinDateExpression()
+				dialect.minimumDate()
 		).as(DateAggregationCte.RANGE_START);
 
 		Field<Date> rangeEnd = coalesce(
 				QualifyingUtil.qualify(validityDate.getStart(), ROWS_RIGHT_TABLE_NAME),
-				functionProvider.getMaxDateExpression()
+				dialect.maximumDate()
 		).as(DateAggregationCte.RANGE_END);
 
 		return Selects.builder()

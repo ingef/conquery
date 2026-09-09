@@ -5,7 +5,7 @@ import java.sql.Date;
 import java.util.List;
 
 import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.compiler.ir.FieldExpressions;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
@@ -39,8 +39,7 @@ class IntermediateTableCte extends DateAggregationCte {
 		List<Field<Date>> allStarts = dateAggregationDates.allStarts();
 		List<Field<Date>> allEnds = dateAggregationDates.allEnds();
 
-		SqlFunctionProvider functionProvider = context.getFunctionProvider();
-		Condition startBeforeEnd = functionProvider.greatest(allStarts).lessThan(functionProvider.least(allEnds));
+		Condition startBeforeEnd = FieldExpressions.greatest(allStarts).lessThan(FieldExpressions.least(allEnds));
 
 		Condition startIsNull = allStarts.stream()
 										 .map(Field::isNull)

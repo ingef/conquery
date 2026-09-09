@@ -7,6 +7,7 @@ import java.sql.Date;
 import java.util.List;
 
 import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
+import com.bakdata.conquery.sql.compiler.ir.FieldExpressions;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
@@ -50,7 +51,7 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 									  .dateAggregationDates(dateAggregationDates)
 									  .dateAggregationTables(aggregationAction.tableNames(conversionContext.getNameGenerator()))
 									  .ids(joinedStep.getQualifiedSelects().getIds())
-									  .conversionContext(conversionContext)
+									  .compilerDialect(conversionContext.getCompilerDialect())
 									  .build();
 
 		QueryStep finalDateAggregationStep = convertSteps(joinedStep, aggregationAction.dateAggregationCtes(), context);
@@ -59,7 +60,11 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 		}
 
 		Selects predecessorSelects = finalDateAggregationStep.getSelects();
-		SqlTables intervalPackingTables = IntervalPackingCteStep.createTables(finalDateAggregationStep, context);
+		SqlTables intervalPackingTables = IntervalPackingCteStep.createTables(
+				finalDateAggregationStep,
+				conversionContext.getCompilerDialect(),
+				conversionContext.getNameGenerator()
+		);
 
 		IntervalPackingContext intervalPackingContext =
 				IntervalPackingContext.builder()
@@ -77,8 +82,8 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 	@Override
 	public ColumnDateRange getAggregatedValidityDate(DateAggregationDates dateAggregationDates, DateAggregationAction dateAggregationAction) {
 		//TODO(FK): i think this is only ever relevant with dateMode=Logical which i want to remove
-		Field<Date> rangeStart = functionProvider.least(dateAggregationDates.allStarts());
-		Field<Date> rangeEnd = functionProvider.greatest(dateAggregationDates.allEnds());
+		Field<Date> rangeStart = FieldExpressions.least(dateAggregationDates.allStarts());
+		Field<Date> rangeEnd = FieldExpressions.greatest(dateAggregationDates.allEnds());
 
 		return ColumnDateRange.of(
 				rangeStart.as(DateAggregationCte.RANGE_START),
@@ -101,10 +106,10 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 															   .sqlAggregationAction(null) // when inverting, an aggregation has already been applied
 															   .carryThroughSelects(baseStepQualifiedSelects.getSqlSelects())
 															   .dateAggregationDates(dateAggregationDates)
-															   .dateAggregationTables(dateAggregationTables)
-															   .ids(baseStepQualifiedSelects.getIds())
-															   .conversionContext(conversionContext)
-															   .build();
+														   .dateAggregationTables(dateAggregationTables)
+														   .ids(baseStepQualifiedSelects.getIds())
+														   .compilerDialect(conversionContext.getCompilerDialect())
+														   .build();
 
 		return convertSteps(baseStep, DateAggregationCteStep.createInvertCtes(), context);
 	}

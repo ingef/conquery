@@ -4,7 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.bakdata.conquery.sql.conversion.Context;
+import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.CteStep;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
@@ -28,17 +29,21 @@ public enum IntervalPackingCteStep implements CteStep {
 	/**
 	 * Create {@link SqlTables} based on a preceding {@link QueryStep}, that must contain a validity date which shall be interval-packed.
 	 */
-	public static SqlTables createTables(QueryStep predecessor, Context context) {
+	public static SqlTables createTables(
+			QueryStep predecessor,
+			CompilerDialect dialect,
+			SqlNameGenerator nameGenerator
+	) {
 
 		String rootTable = predecessor.getCteName();
-		Set<CteStep> requiredSteps = context.getCompilerDialect().supportsSingleColumnRanges()
+		Set<CteStep> requiredSteps = dialect.supportsSingleColumnRanges()
 									 ? Set.of(INTERVAL_COMPLETE)
 									 : Set.of(values());
 
 		Map<CteStep, String> cteNameMap = CteStep.createCteNameMap(
 				requiredSteps,
 				rootTable,
-				context.getNameGenerator()::cteStepName
+				nameGenerator::cteStepName
 		);
 		Map<CteStep, CteStep> predecessorMap = CteStep.getDefaultPredecessorMap(requiredSteps);
 
