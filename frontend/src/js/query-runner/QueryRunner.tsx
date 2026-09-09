@@ -11,15 +11,23 @@ import QueryRunningProgress from "./QueryRunningProgress";
 import { QueryRunningSpinner } from "./QueryRunningSpinner";
 import type { QueryRunnerStateT } from "./reducer";
 
+// one row of controls: 30 px high, 10 px above and below, nothing wraps to
+// a second line
 const root = tv({
   base: [
-    "flex items-center",
+    "grid grid-cols-[auto_minmax(0,1fr)] items-center",
+    "gap-x-5",
+    "h-[50px]",
     "w-full",
     "shrink-0",
-    "py-[10px] pr-5 pl-[10px]",
+    "pr-5 pl-[10px]",
     "border-t border-gray-100",
     "bg-bg-50",
   ],
+});
+
+const status = tv({
+  base: ["flex items-center justify-end", "gap-[10px]", "min-w-0"],
 });
 
 const QueryRunner = ({
@@ -50,23 +58,19 @@ const QueryRunner = ({
 
   return (
     <div className={root()} data-test-id="query-runner">
-      <div className="grow">
-        <TooltipTrigger>
-          <QueryRunnerButton
-            onClick={btnAction}
-            isStartStopLoading={isStartStopLoading}
-            isQueryRunning={isQueryRunning}
-            disabled={disabled}
-          />
-          <Tooltip>{buttonTooltip}</Tooltip>
-        </TooltipTrigger>
-      </div>
-      <div className="grow-[2] pl-5">
-        <div className="flex flex-row items-center justify-end">
-          {exists(progress) && <QueryRunningProgress progress={progress} />}
-          {isQueryRunning && <QueryRunningSpinner />}
-          {!!queryRunner && <QueryRunnerInfo queryRunner={queryRunner} />}
-        </div>
+      <TooltipTrigger>
+        <QueryRunnerButton
+          onClick={btnAction}
+          isStartStopLoading={isStartStopLoading}
+          isQueryRunning={isQueryRunning}
+          disabled={disabled}
+        />
+        <Tooltip>{buttonTooltip}</Tooltip>
+      </TooltipTrigger>
+      <div className={status()}>
+        {exists(progress) && <QueryRunningProgress progress={progress} />}
+        {isQueryRunning && <QueryRunningSpinner />}
+        {!!queryRunner && <QueryRunnerInfo queryRunner={queryRunner} />}
         {!!queryRunner &&
           !!queryRunner.queryResult &&
           !queryRunner.queryResult.error &&

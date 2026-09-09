@@ -1,7 +1,7 @@
 import { tv } from "tailwind-variants";
 
 const progressText = tv({
-  base: ["mr-[10px]", "text-xl", "font-bold", "text-primary-200"],
+  base: ["text-xl", "font-bold", "text-primary-200"],
 });
 
 // progress is between 0 and 1
