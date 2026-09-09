@@ -1,24 +1,21 @@
-package com.bakdata.conquery.sql.conversion.cqelement.intervalpacking;
+package com.bakdata.conquery.sql.compiler.ir.interval;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
-import javax.annotation.Nullable;
-
-import com.bakdata.conquery.sql.conversion.Context;
-import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.Builder;
 import lombok.Value;
 
+/** Inputs required to transform a date range into interval-packing query steps. */
 @Value
 @Builder
-public class IntervalPackingContext implements Context {
+public class IntervalPackingContext {
 
 	SqlIdColumns ids;
 
@@ -30,8 +27,8 @@ public class IntervalPackingContext implements Context {
 	/**
 	 * An optional predecessor of the first interval packing CTE.
 	 */
-	@Nullable
-	QueryStep predecessor;
+	@Builder.Default
+	Optional<QueryStep> predecessor = Optional.empty();
 
 	SqlTables tables;
 
@@ -40,13 +37,5 @@ public class IntervalPackingContext implements Context {
 	 */
 	@Builder.Default
 	List<SqlSelect> carryThroughSelects = Collections.emptyList();
-
-	@Nullable
-	ConversionContext conversionContext;
-
-	@Override
-	public LegacyCompilerDialect getCompilerDialect() {
-		return getConversionContext().getCompilerDialect();
-	}
 
 }

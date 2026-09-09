@@ -5,13 +5,14 @@ import static org.jooq.impl.DSL.inline;
 
 import java.sql.Date;
 import java.util.List;
+import java.util.Optional;
 
 import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
 import com.bakdata.conquery.sql.compiler.ir.FieldExpressions;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
-import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingCteStep;
-import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
+import com.bakdata.conquery.sql.compiler.ir.interval.AnsiSqlIntervalPacker;
+import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingContext;
+import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingCteStep;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
@@ -26,7 +27,6 @@ import org.jooq.Field;
 @Data
 public class AnsiSqlDateAggregator implements SqlDateAggregator {
 
-	private final IntervalPacker intervalPacker;
 	private final SqlFunctionProvider functionProvider;
 
 
@@ -70,13 +70,12 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 				IntervalPackingContext.builder()
 									  .ids(predecessorSelects.getIds())
 									  .daterange(predecessorSelects.getValidityDate().get())
-									  .predecessor(finalDateAggregationStep)
+									  .predecessor(Optional.of(finalDateAggregationStep))
 									  .carryThroughSelects(carryThroughSelects)
 									  .tables(intervalPackingTables)
-									  .conversionContext(conversionContext)
 									  .build();
 
-		return this.intervalPacker.aggregateAsValidityDate(intervalPackingContext);
+		return AnsiSqlIntervalPacker.aggregateAsValidityDate(intervalPackingContext);
 	}
 
 	@Override

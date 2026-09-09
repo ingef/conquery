@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
-import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
+import com.bakdata.conquery.sql.compiler.ir.interval.AnsiSqlIntervalPacker;
+import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingContext;
 import com.bakdata.conquery.sql.compiler.ir.JoinMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.QueryStepJoiner;
@@ -63,8 +63,7 @@ class JoinBranchesCte extends ConnectorCte {
 		}
 		else {
 			IntervalPackingContext intervalPackingContext = createIntervalPackingContext(tableContext);
-			IntervalPacker intervalPacker = tableContext.getConversionContext().getCompilerDialect().getIntervalPacker();
-			QueryStep lastIntervalPackingStep = intervalPacker.aggregateAsValidityDate(intervalPackingContext);
+			QueryStep lastIntervalPackingStep = AnsiSqlIntervalPacker.aggregateAsValidityDate(intervalPackingContext);
 			queriesToJoin.add(lastIntervalPackingStep);
 			validityDate = lastIntervalPackingStep.getQualifiedSelects().getValidityDate();
 

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.cqelement.intervalpacking;
+package com.bakdata.conquery.sql.compiler.ir.interval;
 
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
