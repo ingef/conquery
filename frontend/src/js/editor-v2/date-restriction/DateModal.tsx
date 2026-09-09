@@ -1,4 +1,3 @@
-import { faCalendarMinus } from "@fortawesome/free-regular-svg-icons";
 import { faUndo } from "@fortawesome/free-solid-svg-icons";
 import { useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -79,15 +78,9 @@ export const DateModal = ({
             max: maxDate,
           }}
         />
-        <div>
-          <Checkbox
-            isSelected={excludeFromDates}
-            onChange={setExcludeFromDates}
-          >
-            <Icon icon={faCalendarMinus} className="text-red" />
-            {t("queryNodeEditor.excludeTimestamps")}
-          </Checkbox>
-        </div>
+        <Checkbox isSelected={excludeFromDates} onChange={setExcludeFromDates}>
+          {t("queryNodeEditor.excludeTimestamps")}
+        </Checkbox>
       </div>
     </Modal>
   );

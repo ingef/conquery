@@ -1,9 +1,7 @@
-import { faCalendarMinus } from "@fortawesome/free-regular-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 
 import { Checkbox, type CheckboxProps } from "./Checkbox";
-import { Icon } from "./Icon";
 
 export default {
   title: "UiComponents/Checkbox",
@@ -56,15 +54,6 @@ export const Disabled: Story = {
 export const WithInfoTooltip: Story = {
   render: () => (
     <Stateful infoTooltip="Rows without a date are left out of the time calculation.">
-      Exclude from time calculation
-    </Stateful>
-  ),
-};
-
-export const WithIcon: Story = {
-  render: () => (
-    <Stateful>
-      <Icon icon={faCalendarMinus} className="text-red" />
       Exclude from time calculation
     </Stateful>
   ),

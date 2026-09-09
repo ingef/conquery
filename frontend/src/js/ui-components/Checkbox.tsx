@@ -1,5 +1,4 @@
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
-import type { ReactNode } from "react";
 import {
   Checkbox as RacCheckbox,
   type CheckboxProps as RacCheckboxProps,
@@ -16,10 +15,12 @@ import {
   tooltipDelay,
 } from "./Tooltip";
 
+// block-level: as an inline box it would sit on the parent's line box, whose
+// height then depends on the parent's font and on the baseline of the box
 const root = tv({
   base: [
     "group",
-    "inline-flex items-start",
+    "flex items-start",
     "gap-1",
     "cursor-pointer select-none",
     "text-sm font-medium",
@@ -47,13 +48,12 @@ const box = tv({
 
 // 5 px above and below a 20 px line: the first line centers on the box,
 // further lines flow below it
-const label = tv({
-  base: ["inline-flex items-center", "gap-[6px]", "py-[5px]", "leading-5"],
-});
+const label = tv({ base: ["py-[5px]", "leading-5"] });
 
 export interface CheckboxProps
   extends Omit<RacCheckboxProps, "className" | "style" | "children"> {
-  children?: ReactNode;
+  /** the label */
+  children: string;
   /** shown on the box after a while, e.g. why it is disabled */
   tooltip?: string;
   /** a help icon after the label */
@@ -63,7 +63,7 @@ export interface CheckboxProps
 /**
  * A checkbox with its label, react-aria's Checkbox underneath: `isSelected` /
  * `onChange`, `isDisabled`, keyboard and form support. The children are the
- * label, an Icon may lead. Layout around it belongs to the parent.
+ * label text. Layout around it belongs to the parent.
  *
  *   <Checkbox isSelected={exclude} onChange={setExclude}>
  *     {t("queryNodeEditor.excludeTimestamps")}
@@ -86,8 +86,10 @@ export const Checkbox = ({
           </TooltipTarget>
           <Tooltip>{tooltip}</Tooltip>
         </TooltipTrigger>
-        <span className={label()}>{children}</span>
-        {exists(infoTooltip) && <InfoTooltip text={infoTooltip} />}
+        <span className={label()}>
+          {children}
+          {exists(infoTooltip) && <InfoTooltip text={infoTooltip} />}
+        </span>
       </>
     )}
   </RacCheckbox>
