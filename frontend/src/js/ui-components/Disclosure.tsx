@@ -98,8 +98,12 @@ export const DisclosureTitle = ({
   </div>
 );
 
+// while collapsed the panel is hidden "until found", which keeps the element's
+// own box; so the padding and border sit on an inner element
 export const DisclosurePanel = ({ children }: { children: ReactNode }) => (
-  <RacDisclosurePanel className={panel()}>{children}</RacDisclosurePanel>
+  <RacDisclosurePanel>
+    <div className={panel()}>{children}</div>
+  </RacDisclosurePanel>
 );
 
 export interface DisclosureGroupProps
