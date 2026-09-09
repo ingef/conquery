@@ -61,6 +61,7 @@ const ConceptTree = ({
           intent="tertiary"
           size="sm"
           danger
+          aria-label={t("common.retry")}
           onPress={() => onLoadTree(conceptId)}
         >
           <Icon icon={faRedo} />

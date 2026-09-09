@@ -61,6 +61,7 @@ const ConceptEntry = ({
         <Button
           intent="tertiary"
           size="sm"
+          aria-label={t("common.delete")}
           onPress={() => onRemoveConcept(conceptId)}
         >
           <Icon icon={faTrashCan} />

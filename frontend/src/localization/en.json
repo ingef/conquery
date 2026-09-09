@@ -133,6 +133,8 @@
     "unshare": "Revoke sharing"
   },
   "common": {
+    "add": "Add",
+    "retry": "Try again",
     "version": "Version",
     "help": "Help",
     "manual": "Manual",
@@ -395,8 +397,14 @@
     "placeholder": "Search ...",
     "resultLabel": "{{totalResults}} results ({{duration}} s)"
   },
+  "inputDate": {
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month"
+  },
   "preview": {
     "preview": "Preview",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
     "page": "Page",
     "headline": "Results preview",
     "previewHeadline": "Result CSV",

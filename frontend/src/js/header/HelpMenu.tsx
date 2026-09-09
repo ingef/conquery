@@ -22,7 +22,11 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
 
   return (
     <MenuTrigger>
-      <Button intent="secondary" data-test-id="help-menu">
+      <Button
+        intent="secondary"
+        aria-label={t("common.help")}
+        data-test-id="help-menu"
+      >
         <Icon icon={faQuestion} />
       </Button>
       <Menu

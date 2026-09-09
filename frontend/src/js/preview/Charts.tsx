@@ -77,6 +77,7 @@ export default function Charts({
       <div className={directionSelector()}>
         <Button
           intent="tertiary"
+          aria-label={t("preview.previousPage")}
           onPress={() => updatePage(-1)}
           isDisabled={page === 0}
         >
@@ -88,6 +89,7 @@ export default function Charts({
         </span>
         <Button
           intent="tertiary"
+          aria-label={t("preview.nextPage")}
           onPress={() => updatePage(1)}
           isDisabled={page === maxPage - 1}
         >
