@@ -97,8 +97,10 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
           <Panel key="right">
             <div className={expand({ areFoldersOpen })}>
               <div className="my-2 flex items-start">
-                <ProjectItemsTypeFilter className={typeFilter()} />
-                <ProjectItemsFilter className="flex items-start" />
+                <div className={typeFilter()}>
+                  <ProjectItemsTypeFilter />
+                </div>
+                <ProjectItemsFilter />
               </div>
               <div className="overflow-y-auto text-sm [-webkit-overflow-scrolling:touch]">
                 {items.length === 0 && !loading && (

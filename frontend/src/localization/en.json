@@ -10,10 +10,12 @@
     "reloadDescription": "If this happens again, please leave us a message. That way, we can fix this issue sooner."
   },
   "leftPane": {
+    "tabs": "Concepts and queries",
     "conceptTrees": "Concepts",
     "previousQueries": "Queries and Forms"
   },
   "rightPane": {
+    "tabs": "Editors",
     "queryEditor": "Editor",
     "timebasedQueryEditor": "Timebased Editor",
     "externalForms": "Form Editor"
@@ -241,12 +243,14 @@
     "hasNoDates": "No date values in the results."
   },
   "projectItemsFilter": {
+    "tabs": "Filter",
     "all": "All",
     "own": "Own",
     "shared": "Shared",
     "system": "SYSTEM"
   },
   "projectItemsTypeFilter": {
+    "tabs": "Type",
     "queries": "Queries only",
     "configs": "Forms only"
   },
@@ -481,6 +485,7 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "infoTabs": "Info categories",
     "search": "Search",
     "matches_one": "Match",
     "matches_other": "Matches",

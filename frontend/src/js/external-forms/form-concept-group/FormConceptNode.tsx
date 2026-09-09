@@ -8,10 +8,10 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { getWidthAndHeight } from "../../app/DndProvider";
 import { canNodeBeDropped } from "../../model/node";
-import { HoverNavigatable } from "../../small-tab-navigation/HoverNavigatable";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import { Button } from "../../ui-components/Button";
+import { HoverNavigatable } from "../../ui-components/HoverNavigatable";
 import { Icon } from "../../ui-components/Icon";
 import {
   Tooltip,
