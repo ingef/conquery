@@ -7,7 +7,7 @@ import { exists } from "../../common/helpers/exists";
 import { useActiveLang } from "../../localization/useActiveLang";
 import Modal from "../../modal/Modal";
 import { Button } from "../../ui-components/Button";
-import InputCheckbox from "../../ui-components/InputCheckbox";
+import { Checkbox } from "../../ui-components/Checkbox";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
 import { useVisibleConceptListFields } from "../stateSelectors";
 
@@ -17,8 +17,11 @@ const buttons = tv({
   base: ["flex items-center justify-between", "w-full", "mt-5"],
 });
 
+const selectAll = tv({ base: "mt-[10px] ml-2" });
+
 const options = tv({
   base: [
+    "flex flex-col gap-1",
     "pt-2 pl-[28px]",
     "max-h-[345px]",
     "overflow-y-auto",
@@ -141,22 +144,24 @@ const FormConceptCopyModal = ({
         }}
         value={selectedOption}
       />
-      <InputCheckbox
-        className="mt-[10px] ml-2"
-        label={t("externalForms.copyModal.selectAll")}
-        value={allConceptsSelected}
-        onChange={onToggleAllConcepts}
-      />
+      <div className={selectAll()}>
+        <Checkbox
+          isSelected={allConceptsSelected}
+          onChange={onToggleAllConcepts}
+        >
+          {t("externalForms.copyModal.selectAll")}
+        </Checkbox>
+      </div>
       <div className={options()}>
         {Object.keys(valuesChecked).map((idx) =>
           idxHasConcepts(idx) ? (
-            <InputCheckbox
-              className="my-[5px]"
+            <Checkbox
               key={idx}
-              label={getLabelFromIdx(idx)}
-              value={valuesChecked[idx]}
+              isSelected={valuesChecked[idx]}
               onChange={(checked: boolean) => onToggleConcept(idx, checked)}
-            />
+            >
+              {getLabelFromIdx(idx)}
+            </Checkbox>
           ) : null,
         )}
       </div>

@@ -32,8 +32,8 @@ import Modal from "../modal/Modal";
 import { nodeIsElement } from "../model/node";
 import ScrollableList from "../scrollable-list/ScrollableList";
 import { Button } from "../ui-components/Button";
+import { Checkbox } from "../ui-components/Checkbox";
 import { Icon } from "../ui-components/Icon";
-import InputCheckbox from "../ui-components/InputCheckbox";
 import InputPlain from "../ui-components/InputPlain/InputPlain";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 import { DropdownOption } from "./DropdownOption";
@@ -556,19 +556,20 @@ const UploadConceptListModal = ({
                   />
                 </div>
                 {(resolvedFilters?.unknownCodes?.length || 0) > 0 && (
-                  <InputCheckbox
-                    tooltip={
+                  <Checkbox
+                    infoTooltip={
                       mustIncludeUnresolved
                         ? t(
                             "uploadConceptListModal.includeUnresolvedTooltipDisabled",
                           )
                         : undefined
                     }
-                    disabled={mustIncludeUnresolved}
-                    value={mustIncludeUnresolved || includeUnresolved}
+                    isDisabled={mustIncludeUnresolved}
+                    isSelected={mustIncludeUnresolved || includeUnresolved}
                     onChange={setIncludeUnresolved}
-                    label={t("uploadConceptListModal.includeUnresolved")}
-                  />
+                  >
+                    {t("uploadConceptListModal.includeUnresolved")}
+                  </Checkbox>
                 )}
                 <Button intent="primary" type="submit" data-test-id="insert">
                   {mustIncludeUnresolved
