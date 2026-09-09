@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
-import InputCheckbox from "../ui-components/InputCheckbox";
+import { Checkbox } from "../ui-components/Checkbox";
 
 interface Props {
   excludeTimestamps?: boolean;
@@ -22,22 +22,24 @@ const CommonNodeSettings = ({
     <div className="mx-[10px] my-[15px]">
       {onToggleTimestamps && (
         <div className="mb-[10px] max-w-[300px]">
-          <InputCheckbox
-            label={t("queryNodeEditor.excludeTimestamps")}
-            tooltip={t("help.excludeTimestamps")}
-            value={excludeTimestamps}
+          <Checkbox
+            infoTooltip={t("help.excludeTimestamps")}
+            isSelected={excludeTimestamps}
             onChange={onToggleTimestamps}
-          />
+          >
+            {t("queryNodeEditor.excludeTimestamps")}
+          </Checkbox>
         </div>
       )}
       {onToggleSecondaryIdExclude && (
         <div className="mb-[10px] max-w-[300px]">
-          <InputCheckbox
-            label={t("queryNodeEditor.excludeFromSecondaryId")}
-            tooltip={t("help.excludeFromSecondaryId")}
-            value={excludeFromSecondaryId}
+          <Checkbox
+            infoTooltip={t("help.excludeFromSecondaryId")}
+            isSelected={excludeFromSecondaryId}
             onChange={onToggleSecondaryIdExclude}
-          />
+          >
+            {t("queryNodeEditor.excludeFromSecondaryId")}
+          </Checkbox>
         </div>
       )}
     </div>
