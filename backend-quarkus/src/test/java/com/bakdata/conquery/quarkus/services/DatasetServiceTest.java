@@ -1,0 +1,110 @@
+package com.bakdata.conquery.quarkus.services;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import com.bakdata.conquery.quarkus.concepts.conditions.ConceptCondition;
+import com.bakdata.conquery.quarkus.concepts.conditions.definitions.EqualConceptCondition;
+import com.bakdata.conquery.quarkus.ids.ConceptId;
+import com.bakdata.conquery.quarkus.ids.DatasetId;
+import com.bakdata.conquery.quarkus.ids.TableId;
+import com.bakdata.conquery.quarkus.ids.StructureNodeId;
+import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
+import com.bakdata.conquery.quarkus.storage.NamespaceStorage;
+import com.bakdata.conquery.quarkus.storage.NamespaceStorageRegistry;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+class DatasetServiceTest {
+
+	@Test
+	@Disabled("Endpoint not yet implemented")
+	void resolvesConceptCodesAgainstRequestedConceptSubtree() {
+		DatasetService service = new DatasetService();
+		service.namespaceStorageRegistry = new TestNamespaceStorageRegistry(List.of(
+				new DatasetCatalogRepository.Concept(cid("demo.icd"), "ICD", null, List.of(), false, Map.of(
+
+						cid("demo.icd.a00"), new DatasetCatalogRepository.ConceptElement(cid("demo.icd.a00"), "A00", null, List.of(), cid("demo.icd"), List.of(cid("demo.icd.a00.a00_0")), equal("A00", "A000")),
+						cid("demo.icd.a00.a00_0"), new DatasetCatalogRepository.ConceptElement(cid("demo.icd.a00.a00_0"), "A00.0", null, List.of(), cid("demo.icd.a00"), List.of(), equal("A000"))
+
+				), List.of(cid("demo.icd.a00")), null, List.of()),
+				new DatasetCatalogRepository.Concept(cid("demo.other"), "Other", null, List.of(), false, null, null, List.of(), List.of())
+		));
+
+		DatasetService.ConceptCodeResolution resolution = service.resolveConceptCodes("demo.icd", List.of("A00", "A000", "OTHER", "UNKNOWN"));
+
+		assertEquals(List.of("demo.icd.a00", "demo.icd.a00.a00_0"), resolution.resolvedConcepts());
+		assertEquals(List.of("OTHER", "UNKNOWN"), resolution.unknownCodes());
+	}
+
+	private ConceptCondition equal(String... values) {
+		EqualConceptCondition condition = new EqualConceptCondition();
+		condition.setType("EQUAL");
+		condition.setValues(List.of(values));
+		return condition;
+	}
+
+	private ConceptId cid(String value) {
+		return ConceptId.parse(value);
+	}
+
+	private static DatasetId did(String value) {
+		return DatasetId.parse(value);
+	}
+
+	private record TestNamespaceStorageRegistry(List<DatasetCatalogRepository.Concept> concepts) implements NamespaceStorageRegistry {
+		@Override
+		public List<DatasetCatalogRepository.DatasetRecord> listDatasets() {
+			return List.of(new DatasetCatalogRepository.DatasetRecord(did("demo"), "Demo", "analytics"));
+		}
+
+		@Override
+		public Optional<NamespaceStorage> findNamespace(DatasetId datasetId) {
+			if (!did("demo").equals(datasetId)) {
+				return Optional.empty();
+			}
+			return Optional.of(new TestNamespaceStorage(concepts));
+		}
+	}
+
+	private record TestNamespaceStorage(List<DatasetCatalogRepository.Concept> concepts) implements NamespaceStorage {
+		@Override
+		public DatasetCatalogRepository.DatasetRecord dataset() {
+			return new DatasetCatalogRepository.DatasetRecord(did("demo"), "Demo", "analytics");
+		}
+
+		@Override
+		public List<DatasetCatalogRepository.Concept> listConcepts() {
+			return concepts;
+		}
+
+		@Override
+		public Optional<DatasetCatalogRepository.Concept> findConcept(ConceptId conceptId) {
+			return concepts.stream().filter(concept -> concept.id().equals(conceptId)).findFirst();
+		}
+
+		@Override
+		public List<DatasetCatalogRepository.StructureNode> listStructureNodes() {
+			return List.of();
+		}
+
+		@Override
+		public Optional<DatasetCatalogRepository.StructureNode> findStructureNode(StructureNodeId structureNodeId) {
+			return Optional.empty();
+		}
+
+		@Override
+		public List<DatasetCatalogRepository.TableRecord> listTables() {
+			return List.of();
+		}
+
+		@Override
+		public Optional<DatasetCatalogRepository.TableRecord> findTable(TableId tableId) {
+			return Optional.empty();
+		}
+
+	}
+}

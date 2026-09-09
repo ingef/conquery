@@ -6,14 +6,14 @@ import java.util.Optional;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDateUnionSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDurationSumSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.select.ConceptSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import com.google.common.base.Preconditions;
 
 public class IntervalPackingSelectsCte {
@@ -23,15 +23,15 @@ public class IntervalPackingSelectsCte {
 			ColumnDateRange daterange,
 			SqlSelect select,
 			SqlTables tables,
-			DialectBundle dialectBundle
+			LegacyCompilerDialect compilerDialect
 	) {
 		List<QueryStep> predecessors = List.of(withAggregatedDaterange);
 		QueryStep directPredecessor = withAggregatedDaterange;
 
 		// we need an additional predecessor to unnest the validity date if it is a single column range
-		if (dialectBundle.supportsSingleColumnRanges()) {
+		if (compilerDialect.supportsSingleColumnRanges()) {
 			String unnestCteName = tables.cteName(ConceptCteStep.UNNEST_DATE);
-			directPredecessor = dialectBundle.getFunctionProvider().unnestDaterange(daterange, withAggregatedDaterange, unnestCteName);
+			directPredecessor = compilerDialect.getFunctionProvider().unnestDaterange(daterange, withAggregatedDaterange, unnestCteName);
 			predecessors = List.of(withAggregatedDaterange, directPredecessor);
 		}
 

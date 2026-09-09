@@ -7,6 +7,8 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
@@ -14,8 +16,8 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -102,7 +104,7 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 	) {
 		List<QueryStep> unionSteps = connectors.stream().map(connector -> createConnectorColumnSelectQuery(connector, alias, selectContext)).toList();
 		String unionedColumnsCteName = selectContext.getNameGenerator().cteStepName(CONCEPT_COLUMN_STEPS.UNIONED_COLUMNS, alias);
-		return QueryStep.createUnionStep(unionSteps, unionedColumnsCteName, Collections.emptyList(), false, selectContext.getFunctionProvider()); //TODO is false correct here?
+		return QueryStep.createUnionStep(unionSteps, unionedColumnsCteName, Collections.emptyList(), false); //TODO is false correct here?
 	}
 
 	private static QueryStep createConnectorColumnSelectQuery(

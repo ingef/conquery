@@ -1,0 +1,57 @@
+{
+  "name": "imdb",
+  "label": "IMDb",
+  "additionalInfos": [
+    {
+      "key": "Source",
+      "value": "IMDb test metadata"
+    }
+  ],
+  "selects": {
+    "type": "EXISTS",
+    "name": "exists",
+    "label": "Exists",
+    "description": "Whether any title exists",
+    "default": true
+  },
+  "children": [
+    {
+      "name": "movie",
+      "label": "Movie",
+      "additionalInfos": [
+        {
+          "key": "Kind",
+          "value": "Feature film"
+        }
+      ],
+      "children": []
+    }
+  ],
+  "connectors": [
+    {
+      "name": "titles",
+      "label": "Titles",
+      "table": "title",
+      "validityDatesDescription": "Choose the release date",
+      "validityDates": {
+        "label": "Release date",
+        "column": "release_date"
+      },
+      "filters": [
+        {
+          "type": "DATE_DISTANCE",
+          "name": "release_age",
+          "label": "Release Age",
+          "column": "release_date"
+        }
+      ],
+      "selects": {
+        "type": "FIRST",
+        "label": "Title",
+        "description": "First matching title",
+        "default": true,
+        "column": "name"
+      }
+    }
+  ]
+}

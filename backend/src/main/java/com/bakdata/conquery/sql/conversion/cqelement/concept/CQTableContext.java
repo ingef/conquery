@@ -7,10 +7,10 @@ import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
 import lombok.Builder;
@@ -47,7 +47,7 @@ class CQTableContext implements Context {
 	}
 
 	@Override
-	public DialectBundle getDialectBundle() {
-		return getConversionContext().getDialectBundle();
+	public LegacyCompilerDialect getCompilerDialect() {
+		return getConversionContext().getCompilerDialect();
 	}
 }

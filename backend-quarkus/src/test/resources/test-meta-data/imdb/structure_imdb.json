@@ -1,0 +1,17 @@
+[
+  {
+    "name": "catalog",
+    "label": "Catalog",
+    "description": "Available media concepts",
+    "children": [
+      {
+        "label": "Movies",
+        "containedRoots": ["imdb"]
+      }
+    ]
+  },
+  {
+    "name": "empty",
+    "label": "Empty folder"
+  }
+]

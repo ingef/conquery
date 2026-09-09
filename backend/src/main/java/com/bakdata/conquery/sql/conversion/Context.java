@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.conversion;
 
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
+import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 
@@ -12,14 +12,14 @@ public interface Context {
 
 	ConversionContext getConversionContext();
 
-	DialectBundle getDialectBundle();
+	LegacyCompilerDialect getCompilerDialect();
 
 	default NameGenerator getNameGenerator() {
 		return getConversionContext().getNameGenerator();
 	}
 	
 	default SqlFunctionProvider getFunctionProvider(){
-		return getConversionContext().getDialectBundle().getFunctionProvider();
+		return getConversionContext().getCompilerDialect().getFunctionProvider();
 	}
 
 }

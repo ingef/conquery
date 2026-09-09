@@ -18,15 +18,15 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.Resolution;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.google.common.base.Preconditions;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
@@ -163,20 +163,20 @@ class RelativeStratification {
 				Stream.concat(Stream.ofNullable(outcomeTable), Stream.ofNullable(featureTable)).toList(),
 				FormCteStep.COMPLETE.getSuffix(),
 				Collections.emptyList(),
-				context.isNegation(), functionProvider
+				context.isNegation()
 		);
 	}
 
 	private QueryStep createCompleteFeatureTable(Selects predecessorSelects, Interval interval, Range<Integer> intRange, QueryStep totalBoundsStep) {
 		Field<Integer> featureIndex = DSL.field(DSL.inline(-1)).as(SharedAliases.INDEX.getAlias());
-		SqlIdColumns featureIds = predecessorSelects.getIds().withRelativeStratification(Resolution.COMPLETE, featureIndex, INDEX_SELECTOR);
+		SqlIdColumns featureIds = predecessorSelects.getIds().withStratification(Resolution.COMPLETE.name(), featureIndex, INDEX_SELECTOR);
 		Field<Date> rangeStart = stratificationFunctions.shiftByInterval(INDEX_START_NEGATIVE, interval, DSL.inline(intRange.getMin()), Offset.NONE);
 		return createIntervalStep(featureIds, rangeStart, INDEX_START_NEGATIVE, Optional.empty(), totalBoundsStep);
 	}
 
 	private QueryStep createCompleteOutcomeTable(Selects predecessorSelects, Interval interval, Range<Integer> intRange, QueryStep totalBoundsStep) {
 		Field<Integer> outcomeIndex = DSL.field(DSL.inline(1)).as(SharedAliases.INDEX.getAlias());
-		SqlIdColumns outcomeIds = predecessorSelects.getIds().withRelativeStratification(Resolution.COMPLETE, outcomeIndex, INDEX_SELECTOR);
+		SqlIdColumns outcomeIds = predecessorSelects.getIds().withStratification(Resolution.COMPLETE.name(), outcomeIndex, INDEX_SELECTOR);
 		Field<Date> rangeEnd = stratificationFunctions.shiftByInterval(INDEX_START_POSITIVE, interval, DSL.inline(intRange.getMax()), Offset.NONE);
 		return createIntervalStep(outcomeIds, INDEX_START_POSITIVE, rangeEnd, Optional.empty(), totalBoundsStep);
 	}
@@ -185,7 +185,7 @@ class RelativeStratification {
 
 		Field<Integer> seriesIndex = stratificationFunctions.intSeriesField();
 		Selects predecessorSelects = totalBoundsStep.getQualifiedSelects();
-		SqlIdColumns ids = predecessorSelects.getIds().withRelativeStratification(resolution, seriesIndex, INDEX_SELECTOR);
+		SqlIdColumns ids = predecessorSelects.getIds().withStratification(resolution.name(), seriesIndex, INDEX_SELECTOR);
 		Interval interval = getInterval(form.getTimeUnit(), resolution);
 		Range<Integer> bounds = toGenerateSeriesBounds(form, resolution);
 
@@ -196,7 +196,7 @@ class RelativeStratification {
 				List.of(timeBeforeStep, timeAfterStep),
 				FormCteStep.stratificationCte(resolution).getSuffix(),
 				Collections.emptyList(),
-				context.isNegation(), functionProvider
+				context.isNegation()
 		);
 	}
 

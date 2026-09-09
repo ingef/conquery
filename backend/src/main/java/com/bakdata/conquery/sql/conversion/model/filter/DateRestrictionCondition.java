@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.filter;
 
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 

@@ -7,13 +7,13 @@ import java.util.Map;
 
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
-import com.bakdata.conquery.sql.conversion.model.Qualifiable;
-import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
+import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.Qualifiable;
+import com.bakdata.conquery.sql.compiler.ir.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.Builder;
 import lombok.Value;
 
@@ -63,8 +63,8 @@ class DateAggregationContext implements Context, Qualifiable<DateAggregationCont
 	}
 
 	@Override
-	public DialectBundle getDialectBundle() {
-		return getConversionContext().getDialectBundle();
+	public LegacyCompilerDialect getCompilerDialect() {
+		return getConversionContext().getCompilerDialect();
 	}
 
 }

@@ -7,10 +7,10 @@ import java.util.Optional;
 import com.bakdata.conquery.apiv1.query.CQYes;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import org.jooq.Field;
 import org.jooq.Record;
 

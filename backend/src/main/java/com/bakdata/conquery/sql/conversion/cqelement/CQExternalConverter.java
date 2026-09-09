@@ -12,14 +12,14 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import com.google.common.base.Preconditions;
 import org.jooq.Field;
 import org.jooq.Name;
@@ -41,7 +41,7 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 			unions.addAll(rowSelects);
 		}
 		Preconditions.checkArgument(!unions.isEmpty(), "Expecting at least 1 resolved row when converting a CQExternal");
-		QueryStep allStep = QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_IDS_CTE_NAME, Collections.emptyList(), context.isNegation(), functionProvider);
+		QueryStep allStep = QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_IDS_CTE_NAME, Collections.emptyList(), context.isNegation());
 
 		Optional<ColumnDateRange> maybeValidityDate = allStep.getSelects().getValidityDate();
 
@@ -152,7 +152,7 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 
 	@Override
 	public ConversionContext convert(CQExternal external, ConversionContext context) {
-		SqlFunctionProvider functionProvider = context.getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = context.getCompilerDialect().getFunctionProvider();
 
 		QueryStep externalIdsCte = createExternalIdsCte(external, functionProvider, context);
 		ConversionContext withExternalIdCte = context.withQueryStep(externalIdsCte);
@@ -173,7 +173,7 @@ public class CQExternalConverter implements NodeConverter<CQExternal> {
 			unions.add(rowSelects);
 		}
 		Preconditions.checkArgument(!unions.isEmpty(), "Expecting at least 1 converted resolved row when converting a CQExternal");
-		return QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_EXTRAS_CTE_NAME, Collections.emptyList(), context.isNegation(), functionProvider);
+		return QueryStep.createUnionAllStep(unions, CQ_EXTERNAL_EXTRAS_CTE_NAME, Collections.emptyList(), context.isNegation());
 	}
 
 

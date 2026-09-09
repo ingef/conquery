@@ -5,9 +5,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import lombok.Getter;
 import org.jooq.Condition;

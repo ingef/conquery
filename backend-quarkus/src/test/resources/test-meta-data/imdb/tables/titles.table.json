@@ -1,0 +1,23 @@
+{
+  "name": "title",
+  "label": "Titles",
+  "primaryColumn": "imdb.title.id",
+  "columns": [
+    {
+      "id": "imdb.title.id",
+      "label": "Title ID",
+      "type": "INTEGER",
+      "secondaryId": "pid"
+    },
+    {
+      "id": "imdb.title.name",
+      "label": "Title",
+      "type": "STRING"
+    },
+    {
+      "id": "imdb.title.release_date",
+      "label": "Release Date",
+      "type": "DATE"
+    }
+  ]
+}

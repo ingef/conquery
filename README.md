@@ -79,6 +79,33 @@ configurations, such as:
 
 ## Development
 
+### Backend Development
+
+#### Dropwizard backend (current production backend)
+
+From the repository root:
+
+```bash
+./mvnw -pl backend -am test
+./mvnw -pl executable -am package
+java -jar executable/target/conquery.jar standalone <path-to-config.json>
+```
+
+#### Quarkus backend (migration target)
+
+From the repository root:
+
+```bash
+./mvnw -pl backend-quarkus quarkus:dev
+```
+
+Useful endpoints while running:
+
+- `http://localhost:8090/api/ping`
+- `http://localhost:8090/api/config/frontend`
+- `http://localhost:8090/q/health`
+- `http://localhost:8090/q/swagger-ui`
+
 ### Testing
 
 #### Integration Tests

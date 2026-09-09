@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
+import com.bakdata.conquery.sql.compiler.ir.Selects;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,9 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
@@ -30,7 +34,6 @@ import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.ConceptSqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Preconditions;
 import org.jooq.Condition;
@@ -65,7 +68,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		List<ConceptSqlSelects> converted = cqConcept.getSelects().stream()
 				.map(selectId -> {
 					Select select = selectId.resolve();
-					return context.getDialectBundle().getSelectConverter(select).conceptSelect(select, selectContext);
+					return context.getCompilerDialect().getSelectConverter(select).conceptSelect(select, selectContext);
 				})
 				.toList();
 
@@ -247,7 +250,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				.map(SelectId::resolve)
 				.filter(select -> select instanceof ConceptColumnSelect)
 				.findFirst()
-				.map(select -> selectContext.getDialectBundle().getSelectConverter(select).connectorSelect(select, selectContext))
+				.map(select -> selectContext.getCompilerDialect().getSelectConverter(select).connectorSelect(select, selectContext))
 				.orElse(ConnectorSqlSelects.none());
 	}
 
@@ -310,7 +313,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		cqTable.getSelects()
 				.stream()
 				.map(SelectId::resolve)
-				.map(select -> selectContext.getDialectBundle().getSelectConverter(select).connectorSelect(select, selectContext))
+				.map(select -> selectContext.getCompilerDialect().getSelectConverter(select).connectorSelect(select, selectContext))
 				.forEach(allSelectsForTable::add);
 
 		return CQTableContext.builder()

@@ -18,6 +18,7 @@
 
     <properties>
         <java.required>21</java.required>
+        <jooq.version>3.20.2</jooq.version>
         <lombok.version>1.18.36</lombok.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>${java.required}</maven.compiler.source>
@@ -29,7 +30,12 @@
     </properties>
 
     <modules>
+        <module>dataset-model</module>
+        <module>sql-connector</module>
         <module>backend</module>
+        <module>backend-quarkus-plugin-api</module>
+        <module>backend-quarkus</module>
+        <module>backend-quarkus-plugin-test</module>
         <module>executable</module>
         <module>autodoc</module>
     </modules>
