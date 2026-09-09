@@ -22,8 +22,8 @@ import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.bakdata.conquery.sql.conversion.model.filter.LegacyInclusiveRangeCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
@@ -298,7 +298,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		}
 
 		Field<BigDecimal> qualifiedSumSelect = sumAggregationSelect.getGroupBy().qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER)).select();
-		SumCondition sumCondition = new SumCondition(qualifiedSumSelect, filterContext.getValue());
+		LegacyInclusiveRangeCondition sumCondition = new LegacyInclusiveRangeCondition(qualifiedSumSelect, filterContext.getValue());
 		WhereClauses whereClauses = WhereClauses.builder()
 												.groupFilter(sumCondition)
 												.build();
@@ -318,14 +318,14 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 
 		ColumnId subtractColumn = filter.getSubtractColumn();
 		if (subtractColumn == null) {
-			return new SumCondition(field, filterContext.getValue()).condition();
+			return new LegacyInclusiveRangeCondition(field, filterContext.getValue()).condition();
 		}
 
 		Column resolvedSubtractionColumn = subtractColumn.resolve();
 		String subtractColumnName = resolvedSubtractionColumn.getName();
 		String subtractTableName = resolvedSubtractionColumn.getTable().getName();
 		Field<? extends Number> subtractField = DSL.field(DSL.name(subtractTableName, subtractColumnName), numberClass);
-		return new SumCondition(field.minus(subtractField), filterContext.getValue()).condition();
+		return new LegacyInclusiveRangeCondition(field.minus(subtractField), filterContext.getValue()).condition();
 	}
 
 	@Getter

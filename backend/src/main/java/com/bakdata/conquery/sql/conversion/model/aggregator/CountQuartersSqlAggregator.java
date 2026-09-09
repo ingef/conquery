@@ -15,8 +15,8 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
-import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.bakdata.conquery.sql.conversion.model.filter.LegacyInclusiveRangeCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
@@ -144,7 +144,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 
 		String predecessorTableName = filterContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
 		Field<? extends Number> qualifiedCountSelect = countAggregationSelect.getGroupBy().qualify(predecessorTableName).select();
-		CountCondition countCondition = new CountCondition(qualifiedCountSelect, filterContext.getValue());
+		LegacyInclusiveRangeCondition countCondition = new LegacyInclusiveRangeCondition(qualifiedCountSelect, filterContext.getValue());
 		WhereClauses whereClauses = WhereClauses.builder().groupFilter(countCondition).build();
 
 		return new SqlFilters(selects, whereClauses);
@@ -153,7 +153,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 	@Override
 	public Condition convertForTableExport(CountQuartersFilter filter, FilterContext<Range.LongRange> filterContext) {
 		Param<Integer> field = DSL.inline(1); // no grouping, count is always 1 per row
-		return new CountCondition(field, filterContext.getValue()).condition();
+		return new LegacyInclusiveRangeCondition(field, filterContext.getValue()).condition();
 	}
 
 }
