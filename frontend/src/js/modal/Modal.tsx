@@ -6,7 +6,7 @@ import { tv } from "tailwind-variants";
 import { TransparentButton } from "../button/TransparentButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import { Heading3 } from "../headings/Headings";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 const root = tv({
   base: [

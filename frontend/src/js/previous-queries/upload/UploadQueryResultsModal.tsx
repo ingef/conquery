@@ -6,8 +6,8 @@ import { tv } from "tailwind-variants";
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
 import FaIcon from "../../icon/FaIcon";
 import Modal from "../../modal/Modal";
-import InfoTooltip from "../../tooltip/InfoTooltip";
 import DropzoneWithFileInput from "../../ui-components/DropzoneWithFileInput";
+import InfoTooltip from "../../ui-components/InfoTooltip";
 
 import CSVColumnPicker, { type QueryToUploadT } from "./CSVColumnPicker";
 

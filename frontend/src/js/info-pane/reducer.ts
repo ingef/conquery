@@ -7,7 +7,7 @@ import type { Action } from "../app/actions";
 import {
   displayAdditionalInfos,
   toggleAdditionalInfos,
-  toggleDisplayTooltip,
+  toggleInfoPane,
 } from "./actions";
 
 type InfoType = {
@@ -28,8 +28,8 @@ export type AdditionalInfosType = {
   rootLabel?: string;
 };
 
-export type TooltipStateT = {
-  displayTooltip: boolean;
+export type InfoPaneStateT = {
+  isOpen: boolean;
   toggleAdditionalInfos: boolean;
   additionalInfos: AdditionalInfosType;
 };
@@ -39,14 +39,14 @@ const additionalInfosInitialState: AdditionalInfosType = {
   matchingEntities: null,
 };
 
-const initialState: TooltipStateT = {
-  displayTooltip: true,
+const initialState: InfoPaneStateT = {
+  isOpen: true,
   toggleAdditionalInfos: false,
   additionalInfos: additionalInfosInitialState,
 };
 
 const setAdditionalInfos = (
-  state: TooltipStateT,
+  state: InfoPaneStateT,
   { additionalInfos }: ActionType<typeof displayAdditionalInfos>["payload"],
 ) => {
   if (state.toggleAdditionalInfos)
@@ -60,10 +60,10 @@ const setAdditionalInfos = (
   };
 };
 
-const tooltip = (
-  state: TooltipStateT = initialState,
+const infoPane = (
+  state: InfoPaneStateT = initialState,
   action: Action,
-): TooltipStateT => {
+): InfoPaneStateT => {
   switch (action.type) {
     case getType(displayAdditionalInfos):
       return setAdditionalInfos(state, action.payload);
@@ -72,14 +72,14 @@ const tooltip = (
         ...state,
         toggleAdditionalInfos: !state.toggleAdditionalInfos,
       };
-    case getType(toggleDisplayTooltip):
+    case getType(toggleInfoPane):
       return {
         ...state,
-        displayTooltip: !state.displayTooltip,
+        isOpen: !state.isOpen,
       };
     default:
       return state;
   }
 };
 
-export default tooltip;
+export default infoPane;

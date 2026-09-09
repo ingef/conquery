@@ -9,7 +9,7 @@ import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import ProgressBar from "../common/components/ProgressBar";
 import { Heading3 } from "../headings/Headings";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 import { SettingsModal } from "./SettingsModal";
 
@@ -97,7 +97,7 @@ export const NavigationHeader = memo(
         <div className="grid gap-x-2 grid-cols-[auto_1fr] items-center">
           <Heading3 className={heading({ end: true })}>{idsCount}</Heading3>
           <span className={infoText()}>
-            {t("tooltip.entitiesFound", { count: idsCount })}
+            {t("common.entitiesFound", { count: idsCount })}
           </span>
           <Heading3 className={heading({ end: true })}>{markedCount}</Heading3>
           <span className={infoText()}>

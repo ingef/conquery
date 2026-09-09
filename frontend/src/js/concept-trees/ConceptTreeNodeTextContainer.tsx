@@ -5,12 +5,12 @@ import type { ConceptIdT, ConceptT } from "../api/types";
 import { getWidthAndHeight } from "../app/DndProvider";
 import { DNDType } from "../common/constants/dndTypes";
 import { exists } from "../common/helpers/exists";
+import AdditionalInfoHoverable from "../info-pane/AdditionalInfoHoverable";
 import { getNodeIcon } from "../model/node";
 import type {
   ConceptQueryNodeType,
   DragItemConceptTreeNode,
 } from "../standard-query-editor/types";
-import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
 import type { SearchT } from "./reducer";

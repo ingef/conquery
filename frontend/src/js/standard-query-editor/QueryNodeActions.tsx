@@ -11,7 +11,7 @@ import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 const actionButton = tv({
   base: "px-[6px] py-1",

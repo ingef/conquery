@@ -8,7 +8,7 @@ import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import { useClickOutside } from "../../common/helpers/useClickOutside";
 import { usePrevious } from "../../common/helpers/usePrevious";
-import InfoTooltip from "../../tooltip/InfoTooltip";
+import InfoTooltip from "../InfoTooltip";
 import Labeled from "../Labeled";
 import SelectEmptyPlaceholder from "../SelectEmptyPlaceholder";
 

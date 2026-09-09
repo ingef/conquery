@@ -3,6 +3,7 @@ import type { ConceptTreesOpenActions } from "../concept-trees-open/actions";
 import type { DatasetActions } from "../dataset/actions";
 import type { EntityHistoryActions } from "../entity-history/actions";
 import type { ExternalFormActions } from "../external-forms/actions";
+import type { InfoPaneActions } from "../info-pane/actions";
 import type { PaneActions } from "../pane/actions";
 import type { PreviewActions } from "../preview/actions";
 import type { ProjectItemsFilterActions } from "../previous-queries/filter/actions";
@@ -16,7 +17,6 @@ import type { QueryUploadConceptListModalActions } from "../query-upload-concept
 import type { SnackMessageActions } from "../snack-message/actions";
 import type { StandardQueryEditorActions } from "../standard-query-editor/actions";
 import type { StartupActions } from "../startup/actions";
-import type { TooltipActions } from "../tooltip/actions";
 import type { UploadConceptListModalActions } from "../upload-concept-list-modal/actions";
 import type { UserActions } from "../user/actions";
 
@@ -35,7 +35,7 @@ export type Action =
   | SnackMessageActions
   | PreviousQueryListActions
   | StartupActions
-  | TooltipActions
+  | InfoPaneActions
   | ExternalFormActions
   | QueryRunnerActions
   | PaneActions

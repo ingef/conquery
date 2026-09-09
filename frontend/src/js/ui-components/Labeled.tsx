@@ -3,7 +3,7 @@ import { tv } from "tailwind-variants";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
 import { exists } from "../common/helpers/exists";
-import InfoTooltip from "../tooltip/InfoTooltip";
+import InfoTooltip from "./InfoTooltip";
 
 import Label from "./Label";
 

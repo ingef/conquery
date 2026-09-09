@@ -25,7 +25,7 @@ import { useFormLabelByType } from "../../external-forms/stateSelectors";
 import FaIcon from "../../icon/FaIcon";
 import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
-import WithTooltip from "../../tooltip/WithTooltip";
+import WithTooltip from "../../ui-components/WithTooltip";
 import { useUpdateFormConfig, useUpdateQuery } from "./actions";
 import { DeleteProjectItemButton } from "./DeleteProjectItemButton";
 import { isFormConfig } from "./helpers";

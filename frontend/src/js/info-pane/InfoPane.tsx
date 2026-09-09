@@ -13,11 +13,11 @@ import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import { Highlighter } from "../common/components/Highlighter";
 import FaIcon from "../icon/FaIcon";
-import ActivateTooltip from "./ActivateTooltip";
 import { toggleAdditionalInfos as toggleInfos } from "./actions";
+import InfoPaneCollapsed from "./InfoPaneCollapsed";
+import { InfoPaneHeader } from "./InfoPaneHeader";
+import MatchingStats from "./MatchingStats";
 import type { AdditionalInfosType } from "./reducer";
-import TooltipEntries from "./TooltipEntries";
-import { TooltipHeader } from "./TooltipHeader";
 
 const root = tv({
   base: [
@@ -82,7 +82,7 @@ const infoHeadline = tv({
   base: ["m-0", "text-xs", "font-bold", "leading-[1.3]"],
 });
 
-const tooltipEntries = tv({
+const matchingStats = tv({
   base: ["grid grid-cols-[auto_1fr]", "gap-3", "items-center"],
 });
 
@@ -118,7 +118,7 @@ const ConceptLabel = ({
         {label ? (
           <HighlightedText words={words} text={label} />
         ) : (
-          t("tooltip.placeholder")
+          t("infoPane.placeholder")
         )}
       </span>
       {tackIcon}
@@ -131,7 +131,7 @@ const mark = (text: string, regex: RegExp | null): string => {
   return text.replace(regex, "==$&==");
 };
 
-const Tooltip = () => {
+const InfoPane = () => {
   const wordsRaw = useSelector<StateT, string[] | null>(
     (state) => state.conceptTrees.search.words,
   );
@@ -148,13 +148,11 @@ const Tooltip = () => {
     rootLabel,
     rootIcon,
   } = useSelector<StateT, AdditionalInfosType>(
-    (state) => state.tooltip.additionalInfos,
+    (state) => state.infoPane.additionalInfos,
   );
-  const displayTooltip = useSelector<StateT, boolean>(
-    (state) => state.tooltip.displayTooltip,
-  );
+  const isOpen = useSelector<StateT, boolean>((state) => state.infoPane.isOpen);
   const toggleAdditionalInfos = useSelector<StateT, boolean>(
-    (state) => state.tooltip.toggleAdditionalInfos,
+    (state) => state.infoPane.toggleAdditionalInfos,
   );
 
   const highlightRegex = useMemo(() => {
@@ -166,7 +164,7 @@ const Tooltip = () => {
   const dispatch = useDispatch();
   const onToggleAdditionalInfos = () => dispatch(toggleInfos());
 
-  if (!displayTooltip) return <ActivateTooltip />;
+  if (!isOpen) return <InfoPaneCollapsed />;
 
   const mainLabel = rootLabel || label;
   const mainIcon = rootIcon || icon;
@@ -175,10 +173,10 @@ const Tooltip = () => {
 
   return (
     <div className={root()}>
-      <TooltipHeader />
+      <InfoPaneHeader />
       <div className={content()}>
-        <TooltipEntries
-          className={tooltipEntries()}
+        <MatchingStats
+          className={matchingStats()}
           matchingEntries={matchingEntries}
           matchingEntities={matchingEntities}
           dateRange={dateRange}
@@ -227,4 +225,4 @@ const Tooltip = () => {
   );
 };
 
-export default Tooltip;
+export default InfoPane;

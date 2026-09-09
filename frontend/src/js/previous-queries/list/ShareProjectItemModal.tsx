@@ -7,8 +7,8 @@ import type { SelectOptionT, UserGroupT } from "../../api/types";
 import type { StateT } from "../../app/reducers";
 import IconButton from "../../button/IconButton";
 import Modal from "../../modal/Modal";
-import WithTooltip from "../../tooltip/WithTooltip";
 import InputMultiSelect from "../../ui-components/InputMultiSelect/InputMultiSelect";
+import WithTooltip from "../../ui-components/WithTooltip";
 import {
   useLoadFormConfig,
   useLoadQuery,

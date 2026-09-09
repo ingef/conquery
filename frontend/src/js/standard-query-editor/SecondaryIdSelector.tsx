@@ -9,7 +9,7 @@ import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 import { nodeIsConceptQueryNode } from "../model/node";
-import InfoTooltip from "../tooltip/InfoTooltip";
+import InfoTooltip from "../ui-components/InfoTooltip";
 import ToggleButton from "../ui-components/ToggleButton";
 
 import { setSelectedSecondaryId } from "./actions";

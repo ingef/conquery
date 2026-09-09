@@ -8,7 +8,7 @@ import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 export type ContentType =
   | "groupId"

@@ -5,7 +5,7 @@ import { tv } from "tailwind-variants";
 import type { ConceptIdT, ConceptT } from "../api/types";
 import IconButton from "../button/IconButton";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
-import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
+import AdditionalInfoHoverable from "../info-pane/AdditionalInfoHoverable";
 
 const concept = tv({
   base: [

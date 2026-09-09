@@ -3,8 +3,8 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
-import WithTooltip from "../tooltip/WithTooltip";
+import { ConfirmableTooltip } from "../ui-components/ConfirmableTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 const ResetAllSettingsButton = ({
   compact,

@@ -20,8 +20,8 @@ import { parseCSV, toCSV } from "../../file/csv";
 import FaIcon from "../../icon/FaIcon";
 import { useActiveLang } from "../../localization/useActiveLang";
 import ScrollableList from "../../scrollable-list/ScrollableList";
-import WithTooltip from "../../tooltip/WithTooltip";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
+import WithTooltip from "../../ui-components/WithTooltip";
 
 const td = tv({
   base: "min-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap text-xs",

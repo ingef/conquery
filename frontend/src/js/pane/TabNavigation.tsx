@@ -2,7 +2,7 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { tv } from "tailwind-variants";
 import FaIcon from "../icon/FaIcon";
 import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 const root = tv({
   base: ["flex items-start", "border-b border-gray-100", "bg-white", "px-5"],

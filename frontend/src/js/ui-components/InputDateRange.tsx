@@ -14,7 +14,7 @@ import {
 } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
-import InfoTooltip from "../tooltip/InfoTooltip";
+import InfoTooltip from "./InfoTooltip";
 
 import InputDate from "./InputDate/InputDate";
 import Label from "./Label";

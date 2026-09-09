@@ -2,7 +2,7 @@ import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../../button/IconButton";
-import WithTooltip from "../../tooltip/WithTooltip";
+import WithTooltip from "../../ui-components/WithTooltip";
 
 const FoldersToggleButton = ({
   className,

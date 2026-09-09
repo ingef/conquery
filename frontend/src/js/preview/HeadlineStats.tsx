@@ -1,11 +1,11 @@
 import { tv } from "tailwind-variants";
 import type { PreviewStatisticsResponse } from "../api/types";
-import TooltipEntries from "../tooltip/TooltipEntries";
+import MatchingStats from "../info-pane/MatchingStats";
 
 // the old styles also declared `align-self: right` — an invalid value, never applied
 const root = tv({ base: ["ml-auto", "p-[10px]"] });
 
-const tooltipEntries = tv({
+const matchingStats = tv({
   base: ["flex flex-row", "gap-3", "m-auto"],
 });
 
@@ -20,8 +20,8 @@ export default function HeadlineStats({
 }: HeadlineStatsProps) {
   return (
     <div className={root()}>
-      <TooltipEntries
-        className={tooltipEntries()}
+      <MatchingStats
+        className={matchingStats()}
         matchingEntities={statistics?.entities}
         matchingEntries={statistics?.total}
         dateRange={statistics?.dateRange}

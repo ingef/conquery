@@ -9,7 +9,7 @@ import {
 } from "../../../common/helpers/dateHelper";
 import { exists } from "../../../common/helpers/exists";
 import FaIcon from "../../../icon/FaIcon";
-import InfoTooltip from "../../../tooltip/InfoTooltip";
+import InfoTooltip from "../../../ui-components/InfoTooltip";
 import InputDate from "../../../ui-components/InputDate/InputDate";
 import Label from "../../../ui-components/Label";
 import type { DateField as DateFieldT } from "../../config-types";

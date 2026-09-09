@@ -13,8 +13,8 @@ import { exists } from "../../common/helpers/exists";
 import { getFileRows } from "../../common/helpers/fileHelper";
 import { useDebounce } from "../../common/helpers/useDebounce";
 import FaIcon from "../../icon/FaIcon";
-import InfoTooltip from "../../tooltip/InfoTooltip";
 import DropzoneWithFileInput from "../DropzoneWithFileInput";
+import InfoTooltip from "../InfoTooltip";
 import {
   Control,
   DropdownToggleButton,

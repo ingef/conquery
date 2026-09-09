@@ -7,7 +7,7 @@ import { deleteStoredAuthToken } from "../authorization/helper";
 import IconButton from "../button/IconButton";
 import { clearIndexedDBCache } from "../common/helpers/indexedDBCache";
 import { isIDPEnabled } from "../environment";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 const LogoutButton = ({ className }: { className?: string }) => {
   const { t } = useTranslation();

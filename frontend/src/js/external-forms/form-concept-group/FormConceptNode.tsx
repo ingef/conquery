@@ -13,7 +13,7 @@ import { canNodeBeDropped } from "../../model/node";
 import { HoverNavigatable } from "../../small-tab-navigation/HoverNavigatable";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
-import WithTooltip from "../../tooltip/WithTooltip";
+import WithTooltip from "../../ui-components/WithTooltip";
 
 const node = tv({
   base: [

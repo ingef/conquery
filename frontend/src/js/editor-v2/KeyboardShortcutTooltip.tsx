@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import { KeyboardKey } from "../common/components/KeyboardKey";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "../ui-components/WithTooltip";
 
 const keyTooltip = tv({
   base: ["flex items-center", "gap-[5px]", "px-[15px] py-2"],

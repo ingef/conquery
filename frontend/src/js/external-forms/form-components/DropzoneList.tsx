@@ -4,7 +4,6 @@ import type { DropTargetMonitor } from "react-dnd";
 import { tv } from "tailwind-variants";
 
 import IconButton from "../../button/IconButton";
-import InfoTooltip from "../../tooltip/InfoTooltip";
 import type {
   ChildArgs,
   PossibleDroppableObject,
@@ -12,6 +11,7 @@ import type {
 import DropzoneWithFileInput, {
   type DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
+import InfoTooltip from "../../ui-components/InfoTooltip";
 import Label from "../../ui-components/Label";
 
 import DropzoneBetweenElements from "./DropzoneBetweenElements";

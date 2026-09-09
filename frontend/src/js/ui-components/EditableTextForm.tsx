@@ -5,7 +5,7 @@ import { tv } from "tailwind-variants";
 
 import IconButton from "../button/IconButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
-import WithTooltip from "../tooltip/WithTooltip";
+import WithTooltip from "./WithTooltip";
 
 const input = tv({
   base: ["h-[28px]", "px-2", "rounded", "border border-gray-500", "text-sm"],
