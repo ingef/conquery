@@ -16,6 +16,12 @@ import org.jooq.Field;
  */
 public interface CompilerDialect {
 
+	/** Expression used as the database-specific lower infinity sentinel for dates. */
+	Field<Date> minimumDate();
+
+	/** Expression used as the database-specific upper infinity sentinel for dates. */
+	Field<Date> maximumDate();
+
 	/**
 	 * Aggregate a field to an arbitrary value from its group.
 	 *

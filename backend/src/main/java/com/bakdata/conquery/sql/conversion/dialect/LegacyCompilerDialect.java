@@ -41,6 +41,16 @@ import org.jooq.Field;
 public interface LegacyCompilerDialect extends CompilerDialect {
 
 	@Override
+	default Field<Date> minimumDate() {
+		return getFunctionProvider().getMinDateExpression();
+	}
+
+	@Override
+	default Field<Date> maximumDate() {
+		return getFunctionProvider().getMaxDateExpression();
+	}
+
+	@Override
 	default <T> Field<T> anyValue(Field<T> field) {
 		return getFunctionProvider().anyValue(field);
 	}

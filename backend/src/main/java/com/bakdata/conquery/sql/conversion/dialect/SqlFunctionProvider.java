@@ -240,24 +240,6 @@ public interface SqlFunctionProvider {
 		return field(concatenated, String.class);
 	}
 
-	default <T> Field<T> least(List<Field<T>> fields) {
-		if (fields.isEmpty()) {
-			return null;
-		}
-		Field<T>[] fieldArray = fields.toArray(Field[]::new);
-		// signature only accepts arrays/varargs
-		return function("least", fieldArray[0].getType(), fieldArray);
-	}
-
-	default <T> Field<T> greatest(List<Field<T>> fields) {
-		if (fields.isEmpty()) {
-			return null;
-		}
-		Field<T>[] fieldArray = fields.toArray(Field[]::new);
-		// signature only accepts arrays/varargs
-		return function("greatest", fieldArray[0].getType(), fieldArray);
-	}
-
 	default TableOnConditionStep<Record> innerJoin(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions) {
 		return leftPart.innerJoin(rightPart).on(joinConditions.toArray(Condition[]::new));
 	}

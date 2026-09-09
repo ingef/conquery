@@ -77,6 +77,16 @@ class QueryStepRendererTest {
 	private static final class TestDialect implements CompilerDialect {
 
 		@Override
+		public Field<Date> minimumDate() {
+			return field(name("minimum_date"), Date.class);
+		}
+
+		@Override
+		public Field<Date> maximumDate() {
+			return field(name("maximum_date"), Date.class);
+		}
+
+		@Override
 		public <T> Field<T> anyValue(Field<T> field) {
 			return field;
 		}

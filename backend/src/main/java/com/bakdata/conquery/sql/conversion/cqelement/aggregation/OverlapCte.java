@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.compiler.ir.FieldExpressions;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
@@ -25,20 +25,18 @@ class OverlapCte extends DateAggregationCte {
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor) {
 
-		SqlFunctionProvider functionProvider = context.getFunctionProvider();
-
 		DateAggregationDates dateAggregationDates = context.getDateAggregationDates();
 		List<Field<Date>> allStarts = dateAggregationDates.allStarts();
 		List<Field<Date>> allEnds = dateAggregationDates.allEnds();
 
-		ColumnDateRange overlapValidityDate = context.getSqlAggregationAction().getOverlapValidityDate(context.getDateAggregationDates(), functionProvider);
+		ColumnDateRange overlapValidityDate = context.getSqlAggregationAction().getOverlapValidityDate(context.getDateAggregationDates());
 		Selects overlapSelects = Selects.builder()
 										.ids(context.getIds())
 										.validityDate(Optional.of(overlapValidityDate.asValidityDateRange(predecessor)))
 										.sqlSelects(context.getCarryThroughSelects())
 										.build();
 
-		Condition startBeforeEnd = functionProvider.greatest(allStarts).lessThan(functionProvider.least(allEnds));
+		Condition startBeforeEnd = FieldExpressions.greatest(allStarts).lessThan(FieldExpressions.least(allEnds));
 		Condition allStartsNotNull = allStarts.stream()
 											  .map(Field::isNotNull)
 											  .reduce(Condition::and)

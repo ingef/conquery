@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.compiler.ir.FieldExpressions;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
@@ -32,10 +32,10 @@ class MergeAggregateAction implements SqlAggregationAction {
 	}
 
 	@Override
-	public ColumnDateRange getOverlapValidityDate(DateAggregationDates dateAggregationDates, SqlFunctionProvider functionProvider) {
+	public ColumnDateRange getOverlapValidityDate(DateAggregationDates dateAggregationDates) {
 
-		Field<Date> rangeStart = functionProvider.least(dateAggregationDates.allStarts());
-		Field<Date> rangeEnd = functionProvider.greatest(dateAggregationDates.allEnds());
+		Field<Date> rangeStart = FieldExpressions.least(dateAggregationDates.allStarts());
+		Field<Date> rangeEnd = FieldExpressions.greatest(dateAggregationDates.allEnds());
 
 		return ColumnDateRange.of(
 				rangeStart.as(DateAggregationCte.RANGE_START),

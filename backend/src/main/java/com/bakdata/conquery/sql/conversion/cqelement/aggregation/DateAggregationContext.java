@@ -5,10 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
-import com.bakdata.conquery.sql.conversion.Context;
-import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.Qualifiable;
 import com.bakdata.conquery.sql.compiler.ir.QualifyingUtil;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
@@ -20,7 +18,7 @@ import lombok.Value;
 
 @Value
 @Builder(toBuilder = true)
-class DateAggregationContext implements Context, Qualifiable<DateAggregationContext> {
+class DateAggregationContext implements Qualifiable<DateAggregationContext> {
 
 	SqlIdColumns ids;
 	List<SqlSelect> carryThroughSelects;
@@ -29,7 +27,7 @@ class DateAggregationContext implements Context, Qualifiable<DateAggregationCont
 	@Builder.Default
 	Map<DateAggregationCteStep, List<QueryStep>> intervalMergeSteps = new HashMap<>();
 	SqlAggregationAction sqlAggregationAction;
-	ConversionContext conversionContext;
+	CompilerDialect compilerDialect;
 
 	public DateAggregationContext withStep(DateAggregationCteStep dateAggregationCteStep, QueryStep queryStep) {
 		this.intervalMergeSteps.computeIfAbsent(dateAggregationCteStep, k -> new ArrayList<>())
@@ -61,11 +59,6 @@ class DateAggregationContext implements Context, Qualifiable<DateAggregationCont
 				   .carryThroughSelects(QualifyingUtil.qualify(this.carryThroughSelects, qualifier))
 				   .dateAggregationDates(this.dateAggregationDates.qualify(qualifier))
 				   .build();
-	}
-
-	@Override
-	public LegacyCompilerDialect getCompilerDialect() {
-		return getConversionContext().getCompilerDialect();
 	}
 
 }
