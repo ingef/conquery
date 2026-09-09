@@ -43,7 +43,6 @@ const EditProjectItemFoldersModal = ({
       </ModalHeader>
       <ModalBody>
         <EditableTagsForm
-          className="min-w-[300px] max-w-[500px]"
           tags={item.tags}
           loading={loading}
           onSubmit={onSubmit}

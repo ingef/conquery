@@ -18,6 +18,7 @@ const ExpandPreviousQueryModal = ({
 
   return (
     <Modal
+      size="sm"
       isOpen
       onOpenChange={(isOpen) => {
         if (!isOpen) onClose();
@@ -32,9 +33,7 @@ const ExpandPreviousQueryModal = ({
         }}
       >
         <ModalBody>
-          <p className="max-w-[400px]">
-            {t("expandPreviousQueryModal.description")}
-          </p>
+          <p>{t("expandPreviousQueryModal.description")}</p>
         </ModalBody>
         <ModalFooter>
           <Button slot="close">{t("common.cancel")}</Button>

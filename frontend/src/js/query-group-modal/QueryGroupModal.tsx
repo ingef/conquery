@@ -100,7 +100,7 @@ const QueryGroupModal = ({
     >
       <ModalHeader>{t("queryGroupModal.explanation")}</ModalHeader>
       <ModalBody>
-        <div className="block mb-[15px] max-w-[450px]">
+        <div className="block mb-[15px]">
           <span className="pr-[5px]" key={-1}>
             {t("queryGroupModal.headlineStart")}
           </span>

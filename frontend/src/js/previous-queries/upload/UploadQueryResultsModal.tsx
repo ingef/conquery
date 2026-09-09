@@ -16,7 +16,7 @@ const successIcon = tv({
 });
 
 const dropzone = tv({
-  base: ["w-full", "cursor-pointer", "px-[250px] py-[180px]"],
+  base: ["w-full", "cursor-pointer", "py-[180px]"],
 });
 
 const UploadQueryResultsModal = ({
@@ -45,6 +45,7 @@ const UploadQueryResultsModal = ({
 
   return (
     <Modal
+      size="lg"
       scrollable
       isOpen
       onOpenChange={(isOpen) => {

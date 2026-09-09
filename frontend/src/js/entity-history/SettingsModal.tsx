@@ -26,17 +26,15 @@ export const SettingsModal = ({
     >
       <ModalHeader>{t("history.settings.headline")}</ModalHeader>
       <ModalBody>
-        <div className="w-[300px]">
-          <InputMultiSelect
-            creatable
-            label={t("history.settings.selectStatusHeadline")}
-            placeholder={t("history.settings.selectStatusPlaceholder")}
-            tooltip={t("history.settings.selectStatusTooltip")}
-            onChange={setEntityStatusOptions}
-            value={entityStatusOptions}
-            options={entityStatusOptions}
-          />
-        </div>
+        <InputMultiSelect
+          creatable
+          label={t("history.settings.selectStatusHeadline")}
+          placeholder={t("history.settings.selectStatusPlaceholder")}
+          tooltip={t("history.settings.selectStatusTooltip")}
+          onChange={setEntityStatusOptions}
+          value={entityStatusOptions}
+          options={entityStatusOptions}
+        />
       </ModalBody>
     </Modal>
   );

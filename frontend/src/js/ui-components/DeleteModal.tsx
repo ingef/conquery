@@ -20,6 +20,7 @@ export const DeleteModal = ({
 
   return (
     <Modal
+      size="sm"
       isOpen
       onOpenChange={(isOpen) => {
         if (!isOpen) onClose();
@@ -28,7 +29,7 @@ export const DeleteModal = ({
       <ModalHeader>{headline}</ModalHeader>
       {description && (
         <ModalBody>
-          <p className="max-w-[400px]">{description}</p>
+          <p>{description}</p>
         </ModalBody>
       )}
       <ModalFooter>

@@ -21,21 +21,29 @@ const overlay = tv({
 
 const modal = tv({
   base: [
-    "mx-5",
-    "max-h-[95%] max-w-full",
+    "w-full mx-5",
+    "max-h-[95%]",
     "rounded",
     "bg-white",
     "shadow-[0_0_15px_0_rgba(0,0,0,0.2)]",
     "outline-none",
   ],
   variants: {
+    // the card's width, 30 px padding included; the content fills it
+    size: {
+      sm: "max-w-[440px]",
+      md: "max-w-[560px]",
+      lg: "max-w-[760px]",
+      xl: "max-w-[1000px]",
+      full: "max-w-none",
+    },
     // visible overflow lets the menus of the select boxes reach past the card
     scrollable: {
       true: "overflow-y-auto",
       false: "overflow-y-visible",
     },
   },
-  defaultVariants: { scrollable: false },
+  defaultVariants: { size: "md", scrollable: false },
 });
 
 const dialog = tv({
@@ -47,8 +55,6 @@ const header = tv({ base: ["flex flex-col", "gap-[15px]"] });
 const heading = tv({
   base: ["flex items-center", "text-lg font-normal text-gray-800"],
 });
-
-const subtitleStyle = tv({ base: "max-w-[600px]" });
 
 const body = tv({ base: "min-w-0" });
 
@@ -62,6 +68,12 @@ export interface ModalProps
   children: ReactNode | ((renderProps: DialogRenderProps) => ReactNode);
   /** names the dialog when it has no ModalHeader */
   "aria-label"?: string;
+  /**
+   * the card's width: `sm` 440 px for a confirmation, `md` 560 px for a form
+   * (the default), `lg` 760 px for a text area or a drop area, `xl` 1000 px
+   * for wide tables, `full` the viewport minus its margins
+   */
+  size?: "sm" | "md" | "lg" | "xl" | "full";
   /** the card scrolls instead of growing past the viewport */
   scrollable?: boolean;
   "data-test-id"?: string;
@@ -86,18 +98,19 @@ export interface ModalProps
  *     </Modal>
  *   </DialogTrigger>
  *
- * Header and footer are optional. Layout around the modal is none of the
- * caller's concern; layout inside the body is the caller's.
+ * Header and footer are optional. `size` sets the card's width, the content
+ * fills it; layout inside the body is the caller's.
  */
 export const Modal = ({
   children,
   "aria-label": ariaLabel,
+  size,
   scrollable,
   "data-test-id": dataTestId,
   ...props
 }: ModalProps) => (
   <ModalOverlay className={overlay()} isDismissable {...props}>
-    <RacModal className={modal({ scrollable })} data-test-id={dataTestId}>
+    <RacModal className={modal({ size, scrollable })} data-test-id={dataTestId}>
       <Dialog className={dialog()} aria-label={ariaLabel}>
         {children}
       </Dialog>
@@ -117,7 +130,7 @@ export const ModalHeader = ({
     <Heading slot="title" className={heading()}>
       {children}
     </Heading>
-    {subtitle && <p className={subtitleStyle()}>{subtitle}</p>}
+    {subtitle && <p>{subtitle}</p>}
   </header>
 );
 

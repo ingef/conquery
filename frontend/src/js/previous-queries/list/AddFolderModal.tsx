@@ -35,7 +35,7 @@ const AddFolderModal = ({ onClose, onSubmit, isValidName }: Props) => {
         }}
       >
         <ModalBody>
-          <div className="flex max-w-[500px] flex-col gap-5">
+          <div className="flex flex-col gap-5">
             <p>{t("addFolderModal.description")}</p>
             <InputPlain
               label={t("addFolderModal.inputLabel")}

@@ -480,6 +480,7 @@ const UploadConceptListModal = ({
 
   return (
     <Modal
+      size="xl"
       data-test-id="uploadConceptListModal"
       isOpen
       onOpenChange={(isOpen) => {
@@ -489,7 +490,7 @@ const UploadConceptListModal = ({
       <ModalHeader>{t("uploadConceptListModal.headline")}</ModalHeader>
       <ModalBody>
         <InputSelect
-          className="w-[60vw] max-w-[900px]"
+          className="w-full"
           label={t("uploadConceptListModal.selectConceptRootNode")}
           value={
             selectOptions.find(({ value }) => value === selectedValue) || null

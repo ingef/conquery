@@ -26,6 +26,7 @@ export default function DiagramModal({
 
   return (
     <Modal
+      size="full"
       aria-label={t("preview.headline")}
       isOpen
       onOpenChange={(isOpen) => {

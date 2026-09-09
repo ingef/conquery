@@ -10,7 +10,7 @@ import type { TimeOperator, TimeTimestamp, TreeChildrenTime } from "../types";
 import { useGetNodeLabel } from "../util";
 
 const content = tv({
-  base: ["flex flex-col", "gap-[15px]", "min-w-[350px]"],
+  base: ["flex flex-col", "gap-[15px]"],
 });
 
 const row = tv({

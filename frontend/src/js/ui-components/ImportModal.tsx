@@ -19,9 +19,7 @@ const textarea = tv({
   base: ["font-mono", "w-full"],
 });
 
-const subtitle = tv({
-  base: ["m-0", "max-w-[600px]"],
-});
+const subtitle = tv({ base: "m-0" });
 
 const acceptedDropTypes = [NativeTypes.FILE];
 
@@ -129,6 +127,7 @@ export const ImportModal = ({
 
   return (
     <Modal
+      size="lg"
       isOpen
       onOpenChange={(isOpen) => {
         if (!isOpen) onClose();

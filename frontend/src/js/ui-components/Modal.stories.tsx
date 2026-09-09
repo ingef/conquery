@@ -17,10 +17,10 @@ export const Confirmation: Story = {
   render: () => (
     <DialogTrigger>
       <Button>Delete folder</Button>
-      <Modal>
+      <Modal size="sm">
         <ModalHeader>Delete the folder?</ModalHeader>
         <ModalBody>
-          <p className="max-w-[400px]">
+          <p>
             The folder "Reports 2024" is removed from all queries. The queries
             themselves stay.
           </p>
@@ -43,7 +43,7 @@ export const HeaderAndBodyOnly: Story = {
       <Modal>
         <ModalHeader subtitle="Applies to this session">Settings</ModalHeader>
         <ModalBody>
-          <p className="w-[300px]">
+          <p>
             Escape or a click outside closes the dialog; there is no footer.
           </p>
         </ModalBody>
@@ -59,9 +59,7 @@ export const DoneButton: Story = {
       <Modal>
         <ModalHeader>Date range</ModalHeader>
         <ModalBody>
-          <p className="w-[350px]">
-            Edits apply as you make them, so the footer only has "Done".
-          </p>
+          <p>Edits apply as you make them, so the footer only has "Done".</p>
         </ModalBody>
         <ModalFooter>
           <Button slot="close">Done</Button>
@@ -106,6 +104,32 @@ export const WithForm: Story = {
   ),
 };
 
+const sizes = ["sm", "md", "lg", "xl", "full"] as const;
+
+export const Sizes: Story = {
+  render: () => (
+    <div className="flex gap-2">
+      {sizes.map((size) => (
+        <DialogTrigger key={size}>
+          <Button>{size}</Button>
+          <Modal size={size}>
+            <ModalHeader>Size {size}</ModalHeader>
+            <ModalBody>
+              <p>
+                The card has a fixed width per size; the content fills it and
+                wraps inside it.
+              </p>
+            </ModalBody>
+            <ModalFooter>
+              <Button slot="close">Done</Button>
+            </ModalFooter>
+          </Modal>
+        </DialogTrigger>
+      ))}
+    </div>
+  ),
+};
+
 export const Scrollable: Story = {
   render: () => (
     <DialogTrigger>
@@ -113,7 +137,7 @@ export const Scrollable: Story = {
       <Modal scrollable>
         <ModalHeader>Regions</ModalHeader>
         <ModalBody>
-          <ul className="flex w-[300px] flex-col gap-2">
+          <ul className="flex flex-col gap-2">
             {Array.from({ length: 60 }, (_, i) => (
               <li key={i}>Region {i + 1}</li>
             ))}
@@ -136,7 +160,7 @@ const Controlled = () => {
       <Modal isOpen={isOpen} onOpenChange={setOpen}>
         <ModalHeader>File received</ModalHeader>
         <ModalBody>
-          <p className="w-[300px]">3 of 4 rows resolved.</p>
+          <p>3 of 4 rows resolved.</p>
         </ModalBody>
         <ModalFooter>
           <Button slot="close">Done</Button>
