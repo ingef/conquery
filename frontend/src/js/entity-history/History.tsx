@@ -42,7 +42,12 @@ const controls = tv({
 });
 
 const sidebar = tv({
-  base: ["flex flex-col", "gap-5", "pt-[10px]", "border-r border-gray-100"],
+  base: [
+    "flex flex-col",
+    "gap-5",
+    "px-[10px] pt-[10px]",
+    "border-r border-gray-100",
+  ],
 });
 
 const sidebarBottom = tv({
