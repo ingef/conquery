@@ -6,6 +6,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { type ComponentProps, useEffect, useState } from "react";
 import { useFieldArray } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { exists } from "../../../common/helpers/exists";
 import { usePrevious } from "../../../common/helpers/usePrevious";
@@ -50,6 +51,7 @@ const DisclosureField = ({
   canRemove?: boolean;
   commonProps: Omit<ComponentProps<typeof Field>, "field">;
 }) => {
+  const { t } = useTranslation();
   if (field.fields.length === 0) return null;
 
   const { formType, locale } = commonProps;
@@ -82,7 +84,12 @@ const DisclosureField = ({
         </div>
         {field.creatable && canRemove && (
           <div className="absolute right-0 top-1/2 -translate-y-1/2">
-            <Button size="sm" intent="tertiary" onPress={() => remove(index)}>
+            <Button
+              size="sm"
+              intent="tertiary"
+              aria-label={t("common.delete")}
+              onPress={() => remove(index)}
+            >
               <Icon icon={faTimes} />
             </Button>
           </div>

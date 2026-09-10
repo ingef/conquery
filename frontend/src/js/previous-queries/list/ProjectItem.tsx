@@ -268,6 +268,7 @@ const ProjectItem = ({
               <Button
                 intent="tertiary"
                 size="sm"
+                aria-label={t("previousQuery.editFolders")}
                 onPress={onIndicateEditFolders}
                 isDisabled={!mayEdit}
               >

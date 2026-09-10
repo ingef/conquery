@@ -63,8 +63,8 @@ const arrow = tv({
  *     <Tooltip>{text}</Tooltip>
  *   </TooltipTrigger>
  *
- * Buttons based on BasicButton attach themselves to the trigger.
- * Other elements need a TooltipTarget (or react-aria's Focusable for native buttons).
+ * Button and ToggleButton are triggers on their own. Other elements need
+ * a TooltipTarget (or react-aria's Focusable for native buttons).
  *
  * Timing follows Spectrum's tooltip guideline: tooltips wait for a global
  * warm-up, after which neighboring tooltips open immediately. Pick the

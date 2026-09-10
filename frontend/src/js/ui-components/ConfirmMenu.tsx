@@ -10,7 +10,7 @@ import { Menu, MenuItem } from "./Menu";
 
 /**
  * Asks for confirmation before calling onConfirm: a menu with a single item.
- * The child is the trigger, a button built on BasicButton.
+ * The child is the trigger: a Button or ToggleButton.
  */
 export const ConfirmMenu = ({
   children,

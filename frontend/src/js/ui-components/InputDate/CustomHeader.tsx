@@ -4,6 +4,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import type { ReactDatePickerCustomHeaderProps } from "react-datepicker";
+import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../../api/types";
 import { useMonthName, useMonthNames } from "../../common/helpers/dateHelper";
@@ -145,10 +146,12 @@ export const CustomHeader = ({
   prevMonthButtonDisabled,
   nextMonthButtonDisabled,
 }: ReactDatePickerCustomHeaderProps) => {
+  const { t } = useTranslation();
   return (
     <div className={root()}>
       <Button
         intent="tertiary"
+        aria-label={t("inputDate.previousMonth")}
         onPress={decreaseMonth}
         isDisabled={prevMonthButtonDisabled}
       >
@@ -161,6 +164,7 @@ export const CustomHeader = ({
       />
       <Button
         intent="tertiary"
+        aria-label={t("inputDate.nextMonth")}
         onPress={increaseMonth}
         isDisabled={nextMonthButtonDisabled}
       >
