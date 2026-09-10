@@ -29,20 +29,30 @@ const periods = [
   { id: "month", label: "Month", description: "One row per month" },
 ];
 
+const regions = [
+  "North",
+  "South",
+  "East",
+  "West",
+  "Central",
+  "Coast",
+  "Highlands",
+  "Islands",
+];
+
 const detailLevels = [
   { id: "summary", icon: faCircle, label: "Summary" },
   { id: "detail", icon: faCircleDot, label: "Detail" },
   { id: "full", icon: faBullseye, label: "Everything" },
 ];
 
-/** one connected control, exactly one segment selected, in every size */
-export const Segmented: Story = {
+/** exactly one button selected, in every size */
+export const SingleSelection: Story = {
   render: () => (
     <div className="flex flex-col items-start gap-3">
       {sizes.map((size) => (
         <ToggleButtonGroup
           key={size}
-          segmented
           size={size}
           selectionMode="single"
           disallowEmptySelection
@@ -60,11 +70,10 @@ export const Segmented: Story = {
   ),
 };
 
-/** each segment explains itself in a tooltip */
-export const SegmentedWithTooltips: Story = {
+/** each option explains itself in a tooltip */
+export const WithTooltips: Story = {
   render: () => (
     <ToggleButtonGroup
-      segmented
       size="sm"
       selectionMode="single"
       disallowEmptySelection
@@ -81,24 +90,25 @@ export const SegmentedWithTooltips: Story = {
   ),
 };
 
-/** the segments stack when the group is vertical */
-export const SegmentedVertical: Story = {
+/** options that come from data continue on the next line when the group may wrap */
+export const Wrapping: Story = {
   render: () => (
-    <ToggleButtonGroup
-      segmented
-      size="sm"
-      orientation="vertical"
-      selectionMode="single"
-      disallowEmptySelection
-      defaultSelectedKeys={["week"]}
-      aria-label="Period"
-    >
-      {periods.map(({ id, label }) => (
-        <ToggleButton key={id} id={id}>
-          {label}
-        </ToggleButton>
-      ))}
-    </ToggleButtonGroup>
+    <div className="flex w-72 flex-col gap-3 border border-dashed border-gray-400 p-3">
+      <ToggleButtonGroup
+        wrap
+        size="sm"
+        selectionMode="single"
+        disallowEmptySelection
+        defaultSelectedKeys={["North"]}
+        aria-label="Region"
+      >
+        {regions.map((region) => (
+          <ToggleButton key={region} id={region}>
+            {region}
+          </ToggleButton>
+        ))}
+      </ToggleButtonGroup>
+    </div>
   ),
 };
 
