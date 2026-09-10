@@ -49,8 +49,12 @@ const Counter = ({ label }: { label: string }) => {
   );
 };
 
-/** Force-mounted panels keep their state while another tab shows. */
-export const PanelsKeepState: Story = {
+/**
+ * `shouldForceMount` keeps a panel mounted (hidden, inert) while another tab
+ * shows, so what the user did in it survives a switch: the panes use it for
+ * the concept trees and the editors. Click a counter, switch, switch back.
+ */
+export const ForceMountedPanels: Story = {
   render: () => (
     <div className="w-[480px]">
       <Tabs defaultSelectedKey="a">
