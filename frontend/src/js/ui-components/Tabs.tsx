@@ -57,6 +57,7 @@ const list = tv({
 const tab = tv({
   base: [
     "relative",
+    "shrink-0 whitespace-nowrap",
     "cursor-pointer",
     "outline-none",
     "transition-colors duration-100",
