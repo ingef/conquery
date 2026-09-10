@@ -1,4 +1,12 @@
-import { createContext, type ReactNode, useContext } from "react";
+import {
+  type ContextType,
+  createContext,
+  type ReactNode,
+  type RefObject,
+  useContext,
+  useEffect,
+  useRef,
+} from "react";
 import {
   Tab as RacTab,
   TabList as RacTabList,
@@ -22,7 +30,29 @@ import {
 
 type Variant = "primary" | "secondary";
 
-const VariantContext = createContext<Variant>("primary");
+type TabListState = NonNullable<ContextType<typeof TabListStateContext>>;
+
+// react-aria renders the tabs once into a hidden tree to collect them and once
+// for real; a Tab's hooks run in the hidden pass, where react-aria's state
+// context is not provided yet. This context sits above both passes and hands
+// the Tab the real state through a ref.
+const TabsContext = createContext<{
+  variant: Variant;
+  stateRef: RefObject<TabListState | null>;
+}>({ variant: "primary", stateRef: { current: null } });
+
+// rendered inside react-aria's Tabs, so the real pass sees the state
+const StateBridge = ({
+  stateRef,
+}: {
+  stateRef: RefObject<TabListState | null>;
+}) => {
+  const state = useContext(TabListStateContext);
+  useEffect(() => {
+    if (state) stateRef.current = state;
+  }, [state, stateRef]);
+  return null;
+};
 
 const root = tv({
   base: ["flex flex-col", "min-h-0"],
@@ -134,18 +164,22 @@ export const Tabs = ({
   children,
   onSelectionChange,
   ...props
-}: TabsProps) => (
-  <VariantContext.Provider value={variant}>
-    <RacTabs
-      className={root({ variant })}
-      // the ids are strings, react-aria's key type also allows numbers
-      onSelectionChange={(key) => onSelectionChange?.(String(key))}
-      {...props}
-    >
-      {children}
-    </RacTabs>
-  </VariantContext.Provider>
-);
+}: TabsProps) => {
+  const stateRef = useRef<TabListState | null>(null);
+  return (
+    <TabsContext.Provider value={{ variant, stateRef }}>
+      <RacTabs
+        className={root({ variant })}
+        // the ids are strings, react-aria's key type also allows numbers
+        onSelectionChange={(key) => onSelectionChange?.(String(key))}
+        {...props}
+      >
+        <StateBridge stateRef={stateRef} />
+        {children}
+      </RacTabs>
+    </TabsContext.Provider>
+  );
+};
 
 export interface TabListProps
   extends Omit<
@@ -158,7 +192,7 @@ export interface TabListProps
 }
 
 export const TabList = ({ children, ...props }: TabListProps) => {
-  const variant = useContext(VariantContext);
+  const { variant } = useContext(TabsContext);
   return (
     <RacTabList className={list({ variant })} {...props}>
       {children}
@@ -175,10 +209,10 @@ export interface TabProps
 }
 
 export const Tab = ({ id, tooltip, children, ...props }: TabProps) => {
-  const variant = useContext(VariantContext);
-  const state = useContext(TabListStateContext);
+  const { variant, stateRef } = useContext(TabsContext);
   const { drop, isOver, isDroppable } = useHoverNavigate({
     triggerNavigate: () => {
+      const state = stateRef.current;
       if (state && state.selectedKey !== id) state.setSelectedKey(id);
     },
   });
