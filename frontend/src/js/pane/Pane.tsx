@@ -1,9 +1,10 @@
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 
 import type { StateT } from "../app/reducers";
-import { Tab, TabList, Tabs } from "../ui-components/Tabs";
+import { Tab, TabList, TabPanel, Tabs } from "../ui-components/Tabs";
 import { clickPaneTab } from "./actions";
 
 const root = tv({ base: ["h-full w-full", "pt-[40px]"] });
@@ -16,6 +17,7 @@ export interface PaneTab {
   key: string;
   label: string;
   tooltip?: string;
+  content: ReactNode;
 }
 
 interface Props {
@@ -24,10 +26,11 @@ interface Props {
   left?: boolean;
   className?: string;
   dataTestId: string;
-  children: React.ReactNode;
 }
 
-const Pane = ({ tabs, left, children, className, dataTestId }: Props) => {
+// every tab's content stays mounted while another tab shows, so editors and
+// trees keep their state across a switch
+const Pane = ({ tabs, left, className, dataTestId }: Props) => {
   const { t } = useTranslation();
   const paneType = left ? "left" : "right";
   const activeTab = useSelector<StateT, string | null>(
@@ -54,10 +57,14 @@ const Pane = ({ tabs, left, children, className, dataTestId }: Props) => {
               </Tab>
             ))}
           </TabList>
+          <div className={container()} data-test-id={`${dataTestId}-container`}>
+            {tabs.map(({ key, content }) => (
+              <TabPanel key={key} id={key} shouldForceMount>
+                {content}
+              </TabPanel>
+            ))}
+          </div>
         </Tabs>
-        <div className={container()} data-test-id={`${dataTestId}-container`}>
-          {children}
-        </div>
       </div>
     </div>
   );

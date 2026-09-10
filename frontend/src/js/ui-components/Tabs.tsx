@@ -20,24 +20,34 @@ import {
   tooltipDelay,
 } from "./Tooltip";
 
-type Variant = "underline" | "boxed";
+type Variant = "primary" | "secondary";
 type Size = "sm" | "md";
 
 const TabsStyleContext = createContext<{ variant: Variant; size: Size }>({
-  variant: "underline",
+  variant: "primary",
   size: "md",
+});
+
+const root = tv({
+  base: ["flex flex-col", "min-h-0"],
+  variants: {
+    variant: { primary: "", secondary: "" },
+    size: { sm: "", md: "" },
+  },
+  // a pane's main navigation fills its pane
+  compoundVariants: [{ variant: "primary", size: "md", class: "h-full" }],
 });
 
 const list = tv({
   base: "flex items-start",
   variants: {
-    variant: { underline: "", boxed: "pt-[3px] pl-[10px]" },
+    variant: { primary: "", secondary: "pt-[3px] pl-[10px]" },
     size: { sm: "", md: "" },
   },
   compoundVariants: [
     // the panes' main navigation: a line the tabs sit on
     {
-      variant: "underline",
+      variant: "primary",
       size: "md",
       class: ["px-5", "border-b border-gray-100", "bg-white"],
     },
@@ -53,7 +63,7 @@ const tab = tv({
     "data-focus-visible:outline-2 data-focus-visible:-outline-offset-2 data-focus-visible:outline-primary-500",
   ],
   variants: {
-    variant: { underline: "", boxed: "" },
+    variant: { primary: "", secondary: "" },
     size: { sm: "", md: "" },
     // a dragged item may be dropped here: the tab switches while hovering
     droppable: { true: "bg-gray-50" },
@@ -61,7 +71,7 @@ const tab = tv({
   },
   compoundVariants: [
     {
-      variant: "underline",
+      variant: "primary",
       size: "md",
       class: [
         "mt-[6px] mr-[5px] px-3",
@@ -73,7 +83,7 @@ const tab = tv({
       ],
     },
     {
-      variant: "underline",
+      variant: "primary",
       size: "sm",
       class: [
         "mx-[2px] px-[3px]",
@@ -88,7 +98,7 @@ const tab = tv({
     },
     // sits on the box below it like a folder tab
     {
-      variant: "boxed",
+      variant: "secondary",
       size: "md",
       class: [
         "mx-[2px] px-[10px]",
@@ -107,23 +117,35 @@ const tab = tv({
 
 const tabTarget = tv({ base: "block" });
 
+// a force-mounted panel of an unselected tab is inert: hidden, state kept
+const panel = tv({
+  base: [
+    "flex flex-col",
+    "grow",
+    "min-h-0",
+    "outline-none",
+    "data-inert:hidden",
+  ],
+});
+
 export interface TabsProps
   extends Omit<
     RacTabsProps,
     "className" | "style" | "children" | "orientation"
   > {
   children: ReactNode;
-  /** `underline` marks the selected tab with a bar, `boxed` connects it to the box below */
+  /** `primary` underlines the selected tab, `secondary` connects it to the box below */
   variant?: Variant;
-  /** `md` for a main navigation, `sm` for a switch inside a pane */
+  /** `md` for a main navigation, `sm` for tabs inside a pane */
   size?: Size;
 }
 
 /**
  * Tabs on react-aria-components: `selectedKey` / `onSelectionChange`, arrow
- * keys move between the tabs, each keyed by `id`. A `TabPanel` with the same
- * id shows while its tab is selected; content rendered elsewhere works too.
- * A dragged item hovering over a tab switches to it.
+ * keys move between the tabs, each keyed by `id`. The `TabPanel` with the
+ * same id shows while its tab is selected; `shouldForceMount` keeps a panel
+ * mounted (hidden and inert) so its state survives a switch. A dragged item
+ * hovering over a tab switches to it.
  *
  *   <Tabs selectedKey={tab} onSelectionChange={setTab}>
  *     <TabList aria-label="Editors">
@@ -134,13 +156,15 @@ export interface TabsProps
  *   </Tabs>
  */
 export const Tabs = ({
-  variant = "underline",
+  variant = "primary",
   size = "md",
   children,
   ...props
 }: TabsProps) => (
   <TabsStyleContext.Provider value={{ variant, size }}>
-    <RacTabs {...props}>{children}</RacTabs>
+    <RacTabs className={root({ variant, size })} {...props}>
+      {children}
+    </RacTabs>
   </TabsStyleContext.Provider>
 );
 
@@ -215,5 +239,7 @@ export interface TabPanelProps
 }
 
 export const TabPanel = ({ children, ...props }: TabPanelProps) => (
-  <RacTabPanel {...props}>{children}</RacTabPanel>
+  <RacTabPanel className={panel()} {...props}>
+    {children}
+  </RacTabPanel>
 );

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { useState } from "react";
 
 import { Tab, TabList, TabPanel, Tabs } from "./Tabs";
 
@@ -10,7 +11,7 @@ export default {
 
 type Story = StoryObj<typeof Tabs>;
 
-export const Underline: Story = {
+export const Primary: Story = {
   render: () => (
     <div className="w-[480px]">
       <Tabs defaultSelectedKey="regions">
@@ -35,7 +36,40 @@ export const Underline: Story = {
   ),
 };
 
-export const UnderlineSmall: Story = {
+const Counter = ({ label }: { label: string }) => {
+  const [count, setCount] = useState(0);
+  return (
+    <button
+      type="button"
+      className="p-5 text-sm underline"
+      onClick={() => setCount((c) => c + 1)}
+    >
+      {label}: clicked {count} times
+    </button>
+  );
+};
+
+/** Force-mounted panels keep their state while another tab shows. */
+export const PanelsKeepState: Story = {
+  render: () => (
+    <div className="w-[480px]">
+      <Tabs defaultSelectedKey="a">
+        <TabList aria-label="Editors">
+          <Tab id="a">Editor A</Tab>
+          <Tab id="b">Editor B</Tab>
+        </TabList>
+        <TabPanel id="a" shouldForceMount>
+          <Counter label="A" />
+        </TabPanel>
+        <TabPanel id="b" shouldForceMount>
+          <Counter label="B" />
+        </TabPanel>
+      </Tabs>
+    </div>
+  ),
+};
+
+export const PrimarySmall: Story = {
   render: () => (
     <Tabs size="sm" defaultSelectedKey="all">
       <TabList aria-label="Filter">
@@ -47,20 +81,26 @@ export const UnderlineSmall: Story = {
   ),
 };
 
-export const Boxed: Story = {
+export const Secondary: Story = {
   render: () => (
     <div className="w-[400px]">
-      <Tabs variant="boxed" defaultSelectedKey="north">
+      <Tabs variant="secondary" defaultSelectedKey="north">
         <TabList aria-label="Region">
           <Tab id="north" tooltip="The northern regions">
             North
           </Tab>
           <Tab id="south">South</Tab>
         </TabList>
-        <div className="rounded border border-gray-500 bg-bg-50 px-[10px] py-3 text-sm">
-          <TabPanel id="north">Fields for the north.</TabPanel>
-          <TabPanel id="south">Fields for the south.</TabPanel>
-        </div>
+        <TabPanel id="north">
+          <div className="rounded border border-gray-500 bg-bg-50 px-[10px] py-3 text-sm">
+            Fields for the north.
+          </div>
+        </TabPanel>
+        <TabPanel id="south">
+          <div className="rounded border border-gray-500 bg-bg-50 px-[10px] py-3 text-sm">
+            Fields for the south.
+          </div>
+        </TabPanel>
       </Tabs>
     </div>
   ),
