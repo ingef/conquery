@@ -5,10 +5,10 @@ import {
   faInfo,
 } from "@fortawesome/free-solid-svg-icons";
 import { memo, useMemo, useState } from "react";
-import { ToggleButtonGroup } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { Icon } from "../ui-components/Icon";
 import { ToggleButton } from "../ui-components/ToggleButton";
+import { ToggleButtonGroup } from "../ui-components/ToggleButtonGroup";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 export type ContentType =
@@ -56,7 +56,6 @@ const ContentControl = ({ value, onChange }: Props) => {
 
   return (
     <ToggleButtonGroup
-      className="flex flex-col items-center"
       orientation="vertical"
       selectionMode="multiple"
       selectedKeys={options.filter((o) => value[o.key]).map((o) => o.key)}

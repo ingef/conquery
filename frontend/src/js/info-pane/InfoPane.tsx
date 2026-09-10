@@ -10,7 +10,7 @@ import remarkFlexibleMarkers from "remark-flexible-markers";
 import remarkGfm from "remark-gfm";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
-import { Highlighter } from "../common/components/Highlighter";
+import { Highlighter } from "../ui-components/Highlighter";
 import { Icon } from "../ui-components/Icon";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { toggleAdditionalInfos as toggleInfos } from "./actions";

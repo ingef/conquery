@@ -1,8 +1,7 @@
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
-
-import ProgressBar from "../common/components/ProgressBar";
 import { Icon } from "../ui-components/Icon";
+import ProgressBar from "../ui-components/ProgressBar";
 
 import type { TreesT } from "./reducer";
 

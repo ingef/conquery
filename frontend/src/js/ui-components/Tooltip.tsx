@@ -12,7 +12,6 @@ import { tv } from "tailwind-variants";
 const tooltip = tv({
   base: [
     "z-[9999]",
-    "max-w-[400px]",
     "rounded",
     "bg-white",
     "shadow-[0_0_8px_rgba(0,0,0,0.18)]",
@@ -31,9 +30,15 @@ const tooltip = tv({
     "[&_li]:leading-[1.3] [&_li]:mb-[5px]",
   ],
   variants: {
-    wide: { true: "max-w-[700px]" },
+    size: {
+      normal: "max-w-[400px]",
+      wide: "max-w-[700px]",
+    },
   },
+  defaultVariants: { size: "normal" },
 });
+
+export type TooltipSize = "normal" | "wide";
 
 /** Warm-up in ms before a tooltip opens. */
 export const tooltipDelay = {
@@ -63,8 +68,8 @@ const arrow = tv({
  *     <Tooltip>{text}</Tooltip>
  *   </TooltipTrigger>
  *
- * Buttons based on BasicButton attach themselves to the trigger.
- * Other elements need a TooltipTarget (or react-aria's Focusable for native buttons).
+ * Button and ToggleButton are triggers on their own. Other elements need
+ * a TooltipTarget (or react-aria's Focusable for native buttons).
  *
  * Timing follows Spectrum's tooltip guideline: tooltips wait for a global
  * warm-up, after which neighboring tooltips open immediately. Pick the
@@ -90,20 +95,21 @@ export const TooltipTrigger = ({
 export const Tooltip = ({
   children,
   className,
-  wide,
+  size,
   offset = 10,
   ...props
 }: Omit<RacTooltipProps, "className" | "children"> & {
   children?: ReactNode;
   className?: string;
-  wide?: boolean;
+  /** wide for rich content: paragraphs, lists, tables */
+  size?: TooltipSize;
 }) => {
   if (!children) return null;
 
   return (
     <RacTooltip
       offset={offset}
-      className={tooltip({ wide, className })}
+      className={tooltip({ size, className })}
       {...props}
     >
       <OverlayArrow className={arrow()}>

@@ -1,4 +1,5 @@
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { exists } from "../../common/helpers/exists";
 import type { DragItemQuery } from "../../standard-query-editor/types";
@@ -36,6 +37,7 @@ const FormQueryResult = ({
   error,
   onDelete,
 }: PropsT) => {
+  const { t } = useTranslation();
   return (
     <div className={root({ error: exists(error), className })}>
       {error ? (
@@ -44,7 +46,12 @@ const FormQueryResult = ({
         queryResult.label || queryResult.id
       ) : null}
       {onDelete && (
-        <Button intent="tertiary" size="sm" onPress={onDelete}>
+        <Button
+          intent="tertiary"
+          size="sm"
+          aria-label={t("common.delete")}
+          onPress={onDelete}
+        >
           <Icon icon={faTimes} />
         </Button>
       )}

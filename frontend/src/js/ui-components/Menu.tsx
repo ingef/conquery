@@ -54,8 +54,8 @@ const menuItem = tv({
  *     </Menu>
  *   </MenuTrigger>
  *
- * MenuTrigger comes from react-aria-components; buttons built on BasicButton
- * are its trigger without further wiring. Items focus on hover, arrow keys
+ * MenuTrigger comes from react-aria-components; a Button or ToggleButton
+ * is its trigger without further wiring. Items focus on hover, arrow keys
  * move between them, the menu closes after an action. `placement` positions
  * the menu relative to the trigger (default below, start-aligned).
  */

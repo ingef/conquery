@@ -4,9 +4,9 @@ import { useDispatch, useSelector } from "react-redux";
 import type { ColumnDescription } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
-import { openHistory, useNewHistorySession } from "../entity-history/actions";
 import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
+import { openHistory, useNewHistorySession } from "./actions";
 
 export const QueryResultHistoryButton = ({
   url,

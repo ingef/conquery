@@ -2,7 +2,7 @@ import { Fragment, type ReactElement } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
-import { KeyboardKey } from "../common/components/KeyboardKey";
+import { KeyboardKey } from "../ui-components/KeyboardKey";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const keyTooltip = tv({

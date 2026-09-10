@@ -1,5 +1,6 @@
 import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { Button } from "../../ui-components/Button";
 import { Icon } from "../../ui-components/Icon";
@@ -33,6 +34,7 @@ const DynamicInputGroup = ({
   onRemoveClick,
   onAddClick,
 }: PropsT) => {
+  const { t } = useTranslation();
   // 0 means "infinite"
   const limitNotReached = limit === 0 || items.length < limit;
 
@@ -55,6 +57,7 @@ const DynamicInputGroup = ({
               <Button
                 intent="tertiary"
                 size="sm"
+                aria-label={t("common.delete")}
                 onPress={() => onRemoveClick(idx)}
               >
                 <Icon icon={faTimes} />
@@ -64,7 +67,12 @@ const DynamicInputGroup = ({
         </div>
       ))}
       {limitNotReached && (
-        <Button intent="tertiary" size="sm" onPress={onAddClick}>
+        <Button
+          intent="tertiary"
+          size="sm"
+          aria-label={t("common.add")}
+          onPress={onAddClick}
+        >
           <Icon icon={faPlus} />
         </Button>
       )}

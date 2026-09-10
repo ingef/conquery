@@ -7,9 +7,9 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../app/reducers";
-import { openPreview, useLoadPreviewData } from "../preview/actions";
 import { Button, type ButtonProps } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
+import { openPreview, useLoadPreviewData } from "./actions";
 
 const PreviewButton = (props: ButtonProps) => {
   const { t } = useTranslation();

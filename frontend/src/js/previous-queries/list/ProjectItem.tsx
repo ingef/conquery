@@ -16,14 +16,14 @@ import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel, SecondaryId } from "../../api/types";
 import type { StateT } from "../../app/reducers";
-import DownloadButton from "../../button/DownloadButton";
-import { Highlighter } from "../../common/components/Highlighter";
 import { formatDate } from "../../common/helpers/dateHelper";
 import { exists } from "../../common/helpers/exists";
 import { useFormLabelByType } from "../../external-forms/stateSelectors";
+import DownloadButton from "../../query-runner/DownloadButton";
 import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
 import { Button } from "../../ui-components/Button";
+import { Highlighter } from "../../ui-components/Highlighter";
 import { Icon } from "../../ui-components/Icon";
 import {
   Tooltip,
@@ -268,6 +268,7 @@ const ProjectItem = ({
               <Button
                 intent="tertiary"
                 size="sm"
+                aria-label={t("previousQuery.editFolders")}
                 onPress={onIndicateEditFolders}
                 isDisabled={!mayEdit}
               >

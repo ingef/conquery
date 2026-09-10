@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useState } from "react";
 
-import LoadMoreSentinel from "../../ui-components/InputMultiSelect/LoadMoreSentinel";
+import LoadMoreSentinel from "./InputMultiSelect/LoadMoreSentinel";
 
 // Renders the first `pageSize` items and appends another page whenever the
 // sentinel at the end scrolls into view. Rows stay mounted once rendered,

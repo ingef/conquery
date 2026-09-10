@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
-import AnimatedDots from "../common/components/AnimatedDots";
 import ConceptTreesOpenButtons from "../concept-trees-open/ConceptTreesOpenButtons";
 import SearchBar from "../search-bar/SearchBar";
+import AnimatedDots from "../ui-components/AnimatedDots";
 import { Button } from "../ui-components/Button";
 
 import {

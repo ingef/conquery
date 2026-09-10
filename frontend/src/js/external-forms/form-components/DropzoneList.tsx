@@ -1,6 +1,7 @@
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import type { ReactNode, Ref } from "react";
 import type { DropTargetMonitor } from "react-dnd";
+import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { Button } from "../../ui-components/Button";
 import type {
@@ -71,6 +72,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>({
   dropBetween,
   ref,
 }: PropsT<DroppableObject> & { ref?: Ref<HTMLDivElement> }) => {
+  const { t } = useTranslation();
   // allow at least one column
   const showDropzone =
     (items && items.length === 0) || !disallowMultipleColumns;
@@ -97,6 +99,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>({
                   <Button
                     size="sm"
                     intent="tertiary"
+                    aria-label={t("common.delete")}
                     onPress={() => onDelete(i)}
                   >
                     <Icon icon={faTimes} />

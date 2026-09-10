@@ -51,7 +51,7 @@ const UploadQueryResultsModal = ({
         <>
           {t("uploadQueryResultsModal.headline")}
           <InfoTooltip
-            wide
+            size="wide"
             text={t("uploadQueryResultsModal.formatInfo.text")}
           />
         </>

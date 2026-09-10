@@ -5,10 +5,10 @@ import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import ProgressBar from "../common/components/ProgressBar";
 import { Heading3 } from "../headings/Headings";
 import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
+import ProgressBar from "../ui-components/ProgressBar";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { SettingsModal } from "./SettingsModal";
