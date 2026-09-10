@@ -5,10 +5,10 @@ import { tv } from "tailwind-variants";
 
 import type { ColumnDescription, ResultUrlWithLabel } from "../api/types";
 import type { StateT } from "../app/reducers";
-import PreviewButton from "../button/PreviewButton";
-import { QueryResultHistoryButton } from "../button/QueryResultHistoryButton";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
+import { QueryResultHistoryButton } from "../entity-history/QueryResultHistoryButton";
+import PreviewButton from "../preview/PreviewButton";
 import { Icon } from "../ui-components/Icon";
 import { canViewEntityPreview, canViewQueryPreview } from "../user/selectors";
 import DownloadResultsDropdownButton from "./DownloadResultsDropdownButton";

@@ -2,10 +2,9 @@ import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import { IndexPrefix } from "../common/components/IndexPrefix";
 import { exists } from "../common/helpers/exists";
 import { Icon } from "../ui-components/Icon";
+import { IndexPrefix } from "../ui-components/IndexPrefix";
 
 const container = tv({
   base: [

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { tv } from "tailwind-variants";
-import { IncrementalList } from "../common/components/IncrementalList";
+import { IncrementalList } from "../ui-components/IncrementalList";
 
 interface PropsType {
   items: ReactNode[];

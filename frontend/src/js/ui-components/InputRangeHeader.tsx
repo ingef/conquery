@@ -1,5 +1,5 @@
-import { IndexPrefix } from "../common/components/IndexPrefix";
 import { exists } from "../common/helpers/exists";
+import { IndexPrefix } from "./IndexPrefix";
 import InfoTooltip from "./InfoTooltip";
 
 import Label from "./Label";

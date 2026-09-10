@@ -5,11 +5,11 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
-import { getFileIcon } from "../button/DownloadButton";
 import { Icon } from "../ui-components/Icon";
 import { Menu, MenuItem } from "../ui-components/Menu";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { getUserSettings, storeUserSettings } from "../user/userSettings";
+import { getFileIcon } from "./DownloadButton";
 
 // a split button: the chosen format downloads, the caret opens the list
 const frame = tv({

@@ -2,8 +2,8 @@ import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { tv } from "tailwind-variants";
 import type { ConceptIdT, ConceptT } from "../../api/types";
-import { Highlighter } from "../../common/components/Highlighter";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
+import { Highlighter } from "../../ui-components/Highlighter";
 import { Icon } from "../../ui-components/Icon";
 import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 

@@ -1,9 +1,8 @@
 import { faFolder as faFolderRegular } from "@fortawesome/free-regular-svg-icons";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { tv } from "tailwind-variants";
-import { Highlighter } from "../../common/components/Highlighter";
-
 import { exists } from "../../common/helpers/exists";
+import { Highlighter } from "../../ui-components/Highlighter";
 import { Icon } from "../../ui-components/Icon";
 
 const root = tv({

@@ -5,7 +5,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import type { Ref } from "react";
 import { tv } from "tailwind-variants";
-import { Highlighter } from "../common/components/Highlighter";
+import { Highlighter } from "../ui-components/Highlighter";
 
 import { Icon } from "../ui-components/Icon";
 

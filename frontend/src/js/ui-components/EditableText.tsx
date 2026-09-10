@@ -1,9 +1,9 @@
 import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { tv } from "tailwind-variants";
-import { Highlighter } from "../common/components/Highlighter";
 import HighlightableLabel from "../highlightable-label/HighlightableLabel";
 import { Button } from "./Button";
 import EditableTextForm from "./EditableTextForm";
+import { Highlighter } from "./Highlighter";
 import { Icon } from "./Icon";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
