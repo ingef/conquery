@@ -39,6 +39,9 @@
   /* bare `rounded` */
   --radius: 3px;
 
+  /* the absolutely positioned app header; the panes start below it */
+  --spacing-header: 40px;
+
   --animate-spin-fast: spin 0.5s linear infinite;
   --animate-blink: blink 1s linear infinite;
   --animate-fade-in: fade-in 0.1s ease-out;
