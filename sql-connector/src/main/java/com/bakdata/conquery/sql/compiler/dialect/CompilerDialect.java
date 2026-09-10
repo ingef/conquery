@@ -2,7 +2,10 @@ package com.bakdata.conquery.sql.compiler.dialect;
 
 import java.sql.Date;
 
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 /**
  * Database-specific capabilities exposed to the framework-neutral SQL compiler.
@@ -21,6 +24,26 @@ public interface CompilerDialect {
 
 	/** Expression used as the database-specific upper infinity sentinel for dates. */
 	Field<Date> maximumDate();
+
+	/** Date range representing no date value. */
+	default ColumnDateRange emptyDateRange() {
+		return ColumnDateRange.of(DSL.inline(null, Date.class), DSL.inline(null, Date.class));
+	}
+
+	/** Logically unbounded date range using the database-specific date sentinels. */
+	default ColumnDateRange unboundedDateRange() {
+		return ColumnDateRange.of(minimumDate(), maximumDate());
+	}
+
+	/**
+	 * Logically unbounded date range when the supplied condition holds, and an empty range otherwise.
+	 */
+	default ColumnDateRange conditionalUnboundedDateRange(Condition condition) {
+		return ColumnDateRange.of(
+				DSL.when(condition.isTrue(), minimumDate()),
+				DSL.when(condition.isTrue(), maximumDate())
+		);
+	}
 
 	/**
 	 * Aggregate a field to an arbitrary value from its group.

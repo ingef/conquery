@@ -102,11 +102,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
     }
 
 	@Override
-	public ColumnDateRange allRange() {
-		return ColumnDateRange.of(getMinDateExpression(), getMaxDateExpression());
-	}
-
-	@Override
     public <T> Field<T> anyValue(Field<T> field) {
         // Hana does not have any_value
         return DSL.min(field);
@@ -155,18 +150,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 				Date.class,
 				dateColumn,
 				amountOfDays
-		);
-	}
-
-	@Override
-	public ColumnDateRange allRangeIf(Condition condition) {
-		return ColumnDateRange.of(
-				when(condition.isTrue(),
-						getMinDateExpression()
-				),
-				when(condition.isTrue(),
-						getMaxDateExpression()
-				)
 		);
 	}
 

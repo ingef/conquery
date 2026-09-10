@@ -89,11 +89,6 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
 
 
     @Override
-    public ColumnDateRange allRange() {
-        return ColumnDateRange.of(getMinDateExpression(), getMaxDateExpression());
-    }
-
-    @Override
     public <T> Field<T> anyValue(Field<T> field) {
         return DSL.anyValue(field);
     }
@@ -315,18 +310,6 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
     @Override
     public Field<String> yearQuarter(Field<Date> dateField) {
         return field("formatDateTime({0}, '%Y-Q%Q')", String.class, dateField);
-    }
-
-    @Override
-    public ColumnDateRange allRangeIf(Condition condition) {
-        return ColumnDateRange.of(
-                when(condition.isTrue(),
-                        getMinDateExpression()
-                ),
-                when(condition.isTrue(),
-                        getMaxDateExpression()
-                )
-        );
     }
 
 }
