@@ -13,9 +13,6 @@ const container = tv({
   base: ["relative", "flex flex-col", "h-full", "overflow-hidden"],
 });
 
-// the panes' navigation sits on a white strip
-const strip = tv({ base: "bg-white" });
-
 export interface PaneTab {
   key: string;
   label: string;
@@ -48,7 +45,7 @@ const Pane = ({ tabs, left, className, dataTestId }: Props) => {
           selectedKey={activeTab}
           onSelectionChange={(tab) => dispatch(clickPaneTab({ paneType, tab }))}
         >
-          <div className={strip()}>
+          <div className="bg-white">
             <TabList
               aria-label={left ? t("leftPane.tabs") : t("rightPane.tabs")}
               data-test-id={dataTestId}
