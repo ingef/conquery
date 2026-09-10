@@ -1,16 +1,8 @@
 name: "Test Backend"
 
+# Called from ci.yml, which decides based on the changed paths whether this runs.
 on:
-  push:
-    branches:
-      # Always run on protected branches
-      - master
-      - develop
-      - release
-  pull_request:
-    paths:
-      - "backend/**"
-      - ".github/workflows/test_backend.yml"
+  workflow_call:
 
 jobs:
   build:
@@ -36,6 +28,7 @@ jobs:
       run: mvn -T 1C install -pl backend -DskipTests -am
 
   test:
+    name: test (${{ matrix.test-group.name }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: build
