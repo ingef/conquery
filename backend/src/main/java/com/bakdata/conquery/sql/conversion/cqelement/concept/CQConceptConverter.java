@@ -164,7 +164,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			if (hasDateRestriction) {
 				sqlValidityDate = functionProvider.forCDateRange(context.getDateRestrictionRange());
 			} else {
-				sqlValidityDate = functionProvider.allRange();
+				sqlValidityDate = context.getCompilerDialect().unboundedDateRange();
 			}
 		}
 

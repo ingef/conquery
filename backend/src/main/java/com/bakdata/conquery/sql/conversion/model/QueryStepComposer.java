@@ -23,7 +23,6 @@ import com.bakdata.conquery.sql.compiler.ir.aggregation.DateAggregationCompiler;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -49,8 +48,6 @@ public class QueryStepComposer {
 	 */
 	public static QueryStep antiJoinWithAllIdsTable(QueryStep queryStep, ConversionContext context, DateAggregationAction dateAggregationAction) {
 
-		SqlFunctionProvider functionProvider = context.getConversionContext().getCompilerDialect().getFunctionProvider();
-
 		Field<String> queryStepPrimaryColumn = queryStep.getQualifiedSelects().getIds().getPrimaryColumn();
 		ColumnConfig idColumnConfig = context.getIdColumns().findPrimaryIdColumn();
 
@@ -65,8 +62,8 @@ public class QueryStepComposer {
 		String cteName = queryStep.getCteName() + NEGATED_CTE_SUFFIX;
 
 		Optional<ColumnDateRange> validityDate = switch (dateAggregationAction) {
-			case BLOCK, MERGE, INTERSECT -> Optional.of(functionProvider.emptyColumnDateRange());
-			case NEGATE -> Optional.of(functionProvider.allRange());
+			case BLOCK, MERGE, INTERSECT -> Optional.of(context.getCompilerDialect().emptyDateRange());
+			case NEGATE -> Optional.of(context.getCompilerDialect().unboundedDateRange());
 		};
 
 		Selects selects = Selects.builder()
@@ -218,7 +215,7 @@ public class QueryStepComposer {
 		DateAggregationDates aggregationDates = DateAggregationDates.forValidityDates(List.of(
 				nonNegateJoined.getQualifiedSelects().getValidityDate(),
 				negateJoined.getQualifiedSelects().getValidityDate(),
-				Optional.of(context.getCompilerDialect().getFunctionProvider().allRangeIf(infinityRangeCondition))
+				Optional.of(context.getCompilerDialect().conditionalUnboundedDateRange(infinityRangeCondition))
 		));
 		ColumnDateRange merged = DateAggregationCompiler.getAggregatedValidityDate(aggregationDates)
 				.as(cteName + SharedAliases.DATES_COLUMN.getAlias());

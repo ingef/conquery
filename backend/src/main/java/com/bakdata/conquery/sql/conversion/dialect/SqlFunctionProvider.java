@@ -132,11 +132,6 @@ public interface SqlFunctionProvider {
 		return isNotEmptyStart.or(isNotEmptyEnd);
 	}
 
-	/**
-	 * Creates a {@link ColumnDateRange} of maximum range.
-	 */
-	ColumnDateRange allRange();
-
 	<T> Field<T> anyValue(Field<T> field);
 
 	/**
@@ -224,8 +219,6 @@ public interface SqlFunctionProvider {
 				orderBy(orderByFields)
 		);
 	}
-
-	ColumnDateRange allRangeIf(Condition condition);
 
 	/**
 	 * Render an array for Conquery processing.
