@@ -67,7 +67,7 @@ const list = tv({
   variants: {
     variant: {
       // a line the tabs sit on
-      primary: ["px-5", "border-b border-gray-100", "bg-white"],
+      primary: ["px-5", "border-b border-gray-100"],
       secondary: "pt-[3px] pl-[10px]",
     },
   },

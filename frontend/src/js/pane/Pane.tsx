@@ -13,6 +13,9 @@ const container = tv({
   base: ["relative", "flex flex-col", "h-full", "overflow-hidden"],
 });
 
+// the panes' navigation sits on a white strip
+const strip = tv({ base: "bg-white" });
+
 export interface PaneTab {
   key: string;
   label: string;
@@ -45,16 +48,18 @@ const Pane = ({ tabs, left, className, dataTestId }: Props) => {
           selectedKey={activeTab}
           onSelectionChange={(tab) => dispatch(clickPaneTab({ paneType, tab }))}
         >
-          <TabList
-            aria-label={left ? t("leftPane.tabs") : t("rightPane.tabs")}
-            data-test-id={dataTestId}
-          >
-            {tabs.map(({ key, label, tooltip }) => (
-              <Tab key={key} id={key} tooltip={tooltip}>
-                {label}
-              </Tab>
-            ))}
-          </TabList>
+          <div className={strip()}>
+            <TabList
+              aria-label={left ? t("leftPane.tabs") : t("rightPane.tabs")}
+              data-test-id={dataTestId}
+            >
+              {tabs.map(({ key, label, tooltip }) => (
+                <Tab key={key} id={key} tooltip={tooltip}>
+                  {label}
+                </Tab>
+              ))}
+            </TabList>
+          </div>
           <div className={container()} data-test-id={`${dataTestId}-container`}>
             {tabs.map(({ key, content }) => (
               <TabPanel key={key} id={key} shouldForceMount>
