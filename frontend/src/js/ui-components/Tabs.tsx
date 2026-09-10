@@ -46,6 +46,7 @@ const list = tv({
 const tab = tv({
   base: [
     "relative",
+    "flex items-center",
     "shrink-0 whitespace-nowrap",
     "cursor-pointer",
     "outline-none",
@@ -65,7 +66,7 @@ const tab = tv({
       // sits on the box below it like a folder tab
       secondary: [
         "mx-[2px] px-[10px]",
-        "h-[30px] leading-[28px]",
+        "h-[30px]",
         "translate-y-px",
         "rounded-t",
         "border border-b-0 border-transparent",
