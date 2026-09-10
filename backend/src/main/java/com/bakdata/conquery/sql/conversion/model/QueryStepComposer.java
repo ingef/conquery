@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
+import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
 import com.bakdata.conquery.sql.compiler.ir.JoinMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
@@ -18,11 +19,10 @@ import com.bakdata.conquery.sql.compiler.ir.QueryStepJoiner;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.aggregation.DateAggregationCompiler;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
-import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -201,8 +201,11 @@ public class QueryStepComposer {
 		}
 
 		// first, invert dates of negated step
-		SqlDateAggregator dateAggregator = context.getCompilerDialect().getDateAggregator();
-		negateJoined = dateAggregator.invertAggregatedIntervals(negateJoined, context);
+		negateJoined = DateAggregationCompiler.invert(
+				negateJoined,
+				context.getCompilerDialect(),
+				context.getNameGenerator()
+		);
 
 		// join with all-ids table necessary
 		ColumnConfig columnConfig = context.getIdColumns().findPrimaryIdColumn();
@@ -217,9 +220,8 @@ public class QueryStepComposer {
 				negateJoined.getQualifiedSelects().getValidityDate(),
 				Optional.of(context.getCompilerDialect().getFunctionProvider().allRangeIf(infinityRangeCondition))
 		));
-		ColumnDateRange merged =
-				dateAggregator.getAggregatedValidityDate(aggregationDates, DateAggregationAction.MERGE)
-							  .as(cteName + SharedAliases.DATES_COLUMN.getAlias());
+		ColumnDateRange merged = DateAggregationCompiler.getAggregatedValidityDate(aggregationDates)
+				.as(cteName + SharedAliases.DATES_COLUMN.getAlias());
 
 		Field<String> coalescedId = DSL.coalesce(nonNegatePrimaryColumn, allIdsPrimaryColumn)
 									   .as(SharedAliases.PRIMARY_COLUMN.getAlias());
@@ -272,13 +274,13 @@ public class QueryStepComposer {
 		withAllValidityDates.addAll(dateAggregationDates.allStartsAndEnds());
 		QueryStep joinedStep = buildJoinedStep(ids, withAllValidityDates, Optional.empty(), Optional.empty(), builder);
 
-		SqlDateAggregator sqlDateAggregator = context.getCompilerDialect().getDateAggregator();
-		return sqlDateAggregator.apply(
+		return DateAggregationCompiler.aggregate(
 				joinedStep,
 				mergedSelects,
 				dateAggregationDates,
 				dateAggregationAction,
-				context
+				context.getCompilerDialect(),
+				context.getNameGenerator()
 		);
 	}
 

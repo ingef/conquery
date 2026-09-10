@@ -7,9 +7,7 @@ import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.cqelement.aggregation.AnsiSqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.DialectBundle;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.execution.DefaultResultSetProcessor;
@@ -23,12 +21,10 @@ import org.jooq.SQLDialect;
 public class HanaDialectBundle implements DialectBundle {
 
 	private final SqlFunctionProvider functionProvider;
-	private final SqlDateAggregator dateAggregator;
 	private final SqlCDateSetParser dateSetParser;
 
 	public HanaDialectBundle() {
 		this.functionProvider = new HanaSqlFunctionProvider();
-		this.dateAggregator = new AnsiSqlDateAggregator();
 		this.dateSetParser = new HanaSqlCDateSetParser();
 	}
 
@@ -84,11 +80,6 @@ public class HanaDialectBundle implements DialectBundle {
 	@Override
 	public SqlFunctionProvider getFunctionProvider() {
 		return this.functionProvider;
-	}
-
-	@Override
-	public SqlDateAggregator getDateAggregator() {
-		return this.dateAggregator;
 	}
 
 }

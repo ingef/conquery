@@ -69,8 +69,6 @@ public interface LegacyCompilerDialect extends CompilerDialect {
 
 	SqlFunctionProvider getFunctionProvider();
 
-	SqlDateAggregator getDateAggregator();
-
 	List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext context);
 
 	default List<NodeConverter<? extends Visitable>> getDefaultNodeConverters(DSLContext dslContext) {
