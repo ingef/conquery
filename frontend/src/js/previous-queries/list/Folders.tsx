@@ -1,5 +1,6 @@
 import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
@@ -154,9 +155,6 @@ const Folders = ({ className }: { className?: string }) => {
     }
   };
 
-  const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
-  const [showAddFolderModal, setShowAddFolderModal] = useState<boolean>(false);
-
   const { isNarrow, parentRef } = useIsParentNarrow();
 
   useEffect(
@@ -174,41 +172,23 @@ const Folders = ({ className }: { className?: string }) => {
 
   return (
     <div className={root({ className })}>
-      {folderToDelete && (
-        <DeleteFolderModal
-          folder={folderToDelete}
-          onClose={() => setFolderToDelete(null)}
-          onDeleteSuccess={() => {
-            setFolderToDelete(null);
-            dispatch(setFolderFilter([]));
-          }}
-        />
-      )}
       <div
         className="mb-3 flex w-full min-w-[100px] items-start"
         ref={parentRef}
       >
-        <Button
-          intent="tertiary"
-          size="sm"
-          onPress={() => setShowAddFolderModal(true)}
-        >
-          <Icon icon={faPlus} />
-          {isNarrow ? t("folders.addShort") : t("folders.add")}
-        </Button>
+        <DialogTrigger>
+          <Button intent="tertiary" size="sm">
+            <Icon icon={faPlus} />
+            {isNarrow ? t("folders.addShort") : t("folders.add")}
+          </Button>
+          <AddFolderModal
+            isValidName={(v) => v.length > 0 && !folders.includes(v)}
+            onSubmit={(v) => {
+              if (v.length > 0) dispatch(addFolder({ folderName: v }));
+            }}
+          />
+        </DialogTrigger>
       </div>
-      {showAddFolderModal && (
-        <AddFolderModal
-          onClose={() => setShowAddFolderModal(false)}
-          isValidName={(v) => v.length > 0 && !folders.includes(v)}
-          onSubmit={(v) => {
-            if (v.length > 0) {
-              setShowAddFolderModal(false);
-              dispatch(addFolder({ folderName: v }));
-            }
-          }}
-        />
-      )}
       <Folder
         className="mb-[5px]"
         key="all-queries"
@@ -262,18 +242,21 @@ const Folders = ({ className }: { className?: string }) => {
                     resultWords={searchResultWords}
                   />
                   <TooltipTrigger>
-                    <div className={deleteButton()}>
-                      <Button
-                        size="sm"
-                        aria-label={t("common.delete")}
-                        intent="tertiary"
-                        onPress={() => {
-                          setFolderToDelete(folder);
-                        }}
-                      >
-                        <Icon icon={faTimes} />
-                      </Button>
-                    </div>
+                    <DialogTrigger>
+                      <div className={deleteButton()}>
+                        <Button
+                          size="sm"
+                          aria-label={t("common.delete")}
+                          intent="tertiary"
+                        >
+                          <Icon icon={faTimes} />
+                        </Button>
+                      </div>
+                      <DeleteFolderModal
+                        folder={folder}
+                        onDeleteSuccess={() => dispatch(setFolderFilter([]))}
+                      />
+                    </DialogTrigger>
                     <Tooltip>{t("common.delete")}</Tooltip>
                   </TooltipTrigger>
                 </>

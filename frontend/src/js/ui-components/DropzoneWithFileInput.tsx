@@ -130,14 +130,13 @@ const DropzoneWithFileInput = <
     >
       {(args) => (
         <>
-          {importModalOpen && (
-            <ImportModal
-              onClose={() => setImportModalOpen(false)}
-              onSubmit={onSubmitImport}
-              placeholder={importPlaceholder}
-              description={importDescription}
-            />
-          )}
+          <ImportModal
+            isOpen={importModalOpen}
+            onOpenChange={setImportModalOpen}
+            onSubmit={onSubmitImport}
+            placeholder={importPlaceholder}
+            description={importDescription}
+          />
           {showImportButton && onImportLines && (
             <div className={importButton({ outside: !!importButtonOutside })}>
               <Button intent="link" onPress={() => setImportModalOpen(true)}>

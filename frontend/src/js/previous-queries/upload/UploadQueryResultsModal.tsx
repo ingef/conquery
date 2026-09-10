@@ -24,14 +24,12 @@ const UploadQueryResultsModal = ({
   config,
   uploadResult,
   onClearUploadResult,
-  onClose,
   onUpload,
 }: {
   loading: boolean;
   config: QueryUploadConfigT;
   uploadResult: UploadQueryResponseT | null;
   onClearUploadResult: () => void;
-  onClose: () => void;
   onUpload: (query: QueryToUploadT) => void;
 }) => {
   const { t } = useTranslation();
@@ -44,64 +42,61 @@ const UploadQueryResultsModal = ({
     uploadResult.unresolvedId.length === 0;
 
   return (
-    <Modal
-      size="lg"
-      scrollable
-      isOpen
-      onOpenChange={(isOpen) => {
-        if (!isOpen) onClose();
-      }}
-    >
-      <ModalHeader>
-        {t("uploadQueryResultsModal.headline")}
-        <InfoTooltip
-          size="wide"
-          text={t("uploadQueryResultsModal.formatInfo.text")}
-        />
-      </ModalHeader>
-      <ModalBody>
-        {fullUploadSuccess ? (
-          <div className="my-[25px]">
-            <Icon icon={faCheckCircle} className={successIcon()} />
-            <p className="m-0">
-              {t("uploadQueryResultsModal.uploadSucceeded", {
-                count: uploadResult?.resolved || 0,
-              })}
-            </p>
-          </div>
-        ) : (
-          <div>
-            {file && (
-              <CSVColumnPicker
-                file={file}
-                uploadResult={uploadResult}
-                config={config}
-                loading={loading}
-                onUpload={onUpload}
-                onCancel={onClose}
-                onReset={() => {
-                  setFile(null);
-                  onClearUploadResult();
-                }}
-              />
+    <Modal size="lg" scrollable>
+      {({ close }) => (
+        <>
+          <ModalHeader>
+            {t("uploadQueryResultsModal.headline")}
+            <InfoTooltip
+              size="wide"
+              text={t("uploadQueryResultsModal.formatInfo.text")}
+            />
+          </ModalHeader>
+          <ModalBody>
+            {fullUploadSuccess ? (
+              <div className="my-[25px]">
+                <Icon icon={faCheckCircle} className={successIcon()} />
+                <p className="m-0">
+                  {t("uploadQueryResultsModal.uploadSucceeded", {
+                    count: uploadResult?.resolved || 0,
+                  })}
+                </p>
+              </div>
+            ) : (
+              <div>
+                {file && (
+                  <CSVColumnPicker
+                    file={file}
+                    uploadResult={uploadResult}
+                    config={config}
+                    loading={loading}
+                    onUpload={onUpload}
+                    onCancel={close}
+                    onReset={() => {
+                      setFile(null);
+                      onClearUploadResult();
+                    }}
+                  />
+                )}
+                {!file && (
+                  <DropzoneWithFileInput
+                    className={dropzone()}
+                    onDrop={(item) => {
+                      if (item.type === "__NATIVE_FILE__") {
+                        setFile(item.files[0]);
+                      }
+                    }}
+                    onSelectFile={setFile}
+                    accept="text/csv"
+                  >
+                    {() => t("uploadQueryResultsModal.dropzone")}
+                  </DropzoneWithFileInput>
+                )}
+              </div>
             )}
-            {!file && (
-              <DropzoneWithFileInput
-                className={dropzone()}
-                onDrop={(item) => {
-                  if (item.type === "__NATIVE_FILE__") {
-                    setFile(item.files[0]);
-                  }
-                }}
-                onSelectFile={setFile}
-                accept="text/csv"
-              >
-                {() => t("uploadQueryResultsModal.dropzone")}
-              </DropzoneWithFileInput>
-            )}
-          </div>
-        )}
-      </ModalBody>
+          </ModalBody>
+        </>
+      )}
     </Modal>
   );
 };

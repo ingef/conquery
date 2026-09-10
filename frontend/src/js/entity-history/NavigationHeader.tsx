@@ -1,5 +1,6 @@
 import { faSliders } from "@fortawesome/free-solid-svg-icons";
-import { type Dispatch, memo, type SetStateAction, useState } from "react";
+import { type Dispatch, memo, type SetStateAction } from "react";
+import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
@@ -69,17 +70,8 @@ export const NavigationHeader = memo(
       (state) => state.entityHistory.label,
     );
 
-    const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-
     return (
       <div className={root({ className })}>
-        {settingsModalOpen && (
-          <SettingsModal
-            onClose={() => setSettingsModalOpen(false)}
-            setEntityStatusOptions={setEntityStatusOptions}
-            entityStatusOptions={entityStatusOptions}
-          />
-        )}
         <div className={baseInfo()}>
           <div style={{ overflow: "hidden" }}>
             <Heading3 className={heading()} title={label}>
@@ -88,13 +80,18 @@ export const NavigationHeader = memo(
             <p className={specialText()}>{t("history.history")}</p>
           </div>
           <TooltipTrigger>
-            <Button
-              aria-label={t("history.settings.headline")}
-              intent="tertiary"
-              onPress={() => setSettingsModalOpen(true)}
-            >
-              <Icon icon={faSliders} />
-            </Button>
+            <DialogTrigger>
+              <Button
+                aria-label={t("history.settings.headline")}
+                intent="tertiary"
+              >
+                <Icon icon={faSliders} />
+              </Button>
+              <SettingsModal
+                setEntityStatusOptions={setEntityStatusOptions}
+                entityStatusOptions={entityStatusOptions}
+              />
+            </DialogTrigger>
             <Tooltip>{t("history.settings.headline")}</Tooltip>
           </TooltipTrigger>
         </div>

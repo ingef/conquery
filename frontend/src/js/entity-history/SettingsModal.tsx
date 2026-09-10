@@ -6,24 +6,17 @@ import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect
 import { Modal, ModalBody, ModalHeader } from "../ui-components/Modal";
 
 interface Props {
-  onClose: () => void;
   entityStatusOptions: SelectOptionT[];
   setEntityStatusOptions: Dispatch<SetStateAction<SelectOptionT[]>>;
 }
 
 export const SettingsModal = ({
-  onClose,
   setEntityStatusOptions,
   entityStatusOptions,
 }: Props) => {
   const { t } = useTranslation();
   return (
-    <Modal
-      isOpen
-      onOpenChange={(isOpen) => {
-        if (!isOpen) onClose();
-      }}
-    >
+    <Modal>
       <ModalHeader>{t("history.settings.headline")}</ModalHeader>
       <ModalBody>
         <InputMultiSelect

@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { usePostPrefixForSuggestions } from "../../api/api";
@@ -282,11 +283,7 @@ const FormConceptGroup = (props: Props) => {
     isValidConcept: props.isValidConcept,
   });
 
-  const {
-    isOpen: isCopyModalOpen,
-    setIsOpen: setIsCopyModalOpen,
-    onAccept: onAcceptCopyModal,
-  } = useCopyModal({
+  const { onAccept: onAcceptCopyModal } = useCopyModal({
     value: props.value,
     onChange: props.onChange,
     newValue,
@@ -310,13 +307,15 @@ const FormConceptGroup = (props: Props) => {
             {props.label}
             {allowExtendedCopying && (
               <span className="ml-[10px]">
-                <Button
-                  intent="secondary"
-                  size="sm"
-                  onPress={() => setIsCopyModalOpen(true)}
-                >
-                  {t("externalForms.common.concept.copyFrom")}
-                </Button>
+                <DialogTrigger>
+                  <Button intent="secondary" size="sm">
+                    {t("externalForms.common.concept.copyFrom")}
+                  </Button>
+                  <FormConceptCopyModal
+                    targetFieldname={props.fieldName}
+                    onAccept={onAcceptCopyModal}
+                  />
+                </DialogTrigger>
               </span>
             )}
           </>
@@ -476,13 +475,6 @@ const FormConceptGroup = (props: Props) => {
           </div>
         ))}
       />
-      {isCopyModalOpen && (
-        <FormConceptCopyModal
-          targetFieldname={props.fieldName}
-          onAccept={onAcceptCopyModal}
-          onClose={() => setIsCopyModalOpen(false)}
-        />
-      )}
       {isUploadConceptListModalOpen && (
         <UploadConceptListModal
           onAcceptConceptsOrFilter={onAcceptUploadModalConceptsOrFilter}

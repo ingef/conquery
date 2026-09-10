@@ -6,11 +6,9 @@ import { useDeleteProjectItemFolder } from "./useDeleteProjectItemFolder";
 
 const DeleteFolderModal = ({
   folder,
-  onClose,
   onDeleteSuccess,
 }: {
   folder: string;
-  onClose: () => void;
   onDeleteSuccess: () => void;
 }) => {
   const { t } = useTranslation();
@@ -19,7 +17,6 @@ const DeleteFolderModal = ({
 
   return (
     <DeleteModal
-      onClose={onClose}
       headline={t("deletePreviousQueryFolderModal.areYouSure")}
       description={t("deletePreviousQueryFolderModal.description", { folder })}
       onDelete={async () => {
