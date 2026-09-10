@@ -47,11 +47,7 @@ export const TabbableTimeStratifiedInfos = ({
 
   return (
     <div className={container()}>
-      <Tabs
-        size="sm"
-        selectedKey={activeTab}
-        onSelectionChange={(key) => setActiveTab(String(key))}
-      >
+      <Tabs selectedKey={activeTab} onSelectionChange={setActiveTab}>
         <TabList aria-label={t("history.infoTabs")}>
           {infos.map((info) => (
             <Tab key={info.label} id={info.label}>

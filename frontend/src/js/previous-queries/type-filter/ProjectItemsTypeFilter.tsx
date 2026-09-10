@@ -3,55 +3,68 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../../app/reducers";
-import SmallTabNavigation from "../../small-tab-navigation/SmallTabNavigation";
 import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
+import { ToggleButton } from "../../ui-components/ToggleButton";
+import { ToggleButtonGroup } from "../../ui-components/ToggleButtonGroup";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 
 import { setTypeFilter } from "./actions";
 import type { ProjectItemsTypeFilterStateT } from "./reducer";
 
-const ProjectItemsTypeFilter = ({ className }: { className?: string }) => {
+const isTypeFilter = (key: unknown): key is ProjectItemsTypeFilterStateT =>
+  key === "all" || key === "queries" || key === "configs";
+
+const ProjectItemsTypeFilter = () => {
   const { t } = useTranslation();
   const OPTIONS: {
     value: ProjectItemsTypeFilterStateT;
-    label: () => ReactNode;
+    label: ReactNode;
     tooltip?: string;
   }[] = useMemo(
     () => [
-      {
-        value: "all",
-        label: () => t("projectItemsFilter.all"),
-      },
+      { value: "all", label: t("projectItemsFilter.all") },
       {
         value: "queries",
-        label: () => <QuerySymbol />,
+        label: <QuerySymbol />,
         tooltip: t("projectItemsTypeFilter.queries"),
       },
       {
         value: "configs",
-        label: () => <FormSymbol />,
+        label: <FormSymbol />,
         tooltip: t("projectItemsTypeFilter.configs"),
       },
     ],
     [t],
   );
 
-  const selectedFilter = useSelector<StateT, string>(
+  const selectedFilter = useSelector<StateT, ProjectItemsTypeFilterStateT>(
     (state) => state.projectItemsTypeFilter,
   );
   const dispatch = useDispatch();
-  const onSetTypeFilter = (filter: ProjectItemsTypeFilterStateT) =>
-    dispatch(setTypeFilter(filter));
 
   return (
-    <SmallTabNavigation
-      className={className}
-      options={OPTIONS}
-      selectedTab={selectedFilter}
-      onSelectTab={(tab) =>
-        onSetTypeFilter(tab as ProjectItemsTypeFilterStateT)
-      }
-    />
+    <ToggleButtonGroup
+      segmented
+      size="sm"
+      aria-label={t("projectItemsTypeFilter.label")}
+      selectionMode="single"
+      disallowEmptySelection
+      selectedKeys={[selectedFilter]}
+      onSelectionChange={(keys) => {
+        const [key] = keys;
+        if (isTypeFilter(key)) dispatch(setTypeFilter(key));
+      }}
+    >
+      {OPTIONS.map(({ value, label, tooltip }) => (
+        <TooltipTrigger key={value}>
+          <ToggleButton id={value} aria-label={tooltip}>
+            {label}
+          </ToggleButton>
+          <Tooltip>{tooltip}</Tooltip>
+        </TooltipTrigger>
+      ))}
+    </ToggleButtonGroup>
   );
 };
 

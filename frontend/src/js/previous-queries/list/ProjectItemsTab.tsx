@@ -36,10 +36,6 @@ const foldersAndQueries = tv({
   ],
 });
 
-const typeFilter = tv({
-  base: ["flex items-start", "mr-5", "pr-[10px]"],
-});
-
 const expand = tv({
   base: ["flex flex-col", "grow", "h-full", "pr-[2px]"],
   variants: {
@@ -96,9 +92,9 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
           />
           <Panel key="right">
             <div className={expand({ areFoldersOpen })}>
-              <div className="my-2 flex items-start">
-                <ProjectItemsTypeFilter className={typeFilter()} />
-                <ProjectItemsFilter className="flex items-start" />
+              <div className="my-2 flex items-start gap-5">
+                <ProjectItemsTypeFilter />
+                <ProjectItemsFilter />
               </div>
               <div className="overflow-y-auto text-sm [-webkit-overflow-scrolling:touch]">
                 {items.length === 0 && !loading && (

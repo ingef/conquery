@@ -243,12 +243,14 @@
     "hasNoDates": "Keine Datumswerte in den Ergebnissen vorhanden."
   },
   "projectItemsFilter": {
+    "label": "Filter",
     "all": "Alle",
     "own": "Eigene",
     "shared": "Freigegeben",
     "system": "SYSTEM"
   },
   "projectItemsTypeFilter": {
+    "label": "Typ",
     "queries": "Nur Anfragen",
     "configs": "Nur Formulare"
   },

@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
+import { useDrag } from "react-dnd";
 
+import { DNDType } from "../common/constants/dndTypes";
+import { Button } from "./Button";
 import { Tab, TabList, TabPanel, Tabs } from "./Tabs";
 
 export default {
@@ -39,20 +42,22 @@ export const Primary: Story = {
 const Counter = ({ label }: { label: string }) => {
   const [count, setCount] = useState(0);
   return (
-    <button
-      type="button"
-      className="p-5 text-sm underline"
-      onClick={() => setCount((c) => c + 1)}
-    >
-      {label}: clicked {count} times
-    </button>
+    <div className="flex flex-col items-start gap-3 p-5 text-sm">
+      <Button intent="primary" onPress={() => setCount((c) => c + 1)}>
+        Count up in {label}
+      </Button>
+      <p>
+        {label} counted {count} times. Switch to the other tab and back: the
+        panel stays mounted, so the count survives.
+      </p>
+    </div>
   );
 };
 
 /**
- * `shouldForceMount` keeps a panel mounted (hidden, inert) while another tab
- * shows, so what the user did in it survives a switch: the panes use it for
- * the concept trees and the editors. Click a counter, switch, switch back.
+ * Without `shouldForceMount` a panel unmounts while another tab shows and
+ * loses its state. With it, the panel stays mounted, hidden and inert, which
+ * is how the concept trees and the editors keep their state in the panes.
  */
 export const ForceMountedPanels: Story = {
   render: () => (
@@ -73,15 +78,41 @@ export const ForceMountedPanels: Story = {
   ),
 };
 
-export const PrimarySmall: Story = {
+const Draggable = () => {
+  const [, drag] = useDrag({
+    type: DNDType.CONCEPT_TREE_NODE,
+    item: { type: DNDType.CONCEPT_TREE_NODE },
+  });
+  return (
+    <div
+      ref={(el) => {
+        drag(el);
+      }}
+      className="cursor-grab self-start rounded border border-gray-500 bg-white px-2 py-1 text-sm"
+    >
+      Drag me over a tab and hold
+    </div>
+  );
+};
+
+/** A dragged item hovering over a tab for a moment switches to that tab. */
+export const SwitchWhileDragging: Story = {
   render: () => (
-    <Tabs size="sm" defaultSelectedKey="all">
-      <TabList aria-label="Filter">
-        <Tab id="all">All</Tab>
-        <Tab id="own">Own</Tab>
-        <Tab id="shared">Shared</Tab>
-      </TabList>
-    </Tabs>
+    <div className="flex w-[480px] flex-col gap-5">
+      <Draggable />
+      <Tabs defaultSelectedKey="regions">
+        <TabList aria-label="Sections">
+          <Tab id="regions">Regions</Tab>
+          <Tab id="years">Years</Tab>
+        </TabList>
+        <TabPanel id="regions">
+          <p className="p-5 text-sm">Drop targets for regions.</p>
+        </TabPanel>
+        <TabPanel id="years">
+          <p className="p-5 text-sm">Drop targets for years.</p>
+        </TabPanel>
+      </Tabs>
+    </div>
   ),
 };
 

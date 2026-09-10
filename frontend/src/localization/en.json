@@ -243,12 +243,14 @@
     "hasNoDates": "No date values in the results."
   },
   "projectItemsFilter": {
+    "label": "Filter",
     "all": "All",
     "own": "Own",
     "shared": "Shared",
     "system": "SYSTEM"
   },
   "projectItemsTypeFilter": {
+    "label": "Type",
     "queries": "Queries only",
     "configs": "Forms only"
   },

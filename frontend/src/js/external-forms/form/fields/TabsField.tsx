@@ -38,8 +38,8 @@ export const TabsField = ({
           <Tabs
             variant="secondary"
             selectedKey={fieldProps.value as string}
-            onSelectionChange={(key) => {
-              commonProps.setValue(field.name, String(key), setValueConfig);
+            onSelectionChange={(tab) => {
+              commonProps.setValue(field.name, tab, setValueConfig);
               setTimeout(() => {
                 commonProps.trigger();
               }, 100);

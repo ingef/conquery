@@ -33,7 +33,7 @@ interface Props {
 const Pane = ({ tabs, left, className, dataTestId }: Props) => {
   const { t } = useTranslation();
   const paneType = left ? "left" : "right";
-  const activeTab = useSelector<StateT, string | null>(
+  const activeTab = useSelector<StateT, string>(
     (state) => state.panes[paneType].activeTab,
   );
   const dispatch = useDispatch();
@@ -42,10 +42,8 @@ const Pane = ({ tabs, left, className, dataTestId }: Props) => {
     <div className={root({ className })}>
       <div className={container()}>
         <Tabs
-          selectedKey={activeTab ?? undefined}
-          onSelectionChange={(key) =>
-            dispatch(clickPaneTab({ paneType, tab: String(key) }))
-          }
+          selectedKey={activeTab}
+          onSelectionChange={(tab) => dispatch(clickPaneTab({ paneType, tab }))}
         >
           <TabList
             aria-label={left ? t("leftPane.tabs") : t("rightPane.tabs")}

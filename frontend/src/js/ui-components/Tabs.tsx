@@ -21,37 +21,26 @@ import {
 } from "./Tooltip";
 
 type Variant = "primary" | "secondary";
-type Size = "sm" | "md";
 
-const TabsStyleContext = createContext<{ variant: Variant; size: Size }>({
-  variant: "primary",
-  size: "md",
-});
+const VariantContext = createContext<Variant>("primary");
 
 const root = tv({
   base: ["flex flex-col", "min-h-0"],
   variants: {
-    variant: { primary: "", secondary: "" },
-    size: { sm: "", md: "" },
+    // a main navigation fills its pane
+    variant: { primary: "h-full", secondary: "" },
   },
-  // a pane's main navigation fills its pane
-  compoundVariants: [{ variant: "primary", size: "md", class: "h-full" }],
 });
 
 const list = tv({
   base: "flex items-start",
   variants: {
-    variant: { primary: "", secondary: "pt-[3px] pl-[10px]" },
-    size: { sm: "", md: "" },
-  },
-  compoundVariants: [
-    // the panes' main navigation: a line the tabs sit on
-    {
-      variant: "primary",
-      size: "md",
-      class: ["px-5", "border-b border-gray-100", "bg-white"],
+    variant: {
+      // a line the tabs sit on
+      primary: ["px-5", "border-b border-gray-100", "bg-white"],
+      secondary: "pt-[3px] pl-[10px]",
     },
-  ],
+  },
 });
 
 const tab = tv({
@@ -64,17 +53,8 @@ const tab = tv({
     "data-focus-visible:outline-2 data-focus-visible:-outline-offset-2 data-focus-visible:outline-primary-500",
   ],
   variants: {
-    variant: { primary: "", secondary: "" },
-    size: { sm: "", md: "" },
-    // a dragged item may be dropped here: the tab switches while hovering
-    droppable: { true: "bg-gray-50" },
-    over: { true: "bg-gray-100" },
-  },
-  compoundVariants: [
-    {
-      variant: "primary",
-      size: "md",
-      class: [
+    variant: {
+      primary: [
         "mt-[6px] mr-[5px] px-3",
         "border-b-[3px] border-transparent",
         "text-sm leading-[30px] font-bold uppercase tracking-wider",
@@ -82,26 +62,8 @@ const tab = tv({
         "not-data-selected:data-hovered:border-primary-200 not-data-selected:data-hovered:text-black",
         "data-selected:border-primary-500 data-selected:text-primary-500",
       ],
-    },
-    {
-      variant: "primary",
-      size: "sm",
-      class: [
-        "mx-[2px] px-[3px]",
-        "h-[26px]",
-        "rounded-t",
-        "text-xs uppercase",
-        "text-gray-500",
-        "after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:content-['']",
-        "not-data-selected:data-hovered:after:bg-gray-100",
-        "data-selected:text-gray-800 data-selected:after:bg-gray-800",
-      ],
-    },
-    // sits on the box below it like a folder tab
-    {
-      variant: "secondary",
-      size: "md",
-      class: [
+      // sits on the box below it like a folder tab
+      secondary: [
         "mx-[2px] px-[10px]",
         "h-[30px] leading-[28px]",
         "translate-y-px",
@@ -113,7 +75,10 @@ const tab = tv({
         "data-selected:border-gray-500 data-selected:bg-bg-50 data-selected:text-gray-800",
       ],
     },
-  ],
+    // a dragged item may be dropped here: the tab switches while hovering
+    droppable: { true: "bg-gray-50" },
+    over: { true: "bg-gray-100" },
+  },
 });
 
 const tabTarget = tv({ base: "block" });
@@ -132,13 +97,20 @@ const panel = tv({
 export interface TabsProps
   extends Omit<
     RacTabsProps,
-    "className" | "style" | "children" | "orientation"
+    | "className"
+    | "style"
+    | "children"
+    | "orientation"
+    | "selectedKey"
+    | "defaultSelectedKey"
+    | "onSelectionChange"
   > {
   children: ReactNode;
   /** `primary` underlines the selected tab, `secondary` connects it to the box below */
   variant?: Variant;
-  /** `md` for a main navigation, `sm` for tabs inside a pane */
-  size?: Size;
+  selectedKey?: string;
+  defaultSelectedKey?: string;
+  onSelectionChange?: (key: string) => void;
 }
 
 /**
@@ -158,15 +130,20 @@ export interface TabsProps
  */
 export const Tabs = ({
   variant = "primary",
-  size = "md",
   children,
+  onSelectionChange,
   ...props
 }: TabsProps) => (
-  <TabsStyleContext.Provider value={{ variant, size }}>
-    <RacTabs className={root({ variant, size })} {...props}>
+  <VariantContext.Provider value={variant}>
+    <RacTabs
+      className={root({ variant })}
+      // the ids are strings, react-aria's key type also allows numbers
+      onSelectionChange={(key) => onSelectionChange?.(String(key))}
+      {...props}
+    >
       {children}
     </RacTabs>
-  </TabsStyleContext.Provider>
+  </VariantContext.Provider>
 );
 
 export interface TabListProps
@@ -180,9 +157,9 @@ export interface TabListProps
 }
 
 export const TabList = ({ children, ...props }: TabListProps) => {
-  const { variant, size } = useContext(TabsStyleContext);
+  const variant = useContext(VariantContext);
   return (
-    <RacTabList className={list({ variant, size })} {...props}>
+    <RacTabList className={list({ variant })} {...props}>
       {children}
     </RacTabList>
   );
@@ -197,7 +174,7 @@ export interface TabProps
 }
 
 export const Tab = ({ id, tooltip, children, ...props }: TabProps) => {
-  const { variant, size } = useContext(TabsStyleContext);
+  const variant = useContext(VariantContext);
   const state = useContext(TabListStateContext);
   const { drop, isOver, isDroppable } = useHoverNavigate({
     triggerNavigate: () => {
@@ -213,7 +190,6 @@ export const Tab = ({ id, tooltip, children, ...props }: TabProps) => {
       }}
       className={tab({
         variant,
-        size,
         droppable: isDroppable,
         over: isOver && isDroppable,
       })}
