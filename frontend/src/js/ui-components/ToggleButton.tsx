@@ -40,6 +40,22 @@ export interface ToggleButtonProps extends CommonProps {
   highlight?: "primary" | "danger";
 }
 
+// bold text is wider than regular text: a label repeats itself in bold in a
+// zero-height pseudo-element, so the button keeps its bold width while off
+const reserveBoldWidth = (children: ReactNode) =>
+  Children.map(children, (child) =>
+    typeof child === "string" || typeof child === "number" ? (
+      <span
+        data-text={child}
+        className="after:invisible after:block after:h-0 after:overflow-hidden after:font-bold after:content-[attr(data-text)]"
+      >
+        {child}
+      </span>
+    ) : (
+      child
+    ),
+  );
+
 const isIconOnly = (children: ReactNode) => {
   const items = Children.toArray(children);
   return (
@@ -77,7 +93,7 @@ export const ToggleButton = ({
       })}
       {...props}
     >
-      {children}
+      {reserveBoldWidth(children)}
     </RacToggleButton>
   );
 };
