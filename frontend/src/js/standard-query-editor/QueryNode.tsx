@@ -14,7 +14,7 @@ import {
   useActiveState,
 } from "../model/node";
 import { isQueryExpandable } from "../model/query";
-import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
+import { HoverNavigatable } from "../ui-components/HoverNavigatable";
 import { getRootNodeLabel } from "./helper";
 import QueryNodeActions from "./QueryNodeActions";
 import QueryNodeContent from "./QueryNodeContent";

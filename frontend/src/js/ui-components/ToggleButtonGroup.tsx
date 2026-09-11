@@ -6,27 +6,22 @@ import {
 import { tv } from "tailwind-variants";
 
 const groupStyle = tv({
-  base: "flex items-center",
+  base: "flex items-center gap-1",
   variants: {
     orientation: {
-      horizontal: "flex-row flex-wrap gap-1",
-      vertical: "flex-col gap-1",
+      horizontal: "flex-row",
+      vertical: "flex-col",
     },
-    // the buttons join into one control and share their borders
-    segmented: { true: "inline-flex flex-nowrap gap-0" },
+    // a group that grows with its data continues on the next line
+    wrap: { true: "flex-wrap" },
   },
-  defaultVariants: { orientation: "horizontal" },
 });
 
 type Orientation = "horizontal" | "vertical";
 type Size = "sm" | "md" | "lg";
 
 /** what a ToggleButton needs to know about the group it sits in */
-export const ToggleButtonGroupContext = createContext<{
-  segmented: boolean;
-  orientation: Orientation;
-  size?: Size;
-} | null>(null);
+const ToggleButtonGroupContext = createContext<{ size?: Size } | null>(null);
 
 export const useToggleButtonGroup = () => useContext(ToggleButtonGroupContext);
 
@@ -34,8 +29,8 @@ export interface ToggleButtonGroupProps
   extends Omit<RacToggleButtonGroupProps, "className" | "style" | "children"> {
   children?: ReactNode;
   orientation?: Orientation;
-  /** one connected control: the buttons share their borders, a segmented control */
-  segmented?: boolean;
+  /** the buttons may continue on further lines: for a group whose options come from data */
+  wrap?: boolean;
   /** the size of every button in the group */
   size?: Size;
 }
@@ -46,25 +41,25 @@ export interface ToggleButtonGroupProps
  * `onSelectionChange` (or `defaultSelectedKeys`), `disallowEmptySelection`,
  * and the arrow keys move along the group. Each button carries its key as `id`.
  *
- *   <ToggleButtonGroup segmented size="sm" selectionMode="single" disallowEmptySelection
+ *   <ToggleButtonGroup size="sm" selectionMode="single" disallowEmptySelection
  *     selectedKeys={[mode]} onSelectionChange={(keys) => …}>
  *     <ToggleButton id="range">Range</ToggleButton>
  *     <ToggleButton id="exact">Exact</ToggleButton>
  *   </ToggleButtonGroup>
  *
- * Plain, the buttons keep their own look with a small gap; `segmented` joins
- * them into one bordered control. Layout around the group belongs to the parent.
+ * The buttons keep their own look, a small gap between them; the group stays
+ * on one line unless it may `wrap`. Layout around the group belongs to the parent.
  */
 export const ToggleButtonGroup = ({
   orientation = "horizontal",
-  segmented = false,
+  wrap = false,
   size,
   children,
   ...props
 }: ToggleButtonGroupProps) => (
-  <ToggleButtonGroupContext.Provider value={{ segmented, orientation, size }}>
+  <ToggleButtonGroupContext.Provider value={{ size }}>
     <RacToggleButtonGroup
-      className={groupStyle({ orientation, segmented })}
+      className={groupStyle({ orientation, wrap })}
       orientation={orientation}
       {...props}
     >

@@ -364,7 +364,6 @@ const FormConceptGroup = (props: Props) => {
                   {t("externalForms.common.connectedWith")}:
                 </Description>
                 <ToggleButtonGroup
-                  segmented
                   size="sm"
                   selectionMode="single"
                   disallowEmptySelection
