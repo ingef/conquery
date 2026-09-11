@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion;
 
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.sql.compiler.conversion.Converter;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 
 /**

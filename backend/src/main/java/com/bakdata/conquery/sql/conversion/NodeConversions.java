@@ -4,6 +4,7 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.sql.compiler.conversion.ConversionDispatcher;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
@@ -18,7 +19,7 @@ import java.util.Locale;
  */
 public class NodeConversions implements NodeConversionDispatcher {
 
-	private final Conversions<Object, ConversionContext, ConversionContext> conversions;
+	private final ConversionDispatcher<Object, ConversionContext, ConversionContext> dispatcher;
 	private final IdColumnConfig idColumns;
 	private final LegacyCompilerDialect dialect;
 	private final SqlNameGenerator nameGenerator;
@@ -33,7 +34,7 @@ public class NodeConversions implements NodeConversionDispatcher {
 			Clock clock,
 			String defaultPrimaryColumn
 	) {
-		this.conversions = new Conversions<>(compilerDialect.getNodeConverters(dslContext));
+		this.dispatcher = new ConversionDispatcher<>(compilerDialect.getNodeConverters(dslContext));
 		this.idColumns = idColumns;
 		this.dialect = compilerDialect;
 		this.nameGenerator = new SqlNameGenerator(compilerDialect.getNameMaxLength());
@@ -43,7 +44,7 @@ public class NodeConversions implements NodeConversionDispatcher {
 
 	@Override
 	public ConversionContext convert(Object node, ConversionContext context) {
-		return conversions.convert(node, context);
+		return dispatcher.convert(node, context);
 	}
 
 	public ConversionContext convert(QueryDescription queryDescription, ConqueryConfig conqueryConfig) {
