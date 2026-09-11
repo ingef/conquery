@@ -1,59 +1,25 @@
 package com.bakdata.conquery.sql.conversion.query;
 
-import com.bakdata.conquery.sql.compiler.ir.JoinMode;
-import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
-import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.compiler.ir.QueryStepJoiner;
-import com.bakdata.conquery.sql.compiler.ir.Selects;
-import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQNegation;
 import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.FinalQueryStepComposer;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.*;
-import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
-import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
+import com.bakdata.conquery.sql.conversion.model.QueryStepComposer;
+import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import lombok.RequiredArgsConstructor;
-import org.jooq.*;
 import org.jooq.Record;
+import org.jooq.Select;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 
 	private final QueryStepRenderer queryStepRenderer;
-
-	private static Selects getPreFinalSelects(QueryStep preFinalStep, ConversionContext context) {
-		Selects preFinalStepSelects = preFinalStep.getQualifiedSelects();
-		QueryStep externalExtras = context.getExternalExtras();
-		if (externalExtras == null) {
-			return preFinalStepSelects;
-		}
-		// adding extra selects
-		List<SqlSelect> concatenated = Stream.concat(
-				preFinalStepSelects.getSqlSelects().stream(),
-				externalExtras.getQualifiedSelects().getSqlSelects().stream()
-		).toList();
-		return preFinalStepSelects.toBuilder().sqlSelects(concatenated).build();
-	}
-
-	private static TableLike<Record> getFinalTable(QueryStep preFinalStep, ConversionContext context) {
-		QueryStep externalExtras = context.getExternalExtras();
-		if (externalExtras == null) {
-			return QueryStep.toTableLike(preFinalStep.getCteName());
-		}
-		return QueryStepJoiner.join(
-				List.of(preFinalStep, externalExtras),
-				JoinMode.INNER
-		);
-	}
 
 	@Override
 	public Class<ConceptQuery> getConversionClass() {
@@ -75,56 +41,14 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 			);
 		}
 
-		Selects preFinalSelects = getPreFinalSelects(preFinalStep, contextAfterConversion);
-		List<QueryStep> predecessors = Stream.concat(Stream.of(preFinalStep), Stream.ofNullable(contextAfterConversion.getExternalExtras())).toList();
-
-		QueryStep finalStep = QueryStep.builder()
-				.cteName(null)  // the final QueryStep won't be converted to a CTE
-				.projectionMode(ProjectionMode.AGGREGATED)
-				.selects(getFinalSelects(conceptQuery, preFinalSelects, context.getCompilerDialect()))
-				.fromTable(getFinalTable(preFinalStep, contextAfterConversion))
-				.groupBy(getFinalGroupBySelects(preFinalSelects))
-				.predecessors(predecessors)
-				.build();
+		QueryStep finalStep = FinalQueryStepComposer.compose(
+				preFinalStep,
+				Optional.ofNullable(contextAfterConversion.getExternalExtras()),
+				conceptQuery.getDateAggregationMode() != DateAggregationMode.NONE,
+				context.getCompilerDialect()
+		);
 
 		Select<Record> finalQuery = this.queryStepRenderer.toSelectQuery(finalStep, context.getCompilerDialect());
 		return contextAfterConversion.withFinalQuery(new SqlQuery(finalQuery, conceptQuery.getResultInfos()));
 	}
-
-	private Selects getFinalSelects(ConceptQuery conceptQuery, Selects preFinalSelects, LegacyCompilerDialect dialect) {
-		SqlFunctionProvider functionProvider = dialect.getFunctionProvider();
-		Selects finalSelects = preFinalSelects;
-		if (conceptQuery.getDateAggregationMode() == DateAggregationMode.NONE) {
-			finalSelects = preFinalSelects.blockValidityDate();
-		}
-
-// In case all final selects have no validity-date, we convert it to infinity.
-		if (preFinalSelects.getValidityDate().isEmpty()) {
-			return preFinalSelects.toBuilder()
-					.validityDate(Optional.of(functionProvider.emptyColumnDateRange()))
-					.build();
-		}
-		return Selects.builder()
-				.ids(finalSelects.getIds())
-				.validityDate(finalSelects.getValidityDate())
-				.stratificationDate(finalSelects.getStratificationDate())
-				.sqlSelects(getFinalAggregatedSelects(finalSelects, dialect))
-				.build();
-	}
-
-	private List<? extends FieldWrapper<?>> getFinalAggregatedSelects(Selects finalSelects, CompilerDialect dialect) {
-		return finalSelects.getSqlSelects().stream()
-				.flatMap(sqlSelect -> sqlSelect.aggregateForFinalQuery(dialect).stream())
-				.map(this::toFieldWrapper)
-				.toList();
-	}
-
-	private FieldWrapper<?> toFieldWrapper(Field<?> field) {
-		return new FieldWrapper<>(field);
-	}
-
-	private List<Field<?>> getFinalGroupBySelects(Selects preFinalSelects) {
-		return preFinalSelects.getIds().toFields();
-	}
-
 }
