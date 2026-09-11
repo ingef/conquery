@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -32,7 +32,6 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
-import com.google.common.collect.Streams;
 import io.dropwizard.validation.ValidationMethod;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AccessLevel;
@@ -106,13 +105,7 @@ public class CQExternal extends CQElement {
 			throw new IllegalStateException("CQExternal needs to be resolved before creating a plan");
 		}
 
-		final String[] extraHeaders = Streams.zip(
-													 Arrays.stream(headers),
-													 format.stream(),
-													 (header, format) -> format.equals(EntityResolverUtil.FORMAT_EXTRA) ? header : null
-											 )
-											 .filter(Objects::nonNull)
-											 .toArray(String[]::new);
+		final String[] extraHeaders = getExtraHeaders().toArray(String[]::new);
 
 		if (onlySingles) {
 			return createExternalNodeOnlySingle(context, plan, extraHeaders);
@@ -218,19 +211,24 @@ public class CQExternal extends CQElement {
 		if (extra == null) {
 			return Collections.emptyList();
 		}
-		List<ResultInfo> resultInfos = new ArrayList<>();
-		for (int col = 0; col < format.size(); col++) {
-			if (!format.get(col).equals(EntityResolverUtil.FORMAT_EXTRA)) {
-				continue;
-			}
+		final ResultType type = onlySingles
+				? ResultType.Primitive.STRING
+				: new ResultType.ListT<>(ResultType.Primitive.STRING);
+		return getExtraHeaders().stream()
+				.<ResultInfo>map(column -> new ExternalResultInfo(column, type))
+				.toList();
+	}
 
-			final String column = headers[col];
-
-			final ResultType type = onlySingles ? ResultType.Primitive.STRING : new ResultType.ListT<>(ResultType.Primitive.STRING);
-			resultInfos.add(new ExternalResultInfo(column, type));
+	/** Ordered names of the resolved columns that are returned as external result values. */
+	@JsonIgnore
+	public List<String> getExtraHeaders() {
+		if (headers == null) {
+			return List.of();
 		}
-
-		return resultInfos;
+		return IntStream.range(0, format.size())
+				.filter(index -> EntityResolverUtil.FORMAT_EXTRA.equals(format.get(index)))
+				.mapToObj(index -> headers[index])
+				.toList();
 	}
 
 
@@ -268,6 +266,9 @@ public class CQExternal extends CQElement {
 	}
 
 	public List<Map.Entry<String, List<String>>> getExtrasForId(String id) {
+		if (extra == null) {
+			return List.of();
+		}
 		Map<String, List<String>> extras = extra.getOrDefault(id, Collections.emptyMap());
 		// we need to bring the extras in the correct order
 		List<Map.Entry<String, List<String>>> inOrder = new ArrayList<>();

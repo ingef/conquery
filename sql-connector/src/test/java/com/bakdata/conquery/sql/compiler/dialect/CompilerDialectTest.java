@@ -6,9 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.Locale;
 
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.model.range.DateRange;
 import org.jooq.Field;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -46,6 +48,17 @@ class CompilerDialectTest {
 		assertTrue(start.contains("\"minimum_date\""));
 		assertTrue(end.contains("case when"));
 		assertTrue(end.contains("\"maximum_date\""));
+	}
+
+	@Test
+	void shouldConvertInclusiveResolvedDateRangeToExclusiveSqlEnd() {
+		ColumnDateRange dateRange = DIALECT.dateRangeLiteral(DateRange.closed(
+				LocalDate.of(2025, 1, 1),
+				LocalDate.of(2025, 1, 31)
+		));
+
+		assertEquals("date '2025-01-01'", render(dateRange.getStart()));
+		assertEquals("date '2025-02-01'", render(dateRange.getEnd()));
 	}
 
 	private static String render(Field<?> expression) {
