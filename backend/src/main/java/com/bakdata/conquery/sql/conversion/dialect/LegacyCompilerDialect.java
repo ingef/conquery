@@ -5,11 +5,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
+import com.bakdata.conquery.sql.model.range.DateRange;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQAndConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQDateRestrictionConverter;
@@ -30,6 +32,8 @@ import com.bakdata.conquery.sql.conversion.query.SecondaryIdQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.TableExportQueryConverter;
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.Table;
 
 /**
  * Temporary backend adapter exposing services required by the legacy SQL compiler.
@@ -63,6 +67,30 @@ public interface LegacyCompilerDialect extends CompilerDialect {
 	@Override
 	default Field<?> aggregateDateRanges(Field<Date> start, Field<Date> end) {
 		return getFunctionProvider().dateRangeAggregation(ColumnDateRange.of(start, end));
+	}
+
+	@Override
+	default Field<String> externalId(String id) {
+		return getFunctionProvider().externalId(id);
+	}
+
+	@Override
+	default Field<?> externalStringValues(List<String> values) {
+		return getFunctionProvider().asArrayRepr(values);
+	}
+
+	@Override
+	default Table<? extends Record> literalSelectTable() {
+		return getFunctionProvider().getNoOpTable();
+	}
+
+	@Override
+	default ColumnDateRange dateRangeLiteral(DateRange dateRange) {
+		CDateRange legacyDateRange = CDateRange.of(
+				dateRange.startInclusive().orElse(null),
+				dateRange.endInclusive().orElse(null)
+		);
+		return getFunctionProvider().forCDateRange(legacyDateRange);
 	}
 
 	StratificationFunctions getStratificationFunctions();
