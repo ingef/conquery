@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.DistinctSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
