@@ -2,13 +2,12 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import com.bakdata.conquery.sql.compiler.ir.JoinMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.compiler.ir.QueryStepJoiner;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteCompiler;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -27,7 +26,6 @@ import com.bakdata.conquery.sql.compiler.ir.condition.ConditionWrappingWhereCond
 import com.bakdata.conquery.sql.compiler.ir.condition.DateRestrictionCondition;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
-import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
@@ -43,8 +41,6 @@ import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Preconditions;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.Record;
-import org.jooq.TableLike;
 
 import static org.jooq.impl.DSL.*;
 
@@ -64,7 +60,6 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	private static QueryStep finishConceptConversion(QueryStep predecessor, CQConcept cqConcept, TablePath tablePath, ConversionContext context) {
 
 		ConceptSqlTables universalTables = tablePath.createConceptTables(predecessor);
-
 		Selects predecessorSelects = predecessor.getQualifiedSelects();
 		Optional<ColumnDateRange> validityDate = predecessorSelects.getValidityDate();
 		SqlIdColumns ids = predecessorSelects.getIds();
@@ -77,49 +72,19 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				})
 				.toList();
 
-		List<QueryStep> queriesToJoin = new ArrayList<>();
-		queriesToJoin.add(predecessor);
-		converted.stream().map(ConceptSqlSelects::getAdditionalPredecessor).filter(Optional::isPresent).map(Optional::get).forEach(queriesToJoin::add);
-
+		Optional<QueryStep> intervalPackingSelects = Optional.empty();
 		if (universalTables.isRequiredStep(ConceptCteStep.INTERVAL_PACKING_SELECTS)) {
 			QueryStep eventDateSelectsStep = IntervalPackingSelectsCte.forConcept(predecessor, universalTables, converted, context);
-			queriesToJoin.add(eventDateSelectsStep);
+			intervalPackingSelects = Optional.of(eventDateSelectsStep);
 		}
 
-		// combine all universal selects and connector selects from preceding step
-		List<SqlSelect> allConceptSelects = Stream.concat(
-						converted.stream().flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream()),
-						// aggregate special selects (e.g. Exists)
-						predecessor.getQualifiedSelects().getSqlSelects().stream().map(SqlSelect::connectorAggregate)
-				)
-				.toList();
-
-		Selects finalSelects = Selects.builder()
-				.ids(ids)
-				.stratificationDate(predecessorSelects.getStratificationDate())
-				.validityDate(validityDate)
-				.sqlSelects(allConceptSelects)
-				.build();
-
-		TableLike<Record> joinedTable = QueryStepJoiner.join(queriesToJoin, JoinMode.INNER);
-
-		// group by everything which is not part of an aggregation in this step
-		List<Field<?>> groupByFields =
-				Stream.concat(
-						finalSelects.nonExplicitSelects().stream(),
-						finalSelects.getSqlSelects().stream()
-								.filter(Predicate.not(SqlSelect::isUniversal))
-								.flatMap(sqlSelect -> sqlSelect.toFields().stream())
-				).toList();
-
-		return QueryStep.builder()
-				.cteName(universalTables.cteName(ConceptCteStep.UNIVERSAL_SELECTS))
-				.selects(finalSelects)
-				.fromTable(joinedTable)
-				.groupBy(groupByFields)
-				.predecessors(queriesToJoin)
-				.negate(context.isNegation())
-				.build();
+		return ConceptCteCompiler.compileUniversalSelects(
+				predecessor,
+				converted,
+				intervalPackingSelects,
+				universalTables,
+				context.isNegation()
+		);
 	}
 
 	public static SqlIdColumns convertIds(CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
