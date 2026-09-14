@@ -1,6 +1,6 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.*;
+import static com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep.*;
 import static com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingCteStep.INTERVAL_COMPLETE;
 import static org.jooq.impl.DSL.*;
 
@@ -21,7 +21,7 @@ import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.Context;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.IntervalPackingSelectsCte;

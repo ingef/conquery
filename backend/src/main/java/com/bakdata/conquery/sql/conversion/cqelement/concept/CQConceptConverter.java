@@ -4,6 +4,7 @@ import com.bakdata.conquery.sql.compiler.ir.JoinMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.QueryStepJoiner;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
