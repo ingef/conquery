@@ -1,14 +1,8 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
-import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
-import org.jooq.Condition;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorCteCompiler;
 
 class AggregationFilterCte extends ConnectorCte {
 
@@ -19,42 +13,11 @@ class AggregationFilterCte extends ConnectorCte {
 
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
-
-		Selects aggregationFilterSelects = collectSelects(tableContext);
-
-		List<Condition> aggregationFilterConditions = tableContext.getSqlFilters().stream()
-																  .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getGroupFilters().stream())
-																  .map(WhereCondition::condition)
-																  .toList();
-
-		return QueryStep.builder()
-						.selects(aggregationFilterSelects)
-						.conditions(aggregationFilterConditions);
-	}
-
-	private Selects collectSelects(CQTableContext tableContext) {
-
-		QueryStep previous = tableContext.getPrevious();
-		Selects previousSelects = previous.getQualifiedSelects();
-		List<SqlSelect> forAggregationFilterStep =
-				tableContext.allSqlSelects().stream()
-							.flatMap(sqlSelects -> sqlSelects.getFinalSelects().stream())
-							.map(sqlSelect -> {
-								// universal selects like an ExistsSelect have no predecessor in preceding CTE
-								if (sqlSelect.isUniversal()) {
-									return sqlSelect;
-								}
-								return sqlSelect.qualify(previous.getCteName());
-							})
-							.collect(Collectors.toList());
-
-		return Selects.builder()
-					  .ids(previousSelects.getIds())
-					  .stratificationDate(previousSelects.getStratificationDate())
-					  .validityDate(previousSelects.getValidityDate())
-					  .sqlSelects(forAggregationFilterStep)
-					  .build();
-
+		return ConnectorCteCompiler.compileAggregationFilter(
+				tableContext.getPrevious(),
+				tableContext.allSqlSelects(),
+				tableContext.getSqlFilters()
+		);
 	}
 
 }
