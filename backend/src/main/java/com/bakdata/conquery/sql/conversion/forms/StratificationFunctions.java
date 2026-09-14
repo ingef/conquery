@@ -1,8 +1,8 @@
 package com.bakdata.conquery.sql.conversion.forms;
 
-import static com.bakdata.conquery.sql.conversion.dialect.Interval.DAYS_PER_QUARTER;
-import static com.bakdata.conquery.sql.conversion.dialect.Interval.DAYS_PER_YEAR;
-import static com.bakdata.conquery.sql.conversion.dialect.Interval.MONTHS_PER_QUARTER;
+import static com.bakdata.conquery.sql.compiler.dialect.Interval.DAYS_PER_QUARTER;
+import static com.bakdata.conquery.sql.compiler.dialect.Interval.DAYS_PER_YEAR;
+import static com.bakdata.conquery.sql.compiler.dialect.Interval.MONTHS_PER_QUARTER;
 import static com.bakdata.conquery.sql.conversion.forms.FormConstants.DAY_ALIGNED_COUNT;
 import static com.bakdata.conquery.sql.conversion.forms.FormConstants.INDEX_SELECTOR;
 import static com.bakdata.conquery.sql.conversion.forms.FormConstants.INDEX_START;
@@ -27,7 +27,7 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
-import com.bakdata.conquery.sql.conversion.dialect.Interval;
+import com.bakdata.conquery.sql.compiler.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
