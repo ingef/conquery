@@ -3,16 +3,11 @@ package com.bakdata.conquery.sql.conversion.model;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
-import com.bakdata.conquery.models.config.ColumnConfig;
-import com.bakdata.conquery.models.config.IdColumnConfig;
-import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.sql.compiler.ir.JoinMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
-import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
-import com.bakdata.conquery.sql.model.schema.SqlTable;
 
 /**
  * Adapts legacy backend query nodes and ID configuration to connector-owned query-step composition.
@@ -32,7 +27,7 @@ public final class QueryStepComposer {
 	) {
 		return com.bakdata.conquery.sql.compiler.ir.QueryStepComposer.antiJoinWithAllEntities(
 				queryStep,
-				toEntitySchema(context.getIdColumns()),
+				EntitySchemaAdapter.from(context.getIdColumns()),
 				dateAggregationAction,
 				context.getCompilerDialect()
 		);
@@ -61,22 +56,10 @@ public final class QueryStepComposer {
 				queriesToJoin,
 				logicalOperation,
 				dateAggregationAction,
-				toEntitySchema(context.getIdColumns()),
+				EntitySchemaAdapter.from(context.getIdColumns()),
 				context.getCompilerDialect(),
 				context.getNameGenerator()
 		);
 	}
 
-	private static EntitySchema toEntitySchema(IdColumnConfig idColumns) {
-		ColumnConfig primaryId = idColumns.findPrimaryIdColumn();
-		SqlTable entityTable = SqlTable.of(idColumns.getTable(), idColumns.getTable());
-		ResolvedColumn primaryIdColumn = new ResolvedColumn(
-				primaryId.getName(),
-				entityTable,
-				primaryId.getField(),
-				ColumnType.STRING,
-				false
-		);
-		return new EntitySchema(entityTable, primaryIdColumn);
-	}
 }

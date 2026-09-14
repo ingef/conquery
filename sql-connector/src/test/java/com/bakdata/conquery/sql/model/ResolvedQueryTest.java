@@ -96,6 +96,15 @@ class ResolvedQueryTest {
 	}
 
 	@Test
+	void shouldRejectNonStringEntityIds() {
+		ResolvedColumn numericId = new ResolvedColumn(
+				"dataset.events.numeric_id", EVENTS, "numeric_id", ColumnType.INTEGER, false
+		);
+
+		assertInvalid(new EntitySchema(EVENTS, numericId));
+	}
+
+	@Test
 	void shouldRejectNonDateValidityColumns() {
 		assertInvalid(new ResolvedValidityDate.Point(ENTITY_ID));
 	}
