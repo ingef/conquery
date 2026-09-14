@@ -1,8 +1,8 @@
 package com.bakdata.conquery.sql.conversion.forms;
 
-import static com.bakdata.conquery.sql.conversion.forms.FormConstants.INDEX_SELECTOR;
-import static com.bakdata.conquery.sql.conversion.forms.FormConstants.INDEX_START_NEGATIVE;
-import static com.bakdata.conquery.sql.conversion.forms.FormConstants.INDEX_START_POSITIVE;
+import static com.bakdata.conquery.sql.compiler.ir.form.FormConstants.INDEX_SELECTOR;
+import static com.bakdata.conquery.sql.compiler.ir.form.FormConstants.INDEX_START_NEGATIVE;
+import static com.bakdata.conquery.sql.compiler.ir.form.FormConstants.INDEX_START_POSITIVE;
 
 import java.sql.Date;
 import java.util.ArrayList;
@@ -19,6 +19,8 @@ import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
+import com.bakdata.conquery.sql.compiler.ir.form.FormConstants;
+import com.bakdata.conquery.sql.compiler.ir.form.Offset;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.compiler.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
