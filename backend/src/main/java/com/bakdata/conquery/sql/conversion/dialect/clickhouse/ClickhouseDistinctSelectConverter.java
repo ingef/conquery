@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.DistinctSe
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
-import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;

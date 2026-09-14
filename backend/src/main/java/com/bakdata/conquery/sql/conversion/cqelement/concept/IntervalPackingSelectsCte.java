@@ -13,7 +13,7 @@ import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.conversion.model.select.ConceptSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import com.google.common.base.Preconditions;
 

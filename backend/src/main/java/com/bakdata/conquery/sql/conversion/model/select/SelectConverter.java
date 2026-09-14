@@ -1,6 +1,8 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 
