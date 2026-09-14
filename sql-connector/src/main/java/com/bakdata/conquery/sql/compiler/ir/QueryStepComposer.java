@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.compiler.ir;
 
-import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.table;
 
@@ -19,7 +18,6 @@ import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.TableLike;
@@ -41,9 +39,9 @@ public final class QueryStepComposer {
 			CompilerDialect compilerDialect
 	) {
 		Field<String> queryStepPrimaryColumn = queryStep.getQualifiedSelects().getIds().getPrimaryColumn();
-		Field<String> allIdsPrimaryColumn = primaryIdField(entitySchema);
+		Field<String> allIdsPrimaryColumn = EntitySchemaSql.primaryId(entitySchema);
 
-		Table<?> joinedTable = table(tableName(entitySchema))
+		Table<?> joinedTable = table(EntitySchemaSql.tableName(entitySchema))
 				.leftOuterJoin(table(name(queryStep.getCteName())))
 				.on(allIdsPrimaryColumn.eq(queryStepPrimaryColumn));
 
@@ -197,7 +195,7 @@ public final class QueryStepComposer {
 		}
 
 		negateJoined = DateAggregationCompiler.invert(negateJoined, compilerDialect, nameGenerator);
-		Field<String> allIdsPrimaryColumn = primaryIdField(entitySchema);
+		Field<String> allIdsPrimaryColumn = EntitySchemaSql.primaryId(entitySchema);
 		Field<String> negatePrimaryColumn = negateJoined.getQualifiedSelects().getIds().getPrimaryColumn();
 		Field<String> nonNegatePrimaryColumn = nonNegateJoined.getQualifiedSelects().getIds().getPrimaryColumn();
 
@@ -216,7 +214,7 @@ public final class QueryStepComposer {
 				.ids(new SqlIdColumns(coalescedId))
 				.validityDate(Optional.of(merged));
 
-		Table<?> joinedTable = table(tableName(entitySchema))
+		Table<?> joinedTable = table(EntitySchemaSql.tableName(entitySchema))
 				.leftOuterJoin(table(name(negateJoined.getCteName())))
 				.on(allIdsPrimaryColumn.eq(negatePrimaryColumn))
 				.leftOuterJoin(table(name(nonNegateJoined.getCteName())))
@@ -279,13 +277,4 @@ public final class QueryStepComposer {
 				.reduce(ColumnDateRange::coalesce);
 	}
 
-	private static Name tableName(EntitySchema entitySchema) {
-		return name(entitySchema.table().physicalName().toArray(String[]::new));
-	}
-
-	private static Field<String> primaryIdField(EntitySchema entitySchema) {
-		List<String> qualifiedName = new ArrayList<>(entitySchema.table().physicalName());
-		qualifiedName.add(entitySchema.primaryId().physicalName());
-		return field(name(qualifiedName.toArray(String[]::new)), String.class);
-	}
 }
