@@ -1,12 +1,20 @@
 package com.bakdata.conquery.sql.conversion.cqelement;
 
+import java.util.List;
+
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.sql.compiler.ir.JoinMode;
+import com.bakdata.conquery.sql.compiler.ir.LogicalQueryStepCompiler;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.compiler.ir.select.ExistsSqlSelect;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
+import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
 import com.bakdata.conquery.sql.conversion.model.QueryStepComposer;
 
+/**
+ * Adapts a resolved legacy conjunction to connector-owned logical query-step compilation.
+ *
+ * <p>TODO Remove this adapter once backend query resolution produces connector query nodes directly.</p>
+ */
 public class CQAndConverter implements NodeConverter<CQAnd> {
 
 	@Override
@@ -16,28 +24,16 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 
 	@Override
 	public ConversionContext convert(CQAnd andNode, ConversionContext context) {
-
-		QueryStep joined;
-		if (andNode.getChildren().size() == 1) {
-			ConversionContext withConvertedChild = context.getNodeConversions().convert(andNode.getChildren().get(0), context);
-			joined = withConvertedChild.getLastConvertedStep();
-		}
-		else {
-			joined = QueryStepComposer.joinChildren(
-					andNode.getChildren(),
-					context,
-					JoinMode.INNER,
-					andNode.getDateAction()
-			);
-		}
-
-		if (andNode.getCreateExists().isEmpty()) {
-			return context.withQueryStep(joined);
-		}
-
-		String joinedNodeName = joined.getCteName();
-		ExistsSqlSelect existsSqlSelect = ExistsSqlSelect.withAlias(joinedNodeName);
-		return context.withQueryStep(joined.addSqlSelect(existsSqlSelect));
+		List<QueryStep> children = QueryStepComposer.convertChildren(andNode.getChildren(), context);
+		QueryStep joined = LogicalQueryStepCompiler.compile(
+				children,
+				JoinMode.INNER,
+				andNode.getDateAction(),
+				andNode.getCreateExists().orElse(false),
+				EntitySchemaAdapter.from(context.getIdColumns()),
+				context.getCompilerDialect(),
+				context.getNameGenerator()
+		);
+		return context.withQueryStep(joined);
 	}
-
 }

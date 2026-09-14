@@ -33,17 +33,15 @@ public final class QueryStepComposer {
 		);
 	}
 
-	public static QueryStep joinChildren(
+	public static List<QueryStep> convertChildren(
 			Iterable<CQElement> children,
-			ConversionContext context,
-			JoinMode logicalOperation,
-			DateAggregationAction dateAggregationAction
+			ConversionContext context
 	) {
 		ConversionContext childrenContext = context.createChildContext();
 		for (CQElement childNode : children) {
 			childrenContext = context.getNodeConversions().convert(childNode, childrenContext);
 		}
-		return joinSteps(childrenContext.getQuerySteps(), logicalOperation, dateAggregationAction, context);
+		return childrenContext.getQuerySteps();
 	}
 
 	public static QueryStep joinSteps(
