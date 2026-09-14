@@ -1,6 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import static com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep.*;
+import static com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep.*;
 import static com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingCteStep.INTERVAL_COMPLETE;
 
 import java.util.HashMap;

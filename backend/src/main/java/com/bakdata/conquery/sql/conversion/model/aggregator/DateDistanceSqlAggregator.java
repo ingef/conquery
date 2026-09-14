@@ -10,7 +10,7 @@ import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
 import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
