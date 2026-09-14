@@ -1,8 +1,9 @@
-package com.bakdata.conquery.sql.conversion.dialect;
+package com.bakdata.conquery.sql.compiler.dialect;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+/** Calendar interval amounts used by dialect-specific SQL date calculations. */
 @Getter
 @RequiredArgsConstructor
 public enum Interval {
@@ -18,5 +19,4 @@ public enum Interval {
 	public static final int MONTHS_PER_QUARTER = Interval.QUARTER_INTERVAL.getAmount();
 
 	private final int amount;
-
 }
