@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
+import lombok.experimental.UtilityClass;
 import org.jooq.Condition;
 import org.jooq.Record;
 import org.jooq.Table;
@@ -17,10 +18,8 @@ import org.jooq.TableLike;
 import org.jooq.TableOnConditionStep;
 
 /** Combines compiler query-step IR without applying backend query semantics. */
+@UtilityClass
 public final class QueryStepJoiner {
-
-	private QueryStepJoiner() {
-	}
 
 	/**
 	 * Join the CTE tables represented by the supplied steps on their IDs and, where present, stratification dates.

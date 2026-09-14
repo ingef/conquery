@@ -16,6 +16,7 @@ import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
+import lombok.experimental.UtilityClass;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -24,12 +25,10 @@ import org.jooq.TableLike;
 import org.jooq.impl.DSL;
 
 /** Composes query-step IR, including negation and date aggregation, from resolved compiler inputs. */
+@UtilityClass
 public final class QueryStepComposer {
 
 	private static final String NEGATED_CTE_SUFFIX = "_negated";
-
-	private QueryStepComposer() {
-	}
 
 	/** Implements an anti-join against the entity schema used to enumerate all known entities. */
 	public static QueryStep antiJoinWithAllEntities(

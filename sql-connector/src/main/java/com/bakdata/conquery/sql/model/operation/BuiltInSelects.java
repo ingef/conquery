@@ -16,12 +16,11 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.experimental.UtilityClass;
 
 /** Framework-neutral select operations supported by the SQL connector. */
+@UtilityClass
 public final class BuiltInSelects {
-
-	private BuiltInSelects() {
-	}
 
 	public enum ValueOperation {
 		DISTINCT,

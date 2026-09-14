@@ -8,15 +8,14 @@ import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
+import lombok.experimental.UtilityClass;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
 
 /** Builds the final aggregated query-step projection from compiled connector IR. */
+@UtilityClass
 public final class FinalQueryStepComposer {
-
-	private FinalQueryStepComposer() {
-	}
 
 	/**
 	 * Compose a final, non-CTE query step.

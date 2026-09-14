@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
+import lombok.experimental.UtilityClass;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -14,10 +15,8 @@ import org.jooq.Table;
 import org.jooq.impl.DSL;
 
 /** Creates SQL identifiers for a resolved entity schema. */
+@UtilityClass
 final class EntitySchemaSql {
-
-	private EntitySchemaSql() {
-	}
 
 	static Table<Record> table(EntitySchema entitySchema) {
 		return DSL.table(tableName(entitySchema));
