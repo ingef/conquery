@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.conversion.dialect.clickhouse;
 
 import static com.bakdata.conquery.sql.compiler.dialect.Interval.MONTHS_PER_QUARTER;
-import static com.bakdata.conquery.sql.conversion.forms.FormConstants.SERIES_INDEX;
+import static com.bakdata.conquery.sql.compiler.ir.form.FormConstants.SERIES_INDEX;
 import static org.jooq.impl.DSL.*;
 import static org.jooq.impl.DSL.inline;
 
@@ -11,7 +11,7 @@ import java.time.temporal.ChronoUnit;
 import com.bakdata.conquery.apiv1.query.TemporalSamplerFactory;
 import com.bakdata.conquery.sql.compiler.dialect.Interval;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.forms.Offset;
+import com.bakdata.conquery.sql.compiler.ir.form.Offset;
 import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import lombok.Getter;
