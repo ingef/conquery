@@ -15,17 +15,16 @@ import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import com.bakdata.conquery.sql.model.node.ExternalEntity;
 import com.bakdata.conquery.sql.model.node.ExternalNode;
 import com.bakdata.conquery.sql.model.range.DateRange;
+import lombok.experimental.UtilityClass;
 import org.jooq.Field;
 import org.jooq.Name;
 
 /** Compiles resolved external entity values into literal-backed query-step IR. */
+@UtilityClass
 public final class ExternalQueryStepCompiler {
 
 	private static final String EXTERNAL_IDS_CTE_NAME = "external_ids";
 	private static final String EXTERNAL_VALUES_CTE_NAME = "external_extra";
-
-	private ExternalQueryStepCompiler() {
-	}
 
 	public static ExternalQuerySteps compile(
 			ExternalNode externalNode,

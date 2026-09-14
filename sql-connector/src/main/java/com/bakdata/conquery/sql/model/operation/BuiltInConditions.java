@@ -12,12 +12,11 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.experimental.UtilityClass;
 
 /** Declarative connector and concept-element conditions supported by the SQL connector. */
+@UtilityClass
 public final class BuiltInConditions {
-
-	private BuiltInConditions() {
-	}
 
 	public record AllOf(
 			@NotEmpty List<@NotNull @Valid ResolvedCondition> conditions

@@ -6,14 +6,13 @@ import java.util.Optional;
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.model.node.AllEntitiesNode;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
+import lombok.experimental.UtilityClass;
 
 /** Compiles the resolved entity schema into the query step used to select every entity. */
+@UtilityClass
 public final class AllEntitiesQueryStepCompiler {
 
 	private static final String ALL_ENTITIES_CTE = "all_ids";
-
-	private AllEntitiesQueryStepCompiler() {
-	}
 
 	public static QueryStep compile(
 			AllEntitiesNode allEntitiesNode,

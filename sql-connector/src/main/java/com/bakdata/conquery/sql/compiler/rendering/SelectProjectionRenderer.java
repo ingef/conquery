@@ -11,13 +11,12 @@ import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import lombok.experimental.UtilityClass;
 import org.jooq.Field;
 
 /** Renders a select projection from compiler IR into database-specific physical fields. */
+@UtilityClass
 public final class SelectProjectionRenderer {
-
-	private SelectProjectionRenderer() {
-	}
 
 	/**
 	 * Render the final projection fields.

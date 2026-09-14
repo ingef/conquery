@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public final class ModelNormalization {
+import lombok.experimental.UtilityClass;
 
-	private ModelNormalization() {
-	}
+@UtilityClass
+public final class ModelNormalization {
 
 	public static <T> List<T> immutableCopy(List<T> values) {
 		return values == null ? null : Collections.unmodifiableList(new ArrayList<>(values));
