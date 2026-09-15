@@ -29,6 +29,25 @@ import org.jooq.impl.DSL;
 /** Builds connector-level concept CTE bodies from compiler IR. */
 @UtilityClass
 public class ConnectorCteCompiler {
+	private static final List<ConceptCteStep> CONNECTOR_PIPELINE = List.of(
+			ConceptCteStep.PREPROCESSING,
+			ConceptCteStep.AGGREGATION_SELECT,
+			ConceptCteStep.JOIN_BRANCHES,
+			ConceptCteStep.AGGREGATION_FILTER
+	);
+
+	public static Optional<QueryStep> compileConnector(ConnectorCtePipelineInput input) {
+		Optional<QueryStep> previous = Optional.empty();
+		for (ConceptCteStep cteStep : CONNECTOR_PIPELINE) {
+			if (!input.tables().isRequiredStep(cteStep)) {
+				continue;
+			}
+			QueryStep.QueryStepBuilder builder = compileConnectorStep(input, cteStep, previous)
+					.cteName(input.tables().cteName(cteStep));
+			previous = Optional.of(completeStep(builder, previous));
+		}
+		return previous;
+	}
 
 	public static QueryStep.QueryStepBuilder compilePreprocessing(PreprocessingCteInput input) {
 		List<SqlSelect> preprocessingSelects = input.sqlSelects().stream()
@@ -183,6 +202,55 @@ public class ConnectorCteCompiler {
 				.selects(selects)
 				.fromTable(QueryStepJoiner.join(queriesToJoin, JoinMode.FULL_OUTER))
 				.predecessors(queriesToJoin);
+	}
+
+	private static QueryStep.QueryStepBuilder compileConnectorStep(
+			ConnectorCtePipelineInput input,
+			ConceptCteStep cteStep,
+			Optional<QueryStep> previous
+	) {
+		if (cteStep == ConceptCteStep.PREPROCESSING) {
+			// TODO this looks like it can be unwinded
+			return compilePreprocessing(input.preprocessing());
+		}
+
+		QueryStep predecessor = previous.orElseThrow(() -> new IllegalStateException(
+				"Connector CTE %s requires a predecessor".formatted(cteStep)
+		));
+		return switch (cteStep) {
+			case AGGREGATION_SELECT -> compileAggregationSelect(predecessor, input.preprocessing().sqlSelects());
+			case JOIN_BRANCHES -> compileJoinBranches(new JoinBranchesCteInput(
+					predecessor,
+					input.preprocessing().validityDate(),
+					input.tables(),
+					input.withIntervalPacking(),
+					input.excludedFromTimeAggregation(),
+					input.eventDateSelects(),
+					input.additionalPredecessors()
+			));
+			case AGGREGATION_FILTER -> compileAggregationFilter(
+					predecessor,
+					input.preprocessing().sqlSelects(),
+					input.preprocessing().sqlFilters()
+			);
+			default -> throw new IllegalArgumentException("Not a connector pipeline step: %s".formatted(cteStep));
+		};
+	}
+
+	private static QueryStep completeStep(QueryStep.QueryStepBuilder builder, Optional<QueryStep> previous) {
+		if (previous.isEmpty()) {
+			return builder.predecessors(List.of()).build();
+		}
+
+		QueryStep partialStep = builder.build();
+		if (partialStep.getFromTables().isEmpty() && partialStep.getPredecessors().isEmpty()) {
+			QueryStep predecessor = previous.orElseThrow();
+			return builder
+					.fromTable(QueryStep.toTableLike(predecessor.getCteName()))
+					.predecessors(List.of(predecessor))
+					.build();
+		}
+		return partialStep;
 	}
 
 	private static SqlSelect qualifyUnlessUniversal(SqlSelect sqlSelect, String predecessorName) {

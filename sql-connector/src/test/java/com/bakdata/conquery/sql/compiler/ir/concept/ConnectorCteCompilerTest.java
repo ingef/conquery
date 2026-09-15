@@ -36,6 +36,40 @@ class ConnectorCteCompilerTest {
 	private static final String PREDECESSOR_NAME = "predecessor";
 
 	@Test
+	void shouldCompileConnectorCtePipeline() {
+		SqlTables tables = new SqlTables(
+				"events",
+				Map.of(
+						ConceptCteStep.PREPROCESSING, "preprocessing",
+						ConceptCteStep.AGGREGATION_SELECT, "aggregation",
+						ConceptCteStep.JOIN_BRANCHES, "joined",
+						ConceptCteStep.AGGREGATION_FILTER, "filtered"
+				),
+				Map.of()
+		);
+		ConnectorCtePipelineInput input = new ConnectorCtePipelineInput(
+				tables,
+				preprocessingInput(Optional.empty()),
+				List.of(),
+				List.of(),
+				false,
+				false
+		);
+
+		QueryStep aggregationFilter = ConnectorCteCompiler.compileConnector(input).orElseThrow();
+		QueryStep joinedBranches = aggregationFilter.getPredecessors().getFirst();
+		QueryStep aggregationSelect = joinedBranches.getPredecessors().getFirst();
+		QueryStep preprocessing = aggregationSelect.getPredecessors().getFirst();
+
+		assertEquals("filtered", aggregationFilter.getCteName());
+		assertEquals("joined", joinedBranches.getCteName());
+		assertEquals("aggregation", aggregationSelect.getCteName());
+		assertEquals("preprocessing", preprocessing.getCteName());
+		assertEquals("\"joined\"", aggregationFilter.getFromTables().getFirst().toString());
+		assertEquals("\"preprocessing\"", aggregationSelect.getFromTables().getFirst().toString());
+	}
+
+	@Test
 	void shouldCompilePreprocessingAgainstConnectorTable() {
 		PreprocessingCteInput input = preprocessingInput(Optional.empty());
 
