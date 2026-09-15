@@ -1,5 +1,11 @@
 package com.bakdata.conquery.sql.conquery;
 
+import java.sql.Date;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -9,6 +15,7 @@ import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptIdMapping;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
@@ -21,9 +28,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
-
-import java.sql.Date;
-import java.util.*;
 
 import static org.jooq.impl.DSL.*;
 
@@ -39,7 +43,7 @@ public class SqlMatchingStats {
 	private static final Field<String> PID_FIELD = field(name("pid"), String.class);
 	private static final Field<Date> LB_FIELD = field(name("lower_bound"), Date.class);
 	private static final Field<Date> UB_FIELD = field(name("upper_bound"), Date.class);
-	private static final Field<Integer> CONCEPT_ID_FIELD = field(name("resolved_id"), Integer.class);
+	private static final Field<Integer> CONCEPT_ID_FIELD = field(name(ConceptIdMapping.RESOLVED_ID_COLUMN), Integer.class);
 	private final DSLContext dslContext;
 	private final SqlFunctionProvider functionProvider;
 	private final String defaultPrimaryColumn;
@@ -79,32 +83,26 @@ public class SqlMatchingStats {
 	 * @param concept
 	 */
 	public void createConceptIdJoinTable(TreeConcept concept) {
-		ConceptIdMapping mapping = ConceptIdMapping.create(concept, functionProvider);
-		Name tableName = mapping.tableName();
+		ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
+		Name tableName = mapping.getTableName();
 
-		boolean alreadyExists = dslContext.meta().getTables().stream()
-				.anyMatch(existing -> existing.getName().equals(tableName.last()));
-		if (alreadyExists) {
-			log.debug("Concept id table {} already exists", tableName);
-			return;
-		}
-
+		deleteConceptIdJoinTable(concept.getId());
 		List<Field<?>> fields = createConceptIdsTable(tableName, mapping.tableFields());
 
-		insertConceptIdMappings(tableName, fields, mapping.rows(), dslContext);
+		insertConceptIdMappings(tableName, fields, mapping.getRows(), dslContext);
 		createConceptIdIndexes(mapping);
 	}
 
 	private void createConceptIdIndexes(ConceptIdMapping mapping) {
 		if (dslContext.dialect().family() == SQLDialect.CLICKHOUSE) {
-			log.debug("Skipping secondary indexes for ClickHouse concept id table {}", mapping.tableName());
+			log.debug("Skipping secondary indexes for ClickHouse concept id table {}", mapping.getTableName());
 			return;
 		}
 
-		String indexToken = Integer.toUnsignedString(mapping.tableName().hashCode(), 16);
-		if (!mapping.keyFields().isEmpty()) {
+		String indexToken = Integer.toUnsignedString(mapping.getTableName().hashCode(), 16);
+		if (!mapping.getKeyFields().isEmpty()) {
 			dslContext.createIndex(name("cq_map_%s_keys".formatted(indexToken)))
-					.on(mapping.table(), mapping.keyFields().stream().map(Field::sortDefault).toList())
+					.on(mapping.table(), mapping.getKeyFields().stream().map(Field::sortDefault).toList())
 					.execute();
 		}
 		dslContext.createIndex(name("cq_map_%s_id".formatted(indexToken)))
@@ -193,7 +191,7 @@ public class SqlMatchingStats {
 	}
 
 	/**
-	 * Create a versioned table and its fields.
+	 * Create a table and its fields. Assumes the table has been dropped already.
 	 */
 	private List<Field<?>> createConceptIdsTable(Name tableName, List<Field<?>> fields) {
 		log.debug("Creating table {} with fields {}", tableName, fields);
@@ -230,7 +228,7 @@ public class SqlMatchingStats {
 	private SelectJoinStep<? extends Record> createMatchingStatsStatement(TreeConcept concept) {
 
 		List<Select<? extends Record>> connectorTables = new ArrayList<>();
-		ConceptIdMapping mapping = ConceptIdMapping.create(concept, functionProvider);
+		ConceptIdMapping mapping = new ConceptIdMapping(concept, functionProvider);
 
 		Field<Date> positiveInfinity = functionProvider.getMaxDateExpression();
 		Field<Date> negativeInfinity = functionProvider.getMinDateExpression();
@@ -251,7 +249,7 @@ public class SqlMatchingStats {
 							// join onto the concept-ids table to assign the most specific id.
 							.on(mapping.joinCondition(connector))
 							.where(connector.getCondition() != null ? connector.getCondition()
-									.convertToSqlCondition(com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext.forConnector(connector, functionProvider))
+									.convertToSqlCondition(CTConditionContext.forConnector(connector, functionProvider))
 									.condition() : noCondition());
 
 			connectorTables.add(connectorTable);
@@ -268,20 +266,14 @@ public class SqlMatchingStats {
 	}
 
 	public void deleteConceptIdJoinTable(ConceptId concept) {
-		String tablePrefix = ConceptIdMapping.tablePrefix(concept.getName());
-		List<org.jooq.Table<?>> mappingTables = dslContext.meta().getTables().stream()
-				.filter(existing -> existing.getName().startsWith(tablePrefix))
-				.toList();
-		for (org.jooq.Table<?> mappingTable : mappingTables) {
-			Name tableName = mappingTable.getQualifiedName();
-			log.debug("Trying to delete id-table {}", tableName);
-			try {
-				dslContext.dropTable(tableName).execute();
-			}
-			catch (DataAccessException exception) {
-				// Likely it doesn't exist. Some DBMS just don't support drop-IfExists so this is the next best thing :^)
-				log.trace("Failed to drop table {}", tableName, exception);
-			}
+		Name tableName = ConceptIdMapping.tableName(concept);
+		log.debug("Trying to delete id-table {}", tableName);
+
+		try {
+			dslContext.dropTable(tableName).execute();
+		} catch (DataAccessException exception) {
+			// Likely it doesn't exist. Some DBMS just don't support drop-IfExists so this is the next best thing :^)
+			log.trace("Failed to drop table {}", tableName, exception);
 		}
 	}
 

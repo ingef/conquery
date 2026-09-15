@@ -1,25 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import static org.jooq.impl.DSL.field;
-import static org.jooq.impl.DSL.inline;
-import static org.jooq.impl.DSL.name;
-import static org.jooq.impl.DSL.noCondition;
-import static org.jooq.impl.DSL.row;
-import static org.jooq.impl.DSL.val;
-import static org.jooq.impl.SQLDataType.VARCHAR;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HexFormat;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -27,20 +8,21 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.google.common.collect.Sets;
-import org.jooq.Condition;
-import org.jooq.DataType;
-import org.jooq.Field;
-import org.jooq.Name;
-import org.jooq.Param;
+import lombok.Data;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.RowN;
-import org.jooq.Table;
+import org.jooq.impl.DSL;
+
+import static org.jooq.impl.DSL.*;
+import static org.jooq.impl.SQLDataType.VARCHAR;
 
 /**
  * Description of the physical lookup table that maps connector values to their most specific concept element.
  */
+@Data
 public final class ConceptIdMapping {
 
 	public static final String RESOLVED_ID_COLUMN = "resolved_id";
@@ -51,96 +33,18 @@ public final class ConceptIdMapping {
 	private final List<Field<?>> keyFields;
 	private final List<RowN> rows;
 
-	private ConceptIdMapping(
-			TreeConcept concept,
-			SqlFunctionProvider functionProvider,
-			Name tableName,
-			List<Field<?>> keyFields,
-			List<RowN> rows
-	) {
+	public ConceptIdMapping(TreeConcept concept, SqlFunctionProvider functionProvider) {
 		this.concept = concept;
 		this.functionProvider = functionProvider;
-		this.tableName = tableName;
-		this.keyFields = keyFields;
-		this.rows = rows;
-	}
-
-	public static ConceptIdMapping create(TreeConcept concept, SqlFunctionProvider functionProvider) {
 		CTConditionContext context = CTConditionContext.forJoinTables(functionProvider);
 		List<CTCondition.ConceptConditions> expressions = collectAllExpressions(concept, null, context);
-		List<Field<?>> keyFields = collectKeyFields(expressions);
-		List<RowN> rows = expressionsToRows(concept, expressions, keyFields);
-		return new ConceptIdMapping(concept, functionProvider, tableName(concept.getName(), mappingVersion(keyFields, rows)), keyFields, rows);
+		this.keyFields = collectKeyFields(expressions);
+		this.rows = expressionsToRows(concept, expressions, keyFields);
+		this.tableName = tableName(concept.getId());
 	}
 
-	public static String tablePrefix(String conceptName) {
-		return "%s_ids_".formatted(conceptName);
-	}
-
-	private static Name tableName(String conceptName, String version) {
-		return name("%s%s".formatted(tablePrefix(conceptName), version));
-	}
-
-	public Name tableName() {
-		return tableName;
-	}
-
-	public Table<Record> table() {
-		return org.jooq.impl.DSL.table(tableName);
-	}
-
-	public Field<Integer> resolvedId() {
-		return field(name(tableName, name(RESOLVED_ID_COLUMN)), Integer.class);
-	}
-
-	public List<Field<?>> tableFields() {
-		List<Field<?>> fields = new ArrayList<>(keyFields.size() + 1);
-		fields.add(field(name(RESOLVED_ID_COLUMN), Integer.class));
-		fields.addAll(keyFields);
-		return fields;
-	}
-
-	public List<Field<?>> keyFields() {
-		return keyFields;
-	}
-
-	public List<RowN> rows() {
-		return rows;
-	}
-
-	public Condition joinCondition(Connector connector) {
-		CTConditionContext context = CTConditionContext.forConnector(connector, functionProvider);
-		List<CTCondition.ConceptConditions> expressions = collectAllExpressions(concept, null, context);
-		Map<String, Field<?>> extractors = collectExtractors(expressions);
-
-		Condition condition = noCondition();
-		for (Field<?> keyField : keyFields) {
-			Field<?> extractor = extractors.get(keyField.getName());
-			if (extractor == null) {
-				throw new IllegalArgumentException(
-						"No connector expression for concept mapping field `%s` in connector %s"
-								.formatted(keyField.getName(), connector.getId())
-				);
-			}
-			Field<?> mappingField = field(name(tableName, keyField.getUnqualifiedName()), keyField.getDataType());
-			condition = condition.and(mappingField.eq((Field) extractor));
-		}
-
-		return condition.equals(noCondition()) ? functionProvider.unconditionalJoinCondition() : condition;
-	}
-
-	/**
-	 * The mapping table stores the most-specific match. A selected parent therefore accepts every mapped element whose prefix it matches.
-	 */
-	public Set<Integer> includedLocalIds(List<ConceptElement<?>> selectedElements) {
-		return concept.getAllChildren()
-				.filter(candidate -> selectedElements.stream().anyMatch(selected -> selected.matchesPrefix(candidate.getPrefix())))
-				.map(ConceptElement::getLocalId)
-				.collect(Collectors.toSet());
-	}
-
-	public boolean includesRoot(List<ConceptElement<?>> selectedElements) {
-		return selectedElements.stream().anyMatch(TreeConcept.class::isInstance);
+	public static Name tableName(ConceptId conceptId) {
+		return name("%s_ids".formatted(conceptId));
 	}
 
 	private static List<Field<?>> collectKeyFields(List<CTCondition.ConceptConditions> expressions) {
@@ -151,23 +55,6 @@ public final class ConceptIdMapping {
 			}
 		}
 		return List.copyOf(fields.values());
-	}
-
-	private static String mappingVersion(List<Field<?>> keyFields, List<RowN> rows) {
-		try {
-			MessageDigest digest = MessageDigest.getInstance("SHA-256");
-			keyFields.stream()
-					.map(field -> "%s:%s".formatted(field.getName(), field.getDataType()))
-					.forEach(value -> digest.update(value.getBytes(StandardCharsets.UTF_8)));
-			rows.stream()
-					.map(RowN::toString)
-					.sorted()
-					.forEach(value -> digest.update(value.getBytes(StandardCharsets.UTF_8)));
-			return HexFormat.of().formatHex(digest.digest(), 0, 6);
-		}
-		catch (NoSuchAlgorithmException exception) {
-			throw new IllegalStateException("SHA-256 is required for concept mapping table versioning", exception);
-		}
 	}
 
 	private static Field<?> mergeFieldType(Field<?> left, Field<?> right) {
@@ -265,5 +152,55 @@ public final class ConceptIdMapping {
 			expressions.addAll(collectAllExpressions(child, currentExpression, context));
 		}
 		return expressions;
+	}
+
+	public Table<Record> table() {
+		return DSL.table(tableName);
+	}
+
+	public Field<Integer> resolvedId() {
+		return field(name(tableName, name(RESOLVED_ID_COLUMN)), Integer.class);
+	}
+
+	public List<Field<?>> tableFields() {
+		List<Field<?>> fields = new ArrayList<>(keyFields.size() + 1);
+		fields.add(field(name(RESOLVED_ID_COLUMN), Integer.class));
+		fields.addAll(keyFields);
+		return fields;
+	}
+
+	public Condition joinCondition(Connector connector) {
+		CTConditionContext context = CTConditionContext.forConnector(connector, functionProvider);
+		List<CTCondition.ConceptConditions> expressions = collectAllExpressions(concept, null, context);
+		Map<String, Field<?>> extractors = collectExtractors(expressions);
+
+		Condition condition = noCondition();
+		for (Field<?> keyField : keyFields) {
+			Field<?> extractor = extractors.get(keyField.getName());
+			if (extractor == null) {
+				throw new IllegalArgumentException(
+						"No connector expression for concept mapping field `%s` in connector %s"
+								.formatted(keyField.getName(), connector.getId())
+				);
+			}
+			Field<?> mappingField = field(name(tableName, keyField.getUnqualifiedName()), keyField.getDataType());
+			condition = condition.and(mappingField.eq((Field) extractor));
+		}
+
+		return condition.equals(noCondition()) ? functionProvider.unconditionalJoinCondition() : condition;
+	}
+
+	/**
+	 * The mapping table stores the most-specific match. A selected parent therefore accepts every mapped element whose prefix it matches.
+	 */
+	public Set<Integer> includedLocalIds(List<ConceptElement<?>> selectedElements) {
+		return concept.getAllChildren()
+				.filter(candidate -> selectedElements.stream().anyMatch(selected -> selected.matchesPrefix(candidate.getPrefix())))
+				.map(ConceptElement::getLocalId)
+				.collect(Collectors.toSet());
+	}
+
+	public boolean includesRoot(List<ConceptElement<?>> selectedElements) {
+		return selectedElements.stream().anyMatch(TreeConcept.class::isInstance);
 	}
 }

@@ -48,7 +48,7 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 		}
 		if (select.isAsIds()) {
 			TreeConcept concept = (TreeConcept) select.getHolder().findConcept();
-			ConceptIdMapping mapping = ConceptIdMapping.create(concept, selectContext.getFunctionProvider());
+			ConceptIdMapping mapping = new ConceptIdMapping(concept, selectContext.getFunctionProvider());
 			Field<Integer> resolvedId = DSL.coalesce(mapping.resolvedId(), DSL.inline(concept.getLocalId()))
 					.as(connector.getColumn().getColumn());
 			return ConnectorSqlSelects.builder()
@@ -143,7 +143,7 @@ public class ConceptColumnSelectConverter implements SelectConverter<ConceptColu
 
 		if (select.isAsIds() && convertedConnector.isEmpty()) {
 			TreeConcept concept = (TreeConcept) select.getHolder().findConcept();
-			ConceptIdMapping mapping = ConceptIdMapping.create(concept, selectContext.getFunctionProvider());
+			ConceptIdMapping mapping = new ConceptIdMapping(concept, selectContext.getFunctionProvider());
 			sourceTable = selectContext.getFunctionProvider().leftJoin(
 					connectorTable,
 					mapping.table(),

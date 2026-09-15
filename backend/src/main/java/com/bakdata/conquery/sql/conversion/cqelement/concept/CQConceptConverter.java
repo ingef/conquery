@@ -165,15 +165,13 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	}
 
 	private static SqlFilters collectConditionFilters(
-			List<ConceptElement<?>> conceptElements, CQTable cqTable, SqlFunctionProvider functionProvider) {
+			CQTable cqTable, SqlFunctionProvider functionProvider) {
 		List<WhereCondition> conditions = new ArrayList<>();
 		convertConnectorCondition(cqTable, functionProvider).ifPresent(conditions::add);
 
-		if (conceptElements.stream().anyMatch(TreeConcept.class::isInstance)) {
-			Connector connector = cqTable.getConnector().resolve();
-			if (connector.getColumn() != null) {
-				conditions.add(ConditionUtil.wrap(field(CTConditionContext.forConnector(connector, functionProvider).getConnectorColumn(), String.class).isNotNull()));
-			}
+		Connector connector = cqTable.getConnector().resolve();
+		if (connector.getColumn() != null) {
+			conditions.add(ConditionUtil.wrap(field(CTConditionContext.forConnector(connector, functionProvider).getConnectorColumn(), String.class).isNotNull()));
 		}
 
 		ValidityDate validityDate = cqTable.findValidityDate();
@@ -274,13 +272,13 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		List<ConceptElement<?>> conceptElements = cqConcept.getElements().stream().<ConceptElement<?>>map(ConceptElementId::resolve).toList();
 		TreeConcept concept = (TreeConcept) cqConcept.getConcept();
-		ConceptIdMapping conceptIdMapping = ConceptIdMapping.create(concept, functionProvider);
+		ConceptIdMapping conceptIdMapping = new ConceptIdMapping(concept, functionProvider);
 		boolean resolveConceptIds = cqConcept.getSelects().stream()
 				.map(SelectId::resolve)
 				.filter(ConceptColumnSelect.class::isInstance)
 				.map(ConceptColumnSelect.class::cast)
 				.anyMatch(ConceptColumnSelect::isAsIds);
-		allSqlFiltersForTable.add(collectConditionFilters(conceptElements, cqTable, functionProvider));
+		allSqlFiltersForTable.add(collectConditionFilters(cqTable, functionProvider));
 
 		allSqlFiltersForTable.add(dateRestrictionFilter(conversionContext, validityDateCalculation));
 

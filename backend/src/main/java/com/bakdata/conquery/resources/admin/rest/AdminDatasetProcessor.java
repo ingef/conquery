@@ -231,12 +231,13 @@ public class AdminDatasetProcessor {
 			if (!force) {
 				throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
 			}
-			log.info("Replacing previous concept: {}", concept.getId());
+			deleteConcept(concept.getId());
+			log.info("Force deleted previous concept: {}", concept.getId());
 		}
 
-		// Prepare external resources before publishing the concept to queries.
-		storageListener.onAddConcept(concept);
+		// Register the Concept in the ManagerNode and Workers
 		namespaceStorage.updateConcept(concept);
+		storageListener.onAddConcept(concept);
 	}
 
 	/**
