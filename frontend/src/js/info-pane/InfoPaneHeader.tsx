@@ -26,7 +26,7 @@ const header = tv({
 // as tall as the header it sits in
 const toggleButton = tv({
   base: [
-    "absolute top-[40px] right-0",
+    "absolute top-header right-0",
     "h-[39px] w-[30px]",
     "flex items-center justify-center",
     "text-gray-800",

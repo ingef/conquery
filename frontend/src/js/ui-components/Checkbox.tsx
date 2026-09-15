@@ -12,10 +12,15 @@ import InfoTooltip from "./InfoTooltip";
 
 // the clickable label. Block-level: as an inline box it would sit on the
 // parent's line box, whose height then depends on the parent's font and on
-// the baseline of the box
+// the baseline of the box.
+// `relative`, because react-aria's visually hidden <input> is absolutely
+// positioned and focused on every press: the label as its containing block
+// keeps it on the box. Otherwise it escapes the scroll container and the
+// focus scrolls overflow-hidden ancestors towards it
 const button = tv({
   base: [
     "group",
+    "relative",
     "flex items-start",
     "gap-1",
     "cursor-pointer select-none",

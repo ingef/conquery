@@ -11,11 +11,12 @@ import type { TabNavigationTab } from "../pane/TabNavigation";
 import StandardQueryEditorTab from "../standard-query-editor/StandardQueryEditorTab";
 import type { StateT } from "./reducers";
 
+// one cell filling the pane; the tab's content defines its own rows inside
 const tab = tv({
-  base: ["h-full", "grow", "flex-col"],
+  base: ["grow", "min-h-0", "grid-rows-[minmax(0,1fr)]"],
   variants: {
     isActive: {
-      true: "flex",
+      true: "grid",
       false: "hidden",
     },
   },
