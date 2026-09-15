@@ -1,21 +1,16 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
-import java.util.Optional;
 
-import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDateUnionSelect;
-import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDurationSumSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingSelectCompiler;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
-import com.google.common.base.Preconditions;
 
 public class IntervalPackingSelectsCte {
 
@@ -52,62 +47,23 @@ public class IntervalPackingSelectsCte {
 	}
 
 	public static QueryStep forConnector(QueryStep predecessor, CQTableContext cqTableContext) {
-		return create(
+		return IntervalPackingSelectCompiler.compile(
 				predecessor,
 				cqTableContext.getSqlSelects().stream().flatMap(selects -> selects.getEventDateSelects().stream()).toList(),
-				cqTableContext.getConnectorTables(),
-				cqTableContext.getFunctionProvider()
+				cqTableContext.getConnectorTables()
 		);
 	}
 
 	public static QueryStep forConcept(
 			QueryStep predecessor,
 			SqlTables tables,
-			List<ConceptSqlSelects> sqlSelects,
-			ConversionContext conversionContext
+			List<ConceptSqlSelects> sqlSelects
 	) {
-		return create(
+		return IntervalPackingSelectCompiler.compile(
 				predecessor,
 				sqlSelects.stream().flatMap(selects -> selects.getEventDateSelects().stream()).toList(),
-				tables,
-				conversionContext.getFunctionProvider()
+				tables
 		);
-	}
-
-	/**
-	 * @param predecessor            The preceding query step which must contain an aggregated validity date.
-	 * @param intervalPackingSelects {@link SqlSelect}s which will be part of the returned {@link QueryStep}.
-	 * @return A {@link QueryStep} containing converted interval packing selects, like {@link EventDurationSumSelect}, {@link EventDateUnionSelect}, etc.
-	 * Returns the given predecessor as is if the given list of interval packing selects is empty.
-	 */
-	private static QueryStep create(
-			QueryStep predecessor,
-			List<SqlSelect> intervalPackingSelects,
-			SqlTables tables,
-			SqlFunctionProvider functionProvider
-	) {
-		if (intervalPackingSelects.isEmpty()) {
-			return predecessor;
-		}
-
-		Optional<ColumnDateRange> validityDate = predecessor.getQualifiedSelects().getValidityDate();
-		Preconditions.checkArgument(validityDate.isPresent(), "Can't create a IntervalPackingSelectsCte without a validity date present.");
-
-		// we need an additional predecessor to unnest the validity date if it is a single column range
-
-        Selects predecessorSelects = predecessor.getQualifiedSelects();
-		Selects selects = Selects.builder()
-								 .ids(predecessorSelects.getIds())
-								 .sqlSelects(intervalPackingSelects)
-								 .build();
-
-		return QueryStep.builder()
-						.cteName(tables.cteName(ConceptCteStep.INTERVAL_PACKING_SELECTS))
-						.selects(selects)
-						.fromTable(QueryStep.toTableLike(predecessor.getCteName()))
-						.groupBy(predecessorSelects.getIds().toFields())
-						.predecessors(List.of())
-						.build();
 	}
 
 }
