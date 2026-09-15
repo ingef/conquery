@@ -74,7 +74,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		Optional<QueryStep> intervalPackingSelects = Optional.empty();
 		if (universalTables.isRequiredStep(ConceptCteStep.INTERVAL_PACKING_SELECTS)) {
-			QueryStep eventDateSelectsStep = IntervalPackingSelectsCte.forConcept(predecessor, universalTables, converted, context);
+			QueryStep eventDateSelectsStep = IntervalPackingSelectsCte.forConcept(predecessor, universalTables, converted);
 			intervalPackingSelects = Optional.of(eventDateSelectsStep);
 		}
 
