@@ -83,7 +83,7 @@ public class SqlMatchingStats {
 		Name tableName = mapping.tableName();
 
 		boolean alreadyExists = dslContext.meta().getTables().stream()
-				.anyMatch(existing -> existing.getQualifiedName().equals(tableName));
+				.anyMatch(existing -> existing.getName().equals(tableName.last()));
 		if (alreadyExists) {
 			log.debug("Concept id table {} already exists", tableName);
 			return;
@@ -92,6 +92,24 @@ public class SqlMatchingStats {
 		List<Field<?>> fields = createConceptIdsTable(tableName, mapping.tableFields());
 
 		insertConceptIdMappings(tableName, fields, mapping.rows(), dslContext);
+		createConceptIdIndexes(mapping);
+	}
+
+	private void createConceptIdIndexes(ConceptIdMapping mapping) {
+		if (dslContext.dialect().family() == SQLDialect.CLICKHOUSE) {
+			log.debug("Skipping secondary indexes for ClickHouse concept id table {}", mapping.tableName());
+			return;
+		}
+
+		String indexToken = Integer.toUnsignedString(mapping.tableName().hashCode(), 16);
+		if (!mapping.keyFields().isEmpty()) {
+			dslContext.createIndex(name("cq_map_%s_keys".formatted(indexToken)))
+					.on(mapping.table(), mapping.keyFields().stream().map(Field::sortDefault).toList())
+					.execute();
+		}
+		dslContext.createIndex(name("cq_map_%s_id".formatted(indexToken)))
+				.on(mapping.table(), mapping.resolvedId().sortDefault())
+				.execute();
 	}
 
 	@NotNull
@@ -157,7 +175,6 @@ public class SqlMatchingStats {
 		return matchingStats;
 	}
 
-	@NotNull
 	private void insertConceptIdMappings(Name tableName, List<Field<?>> fieldNames, List<RowN> rows, DSLContext dsl) {
 		log.info("BEGIN inserting {} rows into {}", rows.size(), tableName);
 		Stopwatch stopwatch = Stopwatch.createStarted();
@@ -176,12 +193,10 @@ public class SqlMatchingStats {
 	}
 
 	/**
-	 * Create table and fields. Assumes, table has been dropped already.
+	 * Create a versioned table and its fields.
 	 */
 	private List<Field<?>> createConceptIdsTable(Name tableName, List<Field<?>> fields) {
 		log.debug("Creating table {} with fields {}", tableName, fields);
-
-		//TODO Option to create primaryKeys and indices here, but Hana is a bit flaky with it, would need to differentiate the impls.
 
 		CreateTableElementListStep createTable =
 				dslContext.createTable(tableName)

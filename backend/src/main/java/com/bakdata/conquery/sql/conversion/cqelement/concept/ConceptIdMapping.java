@@ -5,7 +5,6 @@ import static org.jooq.impl.DSL.inline;
 import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.DSL.noCondition;
 import static org.jooq.impl.DSL.row;
-import static org.jooq.impl.DSL.table;
 import static org.jooq.impl.DSL.val;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
@@ -87,7 +86,7 @@ public final class ConceptIdMapping {
 	}
 
 	public Table<Record> table() {
-		return table(tableName);
+		return org.jooq.impl.DSL.table(tableName);
 	}
 
 	public Field<Integer> resolvedId() {
