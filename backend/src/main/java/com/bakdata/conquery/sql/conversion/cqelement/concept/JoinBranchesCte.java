@@ -1,24 +1,17 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-import com.bakdata.conquery.sql.compiler.ir.interval.AnsiSqlIntervalPacker;
-import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingContext;
-import com.bakdata.conquery.sql.compiler.ir.JoinMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.compiler.ir.QueryStepJoiner;
-import com.bakdata.conquery.sql.compiler.ir.Selects;
-import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorCteCompiler;
+import com.bakdata.conquery.sql.compiler.ir.concept.JoinBranchesCteInput;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
-import org.jooq.Record;
-import org.jooq.TableLike;
+import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
 
 /**
+ * Adapts the legacy connector context to the SQL-ready branch-joining compiler input.
+ * <p>
  * Joins the {@link ConceptCteStep#AGGREGATION_SELECT} with the interval packing branch for the aggregated validity date and optional validity date selects
  * {@link IntervalPackingSelectsCte} as well as optional additional predecessors.
  * <p>
@@ -53,67 +46,22 @@ class JoinBranchesCte extends ConnectorCte {
 
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
-
-		List<QueryStep> queriesToJoin = new ArrayList<>();
-		queriesToJoin.add(tableContext.getPrevious());
-
-		// validity date aggregation
-		Optional<ColumnDateRange> validityDate;
-		if (!tableContext.getConnectorTables().isWithIntervalPacking()) {
-			validityDate = Optional.empty();
-		}
-		else {
-			IntervalPackingContext intervalPackingContext = createIntervalPackingContext(tableContext);
-			QueryStep lastIntervalPackingStep = AnsiSqlIntervalPacker.aggregateAsValidityDate(intervalPackingContext);
-			queriesToJoin.add(lastIntervalPackingStep);
-			validityDate = lastIntervalPackingStep.getQualifiedSelects().getValidityDate();
-
-			QueryStep intervalPackingSelectsStep = IntervalPackingSelectsCte.forConnector(lastIntervalPackingStep, tableContext);
-			if (intervalPackingSelectsStep != lastIntervalPackingStep) {
-				queriesToJoin.add(intervalPackingSelectsStep);
-			}
-
-			// interval packing was required for event date selects, but we won't propagate it
-			if (tableContext.getConnectorTables().isExcludedFromTimeAggregation()) {
-				validityDate = Optional.empty();
-			}
-		}
-
-		// additional preceding tables
-		tableContext.allSqlSelects().stream()
-					.flatMap(sqlSelects -> sqlSelects.getAdditionalPredecessor().stream())
-					.forEach(queriesToJoin::add);
-
-		Selects selects = collectSelects(validityDate, queriesToJoin, tableContext);
-		TableLike<Record> fromTable = QueryStepJoiner.join(queriesToJoin, JoinMode.FULL_OUTER);
-
-		return QueryStep.builder()
-						.selects(selects)
-						.fromTable(fromTable)
-						.predecessors(queriesToJoin);
-	}
-
-	private static IntervalPackingContext createIntervalPackingContext(CQTableContext tableContext) {
-		Selects predcessorSelects = tableContext.getPrevious().getQualifiedSelects();
-		return IntervalPackingContext.builder()
-									 .ids(predcessorSelects.getIds())
-									 .daterange(tableContext.getValidityDate())
-									 .tables(tableContext.getConnectorTables())
-									 .build();
-	}
-
-	private static Selects collectSelects(Optional<ColumnDateRange> validityDate, List<QueryStep> queriesToJoin, CQTableContext tableContext) {
-
-		SqlIdColumns ids = QueryStepJoiner.coalesceIds(queriesToJoin);
-		List<SqlSelect> mergedSqlSelects = QueryStepJoiner.mergeSelects(queriesToJoin);
-		Optional<ColumnDateRange> stratificationDate = tableContext.getPrevious().getQualifiedSelects().getStratificationDate();
-
-		return Selects.builder()
-					  .ids(ids)
-					  .stratificationDate(stratificationDate)
-					  .validityDate(validityDate)
-					  .sqlSelects(mergedSqlSelects)
-					  .build();
+		ConnectorSqlTables tables = tableContext.getConnectorTables();
+		List<SqlSelect> eventDateSelects = tableContext.getSqlSelects().stream()
+				.flatMap(selects -> selects.getEventDateSelects().stream())
+				.toList();
+		List<QueryStep> additionalPredecessors = tableContext.allSqlSelects().stream()
+				.flatMap(selects -> selects.getAdditionalPredecessor().stream())
+				.toList();
+		return ConnectorCteCompiler.compileJoinBranches(new JoinBranchesCteInput(
+				tableContext.getPrevious(),
+				tableContext.getValidityDate(),
+				tables,
+				tables.isWithIntervalPacking(),
+				tables.isExcludedFromTimeAggregation(),
+				eventDateSelects,
+				additionalPredecessors
+		));
 	}
 
 }
