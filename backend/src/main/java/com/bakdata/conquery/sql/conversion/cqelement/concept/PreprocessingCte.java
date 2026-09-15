@@ -63,8 +63,7 @@ class PreprocessingCte extends ConnectorCte {
 			return joinWithStratificationTable(forPreprocessing, conditions, tableContext);
 		}
 
-		TableLike<Record> rootTable = QueryStep.toTableLike(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING));
-		return builder.fromTable(rootTable);
+		return builder.fromTable(createConceptJoin(tableContext));
 
 	}
 
@@ -92,7 +91,7 @@ class PreprocessingCte extends ConnectorCte {
 		// Both expressions are available from the joined source tables; do not reference aliases produced by this SELECT.
 		conditions.add(functionProvider.dateRestriction(stratificationDate, tableContext.getRawValidityDate()));
 
-		Table<Record> connectorTable = DSL.table(DSL.name(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING)));
+		Table<?> connectorTable = createConceptJoin(tableContext);
 		TableLike<Record> joinedTable = functionProvider.innerJoin(connectorTable, stratificationTable, idConditions);
 
 		Selects selects = Selects.builder()
@@ -106,6 +105,22 @@ class PreprocessingCte extends ConnectorCte {
 						.selects(selects)
 						.fromTable(joinedTable)
 						.conditions(conditions);
+	}
+
+	private static Table<?> createConceptJoin(CQTableContext tableContext) {
+		Table<Record> connectorTable = DSL.table(DSL.name(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING)));
+		ConceptIdMapping mapping = tableContext.getConceptIdMapping();
+		if (mapping.includesRoot(tableContext.getSelectedConceptElements())) {
+			return connectorTable;
+		}
+
+		Condition joinCondition = mapping.joinCondition(mappingConnector(tableContext))
+				.and(mapping.resolvedId().in(mapping.includedLocalIds(tableContext.getSelectedConceptElements())));
+		return tableContext.getConversionContext().getFunctionProvider().innerJoin(connectorTable, mapping.table(), List.of(joinCondition));
+	}
+
+	private static com.bakdata.conquery.models.datasets.concepts.Connector mappingConnector(CQTableContext tableContext) {
+		return tableContext.getConnectorTables().getConnector();
 	}
 
 }
