@@ -275,6 +275,11 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		List<ConceptElement<?>> conceptElements = cqConcept.getElements().stream().<ConceptElement<?>>map(ConceptElementId::resolve).toList();
 		TreeConcept concept = (TreeConcept) cqConcept.getConcept();
 		ConceptIdMapping conceptIdMapping = ConceptIdMapping.create(concept, functionProvider);
+		boolean resolveConceptIds = cqConcept.getSelects().stream()
+				.map(SelectId::resolve)
+				.filter(ConceptColumnSelect.class::isInstance)
+				.map(ConceptColumnSelect.class::cast)
+				.anyMatch(ConceptColumnSelect::isAsIds);
 		allSqlFiltersForTable.add(collectConditionFilters(conceptElements, cqTable, functionProvider));
 
 		allSqlFiltersForTable.add(dateRestrictionFilter(conversionContext, validityDateCalculation));
@@ -299,6 +304,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				.connectorTables(connectorTables)
 				.conceptIdMapping(conceptIdMapping)
 				.selectedConceptElements(conceptElements)
+				.resolveConceptIds(resolveConceptIds)
 				.conversionContext(conversionContext)
 				.build();
 	}

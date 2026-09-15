@@ -33,6 +33,7 @@ class CQTableContext implements Context {
 	ConnectorSqlTables connectorTables;
 	ConceptIdMapping conceptIdMapping;
 	List<ConceptElement<?>> selectedConceptElements;
+	boolean resolveConceptIds;
 	ConversionContext conversionContext;
 	@With
 	QueryStep previous;

@@ -111,7 +111,11 @@ class PreprocessingCte extends ConnectorCte {
 		Table<Record> connectorTable = DSL.table(DSL.name(tableContext.getConnectorTables().getPredecessor(ConceptCteStep.PREPROCESSING)));
 		ConceptIdMapping mapping = tableContext.getConceptIdMapping();
 		if (mapping.includesRoot(tableContext.getSelectedConceptElements())) {
-			return connectorTable;
+			if (!tableContext.isResolveConceptIds()) {
+				return connectorTable;
+			}
+			return tableContext.getConversionContext().getFunctionProvider()
+					.leftJoin(connectorTable, mapping.table(), List.of(mapping.joinCondition(mappingConnector(tableContext))));
 		}
 
 		Condition joinCondition = mapping.joinCondition(mappingConnector(tableContext))
