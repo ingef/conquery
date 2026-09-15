@@ -1,65 +1,37 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.sql.compiler.ir.condition.DateRestrictionCondition;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.compiler.ir.Selects;
-import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.compiler.ir.concept.SqlFilters;
-import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
-import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorCteCompiler;
+import com.bakdata.conquery.sql.compiler.ir.concept.PreprocessingCteInput;
 import org.jooq.Condition;
 import org.jooq.Record;
 import org.jooq.Table;
-import org.jooq.TableLike;
 import org.jooq.impl.DSL;
 
 class PreprocessingCte extends ConnectorCte {
 
-	private static QueryStep.QueryStepBuilder joinWithStratificationTable(
-			List<SqlSelect> preprocessingSelects,
-			List<Condition> conditions,
-			CQTableContext tableContext
-	) {
-		QueryStep stratificationTableCte = tableContext.getConversionContext().getStratificationTable();
-		Table<Record> stratificationTable = DSL.table(DSL.name(stratificationTableCte.getCteName()));
+	@Override
+	public ConceptCteStep cteStep() {
+		return ConceptCteStep.PREPROCESSING;
+	}
 
-		Selects stratificationSelects = stratificationTableCte.getQualifiedSelects();
-		SqlIdColumns stratificationIds = stratificationSelects.getIds();
-		SqlIdColumns rootTableIds = tableContext.getIds().getPredecessor().orElseThrow(() -> new IllegalStateException(
-				"Id's should have been qualified during conversion and thus have a predecessor")
+	@Override
+	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
+		PreprocessingCteInput input = new PreprocessingCteInput(
+				createConceptJoin(tableContext),
+				tableContext.getIds(),
+				tableContext.getRawValidityDate(),
+				tableContext.getValidityDate(),
+				tableContext.allSqlSelects(),
+				tableContext.getSqlFilters(),
+				Optional.ofNullable(tableContext.getConversionContext().getStratificationTable())
 		);
-		List<Condition> idConditions = stratificationIds.join(rootTableIds);
-
-		// join full stratification with connector table on all ID's from prerequisite query
-		SqlFunctionProvider functionProvider = tableContext.getConversionContext().getFunctionProvider();
-		ColumnDateRange stratificationDate = stratificationSelects.getStratificationDate().orElseThrow(() -> new IllegalStateException(
-				"Stratification table must provide a stratification date"
-		));
-		// Both expressions are available from the joined source tables; do not reference aliases produced by this SELECT.
-		conditions.add(new DateRestrictionCondition(stratificationDate, tableContext.getRawValidityDate()).condition());
-
-		Table<?> connectorTable = createConceptJoin(tableContext);
-		TableLike<Record> joinedTable = functionProvider.innerJoin(connectorTable, stratificationTable, idConditions);
-
-		Selects selects = Selects.builder()
-				.ids(stratificationSelects.getIds())
-				.validityDate(Optional.of(tableContext.getValidityDate()))
-				.stratificationDate(stratificationSelects.getStratificationDate())
-				.sqlSelects(preprocessingSelects)
-				.build();
-
-		return QueryStep.builder()
-				.selects(selects)
-				.fromTable(joinedTable)
-				.conditions(conditions);
+		return ConnectorCteCompiler.compilePreprocessing(input);
 	}
 
 	private static Table<?> createConceptJoin(CQTableContext tableContext) {
@@ -71,68 +43,18 @@ class PreprocessingCte extends ConnectorCte {
 		}
 
 		Condition joinCondition = mapping.joinCondition(mappingConnector(tableContext));
-		Condition conceptFilterCondition;
+		Condition conceptFilterCondition = tableContext.getSelectedConceptElements().isEmpty()
+				? DSL.noCondition()
+				: mapping.resolvedId().in(mapping.includedLocalIds(tableContext.getSelectedConceptElements()));
 
-		if (!tableContext.getSelectedConceptElements().isEmpty()) {
-			conceptFilterCondition = mapping.resolvedId().in(mapping.includedLocalIds(tableContext.getSelectedConceptElements()));
-		} else {
-			conceptFilterCondition = DSL.noCondition();
-		}
-
-		return tableContext.getConversionContext().getFunctionProvider().innerJoin(connectorTable, mapping.table(), List.of(joinCondition.and(conceptFilterCondition)));
+		return tableContext.getConversionContext().getFunctionProvider().innerJoin(
+				connectorTable,
+				mapping.table(),
+				List.of(joinCondition.and(conceptFilterCondition))
+		);
 	}
 
 	private static Connector mappingConnector(CQTableContext tableContext) {
 		return tableContext.getConnectorTables().getConnector();
-
-
 	}
-
-	@Override
-	public ConceptCteStep cteStep() {
-		return ConceptCteStep.PREPROCESSING;
-	}
-
-	@Override
-	public QueryStep.QueryStepBuilder convertStep(CQTableContext tableContext) {
-
-		List<SqlSelect> forPreprocessing = tableContext.allSqlSelects().stream()
-				.flatMap(sqlSelects -> sqlSelects.getPreprocessingSelects().stream())
-				.toList();
-
-		Selects preprocessingSelects = Selects.builder()
-				.ids(tableContext.getIds())
-				.validityDate(Optional.of(tableContext.getValidityDate()))
-				.sqlSelects(forPreprocessing)
-				.build();
-		// All event-level where clauses are applied directly to the connector table while preprocessing.
-		List<Condition> conditions = new ArrayList<>();
-
-		for (SqlFilters sqlFilter : tableContext.getSqlFilters()) {
-			for (WhereCondition whereCondition : sqlFilter.getWhereClauses().getPreprocessingConditions()) {
-				conditions.add(whereCondition.condition());
-			}
-			for (WhereCondition whereCondition : sqlFilter.getWhereClauses().getEventFilters()) {
-				conditions.add(whereCondition.condition());
-			}
-		}
-
-		// The aliased secondary ID is selected in this CTE, so its root-table expression must be used in the WHERE clause.
-		tableContext.getIds()
-				.getPredecessor()
-				.flatMap(SqlIdColumns::getSecondaryId)
-				.ifPresent(secondaryId -> conditions.add(secondaryId.isNotNull()));
-
-		QueryStep.QueryStepBuilder builder = QueryStep.builder()
-				.selects(preprocessingSelects)
-				.conditions(conditions);
-
-		if (tableContext.getConversionContext().isWithStratification()) {
-			return joinWithStratificationTable(forPreprocessing, conditions, tableContext);
-		}
-
-		return builder.fromTable(createConceptJoin(tableContext));
-
-	}
-
 }

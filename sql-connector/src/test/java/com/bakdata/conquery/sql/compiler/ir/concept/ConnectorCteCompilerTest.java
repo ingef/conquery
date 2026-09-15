@@ -4,9 +4,11 @@ import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.name;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
@@ -21,11 +23,60 @@ import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Name;
+import org.jooq.SQLDialect;
+import org.jooq.conf.ParamType;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
 
 class ConnectorCteCompilerTest {
 
 	private static final String PREDECESSOR_NAME = "predecessor";
+
+	@Test
+	void shouldCompilePreprocessingAgainstConnectorTable() {
+		PreprocessingCteInput input = preprocessingInput(Optional.empty());
+
+		QueryStep result = ConnectorCteCompiler.compilePreprocessing(input).build();
+
+		assertEquals(List.of(name("score")), result.getSelects().getSqlSelects().stream()
+				.flatMap(sqlSelect -> sqlSelect.toFields().stream())
+				.map(Field::getQualifiedName)
+				.toList());
+		assertEquals(3, result.getConditions().size());
+		String sql = render(result);
+		assertTrue(sql.contains("from \"events\""));
+		assertTrue(sql.contains("\"events\".\"status\" = 'active'"));
+		assertTrue(sql.contains("\"events\".\"score\" > 0"));
+		assertTrue(sql.contains("\"events\".\"secondary\" is not null"));
+	}
+
+	@Test
+	void shouldCompilePreprocessingWithStratificationJoin() {
+		QueryStep stratificationTable = QueryStep.builder()
+				.cteName("stratification")
+				.selects(Selects.builder()
+						.ids(new SqlIdColumns(field(name("person"), String.class)))
+						.stratificationDate(Optional.of(ColumnDateRange.of(
+								field(name("stratification_start"), Date.class),
+								field(name("stratification_end"), Date.class)
+						)))
+						.build())
+				.build();
+		PreprocessingCteInput input = preprocessingInput(Optional.of(stratificationTable));
+
+		QueryStep result = ConnectorCteCompiler.compilePreprocessing(input).build();
+
+		assertEquals(name("stratification", "person"), result.getSelects().getIds().getPrimaryColumn().getQualifiedName());
+		assertEquals(
+				List.of(name("stratification", "stratification_start"), name("stratification", "stratification_end")),
+				qualifiedNames(result.getSelects().getStratificationDate().orElseThrow())
+		);
+		String sql = render(result);
+		assertTrue(sql.contains("from \"events\" join \"stratification\""));
+		assertTrue(sql.contains("\"stratification\".\"person\" = \"events\".\"person\""));
+		assertTrue(sql.contains("\"stratification\".\"stratification_start\" < \"events\".\"valid_to\""));
+		assertTrue(sql.contains("\"stratification\".\"stratification_end\" > \"events\".\"valid_from\""));
+	}
 
 	@Test
 	void shouldCompileAggregationSelectsAndGroupByPredecessorDimensions() {
@@ -87,6 +138,52 @@ class ConnectorCteCompilerTest {
 
 	private static List<Name> qualifiedNames(ColumnDateRange range) {
 		return range.toFields().stream().map(Field::getQualifiedName).toList();
+	}
+
+	private static PreprocessingCteInput preprocessingInput(Optional<QueryStep> stratificationTable) {
+		SqlIdColumns ids = new SqlIdColumns(
+				field(name("events", "person"), String.class),
+				field(name("events", "secondary"), String.class)
+		).withAlias();
+		ColumnDateRange rawValidityDate = ColumnDateRange.of(
+				field(name("events", "valid_from"), Date.class),
+				field(name("events", "valid_to"), Date.class)
+		);
+		ConnectorSqlSelects sqlSelects = ConnectorSqlSelects.builder()
+				.preprocessingSelect(new FieldWrapper<>(field(name("events", "score"), Integer.class).as("score")))
+				.build();
+		SqlFilters sqlFilters = new SqlFilters(
+				ConnectorSqlSelects.none(),
+				WhereClauses.builder()
+						.preprocessingCondition(new ConditionWrappingWhereCondition(
+								field(name("events", "status"), String.class).eq("active")
+						))
+						.eventFilter(new ConditionWrappingWhereCondition(
+								field(name("events", "score"), Integer.class).greaterThan(0)
+						))
+						.groupFilter(new ConditionWrappingWhereCondition(
+								field(name("events", "score"), Integer.class).lessThan(10)
+						))
+						.build()
+		);
+		return new PreprocessingCteInput(
+				"events",
+				ids,
+				rawValidityDate,
+				rawValidityDate.asValidityDateRange("connector"),
+				List.of(sqlSelects),
+				List.of(sqlFilters),
+				stratificationTable
+		);
+	}
+
+	private static String render(QueryStep queryStep) {
+		return DSL.using(SQLDialect.POSTGRES)
+				.select(queryStep.getSelects().all())
+				.from(queryStep.getFromTables().getFirst())
+				.where(queryStep.getConditions())
+				.getSQL(ParamType.INLINED)
+				.toLowerCase(Locale.ROOT);
 	}
 
 	private static QueryStep predecessor() {

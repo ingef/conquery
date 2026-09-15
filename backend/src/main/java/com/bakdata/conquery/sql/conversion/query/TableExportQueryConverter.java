@@ -160,7 +160,7 @@ public class TableExportQueryConverter implements NodeConverter<TableExportQuery
 				Stream.of(new DateRestrictionCondition(functionProvider.forCDateRange(dateRestriction), validityDate).condition())
 		).toList();
 
-		return functionProvider.innerJoin(connectorTable, convertedPrerequisiteTable, joinConditions);
+		return connectorTable.innerJoin(convertedPrerequisiteTable).on(joinConditions.toArray(Condition[]::new));
 	}
 
 	private static Field<?>[] createPlaceholders(Map<ColumnId, Integer> positions) {

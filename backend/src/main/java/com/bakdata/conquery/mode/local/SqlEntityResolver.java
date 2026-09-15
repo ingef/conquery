@@ -153,7 +153,7 @@ public class SqlEntityResolver implements EntityResolver {
 		SelectConditionStep<Record3<Integer, String, Boolean>> resolveIdsQuery =
 				context.with(unresolvedCte)
 					   .select(rowIndex, externalPrimaryColumn, isResolved)
-					   .from(dialect.getFunctionProvider().innerJoin(allIdsTable, unresolvedCte, List.of(externalPrimaryColumn.eq(innerPrimaryColumn))))
+					   .from(allIdsTable.innerJoin(unresolvedCte).on(externalPrimaryColumn.eq(innerPrimaryColumn)))
 					   .where(externalPrimaryColumn.eq(innerPrimaryColumn));
 
 		return executionService.fetchStream(resolveIdsQuery)
