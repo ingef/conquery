@@ -6,11 +6,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.sql.compiler.ir.JoinMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.QueryStepJoiner;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.condition.DateRestrictionCondition;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
+import com.bakdata.conquery.sql.compiler.ir.interval.AnsiSqlIntervalPacker;
+import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingContext;
+import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingSelectCompiler;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.experimental.UtilityClass;
@@ -134,6 +139,50 @@ public class ConnectorCteCompiler {
 		return QueryStep.builder()
 				.selects(selects)
 				.conditions(conditions);
+	}
+
+	public static QueryStep.QueryStepBuilder compileJoinBranches(JoinBranchesCteInput input) {
+		List<QueryStep> queriesToJoin = new ArrayList<>();
+		queriesToJoin.add(input.predecessor());
+
+		Optional<ColumnDateRange> validityDate = Optional.empty();
+		if (input.withIntervalPacking()) {
+			IntervalPackingContext intervalPackingContext = IntervalPackingContext.builder()
+					.ids(input.predecessor().getQualifiedSelects().getIds())
+					.daterange(input.validityDate())
+					.tables(input.tables())
+					.build();
+			QueryStep lastIntervalPackingStep = AnsiSqlIntervalPacker.aggregateAsValidityDate(intervalPackingContext);
+			queriesToJoin.add(lastIntervalPackingStep);
+			validityDate = lastIntervalPackingStep.getQualifiedSelects().getValidityDate();
+
+			QueryStep intervalPackingSelects = IntervalPackingSelectCompiler.compile(
+					lastIntervalPackingStep,
+					input.eventDateSelects(),
+					input.tables()
+			);
+			if (intervalPackingSelects != lastIntervalPackingStep) {
+				queriesToJoin.add(intervalPackingSelects);
+			}
+
+			if (input.excludedFromTimeAggregation()) {
+				validityDate = Optional.empty();
+			}
+		}
+
+		queriesToJoin.addAll(input.additionalPredecessors());
+
+		Selects selects = Selects.builder()
+				.ids(QueryStepJoiner.coalesceIds(queriesToJoin))
+				.stratificationDate(input.predecessor().getQualifiedSelects().getStratificationDate())
+				.validityDate(validityDate)
+				.sqlSelects(QueryStepJoiner.mergeSelects(queriesToJoin))
+				.build();
+
+		return QueryStep.builder()
+				.selects(selects)
+				.fromTable(QueryStepJoiner.join(queriesToJoin, JoinMode.FULL_OUTER))
+				.predecessors(queriesToJoin);
 	}
 
 	private static SqlSelect qualifyUnlessUniversal(SqlSelect sqlSelect, String predecessorName) {

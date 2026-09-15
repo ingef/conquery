@@ -9,13 +9,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.sql.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.compiler.ir.condition.ConditionWrappingWhereCondition;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
+import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingCteStep;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.ExistsSqlSelect;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
@@ -136,6 +139,93 @@ class ConnectorCteCompilerTest {
 		);
 	}
 
+	@Test
+	void shouldJoinAdditionalPredecessors() {
+		FieldWrapper<Integer> additionalSelect = new FieldWrapper<>(field(name("metric"), Integer.class));
+		QueryStep additionalPredecessor = QueryStep.builder()
+				.cteName("additional")
+				.selects(Selects.builder()
+						.ids(new SqlIdColumns(field(name("person"), String.class)))
+						.sqlSelect(additionalSelect)
+						.build())
+				.build();
+		JoinBranchesCteInput input = new JoinBranchesCteInput(
+				predecessor(),
+				validityDate(),
+				new SqlTables(PREDECESSOR_NAME, Map.of(), Map.of()),
+				false,
+				false,
+				List.of(),
+				List.of(additionalPredecessor)
+		);
+
+		QueryStep result = ConnectorCteCompiler.compileJoinBranches(input).build();
+
+		assertEquals(List.of(PREDECESSOR_NAME, "additional"), result.getPredecessors().stream().map(QueryStep::getCteName).toList());
+		assertTrue(result.getSelects().getValidityDate().isEmpty());
+		assertEquals(
+				List.of(name("additional", "metric")),
+				result.getSelects().getSqlSelects().stream()
+						.flatMap(select -> select.toFields().stream())
+						.map(Field::getQualifiedName)
+						.toList()
+		);
+		assertTrue(render(result).contains("full outer join \"additional\""));
+	}
+
+	@Test
+	void shouldJoinIntervalPackingAndEventDateSelectBranches() {
+		FieldWrapper<Integer> eventDuration = new FieldWrapper<>(field(name("event_duration"), Integer.class));
+		JoinBranchesCteInput input = new JoinBranchesCteInput(
+				predecessor(),
+				validityDate(),
+				intervalPackingTables(),
+				true,
+				false,
+				List.of(eventDuration),
+				List.of()
+		);
+
+		QueryStep result = ConnectorCteCompiler.compileJoinBranches(input).build();
+
+		assertEquals(
+				List.of(PREDECESSOR_NAME, "interval_complete", "interval_selects"),
+				result.getPredecessors().stream().map(QueryStep::getCteName).toList()
+		);
+		assertEquals(
+				List.of(name("interval_complete", "validity_start"), name("interval_complete", "validity_end")),
+				qualifiedNames(result.getSelects().getValidityDate().orElseThrow())
+		);
+		assertEquals(
+				List.of(name("interval_selects", "event_duration")),
+				result.getSelects().getSqlSelects().stream()
+						.flatMap(select -> select.toFields().stream())
+						.map(Field::getQualifiedName)
+						.toList()
+		);
+	}
+
+	@Test
+	void shouldNotPropagateExcludedValidityDate() {
+		JoinBranchesCteInput input = new JoinBranchesCteInput(
+				predecessor(),
+				validityDate(),
+				intervalPackingTables(),
+				true,
+				true,
+				List.of(),
+				List.of()
+		);
+
+		QueryStep result = ConnectorCteCompiler.compileJoinBranches(input).build();
+
+		assertEquals(
+				List.of(PREDECESSOR_NAME, "interval_complete"),
+				result.getPredecessors().stream().map(QueryStep::getCteName).toList()
+		);
+		assertTrue(result.getSelects().getValidityDate().isEmpty());
+	}
+
 	private static List<Name> qualifiedNames(ColumnDateRange range) {
 		return range.toFields().stream().map(Field::getQualifiedName).toList();
 	}
@@ -184,6 +274,29 @@ class ConnectorCteCompilerTest {
 				.where(queryStep.getConditions())
 				.getSQL(ParamType.INLINED)
 				.toLowerCase(Locale.ROOT);
+	}
+
+	private static ColumnDateRange validityDate() {
+		return ColumnDateRange.of(
+				field(name("connector", "validity_start"), Date.class),
+				field(name("connector", "validity_end"), Date.class)
+		);
+	}
+
+	private static SqlTables intervalPackingTables() {
+		return new SqlTables(
+				PREDECESSOR_NAME,
+				Map.of(
+						IntervalPackingCteStep.PREVIOUS_END, "previous_end",
+						IntervalPackingCteStep.RANGE_INDEX, "range_index",
+						IntervalPackingCteStep.INTERVAL_COMPLETE, "interval_complete",
+						ConceptCteStep.INTERVAL_PACKING_SELECTS, "interval_selects"
+				),
+				Map.of(
+						IntervalPackingCteStep.RANGE_INDEX, IntervalPackingCteStep.PREVIOUS_END,
+						IntervalPackingCteStep.INTERVAL_COMPLETE, IntervalPackingCteStep.RANGE_INDEX
+				)
+		);
 	}
 
 	private static QueryStep predecessor() {

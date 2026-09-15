@@ -46,14 +46,6 @@ public class IntervalPackingSelectsCte {
 						.build();
 	}
 
-	public static QueryStep forConnector(QueryStep predecessor, CQTableContext cqTableContext) {
-		return IntervalPackingSelectCompiler.compile(
-				predecessor,
-				cqTableContext.getSqlSelects().stream().flatMap(selects -> selects.getEventDateSelects().stream()).toList(),
-				cqTableContext.getConnectorTables()
-		);
-	}
-
 	public static QueryStep forConcept(
 			QueryStep predecessor,
 			SqlTables tables,
