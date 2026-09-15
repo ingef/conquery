@@ -9,9 +9,13 @@ import static org.jooq.impl.DSL.table;
 import static org.jooq.impl.DSL.val;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,11 +71,15 @@ public final class ConceptIdMapping {
 		List<CTCondition.ConceptConditions> expressions = collectAllExpressions(concept, null, context);
 		List<Field<?>> keyFields = collectKeyFields(expressions);
 		List<RowN> rows = expressionsToRows(concept, expressions, keyFields);
-		return new ConceptIdMapping(concept, functionProvider, tableName(concept.getName()), keyFields, rows);
+		return new ConceptIdMapping(concept, functionProvider, tableName(concept.getName(), mappingVersion(keyFields, rows)), keyFields, rows);
 	}
 
-	public static Name tableName(String conceptName) {
-		return name("%s_ids".formatted(conceptName));
+	public static String tablePrefix(String conceptName) {
+		return "%s_ids_".formatted(conceptName);
+	}
+
+	private static Name tableName(String conceptName, String version) {
+		return name("%s%s".formatted(tablePrefix(conceptName), version));
 	}
 
 	public Name tableName() {
@@ -144,6 +152,23 @@ public final class ConceptIdMapping {
 			}
 		}
 		return List.copyOf(fields.values());
+	}
+
+	private static String mappingVersion(List<Field<?>> keyFields, List<RowN> rows) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			keyFields.stream()
+					.map(field -> "%s:%s".formatted(field.getName(), field.getDataType()))
+					.forEach(value -> digest.update(value.getBytes(StandardCharsets.UTF_8)));
+			rows.stream()
+					.map(RowN::toString)
+					.sorted()
+					.forEach(value -> digest.update(value.getBytes(StandardCharsets.UTF_8)));
+			return HexFormat.of().formatHex(digest.digest(), 0, 6);
+		}
+		catch (NoSuchAlgorithmException exception) {
+			throw new IllegalStateException("SHA-256 is required for concept mapping table versioning", exception);
+		}
 	}
 
 	private static Field<?> mergeFieldType(Field<?> left, Field<?> right) {

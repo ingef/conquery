@@ -82,8 +82,13 @@ public class SqlMatchingStats {
 		ConceptIdMapping mapping = ConceptIdMapping.create(concept, functionProvider);
 		Name tableName = mapping.tableName();
 
-		// Make sure there's no table present.
-		deleteConceptIdJoinTable(concept.getId());
+		boolean alreadyExists = dslContext.meta().getTables().stream()
+				.anyMatch(existing -> existing.getQualifiedName().equals(tableName));
+		if (alreadyExists) {
+			log.debug("Concept id table {} already exists", tableName);
+			return;
+		}
+
 		List<Field<?>> fields = createConceptIdsTable(tableName, mapping.tableFields());
 
 		insertConceptIdMappings(tableName, fields, mapping.rows(), dslContext);
@@ -248,14 +253,20 @@ public class SqlMatchingStats {
 	}
 
 	public void deleteConceptIdJoinTable(ConceptId concept) {
-		Name tableName = ConceptIdMapping.tableName(concept.getName());
-		log.debug("Trying to delete id-table {}", tableName);
-
-		try {
-			dslContext.dropTable(tableName).execute();
-		} catch (DataAccessException exception) {
-			// Likely it doesn't exist. Some DBMS just don't support drop-IfExists so this is the next best thing :^)
-			log.trace("Failed to drop table {}", tableName, exception);
+		String tablePrefix = ConceptIdMapping.tablePrefix(concept.getName());
+		List<org.jooq.Table<?>> mappingTables = dslContext.meta().getTables().stream()
+				.filter(existing -> existing.getName().startsWith(tablePrefix))
+				.toList();
+		for (org.jooq.Table<?> mappingTable : mappingTables) {
+			Name tableName = mappingTable.getQualifiedName();
+			log.debug("Trying to delete id-table {}", tableName);
+			try {
+				dslContext.dropTable(tableName).execute();
+			}
+			catch (DataAccessException exception) {
+				// Likely it doesn't exist. Some DBMS just don't support drop-IfExists so this is the next best thing :^)
+				log.trace("Failed to drop table {}", tableName, exception);
+			}
 		}
 	}
 
