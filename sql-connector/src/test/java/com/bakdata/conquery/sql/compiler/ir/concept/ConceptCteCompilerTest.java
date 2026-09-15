@@ -28,6 +28,34 @@ import org.junit.jupiter.api.Test;
 class ConceptCteCompilerTest {
 
 	@Test
+	void shouldCompileIntervalSelectBranchFromResolvedConceptInput() {
+		QueryStep predecessor = queryStep("connector");
+		FieldWrapper<Integer> eventDuration = new FieldWrapper<>(field(name("event_duration"), Integer.class));
+		ConceptSqlSelects conceptSelects = ConceptSqlSelects.builder()
+				.eventDateSelect(eventDuration)
+				.build();
+		SqlTables tables = new SqlTables(
+				"connector",
+				Map.of(
+						ConceptCteStep.INTERVAL_PACKING_SELECTS, "interval_packing",
+						ConceptCteStep.UNIVERSAL_SELECTS, "concept"
+				),
+				Map.of()
+		);
+
+		QueryStep result = ConceptCteCompiler.compileConcept(new ConceptCteInput(
+				predecessor,
+				List.of(conceptSelects),
+				tables,
+				false
+		));
+
+		assertEquals(List.of("connector", "interval_packing"), result.getPredecessors().stream().map(QueryStep::getCteName).toList());
+		QueryStep intervalPacking = result.getPredecessors().getLast();
+		assertEquals(List.of(eventDuration), intervalPacking.getSelects().getSqlSelects());
+	}
+
+	@Test
 	void shouldCompileUniversalConceptStep() {
 		FieldWrapper<Integer> connectorMetric = new FieldWrapper<>(field(name("connector_metric"), Integer.class));
 		QueryStep predecessor = queryStep("connector", connectorMetric);
