@@ -233,10 +233,6 @@ public interface SqlFunctionProvider {
 		return field(concatenated, String.class);
 	}
 
-	default TableOnConditionStep<Record> innerJoin(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions) {
-		return leftPart.innerJoin(rightPart).on(joinConditions.toArray(Condition[]::new));
-	}
-
 	default TableOnConditionStep<Record> fullOuterJoin(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions) {
 		return leftPart.fullOuterJoin(rightPart).on(joinConditions.toArray(Condition[]::new));
 	}
