@@ -12,6 +12,7 @@ import com.bakdata.conquery.sql.compiler.ir.QueryStepJoiner;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingSelectCompiler;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.experimental.UtilityClass;
@@ -22,6 +23,27 @@ import org.jooq.TableLike;
 /** Builds concept-level CTEs from connector compiler IR. */
 @UtilityClass
 public class ConceptCteCompiler {
+
+	public static QueryStep compileConcept(ConceptCteInput input) {
+		Optional<QueryStep> intervalPackingSelects = Optional.empty();
+		if (input.tables().isRequiredStep(ConceptCteStep.INTERVAL_PACKING_SELECTS)) {
+			// TODO Derive the optional branch from the resolved selects instead of retaining duplicate CTE-graph state.
+			QueryStep eventDateSelects = IntervalPackingSelectCompiler.compile(
+					input.predecessor(),
+					input.sqlSelects().stream().flatMap(selects -> selects.getEventDateSelects().stream()).toList(),
+					input.tables()
+			);
+			intervalPackingSelects = Optional.of(eventDateSelects);
+		}
+
+		return compileUniversalSelects(
+				input.predecessor(),
+				input.sqlSelects(),
+				intervalPackingSelects,
+				input.tables(),
+				input.negate()
+		);
+	}
 
 	public static QueryStep compileUniversalSelects(
 			QueryStep predecessor,

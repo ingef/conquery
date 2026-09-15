@@ -8,8 +8,6 @@ import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.compiler.ir.concept.ConceptSqlSelects;
-import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingSelectCompiler;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 
 public class IntervalPackingSelectsCte {
@@ -44,18 +42,6 @@ public class IntervalPackingSelectsCte {
 						.groupBy(predecessorSelects.getIds().toFields())
 						.predecessors(predecessors)
 						.build();
-	}
-
-	public static QueryStep forConcept(
-			QueryStep predecessor,
-			SqlTables tables,
-			List<ConceptSqlSelects> sqlSelects
-	) {
-		return IntervalPackingSelectCompiler.compile(
-				predecessor,
-				sqlSelects.stream().flatMap(selects -> selects.getEventDateSelects().stream()).toList(),
-				tables
-		);
 	}
 
 }

@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 import com.bakdata.conquery.sql.compiler.ir.JoinMode;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteInput;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteCompiler;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorCteCompiler;
@@ -65,19 +66,12 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				})
 				.toList();
 
-		Optional<QueryStep> intervalPackingSelects = Optional.empty();
-		if (universalTables.isRequiredStep(ConceptCteStep.INTERVAL_PACKING_SELECTS)) {
-			QueryStep eventDateSelectsStep = IntervalPackingSelectsCte.forConcept(predecessor, universalTables, converted);
-			intervalPackingSelects = Optional.of(eventDateSelectsStep);
-		}
-
-		return ConceptCteCompiler.compileUniversalSelects(
+		return ConceptCteCompiler.compileConcept(new ConceptCteInput(
 				predecessor,
 				converted,
-				intervalPackingSelects,
 				universalTables,
 				context.isNegation()
-		);
+		));
 	}
 
 	public static SqlIdColumns convertIds(CQConcept cqConcept, CQTable cqTable, ConversionContext conversionContext) {
