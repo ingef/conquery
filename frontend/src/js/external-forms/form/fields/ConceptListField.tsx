@@ -80,7 +80,7 @@ export const ConceptListField = ({
               ? ({ value: fieldValue, onChange, row, i }) => (
                   <div className="mb-[5px]">
                     <ToggleButtonGroup
-                      segmented
+                      wrap
                       size="sm"
                       selectionMode="single"
                       disallowEmptySelection

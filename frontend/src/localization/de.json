@@ -10,10 +10,12 @@
     "reloadDescription": "Bitte hinterlasse uns eine Nachricht, damit wir dieses Problem beheben können."
   },
   "leftPane": {
+    "tabs": "Konzepte und Anfragen",
     "conceptTrees": "Konzepte",
     "previousQueries": "Anfragen und Formulare"
   },
   "rightPane": {
+    "tabs": "Editoren",
     "queryEditor": "Editor",
     "timebasedQueryEditor": "Zeit-Editor",
     "externalForms": "Formular-Editor",
@@ -240,12 +242,14 @@
     "hasNoDates": "Keine Datumswerte in den Ergebnissen vorhanden."
   },
   "projectItemsFilter": {
+    "label": "Filter",
     "all": "Alle",
     "own": "Eigene",
     "shared": "Freigegeben",
     "system": "SYSTEM"
   },
   "projectItemsTypeFilter": {
+    "label": "Typ",
     "queries": "Nur Anfragen",
     "configs": "Nur Formulare"
   },
@@ -480,6 +484,7 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "infoTabs": "Info-Kategorien",
     "search": "Suche",
     "matches_one": "Eintrag",
     "matches_other": "Einträge",

@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import { tv } from "tailwind-variants";
-import type { Tabs } from "../../config-types";
-import FormTabNavigation from "../../form-tab-navigation/FormTabNavigation";
+import { Tab, TabList, TabPanel, Tabs } from "../../../ui-components/Tabs";
+import type { Tabs as TabsFieldT } from "../../config-types";
 import { getFieldKey } from "../../helper";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
 import Field from "../Field";
@@ -22,7 +22,7 @@ export const TabsField = ({
   commonProps,
   defaultValue,
 }: {
-  field: Tabs;
+  field: TabsFieldT;
   commonProps: Omit<ComponentProps<typeof Field>, "field">;
   defaultValue: unknown;
 }) => {
@@ -34,40 +34,46 @@ export const TabsField = ({
       noContainer
     >
       {({ ref, ...fieldProps }) => {
-        const tabToShow = field.tabs.find(
-          (tab) => tab.name === fieldProps.value,
-        );
-
         return (
-          <>
-            <FormTabNavigation
-              selectedTab={fieldProps.value as string}
-              onSelectTab={(tab) => {
-                commonProps.setValue(field.name, tab, setValueConfig);
-                setTimeout(() => {
-                  commonProps.trigger();
-                }, 100);
-              }}
-              options={field.tabs.map((tab) => ({
-                label: () => tab.title[commonProps.locale] || "",
-                value: tab.name,
-                tooltip: tab.tooltip
-                  ? tab.tooltip[commonProps.locale]
-                  : undefined,
-              }))}
-            />
-            {tabToShow && tabToShow.fields.length > 0 ? (
-              <div className={nestedFields()}>
-                {tabToShow.fields.map((f, i) => {
-                  const key = getFieldKey(commonProps.formType, f, i);
+          <Tabs
+            variant="secondary"
+            selectedKey={fieldProps.value as string}
+            onSelectionChange={(tab) => {
+              commonProps.setValue(field.name, tab, setValueConfig);
+              setTimeout(() => {
+                commonProps.trigger();
+              }, 100);
+            }}
+          >
+            <TabList aria-label={field.name}>
+              {field.tabs.map((tab) => (
+                <Tab
+                  key={tab.name}
+                  id={tab.name}
+                  tooltip={
+                    tab.tooltip ? tab.tooltip[commonProps.locale] : undefined
+                  }
+                >
+                  {tab.title[commonProps.locale] || ""}
+                </Tab>
+              ))}
+            </TabList>
+            {field.tabs.map((tab) => (
+              <TabPanel key={tab.name} id={tab.name}>
+                {tab.fields.length > 0 ? (
+                  <div className={nestedFields()}>
+                    {tab.fields.map((f, i) => {
+                      const key = getFieldKey(commonProps.formType, f, i);
 
-                  return <Field key={key} field={f} {...commonProps} />;
-                })}
-              </div>
-            ) : (
-              <div className="h-[14px]" />
-            )}
-          </>
+                      return <Field key={key} field={f} {...commonProps} />;
+                    })}
+                  </div>
+                ) : (
+                  <div className="h-[14px]" />
+                )}
+              </TabPanel>
+            ))}
+          </Tabs>
         );
       }}
     </ConnectedField>

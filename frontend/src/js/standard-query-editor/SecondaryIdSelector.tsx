@@ -169,7 +169,7 @@ const SecondaryIdSelectorUI = memo(
           <InfoTooltip text={t("queryEditor.secondaryIdTooltip")} />
         </h3>
         <ToggleButtonGroup
-          segmented
+          wrap
           size="sm"
           selectionMode="single"
           disallowEmptySelection

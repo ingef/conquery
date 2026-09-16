@@ -119,7 +119,6 @@ const InputRange = ({
         tooltip={tooltip}
       />
       <ToggleButtonGroup
-        segmented
         size="sm"
         selectionMode="single"
         disallowEmptySelection
