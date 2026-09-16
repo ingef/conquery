@@ -31,7 +31,7 @@ export const ControlledNumberField = ({
           placeholder={field.placeholder?.[locale] || ""}
           value={(value as number | null) ?? null}
           onChange={(value) => setValue(field.name, value, setValueConfig)}
-          step={field.step ? Number(field.step) : 1}
+          step={field.step ? Number(field.step) : undefined}
           minValue={field.min ?? constraints.minValue}
           maxValue={field.max}
           formatOptions={
