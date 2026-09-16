@@ -1,15 +1,15 @@
 import type { ComponentProps } from "react";
-import { InputTextarea } from "../../../ui-components/InputTextarea/InputTextarea";
-import type { TextareaField } from "../../config-types";
+import { TextField } from "../../../ui-components/TextField";
+import type { StringField as StringFieldT } from "../../config-types";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
 import type Field from "../Field";
 
-export const TextAreaField = ({
+export const ControlledStringField = ({
   field,
   defaultValue,
-  commonProps: { control, locale, setValue },
+  commonProps: { locale, control, setValue },
 }: {
-  field: TextareaField;
+  field: StringFieldT;
   defaultValue: unknown;
   commonProps: Omit<ComponentProps<typeof Field>, "field">;
 }) => {
@@ -18,18 +18,17 @@ export const TextAreaField = ({
       formField={field}
       control={control}
       defaultValue={defaultValue}
+      errorInField
     >
-      {({ ref, ...fieldProps }) => (
-        <InputTextarea
-          ref={ref}
+      {({ ref, value, errorMessage }) => (
+        <TextField
+          inputRef={ref}
           label={field.label[locale] || ""}
           placeholder={field.placeholder?.[locale] || ""}
-          rows={field.style?.rows ?? 4}
-          value={fieldProps.value as string}
-          onChange={(value) => {
-            setValue(field.name, value, setValueConfig);
-          }}
+          value={(value as string | null) ?? ""}
+          onChange={(value) => setValue(field.name, value, setValueConfig)}
           tooltip={field.tooltip ? field.tooltip[locale] : undefined}
+          errorMessage={errorMessage}
         />
       )}
     </ConnectedField>

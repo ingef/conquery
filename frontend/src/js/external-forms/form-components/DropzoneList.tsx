@@ -12,8 +12,7 @@ import DropzoneWithFileInput, {
   type DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
 import { Icon } from "../../ui-components/Icon";
-import InfoTooltip from "../../ui-components/InfoTooltip";
-import Label from "../../ui-components/Label";
+import { Label } from "../../ui-components/Label";
 
 import DropzoneBetweenElements from "./DropzoneBetweenElements";
 
@@ -79,10 +78,11 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>({
 
   return (
     <div className={className}>
-      <div className="flex items-center">
-        {label && <Label>{label}</Label>}
-        {tooltip && <InfoTooltip text={tooltip} />}
-      </div>
+      {label && (
+        <Label elementType="span" tooltip={tooltip}>
+          {label}
+        </Label>
+      )}
       {items && items.length > 0 && (
         <>
           {items.map((item, i) => (

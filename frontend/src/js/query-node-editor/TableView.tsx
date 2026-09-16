@@ -11,7 +11,7 @@ import type {
   ConceptQueryNodeType,
   FilterWithValueType,
 } from "../standard-query-editor/types";
-import type { ModeT } from "../ui-components/InputRange";
+import type { ModeT } from "../ui-components/NumberRangeField";
 
 import ContentCell from "./ContentCell";
 import DateColumnSelect from "./DateColumnSelect";

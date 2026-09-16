@@ -1,11 +1,11 @@
 import type { ComponentProps } from "react";
 import type { DateStringMinMax } from "../../../common/helpers/dateHelper";
-import InputDateRange from "../../../ui-components/InputDateRange";
+import { DateRangeField } from "../../../ui-components/DateRangeField";
 import type { DateRangeField as DateRangeFieldT } from "../../config-types";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
 import type Field from "../Field";
 
-export const DateRangeField = ({
+export const ControlledDateRangeField = ({
   field,
   defaultValue,
   commonProps: { control, locale, setValue },
@@ -22,7 +22,7 @@ export const DateRangeField = ({
     >
       {({ ref, ...fieldProps }) => {
         return (
-          <InputDateRange
+          <DateRangeField
             inline={true}
             label={field.label[locale]}
             tooltip={field.tooltip ? field.tooltip[locale] : undefined}

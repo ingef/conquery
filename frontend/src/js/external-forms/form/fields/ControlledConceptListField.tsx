@@ -10,7 +10,7 @@ import type { FormConceptGroupT } from "../../form-concept-group/formConceptGrou
 import { ConnectedField, setValueConfig } from "../ConnectedField";
 import type Field from "../Field";
 
-export const ConceptListField = ({
+export const ControlledConceptListField = ({
   field,
   defaultValue,
   commonProps: { formType, control, locale, setValue },

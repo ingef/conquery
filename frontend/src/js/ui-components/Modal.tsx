@@ -37,7 +37,6 @@ const modal = tv({
       xl: "max-w-[1000px]",
       full: "max-w-none",
     },
-    // visible overflow lets the menus of the select boxes reach past the card
     scrollable: {
       true: "overflow-y-auto",
       false: "overflow-y-visible",

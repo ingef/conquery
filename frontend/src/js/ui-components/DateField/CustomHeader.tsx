@@ -10,7 +10,7 @@ import type { SelectOptionT } from "../../api/types";
 import { useMonthName, useMonthNames } from "../../common/helpers/dateHelper";
 import { Button } from "../Button";
 import { Icon } from "../Icon";
-import { List, Menu } from "../InputSelect/InputSelectComponents";
+import { List, Menu } from "../InputMultiSelect/InputSelectComponents";
 import { ToggleButton } from "../ToggleButton";
 
 const root = tv({

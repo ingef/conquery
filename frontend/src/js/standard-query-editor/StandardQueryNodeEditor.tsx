@@ -6,7 +6,7 @@ import type { StateT } from "../app/reducers";
 import { type NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
 import { tableIsEditable } from "../model/table";
 import QueryNodeEditor from "../query-node-editor/QueryNodeEditor";
-import type { ModeT } from "../ui-components/InputRange";
+import type { ModeT } from "../ui-components/NumberRangeField";
 
 import {
   addConceptToNode,

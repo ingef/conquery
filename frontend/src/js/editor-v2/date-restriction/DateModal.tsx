@@ -5,8 +5,8 @@ import type { DateRangeT } from "../../api/types";
 import type { DateStringMinMax } from "../../common/helpers/dateHelper";
 import { Button } from "../../ui-components/Button";
 import { Checkbox } from "../../ui-components/Checkbox";
+import { DateRangeField } from "../../ui-components/DateRangeField";
 import { Icon } from "../../ui-components/Icon";
-import InputDateRange from "../../ui-components/InputDateRange";
 import {
   Modal,
   ModalBody,
@@ -71,8 +71,7 @@ export const DateModal = ({
       <ModalBody>
         <div className="flex flex-col gap-8">
           <div>{headline}</div>
-          <InputDateRange
-            large
+          <DateRangeField
             inline
             autoFocus
             label={t("queryGroupModal.dateRange")}

@@ -10,8 +10,11 @@ import type {
 } from "../api/types";
 import type { StateT } from "../app/reducers";
 import type { FilterWithValueType } from "../standard-query-editor/types";
-import InputRange, { type ModeT } from "../ui-components/InputRange";
-import InputSelect from "../ui-components/InputSelect/InputSelect";
+import { ComboBoxField } from "../ui-components/ComboBoxField";
+import {
+  type ModeT,
+  NumberRangeField,
+} from "../ui-components/NumberRangeField";
 
 import FilterListMultiSelect from "./FilterListMultiSelect";
 
@@ -57,7 +60,7 @@ const TableFilter = ({
     switch (filter.type) {
       case "SELECT":
         return (
-          <InputSelect
+          <ComboBoxField
             indexPrefix={filterIdx + 1}
             value={
               filter.options.find((o) => o.value === filter.value) ||
@@ -70,7 +73,7 @@ const TableFilter = ({
             label={filter.label}
             tooltip={filter.tooltip}
             options={filter.options}
-            disabled={excludeTable}
+            isDisabled={excludeTable}
           />
         );
       case "MULTI_SELECT":
@@ -115,10 +118,9 @@ const TableFilter = ({
         );
       case "INTEGER_RANGE":
         return (
-          <InputRange
+          <NumberRangeField
             indexPrefix={filterIdx + 1}
             value={filter.value}
-            defaultValue={filter.defaultValue}
             onChange={(value) =>
               onSetFilterValue(filterIdx, value as RangeFilterValueT)
             }
@@ -127,6 +129,7 @@ const TableFilter = ({
             label={filter.label}
             tooltip={filter.tooltip}
             mode={filter.mode || "range"}
+            stepSize={1}
             disabled={!!excludeTable}
             onSwitchMode={(mode) => onSwitchFilterMode(filterIdx, mode)}
             placeholder="-"
@@ -135,10 +138,9 @@ const TableFilter = ({
         );
       case "REAL_RANGE":
         return (
-          <InputRange
+          <NumberRangeField
             indexPrefix={filterIdx + 1}
             value={filter.value}
-            defaultValue={filter.defaultValue}
             onChange={(value) =>
               onSetFilterValue(filterIdx, value as RangeFilterValueT)
             }
@@ -156,11 +158,10 @@ const TableFilter = ({
         );
       case "MONEY_RANGE":
         return (
-          <InputRange
+          <NumberRangeField
             indexPrefix={filterIdx + 1}
             moneyRange
             value={filter.value}
-            defaultValue={filter.defaultValue}
             onChange={(value) =>
               onSetFilterValue(filterIdx, value as RangeFilterValueT)
             }

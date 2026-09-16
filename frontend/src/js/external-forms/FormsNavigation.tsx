@@ -5,9 +5,9 @@ import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import { useActiveLang } from "../localization/useActiveLang";
 import { Button } from "../ui-components/Button";
+import { ComboBoxField } from "../ui-components/ComboBoxField";
 import { ConfirmMenu } from "../ui-components/ConfirmMenu";
 import { Icon } from "../ui-components/Icon";
-import InputSelect from "../ui-components/InputSelect/InputSelect";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { setExternalForm } from "./actions";
@@ -56,21 +56,22 @@ const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
   return (
     <div className={root()}>
       <div className="flex flex-row items-end">
-        <InputSelect
-          className="grow"
-          dataTestId="form-select"
-          label={t("externalForms.forms")}
-          options={options}
-          value={options.find((o) => o.value === activeForm) || null}
-          onChange={(value) => {
-            if (value) {
-              onChangeToForm(value.value as string);
-              // we intentionally only change the form
-              // but we don't reset field state,
-              // so values are kept when switching forms
-            }
-          }}
-        />
+        <div className="grow">
+          <ComboBoxField
+            data-test-id="form-select"
+            label={t("externalForms.forms")}
+            options={options}
+            value={options.find((o) => o.value === activeForm) || null}
+            onChange={(value) => {
+              if (value) {
+                onChangeToForm(value.value as string);
+                // we intentionally only change the form
+                // but we don't reset field state,
+                // so values are kept when switching forms
+              }
+            }}
+          />
+        </div>
         <div className="ml-[10px]">
           <TooltipTrigger>
             <ConfirmMenu

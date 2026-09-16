@@ -17,8 +17,8 @@ import { parseCSV, toCSV } from "../../file/csv";
 import { useActiveLang } from "../../localization/useActiveLang";
 import ScrollableList from "../../scrollable-list/ScrollableList";
 import { Button } from "../../ui-components/Button";
+import { ComboBoxField } from "../../ui-components/ComboBoxField";
 import { Icon } from "../../ui-components/Icon";
-import InputSelect from "../../ui-components/InputSelect/InputSelect";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 
 const td = tv({
@@ -145,8 +145,10 @@ const CSVPreviewTable = ({
             <tr key={j}>
               {row.map((cell, i) => (
                 <th key={cell + i} className={th()}>
-                  <InputSelect
-                    smallMenu
+                  <ComboBoxField
+                    aria-label={t("csvColumnPicker.columnType", {
+                      index: i + 1,
+                    })}
                     options={selectOptions}
                     value={
                       selectOptions.find((o) => o.value === csvHeader[i]) ||
@@ -269,18 +271,20 @@ const CSVColumnPicker = ({
           </TooltipTrigger>
         </div>
         {csv.length > 0 && (
-          <InputSelect
-            className="ml-[15px] inline-block w-[150px] text-left"
-            label={t("csvColumnPicker.delimiter")}
-            onChange={(val) => {
-              if (val) setDelimiter(val.value as string);
-            }}
-            value={
-              DELIMITER_OPTIONS.find((option) => option.value === delimiter) ||
-              null
-            }
-            options={DELIMITER_OPTIONS}
-          />
+          <div className="ml-[15px] inline-block w-[150px] text-left">
+            <ComboBoxField
+              label={t("csvColumnPicker.delimiter")}
+              onChange={(val) => {
+                if (val) setDelimiter(val.value as string);
+              }}
+              value={
+                DELIMITER_OPTIONS.find(
+                  (option) => option.value === delimiter,
+                ) || null
+              }
+              options={DELIMITER_OPTIONS}
+            />
+          </div>
         )}
       </div>
       <div className="overflow-hidden rounded-sm py-3 px-2 border w-full">

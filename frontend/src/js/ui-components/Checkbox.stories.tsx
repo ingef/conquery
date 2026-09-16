@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Checkbox, type CheckboxProps } from "./Checkbox";
 
 export default {
-  title: "UiComponents/Checkbox",
+  title: "FormComponents/Checkbox",
   component: Checkbox,
   parameters: { layout: "centered" },
 } as Meta<typeof Checkbox>;

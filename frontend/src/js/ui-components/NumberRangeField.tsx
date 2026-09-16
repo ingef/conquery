@@ -1,16 +1,23 @@
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
+
 import type { CurrencyConfigT } from "../api/types";
 import { exists } from "../common/helpers/exists";
-import InputPlain from "./InputPlain/InputPlain";
-import InputRangeHeader from "./InputRangeHeader";
+import { numberPatternConstraints } from "../common/helpers/numberPattern";
+import { Label } from "./Label";
+import { NumberField } from "./NumberField";
 import { ToggleButton } from "./ToggleButton";
 import { ToggleButtonGroup } from "./ToggleButtonGroup";
 
-const container = tv({ base: ["flex flex-row", "w-full", "-mt-[3px]"] });
-
-const rangeInput = tv({
-  base: ["[&_input]:w-full [&_input]:min-w-[50px]", "last-of-type:pl-[5px]"],
+// pulled up under the mode switch
+const inputs = tv({
+  base: "-mt-[3px]",
+  variants: {
+    mode: {
+      range: "grid grid-cols-2 gap-[5px]",
+      exact: "",
+    },
+  },
 });
 
 interface ValueT {
@@ -27,10 +34,9 @@ interface PropsType {
   unit?: string;
   value: ValueT | null;
   onChange: (value: ValueT | null) => void;
-  defaultValue?: ValueT;
   limits?: {
-    min?: number;
-    max?: number;
+    min?: number | null;
+    max?: number | null;
   };
   disabled: boolean;
   mode: ModeT;
@@ -38,7 +44,7 @@ interface PropsType {
   placeholder: string;
   onSwitchMode: (mode: ModeT) => void;
   tooltip?: string;
-  pattern?: string;
+  pattern?: string | null;
   currencyConfig?: CurrencyConfigT;
 }
 
@@ -52,7 +58,7 @@ function getMinMaxExact(value: ValueT | null) {
   };
 }
 
-const InputRange = ({
+export const NumberRangeField = ({
   limits,
   stepSize,
   currencyConfig,
@@ -67,27 +73,47 @@ const InputRange = ({
   tooltip,
   onSwitchMode,
   value,
-  defaultValue,
   onChange,
 }: PropsType) => {
   const { t } = useTranslation();
-  // Make sure undefined / null is never set as a value, but an empty string instead
   const val = getMinMaxExact(value);
-  const defaultVal = defaultValue || {};
   const isRangeMode = mode === "range";
 
-  const inputProps = {
-    step: stepSize || null,
-    min: limits?.min || null,
-    max: limits?.max || null,
-    pattern: pattern,
+  const constraints = numberPatternConstraints(pattern);
+  // money is stored in the smallest unit and shown in the major one
+  const money = moneyRange && currencyConfig ? currencyConfig : null;
+  const factor = money ? 10 ** money.decimalScale : 1;
+  const fractionDigits = money
+    ? money.decimalScale
+    : constraints.maximumFractionDigits;
+
+  const numberProps = {
+    // an unset bound is null from the backend; react-aria clamps to Number(null)
+    minValue: limits?.min ?? constraints.minValue,
+    maxValue: limits?.max ?? undefined,
+    step: stepSize,
+    formatOptions: exists(fractionDigits)
+      ? {
+          minimumFractionDigits: money ? fractionDigits : undefined,
+          maximumFractionDigits: fractionDigits,
+        }
+      : undefined,
+    unit: money?.unit,
+    placeholder,
+    isDisabled: disabled,
+    labelSize: "sm" as const,
   };
+
+  const toDisplay = (stored: number | null) =>
+    exists(stored) ? stored / factor : null;
+  const toStored = (shown: number | null) =>
+    exists(shown) ? Math.round(shown * factor) : null;
 
   const onChangeValue = (
     type: "exact" | "max" | "min",
-    newValue: number | null,
+    shown: number | null,
   ) => {
-    const nextValue = exists(newValue) ? newValue : null;
+    const nextValue = toStored(shown);
 
     if (type === "exact") {
       onChange(nextValue === null ? null : { exact: nextValue });
@@ -111,13 +137,15 @@ const InputRange = ({
 
   return (
     <div>
-      <InputRangeHeader
-        disabled={disabled}
-        label={label}
+      <Label
+        elementType="span"
+        isDisabled={disabled}
         indexPrefix={indexPrefix}
-        unit={unit}
         tooltip={tooltip}
-      />
+      >
+        {label}
+        {unit && ` ( ${unit} )`}
+      </Label>
       <ToggleButtonGroup
         size="sm"
         selectionMode="single"
@@ -131,53 +159,31 @@ const InputRange = ({
         <ToggleButton id="range">{t("inputRange.range")}</ToggleButton>
         <ToggleButton id="exact">{t("inputRange.exact")}</ToggleButton>
       </ToggleButtonGroup>
-      <div className={container()}>
+      <div className={inputs({ mode })}>
         {isRangeMode ? (
           <>
-            <InputPlain
-              className={rangeInput()}
-              inputType="number"
-              currencyConfig={currencyConfig}
-              money={moneyRange}
-              placeholder={placeholder}
+            <NumberField
+              {...numberProps}
               label={t("inputRange.minLabel")}
-              tinyLabel={true}
-              value={val.min}
-              defaultValue={defaultVal.min}
-              onChange={(value) => onChangeValue("min", value as number | null)}
-              inputProps={inputProps}
+              value={toDisplay(val.min)}
+              onChange={(shown) => onChangeValue("min", shown)}
             />
-            <InputPlain
-              className={rangeInput()}
-              inputType="number"
-              currencyConfig={currencyConfig}
-              money={moneyRange}
-              placeholder={placeholder}
+            <NumberField
+              {...numberProps}
               label={t("inputRange.maxLabel")}
-              tinyLabel={true}
-              value={val.max}
-              defaultValue={defaultVal.max}
-              onChange={(value) => onChangeValue("max", value as number | null)}
-              inputProps={inputProps}
+              value={toDisplay(val.max)}
+              onChange={(shown) => onChangeValue("max", shown)}
             />
           </>
         ) : (
-          <InputPlain
-            inputType="number"
-            currencyConfig={currencyConfig}
-            money={moneyRange}
-            placeholder={placeholder}
+          <NumberField
+            {...numberProps}
             label={t("inputRange.exactLabel")}
-            tinyLabel={true}
-            value={val.exact}
-            defaultValue={defaultVal.exact}
-            onChange={(value) => onChangeValue("exact", value as number | null)}
-            inputProps={inputProps}
+            value={toDisplay(val.exact)}
+            onChange={(shown) => onChangeValue("exact", shown)}
           />
         )}
       </div>
     </div>
   );
 };
-
-export default InputRange;

@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 import type { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../previous-queries/list/reducer";
-import type { ModeT } from "../ui-components/InputRange";
+import type { ModeT } from "../ui-components/NumberRangeField";
 
 export interface DatasetT {
   id: string;
@@ -53,9 +53,10 @@ export interface RangeFilterT extends FilterBaseT {
   unit?: string;
   mode?: ModeT; // Usually not sent, then default "range" is assumed
   precision?: number;
-  min?: number;
-  max?: number;
-  pattern?: string;
+  // null when unset, the backend serializes every field
+  min?: number | null;
+  max?: number | null;
+  pattern?: string | null;
 }
 
 export type MultiSelectFilterValueT = SelectOptionT[];

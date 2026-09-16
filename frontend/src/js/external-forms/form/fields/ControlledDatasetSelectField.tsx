@@ -1,11 +1,11 @@
 import type { ComponentProps } from "react";
 import type { SelectOptionT } from "../../../api/types";
-import InputSelect from "../../../ui-components/InputSelect/InputSelect";
+import { ComboBoxField } from "../../../ui-components/ComboBoxField";
 import type { DatasetSelectField as DatasetSelectFieldT } from "../../config-types";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
 import type Field from "../Field";
 
-export const DatasetSelectField = ({
+export const ControlledDatasetSelectField = ({
   field,
   datasetId,
   commonProps: { control, locale, setValue, availableDatasets },
@@ -24,18 +24,18 @@ export const DatasetSelectField = ({
             availableDatasets[0]
           : null
       }
+      errorInField
     >
-      {({ ref, ...fieldProps }) => {
-        return (
-          <InputSelect
-            label={field.label[locale]}
-            options={availableDatasets}
-            tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-            value={fieldProps.value as SelectOptionT | null}
-            onChange={(value) => setValue(field.name, value, setValueConfig)}
-          />
-        );
-      }}
+      {({ value, errorMessage }) => (
+        <ComboBoxField
+          label={field.label[locale] || ""}
+          options={availableDatasets}
+          tooltip={field.tooltip ? field.tooltip[locale] : undefined}
+          value={(value as SelectOptionT | null) ?? null}
+          onChange={(value) => setValue(field.name, value, setValueConfig)}
+          errorMessage={errorMessage}
+        />
+      )}
     </ConnectedField>
   );
 };

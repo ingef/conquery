@@ -1,15 +1,16 @@
 import type { ComponentProps } from "react";
-import { Checkbox } from "../../../ui-components/Checkbox";
-import type { CheckboxField as CheckboxFieldT } from "../../config-types";
+import type { DragItemQuery } from "../../../standard-query-editor/types";
+import type { ResultGroupField as ResultGroupFieldT } from "../../config-types";
+import FormQueryDropzone from "../../form-query-dropzone/FormQueryDropzone";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
 import type Field from "../Field";
 
-export const CheckboxField = ({
+export const ControlledResultGroupField = ({
   field,
   defaultValue,
   commonProps: { control, locale, setValue },
 }: {
-  field: CheckboxFieldT;
+  field: ResultGroupFieldT;
   defaultValue: unknown;
   commonProps: Omit<ComponentProps<typeof Field>, "field">;
 }) => {
@@ -18,16 +19,15 @@ export const CheckboxField = ({
       formField={field}
       control={control}
       defaultValue={defaultValue}
-      noLabel
     >
       {({ ref, ...fieldProps }) => (
-        <Checkbox
-          isSelected={fieldProps.value as boolean}
+        <FormQueryDropzone
+          label={field.label[locale] || ""}
+          dropzoneText={field.dropzoneLabel[locale] || ""}
+          tooltip={field.tooltip ? field.tooltip[locale] : undefined}
+          value={fieldProps.value as DragItemQuery}
           onChange={(value) => setValue(field.name, value, setValueConfig)}
-          infoTooltip={field.tooltip ? field.tooltip[locale] : undefined}
-        >
-          {field.label[locale] || ""}
-        </Checkbox>
+        />
       )}
     </ConnectedField>
   );

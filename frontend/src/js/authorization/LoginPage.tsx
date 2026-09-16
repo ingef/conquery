@@ -8,7 +8,7 @@ import { useAppTheme } from "../app-theme-context";
 import ErrorMessage from "../error-message/ErrorMessage";
 import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
-import InputPlain from "../ui-components/InputPlain/InputPlain";
+import { TextField } from "../ui-components/TextField";
 
 import { AuthTokenContext } from "./AuthTokenProvider";
 
@@ -37,12 +37,14 @@ const headline = tv({
 
 const form = tv({
   base: [
-    "flex flex-col items-center justify-center",
+    "flex flex-col",
+    "gap-[10px]",
+    "w-[255px]",
     "mx-auto mt-[15px] mb-[50px]",
   ],
 });
 
-const submitButton = tv({ base: ["grid", "mt-[35px]", "w-[255px]"] });
+const submitButton = tv({ base: ["grid", "mt-[25px]"] });
 
 const LoginPage = () => {
   const [user, setUser] = useState("");
@@ -92,26 +94,18 @@ const LoginPage = () => {
           <ErrorMessage className="mx-[10px] mt-5" message={t("login.error")} />
         )}
         <form className={form()} onSubmit={onSubmit}>
-          <InputPlain
-            className="px-0 py-[5px]"
+          <TextField
             label={t("login.username")}
-            large
             value={user}
-            onChange={(value) => setUser(value as string)}
-            inputProps={{
-              disabled: loading,
-            }}
+            onChange={setUser}
+            isDisabled={loading}
           />
-          <InputPlain
-            className="px-0 py-[5px]"
-            inputType="password"
+          <TextField
+            type="password"
             label={t("login.password")}
-            large
             value={password}
-            onChange={(value) => setPassword(value as string)}
-            inputProps={{
-              disabled: loading,
-            }}
+            onChange={setPassword}
+            isDisabled={loading}
           />
           <div className={submitButton()}>
             <Button

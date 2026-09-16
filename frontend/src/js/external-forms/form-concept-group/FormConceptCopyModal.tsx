@@ -7,7 +7,7 @@ import { exists } from "../../common/helpers/exists";
 import { useActiveLang } from "../../localization/useActiveLang";
 import { Button } from "../../ui-components/Button";
 import { Checkbox } from "../../ui-components/Checkbox";
-import InputSelect from "../../ui-components/InputSelect/InputSelect";
+import { ComboBoxField } from "../../ui-components/ComboBoxField";
 import {
   Modal,
   ModalBody,
@@ -139,7 +139,7 @@ const FormConceptCopyModal = ({
         <>
           <ModalHeader>{t("externalForms.copyModal.headline")}</ModalHeader>
           <ModalBody>
-            <InputSelect
+            <ComboBoxField
               label={t("externalForms.copyModal.selectLabel")}
               options={conceptListFieldOptions}
               onChange={(val) => {

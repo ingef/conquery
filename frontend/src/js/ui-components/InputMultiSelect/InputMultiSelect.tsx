@@ -14,7 +14,8 @@ import { getFileRows } from "../../common/helpers/fileHelper";
 import { useDebounce } from "../../common/helpers/useDebounce";
 import DropzoneWithFileInput from "../DropzoneWithFileInput";
 import { Icon } from "../Icon";
-import InfoTooltip from "../InfoTooltip";
+import EmptyPlaceholder from "../SelectEmptyPlaceholder";
+import TooManyValues from "../TooManyValues";
 import {
   Control,
   DropdownToggleButton,
@@ -26,11 +27,9 @@ import {
   ResetButton,
   SelectContainer,
   VerticalSeparator,
-} from "../InputSelect/InputSelectComponents";
-import Labeled from "../Labeled";
-import EmptyPlaceholder from "../SelectEmptyPlaceholder";
-import TooManyValues from "../TooManyValues";
+} from "./InputSelectComponents";
 
+import { Labeled } from "./Labeled";
 import ListItem from "./ListItem";
 import LoadMoreSentinel from "./LoadMoreSentinel";
 import MenuActionBar from "./MenuActionBar";
@@ -434,13 +433,8 @@ const InputMultiSelect = ({
       ref={(el) => {
         clickOutsideRef.current = el;
       }}
-      htmlFor="" // Important to override getLabelProps with this to avoid click events everywhere
-      label={
-        <>
-          {label}
-          {tooltip && <InfoTooltip text={tooltip} />}
-        </>
-      }
+      label={label}
+      tooltip={tooltip}
       indexPrefix={indexPrefix}
     >
       {children}

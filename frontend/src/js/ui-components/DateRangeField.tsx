@@ -1,8 +1,9 @@
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
-import { createRef, type ReactNode, useMemo } from "react";
+import { type ReactNode, useRef } from "react";
 import type ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
+
 import {
   type DateStringMinMax,
   formatDateFromState,
@@ -11,39 +12,19 @@ import {
   parseDateToState,
 } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
+import { DateField } from "./DateField/DateField";
 import { Icon } from "./Icon";
-import { IndexPrefix } from "./IndexPrefix";
 import InfoTooltip from "./InfoTooltip";
-
-import InputDate from "./InputDate/InputDate";
-import Label from "./Label";
-import Labeled from "./Labeled";
-
-const root = tv({
-  variants: {
-    center: {
-      true: "text-center",
-      false: "text-left",
-    },
-  },
-});
+import { Label } from "./Label";
 
 const pickers = tv({
-  base: "flex",
+  base: ["flex", "gap-[10px]"],
   variants: {
     inline: {
       true: "flex-row",
       false: "flex-col",
     },
-    center: {
-      true: "justify-center",
-      false: "justify-start",
-    },
   },
-});
-
-const labeled = tv({
-  base: "first-of-type:mr-[10px]",
 });
 
 const customTooltip = tv({
@@ -60,10 +41,6 @@ const customTooltip = tv({
     "[&_td]:px-[5px] [&_td]:py-[2px]",
     "[&_td]:leading-[1.2]",
   ],
-});
-
-const tooltipMain = tv({
-  base: "text-base",
 });
 
 const tooltipTutorial = tv({
@@ -87,10 +64,8 @@ function getDisplayDate(
   return formatDateFromState(dateString, dateFormat);
 }
 
-const InputDateRange = ({
-  large,
+export const DateRangeField = ({
   inline,
-  center,
   label,
   indexPrefix,
   autoFocus,
@@ -102,10 +77,7 @@ const InputDateRange = ({
   label?: ReactNode;
   indexPrefix?: number;
   labelSuffix?: ReactNode;
-  className?: string;
   inline?: boolean;
-  large?: boolean;
-  center?: boolean;
   autoFocus?: boolean;
   tooltip?: string;
   value: DateStringMinMax;
@@ -160,80 +132,65 @@ const InputDateRange = ({
   const min = getDisplayDate("min", value, displayDateFormat);
   const max = getDisplayDate("max", value, displayDateFormat);
 
-  const maxRef = createRef<ReactDatePicker>();
+  const maxRef = useRef<ReactDatePicker>(null);
 
   const isMinValid = exists(value.min && parseDate(min, displayDateFormat));
   const isMaxValid = exists(value.max && parseDate(max, displayDateFormat));
 
-  const labelWithSuffix = useMemo(() => {
-    if (!label) return null;
-
-    return (
-      <Label large={large}>
-        <Icon icon={faCalendar} className="mr-[10px] text-gray-500" />
-        {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
-        {label}
-        <InfoTooltip
-          html={
-            <div className={customTooltip()}>
-              {exists(tooltip) && (
-                <div className={tooltipMain()}>{tooltip}</div>
-              )}
-              <div
-                className={tooltipTutorial({ hasMain: exists(tooltip) })}
-                // biome-ignore lint/security/noDangerouslySetInnerHtml: i18n text with markup
-                dangerouslySetInnerHTML={{
-                  __html: t("inputDateRange.tooltip.possiblePattern"),
-                }}
-              />
-            </div>
-          }
-        />
-        {labelSuffix && labelSuffix}
-      </Label>
-    );
-  }, [t, label, labelSuffix, large, tooltip, indexPrefix]);
-
   return (
-    <div className={root({ center: !!center })}>
-      {labelWithSuffix}
-      <div className={pickers({ inline: !!inline, center: !!center })}>
-        <Labeled className={labeled()} label={t("inputDateRange.from")}>
-          <InputDate
-            value={min}
-            dateFormat={displayDateFormat}
-            valid={isMinValid}
-            invalid={min.length !== 0 && !isMinValid}
-            invalidText={t("common.dateInvalid")}
-            placeholder={displayDateFormat.toUpperCase()}
-            onChange={(val) =>
-              onChangeRaw("min", val as string, displayDateFormat)
+    <div>
+      {label && (
+        <Label elementType="span" indexPrefix={indexPrefix}>
+          <Icon icon={faCalendar} className="mr-[10px] text-gray-500" />
+          {label}
+          <InfoTooltip
+            html={
+              <div className={customTooltip()}>
+                {exists(tooltip) && <div className="text-base">{tooltip}</div>}
+                <div
+                  className={tooltipTutorial({ hasMain: exists(tooltip) })}
+                  // biome-ignore lint/security/noDangerouslySetInnerHtml: i18n text with markup
+                  dangerouslySetInnerHTML={{
+                    __html: t("inputDateRange.tooltip.possiblePattern"),
+                  }}
+                />
+              </div>
             }
-            onCalendarSelect={() => maxRef.current?.setOpen(true)}
-            onBlur={(e) => applyDate("min", e.target.value, displayDateFormat)}
-            inputProps={{
-              autoFocus,
-            }}
           />
-        </Labeled>
-        <Labeled className={labeled()} label={t("inputDateRange.to")}>
-          <InputDate
-            ref={maxRef}
-            value={max}
-            dateFormat={displayDateFormat}
-            valid={isMaxValid}
-            invalid={max.length !== 0 && !isMaxValid}
-            invalidText={t("common.dateInvalid")}
-            placeholder={displayDateFormat.toUpperCase()}
-            onChange={(val) =>
-              onChangeRaw("max", val as string, displayDateFormat)
-            }
-            onBlur={(e) => applyDate("max", e.target.value, displayDateFormat)}
-          />
-        </Labeled>
+          {labelSuffix}
+        </Label>
+      )}
+      <div className={pickers({ inline: !!inline })}>
+        <DateField
+          label={t("inputDateRange.from")}
+          value={min}
+          dateFormat={displayDateFormat}
+          errorMessage={
+            min.length !== 0 && !isMinValid
+              ? t("common.dateInvalid")
+              : undefined
+          }
+          placeholder={displayDateFormat.toUpperCase()}
+          onChange={(val) => onChangeRaw("min", val, displayDateFormat)}
+          onCalendarSelect={() => maxRef.current?.setOpen(true)}
+          onBlur={(e) => applyDate("min", e.target.value, displayDateFormat)}
+          autoFocus={autoFocus}
+        />
+        <DateField
+          ref={maxRef}
+          label={t("inputDateRange.to")}
+          value={max}
+          dateFormat={displayDateFormat}
+          errorMessage={
+            max.length !== 0 && !isMaxValid
+              ? t("common.dateInvalid")
+              : undefined
+          }
+          placeholder={displayDateFormat.toUpperCase()}
+          onChange={(val) => onChangeRaw("max", val, displayDateFormat)}
+          onBlur={(e) => applyDate("max", e.target.value, displayDateFormat)}
+        />
       </div>
     </div>
   );
 };
-
-export default InputDateRange;

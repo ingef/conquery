@@ -1,7 +1,7 @@
 import { memo, type Ref } from "react";
 
 import type { SelectOptionT } from "../../api/types";
-import { SxSelectListOption } from "../InputSelect/InputSelectComponents";
+import { SxSelectListOption } from "./InputSelectComponents";
 
 interface Props {
   item: SelectOptionT;

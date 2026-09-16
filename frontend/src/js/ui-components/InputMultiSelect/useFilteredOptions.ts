@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
-import { optionMatchesQuery } from "../InputSelect/optionMatchesQuery";
+import { optionMatchesQuery } from "./optionMatchesQuery";
 
 export const useFilteredOptions = ({
   options,

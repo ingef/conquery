@@ -123,10 +123,6 @@ export type StringField = CommonField & {
   type: "STRING";
   placeholder?: TranslatableString;
   defaultValue?: string; // Default: ""
-  style?: {
-    fullWidth?: boolean; // Default: False
-  };
-  pattern?: string; // Regex to validate, using double backslashes, e.g.: "^(?!-)\\\\d*$"
   validations?: StringFieldValidation[];
 };
 
