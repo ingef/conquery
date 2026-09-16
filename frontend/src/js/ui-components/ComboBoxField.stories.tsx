@@ -32,9 +32,9 @@ const Stateful = ({
 }) => {
   const [value, setValue] = useState<SelectOptionT | null>(defaultValue);
   return (
-    <div className="flex w-72 flex-col gap-2">
+    <div className="flex w-72 flex-col">
       <ComboBoxField value={value} onChange={setValue} {...props} />
-      <span className="text-xs text-gray-500">
+      <span className="mt-10 text-xs text-gray-400">
         value: {value ? String(value.value) : "null"}
       </span>
     </div>

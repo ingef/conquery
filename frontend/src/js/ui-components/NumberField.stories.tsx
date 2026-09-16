@@ -20,9 +20,9 @@ const Stateful = ({
 }) => {
   const [value, setValue] = useState<number | null>(defaultValue);
   return (
-    <div className="flex w-64 flex-col gap-2">
+    <div className="flex w-64 flex-col">
       <NumberField value={value} onChange={setValue} {...props} />
-      <span className="text-xs text-gray-500">
+      <span className="mt-10 text-xs text-gray-400">
         value: {value === null ? "null" : value}
       </span>
     </div>

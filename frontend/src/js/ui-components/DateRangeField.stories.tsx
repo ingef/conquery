@@ -22,9 +22,9 @@ const Stateful = ({
   const [value, setValue] = useState<DateStringMinMax>(defaultValue);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col">
       <DateRangeField value={value} onChange={setValue} {...props} />
-      <span className="text-xs text-gray-500">
+      <span className="mt-10 text-xs text-gray-400">
         value: {JSON.stringify(value)}
       </span>
     </div>

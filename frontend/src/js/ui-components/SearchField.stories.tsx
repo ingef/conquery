@@ -17,7 +17,7 @@ const Stateful = () => {
   const [submitted, setSubmitted] = useState<string | null>(null);
 
   return (
-    <div className="flex w-72 flex-col gap-2">
+    <div className="flex w-72 flex-col">
       <SearchField
         aria-label="Search regions"
         placeholder="Search regions"
@@ -26,7 +26,7 @@ const Stateful = () => {
         onSubmit={setSubmitted}
         onClear={() => setSubmitted(null)}
       />
-      <span className="text-xs text-gray-500">
+      <span className="mt-10 text-xs text-gray-400">
         searched for: {submitted ?? "nothing yet"}
       </span>
     </div>

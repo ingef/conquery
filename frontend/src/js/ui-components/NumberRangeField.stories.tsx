@@ -28,7 +28,7 @@ const Stateful = ({
   const [mode, setMode] = useState<ModeT>("range");
 
   return (
-    <div className="flex w-72 flex-col gap-2">
+    <div className="flex w-72 flex-col">
       <NumberRangeField
         value={value}
         onChange={setValue}
@@ -38,7 +38,7 @@ const Stateful = ({
         placeholder="-"
         {...props}
       />
-      <span className="text-xs text-gray-500">
+      <span className="mt-10 text-xs text-gray-400">
         value: {JSON.stringify(value)}
       </span>
     </div>
