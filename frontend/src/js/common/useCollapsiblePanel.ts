@@ -3,9 +3,7 @@ import { usePanelRef } from "react-resizable-panels";
 
 // react-resizable-panels only exposes collapse/expand imperatively,
 // this keeps a `collapsible` Panel in sync with a boolean from state.
-// A panel that starts collapsed has no size to expand back to, so its first
-// expansion gets `initialSize` when given; later ones restore the most recent
-// size.
+// a panel that starts collapsed expands to `initialSize` first, then to its last size
 export const useCollapsiblePanel = (
   collapsed: boolean,
   initialSize?: number | string,

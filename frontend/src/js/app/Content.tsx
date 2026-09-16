@@ -26,8 +26,7 @@ const Content = () => {
   );
 
   const infoPaneRef = useCollapsiblePanel(!isInfoPaneOpen);
-  // read once: a changed default lays the group out anew, and the panel loses
-  // the size it collapsed from
+  // read once, a changing default resets the group's layout
   const [infoPaneDefaultSize] = useState(() => (isInfoPaneOpen ? 200 : 30));
 
   return (

@@ -4,7 +4,6 @@ import { tv } from "tailwind-variants";
 
 import { Icon } from "./Icon";
 
-// takes the space left over in a column and centers in it
 const root = tv({
   base: [
     "flex flex-col items-center justify-center",
@@ -16,12 +15,7 @@ const root = tv({
   ],
 });
 
-/**
- * A large icon with a short message below, for a list or area without
- * content.
- *
- *   <EmptyState icon={faFolderOpen}>No queries and forms found</EmptyState>
- */
+/** an icon with a short message below, for an area without content */
 export const EmptyState = ({
   icon,
   children,

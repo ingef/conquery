@@ -121,9 +121,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
     }
   };
 
-  // the editor sits in a panel that resizes independent of the window; below
-  // the compact width the reset button shows its text in a tooltip only, which
-  // a container query cannot switch
+  // no container query: compact mode also swaps in a tooltip
   const parentRef = useRef<HTMLDivElement | null>(null);
   const [parentWidth, setParentWidth] = useState<number>(0);
   const isCompact = parentWidth < COMPACT_WIDTH;

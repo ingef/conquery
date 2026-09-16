@@ -26,7 +26,6 @@ import { ProjectItems } from "./ProjectItems";
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 import { selectPreviousQueries } from "./selector";
 
-// a quarter of the row, the list takes the rest
 const FOLDERS_SHARE = "25";
 
 const foldersAndQueries = tv({
@@ -64,8 +63,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
   const { items, loading } = useProjectItems({ datasetId });
 
   const foldersPanelRef = useCollapsiblePanel(!areFoldersOpen, FOLDERS_SHARE);
-  // read once: a changed default lays the group out anew, and the panel loses
-  // the size it collapsed from
+  // read once, a changing default resets the group's layout
   const [defaultSize] = useState(() => (areFoldersOpen ? FOLDERS_SHARE : 0));
 
   return (

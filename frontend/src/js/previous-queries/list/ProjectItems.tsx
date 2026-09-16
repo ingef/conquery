@@ -33,7 +33,6 @@ const ProjectItemRow = ({
   </div>
 );
 
-// takes the height left over in the column; the list fills it and scrolls
 const root = tv({
   base: ["grow", "min-h-0", "py-1", "text-sm"],
 });
