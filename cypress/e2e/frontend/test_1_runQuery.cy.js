@@ -145,8 +145,7 @@ describe("Reference list", () => {
         // Change list name
         cy.get('@uploadConceptListModal').find('[data-test-id="insert-form"]').as("insert-form")
         cy.get('@insert-form').find('input[type=text]').should('have.value', 'concept_reference_list')
-        cy.get('@insert-form').find('button[type=button]').click()
-        cy.get('@insert-form').find('input[type=text]').type("My List")
+        cy.get('@insert-form').find('input[type=text]').clear().type("My List")
 
         // Insert elements
         cy.get('@uploadConceptListModal').find('[data-test-id="insert"]').click()
@@ -185,8 +184,7 @@ describe("Reference list", () => {
         // Change list name
         cy.get('@uploadConceptListModal').find('[data-test-id="insert-form"]').as("insert-form")
         cy.get('@insert-form').find('input[type=text]').should('have.value', 'filter_value_reference_list')
-        cy.get('@insert-form').find('button[type=button]').click()
-        cy.get('@insert-form').find('input[type=text]').type("My List")
+        cy.get('@insert-form').find('input[type=text]').clear().type("My List")
 
         // Insert elements
         cy.get('@uploadConceptListModal').find('[data-test-id="insert"]').click()
