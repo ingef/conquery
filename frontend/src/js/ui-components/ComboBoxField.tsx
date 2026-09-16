@@ -1,6 +1,7 @@
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
-import { useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import {
+  ComboBoxStateContext,
   type Key,
   ListBox,
   ListBoxItem,
@@ -13,7 +14,7 @@ import type { SelectOptionT } from "../api/types";
 import { exists } from "../common/helpers/exists";
 import { FieldError } from "./FieldError";
 import { Icon } from "./Icon";
-import { Input, InputButton } from "./Input";
+import { Input, InputButton, type InputProps } from "./Input";
 import { optionMatchesQuery } from "./InputMultiSelect/optionMatchesQuery";
 import { type FieldLabelProps, Label } from "./Label";
 import { Popover } from "./Popover";
@@ -43,6 +44,21 @@ const listBoxItem = tv({
     "[&_p]:m-0",
   ],
 });
+
+// the list opens on focus; a press into the already focused input opens it again
+const ComboBoxInput = (props: InputProps) => {
+  const state = useContext(ComboBoxStateContext);
+
+  return (
+    <Input
+      {...props}
+      onPointerDown={(e) => {
+        if (e.button === 0 && state && !state.isOpen)
+          state.open(null, "manual");
+      }}
+    />
+  );
+};
 
 const textOf = (option: SelectOptionT | null) =>
   option ? option.selectedLabel || option.label || String(option.value) : "";
@@ -130,7 +146,7 @@ export const ComboBoxField = ({
               {label}
             </Label>
           )}
-          <Input
+          <ComboBoxInput
             placeholder={placeholder}
             isDisabled={isDisabled}
             isInvalid={isInvalid}
