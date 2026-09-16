@@ -110,8 +110,6 @@ export interface QueryNodeEditorPropsT {
 }
 
 const COMPACT_WIDTH = 600;
-const RIGHT_SIDE_WIDTH = 400;
-const RIGHT_SIDE_WIDTH_COMPACT = 150;
 
 const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const [selectedTableIdx, setSelectedTableIdx] = useState<number | null>(null);
@@ -123,10 +121,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
     }
   };
 
-  // To make sure that Close button is always visible and to consider
-  // that QueryNodeEditor may be contained in a horizontally resizeable panel
-  // that's resized independent of the window width.
-  // TODO: Once https://caniuse.com/css-container-queries ships, use those instead
+  // no container query: compact mode also swaps in a tooltip
   const parentRef = useRef<HTMLDivElement | null>(null);
   const [parentWidth, setParentWidth] = useState<number>(0);
   const isCompact = parentWidth < COMPACT_WIDTH;
@@ -142,11 +137,6 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   useHotkeys("esc", props.onCloseModal);
 
   const showClearReset = !nodeHasEmptySettings(node);
-  const nodeNameMaxWidth =
-    parentWidth -
-    (isCompact || !showClearReset
-      ? RIGHT_SIDE_WIDTH_COMPACT
-      : RIGHT_SIDE_WIDTH);
 
   const { autoLabel, autoLabelEnabled, setAutoLabelEnabled } = useAutoLabel({
     node,
@@ -175,7 +165,6 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
       <div className={contentWrap()}>
         <div className={header()}>
           <NodeName
-            maxWidth={nodeNameMaxWidth}
             allowEditing={nodeIsConceptQueryNode(node)}
             label={nodeLabel}
             onUpdateLabel={(label) => {

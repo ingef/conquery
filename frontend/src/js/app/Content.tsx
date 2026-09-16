@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { Group, Panel } from "react-resizable-panels";
 import { ResizeHandle } from "../common/ResizeHandle";
@@ -25,6 +26,8 @@ const Content = () => {
   );
 
   const infoPaneRef = useCollapsiblePanel(!isInfoPaneOpen);
+  // read once, a changing default resets the group's layout
+  const [infoPaneDefaultSize] = useState(() => (isInfoPaneOpen ? 200 : 30));
 
   return (
     <DndProvider>
@@ -36,7 +39,7 @@ const Content = () => {
             collapsedSize={30}
             minSize={200}
             maxSize={600}
-            defaultSize={isInfoPaneOpen ? 200 : 30}
+            defaultSize={infoPaneDefaultSize}
           >
             {isInfoPaneOpen ? <InfoPane /> : <InfoPaneCollapsed />}
           </Panel>

@@ -1,12 +1,11 @@
 import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../../app/reducers";
 import { DNDType } from "../../common/constants/dndTypes";
-import { useResizeObserver } from "../../common/helpers/useResizeObserver";
 import type { DragItemFormConfig } from "../../external-forms/types";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import { Button } from "../../ui-components/Button";
@@ -69,27 +68,6 @@ const scrollContainer = tv({
     "overflow-y-auto overflow-x-hidden",
   ],
 });
-
-const NARROW_WIDTH = 120;
-const useIsParentNarrow = () => {
-  // TODO: Once https://caniuse.com/css-container-queries ships, use those instead
-  const parentRef = useRef<HTMLDivElement | null>(null);
-  const [parentWidth, setParentWidth] = useState<number>(0);
-  const isNarrow = parentWidth < NARROW_WIDTH;
-  useResizeObserver(
-    useCallback((entry: ResizeObserverEntry) => {
-      if (entry) {
-        setParentWidth(entry.contentRect.width);
-      }
-    }, []),
-    parentRef.current,
-  );
-
-  return {
-    isNarrow,
-    parentRef,
-  };
-};
 
 const Folders = ({ className }: { className?: string }) => {
   const folders = useFolders();
@@ -155,8 +133,6 @@ const Folders = ({ className }: { className?: string }) => {
     }
   };
 
-  const { isNarrow, parentRef } = useIsParentNarrow();
-
   useEffect(
     function resetFolderFilterWhenFolderNotVisible() {
       const isSomeActiveFolderInvisible = folderFilter.some(
@@ -172,14 +148,12 @@ const Folders = ({ className }: { className?: string }) => {
 
   return (
     <div className={root({ className })}>
-      <div
-        className="mb-3 flex w-full min-w-[100px] items-start"
-        ref={parentRef}
-      >
+      <div className="@container mb-3 flex w-full min-w-[100px] items-start">
         <DialogTrigger>
           <Button intent="tertiary" size="sm">
             <Icon icon={faPlus} />
-            {isNarrow ? t("folders.addShort") : t("folders.add")}
+            <span className="@max-[120px]:hidden">{t("folders.add")}</span>
+            <span className="@min-[120px]:hidden">{t("folders.addShort")}</span>
           </Button>
           <AddFolderModal
             isValidName={(v) => v.length > 0 && !folders.includes(v)}

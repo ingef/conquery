@@ -69,7 +69,6 @@
     "redux": "^5.0.1",
     "remark-flexible-markers": "^1.3.6",
     "remark-gfm": "^4.0.1",
-    "resize-observer-polyfill": "^1.5.1",
     "tailwind-variants": "^3.3.1",
     "typesafe-actions": "^5.1.0"
   },

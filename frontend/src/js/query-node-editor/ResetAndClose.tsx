@@ -22,7 +22,7 @@ const ResetAndClose = ({
   const { t } = useTranslation();
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex shrink-0 items-center gap-4">
       {showClearReset && (
         <ResetAllSettingsButton
           onClick={() => onResetAllSettings({ useDefaults: false })}
