@@ -31,7 +31,7 @@ const overflowHidden = tv({
 });
 
 const logo = tv({
-  base: ["h-full", "bg-no-repeat", "[background-position-y:50%]"],
+  base: ["h-header", "bg-no-repeat", "[background-position-y:50%]"],
 });
 
 // the second font-size of the old styles won, hence text-xs and not text-base
