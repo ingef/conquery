@@ -1,6 +1,9 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.ExistsSelect;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.select.ExistsSqlSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 
@@ -23,7 +26,7 @@ public class ExistsSelectConverter implements SelectConverter<ExistsSelect> {
 	}
 
 	private static ExistsSqlSelect createExistsSelect(ExistsSelect select, SelectContext<?> selectContext) {
-		String alias = selectContext.getNameGenerator().selectName(select);
+		String alias = selectContext.getNameGenerator().legacyOperationName(select.getName());
 		return ExistsSqlSelect.withAlias(alias);
 	}
 }

@@ -16,8 +16,8 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.DataType;
@@ -56,15 +56,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		// Hana requires a specific syntax structure, this is the minimal solution.
 		return inline(true).eq(inline(true));
 	}
-
-	@Override
-	public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange daterange) {
-		Condition dateRestrictionStartsBeforeDate = dateRestriction.getStart().lessThan(daterange.getEnd());
-		Condition dateRestrictionEndsAfterDate = dateRestriction.getEnd().greaterThan(daterange.getStart());
-
-		return condition(dateRestrictionStartsBeforeDate.and(dateRestrictionEndsAfterDate));
-	}
-
 
 	@Override
 	public ColumnDateRange forCDateRange(CDateRange daterange) {
@@ -109,11 +100,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
     public ColumnDateRange forValidityDate(ValidityDate validityDate) {
         return toColumnDateRange(validityDate);
     }
-
-	@Override
-	public ColumnDateRange allRange() {
-		return ColumnDateRange.of(getMinDateExpression(), getMaxDateExpression());
-	}
 
 	@Override
     public <T> Field<T> anyValue(Field<T> field) {
@@ -164,18 +150,6 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 				Date.class,
 				dateColumn,
 				amountOfDays
-		);
-	}
-
-	@Override
-	public ColumnDateRange allRangeIf(Condition condition) {
-		return ColumnDateRange.of(
-				when(condition.isTrue(),
-						getMinDateExpression()
-				),
-				when(condition.isTrue(),
-						getMaxDateExpression()
-				)
 		);
 	}
 

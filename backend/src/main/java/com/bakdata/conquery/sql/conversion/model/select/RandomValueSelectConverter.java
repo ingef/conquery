@@ -1,7 +1,10 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.RandomValueSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import org.jooq.Field;
 
@@ -16,7 +19,7 @@ public class RandomValueSelectConverter implements SelectConverter<RandomValueSe
 		String columnName = select.getColumn().getColumn();
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(rootTableName, columnName, Object.class);
 
-		String alias = selectContext.getNameGenerator().selectName(select);
+		String alias = selectContext.getNameGenerator().legacyOperationName(select.getName());
 		Field<?> qualifiedRootSelect = rootSelect.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
 		Field<?> firstAggregation = selectContext.getFunctionProvider().random(qualifiedRootSelect).as(alias);
 		FieldWrapper<?> firstAggregationSqlSelect = new FieldWrapper<>(firstAggregation, columnName);

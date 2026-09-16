@@ -12,21 +12,21 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.FlagFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.FlagSelect;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.model.filter.FlagCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
-import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.condition.FlagCondition;
+import com.bakdata.conquery.sql.compiler.ir.concept.SqlFilters;
+import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
 import org.jooq.Condition;
 import org.jooq.Field;
 
@@ -137,12 +137,12 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 	@Override
 	public ConnectorSqlSelects connectorSelect(FlagSelect flagSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
-		SqlFunctionProvider functionProvider = selectContext.getConversionContext().getDialectBundle().getFunctionProvider();
+		SqlFunctionProvider functionProvider = selectContext.getConversionContext().getCompilerDialect().getFunctionProvider();
 		SqlTables connectorTables = selectContext.getTables();
 
 		Map<String, SingleColumnSqlSelect> rootSelects = createFlagRootSelectMap(flagSelect, connectorTables.getRootTable());
 
-		String alias = selectContext.getNameGenerator().selectName(flagSelect);
+		String alias = selectContext.getNameGenerator().legacyOperationName(flagSelect.getName());
 		FieldWrapper<?> flagAggregation = createFlagSelect(alias, connectorTables, functionProvider, rootSelects);
 
 		ExtractingSqlSelect<?> finalSelect = flagAggregation.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));

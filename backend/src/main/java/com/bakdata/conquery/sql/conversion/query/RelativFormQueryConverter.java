@@ -5,7 +5,7 @@ import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.forms.FormType;
 import com.bakdata.conquery.sql.conversion.forms.StratificationTableFactory;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor

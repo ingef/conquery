@@ -1,0 +1,40 @@
+{
+  "type": "FULL_EXPORT_FORM",
+  "title": {
+    "de": "Tabellenexport",
+    "en": "Table Export"
+  },
+  "description": {
+    "de": "Minimale Konfiguration fuer den Formular-Tab.",
+    "en": "Minimal configuration for the forms tab."
+  },
+  "fields": [
+    {
+      "type": "HEADLINE",
+      "label": {
+        "de": "Zeitraum",
+        "en": "Date Range"
+      }
+    },
+    {
+      "name": "dateRange",
+      "type": "DATE_RANGE",
+      "label": {
+        "de": "Zeitraum",
+        "en": "Date Range"
+      }
+    },
+    {
+      "name": "resultGroup",
+      "type": "RESULT_GROUP",
+      "label": {
+        "de": "Ergebnisgruppe",
+        "en": "Result Group"
+      },
+      "dropzoneLabel": {
+        "de": "Ziehe eine vorherige Abfrage hierher",
+        "en": "Drop a previous query here"
+      }
+    }
+  ]
+}

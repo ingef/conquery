@@ -11,26 +11,27 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.compiler.ir.concept.CommonAggregationSelect;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.model.CteStep;
-import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import com.bakdata.conquery.sql.compiler.ir.CteStep;
+import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import com.bakdata.conquery.sql.conversion.model.NumberMapUtil;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
-import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.conversion.model.filter.LegacyInclusiveRangeCondition;
+import com.bakdata.conquery.sql.compiler.ir.concept.SqlFilters;
+import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
@@ -87,8 +88,8 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 	@Override
 	public ConnectorSqlSelects connectorSelect(SumSelect sumSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
-		NameGenerator nameGenerator = selectContext.getNameGenerator();
-		String alias = nameGenerator.selectName(sumSelect);
+		SqlNameGenerator nameGenerator = selectContext.getNameGenerator();
+		String alias = nameGenerator.legacyOperationName(sumSelect.getName());
 
 		Column sumColumn = sumSelect.getColumn().resolve();
 		Column subtractColumn = sumSelect.getSubtractColumn() != null ? sumSelect.getSubtractColumn().resolve() : null;
@@ -126,7 +127,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 			String alias,
 			SqlIdColumns ids,
 			ConnectorSqlTables tables,
-			NameGenerator nameGenerator
+			SqlNameGenerator nameGenerator
 	) {
 		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
 
@@ -211,7 +212,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 			List<ExtractingSqlSelect<?>> distinctByRootSelects,
 			String alias,
 			SqlTables connectorTables,
-			NameGenerator nameGenerator
+			SqlNameGenerator nameGenerator
 	) {
 		String predecessor = connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
 		SqlIdColumns qualifiedIds = ids.qualify(predecessor);
@@ -246,7 +247,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 			QueryStep rowNumberCte,
 			FieldWrapper<BigDecimal> sumSelect,
 			String alias,
-			NameGenerator nameGenerator
+			SqlNameGenerator nameGenerator
 	) {
 		SqlIdColumns ids = rowNumberCte.getQualifiedSelects().getIds();
 
@@ -274,7 +275,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		Column sumColumn = sumFilter.getColumn().resolve();
 		Column subtractColumn = sumFilter.getSubtractColumn() != null ? sumFilter.getSubtractColumn().resolve() : null;
 		List<Column> distinctByColumns = sumFilter.getDistinctByColumn().stream().map(ColumnId::resolve).toList();
-		String alias = filterContext.getNameGenerator().selectName(sumFilter);
+		String alias = filterContext.getNameGenerator().legacyOperationName(sumFilter.getName());
 		ConnectorSqlTables tables = filterContext.getTables();
 
 		CommonAggregationSelect<BigDecimal> sumAggregationSelect;
@@ -298,7 +299,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		}
 
 		Field<BigDecimal> qualifiedSumSelect = sumAggregationSelect.getGroupBy().qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER)).select();
-		SumCondition sumCondition = new SumCondition(qualifiedSumSelect, filterContext.getValue());
+		LegacyInclusiveRangeCondition sumCondition = new LegacyInclusiveRangeCondition(qualifiedSumSelect, filterContext.getValue());
 		WhereClauses whereClauses = WhereClauses.builder()
 												.groupFilter(sumCondition)
 												.build();
@@ -318,14 +319,14 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 
 		ColumnId subtractColumn = filter.getSubtractColumn();
 		if (subtractColumn == null) {
-			return new SumCondition(field, filterContext.getValue()).condition();
+			return new LegacyInclusiveRangeCondition(field, filterContext.getValue()).condition();
 		}
 
 		Column resolvedSubtractionColumn = subtractColumn.resolve();
 		String subtractColumnName = resolvedSubtractionColumn.getName();
 		String subtractTableName = resolvedSubtractionColumn.getTable().getName();
 		Field<? extends Number> subtractField = DSL.field(DSL.name(subtractTableName, subtractColumnName), numberClass);
-		return new SumCondition(field.minus(subtractField), filterContext.getValue()).condition();
+		return new LegacyInclusiveRangeCondition(field.minus(subtractField), filterContext.getValue()).condition();
 	}
 
 	@Getter

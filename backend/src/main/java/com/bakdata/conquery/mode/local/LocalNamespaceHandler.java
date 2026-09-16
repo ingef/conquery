@@ -49,7 +49,7 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 			ResultSetProcessor resultSetProcessor = dialectBundle.getResultSetProcessor(config);
 			SqlExecutionService sqlExecutionService = new SqlExecutionService(dslContext, resultSetProcessor);
 
-			NodeConversions nodeConversions = new NodeConversions(config.getIdColumns(), dialectBundle, dslContext, sqlExecutionService, clock, connection.getConnection().getPrimaryColumn());
+			NodeConversions nodeConversions = new NodeConversions(config.getIdColumns(), dialectBundle, dslContext, clock, connection.getConnection().getPrimaryColumn());
 			SqlConverter sqlConverter = new SqlConverter(nodeConversions, config);
 			ExecutionManager executionManager = new SqlExecutionManager(sqlConverter, sqlExecutionService, metaStorage, datasetRegistry, config);
 			SqlStorageHandler sqlStorageHandler = new SqlStorageHandler(sqlExecutionService);

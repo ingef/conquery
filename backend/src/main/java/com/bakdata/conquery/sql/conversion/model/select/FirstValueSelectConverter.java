@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValueSelect;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import org.jooq.Field;
 
@@ -10,7 +11,7 @@ public class FirstValueSelectConverter implements SelectConverter<FirstValueSele
 	public ConnectorSqlSelects connectorSelect(FirstValueSelect select, SelectContext<ConnectorSqlTables> selectContext) {
 		return ValueSelectUtil.createValueSelect(
 				select.getColumn().resolve(),
-				selectContext.getNameGenerator().selectName(select),
+				selectContext.getNameGenerator().legacyOperationName(select.getName()),
 				Field::asc,
 				select.getSubstringRange(),
 				selectContext

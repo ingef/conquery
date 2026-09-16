@@ -1,0 +1,32 @@
+package com.bakdata.conquery.sql.compiler.ir.aggregation;
+
+import java.util.List;
+
+import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
+import com.bakdata.conquery.models.query.DateAggregationAction;
+
+/**
+ * Represents a subset of {@link DateAggregationAction}.
+ */
+interface SqlAggregationAction {
+
+	SqlTables tableNames(SqlNameGenerator nameGenerator);
+
+	List<DateAggregationCte> dateAggregationCtes();
+
+	ColumnDateRange getOverlapValidityDate(DateAggregationDates dateAggregationDates);
+
+	List<SqlSelect> getIntermediateTableSelects(DateAggregationDates dateAggregationDates, List<SqlSelect> carryThroughSelects);
+
+	List<QueryStep> getNoOverlapSelects(DateAggregationContext dateAggregationContext);
+
+	QueryStep getOverlapStep(DateAggregationContext dateAggregationContext);
+
+	boolean requiresIntervalPackingAfterwards();
+
+}

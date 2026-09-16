@@ -13,9 +13,9 @@ import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
+import com.bakdata.conquery.sql.compiler.ir.condition.StringValuesCondition;
+import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
-import com.bakdata.conquery.sql.conversion.model.filter.MultiSelectCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.CollectionsUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -59,7 +59,7 @@ public class ColumnEqualCondition implements CTCondition {
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
 		Field<String> field = field(name(column), String.class);
-		return new MultiSelectCondition(field, values.toArray(String[]::new), context.getFunctionProvider());
+		return new StringValuesCondition(field, values.toArray(String[]::new));
 	}
 
 	private int fieldLength() {

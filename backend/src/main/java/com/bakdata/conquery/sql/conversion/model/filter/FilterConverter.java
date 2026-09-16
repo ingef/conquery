@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.filter;
 
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
+import com.bakdata.conquery.sql.compiler.ir.concept.SqlFilters;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import org.jooq.Condition;
 

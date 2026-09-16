@@ -4,16 +4,17 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.CountFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.CountSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.compiler.ir.concept.CommonAggregationSelect;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
-import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.conversion.model.filter.LegacyInclusiveRangeCondition;
+import com.bakdata.conquery.sql.compiler.ir.concept.SqlFilters;
+import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import lombok.NoArgsConstructor;
@@ -31,7 +32,7 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 		ConnectorSqlTables tables = selectContext.getTables();
 		boolean distinct = countSelect.isDistinct();
 		Column countColumn = countSelect.getColumn().resolve();
-		String alias = selectContext.getNameGenerator().selectName(countSelect);
+		String alias = selectContext.getNameGenerator().legacyOperationName(countSelect.getName());
 
 		CommonAggregationSelect<Integer> countAggregationSelect = createCountAggregationSelect(countColumn, distinct, alias, tables);
 
@@ -68,7 +69,7 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 		ConnectorSqlTables tables = filterContext.getTables();
 		boolean distinct = countFilter.isDistinct();
 		Column countColumn = countFilter.getColumn().resolve();
-		String alias = filterContext.getNameGenerator().selectName(countFilter);
+		String alias = filterContext.getNameGenerator().legacyOperationName(countFilter.getName());
 
 		CommonAggregationSelect<Integer> countAggregationSelect = createCountAggregationSelect(countColumn, distinct, alias, tables);
 		ConnectorSqlSelects selects = ConnectorSqlSelects.builder()
@@ -77,7 +78,7 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 														 .build();
 
 		Field<Integer> qualifiedCountSelect = countAggregationSelect.getGroupBy().qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER)).select();
-		CountCondition countCondition = new CountCondition(qualifiedCountSelect, filterContext.getValue());
+		LegacyInclusiveRangeCondition countCondition = new LegacyInclusiveRangeCondition(qualifiedCountSelect, filterContext.getValue());
 		WhereClauses whereClauses = WhereClauses.builder()
 												.groupFilter(countCondition)
 												.build();
@@ -88,7 +89,7 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 	@Override
 	public Condition convertForTableExport(CountFilter countFilter, FilterContext<Range.LongRange> filterContext) {
 		Param<Integer> field = DSL.inline(1); // no grouping, count is always 1 per row
-		return new CountCondition(field, filterContext.getValue()).condition();
+		return new LegacyInclusiveRangeCondition(field, filterContext.getValue()).condition();
 	}
 
 

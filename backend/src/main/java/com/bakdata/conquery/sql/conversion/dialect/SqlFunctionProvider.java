@@ -16,9 +16,9 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import org.jooq.Condition;
 import org.jooq.DataType;
@@ -87,12 +87,6 @@ public interface SqlFunctionProvider {
 	}
 
 	/**
-	 * A date restriction condition is true if holds: dateRestrictionStart < daterangeEnd and dateRestrictionEnd > daterangeStart. The ends of both ranges are
-	 * exclusive.
-	 */
-	Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange daterange);
-
-	/**
 	 * Creates a {@link ColumnDateRange} as a SQL representation of the {@link CDateRange}.
 	 */
 	ColumnDateRange forCDateRange(CDateRange daterange);
@@ -137,11 +131,6 @@ public interface SqlFunctionProvider {
 
 		return isNotEmptyStart.or(isNotEmptyEnd);
 	}
-
-	/**
-	 * Creates a {@link ColumnDateRange} of maximum range.
-	 */
-	ColumnDateRange allRange();
 
 	<T> Field<T> anyValue(Field<T> field);
 
@@ -231,8 +220,6 @@ public interface SqlFunctionProvider {
 		);
 	}
 
-	ColumnDateRange allRangeIf(Condition condition);
-
 	/**
 	 * Render an array for Conquery processing.
 	 */
@@ -244,32 +231,6 @@ public interface SqlFunctionProvider {
 						.map(Field::toString)
 						.collect(Collectors.joining(SQL_UNIT_SEPARATOR));
 		return field(concatenated, String.class);
-	}
-
-	default <T> Field<T> least(List<Field<T>> fields) {
-		if (fields.isEmpty()) {
-			return null;
-		}
-		Field<T>[] fieldArray = fields.toArray(Field[]::new);
-		// signature only accepts arrays/varargs
-		return function("least", fieldArray[0].getType(), fieldArray);
-	}
-
-	default <T> Field<T> greatest(List<Field<T>> fields) {
-		if (fields.isEmpty()) {
-			return null;
-		}
-		Field<T>[] fieldArray = fields.toArray(Field[]::new);
-		// signature only accepts arrays/varargs
-		return function("greatest", fieldArray[0].getType(), fieldArray);
-	}
-
-	default Condition in(Field<String> column, String[] values) {
-		return column.in(values);
-	}
-
-	default TableOnConditionStep<Record> innerJoin(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions) {
-		return leftPart.innerJoin(rightPart).on(joinConditions.toArray(Condition[]::new));
 	}
 
 	default TableOnConditionStep<Record> fullOuterJoin(Table<?> leftPart, Table<?> rightPart, List<Condition> joinConditions) {

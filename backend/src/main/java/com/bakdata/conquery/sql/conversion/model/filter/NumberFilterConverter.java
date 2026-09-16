@@ -3,11 +3,13 @@ package com.bakdata.conquery.sql.conversion.model.filter;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.NumberFilter;
+import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.NumberMapUtil;
-import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.concept.SqlFilters;
+import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -24,7 +26,7 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), column.getName(), numberClass);
 
 		IRange<? extends Number, ?> filterValue = filterContext.getValue();
-		NumberCondition condition = new NumberCondition(rootSelect.select(), filterValue);
+		LegacyInclusiveRangeCondition condition = new LegacyInclusiveRangeCondition(rootSelect.select(), filterValue);
 
 		WhereClauses whereClauses = WhereClauses.builder().eventFilter(condition).build();
 
@@ -41,6 +43,6 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 		Field<? extends Number> field = DSL.field(DSL.name(tableName, columnName), numberClass);
 		IRange<? extends Number, ?> range = filterContext.getValue();
 
-		return new NumberCondition(field, range).condition();
+		return new LegacyInclusiveRangeCondition(field, range).condition();
 	}
 }

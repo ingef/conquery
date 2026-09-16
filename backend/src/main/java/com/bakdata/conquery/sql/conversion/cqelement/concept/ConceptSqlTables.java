@@ -1,10 +1,8 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
-import java.util.Map;
 
-import com.bakdata.conquery.sql.conversion.model.CteStep;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import lombok.Getter;
 
 @Getter
@@ -13,12 +11,10 @@ public class ConceptSqlTables extends SqlTables {
 	private final List<ConnectorSqlTables> connectorTables;
 
 	public ConceptSqlTables(
-			String rootTable,
-			Map<CteStep, String> cteNameMap,
-			Map<CteStep, CteStep> predecessorMap,
+			SqlTables tables,
 			List<ConnectorSqlTables> connectorTables
 	) {
-		super(rootTable, cteNameMap, predecessorMap);
+		super(tables);
 		this.connectorTables = connectorTables;
 	}
 

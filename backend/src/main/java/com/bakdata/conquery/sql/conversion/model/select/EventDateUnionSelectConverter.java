@@ -1,11 +1,15 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDateUnionSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.google.common.base.Preconditions;
 
 public class EventDateUnionSelectConverter implements SelectConverter<EventDateUnionSelect> {
@@ -40,7 +44,7 @@ public class EventDateUnionSelectConverter implements SelectConverter<EventDateU
 		ColumnDateRange validityDate = selectContext.getValidityDate().get();
 
 		SqlFunctionProvider functionProvider = selectContext.getFunctionProvider();
-		String alias = selectContext.getNameGenerator().selectName(select);
+		String alias = selectContext.getNameGenerator().legacyOperationName(select.getName());
 
 		ColumnDateRange qualified = validityDate.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.INTERVAL_PACKING_SELECTS));
 		return new FieldWrapper<>(functionProvider.dateRangeAggregation(qualified).as(alias));

@@ -5,13 +5,19 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.DateDistanceFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DateDistanceSelect;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.concept.SqlFilters;
+import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
+import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
+import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.*;
 import com.bakdata.conquery.sql.conversion.model.select.*;
 import org.jooq.Condition;
@@ -30,7 +36,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 	public ConnectorSqlSelects connectorSelect(DateDistanceSelect select, SelectContext<ConnectorSqlTables> selectContext) {
 
 		Column column = select.getColumn().resolve();
-		String alias = selectContext.getNameGenerator().selectName(select);
+		String alias = selectContext.getNameGenerator().legacyOperationName(select.getName());
 		ConnectorSqlTables tables = selectContext.getTables();
 
 		Field<Integer> dateDistanceCalculation = createDateDistanceCalculation(column, select.getTimeUnit(), tables, selectContext.getConversionContext());
@@ -56,7 +62,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 		ConnectorSqlTables tables = filterContext.getTables();
 
 		Field<Integer> dateDistanceCalculation = createDateDistanceCalculation(column, filter.getTimeUnit(), tables, filterContext.getConversionContext());
-		WhereCondition dateDistanceCondition = new DateDistanceCondition(dateDistanceCalculation, filterContext.getValue());
+		WhereCondition dateDistanceCondition = new LegacyInclusiveRangeCondition(dateDistanceCalculation, filterContext.getValue());
 
 		WhereClauses whereClauses = WhereClauses.builder().eventFilter(dateDistanceCondition).build();
 
@@ -74,7 +80,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 		Field<Date> endDate = getEndDate(filterContext.getConversionContext());
 
 		Field<Integer> dateDistance = filterContext.getFunctionProvider().dateDistance(filter.getTimeUnit(), startDateField, endDate);
-		return new DateDistanceCondition(dateDistance, filterContext.getValue()).condition();
+		return new LegacyInclusiveRangeCondition(dateDistance, filterContext.getValue()).condition();
 	}
 
 	private Field<Integer> createDateDistanceCalculation(

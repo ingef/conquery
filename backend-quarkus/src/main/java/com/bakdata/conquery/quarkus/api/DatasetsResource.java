@@ -1,0 +1,433 @@
+package com.bakdata.conquery.quarkus.api;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import com.bakdata.conquery.quarkus.config.EntityPreviewRuntimeConfig;
+import com.bakdata.conquery.quarkus.config.FormQueriesRuntimeConfig;
+import com.bakdata.conquery.quarkus.concepts.filters.values.FilterValue;
+import com.bakdata.conquery.quarkus.ids.ConceptId;
+import com.bakdata.conquery.quarkus.ids.StructureNodeId;
+import com.bakdata.conquery.quarkus.services.DatasetService;
+import com.bakdata.conquery.quarkus.services.EntityQueryService;
+import com.bakdata.conquery.quarkus.services.QueryStateService;
+import com.bakdata.conquery.quarkus.services.QueryUploadService;
+import com.bakdata.conquery.quarkus.storage.DatasetCatalogRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+
+@Path("/api/datasets")
+@Produces(MediaType.APPLICATION_JSON)
+public class DatasetsResource {
+	@Inject
+	DatasetService datasetService;
+
+	@Inject
+	EntityPreviewRuntimeConfig entityPreviewConfig;
+
+	@Inject
+	FormQueriesRuntimeConfig formQueriesConfig;
+
+	@Inject
+	ObjectMapper objectMapper;
+
+	@Inject
+	QueryStateService queryStateService;
+
+	@Inject
+	QueryUploadService queryUploadService;
+
+	@Inject
+	EntityQueryService entityQueryService;
+
+	@Inject
+	Instance<SecurityIdentity> identity;
+
+	@GET
+	public List<DatasetResponse> getDatasets() {
+		return datasetService.listDatasets().stream()
+							 .map(entry -> new DatasetResponse(entry.id().toString(), entry.label()))
+							 .toList();
+	}
+
+	@GET
+	@Path("/{datasetId}/entity-preview")
+	public EntityPreviewResponse getEntityPreview(@PathParam("datasetId") String datasetId) {
+		datasetService.requireDataset(datasetId);
+
+		List<EntityPreviewResponse.LabeledSource> allSources =
+				entityPreviewConfig.allSources().stream().map(source -> new EntityPreviewResponse.LabeledSource(source.name(), source.label())).toList();
+
+		List<EntityPreviewResponse.LabeledSource> defaultSources =
+				entityPreviewConfig.defaultSources().stream().map(source -> new EntityPreviewResponse.LabeledSource(source.name(), source.label())).toList();
+
+		List<String> searchFilters = entityPreviewConfig.searchFilters()
+											.map(value -> Stream.of(value.split(","))
+																.map(String::trim)
+																.filter(filter -> !filter.isEmpty())
+																.toList())
+											.orElse(List.of());
+		String searchConcept = entityPreviewConfig.searchConcept().orElse(null);
+
+		return new EntityPreviewResponse(allSources, defaultSources, searchFilters, searchConcept);
+	}
+
+	@GET
+	@Path("/{datasetId}/concepts")
+	@Operation(
+			summary = "Get root concepts for a dataset",
+			description = "Returns top-level concept nodes. Nodes with detailsAvailable=false represent folder/structure nodes."
+	)
+	public ConceptsResponse getConcepts(@PathParam("datasetId") String datasetId) {
+
+		java.util.Map<String, ConceptsResponse.ConceptSummaryResponse> concepts = new LinkedHashMap<>();
+		List<DatasetCatalogRepository.StructureNode> structureNodes = datasetService.listStructureNodesForDataset(datasetId);
+		Map<StructureNodeId, DatasetCatalogRepository.StructureNode> structureNodesById = structureNodes.stream()
+				.collect(java.util.stream.Collectors.toMap(DatasetCatalogRepository.StructureNode::id, node -> node));
+		Map<ConceptId, StructureNodeId> structureParentByConcept = new LinkedHashMap<>();
+		structureNodes.forEach(node -> node.containedRoots().forEach(conceptId -> structureParentByConcept.put(conceptId, node.id())));
+		// TODO Add concept search after the metadata tree and its indexing requirements have been migrated.
+		datasetService.listRootConceptsForDataset(datasetId).forEach(entry -> concepts.put(
+				entry.id().toString(),
+				new ConceptsResponse.ConceptSummaryResponse(
+						entry.label(),
+						entry.description(),
+						true,
+						Optional.ofNullable(structureParentByConcept.get(entry.id())).map(StructureNodeId::toString).orElse(null),
+						entry.childrenIds().stream().map(ConceptId::toString).toList(),
+						0L,
+						0L,
+						true,
+						!entry.children().isEmpty(),
+						entry.additionalInfos(),
+						excludeFromTimeAggregation(entry),
+						// TODO Remove detailed connector filters/selects from this summary once the frontend loads them via /api/concepts/{conceptId}.
+						entry.connectors().stream().map(this::toTableResponse).toList(),
+						entry.selects().stream().map(this::toSelectResponse).toList()
+				)
+		));
+
+		Set<StructureNodeId> visibleStructureNodes = structureNodes.stream()
+				.filter(node -> isVisibleStructureNode(node, structureNodesById))
+				.map(DatasetCatalogRepository.StructureNode::id)
+				.collect(java.util.stream.Collectors.toSet());
+		structureNodes.stream()
+				.sorted(java.util.Comparator.comparingInt(DatasetCatalogRepository.StructureNode::sourceOrder))
+				.filter(node -> visibleStructureNodes.contains(node.id()))
+				.forEach(node -> concepts.put(node.id().toString(), toStructureNodeResponse(node, visibleStructureNodes)));
+
+		return new ConceptsResponse(
+				List.of(),
+				concepts
+		);
+	}
+
+	private boolean excludeFromTimeAggregation(DatasetCatalogRepository.Concept concept) {
+		return concept.defaultExcludeFromTimeAggregation()
+				|| concept.connectors().stream().allMatch(connector -> connector.validityDates().isEmpty());
+	}
+
+	private boolean isVisibleStructureNode(
+			DatasetCatalogRepository.StructureNode node,
+			Map<StructureNodeId, DatasetCatalogRepository.StructureNode> nodesById
+	) {
+		return !node.containedRoots().isEmpty() || node.children().stream()
+				.map(nodesById::get)
+				.filter(Objects::nonNull)
+				.anyMatch(child -> isVisibleStructureNode(child, nodesById));
+	}
+
+	private ConceptsResponse.ConceptSummaryResponse toStructureNodeResponse(
+			DatasetCatalogRepository.StructureNode node,
+			Set<StructureNodeId> visibleStructureNodes
+	) {
+		List<String> children = Stream.concat(
+				node.children().stream().filter(visibleStructureNodes::contains).map(StructureNodeId::toString),
+				node.containedRoots().stream().map(ConceptId::toString)
+		).toList();
+		return new ConceptsResponse.ConceptSummaryResponse(
+				node.label(),
+				node.description(),
+				false,
+				node.parentId() == null ? null : node.parentId().toString(),
+				children,
+				0L,
+				0L,
+				false,
+				false,
+				List.of(),
+				null,
+				null,
+				null
+		);
+	}
+
+
+	private ConceptResource.ConnectorResponse toTableResponse(DatasetCatalogRepository.Connector connector) {
+		// TODO combine this with ConceptResource#toConnectorResponse
+		DatasetCatalogRepository.TableRecord tableRecord = datasetService.requireTable(connector.tableId());
+		List<String> supportedSecondaryIds = tableRecord.columns().stream()
+				.map(DatasetCatalogRepository.ColumnRecord::secondaryId)
+				.filter(Objects::nonNull)
+				.distinct()
+				.toList();
+
+		return new ConceptResource.ConnectorResponse(
+				connector.tableId().toString(),
+				connector.id().toString(),
+				connector.label(),
+				connector.isDefault(),
+				connector.filters().stream().map(this::toFilterResponse).toList(),
+				connector.selects().stream().map(this::toSelectResponse).toList(),
+				toDateColumnResponse(connector),
+				supportedSecondaryIds
+		);
+	}
+
+	private ConceptResource.DateColumnResponse toDateColumnResponse(DatasetCatalogRepository.Connector connector) {
+		if (connector.validityDates().isEmpty()) {
+			return null;
+		}
+		List<ConceptResource.ValueResponse> options = connector.validityDates().stream()
+				.map(validityDate -> new ConceptResource.ValueResponse(validityDate.id().toString(), validityDate.label()))
+				.toList();
+		return new ConceptResource.DateColumnResponse(options, options.getFirst().value(), null, connector.validityDatesDescription());
+	}
+
+	private ConceptResource.SelectResponse toSelectResponse(DatasetCatalogRepository.Select select) {
+		return new ConceptResource.SelectResponse(
+				select.id().toString(),
+				select.label(),
+				select.description(),
+				select.defaultSelected(),
+				toSelectResultTypeResponse(select.resultType())
+		);
+	}
+
+	private ConceptResource.SelectResponse toSelectResponse(DatasetCatalogRepository.ConceptSelect select) {
+		return new ConceptResource.SelectResponse(
+				select.id().toString(),
+				select.label(),
+				select.description(),
+				select.defaultSelected(),
+				toSelectResultTypeResponse(select.resultType())
+		);
+	}
+
+	private ConceptResource.SelectResultTypeResponse toSelectResultTypeResponse(DatasetCatalogRepository.SelectResultType resultType) {
+		return new ConceptResource.SelectResultTypeResponse(
+				resultType.type(),
+				resultType.elementType() == null ? null : new ConceptResource.ElementTypeResponse(resultType.elementType().type())
+		);
+	}
+
+	private ConceptResource.FilterResponse toFilterResponse(DatasetCatalogRepository.Filter filter) {
+		return new ConceptResource.FilterResponse(
+				filter.id().toString(),
+				filter.label(),
+				filter.type(),
+				filter.unit(),
+				filter.tooltip(),
+				filter.options().stream()
+						.map(option -> new ConceptResource.FrontendValue(option.value(), option.label(), option.optionValue()))
+						.toList(),
+				filter.min(),
+				filter.max(),
+				filter.pattern(),
+				filter.allowDropFile(),
+				filter.creatable(),
+				filter.defaultValue()
+				);
+	}
+
+	private ConceptResource.ColumnResponse toColumnResponse(DatasetCatalogRepository.ColumnRecord column) {
+		return new ConceptResource.ColumnResponse(
+				column.id().toString(),
+				column.label(),
+				column.type(),
+				column.secondaryId()
+		);
+	}
+
+
+	@GET
+	@Path("/{datasetId}/form-queries")
+	@Operation(
+			summary = "Get form configurations for a dataset",
+			description = "Returns raw frontend form configuration objects."
+	)
+	public List<Object> getFormQueries(@PathParam("datasetId") String datasetId) {
+		datasetService.requireDataset(datasetId);
+		return formQueriesConfig.resources().stream().map(this::loadFormResource).toList();
+	}
+
+	@GET
+	@Path("/{datasetId}/queries")
+	@Operation(
+			summary = "List queries for a dataset",
+			description = "Returns the query history list for the given dataset."
+	)
+	public List<QuerySummaryResponse> getQueries(@PathParam("datasetId") String datasetId) {
+		datasetService.requireDataset(datasetId);
+		return queryStateService.getDatasetQueries(datasetId);
+	}
+
+	@POST
+	@Path("/{datasetId}/queries")
+	@Operation(
+			summary = "Create a query for a dataset",
+			description = "Accepts a query payload and returns the created query id."
+	)
+	public StartQueryResponse postQueries(@PathParam("datasetId") String datasetId, @Valid @NotNull QuerySubmissionPayload payload) {
+		datasetService.requireDataset(datasetId);
+		return queryStateService.createQuery(datasetId, payload, SecurityIdentityUtil.resolveUserName(identity));
+	}
+
+	@POST
+	@Path("/{datasetId}/queries/upload")
+	@Operation(
+			summary = "Upload query entities",
+			description = "Uploads entity id rows for query upload workflow."
+	)
+	public UploadQueryResponse uploadQueries(
+			@PathParam("datasetId") String datasetId,
+			@Valid @NotNull QueryUploadPayload payload
+	) {
+		datasetService.requireDataset(datasetId);
+		QueryUploadService.UploadResult result = queryUploadService.processUpload(
+				new QueryUploadService.QueryUploadPayload(payload.format, payload.values, payload.label)
+		);
+		return new UploadQueryResponse(result.resolved(), result.unresolvedId(), result.unreadableDate());
+	}
+
+	@POST
+	@Path("/{datasetId}/queries/entity")
+	@Operation(
+			summary = "Get entity history",
+			description = "Not implemented yet in the Quarkus backend."
+	)
+	public EntityQueryService.EntityHistoryResponse getEntityHistory(
+			@PathParam("datasetId") String datasetId,
+			@Valid @NotNull EntityHistoryRequest payload
+	) {
+		datasetService.requireDataset(datasetId);
+		return entityQueryService.getEntityHistory(
+				new EntityQueryService.EntityHistoryRequest(
+						payload.idKind,
+						payload.entityId,
+						payload.time,
+						payload.sources
+				)
+		);
+	}
+
+	@POST
+	@Path("/{datasetId}/queries/resolve-entities")
+	@Operation(
+			summary = "Resolve entities from filter values",
+			description = "Not implemented yet in the Quarkus backend."
+	)
+	public List<Map<String, String>> resolveEntities(
+			@PathParam("datasetId") String datasetId,
+			@Valid @NotNull List<@Valid FilterValue> payload
+	) {
+		datasetService.requireDataset(datasetId);
+		return entityQueryService.resolveEntities(payload);
+	}
+
+	private Object loadFormResource(String path) {
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		try (InputStream input = classLoader.getResourceAsStream(path)) {
+			if (input == null) {
+				throw new IllegalStateException("Configured form resource does not exist: " + path);
+			}
+			return objectMapper.readValue(input, Object.class);
+		}
+		catch (IOException e) {
+			throw new UncheckedIOException("Failed to parse form resource: " + path, e);
+		}
+	}
+
+	public record QuerySummaryResponse(
+			String id,
+			String label,
+			Long numberOfResults,
+			String createdAt,
+			List<String> tags,
+			boolean own,
+			String ownerName,
+			boolean system,
+			List<QueryResource.ResultUrlResponse> resultUrls,
+			boolean shared,
+			boolean canExpand,
+			String queryType,
+			String secondaryId,
+			boolean containsDates
+	) {
+	}
+
+	public record StartQueryResponse(
+			String id
+	) {
+	}
+
+	public record UploadQueryResponse(
+			int resolved,
+			List<List<String>> unresolvedId,
+			List<List<String>> unreadableDate
+	) {
+	}
+
+	public static final class QueryUploadPayload {
+		public final @NotNull @NotEmpty List<@NotBlank String> format;
+		public final @NotNull List<@NotNull List<@NotBlank String>> values;
+		public final @NotBlank String label;
+
+		public QueryUploadPayload(List<String> format, List<List<String>> values, String label) {
+			this.format = format;
+			this.values = values;
+			this.label = label;
+		}
+	}
+
+	public static final class EntityHistoryRequest {
+		public final @NotBlank String idKind;
+		public final @NotBlank String entityId;
+		public final @NotNull @Valid QuerySubmissionPayload.DateRangePayload time;
+		public final @NotNull @NotEmpty List<@NotBlank String> sources;
+
+		public EntityHistoryRequest(String idKind, String entityId, QuerySubmissionPayload.DateRangePayload time, List<String> sources) {
+			this.idKind = idKind;
+			this.entityId = entityId;
+			this.time = time;
+			this.sources = sources;
+		}
+	}
+
+	public record DatasetResponse(
+			String id,
+			String label
+	) {
+	}
+}

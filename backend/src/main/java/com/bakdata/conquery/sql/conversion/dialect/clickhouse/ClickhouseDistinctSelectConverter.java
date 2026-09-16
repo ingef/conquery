@@ -4,13 +4,13 @@ import static org.jooq.impl.DSL.field;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.DistinctSelect;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
-import com.bakdata.conquery.sql.conversion.model.select.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
-import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
+import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
 
 public class ClickhouseDistinctSelectConverter implements SelectConverter<DistinctSelect> {
 
@@ -18,7 +18,7 @@ public class ClickhouseDistinctSelectConverter implements SelectConverter<Distin
 	@Override
 	public ConnectorSqlSelects connectorSelect(DistinctSelect distinctSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
-		String alias = selectContext.getNameGenerator().selectName(distinctSelect);
+		String alias = selectContext.getNameGenerator().legacyOperationName(distinctSelect.getName());
 
 		ConnectorSqlTables tables = selectContext.getTables();
 		SingleColumnSqlSelect preprocessingSelect =

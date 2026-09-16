@@ -1,18 +1,26 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import com.bakdata.conquery.sql.compiler.ir.JoinMode;
+import com.bakdata.conquery.sql.compiler.ir.ProjectionMode;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.QueryStepJoiner;
+import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
-import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.sql.conversion.SharedAliases;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.ir.SharedAliases;
+import com.bakdata.conquery.models.query.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.forms.FormCteStep;
 import com.bakdata.conquery.sql.conversion.forms.FormType;
 import com.bakdata.conquery.sql.conversion.model.*;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.google.common.base.Preconditions;
 import lombok.RequiredArgsConstructor;
 import org.jooq.*;
@@ -28,7 +36,7 @@ import static org.jooq.impl.DSL.*;
 @RequiredArgsConstructor
 public class FormConversionHelper {
 
-	private final QueryStepTransformer queryStepTransformer;
+	private final QueryStepRenderer queryStepRenderer;
 
 	/**
 	 * Selects the ID, resolution, index and date range from stratification table plus all explicit selects from the converted features step.
@@ -42,7 +50,7 @@ public class FormConversionHelper {
 		Selects preFinalSelects = convertedFeatures.getQualifiedSelects();
 		Selects stratificationSelects = stratificationTable.getQualifiedSelects();
 
-		SqlIdColumns ids = stratificationSelects.getIds().forFinalSelect();
+		SqlIdColumns ids = stratificationSelects.getIds().forFinalSelect(Resolution.COMPLETE.name());
 
 		Selects.SelectsBuilder selects = Selects.builder()
 				.ids(ids)
@@ -121,7 +129,7 @@ public class FormConversionHelper {
 
 		// child context contains the converted feature's QuerySteps
 		List<QueryStep> queriesToJoin = childContext.getQuerySteps();
-		QueryStep joinedFeatures = QueryStepJoiner.joinSteps(queriesToJoin, ConqueryJoinType.OUTER_JOIN, DateAggregationAction.BLOCK, context);
+		QueryStep joinedFeatures = QueryStepComposer.joinSteps(queriesToJoin, JoinMode.FULL_OUTER, DateAggregationAction.BLOCK, context);
 		return createFinalSelect(formType, stratificationTable, joinedFeatures, resultInfos, context);
 	}
 
@@ -145,17 +153,16 @@ public class FormConversionHelper {
 		);
 
 		List<QueryStep> queriesToJoin = List.of(stratificationTable, convertedFeatures);
-		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, ConqueryJoinType.LEFT_JOIN, context);
-		SqlFunctionProvider functionProvider = context.getFunctionProvider();
-
+		TableLike<Record> joinedTable = QueryStepJoiner.join(queriesToJoin, JoinMode.LEFT);
 		QueryStep finalStep = QueryStep.builder()
 				.cteName(null)  // the final QueryStep won't be converted to a CTE
+				.projectionMode(ProjectionMode.AGGREGATED)
 				.selects(getFinalSelects(formType, stratificationTable, convertedFeatures))
 				.fromTable(joinedTable)
 				.predecessors(queriesToJoin)
 				.build();
 
-		Select<Record> selectQuery = queryStepTransformer.toSelectQuery(finalStep, functionProvider);
+		Select<Record> selectQuery = queryStepRenderer.toSelectQuery(finalStep, context.getCompilerDialect());
 		return context.withFinalQuery(new SqlQuery(selectQuery, resultInfos));
 	}
 
