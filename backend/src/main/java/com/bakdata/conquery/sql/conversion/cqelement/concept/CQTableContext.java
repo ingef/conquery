@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.conversion.Context;
@@ -30,6 +31,9 @@ class CQTableContext implements Context {
 	List<ConnectorSqlSelects> sqlSelects;
 	List<SqlFilters> sqlFilters;
 	ConnectorSqlTables connectorTables;
+	ConceptIdMapping conceptIdMapping;
+	List<ConceptElement<?>> selectedConceptElements;
+	boolean resolveConceptIds;
 	ConversionContext conversionContext;
 	@With
 	QueryStep previous;
