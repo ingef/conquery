@@ -12,7 +12,7 @@ interface TranslatableString {
 
 export type Forms = Form[];
 
-export type NonFormField = Headline | Description;
+type NonFormField = Headline | Description;
 export type FormField = Field | Tabs | Group;
 export type FormFieldWithValue = Exclude<FormField, Group>;
 
@@ -93,7 +93,7 @@ export interface Headline {
 
 /* ------------------------------ */
 
-export interface Description {
+interface Description {
   type: "DESCRIPTION";
   label: TranslatableString;
 }

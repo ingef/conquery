@@ -51,7 +51,7 @@ export interface TableWithFilterValueT
   dateColumn?: SelectedDateColumnT;
 }
 
-export interface DragContext {
+interface DragContext {
   width: number;
   height: number;
   movedFromAndIdx?: number;

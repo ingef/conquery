@@ -70,7 +70,7 @@ const header = tv({
   ],
 });
 
-export interface QueryNodeEditorPropsT {
+interface QueryNodeEditorPropsT {
   name: string;
   node: StandardQueryNodeT;
   showTables: boolean;

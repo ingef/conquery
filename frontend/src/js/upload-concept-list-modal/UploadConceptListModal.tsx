@@ -181,7 +181,7 @@ const useDropdownOptions = () => {
   };
 };
 
-export const useResolveConcepts = () => {
+const useResolveConcepts = () => {
   const postConceptsListToResolve = usePostConceptsListToResolve();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);

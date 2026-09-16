@@ -51,7 +51,7 @@ export function hexToRgbA(hex: string) {
   throw new Error("Bad Hex");
 }
 
-export function interpolateDecreasingOpacity(index: number) {
+function interpolateDecreasingOpacity(index: number) {
   return Math.min(1, 1 / (index + 0.3));
 }
 

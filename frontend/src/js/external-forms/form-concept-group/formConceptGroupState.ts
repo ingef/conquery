@@ -123,7 +123,7 @@ export const setConceptProperties = (
     : value;
 };
 
-export const setTableProperties = (
+const setTableProperties = (
   value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
@@ -148,7 +148,7 @@ export const setTableProperties = (
   });
 };
 
-export const setFilterProperties = (
+const setFilterProperties = (
   value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
@@ -246,7 +246,7 @@ export const onToggleIncludeSubnodes = (
   );
 };
 
-export const createQueryNodeFromConceptListUploadResult = (
+const createQueryNodeFromConceptListUploadResult = (
   label: string,
   rootConcepts: TreesT,
   resolvedConcepts: string[],

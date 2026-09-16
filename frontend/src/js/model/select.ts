@@ -39,10 +39,7 @@ function selectTypesMatch(
   return resultType1.type === resultType2.type;
 }
 
-export function selectIsWithinTypes(
-  select: SelectorT,
-  types: SelectorResultType[],
-) {
+function selectIsWithinTypes(select: SelectorT, types: SelectorResultType[]) {
   return types.some((selectType) =>
     selectTypesMatch(selectType, select.resultType),
   );

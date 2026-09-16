@@ -43,7 +43,7 @@ export const transformFilterValueToApi = (
   }
 };
 
-export const transformSelectsToApi = (selects?: SelectedSelectorT[] | null) => {
+const transformSelectsToApi = (selects?: SelectedSelectorT[] | null) => {
   if (!selects) return [];
 
   return selects
@@ -51,7 +51,7 @@ export const transformSelectsToApi = (selects?: SelectedSelectorT[] | null) => {
     : [];
 };
 
-export const transformDateColumnToApi = (dateColumn?: SelectedDateColumnT) => {
+const transformDateColumnToApi = (dateColumn?: SelectedDateColumnT) => {
   if (!dateColumn) return null;
 
   return {
@@ -59,7 +59,7 @@ export const transformDateColumnToApi = (dateColumn?: SelectedDateColumnT) => {
   };
 };
 
-export const transformTablesToApi = (tables: TableWithFilterValueT[]) => {
+const transformTablesToApi = (tables: TableWithFilterValueT[]) => {
   if (!tables) return [];
 
   return tables

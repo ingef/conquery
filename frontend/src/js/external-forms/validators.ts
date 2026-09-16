@@ -14,27 +14,24 @@ import type {
 } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 
-export const validateRequired = (
-  t: TFunction,
-  value: unknown,
-): string | null => {
+const validateRequired = (t: TFunction, value: unknown): string | null => {
   return isEmpty(value) ? t("externalForms.formValidation.isRequired") : null;
 };
 
-export const validatePositive = (t: TFunction, value: number) => {
+const validatePositive = (t: TFunction, value: number) => {
   return isEmpty(value) || value > 0
     ? null
     : t("externalForms.formValidation.mustBePositiveNumber");
 };
 
-export const validateDate = (t: TFunction, value: string | null) => {
+const validateDate = (t: TFunction, value: string | null) => {
   // May be empty
   if (!value) return null;
 
   return parseStdDate(value) ? null : t("common.dateInvalid");
 };
 
-export const validateDateRequired = (
+const validateDateRequired = (
   t: TFunction,
   value: string | null,
 ): string | null => {
@@ -43,7 +40,7 @@ export const validateDateRequired = (
   return validateDate(t, value);
 };
 
-export const validateDateRange = (
+const validateDateRange = (
   t: TFunction,
   value: { min: string; max: string },
 ) => {
@@ -59,7 +56,7 @@ export const validateDateRange = (
   return null;
 };
 
-export const validateDateRangeRequired = (
+const validateDateRangeRequired = (
   t: TFunction,
   value: {
     min: string;
@@ -72,7 +69,7 @@ export const validateDateRangeRequired = (
   return validateDateRange(t, value);
 };
 
-export const validateConceptGroupFilled = (
+const validateConceptGroupFilled = (
   t: TFunction,
   group: { concepts: [] }[],
 ): string | null => {

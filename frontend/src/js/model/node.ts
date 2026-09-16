@@ -73,7 +73,7 @@ export const nodeHasNonDefaultSettings = (node: StandardQueryNodeT) =>
       nodeHasNonDefaultTableSettings(node) ||
       nodeHasNonDefaultExludedTable(node)));
 
-export const nodeHasNonDefaultTableSettings = (node: ConceptQueryNodeType) => {
+const nodeHasNonDefaultTableSettings = (node: ConceptQueryNodeType) => {
   if (!node.tables) return false;
 
   return tablesHaveNonDefaultSettings(node.tables);
@@ -91,7 +91,7 @@ export function nodeIsInvalid(
   );
 }
 
-export function nodeIsBlocklisted(
+function nodeIsBlocklisted(
   node: ConceptQueryNodeType,
   blocklistedConceptIds: string[],
 ) {
@@ -103,7 +103,7 @@ export function nodeIsBlocklisted(
   );
 }
 
-export function nodeIsAllowlisted(
+function nodeIsAllowlisted(
   node: ConceptQueryNodeType,
   allowlistedConceptIds: string[],
 ) {

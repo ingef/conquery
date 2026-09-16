@@ -39,7 +39,7 @@ const useLoadForms = ({ datasetId }: { datasetId: DatasetT["id"] | null }) => {
   }, [datasetId, getForms, dispatch]);
 };
 
-export const useDatasetOptions = () => {
+const useDatasetOptions = () => {
   const availableDatasets = useSelector<StateT, DatasetT[]>(
     (state) => state.datasets.data,
   );
