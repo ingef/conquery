@@ -22,7 +22,7 @@ import type { AdditionalInfosType } from "./reducer";
 const root = tv({
   base: [
     "h-full w-full",
-    "pt-[40px] pb-[10px]",
+    "pt-header pb-[10px]",
     "relative",
     "flex flex-col",
     "bg-bg-100",

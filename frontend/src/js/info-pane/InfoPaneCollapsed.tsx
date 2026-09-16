@@ -9,7 +9,7 @@ import { toggleInfoPane } from "./actions";
 // a strip that fills the collapsed pane; the chevron sits at its top
 const button = tv({
   base: [
-    "absolute top-[40px] right-0 bottom-0",
+    "absolute top-header right-0 bottom-0",
     "w-full",
     "flex justify-center items-start",
     "pt-3",

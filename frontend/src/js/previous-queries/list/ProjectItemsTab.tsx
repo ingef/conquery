@@ -65,7 +65,8 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
   const foldersPanelRef = useCollapsiblePanel(!areFoldersOpen);
 
   return (
-    <>
+    // the list takes the height left over by the search row
+    <div className="flex flex-col">
       <div className="mx-[10px] mt-2 flex items-start gap-[5px]">
         <FoldersToggleButton
           active={areFoldersOpen}
@@ -108,7 +109,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
           </Panel>
         </Group>
       </div>
-    </>
+    </div>
   );
 };
 

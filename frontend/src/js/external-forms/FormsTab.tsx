@@ -140,13 +140,16 @@ const FormsTab = () => {
 
   return (
     <FormProvider {...methods}>
-      <FormsNavigation onReset={onResetActiveForm} />
-      <FormContainer
-        methods={methods}
-        config={config}
-        datasetOptions={datasetOptions}
-      />
-      <FormsQueryRunner />
+      {/* the form takes the height left over by the navigation and runner rows */}
+      <div className="grid grid-rows-[auto_minmax(0,1fr)_auto]">
+        <FormsNavigation onReset={onResetActiveForm} />
+        <FormContainer
+          methods={methods}
+          config={config}
+          datasetOptions={datasetOptions}
+        />
+        <FormsQueryRunner />
+      </div>
     </FormProvider>
   );
 };

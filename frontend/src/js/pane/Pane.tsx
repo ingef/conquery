@@ -7,10 +7,12 @@ import type { StateT } from "../app/reducers";
 import { Tab, TabList, TabPanel, Tabs } from "../ui-components/Tabs";
 import { clickPaneTab } from "./actions";
 
-const root = tv({ base: ["h-full w-full", "pt-[40px]"] });
+// starts below the absolutely positioned header
+const root = tv({ base: ["h-full w-full", "pt-header"] });
 
+// the content row, a column of the panels; the selected one takes it
 const container = tv({
-  base: ["relative", "flex flex-col", "h-full", "overflow-hidden"],
+  base: ["relative", "flex flex-col", "min-h-0", "overflow-hidden"],
 });
 
 export interface PaneTab {
@@ -40,32 +42,30 @@ const Pane = ({ tabs, left, className, dataTestId }: Props) => {
 
   return (
     <div className={root({ className })}>
-      <div className={container()}>
-        <Tabs
-          selectedKey={activeTab}
-          onSelectionChange={(tab) => dispatch(clickPaneTab({ paneType, tab }))}
-        >
-          <div className="bg-white">
-            <TabList
-              aria-label={left ? t("leftPane.tabs") : t("rightPane.tabs")}
-              data-test-id={dataTestId}
-            >
-              {tabs.map(({ key, label, tooltip }) => (
-                <Tab key={key} id={key} tooltip={tooltip}>
-                  {label}
-                </Tab>
-              ))}
-            </TabList>
-          </div>
-          <div className={container()} data-test-id={`${dataTestId}-container`}>
-            {tabs.map(({ key, content }) => (
-              <TabPanel key={key} id={key} shouldForceMount>
-                {content}
-              </TabPanel>
+      <Tabs
+        selectedKey={activeTab}
+        onSelectionChange={(tab) => dispatch(clickPaneTab({ paneType, tab }))}
+      >
+        <div className="bg-white">
+          <TabList
+            aria-label={left ? t("leftPane.tabs") : t("rightPane.tabs")}
+            data-test-id={dataTestId}
+          >
+            {tabs.map(({ key, label, tooltip }) => (
+              <Tab key={key} id={key} tooltip={tooltip}>
+                {label}
+              </Tab>
             ))}
-          </div>
-        </Tabs>
-      </div>
+          </TabList>
+        </div>
+        <div className={container()} data-test-id={`${dataTestId}-container`}>
+          {tabs.map(({ key, content }) => (
+            <TabPanel key={key} id={key} shouldForceMount>
+              {content}
+            </TabPanel>
+          ))}
+        </div>
+      </Tabs>
     </div>
   );
 };

@@ -30,13 +30,14 @@ const LeftPane = () => {
           label: t("leftPane.conceptTrees"),
           key: "conceptTrees",
           tooltip: t("help.tabConceptTrees"),
+          // the list takes the height left over by the search box
           content: (
-            <>
+            <div className="flex flex-col">
               {areTreesAvailable && (
                 <ConceptTreeSearchBox className="mx-[10px] mt-2 mb-[5px]" />
               )}
               <ConceptTreeList datasetId={selectedDatasetId} />
-            </>
+            </div>
           ),
         },
         {

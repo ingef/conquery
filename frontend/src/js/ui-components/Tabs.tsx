@@ -55,10 +55,15 @@ const StateBridge = ({
 };
 
 const root = tv({
-  base: ["flex flex-col", "min-h-0"],
+  base: "min-h-0",
   variants: {
-    // a main navigation fills its pane
-    variant: { primary: "h-full", secondary: "" },
+    variant: {
+      // a main navigation fills its pane. Two rows: the tab bar and the
+      // content, whose track can shrink to zero, so the content never pushes
+      // the pane past its bottom
+      primary: ["grid grid-rows-[auto_minmax(0,1fr)]", "h-full"],
+      secondary: "flex flex-col",
+    },
   },
 });
 
@@ -114,10 +119,11 @@ const tab = tv({
 
 const tabTarget = tv({ base: "block" });
 
-// a force-mounted panel of an unselected tab is inert: hidden, state kept
+// one cell the content fills; the content defines its own rows inside.
+// A force-mounted panel of an unselected tab is inert: hidden, state kept
 const panel = tv({
   base: [
-    "flex flex-col",
+    "grid grid-rows-[minmax(0,1fr)]",
     "grow",
     "min-h-0",
     "outline-none",

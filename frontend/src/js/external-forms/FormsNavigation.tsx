@@ -18,7 +18,6 @@ const root = tv({
   base: [
     "relative",
     "z-2",
-    "shrink-0",
     "box-border",
     "pt-2 pr-5 pb-[10px] pl-[10px]",
     "bg-bg-50",
