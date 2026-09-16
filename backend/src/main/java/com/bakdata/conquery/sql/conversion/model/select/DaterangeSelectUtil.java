@@ -25,9 +25,9 @@ import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.IntervalPackingSelectsCte;
 import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingContext;
 import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingCteStep;
+import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingSelectCompiler;
 import com.bakdata.conquery.sql.compiler.ir.interval.AnsiSqlIntervalPacker;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
@@ -45,7 +45,7 @@ public class DaterangeSelectUtil {
 
 	/**
 	 * Aggregates the daterange of a corresponding {@link DaterangeSelectOrFilter} and applies the respective converted aggregation via
-	 * {@link IntervalPackingSelectsCte}s using additional predecessor tables.
+	 * {@link IntervalPackingSelectCompiler} using an additional predecessor table.
 	 */
 	public static <S extends Select & DaterangeSelectOrFilter> ConnectorSqlSelects createForSelect(
 			S select,
@@ -66,7 +66,7 @@ public class DaterangeSelectUtil {
 		ColumnDateRange qualified = daterange.qualify(daterangeSelectTables.getPredecessor(INTERVAL_PACKING_SELECTS));
 		FieldWrapper<?> aggregationField = aggregationFunction.apply(qualified, alias, functionProvider);
 
-		QueryStep intervalPackingSelectsStep = IntervalPackingSelectsCte.forSelect(
+		QueryStep intervalPackingSelectsStep = IntervalPackingSelectCompiler.compileArbitrarySelect(
 				lastIntervalPackingStep,
 				qualified,
 				aggregationField,
@@ -86,7 +86,7 @@ public class DaterangeSelectUtil {
 
 	/**
 	 * Aggregates the daterange of a corresponding {@link DaterangeSelectOrFilter} and applies the respective converted aggregation via
-	 * {@link IntervalPackingSelectsCte}s using additional predecessor tables. Finally, the filter condition is created.
+	 * {@link IntervalPackingSelectCompiler} using an additional predecessor table. Finally, the filter condition is created.
 	 */
 	public static SqlFilters createForFilter(
 			DaterangeSelectOrFilter filter,
@@ -108,7 +108,7 @@ public class DaterangeSelectUtil {
 		ColumnDateRange qualified = daterange.qualify(daterangeSelectTables.getPredecessor(INTERVAL_PACKING_SELECTS));
 		FieldWrapper<?> aggregationField = aggregationFunction.apply(qualified, alias, functionProvider);
 
-		QueryStep intervalPackingSelectsStep = IntervalPackingSelectsCte.forSelect(
+		QueryStep intervalPackingSelectsStep = IntervalPackingSelectCompiler.compileArbitrarySelect(
 				lastIntervalPackingStep,
 				qualified,
 				aggregationField,

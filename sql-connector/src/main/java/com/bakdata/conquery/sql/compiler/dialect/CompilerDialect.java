@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.compiler.dialect;
 import java.sql.Date;
 import java.util.List;
 
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.model.range.DateRange;
 import org.jooq.Condition;
@@ -109,5 +110,15 @@ public interface CompilerDialect {
 	/** Whether the dialect represents date ranges in one database column instead of separate start and end columns. */
 	default boolean supportsSingleColumnRanges() {
 		return false;
+	}
+
+	/**
+	 * Expand a physical single-column date range into a query step exposing its logical start and end fields.
+	 *
+	 * @throws UnsupportedOperationException when a dialect advertises single-column ranges without implementing the
+	 * expansion
+	 */
+	default QueryStep unnestDateRange(ColumnDateRange dateRange, QueryStep predecessor, String cteName) {
+		throw new UnsupportedOperationException("Single-column date-range expansion is not implemented by this dialect");
 	}
 }
