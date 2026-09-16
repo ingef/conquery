@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.rendering.QueryStepRenderer;
 import com.bakdata.conquery.sql.model.range.DateRange;
@@ -91,6 +92,11 @@ public interface LegacyCompilerDialect extends CompilerDialect {
 				dateRange.endInclusive().orElse(null)
 		);
 		return getFunctionProvider().forCDateRange(legacyDateRange);
+	}
+
+	@Override
+	default QueryStep unnestDateRange(ColumnDateRange dateRange, QueryStep predecessor, String cteName) {
+		return getFunctionProvider().unnestDaterange(dateRange, predecessor, cteName);
 	}
 
 	StratificationFunctions getStratificationFunctions();
