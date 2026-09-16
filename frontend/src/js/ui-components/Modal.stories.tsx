@@ -9,7 +9,7 @@ import { DateField } from "./DateField/DateField";
 import InputMultiSelect from "./InputMultiSelect/InputMultiSelect";
 import { Menu, MenuItem } from "./Menu";
 import { Modal, ModalBody, ModalFooter, ModalHeader } from "./Modal";
-import { Tooltip, TooltipTrigger } from "./Tooltip";
+import { Tooltip, TooltipTrigger, tooltipDelay } from "./Tooltip";
 
 export default {
   title: "UiComponents/Modal",
@@ -225,7 +225,7 @@ const Overlays = () => {
             ))}
           </Menu>
         </MenuTrigger>
-        <TooltipTrigger>
+        <TooltipTrigger delay={tooltipDelay.immediate}>
           <Button>Tooltip</Button>
           <Tooltip>
             A tooltip that must not be cut off by the card either.
