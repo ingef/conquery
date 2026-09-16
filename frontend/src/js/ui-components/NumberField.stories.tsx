@@ -47,7 +47,6 @@ export const ClampedAndSnapped: Story = {
       minValue={0}
       maxValue={100}
       step={1}
-      defaultValue={250}
     />
   ),
 };
