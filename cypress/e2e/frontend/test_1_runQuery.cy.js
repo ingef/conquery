@@ -129,8 +129,7 @@ describe("Reference list", () => {
 
         // We need force here because the input is invisible
         cy.get("@queryEditor").find('input[type=file]').selectFile('cypress/support/test_data/concept_reference_list.txt', {"force": true})
-        cy.get('@queryEditor')
-            .find('[data-test-id="uploadConceptListModal"]')
+        cy.get('[data-test-id="uploadConceptListModal"]')
             .as("uploadConceptListModal")
             .find('[data-test-id="selection-dropdown"]').click()
 
@@ -171,8 +170,7 @@ describe("Reference list", () => {
             .find('input[type=file]')
             .selectFile('cypress/support/test_data/filter_value_reference_list.txt', {"force": true})
 
-        cy.get('@queryEditor')
-            .find('[data-test-id="uploadConceptListModal"]')
+        cy.get('[data-test-id="uploadConceptListModal"]')
             .as("uploadConceptListModal")
             .find('[data-test-id="selection-dropdown"]').click()
 

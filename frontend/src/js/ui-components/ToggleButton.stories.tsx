@@ -7,8 +7,12 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
+import { DialogTrigger } from "react-aria-components";
 
+import { Button } from "./Button";
+import { Checkbox } from "./Checkbox";
 import { Icon } from "./Icon";
+import { Modal, ModalBody, ModalFooter, ModalHeader } from "./Modal";
 import { ToggleButton, type ToggleButtonProps } from "./ToggleButton";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
@@ -129,3 +133,46 @@ export const IconOnlyWithTooltip: Story = {
     </Row>
   ),
 };
+
+const RestrictionEditor = () => {
+  const [years, setYears] = useState({ before2020: false, after2024: false });
+  const restricted = years.before2020 || years.after2024;
+  return (
+    <Row label="pressing opens an editor">
+      <DialogTrigger>
+        <ToggleButton isSelected={restricted}>
+          <Icon icon={faCalendar} />
+          {restricted ? "restricted" : "all years"}
+        </ToggleButton>
+        <Modal size="sm">
+          <ModalHeader>Exclude years</ModalHeader>
+          <ModalBody>
+            <div className="flex flex-col gap-1">
+              <Checkbox
+                isSelected={years.before2020}
+                onChange={(before2020) => setYears({ ...years, before2020 })}
+              >
+                before 2020
+              </Checkbox>
+              <Checkbox
+                isSelected={years.after2024}
+                onChange={(after2024) => setYears({ ...years, after2024 })}
+              >
+                after 2024
+              </Checkbox>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button slot="close">Done</Button>
+          </ModalFooter>
+        </Modal>
+      </DialogTrigger>
+    </Row>
+  );
+};
+
+/**
+ * A button whose look reflects a state is a ToggleButton even when pressing
+ * opens an editor: the selected look mirrors the state, the modal edits it.
+ */
+export const OpensAnEditor: Story = { render: () => <RestrictionEditor /> };

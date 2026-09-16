@@ -11,9 +11,14 @@ import {
 import { useHotkeys } from "react-hotkeys-hook";
 import { useSelector } from "react-redux";
 import type { GetFrontendConfigResponseT } from "../api/types";
-import Modal from "../modal/Modal";
 import { Button } from "../ui-components/Button";
 import { Icon } from "../ui-components/Icon";
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "../ui-components/Modal";
 import type { StateT } from "./reducers";
 
 const initialState = {
@@ -71,11 +76,10 @@ export const About = memo(() => {
 
   useHotkeys("?", toggleOpen, { useKey: true }, [toggleOpen]);
 
-  if (!isOpen) return null;
-
   return (
-    <Modal headline="Version" onClose={() => setOpen(false)}>
-      <div className="space-y-5">
+    <Modal isOpen={isOpen} onOpenChange={setOpen}>
+      <ModalHeader>Version</ModalHeader>
+      <ModalBody>
         <div className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-1">
           {backendVersions.map((version) => (
             <Fragment key={version.name}>
@@ -91,11 +95,13 @@ export const About = memo(() => {
             {frontendGitDescribe} – {frontendTimestamp}
           </code>
         </div>
+      </ModalBody>
+      <ModalFooter>
         <Button intent="secondary" onPress={copyVersionToClipboard}>
           <Icon icon={faCopy} />
           Copy version info
         </Button>
-      </div>
+      </ModalFooter>
     </Modal>
   );
 });
