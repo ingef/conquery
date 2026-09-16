@@ -130,7 +130,7 @@ const TableFilter = ({
             tooltip={filter.tooltip}
             mode={filter.mode || "range"}
             stepSize={1}
-            disabled={!!excludeTable}
+            isDisabled={!!excludeTable}
             onSwitchMode={(mode) => onSwitchFilterMode(filterIdx, mode)}
             placeholder="-"
             pattern={filter.pattern}
@@ -150,7 +150,7 @@ const TableFilter = ({
             tooltip={filter.tooltip}
             mode={filter.mode || "range"}
             stepSize={filter.precision || 0.1}
-            disabled={!!excludeTable}
+            isDisabled={!!excludeTable}
             onSwitchMode={(mode) => onSwitchFilterMode(filterIdx, mode)}
             placeholder="-"
             pattern={filter.pattern}
@@ -169,7 +169,7 @@ const TableFilter = ({
             label={filter.label}
             tooltip={filter.tooltip}
             mode={filter.mode || "range"}
-            disabled={!!excludeTable}
+            isDisabled={!!excludeTable}
             onSwitchMode={(mode) => onSwitchFilterMode(filterIdx, mode)}
             placeholder="-"
             currencyConfig={currencyConfig}

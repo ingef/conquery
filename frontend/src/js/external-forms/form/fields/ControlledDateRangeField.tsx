@@ -23,7 +23,6 @@ export const ControlledDateRangeField = ({
       {({ ref, ...fieldProps }) => {
         return (
           <DateRangeField
-            inline={true}
             label={field.label[locale]}
             tooltip={field.tooltip ? field.tooltip[locale] : undefined}
             value={fieldProps.value as DateStringMinMax}

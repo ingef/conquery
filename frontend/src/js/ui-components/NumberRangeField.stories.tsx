@@ -19,10 +19,9 @@ const Stateful = ({
   ...props
 }: Omit<
   ComponentProps<typeof NumberRangeField>,
-  "value" | "onChange" | "mode" | "onSwitchMode" | "disabled" | "placeholder"
+  "value" | "onChange" | "mode" | "onSwitchMode" | "placeholder"
 > & {
   defaultValue?: Value;
-  disabled?: boolean;
 }) => {
   const [value, setValue] = useState<Value>(defaultValue);
   const [mode, setMode] = useState<ModeT>("range");
@@ -34,7 +33,6 @@ const Stateful = ({
         onChange={setValue}
         mode={mode}
         onSwitchMode={setMode}
-        disabled={false}
         placeholder="-"
         {...props}
       />
@@ -93,7 +91,7 @@ export const Disabled: Story = {
     <Stateful
       label="Number of items"
       unit="#"
-      disabled
+      isDisabled
       defaultValue={{ min: 3, max: 12 }}
     />
   ),

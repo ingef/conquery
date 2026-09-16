@@ -38,7 +38,7 @@ interface PropsType {
     min?: number | null;
     max?: number | null;
   };
-  disabled: boolean;
+  isDisabled?: boolean;
   mode: ModeT;
   stepSize?: number;
   placeholder: string;
@@ -66,7 +66,7 @@ export const NumberRangeField = ({
   mode,
   moneyRange,
   placeholder,
-  disabled,
+  isDisabled,
   label,
   indexPrefix,
   unit,
@@ -100,7 +100,7 @@ export const NumberRangeField = ({
       : undefined,
     unit: money?.unit,
     placeholder,
-    isDisabled: disabled,
+    isDisabled,
     labelSize: "sm" as const,
   };
 
@@ -139,7 +139,7 @@ export const NumberRangeField = ({
     <div>
       <Label
         elementType="span"
-        isDisabled={disabled}
+        isDisabled={isDisabled}
         indexPrefix={indexPrefix}
         tooltip={tooltip}
       >

@@ -17,16 +17,6 @@ import { Icon } from "./Icon";
 import InfoTooltip from "./InfoTooltip";
 import { Label } from "./Label";
 
-const pickers = tv({
-  base: ["flex", "gap-[10px]"],
-  variants: {
-    inline: {
-      true: "flex-row",
-      false: "flex-col",
-    },
-  },
-});
-
 const customTooltip = tv({
   base: [
     "flex flex-col",
@@ -65,11 +55,11 @@ function getDisplayDate(
 }
 
 export const DateRangeField = ({
-  inline,
   label,
   indexPrefix,
   autoFocus,
   labelSuffix,
+  isDisabled,
   value,
   onChange,
   tooltip,
@@ -77,8 +67,8 @@ export const DateRangeField = ({
   label?: ReactNode;
   indexPrefix?: number;
   labelSuffix?: ReactNode;
-  inline?: boolean;
   autoFocus?: boolean;
+  isDisabled?: boolean;
   tooltip?: string;
   value: DateStringMinMax;
   onChange: (value: DateStringMinMax) => void;
@@ -140,7 +130,11 @@ export const DateRangeField = ({
   return (
     <div>
       {label && (
-        <Label elementType="span" indexPrefix={indexPrefix}>
+        <Label
+          elementType="span"
+          indexPrefix={indexPrefix}
+          isDisabled={isDisabled}
+        >
           <Icon icon={faCalendar} className="mr-[10px] text-gray-500" />
           {label}
           <InfoTooltip
@@ -161,9 +155,10 @@ export const DateRangeField = ({
           {labelSuffix}
         </Label>
       )}
-      <div className={pickers({ inline: !!inline })}>
+      <div className="flex gap-[10px]">
         <DateField
           label={t("inputDateRange.from")}
+          isDisabled={isDisabled}
           value={min}
           dateFormat={displayDateFormat}
           errorMessage={
@@ -180,6 +175,7 @@ export const DateRangeField = ({
         <DateField
           ref={maxRef}
           label={t("inputDateRange.to")}
+          isDisabled={isDisabled}
           value={max}
           dateFormat={displayDateFormat}
           errorMessage={

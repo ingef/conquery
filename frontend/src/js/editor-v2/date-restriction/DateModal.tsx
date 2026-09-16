@@ -72,7 +72,6 @@ export const DateModal = ({
         <div className="flex flex-col gap-8">
           <div>{headline}</div>
           <DateRangeField
-            inline
             autoFocus
             label={t("queryGroupModal.dateRange")}
             labelSuffix={labelSuffix}

@@ -117,7 +117,6 @@ const QueryGroupModal = ({
           ))}
         </div>
         <DateRangeField
-          inline
           autoFocus
           label={t("queryGroupModal.dateRange")}
           labelSuffix={labelSuffix}
