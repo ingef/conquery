@@ -1,11 +1,9 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import java.util.Map;
-
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingCteStep;
-import com.bakdata.conquery.sql.compiler.ir.CteStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorCtePlan;
+import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingCteStep;
 import lombok.Getter;
 
 @Getter
@@ -34,17 +32,13 @@ public class ConnectorSqlTables extends SqlTables {
 	public ConnectorSqlTables(
 			Connector connector,
 			String connectorName,
-			String rootTable,
-			Map<CteStep, String> cteNameMap,
-			Map<CteStep, CteStep> predecessorMap,
-			boolean containsIntervalPacking,
-			boolean excludedFromTimeAggregation
+			ConnectorCtePlan plan
 	) {
-		super(rootTable, cteNameMap, predecessorMap);
+		super(plan.tables());
 		this.connector = connector;
 		this.name = connectorName;
-		this.withIntervalPacking = containsIntervalPacking;
-		this.excludedFromTimeAggregation = excludedFromTimeAggregation;
+		this.withIntervalPacking = plan.withIntervalPacking();
+		this.excludedFromTimeAggregation = plan.excludedFromTimeAggregation();
 	}
 
 }

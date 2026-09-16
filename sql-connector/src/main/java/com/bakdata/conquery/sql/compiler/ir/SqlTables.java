@@ -14,6 +14,13 @@ public class SqlTables {
 	private final Map<CteStep, String> cteNameMap;
 	private final Map<CteStep, CteStep> predecessorMap;
 
+	/** Allow backend adapters to attach framework-specific metadata without exposing the graph maps. */
+	protected SqlTables(SqlTables tables) {
+		this.rootTable = tables.rootTable;
+		this.cteNameMap = tables.cteNameMap;
+		this.predecessorMap = tables.predecessorMap;
+	}
+
 	/** Returns the generated CTE name for the supplied step. */
 	public String cteName(CteStep cteStep) {
 		return cteNameMap.get(cteStep);
