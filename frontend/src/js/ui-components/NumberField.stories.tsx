@@ -51,15 +51,25 @@ export const ClampedAndSnapped: Story = {
   ),
 };
 
-export const Decimals: Story = {
+// without a step any decimals pass; with one, the value snaps to it on blur
+export const Step: Story = {
   render: () => (
-    <Stateful
-      label="Distance"
-      unit="km"
-      step={0.1}
-      formatOptions={{ maximumFractionDigits: 1 }}
-      defaultValue={12.3}
-    />
+    <div className="flex flex-col gap-4">
+      <Stateful label="No step: any decimals" defaultValue={12.345} />
+      <Stateful label="Step 1: whole numbers" step={1} defaultValue={12} />
+      <Stateful
+        label="Step 0.1"
+        step={0.1}
+        formatOptions={{ maximumFractionDigits: 1 }}
+        defaultValue={12.3}
+      />
+      <Stateful
+        label="Step 0.25, from a minimum of 1"
+        step={0.25}
+        minValue={1}
+        defaultValue={2.75}
+      />
+    </div>
   ),
 };
 
