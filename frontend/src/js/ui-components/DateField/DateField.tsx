@@ -130,7 +130,7 @@ export const DateField = ({
                 datePickerRef.current?.setOpen(false);
               }}
               onClickOutside={() => datePickerRef.current?.setOpen(false)}
-              renderCustomHeader={CustomHeader}
+              renderCustomHeader={(props) => <CustomHeader {...props} />}
               customInput={<input className="hidden" />}
               calendarStartDay={1}
             />
