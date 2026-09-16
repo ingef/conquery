@@ -1,6 +1,4 @@
 import type { ComponentProps } from "react";
-import { exists } from "../../../common/helpers/exists";
-import { numberPatternConstraints } from "../../../common/helpers/numberPattern";
 import { NumberField } from "../../../ui-components/NumberField";
 import type { NumberField as NumberFieldT } from "../../config-types";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
@@ -15,8 +13,6 @@ export const ControlledNumberField = ({
   defaultValue: unknown;
   commonProps: Omit<ComponentProps<typeof Field>, "field">;
 }) => {
-  const constraints = numberPatternConstraints(field.pattern);
-
   return (
     <ConnectedField
       formField={field}
@@ -32,13 +28,8 @@ export const ControlledNumberField = ({
           value={(value as number | null) ?? null}
           onChange={(value) => setValue(field.name, value, setValueConfig)}
           step={field.step ? Number(field.step) : undefined}
-          minValue={field.min ?? constraints.minValue}
+          minValue={field.min}
           maxValue={field.max}
-          formatOptions={
-            exists(constraints.maximumFractionDigits)
-              ? { maximumFractionDigits: constraints.maximumFractionDigits }
-              : undefined
-          }
           tooltip={field.tooltip ? field.tooltip[locale] : undefined}
           errorMessage={errorMessage}
         />

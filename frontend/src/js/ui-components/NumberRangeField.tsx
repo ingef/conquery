@@ -3,7 +3,6 @@ import { tv } from "tailwind-variants";
 
 import type { CurrencyConfigT } from "../api/types";
 import { exists } from "../common/helpers/exists";
-import { numberPatternConstraints } from "../common/helpers/numberPattern";
 import { Label } from "./Label";
 import { NumberField } from "./NumberField";
 import { ToggleButton } from "./ToggleButton";
@@ -44,7 +43,6 @@ interface PropsType {
   placeholder: string;
   onSwitchMode: (mode: ModeT) => void;
   tooltip?: string;
-  pattern?: string | null;
   currencyConfig?: CurrencyConfigT;
 }
 
@@ -62,7 +60,6 @@ export const NumberRangeField = ({
   limits,
   stepSize,
   currencyConfig,
-  pattern,
   mode,
   moneyRange,
   placeholder,
@@ -79,23 +76,19 @@ export const NumberRangeField = ({
   const val = getMinMaxExact(value);
   const isRangeMode = mode === "range";
 
-  const constraints = numberPatternConstraints(pattern);
   // money is stored in the smallest unit and shown in the major one
   const money = moneyRange && currencyConfig ? currencyConfig : null;
   const factor = money ? 10 ** money.decimalScale : 1;
-  const fractionDigits = money
-    ? money.decimalScale
-    : constraints.maximumFractionDigits;
 
   const numberProps = {
     // an unset bound is null from the backend; react-aria clamps to Number(null)
-    minValue: limits?.min ?? constraints.minValue,
+    minValue: limits?.min ?? undefined,
     maxValue: limits?.max ?? undefined,
     step: stepSize,
-    formatOptions: exists(fractionDigits)
+    formatOptions: money
       ? {
-          minimumFractionDigits: money ? fractionDigits : undefined,
-          maximumFractionDigits: fractionDigits,
+          minimumFractionDigits: money.decimalScale,
+          maximumFractionDigits: money.decimalScale,
         }
       : undefined,
     unit: money?.unit,

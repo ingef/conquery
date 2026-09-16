@@ -56,7 +56,6 @@ export interface RangeFilterT extends FilterBaseT {
   // null when unset, the backend serializes every field
   min?: number | null;
   max?: number | null;
-  pattern?: string | null;
 }
 
 export type MultiSelectFilterValueT = SelectOptionT[];

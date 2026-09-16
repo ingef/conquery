@@ -49,10 +49,9 @@ export const Integer: Story = {
       label="Number of items"
       indexPrefix={1}
       unit="#"
-      tooltip="Whole numbers from 1 upwards; the shape comes from a backend pattern, the unset bound is null like the backend sends it."
+      tooltip="Whole numbers from 1 upwards; the unset bound is null like the backend sends it."
       limits={{ min: 1, max: null }}
       stepSize={1}
-      pattern="^(?!-)\\d*$"
     />
   ),
 };

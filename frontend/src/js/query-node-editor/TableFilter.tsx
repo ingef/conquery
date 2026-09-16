@@ -133,7 +133,6 @@ const TableFilter = ({
             isDisabled={!!excludeTable}
             onSwitchMode={(mode) => onSwitchFilterMode(filterIdx, mode)}
             placeholder="-"
-            pattern={filter.pattern}
           />
         );
       case "REAL_RANGE":
@@ -153,7 +152,6 @@ const TableFilter = ({
             isDisabled={!!excludeTable}
             onSwitchMode={(mode) => onSwitchFilterMode(filterIdx, mode)}
             placeholder="-"
-            pattern={filter.pattern}
           />
         );
       case "MONEY_RANGE":

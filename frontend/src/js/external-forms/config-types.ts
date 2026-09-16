@@ -148,8 +148,7 @@ export type NumberField = CommonField & {
   type: "NUMBER";
   defaultValue?: number; // Default: null
   placeholder?: TranslatableString;
-  pattern?: string; // Regex to validate, using double backslashes, e.g.: "^(?!-)\\\\d*$"
-  step?: string;
+  step?: string; // Default: any decimals; "1" for whole numbers
   min?: number;
   max?: number;
   validations?: NumberFieldValidation[];
