@@ -57,7 +57,7 @@ class TablePath {
 				context.getNameGenerator()
 		);
 
-		return new ConnectorSqlTables(connector, connectorName, plan);
+		return new ConnectorSqlTables(connector, plan);
 	}
 
 	public ConceptSqlTables createConceptTables(QueryStep predecessor) {
