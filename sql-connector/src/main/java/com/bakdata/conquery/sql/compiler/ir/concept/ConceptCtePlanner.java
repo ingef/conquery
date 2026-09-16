@@ -33,7 +33,7 @@ public class ConceptCtePlanner {
 		Map<CteStep, CteStep> mappings = CteStep.getDefaultPredecessorMap(ConceptCteStep.MANDATORY_STEPS);
 		boolean withIntervalPacking = aggregateEventDates || eventDateSelectsPresent;
 		if (!withIntervalPacking) {
-			return new ConnectorCtePlan(createTables(rootTable, connectorName, mappings, nameGenerator), false, false);
+			return new ConnectorCtePlan(connectorName, createTables(rootTable, connectorName, mappings, nameGenerator), false, false);
 		}
 
 		mappings.putAll(IntervalPackingCteStep.getMappings(PREPROCESSING, dialect));
@@ -42,7 +42,7 @@ public class ConceptCtePlanner {
 		}
 
 		SqlTables tables = createTables(rootTable, connectorName, mappings, nameGenerator);
-		return new ConnectorCtePlan(tables, true, !aggregateEventDates);
+		return new ConnectorCtePlan(connectorName, tables, true, !aggregateEventDates);
 	}
 
 	/** Plan the final concept CTE graph over the converted connector branches. */
