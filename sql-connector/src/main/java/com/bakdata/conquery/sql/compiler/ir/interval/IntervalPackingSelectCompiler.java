@@ -1,19 +1,56 @@
 package com.bakdata.conquery.sql.compiler.ir.interval;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
+import com.bakdata.conquery.sql.compiler.ir.CteStep;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
+import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
+import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import lombok.experimental.UtilityClass;
 
 /** Builds the side branch that aggregates interval-based select expressions. */
 @UtilityClass
 public class IntervalPackingSelectCompiler {
+
+	public static IntervalPackingSelectPreparation prepareArbitrarySelect(
+			String label,
+			String sourceTable,
+			SqlIdColumns ids,
+			ColumnDateRange dateRange,
+			CompilerDialect dialect,
+			SqlNameGenerator nameGenerator
+	) {
+		Map<CteStep, CteStep> predecessorMapping = new HashMap<>(IntervalPackingCteStep.getMappings(dialect));
+		if (dialect.supportsSingleColumnRanges()) {
+			predecessorMapping.put(ConceptCteStep.UNNEST_DATE, IntervalPackingCteStep.INTERVAL_COMPLETE);
+			predecessorMapping.put(ConceptCteStep.INTERVAL_PACKING_SELECTS, ConceptCteStep.UNNEST_DATE);
+		}
+		else {
+			predecessorMapping.put(ConceptCteStep.INTERVAL_PACKING_SELECTS, IntervalPackingCteStep.INTERVAL_COMPLETE);
+		}
+		Map<CteStep, String> cteNames = CteStep.createCteNameMap(
+				predecessorMapping.keySet(),
+				label,
+				nameGenerator::cteStepName
+		);
+		SqlTables tables = new SqlTables(sourceTable, cteNames, predecessorMapping);
+		IntervalPackingContext intervalPackingContext = IntervalPackingContext.builder()
+				.ids(ids.qualify(sourceTable))
+				.daterange(dateRange.qualify(sourceTable))
+				.tables(tables)
+				.build();
+		QueryStep predecessor = AnsiSqlIntervalPacker.aggregateAsArbitrarySelect(intervalPackingContext);
+		ColumnDateRange qualifiedDateRange = dateRange.qualify(tables.getPredecessor(ConceptCteStep.INTERVAL_PACKING_SELECTS));
+		return new IntervalPackingSelectPreparation(predecessor, qualifiedDateRange, tables);
+	}
 
 	/**
 	 * Compile one aggregation over an arbitrary interval-packed date range.

@@ -19,6 +19,7 @@ import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
+import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
 import org.jooq.Field;
 import org.junit.jupiter.api.Test;
 
@@ -74,19 +75,29 @@ class IntervalPackingSelectCompilerTest {
 		QueryStep predecessor = predecessor(true);
 		ColumnDateRange dateRange = predecessor.getSelects().getValidityDate().orElseThrow();
 		FieldWrapper<Integer> duration = new FieldWrapper<>(field(name("duration"), Integer.class));
+		IntervalPackingSelectPreparation preparation = IntervalPackingSelectCompiler.prepareArbitrarySelect(
+				"duration",
+				"source",
+				predecessor.getSelects().getIds(),
+				dateRange,
+				new TestDialect(false),
+				new SqlNameGenerator(128)
+		);
 
 		QueryStep result = IntervalPackingSelectCompiler.compileArbitrarySelect(
-				predecessor,
-				dateRange,
+				preparation.predecessor(),
+				preparation.dateRange(),
 				duration,
-				TABLES,
+				preparation.tables(),
 				new TestDialect(false)
 		);
 
-		assertEquals("interval_selects", result.getCteName());
-		assertEquals(List.of(predecessor), result.getPredecessors());
+		assertEquals("duration-interval_packing_selects", result.getCteName());
+		assertEquals(List.of(preparation.predecessor()), result.getPredecessors());
+		assertEquals("duration-interval_complete", preparation.predecessor().getCteName());
+		assertEquals(name("duration-interval_complete", "valid_from"), preparation.dateRange().getStart().getQualifiedName());
 		assertEquals(List.of(duration), result.getSelects().getSqlSelects());
-		assertEquals("\"interval_complete\"", result.getFromTables().getFirst().toString());
+		assertEquals("\"duration-interval_complete\"", result.getFromTables().getFirst().toString());
 	}
 
 	@Test
