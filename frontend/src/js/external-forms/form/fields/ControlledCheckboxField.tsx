@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import { Checkbox } from "../../../ui-components/Checkbox";
+import { CheckboxField } from "../../../ui-components/CheckboxField";
 import type { CheckboxField as CheckboxFieldT } from "../../config-types";
 import { ConnectedField, setValueConfig } from "../ConnectedField";
 import type Field from "../Field";
@@ -19,15 +19,17 @@ export const ControlledCheckboxField = ({
       control={control}
       defaultValue={defaultValue}
       noLabel
+      errorInField
     >
-      {({ ref, ...fieldProps }) => (
-        <Checkbox
-          isSelected={fieldProps.value as boolean}
+      {({ value, errorMessage }) => (
+        <CheckboxField
+          isSelected={value as boolean}
           onChange={(value) => setValue(field.name, value, setValueConfig)}
-          infoTooltip={field.tooltip ? field.tooltip[locale] : undefined}
+          tooltip={field.tooltip ? field.tooltip[locale] : undefined}
+          errorMessage={errorMessage}
         >
           {field.label[locale] || ""}
-        </Checkbox>
+        </CheckboxField>
       )}
     </ConnectedField>
   );

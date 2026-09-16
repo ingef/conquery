@@ -1,25 +1,27 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 
-import { Checkbox, type CheckboxProps } from "./Checkbox";
+import { CheckboxField, type CheckboxFieldProps } from "./CheckboxField";
 
 export default {
-  title: "FormComponents/Checkbox",
-  component: Checkbox,
+  title: "FormComponents/CheckboxField",
+  component: CheckboxField,
   parameters: { layout: "centered" },
-} as Meta<typeof Checkbox>;
+} as Meta<typeof CheckboxField>;
 
-type Story = StoryObj<typeof Checkbox>;
+type Story = StoryObj<typeof CheckboxField>;
 
 // each example keeps its own state so it can be switched in the story
 const Stateful = ({
   defaultSelected = false,
   ...props
-}: Omit<CheckboxProps, "isSelected" | "onChange"> & {
+}: Omit<CheckboxFieldProps, "isSelected" | "onChange"> & {
   defaultSelected?: boolean;
 }) => {
   const [selected, setSelected] = useState(defaultSelected);
-  return <Checkbox isSelected={selected} onChange={setSelected} {...props} />;
+  return (
+    <CheckboxField isSelected={selected} onChange={setSelected} {...props} />
+  );
 };
 
 export const Default: Story = {
@@ -38,7 +40,7 @@ export const Disabled: Story = {
       <Stateful
         isDisabled
         defaultSelected
-        infoTooltip="All codes are unresolved, so they are included."
+        tooltip="All codes are unresolved, so they are included."
       >
         Include unresolved codes
       </Stateful>
@@ -48,8 +50,16 @@ export const Disabled: Story = {
 
 export const WithInfoTooltip: Story = {
   render: () => (
-    <Stateful infoTooltip="Rows without a date are left out of the time calculation.">
+    <Stateful tooltip="Rows without a date are left out of the time calculation.">
       Exclude from time calculation
+    </Stateful>
+  ),
+};
+
+export const WithError: Story = {
+  render: () => (
+    <Stateful errorMessage="Confirm the terms to continue">
+      I have read the terms
     </Stateful>
   ),
 };

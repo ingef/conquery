@@ -144,6 +144,7 @@ export const DateRangeField = ({
           <Icon icon={faCalendar} className="mr-[10px] text-gray-500" />
           {label}
           <InfoTooltip
+            excludeFromTabOrder
             html={
               <div className={customTooltip()}>
                 {exists(tooltip) && <div className="text-base">{tooltip}</div>}

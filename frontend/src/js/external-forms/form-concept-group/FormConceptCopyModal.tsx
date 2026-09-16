@@ -6,7 +6,7 @@ import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import { useActiveLang } from "../../localization/useActiveLang";
 import { Button } from "../../ui-components/Button";
-import { Checkbox } from "../../ui-components/Checkbox";
+import { CheckboxField } from "../../ui-components/CheckboxField";
 import { ComboBoxField } from "../../ui-components/ComboBoxField";
 import {
   Modal,
@@ -148,17 +148,17 @@ const FormConceptCopyModal = ({
               value={selectedOption}
             />
             <div className={selectAll()}>
-              <Checkbox
+              <CheckboxField
                 isSelected={allConceptsSelected}
                 onChange={onToggleAllConcepts}
               >
                 {t("externalForms.copyModal.selectAll")}
-              </Checkbox>
+              </CheckboxField>
             </div>
             <div className={options()}>
               {Object.keys(valuesChecked).map((idx) =>
                 idxHasConcepts(idx) ? (
-                  <Checkbox
+                  <CheckboxField
                     key={idx}
                     isSelected={valuesChecked[idx]}
                     onChange={(checked: boolean) =>
@@ -166,7 +166,7 @@ const FormConceptCopyModal = ({
                     }
                   >
                     {getLabelFromIdx(idx)}
-                  </Checkbox>
+                  </CheckboxField>
                 ) : null,
               )}
             </div>

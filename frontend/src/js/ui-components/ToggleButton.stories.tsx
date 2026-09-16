@@ -10,7 +10,7 @@ import { useState } from "react";
 import { DialogTrigger } from "react-aria-components";
 
 import { Button } from "./Button";
-import { Checkbox } from "./Checkbox";
+import { CheckboxField } from "./CheckboxField";
 import { Icon } from "./Icon";
 import { Modal, ModalBody, ModalFooter, ModalHeader } from "./Modal";
 import { ToggleButton, type ToggleButtonProps } from "./ToggleButton";
@@ -148,18 +148,18 @@ const RestrictionEditor = () => {
           <ModalHeader>Exclude years</ModalHeader>
           <ModalBody>
             <div className="flex flex-col gap-1">
-              <Checkbox
+              <CheckboxField
                 isSelected={years.before2020}
                 onChange={(before2020) => setYears({ ...years, before2020 })}
               >
                 before 2020
-              </Checkbox>
-              <Checkbox
+              </CheckboxField>
+              <CheckboxField
                 isSelected={years.after2024}
                 onChange={(after2024) => setYears({ ...years, after2024 })}
               >
                 after 2024
-              </Checkbox>
+              </CheckboxField>
             </div>
           </ModalBody>
           <ModalFooter>

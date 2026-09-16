@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { DateRangeT } from "../../api/types";
 import type { DateStringMinMax } from "../../common/helpers/dateHelper";
 import { Button } from "../../ui-components/Button";
-import { Checkbox } from "../../ui-components/Checkbox";
+import { CheckboxField } from "../../ui-components/CheckboxField";
 import { DateRangeField } from "../../ui-components/DateRangeField";
 import { Icon } from "../../ui-components/Icon";
 import {
@@ -82,12 +82,12 @@ export const DateModal = ({
               max: maxDate,
             }}
           />
-          <Checkbox
+          <CheckboxField
             isSelected={excludeFromDates}
             onChange={setExcludeFromDates}
           >
             {t("queryNodeEditor.excludeTimestamps")}
-          </Checkbox>
+          </CheckboxField>
         </div>
       </ModalBody>
       <ModalFooter>

@@ -31,7 +31,7 @@ import type { StateT } from "../app/reducers";
 import { nodeIsElement } from "../model/node";
 import ScrollableList from "../scrollable-list/ScrollableList";
 import { Button } from "../ui-components/Button";
-import { Checkbox } from "../ui-components/Checkbox";
+import { CheckboxField } from "../ui-components/CheckboxField";
 import { ComboBoxField } from "../ui-components/ComboBoxField";
 import { Icon } from "../ui-components/Icon";
 import {
@@ -561,8 +561,8 @@ const UploadConceptListModal = ({
                   />
                 </div>
                 {(resolvedFilters?.unknownCodes?.length || 0) > 0 && (
-                  <Checkbox
-                    infoTooltip={
+                  <CheckboxField
+                    tooltip={
                       mustIncludeUnresolved
                         ? t(
                             "uploadConceptListModal.includeUnresolvedTooltipDisabled",
@@ -574,7 +574,7 @@ const UploadConceptListModal = ({
                     onChange={setIncludeUnresolved}
                   >
                     {t("uploadConceptListModal.includeUnresolved")}
-                  </Checkbox>
+                  </CheckboxField>
                 )}
                 <ModalFooter>
                   <Button intent="primary" type="submit" data-test-id="insert">

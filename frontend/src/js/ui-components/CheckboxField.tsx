@@ -1,12 +1,13 @@
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import {
   CheckboxButton,
-  CheckboxField,
-  type CheckboxFieldProps,
+  CheckboxField as RacCheckboxField,
+  type CheckboxFieldProps as RacCheckboxFieldProps,
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
 import { exists } from "../common/helpers/exists";
+import { FieldError } from "./FieldError";
 import { Icon } from "./Icon";
 import InfoTooltip from "./InfoTooltip";
 
@@ -42,6 +43,7 @@ const box = tv({
     "border-2 border-primary-500",
     "bg-white text-white",
     "group-data-selected:bg-primary-500",
+    "group-data-invalid:border-red",
     "group-data-focus-visible:outline-2 group-data-focus-visible:outline-offset-2 group-data-focus-visible:outline-primary-500",
     "group-data-disabled:opacity-50",
   ],
@@ -51,30 +53,43 @@ const box = tv({
 // further lines flow below it
 const label = tv({ base: ["py-[5px]", "leading-5"] });
 
-export interface CheckboxProps
-  extends Omit<CheckboxFieldProps, "className" | "style" | "children"> {
+// under the label text, past the box
+const error = tv({ base: "pl-[34px]" });
+
+export interface CheckboxFieldProps
+  extends Omit<
+    RacCheckboxFieldProps,
+    | "className"
+    | "style"
+    | "children"
+    | "isInvalid"
+    | "validate"
+    | "validationBehavior"
+  > {
   /** the label */
   children: string;
   /** a help icon after the label, e.g. what selecting does or why it is disabled */
-  infoTooltip?: string;
+  tooltip?: string;
+  /** shown below the label; the field is invalid while it is set */
+  errorMessage?: string;
 }
 
 /**
  * A checkbox with its label, react-aria's CheckboxField + CheckboxButton
  * underneath: `isSelected` / `onChange`, `isDisabled`, keyboard and form
- * support. The children are the label text. Layout around it belongs to the
- * parent.
- *
- *   <Checkbox isSelected={exclude} onChange={setExclude}>
- *     {t("queryNodeEditor.excludeTimestamps")}
- *   </Checkbox>
+ * support. The children are the label text.
  */
-export const Checkbox = ({
+export const CheckboxField = ({
   children,
-  infoTooltip,
+  tooltip,
+  errorMessage,
   ...props
-}: CheckboxProps) => (
-  <CheckboxField {...props}>
+}: CheckboxFieldProps) => (
+  <RacCheckboxField
+    validationBehavior="aria"
+    isInvalid={exists(errorMessage)}
+    {...props}
+  >
     <CheckboxButton className={button()}>
       {({ isSelected }) => (
         <>
@@ -85,10 +100,15 @@ export const Checkbox = ({
           </span>
           <span className={label()}>
             {children}
-            {exists(infoTooltip) && <InfoTooltip text={infoTooltip} />}
+            {exists(tooltip) && (
+              <InfoTooltip text={tooltip} excludeFromTabOrder />
+            )}
           </span>
         </>
       )}
     </CheckboxButton>
-  </CheckboxField>
+    <div className={error()}>
+      <FieldError>{errorMessage}</FieldError>
+    </div>
+  </RacCheckboxField>
 );

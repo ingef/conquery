@@ -23,11 +23,14 @@ const InfoTooltip = ({
   text,
   html,
   size,
+  excludeFromTabOrder,
 }: {
   text?: string;
   html?: ReactElement;
   className?: string;
   size?: TooltipSize;
+  /** for a help icon inside a label: tabbing through the fields must not open it */
+  excludeFromTabOrder?: boolean;
 }) => {
   return (
     <TooltipTrigger delay={tooltipDelay.immediate}>
@@ -35,6 +38,7 @@ const InfoTooltip = ({
         role="img"
         aria-label="Info"
         className={spanContainer({ className })}
+        excludeFromTabOrder={excludeFromTabOrder}
       >
         <Icon icon={faQuestionCircle} className={[icon(), "text-gray-500"]} />
       </TooltipTarget>

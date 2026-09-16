@@ -48,7 +48,7 @@ export const Label = ({
   <RacLabel className={label({ size, isDisabled })} {...props}>
     {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
     {children}
-    {exists(tooltip) && <InfoTooltip text={tooltip} />}
+    {exists(tooltip) && <InfoTooltip text={tooltip} excludeFromTabOrder />}
   </RacLabel>
 );
 
