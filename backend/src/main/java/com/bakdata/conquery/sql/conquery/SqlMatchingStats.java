@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conquery;
 
 import java.sql.Date;
+import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -237,6 +238,19 @@ public class SqlMatchingStats {
 
 			Field<Date>[] validityDates = collectValidityDateFields(connector);
 
+			Name tableName = name(connector.getResolvedTable().getName());
+
+			Condition condition = noCondition();
+
+			if (connector.getColumn() != null) {
+				condition = field(name(tableName, name(connector.getColumn().getColumn()))).isNotNull();
+			}
+
+			if (connector.getCondition() != null) {
+				CTConditionContext context = CTConditionContext.forConnector(connector, functionProvider);
+				condition = condition.and(connector.getCondition().convertToSqlCondition(context).condition());
+			}
+
 			SelectConditionStep<? extends Record> connectorTable =
 					dslContext.select(
 									TablePrimaryColumnUtil.findPrimaryColumn(connector.getResolvedTable(), defaultPrimaryColumn).as(PID_FIELD),
@@ -244,13 +258,11 @@ public class SqlMatchingStats {
 									least(positiveInfinity, validityDates).as(LB_FIELD),
 									greatest(negativeInfinity, validityDates).as(UB_FIELD),
 									CONCEPT_ID_FIELD)
-							.from(table(name(connector.getResolvedTable().getName())))
+							.from(table(tableName))
 							.leftJoin(mapping.table())
 							// join onto the concept-ids table to assign the most specific id.
 							.on(mapping.joinCondition(connector))
-							.where(connector.getCondition() != null ? connector.getCondition()
-									.convertToSqlCondition(CTConditionContext.forConnector(connector, functionProvider))
-									.condition() : noCondition());
+							.where(condition);
 
 			connectorTables.add(connectorTable);
 		}
