@@ -44,13 +44,7 @@ import type { Tree, TreeChildrenTime } from "./types";
 import { findNodeById, useGetTranslatedConnection } from "./util";
 
 const main = tv({
-  base: [
-    "grow",
-    "h-full",
-    "pt-2 pb-[10px] px-[10px]",
-    "flex flex-col",
-    "gap-[10px]",
-  ],
+  base: ["pt-2 pb-[10px] px-[10px]", "flex flex-col", "gap-[10px]"],
 });
 
 const useEditorState = () => {
@@ -243,7 +237,7 @@ export function EditorV2({
   );
 
   return (
-    <div className="flex h-full grow flex-col">
+    <div className="grid grid-rows-[minmax(0,1fr)_auto]">
       <div className={main()}>
         {showQueryNodeEditor &&
           selectedNode?.data &&
