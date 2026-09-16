@@ -1,9 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
-import { DialogTrigger } from "react-aria-components";
+import { DialogTrigger, MenuTrigger } from "react-aria-components";
 
+import type { SelectOptionT } from "../api/types";
 import { Button } from "./Button";
+import { ComboBoxField } from "./ComboBoxField";
+import { DateField } from "./DateField/DateField";
+import InputMultiSelect from "./InputMultiSelect/InputMultiSelect";
+import { Menu, MenuItem } from "./Menu";
 import { Modal, ModalBody, ModalFooter, ModalHeader } from "./Modal";
+import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 export default {
   title: "UiComponents/Modal",
@@ -175,3 +181,98 @@ const Controlled = () => {
 
 /** Controlled with `isOpen` / `onOpenChange` when the trigger is not a button next to it. */
 export const ControlledOpenState: Story = { render: () => <Controlled /> };
+
+const REGIONS: SelectOptionT[] = Array.from({ length: 60 }, (_, i) => ({
+  value: i,
+  label: `Region ${i + 1}`,
+}));
+
+// every kind of overlay that can open from inside a dialog, at the bottom of the card
+const Overlays = () => {
+  const [region, setRegion] = useState<SelectOptionT | null>(null);
+  const [regions, setRegions] = useState<SelectOptionT[]>([]);
+  const [date, setDate] = useState("");
+
+  return (
+    <div className="flex flex-col gap-3">
+      <ComboBoxField
+        label="Region"
+        options={REGIONS}
+        value={region}
+        onChange={setRegion}
+      />
+      <InputMultiSelect
+        label="Regions"
+        options={REGIONS}
+        value={regions}
+        onChange={setRegions}
+      />
+      <DateField
+        label="Start"
+        value={date}
+        onChange={setDate}
+        dateFormat="dd.MM.yyyy"
+        placeholder="DD.MM.YYYY"
+      />
+      <div className="flex gap-2">
+        <MenuTrigger>
+          <Button>Menu</Button>
+          <Menu aria-label="Regions">
+            {REGIONS.slice(0, 30).map((r) => (
+              <MenuItem key={r.value} id={r.value}>
+                {r.label}
+              </MenuItem>
+            ))}
+          </Menu>
+        </MenuTrigger>
+        <TooltipTrigger>
+          <Button>Tooltip</Button>
+          <Tooltip>
+            A tooltip that must not be cut off by the card either.
+          </Tooltip>
+        </TooltipTrigger>
+      </div>
+    </div>
+  );
+};
+
+/** The combobox list, menu, calendar and tooltip open in portals; the multi select's list does not. */
+export const OverlaysInside: Story = {
+  render: () => (
+    <DialogTrigger>
+      <Button>Overlays</Button>
+      <Modal>
+        <ModalHeader>Overlays inside a dialog</ModalHeader>
+        <ModalBody>
+          <Overlays />
+        </ModalBody>
+        <ModalFooter>
+          <Button slot="close">Done</Button>
+        </ModalFooter>
+      </Modal>
+    </DialogTrigger>
+  ),
+};
+
+/** Same, in a card that scrolls: a list that is not portaled gets clipped here. */
+export const OverlaysInsideScrollable: Story = {
+  render: () => (
+    <DialogTrigger>
+      <Button>Overlays, scrolling card</Button>
+      <Modal scrollable>
+        <ModalHeader>Overlays inside a scrolling dialog</ModalHeader>
+        <ModalBody>
+          <ul className="mb-5 flex flex-col gap-2">
+            {Array.from({ length: 40 }, (_, i) => (
+              <li key={i}>Row {i + 1}</li>
+            ))}
+          </ul>
+          <Overlays />
+        </ModalBody>
+        <ModalFooter>
+          <Button slot="close">Done</Button>
+        </ModalFooter>
+      </Modal>
+    </DialogTrigger>
+  ),
+};
