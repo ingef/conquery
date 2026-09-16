@@ -1,8 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import { TransparentButton } from "../../button/TransparentButton";
 import { exists } from "../../common/helpers/exists";
+import { Button } from "../Button";
 
 const row = tv({
   base: [
@@ -33,13 +32,14 @@ const MenuActionBar = ({ optionsCount, total, onInsertAllClick }: Props) => {
           total !== optionsCount &&
           t("inputMultiSelect.ofTotal", { count: total })}
       </p>
-      <TransparentButton
-        tiny
-        disabled={optionsCount === 0}
-        onClick={onInsertAllClick}
+      <Button
+        intent="secondary"
+        size="sm"
+        isDisabled={optionsCount === 0}
+        onPress={onInsertAllClick}
       >
         {t("inputMultiSelect.insertAll")}
-      </TransparentButton>
+      </Button>
     </div>
   );
 };

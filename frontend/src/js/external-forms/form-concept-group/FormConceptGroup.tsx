@@ -1,10 +1,9 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import { usePostPrefixForSuggestions } from "../../api/api";
 import type { SelectorResultType } from "../../api/types";
-import { TransparentButton } from "../../button/TransparentButton";
 import { DNDType } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";
 import {
@@ -16,6 +15,7 @@ import {
   nodeHasNonDefaultSettings,
 } from "../../model/node";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
+import { Button } from "../../ui-components/Button";
 import {
   isMovedObject,
   type PossibleDroppableObject,
@@ -23,7 +23,8 @@ import {
 import DropzoneWithFileInput, {
   type DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
-import ToggleButton from "../../ui-components/ToggleButton";
+import { ToggleButton } from "../../ui-components/ToggleButton";
+import { ToggleButtonGroup } from "../../ui-components/ToggleButtonGroup";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 import { Description } from "../form-components/Description";
@@ -282,11 +283,7 @@ const FormConceptGroup = (props: Props) => {
     isValidConcept: props.isValidConcept,
   });
 
-  const {
-    isOpen: isCopyModalOpen,
-    setIsOpen: setIsCopyModalOpen,
-    onAccept: onAcceptCopyModal,
-  } = useCopyModal({
+  const { onAccept: onAcceptCopyModal } = useCopyModal({
     value: props.value,
     onChange: props.onChange,
     newValue,
@@ -309,13 +306,17 @@ const FormConceptGroup = (props: Props) => {
           <>
             {props.label}
             {allowExtendedCopying && (
-              <TransparentButton
-                className="ml-[10px] shrink-0"
-                tiny
-                onClick={() => setIsCopyModalOpen(true)}
-              >
-                {t("externalForms.common.concept.copyFrom")}
-              </TransparentButton>
+              <span className="ml-[10px]">
+                <DialogTrigger>
+                  <Button intent="secondary" size="sm">
+                    {t("externalForms.common.concept.copyFrom")}
+                  </Button>
+                  <FormConceptCopyModal
+                    targetFieldname={props.fieldName}
+                    onAccept={onAcceptCopyModal}
+                  />
+                </DialogTrigger>
+              </span>
             )}
           </>
         }
@@ -361,20 +362,22 @@ const FormConceptGroup = (props: Props) => {
                 <Description className={connectorDescription()}>
                   {t("externalForms.common.connectedWith")}:
                 </Description>
-                <ToggleButton
-                  value={props.value[i].connector}
-                  onChange={(val) => {
+                <ToggleButtonGroup
+                  size="sm"
+                  selectionMode="single"
+                  disallowEmptySelection
+                  selectedKeys={[props.value[i].connector]}
+                  onSelectionChange={(keys) => {
+                    const [connector] = keys;
+                    if (typeof connector !== "string") return;
                     props.onChange(
-                      setValueProperties(props.value, i, {
-                        connector: val,
-                      }),
+                      setValueProperties(props.value, i, { connector }),
                     );
                   }}
-                  options={[
-                    { value: "OR", label: t("common.or") },
-                    { value: "AND", label: t("common.and") },
-                  ]}
-                />
+                >
+                  <ToggleButton id="OR">{t("common.or")}</ToggleButton>
+                  <ToggleButton id="AND">{t("common.and")}</ToggleButton>
+                </ToggleButtonGroup>
               </div>
             )}
             <DynamicInputGroup
@@ -471,13 +474,6 @@ const FormConceptGroup = (props: Props) => {
           </div>
         ))}
       />
-      {isCopyModalOpen && (
-        <FormConceptCopyModal
-          targetFieldname={props.fieldName}
-          onAccept={onAcceptCopyModal}
-          onClose={() => setIsCopyModalOpen(false)}
-        />
-      )}
       {isUploadConceptListModalOpen && (
         <UploadConceptListModal
           onAcceptConceptsOrFilter={onAcceptUploadModalConceptsOrFilter}

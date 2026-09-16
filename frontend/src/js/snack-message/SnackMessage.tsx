@@ -1,10 +1,12 @@
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { memo, useRef } from "react";
+import { Button as RacButton } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import { useClickOutside } from "../common/helpers/useClickOutside";
-import FaIcon from "../icon/FaIcon";
+import { Icon } from "../ui-components/Icon";
 import { resetMessage as resetMessageAction } from "./actions";
 import type { SnackMessageStateT } from "./reducer";
 
@@ -26,7 +28,12 @@ const root = tv({
 });
 
 const clearZone = tv({
-  base: ["absolute top-3 right-4", "z-11", "opacity-80 hover:opacity-100"],
+  base: [
+    "absolute top-3 right-4",
+    "z-11",
+    "opacity-80 hover:opacity-100",
+    "cursor-pointer",
+  ],
 });
 
 export const SnackMessage = memo(function SnackMessageComponent() {
@@ -34,6 +41,7 @@ export const SnackMessage = memo(function SnackMessageComponent() {
   const { message, type } = useSelector<StateT, SnackMessageStateT>(
     (state) => state.snackMessage,
   );
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const resetMessage = () => dispatch(resetMessageAction());
 
@@ -50,13 +58,13 @@ export const SnackMessage = memo(function SnackMessageComponent() {
           <div className="relative py-3 pr-10 pl-5">
             {/* biome-ignore lint/security/noDangerouslySetInnerHtml: messages are our own i18n text */}
             <div dangerouslySetInnerHTML={{ __html: message }} />
-            <button
-              type="button"
+            <RacButton
+              aria-label={t("common.close")}
               className={clearZone()}
-              onClick={resetMessage}
+              onPress={resetMessage}
             >
-              <FaIcon white large icon={faTimes} />
-            </button>
+              <Icon icon={faTimes} className="text-white" />
+            </RacButton>
           </div>
         </div>
       )}

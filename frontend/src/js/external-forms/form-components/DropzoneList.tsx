@@ -1,10 +1,9 @@
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import type { ReactNode, Ref } from "react";
 import type { DropTargetMonitor } from "react-dnd";
+import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import IconButton from "../../button/IconButton";
-import InfoTooltip from "../../tooltip/InfoTooltip";
+import { Button } from "../../ui-components/Button";
 import type {
   ChildArgs,
   PossibleDroppableObject,
@@ -12,6 +11,8 @@ import type {
 import DropzoneWithFileInput, {
   type DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
+import { Icon } from "../../ui-components/Icon";
+import InfoTooltip from "../../ui-components/InfoTooltip";
 import Label from "../../ui-components/Label";
 
 import DropzoneBetweenElements from "./DropzoneBetweenElements";
@@ -71,6 +72,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>({
   dropBetween,
   ref,
 }: PropsT<DroppableObject> & { ref?: Ref<HTMLDivElement> }) => {
+  const { t } = useTranslation();
   // allow at least one column
   const showDropzone =
     (items && items.length === 0) || !disallowMultipleColumns;
@@ -93,12 +95,16 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>({
                 />
               )}
               <div className={listItem()}>
-                <IconButton
-                  className="absolute top-0 right-0"
-                  bgHover
-                  icon={faTimes}
-                  onClick={() => onDelete(i)}
-                />
+                <div className="absolute top-0 right-0">
+                  <Button
+                    size="sm"
+                    intent="tertiary"
+                    aria-label={t("common.delete")}
+                    onPress={() => onDelete(i)}
+                  >
+                    <Icon icon={faTimes} />
+                  </Button>
+                </div>
                 {item}
               </div>
             </div>

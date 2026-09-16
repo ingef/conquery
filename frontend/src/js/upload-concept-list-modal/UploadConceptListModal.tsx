@@ -14,7 +14,6 @@ import {
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import {
   usePostConceptsListToResolve,
   usePostFilterValuesResolve,
@@ -29,14 +28,19 @@ import type {
   SelectOptionT,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
-import PrimaryButton from "../button/PrimaryButton";
-import FaIcon from "../icon/FaIcon";
-import Modal from "../modal/Modal";
 import { nodeIsElement } from "../model/node";
 import ScrollableList from "../scrollable-list/ScrollableList";
-import InputCheckbox from "../ui-components/InputCheckbox";
+import { Button } from "../ui-components/Button";
+import { Checkbox } from "../ui-components/Checkbox";
+import { Icon } from "../ui-components/Icon";
 import InputPlain from "../ui-components/InputPlain/InputPlain";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "../ui-components/Modal";
 import { DropdownOption } from "./DropdownOption";
 import type { UploadConceptListModalStateT } from "./reducer";
 
@@ -476,13 +480,17 @@ const UploadConceptListModal = ({
 
   return (
     <Modal
-      onClose={onClose}
-      headline={t("uploadConceptListModal.headline")}
-      dataTestId="uploadConceptListModal"
+      size="xl"
+      data-test-id="uploadConceptListModal"
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
-      <div className="pb-[10px]">
+      <ModalHeader>{t("uploadConceptListModal.headline")}</ModalHeader>
+      <ModalBody>
         <InputSelect
-          className="w-[60vw] max-w-[900px]"
+          className="w-full"
           label={t("uploadConceptListModal.selectConceptRootNode")}
           value={
             selectOptions.find(({ value }) => value === selectedValue) || null
@@ -494,22 +502,22 @@ const UploadConceptListModal = ({
         <div className="mt-[15px] grid gap-5">
           {error && (
             <div className="flex items-center">
-              <FaIcon
-                className={bigIcon({ kind: "error" })}
+              <Icon
                 icon={faExclamationCircle}
+                className={bigIcon({ kind: "error" })}
               />
               {t("uploadConceptListModal.error")}
             </div>
           )}
-          {loading && <FaIcon className="text-center" icon={faSpinner} />}
+          {loading && <Icon icon={faSpinner} className="text-center" />}
           {(!!resolvedConcepts || !!resolvedFilters) && (
             <>
               {hasUnresolvedItems && (
                 <div>
                   <p className="m-0">
-                    <FaIcon
-                      className={bigIcon({ kind: "error" })}
+                    <Icon
                       icon={faExclamationCircle}
+                      className={bigIcon({ kind: "error" })}
                     />
                     <span>
                       {t("uploadConceptListModal.unknownCodes", {
@@ -537,9 +545,9 @@ const UploadConceptListModal = ({
                 <div>
                   {hasResolvedItems && (
                     <>
-                      <FaIcon
-                        className={bigIcon({ kind: "success" })}
+                      <Icon
                         icon={faCheckCircle}
+                        className={bigIcon({ kind: "success" })}
                       />
                       {t("uploadConceptListModal.resolvedCodes", {
                         count: resolvedItemsCount,
@@ -557,34 +565,33 @@ const UploadConceptListModal = ({
                   />
                 </div>
                 {(resolvedFilters?.unknownCodes?.length || 0) > 0 && (
-                  <InputCheckbox
-                    tooltip={
+                  <Checkbox
+                    infoTooltip={
                       mustIncludeUnresolved
                         ? t(
                             "uploadConceptListModal.includeUnresolvedTooltipDisabled",
                           )
                         : undefined
                     }
-                    disabled={mustIncludeUnresolved}
-                    value={mustIncludeUnresolved || includeUnresolved}
+                    isDisabled={mustIncludeUnresolved}
+                    isSelected={mustIncludeUnresolved || includeUnresolved}
                     onChange={setIncludeUnresolved}
-                    label={t("uploadConceptListModal.includeUnresolved")}
-                  />
+                  >
+                    {t("uploadConceptListModal.includeUnresolved")}
+                  </Checkbox>
                 )}
-                <PrimaryButton
-                  className="shrink-0"
-                  type="submit"
-                  data-test-id="insert"
-                >
-                  {mustIncludeUnresolved
-                    ? t("uploadConceptListModal.insertRegardless")
-                    : t("uploadConceptListModal.insertNode")}
-                </PrimaryButton>
+                <ModalFooter>
+                  <Button intent="primary" type="submit" data-test-id="insert">
+                    {mustIncludeUnresolved
+                      ? t("uploadConceptListModal.insertRegardless")
+                      : t("uploadConceptListModal.insertNode")}
+                  </Button>
+                </ModalFooter>
               </form>
             </>
           )}
         </div>
-      </div>
+      </ModalBody>
     </Modal>
   );
 };

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../../app/reducers";
-import FaIcon from "../../icon/FaIcon";
+import { Icon } from "../../ui-components/Icon";
 import type { EntityHistoryStateT } from "../reducer";
 
 const root = tv({
@@ -22,7 +22,7 @@ const message = tv({
 });
 
 const bigIcon = tv({
-  base: ["text-[120px]", "text-gray-100"],
+  base: ["size-[120px]", "text-gray-100"],
 });
 
 export const TimelineEmptyPlaceholder = ({
@@ -59,9 +59,9 @@ export const TimelineEmptyPlaceholder = ({
   return (
     <div className={root({ className })}>
       <div className="flex items-center gap-[30px]">
-        <FaIcon
-          className={bigIcon()}
+        <Icon
           icon={searchTerm ? faMagnifyingGlass : faListUl}
+          className={bigIcon()}
         />
         <div>
           <h2 className="text-2xl leading-[1.3]">

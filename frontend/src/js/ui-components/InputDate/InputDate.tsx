@@ -1,11 +1,12 @@
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { type Ref, useRef } from "react";
+import { Button as RacButton } from "react-aria-components";
 import ReactDatePicker from "react-datepicker";
+import { Icon } from "../Icon";
 import "react-datepicker/dist/react-datepicker.css";
 import { mergeRefs } from "react-merge-refs";
 import { tv } from "tailwind-variants";
 
-import IconButton from "../../button/IconButton";
 import { formatDate, parseDate } from "../../common/helpers/dateHelper";
 import BaseInput, { type Props as BaseInputProps } from "../BaseInput";
 
@@ -18,7 +19,13 @@ const root = tv({
 });
 
 const calendarButton = tv({
-  base: ["absolute top-0 left-0", "px-[10px] py-2"],
+  base: [
+    "absolute top-0 left-0",
+    "h-[30px] px-[10px]",
+    "flex items-center",
+    "text-gray-800",
+    "cursor-pointer",
+  ],
 });
 
 const baseInput = tv({
@@ -68,11 +75,12 @@ const InputDate = ({
           },
         }}
       />
-      <IconButton
+      <RacButton
         className={calendarButton()}
-        icon={faCalendar}
-        onClick={() => datePickerRef.current?.setOpen(true)}
-      />
+        onPress={() => datePickerRef.current?.setOpen(true)}
+      >
+        <Icon icon={faCalendar} />
+      </RacButton>
       <ReactDatePicker
         ref={mergeRefs([datePickerRef, ref])}
         portalId="datepicker-portal"

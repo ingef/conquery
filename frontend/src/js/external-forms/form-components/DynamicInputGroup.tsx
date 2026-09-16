@@ -1,9 +1,9 @@
 import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 import type { ReactNode } from "react";
-
+import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import IconButton from "../../button/IconButton";
+import { Button } from "../../ui-components/Button";
+import { Icon } from "../../ui-components/Icon";
 
 interface PropsT {
   className?: string;
@@ -19,7 +19,7 @@ const container = tv({
 });
 
 const removeButton = tv({
-  base: ["absolute -top-[7px] -right-[7px]", "z-1", "bg-white", "opacity-100"],
+  base: ["absolute -top-[7px] -right-[7px]", "z-1", "rounded bg-white"],
 });
 
 const groupItem = tv({
@@ -34,6 +34,7 @@ const DynamicInputGroup = ({
   onRemoveClick,
   onAddClick,
 }: PropsT) => {
+  const { t } = useTranslation();
   // 0 means "infinite"
   const limitNotReached = limit === 0 || items.length < limit;
 
@@ -52,18 +53,28 @@ const DynamicInputGroup = ({
             you can also just delete the following constraint:
            */}
           {limit !== 1 && (
-            <IconButton
-              className={removeButton()}
-              bgHover
-              tiny
-              icon={faTimes}
-              onClick={() => onRemoveClick(idx)}
-            />
+            <div className={removeButton()}>
+              <Button
+                intent="tertiary"
+                size="sm"
+                aria-label={t("common.delete")}
+                onPress={() => onRemoveClick(idx)}
+              >
+                <Icon icon={faTimes} />
+              </Button>
+            </div>
           )}
         </div>
       ))}
       {limitNotReached && (
-        <IconButton bgHover icon={faPlus} tiny onClick={onAddClick} />
+        <Button
+          intent="tertiary"
+          size="sm"
+          aria-label={t("common.add")}
+          onPress={onAddClick}
+        >
+          <Icon icon={faPlus} />
+        </Button>
       )}
     </div>
   );

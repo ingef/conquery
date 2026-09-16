@@ -1,13 +1,8 @@
 name: "End-To-End Tests"
 
+# Called from ci.yml on every run.
 on:
-  push:
-    branches:
-      # Always run on protected branches
-      - master
-      - develop
-      - release
-  pull_request:
+  workflow_call:
 
 jobs:
   test:

@@ -4,8 +4,8 @@ import { tv } from "tailwind-variants";
 
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { BadgeToggleButton } from "../button/BadgeToggleButton";
 import { Heading3 } from "../headings/Headings";
+import { BadgeToggleButton } from "./BadgeToggleButton";
 
 import type { EntityId } from "./reducer";
 

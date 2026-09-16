@@ -3,8 +3,6 @@ import { createRef, type ReactNode, useMemo } from "react";
 import type ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
-import { IndexPrefix } from "../common/components/IndexPrefix";
 import {
   type DateStringMinMax,
   formatDateFromState,
@@ -13,8 +11,9 @@ import {
   parseDateToState,
 } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
-import FaIcon from "../icon/FaIcon";
-import InfoTooltip from "../tooltip/InfoTooltip";
+import { Icon } from "./Icon";
+import { IndexPrefix } from "./IndexPrefix";
+import InfoTooltip from "./InfoTooltip";
 
 import InputDate from "./InputDate/InputDate";
 import Label from "./Label";
@@ -171,7 +170,7 @@ const InputDateRange = ({
 
     return (
       <Label large={large}>
-        <FaIcon icon={faCalendar} left gray />
+        <Icon icon={faCalendar} className="mr-[10px] text-gray-500" />
         {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
         {label}
         <InfoTooltip

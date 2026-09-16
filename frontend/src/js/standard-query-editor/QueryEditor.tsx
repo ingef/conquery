@@ -7,7 +7,7 @@ import Query from "./Query";
 import StandardQueryNodeEditor from "./StandardQueryNodeEditor";
 
 const root = tv({
-  base: ["grow", "h-full", "pt-2 px-[10px] pb-[10px]", "overflow-hidden"],
+  base: ["pt-2 px-[10px] pb-[10px]", "overflow-hidden"],
 });
 
 export const QueryEditor = () => {

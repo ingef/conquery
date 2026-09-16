@@ -1,5 +1,7 @@
 import type { Decorator, Preview } from "@storybook/react";
 
+import "../src/index.css";
+
 import { theme } from "../src/app-theme";
 import DndProvider from "../src/js/app/DndProvider";
 import { AppThemeContext } from "../src/js/app-theme-context";

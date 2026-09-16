@@ -3,14 +3,15 @@ import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
-
 import type { SecondaryId } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
-import FaIcon from "../icon/FaIcon";
 import { nodeIsConceptQueryNode } from "../model/node";
-import InfoTooltip from "../tooltip/InfoTooltip";
-import ToggleButton from "../ui-components/ToggleButton";
+import { Icon } from "../ui-components/Icon";
+import InfoTooltip from "../ui-components/InfoTooltip";
+import { ToggleButton } from "../ui-components/ToggleButton";
+import { ToggleButtonGroup } from "../ui-components/ToggleButtonGroup";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { setSelectedSecondaryId } from "./actions";
 import type { StandardQueryStateT } from "./queryReducer";
@@ -151,7 +152,7 @@ const SecondaryIdSelectorUI = memo(
     value,
     onChange,
   }: {
-    options: { label: string; value: string }[];
+    options: { label: string; value: string; description?: string }[];
     value: string | null;
     onChange: (value: string) => void;
   }) => {
@@ -160,19 +161,31 @@ const SecondaryIdSelectorUI = memo(
     return (
       <div>
         <h3 className={headline({ active: !!value })}>
-          <FaIcon
-            className={headlineIcon({ active: !!value })}
-            left
+          <Icon
             icon={faMicroscope}
+            className={[headlineIcon({ active: !!value }), "mr-[10px]"]}
           />
           {t("queryEditor.secondaryId")}
           <InfoTooltip text={t("queryEditor.secondaryIdTooltip")} />
         </h3>
-        <ToggleButton
-          value={value || "standard"}
-          onChange={onChange}
-          options={options}
-        />
+        <ToggleButtonGroup
+          wrap
+          size="sm"
+          selectionMode="single"
+          disallowEmptySelection
+          selectedKeys={[value || "standard"]}
+          onSelectionChange={(keys) => {
+            const [key] = keys;
+            if (typeof key === "string") onChange(key);
+          }}
+        >
+          {options.map(({ value: id, label, description }) => (
+            <TooltipTrigger key={id}>
+              <ToggleButton id={id}>{label}</ToggleButton>
+              <Tooltip>{description}</Tooltip>
+            </TooltipTrigger>
+          ))}
+        </ToggleButtonGroup>
       </div>
     );
   },

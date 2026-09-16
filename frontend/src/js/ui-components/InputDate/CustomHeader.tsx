@@ -4,13 +4,14 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import type { ReactDatePickerCustomHeaderProps } from "react-datepicker";
+import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-
 import type { SelectOptionT } from "../../api/types";
-import IconButton from "../../button/IconButton";
-import { TransparentButton } from "../../button/TransparentButton";
 import { useMonthName, useMonthNames } from "../../common/helpers/dateHelper";
+import { Button } from "../Button";
+import { Icon } from "../Icon";
 import { List, Menu } from "../InputSelect/InputSelectComponents";
+import { ToggleButton } from "../ToggleButton";
 
 const root = tv({
   base: "flex items-center justify-between",
@@ -54,17 +55,18 @@ const SelectMenu = ({
       <Menu>
         <List className={optionList({ layout })}>
           {options.map((option) => (
-            <TransparentButton
-              small
+            <ToggleButton
+              intent="secondary"
+              size="sm"
               key={option.value}
-              active={
+              isSelected={
                 option.value === date.getFullYear() ||
                 option.value === date.getMonth()
               }
-              onClick={() => onSelect(option.value as number)}
+              onPress={() => onSelect(option.value as number)}
             >
               {option.label}
-            </TransparentButton>
+            </ToggleButton>
           ))}
         </List>
       </Menu>
@@ -144,23 +146,30 @@ export const CustomHeader = ({
   prevMonthButtonDisabled,
   nextMonthButtonDisabled,
 }: ReactDatePickerCustomHeaderProps) => {
+  const { t } = useTranslation();
   return (
     <div className={root()}>
-      <IconButton
-        icon={faChevronLeft}
-        onClick={decreaseMonth}
-        disabled={prevMonthButtonDisabled}
-      />
+      <Button
+        intent="tertiary"
+        aria-label={t("inputDate.previousMonth")}
+        onPress={decreaseMonth}
+        isDisabled={prevMonthButtonDisabled}
+      >
+        <Icon icon={faChevronLeft} />
+      </Button>
       <YearMonthSelect
         date={date}
         changeYear={changeYear}
         changeMonth={changeMonth}
       />
-      <IconButton
-        icon={faChevronRight}
-        onClick={increaseMonth}
-        disabled={nextMonthButtonDisabled}
-      />
+      <Button
+        intent="tertiary"
+        aria-label={t("inputDate.nextMonth")}
+        onPress={increaseMonth}
+        isDisabled={nextMonthButtonDisabled}
+      >
+        <Icon icon={faChevronRight} />
+      </Button>
     </div>
   );
 };

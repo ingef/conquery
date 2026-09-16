@@ -1,31 +1,18 @@
-import { faCalendarMinus } from "@fortawesome/free-regular-svg-icons";
 import { faUndo } from "@fortawesome/free-solid-svg-icons";
 import { useCallback, useMemo } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
-import { tv } from "tailwind-variants";
-
 import type { DateRangeT } from "../../api/types";
-import IconButton from "../../button/IconButton";
 import type { DateStringMinMax } from "../../common/helpers/dateHelper";
-import FaIcon from "../../icon/FaIcon";
-import Modal from "../../modal/Modal";
-import InputCheckbox from "../../ui-components/InputCheckbox";
+import { Button } from "../../ui-components/Button";
+import { Checkbox } from "../../ui-components/Checkbox";
+import { Icon } from "../../ui-components/Icon";
 import InputDateRange from "../../ui-components/InputDateRange";
-
-const sectionHeadline = tv({
-  base: [
-    "flex items-center",
-    "gap-[10px]",
-    "mb-[10px]",
-    "text-base",
-    "font-normal",
-  ],
-});
-
-const resetAll = tv({
-  base: ["ml-5", "text-primary-500", "font-bold"],
-});
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "../../ui-components/Modal";
 
 export const DateModal = ({
   onClose,
@@ -46,22 +33,18 @@ export const DateModal = ({
 }) => {
   const { t } = useTranslation();
 
-  useHotkeys("esc", onClose, [onClose]);
-
   const minDate = dateRange ? dateRange.min || null : null;
   const maxDate = dateRange ? dateRange.max || null : null;
   const hasActiveDate = !!(minDate || maxDate);
 
   const labelSuffix = useMemo(() => {
     return hasActiveDate ? (
-      <IconButton
-        className={resetAll()}
-        bare
-        onClick={onResetDates}
-        icon={faUndo}
-      >
-        {t("queryNodeEditor.reset")}
-      </IconButton>
+      <span className="ml-5">
+        <Button intent="link" onPress={onResetDates}>
+          <Icon icon={faUndo} />
+          {t("queryNodeEditor.reset")}
+        </Button>
+      </span>
     ) : null;
   }, [t, hasActiveDate, onResetDates]);
 
@@ -79,36 +62,38 @@ export const DateModal = ({
 
   return (
     <Modal
-      onClose={onClose}
-      doneButton
-      headline={t("queryGroupModal.explanation")}
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
-      <div className="flex flex-col gap-8">
-        <div>{headline}</div>
-        <InputDateRange
-          large
-          inline
-          autoFocus
-          label={t("queryGroupModal.dateRange")}
-          labelSuffix={labelSuffix}
-          onChange={onChange}
-          value={{
-            min: minDate,
-            max: maxDate,
-          }}
-        />
-        <div>
-          <p className={sectionHeadline()}>
-            <FaIcon icon={faCalendarMinus} red />
+      <ModalHeader>{t("queryGroupModal.explanation")}</ModalHeader>
+      <ModalBody>
+        <div className="flex flex-col gap-8">
+          <div>{headline}</div>
+          <InputDateRange
+            large
+            inline
+            autoFocus
+            label={t("queryGroupModal.dateRange")}
+            labelSuffix={labelSuffix}
+            onChange={onChange}
+            value={{
+              min: minDate,
+              max: maxDate,
+            }}
+          />
+          <Checkbox
+            isSelected={excludeFromDates}
+            onChange={setExcludeFromDates}
+          >
             {t("queryNodeEditor.excludeTimestamps")}
-            <InputCheckbox
-              label=""
-              onChange={setExcludeFromDates}
-              value={excludeFromDates}
-            />
-          </p>
+          </Checkbox>
         </div>
-      </div>
+      </ModalBody>
+      <ModalFooter>
+        <Button slot="close">{t("common.done")}</Button>
+      </ModalFooter>
     </Modal>
   );
 };

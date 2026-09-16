@@ -10,10 +10,12 @@
     "reloadDescription": "Bitte hinterlasse uns eine Nachricht, damit wir dieses Problem beheben können."
   },
   "leftPane": {
+    "tabs": "Konzepte und Anfragen",
     "conceptTrees": "Konzepte",
     "previousQueries": "Anfragen und Formulare"
   },
   "rightPane": {
+    "tabs": "Editoren",
     "queryEditor": "Editor",
     "timebasedQueryEditor": "Zeit-Editor",
     "externalForms": "Formular-Editor",
@@ -133,7 +135,10 @@
     "unshare": "Freigabe aufheben"
   },
   "common": {
+    "add": "Hinzufügen",
+    "retry": "Erneut versuchen",
     "version": "Version",
+    "help": "Hilfe",
     "manual": "Handbuch",
     "contact": "Kontakt",
     "confirm": "Bestätigen",
@@ -152,7 +157,6 @@
     "title": "Titel",
     "description": "Beschreibung",
     "clearValue": "Wert entfernen",
-    "closeEsc": "Schließen (ESC)",
     "close": "Schließen",
     "create": "Erstellen",
     "addTag": "Zu Ordner hinzufügen",
@@ -172,15 +176,15 @@
     "openFileDialog": "Datei auswählen",
     "shortcut": "Kurzbefehl",
     "true": "Wahr",
-    "false": "Falsch"
-  },
-  "tooltip": {
-    "headline": "Info",
-    "placeholder": "Weitere Informationen zu Konzepten ...",
+    "false": "Falsch",
     "entitiesFound_one": "Entität",
     "entitiesFound_other": "Entitäten",
     "entriesFound_one": "Eintrag",
-    "entriesFound_other": "Einträge",
+    "entriesFound_other": "Einträge"
+  },
+  "infoPane": {
+    "headline": "Info",
+    "placeholder": "Weitere Informationen zu Konzepten ...",
     "date": {
       "daterange": "Zeitraum",
       "from": "Von",
@@ -238,12 +242,14 @@
     "hasNoDates": "Keine Datumswerte in den Ergebnissen vorhanden."
   },
   "projectItemsFilter": {
+    "label": "Filter",
     "all": "Alle",
     "own": "Eigene",
     "shared": "Freigegeben",
     "system": "SYSTEM"
   },
   "projectItemsTypeFilter": {
+    "label": "Typ",
     "queries": "Nur Anfragen",
     "configs": "Nur Formulare"
   },
@@ -394,8 +400,14 @@
     "placeholder": "Suchen ...",
     "resultLabel": "{{totalResults}} Ergebnisse ({{duration}} s)"
   },
+  "inputDate": {
+    "previousMonth": "Vormonat",
+    "nextMonth": "Nächster Monat"
+  },
   "preview": {
     "preview": "Vorschau",
+    "previousPage": "Vorherige Seite",
+    "nextPage": "Nächste Seite",
     "page": "Seite",
     "headline": "Ergebnisvorschau",
     "previewHeadline": "Ergebnis-CSV",
@@ -472,6 +484,7 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "infoTabs": "Info-Kategorien",
     "search": "Suche",
     "matches_one": "Eintrag",
     "matches_other": "Einträge",
@@ -528,7 +541,8 @@
       "importPlaceholder": "{{idkind}};A0123456788;auffällig;\n{{idkind}};A0123456789;;unauffällig",
       "error": "Konnte Historie für diese Datei nicht laden."
     },
-    "searchResultLabel": "Gefundene IDs"
+    "searchResultLabel": "Gefundene IDs",
+    "toolbar": "Werkzeugleiste"
   },
   "importModal": {
     "headline": "Zeilenweise Importieren",
