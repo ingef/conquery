@@ -12,10 +12,15 @@ import java.util.Map;
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.CteStep;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
+import com.bakdata.conquery.sql.compiler.ir.SchemaSql;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.compiler.ir.interval.IntervalPackingCteStep;
 import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
+import com.bakdata.conquery.sql.model.schema.SqlTable;
 import lombok.experimental.UtilityClass;
+import org.jooq.Record;
+import org.jooq.Table;
+import org.jooq.impl.DSL;
 
 /** Plans the CTE graphs required to compile a resolved concept and its connectors. */
 @UtilityClass
@@ -30,10 +35,57 @@ public class ConceptCtePlanner {
 			CompilerDialect dialect,
 			SqlNameGenerator nameGenerator
 	) {
+		return planConnector(
+				DSL.table(DSL.name(rootTable)),
+				rootTable,
+				connectorName,
+				aggregateEventDates,
+				eventDateSelectsPresent,
+				dialect,
+				nameGenerator
+		);
+	}
+
+	/** Plan one connector branch from a fully resolved physical source table. */
+	public ConnectorCtePlan planConnector(
+			SqlTable sourceTable,
+			String connectorName,
+			boolean aggregateEventDates,
+			boolean eventDateSelectsPresent,
+			CompilerDialect dialect,
+			SqlNameGenerator nameGenerator
+	) {
+		String rootQualifier = sourceTable.physicalName().getLast();
+		return planConnector(
+				SchemaSql.table(sourceTable),
+				rootQualifier,
+				connectorName,
+				aggregateEventDates,
+				eventDateSelectsPresent,
+				dialect,
+				nameGenerator
+		);
+	}
+
+	private ConnectorCtePlan planConnector(
+			Table<Record> sourceTable,
+			String rootQualifier,
+			String connectorName,
+			boolean aggregateEventDates,
+			boolean eventDateSelectsPresent,
+			CompilerDialect dialect,
+			SqlNameGenerator nameGenerator
+	) {
 		Map<CteStep, CteStep> mappings = CteStep.getDefaultPredecessorMap(ConceptCteStep.MANDATORY_STEPS);
 		boolean withIntervalPacking = aggregateEventDates || eventDateSelectsPresent;
 		if (!withIntervalPacking) {
-			return new ConnectorCtePlan(connectorName, createTables(rootTable, connectorName, mappings, nameGenerator), false, false);
+			return new ConnectorCtePlan(
+					connectorName,
+					sourceTable,
+					createTables(rootQualifier, connectorName, mappings, nameGenerator),
+					false,
+					false
+			);
 		}
 
 		mappings.putAll(IntervalPackingCteStep.getMappings(PREPROCESSING, dialect));
@@ -41,8 +93,8 @@ public class ConceptCtePlanner {
 			addIntervalSelectMappings(mappings, INTERVAL_COMPLETE, dialect);
 		}
 
-		SqlTables tables = createTables(rootTable, connectorName, mappings, nameGenerator);
-		return new ConnectorCtePlan(connectorName, tables, true, !aggregateEventDates);
+		SqlTables tables = createTables(rootQualifier, connectorName, mappings, nameGenerator);
+		return new ConnectorCtePlan(connectorName, sourceTable, tables, true, !aggregateEventDates);
 	}
 
 	/** Plan the final concept CTE graph over the converted connector branches. */

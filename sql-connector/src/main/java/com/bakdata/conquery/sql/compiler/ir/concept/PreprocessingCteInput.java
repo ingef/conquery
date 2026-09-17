@@ -7,10 +7,12 @@ import java.util.Optional;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import org.jooq.Record;
+import org.jooq.Table;
 
 /** Fully SQL-resolved input needed to build a connector preprocessing CTE. */
 public record PreprocessingCteInput(
-		String sourceTable,
+		Table<Record> sourceTable,
 		SqlIdColumns ids,
 		ColumnDateRange rawValidityDate,
 		ColumnDateRange validityDate,

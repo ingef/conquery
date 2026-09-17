@@ -1,7 +1,5 @@
 package com.bakdata.conquery.sql.compiler.ir.concept;
 
-import static com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep.PREPROCESSING;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -30,7 +28,7 @@ public class ConnectorCtePipelineAssembler {
 		).toList();
 		ColumnDateRange validityDate = rawValidityDate.asValidityDateRange(plan.connectorName());
 		PreprocessingCteInput preprocessing = new PreprocessingCteInput(
-				plan.tables().getPredecessor(PREPROCESSING),
+				plan.sourceTable(),
 				ids,
 				rawValidityDate,
 				validityDate,

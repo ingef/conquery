@@ -74,7 +74,7 @@ public class ConnectorCteCompiler {
 					.build();
 			return QueryStep.builder()
 					.selects(selects)
-					.fromTable(QueryStep.toTableLike(input.sourceTable()))
+					.fromTable(input.sourceTable())
 					.conditions(conditions);
 		}
 
@@ -90,7 +90,7 @@ public class ConnectorCteCompiler {
 		));
 		conditions.add(new DateRestrictionCondition(stratificationDate, input.rawValidityDate()).condition());
 
-		Table<Record> connectorTable = DSL.table(DSL.name(input.sourceTable()));
+		Table<Record> connectorTable = input.sourceTable();
 		TableLike<Record> joinedTable = connectorTable.innerJoin(stratificationTable)
 				.on(idConditions.toArray(Condition[]::new));
 		Selects selects = Selects.builder()

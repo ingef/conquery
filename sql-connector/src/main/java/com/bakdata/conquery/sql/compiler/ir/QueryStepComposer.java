@@ -38,9 +38,9 @@ public final class QueryStepComposer {
 			CompilerDialect compilerDialect
 	) {
 		Field<String> queryStepPrimaryColumn = queryStep.getQualifiedSelects().getIds().getPrimaryColumn();
-		Field<String> allIdsPrimaryColumn = EntitySchemaSql.primaryId(entitySchema);
+		Field<String> allIdsPrimaryColumn = SchemaSql.field(entitySchema.primaryId(), String.class);
 
-		Table<?> joinedTable = table(EntitySchemaSql.tableName(entitySchema))
+		Table<?> joinedTable = table(SchemaSql.tableName(entitySchema.table()))
 				.leftOuterJoin(table(name(queryStep.getCteName())))
 				.on(allIdsPrimaryColumn.eq(queryStepPrimaryColumn));
 
@@ -194,7 +194,7 @@ public final class QueryStepComposer {
 		}
 
 		negateJoined = DateAggregationCompiler.invert(negateJoined, compilerDialect, nameGenerator);
-		Field<String> allIdsPrimaryColumn = EntitySchemaSql.primaryId(entitySchema);
+		Field<String> allIdsPrimaryColumn = SchemaSql.field(entitySchema.primaryId(), String.class);
 		Field<String> negatePrimaryColumn = negateJoined.getQualifiedSelects().getIds().getPrimaryColumn();
 		Field<String> nonNegatePrimaryColumn = nonNegateJoined.getQualifiedSelects().getIds().getPrimaryColumn();
 
@@ -213,7 +213,7 @@ public final class QueryStepComposer {
 				.ids(new SqlIdColumns(coalescedId))
 				.validityDate(Optional.of(merged));
 
-		Table<?> joinedTable = table(EntitySchemaSql.tableName(entitySchema))
+		Table<?> joinedTable = table(SchemaSql.tableName(entitySchema.table()))
 				.leftOuterJoin(table(name(negateJoined.getCteName())))
 				.on(allIdsPrimaryColumn.eq(negatePrimaryColumn))
 				.leftOuterJoin(table(name(nonNegateJoined.getCteName())))

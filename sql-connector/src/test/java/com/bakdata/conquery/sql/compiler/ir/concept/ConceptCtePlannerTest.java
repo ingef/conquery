@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.sql.Date;
 import java.util.Optional;
 
+import com.bakdata.conquery.sql.model.schema.SqlTable;
 import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
@@ -67,6 +68,21 @@ class ConceptCtePlannerTest {
 		assertTrue(plan.excludedFromTimeAggregation());
 		assertTrue(plan.tables().isRequiredStep(INTERVAL_PACKING_SELECTS));
 		assertEquals("connector-interval_complete", plan.tables().getPredecessor(INTERVAL_PACKING_SELECTS));
+	}
+
+	@Test
+	void shouldRetainResolvedPhysicalConnectorTable() {
+		ConnectorCtePlan plan = ConceptCtePlanner.planConnector(
+				SqlTable.of("events", "catalog", "events"),
+				"connector",
+				false,
+				false,
+				new TestDialect(false),
+				new SqlNameGenerator(128)
+		);
+
+		assertEquals(name("catalog", "events"), plan.sourceTable().getQualifiedName());
+		assertEquals("events", plan.tables().getPredecessor(PREPROCESSING));
 	}
 
 	@Test

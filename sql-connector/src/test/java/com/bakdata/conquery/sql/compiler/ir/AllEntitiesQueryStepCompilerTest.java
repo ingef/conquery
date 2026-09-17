@@ -20,7 +20,6 @@ class AllEntitiesQueryStepCompilerTest {
 
 	private static final SqlTable ENTITIES = SqlTable.of("entities", "catalog", "entities");
 	private static final EntitySchema ENTITY_SCHEMA = new EntitySchema(
-			ENTITIES,
 			new ResolvedColumn("entity-id", ENTITIES, "person_id", ColumnType.STRING, false)
 	);
 
