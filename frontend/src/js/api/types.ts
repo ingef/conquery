@@ -510,6 +510,16 @@ export interface UserGroupT {
   label: string;
 }
 
+export interface NewsItemT {
+  id: string;
+  title: string;
+  description: string;
+  link: string | null;
+  date: string; // ISO date
+}
+
+export type GetNewsResponseT = NewsItemT[];
+
 export interface GetMeResponseT {
   userName: string;
   datasetAbilities: Record<DatasetT["id"], PermissionsT>;

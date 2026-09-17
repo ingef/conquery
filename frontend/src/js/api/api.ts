@@ -23,6 +23,7 @@ import type {
   GetFormQueriesResponseT,
   GetFrontendConfigResponseT,
   GetMeResponseT,
+  GetNewsResponseT,
   GetQueriesResponseT,
   GetQueryResponseT,
   HistorySources,
@@ -263,6 +264,18 @@ export const usePostFilterValuesResolve = () => {
         url: getProtectedUrl(`/filters/${filterId}/resolve`),
         method: "POST",
         data: { values },
+      }),
+    [api],
+  );
+};
+
+export const useGetNews = () => {
+  const api = useApi<GetNewsResponseT>();
+
+  return useCallback(
+    (datasetId: DatasetT["id"]) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/news`),
       }),
     [api],
   );
