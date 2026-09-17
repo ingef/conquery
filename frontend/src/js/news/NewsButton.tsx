@@ -13,7 +13,7 @@ import { useNews } from "./useNews";
 // the ring cuts the dot out of the icon, in the button's background
 const unreadMarker = tv({
   base: [
-    "absolute top-[5px] right-[5px]",
+    "absolute top-[3px] right-[3px]",
     "rounded-full",
     "ring-2 ring-bg-50 group-hover:ring-gray-50",
     "pointer-events-none",
