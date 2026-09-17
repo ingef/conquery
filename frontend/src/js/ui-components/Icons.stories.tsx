@@ -57,7 +57,7 @@ const stateIcons = [FolderIcon, FolderOpenIcon, UserIcon, SquareIcon];
 const looks = [
   { label: "off", className: undefined, filled: false },
   { label: "data-filled", className: undefined, filled: true },
-  { label: "tinted fill", className: "fill-current/25", filled: false },
+  { label: "fill-current", className: "fill-current", filled: false },
   { label: "stroke-4", className: "stroke-4", filled: false },
 ];
 

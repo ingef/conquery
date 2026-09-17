@@ -91,9 +91,10 @@
     vertical-align: -0.125em;
   }
 
-  /* the "on" look of an icon that shows a state */
+  /* the "on" look of an icon that shows a state: a tint, the icon's lines stay readable */
   .lucide[data-filled="true"] {
     fill: currentColor;
+    fill-opacity: 0.3;
   }
 
   .lucide-loader-circle {

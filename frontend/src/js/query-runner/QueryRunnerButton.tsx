@@ -55,7 +55,7 @@ const RunnerIcon = ({
 }) => {
   if (loading) return <LoaderCircleIcon />;
 
-  return running ? <SquareIcon data-filled /> : <PlayIcon />;
+  return running ? <SquareIcon className="fill-current" /> : <PlayIcon />;
 };
 
 interface Props {
