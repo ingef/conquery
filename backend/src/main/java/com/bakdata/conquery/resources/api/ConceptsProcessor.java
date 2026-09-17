@@ -103,7 +103,7 @@ public class ConceptsProcessor {
 		final Namespace namespace = namespaces.get(dataset);
 		final PreviewConfig previewConfig = namespace.getPreviewConfig();
 
-		ConnectorId searchConnector = previewConfig.resolveSearchConnector();
+    ConnectorId searchConnector = previewConfig.resolveSearchConnector();
 
 		// Connectors only act as bridge to table for the fronted, but also provide ConceptColumnT semantic
 		return new FrontendPreviewConfig(

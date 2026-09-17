@@ -104,7 +104,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				}
 			}
 			log.info("Executing query before update");
-			IntegrationUtils.assertQueryResult(conquery, query, 1L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 1L, ExecutionState.DONE, conquery.getTestUser(), 201);
 			conquery.waitUntilWorkDone();
 			log.info("Query before update executed");
 		}
@@ -152,7 +152,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			log.info("Executing query after update");
 
 			// Assert that it now contains 2 instead of 1.
-			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 			conquery.waitUntilWorkDone();
 			log.info("Query after update executed");
 		}
@@ -200,7 +200,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 				log.info("Executing query after restart.");
 				// Re-assert state.
-				IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+				IntegrationUtils.assertQueryResult(conquery, query, null, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 				conquery.waitUntilWorkDone();
 			}
 		}
@@ -247,7 +247,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");
 
 			// Issue a query and assert that it is failing.
-			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 404);
+			IntegrationUtils.assertQueryResult(conquery, query, null, 0L, ExecutionState.FAILED, conquery.getTestUser(), 404);
 		}
 
 
@@ -288,7 +288,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				log.info("Executing query after restart (EXPECTING AN EXCEPTION IN THE LOGS!)");
 
 				// Issue a query and assert that it is failing.
-				IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 404);
+				IntegrationUtils.assertQueryResult(conquery, query, null, 0L, ExecutionState.FAILED, conquery.getTestUser(), 404);
 			}
 		}
 	}

@@ -82,7 +82,7 @@ public class ConceptColumnSelect extends UniversalSelect {
 	}
 
 	@Override
-	public ResultSetProcessor.Reader<String> createResultSetReader(ResultSetProcessor processor) {
-		return processor::getString;
+	public ResultSetProcessor.Reader<?> createResultSetReader(ResultSetProcessor processor) {
+		return isAsIds() ? processor::getIntegerList : processor::getStringList;
 	}
 }

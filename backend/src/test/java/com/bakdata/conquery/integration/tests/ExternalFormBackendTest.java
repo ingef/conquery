@@ -102,7 +102,7 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 					managedExecutionId =
 					IntegrationUtils.assertQueryResult(support,
 													   String.format("{\"type\": \"%s\", \"testProp\": \"testVal\"}", externalFormId),
-													   -1,
+							null, -1,
 													   ExecutionState.DONE,
 													   testUser,
 													   201
