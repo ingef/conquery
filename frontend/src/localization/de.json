@@ -425,6 +425,13 @@
     "chartYLabel": "Anzahl",
     "idLabel": "{{primaryIdLabel}} und {{secondaryIdLabel}}"
   },
+  "news": {
+    "headline": "Neuigkeiten",
+    "unread": "Ungelesen",
+    "unreadCount_one": "{{count}} ungelesen",
+    "unreadCount_other": "{{count}} ungelesen",
+    "more": "Mehr erfahren"
+  },
   "login": {
     "headline": "Anfragen und Analyse",
     "username": "Nutzername",
