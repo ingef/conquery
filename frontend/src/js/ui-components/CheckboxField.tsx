@@ -95,7 +95,7 @@ export const CheckboxField = ({
         <>
           <span className={frame()}>
             <span className={box()}>
-              {isSelected && <Icon icon={CheckIcon} />}
+              {isSelected && <Icon icon={CheckIcon} className="size-3.5" />}
             </span>
           </span>
           <span className={label()}>

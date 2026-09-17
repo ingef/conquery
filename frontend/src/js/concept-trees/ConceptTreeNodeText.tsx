@@ -33,8 +33,11 @@ const text = tv({
   },
 });
 
-const iconContainer = tv({
-  base: ["inline-block", "w-5", "shrink-0"],
+const nodeIcon = tv({
+  base: "mr-1 text-primary-500",
+  variants: {
+    disabled: { true: "text-gray-400 cursor-not-allowed" },
+  },
 });
 
 const descriptionText = tv({
@@ -97,15 +100,7 @@ const ConceptTreeNodeText = ({
         className={text({ disabled: !!disabled, red, isOpen })}
         onClick={onClick}
       >
-        <span className={iconContainer()}>
-          <NodeIcon
-            icon={icon}
-            className={[
-              "text-primary-500",
-              disabled ? "text-gray-400 cursor-not-allowed" : undefined,
-            ]}
-          />
-        </span>
+        <NodeIcon icon={icon} className={nodeIcon({ disabled: !!disabled })} />
         {resultCount && <span className={resultsNumber()}>{resultCount}</span>}
         <span>
           {searchWords ? (

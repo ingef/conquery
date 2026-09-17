@@ -42,8 +42,8 @@
 
   /* every icon, see ui-components/Icon. The stroke is in lucide's 24 unit
      grid like its strokeWidth prop, so it grows with a larger icon */
-  --icon-size: 14px;
-  --icon-stroke-width: 2.5;
+  --icon-size: 16px;
+  --icon-stroke-width: 3;
 
   --animate-spin-fast: spin 0.5s linear infinite;
   --animate-blink: blink 1s linear infinite;
