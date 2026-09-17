@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.C
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.compiler.ir.concept.CommonAggregationSelect;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.compiler.dialect.Interval;
@@ -36,7 +37,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 	private static CommonAggregationSelect<Integer> createSingleDateColumnAggregationSelect(
 			Column countColumn,
 			String alias,
-			ConnectorSqlTables tables,
+			SqlTables tables,
 			SqlFunctionProvider functionProvider) {
 
 		ExtractingSqlSelect<Date> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), countColumn.getName(), Date.class);
@@ -52,7 +53,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 			Column startColumn,
 			Column endColumn,
 			String alias,
-			ConnectorSqlTables tables,
+			SqlTables tables,
 			SqlFunctionProvider functionProvider,
 			StratificationFunctions stratificationFunctions) {
 
@@ -69,7 +70,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 			Field<Date> quarterStart,
 			Field<Date> nextQuarterStart,
 			String alias,
-			ConnectorSqlTables tables,
+			SqlTables tables,
 			SqlFunctionProvider functionProvider) {
 		Field<Integer> quarterCount = calcQuarterCount(quarterStart, nextQuarterStart, alias, functionProvider);
 		FieldWrapper<Integer> quarterCountWrapper = new FieldWrapper<>(quarterCount);
@@ -89,7 +90,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 			ColumnId startColumn,
 			ColumnId endColumn,
 			String alias,
-			ConnectorSqlTables tables,
+			SqlTables tables,
 			SqlFunctionProvider functionProvider,
 			StratificationFunctions stratificationFunctions) {
 

@@ -3,8 +3,8 @@ package com.bakdata.conquery.sql.conversion.model.filter;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.NumberFilter;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.NumberMapUtil;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
@@ -20,7 +20,7 @@ public class NumberFilterConverter<RANGE extends IRange<? extends Number, ?>> im
 	public SqlFilters convertToSqlFilter(NumberFilter<RANGE> filter, FilterContext<RANGE> filterContext) {
 
 		Column column = filter.getColumn().resolve();
-		ConnectorSqlTables tables = filterContext.getTables();
+		SqlTables tables = filterContext.getTables();
 
 		Class<? extends Number> numberClass = NumberMapUtil.getType(column);
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), column.getName(), numberClass);

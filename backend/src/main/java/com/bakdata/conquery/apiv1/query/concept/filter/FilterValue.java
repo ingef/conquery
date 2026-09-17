@@ -15,8 +15,8 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.concept.SqlFilters;
@@ -58,7 +58,7 @@ public abstract class FilterValue<VALUE> {
 		return ((VALUE) value);
 	}
 
-	public SqlFilters convertToSqlFilter(SqlIdColumns ids, ConversionContext context, ConnectorSqlTables tables) {
+	public SqlFilters convertToSqlFilter(SqlIdColumns ids, ConversionContext context, SqlTables tables) {
 		FilterContext<VALUE> filterContext = FilterContext.forConceptConversion(ids, readValue(), context, tables);
 		final Filter<VALUE> resolve = (Filter<VALUE>) filter.resolve();
 		SqlFilters sqlFilters = resolve.createConverter().convertToSqlFilter(resolve, filterContext);

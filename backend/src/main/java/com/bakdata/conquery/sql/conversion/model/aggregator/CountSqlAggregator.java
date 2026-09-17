@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.CountFilte
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.CountSelect;
 import com.bakdata.conquery.sql.compiler.ir.concept.CommonAggregationSelect;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
@@ -29,7 +30,7 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 	@Override
 	public ConnectorSqlSelects connectorSelect(CountSelect countSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
-		ConnectorSqlTables tables = selectContext.getTables();
+		SqlTables tables = selectContext.getTables();
 		boolean distinct = countSelect.isDistinct();
 		Column countColumn = countSelect.getColumn().resolve();
 		String alias = selectContext.getNameGenerator().legacyOperationName(countSelect.getName());
@@ -46,7 +47,7 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 								  .build();
 	}
 
-	private CommonAggregationSelect<Integer> createCountAggregationSelect(Column countColumn, boolean distinct, String alias, ConnectorSqlTables tables) {
+	private CommonAggregationSelect<Integer> createCountAggregationSelect(Column countColumn, boolean distinct, String alias, SqlTables tables) {
 
 		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), countColumn.getName(), Object.class);
 
@@ -66,7 +67,7 @@ public class CountSqlAggregator implements SelectConverter<CountSelect>, FilterC
 	@Override
 	public SqlFilters convertToSqlFilter(CountFilter countFilter, FilterContext<Range.LongRange> filterContext) {
 
-		ConnectorSqlTables tables = filterContext.getTables();
+		SqlTables tables = filterContext.getTables();
 		boolean distinct = countFilter.isDistinct();
 		Column countColumn = countFilter.getColumn().resolve();
 		String alias = filterContext.getNameGenerator().legacyOperationName(countFilter.getName());

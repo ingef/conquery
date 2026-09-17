@@ -96,7 +96,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 
 		List<Column> distinctByColumns = sumSelect.getDistinctByColumn().stream().map(ColumnId::resolve).toList();
 
-		ConnectorSqlTables tables = selectContext.getTables();
+		SqlTables tables = selectContext.getTables();
 
 		CommonAggregationSelect<BigDecimal> sumAggregationSelect;
 
@@ -126,7 +126,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 			List<Column> distinctByColumns,
 			String alias,
 			SqlIdColumns ids,
-			ConnectorSqlTables tables,
+			SqlTables tables,
 			SqlNameGenerator nameGenerator
 	) {
 		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
@@ -153,12 +153,12 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 									  .build();
 	}
 
-	private static ExtractingSqlSelect<BigDecimal> createFinalSelect(CommonAggregationSelect<BigDecimal> sumAggregationSelect, ConnectorSqlTables tables) {
+	private static ExtractingSqlSelect<BigDecimal> createFinalSelect(CommonAggregationSelect<BigDecimal> sumAggregationSelect, SqlTables tables) {
 		String finalPredecessor = tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
 		return sumAggregationSelect.getGroupBy().qualify(finalPredecessor);
 	}
 
-	private CommonAggregationSelect<BigDecimal> createSumAggregationSelect(Column sumColumn, Column subtractColumn, String alias, ConnectorSqlTables tables) {
+	private CommonAggregationSelect<BigDecimal> createSumAggregationSelect(Column sumColumn, Column subtractColumn, String alias, SqlTables tables) {
 
 		Class<? extends Number> numberClass = NumberMapUtil.getType(sumColumn);
 		List<ExtractingSqlSelect<?>> preprocessingSelects = new ArrayList<>();
@@ -276,7 +276,7 @@ public class SumSqlAggregator<RANGE extends IRange<? extends Number, ?>> impleme
 		Column subtractColumn = sumFilter.getSubtractColumn() != null ? sumFilter.getSubtractColumn().resolve() : null;
 		List<Column> distinctByColumns = sumFilter.getDistinctByColumn().stream().map(ColumnId::resolve).toList();
 		String alias = filterContext.getNameGenerator().legacyOperationName(sumFilter.getName());
-		ConnectorSqlTables tables = filterContext.getTables();
+		SqlTables tables = filterContext.getTables();
 
 		CommonAggregationSelect<BigDecimal> sumAggregationSelect;
 		ConnectorSqlSelects selects;

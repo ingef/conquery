@@ -28,6 +28,7 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.compiler.ir.concept.SqlFilters;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
@@ -71,7 +72,7 @@ public class DaterangeSelectUtil {
 				context.getCompilerDialect()
 		);
 
-		ConnectorSqlTables tables = context.getTables();
+		SqlTables tables = context.getTables();
 		ExtractingSqlSelect<?> finalSelect = aggregationField.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
 
 		return ConnectorSqlSelects.builder()
@@ -122,7 +123,7 @@ public class DaterangeSelectUtil {
 															.additionalPredecessor(Optional.of(intervalPackingSelectsStep))
 															.build();
 
-		ConnectorSqlTables tables = context.getTables();
+		SqlTables tables = context.getTables();
 		Field<?> qualifiedAggregationField = aggregationField.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER)).select();
 		WhereClauses whereClauses = WhereClauses.builder().groupFilter(filterFunction.apply(qualifiedAggregationField)).build();
 
@@ -149,7 +150,7 @@ public class DaterangeSelectUtil {
 			String alias,
 			ColumnDateRange daterange,
 			SqlIdColumns ids,
-			ConnectorSqlTables tables,
+			SqlTables tables,
 			Context context
 	) {
 		return IntervalPackingSelectCompiler.prepareArbitrarySelect(

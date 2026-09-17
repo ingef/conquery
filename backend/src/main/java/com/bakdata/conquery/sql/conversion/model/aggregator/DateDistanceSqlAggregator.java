@@ -37,7 +37,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 
 		Column column = select.getColumn().resolve();
 		String alias = selectContext.getNameGenerator().legacyOperationName(select.getName());
-		ConnectorSqlTables tables = selectContext.getTables();
+		SqlTables tables = selectContext.getTables();
 
 		Field<Integer> dateDistanceCalculation = createDateDistanceCalculation(column, select.getTimeUnit(), tables, selectContext.getConversionContext());
 		FieldWrapper<Integer> dateDistanceSelect = new FieldWrapper<>(dateDistanceCalculation.as(alias));
@@ -59,7 +59,7 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 	public SqlFilters convertToSqlFilter(DateDistanceFilter filter, FilterContext<Range.LongRange> filterContext) {
 
 		Column column = filter.getColumn().resolve();
-		ConnectorSqlTables tables = filterContext.getTables();
+		SqlTables tables = filterContext.getTables();
 
 		Field<Integer> dateDistanceCalculation = createDateDistanceCalculation(column, filter.getTimeUnit(), tables, filterContext.getConversionContext());
 		WhereCondition dateDistanceCondition = new LegacyInclusiveRangeCondition(dateDistanceCalculation, filterContext.getValue());
