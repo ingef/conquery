@@ -79,14 +79,19 @@ export const useNews = () => {
     );
   }, [items, readIds]);
 
-  const markAllRead = useCallback(() => {
-    if (unreadIds.size === 0) return;
+  const markRead = useCallback(
+    (ids: string[]) => {
+      const newlyReadIds = ids.filter((id) => unreadIds.has(id));
 
-    const nextReadIds = [...readIds, ...unreadIds];
+      if (newlyReadIds.length === 0) return;
 
-    storeReadIds(userName, nextReadIds);
-    setReadIds(nextReadIds);
-  }, [readIds, unreadIds, userName]);
+      const nextReadIds = [...readIds, ...newlyReadIds];
 
-  return { items, unreadIds, markAllRead };
+      storeReadIds(userName, nextReadIds);
+      setReadIds(nextReadIds);
+    },
+    [readIds, unreadIds, userName],
+  );
+
+  return { items, unreadIds, markRead };
 };

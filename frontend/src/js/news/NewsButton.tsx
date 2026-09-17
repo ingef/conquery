@@ -1,19 +1,21 @@
 import { MegaphoneIcon } from "lucide-react";
+import { useRef } from "react";
 import { Dialog, DialogTrigger, Heading } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { Button } from "../ui-components/Button";
-import { Dot } from "../ui-components/Dot";
 import { Popover } from "../ui-components/Popover";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
+import { UnreadDot } from "../ui-components/UnreadDot";
 import { NewsList } from "./NewsList";
 import { useNews } from "./useNews";
 
+// the ring cuts the dot out of the icon, in the button's background
 const unreadMarker = tv({
   base: [
-    "absolute -top-[3px] -right-[3px]",
+    "absolute top-[5px] right-[5px]",
     "rounded-full",
-    "ring-2 ring-bg-50",
+    "ring-2 ring-bg-50 group-hover:ring-gray-50",
     "pointer-events-none",
   ],
 });
@@ -21,17 +23,20 @@ const unreadMarker = tv({
 // explicit: a RAC Heading renders an h3, which has base styles
 const headline = tv({
   base: [
+    "flex items-center",
+    "gap-2",
     "m-0",
     "px-5 py-3",
     "border-b border-gray-100",
-    "text-sm leading-5 font-bold",
+    "text-sm leading-5 font-medium",
     "text-gray-800",
   ],
 });
 
 export const NewsButton = () => {
   const { t } = useTranslation();
-  const { items, unreadIds, markAllRead } = useNews();
+  const { items, unreadIds, markRead } = useNews();
+  const seenIds = useRef(new Set<string>());
 
   if (items.length === 0) return null;
 
@@ -44,25 +49,33 @@ export const NewsButton = () => {
     <TooltipTrigger>
       <DialogTrigger
         onOpenChange={(isOpen) => {
-          if (!isOpen) markAllRead();
+          if (isOpen) return;
+
+          markRead([...seenIds.current]);
+          seenIds.current.clear();
         }}
       >
-        <span className="relative flex">
+        <span className="group relative flex">
           <Button intent="secondary" aria-label={label} data-test-id="news">
             <MegaphoneIcon />
           </Button>
           {unreadIds.size > 0 && (
             <span className={unreadMarker()}>
-              <Dot />
+              <UnreadDot />
             </span>
           )}
         </span>
         <Popover placement="bottom end" className="w-[400px]">
           <Dialog className="outline-none">
             <Heading slot="title" className={headline()}>
+              <MegaphoneIcon />
               {t("news.headline")}
             </Heading>
-            <NewsList items={items} unreadIds={unreadIds} />
+            <NewsList
+              items={items}
+              unreadIds={unreadIds}
+              onSeen={(id) => seenIds.current.add(id)}
+            />
           </Dialog>
         </Popover>
       </DialogTrigger>
