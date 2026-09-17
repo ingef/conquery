@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { SelectOptionT, SelectorResultType } from "../api/types";
 import { isSelectDisabled, sortSelects } from "../model/select";
 import type { SelectedSelectorT } from "../standard-query-editor/types";
-import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
+import { ComboBoxMultiField } from "../ui-components/ComboBoxMultiField";
 
 import ContentCell from "./ContentCell";
 
@@ -45,7 +45,8 @@ const NodeSelects = ({
 
   return (
     <ContentCell headline={t("queryNodeEditor.commonSelects")}>
-      <InputMultiSelect
+      <ComboBoxMultiField
+        aria-label={t("queryNodeEditor.commonSelects")}
         onChange={onSelectSelects}
         value={value}
         options={options}

@@ -86,7 +86,7 @@ const TableFilter = ({
             label={filter.label}
             tooltip={filter.tooltip}
             options={filter.options}
-            disabled={excludeTable}
+            isDisabled={excludeTable}
             allowDropFile={!!filter.allowDropFile}
           />
         );
@@ -100,7 +100,7 @@ const TableFilter = ({
             label={filter.label}
             tooltip={filter.tooltip}
             options={filter.options}
-            disabled={!!excludeTable}
+            isDisabled={!!excludeTable}
             creatable={!!filter.creatable}
             allowDropFile={!!filter.allowDropFile}
             total={filter.total}

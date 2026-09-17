@@ -211,7 +211,6 @@
   },
   "inputSelect": {
     "placeholder": "Auswählen ...",
-    "searchPlaceholder": "Suchen ...",
     "empty": "Keine Werte gefunden"
   },
   "inputMultiSelect": {
@@ -221,7 +220,8 @@
     "options_other": "{{count}} Werte",
     "ofTotal": " von {{count}}",
     "tagPlaceholder": "Ordner ...",
-    "createTag": "Zu Ordner hinzufügen: {{label}}"
+    "folders": "Ordner",
+    "selectedValues": "Ausgewählte Werte"
   },
   "previousQueries": {
     "loading": "Lade Anfragen und Formulare",
@@ -487,6 +487,7 @@
   },
   "history": {
     "infoTabs": "Info-Kategorien",
+    "sources": "Datenquellen",
     "search": "Suche",
     "matches_one": "Eintrag",
     "matches_other": "Einträge",

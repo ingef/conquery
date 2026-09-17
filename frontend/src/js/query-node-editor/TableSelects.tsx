@@ -1,9 +1,10 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT, SelectorResultType } from "../api/types";
 import { isSelectDisabled, isValidSelect, sortSelects } from "../model/select";
 import type { SelectedSelectorT } from "../standard-query-editor/types";
-import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
+import { ComboBoxMultiField } from "../ui-components/ComboBoxMultiField";
 
 interface PropsT {
   selects: SelectedSelectorT[];
@@ -20,6 +21,7 @@ const TableSelects = ({
   onSelectTableSelects,
   excludeTable,
 }: PropsT) => {
+  const { t } = useTranslation();
   const options = useMemo(() => {
     return sortSelects(selects).map((select) => ({
       value: select.id,
@@ -39,11 +41,12 @@ const TableSelects = ({
 
   return (
     <div>
-      <InputMultiSelect
+      <ComboBoxMultiField
+        aria-label={t("queryNodeEditor.selects")}
         onChange={onSelectTableSelects}
         value={value}
         options={options}
-        disabled={excludeTable}
+        isDisabled={excludeTable}
       />
     </div>
   );
