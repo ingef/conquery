@@ -12,6 +12,7 @@ import {
   ListBox,
   ListBoxItem,
   ListBoxLoadMoreItem,
+  ListStateContext,
   ComboBox as RacComboBox,
   Input as RacInput,
   Tag,
@@ -212,7 +213,7 @@ export const ComboBoxMultiField = ({
 
   const field = (
     <RacComboBox
-      className="min-w-0"
+      className="w-full min-w-0"
       selectionMode="multiple"
       menuTrigger="focus"
       allowsEmptyCollection
@@ -239,29 +240,34 @@ export const ComboBoxMultiField = ({
             isInvalid={isInvalid}
           >
             <div className={content()}>
-              <TagGroup
-                className="contents"
-                aria-label={t("inputMultiSelect.selectedValues")}
-                disabledKeys={isDisabled ? value.map((item) => item.value) : []}
-                onRemove={(keys) =>
-                  onChange(value.filter((item) => !keys.has(item.value)))
-                }
-              >
-                <TagList className="contents" items={value}>
-                  {(item) => (
-                    <Tag
-                      id={item.value}
-                      textValue={optionText(item)}
-                      className={tag()}
-                    >
-                      <OptionLabel option={item} />
-                      <Button slot="remove" intent="tertiary" size="sm">
-                        <Icon icon={faTimes} />
-                      </Button>
-                    </Tag>
-                  )}
-                </TagList>
-              </TagGroup>
+              {/* the tag list must not see the combobox's list state, or it renders its tags against it */}
+              <ListStateContext.Provider value={null}>
+                <TagGroup
+                  className="contents"
+                  aria-label={t("inputMultiSelect.selectedValues")}
+                  disabledKeys={
+                    isDisabled ? value.map((item) => item.value) : []
+                  }
+                  onRemove={(keys) =>
+                    onChange(value.filter((item) => !keys.has(item.value)))
+                  }
+                >
+                  <TagList className="contents" items={value}>
+                    {(item) => (
+                      <Tag
+                        id={item.value}
+                        textValue={optionText(item)}
+                        className={tag()}
+                      >
+                        <OptionLabel option={item} />
+                        <Button slot="remove" intent="tertiary" size="sm">
+                          <Icon icon={faTimes} />
+                        </Button>
+                      </Tag>
+                    )}
+                  </TagList>
+                </TagGroup>
+              </ListStateContext.Provider>
               <RacInput
                 className={inputControl({ inline: true })}
                 placeholder={
