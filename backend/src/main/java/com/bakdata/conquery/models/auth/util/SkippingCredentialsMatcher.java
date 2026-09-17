@@ -16,5 +16,5 @@ public enum SkippingCredentialsMatcher implements CredentialsMatcher {
 	public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) {
 		return true;
 	}
-	
+
 }

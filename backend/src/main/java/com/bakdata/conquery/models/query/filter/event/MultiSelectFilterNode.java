@@ -27,7 +27,7 @@ public class MultiSelectFilterNode extends EventFilterNode<Set<String>> {
 	private Column column;
 
 	private final boolean empty;
-	
+
 
 	public MultiSelectFilterNode(Column column, Set<String> filterValue) {
 		super(filterValue);

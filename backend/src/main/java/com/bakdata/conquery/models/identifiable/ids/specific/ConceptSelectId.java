@@ -14,7 +14,7 @@ import lombok.Getter;
 public final class ConceptSelectId extends SelectId {
 
 	private final ConceptId concept;
-	
+
 	public ConceptSelectId(ConceptId concept, String select) {
 		super(select);
 		this.concept = concept;

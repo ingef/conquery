@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.config.search.solr;
 
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.search.SearchConfig;

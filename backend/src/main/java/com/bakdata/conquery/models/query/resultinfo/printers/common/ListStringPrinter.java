@@ -24,7 +24,7 @@ public record ListStringPrinter<T>(Printer<T> elementPrinter, PrintSettings cfg,
 			if (obj == null){
 				continue;
 			}
-			
+
 			joiner.add(listFormat.escapeListElement(Objects.toString(elementPrinter.apply(obj))));
 		}
 		return joiner.toString();

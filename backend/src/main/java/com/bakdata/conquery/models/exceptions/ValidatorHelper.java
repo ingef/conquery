@@ -73,7 +73,7 @@ public final class ValidatorHelper {
 			sb.append("\n\tFor the leaf type '").append(node.getClass()).append("':");
 		}
 		for (V violation : violations) {
-			// List all the violations for the specific leaf. 
+			// List all the violations for the specific leaf.
 			sb.append("\n\t\t- ").append(violation.getPropertyPath()).append(": ").append(violation.getMessage());
 		}
 		return sb.toString();

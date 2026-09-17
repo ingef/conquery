@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.auth.oidc.keycloak;
 
 import java.net.URI;
 import java.util.Set;
-
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.GenericType;

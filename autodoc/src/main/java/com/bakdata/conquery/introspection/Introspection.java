@@ -32,8 +32,8 @@ public interface Introspection {
 					return new SimpleIntrospection(f);
 				}
 			}
-			
-			
+
+
 			CompilationUnit cu = StaticJavaParser.parse(f);
 
 			TypeDeclaration<?> typeDeclaration = cu.getPrimaryType().get();

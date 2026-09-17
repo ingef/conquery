@@ -14,7 +14,7 @@ import lombok.Getter;
 public final class ConnectorSelectId extends SelectId {
 
 	private final ConnectorId connector;
-	
+
 	public ConnectorSelectId(ConnectorId connector, String select) {
 		super(select);
 		this.connector = connector;

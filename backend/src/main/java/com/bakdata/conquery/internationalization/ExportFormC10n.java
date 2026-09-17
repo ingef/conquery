@@ -7,7 +7,7 @@ import c10n.annotations.En;
  * Used to generate an expressive default name.
  */
 public interface ExportFormC10n {
-	
+
 	@En("Data Export")
 	@De("Datenexport")
 	String getType();

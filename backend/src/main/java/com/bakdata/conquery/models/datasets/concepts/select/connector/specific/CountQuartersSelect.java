@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.util.List;
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
@@ -15,9 +18,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * Entity is included when the number of distinct quarters for all events is within a given range.

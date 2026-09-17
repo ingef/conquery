@@ -75,7 +75,7 @@ public class ShardResult  extends NamespaceMessage {
 		// Truncate here because too large logs will crash/lock the process
 		log.trace("Collected Results for execution {}\n{}", executionId, StringUtils.truncate(results.toString(), 1000) + " (...)");
 	}
-	
+
 	protected void addResult(DistributedExecutionManager executionManager) {
 		executionManager.handleQueryResult(this, ((ManagedQuery) executionManager.getExecution(executionId)));
 	}

@@ -1,13 +1,8 @@
 package com.bakdata.conquery.models.config;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorContext;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.util.validation.ManualURI;

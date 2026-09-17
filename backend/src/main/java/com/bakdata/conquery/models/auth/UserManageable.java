@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 
 /**
- * Basic functionality for a realm to manage users and interface with {@link Conquery}. 
+ * Basic functionality for a realm to manage users and interface with {@link Conquery}.
  */
 public interface UserManageable {
 
@@ -23,7 +23,7 @@ public interface UserManageable {
 	 */
 	boolean addUser(UserId userId, CredentialType credential);
 
-	
+
 	/**
 	 * Similar to {@link UserManageable#addUser(User, List)} but if the user already existed it is overridden, when a fitting {@link CredentialType} was found.
 	 */

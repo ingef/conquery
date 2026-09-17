@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
+import static org.jooq.impl.DSL.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,8 +39,6 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
-
-import static org.jooq.impl.DSL.*;
 
 public class CQConceptConverter implements NodeConverter<CQConcept> {
 

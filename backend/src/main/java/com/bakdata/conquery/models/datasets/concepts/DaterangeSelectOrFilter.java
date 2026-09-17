@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
+import java.util.EnumSet;
+
 import com.bakdata.conquery.models.common.ColumnUtils;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-
-import java.util.EnumSet;
 
 public interface DaterangeSelectOrFilter {
 

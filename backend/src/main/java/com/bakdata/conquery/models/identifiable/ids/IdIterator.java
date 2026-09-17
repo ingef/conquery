@@ -13,23 +13,23 @@ public class IdIterator {
 	@EqualsAndHashCode.Include
 	private final List<String> data;
 	private int index;
-	
+
 	public IdIterator(List<String> data) {
 		this.data = data;
 		this.index = data.size();
 	}
-	
+
 	public List<String> getRemaining() {
 		if(index <= 0) {
 			throw new IllegalStateException("No more remaining values in "+data);
 		}
 		return data.subList(0, index);
 	}
-	
+
 	public int remaining() {
 		return index;
 	}
-	
+
 	public String next() {
 		return data.get(--index);
 	}

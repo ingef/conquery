@@ -223,9 +223,9 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 	}
 
 
-	
+
 	//////////////////// LIFECYCLE MANAGEMENT ////////////////////
-		
+
 	@Override
 	@SneakyThrows(IOException.class)
 	public void destroy() throws InterruptedException {
@@ -241,7 +241,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 			}
 			catch (ExodusException e) {
 				if (retries == 0) {
-					log.info("The environment is still working on some transactions. Retry");				
+					log.info("The environment is still working on some transactions. Retry");
 				}
 				log.info("Waiting for {} seconds to retry.", ENVIRONMENT_CLOSING_TIMEOUT);
 

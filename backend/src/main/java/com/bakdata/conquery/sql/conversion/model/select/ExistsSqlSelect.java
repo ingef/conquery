@@ -1,16 +1,16 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
+import static org.jooq.impl.DSL.*;
+import static org.jooq.impl.DSL.field;
+
+import java.util.Collections;
+import java.util.List;
+
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
 import org.jooq.Name;
-
-import java.util.Collections;
-import java.util.List;
-
-import static org.jooq.impl.DSL.*;
-import static org.jooq.impl.DSL.field;
 
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExistsSqlSelect implements SingleColumnSqlSelect {

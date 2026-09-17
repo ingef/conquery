@@ -3,7 +3,8 @@ package com.bakdata.conquery.models.auth.basic;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Random;
-
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.HttpHeaders;
 import javax.annotation.Nullable;
 
 import com.auth0.jwt.JWT;
@@ -12,8 +13,6 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.bakdata.conquery.models.auth.web.AuthFilter;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import io.dropwizard.util.Duration;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.HttpHeaders;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;

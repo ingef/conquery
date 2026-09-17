@@ -1,5 +1,7 @@
 package com.bakdata.conquery.resources.api;
 
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,8 +34,6 @@ import com.bakdata.conquery.util.validation.ValidUUID4;
 import io.dropwizard.auth.Auth;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 @Path("datasets/{" + DATASET + "}/queries")
 @Data

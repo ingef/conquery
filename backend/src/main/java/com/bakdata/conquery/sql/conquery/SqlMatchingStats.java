@@ -1,7 +1,8 @@
 package com.bakdata.conquery.sql.conquery;
 
+import static org.jooq.impl.DSL.*;
+
 import java.sql.Date;
-import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,8 +30,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
-
-import static org.jooq.impl.DSL.*;
 
 @Slf4j
 @Data

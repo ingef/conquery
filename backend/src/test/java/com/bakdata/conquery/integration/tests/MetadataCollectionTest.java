@@ -49,7 +49,7 @@ public class MetadataCollectionTest extends IntegrationTest.Simple implements Pr
 		//check the number of matched events
 		assertThat(concept.getMatchingStats().countEvents()).isEqualTo(4);
 		assertThat(concept.getChildren()).allSatisfy(c -> assertThat(c.getMatchingStats().countEvents()).isEqualTo(2));
-		
+
 		//check the date ranges
 		assertThat(concept.getMatchingStats().spanEvents())
 			.isEqualTo(CDateRange.of(LocalDate.parse("2010-07-15"), LocalDate.parse("2013-11-10")));

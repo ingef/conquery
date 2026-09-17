@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.forms.util;
 
+import java.util.List;
+
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.google.common.collect.Lists;
-
-import java.util.List;
 
 /**
  * Specifies whether the sub date ranges (which have the maximum length specified by the {@link Resolution})

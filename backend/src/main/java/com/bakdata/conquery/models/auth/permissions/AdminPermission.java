@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.auth.permissions;
 
-import java.util.Collections;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;

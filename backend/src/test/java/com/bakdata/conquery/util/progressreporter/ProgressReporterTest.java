@@ -32,7 +32,7 @@ public class ProgressReporterTest {
 	public void alignmentTest() throws InterruptedException {
 		ProgressReporterImpl pr = (ProgressReporterImpl)ProgressReporter.createWaiting();
 		Thread.sleep(2_000);
-		
+
 		pr.start();
 		pr.setMax(100);
 		pr.report(1);
@@ -44,28 +44,28 @@ public class ProgressReporterTest {
 			Thread.sleep(100);
 			assertThat(occurenceOfHour).isEqualTo(allOccurencesOf(pr.getEstimate(), "h"));
 		}
-		
+
 	}
-	
+
 	@Test
 	public void basicTest() throws InterruptedException {
-		
+
 		ProgressReporter pr = ProgressReporter.createStarted();
 		pr.setMax(100);
 		assertThat(pr.getEstimate()).contains(UNKNOWN);
 		Thread.sleep(100);
 
 		pr.report(1);
-		
+
 		log.info(pr.getEstimate());
 		pr.report(99);
 		assertThat(pr.isDone()).isFalse();
 		pr.done();
-		
+
 		assertThat(pr.isDone()).isTrue();
 		assertThat(pr.getEstimate()).isEqualTo(MAX_PROGRESS);
 	}
-	
+
 	@Test
 	public void serialisationTest() throws JsonProcessingException, InterruptedException {
 		ProgressReporterImpl pr = (ProgressReporterImpl)ProgressReporter.createStarted();
@@ -74,11 +74,11 @@ public class ProgressReporterTest {
 		Thread.sleep(100);
 		pr.report(1);
 		log.info(pr.getEstimate());
-		
+
 		JsonNode json = Jackson.MAPPER.valueToTree(pr);
 		log.info(json.asText());
 		ImmutableProgressReporter deserialized = (ImmutableProgressReporter) Jackson.MAPPER.treeToValue(json, ProgressReporter.class);
-		
+
 		log.info(deserialized.getEstimate());
 		Thread.sleep(100);
 		log.info(deserialized.getEstimate());
