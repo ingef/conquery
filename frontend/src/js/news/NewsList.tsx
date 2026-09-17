@@ -1,6 +1,6 @@
 import { parseISO } from "date-fns";
 import { ExternalLinkIcon } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useDateFormatter } from "react-aria";
 import { Link } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -8,6 +8,8 @@ import { tv } from "tailwind-variants";
 import type { NewsItemT } from "../api/types";
 import { useIntersectionObserver } from "../common/useIntersectionObserver";
 import { UnreadDot } from "../ui-components/UnreadDot";
+
+const READ_AFTER_MS = 1500;
 
 const list = tv({
   base: [
@@ -30,6 +32,14 @@ const root = tv({
   ],
 });
 
+// in the item's left padding, level with the date, so nothing moves when it fades
+const unreadMarker = tv({
+  base: ["absolute top-[22px] left-[6px]", "transition-opacity duration-500"],
+  variants: {
+    isUnread: { false: "opacity-0" },
+  },
+});
+
 const link = tv({
   base: [
     "flex items-center self-start",
@@ -47,25 +57,35 @@ const link = tv({
 const NewsListItem = ({
   item: { id, title, description, link: href, date },
   isUnread,
-  onSeen,
+  onRead,
 }: {
   item: NewsItemT;
   isUnread: boolean;
-  onSeen: (id: NewsItemT["id"]) => void;
+  onRead: (id: NewsItemT["id"]) => void;
 }) => {
   const { t } = useTranslation();
   const dateFormatter = useDateFormatter({ dateStyle: "long" });
 
-  // seen = the item's end has been scrolled into view
+  // read = the item's end stayed in view for a moment
   const endRef = useRef<HTMLSpanElement>(null);
+  const readTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
+
   useIntersectionObserver(endRef, (_, isIntersecting) => {
-    if (isIntersecting) onSeen(id);
+    clearTimeout(readTimeout.current);
+
+    if (isIntersecting && isUnread) {
+      readTimeout.current = setTimeout(() => onRead(id), READ_AFTER_MS);
+    }
   });
+
+  useEffect(() => () => clearTimeout(readTimeout.current), []);
 
   return (
     <li className={root()}>
-      <p className="flex items-center gap-2 text-xs text-gray-500">
-        {isUnread && <UnreadDot />}
+      <span className={unreadMarker({ isUnread })}>
+        <UnreadDot />
+      </span>
+      <p className="text-xs text-gray-500">
         <time dateTime={date}>{dateFormatter.format(parseISO(date))}</time>
         {isUnread && <span className="sr-only">{t("news.unread")}</span>}
       </p>
@@ -90,11 +110,11 @@ const NewsListItem = ({
 export const NewsList = ({
   items,
   unreadIds,
-  onSeen,
+  onRead,
 }: {
   items: NewsItemT[];
   unreadIds: Set<NewsItemT["id"]>;
-  onSeen: (id: NewsItemT["id"]) => void;
+  onRead: (id: NewsItemT["id"]) => void;
 }) => (
   <ul className={list()}>
     {items.map((item) => (
@@ -102,7 +122,7 @@ export const NewsList = ({
         key={item.id}
         item={item}
         isUnread={unreadIds.has(item.id)}
-        onSeen={onSeen}
+        onRead={onRead}
       />
     ))}
   </ul>

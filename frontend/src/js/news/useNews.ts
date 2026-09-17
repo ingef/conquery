@@ -80,17 +80,18 @@ export const useNews = () => {
   }, [items, readIds]);
 
   const markRead = useCallback(
-    (ids: string[]) => {
-      const newlyReadIds = ids.filter((id) => unreadIds.has(id));
+    (id: NewsItemT["id"]) => {
+      // read from the storage: several items can become read within one render
+      const storedIds = getReadIds(userName);
 
-      if (newlyReadIds.length === 0) return;
+      if (storedIds.includes(id)) return;
 
-      const nextReadIds = [...readIds, ...newlyReadIds];
+      const nextReadIds = [...storedIds, id];
 
       storeReadIds(userName, nextReadIds);
       setReadIds(nextReadIds);
     },
-    [readIds, unreadIds, userName],
+    [userName],
   );
 
   return { items, unreadIds, markRead };
