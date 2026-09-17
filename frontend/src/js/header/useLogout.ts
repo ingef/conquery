@@ -1,20 +1,14 @@
 import { useKeycloak } from "@react-keycloak-fork/web";
-import { LogOutIcon } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { deleteStoredAuthToken } from "../authorization/helper";
 import { clearIndexedDBCache } from "../common/helpers/indexedDBCache";
 import { isIDPEnabled } from "../environment";
-import { Button } from "../ui-components/Button";
-import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
-const LogoutButton = () => {
-  const { t } = useTranslation();
+export const useLogout = () => {
   const navigate = useNavigate();
   const { keycloak } = useKeycloak();
-  const goToLogin = () => navigate("/login");
 
-  const onLogout = async () => {
+  return async () => {
     await clearIndexedDBCache();
 
     deleteStoredAuthToken();
@@ -22,7 +16,7 @@ const LogoutButton = () => {
     if (isIDPEnabled) {
       keycloak.logout();
     } else {
-      goToLogin();
+      navigate("/login");
 
       // Hard refresh to reset all state
       // and reload all data
@@ -32,19 +26,4 @@ const LogoutButton = () => {
       }, ARBITRARY_SHORT_TIME);
     }
   };
-
-  return (
-    <TooltipTrigger>
-      <Button
-        aria-label={t("common.logout")}
-        intent="secondary"
-        onPress={onLogout}
-      >
-        <LogOutIcon />
-      </Button>
-      <Tooltip>{t("common.logout")}</Tooltip>
-    </TooltipTrigger>
-  );
 };
-
-export default LogoutButton;
