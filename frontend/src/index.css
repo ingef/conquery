@@ -40,9 +40,10 @@
   /* the absolutely positioned app header; the panes start below it */
   --spacing-header: 40px;
 
-  /* every icon, see ui-components/Icon */
+  /* every icon, see ui-components/Icon. The stroke is in lucide's 24 unit
+     grid like its strokeWidth prop, so it grows with a larger icon */
   --icon-size: 14px;
-  --icon-stroke-width: 1.5px;
+  --icon-stroke-width: 2.5;
 
   --animate-spin-fast: spin 0.5s linear infinite;
   --animate-blink: blink 1s linear infinite;

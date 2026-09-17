@@ -47,11 +47,7 @@ export const Picture: Story = {
       </div>
       <div className="flex flex-col items-center gap-1">
         <Icon icon={CheckIcon} className="size-10 text-green" />
-        size-10, the stroke stays
-      </div>
-      <div className="flex flex-col items-center gap-1">
-        <Icon icon={CheckIcon} className="size-10 stroke-3 text-green" />
-        size-10 stroke-3
+        size-10, a picture
       </div>
     </div>
   ),
@@ -63,7 +59,7 @@ const looks = [
   { label: "off", className: undefined, filled: false },
   { label: "filled", className: undefined, filled: true },
   { label: "tinted fill", className: "fill-current/25", filled: false },
-  { label: "stroke-[2.5px]", className: "stroke-[2.5px]", filled: false },
+  { label: "stroke-4", className: "stroke-4", filled: false },
 ];
 
 export const State: Story = {

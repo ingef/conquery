@@ -13,8 +13,8 @@ const root = tv({
  *
  * - size and stroke width: app-wide, `--icon-size` and `--icon-stroke-width`
  *   in index.css. Override with a `size-*` class only where the icon is a
- *   picture (empty states, big status marks), with a `stroke-*` class only
- *   for a deliberate weight.
+ *   picture (empty states, big status marks), its stroke grows with it;
+ *   with a `stroke-*` class only for a deliberate weight.
  * - color: `currentColor`, inherited from the surrounding text. A button
  *   colors its icon through its own text color.
  * - filled: the "on" look of an icon that shows a state.
@@ -38,11 +38,4 @@ export const Icon = ({
   icon: LucideIcon;
   filled?: boolean;
   className?: ClassValue;
-}) => (
-  // the stroke keeps its width in px however large the icon is drawn
-  <IconComponent
-    nonScalingStroke
-    className={root({ filled, className })}
-    {...props}
-  />
-);
+}) => <IconComponent className={root({ filled, className })} {...props} />;
