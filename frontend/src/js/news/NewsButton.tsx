@@ -1,5 +1,4 @@
 import { MegaphoneIcon } from "lucide-react";
-import { useRef } from "react";
 import { Dialog, DialogTrigger, Heading } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -36,7 +35,6 @@ const headline = tv({
 export const NewsButton = () => {
   const { t } = useTranslation();
   const { items, unreadIds, markRead } = useNews();
-  const seenIds = useRef(new Set<string>());
 
   if (items.length === 0) return null;
 
@@ -47,14 +45,7 @@ export const NewsButton = () => {
 
   return (
     <TooltipTrigger>
-      <DialogTrigger
-        onOpenChange={(isOpen) => {
-          if (isOpen) return;
-
-          markRead([...seenIds.current]);
-          seenIds.current.clear();
-        }}
-      >
+      <DialogTrigger>
         <span className="group relative flex">
           <Button intent="secondary" aria-label={label} data-test-id="news">
             <MegaphoneIcon />
@@ -71,11 +62,7 @@ export const NewsButton = () => {
               <MegaphoneIcon />
               {t("news.headline")}
             </Heading>
-            <NewsList
-              items={items}
-              unreadIds={unreadIds}
-              onSeen={(id) => seenIds.current.add(id)}
-            />
+            <NewsList items={items} unreadIds={unreadIds} onRead={markRead} />
           </Dialog>
         </Popover>
       </DialogTrigger>
