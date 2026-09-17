@@ -8,6 +8,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.LegacyCompilerDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
+import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
@@ -29,9 +30,9 @@ public class FilterContext<V> implements Context {
 	 * Not present if this context is for table export.
 	 */
 	@Nullable
-	ConnectorSqlTables tables;
+	SqlTables tables;
 
-	public static <V> FilterContext<V> forConceptConversion(SqlIdColumns ids, V value, ConversionContext conversionContext, ConnectorSqlTables tables) {
+	public static <V> FilterContext<V> forConceptConversion(SqlIdColumns ids, V value, ConversionContext conversionContext, SqlTables tables) {
 		return new FilterContext<>(ids, value, conversionContext, tables);
 	}
 
