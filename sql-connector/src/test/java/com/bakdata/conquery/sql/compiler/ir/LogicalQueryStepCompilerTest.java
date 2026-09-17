@@ -23,7 +23,6 @@ class LogicalQueryStepCompilerTest {
 	private static final CompilerDialect DIALECT = new TestDialect();
 	private static final SqlTable ENTITY_TABLE = SqlTable.of("entities", "catalog", "entities");
 	private static final EntitySchema ENTITY_SCHEMA = new EntitySchema(
-			ENTITY_TABLE,
 			new ResolvedColumn("person", ENTITY_TABLE, "person_id", ColumnType.STRING, false)
 	);
 

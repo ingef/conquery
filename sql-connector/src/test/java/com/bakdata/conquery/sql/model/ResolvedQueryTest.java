@@ -51,7 +51,7 @@ class ResolvedQueryTest {
 		);
 
 		ResolvedQuery query = new ResolvedQuery(
-				new EntitySchema(EVENTS, ENTITY_ID),
+				new EntitySchema(ENTITY_ID),
 				concept,
 				true,
 				List.of(new ResultColumn("entity", ResultType.Primitive.STRING))
@@ -101,7 +101,7 @@ class ResolvedQueryTest {
 				"dataset.events.numeric_id", EVENTS, "numeric_id", ColumnType.INTEGER, false
 		);
 
-		assertInvalid(new EntitySchema(EVENTS, numericId));
+		assertInvalid(new EntitySchema(numericId));
 	}
 
 	@Test
@@ -130,7 +130,7 @@ class ResolvedQueryTest {
 				List.of()
 		);
 		ResolvedQuery query = new ResolvedQuery(
-				new EntitySchema(EVENTS, ENTITY_ID),
+				new EntitySchema(ENTITY_ID),
 				new ConceptNode("concept", List.of(invalidConnector), List.of(), DateAggregationAction.MERGE),
 				true,
 				List.of()
@@ -145,7 +145,7 @@ class ResolvedQueryTest {
 	@Test
 	void shouldRejectAmbiguousResultColumnIds() {
 		ResolvedQuery query = new ResolvedQuery(
-				new EntitySchema(EVENTS, ENTITY_ID),
+				new EntitySchema(ENTITY_ID),
 				conceptNode(EVENTS),
 				false,
 				List.of(

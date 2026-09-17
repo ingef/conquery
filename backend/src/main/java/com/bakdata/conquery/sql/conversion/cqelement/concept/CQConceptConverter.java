@@ -265,7 +265,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		);
 	}
 
-	private static org.jooq.Table<?> createConceptSourceTable(
+	private static org.jooq.Table<Record> createConceptSourceTable(
 			ConnectorSqlTables connectorTables,
 			ConceptIdMapping conceptIdMapping,
 			List<ConceptElement<?>> selectedConceptElements,

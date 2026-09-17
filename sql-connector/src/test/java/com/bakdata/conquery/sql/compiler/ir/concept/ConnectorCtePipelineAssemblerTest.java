@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.compiler.ir.concept;
 
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.name;
+import static org.jooq.impl.DSL.table;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -44,7 +45,7 @@ class ConnectorCtePipelineAssemblerTest {
 
 		ConnectorCtePipelineInput input = ConnectorCtePipelineAssembler.assemble(
 				plan,
-				QueryStep.toTableLike("events"),
+				org.jooq.impl.DSL.table(name("events")),
 				ids,
 				rawValidityDate,
 				List.of(selects),
@@ -53,7 +54,7 @@ class ConnectorCtePipelineAssemblerTest {
 		);
 
 		assertSame(plan.tables(), input.tables());
-		assertEquals("events", input.preprocessing().sourceTable().asTable().getName());
+		assertEquals(name("events"), input.preprocessing().sourceTable().getQualifiedName());
 		assertSame(ids, input.preprocessing().ids());
 		assertSame(rawValidityDate, input.preprocessing().rawValidityDate());
 		assertEquals("connector_validity_date", input.preprocessing().validityDate().getAlias());
@@ -84,7 +85,7 @@ class ConnectorCtePipelineAssemblerTest {
 
 		ConnectorCtePipelineInput input = ConnectorCtePipelineAssembler.assemble(
 				plan(),
-				QueryStep.toTableLike("events"),
+				org.jooq.impl.DSL.table(name("events")),
 				new SqlIdColumns(field(name("person"), String.class)),
 				ColumnDateRange.of(field(name("start"), Date.class), field(name("end"), Date.class)),
 				List.of(selects),
@@ -102,7 +103,7 @@ class ConnectorCtePipelineAssemblerTest {
 				Map.of(ConceptCteStep.PREPROCESSING, "connector-preprocessing"),
 				Map.of()
 		);
-		return new ConnectorCtePlan("connector", tables, true, true);
+		return new ConnectorCtePlan("connector", table(name("events")), tables, true, true);
 	}
 
 	private static QueryStep queryStep(String cteName) {

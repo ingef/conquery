@@ -1,7 +1,5 @@
 package com.bakdata.conquery.sql.compiler.ir.concept;
 
-import static com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep.PREPROCESSING;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -12,7 +10,7 @@ import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import lombok.experimental.UtilityClass;
 import org.jooq.Record;
-import org.jooq.TableLike;
+import org.jooq.Table;
 
 /** Assembles SQL-resolved connector operations into the input for the connector CTE pipeline. */
 @UtilityClass
@@ -20,7 +18,7 @@ public class ConnectorCtePipelineAssembler {
 
 	public ConnectorCtePipelineInput assemble(
 			ConnectorCtePlan plan,
-			TableLike<? extends Record> sourceTable,
+			Table<Record> sourceTable,
 			SqlIdColumns ids,
 			ColumnDateRange rawValidityDate,
 			List<ConnectorSqlSelects> selects,

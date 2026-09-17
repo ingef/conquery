@@ -8,11 +8,11 @@ import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import org.jooq.Record;
-import org.jooq.TableLike;
+import org.jooq.Table;
 
 /** Fully SQL-resolved input needed to build a connector preprocessing CTE. */
 public record PreprocessingCteInput(
-		TableLike<? extends Record> sourceTable,
+		Table<Record> sourceTable,
 		SqlIdColumns ids,
 		ColumnDateRange rawValidityDate,
 		ColumnDateRange validityDate,
@@ -29,17 +29,5 @@ public record PreprocessingCteInput(
 		sqlSelects = List.copyOf(sqlSelects);
 		sqlFilters = List.copyOf(sqlFilters);
 		Objects.requireNonNull(stratificationTable, "stratificationTable");
-	}
-
-	public PreprocessingCteInput(
-			String sourceTable,
-			SqlIdColumns ids,
-			ColumnDateRange rawValidityDate,
-			ColumnDateRange validityDate,
-			List<ConnectorSqlSelects> sqlSelects,
-			List<SqlFilters> sqlFilters,
-			Optional<QueryStep> stratificationTable
-	) {
-		this(QueryStep.toTableLike(sourceTable), ids, rawValidityDate, validityDate, sqlSelects, sqlFilters, stratificationTable);
 	}
 }

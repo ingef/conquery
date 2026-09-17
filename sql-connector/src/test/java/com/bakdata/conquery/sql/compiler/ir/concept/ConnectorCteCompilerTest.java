@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.compiler.ir.concept;
 
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.name;
+import static org.jooq.impl.DSL.table;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -291,7 +292,7 @@ class ConnectorCteCompilerTest {
 						.build()
 		);
 		return new PreprocessingCteInput(
-				"events",
+				table(name("events")),
 				ids,
 				rawValidityDate,
 				rawValidityDate.asValidityDateRange("connector"),

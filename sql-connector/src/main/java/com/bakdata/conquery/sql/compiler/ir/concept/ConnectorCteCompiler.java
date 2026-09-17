@@ -89,8 +89,8 @@ public class ConnectorCteCompiler {
 		));
 		conditions.add(new DateRestrictionCondition(stratificationDate, input.rawValidityDate()).condition());
 
-		Table<?> connectorTable = input.sourceTable().asTable();
-		Table<?> joinedTable = connectorTable.innerJoin(stratificationTable)
+		Table<Record> connectorTable = input.sourceTable();
+		Table<Record> joinedTable = connectorTable.innerJoin(stratificationTable)
 				.on(idConditions.toArray(Condition[]::new));
 		Selects selects = Selects.builder()
 				.ids(stratificationSelects.getIds())

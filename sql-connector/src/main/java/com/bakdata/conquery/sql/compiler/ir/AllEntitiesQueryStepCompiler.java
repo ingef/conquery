@@ -21,7 +21,7 @@ public final class AllEntitiesQueryStepCompiler {
 	) {
 		Objects.requireNonNull(allEntitiesNode, "allEntitiesNode");
 		Selects selects = Selects.builder()
-				.ids(new SqlIdColumns(EntitySchemaSql.primaryId(entitySchema)))
+				.ids(new SqlIdColumns(SchemaSql.field(entitySchema.primaryId(), String.class)))
 				.validityDate(Optional.of(
 						compilerDialect.emptyDateRange().asValidityDateRange(ALL_ENTITIES_CTE)
 				))
@@ -29,7 +29,7 @@ public final class AllEntitiesQueryStepCompiler {
 		return QueryStep.builder()
 				.cteName(ALL_ENTITIES_CTE)
 				.selects(selects)
-				.fromTable(EntitySchemaSql.table(entitySchema))
+				.fromTable(SchemaSql.table(entitySchema.table()))
 				.build();
 	}
 }

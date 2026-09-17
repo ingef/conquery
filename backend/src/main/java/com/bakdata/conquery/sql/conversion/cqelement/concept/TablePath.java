@@ -14,6 +14,7 @@ import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCtePlanner;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorCtePlan;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
+import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
 import lombok.Getter;
 
 /**
@@ -49,7 +50,7 @@ class TablePath {
 				.map(SelectId::resolve)
 				.anyMatch(Select::isEventDateSelect);
 		ConnectorCtePlan plan = ConceptCtePlanner.planConnector(
-				connector.resolveTableId().getTable(),
+				EntitySchemaAdapter.from(connector.getResolvedTable()),
 				connectorName,
 				cqConcept.isAggregateEventDates(),
 				eventDateSelectsPresent,
