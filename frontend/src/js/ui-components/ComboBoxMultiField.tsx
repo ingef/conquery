@@ -115,6 +115,18 @@ export type ComboBoxMultiFieldProps = FieldLabelProps & {
   "data-test-id"?: string;
 };
 
+// react-aria compares the selected keys by reference and resets the typed
+// text when they change, so the array only changes with its content
+const useSelectedKeys = (value: SelectOptionT[]) => {
+  const keysRef = useRef<Key[]>([]);
+  const keys = value.map((item) => item.value);
+  const same =
+    keys.length === keysRef.current.length &&
+    keys.every((key, i) => key === keysRef.current[i]);
+  if (!same) keysRef.current = keys;
+  return keysRef.current;
+};
+
 /**
  * Several choices from a list, typed to filter: react-aria's ComboBox in
  * multiple selection mode, the chosen values as tags in the frame.
@@ -141,6 +153,7 @@ export const ComboBoxMultiField = ({
   const [query, setQuery] = useState("");
   const [isOpen, setOpen] = useState(false);
   const stateRef: ComboBoxStateRef = useRef(null);
+  const selectedKeys = useSelectedKeys(value);
 
   const createRow = useMemo(
     () =>
@@ -221,7 +234,7 @@ export const ComboBoxMultiField = ({
       validationBehavior="aria"
       isInvalid={exists(errorMessage)}
       items={items}
-      value={value.map((item) => item.value)}
+      value={selectedKeys}
       onChange={onSelectionChange}
       onInputChange={setQuery}
       onOpenChange={setOpen}
