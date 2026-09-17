@@ -1,4 +1,4 @@
-import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { CheckIcon, LoaderCircleIcon } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -71,7 +71,7 @@ const EditableTextForm = ({
               type="submit"
               isDisabled={loading}
             >
-              <Icon icon={loading ? faSpinner : faCheck} />
+              <Icon icon={loading ? LoaderCircleIcon : CheckIcon} />
             </Button>
             <Tooltip>{t("common.save")}</Tooltip>
           </TooltipTrigger>

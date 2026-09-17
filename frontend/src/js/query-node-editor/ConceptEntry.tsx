@@ -1,4 +1,4 @@
-import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
+import { TrashIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { ConceptIdT, ConceptT } from "../api/types";
@@ -64,7 +64,7 @@ const ConceptEntry = ({
           aria-label={t("common.delete")}
           onPress={() => onRemoveConcept(conceptId)}
         >
-          <Icon icon={faTrashCan} />
+          <Icon icon={TrashIcon} />
         </Button>
       )}
     </div>

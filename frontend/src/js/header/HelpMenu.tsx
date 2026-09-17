@@ -1,9 +1,9 @@
 import {
-  faBook,
-  faInfoCircle,
-  faPaperPlane,
-  faQuestion,
-} from "@fortawesome/free-solid-svg-icons";
+  BookIcon,
+  CircleQuestionMarkIcon,
+  InfoIcon,
+  SendIcon,
+} from "lucide-react";
 import { MenuTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useAbout } from "../app/About";
@@ -27,7 +27,7 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
         aria-label={t("common.help")}
         data-test-id="help-menu"
       >
-        <Icon icon={faQuestion} />
+        <Icon icon={CircleQuestionMarkIcon} />
       </Button>
       <Menu
         aria-label={t("common.help")}
@@ -42,7 +42,7 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
           rel="noopener noreferrer"
           data-test-id="help-email"
         >
-          <Icon icon={faPaperPlane} />
+          <Icon icon={SendIcon} />
           {t("common.contact")}
         </MenuItem>
         <MenuItem
@@ -52,11 +52,11 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
           rel="noopener noreferrer"
           data-test-id="help-manual"
         >
-          <Icon icon={faBook} />
+          <Icon icon={BookIcon} />
           {t("common.manual")}
         </MenuItem>
         <MenuItem id="version">
-          <Icon icon={faInfoCircle} />
+          <Icon icon={InfoIcon} />
           {t("common.version")}
         </MenuItem>
       </Menu>

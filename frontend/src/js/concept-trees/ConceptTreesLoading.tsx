@@ -1,4 +1,4 @@
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { LoaderCircleIcon } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -9,7 +9,7 @@ const ConceptTreesLoading = () => {
 
   return (
     <div className="flex flex-row items-center px-3 py-[5px]">
-      <Icon icon={faSpinner} className="mr-[10px]" />
+      <Icon icon={LoaderCircleIcon} className="mr-[10px]" />
       <span>{t("conceptTreeList.loading")}</span>
     </div>
   );

@@ -1,4 +1,4 @@
-import { faPlay, faSpinner, faStop } from "@fortawesome/free-solid-svg-icons";
+import { LoaderCircleIcon, PlayIcon, SquareIcon } from "lucide-react";
 import type { Ref } from "react";
 import { Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -48,7 +48,7 @@ const button = tv({
 });
 
 function getIcon(loading: boolean, running: boolean) {
-  return loading ? faSpinner : running ? faStop : faPlay;
+  return loading ? LoaderCircleIcon : running ? SquareIcon : PlayIcon;
 }
 
 interface Props {
@@ -82,6 +82,7 @@ const QueryRunnerButton = ({
         <span className={left({ running: isQueryRunning })}>
           <Icon
             icon={icon}
+            filled={icon === SquareIcon}
             className={[!isQueryRunning ? "text-white" : undefined]}
           />
         </span>

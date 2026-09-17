@@ -1,4 +1,4 @@
-import { faFile, faPaste } from "@fortawesome/free-solid-svg-icons";
+import { ClipboardPasteIcon, FileIcon } from "lucide-react";
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
@@ -181,12 +181,12 @@ export const ImportModal = ({
           </ModalBody>
           <ModalFooter>
             <Button intent="tertiary" onPress={onOpenFileDialog}>
-              <Icon icon={faFile} />
+              <Icon icon={FileIcon} />
               {t("common.openFileDialog")}
             </Button>
             {canReadClipboard && (
               <Button intent="tertiary" onPress={onPasteClick}>
-                <Icon icon={faPaste} />
+                <Icon icon={ClipboardPasteIcon} />
                 {t("importModal.paste")}
               </Button>
             )}

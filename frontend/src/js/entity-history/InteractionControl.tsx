@@ -1,4 +1,4 @@
-import { faChevronRight, faHome } from "@fortawesome/free-solid-svg-icons";
+import { ChevronRightIcon, HouseIcon } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../ui-components/Button";
@@ -22,7 +22,7 @@ const InteractionControl = ({
           aria-label={t("history.closeAll")}
           onPress={onCloseAll}
         >
-          <Icon icon={faHome} />
+          <Icon icon={HouseIcon} />
         </Button>
         <Tooltip placement="right">{t("history.closeAll")}</Tooltip>
       </TooltipTrigger>
@@ -32,7 +32,7 @@ const InteractionControl = ({
           aria-label={t("history.openAll")}
           onPress={onOpenAll}
         >
-          <Icon icon={faChevronRight} />
+          <Icon icon={ChevronRightIcon} />
         </Button>
         <Tooltip placement="right">{t("history.openAll")}</Tooltip>
       </TooltipTrigger>

@@ -1,5 +1,4 @@
-import { faCheckSquare, faSquare } from "@fortawesome/free-regular-svg-icons";
-import { faFilter } from "@fortawesome/free-solid-svg-icons";
+import { FunnelIcon, SquareCheckIcon, SquareIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { NodeResetConfig } from "../model/node";
@@ -83,7 +82,7 @@ const MenuColumnItem = ({
           size="sm"
         >
           <Icon
-            icon={includable ? faSquare : faCheckSquare}
+            icon={includable ? SquareIcon : SquareCheckIcon}
             className="size-5"
           />
         </Button>
@@ -105,7 +104,7 @@ const MenuColumnItem = ({
               onResetTable({ useDefaults: false });
             }}
           >
-            <Icon icon={faFilter} />
+            <Icon icon={FunnelIcon} />
           </ToggleButton>
           <Tooltip>{t("queryNodeEditor.clearSettings")}</Tooltip>
         </TooltipTrigger>

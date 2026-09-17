@@ -1,5 +1,5 @@
-import { faInfoCircle, faTrash } from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
+import { InfoIcon, TrashIcon } from "lucide-react";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
 
@@ -23,7 +23,7 @@ export const OnButtons: Story = {
     <div className="flex items-center gap-4">
       <TooltipTrigger>
         <Button intent="secondary">
-          <Icon icon={faTrash} />
+          <Icon icon={TrashIcon} />
         </Button>
         <Tooltip>Delete</Tooltip>
       </TooltipTrigger>
@@ -65,7 +65,7 @@ export const Timing: Story = {
     <div className="flex items-center gap-4 text-sm">
       <TooltipTrigger>
         <Button intent="secondary">
-          <Icon icon={faTrash} />
+          <Icon icon={TrashIcon} />
         </Button>
         <Tooltip>
           Names a control: short warm-up, neighbors open instantly
@@ -77,7 +77,7 @@ export const Timing: Story = {
       </TooltipTrigger>
       <TooltipTrigger delay={tooltipDelay.immediate}>
         <TooltipTarget role="img" aria-label="Info">
-          <Icon icon={faInfoCircle} className="text-gray-500" />
+          <Icon icon={InfoIcon} className="text-gray-500" />
         </TooltipTarget>
         <Tooltip>Help icons open immediately</Tooltip>
       </TooltipTrigger>
@@ -109,7 +109,7 @@ export const OnStaticContent: Story = {
     <div className="flex items-center gap-4 text-sm">
       <TooltipTrigger delay={tooltipDelay.immediate}>
         <TooltipTarget role="img" aria-label="Info">
-          <Icon icon={faInfoCircle} className="text-gray-500" />
+          <Icon icon={InfoIcon} className="text-gray-500" />
         </TooltipTarget>
         <Tooltip>An icon that is reachable with the keyboard</Tooltip>
       </TooltipTrigger>

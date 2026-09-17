@@ -1,5 +1,5 @@
-import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { useKeycloak } from "@react-keycloak-fork/web";
+import { LogOutIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { deleteStoredAuthToken } from "../authorization/helper";
@@ -41,7 +41,7 @@ const LogoutButton = () => {
         intent="secondary"
         onPress={onLogout}
       >
-        <Icon icon={faSignOutAlt} />
+        <Icon icon={LogOutIcon} />
       </Button>
       <Tooltip>{t("common.logout")}</Tooltip>
     </TooltipTrigger>

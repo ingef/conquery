@@ -1,4 +1,4 @@
-import { faMicroscope } from "@fortawesome/free-solid-svg-icons";
+import { MicroscopeIcon } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -162,7 +162,7 @@ const SecondaryIdSelectorUI = memo(
       <div>
         <h3 className={headline({ active: !!value })}>
           <Icon
-            icon={faMicroscope}
+            icon={MicroscopeIcon}
             className={[headlineIcon({ active: !!value }), "mr-[10px]"]}
           />
           {t("queryEditor.secondaryId")}

@@ -1,4 +1,4 @@
-import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { CheckIcon, LoaderCircleIcon } from "lucide-react";
 import { type FormEvent, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -115,7 +115,7 @@ const LoginPage = () => {
               type="submit"
             >
               <Icon
-                icon={loading ? faSpinner : faCheck}
+                icon={loading ? LoaderCircleIcon : CheckIcon}
                 className="text-white"
               />
               {t("login.submit")}

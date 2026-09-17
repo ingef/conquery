@@ -1,4 +1,4 @@
-import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
+import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { Fragment, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -212,7 +212,7 @@ const YearHead = ({
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO make this a button */}
       <div className={stickyWrap()} onClick={onClick}>
         <Icon
-          icon={isOpen ? faCaretDown : faCaretRight}
+          icon={isOpen ? ChevronDownIcon : ChevronRightIcon}
           className="text-gray-500"
         />
         <div>

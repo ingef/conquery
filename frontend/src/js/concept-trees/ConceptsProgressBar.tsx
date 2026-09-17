@@ -1,4 +1,4 @@
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { LoaderCircleIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Icon } from "../ui-components/Icon";
 import ProgressBar from "../ui-components/ProgressBar";
@@ -20,7 +20,7 @@ const ConceptsProgressBar = ({ trees }: PropsT) => {
   return (
     <div className="m-[10px]">
       <div className="flex items-center">
-        <Icon icon={faSpinner} />
+        <Icon icon={LoaderCircleIcon} />
         <p className="mx-[10px]">
           {t("conceptTreeList.loading")} {doneCount} / {treeIds.length}
         </p>

@@ -1,4 +1,4 @@
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { XIcon } from "lucide-react";
 import type { ReactNode, Ref } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import { useTranslation } from "react-i18next";
@@ -102,7 +102,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>({
                     aria-label={t("common.delete")}
                     onPress={() => onDelete(i)}
                   >
-                    <Icon icon={faTimes} />
+                    <Icon icon={XIcon} />
                   </Button>
                 </div>
                 {item}

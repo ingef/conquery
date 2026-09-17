@@ -1,4 +1,4 @@
-import { faBook } from "@fortawesome/free-solid-svg-icons";
+import { BookIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { Button } from "../ui-components/Button";
@@ -30,7 +30,7 @@ const FormHeader = ({
       {manualUrl && (
         <a href={manualUrl} target="_blank" rel="noreferrer" className="grid">
           <Button intent="secondary">
-            <Icon icon={faBook} />
+            <Icon icon={BookIcon} />
             {t("externalForms.manualButton")}
           </Button>
         </a>

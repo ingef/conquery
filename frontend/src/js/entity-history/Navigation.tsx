@@ -1,10 +1,10 @@
 import {
-  faArrowDown,
-  faArrowUp,
-  faChevronLeft,
-  faDownload,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
+  ArrowDownIcon,
+  ArrowUpIcon,
+  ChevronLeftIcon,
+  DownloadIcon,
+  TrashIcon,
+} from "lucide-react";
 import {
   type Dispatch,
   memo,
@@ -140,7 +140,7 @@ export const Navigation = memo(
           <div className="grid grow">
             <TooltipTrigger>
               <Button intent="secondary" onPress={onCloseHistory}>
-                <Icon icon={faChevronLeft} />
+                <Icon icon={ChevronLeftIcon} />
                 {t("common.back")}
               </Button>
               <Tooltip>{backButtonWarning}</Tooltip>
@@ -153,7 +153,7 @@ export const Navigation = memo(
                 confirmationText={t("history.settings.resetConfirm")}
               >
                 <Button intent="secondary">
-                  <Icon icon={faTrash} />
+                  <Icon icon={TrashIcon} />
                   {t("history.settings.reset")}
                 </Button>
               </ConfirmMenu>
@@ -178,7 +178,7 @@ export const Navigation = memo(
                   intent="tertiary"
                   onPress={goToPrev}
                 >
-                  <Icon icon={faArrowUp} />
+                  <Icon icon={ArrowUpIcon} />
                 </Button>
                 <Tooltip>{`${t("history.prevButtonLabel")} (shift + ⬆)`}</Tooltip>
               </TooltipTrigger>
@@ -209,7 +209,7 @@ export const Navigation = memo(
                     intent="tertiary"
                     onPress={goToNext}
                   >
-                    <Icon icon={faArrowDown} />
+                    <Icon icon={ArrowDownIcon} />
                   </Button>
                   <Tooltip>{`${t("history.nextButtonLabel")} (shift + ⬇)`}</Tooltip>
                 </TooltipTrigger>
@@ -217,7 +217,7 @@ export const Navigation = memo(
               <div className="mt-[10px] grid">
                 <TooltipTrigger>
                   <Button intent="secondary" onPress={onDownload}>
-                    <Icon icon={faDownload} />
+                    <Icon icon={DownloadIcon} />
                     CSV
                   </Button>
                   <Tooltip>{t("history.downloadButtonLabel")}</Tooltip>

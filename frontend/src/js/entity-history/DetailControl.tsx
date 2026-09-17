@@ -1,9 +1,9 @@
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
-  faBullseye,
-  faCircle,
-  faCircleDot,
-} from "@fortawesome/free-solid-svg-icons";
+  CircleDotIcon,
+  CircleIcon,
+  type LucideIcon,
+  TargetIcon,
+} from "lucide-react";
 import { type Dispatch, memo, type SetStateAction, useMemo } from "react";
 import type { Key } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -26,22 +26,22 @@ const useButtonConfig = () => {
   const { t } = useTranslation();
   return useMemo(
     (): {
-      icon: IconProp;
+      icon: LucideIcon;
       value: string;
       tooltip: string;
     }[] => [
       {
-        icon: faCircle,
+        icon: CircleIcon,
         value: "summary",
         tooltip: t("history.detail.summary"),
       },
       {
-        icon: faCircleDot,
+        icon: CircleDotIcon,
         value: "detail",
         tooltip: t("history.detail.detail"),
       },
       {
-        icon: faBullseye,
+        icon: TargetIcon,
         value: "full",
         tooltip: t("history.detail.full"),
       },

@@ -72,7 +72,7 @@ const isIconOnly = (children: ReactNode) => {
  * state or open an editor for it.
  *
  *   <ToggleButton isSelected={pinned} onChange={setPinned} aria-label="Pin">
- *     <Icon icon={faThumbtack} />
+ *     <Icon icon={PinIcon} />
  *   </ToggleButton>
  */
 export const ToggleButton = ({

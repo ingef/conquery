@@ -1,4 +1,4 @@
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { CheckIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
@@ -49,7 +49,7 @@ const QueryResults = ({
     <div className={root()}>
       {isEmpty(resultCount) ? (
         <p className={text()}>
-          <Icon icon={faCheck} className="mr-[10px]" />
+          <Icon icon={CheckIcon} className="mr-[10px]" />
           {t("queryRunner.endSuccess")}
         </p>
       ) : (

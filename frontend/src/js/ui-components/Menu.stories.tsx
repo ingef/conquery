@@ -1,10 +1,10 @@
-import {
-  faBook,
-  faEllipsisV,
-  faPaperPlane,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
+import {
+  BookIcon,
+  EllipsisVerticalIcon,
+  SendIcon,
+  TrashIcon,
+} from "lucide-react";
 import { MenuTrigger } from "react-aria-components";
 import { Button } from "./Button";
 import { ConfirmMenu } from "./ConfirmMenu";
@@ -24,21 +24,21 @@ export const Default: Story = {
   render: () => (
     <MenuTrigger>
       <Button intent="secondary">
-        <Icon icon={faEllipsisV} />
+        <Icon icon={EllipsisVerticalIcon} />
       </Button>
       <Menu aria-label="Actions" onAction={(key) => console.log(key)}>
         <MenuItem id="contact" href="mailto:someone@example.com">
-          <Icon icon={faPaperPlane} />A link item
+          <Icon icon={SendIcon} />A link item
         </MenuItem>
         <MenuItem id="manual">
-          <Icon icon={faBook} />
+          <Icon icon={BookIcon} />
           An action item
         </MenuItem>
         <MenuItem id="disabled" isDisabled>
-          <Icon icon={faTrash} />A disabled item
+          <Icon icon={TrashIcon} />A disabled item
         </MenuItem>
         <MenuItem id="delete" danger>
-          <Icon icon={faTrash} />A dangerous item
+          <Icon icon={TrashIcon} />A dangerous item
         </MenuItem>
       </Menu>
     </MenuTrigger>
@@ -58,7 +58,7 @@ export const Confirm: Story = {
         onConfirm={() => {}}
       >
         <Button intent="secondary">
-          <Icon icon={faTrash} />
+          <Icon icon={TrashIcon} />
         </Button>
       </ConfirmMenu>
     </div>
@@ -70,7 +70,7 @@ export const WithTooltipOnTrigger: Story = {
     <TooltipTrigger>
       <ConfirmMenu confirmationText="Really delete?" onConfirm={() => {}}>
         <Button intent="secondary">
-          <Icon icon={faTrash} />
+          <Icon icon={TrashIcon} />
         </Button>
       </ConfirmMenu>
       <Tooltip>Delete</Tooltip>

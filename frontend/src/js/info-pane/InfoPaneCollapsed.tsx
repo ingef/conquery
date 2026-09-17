@@ -1,4 +1,4 @@
-import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
+import { ChevronRightIcon } from "lucide-react";
 import { Button as RacButton } from "react-aria-components";
 import { useDispatch } from "react-redux";
 import { tv } from "tailwind-variants";
@@ -26,7 +26,7 @@ const InfoPaneCollapsed = () => {
   return (
     <div className="relative h-full">
       <RacButton className={button()} onPress={onToggleInfoPane}>
-        <Icon icon={faAngleRight} />
+        <Icon icon={ChevronRightIcon} />
       </RacButton>
     </div>
   );

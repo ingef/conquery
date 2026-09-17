@@ -1,5 +1,4 @@
-import { faFolder as faFolderRegular } from "@fortawesome/free-regular-svg-icons";
-import { faFolder } from "@fortawesome/free-solid-svg-icons";
+import { FolderIcon } from "lucide-react";
 import { tv } from "tailwind-variants";
 import { exists } from "../../common/helpers/exists";
 import { Highlighter } from "../../ui-components/Highlighter";
@@ -63,7 +62,8 @@ const Folder = ({
       title={folder}
     >
       <Icon
-        icon={special ? faFolderRegular : faFolder}
+        icon={FolderIcon}
+        filled={!special}
         className="mr-2 text-primary-500"
       />
       {exists(count) && <span className={resultCount()}>{count}</span>}

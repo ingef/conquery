@@ -1,4 +1,4 @@
-import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
+import { ArrowUpIcon } from "lucide-react";
 import {
   type HTMLAttributes,
   type PropsWithChildren,
@@ -59,7 +59,7 @@ export default function ScrollBox({
             scrollBoxRef.current?.scrollTo({ top: 0, behavior: "smooth" })
           }
         >
-          <Icon icon={faArrowUp} />
+          <Icon icon={ArrowUpIcon} />
         </RacButton>
       )}
       {children}

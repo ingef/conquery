@@ -1,4 +1,4 @@
-import { faListUl, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { ListIcon, LoaderCircleIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import type { ColumnDescription } from "../api/types";
@@ -34,7 +34,7 @@ export const QueryResultHistoryButton = ({
         dispatch(openHistory());
       }}
     >
-      <Icon icon={isLoading ? faSpinner : faListUl} />
+      <Icon icon={isLoading ? LoaderCircleIcon : ListIcon} />
       {t("history.history")}
     </Button>
   );

@@ -1,4 +1,4 @@
-import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { PlusIcon, XIcon } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -151,7 +151,7 @@ const Folders = ({ className }: { className?: string }) => {
       <div className="@container mb-3 flex w-full min-w-[100px] items-start">
         <DialogTrigger>
           <Button intent="tertiary" size="sm">
-            <Icon icon={faPlus} />
+            <Icon icon={PlusIcon} />
             <span className="@max-[120px]:hidden">{t("folders.add")}</span>
             <span className="@min-[120px]:hidden">{t("folders.addShort")}</span>
           </Button>
@@ -223,7 +223,7 @@ const Folders = ({ className }: { className?: string }) => {
                           aria-label={t("common.delete")}
                           intent="tertiary"
                         >
-                          <Icon icon={faTimes} />
+                          <Icon icon={XIcon} />
                         </Button>
                       </div>
                       <DeleteFolderModal

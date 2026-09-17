@@ -1,7 +1,4 @@
-import {
-  faCompressArrowsAlt,
-  faExpandArrowsAlt,
-} from "@fortawesome/free-solid-svg-icons";
+import { Maximize2Icon, Minimize2Icon } from "lucide-react";
 import { useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
@@ -168,9 +165,7 @@ const FormConceptNode = ({
                   expand.onClick();
                 }}
               >
-                <Icon
-                  icon={expand.active ? faCompressArrowsAlt : faExpandArrowsAlt}
-                />
+                <Icon icon={expand.active ? Minimize2Icon : Maximize2Icon} />
               </Button>
               <Tooltip>{t("externalForms.common.concept.expand")}</Tooltip>
             </TooltipTrigger>

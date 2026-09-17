@@ -1,4 +1,4 @@
-import { faCalendar } from "@fortawesome/free-regular-svg-icons";
+import { CalendarIcon } from "lucide-react";
 import { type Ref, useRef } from "react";
 import {
   TextField as RacTextField,
@@ -111,7 +111,7 @@ export const DateField = ({
                   isDisabled={isDisabled}
                   onPress={() => datePickerRef.current?.setOpen(true)}
                 >
-                  <Icon icon={faCalendar} />
+                  <Icon icon={CalendarIcon} />
                 </InputButton>
               }
             />

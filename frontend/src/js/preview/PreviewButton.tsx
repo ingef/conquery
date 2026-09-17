@@ -1,7 +1,4 @@
-import {
-  faMagnifyingGlass,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
+import { LoaderCircleIcon, SearchIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,7 +19,7 @@ const PreviewButton = (props: ButtonProps) => {
 
   const [isLoading, setLoading] = useState(false);
   const icon = useMemo(
-    () => (isLoading ? faSpinner : faMagnifyingGlass),
+    () => (isLoading ? LoaderCircleIcon : SearchIcon),
     [isLoading],
   );
 

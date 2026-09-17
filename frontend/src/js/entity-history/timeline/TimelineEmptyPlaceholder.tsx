@@ -1,4 +1,4 @@
-import { faListUl, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { ListIcon, SearchIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -59,10 +59,7 @@ export const TimelineEmptyPlaceholder = ({
   return (
     <div className={root({ className })}>
       <div className="flex items-center gap-[30px]">
-        <Icon
-          icon={searchTerm ? faMagnifyingGlass : faListUl}
-          className={bigIcon()}
-        />
+        <Icon icon={searchTerm ? SearchIcon : ListIcon} className={bigIcon()} />
         <div>
           <h2 className="text-2xl leading-[1.3]">
             {t("history.emptyTimeline.headline")}

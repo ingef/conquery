@@ -1,5 +1,5 @@
-import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { t } from "i18next";
+import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { tv } from "tailwind-variants";
 import type { PreviewStatistics } from "../api/types";
@@ -81,7 +81,7 @@ export default function Charts({
           onPress={() => updatePage(-1)}
           isDisabled={page === 0}
         >
-          <Icon icon={faArrowLeft} />
+          <Icon icon={ArrowLeftIcon} />
         </Button>
         <span>
           {t("preview.page")} {page + 1}/
@@ -93,7 +93,7 @@ export default function Charts({
           onPress={() => updatePage(1)}
           isDisabled={page === maxPage - 1}
         >
-          <Icon icon={faArrowRight} />
+          <Icon icon={ArrowRightIcon} />
         </Button>
       </div>
     </div>

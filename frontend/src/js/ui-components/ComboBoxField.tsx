@@ -1,4 +1,4 @@
-import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { ChevronDownIcon } from "lucide-react";
 import { useContext, useMemo, useState } from "react";
 import {
   ComboBoxStateContext,
@@ -152,7 +152,7 @@ export const ComboBoxField = ({
             isInvalid={isInvalid}
             addonRight={
               <InputButton data-test-id="selection-dropdown">
-                <Icon icon={faChevronDown} />
+                <Icon icon={ChevronDownIcon} />
               </InputButton>
             }
           />

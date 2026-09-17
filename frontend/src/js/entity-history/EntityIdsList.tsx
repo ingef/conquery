@@ -1,4 +1,4 @@
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { LoaderCircleIcon } from "lucide-react";
 import { useMemo } from "react";
 import { tv } from "tailwind-variants";
 import { Icon } from "../ui-components/Icon";
@@ -90,7 +90,7 @@ export const EntityIdsList = ({
           <span className="font-light text-gray-500">({entityId.kind})</span>
         </div>
         {loadingId === entityId.id && (
-          <Icon icon={faSpinner} className="mx-[6px] my-[3px]" />
+          <Icon icon={LoaderCircleIcon} className="mx-[6px] my-[3px]" />
         )}
         <div className="ml-auto flex items-center gap-[2px]">
           {entityIdsStatus[entityId.id] &&

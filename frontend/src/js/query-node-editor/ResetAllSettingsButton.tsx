@@ -1,4 +1,4 @@
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { TrashIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../ui-components/Button";
 import { ConfirmMenu } from "../ui-components/ConfirmMenu";
@@ -18,7 +18,7 @@ const ResetAllSettingsButton = ({
 
   const trigger = (
     <Button intent="tertiary">
-      <Icon icon={faTrash} />
+      <Icon icon={TrashIcon} />
       {compact ? null : text}
     </Button>
   );

@@ -1,4 +1,4 @@
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { CheckIcon } from "lucide-react";
 import {
   CheckboxButton,
   CheckboxField as RacCheckboxField,
@@ -95,7 +95,7 @@ export const CheckboxField = ({
         <>
           <span className={frame()}>
             <span className={box()}>
-              {isSelected && <Icon icon={faCheck} />}
+              {isSelected && <Icon icon={CheckIcon} />}
             </span>
           </span>
           <span className={label()}>

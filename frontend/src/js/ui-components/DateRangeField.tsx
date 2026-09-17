@@ -1,4 +1,4 @@
-import { faCalendar } from "@fortawesome/free-regular-svg-icons";
+import { CalendarIcon } from "lucide-react";
 import { type ReactNode, useId, useRef } from "react";
 import { Group } from "react-aria-components";
 import type ReactDatePicker from "react-datepicker";
@@ -138,7 +138,7 @@ export const DateRangeField = ({
           indexPrefix={indexPrefix}
           isDisabled={isDisabled}
         >
-          <Icon icon={faCalendar} className="mr-[10px] text-gray-500" />
+          <Icon icon={CalendarIcon} className="mr-[10px] text-gray-500" />
           {label}
           <InfoTooltip
             excludeFromTabOrder

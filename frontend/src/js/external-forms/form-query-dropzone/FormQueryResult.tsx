@@ -1,4 +1,4 @@
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { XIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { exists } from "../../common/helpers/exists";
@@ -52,7 +52,7 @@ const FormQueryResult = ({
           aria-label={t("common.delete")}
           onPress={onDelete}
         >
-          <Icon icon={faTimes} />
+          <Icon icon={XIcon} />
         </Button>
       )}
     </div>

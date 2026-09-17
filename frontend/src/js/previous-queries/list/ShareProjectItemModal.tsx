@@ -1,4 +1,4 @@
-import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { CheckIcon, LoaderCircleIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -159,7 +159,7 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
                   type="submit"
                   isDisabled={buttonDisabled}
                 >
-                  <Icon icon={loading ? faSpinner : faCheck} />
+                  <Icon icon={loading ? LoaderCircleIcon : CheckIcon} />
                 </Button>
                 <Tooltip>{shareLabel}</Tooltip>
               </TooltipTrigger>

@@ -1,4 +1,4 @@
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { XIcon } from "lucide-react";
 import { memo, type Ref } from "react";
 import ReactMarkdown from "react-markdown";
 import { tv } from "tailwind-variants";
@@ -59,7 +59,7 @@ const SelectedItem = ({
           removeSelectedItem(item);
         }}
       >
-        <Icon icon={faTimes} />
+        <Icon icon={XIcon} />
       </Button>
     </div>
   );

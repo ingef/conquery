@@ -1,5 +1,5 @@
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
+import { XIcon } from "lucide-react";
 
 import { Button } from "./Button";
 import {
@@ -39,7 +39,7 @@ export const WithInfoAndActions: Story = {
           info="Regions the report covers."
           actions={
             <Button size="sm" intent="tertiary" aria-label="Remove">
-              <Icon icon={faTimes} />
+              <Icon icon={XIcon} />
             </Button>
           }
         >

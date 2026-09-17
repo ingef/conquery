@@ -1,4 +1,4 @@
-import { faFolder } from "@fortawesome/free-solid-svg-icons";
+import { FolderIcon } from "lucide-react";
 import { memo } from "react";
 import { tv } from "tailwind-variants";
 import type { ConceptIdT, ConceptT } from "../../api/types";
@@ -92,7 +92,7 @@ const ConceptName = ({ className, title, rootConceptId, conceptId }: Props) => {
 
   return (
     <div title={title} className={conceptRoot({ className })}>
-      <Icon icon={faFolder} className="text-primary-500" />
+      <Icon icon={FolderIcon} className="text-primary-500" />
       <span>
         {rootConcept && (
           <RootConceptLabel rootConcept={rootConcept} searchTerm={searchTerm} />

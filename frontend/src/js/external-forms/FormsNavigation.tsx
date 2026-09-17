@@ -1,4 +1,4 @@
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { TrashIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
@@ -82,7 +82,7 @@ const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
                 aria-label={t("externalForms.common.clear")}
                 intent="secondary"
               >
-                <Icon icon={faTrash} />
+                <Icon icon={TrashIcon} />
               </Button>
             </ConfirmMenu>
             <Tooltip>{t("externalForms.common.clear")}</Tooltip>

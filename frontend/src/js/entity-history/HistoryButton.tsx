@@ -1,4 +1,4 @@
-import { faListUl } from "@fortawesome/free-solid-svg-icons";
+import { ListIcon } from "lucide-react";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
@@ -22,7 +22,7 @@ export const HistoryButton = () => {
         intent="secondary"
         onPress={onClick}
       >
-        <Icon icon={faListUl} />
+        <Icon icon={ListIcon} />
       </Button>
       <Tooltip>{t("history.history")}</Tooltip>
     </TooltipTrigger>

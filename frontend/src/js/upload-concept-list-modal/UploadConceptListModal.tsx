@@ -1,8 +1,8 @@
 import {
-  faCheckCircle,
-  faExclamationCircle,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
+  CircleAlertIcon,
+  CircleCheckIcon,
+  LoaderCircleIcon,
+} from "lucide-react";
 import {
   type FormEvent,
   memo,
@@ -502,20 +502,20 @@ const UploadConceptListModal = ({
           {error && (
             <div className="flex items-center">
               <Icon
-                icon={faExclamationCircle}
+                icon={CircleAlertIcon}
                 className={bigIcon({ kind: "error" })}
               />
               {t("uploadConceptListModal.error")}
             </div>
           )}
-          {loading && <Icon icon={faSpinner} className="text-center" />}
+          {loading && <Icon icon={LoaderCircleIcon} className="text-center" />}
           {(!!resolvedConcepts || !!resolvedFilters) && (
             <>
               {hasUnresolvedItems && (
                 <div>
                   <p className="m-0">
                     <Icon
-                      icon={faExclamationCircle}
+                      icon={CircleAlertIcon}
                       className={bigIcon({ kind: "error" })}
                     />
                     <span>
@@ -545,7 +545,7 @@ const UploadConceptListModal = ({
                   {hasResolvedItems && (
                     <>
                       <Icon
-                        icon={faCheckCircle}
+                        icon={CircleCheckIcon}
                         className={bigIcon({ kind: "success" })}
                       />
                       {t("uploadConceptListModal.resolvedCodes", {

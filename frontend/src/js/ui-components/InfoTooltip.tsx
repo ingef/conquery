@@ -1,4 +1,4 @@
-import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
+import { CircleQuestionMarkIcon } from "lucide-react";
 import type { ReactElement } from "react";
 import { tv } from "tailwind-variants";
 
@@ -40,7 +40,10 @@ const InfoTooltip = ({
         className={spanContainer({ className })}
         excludeFromTabOrder={excludeFromTabOrder}
       >
-        <Icon icon={faQuestionCircle} className={[icon(), "text-gray-500"]} />
+        <Icon
+          icon={CircleQuestionMarkIcon}
+          className={[icon(), "text-gray-500"]}
+        />
       </TooltipTarget>
       <Tooltip size={size}>
         {text ? (

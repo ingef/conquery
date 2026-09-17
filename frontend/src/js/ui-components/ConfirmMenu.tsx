@@ -1,5 +1,4 @@
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { CheckIcon, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { MenuTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -22,7 +21,7 @@ export const ConfirmMenu = ({
 }: {
   children: ReactNode;
   confirmationText?: string;
-  confirmationIcon?: IconProp;
+  confirmationIcon?: LucideIcon;
   placement?: "top" | "bottom" | "left" | "right";
   onConfirm: () => void;
   red?: boolean;
@@ -35,7 +34,7 @@ export const ConfirmMenu = ({
       {children}
       <Menu aria-label={label} placement={placement} onAction={onConfirm}>
         <MenuItem id="confirm" danger={red} data-test-id="confirm">
-          <Icon icon={confirmationIcon || faCheck} />
+          <Icon icon={confirmationIcon || CheckIcon} />
           {label}
         </MenuItem>
       </Menu>

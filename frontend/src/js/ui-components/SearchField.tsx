@@ -1,4 +1,4 @@
-import { faSearch, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { SearchIcon, XIcon } from "lucide-react";
 import {
   ButtonContext,
   SearchField as RacSearchField,
@@ -47,11 +47,11 @@ export const SearchField = ({
                     isDisabled={isDisabled}
                     onPress={() => onSubmit?.(state.value)}
                   >
-                    <Icon icon={faSearch} />
+                    <Icon icon={SearchIcon} />
                   </InputButton>
                 </ButtonContext.Provider>
                 <InputButton>
-                  <Icon icon={faTimes} />
+                  <Icon icon={XIcon} />
                 </InputButton>
               </>
             )

@@ -1,14 +1,14 @@
-import {
-  faCheckCircle,
-  faDownload,
-  faExclamationCircle,
-  faSpinner,
-  faTrash,
-  faUpload,
-} from "@fortawesome/free-solid-svg-icons";
 import { format } from "date-fns";
 import { saveAs } from "file-saver";
 import type { TFunction } from "i18next";
+import {
+  CircleAlertIcon,
+  CircleCheckIcon,
+  DownloadIcon,
+  LoaderCircleIcon,
+  TrashIcon,
+  UploadIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -265,7 +265,7 @@ const CSVColumnPicker = ({
               intent="secondary"
               onPress={onReset}
             >
-              <Icon icon={faTrash} />
+              <Icon icon={TrashIcon} />
             </Button>
             <Tooltip>{t("common.clear")}</Tooltip>
           </TooltipTrigger>
@@ -303,7 +303,7 @@ const CSVColumnPicker = ({
           <p className={msg()}>
             {uploadResult.resolved > 0 && (
               <Icon
-                icon={faCheckCircle}
+                icon={CircleCheckIcon}
                 className={bigIcon({ kind: "success" })}
               />
             )}
@@ -313,7 +313,7 @@ const CSVColumnPicker = ({
             <>
               <p className={msg()}>
                 <Icon
-                  icon={faExclamationCircle}
+                  icon={CircleAlertIcon}
                   className={bigIcon({ kind: "error" })}
                 />
                 {t("csvColumnPicker.unreadableDate", {
@@ -335,7 +335,7 @@ const CSVColumnPicker = ({
             <>
               <p className={msg()}>
                 <Icon
-                  icon={faExclamationCircle}
+                  icon={CircleAlertIcon}
                   className={bigIcon({ kind: "error" })}
                 />
                 {t("csvColumnPicker.unresolvedId", {
@@ -360,7 +360,7 @@ const CSVColumnPicker = ({
             uploadResult.unresolvedId.length > 0) && (
             <div className="mr-auto">
               <Button intent="secondary" onPress={downloadUnresolved}>
-                <Icon icon={faDownload} />
+                <Icon icon={DownloadIcon} />
                 {t("uploadQueryResultsModal.downloadUnresolved", {
                   count:
                     uploadResult.unreadableDate.length +
@@ -376,9 +376,9 @@ const CSVColumnPicker = ({
             onPress={uploadQuery}
           >
             {loading ? (
-              <Icon icon={faSpinner} className="text-white" />
+              <Icon icon={LoaderCircleIcon} className="text-white" />
             ) : (
-              <Icon icon={faUpload} className="mr-[10px] text-white" />
+              <Icon icon={UploadIcon} className="mr-[10px] text-white" />
             )}{" "}
             {t("uploadQueryResultsModal.uploadAgain")}
           </Button>
@@ -394,9 +394,9 @@ const CSVColumnPicker = ({
             onPress={uploadQuery}
           >
             {loading ? (
-              <Icon icon={faSpinner} className="text-white" />
+              <Icon icon={LoaderCircleIcon} className="text-white" />
             ) : (
-              <Icon icon={faUpload} className="mr-[10px] text-white" />
+              <Icon icon={UploadIcon} className="mr-[10px] text-white" />
             )}{" "}
             {t("uploadQueryResultsModal.upload")}
           </Button>

@@ -1,5 +1,5 @@
-import { faCalendarMinus } from "@fortawesome/free-regular-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
+import { CalendarMinusIcon } from "lucide-react";
 import { type DOMAttributes, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -302,7 +302,7 @@ export function TreeNode({
                 {tree.dates?.excluded && (
                   <div className={dates()}>
                     <Icon
-                      icon={faCalendarMinus}
+                      icon={CalendarMinusIcon}
                       className="mr-[10px] text-red"
                     />
                     {t("editorV2.datesExcluded")}

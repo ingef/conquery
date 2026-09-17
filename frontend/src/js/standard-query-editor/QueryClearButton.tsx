@@ -1,4 +1,4 @@
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { TrashIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { Button } from "../ui-components/Button";
@@ -27,7 +27,7 @@ const QueryClearButton = ({ className }: { className?: string }) => {
             size="sm"
             excludeFromTabOrder
           >
-            <Icon icon={faTrash} />
+            <Icon icon={TrashIcon} />
           </Button>
         </ConfirmMenu>
         <Tooltip>{t("queryEditor.clear")}</Tooltip>

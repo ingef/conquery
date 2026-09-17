@@ -1,4 +1,4 @@
-import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Icon } from "../ui-components/Icon";
@@ -22,7 +22,7 @@ const VisibilityControl = ({
           isSelected={!!blurred}
           onChange={toggleBlurred}
         >
-          <Icon icon={blurred ? faEyeSlash : faEye} />
+          <Icon icon={blurred ? EyeOffIcon : EyeIcon} />
         </ToggleButton>
         <Tooltip placement="right">{t("history.blurred")}</Tooltip>
       </TooltipTrigger>

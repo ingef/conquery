@@ -1,9 +1,9 @@
 import {
-  faArrowsLeftRightToLine,
-  faHashtag,
-  faMicroscope,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
+  HashIcon,
+  MicroscopeIcon,
+  UnfoldHorizontalIcon,
+  UserIcon,
+} from "lucide-react";
 import type { HTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -93,7 +93,7 @@ const MatchingStats = (props: Props) => {
     <div {...rest}>
       {idLabel && (
         <>
-          <Icon icon={faMicroscope} className={icon()} />
+          <Icon icon={MicroscopeIcon} className={icon()} />
           <div className="shrink-0">
             <p className={dateText()}>{idLabel}</p>
             <p className={text({ zero: isZero })}>
@@ -102,7 +102,7 @@ const MatchingStats = (props: Props) => {
           </div>
         </>
       )}
-      <Icon icon={faHashtag} className={icon()} />
+      <Icon icon={HashIcon} className={icon()} />
       <div className="shrink-0">
         <p className={numberText({ zero: isZero })}>
           {exists(matchingEntries) ? (
@@ -122,7 +122,7 @@ const MatchingStats = (props: Props) => {
           )}
         </p>
       </div>
-      <Icon icon={faUser} className={icon()} />
+      <Icon icon={UserIcon} className={icon()} />
       <div className="shrink-0">
         <p className={numberText({ zero: isZeroEntities })}>
           {exists(matchingEntities) ? (
@@ -142,7 +142,7 @@ const MatchingStats = (props: Props) => {
           )}
         </p>
       </div>
-      <Icon icon={faArrowsLeftRightToLine} className={icon()} />
+      <Icon icon={UnfoldHorizontalIcon} className={icon()} />
       <div className="shrink-0">
         <p className={dateText()}>
           {fromDate}

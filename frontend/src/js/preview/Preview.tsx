@@ -1,4 +1,4 @@
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { LoaderCircleIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
@@ -123,7 +123,7 @@ export default function Preview() {
           />
         ) : (
           <div className={chartLoadingBlocker()}>
-            <Icon icon={faSpinner} className={spinnerIcon()} />
+            <Icon icon={LoaderCircleIcon} className={spinnerIcon()} />
           </div>
         )}
         {popOver && (

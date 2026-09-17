@@ -1,4 +1,4 @@
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { XIcon } from "lucide-react";
 import { memo, useRef } from "react";
 import { Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -63,7 +63,7 @@ export const SnackMessage = memo(function SnackMessageComponent() {
               className={clearZone()}
               onPress={resetMessage}
             >
-              <Icon icon={faTimes} className="text-white" />
+              <Icon icon={XIcon} className="text-white" />
             </RacButton>
           </div>
         </div>

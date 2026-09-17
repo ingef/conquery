@@ -1,4 +1,4 @@
-import { faCaretDown, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { ChevronDownIcon, DownloadIcon } from "lucide-react";
 import { memo, useContext, useEffect, useMemo, useState } from "react";
 import { MenuTrigger, Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -116,7 +116,7 @@ const DownloadResultsDropdownButton = ({
       <TooltipTrigger>
         <MenuTrigger>
           <RacButton aria-label={tooltip} className={part({ caret: true })}>
-            <Icon icon={tiny ? faDownload : faCaretDown} />
+            <Icon icon={tiny ? DownloadIcon : ChevronDownIcon} />
           </RacButton>
           <Menu
             aria-label={t("previousQuery.downloadResults")}

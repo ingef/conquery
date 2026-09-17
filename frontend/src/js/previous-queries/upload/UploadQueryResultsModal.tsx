@@ -1,4 +1,4 @@
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { CircleCheckIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -55,7 +55,7 @@ const UploadQueryResultsModal = ({
           <ModalBody>
             {fullUploadSuccess ? (
               <div className="my-[25px]">
-                <Icon icon={faCheckCircle} className={successIcon()} />
+                <Icon icon={CircleCheckIcon} className={successIcon()} />
                 <p className="m-0">
                   {t("uploadQueryResultsModal.uploadSucceeded", {
                     count: uploadResult?.resolved || 0,

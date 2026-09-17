@@ -1,4 +1,4 @@
-import { faPen } from "@fortawesome/free-solid-svg-icons";
+import { PencilIcon } from "lucide-react";
 import { tv } from "tailwind-variants";
 import HighlightableLabel from "../highlightable-label/HighlightableLabel";
 import { Button } from "./Button";
@@ -73,7 +73,7 @@ const EditableText = ({
             size={large ? "md" : "sm"}
             onPress={onToggleEdit}
           >
-            <Icon icon={faPen} />
+            <Icon icon={PencilIcon} />
           </Button>
           <Tooltip>{tooltip}</Tooltip>
         </TooltipTrigger>

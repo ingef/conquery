@@ -1,4 +1,4 @@
-import { faDiagramProject } from "@fortawesome/free-solid-svg-icons";
+import { WorkflowIcon } from "lucide-react";
 
 import { Icon } from "../ui-components/Icon";
 
@@ -7,10 +7,7 @@ import { InABox } from "./InABox";
 const QuerySymbol = ({ className }: { className?: string }) => {
   return (
     <InABox className={className}>
-      <Icon
-        icon={faDiagramProject}
-        className={[className, "text-primary-500"]}
-      />
+      <Icon icon={WorkflowIcon} className={[className, "text-primary-500"]} />
     </InABox>
   );
 };

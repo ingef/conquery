@@ -1,14 +1,14 @@
-import { faCalendar, faTrashCan } from "@fortawesome/free-regular-svg-icons";
-import {
-  faBan,
-  faCircleNodes,
-  faEdit,
-  faExpandArrowsAlt,
-  faHourglass,
-  faRefresh,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
+import {
+  BanIcon,
+  CalendarIcon,
+  HourglassIcon,
+  Maximize2Icon,
+  RefreshCwIcon,
+  SquarePenIcon,
+  TrashIcon,
+  WaypointsIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
@@ -303,7 +303,7 @@ export function EditorV2({
                       onOpenQueryNodeEditor();
                     }}
                   >
-                    <Icon icon={faEdit} />
+                    <Icon icon={SquarePenIcon} />
                     {t("editorV2.edit")}
                   </ToggleButton>
                 </KeyboardShortcutTooltip>
@@ -317,7 +317,7 @@ export function EditorV2({
                       onOpen();
                     }}
                   >
-                    <Icon icon={faCalendar} />
+                    <Icon icon={CalendarIcon} />
                     {t("editorV2.dates")}
                   </ToggleButton>
                 </KeyboardShortcutTooltip>
@@ -330,7 +330,7 @@ export function EditorV2({
                     isSelected={!!selectedNode.negation}
                     onChange={onNegateClick}
                   >
-                    <Icon icon={faBan} />
+                    <Icon icon={BanIcon} />
                     {t("editorV2.negate")}
                   </ToggleButton>
                 </KeyboardShortcutTooltip>
@@ -346,7 +346,7 @@ export function EditorV2({
                       onRotateConnector();
                     }}
                   >
-                    <Icon icon={faCircleNodes} />
+                    <Icon icon={WaypointsIcon} />
                     <Connector>{connection}</Connector>
                   </Button>
                 </KeyboardShortcutTooltip>
@@ -361,7 +361,7 @@ export function EditorV2({
                       onOpenTimeModal();
                     }}
                   >
-                    <Icon icon={faHourglass} />
+                    <Icon icon={HourglassIcon} />
                     <span>{t("editorV2.timeConnection")}</span>
                   </Button>
                 </KeyboardShortcutTooltip>
@@ -374,7 +374,7 @@ export function EditorV2({
                       onExpand();
                     }}
                   >
-                    <Icon icon={faExpandArrowsAlt} />
+                    <Icon icon={Maximize2Icon} />
                     {t("editorV2.expand")}
                   </Button>
                 </KeyboardShortcutTooltip>
@@ -390,7 +390,7 @@ export function EditorV2({
                       onFlip();
                     }}
                   >
-                    <Icon icon={faRefresh} />
+                    <Icon icon={RefreshCwIcon} />
                     {t("editorV2.flip")}
                   </Button>
                 </KeyboardShortcutTooltip>
@@ -405,7 +405,7 @@ export function EditorV2({
                       onDelete();
                     }}
                   >
-                    <Icon icon={faTrashCan} />
+                    <Icon icon={TrashIcon} />
                     {t("editorV2.delete")}
                   </Button>
                 </KeyboardShortcutTooltip>
@@ -417,7 +417,7 @@ export function EditorV2({
                     confirmationText={t("editorV2.clearConfirm")}
                   >
                     <Button aria-label={t("editorV2.clear")} intent="tertiary">
-                      <Icon icon={faTrash} />
+                      <Icon icon={TrashIcon} />
                     </Button>
                   </ConfirmMenu>
                   <Tooltip>{t("editorV2.clear")}</Tooltip>

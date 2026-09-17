@@ -1,7 +1,4 @@
-import {
-  faChartColumn,
-  faDiagramProject,
-} from "@fortawesome/free-solid-svg-icons";
+import { ChartColumnIcon, WorkflowIcon } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -29,12 +26,12 @@ const ProjectItemsTypeFilter = () => {
       { value: "all", label: t("projectItemsFilter.all") },
       {
         value: "queries",
-        label: <Icon icon={faDiagramProject} />,
+        label: <Icon icon={WorkflowIcon} />,
         tooltip: t("projectItemsTypeFilter.queries"),
       },
       {
         value: "configs",
-        label: <Icon icon={faChartColumn} />,
+        label: <Icon icon={ChartColumnIcon} />,
         tooltip: t("projectItemsTypeFilter.configs"),
       },
     ],

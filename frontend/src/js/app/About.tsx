@@ -1,4 +1,4 @@
-import { faCopy } from "@fortawesome/free-regular-svg-icons";
+import { CopyIcon } from "lucide-react";
 import {
   createContext,
   Fragment,
@@ -98,7 +98,7 @@ export const About = memo(() => {
       </ModalBody>
       <ModalFooter>
         <Button intent="secondary" onPress={copyVersionToClipboard}>
-          <Icon icon={faCopy} />
+          <Icon icon={CopyIcon} />
           Copy version info
         </Button>
       </ModalFooter>

@@ -1,4 +1,4 @@
-import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
+import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -110,7 +110,7 @@ export const Quarter = memo(
             onClick={() => toggleOpenQuarter(year, quarter)}
           >
             <Icon
-              icon={isOpen ? faCaretDown : faCaretRight}
+              icon={isOpen ? ChevronDownIcon : ChevronRightIcon}
               className="text-gray-500"
             />
             <SmallHeading className="leading-none">Q{quarter} </SmallHeading>

@@ -1,4 +1,4 @@
-import { faFolder } from "@fortawesome/free-solid-svg-icons";
+import { FolderIcon } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -54,7 +54,7 @@ export const DropdownOption = memo(
             <IndexPrefix className={indexPrefix()}># {filterIdx}</IndexPrefix>
           ) : (
             <Icon
-              icon={faFolder}
+              icon={FolderIcon}
               className={[
                 !hasDifferentFilterLabel ? "text-primary-500" : undefined,
                 hasDifferentFilterLabel ? "text-gray-500" : undefined,

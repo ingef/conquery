@@ -1,14 +1,15 @@
-import {
-  faArrowsLeftRightToLine,
-  faCheck,
-  faEllipsisV,
-  faFolder,
-  faPaperPlane,
-  faSpinner,
-  faTrash,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
+import {
+  CheckIcon,
+  EllipsisVerticalIcon,
+  FolderIcon,
+  FolderOpenIcon,
+  LoaderCircleIcon,
+  SquareIcon,
+  TrashIcon,
+  UnfoldHorizontalIcon,
+  UserIcon,
+} from "lucide-react";
 import { Button } from "./Button";
 
 import { Icon } from "./Icon";
@@ -21,35 +22,19 @@ export default {
 
 type Story = StoryObj<typeof Icon>;
 
-const glyphs = [
-  faEllipsisV,
-  faUser,
-  faFolder,
-  faPaperPlane,
-  faArrowsLeftRightToLine,
-];
-
-export const Frame: Story = {
+export const InText: Story = {
   render: () => (
-    <div className="flex flex-col gap-4 text-xs">
-      <div className="flex items-center gap-2">
-        {glyphs.map((icon, i) => (
-          <Icon key={i} icon={icon} className="bg-gray-100" />
-        ))}
-        <span>narrow to wide glyphs, one 14 px frame each</span>
-      </div>
-      <ul className="flex flex-col gap-1">
-        <li>
-          <Icon icon={faEllipsisV} /> icons line up
-        </li>
-        <li>
-          <Icon icon={faUser} /> in lists and menus
-        </li>
-        <li>
-          <Icon icon={faArrowsLeftRightToLine} /> whatever their shape
-        </li>
-      </ul>
-    </div>
+    <ul className="flex flex-col gap-1 text-sm">
+      <li>
+        <Icon icon={EllipsisVerticalIcon} /> icons sit on the text line
+      </li>
+      <li>
+        <Icon icon={UserIcon} /> in lists and menus
+      </li>
+      <li>
+        <Icon icon={UnfoldHorizontalIcon} /> one size, one stroke width
+      </li>
+    </ul>
   ),
 };
 
@@ -57,13 +42,46 @@ export const Picture: Story = {
   render: () => (
     <div className="flex items-end gap-6 text-xs">
       <div className="flex flex-col items-center gap-1">
-        <Icon icon={faCheck} />
+        <Icon icon={CheckIcon} />
         default
       </div>
       <div className="flex flex-col items-center gap-1">
-        <Icon icon={faCheck} className="size-[30px] text-green" />
-        size-[30px], a picture
+        <Icon icon={CheckIcon} className="size-10 text-green" />
+        size-10, the stroke stays
       </div>
+      <div className="flex flex-col items-center gap-1">
+        <Icon icon={CheckIcon} className="size-10 stroke-3 text-green" />
+        size-10 stroke-3
+      </div>
+    </div>
+  ),
+};
+
+const stateIcons = [FolderIcon, FolderOpenIcon, UserIcon, SquareIcon];
+
+const looks = [
+  { label: "off", className: undefined, filled: false },
+  { label: "filled", className: undefined, filled: true },
+  { label: "tinted fill", className: "fill-current/25", filled: false },
+  { label: "stroke-[2.5px]", className: "stroke-[2.5px]", filled: false },
+];
+
+export const State: Story = {
+  render: () => (
+    <div className="grid grid-cols-[auto_repeat(4,30px)] items-center gap-x-2 gap-y-1 text-xs text-primary-500">
+      {looks.map((look) => (
+        <div key={look.label} className="contents">
+          <span className="text-gray-800">{look.label}</span>
+          {stateIcons.map((icon) => (
+            <Icon
+              key={icon.displayName}
+              icon={icon}
+              filled={look.filled}
+              className={look.className}
+            />
+          ))}
+        </div>
+      ))}
     </div>
   ),
 };
@@ -72,16 +90,16 @@ export const InheritsColor: Story = {
   render: () => (
     <div className="flex items-center gap-6 text-sm">
       <span className="text-gray-500">
-        <Icon icon={faUser} /> muted text
+        <Icon icon={UserIcon} /> muted text
       </span>
       <span className="text-red">
-        <Icon icon={faTrash} /> danger text
+        <Icon icon={TrashIcon} /> danger text
       </span>
       <Button intent="primary">
-        <Icon icon={faCheck} /> inside a button
+        <Icon icon={CheckIcon} /> inside a button
       </Button>
       <Button intent="secondary" danger>
-        <Icon icon={faTrash} />
+        <Icon icon={TrashIcon} />
         red icon button
       </Button>
     </div>
@@ -89,5 +107,5 @@ export const InheritsColor: Story = {
 };
 
 export const Spinner: Story = {
-  render: () => <Icon icon={faSpinner} />,
+  render: () => <Icon icon={LoaderCircleIcon} />,
 };

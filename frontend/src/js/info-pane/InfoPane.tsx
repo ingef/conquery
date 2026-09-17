@@ -1,4 +1,4 @@
-import { faThumbtack } from "@fortawesome/free-solid-svg-icons";
+import { PinIcon } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
@@ -193,7 +193,7 @@ const InfoPane = () => {
                   isSelected
                   onChange={onToggleAdditionalInfos}
                 >
-                  <Icon icon={faThumbtack} />
+                  <Icon icon={PinIcon} />
                 </ToggleButton>
               )
             }

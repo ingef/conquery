@@ -1,12 +1,12 @@
-import {
-  faBullseye,
-  faCircle,
-  faCircleDot,
-  faEuroSign,
-  faFolder,
-  faInfo,
-} from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
+import {
+  CircleDotIcon,
+  CircleIcon,
+  EuroIcon,
+  FolderIcon,
+  InfoIcon,
+  TargetIcon,
+} from "lucide-react";
 
 import { Icon } from "./Icon";
 import { ToggleButton } from "./ToggleButton";
@@ -41,9 +41,9 @@ const regions = [
 ];
 
 const detailLevels = [
-  { id: "summary", icon: faCircle, label: "Summary" },
-  { id: "detail", icon: faCircleDot, label: "Detail" },
-  { id: "full", icon: faBullseye, label: "Everything" },
+  { id: "summary", icon: CircleIcon, label: "Summary" },
+  { id: "detail", icon: CircleDotIcon, label: "Detail" },
+  { id: "full", icon: TargetIcon, label: "Everything" },
 ];
 
 /** exactly one button selected, in every size */
@@ -121,15 +121,15 @@ export const MultipleSelection: Story = {
       aria-label="Content"
     >
       <ToggleButton id="money">
-        <Icon icon={faEuroSign} />
+        <Icon icon={EuroIcon} />
         money
       </ToggleButton>
       <ToggleButton id="concept">
-        <Icon icon={faFolder} />
+        <Icon icon={FolderIcon} />
         concepts
       </ToggleButton>
       <ToggleButton id="rest">
-        <Icon icon={faInfo} />
+        <Icon icon={InfoIcon} />
         other
       </ToggleButton>
     </ToggleButtonGroup>

@@ -1,8 +1,8 @@
 import {
-  faCheckCircle,
-  faExclamationCircle,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
+  CircleAlertIcon,
+  CircleCheckIcon,
+  LoaderCircleIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -87,11 +87,11 @@ const UploadFilterListModal = ({
       <ModalHeader>{t("uploadFilterListModal.headline")}</ModalHeader>
       <ModalBody>
         <div className={root()}>
-          {loading && <Icon icon={faSpinner} className="text-center" />}
+          {loading && <Icon icon={LoaderCircleIcon} className="text-center" />}
           {error && (
             <p>
               <Icon
-                icon={faExclamationCircle}
+                icon={CircleAlertIcon}
                 className={bigIcon({ kind: "error" })}
               />
               {t("uploadConceptListModal.error")}
@@ -101,7 +101,7 @@ const UploadFilterListModal = ({
             <div className="flex flex-col gap-[5px]">
               <p className={msg()}>
                 <Icon
-                  icon={faExclamationCircle}
+                  icon={CircleAlertIcon}
                   className={bigIcon({ kind: "error" })}
                 />
                 <span
@@ -124,7 +124,7 @@ const UploadFilterListModal = ({
             {hasResolvedItems && (
               <p className={msg()}>
                 <Icon
-                  icon={faCheckCircle}
+                  icon={CircleCheckIcon}
                   className={bigIcon({ kind: "success" })}
                 />
                 {t("uploadConceptListModal.resolvedCodes", {

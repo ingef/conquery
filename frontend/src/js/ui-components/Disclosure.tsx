@@ -1,4 +1,4 @@
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { ChevronRightIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import {
   Heading,
@@ -89,7 +89,7 @@ export const DisclosureTitle = ({
   <div className={title()}>
     <Heading className={heading()}>
       <RacButton slot="trigger" className={trigger()}>
-        <Icon icon={faChevronRight} className={chevron()} />
+        <Icon icon={ChevronRightIcon} className={chevron()} />
         {children}
       </RacButton>
     </Heading>

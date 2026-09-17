@@ -1,9 +1,9 @@
 import {
-  faEuroSign,
-  faFingerprint,
-  faFolder,
-  faInfo,
-} from "@fortawesome/free-solid-svg-icons";
+  EuroIcon,
+  FingerprintPatternIcon,
+  FolderIcon,
+  InfoIcon,
+} from "lucide-react";
 import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Icon } from "../ui-components/Icon";
@@ -32,22 +32,22 @@ const ContentControl = ({ value, onChange }: Props) => {
     () => [
       {
         key: "money" as const,
-        icon: faEuroSign,
+        icon: EuroIcon,
         tooltip: t("history.content.money"),
       },
       {
         key: "concept" as const,
-        icon: faFolder,
+        icon: FolderIcon,
         tooltip: t("history.content.concept"),
       },
       {
         key: "rest" as const,
-        icon: faInfo,
+        icon: InfoIcon,
         tooltip: t("history.content.rest"),
       },
       {
         key: "groupId" as const,
-        icon: faFingerprint,
+        icon: FingerprintPatternIcon,
         tooltip: t("history.content.fingerprint"),
       },
     ],

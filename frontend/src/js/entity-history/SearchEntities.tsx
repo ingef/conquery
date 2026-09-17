@@ -1,4 +1,4 @@
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { LoaderCircleIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -244,7 +244,7 @@ const SearchEntitiesComponent = ({
           onPress={onSubmitSearch}
           isDisabled={!hasFiltersSet || loading}
         >
-          {loading && <Icon icon={faSpinner} className="text-white" />}
+          {loading && <Icon icon={LoaderCircleIcon} className="text-white" />}
           {t("history.searchEntitiesButton")}
         </Button>
       </div>

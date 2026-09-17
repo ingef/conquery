@@ -112,8 +112,8 @@ const isIconOnly = (children: ReactNode) => {
  *
  * An icon goes in as a child and takes the button's text color:
  *
- *   <Button intent="primary" onPress={save}><Icon icon={faCheck} />Save</Button>
- *   <Button intent="tertiary" aria-label="Delete"><Icon icon={faTrash} /></Button>
+ *   <Button intent="primary" onPress={save}><Icon icon={CheckIcon} />Save</Button>
+ *   <Button intent="tertiary" aria-label="Delete"><Icon icon={TrashIcon} /></Button>
  *
  * A button whose only children are icons is square; give it an `aria-label`.
  * `link` is for a button that reads as a text link and sits in flowing text.

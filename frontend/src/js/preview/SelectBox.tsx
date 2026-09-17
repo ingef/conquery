@@ -1,4 +1,4 @@
-import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
+import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { type SetStateAction, useMemo, useRef, useState } from "react";
 import { tv } from "tailwind-variants";
 import { useClickOutside } from "../common/helpers/useClickOutside";
@@ -89,7 +89,10 @@ export default function SelectBox<T extends SelectItem>({
           spellCheck={false}
         />
         <div className="mr-[5px]">
-          <Icon icon={isOpen ? faCaretUp : faCaretDown} className={arrow()} />
+          <Icon
+            icon={isOpen ? ChevronUpIcon : ChevronDownIcon}
+            className={arrow()}
+          />
         </div>
       </div>
       <div className={list()} ref={clickOutsideRef}>

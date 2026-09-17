@@ -1,4 +1,4 @@
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { SearchIcon } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Icon } from "../../ui-components/Icon";
@@ -19,7 +19,7 @@ const SearchControl = () => {
           isSelected={searchVisible}
           onChange={setSearchVisible}
         >
-          <Icon icon={faSearch} />
+          <Icon icon={SearchIcon} />
         </ToggleButton>
         <Tooltip placement="right">{t("history.search")}</Tooltip>
       </TooltipTrigger>

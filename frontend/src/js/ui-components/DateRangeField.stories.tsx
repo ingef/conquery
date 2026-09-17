@@ -1,5 +1,5 @@
-import { faUndo } from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
+import { RotateCcwIcon } from "lucide-react";
 import { type ComponentProps, useState } from "react";
 
 import type { DateStringMinMax } from "../common/helpers/dateHelper";
@@ -42,7 +42,7 @@ const Stateful = ({
           hasDate && (
             <span className="ml-5">
               <Button intent="link" onPress={() => setValue(empty)}>
-                <Icon icon={faUndo} />
+                <Icon icon={RotateCcwIcon} />
                 Reset
               </Button>
             </span>

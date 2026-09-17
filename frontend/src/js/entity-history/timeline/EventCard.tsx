@@ -1,8 +1,4 @@
-import {
-  faEuroSign,
-  faFingerprint,
-  faInfo,
-} from "@fortawesome/free-solid-svg-icons";
+import { EuroIcon, FingerprintPatternIcon, InfoIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { type InputAttributes, NumericFormat } from "react-number-format";
 import { tv } from "tailwind-variants";
@@ -150,7 +146,7 @@ const EventCard = ({
                 excludeFromTabOrder
               >
                 <Icon
-                  icon={faEuroSign}
+                  icon={EuroIcon}
                   className={[bucketIcon(), "text-primary-500"]}
                 />
               </TooltipTarget>
@@ -196,7 +192,7 @@ const EventCard = ({
                 excludeFromTabOrder
               >
                 <Icon
-                  icon={faInfo}
+                  icon={InfoIcon}
                   className={[bucketIcon(), "text-primary-500"]}
                 />
               </TooltipTarget>
@@ -230,7 +226,7 @@ const EventCard = ({
                 excludeFromTabOrder
               >
                 <Icon
-                  icon={faFingerprint}
+                  icon={FingerprintPatternIcon}
                   className={[bucketIcon(), "text-primary-500"]}
                 />
               </TooltipTarget>

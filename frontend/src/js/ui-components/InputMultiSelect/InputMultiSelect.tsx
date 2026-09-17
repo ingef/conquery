@@ -1,9 +1,5 @@
-import {
-  faChevronDown,
-  faSpinner,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
 import { useCombobox, useMultipleSelection } from "downshift";
+import { ChevronDownIcon, LoaderCircleIcon, XIcon } from "lucide-react";
 import { Fragment, memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { mergeRefs } from "react-merge-refs";
@@ -317,7 +313,9 @@ const InputMultiSelect = ({
             }}
           />
         </ItemsInputContainer>
-        {loading && <Icon icon={faSpinner} className="mx-[6px] my-[3px]" />}
+        {loading && (
+          <Icon icon={LoaderCircleIcon} className="mx-[6px] my-[3px]" />
+        )}
         {!loading && (inputValue.length > 0 || selectedItems.length > 0) && (
           <ResetButton
             isDisabled={disabled}
@@ -327,12 +325,12 @@ const InputMultiSelect = ({
               resetComboboxState();
             }}
           >
-            <Icon icon={faTimes} />
+            <Icon icon={XIcon} />
           </ResetButton>
         )}
         <VerticalSeparator />
         <DropdownToggleButton isDisabled={disabled} {...getToggleButtonProps()}>
-          <Icon icon={faChevronDown} />
+          <Icon icon={ChevronDownIcon} />
         </DropdownToggleButton>
       </Control>
       {isOpen ? (

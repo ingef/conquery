@@ -1,4 +1,4 @@
-import { faUpload } from "@fortawesome/free-solid-svg-icons";
+import { UploadIcon } from "lucide-react";
 import { useState } from "react";
 import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -82,7 +82,7 @@ const UploadQueryResults = ({
             aria-label={t("uploadQueryResults.uploadResults")}
             intent="secondary"
           >
-            <Icon icon={faUpload} />
+            <Icon icon={UploadIcon} />
           </Button>
           <UploadQueryResultsModal
             loading={loading}

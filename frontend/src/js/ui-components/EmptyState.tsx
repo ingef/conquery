@@ -1,4 +1,4 @@
-import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { tv } from "tailwind-variants";
 
@@ -20,7 +20,7 @@ export const EmptyState = ({
   icon,
   children,
 }: {
-  icon: IconDefinition;
+  icon: LucideIcon;
   children: ReactNode;
 }) => (
   <div className={root()}>
