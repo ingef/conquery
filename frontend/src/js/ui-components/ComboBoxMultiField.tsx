@@ -7,6 +7,7 @@ import { useMemo, useRef, useState } from "react";
 import {
   ButtonContext,
   Collection,
+  ComboBoxValue,
   Group,
   type Key,
   ListBox,
@@ -240,34 +241,38 @@ export const ComboBoxMultiField = ({
             isInvalid={isInvalid}
           >
             <div className={content()}>
-              {/* the tag list must not see the combobox's list state, or it renders its tags against it */}
-              <ListStateContext.Provider value={null}>
-                <TagGroup
-                  className="contents"
-                  aria-label={t("inputMultiSelect.selectedValues")}
-                  disabledKeys={
-                    isDisabled ? value.map((item) => item.value) : []
-                  }
-                  onRemove={(keys) =>
-                    onChange(value.filter((item) => !keys.has(item.value)))
-                  }
-                >
-                  <TagList className="contents" items={value}>
-                    {(item) => (
-                      <Tag
-                        id={item.value}
-                        textValue={optionText(item)}
-                        className={tag()}
-                      >
-                        <OptionLabel option={item} />
-                        <Button slot="remove" intent="tertiary" size="sm">
-                          <Icon icon={faTimes} />
-                        </Button>
-                      </Tag>
-                    )}
-                  </TagList>
-                </TagGroup>
-              </ListStateContext.Provider>
+              {/* ComboBoxValue skips the combobox's hidden pass that collects its options, which would otherwise swallow the tags; the tag list must not see the combobox's list state either */}
+              <ComboBoxValue className="contents">
+                {() => (
+                  <ListStateContext.Provider value={null}>
+                    <TagGroup
+                      className="contents"
+                      aria-label={t("inputMultiSelect.selectedValues")}
+                      disabledKeys={
+                        isDisabled ? value.map((item) => item.value) : []
+                      }
+                      onRemove={(keys) =>
+                        onChange(value.filter((item) => !keys.has(item.value)))
+                      }
+                    >
+                      <TagList className="contents" items={value}>
+                        {(item) => (
+                          <Tag
+                            id={item.value}
+                            textValue={optionText(item)}
+                            className={tag()}
+                          >
+                            <OptionLabel option={item} />
+                            <Button slot="remove" intent="tertiary" size="sm">
+                              <Icon icon={faTimes} />
+                            </Button>
+                          </Tag>
+                        )}
+                      </TagList>
+                    </TagGroup>
+                  </ListStateContext.Provider>
+                )}
+              </ComboBoxValue>
               <RacInput
                 className={inputControl({ inline: true })}
                 placeholder={
@@ -380,7 +385,6 @@ export const ComboBoxMultiField = ({
       }}
       disableClick
       tight
-      importButtonOutside
       showImportButton={!props.isDisabled}
       onImportLines={onResolve}
     >

@@ -10,7 +10,7 @@ import { IndexPrefix } from "./IndexPrefix";
 import InfoTooltip from "./InfoTooltip";
 
 const label = tv({
-  base: ["flex items-center", "mt-[6px] mb-[3px]", "font-normal text-gray-800"],
+  base: ["flex items-center", "mb-[3px]", "font-normal text-gray-800"],
   variants: {
     size: {
       sm: "text-xs",
