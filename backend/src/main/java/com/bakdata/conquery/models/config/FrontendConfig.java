@@ -76,7 +76,7 @@ public class FrontendConfig {
 	@ValidationMethod(message = "Percentiles must be concrete and within 0 - 100")
 	@JsonIgnore
 	public boolean isValidPercentiles() {
-		if (!visualisationPercentiles.hasLowerBound() || !visualisationPercentiles.hasUpperBound()) {
+		if(!visualisationPercentiles.hasLowerBound() || !visualisationPercentiles.hasUpperBound()){
 			return false;
 		}
 

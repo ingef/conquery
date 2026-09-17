@@ -29,12 +29,12 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 	private final String defaultPrimaryColumn;
 
 	public NodeConversions(
-		IdColumnConfig idColumns,
-		DialectBundle dialectBundle,
-		DSLContext dslContext,
-		SqlExecutionService executionService,
-		Clock clock,
-		String defaultPrimaryColumn
+			IdColumnConfig idColumns,
+			DialectBundle dialectBundle,
+			DSLContext dslContext,
+			SqlExecutionService executionService,
+			Clock clock,
+			String defaultPrimaryColumn
 	) {
 		super(dialectBundle.getNodeConverters(dslContext));
 		this.idColumns = idColumns;
@@ -47,21 +47,16 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 
 	public ConversionContext convert(QueryDescription queryDescription, ConqueryConfig conqueryConfig) {
 		ConversionContext initialCtx = ConversionContext.builder()
-			.idColumns(idColumns)
-			.sqlPrintSettings(
-				new PrintSettings(false, Locale.ROOT, conqueryConfig, null, null))
-			.nameGenerator(
-				nameGenerator)
-			.nodeConversions(this)
-			.clock(clock)
-			.defaultPrimaryColumn(
-				this.defaultPrimaryColumn)
-			.stratificationFunctions(
-				dialect.getStratificationFunctions())
-			.dialectBundle(dialect)
-			.executionService(
-				executionService)
-			.build();
+				.idColumns(idColumns)
+				.sqlPrintSettings(new PrintSettings(false, Locale.ROOT, conqueryConfig, null, null))
+				.nameGenerator(nameGenerator)
+				.nodeConversions(this)
+				.clock(clock)
+				.defaultPrimaryColumn(this.defaultPrimaryColumn)
+				.stratificationFunctions(dialect.getStratificationFunctions())
+				.dialectBundle(dialect)
+				.executionService(executionService)
+				.build();
 		return convert(queryDescription, initialCtx);
 	}
 

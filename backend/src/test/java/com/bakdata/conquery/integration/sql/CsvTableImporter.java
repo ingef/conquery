@@ -47,10 +47,7 @@ public class CsvTableImporter {
 	private final TestDialectBundle testSqlDialect;
 	private final DatabaseConnectionConfig databaseConfig;
 
-	public CsvTableImporter(
-		DSLContext dslContext,
-		TestDialectBundle testSqlDialect,
-		DatabaseConnectionConfig databaseConfig) {
+	public CsvTableImporter(DSLContext dslContext, TestDialectBundle testSqlDialect, DatabaseConnectionConfig databaseConfig) {
 		this.dslContext = dslContext;
 		this.dateReader = new LocaleConfig().getDateReader();
 		this.csvReader = new CSVConfig().withParseHeaders(true).createParser();
@@ -77,15 +74,17 @@ public class CsvTableImporter {
 	public void importAllIds(Collection<RequiredTable> tables) {
 
 		Set<String> allIds = tables.stream()
-			.flatMap(
-				table -> collectAllIds(table.getCsv(), table.getPrimaryColumn()).stream())
-			.collect(Collectors.toSet());
+								   .flatMap(table -> collectAllIds(table.getCsv(), table.getPrimaryColumn()).stream())
+								   .collect(Collectors.toSet());
 
 		Table<Record> table = DSL.table(name("entities"));
 		List<Field<?>> columns = List.of(field(name("pid"), SQLDataType.VARCHAR(20)));
 
 
-		List<RowN> content = allIds.stream().map(Collections::singletonList).map(DSL::row).toList();
+		List<RowN> content = allIds.stream()
+								   .map(Collections::singletonList)
+								   .map(DSL::row)
+								   .toList();
 
 		// we directly use JDBC because JOOQ can't cope with some custom types like daterange
 		dslContext.connection((Connection connection) -> {
@@ -119,27 +118,23 @@ public class CsvTableImporter {
 	}
 
 	private List<Field<?>> createFieldsForColumns(List<RequiredColumn> requiredColumns) {
-		return requiredColumns.stream().map(this::createField).collect(Collectors.toList());
+		return requiredColumns.stream()
+							  .map(this::createField)
+							  .collect(Collectors.toList());
 	}
 
 	private void dropTable(Table<Record> table, Statement statement) {
 		try {
-			String dropTableStatement = testSqlDialect.getTestFunctionProvider()
-				.createDropTableStatement(
-					table,
-					dslContext);
+			String dropTableStatement = testSqlDialect.getTestFunctionProvider().createDropTableStatement(table, dslContext);
 			statement.execute(dropTableStatement);
-		} catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			log.debug("Dropping table {} failed.", table.getName(), e);
 		}
 	}
 
 	private void createTable(Table<Record> table, List<Field<?>> columns, Statement statement) throws SQLException {
-		String createTableStatement = testSqlDialect.getTestFunctionProvider()
-			.createTableStatement(
-				table,
-				columns,
-				dslContext);
+		String createTableStatement = testSqlDialect.getTestFunctionProvider().createTableStatement(table, columns, dslContext);
 
 		log.info("Creating table: {}", createTableStatement);
 		statement.execute(createTableStatement);
@@ -189,14 +184,12 @@ public class CsvTableImporter {
 		csvReader.beginParsing(csvFile.stream());
 		List<com.univocity.parsers.common.record.Record> records = csvReader.parseAllRecords();
 		List<List<Object>> castedContent = readRecords(records, requiredColumns);
-		return castedContent.stream().map(DSL::row).toList();
+		return castedContent.stream()
+							.map(DSL::row)
+							.toList();
 	}
 
-	private void insertValuesIntoTable(
-		Table<Record> table,
-		List<Field<?>> columns,
-		List<RowN> content,
-		Statement statement) throws SQLException {
+	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
 		// encountered empty new line
 		if (content.isEmpty()) {
 			return;
@@ -208,19 +201,16 @@ public class CsvTableImporter {
 	/**
 	 * Casts all values of each row to the corresponding type of the column the value refers to.
 	 */
-	private List<List<Object>> readRecords(
-		List<com.univocity.parsers.common.record.Record> rawContent,
-		List<RequiredColumn> requiredColumns) {
+	private List<List<Object>> readRecords(List<com.univocity.parsers.common.record.Record> rawContent, List<RequiredColumn> requiredColumns) {
 		List<List<Object>> castedContent = new ArrayList<>();
 		rawContent.forEach(row -> {
 			List<Object> castEntriesOfRow = new ArrayList<>(requiredColumns.size());
 			for (RequiredColumn col : requiredColumns) {
 				try {
 					castEntriesOfRow.add(this.readAccordingToColumnType(row, col.getName(), col.getType()));
-				} catch (Exception e) {
-					throw new IllegalArgumentException(
-						"Failed to read value %s for %s".formatted(row.getString(col.getName()), col),
-						e);
+				}
+				catch (Exception e) {
+					throw new IllegalArgumentException("Failed to read value %s for %s".formatted(row.getString(col.getName()), col), e);
 				}
 			}
 			castedContent.add(castEntriesOfRow);
@@ -228,10 +218,7 @@ public class CsvTableImporter {
 		return castedContent;
 	}
 
-	private Object readAccordingToColumnType(
-		com.univocity.parsers.common.record.Record record,
-		String column,
-		MajorTypeId type) {
+	private Object readAccordingToColumnType(com.univocity.parsers.common.record.Record record, String column, MajorTypeId type) {
 
 		// if the entry from the CSV is empty, the value in the database should be null
 		if (Strings.isNullOrEmpty(record.getString(column))) {

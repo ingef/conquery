@@ -24,8 +24,7 @@ public class CaffeineValidationTest {
 
 	@Test
 	void correctSoftSpec() {
-		Set<ConstraintViolation<ContainerSoft>> softValues = validator.validate(
-			new ContainerSoft("softValues,maximumSize=1"));
+		Set<ConstraintViolation<ContainerSoft>> softValues = validator.validate(new ContainerSoft("softValues,maximumSize=1"));
 
 		assertThat(softValues).hasSize(0);
 
@@ -40,8 +39,7 @@ public class CaffeineValidationTest {
 
 	@Test
 	void unparsableSpec() {
-		Set<ConstraintViolation<ContainerSoft>> softValues = validator.validate(
-			new ContainerSoft("maximumSize=1=2,softValues"));
+		Set<ConstraintViolation<ContainerSoft>> softValues = validator.validate(new ContainerSoft("maximumSize=1=2,softValues"));
 
 		assertThat(softValues).hasSize(2);
 	}
@@ -54,11 +52,10 @@ public class CaffeineValidationTest {
 		assertThat(softValues).hasSize(3);
 	}
 
-	record ContainerSoft(@ValidCaffeineSpec(softValue = true) String spec) {
-	}
+	record ContainerSoft(@ValidCaffeineSpec(softValue = true) String spec) {}
 
-	record Container(@ValidCaffeineSpec() String spec) {
-	}
+	record Container(@ValidCaffeineSpec() String spec) {}
+
 
 
 }

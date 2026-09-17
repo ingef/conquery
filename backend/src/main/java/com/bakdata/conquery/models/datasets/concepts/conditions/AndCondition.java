@@ -28,9 +28,7 @@ public class AndCondition implements CTCondition {
 	private List<CTCondition> conditions;
 
 	@Override
-	public boolean matches(
-		String value,
-		CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
+	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 		for (CTCondition cond : conditions) {
 			if (!cond.matches(value, rowMap)) {
 				return false;
@@ -49,21 +47,17 @@ public class AndCondition implements CTCondition {
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
 		return conditions.stream()
-			.map(condition -> condition.convertToSqlCondition(context))
-			.reduce(
-				WhereCondition::and)
-			.orElseThrow(
-				() -> new IllegalStateException(
-					"At least one condition is required to convert %s to a SQL condition.".formatted(getClass()))
-			);
+						 .map(condition -> condition.convertToSqlCondition(context))
+						 .reduce(WhereCondition::and)
+						 .orElseThrow(
+								 () -> new IllegalStateException("At least one condition is required to convert %s to a SQL condition.".formatted(getClass()))
+						 );
 	}
 
 	@Override
 	public ConceptConditions buildExpression(CTConditionContext context, ConceptElement<?> id) {
-		List<ConceptConditions> conceptConditions = conditions.stream()
-			.map(
-				cond -> cond.buildExpression(context, id))
-			.toList();
+		List<ConceptConditions> conceptConditions = conditions.stream().map(cond -> cond.buildExpression(context, id))
+															  .toList();
 
 		ConceptConditions out = new ConceptConditions(id, Collections.emptyMap());
 

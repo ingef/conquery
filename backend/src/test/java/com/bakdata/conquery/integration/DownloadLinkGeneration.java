@@ -34,8 +34,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		final User user = new User("testU", "testU", storage);
 
-		final QueryTest test = (QueryTest) ConqueryTestSpec.fromResourcePath(
-			"/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json");
+		final QueryTest test = (QueryTest) ConqueryTestSpec.fromResourcePath("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json");
 
 		storage.updateUser(user);
 
@@ -47,13 +46,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		Query query = LoadingUtil.parseSubTree(conquery, test.getRawQuery(), Query.class, true);
 
 		// Create execution for download
-		ManagedQuery exec = new ManagedQuery(
-			query,
-			user.getId(),
-			conquery.getDataset(),
-			storage,
-			conquery.getDatasetRegistry(),
-			conquery.getConfig());
+		ManagedQuery exec = new ManagedQuery(query, user.getId(), conquery.getDataset(), storage, conquery.getDatasetRegistry(), conquery.getConfig());
 
 		storage.addExecution(exec);
 
@@ -67,8 +60,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		{
 			// Tinker the state of the execution and try again: still not possible because of missing permissions
-			DistributedExecutionManager.DistributedExecutionInfo distributedState = new DistributedExecutionManager.DistributedExecutionInfo(
-				Collections.emptyList());
+			DistributedExecutionManager.DistributedExecutionInfo distributedState = new DistributedExecutionManager.DistributedExecutionInfo(Collections.emptyList());
 			distributedState.setExecutionState(ExecutionState.DONE);
 			distributedState.getExecutingLock().countDown();
 			conquery.getNamespace().getExecutionManager().addState(exec.getId(), distributedState);
@@ -83,14 +75,8 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
 			// This Url is missing the `/api` path part, because we use the standard UriBuilder here
-			assertThat(status.getResultUrls()).contains(
-				new ResultAsset(
-					"CSV",
-					new URI(
-						String.format(
-							"%s/result/csv/%s.csv",
-							conquery.defaultApiURIBuilder().toString(),
-							exec.getId()))));
+			assertThat(status.getResultUrls()).contains(new ResultAsset("CSV", new URI(String.format("%s/result/csv/%s.csv", conquery.defaultApiURIBuilder()
+																																	 .toString(), exec.getId()))));
 		}
 	}
 

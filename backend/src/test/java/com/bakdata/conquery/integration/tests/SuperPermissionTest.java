@@ -14,6 +14,8 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 public class SuperPermissionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 
+
+
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		Dataset dataset1 = new Dataset("dataset1");
@@ -46,7 +48,8 @@ public class SuperPermissionTest extends IntegrationTest.Simple implements Progr
 
 			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isFalse();
 			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isFalse();
-		} finally {
+		}
+		finally {
 			storage.removeUser(user1.getId());
 			storage.removeRole(role1.getId());
 		}

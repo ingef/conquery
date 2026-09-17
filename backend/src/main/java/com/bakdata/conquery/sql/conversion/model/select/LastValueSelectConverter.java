@@ -7,15 +7,11 @@ import org.jooq.Field;
 public class LastValueSelectConverter implements SelectConverter<LastValueSelect> {
 
 	@Override
-	public ConnectorSqlSelects connectorSelect(
-		LastValueSelect select,
-		SelectContext<ConnectorSqlTables> selectContext) {
+	public ConnectorSqlSelects connectorSelect(LastValueSelect select, SelectContext<ConnectorSqlTables> selectContext) {
 		return ValueSelectUtil.createValueSelect(
-			select.getColumn().resolve(),
-			selectContext.getNameGenerator().selectName(select),
-			Field::desc,
-			select.getSubstringRange(),
-			selectContext
+				select.getColumn().resolve(),
+				selectContext.getNameGenerator().selectName(select),
+				Field::desc, select.getSubstringRange(), selectContext
 		);
 	}
 }

@@ -39,25 +39,25 @@ public class ResultJsonDescriptionProcessor {
 		final StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os))) {
 				Jackson.MAPPER.copy()
-					.writerWithDefaultPrettyPrinter()
-					.forType(QueryDescription.class)
-					.writeValue(
-						writer,
-						exec.getSubmitted());
-			} catch (EofException e) {
+							  .writerWithDefaultPrettyPrinter()
+							  .forType(QueryDescription.class)
+							  .writeValue(writer, exec.getSubmitted());
+			}
+			catch (EofException e) {
 				log.trace("User canceled download");
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				throw new InternalServerErrorException("Failed to load result", e);
-			} finally {
+			}
+			finally {
 				log.trace("FINISHED downloading {}", execId);
 			}
 		};
 
-		return makeResponseWithFileName(
-			Response.ok(out),
-			String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_JSON),
-			MediaType.APPLICATION_JSON_TYPE,
-			ResultUtil.ContentDispositionOption.ATTACHMENT
+		return makeResponseWithFileName(Response.ok(out),
+										String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_JSON),
+										MediaType.APPLICATION_JSON_TYPE,
+										ResultUtil.ContentDispositionOption.ATTACHMENT
 		);
 
 	}

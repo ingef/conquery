@@ -42,9 +42,7 @@ public class CountSelect extends Select {
 		}
 
 		if (distinctByColumn != null && !getDistinctByColumn().isEmpty()) {
-			return new DistinctValuesWrapperAggregator(
-				new CountAggregator(resolved),
-				getDistinctByColumn().stream().map(ColumnId::resolve).toList());
+			return new DistinctValuesWrapperAggregator(new CountAggregator(resolved), getDistinctByColumn().stream().map(ColumnId::resolve).toList());
 		}
 
 		return new DistinctValuesWrapperAggregator(new CountAggregator(resolved), List.of(getColumn().resolve()));

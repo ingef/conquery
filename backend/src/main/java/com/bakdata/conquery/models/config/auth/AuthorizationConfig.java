@@ -25,7 +25,6 @@ public interface AuthorizationConfig {
 	 */
 	@NotNull
 	List<ProtoUser> getInitialUsers();
-
 	List<ProtoRole> getInitialRoles();
 
 	/**

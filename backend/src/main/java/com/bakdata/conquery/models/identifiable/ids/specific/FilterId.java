@@ -28,10 +28,8 @@ public class FilterId extends NamespacedId<Filter<?>> {
 	@Override
 	public Filter<?> get() {
 		return getDomain().getStorage(getDataset())
-			.getConcept(connector.getConcept())
-			.getConnectorByName(
-				connector.getConnector())
-			.getFilterByName(getFilter());
+						  .getConcept(connector.getConcept()).getConnectorByName(connector.getConnector())
+						  .getFilterByName(getFilter());
 	}
 
 	@Override

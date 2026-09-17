@@ -23,23 +23,15 @@ public class JsonValidationExceptionMapper implements ExceptionMapper<Constraint
 
 	@Override
 	public Response toResponse(ConstraintViolationException exception) {
-		log.warn(
-			"Json Validation error on {} {}:\nproblem:{}",
+		log.warn("Json Validation error on {} {}:\nproblem:{}",
 			requestContext.get().getMethod(),
 			requestContext.get().getRequestUri(),
-			Joiner.on('\n')
-				.join(
-					Iterables.transform(exception.getConstraintViolations(), this::constraintMessageBuilder))
+			Joiner.on('\n').join(Iterables.transform(exception.getConstraintViolations(), this::constraintMessageBuilder))
 		);
 		return Response.status(422)
-			.type(MediaType.APPLICATION_JSON_TYPE)
-			.entity(
-				new ErrorMessage(
-					422,
-					Joiner.on(" AND ")
-						.join(
-							Iterables.transform(exception.getConstraintViolations(), this::constraintMessageBuilder))))
-			.build();
+						.type(MediaType.APPLICATION_JSON_TYPE)
+						.entity(new ErrorMessage(422, Joiner.on(" AND ").join(Iterables.transform(exception.getConstraintViolations(), this::constraintMessageBuilder))))
+						.build();
 	}
 
 	private <T> String constraintMessageBuilder(ConstraintViolation<T> violation) {

@@ -19,9 +19,9 @@ class FilterResourceTest {
 	@Test
 	void acceptsAutocompleteRequestAtLimits() {
 		final FilterResource.AutocompleteRequest request = new FilterResource.AutocompleteRequest(
-			Optional.of("a".repeat(MAX_AUTOCOMPLETE_TEXT_LENGTH)),
-			OptionalInt.empty(),
-			OptionalInt.of(MAX_AUTOCOMPLETE_PAGE_SIZE)
+				Optional.of("a".repeat(MAX_AUTOCOMPLETE_TEXT_LENGTH)),
+				OptionalInt.empty(),
+				OptionalInt.of(MAX_AUTOCOMPLETE_PAGE_SIZE)
 		);
 
 		assertThat(VALIDATOR.validate(request)).isEmpty();
@@ -30,37 +30,37 @@ class FilterResourceTest {
 	@Test
 	void rejectsAutocompleteTextExceedingLimit() {
 		final FilterResource.AutocompleteRequest request = new FilterResource.AutocompleteRequest(
-			Optional.of("a".repeat(MAX_AUTOCOMPLETE_TEXT_LENGTH + 1)),
-			OptionalInt.empty(),
-			OptionalInt.empty()
+				Optional.of("a".repeat(MAX_AUTOCOMPLETE_TEXT_LENGTH + 1)),
+				OptionalInt.empty(),
+				OptionalInt.empty()
 		);
 
-		assertThat(VALIDATOR.validate(request)).singleElement()
-			.extracting(
-				ConstraintViolation::getPropertyPath)
-			.hasToString("text");
+		assertThat(VALIDATOR.validate(request))
+				.singleElement()
+				.extracting(ConstraintViolation::getPropertyPath)
+				.hasToString("text");
 	}
 
 	@Test
 	void rejectsAutocompletePageSizeExceedingLimit() {
 		final FilterResource.AutocompleteRequest request = new FilterResource.AutocompleteRequest(
-			Optional.empty(),
-			OptionalInt.empty(),
-			OptionalInt.of(MAX_AUTOCOMPLETE_PAGE_SIZE + 1)
+				Optional.empty(),
+				OptionalInt.empty(),
+				OptionalInt.of(MAX_AUTOCOMPLETE_PAGE_SIZE + 1)
 		);
 
-		assertThat(VALIDATOR.validate(request)).singleElement()
-			.extracting(
-				ConstraintViolation::getPropertyPath)
-			.hasToString("pageSize");
+		assertThat(VALIDATOR.validate(request))
+				.singleElement()
+				.extracting(ConstraintViolation::getPropertyPath)
+				.hasToString("pageSize");
 	}
 
 	@Test
 	void acceptsEmptyAutocompleteOptions() {
 		final FilterResource.AutocompleteRequest request = new FilterResource.AutocompleteRequest(
-			Optional.empty(),
-			OptionalInt.empty(),
-			OptionalInt.empty()
+				Optional.empty(),
+				OptionalInt.empty(),
+				OptionalInt.empty()
 		);
 
 		assertThat(VALIDATOR.validate(request)).isEmpty();

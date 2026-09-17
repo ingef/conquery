@@ -20,10 +20,7 @@ public class UpdateWorkerBucket extends WorkerMessage {
 
 	@Override
 	public void react(Worker context) throws Exception {
-		log.debug(
-			"Received new WorkerInformation(size = {},dataset = {})",
-			info.getIncludedBuckets().size(),
-			info.getDataset());
+		log.debug("Received new WorkerInformation(size = {},dataset = {})", info.getIncludedBuckets().size(), info.getDataset());
 		//new included buckets from master
 		context.updateWorkerInfo(info);
 	}

@@ -73,7 +73,8 @@ public class PrefixRangeCondition implements CTCondition {
 			char maxChar = maxChars[i];
 			if (minChar != maxChar) {
 				builder.append("[%s-%s]".formatted(minChar, maxChar));
-			} else {
+			}
+			else {
 				builder.append(minChar);
 			}
 		}

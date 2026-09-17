@@ -20,11 +20,8 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id = "UPDATE_CONCEPT", base = NamespacedMessage.class)
-@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-@Getter
-@Setter
-@ToString
+@CPSType(id="UPDATE_CONCEPT", base=NamespacedMessage.class)
+@RequiredArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString
 @Slf4j
 public class UpdateConcept extends WorkerMessage {
 

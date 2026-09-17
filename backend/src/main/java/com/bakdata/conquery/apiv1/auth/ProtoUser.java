@@ -57,11 +57,11 @@ public class ProtoUser {
 		final User user = new User(name, label, storage);
 		storage.updateUser(user);
 
-		if (roles != null) {
+		if (roles != null){
 			for (String roleId : roles) {
 				final Role role = storage.getRole(new RoleId(roleId));
 
-				if (role == null) {
+				if(role == null){
 					log.warn("Unknown Role[{}] for {}", roleId, this);
 					continue;
 				}

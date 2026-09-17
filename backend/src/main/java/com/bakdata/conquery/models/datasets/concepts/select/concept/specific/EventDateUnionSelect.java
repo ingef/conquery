@@ -26,13 +26,11 @@ public class EventDateUnionSelect extends UniversalSelect {
 	public Aggregator<?> createAggregator() {
 		EventDateUnionAggregator dateUnionAggregator = new EventDateUnionAggregator();
 
-		dateUnionAggregator.setRequiredTables(
-			getHolder().findConcept()
-				.getConnectors()
-				.stream()
-				.map(Connector::getResolvedTable)
-				.collect(
-					Collectors.toSet()));
+		dateUnionAggregator.setRequiredTables(getHolder().findConcept()
+														 .getConnectors()
+														 .stream()
+														 .map(Connector::getResolvedTable)
+														 .collect(Collectors.toSet()));
 
 
 		return dateUnionAggregator;

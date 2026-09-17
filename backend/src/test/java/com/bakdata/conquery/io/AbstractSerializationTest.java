@@ -50,10 +50,7 @@ public abstract class AbstractSerializationTest {
 		namespaceStorage = storageFactory.createNamespaceStorage();
 		workerStorage = storageFactory.createWorkerStorage();
 
-		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(
-			new ClusterState(),
-			config,
-			internalMapperFactory);
+		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, internalMapperFactory);
 		datasetRegistry = new DatasetRegistry<>(config, internalMapperFactory, clusterNamespaceHandler, indexService) {
 			@Override
 			public NamespacedStorage getStorage(DatasetId datasetId) {
@@ -64,9 +61,7 @@ public abstract class AbstractSerializationTest {
 		managerInternalMapper = internalMapperFactory.createManagerPersistenceMapper(datasetRegistry, metaStorage);
 		metaStorage.openStores(managerInternalMapper);
 
-		namespacePersistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(
-			namespaceStorage,
-			datasetRegistry);
+		namespacePersistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(namespaceStorage, datasetRegistry);
 		namespaceStorage.openStores(namespacePersistenceMapper);
 
 		shardNamespacedStorageProvider = new TestNamespacedStorageProvider(getWorkerStorage());

@@ -63,17 +63,13 @@ public class SecondaryIdQuery extends Query {
 	@Override
 	public SecondaryIdQueryPlan createQueryPlan(QueryPlanContext context) {
 		final SecondaryIdDescription secondaryIdDescription = secondaryId.resolve();
-		final ConceptQueryPlan queryPlan = query.createQueryPlan(
-			context.withSelectedSecondaryId(secondaryIdDescription));
+		final ConceptQueryPlan queryPlan = query.createQueryPlan(context.withSelectedSecondaryId(secondaryIdDescription));
 
-		return new SecondaryIdQueryPlan(
-			query,
-			context,
-			secondaryIdDescription,
-			withSecondaryId.stream().map(ColumnId::resolve).collect(Collectors.toSet()),
-			withoutSecondaryId.stream().map(TableId::resolve).collect(Collectors.toSet()),
-			queryPlan,
-			context.getSecondaryIdSubPlanRetention());
+		return new SecondaryIdQueryPlan(query, context, secondaryIdDescription, withSecondaryId.stream()
+																							   .map(ColumnId::resolve)
+																							   .collect(Collectors.toSet()), withoutSecondaryId.stream()
+																																			   .map(TableId::resolve)
+																																			   .collect(Collectors.toSet()), queryPlan, context.getSecondaryIdSubPlanRetention());
 	}
 
 	@Override
@@ -87,10 +83,7 @@ public class SecondaryIdQuery extends Query {
 
 		DateAggregationMode resolvedDateAggregationMode = dateAggregationMode;
 		if (context.getDateAggregationMode() != null) {
-			log.trace(
-				"Overriding date aggregation mode ({}) with mode from context ({})",
-				dateAggregationMode,
-				context.getDateAggregationMode());
+			log.trace("Overriding date aggregation mode ({}) with mode from context ({})", dateAggregationMode, context.getDateAggregationMode());
 			resolvedDateAggregationMode = context.getDateAggregationMode();
 		}
 		final QueryResolveContext resolvedContext = context.withDateAggregationMode(resolvedDateAggregationMode);
@@ -119,7 +112,8 @@ public class SecondaryIdQuery extends Query {
 
 				if (secondaryIdColumn != null && !concept.isExcludeFromSecondaryId()) {
 					withSecondaryId.add(secondaryIdColumn.getId());
-				} else {
+				}
+				else {
 					withoutSecondaryId.add(table.getId());
 				}
 			}

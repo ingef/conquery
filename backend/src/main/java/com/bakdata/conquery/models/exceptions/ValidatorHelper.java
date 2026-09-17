@@ -24,13 +24,11 @@ public final class ValidatorHelper {
 		}
 	}
 
-	public static Optional<String> createViolationsString(
-		Set<? extends ConstraintViolation<?>> violations,
-		boolean detailed) {
+	public static Optional<String> createViolationsString(Set<? extends ConstraintViolation<?>> violations, boolean detailed) {
 
-		Map<Optional<Object>, List<ConstraintViolation<?>>> mapByRoot = violations.stream()
-			.collect(
-				Collectors.groupingBy(v -> Optional.of(v.getRootBean())));
+		Map<Optional<Object>, List<ConstraintViolation<?>>> mapByRoot =
+				violations.stream()
+						  .collect(Collectors.groupingBy(v -> Optional.of(v.getRootBean())));
 
 		// Wrap grouper in Optional to also catch null values.
 		// Combine all leaf fail reports into a single exception.
@@ -49,18 +47,11 @@ public final class ValidatorHelper {
 			}
 
 			// Group violations by their nodes, convert the violations to messages, then append them to sb
-			entry.getValue()
-				.stream()
-				.collect(
-					Collectors.groupingBy(ConstraintViolation::getLeafBean))
-				.entrySet()
-				.stream()
-				.map(
-					objectToViolation -> createViolationString(
-						objectToViolation.getKey(),
-						objectToViolation.getValue(),
-						detailed))
-				.forEach(sb::append);
+			entry.getValue().stream()
+				 .collect(Collectors.groupingBy(ConstraintViolation::getLeafBean))
+				 .entrySet().stream()
+				 .map(objectToViolation -> createViolationString(objectToViolation.getKey(), objectToViolation.getValue(), detailed))
+				 .forEach(sb::append);
 		}
 		return Optional.of(sb.toString());
 	}
@@ -68,15 +59,13 @@ public final class ValidatorHelper {
 	/**
 	 * Combines all violations for a given leaf object and gives the path to the root object if possible.
 	 */
-	private static <V extends ConstraintViolation<?>> String createViolationString(
-		Object node,
-		List<V> violations,
-		boolean detailed) {
+	private static <V extends ConstraintViolation<?>> String createViolationString(Object node, List<V> violations, boolean detailed) {
 		StringBuilder sb = new StringBuilder();
 
 		if (node == null) {
 			// If validations are not directly mappable to an object, directly return the violation messages.
-			return violations.stream().map(ConstraintViolation::getMessage).collect(Collectors.joining("\n\t"));
+			return violations.stream()
+							 .map(ConstraintViolation::getMessage).collect(Collectors.joining("\n\t"));
 		}
 
 		// Build report for a specific failing leaf.

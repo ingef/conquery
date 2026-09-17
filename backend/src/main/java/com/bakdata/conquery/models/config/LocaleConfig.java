@@ -35,10 +35,8 @@ public class LocaleConfig {
 	 */
 	@NotNull
 	private Map<Locale, String> dateFormatMapping = Map.of(
-		Locale.GERMAN,
-		"dd.MM.yyyy",
-		Locale.ROOT,
-		"yyyy-MM-dd"
+			Locale.GERMAN, "dd.MM.yyyy",
+			Locale.ROOT, "yyyy-MM-dd"
 	);
 
 
@@ -47,7 +45,7 @@ public class LocaleConfig {
 	 */
 	@NotNull
 	private Set<String> parsingDateFormats = Set.of(
-		"yyyyMMdd"
+			"yyyyMMdd"
 	);
 
 	/**
@@ -57,10 +55,8 @@ public class LocaleConfig {
 	 */
 	@NotEmpty
 	private Map<Locale, String> localeRangeStartEndSeparators = Map.of(
-		Locale.GERMAN,
-		" - ",
-		Locale.ROOT,
-		"/"
+			Locale.GERMAN, " - ",
+			Locale.ROOT, "/"
 	);
 
 	/**
@@ -76,10 +72,10 @@ public class LocaleConfig {
 	@NotNull
 	@NotEmpty
 	private List<ListFormat> listFormats = List.of(
-		new ListFormat("", " ; ", ""),
-		new ListFormat("", ", ", ""),
-		new ListFormat("{", ",", "}"),
-		new ListFormat("[", ",", "]")
+			new ListFormat("", " ; ", ""),
+			new ListFormat("", ", ", ""),
+			new ListFormat("{", ",", "}"),
+			new ListFormat("[", ",", "]")
 	);
 
 	/**
@@ -129,7 +125,7 @@ public class LocaleConfig {
 			final CDateSet out = CDateSet.createEmpty();
 
 			// After stripping start and end, the trimmed string is empty
-			if (value.isEmpty()) {
+			if(value.isEmpty()){
 				return out;
 			}
 
@@ -162,9 +158,9 @@ public class LocaleConfig {
 		final List<String> rangeStartEndSeperators = new ArrayList<>(localeRangeStartEndSeparators.values());
 		rangeStartEndSeperators.addAll(parsingRangeStartEndSeparators);
 		return new DateReader(
-			Sets.union(parsingDateFormats, Set.copyOf(dateFormatMapping.values())),
-			rangeStartEndSeperators,
-			listFormats
+				Sets.union(parsingDateFormats, Set.copyOf(dateFormatMapping.values())),
+				rangeStartEndSeperators,
+				listFormats
 		);
 	}
 

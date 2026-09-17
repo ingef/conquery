@@ -59,18 +59,14 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Aggreg
 	private List<ColumnId> distinctByColumn = Collections.emptyList();
 
 	@Override
-	public void configureFrontend(
-		FrontendFilterConfiguration.Top f,
-		ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
+	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
 		final MajorTypeId typeId = getColumn().resolve().getType();
 		final String type = switch (typeId) {
 			case MONEY -> FrontendFilterType.Fields.MONEY_RANGE;
 			case INTEGER -> FrontendFilterType.Fields.INTEGER_RANGE;
 			case DECIMAL, REAL -> FrontendFilterType.Fields.REAL_RANGE;
 			default ->
-				throw new ConceptConfigurationException(
-					getConnector(),
-					"NUMBER filter is incompatible with columns of type " + typeId);
+					throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + typeId);
 		};
 
 		f.setType(type);
@@ -103,11 +99,9 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Aggreg
 		}
 
 		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
-			return new RangeFilterNode(
-				range,
-				new DistinctValuesWrapperAggregator(
-					getAggregator(),
-					getDistinctByColumn().stream().map(ColumnId::resolve).toList()));
+			return new RangeFilterNode(range, new DistinctValuesWrapperAggregator(getAggregator(), getDistinctByColumn().stream()
+					.map(ColumnId::resolve)
+					.toList()));
 		}
 
 		return new RangeFilterNode(range, getAggregator());

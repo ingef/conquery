@@ -21,27 +21,30 @@ public class ManualURIValidator implements ConstraintValidator<ManualURI, URI> {
 
 		if (value.isOpaque()) {
 			isValid = false;
-			context.buildConstraintViolationWithTemplate("The URI was opaque").addConstraintViolation();
+			context.buildConstraintViolationWithTemplate("The URI was opaque")
+				   .addConstraintViolation();
 		}
 
 		if (value.isAbsolute()) {
 			try {
 				var unused = value.toURL();
-			} catch (MalformedURLException e) {
+			}
+			catch (MalformedURLException e) {
 				isValid = false;
-				context.buildConstraintViolationWithTemplate(
-					"Absolute URI is not a valid URL (" + e.getMessage() + ")").addConstraintViolation();
+				context.buildConstraintViolationWithTemplate("Absolute URI is not a valid URL (" + e.getMessage() + ")")
+					   .addConstraintViolation();
 			}
 			if (!List.of("http", "https").contains(value.getScheme())) {
 				isValid = false;
-				context.buildConstraintViolationWithTemplate(
-					"The URI has an unsupported Scheme: " + value.getScheme()).addConstraintViolation();
+				context.buildConstraintViolationWithTemplate("The URI has an unsupported Scheme: " + value.getScheme())
+					   .addConstraintViolation();
 			}
-		} else {
+		}
+		else {
 			if (value.getAuthority() != null) {
 				isValid = false;
-				context.buildConstraintViolationWithTemplate(
-					"The URI is not absolute but has an authority: " + value.getAuthority()).addConstraintViolation();
+				context.buildConstraintViolationWithTemplate("The URI is not absolute but has an authority: " + value.getAuthority())
+					   .addConstraintViolation();
 			}
 		}
 

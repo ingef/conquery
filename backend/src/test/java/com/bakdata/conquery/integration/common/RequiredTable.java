@@ -41,11 +41,11 @@ public class RequiredTable {
 	@JsonCreator
 	public static RequiredTable fromFile(String fileResource) throws IOException {
 		return Jackson.MAPPER.readValue(
-			Objects.requireNonNull(
-				IntegrationTest.class.getResourceAsStream(fileResource),
-				fileResource + " not found"
-			),
-			RequiredTable.class
+				Objects.requireNonNull(
+						IntegrationTest.class.getResourceAsStream(fileResource),
+						fileResource + " not found"
+				),
+				RequiredTable.class
 		);
 	}
 
@@ -57,7 +57,8 @@ public class RequiredTable {
 
 		table.init();
 
-		table.setColumns(Arrays.stream(columns).map(col -> col.toColumn(table, idResolver)).toArray(Column[]::new));
+		table.setColumns(Arrays.stream(columns)
+							   .map(col -> col.toColumn(table, idResolver)).toArray(Column[]::new));
 
 		return table;
 	}

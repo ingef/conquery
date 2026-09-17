@@ -50,7 +50,7 @@ public abstract class SingleColumnSelect extends Select {
 	@Override
 	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
 
-		if (categorical) {
+		if(categorical){
 			return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()));
 		}
 
@@ -72,12 +72,7 @@ public abstract class SingleColumnSelect extends Select {
 			return true;
 		}
 
-		log.error(
-			"Column[{}] is of Type[{}]. Not one of {} for {}",
-			column,
-			type,
-			getAcceptedColumnTypes(),
-			getClass().getSimpleName());
+		log.error("Column[{}] is of Type[{}]. Not one of {} for {}", column, type, getAcceptedColumnTypes(), getClass().getSimpleName());
 
 		return false;
 	}

@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 public interface DateStore extends ColumnStore {
 
 	int getDate(int event);
-
 	void setDate(int event, int value);
 
 	@Override

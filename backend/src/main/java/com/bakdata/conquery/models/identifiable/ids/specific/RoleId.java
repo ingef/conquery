@@ -12,7 +12,7 @@ import lombok.Getter;
 
 
 @Getter
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper=false)
 public final class RoleId extends PermissionOwnerId<Role> {
 	public static final String TYPE = "role";
 

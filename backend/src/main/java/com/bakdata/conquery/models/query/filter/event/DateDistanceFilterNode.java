@@ -40,7 +40,8 @@ public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		if (CDate.isPositiveInfinity(ctx.getDateRestriction().getMaxValue()) || ctx.getDateRestriction().isEmpty()) {
 			reference = LocalDate.now();
-		} else {
+		}
+		else {
 			reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
 		}
 	}

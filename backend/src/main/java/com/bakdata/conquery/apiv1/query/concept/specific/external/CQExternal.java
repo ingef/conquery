@@ -107,10 +107,12 @@ public class CQExternal extends CQElement {
 		}
 
 		final String[] extraHeaders = Streams.zip(
-			Arrays.stream(headers),
-			format.stream(),
-			(header, format) -> format.equals(EntityResolverUtil.FORMAT_EXTRA) ? header : null
-		).filter(Objects::nonNull).toArray(String[]::new);
+													 Arrays.stream(headers),
+													 format.stream(),
+													 (header, format) -> format.equals(EntityResolverUtil.FORMAT_EXTRA) ? header : null
+											 )
+											 .filter(Objects::nonNull)
+											 .toArray(String[]::new);
 
 		if (onlySingles) {
 			return createExternalNodeOnlySingle(context, plan, extraHeaders);
@@ -124,27 +126,20 @@ public class CQExternal extends CQElement {
 
 	}
 
-	private ExternalNode<String> createExternalNodeOnlySingle(
-		QueryPlanContext context,
-		ConceptQueryPlan plan,
-		String[] extraHeaders) {
+	private ExternalNode<String> createExternalNodeOnlySingle(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
 		// Remove zero element Lists and substitute one element Lists by containing String
-		final Map<String, Map<String, String>> extraFlat = extra.entrySet()
-			.stream()
-			.collect(
-				Collectors.toMap(
-					Map.Entry::getKey,
-					entityToRowMap -> entityToRowMap.getValue()
-						.entrySet()
-						.stream()
-						.filter(
-							headerToValue -> !headerToValue.getValue().isEmpty())
-						.collect(
-							Collectors.toMap(
-								Map.Entry::getKey,
-								headerToValue -> headerToValue.getValue().get(0)
-							))
-				));
+		final Map<String, Map<String, String>> extraFlat = extra.entrySet().stream()
+																.collect(Collectors.toMap(
+																		Map.Entry::getKey,
+																		entityToRowMap -> entityToRowMap.getValue().entrySet().stream()
+																										.filter(headerToValue -> !headerToValue.getValue()
+																																			   .isEmpty())
+																										.collect(Collectors.toMap(
+																												Map.Entry::getKey,
+																												headerToValue -> headerToValue.getValue()
+																																			  .get(0)
+																										))
+																));
 
 		final Map<String, ConstantValueAggregator<String>> extraAggregators = new HashMap<>(extraHeaders.length);
 		for (String extraHeader : extraHeaders) {
@@ -155,18 +150,10 @@ public class CQExternal extends CQElement {
 
 		}
 
-		return new ExternalNode<>(
-			context.getStorage().getDataset().getAllIdsTable(),
-			valuesResolved,
-			extraFlat,
-			extraHeaders,
-			extraAggregators);
+		return new ExternalNode<>(context.getStorage().getDataset().getAllIdsTable(), valuesResolved, extraFlat, extraHeaders, extraAggregators);
 	}
 
-	private ExternalNode<List<String>> createExternalNodeForList(
-		QueryPlanContext context,
-		ConceptQueryPlan plan,
-		String[] extraHeaders) {
+	private ExternalNode<List<String>> createExternalNodeForList(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
 		final Map<String, ConstantValueAggregator<List<String>>> extraAggregators = new HashMap<>(extraHeaders.length);
 		for (String extraHeader : extraHeaders) {
 			// Just allocating, the result type is irrelevant here
@@ -176,11 +163,11 @@ public class CQExternal extends CQElement {
 		}
 
 		return new ExternalNode<>(
-			context.getStorage().getDataset().getAllIdsTable(),
-			valuesResolved,
-			extra,
-			extraHeaders,
-			extraAggregators
+				context.getStorage().getDataset().getAllIdsTable(),
+				valuesResolved,
+				extra,
+				extraHeaders,
+				extraAggregators
 		);
 	}
 
@@ -188,16 +175,14 @@ public class CQExternal extends CQElement {
 	public void resolve(QueryResolveContext context) {
 		headers = values[0];
 
-		final EntityResolver.ResolveStatistic resolved = context.getNamespace()
-			.getEntityResolver()
-			.resolveEntities(
+		final EntityResolver.ResolveStatistic resolved = context.getNamespace().getEntityResolver().resolveEntities(
 				values,
 				format,
 				context.getNamespace().getStorage().getIdMapping(),
 				context.getConfig().getIdColumns(),
 				context.getConfig().getLocale().getDateReader(),
 				onlySingles
-			);
+		);
 
 		if (resolved.getResolved().isEmpty()) {
 			throw new ConqueryError.ExternalResolveEmptyError();
@@ -205,17 +190,17 @@ public class CQExternal extends CQElement {
 
 		if (!resolved.getUnreadableDate().isEmpty()) {
 			log.warn(
-				"Could not read {} dates. Not resolved: {}",
-				resolved.getUnreadableDate().size(),
-				resolved.getUnreadableDate().subList(0, Math.min(resolved.getUnreadableDate().size(), 10))
+					"Could not read {} dates. Not resolved: {}",
+					resolved.getUnreadableDate().size(),
+					resolved.getUnreadableDate().subList(0, Math.min(resolved.getUnreadableDate().size(), 10))
 			);
 		}
 
 		if (!resolved.getUnresolvedId().isEmpty()) {
 			log.warn(
-				"Could not resolve {} ids. Not resolved: {}",
-				resolved.getUnresolvedId().size(),
-				resolved.getUnresolvedId().subList(0, Math.min(resolved.getUnresolvedId().size(), 10))
+					"Could not resolve {} ids. Not resolved: {}",
+					resolved.getUnresolvedId().size(),
+					resolved.getUnresolvedId().subList(0, Math.min(resolved.getUnresolvedId().size(), 10))
 			);
 		}
 
@@ -241,8 +226,7 @@ public class CQExternal extends CQElement {
 
 			final String column = headers[col];
 
-			final ResultType type = onlySingles ? ResultType.Primitive.STRING : new ResultType.ListT<>(
-				ResultType.Primitive.STRING);
+			final ResultType type = onlySingles ? ResultType.Primitive.STRING : new ResultType.ListT<>(ResultType.Primitive.STRING);
 			resultInfos.add(new ExternalResultInfo(column, type));
 		}
 
@@ -288,9 +272,8 @@ public class CQExternal extends CQElement {
 		// we need to bring the extras in the correct order
 		List<Map.Entry<String, List<String>>> inOrder = new ArrayList<>();
 		Arrays.stream(headers)
-			.filter(extras::containsKey)
-			.forEach(
-				header -> inOrder.add(Map.entry(header, extras.get(header))));
+			  .filter(extras::containsKey)
+			  .forEach(header -> inOrder.add(Map.entry(header, extras.get(header))));
 		return inOrder;
 	}
 

@@ -41,71 +41,51 @@ public class ResultArrowResource {
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_FILE)
 	@Produces(AdditionalMediaTypes.ARROW_FILE)
 	public Response getFile(
-		@Auth Subject subject,
-		@PathParam(QUERY) ManagedExecutionId query,
-		@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
-		@QueryParam("pretty") @DefaultValue("false") boolean pretty,
-		@QueryParam("limit") OptionalLong limit
-	) {
+			@Auth Subject subject,
+			@PathParam(QUERY) ManagedExecutionId query,
+			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
+			@QueryParam("pretty") @DefaultValue("false") boolean pretty,
+			@QueryParam("limit") OptionalLong limit
+			) {
 
 		checkSingleTableResult(query.resolve());
-		log.info(
-			"Result for {} download on dataset {} by subject {} ({}).",
-			query,
-			query.getDataset(),
-			subject.getId(),
-			subject.getName());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", query, query.getDataset(), subject.getId(), subject.getName());
 		return processor.createResultFile(subject, query, pretty, limit);
 	}
 
-	public static <E extends ManagedExecution & SingleTableResult> URL getFileDownloadURL(
-		UriBuilder uriBuilder,
-		E exec) throws MalformedURLException {
-		return uriBuilder.path(ResultArrowResource.class)
-			.resolveTemplate(
-				ResourceConstants.DATASET,
-				exec.getDataset().getName())
-			.path(ResultArrowResource.class, "getFile")
-			.resolveTemplate(
-				ResourceConstants.QUERY,
-				exec.getId().toString())
-			.build()
-			.toURL();
+	public static <E extends ManagedExecution & SingleTableResult> URL getFileDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+		return uriBuilder
+				.path(ResultArrowResource.class)
+				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())
+				.path(ResultArrowResource.class, "getFile")
+				.resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
+				.build()
+				.toURL();
 	}
 
 
-	public static <E extends ManagedExecution & SingleTableResult> URL getStreamDownloadURL(
-		UriBuilder uriBuilder,
-		E exec) throws MalformedURLException {
-		return uriBuilder.path(ResultArrowResource.class)
-			.resolveTemplate(
-				ResourceConstants.DATASET,
-				exec.getDataset().getName())
-			.path(ResultArrowResource.class, "getStream")
-			.resolveTemplate(
-				ResourceConstants.QUERY,
-				exec.getId().toString())
-			.build()
-			.toURL();
+	public static <E extends ManagedExecution & SingleTableResult> URL getStreamDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+		return uriBuilder
+				.path(ResultArrowResource.class)
+				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())
+				.path(ResultArrowResource.class, "getStream")
+				.resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
+				.build()
+				.toURL();
 	}
 
 	@GET
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_STREAM)
 	@Produces(AdditionalMediaTypes.ARROW_STREAM)
 	public Response getStream(
-		@Auth Subject subject,
-		@PathParam(QUERY) ManagedExecutionId execution,
-		@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
-		@QueryParam("pretty") Optional<Boolean> pretty,
-		@QueryParam("limit") OptionalLong limit
+			@Auth Subject subject,
+			@PathParam(QUERY) ManagedExecutionId execution,
+			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
+			@QueryParam("pretty") Optional<Boolean> pretty,
+			@QueryParam("limit") OptionalLong limit
 	) {
 		checkSingleTableResult(execution.resolve());
-		log.info(
-			"Result for {} download on dataset {} by subject {} ({}).",
-			execution,
-			execution.getDataset(),
-			subject.getId(),
-			subject.getName());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 		return processor.createResultStream(subject, execution, pretty.orElse(false), limit);
 	}
 }

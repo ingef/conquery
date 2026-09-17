@@ -36,14 +36,7 @@ public class MessagePackProvider<T> implements MessageBodyReader<T>, MessageBody
 	}
 
 	@Override
-	public void writeTo(
-		T t,
-		Class<?> type,
-		Type genericType,
-		Annotation[] annotations,
-		MediaType mediaType,
-		MultivaluedMap<String, Object> httpHeaders,
-		OutputStream entityStream) throws IOException, WebApplicationException {
+	public void writeTo(T t, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
 		objectMapper.writeValue(entityStream, t);
 		entityStream.flush();
 	}
@@ -54,13 +47,7 @@ public class MessagePackProvider<T> implements MessageBodyReader<T>, MessageBody
 	}
 
 	@Override
-	public T readFrom(
-		Class<T> type,
-		Type genericType,
-		Annotation[] annotations,
-		MediaType mediaType,
-		MultivaluedMap<String, String> httpHeaders,
-		InputStream entityStream) throws IOException, WebApplicationException {
+	public T readFrom(Class<T> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
 		return objectMapper.readValue(entityStream, type);
 	}
 

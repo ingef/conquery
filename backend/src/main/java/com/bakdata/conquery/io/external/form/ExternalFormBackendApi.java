@@ -49,18 +49,7 @@ public class ExternalFormBackendApi {
 	private final WebTarget baseTarget;
 	private final URL conqueryApiUrl;
 
-	public ExternalFormBackendApi(
-		Client client,
-		URI baseURI,
-		String formConfigPath,
-		String postFormPath,
-		String statusTemplatePath,
-		String cancelTaskPath,
-		String healthCheckPath,
-		String versionPath,
-		Function<User, String> tokenCreator,
-		URL conqueryApiUrl,
-		AuthenticationClientFilterProvider authFilterProvider) {
+	public ExternalFormBackendApi(Client client, URI baseURI, String formConfigPath, String postFormPath, String statusTemplatePath, String cancelTaskPath, String healthCheckPath, String versionPath, Function<User, String> tokenCreator, URL conqueryApiUrl, AuthenticationClientFilterProvider authFilterProvider) {
 
 		this.client = client;
 		this.tokenCreator = tokenCreator;
@@ -87,11 +76,9 @@ public class ExternalFormBackendApi {
 		log.debug("Getting form configurations from: {}", formConfigTarget);
 
 		return formConfigTarget.request(MediaType.APPLICATION_JSON_TYPE)
-			.acceptLanguage(
-				I18n.LOCALE.get())
-			.buildGet()
-			.invoke(new GenericType<>() {
-			});
+							   .acceptLanguage(I18n.LOCALE.get())
+							   .buildGet().invoke(new GenericType<>() {
+				});
 	}
 
 	public ExternalTaskState postForm(ExternalForm form, User originalUser, User serviceUser, Dataset dataset) {
@@ -103,9 +90,7 @@ public class ExternalFormBackendApi {
 
 		// If user is not allowed to download, only provide them with statistics.
 
-		final DatasetDetail detail = originalUser.isPermitted(
-			dataset,
-			Ability.DOWNLOAD) ? DatasetDetail.FULL : DatasetDetail.STATISTIC;
+		final DatasetDetail detail = originalUser.isPermitted(dataset, Ability.DOWNLOAD) ? DatasetDetail.FULL : DatasetDetail.STATISTIC;
 		webTarget = webTarget.queryParam(QUERY_SCOPE, detail);
 
 		final Invocation.Builder request = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
@@ -115,16 +100,12 @@ public class ExternalFormBackendApi {
 		final String originalUserToken = tokenCreator.apply(originalUser);
 
 		request.header(HTTP_HEADER_CQ_API_URL, conqueryApiUrl)
-			.header(
-				HTTP_HEADER_CQ_AUTHENTICATION,
-				serviceUserToken)
-			.header(HTTP_HEADER_CQ_AUTHENTICATION_ORIGINAL, originalUserToken)
-			.acceptLanguage(
-				I18n.LOCALE.get());
+			   .header(HTTP_HEADER_CQ_AUTHENTICATION, serviceUserToken)
+			   .header(HTTP_HEADER_CQ_AUTHENTICATION_ORIGINAL, originalUserToken)
+			   .acceptLanguage(I18n.LOCALE.get())
+		;
 
-		ExternalTaskState post = request.post(
-			Entity.entity(form.getExternalApiPayload(), MediaType.APPLICATION_JSON_TYPE),
-			ExternalTaskState.class);
+		ExternalTaskState post = request.post(Entity.entity(form.getExternalApiPayload(), MediaType.APPLICATION_JSON_TYPE), ExternalTaskState.class);
 		return post;
 	}
 
@@ -134,15 +115,16 @@ public class ExternalFormBackendApi {
 		log.debug("Getting status from: {}", getStatusTargetResolved);
 
 		return getStatusTargetResolved.request(MediaType.APPLICATION_JSON_TYPE)
-			.acceptLanguage(I18n.LOCALE.get())
-			.get(
-				ExternalTaskState.class);
+									  .acceptLanguage(I18n.LOCALE.get())
+									  .get(ExternalTaskState.class);
 	}
 
 	public Response getResult(final URI resultURL) {
 		log.debug("Query external form result from {}", resultURL);
 
-		return client.target(baseTarget.getUri().resolve(resultURL)).request().acceptLanguage(I18n.LOCALE.get()).get();
+		return client.target(baseTarget.getUri().resolve(resultURL)).request()
+					 .acceptLanguage(I18n.LOCALE.get())
+					 .get();
 
 	}
 
@@ -158,10 +140,8 @@ public class ExternalFormBackendApi {
 		log.debug("Cancelling task {}", taskId);
 
 		final ExternalTaskState taskState = cancelTaskTarget.resolveTemplates(Map.of(TASK_ID, taskId))
-			.request()
-			.post(
-				null,
-				ExternalTaskState.class);
+															.request()
+															.post(null, ExternalTaskState.class);
 
 		if (taskState.getStatus() != TaskStatus.CANCELLED) {
 			log.warn("Task `{}` was cancelled, but is still in state {}", taskId, taskState.getStatus());

@@ -61,9 +61,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 	}
 
 	public PreprocessorCommand(ExecutorService pool) {
-		super(
-			"preprocess",
-			"Preprocesses all the files in the given input directories. This has to be done only if the model or the files changed.");
+		super("preprocess", "Preprocesses all the files in the given input directories. This has to be done only if the model or the files changed.");
 		this.pool = pool;
 	}
 
@@ -75,15 +73,11 @@ public class PreprocessorCommand extends ConqueryCommand {
 			log.info("EXISTS ALREADY");
 
 			final int currentHash = preprocessingJob.getDescriptor()
-				.calculateValidityHash(
-					preprocessingJob.getCsvDirectory(),
-					preprocessingJob.getTag());
+													.calculateValidityHash(preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
 
 
 			final ObjectMapper om = Jackson.BINARY_MAPPER.copy();
-			try (final PreprocessedReader parser = new PreprocessedReader(
-				new GZIPInputStream(new FileInputStream(preprocessingJob.getPreprocessedFile())),
-				om)) {
+			try (final PreprocessedReader parser = new PreprocessedReader(new GZIPInputStream(new FileInputStream(preprocessingJob.getPreprocessedFile())), om)) {
 
 				final PreprocessedHeader header = parser.readHeader();
 
@@ -92,11 +86,13 @@ public class PreprocessorCommand extends ConqueryCommand {
 					return false;
 				}
 				log.info("\tHASH OUTDATED");
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				log.error("\tHEADER READING FAILED", e);
 				return false;
 			}
-		} else {
+		}
+		else {
 			log.info("DOES NOT EXIST");
 		}
 
@@ -111,53 +107,44 @@ public class PreprocessorCommand extends ConqueryCommand {
 		super.configure(subparser);
 
 		final ArgumentGroup group = subparser.addArgumentGroup("Preprocessing CLI Config")
-			.description(
-				"Optional arguments to do a single import step by hand. Overrides json configuration.");
+											 .description("Optional arguments to do a single import step by hand. Overrides json configuration.");
 
 		group.addArgument("--in")
-			.required(true)
-			.type(new FileArgumentType().verifyIsDirectory().verifyCanRead())
-			.help(
-				"Directory containing the input files (in csv or gzipped csv format).");
+			 .required(true)
+			 .type(new FileArgumentType().verifyIsDirectory().verifyCanRead())
+			 .help("Directory containing the input files (in csv or gzipped csv format).");
 
 		group.addArgument("--out")
-			.required(false)
-			.type(
-				new FileArgumentType().verifyIsDirectory().verifyCanCreate().verifyCanWrite())
-			.help(
-				"Directory to write the output cqpp files to.");
+			 .required(false)
+			 .type(new FileArgumentType().verifyIsDirectory().verifyCanCreate().verifyCanWrite())
+			 .help("Directory to write the output cqpp files to.");
 
 		group.addArgument("--desc")
-			.required(true)
-			.type(new FileArgumentType().verifyCanRead())
-			.nargs("*")
-			.help(
-				"Directory containing the import description files (*.import.json).");
+			 .required(true)
+			 .type(new FileArgumentType().verifyCanRead())
+			 .nargs("*")
+			 .help("Directory containing the import description files (*.import.json).");
 
 		group.addArgument("--tag")
-			.required(false)
-			.type(new StringArgumentType())
-			.nargs("*")
-			.help(
-				"Optional tags for input and output files: Will change input files from `filename.csv.gz` to `filename.$tag.csv.gz` and output files from `filename.cqpp` to `filename.$tag.cqpp`. Tag will also override the import-id to tag.");
+			 .required(false)
+			 .type(new StringArgumentType())
+			 .nargs("*")
+			 .help("Optional tags for input and output files: Will change input files from `filename.csv.gz` to `filename.$tag.csv.gz` and output files from `filename.cqpp` to `filename.$tag.cqpp`. Tag will also override the import-id to tag.");
 
 		group.addArgument("--fast-fail")
-			.action(Arguments.storeTrue())
-			.setDefault(false)
-			.help(
-				"Stop preprocessing and exit with failure if an error occurs that prevents the generation of a cqpp.");
+			 .action(Arguments.storeTrue())
+			 .setDefault(false)
+			 .help("Stop preprocessing and exit with failure if an error occurs that prevents the generation of a cqpp.");
 
 		group.addArgument("--strict")
-			.type(new BooleanArgumentType())
-			.setDefault(true)
-			.help(
-				"Escalate missing files to errors.");
+			 .type(new BooleanArgumentType())
+			 .setDefault(true)
+			 .help("Escalate missing files to errors.");
 
 		group.addArgument("--buckets")
-			.type(Integer.class)
-			.setDefault(100)
-			.help(
-				"Number of buckets to use for id-hashing. This value is required to be a constant per-dataset.");
+			 .type(Integer.class)
+			 .setDefault(100)
+			 .help("Number of buckets to use for id-hashing. This value is required to be a constant per-dataset.");
 
 	}
 
@@ -211,12 +198,13 @@ public class PreprocessorCommand extends ConqueryCommand {
 	private List<PreprocessingJob> validateJobs(Collection<PreprocessingJob> jobs, Environment environment) {
 		final List<PreprocessingJob> broken = new ArrayList<>();
 
-		for (final Iterator<PreprocessingJob> iterator = jobs.iterator(); iterator.hasNext();) {
+		for (final Iterator<PreprocessingJob> iterator = jobs.iterator(); iterator.hasNext(); ) {
 			final PreprocessingJob job = iterator.next();
 
 			try {
 				ValidatorHelper.failOnError(log, environment.getValidator().validate(job.getDescriptor()));
-			} catch (ValidationException exception) {
+			}
+			catch (ValidationException exception) {
 				log.error("Descriptor {} is not valid.", job.getDescriptor(), exception);
 				broken.add(job);
 				iterator.remove();
@@ -225,10 +213,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 			for (TableInputDescriptor input : job.getDescriptor().getInputs()) {
 
-				final File sourceFile = Preprocessor.resolveSourceFile(
-					input.getSourceFile(),
-					job.getCsvDirectory(),
-					job.getTag());
+				final File sourceFile = Preprocessor.resolveSourceFile(input.getSourceFile(), job.getCsvDirectory(), job.getTag());
 				if (!sourceFile.exists()) {
 					log.error("Did not find file `{}` for Preprocessing[{}].", sourceFile, job);
 					broken.add(job);
@@ -246,33 +231,22 @@ public class PreprocessorCommand extends ConqueryCommand {
 	}
 
 	@NotNull
-	private Collection<PreprocessingJob> collectJobs(
-		List<File> descriptionFiles,
-		List<String> tags,
-		File inDir,
-		File outDir,
-		Environment environment) throws IOException {
+	private Collection<PreprocessingJob> collectJobs(List<File> descriptionFiles, List<String> tags, File inDir, File outDir, Environment environment)
+			throws IOException {
 		final Collection<PreprocessingJob> jobs = new ArrayList<>();
 
 		if (tags == null || tags.isEmpty()) {
 			for (File desc : descriptionFiles) {
-				final List<PreprocessingJob> descriptions = findPreprocessingDescriptions(
-					desc,
-					inDir,
-					outDir,
-					Optional.empty(),
-					environment.getValidator());
+				final List<PreprocessingJob> descriptions =
+						findPreprocessingDescriptions(desc, inDir, outDir, Optional.empty(), environment.getValidator());
 				jobs.addAll(descriptions);
 			}
-		} else {
+		}
+		else {
 			for (String tag : tags) {
 				for (File desc : descriptionFiles) {
-					final List<PreprocessingJob> jobDescriptions = findPreprocessingDescriptions(
-						desc,
-						inDir,
-						outDir,
-						Optional.of(tag),
-						environment.getValidator());
+					final List<PreprocessingJob> jobDescriptions =
+							findPreprocessingDescriptions(desc, inDir, outDir, Optional.of(tag), environment.getValidator());
 
 					jobs.addAll(jobDescriptions);
 				}
@@ -281,11 +255,10 @@ public class PreprocessorCommand extends ConqueryCommand {
 		return jobs;
 	}
 
-	private void preprocessJobs(
-		Collection<PreprocessingJob> jobs,
-		int buckets,
-		ConqueryConfig config) throws InterruptedException {
-		final long totalSize = jobs.stream().mapToLong(PreprocessingJob::estimateTotalCsvSizeBytes).sum();
+	private void preprocessJobs(Collection<PreprocessingJob> jobs, int buckets, ConqueryConfig config) throws InterruptedException {
+		final long totalSize = jobs.stream()
+								   .mapToLong(PreprocessingJob::estimateTotalCsvSizeBytes)
+								   .sum();
 
 		log.info("Required to preprocess {} in total", FileUtils.byteCountToDisplaySize(totalSize));
 
@@ -297,10 +270,12 @@ public class PreprocessorCommand extends ConqueryCommand {
 				try {
 					Preprocessor.preprocess(job, totalProgress, config, buckets);
 					success.add(job.toString());
-				} catch (FileNotFoundException e) {
+				}
+				catch (FileNotFoundException e) {
 					log.warn("Did not find file `{}` for preprocessing.", e.getMessage());
 					addMissing(job);
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					log.error("Failed to preprocess " + LogUtil.printPath(job.getDescriptionFile()), e);
 					addFailed(job);
 				}
@@ -327,23 +302,21 @@ public class PreprocessorCommand extends ConqueryCommand {
 		failed.add(job.toString());
 	}
 
-	public List<PreprocessingJob> findPreprocessingDescriptions(
-		File descriptionFiles,
-		File inDir,
-		File outputDir,
-		Optional<String> tag,
-		Validator validator) throws IOException {
+	public List<PreprocessingJob> findPreprocessingDescriptions(File descriptionFiles, File inDir, File outputDir, Optional<String> tag, Validator validator)
+			throws IOException {
 		final List<PreprocessingJob> out = new ArrayList<>();
 
-		final File[] files = descriptionFiles.isFile() ? new File[]{descriptionFiles} : descriptionFiles.listFiles(
-			((dir, name) -> name.endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)));
+		final File[] files = descriptionFiles.isFile()
+							 ? new File[]{descriptionFiles}
+							 : descriptionFiles.listFiles(((dir, name) -> name.endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)));
 
 		if (files == null) {
 			return Collections.emptyList();
 		}
 
 		for (File descriptionFile : files) {
-			tryExtractDescriptor(validator, tag, descriptionFile, outputDir, inDir).ifPresent(out::add);
+			tryExtractDescriptor(validator, tag, descriptionFile, outputDir, inDir)
+					.ifPresent(out::add);
 		}
 		return out;
 	}
@@ -352,30 +325,23 @@ public class PreprocessorCommand extends ConqueryCommand {
 		return !failed.isEmpty();
 	}
 
-	private Optional<PreprocessingJob> tryExtractDescriptor(
-		Validator validator,
-		Optional<String> tag,
-		File descriptionFile,
-		File outputDir,
-		File csvDir) {
+	private Optional<PreprocessingJob> tryExtractDescriptor(Validator validator, Optional<String> tag, File descriptionFile, File outputDir, File csvDir) {
 		try {
-			final TableImportDescriptor descriptor = TableImportDescriptor.read(descriptionFile);
+			final TableImportDescriptor
+					descriptor =
+					TableImportDescriptor.read(descriptionFile);
 
 			validator.validate(validator);
 
-			final PreprocessingJob preprocessingJob = new PreprocessingJob(
-				csvDir.toPath(),
-				descriptionFile,
-				outputDir.toPath(),
-				tag,
-				descriptor);
+			final PreprocessingJob preprocessingJob = new PreprocessingJob(csvDir.toPath(), descriptionFile, outputDir.toPath(), tag, descriptor);
 
 
 			// Override name to tag if present
 			tag.ifPresent(descriptor::setName);
 
 			return Optional.of(preprocessingJob);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.error("Failed to process " + LogUtil.printPath(descriptionFile), e);
 			if (isFailFast) {
 				doFail();

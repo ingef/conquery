@@ -17,10 +17,7 @@ public class JobMetrics {
 	private static final String QUEUE_SIZE = "queue";
 
 	public static Timer.Context getStoreLoadingTimer() {
-		return SharedMetricRegistries.getDefault()
-			.timer(
-				MetricRegistry.name(JOBS, EXECUTION_TIME, ConqueryStorage.class.getSimpleName()))
-			.time();
+		return SharedMetricRegistries.getDefault().timer(MetricRegistry.name(JOBS, EXECUTION_TIME, ConqueryStorage.class.getSimpleName())).time();
 	}
 
 	public static void createJobQueueGauge(String name, LinkedBlockingDeque<Job> jobs) {
@@ -32,9 +29,6 @@ public class JobMetrics {
 	}
 
 	public static Timer.Context getJobExecutorTimer(Job job) {
-		return SharedMetricRegistries.getDefault()
-			.timer(
-				MetricRegistry.name(JOBS, EXECUTION_TIME, job.getClass().getSimpleName()))
-			.time();
+		return SharedMetricRegistries.getDefault().timer(MetricRegistry.name(JOBS, EXECUTION_TIME, job.getClass().getSimpleName())).time();
 	}
 }

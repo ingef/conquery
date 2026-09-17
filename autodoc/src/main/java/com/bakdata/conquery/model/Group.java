@@ -7,8 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
 
-@Getter
-@Builder
+@Getter @Builder
 public class Group {
 
 	private String name;

@@ -35,9 +35,8 @@ public class ClientCredentialsGrantRequestFilter implements ClientRequestFilter 
 		Client client = ClientBuilder.newClient();
 
 		tokenInvocation = client.target(tokenEndpoint)
-			.request(MediaType.APPLICATION_JSON_TYPE)
-			.buildPost(
-				Entity.form(ClientCredentials.create(clientId, clientSecret)));
+								.request(MediaType.APPLICATION_JSON_TYPE).buildPost(Entity.form(ClientCredentials.create(clientId
+						, clientSecret)));
 	}
 
 	@Override
@@ -45,10 +44,7 @@ public class ClientCredentialsGrantRequestFilter implements ClientRequestFilter 
 		AccessTokenResponse response = getActiveAccessToken();
 
 		log.trace("Adding access token to request");
-		requestContext.getHeaders()
-			.add(
-				HttpHeaders.AUTHORIZATION,
-				String.join(" ", response.token_type(), response.access_token()));
+		requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, String.join(" ", response.token_type(), response.access_token()));
 
 	}
 

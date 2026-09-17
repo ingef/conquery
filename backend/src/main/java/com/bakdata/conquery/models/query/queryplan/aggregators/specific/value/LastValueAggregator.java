@@ -55,20 +55,18 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 		if (validityDateColumn == null) {
 			// If there is no validity date, take the first possible value
-			if (selectedBucket == null) {
+			if(selectedBucket == null) {
 				selectedBucket = bucket;
 				selectedEvent = event;
 			} else {
-				log.trace(
-					"There is more than one value for the {}. Choosing the very first one encountered",
-					this.getClass().getSimpleName());
+				log.trace("There is more than one value for the {}. Choosing the very first one encountered", this.getClass().getSimpleName());
 			}
 			return;
 		}
 
 		final CDateRange dateRange = validityDateColumn.getValidityDate(event, bucket);
 
-		if (dateRange == null) {
+		if (dateRange == null){
 			return;
 		}
 
@@ -78,10 +76,9 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 			date = next;
 			selectedEvent = event;
 			selectedBucket = bucket;
-		} else if (next == date) {
-			log.trace(
-				"There is more than one value for the {}. Choosing the very first one encountered",
-				this.getClass().getSimpleName());
+		}
+		else if (next == date) {
+			log.trace("There is more than one value for the {}. Choosing the very first one encountered", this.getClass().getSimpleName());
 		}
 	}
 

@@ -42,9 +42,7 @@ public class IsEmptyCondition implements CTCondition {
 
 	@Override
 	public ConceptConditions buildExpression(CTConditionContext context, ConceptElement<?> id) {
-		FieldCondition condition = new FieldCondition(
-			context.getFunctionProvider().isNull(field(name(column))),
-			Set.of(inline(true)));
+		FieldCondition condition = new FieldCondition(context.getFunctionProvider().isNull(field(name(column))), Set.of(inline(true)));
 		return new ConceptConditions(id, Map.of(field(name("%s_is_empty".formatted(column)), BOOLEAN), condition));
 	}
 }

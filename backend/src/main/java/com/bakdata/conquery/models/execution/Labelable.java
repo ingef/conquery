@@ -10,7 +10,6 @@ import com.bakdata.conquery.apiv1.MetaDataPatch;
  */
 public interface Labelable {
 	String getLabel();
-
 	void setLabel(String label);
 
 	default Consumer<Labelable> labeler() {

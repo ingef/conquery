@@ -1,5 +1,4 @@
 package com.bakdata.conquery.models.worker;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
@@ -39,14 +38,14 @@ public class DistributedNamespace extends Namespace {
 	private final ClusterConfig clusterConfig;
 
 	public DistributedNamespace(
-		ObjectMapper preprocessMapper,
-		NamespaceStorage storage,
-		DistributedExecutionManager executionManager,
-		JobManager jobManager,
-		SearchProcessor filterSearch,
-		ClusterEntityResolver clusterEntityResolver,
-		WorkerHandler workerHandler,
-		ClusterConfig clusterConfig) {
+			ObjectMapper preprocessMapper,
+			NamespaceStorage storage,
+			DistributedExecutionManager executionManager,
+			JobManager jobManager,
+			SearchProcessor filterSearch,
+			ClusterEntityResolver clusterEntityResolver,
+			WorkerHandler workerHandler,
+			ClusterConfig clusterConfig) {
 		super(preprocessMapper, storage, executionManager, jobManager, filterSearch, clusterEntityResolver);
 		this.executionManager = executionManager;
 		this.workerHandler = workerHandler;
@@ -55,9 +54,11 @@ public class DistributedNamespace extends Namespace {
 
 	@Override
 	void updateMatchingStats() {
-		try (Stream<Concept<?>> allConcepts = getStorage().getAllConcepts()) {
-			final Collection<ConceptId> concepts = allConcepts.filter(
-				concept -> concept.getMatchingStats() == null).map(Concept::getId).collect(Collectors.toSet());
+		try(Stream<Concept<?>> allConcepts = getStorage().getAllConcepts()) {
+			final Collection<ConceptId> concepts = allConcepts
+					.filter(concept -> concept.getMatchingStats() == null)
+					.map(Concept::getId)
+					.collect(Collectors.toSet());
 			getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(concepts));
 		}
 	}
@@ -67,9 +68,8 @@ public class DistributedNamespace extends Namespace {
 		log.trace("Sending columns to collect values on shards: {}", Arrays.toString(columns.toArray()));
 
 		final CollectColumnValuesMessage columnValuesJob = new CollectColumnValuesMessage(
-			clusterConfig.getColumnValuesPerChunk(),
-			columns.stream().map(Column::getId).collect(Collectors.toSet()),
-			this
+				clusterConfig.getColumnValuesPerChunk(),
+				columns.stream().map(Column::getId).collect(Collectors.toSet()), this
 		);
 
 		getWorkerHandler().sendToAll(columnValuesJob);

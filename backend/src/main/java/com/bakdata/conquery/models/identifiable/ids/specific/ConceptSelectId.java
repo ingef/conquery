@@ -10,8 +10,7 @@ import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter
-@EqualsAndHashCode(callSuper = true)
+@Getter @EqualsAndHashCode(callSuper=true)
 public final class ConceptSelectId extends SelectId {
 
 	private final ConceptId concept;
@@ -34,7 +33,8 @@ public final class ConceptSelectId extends SelectId {
 
 	@Override
 	public UniversalSelect get() {
-		return (UniversalSelect) getDomain().getStorage(getDataset()).getConcept(concept).getSelectByName(getSelect());
+		return (UniversalSelect) getDomain().getStorage(getDataset())
+											.getConcept(concept).getSelectByName(getSelect());
 	}
 
 

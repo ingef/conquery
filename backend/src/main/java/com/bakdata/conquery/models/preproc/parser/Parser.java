@@ -40,7 +40,8 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 		}
 		try {
 			return parseValue(v);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new ParsingException("Failed to parse '" + v + "' with " + this.getClass().getSimpleName(), e);
 		}
 	}
@@ -78,7 +79,8 @@ public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 
 		if (v == null) {
 			nullLines++;
-		} else {
+		}
+		else {
 			registerValue(v);
 		}
 		return v;

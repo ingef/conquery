@@ -80,11 +80,11 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 	/**
 	 * Count the number of users who have issued a request in the configured duration.
 	 */
-	private Gauge<Integer> activeUsersGauge(Group group) {
+	private Gauge<Integer> activeUsersGauge(Group group){
 		return () -> {
 			int active = 0;
 			for (Map.Entry<User, LocalDateTime> usageTimes : activeUsers.row(group).entrySet()) {
-				if (usageTimes.getValue().isBefore(LocalDateTime.now().minus(activeUserDuration))) {
+				if(usageTimes.getValue().isBefore(LocalDateTime.now().minus(activeUserDuration))){
 					continue;
 				}
 

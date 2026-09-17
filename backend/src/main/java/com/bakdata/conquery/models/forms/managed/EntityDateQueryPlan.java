@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import org.jspecify.annotations.NonNull;
 
 /**
  * Implementation of the QueryPlan for an {@link EntityDateQuery}.
@@ -28,10 +27,10 @@ import org.jspecify.annotations.NonNull;
 public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 
-	private final QueryPlan query;
-	private final ArrayConceptQueryPlan features;
-	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
-	private final CDateRange dateRestriction;
+    private final QueryPlan query;
+    private final ArrayConceptQueryPlan features;
+    private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
+    private final CDateRange dateRestriction;
 
 
 	@Override
@@ -41,42 +40,42 @@ public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	@Override
-	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+    public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
-		// Don't set the query date aggregator here because the subqueries should set their aggregator independently
+        // Don't set the query date aggregator here because the subqueries should set their aggregator independently
 
-		// Execute the prerequisite query
-		Optional<EntityResult> preResult = query.execute(ctx, entity);
-		if (preResult.isEmpty()) {
-			return Optional.empty();
-		}
+        // Execute the prerequisite query
+        Optional<EntityResult> preResult = query.execute(ctx, entity);
+        if (preResult.isEmpty()) {
+            return Optional.empty();
+        }
 
-		Optional<DateAggregator> validityDateAggregator = query.getValidityDateAggregator();
-		if (validityDateAggregator.isEmpty()) {
-			return Optional.empty();
-		}
+        Optional<DateAggregator> validityDateAggregator = query.getValidityDateAggregator();
+        if (validityDateAggregator.isEmpty()) {
+            return Optional.empty();
+        }
 
-		final CDateSet aggregationResult = validityDateAggregator.get().createAggregationResult();
-		aggregationResult.retainAll(dateRestriction);
+        final CDateSet aggregationResult = validityDateAggregator.get().createAggregationResult();
+        aggregationResult.retainAll(dateRestriction);
 
-		// Generate DateContexts in the provided resolutions
-		List<DateContext> contexts = new ArrayList<>();
-		for (CDateRange range : aggregationResult.asRanges()) {
-			contexts.addAll(DateContext.generateAbsoluteContexts(range, resolutionsAndAlignments));
-		}
+        // Generate DateContexts in the provided resolutions
+        List<DateContext> contexts = new ArrayList<>();
+        for (CDateRange range : aggregationResult.asRanges()) {
+            contexts.addAll(DateContext.generateAbsoluteContexts(range, resolutionsAndAlignments));
+        }
 
-		FormQueryPlan resolutionQuery = new FormQueryPlan(contexts, features, false);
+        FormQueryPlan resolutionQuery = new FormQueryPlan(contexts, features, false);
 
-		return resolutionQuery.execute(ctx, entity);
-	}
-
-	@Override
-	public boolean isOfInterest(Entity entity) {
-		return query.isOfInterest(entity);
-	}
+        return resolutionQuery.execute(ctx, entity);
+    }
 
 	@Override
-	public @NonNull Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
-		return query.getValidityDateAggregator();
-	}
+    public boolean isOfInterest(Entity entity) {
+        return query.isOfInterest(entity);
+    }
+
+    @Override
+    public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
+        return query.getValidityDateAggregator();
+    }
 }

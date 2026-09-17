@@ -154,11 +154,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 	public String defaultLabel(Locale locale) {
 		// This forces the default label on children even if there was a user label
 		CQElementC10n localized = C10nCache.getLocalized(CQElementC10n.class, locale);
-		return QueryUtils.createDefaultMultiLabel(
-			children,
-			" " + localized.and() + " ",
-			" " + localized.exists(),
-			locale);
+		return QueryUtils.createDefaultMultiLabel(children, " " + localized.and() + " ", " " + localized.exists(), locale);
 	}
 
 	@Override
@@ -179,7 +175,8 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 
 			if (current == null) {
 				current = next;
-			} else {
+			}
+			else {
 				current = current.intersect(next);
 			}
 		}

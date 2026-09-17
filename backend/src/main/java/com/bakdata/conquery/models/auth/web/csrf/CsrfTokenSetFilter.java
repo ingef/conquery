@@ -53,22 +53,14 @@ public class CsrfTokenSetFilter implements ContainerRequestFilter, ContainerResp
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
-		final String token = RandomStringUtils.random(
-			TOKEN_LENGTH,
-			0,
-			0,
-			true,
-			true,
-			null,
-			random
+		final String token = RandomStringUtils.random(TOKEN_LENGTH, 0, 0, true, true,
+													  null, random
 		);
 		requestContext.setProperty(CSRF_TOKEN_PROPERTY, token);
 	}
 
 	@Override
-	public void filter(
-		ContainerRequestContext requestContext,
-		ContainerResponseContext responseContext) throws IOException {
+	public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
 		final String csrfToken = getCsrfTokenProperty(requestContext);
 
 		if (StringUtils.isBlank(csrfToken)) {
@@ -81,20 +73,18 @@ public class CsrfTokenSetFilter implements ContainerRequestFilter, ContainerResp
 		log.trace("Hashed token for cookie. token='{}' hash='{}'", csrfToken, csrfTokenHash);
 
 		responseContext.getHeaders()
-			.add(
-				HttpHeaders.SET_COOKIE,
-				new NewCookie(
-					CSRF_COOKIE_NAME,
-					csrfTokenHash,
-					"/",
-					null,
-					0,
-					null,
-					COOKIE_MAX_AGE,
-					null,
-					requestContext.getSecurityContext().isSecure(),
-					false
-				));
+					   .add(HttpHeaders.SET_COOKIE, new NewCookie(
+							   CSRF_COOKIE_NAME,
+							   csrfTokenHash,
+							   "/",
+							   null,
+							   0,
+							   null,
+							   COOKIE_MAX_AGE,
+							   null,
+							   requestContext.getSecurityContext().isSecure(),
+							   false
+					   ));
 	}
 
 	private static String getTokenHash(String csrfToken) {
@@ -113,8 +103,7 @@ public class CsrfTokenSetFilter implements ContainerRequestFilter, ContainerResp
 	public static boolean checkHash(String token, String hash) {
 		int delimIdx;
 		if ((delimIdx = hash.indexOf("_")) == -1 || delimIdx == hash.length() - 1) {
-			throw new IllegalArgumentException(
-				"The provided hash must be of this form: <salt>_<hashed_salted_token>, was: " + hash);
+			throw new IllegalArgumentException("The provided hash must be of this form: <salt>_<hashed_salted_token>, was: " + hash);
 		}
 		final String encodedSalt = hash.substring(0, delimIdx);
 		final String saltedHash = hash.substring(delimIdx + 1);

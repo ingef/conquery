@@ -27,7 +27,8 @@ public abstract class ColumnValues<T> {
 		if (value == null) {
 			nulls.set(event);
 			append(nullValue);
-		} else {
+		}
+		else {
 			append(value);
 		}
 

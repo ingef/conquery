@@ -40,7 +40,7 @@ public class DateParser extends Parser<Integer, DateStore> {
 
 	@Override
 	public Integer addLine(Integer v) {
-		if (v == null) {
+		if(v == null){
 			subType.addLine(null);
 			return super.addLine(null);
 		}

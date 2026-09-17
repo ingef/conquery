@@ -66,7 +66,9 @@ public class ExternalForm extends Form implements SubTyped {
 	private final String subType;
 
 	public JsonNode getExternalApiPayload() {
-		return ((ObjectNode) node.deepCopy().without("values")).set("type", new TextNode(subType));
+		return ((ObjectNode) node.deepCopy()
+								 .without("values"))
+				.set("type", new TextNode(subType));
 
 	}
 
@@ -110,9 +112,7 @@ public class ExternalForm extends Form implements SubTyped {
 
 		if (chosenLocale == null) {
 			chosenLocale = localesFound.get(0);
-			log.trace(
-				"Locale lookup did not return a matching locale. Using the first title encountered: {}",
-				chosenLocale);
+			log.trace("Locale lookup did not return a matching locale. Using the first title encountered: {}", chosenLocale);
 		}
 
 		final JsonNode title = titleObj.path(chosenLocale.getLanguage());
@@ -134,12 +134,7 @@ public class ExternalForm extends Form implements SubTyped {
 	}
 
 	@Override
-	public ManagedExecution toManagedExecution(
-		UserId user,
-		DatasetId submittedDataset,
-		MetaStorage storage,
-		DatasetRegistry<?> datasetRegistry,
-		ConqueryConfig config) {
+	public ManagedExecution toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry, ConqueryConfig config) {
 		return new ExternalExecution(this, user, submittedDataset, storage, datasetRegistry, config);
 	}
 
@@ -184,9 +179,7 @@ public class ExternalForm extends Form implements SubTyped {
 		}
 
 		@Override
-		public JsonDeserializer<?> createContextual(
-			DeserializationContext ctxt,
-			BeanProperty property) throws JsonMappingException {
+		public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
 			// This is only called once per typeId@SubTypeId
 			final String subTypeId = (String) ctxt.getAttribute(CPSTypeIdResolver.ATTRIBUTE_SUB_TYPE);
 

@@ -27,7 +27,8 @@ public class BucketId extends NamespacedId<Bucket> {
 
 	@Override
 	public Bucket get() {
-		return assertWorkerStorage(getDomain().getStorage(getDataset())).getBucket(this);
+		return assertWorkerStorage(getDomain().getStorage(getDataset()))
+				.getBucket(this);
 	}
 
 	@Override

@@ -88,7 +88,8 @@ public class FullExportForm extends Form implements InternalForm {
 
 		if (queryGroupId != null) {
 			query = queryGroup.getQuery();
-		} else {
+		}
+		else {
 			query = new ConceptQuery(new CQYes());
 		}
 
@@ -99,8 +100,8 @@ public class FullExportForm extends Form implements InternalForm {
 
 
 		return Map.of(
-			ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
-			exportQuery
+				ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
+				exportQuery
 		);
 
 	}
@@ -128,12 +129,8 @@ public class FullExportForm extends Form implements InternalForm {
 
 
 	@Override
-	public ManagedInternalForm<FullExportForm> toManagedExecution(
-		UserId user,
-		DatasetId submittedDataset,
-		MetaStorage storage,
-		DatasetRegistry<?> datasetRegistry,
-		ConqueryConfig config) {
+	public ManagedInternalForm<FullExportForm> toManagedExecution(UserId user, DatasetId submittedDataset, MetaStorage storage, DatasetRegistry<?> datasetRegistry,
+																  ConqueryConfig config) {
 		return new ManagedInternalForm<>(this, user, submittedDataset, storage, datasetRegistry, config);
 	}
 }

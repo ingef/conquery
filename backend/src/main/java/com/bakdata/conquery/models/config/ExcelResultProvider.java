@@ -34,9 +34,7 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 public class ExcelResultProvider implements ResultRendererProvider {
 
 	// Media type according to https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-	public static final MediaType MEDIA_TYPE = new MediaType(
-		"application",
-		"vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+	public static final MediaType MEDIA_TYPE = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
 	private boolean hidden = false;
 
@@ -49,10 +47,7 @@ public class ExcelResultProvider implements ResultRendererProvider {
 
 	@Override
 	@SneakyThrows(MalformedURLException.class)
-	public Collection<ResultAsset> generateResultURLs(
-		ManagedExecution exec,
-		UriBuilder uriBuilder,
-		boolean allProviders) throws URISyntaxException {
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) throws URISyntaxException {
 		// We only support/produce xlsx files with one sheet for now
 		if (!(exec instanceof SingleTableResult singleExecution)) {
 			log.trace("Execution result is not a single table");
@@ -78,15 +73,12 @@ public class ExcelResultProvider implements ResultRendererProvider {
 		final int maxRowCount = SpreadsheetVersion.EXCEL2007.getMaxRows();
 		if (rowCount.getAsLong() + 1 /* header row*/ > maxRowCount) {
 
-			log.trace(
-				"Row count is too high for XLSX format (is: {}, max: {}). Not producing a result URL",
-				rowCount,
-				maxRowCount);
+			log.trace("Row count is too high for XLSX format (is: {}, max: {}). Not producing a result URL", rowCount, maxRowCount);
 
 			return Collections.emptyList();
 		}
 
-		if (singleExecution.getResultInfos() == null) {
+		if(singleExecution.getResultInfos() == null){
 			return Collections.emptyList();
 		}
 
@@ -97,17 +89,12 @@ public class ExcelResultProvider implements ResultRendererProvider {
 		final int maxColumnCount = SpreadsheetVersion.EXCEL2007.getMaxColumns();
 		if (columnCount > maxColumnCount) {
 
-			log.trace(
-				"Column count is too high for XLSX format (is: {}, max: {}). Not producing a result URL",
-				columnCount,
-				maxColumnCount);
+			log.trace("Column count is too high for XLSX format (is: {}, max: {}). Not producing a result URL", columnCount, maxColumnCount);
 
 			return Collections.emptyList();
 		}
 
-		final URL resultUrl = ResultExcelResource.getDownloadURL(
-			uriBuilder,
-			(ManagedExecution & SingleTableResult) exec);
+		final URL resultUrl = ResultExcelResource.getDownloadURL(uriBuilder, (ManagedExecution & SingleTableResult) exec);
 		log.trace("Generated URL: {}", resultUrl);
 
 		return List.of(new ResultAsset("XLSX", resultUrl.toURI()));

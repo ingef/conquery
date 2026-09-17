@@ -37,10 +37,7 @@ public class FrontendList implements JsonSerializable {
 
 
 	@Override
-	public void serializeWithType(
-		JsonGenerator gen,
-		SerializerProvider serializers,
-		TypeSerializer typeSer) throws IOException {
+	public void serializeWithType(JsonGenerator gen, SerializerProvider serializers, TypeSerializer typeSer) throws IOException {
 		serialize(gen, serializers);
 	}
 }

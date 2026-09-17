@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 public interface MoneyStore extends ColumnStore {
 
 	BigDecimal getMoney(int event);
-
 	void setMoney(int event, BigDecimal money);
 
 	@Override

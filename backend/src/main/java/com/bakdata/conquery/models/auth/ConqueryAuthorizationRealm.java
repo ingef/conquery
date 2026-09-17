@@ -65,18 +65,12 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 
 		@Override
 		public Object getPrincipal() {
-			throw new UnsupportedOperationException(
-				String.format(
-					"This realm (%s) only handles authorization. So this token's functions should never be called.",
-					this.getClass().getName()));
+			throw new UnsupportedOperationException(String.format("This realm (%s) only handles authorization. So this token's functions should never be called.", this.getClass().getName()));
 		}
 
 		@Override
 		public Object getCredentials() {
-			throw new UnsupportedOperationException(
-				String.format(
-					"This realm (%s) only handles authorization. So this token's functions should never be called.",
-					this.getClass().getName()));
+			throw new UnsupportedOperationException(String.format("This realm (%s) only handles authorization. So this token's functions should never be called.", this.getClass().getName()));
 		}
 
 	}
@@ -122,7 +116,7 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 				objectPermissions = (Set<Permission>) permissions;
 				return;
 			}
-			objectPermissions = Sets.union(objectPermissions, (Set<Permission>) permissions);
+			objectPermissions = Sets.union(objectPermissions, (Set<Permission>)permissions);
 		}
 
 	}

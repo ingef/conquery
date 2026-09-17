@@ -24,10 +24,9 @@ public interface ConqueryErrorInfo {
 	 * Method to check if two errors are basically the same, by not checking the id and the context (which possibly checks on hashcode basis).
 	 */
 	default boolean equalsRegardingCodeAndMessage(ConqueryErrorInfo other) {
-		return Comparator.comparing(ConqueryErrorInfo::getCode)
+		return Comparator
+			.comparing(ConqueryErrorInfo::getCode)
 			.thenComparing(ConqueryErrorInfo::getMessage)
-			.compare(
-				this,
-				other) == 0;
+			.compare(this, other) == 0;
 	}
 }

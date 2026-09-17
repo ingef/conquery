@@ -79,17 +79,8 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 
 	//////////////////// INITIALIZATION ////////////////////
 
-	public LocalAuthenticationRealm(
-		Validator validator,
-		ObjectMapper mapper,
-		ConqueryTokenRealm centralTokenRealm,
-		String storeName,
-		File storageDir,
-		XodusConfig passwordStoreConfig,
-		Duration validDuration,
-		HashingFunction defaultHashingFunction,
-		CaffeineSpec caffeineSpec,
-		MetricRegistry metricRegistry) {
+	public LocalAuthenticationRealm(Validator validator, ObjectMapper mapper, ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig, Duration validDuration, HashingFunction defaultHashingFunction,
+									CaffeineSpec caffeineSpec, MetricRegistry metricRegistry) {
 		this.validator = validator;
 		this.mapper = mapper;
 		this.defaultHashingFunction = defaultHashingFunction;
@@ -110,25 +101,24 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 		File passwordStoreFile = new File(storageDir, storeName);
 		passwordEnvironment = Environments.newInstance(passwordStoreFile, passwordStoreConfig.createConfig());
 		passwordStore = new CachedStore<>(
-			new SerializingStore<>(
-				new XodusStore(
-					passwordEnvironment,
-					"passwords",
-					store -> store.getEnvironment().close(),
-					store -> {
-					}
+				new SerializingStore<>(
+						new XodusStore(
+								passwordEnvironment,
+								"passwords",
+								store -> store.getEnvironment().close(),
+								store -> {
+								}
+						),
+						validator,
+						mapper,
+						UserId.class,
+						HashEntry.class,
+						false,
+						true,
+						null, Executors.newSingleThreadExecutor()
 				),
-				validator,
-				mapper,
-				UserId.class,
-				HashEntry.class,
-				false,
-				true,
-				null,
-				Executors.newSingleThreadExecutor()
-			),
-			caffeineSpec,
-			metricRegistry
+				caffeineSpec,
+				metricRegistry
 		);
 	}
 
@@ -139,10 +129,8 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 	 *  Should not be called since the tokens are now handled by the ConqueryTokenRealm.
 	 */
 	@Override
-	public ConqueryAuthenticationInfo doGetAuthenticationInfo(
-		AuthenticationToken token) throws AuthenticationException {
-		throw new UnsupportedOperationException(
-			"Should not be called since the tokens are now handled by the ConqueryTokenRealm.");
+	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+		throw new UnsupportedOperationException("Should not be called since the tokens are now handled by the ConqueryTokenRealm.");
 	}
 
 	//////////////////// FOR USERNAME/PASSWORD
@@ -176,13 +164,14 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 			passwordStore.add(user, hashEntry);
 			log.debug("Added user to realm: {}", user);
 			return true;
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e) {
 			log.warn("Unable to add user '{}'", user, e);
 		}
 		return false;
 	}
 
-	//////////////////// USER MANAGEMENT
+	//////////////////// USER MANAGEMENT ////////////////////
 
 	/**
 	 * Converts the provided password to a Xodus compatible hash.
@@ -191,8 +180,11 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 
 
 		if (credential instanceof PasswordCredential(String password)) {
-			return new HashEntry(Password.hash(password).with(defaultHashingFunction).getResult());
-		} else if (credential instanceof PasswordHashCredential(String hash)) {
+			return new HashEntry(Password.hash(password)
+										 .with(defaultHashingFunction)
+										 .getResult());
+		}
+		else if (credential instanceof PasswordHashCredential(String hash)) {
 			return new HashEntry(hash);
 		}
 
@@ -211,7 +203,8 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 			final HashEntry hashEntry = toHashEntry(credential);
 			passwordStore.update(user, hashEntry);
 			return true;
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e) {
 			log.warn("Unable to update user '{}'", user, e);
 		}
 		return false;
@@ -230,21 +223,23 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 	}
 
 
-	//////////////////// LIFECYCLE MANAGEMENT
+
+	//////////////////// LIFECYCLE MANAGEMENT ////////////////////
 
 	@Override
 	@SneakyThrows(IOException.class)
 	public void destroy() throws InterruptedException {
-		for (int retries = 0; retries < ENVIRONMENT_CLOSING_RETRIES; retries++) {
+		for(int retries = 0; retries < ENVIRONMENT_CLOSING_RETRIES; retries++) {
 			try {
 				log.info("Closing the password environment.");
 				passwordStore.close();
 				return;
-			} catch (EnvironmentClosedException e) {
-				log.warn(
-					"Password environment was already closed, which is odd but maybe the stop() lifecycle event fired twice");
+			}
+			catch (EnvironmentClosedException e) {
+				log.warn("Password environment was already closed, which is odd but maybe the stop() lifecycle event fired twice");
 				return;
-			} catch (ExodusException e) {
+			}
+			catch (ExodusException e) {
 				if (retries == 0) {
 					log.info("The environment is still working on some transactions. Retry");
 				}

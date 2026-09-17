@@ -17,7 +17,9 @@ public class HanaContainer<SELF extends HanaContainer<SELF>> extends JdbcDatabas
 	public HanaContainer(DockerImageName dockerImageName) {
 		super(dockerImageName);
 		setWaitStrategy(
-			new LogMessageWaitStrategy().withRegEx(".*Startup finished.*\\s").withStartupTimeout(Duration.ofMinutes(10))
+				new LogMessageWaitStrategy()
+						.withRegEx(".*Startup finished.*\\s")
+						.withStartupTimeout(Duration.ofMinutes(10))
 		);
 		addExposedPort(DEFAULT_TENANT_HANA_PORT);
 		setCommand(composeHanaArgs());
@@ -31,9 +33,9 @@ public class HanaContainer<SELF extends HanaContainer<SELF>> extends JdbcDatabas
 	@Override
 	public String getJdbcUrl() {
 		return "jdbc:sap://%s:%s/?databaseName=%s&encrypt=true&validateCertificate=false".formatted(
-			getHost(),
-			getMappedPort(DEFAULT_TENANT_HANA_PORT),
-			DATABASE_NAME
+				getHost(),
+				getMappedPort(DEFAULT_TENANT_HANA_PORT),
+				DATABASE_NAME
 		);
 	}
 
@@ -63,7 +65,8 @@ public class HanaContainer<SELF extends HanaContainer<SELF>> extends JdbcDatabas
 	}
 
 	private String composeHanaArgs() {
-		return "--agree-to-sap-license " + "--passwords-url file:///home/secrets/password.json";
+		return "--agree-to-sap-license " +
+			   "--passwords-url file:///home/secrets/password.json";
 	}
 
 }

@@ -23,8 +23,12 @@ public class RequestHelper {
 
 				log.trace("Proto=`{}` Fwd-Host=`{}`", protocol, host);
 
-				return new URIBuilder().setHost(host).setScheme(protocol).toString();
-			} catch (Exception e) {
+				return new URIBuilder()
+						.setHost(host)
+						.setScheme(protocol)
+						.toString();
+			}
+			catch (Exception e) {
 				log.warn("Failed to build response URL from X-Forward headers", e);
 			}
 		}
@@ -47,8 +51,12 @@ public class RequestHelper {
 
 				log.trace("Proto=`{}` Fwd-Host=`{}`", protocol, host);
 
-				return new URIBuilder().setHost(host).setScheme(protocol).build();
-			} catch (Exception e) {
+				return new URIBuilder()
+						.setHost(host)
+						.setScheme(protocol)
+						.build();
+			}
+			catch (Exception e) {
 				log.warn("Failed to build response URL from X-Forward headers", e);
 			}
 		}

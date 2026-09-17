@@ -27,13 +27,8 @@ public class AddWorker extends MessageToShardNode.Slow {
 
 		dataset.setStorageProvider(context.getWorkers());
 
-		Worker worker = context.getWorkers()
-			.newWorker(
-				dataset,
-				createWorkerName(),
-				context.getSession(),
-				context.getConfig().getStorage(),
-				context.getConfig().isFailOnError());
+		Worker worker =
+				context.getWorkers().newWorker(dataset, createWorkerName(), context.getSession(), context.getConfig().getStorage(), context.getConfig().isFailOnError());
 
 		context.send(new RegisterWorker(worker.getInfo()));
 	}

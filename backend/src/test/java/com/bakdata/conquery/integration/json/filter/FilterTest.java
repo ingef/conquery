@@ -117,11 +117,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		}
 
 
-		FilterValue<?> result = LoadingUtil.parseSubTree(
-			support,
-			rawFilterValue,
-			Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class),
-			true);
+		FilterValue<?> result = LoadingUtil.parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class), true);
 
 		CQTable cqTable = new CQTable();
 
@@ -145,27 +141,15 @@ public class FilterTest extends AbstractQueryEngineTest {
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
 		try {
-			final Connector internalConnector = standaloneSupport.getNamespace()
-				.getStorage()
-				.getAllConcepts()
-				.findFirst()
-				.get()
-				.getConnectors()
-				.getFirst();
-			final FrontendFilterConfiguration.Top actual = internalConnector.getFilters()
-				.iterator()
-				.next()
-				.createFrontendConfig(
-					standaloneSupport.getConfig());
+			final Connector internalConnector = standaloneSupport.getNamespace().getStorage().getAllConcepts().findFirst().get().getConnectors().getFirst();
+			final FrontendFilterConfiguration.Top actual = internalConnector.getFilters().iterator().next().createFrontendConfig(standaloneSupport.getConfig());
 
 			if (expectedFrontendConfig != null) {
 				log.info("Checking actual FrontendConfig: {}", actual);
-				assertThat(actual).usingRecursiveComparison()
-					.ignoringFieldsOfTypes(
-						SerializationTestUtil.TYPES_TO_IGNORE)
-					.isEqualTo(expectedFrontendConfig);
+				assertThat(actual).usingRecursiveComparison().ignoringFieldsOfTypes(SerializationTestUtil.TYPES_TO_IGNORE).isEqualTo(expectedFrontendConfig);
 			}
-		} catch (ConceptConfigurationException e) {
+		}
+		catch (ConceptConfigurationException e) {
 			throw new IllegalStateException(e);
 		}
 

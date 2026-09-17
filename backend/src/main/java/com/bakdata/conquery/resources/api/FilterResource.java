@@ -57,25 +57,19 @@ public class FilterResource extends HAuthorized {
 	//TODO migrate from filter to searchable
 	@POST
 	@Path("autocomplete")
-	public ConceptsProcessor.AutoCompleteResult autocompleteTextFilter(
-		@Valid FilterResource.AutocompleteRequest request) {
+	public ConceptsProcessor.AutoCompleteResult autocompleteTextFilter(@Valid FilterResource.AutocompleteRequest request) {
 		subject.isPermitted(filter.getDataset(), Ability.READ);
 		subject.isPermitted(filter.getConnector().getConcept(), Ability.READ);
 
 		if (!(filter.resolve() instanceof SelectFilter)) {
-			throw new WebApplicationException(
-				filter + " is not a SELECT filter, but " + filter.getClass().getSimpleName() + ".",
-				Status.BAD_REQUEST);
+			throw new WebApplicationException(filter + " is not a SELECT filter, but " + filter.getClass().getSimpleName() + ".", Status.BAD_REQUEST);
 		}
 
 
 		try {
-			return processor.autocompleteTextFilter(
-				filter,
-				request.text().orElse(null),
-				request.page(),
-				request.pageSize());
-		} catch (IllegalArgumentException e) {
+			return processor.autocompleteTextFilter(filter, request.text().orElse(null), request.page(), request.pageSize());
+		}
+		catch (IllegalArgumentException e) {
 			throw new BadRequestException(e);
 		}
 	}
@@ -84,9 +78,9 @@ public class FilterResource extends HAuthorized {
 	}
 
 	public record AutocompleteRequest(
-		@NonNull Optional<@Size(max = MAX_AUTOCOMPLETE_TEXT_LENGTH) String> text,
-		@NonNull OptionalInt page,
-		@NonNull @Max(MAX_AUTOCOMPLETE_PAGE_SIZE) OptionalInt pageSize
+			@NonNull Optional<@Size(max = MAX_AUTOCOMPLETE_TEXT_LENGTH) String> text,
+			@NonNull OptionalInt page,
+			@NonNull @Max(MAX_AUTOCOMPLETE_PAGE_SIZE) OptionalInt pageSize
 	) {
 	}
 }

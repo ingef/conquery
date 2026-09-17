@@ -36,24 +36,16 @@ public class CompoundDateRangeOutput extends OutputDescription {
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
 		final Output startReader = Arrays.stream(getParent().getOutput())
-			.filter(
-				output -> output.getName().equals(getStartColumn()))
-			.findFirst()
-			.orElseThrow()
-			.createForHeaders(
-				headers,
-				dateReader,
-				config);
+										 .filter(output -> output.getName().equals(getStartColumn()))
+										 .findFirst()
+										 .orElseThrow()
+										 .createForHeaders(headers, dateReader, config);
 
 		final Output endReader = Arrays.stream(getParent().getOutput())
-			.filter(
-				output -> output.getName().equals(getEndColumn()))
-			.findFirst()
-			.orElseThrow()
-			.createForHeaders(
-				headers,
-				dateReader,
-				config);
+									   .filter(output -> output.getName().equals(getEndColumn()))
+									   .findFirst()
+									   .orElseThrow()
+									   .createForHeaders(headers, dateReader, config);
 
 		final DateParser dateParser = new DateParser(config);
 
@@ -76,9 +68,9 @@ public class CompoundDateRangeOutput extends OutputDescription {
 				}
 
 				return
-				// Since it's not possible that BOTH are null either of them being null already implies an open and therefore valid range.
-				(start == null || end == null)
-				// row is included if start <= end
+						// Since it's not possible that BOTH are null either of them being null already implies an open and therefore valid range.
+						(start == null || end == null)
+						// row is included if start <= end
 						|| (Integer) start <= (Integer) end;
 			}
 		};
@@ -95,10 +87,8 @@ public class CompoundDateRangeOutput extends OutputDescription {
 	@ValidationMethod(message = "End-column not found")
 	public boolean isEndColumnPresent() {
 		return Arrays.stream(getParent().getOutput())
-			.filter(
-				output -> output.getName().equals(getEndColumn()))
-			.anyMatch(
-				output -> output.getResultType().equals(MajorTypeId.DATE));
+					 .filter(output -> output.getName().equals(getEndColumn()))
+					 .anyMatch(output -> output.getResultType().equals(MajorTypeId.DATE));
 	}
 
 	/**
@@ -108,10 +98,8 @@ public class CompoundDateRangeOutput extends OutputDescription {
 	@ValidationMethod(message = "Start-column not found")
 	public boolean isStartColumnPresent() {
 		return Arrays.stream(getParent().getOutput())
-			.filter(
-				output -> output.getName().equals(getStartColumn()))
-			.anyMatch(
-				output -> output.getResultType().equals(MajorTypeId.DATE));
+					 .filter(output -> output.getName().equals(getStartColumn()))
+					 .anyMatch(output -> output.getResultType().equals(MajorTypeId.DATE));
 	}
 
 	/**

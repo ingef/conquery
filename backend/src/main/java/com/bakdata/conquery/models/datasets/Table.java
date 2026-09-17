@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @JsonDeserialize(converter = Table.Initializer.class)
 @ValidSqlTable(groups = {ValidationMode.Local.class})
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper=false)
 public class Table extends LabeledNamespaceIdentifiable<TableId> implements Initializing {
 
 	/**
@@ -112,15 +112,16 @@ public class Table extends LabeledNamespaceIdentifiable<TableId> implements Init
 
 	public Stream<Import> findImports(NamespacedStorage storage) {
 		final TableId thisId = getId();
-		return storage.getAllImports().filter(imp -> imp.getTable().equals(thisId)).map(ImportId::resolve);
+		return storage.getAllImports()
+					  .filter(imp -> imp.getTable().equals(thisId))
+					  .map(ImportId::resolve);
 	}
 
 	public Column getColumnByName(@NotNull String columnName) {
 		return Arrays.stream(columns)
-			.filter(column -> column.getName().equals(columnName))
-			.findFirst()
-			.orElseThrow(
-				() -> new IllegalStateException(String.format("Column %s not found", columnName)));
+					 .filter(column -> column.getName().equals(columnName))
+					 .findFirst()
+					 .orElseThrow(() -> new IllegalStateException(String.format("Column %s not found", columnName)));
 	}
 
 	/**

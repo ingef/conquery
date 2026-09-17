@@ -62,40 +62,23 @@ public class QueryStep {
 	@Singular
 	List<QueryStep> predecessors;
 
-	public static QueryStep createUnionAllStep(
-		List<QueryStep> unionSteps,
-		String cteName,
-		List<QueryStep> predecessors,
-		boolean negation,
-		SqlFunctionProvider functionProvider) {
+	public static QueryStep createUnionAllStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors, boolean negation, SqlFunctionProvider functionProvider) {
 		return createUnionStep(unionSteps, cteName, predecessors, true, negation, functionProvider);
 	}
 
-	public static QueryStep createUnionStep(
-		List<QueryStep> unionSteps,
-		String cteName,
-		List<QueryStep> predecessors,
-		boolean negation,
-		SqlFunctionProvider functionProvider) {
+	public static QueryStep createUnionStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors, boolean negation, SqlFunctionProvider functionProvider) {
 		return createUnionStep(unionSteps, cteName, predecessors, false, negation, functionProvider);
 	}
 
-	private static QueryStep createUnionStep(
-		List<QueryStep> unionSteps,
-		String cteName,
-		List<QueryStep> predecessors,
-		boolean unionAll,
-		boolean negation,
-		SqlFunctionProvider functionProvider) {
+	private static QueryStep createUnionStep(List<QueryStep> unionSteps, String cteName, List<QueryStep> predecessors, boolean unionAll, boolean negation, SqlFunctionProvider functionProvider) {
 		QueryStep first = unionSteps.getFirst();
 		return first.toBuilder()
-			.cteName(cteName)
-			.union(unionSteps.stream().skip(1).toList())
-			.unionAll(
-				unionAll)
-			.predecessors(predecessors)
-			.negate(negation)
-			.build();
+				.cteName(cteName)
+				.union(unionSteps.stream().skip(1).toList())
+				.unionAll(unionAll)
+				.predecessors(predecessors)
+				.negate(negation)
+				.build();
 	}
 
 	public static TableLike<Record> toTableLike(String fromTableName) {

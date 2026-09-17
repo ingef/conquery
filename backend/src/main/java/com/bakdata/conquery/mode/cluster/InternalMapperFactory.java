@@ -21,8 +21,7 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 	 * @return a preconfigured binary object mapper
 	 */
 	private ObjectMapper createInternalObjectMapper(Class<? extends View> viewClass) {
-		final ObjectMapper objectMapper = config.configureObjectMapper(
-			Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
+		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
 
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
@@ -62,9 +61,7 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 		return objectMapper;
 	}
 
-	public ObjectMapper createNamespacePersistenceMapper(
-		NamespaceStorage namespaceStorage,
-		DatasetRegistry<?> datasetRegistry) {
+	public ObjectMapper createNamespacePersistenceMapper(NamespaceStorage namespaceStorage, DatasetRegistry<?> datasetRegistry) {
 		final ObjectMapper objectMapper = createInternalObjectMapper(View.Persistence.Manager.class);
 
 		namespaceStorage.injectInto(objectMapper);
@@ -111,10 +108,7 @@ public record InternalMapperFactory(ConqueryConfig config, Validator validator) 
 	 *
 	 * @param objectMapper to be configured (should be a JSON mapper)
 	 */
-	public void customizeApiObjectMapper(
-		ObjectMapper objectMapper,
-		DatasetRegistry<?> datasetRegistry,
-		MetaStorage metaStorage) {
+	public void customizeApiObjectMapper(ObjectMapper objectMapper, DatasetRegistry<?> datasetRegistry, MetaStorage metaStorage) {
 
 		InternalMapperFactory.setViewClass(objectMapper, View.Api.class);
 

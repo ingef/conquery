@@ -29,7 +29,8 @@ public abstract class Conversions<C, R, X extends Context> {
 			if (maybeConverted.isPresent()) {
 				if (converted == null) {
 					converted = maybeConverted.get();
-				} else {
+				}
+				else {
 					throw new IllegalStateException("Multiple Converters for %s".formatted(node));
 				}
 			}

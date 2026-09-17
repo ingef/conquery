@@ -20,8 +20,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
+@Getter @Setter
 @CPSType(id = "RELATIVE", base = Mode.class)
 @EqualsAndHashCode(callSuper = true)
 public class RelativeMode extends Mode {

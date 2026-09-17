@@ -27,8 +27,7 @@ public class InternalFilterSearchItemTest {
 	@RegisterExtension
 	private static final NamespaceStorageExtension NAMESPACE_STORAGE_EXTENSION = new NamespaceStorageExtension();
 	private static final NamespacedStorage NAMESPACED_STORAGE = NAMESPACE_STORAGE_EXTENSION.getStorage();
-	public static final NamespacedStorageProvider STORAGE_PROVIDER = new TestNamespacedStorageProvider(
-		NAMESPACED_STORAGE);
+	public static final NamespacedStorageProvider STORAGE_PROVIDER = new TestNamespacedStorageProvider(NAMESPACED_STORAGE);
 
 
 	@Test
@@ -95,9 +94,9 @@ public class InternalFilterSearchItemTest {
 		FrontendTable feTable = new FrontEndConceptBuilder(new ConqueryConfig()).createTable(connector);
 
 		assertThat(feTable.getDateColumn().getOptions()).containsExactly(
-			new FrontendValue(val0.getId().toString(), "val0"),
-			new FrontendValue(val1.getId().toString(), "val1"),
-			new FrontendValue(val2.getId().toString(), "val2")
+				new FrontendValue(val0.getId().toString(), "val0"),
+				new FrontendValue(val1.getId().toString(), "val1"),
+				new FrontendValue(val2.getId().toString(), "val2")
 		);
 	}
 }

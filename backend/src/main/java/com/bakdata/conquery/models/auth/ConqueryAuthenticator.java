@@ -18,7 +18,7 @@ import org.apache.shiro.authc.AuthenticationToken;
  * We need this authenticator to plug in the security, and hereby shiro, into the AuthFilter.
  */
 @Slf4j
-public class ConqueryAuthenticator implements Authenticator<AuthenticationToken, Subject> {
+public class ConqueryAuthenticator implements Authenticator<AuthenticationToken, Subject>{
 
 	/**
 	 * The execeptions thrown by Shiro will be catched by {@link AuthenticationExceptionMapper}.
@@ -26,9 +26,7 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 	@Override
 	public Optional<Subject> authenticate(AuthenticationToken token) {
 		// Submit the token to Shiro (to all realms that were registered)
-		ConqueryAuthenticationInfo info = (ConqueryAuthenticationInfo) SecurityUtils.getSecurityManager()
-			.authenticate(
-				token);
+		ConqueryAuthenticationInfo info = (ConqueryAuthenticationInfo) SecurityUtils.getSecurityManager().authenticate(token);
 
 		// Extract
 		Subject subject = info.getPrincipals().oneByType(Subject.class);

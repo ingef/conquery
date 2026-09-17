@@ -16,6 +16,8 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 public class RoleHandlingTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 
+
+
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		Dataset dataset1 = new Dataset();
@@ -50,7 +52,8 @@ public class RoleHandlingTest extends IntegrationTest.Simple implements Programm
 			user1.removeRole(mandator1.getId());
 			assertThat(user1.getRoles()).isEmpty();
 
-		} finally {
+		}
+		finally {
 			storage.removeUser(user1.getId());
 			storage.removeRole(mandator1.getId());
 			storage.removeRole(mandator2.getId());

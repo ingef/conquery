@@ -56,35 +56,24 @@ public class DatasetQueryResource {
 
 	@POST
 	@Path("/entity")
-	public FullExecutionStatus getEntityData(
-		@Auth Subject subject,
-		@Valid EntityPreviewRequest query,
-		@Context HttpServletRequest request) {
+	public FullExecutionStatus getEntityData(@Auth Subject subject, @Valid EntityPreviewRequest query, @Context HttpServletRequest request) {
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(dataset, Ability.PRESERVE_ID);
 
 		final UriBuilder uriBuilder = RequestAwareUriBuilder.fromRequest(request);
-		return processor.getSingleEntityExport(
-			subject,
-			uriBuilder,
-			query.getIdKind(),
-			query.getEntityId(),
-			query.getSources(),
-			dataset,
-			query.getTime());
+		return processor.getSingleEntityExport(subject, uriBuilder, query.getIdKind(), query.getEntityId(), query.getSources(), dataset, query.getTime());
 	}
 
 
 	@POST
 	@Path("/resolve-entities")
-	public Stream<Map<String, String>> resolveEntities(
-		@Auth Subject subject,
-		@Valid @NotEmpty List<FilterValue<?>> container) {
+	public Stream<Map<String, String>> resolveEntities(@Auth Subject subject, @Valid @NotEmpty List<FilterValue<?>> container) {
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(dataset, Ability.PRESERVE_ID);
 
 		return processor.resolveEntities(subject, container, dataset);
 	}
+
 
 
 	@POST
@@ -98,9 +87,7 @@ public class DatasetQueryResource {
 
 
 	@GET
-	public List<? extends ExecutionStatus> getAllQueries(
-		@Auth Subject subject,
-		@QueryParam("all-providers") Optional<Boolean> allProviders) {
+	public List<? extends ExecutionStatus> getAllQueries(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders) {
 
 		subject.authorize(dataset, Ability.READ);
 
@@ -108,22 +95,19 @@ public class DatasetQueryResource {
 	}
 
 	@POST
-	public Response postQuery(
-		@Auth Subject subject,
-		@QueryParam("all-providers") Optional<Boolean> allProviders,
-		@NotNull @Valid QueryDescription query) {
+	public Response postQuery(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders, @NotNull @Valid QueryDescription query) {
 
 		subject.authorize(dataset, Ability.READ);
 
 		final ManagedExecution execution = processor.postQuery(dataset, query, subject, false);
 
-		return Response.ok(
-			processor.getQueryFullStatus(
-				execution.getId(),
-				subject,
-				RequestAwareUriBuilder.fromRequest(servletRequest),
-				allProviders.orElse(false),
-				false
-			)).status(Response.Status.CREATED).build();
+		return Response.ok(processor.getQueryFullStatus(execution.getId(),
+														subject,
+														RequestAwareUriBuilder.fromRequest(servletRequest),
+														allProviders.orElse(false),
+														false
+					   ))
+					   .status(Response.Status.CREATED)
+					   .build();
 	}
 }

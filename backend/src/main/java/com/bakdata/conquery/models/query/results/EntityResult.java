@@ -6,18 +6,15 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
+@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
 public interface EntityResult {
 
 	String getEntityId();
-
 	/**
 	 * Provides the number of columns this result contains.
 	 */
 	int columnCount();
-
 	Stream<Object[]> streamValues();
 
 	/**

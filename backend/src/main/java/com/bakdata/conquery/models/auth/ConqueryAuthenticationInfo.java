@@ -41,11 +41,11 @@ public class ConqueryAuthenticationInfo implements AuthenticationInfo {
 	private final URI frontChannelLogout;
 
 	public ConqueryAuthenticationInfo(
-		Subject subject,
-		Object credentials,
-		ConqueryAuthenticationRealm realm,
-		boolean displayLogout,
-		@Nullable URI frontChannelLogout
+			Subject subject,
+			Object credentials,
+			ConqueryAuthenticationRealm realm,
+			boolean displayLogout,
+			@Nullable URI frontChannelLogout
 	) {
 		this.credentials = credentials;
 		this.displayLogout = displayLogout;

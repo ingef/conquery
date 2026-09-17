@@ -33,12 +33,7 @@ public class ResultJsonDescriptionResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAsJson(@Auth Subject subject, @PathParam(QUERY) ManagedExecutionId execution) {
 
-		log.debug(
-			"Result for {} download on dataset {} by subject {} ({}).",
-			execution,
-			execution.getDataset(),
-			subject.getId(),
-			subject.getName());
+		log.debug("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 
 		return processor.createResult(subject, execution);
 	}
@@ -46,11 +41,9 @@ public class ResultJsonDescriptionResource {
 
 	public static URL getDownloadURL(UriBuilder uriBuilder, ManagedExecutionId execId) throws MalformedURLException {
 		return uriBuilder.path(ResultJsonDescriptionResource.class)
-			.path(
-				ResultJsonDescriptionResource.class,
-				"getAsJson")
-			.resolveTemplate(ResourceConstants.QUERY, execId.toString())
-			.build()
-			.toURL();
+						 .path(ResultJsonDescriptionResource.class, "getAsJson")
+						 .resolveTemplate(ResourceConstants.QUERY, execId.toString())
+						 .build()
+						 .toURL();
 	}
 }

@@ -64,9 +64,11 @@ public sealed abstract class Id<TYPE, DOMAIN> permits NamespacedId, MetaId {
 				throw newIdResolveException();
 			}
 			return o;
-		} catch (IdResolvingException e) {
+		}
+		catch (IdResolvingException e) {
 			throw e;
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw newIdResolveException(e);
 		}
 	}

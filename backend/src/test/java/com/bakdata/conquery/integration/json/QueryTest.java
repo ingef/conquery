@@ -45,7 +45,6 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 	@JsonIgnore
 	private Query query;
-
 	@Override
 	public Query getQuery() {
 		return query;

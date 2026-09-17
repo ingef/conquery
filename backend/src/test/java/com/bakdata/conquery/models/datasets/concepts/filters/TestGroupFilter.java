@@ -57,11 +57,7 @@ public class TestGroupFilter extends EventFilter<TestGroupFilter.GroupFilterValu
 		final boolean acceptable = getAcceptedColumnTypes().contains(resolved.getType());
 
 		if (!acceptable) {
-			log.error(
-				"Column[{}] is of Type[{}]. Not one of [{}]",
-				resolved.getId(),
-				resolved.getType(),
-				getAcceptedColumnTypes());
+			log.error("Column[{}] is of Type[{}]. Not one of [{}]", resolved.getId(), resolved.getType(), getAcceptedColumnTypes());
 		}
 
 		return acceptable;
@@ -87,18 +83,14 @@ public class TestGroupFilter extends EventFilter<TestGroupFilter.GroupFilterValu
 	private Map<String, FrontendFilterConfiguration.Nested> getFEFilter() {
 		// TODO there is not yet a mismatch check between FEFilter and GroupedValues
 		return Map.of(
-			GroupFilterValue.Fields.strings,
-			FrontendFilterConfiguration.Nested.builder()
-				.label("Elements")
-				.type(
-					FrontendFilterType.Fields.MULTI_SELECT)
-				.build(),
-			GroupFilterValue.Fields.repetitions,
-			FrontendFilterConfiguration.Nested.builder()
-				.label("Maximum Repetitions")
-				.type(
-					FrontendFilterType.Fields.INTEGER)
-				.build()
+				GroupFilterValue.Fields.strings, FrontendFilterConfiguration.Nested.builder()
+																				   .label("Elements")
+																				   .type(FrontendFilterType.Fields.MULTI_SELECT)
+																				   .build(),
+				GroupFilterValue.Fields.repetitions, FrontendFilterConfiguration.Nested.builder()
+																					   .label("Maximum Repetitions")
+																					   .type(FrontendFilterType.Fields.INTEGER)
+																					   .build()
 		);
 	}
 
@@ -126,11 +118,10 @@ public class TestGroupFilter extends EventFilter<TestGroupFilter.GroupFilterValu
 			ArrayList<String> values = new ArrayList<>();
 			for (String string : strings) {
 				LongStream.range(1, repetitions + 1)
-					.mapToInt(Math::toIntExact)
-					.mapToObj(
-						string::repeat)
-					.sequential()
-					.collect(Collectors.toCollection(() -> values));
+						  .mapToInt(Math::toIntExact)
+						  .mapToObj(string::repeat)
+						  .sequential()
+						  .collect(Collectors.toCollection(() -> values));
 			}
 			resolvedValues = values.toArray(String[]::new);
 		}

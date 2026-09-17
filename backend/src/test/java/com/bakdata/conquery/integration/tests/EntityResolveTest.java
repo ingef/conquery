@@ -39,8 +39,7 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final String testJson = LoadingUtil.readResource(
-			"/tests/query/ENTITY_EXPORT_TESTS/SIMPLE_TREECONCEPT_Query.json");
+		final String testJson = LoadingUtil.readResource("/tests/query/ENTITY_EXPORT_TESTS/SIMPLE_TREECONCEPT_Query.json");
 
 		final DatasetId dataset = conquery.getDataset();
 
@@ -71,10 +70,8 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 
 		}
 
-		final URI entityExport = HierarchyHelper.hierarchicalPath(
-			conquery.defaultApiURIBuilder(),
-			DatasetQueryResource.class,
-			"resolveEntities").buildFromMap(Map.of(ResourceConstants.DATASET, conquery.getDataset().getName()));
+		final URI entityExport = HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetQueryResource.class, "resolveEntities")
+												.buildFromMap(Map.of(ResourceConstants.DATASET, conquery.getDataset().getName()));
 
 		// Api uses NsIdRef, so we have to use the real objects here.
 		FilterId filterId = FilterId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.values-filter");
@@ -83,25 +80,20 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 
 
 		final List<Map<String, String>> result;
-		try (Response allEntityDataResponse = conquery.getClient()
-			.target(entityExport)
-			.request(
-				MediaType.APPLICATION_JSON_TYPE)
-			.header("Accept-Language", "en-Us")
-			.post(
-				Entity.json(
-					new FilterValue[]{
-							// Bit lazy, but this explicitly or's two filters
-							new FilterValue.CQMultiSelectFilter(
-								filter.getId(),
-								Set.of("A1")), new FilterValue.CQMultiSelectFilter(filter.getId(), Set.of("B2"))
-					}
-				))) {
+		try (Response allEntityDataResponse = conquery.getClient().target(entityExport)
+													  .request(MediaType.APPLICATION_JSON_TYPE)
+													  .header("Accept-Language", "en-Us")
+													  .post(Entity.json(
+															  new FilterValue[]{
+																	  // Bit lazy, but this explicitly or's two filters
+																	  new FilterValue.CQMultiSelectFilter(filter.getId(), Set.of("A1")),
+																	  new FilterValue.CQMultiSelectFilter(filter.getId(), Set.of("B2"))
+															  }
+													  ))) {
 
-			assertThat(allEntityDataResponse.getStatusInfo().getFamily()).describedAs(
-				new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))
-				.isEqualTo(
-					Response.Status.Family.SUCCESSFUL);
+			assertThat(allEntityDataResponse.getStatusInfo().getFamily())
+					.describedAs(new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
 
 			result = allEntityDataResponse.readEntity(List.class);
 		}

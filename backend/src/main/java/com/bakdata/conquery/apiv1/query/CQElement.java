@@ -78,7 +78,7 @@ public abstract class CQElement implements Visitable {
 		return set;
 	}
 
-	public abstract void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries);
+	public abstract void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) ;
 
 	@JsonIgnore
 	public abstract List<ResultInfo> getResultInfos();

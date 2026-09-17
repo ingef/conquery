@@ -43,14 +43,7 @@ public class Histogram {
 	/**
 	 * Create a histogram that is segmented to always have 0 singled out.
 	 */
-	public static Histogram zeroAligned(
-		double lower,
-		double upper,
-		double absMin,
-		double absMax,
-		int expectedBins,
-		boolean roundWidth,
-		boolean integral) {
+	public static Histogram zeroAligned(double lower, double upper, double absMin, double absMax, int expectedBins, boolean roundWidth, boolean integral) {
 
 		if (lower == upper) {
 			TreeRangeMap<Double, Counter> nodes = TreeRangeMap.create();
@@ -71,18 +64,13 @@ public class Histogram {
 
 		if (roundWidth) {
 			return rounded(lower, upper, absMin, absMax, expectedBins, integral);
-		} else {
+		}
+		else {
 			return unrounded(lower, upper, absMin, absMax, expectedBins, integral);
 		}
 	}
 
-	private static Histogram rounded(
-		double lower,
-		double upper,
-		double absMin,
-		double absMax,
-		int expectedBins,
-		boolean integral) {
+	private static Histogram rounded(double lower, double upper, double absMin, double absMax, int expectedBins, boolean integral) {
 		// adjust lower/upper to start on rounded edges.
 		double adjLower = Math.max(Math.floor(absMin), Math.floor(lower));
 		final double adjUpper = Math.min(Math.ceil(absMax), Math.ceil(upper));
@@ -92,27 +80,14 @@ public class Histogram {
 		return createHistogram(lower, absMin, absMax, expectedBins, adjLower, binWidth, integral);
 	}
 
-	private static Histogram unrounded(
-		double lower,
-		double upper,
-		double absMin,
-		double absMax,
-		int expectedBins,
-		boolean integral) {
+	private static Histogram unrounded(double lower, double upper, double absMin, double absMax, int expectedBins, boolean integral) {
 		double binWidth = (upper - lower) / expectedBins;
 
 		return createHistogram(lower, absMin, absMax, expectedBins, lower, binWidth, integral);
 	}
 
 	@NotNull
-	private static Histogram createHistogram(
-		double lower,
-		double absMin,
-		double absMax,
-		int expectedBins,
-		double adjLower,
-		double binWidth,
-		boolean integral) {
+	private static Histogram createHistogram(double lower, double absMin, double absMax, int expectedBins, double adjLower, double binWidth, boolean integral) {
 		adjLower = ensureZeroCrossing(lower, absMax, adjLower, binWidth);
 
 		final TreeRangeMap<Double, Counter> nodes = TreeRangeMap.create();
@@ -120,11 +95,9 @@ public class Histogram {
 		// Note, using multiplication is important to avoid floating-point imprecision when wanting to arrive exactly around 0 etc.
 		for (int index = 0; index < expectedBins; index++) {
 			Counter node = new Counter();
-			nodes.put(
-				Range.closedOpen(
+			nodes.put(Range.closedOpen(
 					adjLower + binWidth * index,
-					adjLower + binWidth * (index + 1)),
-				node);
+					adjLower + binWidth * (index + 1)), node);
 		}
 
 		Range<Double> span = nodes.span();
@@ -167,7 +140,9 @@ public class Histogram {
 				return lower;
 			}
 
-			final String upper = node.hasUpperBound() ? printer.apply(max) : printer.apply(max - 1);
+			final String upper = node.hasUpperBound()
+								 ? printer.apply(max)
+								 : printer.apply(max - 1);
 
 			return lower + FROM_TO + upper;
 		}
@@ -197,14 +172,17 @@ public class Histogram {
 	}
 
 	public List<Map.Entry<Range<Double>, Counter>> nodes() {
-		return nodes.asMapOfRanges().entrySet().stream().filter(entry -> {
-			Range<Double> span = entry.getKey();
-			if (span.hasLowerBound() && span.hasUpperBound()) {
-				return true;
-			} else {
-				return entry.getValue().getCount() > 0;
-			}
-		}).toList();
+		return nodes.asMapOfRanges().entrySet().stream()
+					.filter(entry -> {
+						Range<Double> span = entry.getKey();
+						if (span.hasLowerBound() && span.hasUpperBound()) {
+							return true;
+						}
+						else {
+							return entry.getValue().getCount() > 0;
+						}
+					})
+					.toList();
 	}
 
 	@Data

@@ -41,13 +41,8 @@ public class SqlSchemaValidationTest implements ProgrammaticIntegrationTest {
 
 		StandaloneSupport support = testConquery.getSupport("dataset");
 
-		if (support.getConfig()
-			.getSqlConnectorConfig()
-			.getDatabaseConfigs()
-			.values()
-			.stream()
-			.allMatch(
-				dbconf -> dbconf.getDialect().equals(Dialect.CLICKHOUSE))) {
+		if (support.getConfig().getSqlConnectorConfig().getDatabaseConfigs().values()
+				   .stream().allMatch(dbconf -> dbconf.getDialect().equals(Dialect.CLICKHOUSE))) {
 			log.info("Clickhouse validation does not work.");
 			return;
 		}
@@ -56,26 +51,21 @@ public class SqlSchemaValidationTest implements ProgrammaticIntegrationTest {
 
 		String tableName = "test_table";
 		importer.createTable(
-			RequiredTable.builder()
-				.primaryColumn(new RequiredColumn("pid", MajorTypeId.STRING))
-				.name(
-					tableName)
-				.columns(
-					new RequiredColumn[]{new RequiredColumn("strCol", MajorTypeId.STRING), new RequiredColumn(
-						"intCol",
-						MajorTypeId.INTEGER)
-					})
-				.build()
+				RequiredTable.builder()
+							 .primaryColumn(new RequiredColumn("pid", MajorTypeId.STRING))
+							 .name(tableName)
+							 .columns(new RequiredColumn[]{
+									 new RequiredColumn("strCol", MajorTypeId.STRING),
+									 new RequiredColumn("intCol", MajorTypeId.INTEGER)
+							 })
+							 .build()
 		);
 
-		final Invocation.Builder tableUploadRequest = support.getClient()
-			.target(
-				HierarchyHelper.hierarchicalPath(
-					support.defaultAdminURIBuilder(),
-					AdminDatasetResource.class,
-					"addTable").buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset())))
-			.request(
-				MediaType.APPLICATION_JSON_TYPE);
+		final Invocation.Builder tableUploadRequest =
+				support.getClient()
+					   .target(HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addTable")
+											  .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset())))
+					   .request(MediaType.APPLICATION_JSON_TYPE);
 
 
 		{
@@ -88,26 +78,28 @@ public class SqlSchemaValidationTest implements ProgrammaticIntegrationTest {
 					setType(MajorTypeId.STRING);
 				}
 			});
-			table.setColumns(new Column[]{new Column() {
-				{
-					setName("strCol");
-					setType(MajorTypeId.STRING);
-				}
-			}, new Column() {
-				{
-					setName("intCol");
-					setType(MajorTypeId.INTEGER);
-				}
-			},
-			});
+			table.setColumns(new Column[]{
+					new Column() {
+						{
+							setName("strCol");
+							setType(MajorTypeId.STRING);
+						}
+					},
+					new Column() {
+						{
+							setName("intCol");
+							setType(MajorTypeId.INTEGER);
+						}
+					},
+					});
 
 			try (final Response response = tableUploadRequest.post(Entity.json(table))) {
-				assertThat(response.getStatusInfo().getFamily()).describedAs(
-					new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(
-						Response.Status.Family.CLIENT_ERROR);
+				assertThat(response.getStatusInfo().getFamily())
+						.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+						.isEqualTo(Response.Status.Family.CLIENT_ERROR);
 
-				assertThat(response.readEntity(String.class)).contains("name: SQL table test_table_2 does not exist");
+				assertThat(response.readEntity(String.class))
+						.contains("name: SQL table test_table_2 does not exist");
 			}
 		}
 
@@ -121,27 +113,28 @@ public class SqlSchemaValidationTest implements ProgrammaticIntegrationTest {
 					setType(MajorTypeId.STRING);
 				}
 			});
-			table.setColumns(new Column[]{new Column() {
-				{
-					setName("strCol_2");
-					setType(MajorTypeId.STRING);
-				}
-			}, new Column() {
-				{
-					setName("intCol");
-					setType(MajorTypeId.INTEGER);
-				}
-			},
-			});
+			table.setColumns(new Column[]{
+					new Column() {
+						{
+							setName("strCol_2");
+							setType(MajorTypeId.STRING);
+						}
+					},
+					new Column() {
+						{
+							setName("intCol");
+							setType(MajorTypeId.INTEGER);
+						}
+					},
+					});
 
 			try (final Response response = tableUploadRequest.post(Entity.json(table))) {
-				assertThat(response.getStatusInfo().getFamily()).describedAs(
-					new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(
-						Response.Status.Family.CLIENT_ERROR);
+				assertThat(response.getStatusInfo().getFamily())
+						.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+						.isEqualTo(Response.Status.Family.CLIENT_ERROR);
 
-				assertThat(response.readEntity(String.class)).contains(
-					"columns.strCol_2: SQL Column `test_table.strCol_2` does not exist");
+				assertThat(response.readEntity(String.class))
+						.contains("columns.strCol_2: SQL Column `test_table.strCol_2` does not exist");
 			}
 		}
 
@@ -155,28 +148,29 @@ public class SqlSchemaValidationTest implements ProgrammaticIntegrationTest {
 					setType(MajorTypeId.STRING);
 				}
 			});
-			table.setColumns(new Column[]{new Column() {
-				{
-					setName("strCol");
-					setType(MajorTypeId.DECIMAL);
-				}
-			}, new Column() {
-				{
-					setName("intCol");
-					setType(MajorTypeId.INTEGER);
-				}
-			},
-			});
+			table.setColumns(new Column[]{
+					new Column() {
+						{
+							setName("strCol");
+							setType(MajorTypeId.DECIMAL);
+						}
+					},
+					new Column() {
+						{
+							setName("intCol");
+							setType(MajorTypeId.INTEGER);
+						}
+					},
+					});
 
 			try (final Response response = tableUploadRequest.post(Entity.json(table))) {
 
-				assertThat(response.getStatusInfo().getFamily()).describedAs(
-					new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(
-						Response.Status.Family.CLIENT_ERROR);
+				assertThat(response.getStatusInfo().getFamily())
+						.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+						.isEqualTo(Response.Status.Family.CLIENT_ERROR);
 
-				assertThat(response.readEntity(String.class)).contains(
-					"test_table.strCol` does not match required type DECIMAL"); // I'm only testing the suffix as the underlying type is not specific.
+				assertThat(response.readEntity(String.class))
+						.contains("test_table.strCol` does not match required type DECIMAL"); // I'm only testing the suffix as the underlying type is not specific.
 			}
 		}
 
@@ -192,25 +186,26 @@ public class SqlSchemaValidationTest implements ProgrammaticIntegrationTest {
 				}
 			});
 
-			table.setColumns(new Column[]{new Column() {
-				{
-					setName("strCol");
-					setType(MajorTypeId.STRING);
-				}
-			}, new Column() {
-				{
-					setName("intCol");
-					setType(MajorTypeId.INTEGER);
-				}
-			},
-			});
+			table.setColumns(new Column[]{
+					new Column() {
+						{
+							setName("strCol");
+							setType(MajorTypeId.STRING);
+						}
+					},
+					new Column() {
+						{
+							setName("intCol");
+							setType(MajorTypeId.INTEGER);
+						}
+					},
+					});
 
 			try (final Response response = tableUploadRequest.post(Entity.json(table))) {
 
-				assertThat(response.getStatusInfo().getFamily()).describedAs(
-					new LazyTextDescription(() -> response.readEntity(String.class)))
-					.isEqualTo(
-						Response.Status.Family.SUCCESSFUL);
+				assertThat(response.getStatusInfo().getFamily())
+						.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+						.isEqualTo(Response.Status.Family.SUCCESSFUL);
 			}
 		}
 

@@ -52,7 +52,8 @@ public sealed abstract class IdentifiableImpl<ID extends Id<?, DOMAIN>, DOMAIN> 
 		IdentifiableImpl<?, ?> other = (IdentifiableImpl<?, ?>) obj;
 		if (getId() == null) {
 			return other.getId() == null;
-		} else {
+		}
+		else {
 			return getId().equals(other.getId());
 		}
 	}

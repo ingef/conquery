@@ -60,10 +60,7 @@ public class CQTable {
 	@JsonIgnore
 	@ValidationMethod(message = "Not all Selects belong to Connector.")
 	public boolean isAllSelectsForConnector() {
-		return selects.stream()
-			.map(ConnectorSelectId::getConnector)
-			.allMatch(
-				connectorId -> connectorId.equals(connector));
+		return selects.stream().map(ConnectorSelectId::getConnector).allMatch(connectorId -> connectorId.equals(connector));
 	}
 
 	@JsonIgnore
@@ -94,9 +91,8 @@ public class CQTable {
 	public boolean hasSelectedSecondaryId(SecondaryIdDescriptionId secondaryId) {
 		final Connector resolvedConnector = connector.resolve();
 		return Arrays.stream(resolvedConnector.getResolvedTable().getColumns())
-			.map(Column::getSecondaryId)
-			.anyMatch(
-				secondaryId::equals);
+					 .map(Column::getSecondaryId)
+					 .anyMatch(secondaryId::equals);
 	}
 
 }

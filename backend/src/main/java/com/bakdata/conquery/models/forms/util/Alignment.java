@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public enum Alignment {
-	NO_ALIGN(List::of) {
+	NO_ALIGN(List::of){
 		@Override
 		protected Map<Resolution, Integer> getAmountPerResolution() {
 			return Map.of(Resolution.COMPLETE, 1);
@@ -28,22 +28,17 @@ public enum Alignment {
 		@Override
 		protected Map<Resolution, Integer> getAmountPerResolution() {
 			return Map.of(
-				Resolution.YEARS,
-				365,
-				Resolution.QUARTERS,
-				90,
-				Resolution.DAYS,
-				1);
+					Resolution.YEARS, 365,
+					Resolution.QUARTERS, 90,
+					Resolution.DAYS, 1);
 		}
 	},
 	QUARTER(CDateRange::getCoveredQuarters) {
 		@Override
 		protected Map<Resolution, Integer> getAmountPerResolution() {
 			return Map.of(
-				Resolution.YEARS,
-				4,
-				Resolution.QUARTERS,
-				1);
+					Resolution.YEARS, 4,
+					Resolution.QUARTERS, 1);
 		}
 	},
 	YEAR(CDateRange::getCoveredYears) {

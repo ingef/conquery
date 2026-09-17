@@ -32,7 +32,7 @@ public class JobExecutor extends Thread {
 	}
 
 	public void add(Job job) {
-		if (closed.get()) {
+		if(closed.get()) {
 			log.warn("Tried to add a job to a closed JobManager: {}", job.getLabel());
 			return;
 		}
@@ -50,7 +50,7 @@ public class JobExecutor extends Thread {
 
 		final Job job = currentJob.get();
 
-		if (job != null && job.getJobId().equals(jobId)) {
+		if(job != null && job.getJobId().equals(jobId)){
 			job.cancel();
 			return true;
 		}
@@ -74,11 +74,11 @@ public class JobExecutor extends Thread {
 	 * @return True if there is work left to do for this executor
 	 */
 	public boolean isBusy() {
-		if (currentJob.get() != null) {
+		if(currentJob.get() != null) {
 			log.trace("JobExecutor {} is still working on a task.", getName());
 			return true;
 		}
-		if (!jobs.isEmpty()) {
+		if(!jobs.isEmpty()) {
 			log.trace("JobExecutor {} has still work in the queue.", getName());
 			return true;
 		}
@@ -97,10 +97,10 @@ public class JobExecutor extends Thread {
 	public void run() {
 		ConqueryMDC.setLocation(this.getName());
 
-		while (!closed.get()) {
+		while(!closed.get()) {
 			Job job;
 			try {
-				while ((job = jobs.poll(100, TimeUnit.MILLISECONDS)) != null) {
+				while((job =jobs.poll(100, TimeUnit.MILLISECONDS))!=null) {
 					currentJob.set(job);
 					job.getProgressReporter().start();
 					Stopwatch timer = Stopwatch.createStarted();
@@ -108,7 +108,7 @@ public class JobExecutor extends Thread {
 					final Timer.Context time = JobMetrics.getJobExecutorTimer(job);
 
 					try {
-						if (job.isCancelled()) {
+						if(job.isCancelled()){
 							log.trace("{} skipping cancelled job {}", this.getName(), job);
 							continue;
 						}
@@ -118,7 +118,8 @@ public class JobExecutor extends Thread {
 						job.execute();
 						ConqueryMDC.setLocation(this.getName());
 
-					} catch (Throwable e) {
+					}
+					catch (Throwable e) {
 						ConqueryMDC.setLocation(this.getName());
 
 						log.error("Job {} failed", job, e);

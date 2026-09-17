@@ -22,16 +22,15 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
+@Getter @Setter
 @CPSType(id = "ENTITY_DATE", base = Mode.class)
 public class EntityDateMode extends Mode {
 
-	@CheckForNull
-	@Valid
-	private Range<LocalDate> dateRange;
+    @CheckForNull
+    @Valid
+    private Range<LocalDate> dateRange;
 
-	@NotNull
+    @NotNull
 	private DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
 
 
@@ -51,18 +50,18 @@ public class EntityDateMode extends Mode {
 	public void resolve(QueryResolveContext context) {
 		resolvedFeatures = ArrayConceptQuery.createFromFeatures(getForm().getFeatures());
 		resolvedFeatures.resolve(context);
-	}
+    }
 
 	@Override
 	public Query createSpecializedQuery() {
 		CDateRange dateRestriction = dateRange == null ? CDateRange.all() : CDateRange.of(dateRange);
 
 		return new EntityDateQuery(
-			getForm().getPrerequisite(),
-			resolvedFeatures,
-			ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint()),
-			dateRestriction,
-			dateAggregationMode
+				getForm().getPrerequisite(),
+				resolvedFeatures,
+				ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint()),
+				dateRestriction,
+				dateAggregationMode
 		);
 	}
 }

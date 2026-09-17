@@ -22,10 +22,7 @@ public class SqlTestDataImporter extends WorkerTestDataImporter {
 	private final CsvTableImporter csvTableImporter;
 
 	@Override
-	public void importTables(
-		StandaloneSupport support,
-		List<RequiredTable> tables,
-		boolean autoConcept) throws JSONException {
+	public void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
 		for (RequiredTable table : tables) {
 			csvTableImporter.createTable(table);
 		}

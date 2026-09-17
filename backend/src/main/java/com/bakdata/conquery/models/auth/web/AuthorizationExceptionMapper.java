@@ -9,7 +9,7 @@ import org.apache.shiro.authz.AuthorizationException;
 
 /**
  * This mapper intercepts all {@link AuthorizationException}s that occur during a request.
- * It then logs the specific cause and returns a {@link Response.Status#FORBIDDEN} to the client.
+ * It then logs the specific cause and returns a {@link Response.Status.UNAUTHORIZED} to the client.
  *
  */
 @Slf4j
@@ -22,8 +22,7 @@ public class AuthorizationExceptionMapper implements ExceptionMapper<Authorizati
 		log.trace("Shiro failed to authorize the request.", exception);
 		return Response.status(Response.Status.FORBIDDEN)
 			.type(MediaType.APPLICATION_JSON_TYPE)
-			.entity(
-				"Not sufficient permissions to perform action: " + exception.getMessage())
+			.entity("Not sufficient permissions to perform action: " + exception.getMessage())
 			.build();
 	}
 

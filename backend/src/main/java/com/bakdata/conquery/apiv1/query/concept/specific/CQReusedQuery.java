@@ -31,11 +31,10 @@ import lombok.Setter;
 
 @CPSType(id = "SAVED_QUERY", base = CQElement.class)
 @NoArgsConstructor(onConstructor_ = @JsonCreator)
-@Getter
-@Setter
+@Getter @Setter
 public class CQReusedQuery extends CQElement {
 
-	public CQReusedQuery(ManagedExecutionId executionId) {
+	public CQReusedQuery(ManagedExecutionId executionId){
 		this.queryId = executionId;
 	}
 
@@ -68,7 +67,8 @@ public class CQReusedQuery extends CQElement {
 			context = context.withSelectedSecondaryId(null);
 		}
 
-		return resolvedQuery.getReusableComponents().createQueryPlan(context, plan);
+		return resolvedQuery.getReusableComponents()
+							.createQueryPlan(context, plan);
 	}
 
 	@Override

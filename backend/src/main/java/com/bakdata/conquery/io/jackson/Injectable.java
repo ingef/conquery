@@ -30,11 +30,11 @@ public interface Injectable {
 
 		if (mapper.getInjectableValues() instanceof MutableInjectableValues) {
 			return mapper.copy()
-				.setInjectableValues(
-					inject(((MutableInjectableValues) mapper.getInjectableValues()).copy()));
+						 .setInjectableValues(inject(((MutableInjectableValues) mapper.getInjectableValues()).copy()));
 		}
 		// TODO unsure if overriding is expected here from the user
-		return mapper.copy().setInjectableValues(inject(new MutableInjectableValues()));
+		return mapper.copy()
+					 .setInjectableValues(inject(new MutableInjectableValues()));
 	}
 
 	/**
@@ -47,8 +47,7 @@ public interface Injectable {
 			mapper.setInjectableValues(inject(((MutableInjectableValues) mapper.getInjectableValues())));
 			return mapper;
 		}
-		throw new IllegalStateException(
-			"Cannot add additional injectables if the mapper does not provide MutableInjectableValues");
+		throw new IllegalStateException("Cannot add additional injectables if the mapper does not provide MutableInjectableValues");
 	}
 
 	MutableInjectableValues inject(MutableInjectableValues values);

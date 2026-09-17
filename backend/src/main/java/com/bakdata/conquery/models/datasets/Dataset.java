@@ -79,7 +79,9 @@ public class Dataset extends LabeledNamespaceIdentifiable<DatasetId> implements 
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues mutableInjectableValues) {
-		return mutableInjectableValues.add(Dataset.class, this).add(DatasetId.class, getId());
+		return mutableInjectableValues
+				.add(Dataset.class, this)
+				.add(DatasetId.class, getId());
 	}
 
 	@Override

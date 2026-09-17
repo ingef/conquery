@@ -24,12 +24,12 @@ public class ThreadPoolDefinition {
 
 	public ThreadPoolExecutor createService(String nameFormat) {
 		final ThreadPoolExecutor executor = new ThreadPoolExecutor(
-			minThreads,
-			maxThreads,
-			keepAliveTime.getQuantity(),
-			keepAliveTime.getUnit(),
-			new LinkedBlockingQueue<>(),
-			new ThreadFactoryBuilder().setNameFormat(nameFormat).build()
+				minThreads,
+				maxThreads,
+				keepAliveTime.getQuantity(),
+				keepAliveTime.getUnit(),
+				new LinkedBlockingQueue<>(),
+				new ThreadFactoryBuilder().setNameFormat(nameFormat).build()
 		);
 		executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
 		return executor;

@@ -41,11 +41,10 @@ public abstract class ResultInfo {
 
 	public final ColumnDescriptor asColumnDescriptor(UniqueNamer collector, PrintSettings printSettings) {
 		return new ColumnDescriptor(
-			collector.getUniqueName(this, printSettings),
-			defaultColumnName(printSettings),
-			getDescription(),
-			getType().typeInfo(),
-			getSemantics()
+				collector.getUniqueName(this, printSettings),
+				defaultColumnName(printSettings), getDescription(),
+				getType().typeInfo(),
+				getSemantics()
 		);
 	}
 

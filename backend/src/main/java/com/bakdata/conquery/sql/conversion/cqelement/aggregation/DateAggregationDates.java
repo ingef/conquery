@@ -26,27 +26,24 @@ public class DateAggregationDates {
 
 	public static DateAggregationDates forValidityDates(final List<Optional<ColumnDateRange>> validityDates) {
 		final List<ColumnDateRange> filtered = validityDates.stream()
-			.filter(Optional::isPresent)
-			.map(
-				Optional::get)
-			.toList();
+															.filter(Optional::isPresent)
+															.map(Optional::get)
+															.toList();
 		return new DateAggregationDates(filtered);
 	}
 
 	public static DateAggregationDates forSingleStep(QueryStep queryStep) {
 		List<ColumnDateRange> validityDates = queryStep.getSelects()
-			.getValidityDate()
-			.map(List::of)
-			.orElse(
-				Collections.emptyList());
+													   .getValidityDate()
+													   .map(List::of)
+													   .orElse(Collections.emptyList());
 		return new DateAggregationDates(validityDates);
 	}
 
 	public static DateAggregationDates forSteps(List<QueryStep> querySteps) {
 		final List<ColumnDateRange> validityDates = querySteps.stream()
-			.flatMap(
-				queryStep -> queryStep.getQualifiedSelects().getValidityDate().stream())
-			.toList();
+															  .flatMap(queryStep -> queryStep.getQualifiedSelects().getValidityDate().stream())
+															  .toList();
 		return new DateAggregationDates(validityDates);
 	}
 
@@ -64,17 +61,15 @@ public class DateAggregationDates {
 
 	public List<SqlSelect> allStartsAndEnds() {
 		return this.validityDates.stream()
-			.flatMap(validityDate -> validityDate.toFields().stream())
-			.map(
-				FieldWrapper::new)
-			.collect(Collectors.toList());
+								 .flatMap(validityDate -> validityDate.toFields().stream())
+								 .map(FieldWrapper::new)
+								 .collect(Collectors.toList());
 	}
 
 	public DateAggregationDates qualify(String qualifier) {
 		List<ColumnDateRange> qualified = this.validityDates.stream()
-			.map(
-				validityDate -> validityDate.qualify(qualifier))
-			.toList();
+															.map(validityDate -> validityDate.qualify(qualifier))
+															.toList();
 		// validity dates will already be numerated, no we don't need no apply a counter again
 		return new DateAggregationDates(qualified);
 	}

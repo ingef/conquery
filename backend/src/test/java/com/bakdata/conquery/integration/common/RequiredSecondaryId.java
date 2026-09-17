@@ -39,11 +39,11 @@ public class RequiredSecondaryId {
 	@JsonCreator
 	public static RequiredSecondaryId fromFile(String fileResource) throws IOException {
 		return Jackson.MAPPER.readValue(
-			Objects.requireNonNull(
-				IntegrationTest.class.getResourceAsStream(fileResource),
-				fileResource + " not found"
-			),
-			RequiredSecondaryId.class
+				Objects.requireNonNull(
+						IntegrationTest.class.getResourceAsStream(fileResource),
+						fileResource + " not found"
+				),
+				RequiredSecondaryId.class
 		);
 	}
 }

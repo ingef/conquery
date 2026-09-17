@@ -22,6 +22,6 @@ public class UIView<CONTENT_TYPE> extends View {
 	}
 
 	private static String resolve(String templateName) {
-		return String.format("/com/bakdata/conquery/resources/admin/ui/%s", templateName);
+        return String.format("/com/bakdata/conquery/resources/admin/ui/%s", templateName);
 	}
 }

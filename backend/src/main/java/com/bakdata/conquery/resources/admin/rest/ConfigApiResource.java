@@ -22,7 +22,7 @@ public class ConfigApiResource implements ConfigApi {
 		Iterator<PluginConfig> iterator = config.getPlugins().iterator();
 		while (iterator.hasNext()) {
 			PluginConfig next = iterator.next();
-			if (next instanceof FormBackendConfig backendConfig && backendConfig.getId().equals(configId)) {
+			if (next instanceof FormBackendConfig backendConfig && backendConfig.getId().equals(configId)){
 				// Remove from Plugins
 				iterator.remove();
 

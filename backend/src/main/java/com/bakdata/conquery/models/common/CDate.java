@@ -20,7 +20,7 @@ public final class CDate {
 	}
 
 	public int ofLocalDate(LocalDate date, int defaultValue) {
-		if (date == null) {
+		if(date == null) {
 			return defaultValue;
 		}
 		return Ints.checkedCast(date.toEpochDay());

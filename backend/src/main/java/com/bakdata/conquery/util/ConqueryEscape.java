@@ -80,7 +80,8 @@ public class ConqueryEscape {
 		for (int i = index; i < bytes.length; i++) {
 			if (dontNeedEncoding(bytes[i])) {
 				baos.write(bytes[i]);
-			} else {
+			}
+			else {
 				encode(bytes[i], baos);
 			}
 		}
@@ -88,7 +89,7 @@ public class ConqueryEscape {
 	}
 
 	public static String unescape(@NonNull String word) {
-		if (word.isEmpty()) {
+		if(word.isEmpty()) {
 			return word;
 		}
 
@@ -96,7 +97,7 @@ public class ConqueryEscape {
 
 		for (int i = 0; i < bytes.length; i++) {
 			byte aByte = bytes[i];
-			if (aByte == ESCAPER) {
+			if (aByte == ESCAPER){
 				continue;
 			}
 			if (dontNeedEncoding(aByte)) {
@@ -105,16 +106,17 @@ public class ConqueryEscape {
 			log.warn("Unescaped character '{}' at {} in '{}'", aByte, i, word);
 		}
 
-		if (!ArrayUtils.contains(bytes, ESCAPER)) {
+		if(!ArrayUtils.contains(bytes, ESCAPER)) {
 			return word;
 		}
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream(bytes.length);
 
-		for (int i = 0; i < bytes.length; i++) {
-			if (bytes[i] == ESCAPER) {
+		for(int i=0;i<bytes.length;i++) {
+			if(bytes[i] == ESCAPER) {
 				i += decode(bytes, i, out);
-			} else {
+			}
+			else {
 				out.write(bytes[i]);
 			}
 		}

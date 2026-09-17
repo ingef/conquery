@@ -43,13 +43,12 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 		}
 
 		return StratificationSqlIdColumns.builder()
-			.primaryColumn(primaryColumn)
-			.secondaryId(null)
-			.resolution(
-				resolution)
-			.index(index)
-			.eventDate(eventDate)
-			.build();
+										 .primaryColumn(primaryColumn)
+										 .secondaryId(null)
+										 .resolution(resolution)
+										 .index(index)
+										 .eventDate(eventDate)
+										 .build();
 	}
 
 	/**
@@ -59,18 +58,19 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 	public SqlIdColumns forFinalSelect() {
 
 		Field<Integer> withNulledCompleteIndex = DSL.when(
-			this.resolution.eq(DSL.inline(Resolution.COMPLETE.toString().toUpperCase())),
-			DSL.inline(null, Integer.class)
-		).otherwise(this.index).as(SharedAliases.INDEX.getAlias());
+															this.resolution.eq(DSL.inline(Resolution.COMPLETE.toString().toUpperCase())),
+															DSL.inline(null, Integer.class)
+													)
+													.otherwise(this.index)
+													.as(SharedAliases.INDEX.getAlias());
 
 		return StratificationSqlIdColumns.builder()
-			.primaryColumn(getPrimaryColumn())
-			.secondaryId(null)
-			.resolution(
-				this.resolution)
-			.index(withNulledCompleteIndex)
-			.eventDate(this.eventDate)
-			.build();
+										 .primaryColumn(getPrimaryColumn())
+										 .secondaryId(null)
+										 .resolution(this.resolution)
+										 .index(withNulledCompleteIndex)
+										 .eventDate(this.eventDate)
+										 .build();
 	}
 
 	@Override
@@ -81,11 +81,13 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 	@Override
 	public List<Field<?>> toFields() {
 		return Stream.of(
-			getPrimaryColumn(),
-			this.resolution,
-			this.index,
-			this.eventDate
-		).filter(Objects::nonNull).collect(Collectors.toList());
+							 getPrimaryColumn(),
+							 this.resolution,
+							 this.index,
+							 this.eventDate
+					 )
+					 .filter(Objects::nonNull)
+					 .collect(Collectors.toList());
 	}
 
 	@Override
@@ -96,29 +98,29 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 		}
 
 		StratificationSqlIdColumns rightStratificationIds = (StratificationSqlIdColumns) rightIds;
-		Condition joinResolutionAndIndex = this.resolution.eq(rightStratificationIds.getResolution())
-			.and(
-				this.index.eq(rightStratificationIds.getIndex()));
+		Condition joinResolutionAndIndex = this.resolution.eq(rightStratificationIds.getResolution()).and(this.index.eq(rightStratificationIds.getIndex()));
 
 		Condition joinEventDateCondition;
 		if (this.eventDate != null) {
 			joinEventDateCondition = this.eventDate.eq(rightStratificationIds.getEventDate());
-		} else {
+		}
+		else {
 			joinEventDateCondition = DSL.noCondition();
 		}
 
 		return Stream.concat(
-			super.join(rightIds).stream(),
-			Stream.of(joinResolutionAndIndex, joinEventDateCondition)
-		).toList();
+							 super.join(rightIds).stream(),
+							 Stream.of(joinResolutionAndIndex, joinEventDateCondition)
+					 )
+					 .toList();
 	}
 
 	@Override
 	public SqlIdColumns coalesce(List<SqlIdColumns> selectsIds) {
 
 		Preconditions.checkArgument(
-			selectsIds.stream().allMatch(SqlIdColumns::isWithStratification),
-			"Can only coalesce SqlIdColumns if all are with stratification"
+				selectsIds.stream().allMatch(SqlIdColumns::isWithStratification),
+				"Can only coalesce SqlIdColumns if all are with stratification"
 		);
 
 		List<Field<String>> primaryColumns = new ArrayList<>();
@@ -144,11 +146,8 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 			}
 		}
 
-		Field<String> coalescedPrimaryColumn = coalesceFields(primaryColumns, String.class).coerce(String.class)
-			.as(
-				SharedAliases.PRIMARY_COLUMN.getAlias());
-		Field<String> coalescedResolutions = coalesceFields(resolutions, String.class).as(
-			SharedAliases.RESOLUTION.getAlias());
+		Field<String> coalescedPrimaryColumn = coalesceFields(primaryColumns, String.class).coerce(String.class).as(SharedAliases.PRIMARY_COLUMN.getAlias());
+		Field<String> coalescedResolutions = coalesceFields(resolutions, String.class).as(SharedAliases.RESOLUTION.getAlias());
 		Field<Integer> coalescedIndices = coalesceFields(indices, Integer.class).as(SharedAliases.INDEX.getAlias());
 		Field<Date> eventDate = null;
 		if (!eventDates.isEmpty()) {
@@ -156,12 +155,11 @@ class StratificationSqlIdColumns extends SqlIdColumns {
 		}
 
 		return StratificationSqlIdColumns.builder()
-			.primaryColumn(coalescedPrimaryColumn)
-			.secondaryId(null)
-			.resolution(
-				coalescedResolutions)
-			.index(coalescedIndices)
-			.eventDate(eventDate)
-			.build();
+										 .primaryColumn(coalescedPrimaryColumn)
+										 .secondaryId(null)
+										 .resolution(coalescedResolutions)
+										 .index(coalescedIndices)
+										 .eventDate(eventDate)
+										 .build();
 	}
 }

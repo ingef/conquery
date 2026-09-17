@@ -20,28 +20,28 @@ public class AuthenticationConfig {
 
 	public NewCookie createAuthCookie(ContainerRequestContext request, String token) {
 		return new NewCookie(
-			AuthCookieFilter.ACCESS_TOKEN,
-			token,
-			"/",
-			null,
-			0,
-			null,
-			Long.valueOf(adminEndCookieDuration.toSeconds()).intValue(),
-			null,
-			request.getSecurityContext().isSecure(),
-			true
+				AuthCookieFilter.ACCESS_TOKEN,
+				token,
+				"/",
+				null,
+				0,
+				null,
+				Long.valueOf(adminEndCookieDuration.toSeconds()).intValue(),
+				null,
+				request.getSecurityContext().isSecure(),
+				true
 		);
 	}
 
 	public static NewCookie expireCookie(String cookieName) {
 		return new NewCookie(
-			cookieName,
-			null,
-			"/",
-			null,
-			null,
-			0,
-			false
+				cookieName,
+				null,
+				"/",
+				null,
+				null,
+				0,
+				false
 		);
 	}
 

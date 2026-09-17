@@ -15,10 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 @Slf4j
-@EnabledIfEnvironmentVariable(
-	named = "KEYCLOAK_SERVER_URL",
-	matches = "^https?://.+",
-	disabledReason = "As long as there is no mock server, test manually against a real server")
+@EnabledIfEnvironmentVariable(named = "KEYCLOAK_SERVER_URL", matches = "^https?://.+", disabledReason = "As long as there is no mock server, test manually against a real server")
 @EnabledIfEnvironmentVariable(named = "KEYCLOAK_REALM", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "KEYCLOAK_CLIENT_ID", matches = ".+")
 @EnabledIfEnvironmentVariable(named = "KEYCLOAK_CLIENT_SECRET", matches = ".+")

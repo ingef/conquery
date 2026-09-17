@@ -14,21 +14,16 @@ import org.apache.mina.core.future.WriteFuture;
 public interface MessageSender<MESSAGE> {
 
 	WriteFuture send(MESSAGE message);
-
 	void trySend(MESSAGE message);
-
 	@JsonIgnore
 	SocketAddress getRemoteAddress();
-
 	void awaitClose();
-
 	@JsonIgnore
 	boolean isConnected();
 
 	public static interface Transforming<MESSAGE, TARGET> extends MessageSender<MESSAGE> {
 		@JsonIgnore
 		MessageSender<TARGET> getMessageParent();
-
 		TARGET transform(MESSAGE message);
 
 		@Override
@@ -61,10 +56,7 @@ public interface MessageSender<MESSAGE> {
 	@ToString(of = "session")
 	public static abstract class Simple<MESSAGE extends NetworkMessage<?>> implements MessageSender<MESSAGE> {
 
-		@JsonIgnore
-		@Setter
-		@Getter
-		@NonNull
+		@JsonIgnore @Setter @Getter @NonNull
 		protected NetworkSession session;
 
 		@Override

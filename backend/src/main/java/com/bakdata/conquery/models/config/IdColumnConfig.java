@@ -56,31 +56,27 @@ public class IdColumnConfig {
 	@NotEmpty
 	@Valid
 	private List<ColumnConfig> ids = List.of(
-		ColumnConfig.builder()
-			.name("ID")
-			.field("pid")
-			.label(Map.of(Locale.ROOT, "result"))
-			.primaryId(true)
-			.print(
-				true)
-			.build()
+			ColumnConfig.builder()
+						.name("ID")
+						.field("pid")
+						.label(Map.of(Locale.ROOT, "result"))
+						.primaryId(true)
+						.print(true)
+						.build()
 	);
 
 
 	@JsonIgnore
 	@Setter(AccessLevel.NONE)
 	@Getter(lazy = true, value = AccessLevel.PUBLIC)
-	private final Map<String, ColumnConfig> idMappers = ids.stream()
-		.collect(
-			Collectors.toMap(ColumnConfig::getName, Functions.identity()));
+	private final Map<String, ColumnConfig> idMappers = ids.stream().collect(Collectors.toMap(ColumnConfig::getName, Functions.identity()));
 
 	@JsonIgnore
 	public ColumnConfig findPrimaryIdColumn() {
 		return ids.stream()
-			.filter(ColumnConfig::isPrimaryId)
-			.findFirst()
-			.orElseThrow(
-				() -> new IllegalStateException("Requiring at least 1 primary key column in IdColumnConfig"));
+				  .filter(ColumnConfig::isPrimaryId)
+				  .findFirst()
+				  .orElseThrow(() -> new IllegalStateException("Requiring at least 1 primary key column in IdColumnConfig"));
 	}
 
 	@ValidationMethod(message = "Duplicate Claims for Mapping Columns.")
@@ -114,7 +110,10 @@ public class IdColumnConfig {
 	@ValidationMethod(message = "Must have exactly one Column for Pseudomization.")
 	@JsonIgnore
 	public boolean isExactlyOnePseudo() {
-		return ids.stream().filter(conf -> conf.getField() != null).filter(ColumnConfig::isPrimaryId).count() == 1;
+		return ids.stream()
+				  .filter(conf -> conf.getField() != null)
+				  .filter(ColumnConfig::isPrimaryId)
+				  .count() == 1;
 	}
 
 
@@ -135,16 +134,11 @@ public class IdColumnConfig {
 					// Get the label for the locale,
 					// fall back to any label if there is exactly one defined,
 					// then fall back to the field name.
-					return Objects.requireNonNullElse(
-						labels.getOrDefault(
+					return Objects.requireNonNullElse(labels.getOrDefault(
 							printSettings.getLocale(),
 							// fall backs
-							labels.size() == 1 ? labels.values()
-								.stream()
-								.collect(
-									MoreCollectors.onlyElement()) : col.getField()
-						),
-						col.getField());
+							labels.size() == 1 ? labels.values().stream().collect(MoreCollectors.onlyElement()) : col.getField()
+					), col.getField());
 				}
 
 				@Override

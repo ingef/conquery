@@ -52,29 +52,26 @@ public class MeProcessor {
 
 			// User can use the dataset and can possibly upload ids for resolving
 			datasetAblilites.put(
-				dataset,
-				new FrontendDatasetAbility(
-					user.isPermitted(dataset, Ability.PRESERVE_ID),
-					user.isPermitted(dataset, Ability.ENTITY_PREVIEW) && user.isPermitted(dataset, Ability.PRESERVE_ID),
-					user.isPermitted(dataset, Ability.QUERY_PREVIEW)
-				)
+					dataset,
+					new FrontendDatasetAbility(
+							user.isPermitted(dataset, Ability.PRESERVE_ID),
+							user.isPermitted(dataset, Ability.ENTITY_PREVIEW) && user.isPermitted(dataset, Ability.PRESERVE_ID),
+							user.isPermitted(dataset, Ability.QUERY_PREVIEW)
+					)
 			);
 		}
 
 		// Build user information
 		return FrontendMeInformation.builder()
-			.userName(user.getLabel())
-			.hideLogoutButton(
-				!user.isDisplayLogout())
-			.groups(
-				AuthorizationHelper.getGroupsOf(user, storage)
-					.stream()
-					.map(
-						g -> new IdLabel<GroupId>(g.getId(), g.getLabel()))
-					.collect(Collectors.toList()))
-			.datasetAbilities(
-				datasetAblilites)
-			.build();
+									.userName(user.getLabel())
+									.hideLogoutButton(!user.isDisplayLogout())
+									.groups(
+											AuthorizationHelper.getGroupsOf(user, storage)
+															   .stream()
+															   .map(g -> new IdLabel<GroupId>(g.getId(), g.getLabel()))
+															   .collect(Collectors.toList()))
+									.datasetAbilities(datasetAblilites)
+									.build();
 	}
 
 	/**

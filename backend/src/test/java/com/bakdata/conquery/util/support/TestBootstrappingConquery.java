@@ -30,21 +30,15 @@ public class TestBootstrappingConquery extends Conquery {
 
 		bootstrap.setConfigurationFactoryFactory(new DefaultConfigurationFactoryFactory<>() {
 			@Override
-			public ConfigurationFactory<ConqueryConfig> create(
-				Class<ConqueryConfig> klass,
-				Validator validator,
-				ObjectMapper objectMapper,
-				String propertyPrefix) {
+			public ConfigurationFactory<ConqueryConfig> create(Class<ConqueryConfig> klass, Validator validator, ObjectMapper objectMapper, String propertyPrefix) {
 				return new YamlConfigurationFactory<ConqueryConfig>(
-					klass,
-					validator,
-					configureObjectMapper(objectMapper.copy()),
-					propertyPrefix
+						klass,
+						validator,
+						configureObjectMapper(objectMapper.copy()),
+						propertyPrefix
 				) {
 					@Override
-					protected ConqueryConfig build(
-						JsonNode node,
-						String path) throws IOException, ConfigurationException {
+					protected ConqueryConfig build(JsonNode node, String path) throws IOException, ConfigurationException {
 						final ConqueryConfig config = super.build(node, path);
 						ConfigOverride.configurePathsAndLogging(config, tmpDir);
 						return config;

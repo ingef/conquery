@@ -25,9 +25,8 @@ public class LoginResource {
 	public View getLoginPage(@QueryParam(RedirectingAuthFilter.REDIRECT_URI) URI redirectUri) {
 		final String requestAuthority = request.getUriInfo().getBaseUri().getAuthority();
 		final String redirectAuthority = redirectUri.getAuthority();
-		if (!requestAuthority.equals(redirectAuthority)) {
-			throw new BadRequestException(
-				String.format(
+		if (!requestAuthority.equals(redirectAuthority)){
+			throw new BadRequestException(String.format(
 					"The authorities of request uri (%s) and the redirect uri (%s) differ",
 					requestAuthority,
 					redirectAuthority));

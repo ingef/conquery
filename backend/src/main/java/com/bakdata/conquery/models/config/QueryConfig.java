@@ -33,7 +33,7 @@ public class QueryConfig {
 	/**
 	 * See {@link com.bakdata.conquery.models.query.ExecutionManager#executionInfosL1} for an explanation
 	 */
-	@ValidCaffeineSpec(softValue = true)
+	@ValidCaffeineSpec(softValue=true)
 	private String L2CacheSpec = "softValues";
 
 }

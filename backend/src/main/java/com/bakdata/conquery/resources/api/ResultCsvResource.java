@@ -39,44 +39,30 @@ public class ResultCsvResource {
 
 	private final ResultCsvProcessor processor;
 
-	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(
-		UriBuilder uriBuilder,
-		E exec) throws MalformedURLException {
+	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder.path(ResultCsvResource.class)
-			.path(
-				ResultCsvResource.class,
-				GET_RESULT_PATH_METHOD)
-			.resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
-			.build()
-			.toURL();
+						 .path(ResultCsvResource.class, GET_RESULT_PATH_METHOD)
+						 .resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
+						 .build()
+						 .toURL();
 	}
 
 	@GET
 	@Path("{" + QUERY + "}.csv")
 	@Produces(AdditionalMediaTypes.CSV)
 	public Response getAsCsv(
-		@Auth Subject subject,
-		@PathParam(QUERY) ManagedExecutionId executionId,
-		@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
-		@QueryParam("charset") String queryCharset,
-		@QueryParam("pretty") @DefaultValue("true") boolean pretty,
-		@QueryParam("limit") OptionalLong limit
+			@Auth Subject subject,
+			@PathParam(QUERY) ManagedExecutionId executionId,
+			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
+			@QueryParam("charset") String queryCharset,
+			@QueryParam("pretty") @DefaultValue("true") boolean pretty,
+			@QueryParam("limit") OptionalLong limit
 	) {
 
 		ManagedExecution execution = executionId.resolve();
 		checkSingleTableResult(execution);
-		log.info(
-			"Result for {} download on dataset {} by subject {} ({}).",
-			executionId,
-			execution.getDataset(),
-			subject.getId(),
-			subject.getName());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", executionId, execution.getDataset(), subject.getId(), subject.getName());
 
-		return processor.createResult(
-			(ManagedExecution & SingleTableResult) execution,
-			subject,
-			pretty,
-			determineCharset(userAgent, queryCharset),
-			limit);
+		return processor.createResult((ManagedExecution & SingleTableResult) execution, subject, pretty, determineCharset(userAgent, queryCharset), limit);
 	}
 }

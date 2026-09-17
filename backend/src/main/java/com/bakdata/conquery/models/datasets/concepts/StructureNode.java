@@ -19,9 +19,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter
-@Setter
-@ToString(callSuper = true, of = {"children"})
+@Getter @Setter @ToString(callSuper=true,of={"children"})
 public class StructureNode extends LabeledNamespaceIdentifiable<StructureNodeId> {
 
 	public static final String MANAGED_STRUCTURE_STRUCTURE = "structure_structure";
@@ -30,8 +28,7 @@ public class StructureNode extends LabeledNamespaceIdentifiable<StructureNodeId>
 	@NotNull
 	private DatasetId dataset;
 	private String description;
-	@Valid
-	@JsonManagedReference(MANAGED_STRUCTURE_STRUCTURE)
+	@Valid @JsonManagedReference(MANAGED_STRUCTURE_STRUCTURE)
 	private List<StructureNode> children = Collections.emptyList();
 	@JsonBackReference(MANAGED_STRUCTURE_STRUCTURE)
 	@EqualsAndHashCode.Exclude

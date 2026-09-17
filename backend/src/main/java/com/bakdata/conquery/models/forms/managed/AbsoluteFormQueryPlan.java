@@ -12,10 +12,8 @@ import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import org.jspecify.annotations.NonNull;
 
-@Getter
-@RequiredArgsConstructor
+@Getter @RequiredArgsConstructor
 @ToString
 public class AbsoluteFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
@@ -47,7 +45,7 @@ public class AbsoluteFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	@Override
-	public @NonNull Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
+	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
 		return subPlan.getValidityDateAggregator();
 	}
 }

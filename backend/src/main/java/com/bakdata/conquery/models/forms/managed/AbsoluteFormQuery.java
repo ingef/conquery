@@ -58,11 +58,7 @@ public class AbsoluteFormQuery extends Query {
 	@NotNull
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
-	public AbsoluteFormQuery(
-		Query query,
-		Range<LocalDate> dateRange,
-		ArrayConceptQuery features,
-		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap) {
+	public AbsoluteFormQuery(Query query, Range<LocalDate> dateRange, ArrayConceptQuery features, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap) {
 		this.query = query;
 		this.dateRange = dateRange;
 		this.features = features;
@@ -80,9 +76,9 @@ public class AbsoluteFormQuery extends Query {
 		return new AbsoluteFormQueryPlan(
 			query.createQueryPlan(context),
 			new FormQueryPlan(
-				DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutionsAndAlignmentMap),
-				features.createQueryPlan(context),
-				false
+					DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutionsAndAlignmentMap),
+					features.createQueryPlan(context),
+					false
 			)
 		);
 	}

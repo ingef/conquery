@@ -29,13 +29,13 @@ public class IdMap<ID extends Id, V extends Identifiable<? extends ID, ?>> exten
 
 	public IdMap(Collection<V> collection) {
 		map = new ConcurrentHashMap<>();
-		for (V value : collection) {
+		for(V value : collection) {
 			map.put(value.getId(), value);
 		}
 	}
 
 	@Override
-	public Set<Map.Entry<ID, V>> entrySet() {
+	public Set<Map.Entry <ID, V>> entrySet(){
 		return map.entrySet();
 	}
 
@@ -55,8 +55,8 @@ public class IdMap<ID extends Id, V extends Identifiable<? extends ID, ?>> exten
 
 	public V getOrFail(ID id) {
 		V res = map.get(id);
-		if (res == null) {
-			throw new NoSuchElementException("Could not find an element called '" + id + "'");
+		if(res==null) {
+			throw new NoSuchElementException("Could not find an element called '"+id+"'");
 		}
 		return res;
 	}
@@ -64,8 +64,8 @@ public class IdMap<ID extends Id, V extends Identifiable<? extends ID, ?>> exten
 	private void addToMap(V entry) {
 		// The following cast should be unnecessary, but intellij is complaining without it. Please leave it here for now
 		V old = (V) map.put(entry.getId(), entry);
-		if (old != null && !old.equals(entry)) {
-			throw new IllegalStateException("The element " + entry.getId() + " is present twice in this map.");
+		if(old != null && !old.equals(entry)) {
+			throw new IllegalStateException("The element "+entry.getId()+" is present twice in this map.");
 		}
 	}
 
@@ -87,20 +87,18 @@ public class IdMap<ID extends Id, V extends Identifiable<? extends ID, ?>> exten
 		return obj;
 	}
 
-	@Override
-	@Deprecated
+	@Override @Deprecated
 	public V remove(Object object) {
 		return super.remove(object);
 	}
 
-	@Override
-	@Deprecated
+	@Override @Deprecated
 	public V put(ID key, V value) {
 		return super.put(key, value);
 	}
 
 	@Override
-	protected Map<ID, V> delegate() {
+	protected Map <ID, V> delegate() {
 		return map;
 	}
 }

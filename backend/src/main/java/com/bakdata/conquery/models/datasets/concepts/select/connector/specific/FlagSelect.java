@@ -50,10 +50,7 @@ public class FlagSelect extends Select {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		final Map<String, Column> collect = flags.entrySet()
-			.stream()
-			.collect(
-				Collectors.toMap(Map.Entry::getKey, e -> e.getValue().resolve()));
+		final Map<String, Column> collect = flags.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().resolve()));
 		return new FlagsAggregator(collect);
 	}
 
@@ -67,12 +64,7 @@ public class FlagSelect extends Select {
 	@JsonIgnore
 	@ValidationMethod(message = "Columns must be BOOLEAN.")
 	public boolean isAllColumnsBoolean() {
-		return flags.values()
-			.stream()
-			.map(ColumnId::resolve)
-			.map(Column::getType)
-			.allMatch(
-				MajorTypeId.BOOLEAN::equals);
+		return flags.values().stream().map(ColumnId::resolve).map(Column::getType).allMatch(MajorTypeId.BOOLEAN::equals);
 	}
 
 	@Override

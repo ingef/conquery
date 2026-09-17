@@ -27,7 +27,8 @@ public class TokenResource {
 	public JwtWrapper getToken(UsernamePasswordToken token) {
 		try {
 			return new JwtWrapper(realm.createAccessToken(token.getUser(), token.getPassword()));
-		} catch (AuthenticationException e) {
+		}
+		catch (AuthenticationException e) {
 			log.warn("Failed to authorize request", e);
 			throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 		}

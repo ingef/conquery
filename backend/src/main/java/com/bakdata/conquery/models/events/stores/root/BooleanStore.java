@@ -12,11 +12,10 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 public interface BooleanStore extends ColumnStore {
 
 	boolean getBoolean(int event);
-
 	void setBoolean(int event, boolean value);
 
 	@Override
-	default void setNull(int event) {
+	default void setNull(int event){
 		throw new IllegalStateException("BooleanStore cannot have Null values.");
 	}
 

@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @Slf4j
 @JsonIgnoreProperties({"emptyLabel"})
-public class IndexConfig {
+public class IndexConfig  {
 
 	/**
 	 * Base url under which reference files are access if the url in
@@ -39,7 +39,8 @@ public class IndexConfig {
 			// We just try to convert it to an url and discard the return value
 			URL _ignore = baseUrl.toURL();
 			return true;
-		} catch (MalformedURLException e) {
+		}
+		catch (MalformedURLException e) {
 			log.error("URL validation error.", e);
 			return false;
 		}

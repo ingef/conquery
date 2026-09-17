@@ -26,17 +26,14 @@ public class JsonDescriptionResultProvider implements ResultRendererProvider {
 	private boolean hidden = false;
 
 	@Override
-	public Collection<ResultAsset> generateResultURLs(
-		ManagedExecution exec,
-		UriBuilder uriBuilder,
-		boolean allProviders) throws MalformedURLException, URISyntaxException {
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders)
+			throws MalformedURLException, URISyntaxException {
 
 		if (hidden && !allProviders) {
 			return Collections.emptyList();
 		}
 
-		return List.of(
-			new ResultAsset("JSON", ResultJsonDescriptionResource.getDownloadURL(uriBuilder, exec.getId()).toURI()));
+		return List.of(new ResultAsset("JSON", ResultJsonDescriptionResource.getDownloadURL(uriBuilder, exec.getId()).toURI()));
 	}
 
 	@Override

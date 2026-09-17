@@ -76,12 +76,7 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 	@EqualsAndHashCode.Exclude
 	private CompletableFuture<Index<String>> int2ext;
 
-	public MapInternToExternMapper(
-		@NotEmpty String name,
-		@NotNull URI csv,
-		@NotEmpty String internalColumn,
-		@NotEmpty String externalTemplate,
-		boolean allowMultiple) {
+	public MapInternToExternMapper(@NotEmpty String name, @NotNull URI csv, @NotEmpty String internalColumn, @NotEmpty String externalTemplate, boolean allowMultiple) {
 		this.name = name;
 		this.csv = csv;
 		this.internalColumn = internalColumn;
@@ -106,12 +101,13 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 		int2ext = CompletableFuture.supplyAsync(() -> {
 			try {
 				return mapIndex.<Index<String>>getIndex(key);
-			} catch (IndexCreationException e) {
+			}
+			catch (IndexCreationException e) {
 				throw new IllegalStateException(e);
 			}
 		}).whenComplete((m, e) -> {
 			if (e != null) {
-				log.warn("Unable to get index: {} (enable TRACE for exception)", key, passExceptionOnTrace(log, e));
+				log.warn("Unable to get index: {} (enable TRACE for exception)", key, passExceptionOnTrace(log,e));
 			}
 		});
 	}
@@ -127,12 +123,10 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 				}
 
 				return mapped;
-			} catch (InterruptedException | ExecutionException e) {
+			}
+			catch (InterruptedException | ExecutionException e) {
 				// Should never be reached
-				log.warn(
-					"Unable to resolve mapping for internal value {} (enable TRACE for exception)",
-					internalValue,
-					passExceptionOnTrace(log, e));
+				log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, passExceptionOnTrace(log,e));
 			}
 		}
 
@@ -162,12 +156,10 @@ public class MapInternToExternMapper extends InternToExternMapper implements Ini
 		if (indexAvailable()) {
 			try {
 				return int2ext.get().external(internalValue);
-			} catch (InterruptedException | ExecutionException e) {
+			}
+			catch (InterruptedException | ExecutionException e) {
 				// Should never be reached
-				log.warn(
-					"Unable to resolve mapping for internal value {} (enable TRACE for exception)",
-					internalValue,
-					passExceptionOnTrace(log, e));
+				log.warn("Unable to resolve mapping for internal value {} (enable TRACE for exception)", internalValue, passExceptionOnTrace(log,e));
 			}
 		}
 

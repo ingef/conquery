@@ -31,7 +31,7 @@ public abstract class Aggregator<T> extends EventIterating {
 		return true;
 	}
 
-	public abstract void consumeEvent(Bucket bucket, int event);
+	public abstract void consumeEvent(Bucket bucket, int event) ;
 
 
 }

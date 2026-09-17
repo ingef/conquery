@@ -42,11 +42,9 @@ public interface SqlSelect extends Qualifiable<SqlSelect> {
 	 * Aggregate this select to one value per ID group in the final concept query.
 	 */
 	default List<Field<?>> aggregateForFinalQuery(SqlFunctionProvider functionProvider) {
-		return toFinalRepresentation().toFields()
-			.stream()
-			.<Field<?>>map(
-				field -> functionProvider.anyValue(field).as(field.getName()))
-			.toList();
+		return toFinalRepresentation().toFields().stream()
+				.<Field<?>>map(field -> functionProvider.anyValue(field).as(field.getName()))
+				.toList();
 	}
 
 }

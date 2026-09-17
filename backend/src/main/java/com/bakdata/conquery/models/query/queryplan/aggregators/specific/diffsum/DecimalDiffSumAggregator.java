@@ -56,13 +56,9 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 
 		hit = true;
 
-		BigDecimal addend = bucket.has(event, getAddendColumn()) ? bucket.getDecimal(
-			event,
-			getAddendColumn()) : BigDecimal.ZERO;
+		BigDecimal addend = bucket.has(event, getAddendColumn()) ? bucket.getDecimal(event, getAddendColumn()) : BigDecimal.ZERO;
 
-		BigDecimal subtrahend = bucket.has(event, getSubtrahendColumn()) ? bucket.getDecimal(
-			event,
-			getSubtrahendColumn()) : BigDecimal.ZERO;
+		BigDecimal subtrahend = bucket.has(event, getSubtrahendColumn()) ? bucket.getDecimal(event, getSubtrahendColumn()) : BigDecimal.ZERO;
 
 		sum = sum.add(addend.subtract(subtrahend));
 	}

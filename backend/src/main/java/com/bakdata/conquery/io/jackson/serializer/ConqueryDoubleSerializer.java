@@ -15,9 +15,10 @@ public class ConqueryDoubleSerializer extends JsonSerializer<Double> {
 
 	@Override
 	public void serialize(Double value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-		if (value.isInfinite() || value.isNaN()) {
+		if(value.isInfinite() || value.isNaN()) {
 			gen.writeNull();
-		} else {
+		}
+		else {
 			gen.writeNumber(value.doubleValue());
 		}
 	}

@@ -55,14 +55,10 @@ public class DateDistanceFilter extends EventFilter<Range.LongRange> {
 	}
 
 	@Override
-	public void configureFrontend(
-		FrontendFilterConfiguration.Top f,
-		ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
+	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
 		MajorTypeId type = getColumn().resolve().getType();
 		if (type != MajorTypeId.DATE) {
-			throw new ConceptConfigurationException(
-				getConnector(),
-				"DATE_DISTANCE filter is incompatible with columns of type " + type);
+			throw new ConceptConfigurationException(getConnector(), "DATE_DISTANCE filter is incompatible with columns of type " + type);
 		}
 
 		f.setType(FrontendFilterType.Fields.INTEGER_RANGE);

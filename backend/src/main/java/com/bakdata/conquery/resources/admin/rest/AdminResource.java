@@ -97,10 +97,7 @@ public class AdminResource {
 
 	@GET
 	@Path("/queries")
-	public Stream<ExecutionStatus> getQueries(
-		@Auth Subject currentUser,
-		@QueryParam("limit") OptionalLong maybeLimit,
-		@QueryParam("since") Optional<String> maybeSince) {
+	public Stream<ExecutionStatus> getQueries(@Auth Subject currentUser, @QueryParam("limit") OptionalLong maybeLimit, @QueryParam("since") Optional<String> maybeSince) {
 
 		final LocalDate since = maybeSince.map(LocalDate::parse).orElse(LocalDate.now());
 		final long limit = maybeLimit.orElse(100);
@@ -109,29 +106,26 @@ public class AdminResource {
 
 
 		return storage.getAllExecutions()
-			.filter(
-				t -> t.getCreationTime().toLocalDate().isAfter(since) || t.getCreationTime()
-					.toLocalDate()
-					.isEqual(
-						since))
-			.limit(limit)
-			.map(t -> {
-				try {
-					if (t.isInitialized()) {
-						final Namespace namespace = processor.getDatasetRegistry().get(t.getDataset());
-						return t.buildStatusFull(currentUser, namespace);
-					}
+					  .filter(t -> t.getCreationTime().toLocalDate().isAfter(since) || t.getCreationTime().toLocalDate().isEqual(since))
+					  .limit(limit)
+					  .map(t -> {
+						  try {
+							  if (t.isInitialized()) {
+								  final Namespace namespace = processor.getDatasetRegistry().get(t.getDataset());
+								  return t.buildStatusFull(currentUser, namespace);
+							  }
 
-					return t.buildStatusOverview(currentUser);
-				} catch (ConqueryError e) {
-					// Initialization of execution probably failed, so we construct a status based on the overview status
-					final FullExecutionStatus fullExecutionStatus = new FullExecutionStatus();
-					t.setStatusBase(currentUser, fullExecutionStatus);
-					fullExecutionStatus.setStatus(ExecutionState.FAILED);
-					fullExecutionStatus.setError(e);
-					return fullExecutionStatus;
-				}
-			});
+							  return t.buildStatusOverview(currentUser);
+						  }
+						  catch (ConqueryError e) {
+							  // Initialization of execution probably failed, so we construct a status based on the overview status
+							  final FullExecutionStatus fullExecutionStatus = new FullExecutionStatus();
+							  t.setStatusBase(currentUser, fullExecutionStatus);
+							  fullExecutionStatus.setStatus(ExecutionState.FAILED);
+							  fullExecutionStatus.setError(e);
+							  return fullExecutionStatus;
+						  }
+					  });
 	}
 
 	@POST

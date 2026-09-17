@@ -19,9 +19,8 @@ public class FirstValueSelect extends MappableSingleColumnSelect {
 
 	@JsonCreator
 	public FirstValueSelect(
-		ColumnId column,
-		InternToExternMapperId mapping,
-		Range.IntegerRange substring
+			ColumnId column,
+			InternToExternMapperId mapping, Range.IntegerRange substring
 	) {
 		super(column, mapping, substring);
 	}
@@ -30,6 +29,7 @@ public class FirstValueSelect extends MappableSingleColumnSelect {
 	public Aggregator<?> createAggregator() {
 		return new FirstValueAggregator<>(getColumn().resolve(), getSubstringRange());
 	}
+
 
 
 	@Override

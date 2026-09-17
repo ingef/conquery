@@ -64,17 +64,18 @@ public final class HierarchyHelper {
 		}
 
 		if (!foundPath) {
-			throw new IllegalArgumentException(
-				"The javax.ws.rs.Path annotation was present neither on the class '" + clazz
-					.getName() + "' nor on the method " + methodName + "'.");
+			throw new IllegalArgumentException("The javax.ws.rs.Path annotation was present neither on the class '"+ clazz.getName() + "' nor on the method " + methodName + "'.");
 		}
 
 		return uri;
 	}
 
 	private static boolean isEndpoint(Method method) {
-		return method.isAnnotationPresent(GET.class) || method.isAnnotationPresent(
-			DELETE.class) || method.isAnnotationPresent(HEAD.class) || method.isAnnotationPresent(
-				OPTIONS.class) || method.isAnnotationPresent(POST.class) || method.isAnnotationPresent(PUT.class);
+		return method.isAnnotationPresent(GET.class)
+			|| method.isAnnotationPresent(DELETE.class)
+			|| method.isAnnotationPresent(HEAD.class)
+			|| method.isAnnotationPresent(OPTIONS.class)
+			|| method.isAnnotationPresent(POST.class)
+			|| method.isAnnotationPresent(PUT.class);
 	}
 }

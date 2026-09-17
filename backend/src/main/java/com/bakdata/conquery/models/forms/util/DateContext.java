@@ -48,8 +48,7 @@ public class DateContext {
 	/**
 	 * The date from which the relative context were generated.
 	 */
-	@Getter
-	@Setter
+	@Getter @Setter
 	private LocalDate eventDate = null;
 
 	/**
@@ -70,27 +69,18 @@ public class DateContext {
 	 * @param resolutionAndAlignment The resolutions to produce and their alignment
 	 * @return A sorted list of all generated contexts
 	 */
-	public static List<DateContext> generateAbsoluteContexts(
-		CDateRange dateRangeMask,
-		List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
+	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 		List<DateContext> dcList = new ArrayList<>();
 
 		for (ExportForm.ResolutionAndAlignment mode : resolutionAndAlignment) {
-			Function<CDateRange, List<CDateRange>> divider = getDateRangeSubdivider(
-				AlignmentReference.START,
-				mode.getResolution(),
-				mode.getAlignment());
+			Function<CDateRange, List<CDateRange>> divider = getDateRangeSubdivider(AlignmentReference.START, mode.getResolution(), mode.getAlignment());
 			// Start counting index form 0 for every subdivision mode
 			int index = 0;
 			for (CDateRange quarterInMask : divider.apply(dateRangeMask)) {
 				index++;
-				DateContext dc = new DateContext(
-					quarterInMask,
-					FeatureGroup.SINGLE_GROUP,
+				DateContext dc = new DateContext(quarterInMask, FeatureGroup.SINGLE_GROUP,
 					// For now there is no index for complete
-					mode.getResolution().equals(Resolution.COMPLETE) ? null : index,
-					null,
-					mode.getResolution());
+					mode.getResolution().equals(Resolution.COMPLETE) ? null : index, null, mode.getResolution());
 				dcList.add(dc);
 			}
 		}
@@ -101,13 +91,8 @@ public class DateContext {
 	 * Factory function that produces a list of {@link CDateRange}s from a given dateRangeMask according to the given
 	 * {@link AlignmentReference}, {@link Resolution} and {@link Alignment}.
 	 */
-	public static Function<CDateRange, List<CDateRange>> getDateRangeSubdivider(
-		AlignmentReference alignRef,
-		Resolution resolution,
-		Alignment alignment) {
-		int alignedPerResolution = resolution.getAmountForAlignment(alignment)
-			.orElseThrow(
-				() -> new ConqueryError.ExecutionCreationPlanDateContextError(alignment, resolution));
+	public static Function<CDateRange,List<CDateRange>> getDateRangeSubdivider(AlignmentReference alignRef, Resolution resolution, Alignment alignment){
+		int alignedPerResolution = resolution.getAmountForAlignment(alignment).orElseThrow(() -> new ConqueryError.ExecutionCreationPlanDateContextError(alignment, resolution));
 
 		if (alignedPerResolution == 1) {
 			// When the alignment fits the resolution we can use the alignment subdivision directly
@@ -115,10 +100,9 @@ public class DateContext {
 		}
 
 		return (dateRange) -> {
-			List<CDateRange> alignedSubdivisions = alignRef.getAlignedIterationDirection(
-				alignment.getSubdivider().apply(dateRange));
+			List<CDateRange> alignedSubdivisions = alignRef.getAlignedIterationDirection(alignment.getSubdivider().apply(dateRange));
 
-			if (alignedSubdivisions.isEmpty()) {
+			if(alignedSubdivisions.isEmpty()){
 				return alignedSubdivisions;
 			}
 
@@ -155,16 +139,10 @@ public class DateContext {
 	 * The event (a certain day) itself is expanded to a date range according to the desired alignment and the indexPlacement
 	 * determines to which group it belongs.
 	 */
-	public static List<DateContext> generateRelativeContexts(
-		int event,
-		IndexPlacement indexPlacement,
-		int featureTime,
-		int outcomeTime,
-		CalendarUnit timeUnit,
-		List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
+	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime, int outcomeTime, CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 		if (featureTime < 1 && outcomeTime < 1) {
-			throw new IllegalArgumentException(
-				"Both relative times were smaller than 1 (featureTime: " + featureTime + "; outcomeTime: " + outcomeTime + ")");
+			throw new IllegalArgumentException("Both relative times were smaller than 1 (featureTime: " + featureTime
+					+ "; outcomeTime: " + outcomeTime + ")");
 		}
 		List<DateContext> dcList = new ArrayList<>();
 
@@ -174,17 +152,11 @@ public class DateContext {
 		CDateRange outcomeRange = generateOutcomeRange(event, indexPlacement, outcomeTime, timeUnit);
 
 
-		for (ExportForm.ResolutionAndAlignment mode : resolutionAndAlignment) {
-			Function<CDateRange, List<CDateRange>> featureRangeDivider = getDateRangeSubdivider(
-				AlignmentReference.END,
-				mode.getResolution(),
-				mode.getAlignment());
-			Function<CDateRange, List<CDateRange>> outcomeRangeDivider = getDateRangeSubdivider(
-				AlignmentReference.START,
-				mode.getResolution(),
-				mode.getAlignment());
+		for(ExportForm.ResolutionAndAlignment mode : resolutionAndAlignment) {
+			Function<CDateRange, List<CDateRange>> featureRangeDivider = getDateRangeSubdivider(AlignmentReference.END, mode.getResolution(), mode.getAlignment());
+			Function<CDateRange, List<CDateRange>> outcomeRangeDivider = getDateRangeSubdivider(AlignmentReference.START, mode.getResolution(), mode.getAlignment());
 
-			if (featureRange != null) {
+			if(featureRange != null) {
 
 				List<CDateRange> featureRanges = featureRangeDivider.apply(featureRange);
 				/*
@@ -196,12 +168,12 @@ public class DateContext {
 				int index = featureRanges.size();
 				for (CDateRange subRange : featureRanges) {
 					DateContext dc = new DateContext(
-						subRange,
-						FeatureGroup.FEATURE,
-						// For now there is no index for complete
-						mode.getResolution().equals(Resolution.COMPLETE) ? null : -index,
-						eventdate,
-						mode.getResolution()
+							subRange,
+							FeatureGroup.FEATURE,
+							// For now there is no index for complete
+							mode.getResolution().equals(Resolution.COMPLETE) ? null : -index,
+							eventdate,
+							mode.getResolution()
 					);
 					index--;
 					dcList.add(dc);
@@ -213,12 +185,12 @@ public class DateContext {
 				int index = 1;
 				for (CDateRange subRange : outcomeRangeDivider.apply(outcomeRange)) {
 					DateContext dc = new DateContext(
-						subRange,
-						FeatureGroup.OUTCOME,
-						// For now there is no index for complete
-						mode.getResolution().equals(Resolution.COMPLETE) ? null : index,
-						eventdate,
-						mode.getResolution()
+							subRange,
+							FeatureGroup.OUTCOME,
+							// For now there is no index for complete
+							mode.getResolution().equals(Resolution.COMPLETE) ? null : index,
+							eventdate,
+							mode.getResolution()
 					);
 					index++;
 					dcList.add(dc);
@@ -240,12 +212,8 @@ public class DateContext {
 	 *
 	 * TODO Replace this and the following function by a function with an interface like this: private static CDateRange generateRelativeRange(int event, boolean indexIncluded, int relativeAmount, CalendarUnit timeUnit)
 	 */
-	private static CDateRange generateFeatureRange(
-		int event,
-		IndexPlacement indexPlacement,
-		int featureTime,
-		CalendarUnit timeUnit) {
-		if (featureTime <= 0) {
+	private static CDateRange generateFeatureRange(int event, IndexPlacement indexPlacement, int featureTime, CalendarUnit timeUnit) {
+		if(featureTime <= 0){
 			return null;
 		}
 		if (indexPlacement.equals(IndexPlacement.BEFORE)) {
@@ -253,8 +221,8 @@ public class DateContext {
 				case DAYS:
 					return CDateRange.of(event - featureTime + 1, event);
 				case QUARTERS:
-					LocalDate eventRangeStart = QuarterUtils.getFirstDayOfQuarter(
-						CDate.toLocalDate(event).minus(featureTime - 1, IsoFields.QUARTER_YEARS));
+					LocalDate eventRangeStart = QuarterUtils
+						.getFirstDayOfQuarter(CDate.toLocalDate(event).minus(featureTime - 1, IsoFields.QUARTER_YEARS));
 					LocalDate eventRangeEnd = QuarterUtils.getLastDayOfQuarter(event);
 					return CDateRange.of(eventRangeStart, eventRangeEnd);
 				default:
@@ -266,10 +234,10 @@ public class DateContext {
 			case DAYS:
 				return CDateRange.of(event - featureTime, event - 1);
 			case QUARTERS:
-				LocalDate eventRangeStart = QuarterUtils.getFirstDayOfQuarter(
-					CDate.toLocalDate(event).minus(featureTime, IsoFields.QUARTER_YEARS));
-				LocalDate eventRangeEnd = QuarterUtils.getLastDayOfQuarter(
-					CDate.toLocalDate(event).minus(1, IsoFields.QUARTER_YEARS));
+				LocalDate eventRangeStart = QuarterUtils
+						.getFirstDayOfQuarter(CDate.toLocalDate(event).minus(featureTime, IsoFields.QUARTER_YEARS));
+				LocalDate eventRangeEnd = QuarterUtils
+						.getLastDayOfQuarter(CDate.toLocalDate(event).minus(1, IsoFields.QUARTER_YEARS));
 				return CDateRange.of(eventRangeStart, eventRangeEnd);
 			default:
 				throw new IllegalArgumentException("Unsupported Resolution: " + timeUnit);
@@ -286,15 +254,11 @@ public class DateContext {
 	 * @param resolution  The time unit.
 	 * @return The outcome range.
 	 */
-	private static CDateRange generateOutcomeRange(
-		int event,
-		IndexPlacement indexPlacement,
-		int outcomeTime,
-		CalendarUnit resolution) {
+	private static CDateRange generateOutcomeRange(int event, IndexPlacement indexPlacement, int outcomeTime, CalendarUnit resolution) {
 		if (outcomeTime <= 0) {
 			return null;
 		}
-		switch (indexPlacement) {
+		switch(indexPlacement) {
 			case AFTER:
 				switch (resolution) {
 					case DAYS:
@@ -315,10 +279,10 @@ public class DateContext {
 					case DAYS:
 						return CDateRange.of(event + 1, event + outcomeTime);
 					case QUARTERS:
-						LocalDate eventRangeStart = QuarterUtils.getFirstDayOfQuarter(
-							CDate.toLocalDate(event).plus(1, IsoFields.QUARTER_YEARS));
-						LocalDate eventRangeEnd = QuarterUtils.getLastDayOfQuarter(
-							CDate.toLocalDate(event).plus(outcomeTime, IsoFields.QUARTER_YEARS));
+						LocalDate eventRangeStart = QuarterUtils
+						.getFirstDayOfQuarter(CDate.toLocalDate(event).plus(1, IsoFields.QUARTER_YEARS));
+						LocalDate eventRangeEnd = QuarterUtils
+							.getLastDayOfQuarter(CDate.toLocalDate(event).plus(outcomeTime, IsoFields.QUARTER_YEARS));
 						return CDateRange.of(eventRangeStart, eventRangeEnd);
 					default:
 						throw new IllegalArgumentException("Unsupported Resolution: " + resolution);

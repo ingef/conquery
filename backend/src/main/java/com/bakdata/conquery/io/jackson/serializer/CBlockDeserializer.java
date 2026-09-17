@@ -29,12 +29,10 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
-	public JsonDeserializer<?> createContextual(
-		DeserializationContext ctxt,
-		BeanProperty property) throws JsonMappingException {
-		JavaType type = Optional.ofNullable(ctxt.getContextualType())
-			.orElseGet(
-				Optional.ofNullable(property).map(BeanProperty::getType)::get);
+	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
+		JavaType type = Optional
+				.ofNullable(ctxt.getContextualType())
+				.orElseGet(Optional.ofNullable(property).map(BeanProperty::getType)::get);
 
 		while (type.isContainerType()) {
 			type = type.getContentType();
@@ -48,10 +46,7 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 	}
 
 	@Override
-	public CBlock deserializeWithType(
-		JsonParser p,
-		DeserializationContext ctxt,
-		TypeDeserializer typeDeserializer) throws IOException {
+	public CBlock deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
 		return this.deserialize(p, ctxt);
 	}
 
@@ -73,8 +68,7 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 				}
 
 				log.trace("Getting Elements for local ids: {}", mostSpecificChildren);
-				block.getMostSpecificChildren()[event] = concept.getElementByLocalIdPath(
-					mostSpecificChildren).getPrefix();
+				block.getMostSpecificChildren()[event] = concept.getElementByLocalIdPath(mostSpecificChildren).getPrefix();
 			}
 		}
 		return block;

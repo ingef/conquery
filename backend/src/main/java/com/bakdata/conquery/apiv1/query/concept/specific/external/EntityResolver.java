@@ -19,12 +19,12 @@ public interface EntityResolver {
 	 * Helper method to try and resolve entities in values using the specified format.
 	 */
 	ResolveStatistic resolveEntities(
-		@NotEmpty String[][] values,
-		@NotEmpty List<String> format,
-		EntityIdMap mapping,
-		IdColumnConfig idColumnConfig,
-		@NotNull DateReader dateReader,
-		boolean onlySingles
+			@NotEmpty String[][] values,
+			@NotEmpty List<String> format,
+			EntityIdMap mapping,
+			IdColumnConfig idColumnConfig,
+			@NotNull DateReader dateReader,
+			boolean onlySingles
 	);
 
 	@Data
@@ -43,11 +43,7 @@ public interface EntityResolver {
 		private final List<String[]> unresolvedId;
 
 		public static ResolveStatistic forEmptyReaders(String[][] values) {
-			return new ResolveStatistic(
-				Collections.emptyMap(),
-				Collections.emptyMap(),
-				Collections.emptyList(),
-				List.of(values));
+			return new ResolveStatistic(Collections.emptyMap(), Collections.emptyMap(), Collections.emptyList(), List.of(values));
 		}
 
 	}

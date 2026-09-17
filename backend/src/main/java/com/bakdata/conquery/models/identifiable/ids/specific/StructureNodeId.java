@@ -31,7 +31,8 @@ public class StructureNodeId extends NamespacedId<StructureNode> {
 	public void collectComponents(List<Object> components) {
 		if (parent != null) {
 			parent.collectComponents(components);
-		} else {
+		}
+		else {
 			dataset.collectComponents(components);
 		}
 		components.add(structureNode);
@@ -42,7 +43,8 @@ public class StructureNodeId extends NamespacedId<StructureNode> {
 		collect.add(this);
 		if (parent != null) {
 			parent.collectIds(collect);
-		} else {
+		}
+		else {
 			dataset.collectIds(collect);
 		}
 	}

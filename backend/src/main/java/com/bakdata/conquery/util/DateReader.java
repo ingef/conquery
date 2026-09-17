@@ -60,20 +60,16 @@ public class DateReader {
 	 */
 	@JsonIgnore
 	private final LoadingCache<String, LocalDate> DATE_CACHE = CacheBuilder.newBuilder()
-		.weakValues()
-		.concurrencyLevel(
-			10)
-		.build(CacheLoader.from(this::tryParseDate));
+																		   .weakValues()
+																		   .concurrencyLevel(10)
+																		   .build(CacheLoader.from(this::tryParseDate));
 	@JsonIgnore
 	private final List<String> rangeStartEndSeperators;
 	@JsonIgnore
 	private final List<LocaleConfig.ListFormat> dateSetLayouts;
 
 	@JsonCreator
-	public DateReader(
-		Set<String> dateParsingFormats,
-		List<String> rangeStartEndSeperators,
-		List<LocaleConfig.ListFormat> dateSetLayouts) {
+	public DateReader(Set<String> dateParsingFormats, List<String> rangeStartEndSeperators, List<LocaleConfig.ListFormat> dateSetLayouts) {
 		this.dateFormats = dateParsingFormats.stream().map(DateTimeFormatter::ofPattern).collect(Collectors.toList());
 		this.rangeStartEndSeperators = rangeStartEndSeperators;
 		this.dateSetLayouts = dateSetLayouts;
@@ -97,7 +93,8 @@ public class DateReader {
 				CDateRange result = parseToCDateRange(value, sep);
 				lastRangeFormatIndex.set(index);
 				return result;
-			} catch (ParsingException e) {
+			}
+			catch (ParsingException e) {
 				log.trace("Parsing failed for date range `{}` using `{}`", value, sep, e);
 			}
 		}
@@ -134,18 +131,12 @@ public class DateReader {
 
 		if (parts.length == 2) {
 			return CDateRange.of(
-				parseToLocalDate(parts[0]),
-				parseToLocalDate(parts[1])
+					parseToLocalDate(parts[0]),
+					parseToLocalDate(parts[1])
 			);
 		}
 
-		throw ParsingException.of(
-			value,
-			String.format(
-				"DateRange: Unexpected length of Parts (%d) for `%s` using sep=`%s`",
-				parts.length,
-				value,
-				sep));
+		throw ParsingException.of(value, String.format("DateRange: Unexpected length of Parts (%d) for `%s` using sep=`%s`", parts.length, value, sep));
 	}
 
 	/**
@@ -186,7 +177,8 @@ public class DateReader {
 				final CDateSet result = sep.parse(value, this);
 				lastDateSetLayoutIndex.set(index);
 				return result;
-			} catch (ParsingException e) {
+			}
+			catch (ParsingException e) {
 				log.trace("Parsing failed for date set '{}' with pattern '{}'", value, sep, e);
 			}
 		}
@@ -213,7 +205,8 @@ public class DateReader {
 
 				lastDateFormatIndex.set(index);
 				return res;
-			} catch (DateTimeParseException e) {
+			}
+			catch (DateTimeParseException e) {
 				log.trace("Failed to parse date `{}` using `{}`", value, format, e);
 			}
 		}

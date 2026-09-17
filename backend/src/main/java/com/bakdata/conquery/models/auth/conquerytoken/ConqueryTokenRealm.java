@@ -47,8 +47,7 @@ public class ConqueryTokenRealm extends AuthenticatingRealm implements ConqueryA
 	}
 
 	@Override
-	public ConqueryAuthenticationInfo doGetAuthenticationInfo(
-		AuthenticationToken token) throws AuthenticationException {
+	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		if (!(TOKEN_CLASS.isAssignableFrom(token.getClass()))) {
 			log.trace("Incompatible token. Expected {}, got {}", TOKEN_CLASS, token.getClass());
 			return null;
@@ -57,16 +56,20 @@ public class ConqueryTokenRealm extends AuthenticatingRealm implements ConqueryA
 		DecodedJWT decodedToken = null;
 		try {
 			decodedToken = jwtConfig.getTokenVerifier(this).verify((String) token.getCredentials());
-		} catch (TokenExpiredException e) {
+		}
+		catch (TokenExpiredException e) {
 			log.trace("The provided token is expired.");
 			throw new ExpiredCredentialsException(e);
-		} catch (SignatureVerificationException | InvalidClaimException e) {
+		}
+		catch (SignatureVerificationException | InvalidClaimException e) {
 			log.trace("The provided token was not successfully verified against its signature or claims.");
 			throw new IncorrectCredentialsException(e);
-		} catch (JWTVerificationException e) {
+		}
+		catch (JWTVerificationException e) {
 			log.trace("The provided token could not be verified.", e);
 			throw new AuthenticationException(e);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.trace("Unable to decode token", e);
 			throw new AuthenticationException(e);
 		}
@@ -83,14 +86,10 @@ public class ConqueryTokenRealm extends AuthenticatingRealm implements ConqueryA
 
 
 	public String createTokenForUser(@NonNull UserId userId, @NonNull Duration validDuration) {
-		if (storage.getUser(userId) == null) {
+		if(storage.getUser(userId) == null) {
 			throw new IllegalArgumentException("Cannot create a JWT for unknown user with id: " + userId);
 		}
-		return JWTokenHandler.createToken(
-			userId.toString(),
-			validDuration,
-			getName(),
-			jwtConfig.getTokenSignAlgorithm());
+		return JWTokenHandler.createToken(userId.toString(), validDuration, getName(), jwtConfig.getTokenSignAlgorithm());
 
 	}
 
@@ -99,7 +98,7 @@ public class ConqueryTokenRealm extends AuthenticatingRealm implements ConqueryA
 		return createTokenForUser(userId, jwtConfig.getJwtDuration());
 	}
 
-	public static class JWTConfig {
+	public static class JWTConfig{
 		@Getter
 		@Setter
 		private Duration jwtDuration = Duration.hours(8);
@@ -112,7 +111,7 @@ public class ConqueryTokenRealm extends AuthenticatingRealm implements ConqueryA
 
 		@JsonIgnore
 		public JWTVerifier getTokenVerifier(AuthenticatingRealm realm) {
-			if (tokenVerifier == null) {
+			if(tokenVerifier == null) {
 				tokenVerifier = JWT.require(tokenSignAlgorithm).withIssuer(realm.getName()).build();
 			}
 			return tokenVerifier;

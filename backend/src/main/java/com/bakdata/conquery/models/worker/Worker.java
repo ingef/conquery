@@ -57,15 +57,10 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	 * @implSpec storage must not be open yet.
 	 */
 	public static Worker create(
-		@NonNull WorkerStorage storage,
-		ShardWorkers shardWorkers,
-		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-		@NonNull ExecutorService jobsExecutorService,
-		Clock clock,
-		boolean failOnError,
-		int secondaryIdSubPlanLimit,
-		ObjectMapper persistenceMapper,
-		boolean loadStorage) {
+			@NonNull WorkerStorage storage, ShardWorkers shardWorkers, @NonNull ThreadPoolDefinition queryThreadPoolDefinition,
+			@NonNull ExecutorService jobsExecutorService,
+			Clock clock, boolean failOnError,
+			int secondaryIdSubPlanLimit, ObjectMapper persistenceMapper, boolean loadStorage) {
 
 
 		final Worker worker = new Worker();
@@ -73,10 +68,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		worker.clock = clock;
 		worker.storage = storage;
 		worker.jobsExecutorService = jobsExecutorService;
-		worker.queryExecutor = new QueryExecutor(
-			worker,
-			queryThreadPoolDefinition.createService("QueryExecutor %d"),
-			secondaryIdSubPlanLimit);
+		worker.queryExecutor = new QueryExecutor(worker, queryThreadPoolDefinition.createService("QueryExecutor %d"), secondaryIdSubPlanLimit);
 
 		// The order of the remaining code cannot be changed, there are dependencies throughout.
 		storage.openStores(persistenceMapper);
@@ -119,27 +111,29 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		// We do not close the executorService here because it does not belong to this class
 		try {
 			queryExecutor.close();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			log.error("Unable to close worker query executor of {}.", this, e);
 		}
 
 		try {
 			jobManager.close();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.error("Unable to close worker query executor of {}.", this, e);
 		}
 
 		try {
 			storage.close();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			log.error("Unable to close worker storage of {}.", this, e);
 		}
 	}
 
 	@Override
 	public String toString() {
-		return "Worker[" + getInfo().getId() + ", " + (session != null ? session
-			.getLocalAddress() : "no session") + "]";
+		return "Worker[" + getInfo().getId() + ", " + (session != null ? session.getLocalAddress() : "no session") + "]";
 	}
 
 	public boolean isBusy() {
@@ -174,13 +168,15 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	public void remove() {
 		try {
 			queryExecutor.close();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			log.error("Unable to close worker query executor of {}.", this, e);
 		}
 
 		try {
 			jobManager.close();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.error("Unable to close worker query executor of {}.", this, e);
 		}
 

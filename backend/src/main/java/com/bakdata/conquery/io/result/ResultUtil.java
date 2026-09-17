@@ -36,20 +36,12 @@ public class ResultUtil {
 	}
 
 
-	public static Response makeResponseWithFileName(
-		Response.ResponseBuilder response,
-		String filename,
-		MediaType mediaType,
-		ContentDispositionOption disposition) {
+	public static Response makeResponseWithFileName(Response.ResponseBuilder response, String filename, MediaType mediaType, ContentDispositionOption disposition) {
 		response.header(HttpHeaders.CONTENT_TYPE, mediaType);
 		if (!(Strings.isNullOrEmpty(filename) || filename.isBlank())) {
 			// Set filename from filename if the filename was set, otherwise the browser will name the file according to the request path
-			response.header(
-				"Content-Disposition",
-				String.format(
-					"%s; filename=\"%s\"",
-					disposition.getHeaderValue(),
-					FileUtil.makeSafeFileName(filename)));
+			response.header("Content-Disposition", String.format(
+					"%s; filename=\"%s\"", disposition.getHeaderValue(), FileUtil.makeSafeFileName(filename)));
 		}
 		return response.build();
 	}
@@ -62,7 +54,8 @@ public class ResultUtil {
 		if (queryCharset != null) {
 			try {
 				return Charset.forName(queryCharset);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				log.warn("Unable to map '{}' to a charset.", queryCharset);
 			}
 		}

@@ -57,6 +57,7 @@ public class QueryExecutionContext {
 	private SecondaryIdDescription activeSecondaryId = null;
 
 
+
 	public Set<BucketId> getEntityBucketsForTable(Entity entity, TableId table) {
 		return bucketManager.getEntityBucketsForTable(entity, table);
 	}

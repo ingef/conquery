@@ -83,7 +83,8 @@ class AsyncReader {
 			log.trace("FINISHED parsing {} within {}", result, timer);
 
 			futureMessage.complete(new AsyncPublisher.FinishedMessage(nextFilter, result));
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			futureMessage.completeExceptionally(e);
 			log.error("Something went wrong.", e);
 		}

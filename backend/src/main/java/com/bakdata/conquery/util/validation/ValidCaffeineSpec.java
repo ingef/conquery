@@ -18,8 +18,7 @@ public @interface ValidCaffeineSpec {
 
 	Class<?>[] groups() default {};
 
-	@SuppressWarnings("UnusedDeclaration")
-	Class<? extends Payload>[] payload() default {};
+	@SuppressWarnings("UnusedDeclaration") Class<? extends Payload>[] payload() default {};
 
 	/**
 	 * SoftValues must be configured in the spec.

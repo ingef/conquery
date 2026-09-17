@@ -12,10 +12,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter
-@Setter
-@ToString
-@CPSType(id = "MULTI_LINE", base = EntityResult.class)
+@Getter @Setter @ToString
+@CPSType(id="MULTI_LINE", base= EntityResult.class)
 public class MultilineEntityResult implements EntityResult {
 
 	private final String entityId;

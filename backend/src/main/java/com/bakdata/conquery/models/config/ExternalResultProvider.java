@@ -27,10 +27,7 @@ public class ExternalResultProvider implements ResultRendererProvider {
 	private boolean hidden = false;
 
 	@Override
-	public Collection<ResultAsset> generateResultURLs(
-		ManagedExecution exec,
-		UriBuilder uriBuilder,
-		boolean allProviders) {
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
 
 		if (!(exec instanceof ExternalExecution)) {
 			return Collections.emptyList();
@@ -40,10 +37,7 @@ public class ExternalResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
-		return ((ExternalExecution) exec).getResultAssets()
-			.map(
-				assetBuilder -> assetBuilder.apply(uriBuilder.clone()))
-			.toList();
+		return ((ExternalExecution) exec).getResultAssets().map(assetBuilder -> assetBuilder.apply(uriBuilder.clone())).toList();
 	}
 
 	@Override

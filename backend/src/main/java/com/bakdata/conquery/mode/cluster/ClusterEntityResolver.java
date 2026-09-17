@@ -22,12 +22,12 @@ public class ClusterEntityResolver implements EntityResolver {
 
 	@Override
 	public ResolveStatistic resolveEntities(
-		@NotEmpty String[][] values,
-		List<String> format,
-		EntityIdMap mapping,
-		IdColumnConfig idColumnConfig,
-		DateReader dateReader,
-		boolean onlySingles
+			@NotEmpty String[][] values,
+			List<String> format,
+			EntityIdMap mapping,
+			IdColumnConfig idColumnConfig,
+			DateReader dateReader,
+			boolean onlySingles
 	) {
 		final Map<String, CDateSet> resolved = new HashMap<>();
 		final List<String[]> unresolvedDate = new ArrayList<>();
@@ -40,9 +40,7 @@ public class ClusterEntityResolver implements EntityResolver {
 		// Row -> Column -> Value
 		final Map<String, String>[] extraDataByRow = EntityResolverUtil.readExtras(values, format);
 
-		final List<Function<String[], ExternalId>> readers = IdColumnUtil.getIdReaders(
-			format,
-			idColumnConfig.getIdMappers());
+		final List<Function<String[], ExternalId>> readers = IdColumnUtil.getIdReaders(format, idColumnConfig.getIdMappers());
 
 		// We will not be able to resolve anything...
 		if (readers.isEmpty()) {

@@ -85,7 +85,8 @@ public abstract class FilterValue<VALUE> {
 
 			if (size > 20) {
 				valueString = size + " values";
-			} else {
+			}
+			else {
 				valueString = readValue().toString();
 			}
 
@@ -109,7 +110,8 @@ public abstract class FilterValue<VALUE> {
 
 			if (size > 20) {
 				valueString = size + " values";
-			} else {
+			}
+			else {
 				valueString = readValue().toString();
 			}
 

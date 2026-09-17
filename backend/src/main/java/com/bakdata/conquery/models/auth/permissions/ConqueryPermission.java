@@ -14,9 +14,9 @@ import org.apache.shiro.authz.permission.WildcardPermission;
  * {@link CPSType} system.
  *
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
+@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
-public interface ConqueryPermission extends Permission {
+public interface ConqueryPermission  extends Permission {
 
 	/**
 	 * Gets the domains of a permission according to {@link WildcardPermission}

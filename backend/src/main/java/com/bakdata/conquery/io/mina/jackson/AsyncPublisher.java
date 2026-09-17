@@ -72,10 +72,12 @@ class AsyncPublisher {
 				log.trace("RECEIVED {} from {}", reader, reader);
 
 				reader.handleMessage(session);
-			} catch (InterruptedException e) {
+			}
+			catch (InterruptedException e) {
 				Thread.interrupted();
 				log.trace("Interrupted", e);
-			} catch (ExecutionException e) {
+			}
+			catch (ExecutionException e) {
 				log.error("Failed to get reader", e);
 			}
 		}
@@ -88,7 +90,8 @@ class AsyncPublisher {
 		public void handleMessage(IoSession session) {
 			try {
 				nextFilter.messageReceived(session, networkMessage);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				log.error("{} FAILED to deliver message {}", session, networkMessage, e);
 			}
 		}

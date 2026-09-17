@@ -72,11 +72,7 @@ public class AdminTablesResource {
 	public List<ImportId> listImports(@PathParam(TABLE) TableId table) {
 		Namespace namespace = processor.getDatasetRegistry().get(dataset);
 
-		return namespace.getStorage()
-			.getAllImports()
-			.filter(imp -> imp.getTable().equals(table))
-			.collect(
-				Collectors.toList());
+		return namespace.getStorage().getAllImports().filter(imp -> imp.getTable().equals(table)).collect(Collectors.toList());
 	}
 
 	@DELETE

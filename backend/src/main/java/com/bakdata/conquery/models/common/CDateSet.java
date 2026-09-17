@@ -102,7 +102,8 @@ public class CDateSet {
 
 				try {
 					return this.size() == other.size() && this.containsAll(other);
-				} catch (NullPointerException | ClassCastException ignored) {
+				}
+				catch (NullPointerException | ClassCastException ignored) {
 					return false;
 				}
 			}
@@ -115,7 +116,8 @@ public class CDateSet {
 		Entry<Integer, CDateRange> floorEntry = rangesByLowerBound.floorEntry(value);
 		if (floorEntry != null && floorEntry.getValue().contains(value)) {
 			return floorEntry.getValue();
-		} else {
+		}
+		else {
 			return null;
 		}
 	}
@@ -197,9 +199,7 @@ public class CDateSet {
 		if (firstEntry == null) {
 			throw new NoSuchElementException();
 		}
-		return CDateRange.of(
-			firstEntry.getValue().getMinValue(),
-			rangesByLowerBound.lastEntry().getValue().getMaxValue());
+		return CDateRange.of(firstEntry.getValue().getMinValue(), rangesByLowerBound.lastEntry().getValue().getMaxValue());
 	}
 
 	public void add(CDateRange rangeToAdd) {
@@ -263,9 +263,7 @@ public class CDateSet {
 			}
 		}
 
-		rangesByLowerBound.subMap(
-			rangeToRemove.getMinValue(),
-			IntMath.saturatedAdd(rangeToRemove.getMaxValue(), 1)).clear();
+		rangesByLowerBound.subMap(rangeToRemove.getMinValue(), IntMath.saturatedAdd(rangeToRemove.getMaxValue(),1)).clear();
 	}
 
 	private void putRange(CDateRange range) {
@@ -277,22 +275,22 @@ public class CDateSet {
 		maskedAdd(toAdd, mask, CDateRange.POSITIVE_INFINITY);
 	}
 
-	public void maskedAdd(CDateRange toAdd, CDateSet mask, int truncateMax) {
-		if (mask.isEmpty()) {
+	public void maskedAdd(CDateRange toAdd, CDateSet mask, int truncateMax){
+		if(mask.isEmpty()){
 			return;
 		}
 
-		if (mask.isAll()) {
+		if(mask.isAll()){
 			add(toAdd);
 			return;
 		}
 
-		if (toAdd.isAll()) {
+		if(toAdd.isAll()){
 			addAll(mask);
 			return;
 		}
 
-		if (toAdd.isExactly() && mask.contains(toAdd.getMinValue())) {
+		if(toAdd.isExactly() && mask.contains(toAdd.getMinValue())){
 			add(toAdd);
 			return;
 		}
@@ -304,21 +302,21 @@ public class CDateSet {
 			search = mask.rangesByLowerBound.floorKey(toAdd.getMinValue());
 		}
 
-		if (search == null) {
+		if(search == null) {
 			search = mask.rangesByLowerBound.firstKey();
 		}
 
 		Integer searchEnd = null;
 
-		if (toAdd.hasUpperBound()) {
+		if(toAdd.hasUpperBound()){
 			searchEnd = mask.rangesByLowerBound.floorKey(toAdd.getMaxValue());
 		}
 
-		if (searchEnd == null) {
+		if(searchEnd == null){
 			searchEnd = mask.rangesByLowerBound.lastKey();
 		}
 
-		while (search != null && search <= searchEnd) {
+		while(search != null && search <= searchEnd) {
 			final CDateRange range = mask.rangesByLowerBound.get(search);
 
 			search = mask.rangesByLowerBound.higherKey(search);
@@ -326,22 +324,22 @@ public class CDateSet {
 			int lowerBound = range.getMinValue();
 			int upperBound = range.getMaxValue();
 
-			if (upperBound < toAdd.getMinValue()) {
+			if(upperBound < toAdd.getMinValue()){
 				continue;
 			}
 
-			if (lowerBound < toAdd.getMinValue()) {
+			if(lowerBound < toAdd.getMinValue()){
 				lowerBound = toAdd.getMinValue();
 			}
 
-			if (upperBound > toAdd.getMaxValue()) {
+			if(upperBound > toAdd.getMaxValue()){
 				upperBound = toAdd.getMaxValue();
 			}
 
 			upperBound = Math.min(upperBound, truncateMax);
 
 			// value was not contained
-			if (lowerBound > upperBound) {
+			if(lowerBound > upperBound){
 				continue;
 			}
 
@@ -360,7 +358,7 @@ public class CDateSet {
 
 	@JsonIgnore
 	public boolean isAll() {
-		if (this.rangesByLowerBound.isEmpty()) {
+		if(this.rangesByLowerBound.isEmpty()) {
 			return false;
 		}
 		return this.rangesByLowerBound.firstEntry().getValue().isAll();
@@ -371,29 +369,27 @@ public class CDateSet {
 	 */
 	@JsonIgnore
 	public boolean isOpen() {
-		if (this.rangesByLowerBound.isEmpty()) {
+		if(this.rangesByLowerBound.isEmpty()) {
 			return false;
 		}
 
 		// Since we might be all, just check if any of the boundaries are open.
-		return rangesByLowerBound.firstEntry().getValue().isOpen() || rangesByLowerBound.lastEntry()
-			.getValue()
-			.isOpen();
+		return rangesByLowerBound.firstEntry().getValue().isOpen() || rangesByLowerBound.lastEntry().getValue().isOpen();
 	}
 
 	public void retainAll(CDateSet retained) {
-		if (retained.isEmpty()) {
+		if(retained.isEmpty()) {
 			this.clear();
 			return;
 		}
-		if (retained.isAll()) {
+		if(retained.isAll()) {
 			return;
 		}
 
 		List<CDateRange> l = new ArrayList<>(retained.rangesByLowerBound.values());
 
 		//remove all before the first range
-		if (!l.get(0).isAtMost()) {
+		if(!l.get(0).isAtMost()) {
 			this.remove(CDateRange.atMost(l.get(0).getMinValue() - 1));
 		}
 
@@ -409,17 +405,17 @@ public class CDateSet {
 	}
 
 	public void retainAll(CDateRange retained) {
-		if (retained.isAll()) {
+		if(retained.isAll()) {
 			return;
 		}
 
 		//remove all before the range
-		if (!retained.isAtMost()) {
+		if(!retained.isAtMost()) {
 			this.remove(CDateRange.atMost(retained.getMinValue() - 1));
 		}
 
 		//remove all after the Range
-		if (!retained.isAtLeast()) {
+		if(!retained.isAtLeast()) {
 			this.remove(CDateRange.atLeast(retained.getMaxValue() + 1));
 		}
 	}
@@ -430,15 +426,15 @@ public class CDateSet {
 	 */
 	public Long countDays() {
 		//if we have no entries we return zero days
-		if (rangesByLowerBound.firstEntry() == null) {
+		if(rangesByLowerBound.firstEntry() == null) {
 			return 0L;
 		}
-		if (rangesByLowerBound.firstEntry().getValue().isOpen() || rangesByLowerBound.lastEntry().getValue().isOpen()) {
+		if(rangesByLowerBound.firstEntry().getValue().isOpen() || rangesByLowerBound.lastEntry().getValue().isOpen()) {
 			return null;
 		}
 		long sum = 0;
-		for (CDateRange r : this.asRanges()) {
-			sum += r.getMaxValue() - r.getMinValue() + 1;
+		for(CDateRange r:this.asRanges()) {
+			sum+=r.getMaxValue() - r.getMinValue() + 1;
 		}
 		return sum;
 	}

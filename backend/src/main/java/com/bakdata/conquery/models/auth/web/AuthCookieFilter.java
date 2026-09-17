@@ -58,13 +58,13 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 
 		String queryToken = requestContext.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN);
 
-		if (!cookie.getValue().isEmpty() && queryToken != null) {
+		if(!cookie.getValue().isEmpty() && queryToken != null) {
 			log.trace("Ignoring cookie");
 			return;
 		}
 
 		// Get the token from the cookie and put it into the header
-		requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, PREFIX + " " + cookie.getValue());
+		requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION,PREFIX + " " + cookie.getValue());
 		// Remove the cookie for the rest of this processing
 		requestContext.getCookies().remove(ACCESS_TOKEN);
 		// Remove the query parameter
@@ -87,11 +87,10 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 				log.debug("Overwriting {} cookie", ACCESS_TOKEN);
 			}
 			final NewCookie authCookie = config.getAuthentication().createAuthCookie(request, token);
-			response.getHeaders()
-				.add(
+			response.getHeaders().add(
 					HttpHeader.SET_COOKIE.toString(),
 					authCookie
-				);
+			);
 
 		}
 	}

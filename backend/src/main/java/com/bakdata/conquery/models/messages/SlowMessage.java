@@ -7,6 +7,5 @@ public interface SlowMessage extends Message {
 
 	@JsonIgnore
 	ProgressReporter getProgressReporter();
-
 	void setProgressReporter(ProgressReporter progressReporter);
 }

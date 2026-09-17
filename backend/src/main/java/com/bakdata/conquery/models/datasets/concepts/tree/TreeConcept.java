@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(id = "TREE", base = Concept.class)
 @JsonDeserialize(converter = TreeConcept.Initializer.class)
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper=true)
 public class TreeConcept extends Concept<ConceptTreeConnector> implements SelectHolder<UniversalSelect> {
 
 	@JsonIgnore
@@ -88,16 +88,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Select
 		return localIdMap.stream().filter(ConceptTreeChild.class::isInstance).map(ConceptTreeChild.class::cast);
 	}
 
-	public ConceptTreeChild findMostSpecificChild(
-		String stringValue,
-		CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
+	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 		return findMostSpecificChild(stringValue, rowMap, getChildren());
 	}
 
-	private ConceptTreeChild findMostSpecificChild(
-		String stringValue,
-		CalculatedValue<Map<String, Object>> rowMap,
-		List<ConceptTreeChild> currentList) throws ConceptConfigurationException {
+	private ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap, List<ConceptTreeChild> currentList)
+			throws ConceptConfigurationException {
 
 		ConceptTreeChild best = null;
 
@@ -111,13 +107,8 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Select
 
 				if (match != null) {
 					failed = true;
-					log.error(
-						"Value '{}' matches the two nodes {} and {} in the tree {} (row={}))",
-						stringValue,
-						match.getId(),
-						n.getId(),
-						n.getConcept().getId(),
-						rowMap.getValue()
+					log.error("Value '{}' matches the two nodes {} and {} in the tree {} (row={}))"
+							, stringValue, match.getId(), n.getId(), n.getConcept().getId(), rowMap.getValue()
 					);
 					continue;
 				}
@@ -189,10 +180,9 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Select
 				ctc.setDepth(ctc.getParent().getDepth() + 1);
 
 				ctc.init();
-			} catch (Exception e) {
-				throw new RuntimeException(
-					"Error trying to consolidate the node %s in %s".formatted(ctc.getLabel(), getLabel()),
-					e);
+			}
+			catch (Exception e) {
+				throw new RuntimeException("Error trying to consolidate the node %s in %s".formatted(ctc.getLabel(), getLabel()), e);
 			}
 
 			openList.addAll((openList.get(i)).getChildren());
@@ -228,9 +218,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Select
 
 		for (ConceptTreeChild child : children) {
 			if (parts.get(2).equals(child.getName())) {
-				final List<Object> subParts = parts.size() > 3 ? parts.subList(
-					3,
-					parts.size()) : Collections.emptyList();
+				final List<Object> subParts = parts.size() > 3 ? parts.subList(3, parts.size()) : Collections.emptyList();
 				return child.findByParts(subParts);
 			}
 		}

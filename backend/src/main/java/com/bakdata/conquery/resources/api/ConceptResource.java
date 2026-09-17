@@ -45,8 +45,7 @@ public class ConceptResource extends HAuthorized {
 
 		// check if browser still has this version cached
 		if (request.getHeaderString(HttpHeaders.IF_NONE_MATCH) != null && result.getCacheId()
-			.equals(
-				EntityTag.valueOf(request.getHeaderString(HttpHeaders.IF_NONE_MATCH)))) {
+																				.equals(EntityTag.valueOf(request.getHeaderString(HttpHeaders.IF_NONE_MATCH)))) {
 			return Response.status(HttpServletResponse.SC_NOT_MODIFIED).build();
 		}
 		return Response.ok(result).tag(result.getCacheId()).build();
@@ -55,9 +54,7 @@ public class ConceptResource extends HAuthorized {
 
 	@POST
 	@Path("resolve")
-	public ConceptsProcessor.ResolvedConceptsResult resolve(
-		@PathParam(CONCEPT) ConceptId conceptId,
-		ConceptResource.ConceptCodeList conceptCodes) {
+	public ConceptsProcessor.ResolvedConceptsResult resolve(@PathParam(CONCEPT) ConceptId conceptId, ConceptResource.ConceptCodeList conceptCodes) {
 		final Concept<?> concept = conceptId.resolve();
 
 		subject.authorize(concept.getDataset(), Ability.READ);

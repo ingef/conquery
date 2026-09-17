@@ -44,16 +44,11 @@ public class DatasetFormConfigResource extends HAuthorized {
 	public Response postConfig(@Auth Subject subject, @Valid FormConfigAPI config) {
 		subject.authorize(dataset, Ability.READ);
 
-		return Response.ok(new PostResponse(processor.addConfig(subject, dataset, config).getId()))
-			.status(
-				Status.CREATED)
-			.build();
+		return Response.ok(new PostResponse(processor.addConfig(subject, dataset, config).getId())).status(Status.CREATED).build();
 	}
 
 	@GET
-	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(
-		@Auth Subject subject,
-		@QueryParam("formType") Set<String> formType) {
+	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@Auth Subject subject, @QueryParam("formType") Set<String> formType) {
 		subject.authorize(dataset, Ability.READ);
 
 		return processor.getConfigsByFormType(subject, dataset, formType);

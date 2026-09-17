@@ -27,12 +27,9 @@ public class UIContext {
 	public final String csrfToken;
 
 	public Map<SocketAddress, ShardNodeInformation> getShardNodes() {
-		return shardNodeSupplier.get()
-			.stream()
-			.collect(
-				Collectors.toMap(
-					ShardNodeInformation::getRemoteAddress,
-					Function.identity()
-				));
+		return shardNodeSupplier.get().stream().collect(Collectors.toMap(
+				ShardNodeInformation::getRemoteAddress,
+				Function.identity()
+		));
 	}
 }

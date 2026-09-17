@@ -105,42 +105,21 @@ public class PreviewConfig {
 	/**
 	 * Defines a group of selects that will be evaluated per quarter and year in the requested period of the entity-preview.
 	 */
-	public record TimeStratifiedSelects(
-		@NotNull String label,
-		String description,
-		@NotEmpty List<InfoCardSelect> selects) {
+	public record TimeStratifiedSelects(@NotNull String label, String description, @NotEmpty List<InfoCardSelect> selects) {
 	}
 
 	@ValidationMethod(message = "Selects may be referenced only once.")
 	@JsonIgnore
 	public boolean isSelectsUnique() {
-		return timeStratifiedSelects.stream()
-			.map(TimeStratifiedSelects::selects)
-			.flatMap(Collection::stream)
-			.map(
-				InfoCardSelect::select)
-			.distinct()
-			.count() == timeStratifiedSelects.stream()
-				.map(
-					TimeStratifiedSelects::selects)
-				.mapToLong(Collection::size)
-				.sum();
+		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::select).distinct().count()
+			   == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).mapToLong(Collection::size).sum();
 	}
 
 	@ValidationMethod(message = "Labels must be unique.")
 	@JsonIgnore
 	public boolean isLabelsUnique() {
-		return timeStratifiedSelects.stream()
-			.map(TimeStratifiedSelects::selects)
-			.flatMap(Collection::stream)
-			.map(
-				InfoCardSelect::label)
-			.distinct()
-			.count() == timeStratifiedSelects.stream()
-				.map(
-					TimeStratifiedSelects::selects)
-				.mapToLong(Collection::size)
-				.sum();
+		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::label).distinct().count()
+			   == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).mapToLong(Collection::size).sum();
 	}
 
 	@JsonIgnore
@@ -164,11 +143,7 @@ public class PreviewConfig {
 	@JsonIgnore
 	@ValidationMethod(message = "timeStratifiedSelects' labels must be unique.")
 	public boolean isStratifiedInfosUnique() {
-		return timeStratifiedSelects.stream()
-			.map(
-				TimeStratifiedSelects::label)
-			.distinct()
-			.count() == timeStratifiedSelects.size();
+		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::label).distinct().count() == timeStratifiedSelects.size();
 	}
 
 
@@ -196,7 +171,9 @@ public class PreviewConfig {
 	 */
 	@JsonIgnore
 	public List<SelectId> getSelects() {
-		return getInfoCardSelects().stream().map(InfoCardSelect::select).collect(Collectors.toList());
+		return getInfoCardSelects().stream()
+								   .map(InfoCardSelect::select)
+								   .collect(Collectors.toList());
 	}
 
 	public ConnectorId resolveSearchConnector() {

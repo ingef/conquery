@@ -39,9 +39,7 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 		UserId userId = user.getId();
 		try {
 
-			ConqueryPermission permission = DatasetPermission.onInstance(
-				Ability.READ.asSet(),
-				new DatasetId("testDatasetId"));
+			ConqueryPermission permission = DatasetPermission.onInstance(Ability.READ.asSet(), new DatasetId("testDatasetId"));
 
 			storage.addRole(mandator);
 			storage.addUser(user);
@@ -51,18 +49,21 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 			user.addRole(mandator.getId());
 
 
-			URI classBase = HierarchyHelper.hierarchicalPath(
-				conquery.defaultAdminURIBuilder(),
-				RoleUIResource.class,
-				"getRole").buildFromMap(Map.of(ROLE_ID, mandatorId.toString()));
+			URI classBase = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), RoleUIResource.class, "getRole")
+				.buildFromMap(Map.of(ROLE_ID, mandatorId.toString()));
 
-			Response response = conquery.getClient().target(classBase).request().get();
+			Response response = conquery
+				.getClient()
+				.target(classBase)
+				.request()
+				.get();
 
 			assertThat(response.getStatus()).isEqualTo(200);
 			// Check for Freemarker Errors
 			assertThat(response.readEntity(String.class).toLowerCase()).doesNotContain(List.of("freemarker", "debug"));
 
-		} finally {
+		}
+		finally {
 			storage.removeRole(mandatorId);
 			storage.removeUser(userId);
 		}

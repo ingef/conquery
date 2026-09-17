@@ -54,7 +54,9 @@ public class ArrayConceptQuery extends Query {
 	protected DateAggregationMode resolvedDateAggregationMode;
 
 	public static ArrayConceptQuery createFromFeatures(List<CQElement> features) {
-		List<ConceptQuery> cqWraps = features.stream().map(ConceptQuery::new).collect(Collectors.toList());
+		List<ConceptQuery> cqWraps = features.stream()
+											 .map(ConceptQuery::new)
+											 .collect(Collectors.toList());
 		return new ArrayConceptQuery(cqWraps);
 	}
 
@@ -71,10 +73,7 @@ public class ArrayConceptQuery extends Query {
 	public void resolve(QueryResolveContext context) {
 		resolvedDateAggregationMode = dateAggregationMode;
 		if (context.getDateAggregationMode() != null) {
-			log.trace(
-				"Overriding date aggregation mode ({}) with mode from context ({})",
-				dateAggregationMode,
-				context.getDateAggregationMode());
+			log.trace("Overriding date aggregation mode ({}) with mode from context ({})", dateAggregationMode, context.getDateAggregationMode());
 			resolvedDateAggregationMode = context.getDateAggregationMode();
 		}
 		childQueries.forEach(c -> c.resolve(context.withDateAggregationMode(resolvedDateAggregationMode)));
@@ -98,7 +97,7 @@ public class ArrayConceptQuery extends Query {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
 		ResultInfo dateInfo = ResultHeaders.datesInfo();
 
-		if (getResolvedDateAggregationMode() != DateAggregationMode.NONE) {
+		if(getResolvedDateAggregationMode() != DateAggregationMode.NONE){
 			// Add one DateInfo for the whole Query
 			resultInfos.addFirst(dateInfo);
 		}
@@ -106,11 +105,10 @@ public class ArrayConceptQuery extends Query {
 
 		childQueries.forEach(q -> resultInfos.addAll(q.getResultInfos()));
 
-		if (!resultInfos.isEmpty()) {
+		if(!resultInfos.isEmpty()) {
 			// Remove DateInfo from each childQuery
 			resultInfos.subList(lastIndex, resultInfos.size())
-				.removeIf(
-					resultInfo -> resultInfo.getSemantics().contains(new SemanticType.EventDateT()));
+					   .removeIf(resultInfo -> resultInfo.getSemantics().contains(new SemanticType.EventDateT()));
 		}
 
 		return resultInfos;

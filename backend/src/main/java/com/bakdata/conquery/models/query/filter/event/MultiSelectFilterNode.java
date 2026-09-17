@@ -65,4 +65,4 @@ public class MultiSelectFilterNode extends EventFilterNode<Set<String>> {
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		requiredTables.add(column.getTable());
 	}
-}
+	}

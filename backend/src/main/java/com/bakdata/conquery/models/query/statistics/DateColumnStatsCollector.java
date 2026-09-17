@@ -27,12 +27,7 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 	private CDateRange span = null;
 
 
-	public DateColumnStatsCollector(
-		String name,
-		String label,
-		String description,
-		ResultType type,
-		PrintSettings printSettings) {
+	public DateColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings) {
 		super(name, label, description, printSettings);
 		dateExtractor = getDateExtractor(type);
 	}
@@ -81,14 +76,11 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 	@Override
 	public ResultColumnStatistics describe() {
 
-		return new ColumnDescription(
-			getName(),
-			getLabel(),
-			getDescription(),
-			totalCount,
-			nulls,
-			new TreeMap<>(monthCounts),
-			span == null ? CDateRange.all().toSimpleRange() : span.toSimpleRange()
+		return new ColumnDescription(getName(), getLabel(), getDescription(),
+									 totalCount,
+									 nulls,
+									 new TreeMap<>(monthCounts),
+									 span == null ? CDateRange.all().toSimpleRange() : span.toSimpleRange()
 		);
 	}
 
@@ -103,14 +95,7 @@ public class DateColumnStatsCollector extends ColumnStatsCollector {
 
 		private final Range<LocalDate> span;
 
-		public ColumnDescription(
-			String name,
-			String label,
-			String description,
-			int count,
-			int nullValues,
-			SortedMap<String, Integer> monthCounts,
-			Range<LocalDate> span) {
+		public ColumnDescription(String name, String label, String description, int count, int nullValues, SortedMap<String, Integer> monthCounts, Range<LocalDate> span) {
 			super(name, label, description);
 			this.count = count;
 			this.nullValues = nullValues;

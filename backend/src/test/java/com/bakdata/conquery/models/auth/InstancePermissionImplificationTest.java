@@ -25,11 +25,11 @@ public class InstancePermissionImplificationTest {
 	public void testEqual() {
 		// Test equal Permissions
 		Permission pStored = DatasetPermission.onInstance(
-			Ability.READ.asSet(),
-			new DatasetId(DATASET1));
+				Ability.READ.asSet(),
+				new DatasetId(DATASET1));
 		Permission pRequested = DatasetPermission.onInstance(
-			Ability.READ.asSet(),
-			new DatasetId(DATASET1));
+				Ability.READ.asSet(),
+				new DatasetId(DATASET1));
 		assert pStored.implies(pRequested);
 	}
 
@@ -37,11 +37,11 @@ public class InstancePermissionImplificationTest {
 	public void testDivergingPrincipals() {
 		// Test different user principals
 		Permission pStored = DatasetPermission.onInstance(
-			Ability.READ.asSet(),
-			new DatasetId(DATASET1));
+				Ability.READ.asSet(),
+				new DatasetId(DATASET1));
 		Permission pRequested = DatasetPermission.onInstance(
-			Ability.READ.asSet(),
-			new DatasetId(DATASET1));
+				Ability.READ.asSet(),
+				new DatasetId(DATASET1));
 		assert pStored.implies(pRequested);
 	}
 
@@ -49,11 +49,11 @@ public class InstancePermissionImplificationTest {
 	public void testDivergingAccesTypes() {
 		// Test different access types
 		Permission pStored = DatasetPermission.onInstance(
-			Ability.READ.asSet(),
-			new DatasetId(DATASET1));
+				Ability.READ.asSet(),
+				new DatasetId(DATASET1));
 		Permission pRequested = DatasetPermission.onInstance(
 			Ability.DOWNLOAD.asSet(),
-			new DatasetId(DATASET1));
+				new DatasetId(DATASET1));
 		assert !pStored.implies(pRequested);
 	}
 
@@ -61,11 +61,11 @@ public class InstancePermissionImplificationTest {
 	public void testDivergingInstances() {
 		// Test different Instances
 		Permission pStored = DatasetPermission.onInstance(
-			Ability.READ.asSet(),
-			new DatasetId(DATASET1));
+				Ability.READ.asSet(),
+				new DatasetId(DATASET1));
 		Permission pRequested = DatasetPermission.onInstance(
-			Ability.READ.asSet(),
-			new DatasetId(DATASET2));
+				Ability.READ.asSet(),
+				new DatasetId(DATASET2));
 		assert !pStored.implies(pRequested);
 	}
 
@@ -73,11 +73,11 @@ public class InstancePermissionImplificationTest {
 	public void testMultipleAccessesProhibit() {
 		// Test different Instances
 		Permission pStored = DatasetPermission.onInstance(
-			Ability.READ.asSet(),
-			new DatasetId(DATASET1));
+				Ability.READ.asSet(),
+				new DatasetId(DATASET1));
 		Permission pRequested = DatasetPermission.onInstance(
 			EnumSet.of(Ability.READ, Ability.DOWNLOAD),
-			new DatasetId(DATASET1));
+				new DatasetId(DATASET1));
 		// Should not imply, since one access is missing
 		assert !pStored.implies(pRequested);
 	}
@@ -87,19 +87,17 @@ public class InstancePermissionImplificationTest {
 		// Test different Instances
 		Permission pStored = DatasetPermission.onInstance(
 			EnumSet.of(Ability.READ, Ability.DOWNLOAD),
-			new DatasetId(DATASET1));
+				new DatasetId(DATASET1));
 		Permission pRequested = DatasetPermission.onInstance(
-			Ability.READ.asSet(),
-			new DatasetId(DATASET1));
+				Ability.READ.asSet(),
+				new DatasetId(DATASET1));
 		assert pStored.implies(pRequested);
 	}
 
 	@Test
 	public void permissionTypesFail() {
 		Permission dPerm = DatasetPermission.onInstance(Ability.READ.asSet(), new DatasetId(DATASET1));
-		Permission qPerm = ExecutionPermission.onInstance(
-			Ability.READ.asSet(),
-			new ManagedExecutionId(new DatasetId(DATASET1), UUID.randomUUID()));
+		Permission qPerm = ExecutionPermission.onInstance(Ability.READ.asSet(), new ManagedExecutionId(new DatasetId(DATASET1), UUID.randomUUID()));
 		Permission sPerm = SuperPermission.onDomain();
 		Permission aPerm = AdminPermission.onDomain();
 		assertThat(dPerm.implies(qPerm)).isFalse();

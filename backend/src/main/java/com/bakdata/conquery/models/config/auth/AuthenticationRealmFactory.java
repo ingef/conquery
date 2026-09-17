@@ -21,8 +21,5 @@ public interface AuthenticationRealmFactory {
 	 * @return The realm.
 	 */
 	@JsonIgnore
-	ConqueryAuthenticationRealm createRealm(
-		Environment environment,
-		ConqueryConfig config,
-		AuthorizationController authorizationController);
+	ConqueryAuthenticationRealm createRealm(Environment environment, ConqueryConfig config, AuthorizationController authorizationController);
 }

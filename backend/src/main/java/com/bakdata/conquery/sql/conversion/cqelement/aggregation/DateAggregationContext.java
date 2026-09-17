@@ -31,7 +31,8 @@ class DateAggregationContext implements Context, Qualifiable<DateAggregationCont
 	ConversionContext conversionContext;
 
 	public DateAggregationContext withStep(DateAggregationCteStep dateAggregationCteStep, QueryStep queryStep) {
-		this.intervalMergeSteps.computeIfAbsent(dateAggregationCteStep, k -> new ArrayList<>()).add(queryStep);
+		this.intervalMergeSteps.computeIfAbsent(dateAggregationCteStep, k -> new ArrayList<>())
+							   .add(queryStep);
 		return this;
 	}
 
@@ -46,7 +47,7 @@ class DateAggregationContext implements Context, Qualifiable<DateAggregationCont
 	public List<QueryStep> getSteps(DateAggregationCteStep dateAggregationCteStep) {
 		if (dateAggregationCteStep != DateAggregationCteStep.NODE_NO_OVERLAP) {
 			throw new UnsupportedOperationException(
-				"Only MergeCteStep.NODE_NO_OVERLAP has multiple steps. Use getStep() for all other DateAggregationSteps."
+					"Only MergeCteStep.NODE_NO_OVERLAP has multiple steps. Use getStep() for all other DateAggregationSteps."
 			);
 		}
 		return this.intervalMergeSteps.get(dateAggregationCteStep);
@@ -55,12 +56,10 @@ class DateAggregationContext implements Context, Qualifiable<DateAggregationCont
 	@Override
 	public DateAggregationContext qualify(String qualifier) {
 		return this.toBuilder()
-			.ids(this.ids.qualify(qualifier))
-			.carryThroughSelects(
-				QualifyingUtil.qualify(this.carryThroughSelects, qualifier))
-			.dateAggregationDates(
-				this.dateAggregationDates.qualify(qualifier))
-			.build();
+				   .ids(this.ids.qualify(qualifier))
+				   .carryThroughSelects(QualifyingUtil.qualify(this.carryThroughSelects, qualifier))
+				   .dateAggregationDates(this.dateAggregationDates.qualify(qualifier))
+				   .build();
 	}
 
 	@Override

@@ -10,8 +10,7 @@ import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter
-@EqualsAndHashCode(callSuper = true)
+@Getter @EqualsAndHashCode(callSuper=true)
 public final class ConnectorSelectId extends SelectId {
 
 	private final ConnectorId connector;
@@ -35,10 +34,9 @@ public final class ConnectorSelectId extends SelectId {
 	@Override
 	public Select get() {
 		return getDomain().getStorage(getDataset())
-			.getConcept(findConcept())
-			.getConnectorByName(
-				getConnector().getConnector())
-			.getSelectByName(getSelect());
+						  .getConcept(findConcept())
+						  .getConnectorByName(getConnector().getConnector())
+						  .getSelectByName(getSelect());
 	}
 
 	@Override

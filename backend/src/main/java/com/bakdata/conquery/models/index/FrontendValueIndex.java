@@ -39,9 +39,9 @@ public class FrontendValueIndex implements Index<FrontendValue> {
 	@Override
 	public void put(String internalValue, Map<String, String> templateToConcrete) {
 		final FrontendValue feValue = new FrontendValue(
-			internalValue,
-			templateToConcrete.get(valueTemplate),
-			templateToConcrete.get(optionValueTemplate)
+				internalValue,
+				templateToConcrete.get(valueTemplate),
+				templateToConcrete.get(optionValueTemplate)
 		);
 
 		delegate.addItem(feValue, SearchProcessor.extractKeywords(feValue));

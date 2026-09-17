@@ -30,8 +30,8 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 public class GroovyCondition implements CTCondition {
 
 	public static final String[] AUTO_IMPORTS = Stream.of(
-		LocalDate.class,
-		Range.class
+			LocalDate.class,
+			Range.class
 	).map(Class::getName).toArray(String[]::new);
 
 	@Getter
@@ -59,30 +59,26 @@ public class GroovyCondition implements CTCondition {
 
 				compiled = (ConditionScript) groovy.parse(script);
 				compiled.setNode(node);
-			} catch (Exception | Error e) {
+			}
+			catch (Exception | Error e) {
 				throw new ConceptConfigurationException(node, "Failed to compile condition '" + script + "'", e);
 			}
 		}
 	}
 
 	@Override
-	public boolean matches(
-		String value,
-		CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
+	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 		try {
 			return compiled.matches(rowMap.getValue(), value);
-		} catch (Exception e) {
-			throw new ConceptConfigurationException(
-				node,
-				"Could not execute condition \"" + script + "\" on " + rowMap.getValue(),
-				e);
+		}
+		catch (Exception e) {
+			throw new ConceptConfigurationException(node, "Could not execute condition \"" + script + "\" on " + rowMap.getValue(), e);
 		}
 	}
 
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
-		throw new UnsupportedOperationException(
-			"SQL conversion of CTCondition %s not supported yet.".formatted(getClass()));
+		throw new UnsupportedOperationException("SQL conversion of CTCondition %s not supported yet.".formatted(getClass()));
 	}
 
 

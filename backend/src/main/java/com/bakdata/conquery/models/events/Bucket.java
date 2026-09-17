@@ -80,22 +80,15 @@ public class Bucket extends NamespacedIdentifiable<BucketId> {
 		final ColumnStore[] storesSorted = sortColumns(table, container.getStores());
 		final int numberOfEvents = container.getEnds().values().stream().mapToInt(i -> i).max().orElse(0);
 
-		return new Bucket(
-			container.getBucketId(),
-			new Object2IntOpenHashMap<>(container.getStarts()),
-			new Object2IntOpenHashMap<>(container.getEnds()),
-			numberOfEvents,
-			imp.getId(),
-			storesSorted);
+		return new Bucket(container.getBucketId(), new Object2IntOpenHashMap<>(container.getStarts()), new Object2IntOpenHashMap<>(container.getEnds()), numberOfEvents, imp.getId(), storesSorted);
 	}
 
 	private static ColumnStore[] sortColumns(Table table, Map<String, ColumnStore> stores) {
 		return Arrays.stream(table.getColumns())
-			.map(Column::getName)
-			.map(stores::get)
-			.map(
-				Objects::requireNonNull)
-			.toArray(ColumnStore[]::new);
+					 .map(Column::getName)
+					 .map(stores::get)
+					 .map(Objects::requireNonNull)
+					 .toArray(ColumnStore[]::new);
 	}
 
 	@JsonIgnore
@@ -169,7 +162,7 @@ public class Bucket extends NamespacedIdentifiable<BucketId> {
 	public boolean eventIsContainedIn(int event, ValidityDate validityDate, CDateSet dateRanges) {
 		final CDateRange dateRange = validityDate.getValidityDate(event, this);
 
-		if (dateRange == null) {
+		if (dateRange == null){
 			return false;
 		}
 
@@ -192,7 +185,7 @@ public class Bucket extends NamespacedIdentifiable<BucketId> {
 		return getStore(column).createScriptValue(event);
 	}
 
-	public IntFunction<Map<String, Object>> mapCalculator() {
+	public IntFunction<Map<String, Object>> mapCalculator(){
 		Column[] columns = getTable().resolve().getColumns();
 
 		return event -> calculateMap(event, stores, columns);

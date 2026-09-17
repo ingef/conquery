@@ -18,23 +18,20 @@ import lombok.Getter;
 @Getter
 public class DevelopmentAuthorizationConfig implements AuthorizationConfig {
 
-	private List<ProtoRole> initialRoles = List.of(
-		ProtoRole.builder().name("admin").permissions(Set.of(AdminPermission.DOMAIN)).build());
+	private List<ProtoRole> initialRoles = List.of(ProtoRole.builder()
+															.name("admin")
+															.permissions(Set.of(AdminPermission.DOMAIN))
+															.build());
 
 	@NotEmpty
-	private List<ProtoUser> initialUsers = List.of(
-		ProtoUser.builder()
-			.name("SUPERUSER")
-			.label("SUPERUSER")
-			.permissions(Set.of("*"))
-			.roles(
-				Set.of("admin"))
-			.build());
+	private List<ProtoUser> initialUsers = List.of(ProtoUser.builder()
+															.name("SUPERUSER")
+															.label("SUPERUSER")
+															.permissions(Set.of("*"))
+															.roles(Set.of("admin"))
+															.build());
 
 	@NotNull
-	private List<String> overviewScope = List.of(
-		DatasetPermission.DOMAIN,
-		AdminPermission.DOMAIN,
-		SuperPermission.DOMAIN);
+	private List<String> overviewScope = List.of(DatasetPermission.DOMAIN, AdminPermission.DOMAIN, SuperPermission.DOMAIN);
 
 }

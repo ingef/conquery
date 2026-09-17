@@ -45,15 +45,14 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public CachedStore(Store<KEY, VALUE> store, CaffeineSpec caffeineSpec, MetricRegistry metricRegistry) {
 		this.store = store;
 
-		final StatsCounter statsCounter = metricRegistry != null ? new MetricsStatsCounter(
-			metricRegistry,
-			"cache." + store.toString()) : StatsCounter.disabledStatsCounter();
+		final StatsCounter statsCounter =
+				metricRegistry != null ? new MetricsStatsCounter(metricRegistry, "cache." + store.toString()) : StatsCounter.disabledStatsCounter();
 
 		final Caffeine<KEY, VALUE> caffeine = Caffeine.from(caffeineSpec)
-			.recordStats(
-				() -> statsCounter)
-			.evictionListener(
-				(k, v, cause) -> log.trace("Evicting {} from cache for {} (cause: {})", k, store.toString(), cause));
+													  .recordStats(() -> statsCounter)
+													  .evictionListener(
+															  (k, v, cause) ->
+																	  log.trace("Evicting {} from cache for {} (cause: {})", k, store.toString(), cause));
 
 		cache = caffeine.build(this::getFromStore);
 	}
@@ -144,7 +143,8 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		if (count < 100) {
 			bar = null;
-		} else {
+		}
+		else {
 			bar = PROGRESS_BAR;
 			bar.addMaxValue(count);
 		}
@@ -164,27 +164,22 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				if (!dupes.add(key)) {
 					log.warn("Multiple Keys deserialize to `{}`", key);
 				}
-			} catch (RuntimeException e) {
+			}
+			catch (RuntimeException e) {
 				if (e.getCause() != null && e.getCause() instanceof IdReferenceResolvingException) {
-					log.warn(
-						"Probably failed to read id '{}' because it is not yet present, skipping",
-						((IdReferenceResolvingException) e.getCause()).getValue(),
-						e);
-				} else {
+					log.warn("Probably failed to read id '{}' because it is not yet present, skipping", ((IdReferenceResolvingException) e.getCause()).getValue(), e);
+				}
+				else {
 					throw e;
 				}
-			} finally {
+			}
+			finally {
 				if (bar != null) {
 					bar.addCurrentValue(1);
 				}
 			}
 		});
-		log.debug(
-			"\tloaded store {}: {} entries, {} within {}",
-			this,
-			count,
-			FileUtils.byteCountToDisplaySize(totalSize.sum()),
-			timer.stop());
+		log.debug("\tloaded store {}: {} entries, {} within {}", this, count, FileUtils.byteCountToDisplaySize(totalSize.sum()), timer.stop());
 	}
 
 	@Override

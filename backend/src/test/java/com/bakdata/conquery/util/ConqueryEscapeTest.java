@@ -13,10 +13,25 @@ import org.slf4j.LoggerFactory;
 public class ConqueryEscapeTest {
 
 	@ParameterizedTest
-	@CsvSource(
-		value = {"hallo,hallo", "test,test", "test7,test7", "7test,7test", "$,$24", "$24,$2424", "PO!\"$%&/()=ß,PO$21$22$24$25$26$2f$28$29$3d$c3$9f", "😈,$f0$9f$98$88", "aa.aa,aa$2eaa", "a_a,a_a", "a-a,a-a", "a/a,a$2fa", "a a,a$20a", "`az{,$60az$7b", // Range border characters
-				"@AZ[,$40AZ$5b", "/09:,$2f09$3a", "test@example.org,test$40example$2eorg"
-		})
+	@CsvSource(value = {
+			"hallo,hallo",
+			"test,test",
+			"test7,test7",
+			"7test,7test",
+			"$,$24",
+			"$24,$2424",
+			"PO!\"$%&/()=ß,PO$21$22$24$25$26$2f$28$29$3d$c3$9f",
+			"😈,$f0$9f$98$88",
+			"aa.aa,aa$2eaa",
+			"a_a,a_a",
+			"a-a,a-a",
+			"a/a,a$2fa",
+			"a a,a$20a",
+			"`az{,$60az$7b", // Range border characters
+			"@AZ[,$40AZ$5b",
+			"/09:,$2f09$3a",
+			"test@example.org,test$40example$2eorg"
+	})
 	public void testEscaping(String in, String expectedEscaped) {
 		String escaped1 = ConqueryEscape.escape(in);
 		assertThat(escaped1).isEqualTo(expectedEscaped);
@@ -45,15 +60,17 @@ public class ConqueryEscapeTest {
 		try {
 			String ignore = ConqueryEscape.unescape("test@example$2eorg");
 
-			assertThat(listAppender.list.getFirst()).extracting(
-				ILoggingEvent::getLevel,
-				ILoggingEvent::getFormattedMessage
-			)
-				.containsExactly(
-					ch.qos.logback.classic.Level.WARN,
-					"Unescaped character '64' at 4 in 'test@example$2eorg'"
-				);
-		} finally {
+			assertThat(listAppender.list.getFirst())
+					.extracting(
+							ILoggingEvent::getLevel,
+							ILoggingEvent::getFormattedMessage
+					)
+					.containsExactly(
+							ch.qos.logback.classic.Level.WARN,
+							"Unescaped character '64' at 4 in 'test@example$2eorg'"
+					);
+		}
+		finally {
 			// Cleanup appender
 			conqueryEscapeLog.detachAppender(listAppender);
 			listAppender.stop();

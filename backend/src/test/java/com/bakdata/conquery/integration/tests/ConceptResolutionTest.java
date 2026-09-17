@@ -33,8 +33,7 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		//read test sepcification
-		String testJson = LoadingUtil.readResource(
-			"/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json");
+		String testJson = LoadingUtil.readResource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json");
 
 		DatasetId dataset = conquery.getDataset();
 
@@ -43,12 +42,13 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 
 		test.importRequiredData(conquery);
 
-		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(
-			conquery.defaultAdminURIBuilder(),
-			AdminDatasetResource.class,
-			"postprocessNamespace").buildFromMap(Map.of(DATASET, conquery.getDataset()));
+		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
+															, AdminDatasetResource.class, "postprocessNamespace")
+													.buildFromMap(Map.of(DATASET, conquery.getDataset()));
 
-		conquery.getClient().target(matchingStatsUri).request(MediaType.APPLICATION_JSON_TYPE).post(null);
+		conquery.getClient().target(matchingStatsUri)
+				.request(MediaType.APPLICATION_JSON_TYPE)
+				.post(null);
 
 		conquery.waitUntilWorkDone();
 
@@ -56,36 +56,29 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 		TreeConcept concept = (TreeConcept) allConcepts.iterator().next();
 		allConcepts.close();
 
-		final URI resolveUri = HierarchyHelper.hierarchicalPath(
-			conquery.defaultApiURIBuilder(),
-			ConceptResource.class,
-			"resolve"
-		)
-			.buildFromMap(
-				Map.of(
-					DATASET,
-					conquery.getDataset(),
-					CONCEPT,
-					concept.getId()
-				)
-			);
+		final URI resolveUri =
+				HierarchyHelper.hierarchicalPath(
+									   conquery.defaultApiURIBuilder(),
+									   ConceptResource.class, "resolve"
+							   )
+							   .buildFromMap(
+									   Map.of(
+											   DATASET, conquery.getDataset(),
+											   CONCEPT, concept.getId()
+									   )
+							   );
 
-		final Response response = conquery.getClient()
-			.target(resolveUri)
-			.request(MediaType.APPLICATION_JSON_TYPE)
-			.post(
-				Entity.entity(
-					new ConceptResource.ConceptCodeList(
-						List.of("A1", "unknown")
-					),
-					MediaType.APPLICATION_JSON_TYPE));
+		final Response response = conquery.getClient().target(resolveUri)
+										  .request(MediaType.APPLICATION_JSON_TYPE)
+										  .post(Entity.entity(new ConceptResource.ConceptCodeList(
+												  List.of("A1", "unknown")
+										  ), MediaType.APPLICATION_JSON_TYPE));
 
 
 		ResolvedConceptsResult resolved = response.readEntity(ResolvedConceptsResult.class);
 		//check the resolved values
 		assertThat(resolved).isNotNull();
-		assertThat(resolved.getResolvedConcepts().stream().map(Id::toString)).containsExactlyInAnyOrder(
-			"ConceptResolutionTest.test_tree.test_child1");
+		assertThat(resolved.getResolvedConcepts().stream().map(Id::toString)).containsExactlyInAnyOrder("ConceptResolutionTest.test_tree.test_child1");
 		assertThat(resolved.getUnknownCodes()).containsExactlyInAnyOrder("unknown");
 
 	}

@@ -22,17 +22,12 @@ import org.hibernate.validator.constraints.Length;
 /**
  * Holds the necessary information to configure CSV parsers and writers.
  */
-@Getter
-@Setter
-@With
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter @Setter @With @AllArgsConstructor @NoArgsConstructor
 public class CSVConfig {
 	private char escape = '\\';
 	private char comment = '\0';
 	private char delimeter = ',';
-	@Length(min = 1, max = 2)
-	@NotNull
+	@Length(min=1, max=2) @NotNull
 	private String lineSeparator = "\n";
 	private char quote = '"';
 	@NotNull

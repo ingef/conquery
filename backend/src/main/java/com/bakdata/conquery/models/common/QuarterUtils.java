@@ -10,23 +10,17 @@ import java.time.temporal.TemporalAdjusters;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import lombok.experimental.UtilityClass;
-
 @UtilityClass
 public final class QuarterUtils {
 
-	private static final TemporalAdjuster FIRST_MONTH_IN_QUARTER_ADJUSTER = temporal -> temporal.with(
-		ChronoField.MONTH_OF_YEAR,
-		getFirstMonthOfQuarter(temporal.get(IsoFields.QUARTER_OF_YEAR)).getValue());
+	private static final TemporalAdjuster FIRST_MONTH_IN_QUARTER_ADJUSTER =
+			temporal -> temporal.with(ChronoField.MONTH_OF_YEAR, getFirstMonthOfQuarter(temporal.get(IsoFields.QUARTER_OF_YEAR)).getValue());
 
-	private static final TemporalAdjuster FIRST_DAY_OF_QUARTER_ADJUSTER = temporal -> TemporalAdjusters
-		.firstDayOfMonth()
-		.adjustInto(
-			firstMonthInQuarterAdjuster().adjustInto(temporal));
+	private static final TemporalAdjuster FIRST_DAY_OF_QUARTER_ADJUSTER =
+			temporal -> TemporalAdjusters.firstDayOfMonth().adjustInto(firstMonthInQuarterAdjuster().adjustInto(temporal));
 
-	private static final TemporalAdjuster LAST_DAY_OF_QUARTER_ADJUSTER = temporal -> (TemporalAdjusters
-		.firstDayOfMonth()
-		.adjustInto(
-			nextQuarterAdjuster().adjustInto(temporal))).minus(1, ChronoUnit.DAYS);
+	private static final TemporalAdjuster LAST_DAY_OF_QUARTER_ADJUSTER =
+			temporal -> (TemporalAdjusters.firstDayOfMonth().adjustInto(nextQuarterAdjuster().adjustInto(temporal))).minus(1, ChronoUnit.DAYS);
 
 
 	public static Month getFirstMonthOfQuarter(int quarter) {
@@ -78,13 +72,9 @@ public final class QuarterUtils {
 		return temporal -> {
 			if (temporal.get(IsoFields.QUARTER_OF_YEAR) == 4) {
 				return temporal.with(ChronoField.MONTH_OF_YEAR, 1)
-					.with(
-						ChronoField.YEAR,
-						(temporal).get(ChronoField.YEAR) + 1);
+					.with(ChronoField.YEAR, (temporal).get(ChronoField.YEAR) + 1);
 			}
-			return temporal.with(
-				ChronoField.MONTH_OF_YEAR,
-				getFirstMonthOfQuarter(temporal.get(IsoFields.QUARTER_OF_YEAR) + 1).getValue());
+			return temporal.with(ChronoField.MONTH_OF_YEAR, getFirstMonthOfQuarter(temporal.get(IsoFields.QUARTER_OF_YEAR) + 1).getValue());
 		};
 	}
 

@@ -35,12 +35,7 @@ public class FrontendValueIndexKey implements IndexKey {
 	private final String internalColumn;
 
 
-	public FrontendValueIndexKey(
-		URI csv,
-		String internalColumn,
-		String valueTemplate,
-		String optionValueTemplate,
-		Supplier<Search<FrontendValue>> indexSupplier) {
+	public FrontendValueIndexKey(URI csv, String internalColumn, String valueTemplate, String optionValueTemplate, Supplier<Search<FrontendValue>> indexSupplier) {
 		this.indexSupplier = indexSupplier;
 
 		this.valueTemplate = valueTemplate;

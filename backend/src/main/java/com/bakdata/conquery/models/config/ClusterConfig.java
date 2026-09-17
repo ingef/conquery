@@ -80,10 +80,7 @@ public class ClusterConfig extends Configuration {
 	}
 
 	@JsonIgnore
-	public NioSocketAcceptor getClusterAcceptor(
-		ObjectMapper om,
-		IoHandler ioHandler,
-		String mdcLocation) throws IOException {
+	public NioSocketAcceptor getClusterAcceptor(ObjectMapper om, IoHandler ioHandler, String mdcLocation) throws IOException {
 
 		final NioSocketAcceptor acceptor = new NioSocketAcceptor();
 

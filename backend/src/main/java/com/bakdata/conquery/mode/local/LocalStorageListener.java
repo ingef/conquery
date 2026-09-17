@@ -12,9 +12,7 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 
-public record LocalStorageListener(
-	JobManager jobManager,
-	DatasetRegistry<LocalNamespace> datasetRegistry) implements StorageListener {
+public record LocalStorageListener(JobManager jobManager, DatasetRegistry<LocalNamespace> datasetRegistry) implements StorageListener {
 
 	@Override
 	public void onAddSecondaryId(SecondaryIdDescription secondaryId) {

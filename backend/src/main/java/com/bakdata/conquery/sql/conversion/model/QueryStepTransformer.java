@@ -22,17 +22,12 @@ public class QueryStepTransformer {
 	 */
 	public Select<Record> toSelectQuery(QueryStep queryStep, SqlFunctionProvider functionProvider) {
 
-		List<Field<?>> finalRepresentation = queryStep.getSelects()
-			.toFinalRepresentation(
-				functionProvider,
-				queryStep.isForTableExport());
+		List<Field<?>> finalRepresentation = queryStep.getSelects().toFinalRepresentation(functionProvider, queryStep.isForTableExport());
 
-		SelectConditionStep<Record> queryBase = this.dslContext.with(
-			constructPredecessorCteList(queryStep, functionProvider))
-			.select(finalRepresentation)
-			.from(
-				queryStep.getFromTables())
-			.where(queryStep.getConditions());
+		SelectConditionStep<Record> queryBase = this.dslContext.with(constructPredecessorCteList(queryStep, functionProvider))
+				.select(finalRepresentation)
+				.from(queryStep.getFromTables())
+				.where(queryStep.getConditions());
 
 		// grouping
 		SelectHavingStep<Record> grouped = queryBase;
@@ -48,26 +43,21 @@ public class QueryStepTransformer {
 		return grouped;
 	}
 
-	private List<CommonTableExpression<Record>> constructPredecessorCteList(
-		QueryStep queryStep,
-		SqlFunctionProvider functionProvider) {
-		return predecessorCtes(queryStep, functionProvider).toList();
+	private List<CommonTableExpression<Record>> constructPredecessorCteList(QueryStep queryStep, SqlFunctionProvider functionProvider) {
+		return predecessorCtes(queryStep, functionProvider)
+				.toList();
 	}
 
 	private List<CommonTableExpression<Record>> toCteList(QueryStep queryStep, SqlFunctionProvider functionProvider) {
 		return Stream.concat(
-			this.predecessorCtes(queryStep, functionProvider),
-			Stream.of(toCte(queryStep, functionProvider))
+				this.predecessorCtes(queryStep, functionProvider),
+				Stream.of(toCte(queryStep, functionProvider))
 		).toList();
 	}
 
-	private Stream<CommonTableExpression<Record>> predecessorCtes(
-		QueryStep queryStep,
-		SqlFunctionProvider functionProvider) {
-		return queryStep.getPredecessors()
-			.stream()
-			.flatMap(
-				predecessor -> toCteList(predecessor, functionProvider).stream());
+	private Stream<CommonTableExpression<Record>> predecessorCtes(QueryStep queryStep, SqlFunctionProvider functionProvider) {
+		return queryStep.getPredecessors().stream()
+				.flatMap(predecessor -> toCteList(predecessor, functionProvider).stream());
 	}
 
 	private CommonTableExpression<Record> toCte(QueryStep queryStep, SqlFunctionProvider functionProvider) {
@@ -79,10 +69,7 @@ public class QueryStepTransformer {
 
 		SelectSelectStep<Record> selectClause;
 
-		List<Field<?>> allSelects = queryStep.isForTableExport() ? queryStep.getSelects()
-			.toFinalRepresentation(
-				functionProvider,
-				true) : queryStep.getSelects().all();
+		List<Field<?>> allSelects = queryStep.isForTableExport() ? queryStep.getSelects().toFinalRepresentation(functionProvider, true) : queryStep.getSelects().all();
 
 		if (queryStep.isSelectDistinct()) {
 			selectClause = dslContext.selectDistinct(allSelects);
@@ -105,9 +92,11 @@ public class QueryStepTransformer {
 
 	private Select<Record> union(QueryStep queryStep, Select<Record> base, SqlFunctionProvider functionProvider) {
 		for (QueryStep unionStep : queryStep.getUnion()) {
-			Select<Record> selectStep = queryStep.isForTableExport() ?
-					// TODO this feels like a leaked abstraction, but i am not able to find the proper injection layer at the moment.
-					toSelectQuery(unionStep, functionProvider) : toSelectStep(unionStep, functionProvider);
+			Select<Record> selectStep =
+					queryStep.isForTableExport() ?
+							// TODO this feels like a leaked abstraction, but i am not able to find the proper injection layer at the moment.
+							toSelectQuery(unionStep, functionProvider) :
+							toSelectStep(unionStep, functionProvider);
 
 			if (queryStep.isUnionAll()) {
 				base = base.unionAll(selectStep);

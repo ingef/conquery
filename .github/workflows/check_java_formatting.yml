@@ -1,4 +1,4 @@
-name: "Check Java Formatting"
+name: Check Java source hygiene
 
 on:
   push:
@@ -7,9 +7,11 @@ on:
       - develop
       - release
   pull_request:
+    paths:
+      - "**/*.java"
 
 jobs:
-  formatting:
+  source-hygiene:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -21,5 +23,5 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: maven
-      - name: Check Java formatting
+      - name: Check Java source hygiene
         run: mvn -B -ntp spotless:check

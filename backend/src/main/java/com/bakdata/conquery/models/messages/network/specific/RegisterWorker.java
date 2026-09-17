@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-@CPSType(id = "REGISTER_SHARD_WORKER_IDENTITY", base = NetworkMessage.class)
+@CPSType(id="REGISTER_SHARD_WORKER_IDENTITY", base=NetworkMessage.class)
 @Data
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class RegisterWorker extends MessageToManagerNode {
@@ -22,9 +22,8 @@ public class RegisterWorker extends MessageToManagerNode {
 	public void react(ManagerNodeNetworkContext context) throws Exception {
 		ShardNodeInformation node = getShardNode(context);
 
-		if (node == null) {
-			throw new IllegalStateException(
-				"Received worker %s from unknown shard %s".formatted(info.getId(), context.getRemoteAddress()));
+		if(node == null) {
+			throw new IllegalStateException("Received worker %s from unknown shard %s".formatted(info.getId(), context.getRemoteAddress()));
 		}
 
 		info.setConnectedShardNode(node);
@@ -40,6 +39,8 @@ public class RegisterWorker extends MessageToManagerNode {
 	 * @return the found slave or null if none was found
 	 */
 	private ShardNodeInformation getShardNode(ManagerNodeNetworkContext context) {
-		return context.getClusterState().getShardNodes().get(context.getRemoteAddress());
+		return context.getClusterState()
+			.getShardNodes()
+			.get(context.getRemoteAddress());
 	}
 }

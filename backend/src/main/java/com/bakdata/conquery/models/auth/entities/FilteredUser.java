@@ -18,7 +18,7 @@ import org.apache.shiro.subject.Subject;
  * These are not supposed to be implemented.
  *
  */
-@JsonIgnoreProperties({"session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals"})
+@JsonIgnoreProperties({ "session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals" })
 public abstract class FilteredUser implements Subject {
 
 

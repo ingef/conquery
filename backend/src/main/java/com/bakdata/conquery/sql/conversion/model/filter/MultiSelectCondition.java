@@ -31,9 +31,8 @@ public class MultiSelectCondition implements WhereCondition {
 
 		// values can contain empty or null Strings
 		String[] valuesWithoutNull = Arrays.stream(values)
-			.filter(value -> !Strings.isNullOrEmpty(value))
-			.toArray(
-				String[]::new);
+				.filter(value -> !Strings.isNullOrEmpty(value))
+				.toArray(String[]::new);
 
 
 		Condition inCondition;

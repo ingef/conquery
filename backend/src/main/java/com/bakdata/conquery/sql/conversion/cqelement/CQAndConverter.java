@@ -19,17 +19,15 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 
 		QueryStep joined;
 		if (andNode.getChildren().size() == 1) {
-			ConversionContext withConvertedChild = context.getNodeConversions()
-				.convert(
-					andNode.getChildren().get(0),
-					context);
+			ConversionContext withConvertedChild = context.getNodeConversions().convert(andNode.getChildren().get(0), context);
 			joined = withConvertedChild.getLastConvertedStep();
-		} else {
+		}
+		else {
 			joined = QueryStepJoiner.joinChildren(
-				andNode.getChildren(),
-				context,
-				ConqueryJoinType.INNER_JOIN,
-				andNode.getDateAction()
+					andNode.getChildren(),
+					context,
+					ConqueryJoinType.INNER_JOIN,
+					andNode.getDateAction()
 			);
 		}
 

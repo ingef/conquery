@@ -9,10 +9,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.printers.Printer;
 import org.jetbrains.annotations.NotNull;
 
-public record ListStringPrinter<T>(
-	Printer<T> elementPrinter,
-	PrintSettings cfg,
-	LocaleConfig.ListFormat listFormat) implements Printer<Collection<T>> {
+public record ListStringPrinter<T>(Printer<T> elementPrinter, PrintSettings cfg, LocaleConfig.ListFormat listFormat) implements Printer<Collection<T>> {
 
 	public ListStringPrinter(Printer<T> elementPrinter, PrintSettings cfg) {
 		this(elementPrinter, cfg, cfg.getListFormat());
@@ -24,7 +21,7 @@ public record ListStringPrinter<T>(
 		final StringJoiner joiner = listFormat.createListJoiner();
 
 		for (T obj : f) {
-			if (obj == null) {
+			if (obj == null){
 				continue;
 			}
 

@@ -48,9 +48,7 @@ public class ConceptColumnSelect extends UniversalSelect {
 	@Override
 	public Printer createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		if (isAsIds()) {
-			return printerFactory.getListPrinter(
-				new ConceptIdPrinter((TreeConcept) getHolder().findConcept(), printSettings),
-				printSettings);
+			return printerFactory.getListPrinter(new ConceptIdPrinter((TreeConcept) getHolder().findConcept(), printSettings), printSettings);
 		}
 
 		return printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings);
@@ -60,10 +58,7 @@ public class ConceptColumnSelect extends UniversalSelect {
 	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
 
 		if (isAsIds()) {
-			return new SelectResultInfo(
-				this,
-				cqConcept,
-				Set.of(new SemanticType.ConceptColumnT(cqConcept.getConceptId())));
+			return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConceptId())));
 		}
 
 		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(cqConcept.getConceptId())));

@@ -17,7 +17,7 @@ public interface UserManageable {
 	 * Add a user to an authenticating realm. The realm is responsible for picking the appropriate {@link CredentialType} from the argument.
 	 * If not fitting type was found the user should not be added.
 	 *
-	 * @param credential A credentials that is provided by the user.
+	 * @param credentials A List of credentials that are provided by the user.
 	 * @param userId
 	 * @return True upon successful adding of the user. False if the user could not be added or was already present.
 	 */

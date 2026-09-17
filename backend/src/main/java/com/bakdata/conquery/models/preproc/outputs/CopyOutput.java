@@ -34,7 +34,11 @@ public class CopyOutput extends OutputDescription {
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(super.hashCode()).append(inputColumn).append(inputType.name()).toHashCode();
+		return new HashCodeBuilder()
+				.append(super.hashCode())
+				.append(inputColumn)
+				.append(inputType.name())
+				.toHashCode();
 	}
 
 	@NotNull
@@ -52,11 +56,7 @@ public class CopyOutput extends OutputDescription {
 		return new Output() {
 			@Override
 			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
-				log.trace(
-					"Registering `{}` in line {} for Output[{}]",
-					row[column],
-					sourceLine,
-					this.getDescription().getName());
+				log.trace("Registering `{}` in line {} for Output[{}]", row[column], sourceLine, this.getDescription().getName());
 
 				if (row[column] == null) {
 					return null;

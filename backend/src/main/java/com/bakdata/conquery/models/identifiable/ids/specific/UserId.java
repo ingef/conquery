@@ -10,7 +10,7 @@ import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper=false)
 public final class UserId extends PermissionOwnerId<User> {
 	public static final String TYPE = "user";
 

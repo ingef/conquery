@@ -6,12 +6,15 @@ import java.util.concurrent.atomic.AtomicLong;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-// TODO replace with https://github.com/vdurmont/etaprinter
+//TODO replace with https://github.com/vdurmont/etaprinter
 @Slf4j
 public class ProgressBar {
 
 	private static final int CHARACTERS = 50;
-	private static final char[] BAR_CHARACTERS = {' ', '▌', '█'
+	private static final char[] BAR_CHARACTERS = {
+		' ',
+		'▌',
+		'█'
 	};
 	private static final char RIGHT = '▌';
 
@@ -28,9 +31,9 @@ public class ProgressBar {
 
 	public void addCurrentValue(long add) {
 		long current = currentValue.addAndGet(add);
-		long newPercentage = current * 100L / maxValue.get();
+		long newPercentage = current*100L/maxValue.get();
 		long last = lastPercentage.getAndSet(newPercentage);
-		if (newPercentage != last) {
+		if(newPercentage!=last) {
 			print();
 		}
 	}
@@ -51,28 +54,27 @@ public class ProgressBar {
 		long last = lastPercentage.get();
 		long remaining = last;
 
-		for (int i = 0; i < CHARACTERS; i++) {
-			int v = (int) Math.min(remaining, 2);
+		for(int i=0;i<CHARACTERS;i++) {
+			int v = (int)Math.min(remaining, 2);
 			remaining -= v;
 			sb.append(BAR_CHARACTERS[v]);
 		}
 		sb.append(RIGHT);
 		sb.append(' ');
-		if (last < 100L) {
+		if(last<100L) {
 			sb.append(' ');
 		}
-		if (last < 10L) {
+		if(last<10L) {
 			sb.append(' ');
 		}
 		sb.append(last);
 		sb.append("%\test. time remaining: ");
-		sb.append(
-			Duration.ofNanos((System.nanoTime() - startTime) * (101L - last) / (last + 1L))
-				.toString()
-				.substring(
-					2)
-				.replaceAll("(\\d[HMS])(?!$)", "$1 ")
-				.toLowerCase()
+		sb.append(Duration
+			.ofNanos((System.nanoTime()-startTime)*(101L-last)/(last+1L))
+			.toString()
+            .substring(2)
+            .replaceAll("(\\d[HMS])(?!$)", "$1 ")
+            .toLowerCase()
 		);
 		sb.append('\r');
 		log.info(sb.toString());

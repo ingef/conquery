@@ -62,10 +62,7 @@ public class ArrowUtil {
 	}
 
 	private static Field floatField(@NonNull String uniqueName) {
-		return new Field(
-			uniqueName,
-			FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)),
-			null);
+		return new Field(uniqueName, FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null);
 	}
 
 	private static Field dateField(@NonNull String uniqueName) {
@@ -74,12 +71,12 @@ public class ArrowUtil {
 
 	private static Field dateRangeField(@NonNull String uniqueName) {
 		return new Field(
-			uniqueName,
-			FieldType.nullable(ArrowType.Struct.INSTANCE),
-			List.of(
-				dateField("min"),
-				dateField("max")
-			));
+				uniqueName,
+				FieldType.nullable(ArrowType.Struct.INSTANCE),
+				List.of(
+						dateField("min"),
+						dateField("max")
+				));
 	}
 
 	private static Field listField(@NonNull String uniqueName, ResultType type) {
@@ -89,20 +86,15 @@ public class ArrowUtil {
 		return new Field(uniqueName, FieldType.nullable(ArrowType.List.INSTANCE), List.of(nestedField));
 	}
 
-	public static List<Field> generateFields(
-		@NonNull List<ResultInfo> info,
-		UniqueNamer collector,
-		PrintSettings printSettings) {
-		return info.stream().map(i -> fieldFor(i.getType(), collector.getUniqueName(i, printSettings))).toList();
+	public static List<Field> generateFields(@NonNull List<ResultInfo> info, UniqueNamer collector, PrintSettings printSettings) {
+		return info.stream()
+				   .map(i -> fieldFor(i.getType(), collector.getUniqueName(i, printSettings)))
+				   .toList();
 
 	}
 
 	@NotNull
-	public static List<Field> generateFields(
-		List<ResultInfo> idHeaders,
-		List<ResultInfo> resultInfo,
-		UniqueNamer uniqueNamer,
-		PrintSettings printSettings) {
+	public static List<Field> generateFields(List<ResultInfo> idHeaders, List<ResultInfo> resultInfo, UniqueNamer uniqueNamer, PrintSettings printSettings) {
 		// Combine id and value Fields to one vector to build a schema
 		List<Field> fields = new ArrayList<>();
 

@@ -35,29 +35,21 @@ public class IdpDelegatingAccessTokenCreator implements AccessTokenCreator {
 
 		Secret passwordSecret = new Secret(password);
 
-		AuthorizationGrant grant = new ResourceOwnerPasswordCredentialsGrant(username, passwordSecret);
+		AuthorizationGrant  grant = new ResourceOwnerPasswordCredentialsGrant(username, passwordSecret);
 
-		URI tokenEndpoint = UriBuilder.fromUri(authProviderConf.getTokenEndpoint()).build();
+		URI tokenEndpoint =  UriBuilder.fromUri(authProviderConf.getTokenEndpoint()).build();
 
-		TokenRequest tokenRequest = new TokenRequest(
-			tokenEndpoint,
-			authProviderConf.getClientAuthentication(),
-			grant,
-			Scope.parse("openid"));
+		TokenRequest tokenRequest = new TokenRequest(tokenEndpoint, authProviderConf.getClientAuthentication(), grant, Scope.parse("openid"));
 
 
 		TokenResponse response = TokenResponse.parse(tokenRequest.toHTTPRequest().send());
 
 		if (!response.indicatesSuccess()) {
 			HTTPResponse httpResponse = response.toHTTPResponse();
-			log.error(
-				"Received the following error from the auth server while validating username and password:\n\tPath: {}\n\tStatus code: {}\n\tStatus message: {}\n\tContent: {}",
-				tokenEndpoint,
-				httpResponse.getStatusCode(),
-				httpResponse.getStatusMessage(),
-				httpResponse.getContent());
+			log.error("Received the following error from the auth server while validating username and password:\n\tPath: {}\n\tStatus code: {}\n\tStatus message: {}\n\tContent: {}", tokenEndpoint, httpResponse.getStatusCode(), httpResponse.getStatusMessage(), httpResponse.getContent());
 			throw new IllegalStateException("Unable to retrieve access token from auth server.");
-		} else if (!(response instanceof AccessTokenResponse)) {
+		}
+		else if (!(response instanceof AccessTokenResponse)) {
 			log.error("Unknown token response {}.", response.getClass().getName());
 			throw new IllegalStateException("Unknown token response. See log.");
 		}

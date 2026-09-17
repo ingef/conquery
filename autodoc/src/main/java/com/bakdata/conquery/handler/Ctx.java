@@ -4,12 +4,10 @@ import io.github.classgraph.FieldInfo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.With;
+import lombok.experimental.Wither;
 
 @Getter
-@With
-@AllArgsConstructor
-@NoArgsConstructor
+@Wither @AllArgsConstructor @NoArgsConstructor
 public class Ctx {
 	private FieldInfo field;
 	private boolean idOf;

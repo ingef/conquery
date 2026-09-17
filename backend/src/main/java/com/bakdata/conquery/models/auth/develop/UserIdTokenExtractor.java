@@ -33,7 +33,8 @@ public class UserIdTokenExtractor implements AuthFilter.TokenExtractor {
 
 		if (uid != null) {
 			uid = uid.replaceFirst("^Bearer ", "");
-		} else {
+		}
+		else {
 			// Check also the query parameter "access_token" for a UserId
 			uid = requestContext.getUriInfo().getQueryParameters().getFirst(UID_QUERY_STRING_PARAMETER);
 		}

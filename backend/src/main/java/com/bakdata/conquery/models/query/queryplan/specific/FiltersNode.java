@@ -34,10 +34,7 @@ public class FiltersNode extends QPNode {
 	private final EventDateUnionAggregator eventDateAggregator;
 	private boolean hit = false;
 
-	public static FiltersNode create(
-		List<? extends FilterNode<?>> filters,
-		List<Aggregator<?>> aggregators,
-		EventDateUnionAggregator eventDateAggregator) {
+	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators, EventDateUnionAggregator eventDateAggregator) {
 		if (filters.isEmpty() && aggregators.isEmpty()) {
 			throw new IllegalStateException("Unable to create FilterNode without filters or aggregators.");
 		}
@@ -54,11 +51,11 @@ public class FiltersNode extends QPNode {
 		}
 
 		return new FiltersNode(
-			filters,
-			aggregators,
-			eventFilters,
-			aggregationFilters,
-			eventDateAggregator
+				filters,
+				aggregators,
+				eventFilters,
+				aggregationFilters,
+				eventDateAggregator
 		);
 	}
 

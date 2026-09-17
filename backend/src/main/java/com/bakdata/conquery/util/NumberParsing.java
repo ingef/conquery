@@ -10,8 +10,8 @@ public class NumberParsing {
 
 	public static long parseLong(String value) throws ParsingException {
 		try {
-			return Long.parseLong(value);
-		} catch (Exception e) {
+			return Long.valueOf(value);
+		} catch(Exception e) {
 			throw ParsingException.of(value, "long", e);
 		}
 	}
@@ -19,7 +19,7 @@ public class NumberParsing {
 	public static double parseDouble(String value) throws ParsingException {
 		try {
 			return Double.parseDouble(value);
-		} catch (Exception e) {
+		} catch(Exception e) {
 			throw ParsingException.of(value, "double", e);
 		}
 	}
@@ -27,7 +27,7 @@ public class NumberParsing {
 	public static BigDecimal parseBig(String value) throws ParsingException {
 		try {
 			return new BigDecimal(value);
-		} catch (Exception e) {
+		} catch(Exception e) {
 			throw ParsingException.of(value, "BigDecimal", e);
 		}
 	}

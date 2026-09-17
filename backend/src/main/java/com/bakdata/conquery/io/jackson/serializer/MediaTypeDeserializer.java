@@ -9,9 +9,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 
 public class MediaTypeDeserializer extends JsonDeserializer<MediaType> {
 	@Override
-	public MediaType deserialize(
-		JsonParser jsonParser,
-		DeserializationContext deserializationContext) throws IOException {
+	public MediaType deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
 		return MediaType.valueOf(jsonParser.getText());
 	}
 }

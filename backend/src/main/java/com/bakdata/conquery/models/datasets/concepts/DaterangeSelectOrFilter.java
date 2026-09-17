@@ -33,8 +33,7 @@ public interface DaterangeSelectOrFilter {
 	}
 
 	@JsonIgnore
-	@ValidationMethod(
-		message = "Single column date range (set via column) and two column date range (set via startColumn and endColumn) are exclusive.")
+	@ValidationMethod(message = "Single column date range (set via column) and two column date range (set via startColumn and endColumn) are exclusive.")
 	default boolean isExclusiveDateRange() {
 		if (getColumn() == null) {
 			return getStartColumn() != null && getEndColumn() != null;
@@ -58,11 +57,7 @@ public interface DaterangeSelectOrFilter {
 			return true;
 		}
 
-		return ColumnUtils.assertValidColumnTypes(
-			getStartColumn(),
-			EnumSet.of(MajorTypeId.DATE)) && ColumnUtils.assertValidColumnTypes(
-				getEndColumn(),
-				EnumSet.of(MajorTypeId.DATE));
+		return ColumnUtils.assertValidColumnTypes(getStartColumn(), EnumSet.of(MajorTypeId.DATE)) && ColumnUtils.assertValidColumnTypes(getEndColumn(), EnumSet.of(MajorTypeId.DATE));
 	}
 
 	@JsonIgnore

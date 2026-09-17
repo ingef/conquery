@@ -30,10 +30,7 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 	private Clock clock = Clock.systemDefaultZone();
 
 	public DistributedStandaloneCommand() {
-		super(
-			new NoOpConquery(),
-			"standalone",
-			"starts a manager node and shard node(s) at the same time in a single JVM.");
+		super(new NoOpConquery(), "standalone", "starts a manager node and shard node(s) at the same time in a single JVM.");
 	}
 
 	@Override
@@ -44,8 +41,7 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 
 		if (configuration.getStorage() instanceof XodusStoreFactory) {
 			final Path managerDir = ((XodusStoreFactory) configuration.getStorage()).getDirectory().resolve("manager");
-			managerConfig = configuration.withStorage(
-				((XodusStoreFactory) configuration.getStorage()).withDirectory(managerDir));
+			managerConfig = configuration.withStorage(((XodusStoreFactory) configuration.getStorage()).withDirectory(managerDir));
 		}
 
 		manager = new ClusterManagerProvider().provideManager(managerConfig, environment);
@@ -64,11 +60,8 @@ public class DistributedStandaloneCommand extends ServerCommand<ConqueryConfig> 
 			ConqueryConfig clone = configuration;
 
 			if (configuration.getStorage() instanceof XodusStoreFactory) {
-				final Path managerDir = ((XodusStoreFactory) configuration.getStorage()).getDirectory()
-					.resolve(
-						"shard-node" + id);
-				clone = configuration.withStorage(
-					((XodusStoreFactory) configuration.getStorage()).withDirectory(managerDir));
+				final Path managerDir = ((XodusStoreFactory) configuration.getStorage()).getDirectory().resolve("shard-node" + id);
+				clone = configuration.withStorage(((XodusStoreFactory) configuration.getStorage()).withDirectory(managerDir));
 			}
 
 			sc.run(clone, environment);

@@ -38,10 +38,7 @@ public interface TestDataImporter {
 		waitUntilDone(support, () -> LoadingUtil.importSecondaryIds(support, secondaryIds));
 	}
 
-	default void importTables(
-		StandaloneSupport support,
-		List<RequiredTable> tables,
-		boolean autoConcept) throws JSONException {
+	default void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
 		waitUntilDone(support, () -> LoadingUtil.importTables(support, tables, autoConcept));
 	}
 
@@ -67,7 +64,8 @@ public interface TestDataImporter {
 		default void run() throws RuntimeException {
 			try {
 				runThrows();
-			} catch (Exception ex) {
+			}
+			catch (Exception ex) {
 				throw new RuntimeException(ex);
 			}
 		}

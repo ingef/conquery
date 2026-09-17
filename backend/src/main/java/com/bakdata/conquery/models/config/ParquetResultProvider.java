@@ -26,10 +26,8 @@ public class ParquetResultProvider implements ResultRendererProvider {
 	private boolean hidden = true;
 
 	@Override
-	public Collection<ResultAsset> generateResultURLs(
-		ManagedExecution exec,
-		UriBuilder uriBuilder,
-		boolean allProviders) throws MalformedURLException, URISyntaxException {
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders)
+			throws MalformedURLException, URISyntaxException {
 		if (!(exec instanceof SingleTableResult)) {
 			return Collections.emptyList();
 		}
@@ -39,11 +37,7 @@ public class ParquetResultProvider implements ResultRendererProvider {
 		}
 
 		return List.of(
-			new ResultAsset(
-				"PARQUET",
-				ResultParquetResource.getDownloadURL(
-					uriBuilder.clone(),
-					(ManagedExecution & SingleTableResult) exec).toURI())
+				new ResultAsset("PARQUET", ResultParquetResource.getDownloadURL(uriBuilder.clone(), (ManagedExecution & SingleTableResult) exec).toURI())
 		);
 	}
 

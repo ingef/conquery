@@ -28,19 +28,12 @@ public interface NamespaceHandler<N extends Namespace> {
 	/**
 	 * Creates the {@link NamespaceSetupData} that is shared by all {@link Namespace} types.
 	 */
-	static NamespaceSetupData createNamespaceSetup(
-		NamespaceStorage storage,
-		final ConqueryConfig config,
-		final InternalMapperFactory internalMapperFactory,
-		DatasetRegistry<?> datasetRegistry,
-		Environment environment) {
+	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalMapperFactory internalMapperFactory, DatasetRegistry<?> datasetRegistry, Environment environment) {
 		List<Injectable> injectables = new ArrayList<>();
 		injectables.add(datasetRegistry);
 		injectables.add(storage);
 
-		ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(
-			storage,
-			datasetRegistry);
+		ObjectMapper persistenceMapper = internalMapperFactory.createNamespacePersistenceMapper(storage, datasetRegistry);
 		ObjectMapper preprocessMapper = internalMapperFactory.createPreprocessMapper(storage, datasetRegistry);
 
 		injectables.forEach(i -> {
@@ -65,11 +58,7 @@ public interface NamespaceHandler<N extends Namespace> {
 		return new NamespaceSetupData(preprocessMapper, jobManager, filterSearch);
 	}
 
-	N createNamespace(
-		NamespaceStorage namespaceStorage,
-		MetaStorage metaStorage,
-		DatasetRegistry<N> datasetRegistry,
-		Environment environment);
+	N createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, DatasetRegistry<N> datasetRegistry, Environment environment);
 
 	void removeNamespace(DatasetId id, N namespace);
 

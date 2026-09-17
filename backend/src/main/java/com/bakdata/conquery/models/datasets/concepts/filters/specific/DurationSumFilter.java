@@ -65,9 +65,7 @@ public class DurationSumFilter extends AggregationFilter<Range.LongRange> implem
 	}
 
 	@Override
-	public void configureFrontend(
-		FrontendFilterConfiguration.Top f,
-		ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
+	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
 		f.setType(FrontendFilterType.Fields.INTEGER_RANGE);
 		f.setMin(0);
 	}
@@ -79,13 +77,11 @@ public class DurationSumFilter extends AggregationFilter<Range.LongRange> implem
 
 	@Override
 	public AggregationFilterNode<?, ?> createFilterNode(Range.LongRange value) {
-		ColumnAggregator<?> aggregator = isSingleColumnDaterange() ? new DurationSumAggregator(
-			getColumn().resolve()) : new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
+		ColumnAggregator<?> aggregator = isSingleColumnDaterange() ? new DurationSumAggregator(getColumn().resolve())
+				: new TwoColumnDurationSumAggregator(startColumn.resolve(), endColumn.resolve());
 
 		if (hasDistinct()) {
-			aggregator = new DistinctValuesWrapperAggregator<>(
-				aggregator,
-				distinctBy.stream().map(ColumnId::resolve).toList());
+			aggregator = new DistinctValuesWrapperAggregator<>(aggregator, distinctBy.stream().map(ColumnId::resolve).toList());
 		}
 
 		return new RangeFilterNode(value, aggregator);

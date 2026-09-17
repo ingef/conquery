@@ -41,8 +41,7 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 	@Override
 	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) {
 		JavaType type = Optional.ofNullable(ctxt.getContextualType())
-			.orElseGet(
-				Optional.ofNullable(property).map(BeanProperty::getType)::get);
+								.orElseGet(Optional.ofNullable(property).map(BeanProperty::getType)::get);
 
 		while (type.isContainerType()) {
 			type = type.getContentType();
@@ -51,18 +50,15 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 		IdUtil.Parser<Id<Identifiable<?, ?>, ?>> parser = IdUtil.createParser((Class) idClass);
 
 		return new IdDeserializer(
-			idClass,
-			parser,
-			//we only need to check for the dataset prefix if the id requires it
-			NamespacedId.class.isAssignableFrom(idClass)
+				idClass,
+				parser,
+				//we only need to check for the dataset prefix if the id requires it
+				NamespacedId.class.isAssignableFrom(idClass)
 		);
 	}
 
 	@Override
-	public ID deserializeWithType(
-		JsonParser p,
-		DeserializationContext ctxt,
-		TypeDeserializer typeDeserializer) throws IOException {
+	public ID deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
 		return this.deserialize(p, ctxt);
 	}
 
@@ -72,11 +68,7 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 		JsonToken currentToken = parser.getCurrentToken();
 
 		if (currentToken != JsonToken.VALUE_STRING) {
-			return (ID) ctxt.handleUnexpectedToken(
-				Id.class,
-				currentToken,
-				parser,
-				"name references should be strings. Was: " + currentToken);
+			return (ID) ctxt.handleUnexpectedToken(Id.class, currentToken, parser, "name references should be strings. Was: " + currentToken);
 		}
 
 		String text = parser.getText();
@@ -93,19 +85,14 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 			}
 
 			return id;
-		} catch (Exception e) {
-			return (ID) ctxt.handleWeirdStringValue(
-				idClass,
-				text,
-				"Could not parse `" + idClass.getSimpleName() + "` from `" + text + "`: " + e.getMessage());
+		}
+		catch (Exception e) {
+			return (ID) ctxt.handleWeirdStringValue(idClass, text, "Could not parse `" + idClass.getSimpleName() + "` from `" + text + "`: " + e.getMessage());
 		}
 	}
 
-	public static <ID extends Id<?, ?>> ID deserializeId(
-		String text,
-		IdUtil.Parser<ID> idParser,
-		boolean checkForInjectedPrefix,
-		DeserializationContext ctx) throws JsonMappingException {
+	public static <ID extends Id<?, ?>> ID deserializeId(String text, IdUtil.Parser<ID> idParser, boolean checkForInjectedPrefix, DeserializationContext ctx)
+			throws JsonMappingException {
 
 		String prefix = null;
 
@@ -113,9 +100,9 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 			prefix = findDatasetName(ctx);
 		}
 
-		List<String> components = prefix != null ? IdUtil.Parser.asComponents(
-			prefix,
-			text) : IdUtil.Parser.asComponents(text);
+		List<String> components = prefix != null ?
+								  IdUtil.Parser.asComponents(prefix, text) :
+								  IdUtil.Parser.asComponents(text);
 
 
 		IdInterner interner = IdInterner.get(ctx);
@@ -131,10 +118,7 @@ public class IdDeserializer<ID extends Id<?, ?>> extends JsonDeserializer<ID> im
 		return id;
 	}
 
-	public static void setResolver(
-		Id<?, ?> id,
-		MetaStorage metaStorage,
-		NamespacedStorageProvider namespacedStorageProvider) {
+	public static void setResolver(Id<?, ?> id, MetaStorage metaStorage, NamespacedStorageProvider namespacedStorageProvider) {
 		// Set resolvers in this id and subIds
 		final Set<Id<?, ?>> ids = new HashSet<>();
 		id.collectIds(ids);

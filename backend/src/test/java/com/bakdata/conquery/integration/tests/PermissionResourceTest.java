@@ -25,34 +25,31 @@ public class PermissionResourceTest {
 
 	private static final AdminProcessor ADMIN_PROCESSOR = mock(AdminProcessor.class);
 	private static final ResourceExtension EXT = ResourceExtension.builder()
-		.addResource(
-			new PermissionResource(ADMIN_PROCESSOR))
-		.setRegisterDefaultExceptionMappers(false)
-		.addProvider(
-			JsonValidationExceptionMapper.class)
-		.addProvider(NoSuchElementExceptionMapper.class)
-		.addProvider(
-			IllegalArgumentExceptionMapper.class)
-		.build();
+			.addResource(new PermissionResource(ADMIN_PROCESSOR))
+			.setRegisterDefaultExceptionMappers(false)
+			.addProvider(JsonValidationExceptionMapper.class)
+			.addProvider(NoSuchElementExceptionMapper.class)
+			.addProvider(IllegalArgumentExceptionMapper.class)
+			.build();
 
 	static Stream<Arguments> testParams() {
 		return Stream.of(
-			Arguments.of("domain", 204),
-			Arguments.of("domain:", 422),
-			Arguments.of("domain:operation", 204),
-			Arguments.of("domain:operation:", 422),
-			Arguments.of("domain:operation:instance", 204),
-			Arguments.of("domain:operation1,:instance", 204),
-			Arguments.of("domain-hyphen:operation,:instance@at", 204),
-			Arguments.of("domain-hyphen:operation,:instance_underscore", 204),
-			Arguments.of("domain:operation1,operation2:instance", 204),
-			Arguments.of("*", 204),
-			Arguments.of("*:", 422),
-			Arguments.of("", 422),
-			Arguments.of(":", 422),
-			Arguments.of("domain::instance", 422),
-			Arguments.of("domain:operation:instance:too_many_parts", 422),
-			Arguments.of("domain:,", 400)
+				Arguments.of("domain", 204),
+				Arguments.of("domain:", 422),
+				Arguments.of("domain:operation", 204),
+				Arguments.of("domain:operation:", 422),
+				Arguments.of("domain:operation:instance", 204),
+				Arguments.of("domain:operation1,:instance", 204),
+				Arguments.of("domain-hyphen:operation,:instance@at", 204),
+				Arguments.of("domain-hyphen:operation,:instance_underscore", 204),
+				Arguments.of("domain:operation1,operation2:instance", 204),
+				Arguments.of("*", 204),
+				Arguments.of("*:", 422),
+				Arguments.of("", 422),
+				Arguments.of(":", 422),
+				Arguments.of("domain::instance", 422),
+				Arguments.of("domain:operation:instance:too_many_parts", 422),
+				Arguments.of("domain:,", 400)
 
 		);
 	}
@@ -62,10 +59,9 @@ public class PermissionResourceTest {
 	@MethodSource("testParams")
 	void createPermission(String permission, int httpStatus) {
 		try (Response response = EXT.target("/permissions/testUser")
-			.request()
-			.accept(MediaType.APPLICATION_JSON)
-			.post(
-				Entity.json(permission))) {
+									.request()
+									.accept(MediaType.APPLICATION_JSON)
+									.post(Entity.json(permission))) {
 			assertThat(response.getStatus()).as(response.toString()).isEqualTo(httpStatus);
 
 		}

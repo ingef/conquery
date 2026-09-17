@@ -42,33 +42,23 @@ public class ResultExcelResource {
 	@Path("{" + QUERY + "}.xlsx")
 	@Produces(AdditionalMediaTypes.EXCEL)
 	public Response get(
-		@Auth Subject subject,
-		@PathParam(QUERY) ManagedExecutionId execution,
-		@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
-		@QueryParam("pretty") @DefaultValue("true") boolean pretty,
-		@QueryParam("limit") OptionalLong limit) {
+			@Auth Subject subject,
+			@PathParam(QUERY) ManagedExecutionId execution,
+			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
+			@QueryParam("pretty") @DefaultValue("true") boolean pretty,
+			@QueryParam("limit") OptionalLong limit) {
 		checkSingleTableResult(execution.resolve());
-		log.info(
-			"Result for {} download on dataset {} by subject {} ({}).",
-			execution,
-			execution.getDataset(),
-			subject.getId(),
-			subject.getName());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 		return processor.createResult(subject, execution, pretty, limit);
 	}
 
-	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(
-		UriBuilder uriBuilder,
-		E exec) throws MalformedURLException {
-		return uriBuilder.path(ResultExcelResource.class)
-			.resolveTemplate(
-				ResourceConstants.DATASET,
-				exec.getDataset().getName())
-			.path(ResultExcelResource.class, GET_RESULT_PATH_METHOD)
-			.resolveTemplate(
-				ResourceConstants.QUERY,
-				exec.getId().toString())
-			.build()
-			.toURL();
+	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+		return uriBuilder
+				.path(ResultExcelResource.class)
+				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())
+				.path(ResultExcelResource.class, GET_RESULT_PATH_METHOD)
+				.resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
+				.build()
+				.toURL();
 	}
 }

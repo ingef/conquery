@@ -78,7 +78,8 @@ public class AuthFilter extends io.dropwizard.auth.AuthFilter<AuthenticationToke
 				// Success an extracted token could be authenticated
 				log.trace("Authentication was successful for token type {}", token.getClass().getName());
 				return;
-			} catch (AuthenticationException e) {
+			}
+			catch (AuthenticationException e) {
 				// This is the shiro way to indicate that authentication failed
 				failedTokens++;
 				log.trace("Token authentication failed:", e);

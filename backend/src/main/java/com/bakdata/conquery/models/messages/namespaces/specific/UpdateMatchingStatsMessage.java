@@ -78,11 +78,14 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 		if (minDate == Integer.MAX_VALUE && maxDate == Integer.MIN_VALUE) {
 			span = null;
-		} else if (minDate == Integer.MAX_VALUE) {
+		}
+		else if (minDate == Integer.MAX_VALUE) {
 			span = CDateRange.atMost(maxDate);
-		} else if (maxDate == Integer.MIN_VALUE) {
+		}
+		else if (maxDate == Integer.MIN_VALUE) {
 			span = CDateRange.atLeast(minDate);
-		} else {
+		}
+		else {
 			span = CDateRange.of(minDate, maxDate);
 		}
 		return span;
@@ -101,7 +104,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 		@Override
 		public void execute() throws Exception {
-			try (Stream<CBlock> allCBlocks = worker.getStorage().getAllCBlocks()) {
+			try(Stream<CBlock> allCBlocks = worker.getStorage().getAllCBlocks()) {
 				if (allCBlocks.findAny().isEmpty()) {
 					log.debug("Worker {} is empty, skipping.", worker);
 					return;
@@ -113,41 +116,34 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 			log.info("BEGIN update Matching stats for {} Concepts", concepts.size());
 
-			final Map<? extends ConceptId, CompletableFuture<Void>> subJobs = concepts.stream()
-				.collect(
-					Collectors.toMap(
-						Functions.identity(),
-						conceptId -> CompletableFuture.runAsync(() -> {
+			final Map<? extends ConceptId, CompletableFuture<Void>>
+					subJobs =
+					concepts.stream()
+							.collect(Collectors.toMap(Functions.identity(),
+													  conceptId -> CompletableFuture.runAsync(() -> {
 
-							Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = calculateConceptMatches(
-								conceptId,
-								worker);
+														  Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = calculateConceptMatches(conceptId, worker);
 
-							final WriteFuture writeFuture = worker.send(
-								new UpdateElementMatchingStats(worker.getInfo().getId(), matchingStats));
+														  final WriteFuture writeFuture = worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), matchingStats));
 
-							progressReporter.report(1);
-						}, worker.getJobsExecutorService())
-					));
+														  progressReporter.report(1);
+													  }, worker.getJobsExecutorService())
+							));
 
 
 			log.debug("All jobs submitted. Waiting for completion.");
 
 
-			final CompletableFuture<Void> all = CompletableFuture.allOf(
-				subJobs.values().toArray(CompletableFuture[]::new));
+			final CompletableFuture<Void> all = CompletableFuture.allOf(subJobs.values().toArray(CompletableFuture[]::new));
 
 			do {
 				try {
 					all.get(1, TimeUnit.MINUTES);
-				} catch (TimeoutException exception) {
+				}
+				catch (TimeoutException exception) {
 					// Count unfinished matching stats jobs.
 					if (log.isDebugEnabled()) {
-						final long unfinished = subJobs.values()
-							.stream()
-							.filter(
-								Predicate.not(CompletableFuture::isDone))
-							.count();
+						final long unfinished = subJobs.values().stream().filter(Predicate.not(CompletableFuture::isDone)).count();
 						log.debug("{} still waiting for {} tasks", worker.getInfo().getDataset(), unfinished);
 					}
 
@@ -174,13 +170,11 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 			return String.format("Calculate Matching Stats for %s", worker.getInfo().getDataset());
 		}
 
-		private static Map<ConceptElementId<?>, MatchingStats.Entry> calculateConceptMatches(
-			ConceptId conceptId,
-			Worker worker) {
+		private static Map<ConceptElementId<?>, MatchingStats.Entry> calculateConceptMatches(ConceptId conceptId, Worker worker) {
 
 			Concept<?> concept = conceptId.resolve();
 
-			final Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = new HashMap<>(concept.countElements());
+			final Map<ConceptElementId<?>, MatchingStats.Entry>	matchingStats =	new HashMap<>(concept.countElements());
 
 			log.debug("BEGIN calculating for `{}`", conceptId);
 
@@ -196,10 +190,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 						CBlock cBlock = cBlockId.resolve();
 						final Bucket bucket = cBlock.getBucket().resolve();
 						final Table table = bucket.getTable().resolve();
-						final List<Column> dateColumns = Arrays.stream(table.getColumns())
-							.filter(
-								t -> t.getType().isDateCompatible())
-							.toList();
+						final List<Column> dateColumns = Arrays.stream(table.getColumns()).filter(t -> t.getType().isDateCompatible()).toList();
 
 						for (String entity : bucket.entities()) {
 
@@ -212,9 +203,8 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 
 								if (!(concept instanceof TreeConcept) || localIds == null) {
-									matchingStats.computeIfAbsent(
-										conceptId,
-										(ignored) -> new MatchingStats.Entry()).addEvents(entity, 1, span);
+									matchingStats.computeIfAbsent(conceptId, (ignored) -> new MatchingStats.Entry())
+												 .addEvents(entity, 1, span);
 									continue;
 								}
 
@@ -225,15 +215,15 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 								ConceptElement<?> element = ((TreeConcept) concept).getElementByLocalIdPath(localIds);
 
 								while (element != null) {
-									matchingStats.computeIfAbsent(
-										element.getId(),
-										(ignored) -> new MatchingStats.Entry()).addEvents(entity, 1, span);
+									matchingStats.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Entry())
+												 .addEvents(entity, 1, span);
 									element = element.getParent();
 								}
 							}
 						}
 
-					} catch (Exception e) {
+					}
+					catch (Exception e) {
 						log.error("Failed to collect the matching stats for {}", cBlockId, e);
 					}
 				}

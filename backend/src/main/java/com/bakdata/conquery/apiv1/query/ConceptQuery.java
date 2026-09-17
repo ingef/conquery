@@ -71,10 +71,7 @@ public class ConceptQuery extends Query {
 		resolvedDateAggregationMode = dateAggregationMode;
 
 		if (context.getDateAggregationMode() != null) {
-			log.trace(
-				"Overriding date aggregation mode ({}) with mode from context ({})",
-				dateAggregationMode,
-				context.getDateAggregationMode());
+			log.trace("Overriding date aggregation mode ({}) with mode from context ({})", dateAggregationMode, context.getDateAggregationMode());
 			resolvedDateAggregationMode = context.getDateAggregationMode();
 		}
 		root.resolve(context.withDateAggregationMode(resolvedDateAggregationMode));

@@ -17,9 +17,8 @@ public class LastValueSelect extends MappableSingleColumnSelect {
 
 	@JsonCreator
 	public LastValueSelect(
-		ColumnId column,
-		InternToExternMapperId mapping,
-		Range.IntegerRange substring
+			ColumnId column,
+			InternToExternMapperId mapping, Range.IntegerRange substring
 	) {
 		super(column, mapping, substring);
 	}

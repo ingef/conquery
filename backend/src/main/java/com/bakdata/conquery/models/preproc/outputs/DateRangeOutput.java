@@ -34,13 +34,13 @@ public class DateRangeOutput extends OutputDescription {
 	public boolean allowOpen = false;
 
 	@Override
-	public int hashCode() {
-		return new HashCodeBuilder().append(super.hashCode())
-			.append(startColumn)
-			.append(endColumn)
-			.append(
-				allowOpen)
-			.toHashCode();
+	public int hashCode(){
+		return new HashCodeBuilder()
+					   .append(super.hashCode())
+					   .append(startColumn)
+					   .append(endColumn)
+					   .append(allowOpen)
+					   .toHashCode();
 	}
 
 	@Override

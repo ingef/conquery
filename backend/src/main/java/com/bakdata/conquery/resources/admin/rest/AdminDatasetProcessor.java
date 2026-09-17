@@ -102,12 +102,15 @@ public class AdminDatasetProcessor {
 			List<Table> tables = tableStream.toList();
 			if (!tables.isEmpty()) {
 				throw new WebApplicationException(
-					String.format(
-						"Cannot delete dataset `%s`, because it still has tables: `%s`",
-						dataset,
-						tables.stream().map(Table::getId).map(Objects::toString).collect(Collectors.joining(","))
-					),
-					Response.Status.CONFLICT
+						String.format(
+								"Cannot delete dataset `%s`, because it still has tables: `%s`",
+								dataset,
+								tables.stream()
+									  .map(Table::getId)
+									  .map(Objects::toString)
+									  .collect(Collectors.joining(","))
+						),
+						Response.Status.CONFLICT
 				);
 			}
 		}
@@ -143,23 +146,17 @@ public class AdminDatasetProcessor {
 		final List<Column> dependents;
 		try (Stream<Table> tables = namespace.getStorage().getTables()) {
 
-			dependents = tables.map(Table::getColumns)
-				.flatMap(Arrays::stream)
-				.filter(
-					column -> secondaryId.equals(column.getSecondaryId()))
-				.toList();
+			dependents = tables.map(Table::getColumns).flatMap(Arrays::stream)
+							   .filter(column -> secondaryId.equals(column.getSecondaryId()))
+							   .toList();
 		}
 
 		if (!dependents.isEmpty()) {
-			final Set<TableId> tables = dependents.stream()
-				.map(Column::getTable)
-				.map(Identifiable::getId)
-				.collect(
-					Collectors.toSet());
+			final Set<TableId> tables = dependents.stream().map(Column::getTable).map(Identifiable::getId).collect(Collectors.toSet());
 			log.error(
-				"SecondaryId[{}] still present on {}",
-				secondaryId,
-				tables
+					"SecondaryId[{}] still present on {}",
+					secondaryId,
+					tables
 			);
 
 			throw new ForbiddenException(String.format("SecondaryId still has dependencies. %s", tables));
@@ -184,11 +181,12 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Table already exists", Response.Status.CONFLICT);
 		}
 
-		Class<? extends ValidationMode> mode = switch (namespace) {
-			case LocalNamespace ignored -> ValidationMode.Local.class;
-			case DistributedNamespace ignored -> ValidationMode.Clustered.class;
-			default -> throw new IllegalStateException("Unexpected Namespace class %s".formatted(namespace.getClass()));
-		};
+		Class<? extends ValidationMode> mode =
+				switch (namespace) {
+					case LocalNamespace ignored -> ValidationMode.Local.class;
+					case DistributedNamespace ignored -> ValidationMode.Clustered.class;
+					default -> throw new IllegalStateException("Unexpected Namespace class %s".formatted(namespace.getClass()));
+				};
 
 
 		Set<ConstraintViolation<Table>> violations = new HashSet<>();
@@ -231,9 +229,7 @@ public class AdminDatasetProcessor {
 
 		if (namespaceStorage.hasConcept(concept.getId())) {
 			if (!force) {
-				throw new WebApplicationException(
-					"Can't replace already existing concept " + concept.getId(),
-					Response.Status.CONFLICT);
+				throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
 			}
 			deleteConcept(concept.getId());
 			log.info("Force deleted previous concept: {}", concept.getId());
@@ -268,19 +264,20 @@ public class AdminDatasetProcessor {
 	public void setIdMapping(InputStream data, Namespace namespace) {
 		log.info("Received IdMapping for Dataset[{}]", namespace.getDataset().getId());
 
-		final CsvParser parser = config.getCsv().withSkipHeader(false).withParseHeaders(true).createParser();
+		final CsvParser parser = config.getCsv()
+									   .withSkipHeader(false)
+									   .withParseHeaders(true)
+									   .createParser();
 
 		try {
 
 			parser.beginParsing(data);
 
-			final EntityIdMap mapping = EntityIdMap.generateIdMapping(
-				parser,
-				config.getIdColumns().getIds(),
-				namespace.getStorage());
+			final EntityIdMap mapping = EntityIdMap.generateIdMapping(parser, config.getIdColumns().getIds(), namespace.getStorage());
 			namespace.getStorage().updateIdMapping(mapping);
 
-		} finally {
+		}
+		finally {
 			parser.stopParsing();
 		}
 	}
@@ -317,10 +314,9 @@ public class AdminDatasetProcessor {
 		final List<Concept<?>> dependentConcepts;
 		try (Stream<Concept<?>> allConcepts = namespace.getStorage().getAllConcepts()) {
 			dependentConcepts = allConcepts.flatMap(c -> c.getConnectors().stream())
-				.filter(
-					con -> con.resolveTableId().equals(table))
-				.map(Connector::getConcept)
-				.collect(Collectors.toList());
+										   .filter(con -> con.resolveTableId().equals(table))
+										   .map(Connector::getConcept)
+										   .collect(Collectors.toList());
 		}
 
 		if (force || dependentConcepts.isEmpty()) {
@@ -328,11 +324,9 @@ public class AdminDatasetProcessor {
 				deleteConcept(concept.getId());
 			}
 
-			namespace.getStorage()
-				.getAllImports()
-				.filter(imp -> imp.getTable().equals(table))
-				.forEach(
-					this::deleteImport);
+			namespace.getStorage().getAllImports()
+					 .filter(imp -> imp.getTable().equals(table))
+					 .forEach(this::deleteImport);
 
 			namespace.getStorage().removeTable(table);
 			storageListener.onRemoveTable(table);
@@ -380,19 +374,16 @@ public class AdminDatasetProcessor {
 	public List<ConceptId> deleteInternToExternMapping(InternToExternMapperId internToExternMapper, boolean force) {
 		final Namespace namespace = datasetRegistry.get(internToExternMapper.getDataset());
 
-		final Set<Concept<?>> dependentConcepts = namespace.getStorage()
-			.getAllConcepts()
-			.filter(
-				c -> c.getSelects()
-					.stream()
-					.filter(MappableSingleColumnSelect.class::isInstance)
+		final Set<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts()
+														   .filter(
+																   c -> c.getSelects().stream()
+																		 .filter(MappableSingleColumnSelect.class::isInstance)
 
-					.map(MappableSingleColumnSelect.class::cast)
-					.map(MappableSingleColumnSelect::getMapping)
-					.anyMatch(
-						internToExternMapper::equals)
-			)
-			.collect(Collectors.toSet());
+																		 .map(MappableSingleColumnSelect.class::cast)
+																		 .map(MappableSingleColumnSelect::getMapping)
+																		 .anyMatch(internToExternMapper::equals)
+														   )
+														   .collect(Collectors.toSet());
 
 		if (force || dependentConcepts.isEmpty()) {
 			for (Concept<?> concept : dependentConcepts) {
@@ -425,22 +416,18 @@ public class AdminDatasetProcessor {
 	public List<ConceptId> deleteSearchIndex(SearchIndexId searchIndex, boolean force) {
 		final Namespace namespace = datasetRegistry.get(searchIndex.getDataset());
 
-		final List<Concept<?>> dependentConcepts = namespace.getStorage()
-			.getAllConcepts()
-			.filter(
-				c -> c.getConnectors()
-					.stream()
-					.map(Connector::getFilters)
-					.flatMap(Collection::stream)
-					.filter(
-						SelectFilter.class::isInstance)
-					.map(SelectFilter.class::cast)
-					.map(SelectFilter::getTemplate)
-					.filter(
-						Objects::nonNull)
-					.anyMatch(searchIndex::equals)
-			)
-			.toList();
+		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts()
+															.filter(
+																	c -> c.getConnectors().stream()
+																		  .map(Connector::getFilters)
+																		  .flatMap(Collection::stream)
+																		  .filter(SelectFilter.class::isInstance)
+																		  .map(SelectFilter.class::cast)
+																		  .map(SelectFilter::getTemplate)
+																		  .filter(Objects::nonNull)
+																		  .anyMatch(searchIndex::equals)
+															)
+															.toList();
 
 		if (force || dependentConcepts.isEmpty()) {
 			for (Concept<?> concept : dependentConcepts) {

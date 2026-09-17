@@ -26,8 +26,11 @@ public class EpochOutput extends OutputDescription {
 	private String inputColumn;
 
 	@Override
-	public int hashCode() {
-		return new HashCodeBuilder().append(super.hashCode()).append(inputColumn).toHashCode();
+	public int hashCode(){
+		return new HashCodeBuilder()
+					   .append(super.hashCode())
+					   .append(inputColumn)
+					   .toHashCode();
 	}
 
 	@Override

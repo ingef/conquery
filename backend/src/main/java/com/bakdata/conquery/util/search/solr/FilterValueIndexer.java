@@ -70,7 +70,8 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 		try {
 			QueryResponse response = chunkSubmitter.getSolrClient().query(query);
 			return response.getResults().getNumFound();
-		} catch (SolrServerException | IOException e) {
+		}
+		catch (SolrServerException | IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -99,10 +100,7 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 
 		if (solrFrontendValue.value_s.isEmpty()) {
 			if (seenEmpty) {
-				log.trace(
-					"Skip indexing of {} for {}, because its 'value' is empty and was already added.",
-					solrFrontendValue,
-					getSearchable());
+				log.trace("Skip indexing of {} for {}, because its 'value' is empty and was already added.", solrFrontendValue, getSearchable());
 				return;
 			}
 			seenEmpty = true;
@@ -110,10 +108,7 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 		}
 
 		if (!seenValues.add(solrFrontendValue.value_s)) {
-			log.trace(
-				"Skip indexing of {} for {}, because its 'value' has already been submitted to solr.",
-				solrFrontendValue,
-				getSearchable());
+			log.trace("Skip indexing of {} for {}, because its 'value' has already been submitted to solr.", solrFrontendValue, getSearchable());
 			return;
 		}
 
@@ -131,12 +126,7 @@ public class FilterValueIndexer extends Search<FrontendValue> {
 			if (value == null || value.isBlank()) {
 				continue;
 			}
-			SolrFrontendValue solrFrontendValue = new SolrFrontendValue(
-				getSearchable(),
-				sourcePriority,
-				value,
-				null,
-				null);
+			SolrFrontendValue solrFrontendValue = new SolrFrontendValue(getSearchable(), sourcePriority, value, null, null);
 			insertIntoChunk(solrFrontendValue);
 		}
 	}

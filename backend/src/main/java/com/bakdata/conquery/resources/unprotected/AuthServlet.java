@@ -34,11 +34,7 @@ public class AuthServlet {
 	 *
 	 * @return
 	 */
-	public static DropwizardResourceConfig generalSetup(
-		MetricRegistry metrics,
-		ConqueryConfig config,
-		ServletEnvironment servletEnvironment,
-		ObjectMapper objectMapper) {
+	public static DropwizardResourceConfig generalSetup(MetricRegistry metrics, ConqueryConfig config, ServletEnvironment servletEnvironment, ObjectMapper objectMapper) {
 		DropwizardResourceConfig jerseyConfig = new DropwizardResourceConfig(metrics);
 		jerseyConfig.setUrlPattern("/auth");
 

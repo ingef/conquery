@@ -58,8 +58,7 @@ public class FormConfig extends MetaIdentifiable<FormConfigId> implements Sharea
 	protected DatasetId dataset;
 	@NotEmpty
 	private String formType;
-	@VariableDefaultValue
-	@NonNull
+	@VariableDefaultValue @NonNull
 	private UUID formId = UUID.randomUUID();
 	private String label;
 	@NotNull
@@ -95,30 +94,28 @@ public class FormConfig extends MetaIdentifiable<FormConfigId> implements Sharea
 		String ownerName = getOwnerName();
 
 		return FormConfigOverviewRepresentation.builder()
-			.id(getId())
-			.formType(formType)
-			.label(label)
-			.tags(
-				tags)
-			.ownerName(ownerName)
-			.own(subject.isOwner(this))
-			.createdAt(
-				getCreationTime().atZone(ZoneId.systemDefault()))
-			.shared(shared)
-			// system?
-			.build();
+											   .id(getId())
+											   .formType(formType)
+											   .label(label)
+											   .tags(tags)
+											   .ownerName(ownerName)
+											   .own(subject.isOwner(this))
+											   .createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
+											   .shared(shared)
+											   // system?
+											   .build();
 	}
 
 	@JsonIgnore
 	@Nullable
 	private String getOwnerName() {
-		if (owner == null) {
+		if (owner == null){
 			return null;
 		}
 
 		User resolved = owner.get();
 
-		if (resolved == null) {
+		if (resolved == null){
 			return null;
 		}
 
@@ -128,7 +125,7 @@ public class FormConfig extends MetaIdentifiable<FormConfigId> implements Sharea
 	/**
 	 * Return the full representation of the configuration with the configured form fields and meta data.
 	 */
-	public FormConfigFullRepresentation fullRepresentation(MetaStorage storage, Subject requestingUser) {
+	public FormConfigFullRepresentation fullRepresentation(MetaStorage storage, Subject requestingUser){
 		String ownerName = getOwnerName();
 
 		/* Calculate which groups can see this query.
@@ -137,28 +134,26 @@ public class FormConfig extends MetaIdentifiable<FormConfigId> implements Sharea
 
 		List<GroupId> permittedGroups = new ArrayList<>();
 		for (Group group : storage.getAllGroups().toList()) {
-			for (Permission perm : group.getPermissions()) {
-				if (perm.implies(createPermission(Ability.READ.asSet()))) {
+			for(Permission perm : group.getPermissions()) {
+				if(perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());
 				}
 			}
 		}
 
 		return FormConfigFullRepresentation.builder()
-			.id(getId())
-			.formType(formType)
-			.label(label)
-			.tags(tags)
-			.ownerName(
-				ownerName)
-			.own(requestingUser.isOwner(this))
-			.createdAt(
-				getCreationTime().atZone(ZoneId.systemDefault()))
-			.shared(shared)
-			.groups(permittedGroups)
-			// system? TODO discuss how system is determined (may check if owning user is in a special system group or so)
-			.values(values)
-			.build();
+										   .id(getId())
+										   .formType(formType)
+										   .label(label)
+										   .tags(tags)
+										   .ownerName(ownerName)
+										   .own(requestingUser.isOwner(this))
+										   .createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
+										   .shared(shared)
+										   .groups(permittedGroups)
+										   // system? TODO discuss how system is determined (may check if owning user is in a special system group or so)
+										   .values(values)
+										   .build();
 	}
 
 	@Override

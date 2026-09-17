@@ -78,10 +78,8 @@ public class Conquery extends Application<ConqueryConfig> {
 			@Override
 			public void initialize(Bootstrap<?> bootstrap) {
 				// Allow overriding of config from environment variables.
-				bootstrap.setConfigurationSourceProvider(
-					new SubstitutingSourceProvider(
-						bootstrap.getConfigurationSourceProvider(),
-						StringSubstitutor.createInterpolator()));
+				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
+						bootstrap.getConfigurationSourceProvider(), StringSubstitutor.createInterpolator()));
 			}
 
 			@Override
@@ -109,8 +107,8 @@ public class Conquery extends Application<ConqueryConfig> {
 
 	@Override
 	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-		ManagerProvider provider = configuration.getSqlConnectorConfig().isEnabled() ? new LocalManagerProvider(
-			getQueryClock()) : new ClusterManagerProvider();
+		ManagerProvider provider = configuration.getSqlConnectorConfig().isEnabled() ?
+								   new LocalManagerProvider(getQueryClock()) : new ClusterManagerProvider();
 		Manager manager = provider.provideManager(configuration, environment);
 
 		ManagerNode managerNode = new ManagerNode();

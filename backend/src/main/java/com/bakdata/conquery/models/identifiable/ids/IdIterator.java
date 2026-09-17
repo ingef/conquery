@@ -6,8 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-@Getter
-@ToString
+@Getter @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 //TODO is this class necessary?
 public class IdIterator {
@@ -21,8 +20,8 @@ public class IdIterator {
 	}
 
 	public List<String> getRemaining() {
-		if (index <= 0) {
-			throw new IllegalStateException("No more remaining values in " + data);
+		if(index <= 0) {
+			throw new IllegalStateException("No more remaining values in "+data);
 		}
 		return data.subList(0, index);
 	}
@@ -44,12 +43,12 @@ public class IdIterator {
 	}
 
 	public IdIterator splitOff(int n) {
-		IdIterator result = new IdIterator(data.subList(index - n, index));
+		IdIterator result = new IdIterator(data.subList(index-n, index));
 		index -= n;
 		return result;
 	}
 
 	public void internNext() {
-		data.set(index - 1, data.get(index - 1).intern());
+		data.set(index-1, data.get(index-1).intern());
 	}
 }

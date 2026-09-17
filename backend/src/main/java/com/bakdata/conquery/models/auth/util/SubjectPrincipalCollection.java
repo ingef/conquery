@@ -27,21 +27,19 @@ public class SubjectPrincipalCollection implements PrincipalCollection {
 		this.realm = realm;
 	}
 
-	@Override
-	@JsonIgnore
+	@Override @JsonIgnore
 	public Iterator<Subject> iterator() {
 		return Collections.singleton(principal).iterator();
 	}
 
-	@Override
-	@JsonIgnore
+	@Override @JsonIgnore
 	public Subject getPrimaryPrincipal() {
 		return principal;
 	}
 
 	@Override
 	public <T> T oneByType(Class<T> type) {
-		if (type.isAssignableFrom(principal.getClass())) {
+		if(type.isAssignableFrom(principal.getClass())) {
 			return (T) principal;
 		}
 		return null;
@@ -49,15 +47,15 @@ public class SubjectPrincipalCollection implements PrincipalCollection {
 
 	@Override
 	public <T> Collection<T> byType(Class<T> type) {
-		if (type.isAssignableFrom(principal.getClass())) {
-			return List.of((T) principal);
+		if(type.isAssignableFrom(principal.getClass())) {
+			return List.of((T)principal);
 		}
 		return Collections.emptyList();
 	}
 
 	@Override
 	public List<Subject> asList() {
-		return List.of(principal);
+		return  List.of(principal);
 	}
 
 	@Override
@@ -67,23 +65,21 @@ public class SubjectPrincipalCollection implements PrincipalCollection {
 
 	@Override
 	public Collection<Subject> fromRealm(String realmName) {
-		if (realm.getName().equals(realmName)) {
+		if(realm.getName().equals(realmName)){
 			return List.of(principal);
 		}
 		return Collections.emptyList();
 	}
 
-	@Override
-	@JsonIgnore
+	@Override @JsonIgnore
 	public Set<String> getRealmNames() {
-		if (realm != null) {
+		if(realm != null) {
 			return Set.of(realm.getName());
 		}
 		return Collections.emptySet();
 	}
 
-	@Override
-	@JsonIgnore
+	@Override @JsonIgnore
 	public boolean isEmpty() {
 		return false;
 	}

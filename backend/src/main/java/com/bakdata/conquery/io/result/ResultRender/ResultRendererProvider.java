@@ -25,10 +25,8 @@ public interface ResultRendererProvider {
 	 * @param allProviders A flag that should override internal "hide-this-url" flags.
 	 * @return An Optional with the url or an empty optional.
 	 */
-	Collection<ResultAsset> generateResultURLs(
-		ManagedExecution exec,
-		UriBuilder uriBuilder,
-		boolean allProviders) throws MalformedURLException, URISyntaxException;
+	Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders)
+			throws MalformedURLException, URISyntaxException;
 
 	void registerResultResource(DropwizardResourceConfig environment, ManagerNode manager);
 }

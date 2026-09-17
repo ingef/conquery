@@ -36,8 +36,9 @@ import org.apache.shiro.authz.Permission;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends MetaIdentifiable<T> implements Comparable<PermissionOwner<?>> {
 
-	private static final Comparator<PermissionOwner<?>> COMPARATOR = Comparator.<PermissionOwner<?>, String>comparing(
-		PermissionOwner::getLabel).thenComparing(po -> po.getId().toString());
+	private static final Comparator<PermissionOwner<?>>
+			COMPARATOR =
+			Comparator.<PermissionOwner<?>, String>comparing(PermissionOwner::getLabel).thenComparing(po -> po.getId().toString());
 
 	@Getter
 	@Setter
@@ -80,16 +81,20 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @return Returns the added Permission
 	 */
 	public synchronized void addPermissions(Set<ConqueryPermission> permissions) {
-		this.permissions = ImmutableSet.<ConqueryPermission>builder()
-			.addAll(this.permissions)
-			.addAll(
-				permissions)
-			.build();
+		this.permissions = ImmutableSet
+				.<ConqueryPermission>builder()
+				.addAll(this.permissions)
+				.addAll(permissions)
+				.build();
 		updateStorage();
 	}
 
 	public synchronized void addPermission(ConqueryPermission permission) {
-		this.permissions = ImmutableSet.<ConqueryPermission>builder().addAll(this.permissions).add(permission).build();
+		this.permissions = ImmutableSet
+				.<ConqueryPermission>builder()
+				.addAll(this.permissions)
+				.add(permission)
+				.build();
 		updateStorage();
 	}
 

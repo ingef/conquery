@@ -68,9 +68,7 @@ public abstract class SelectFilter<FE_TYPE> extends EventFilter<FE_TYPE> {
 	}
 
 	@Override
-	public void configureFrontend(
-		FrontendFilterConfiguration.Top f,
-		ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
+	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
 		final SearchIndexId searchIndexId = getTemplate();
 		if (searchIndexId != null) {
 			f.setTemplate((FilterTemplate) searchIndexId.resolve());
@@ -78,10 +76,7 @@ public abstract class SelectFilter<FE_TYPE> extends EventFilter<FE_TYPE> {
 		f.setType(getFilterType());
 
 		// If either not searches are available or all are disabled, we allow users to supply their own values
-		f.setCreatable(
-			conqueryConfig.getFrontend().isAlwaysAllowCreateValue() || getSearchReferences().stream()
-				.noneMatch(
-					Predicate.not(Searchable::isSearchDisabled)));
+		f.setCreatable(conqueryConfig.getFrontend().isAlwaysAllowCreateValue() || getSearchReferences().stream().noneMatch(Predicate.not(Searchable::isSearchDisabled)));
 
 		f.setOptions(collectLabels());
 	}
@@ -120,11 +115,9 @@ public abstract class SelectFilter<FE_TYPE> extends EventFilter<FE_TYPE> {
 
 	@NotNull
 	protected List<FrontendValue> collectLabels() {
-		return labels.entrySet()
-			.stream()
-			.map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
-			.collect(
-				Collectors.toList());
+		return labels.entrySet().stream()
+				.map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
+				.collect(Collectors.toList());
 	}
 
 	@JsonIgnore

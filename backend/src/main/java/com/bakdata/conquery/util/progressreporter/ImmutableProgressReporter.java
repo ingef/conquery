@@ -9,9 +9,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+@RequiredArgsConstructor(onConstructor_=@JsonCreator)
 @JsonSerialize(as = Void.class)
-public class ImmutableProgressReporter implements ProgressReporter {
+public class ImmutableProgressReporter implements ProgressReporter{
 	private final long absoluteProgress;
 	private final long max;
 	private final boolean done;
@@ -37,7 +37,7 @@ public class ImmutableProgressReporter implements ProgressReporter {
 
 	@JsonIgnore
 	public long getWaitedSeconds() {
-		if (started) {
+		if(started) {
 			return TimeUnit.MILLISECONDS.toSeconds(startTimeMillis - creationTimeMillis);
 		}
 		return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - creationTimeMillis);
@@ -70,9 +70,9 @@ public class ImmutableProgressReporter implements ProgressReporter {
 
 	@Override
 	public double getProgress() {
-		if (max <= 0) {
+		if(max <= 0) {
 			return 0;
 		}
-		return ((double) absoluteProgress) / max;
+		return ((double)absoluteProgress)/max;
 	}
 }

@@ -174,14 +174,11 @@ public class AdminDatasetResource {
 
 	@DELETE
 	@Path("searchIndex/{" + SEARCH_INDEX_ID + "}")
-	public List<ConceptId> deleteSearchIndex(
-		@PathParam(SEARCH_INDEX_ID) SearchIndexId searchIndex,
-		@QueryParam("force") @DefaultValue("false") boolean force) {
+	public List<ConceptId> deleteSearchIndex(@PathParam(SEARCH_INDEX_ID) SearchIndexId searchIndex, @QueryParam("force") @DefaultValue("false") boolean force) {
 
 		final List<ConceptId> conceptIds = processor.deleteSearchIndex(searchIndex, force);
 		if (!conceptIds.isEmpty() && !force) {
-			throw new BadRequestException(
-				String.format("Cannot delete search index because it is used by these concepts: %s", conceptIds));
+			throw new BadRequestException(String.format("Cannot delete search index because it is used by these concepts: %s", conceptIds));
 		}
 		return conceptIds;
 	}
@@ -189,8 +186,8 @@ public class AdminDatasetResource {
 	@DELETE
 	@Path("internToExtern/{" + INTERN_TO_EXTERN_ID + "}")
 	public List<ConceptId> deleteInternToExternMapping(
-		@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapperId internToExternMapper,
-		@QueryParam("force") @DefaultValue("false") boolean force) {
+			@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapperId internToExternMapper,
+			@QueryParam("force") @DefaultValue("false") boolean force) {
 		return processor.deleteInternToExternMapping(internToExternMapper, force);
 	}
 
@@ -215,7 +212,10 @@ public class AdminDatasetResource {
 	@GET
 	@Path("concepts")
 	public List<ConceptId> listConcepts() {
-		return namespace.getStorage().getAllConcepts().map(Concept::getId).collect(Collectors.toList());
+		return namespace.getStorage()
+						.getAllConcepts()
+						.map(Concept::getId)
+						.collect(Collectors.toList());
 	}
 
 	@DELETE

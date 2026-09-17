@@ -54,10 +54,8 @@ public class ExternalExecutionInfoImpl implements ExternalExecutionInfo {
 	@Override
 	public Response fetchExternalResult(String assetId) {
 		final ResultAsset resultRef = resultsAssetMap.stream()
-			.map(Pair::key)
-			.filter(
-				a -> a.getAssetId().equals(assetId))
-			.collect(MoreCollectors.onlyElement());
+													 .map(Pair::key).filter(a -> a.getAssetId().equals(assetId))
+													 .collect(MoreCollectors.onlyElement());
 		return api.getResult(resultRef.url());
 	}
 }

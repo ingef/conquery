@@ -26,10 +26,8 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 public class CsvResultProvider implements ResultRendererProvider {
 	private boolean hidden = false;
 
-	public Collection<ResultAsset> generateResultURLs(
-		ManagedExecution exec,
-		UriBuilder uriBuilder,
-		boolean allProviders) throws MalformedURLException, URISyntaxException {
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders)
+			throws MalformedURLException, URISyntaxException {
 		if (!(exec instanceof SingleTableResult)) {
 			return Collections.emptyList();
 		}
@@ -38,10 +36,7 @@ public class CsvResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
-		return List.of(
-			new ResultAsset(
-				"CSV",
-				ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution & SingleTableResult) exec).toURI()));
+		return List.of(new ResultAsset("CSV", ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution & SingleTableResult) exec).toURI()));
 	}
 
 	@Override

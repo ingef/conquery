@@ -54,8 +54,7 @@ public abstract class InternToExternMapper extends NamespacedIdentifiable<Intern
 
 	public Printer<String> createPrinter(PrinterFactory printerFactory, PrintSettings printSettings) {
 		if (isAllowMultiple()) {
-			return new OneToManyMappingPrinter(this).andThen(
-				printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
+			return new OneToManyMappingPrinter(this).andThen(printerFactory.getListPrinter(printerFactory.getStringPrinter(printSettings), printSettings));
 		}
 
 		return new OneToOneMappingPrinter(this, printerFactory.getStringPrinter(printSettings));

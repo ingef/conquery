@@ -48,7 +48,7 @@ public class EventDurationSumAggregator extends Aggregator<Long> {
 
 		final CDateRange value = validityDateColumn.getValidityDate(event, bucket);
 
-		if (value == null) {
+		if (value == null){
 			return;
 		}
 
@@ -59,10 +59,11 @@ public class EventDurationSumAggregator extends Aggregator<Long> {
 	@Override
 	public Long createAggregationResult() {
 
-		queryDateAggregator.map(Aggregator::createAggregationResult)
-			.ifPresent(
-				set::retainAll
-			);
+		queryDateAggregator
+				.map(Aggregator::createAggregationResult)
+				.ifPresent(
+						set::retainAll
+				);
 
 		return set.countDays();
 	}

@@ -33,7 +33,19 @@ public class FirstInitialUserRealm extends AuthenticatingRealm implements Conque
 	/**
 	 * The warning that is displayed, when the realm is instantiated.
 	 */
-	private static final String WARNING = "\n" + "           §§\n" + "          §  §\n" + "         §    §\n" + "        §      §\n" + "       §  §§§§  §       You instantiated and are probably using a Shiro realm\n" + "      §   §§§§   §      that does not do any permission checks or authentication.\n" + "     §     §§     §     Access to all resources is granted to everyone.\n" + "    §      §§      §    DO NOT USE THIS REALM IN PRODUCTION\n" + "   $                §\n" + "  §        §§        §\n" + " §                    §\n" + " §§§§§§§§§§§§§§§§§§§§§§";
+	private static final String WARNING = "\n"
+		+ "           §§\n"
+		+ "          §  §\n"
+		+ "         §    §\n"
+		+ "        §      §\n"
+		+ "       §  §§§§  §       You instantiated and are probably using a Shiro realm\n"
+		+ "      §   §§§§   §      that does not do any permission checks or authentication.\n"
+		+ "     §     §§     §     Access to all resources is granted to everyone.\n"
+		+ "    §      §§      §    DO NOT USE THIS REALM IN PRODUCTION\n"
+		+ "   $                §\n"
+		+ "  §        §§        §\n"
+		+ " §                    §\n"
+		+ " §§§§§§§§§§§§§§§§§§§§§§";
 
 	static {
 		log.warn(WARNING);
@@ -47,8 +59,7 @@ public class FirstInitialUserRealm extends AuthenticatingRealm implements Conque
 	}
 
 	@Override
-	public ConqueryAuthenticationInfo doGetAuthenticationInfo(
-		AuthenticationToken token) throws AuthenticationException {
+	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		if (!(token instanceof DevelopmentToken devToken)) {
 			return null;
 		}

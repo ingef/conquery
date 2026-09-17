@@ -79,20 +79,11 @@ public class FormTest extends ConqueryTestSpec {
 	public void executeTest(StandaloneSupport support) throws Exception {
 
 
-		final ManagedExecutionId managedExecutionId = IntegrationUtils.assertQueryResult(
-			support,
-			form,
-			-1,
-			ExecutionState.DONE,
-			support.getTestUser(),
-			201);
+		final ManagedExecutionId managedExecutionId = IntegrationUtils.assertQueryResult(support, form, -1, ExecutionState.DONE, support.getTestUser(), 201);
 
 		log.info("{} QUERIES EXECUTED", getLabel());
 
-		checkResults(
-			support,
-			(ManagedInternalForm<?>) support.getMetaStorage().getExecution(managedExecutionId),
-			support.getTestUser());
+		checkResults(support, (ManagedInternalForm<?>) support.getMetaStorage().getExecution(managedExecutionId), support.getTestUser());
 	}
 
 	@Override
@@ -106,20 +97,19 @@ public class FormTest extends ConqueryTestSpec {
 		return LoadingUtil.parseSubTree(support, rawForm, Form.class, false);
 	}
 
-	private void checkResults(
-		StandaloneSupport standaloneSupport,
-		ManagedInternalForm<?> managedForm,
-		User user) throws IOException {
+	private void checkResults(StandaloneSupport standaloneSupport, ManagedInternalForm<?> managedForm, User user) throws IOException {
 
 		IdPrinter idPrinter = IdColumnUtil.getIdPrinter(
-			user,
-			managedForm,
-			standaloneSupport.getNamespace(),
-			standaloneSupport.getConfig().getIdColumns().getIds()
+				user,
+				managedForm,
+				standaloneSupport.getNamespace(),
+				standaloneSupport.getConfig().getIdColumns().getIds()
 		);
 
 		final ConqueryConfig config = standaloneSupport.getConfig();
-		PrintSettings printSettings = new PrintSettings(false, Locale.ENGLISH, config, idPrinter::createId, null);
+		PrintSettings
+				printSettings =
+				new PrintSettings(false, Locale.ENGLISH, config, idPrinter::createId, null);
 
 		checkSingleResult(managedForm, config, printSettings);
 
@@ -128,10 +118,8 @@ public class FormTest extends ConqueryTestSpec {
 	/**
 	 * The form produces only one result, so the result is directly requested.
 	 */
-	private <F extends ManagedForm<?> & SingleTableResult> void checkSingleResult(
-		F managedForm,
-		ConqueryConfig config,
-		PrintSettings printSettings) throws IOException {
+	private <F extends ManagedForm<?> & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, PrintSettings printSettings)
+			throws IOException {
 
 
 		try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
@@ -139,21 +127,19 @@ public class FormTest extends ConqueryTestSpec {
 			final CsvRenderer renderer = new CsvRenderer(writer, printSettings);
 
 			renderer.toCSV(
-				config.getIdColumns().getIdResultInfos(),
-				managedForm.collectResultInfos(),
-				managedForm.streamResults(OptionalLong.empty()),
-				printSettings,
-				StandardCharsets.UTF_8
+					config.getIdColumns().getIdResultInfos(),
+					managedForm.collectResultInfos(),
+					managedForm.streamResults(OptionalLong.empty()), printSettings, StandardCharsets.UTF_8
 			);
 
 			writer.close();
 
 
-			assertThat(IOUtils.readLines(new ByteArrayInputStream(output.toByteArray()), StandardCharsets.UTF_8)).as(
-				"Checking result " + managedForm.getLabelWithoutAutoLabelSuffix())
-				.containsExactlyInAnyOrderElementsOf(
-					IOUtils.readLines(expectedCsv.values().iterator().next().stream(), StandardCharsets.UTF_8)
-				);
+			assertThat(IOUtils.readLines(new ByteArrayInputStream(output.toByteArray()), StandardCharsets.UTF_8))
+					.as("Checking result " + managedForm.getLabelWithoutAutoLabelSuffix())
+					.containsExactlyInAnyOrderElementsOf(
+							IOUtils.readLines(expectedCsv.values().iterator().next().stream(), StandardCharsets.UTF_8)
+					);
 		}
 
 

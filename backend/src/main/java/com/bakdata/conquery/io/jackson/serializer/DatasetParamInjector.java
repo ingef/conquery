@@ -42,20 +42,15 @@ public class DatasetParamInjector implements ContainerRequestFilter {
 		public final DatasetRegistry<?> registry;
 
 		@Override
-		public ObjectReader modify(
-			EndpointConfigBase<?> endpoint,
-			MultivaluedMap<String, String> httpHeaders,
-			JavaType resultType,
-			ObjectReader reader,
-			JsonParser p) throws IOException {
+		public ObjectReader modify(EndpointConfigBase<?> endpoint, MultivaluedMap<String, String> httpHeaders, JavaType resultType, ObjectReader reader, JsonParser p)
+				throws IOException {
 			return injectIntoNew(reader);
 		}
 
 		@Override
 		public MutableInjectableValues inject(MutableInjectableValues values) {
 			if (pathParams.containsKey(ResourceConstants.DATASET)) {
-				final DatasetId datasetId = DatasetId.Parser.INSTANCE.parse(
-					pathParams.getFirst(ResourceConstants.DATASET));
+				final DatasetId datasetId = DatasetId.Parser.INSTANCE.parse(pathParams.getFirst(ResourceConstants.DATASET));
 				datasetId.setDomain(registry);
 
 				// this is just interning

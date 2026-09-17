@@ -20,17 +20,16 @@ import lombok.Data;
 public class DefaultAuthorizationConfig implements AuthorizationConfig {
 
 	@Valid
-	private List<ProtoRole> initialRoles = List.of(
-		ProtoRole.builder().name("admin").permissions(Set.of(AdminPermission.DOMAIN)).build());
+	private List<ProtoRole> initialRoles = List.of(ProtoRole.builder()
+															.name("admin")
+															.permissions(Set.of(AdminPermission.DOMAIN))
+															.build());
 
 	@Valid
 	private List<ProtoUser> initialUsers = Collections.emptyList();
 
 	@NotEmpty
-	private List<String> overviewScope = List.of(
-		DatasetPermission.DOMAIN,
-		AdminPermission.DOMAIN,
-		SuperPermission.DOMAIN);
+	private List<String> overviewScope = List.of(DatasetPermission.DOMAIN, AdminPermission.DOMAIN, SuperPermission.DOMAIN);
 
 	@ValidationMethod(message = "No initial entities defined. Access will not be possible")
 	public boolean isInitialAccessPossible() {

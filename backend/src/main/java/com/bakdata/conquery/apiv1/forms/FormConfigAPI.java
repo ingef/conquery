@@ -27,18 +27,14 @@ public class FormConfigAPI {
 	@NotEmpty
 	private String formType;
 	private String label;
-	@NotNull
-	@Builder.Default
+	@NotNull @Builder.Default
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	@NotNull
 	private JsonNode values;
 
-	@VariableDefaultValue
-	@NonNull
-	@Builder.Default
+	@VariableDefaultValue @NonNull @Builder.Default
 	private UUID formId = UUID.randomUUID();
-	@VariableDefaultValue
-	@Builder.Default
+	@VariableDefaultValue @Builder.Default
 	private LocalDateTime creationTime = LocalDateTime.now();
 
 	public FormConfig intern(UserId owner, DatasetId dataset) {

@@ -15,19 +15,15 @@ import lombok.Setter;
 /**
  * This condition matches if its child does not.
  */
-@CPSType(id = "NOT", base = CTCondition.class)
+@CPSType(id="NOT", base=CTCondition.class)
 @Deprecated
 public class NotCondition implements CTCondition {
 
-	@Setter
-	@Getter
-	@Valid
+	@Setter @Getter @Valid
 	private CTCondition condition;
 
 	@Override
-	public boolean matches(
-		String value,
-		CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
+	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 		return !condition.matches(value, rowMap);
 	}
 

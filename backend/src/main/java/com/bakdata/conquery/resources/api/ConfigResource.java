@@ -29,12 +29,12 @@ public class ConfigResource {
 		final FrontendConfig frontendConfig = config.getFrontend();
 
 		return new FrontendConfiguration(
-			VersionInfo.INSTANCE.getVersions(),
-			frontendConfig.getCurrency(),
-			idColumns,
-			frontendConfig.getManualUrl(),
-			frontendConfig.getContactEmail(),
-			Year.now().minusYears(frontendConfig.getObservationPeriodYears()).atDay(1)
+				VersionInfo.INSTANCE.getVersions(),
+				frontendConfig.getCurrency(),
+				idColumns,
+				frontendConfig.getManualUrl(),
+				frontendConfig.getContactEmail(),
+				Year.now().minusYears(frontendConfig.getObservationPeriodYears()).atDay(1)
 		);
 	}
 

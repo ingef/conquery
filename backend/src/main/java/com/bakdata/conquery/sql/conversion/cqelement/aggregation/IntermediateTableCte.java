@@ -25,12 +25,14 @@ class IntermediateTableCte extends DateAggregationCte {
 	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor) {
 
 
-		List<SqlSelect> intermediateTableSelects = context.getSqlAggregationAction()
-			.getIntermediateTableSelects(
+		List<SqlSelect> intermediateTableSelects = context.getSqlAggregationAction().getIntermediateTableSelects(
 				context.getDateAggregationDates(),
 				context.getCarryThroughSelects()
-			);
-		Selects selects = Selects.builder().ids(context.getIds()).sqlSelects(intermediateTableSelects).build();
+		);
+		Selects selects = Selects.builder()
+								 .ids(context.getIds())
+								 .sqlSelects(intermediateTableSelects)
+								 .build();
 
 		DateAggregationDates dateAggregationDates = context.getDateAggregationDates();
 		List<Field<Date>> allStarts = dateAggregationDates.allStarts();
@@ -39,11 +41,16 @@ class IntermediateTableCte extends DateAggregationCte {
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		Condition startBeforeEnd = functionProvider.greatest(allStarts).lessThan(functionProvider.least(allEnds));
 
-		Condition startIsNull = allStarts.stream().map(Field::isNull).reduce(Condition::or).orElseThrow();
+		Condition startIsNull = allStarts.stream()
+										 .map(Field::isNull)
+										 .reduce(Condition::or)
+										 .orElseThrow();
 
 		Condition intermediateTableCondition = startIsNull.orNot(startBeforeEnd);
 
-		return QueryStep.builder().selects(selects).conditions(List.of(intermediateTableCondition));
+		return QueryStep.builder()
+						.selects(selects)
+						.conditions(List.of(intermediateTableCondition));
 	}
 
 }

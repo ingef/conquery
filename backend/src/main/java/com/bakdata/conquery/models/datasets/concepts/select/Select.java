@@ -71,7 +71,9 @@ public abstract class Select extends LabeledNamespaceIdentifiable<SelectId> {
 			return getLabel();
 		}
 		// The select originates from a connector and the corresponding concept has more than one connector -> Print also the connector
-		return ((Connector) getHolder()).getLabel() + ' ' + getLabel();
+		return ((Connector) getHolder()).getLabel()
+			   + ' '
+			   + getLabel();
 	}
 
 	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
@@ -95,12 +97,7 @@ public abstract class Select extends LabeledNamespaceIdentifiable<SelectId> {
 				continue;
 			}
 
-			log.error(
-				"Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]",
-				getId(),
-				column.getTable(),
-				connector.getId(),
-				connector.resolveTableId());
+			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable(), connector.getId(), connector.resolveTableId());
 
 			valid = false;
 		}

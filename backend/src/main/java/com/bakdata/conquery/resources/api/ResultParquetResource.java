@@ -38,38 +38,28 @@ public class ResultParquetResource {
 
 	private final ResultParquetProcessor processor;
 
-	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(
-		UriBuilder uriBuilder,
-		E exec) throws MalformedURLException {
-		return uriBuilder.path(ResultParquetResource.class)
-			.resolveTemplate(
-				ResourceConstants.DATASET,
-				exec.getDataset().getName())
-			.path(ResultParquetResource.class, "getFile")
-			.resolveTemplate(
-				ResourceConstants.QUERY,
-				exec.getId().toString())
-			.build()
-			.toURL();
+	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+		return uriBuilder
+				.path(ResultParquetResource.class)
+				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())
+				.path(ResultParquetResource.class, "getFile")
+				.resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
+				.build()
+				.toURL();
 	}
 
 	@GET
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_PARQUET)
 	@Produces(PARQUET_MEDIA_TYPE_STRING)
 	public Response getFile(
-		@Auth Subject subject,
-		@PathParam(QUERY) ManagedExecutionId execution,
-		@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
-		@QueryParam("pretty") @DefaultValue("false") boolean pretty,
-		@QueryParam("limit") OptionalLong limit) {
+			@Auth Subject subject,
+			@PathParam(QUERY) ManagedExecutionId execution,
+			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
+			@QueryParam("pretty") @DefaultValue("false") boolean pretty,
+			@QueryParam("limit") OptionalLong limit) {
 
 		checkSingleTableResult(execution.resolve());
-		log.info(
-			"Result for {} download on dataset {} by subject {} ({}).",
-			execution,
-			execution.getDataset(),
-			subject.getId(),
-			subject.getName());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 		return processor.createResultFile(subject, execution, pretty, limit);
 	}
 

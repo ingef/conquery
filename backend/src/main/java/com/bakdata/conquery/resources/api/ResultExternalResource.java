@@ -32,19 +32,14 @@ public class ResultExternalResource {
 	private ExternalResultProcessor processor;
 
 
-	public static URI getDownloadURL(
-		UriBuilder uriBuilder,
-		ExternalExecution exec,
-		String filename) throws URISyntaxException {
-		return uriBuilder.path(ResultExternalResource.class)
-			.path(
-				ResultExternalResource.class,
-				DOWNLOAD_PATH_METHOD)
-			.resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
-			.resolveTemplate(
-				FILENAME,
-				filename)
-			.build();
+	public static URI getDownloadURL(UriBuilder uriBuilder, ExternalExecution exec, String filename)
+			throws URISyntaxException {
+		return uriBuilder
+				.path(ResultExternalResource.class)
+				.path(ResultExternalResource.class, DOWNLOAD_PATH_METHOD)
+				.resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
+				.resolveTemplate(FILENAME, filename)
+				.build();
 	}
 
 
@@ -61,18 +56,13 @@ public class ResultExternalResource {
 	@GET
 	@Path("{" + QUERY + "}/{" + FILENAME + "}")
 	public Response download(
-		@Auth Subject subject,
-		@PathParam(QUERY) ManagedExecutionId execution,
-		@PathParam(FILENAME) String fileName,
-		@HeaderParam("user-agent") String userAgent,
-		@QueryParam("charset") String queryCharset
+			@Auth Subject subject,
+			@PathParam(QUERY) ManagedExecutionId execution,
+			@PathParam(FILENAME) String fileName,
+			@HeaderParam("user-agent") String userAgent,
+			@QueryParam("charset") String queryCharset
 	) {
-		log.info(
-			"Result download for {} on dataset {} by user {} ({}).",
-			execution,
-			execution.getDataset(),
-			subject.getId(),
-			subject.getName());
+		log.info("Result download for {} on dataset {} by user {} ({}).", execution, execution.getDataset(), subject.getId(), subject.getName());
 		return processor.getResult(subject, execution, fileName);
 	}
 }

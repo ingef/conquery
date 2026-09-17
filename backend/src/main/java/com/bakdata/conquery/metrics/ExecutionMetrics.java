@@ -42,9 +42,7 @@ public class ExecutionMetrics {
 	private static final String TIME = "time";
 
 	public static Counter getRunningQueriesCounter(String group) {
-		return SharedMetricRegistries.getDefault()
-			.counter(
-				nameWithGroupTag(MetricRegistry.name(QUERIES, RUNNING), group));
+		return SharedMetricRegistries.getDefault().counter(nameWithGroupTag(MetricRegistry.name(QUERIES, RUNNING), group));
 	}
 
 	/**
@@ -67,16 +65,13 @@ public class ExecutionMetrics {
 	}
 
 	public static Counter getQueryStateCounter(ExecutionState state, String group) {
-		return SharedMetricRegistries.getDefault()
-			.counter(
-				nameWithGroupTag(MetricRegistry.name(QUERIES, STATE, state.toString()), group));
+		return SharedMetricRegistries.getDefault().counter(nameWithGroupTag(MetricRegistry.name(QUERIES, STATE, state.toString()), group));
 	}
 
 	public static void reportQueryClassUsage(Class<? extends QueryDescription> clazz, String group) {
 		SharedMetricRegistries.getDefault()
-			.counter(
-				nameWithGroupTag(MetricRegistry.name(QUERIES, CLASSES, clazz.getSimpleName()), group))
-			.inc(); // Count usages of different types of Queries
+							  .counter(nameWithGroupTag(MetricRegistry.name(QUERIES, CLASSES, clazz.getSimpleName()), group))
+							  .inc(); // Count usages of different types of Queries
 	}
 
 	/**
@@ -105,10 +100,7 @@ public class ExecutionMetrics {
 		}
 
 		for (ConceptId id : reportedIds) {
-			SharedMetricRegistries.getDefault()
-				.counter(
-					nameWithGroupTag(MetricRegistry.name(QUERIES, CONCEPTS, id.toString()), group))
-				.inc();
+			SharedMetricRegistries.getDefault().counter(nameWithGroupTag(MetricRegistry.name(QUERIES, CONCEPTS, id.toString()), group)).inc();
 		}
 	}
 
@@ -162,7 +154,9 @@ public class ExecutionMetrics {
 				return;
 			}
 
-			SharedMetricRegistries.getDefault().counter(name).inc();
+			SharedMetricRegistries.getDefault()
+								  .counter(name)
+								  .inc();
 		}
 	}
 }

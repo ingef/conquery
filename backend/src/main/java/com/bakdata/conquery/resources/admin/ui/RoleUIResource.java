@@ -30,10 +30,8 @@ public class RoleUIResource {
 
 	@GET
 	public View getRoles() {
-		return new UIView<>(
-			"roles.html.ftl",
-			uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
-			uiProcessor.getAdminProcessor().getAllRoles()
+		return new UIView<>("roles.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getAdminProcessor()
+																																			.getAllRoles()
 		);
 	}
 
@@ -47,9 +45,6 @@ public class RoleUIResource {
 	@Path("{" + ROLE_ID + "}")
 	@GET
 	public View getRole(@PathParam(ROLE_ID) RoleId role) {
-		return new UIView<>(
-			"role.html.ftl",
-			uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)),
-			uiProcessor.getRoleContent(role));
+		return new UIView<>("role.html.ftl", uiProcessor.getUIContext(CsrfTokenSetFilter.getCsrfTokenProperty(requestContext)), uiProcessor.getRoleContent(role));
 	}
 }

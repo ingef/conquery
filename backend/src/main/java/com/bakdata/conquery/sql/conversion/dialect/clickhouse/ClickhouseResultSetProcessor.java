@@ -40,7 +40,8 @@ public class ClickhouseResultSetProcessor extends DefaultResultSetProcessor {
 		int startDate;
 		if (startDateExpression.equals(ClickhouseFunctionProvider.MIN_DATE_VALUE)) {
 			startDate = CDateRange.NEGATIVE_INFINITY;
-		} else {
+		}
+		else {
 			LocalDate dateValue = Date.valueOf(startDateExpression).toLocalDate();
 			startDate = CDate.ofLocalDate(dateValue);
 		}
@@ -49,7 +50,8 @@ public class ClickhouseResultSetProcessor extends DefaultResultSetProcessor {
 		int endDate;
 		if (endDateExpression.equals(ClickhouseFunctionProvider.MAX_DATE_VALUE)) {
 			endDate = CDateRange.POSITIVE_INFINITY;
-		} else {
+		}
+		else {
 			LocalDate dateValue = Date.valueOf(endDateExpression).toLocalDate();
 			endDate = CDate.ofLocalDate(dateValue);
 		}
@@ -75,7 +77,8 @@ public class ClickhouseResultSetProcessor extends DefaultResultSetProcessor {
 			}
 			if (end == ClickhouseFunctionProvider.MAX_DATE_VALUE) {
 				end = Integer.MAX_VALUE;
-			} else {
+			}
+			else {
 				end--;
 			}
 

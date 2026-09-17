@@ -36,11 +36,7 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 		private final Environment environment;
 		private final NetworkSession rawSession;
 
-		public ShardNodeNetworkContext(
-			NetworkSession session,
-			ShardWorkers workers,
-			ConqueryConfig config,
-			Environment environment) {
+		public ShardNodeNetworkContext(NetworkSession session, ShardWorkers workers, ConqueryConfig config, Environment environment) {
 			super(session);
 			this.workers = workers;
 			this.config = config;
@@ -59,10 +55,7 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 		private final DatasetRegistry<DistributedNamespace> datasetRegistry;
 
 
-		public ManagerNodeNetworkContext(
-			NetworkSession session,
-			DatasetRegistry<DistributedNamespace> datasetRegistry,
-			ClusterState clusterState) {
+		public ManagerNodeNetworkContext(NetworkSession session, DatasetRegistry<DistributedNamespace> datasetRegistry, ClusterState clusterState) {
 			super(session);
 			this.datasetRegistry = datasetRegistry;
 			this.clusterState = clusterState;

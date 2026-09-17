@@ -18,6 +18,5 @@ public @interface ManualURI {
 
 	Class<?>[] groups() default {};
 
-	@SuppressWarnings("UnusedDeclaration")
-	Class<? extends Payload>[] payload() default {};
+	@SuppressWarnings("UnusedDeclaration") Class<? extends Payload>[] payload() default {};
 }

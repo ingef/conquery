@@ -79,30 +79,27 @@ configurations, such as:
 
 ## Development
 
-### Java formatting
+### Java source hygiene
 
-The checked-in `conquery_eclipse_format_setting.xml` is the canonical Java formatter configuration. Spotless also
-organizes imports with static imports first. Wildcard imports are currently allowed. Run Spotless from the repository
-root:
+Spotless keeps Java imports deterministic, with static imports first and the same package ordering applied to static
+and normal imports. Wildcard imports are currently allowed. It also removes unused imports, trims trailing whitespace,
+ensures a final newline, and uses Unix line endings. It does not run a Java code formatter.
+
+Apply or check these rules from the repository root:
 
 ```bash
 mvn spotless:apply
 mvn spotless:check
 ```
 
-Install the repository's pre-push formatting check once per clone:
+Install the repository's pre-push check once per clone:
 
 ```bash
 mvn spotless:install-git-pre-push-hook
 ```
 
-The hook formats violations and aborts the push so the resulting changes can be reviewed and committed. It is a local
-convenience and can be bypassed; CI remains the authoritative formatting check.
-
-IntelliJ IDEA does not automatically import an Eclipse formatter profile from the project root. Import
-`conquery_eclipse_format_setting.xml` under **Editor | Code Style | Java**, or configure the Adapter for Eclipse Code
-Formatter plugin to use the file and select the `conquery` profile. In either case, Maven/Spotless defines the expected
-output.
+The hook applies corrections and aborts the push so they can be reviewed and committed. CI remains the authoritative
+check.
 
 ### Testing
 

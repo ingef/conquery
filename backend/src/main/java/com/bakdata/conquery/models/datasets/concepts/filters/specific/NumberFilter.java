@@ -60,17 +60,13 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Eve
 
 
 	@Override
-	public void configureFrontend(
-		FrontendFilterConfiguration.Top f,
-		ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
+	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
 		final MajorTypeId typeId = getColumn().resolve().getType();
 		final String type = switch (typeId) {
 			case MONEY -> FrontendFilterType.Fields.MONEY_RANGE;
 			case INTEGER -> FrontendFilterType.Fields.INTEGER_RANGE;
 			case DECIMAL, REAL -> FrontendFilterType.Fields.REAL_RANGE;
-			default -> throw new ConceptConfigurationException(
-				getConnector(),
-				"NUMBER filter is incompatible with columns of type " + typeId);
+			default -> throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + typeId);
 		};
 
 		f.setType(type);
@@ -86,8 +82,7 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Eve
 			case INTEGER -> new IntegerFilterNode(column, (Range.LongRange) value);
 			case DECIMAL -> new DecimalFilterNode(column, (Range<BigDecimal>) value);
 			case REAL -> new RealFilterNode(column, Range.DoubleRange.fromNumberRange(value));
-			default -> throw new IllegalStateException(
-				String.format("Column type %s may not be used (Assignment should not have been possible)", column));
+			default -> throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", column));
 		};
 	}
 

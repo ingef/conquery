@@ -36,8 +36,8 @@ public class TableInputDescriptor {
 
 	private static final long serialVersionUID = 1L;
 	private static final String[] AUTO_IMPORTS = Stream.of(
-		LocalDate.class,
-		Range.class
+			LocalDate.class,
+			Range.class
 	).map(Class::getName).toArray(String[]::new);
 
 	@NotNull
@@ -66,7 +66,9 @@ public class TableInputDescriptor {
 	@JsonIgnore
 	@ValidationMethod(message = "One or more columns are duplicated")
 	public boolean allColumnsDistinct() {
-		return Arrays.stream(getOutput()).map(OutputDescription::getName).distinct().count() == getOutput().length;
+		return Arrays.stream(getOutput()).map(OutputDescription::getName)
+					 .distinct()
+					 .count() == getOutput().length;
 	}
 
 
@@ -75,7 +77,8 @@ public class TableInputDescriptor {
 	public boolean isValidGroovyScript() {
 		try {
 			createFilter(FAKE_HEADERS);
-		} catch (Exception ex) {
+		}
+		catch (Exception ex) {
 			log.error("Groovy script is not valid", ex);
 			return false;
 		}
@@ -124,7 +127,8 @@ public class TableInputDescriptor {
 			}
 
 			return (GroovyPredicate) groovy.parse(filter);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new RuntimeException("Failed to compile filter `" + filter + "`", e);
 		}
 	}

@@ -25,7 +25,7 @@ public class OrNode extends QPParentNode {
 	@Override
 	public boolean isContained() {
 		boolean currently = false;
-		for (QPNode agg : getChildren()) {
+		for(QPNode agg:getChildren()) {
 			currently |= agg.isContained();
 		}
 		return currently;

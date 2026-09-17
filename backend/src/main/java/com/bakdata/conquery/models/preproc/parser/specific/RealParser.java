@@ -49,7 +49,8 @@ public class RealParser extends Parser<Double, RealStore> {
 
 		if (floatULP < requiredPrecision) {
 			return FloatArrayStore.create(getLines());
-		} else {
+		}
+		else {
 			return DoubleArrayStore.create(getLines());
 		}
 	}

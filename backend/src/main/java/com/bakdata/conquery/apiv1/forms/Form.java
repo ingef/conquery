@@ -39,12 +39,9 @@ public abstract class Form implements QueryDescription {
 	}
 
 
+
 	@Override
-	public void authorize(
-		Subject subject,
-		DatasetId submittedDataset,
-		@NonNull List<QueryVisitor> visitors,
-		MetaStorage storage) {
+	public void authorize(Subject subject, DatasetId submittedDataset, @NonNull List<QueryVisitor> visitors, MetaStorage storage) {
 		QueryDescription.super.authorize(subject, submittedDataset, visitors, storage);
 		// Check if subject is allowed to create this form
 		final FormType formType = FormScanner.resolveFormType(getFormType());

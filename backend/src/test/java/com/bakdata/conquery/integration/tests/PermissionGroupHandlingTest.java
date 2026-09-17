@@ -59,7 +59,8 @@ public class PermissionGroupHandlingTest extends IntegrationTest.Simple implemen
 			assertThat(user1.isPermitted(ExecutionPermission.onInstance(Ability.DELETE, query1))).isTrue();
 			assertThat(user1.isPermitted(ExecutionPermission.onInstance(Ability.SHARE, query1))).isFalse();
 
-		} finally {
+		}
+		finally {
 			storage.removeGroup(group1.getId());
 			storage.removeUser(user1.getId());
 			storage.removeRole(role1.getId());

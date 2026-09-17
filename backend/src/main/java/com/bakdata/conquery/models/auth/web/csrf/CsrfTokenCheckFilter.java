@@ -25,8 +25,9 @@ public class CsrfTokenCheckFilter implements ContainerRequestFilter {
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
-		final String cookieTokenHash = Optional.ofNullable(
-			requestContext.getCookies().get(CsrfTokenSetFilter.CSRF_COOKIE_NAME)).map(Cookie::getValue).orElse(null);
+		final String
+				cookieTokenHash =
+				Optional.ofNullable(requestContext.getCookies().get(CsrfTokenSetFilter.CSRF_COOKIE_NAME)).map(Cookie::getValue).orElse(null);
 		final String headerToken = requestContext.getHeaders().getFirst(CSRF_TOKEN_HEADER);
 
 		final String method = requestContext.getMethod();

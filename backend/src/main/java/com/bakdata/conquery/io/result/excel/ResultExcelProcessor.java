@@ -33,9 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ResultExcelProcessor {
 
 	// Media type according to https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-	public static final MediaType MEDIA_TYPE = new MediaType(
-		"application",
-		"vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+	public static final MediaType MEDIA_TYPE = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
 	private final MetaStorage metaStorage;
 	private final DatasetRegistry<?> datasetRegistry;
@@ -43,11 +41,7 @@ public class ResultExcelProcessor {
 
 	private final ExcelConfig excelConfig;
 
-	public <E extends ManagedExecution & SingleTableResult> Response createResult(
-		Subject subject,
-		ManagedExecutionId execId,
-		boolean pretty,
-		OptionalLong limit) {
+	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, ManagedExecutionId execId, boolean pretty, OptionalLong limit) {
 
 		ConqueryMDC.setLocation(subject.getName());
 
@@ -58,11 +52,7 @@ public class ResultExcelProcessor {
 		ResultUtil.authorizeExecutable(subject, exec);
 
 		final Namespace namespace = datasetRegistry.get(exec.getDataset());
-		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(
-			subject,
-			exec,
-			namespace,
-			conqueryConfig.getIdColumns().getIds());
+		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, conqueryConfig.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();
 		final PrintSettings settings = new PrintSettings(pretty, locale, conqueryConfig, idPrinter::createId, null);
@@ -70,21 +60,11 @@ public class ResultExcelProcessor {
 		final ExcelRenderer excelRenderer = new ExcelRenderer(excelConfig, settings);
 
 		final StreamingOutput out = output -> {
-			excelRenderer.renderToStream(
-				conqueryConfig.getIdColumns().getIdResultInfos(),
-				exec,
-				output,
-				limit,
-				settings,
-				metaStorage);
+			excelRenderer.renderToStream(conqueryConfig.getIdColumns().getIdResultInfos(), exec, output, limit, settings, metaStorage);
 			log.trace("FINISHED downloading {}", exec.getId());
 		};
 
-		return makeResponseWithFileName(
-			Response.ok(out),
-			String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_XLSX),
-			MEDIA_TYPE,
-			ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(Response.ok(out), String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_XLSX), MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 
 
