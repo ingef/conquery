@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { tv } from "tailwind-variants";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import type {
@@ -20,7 +20,7 @@ import type {
   FilterWithValueType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-import type { ModeT } from "../ui-components/InputRange";
+import type { ModeT } from "../ui-components/NumberRangeField";
 
 import ContentColumn from "./ContentColumn";
 import MenuColumn from "./MenuColumn";
@@ -28,64 +28,49 @@ import NodeName from "./NodeName";
 import ResetAndClose from "./ResetAndClose";
 import { useAutoLabel } from "./useAutoLabel";
 
-const Root = styled("div")`
-  padding: 10px;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  position: absolute;
-  z-index: 2;
-  background-color: ${({ theme }) => theme.col.bg};
-`;
+const root = tv({
+  base: ["absolute inset-0", "z-2", "p-[10px]", "bg-bg-50"],
+});
 
-const ContentWrap = styled("div")`
-  background-color: white;
-  box-shadow: 1px 2px 5px 0 rgba(0, 0, 0, 0.2);
-  border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  flex-grow: 1;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-`;
+const contentWrap = tv({
+  base: [
+    "flex flex-col",
+    "grow",
+    "h-full w-full",
+    "overflow-hidden",
+    "rounded",
+    "border border-gray-400",
+    "bg-white",
+    "shadow-[1px_2px_5px_0_rgba(0,0,0,0.2)]",
+  ],
+});
 
-const Wrapper = styled("div")`
-  flex-grow: 1;
-  width: 100%;
-  overflow: hidden;
-`;
-const ScrollContainer = styled("div")`
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  background-color: ${({ theme }) => theme.col.bg};
-  --webkit-overflow-scrolling: touch;
-`;
+// the original also declared `--webkit-overflow-scrolling: touch` —
+// a typo (double dash) that only defined an unused custom property, dropped
+const scrollContainer = tv({
+  base: [
+    "relative",
+    "flex flex-row",
+    "h-full w-full",
+    "overflow-y-auto",
+    "bg-bg-50",
+  ],
+});
 
-const SxMenuColumn = styled(MenuColumn)`
-  background-color: ${({ theme }) => theme.col.bg};
-  position: sticky;
-  z-index: 2;
-  top: 0;
-  left: 0;
-`;
+const menuColumn = tv({
+  base: ["sticky top-0 left-0", "z-2", "bg-bg-50"],
+});
 
-const Header = styled("div")`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  border-bottom: 1px solid #ccc;
-  padding-right: 10px;
-`;
+const header = tv({
+  base: [
+    "flex items-center justify-between",
+    "w-full",
+    "border-b border-[#ccc]",
+    "pr-[10px]",
+  ],
+});
 
-export interface QueryNodeEditorPropsT {
+interface QueryNodeEditorPropsT {
   name: string;
   node: StandardQueryNodeT;
   showTables: boolean;
@@ -125,8 +110,6 @@ export interface QueryNodeEditorPropsT {
 }
 
 const COMPACT_WIDTH = 600;
-const RIGHT_SIDE_WIDTH = 400;
-const RIGHT_SIDE_WIDTH_COMPACT = 150;
 
 const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const [selectedTableIdx, setSelectedTableIdx] = useState<number | null>(null);
@@ -138,10 +121,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
     }
   };
 
-  // To make sure that Close button is always visible and to consider
-  // that QueryNodeEditor may be contained in a horizontally resizeable panel
-  // that's resized independent of the window width.
-  // TODO: Once https://caniuse.com/css-container-queries ships, use those instead
+  // no container query: compact mode also swaps in a tooltip
   const parentRef = useRef<HTMLDivElement | null>(null);
   const [parentWidth, setParentWidth] = useState<number>(0);
   const isCompact = parentWidth < COMPACT_WIDTH;
@@ -157,11 +137,6 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   useHotkeys("esc", props.onCloseModal);
 
   const showClearReset = !nodeHasEmptySettings(node);
-  const nodeNameMaxWidth =
-    parentWidth -
-    (isCompact || !showClearReset
-      ? RIGHT_SIDE_WIDTH_COMPACT
-      : RIGHT_SIDE_WIDTH);
 
   const { autoLabel, autoLabelEnabled, setAutoLabelEnabled } = useAutoLabel({
     node,
@@ -178,7 +153,8 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   );
 
   return (
-    <Root
+    <div
+      className={root()}
       ref={(instance) => {
         if (instance && parentWidth === 0) {
           setParentWidth(instance.getBoundingClientRect().width);
@@ -186,10 +162,9 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
         parentRef.current = instance;
       }}
     >
-      <ContentWrap>
-        <Header>
+      <div className={contentWrap()}>
+        <div className={header()}>
           <NodeName
-            maxWidth={nodeNameMaxWidth}
             allowEditing={nodeIsConceptQueryNode(node)}
             label={nodeLabel}
             onUpdateLabel={(label) => {
@@ -203,10 +178,11 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             onResetAllSettings={props.onResetAllSettings}
             showClearReset={showClearReset}
           />
-        </Header>
-        <Wrapper>
-          <ScrollContainer ref={scrollContainerRef}>
-            <SxMenuColumn
+        </div>
+        <div className="w-full grow overflow-hidden">
+          <div className={scrollContainer()} ref={scrollContainerRef}>
+            <MenuColumn
+              className={menuColumn()}
               node={node}
               selectedTableIdx={selectedTableIdx}
               showTables={props.showTables}
@@ -239,10 +215,10 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
               onSetFilterValue={props.onSetFilterValue}
               onSwitchFilterMode={props.onSwitchFilterMode}
             />
-          </ScrollContainer>
-        </Wrapper>
-      </ContentWrap>
-    </Root>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

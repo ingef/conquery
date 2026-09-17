@@ -1,33 +1,36 @@
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
-
-import IconButton from "../button/IconButton";
-import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
-import WithTooltip from "../tooltip/WithTooltip";
+import { Button } from "../ui-components/Button";
+import { ConfirmMenu } from "../ui-components/ConfirmMenu";
+import { Icon } from "../ui-components/Icon";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { clearQuery } from "./actions";
 
-interface PropsT {
-  className?: string;
-}
-
-const QueryClearButton: FC<PropsT> = ({ className }) => {
+const QueryClearButton = ({ className }: { className?: string }) => {
   const dispatch = useDispatch();
   const onClearQuery = () => dispatch(clearQuery());
   const { t } = useTranslation();
 
   return (
     <div className={className}>
-      <ConfirmableTooltip
-        confirmationText={t(`queryEditor.clearConfirm`)}
-        onConfirm={onClearQuery}
-      >
-        <WithTooltip text={t("queryEditor.clear")}>
-          <IconButton tiny icon={faTrash} tabIndex={-1} />
-        </WithTooltip>
-      </ConfirmableTooltip>
+      <TooltipTrigger>
+        <ConfirmMenu
+          confirmationText={t(`queryEditor.clearConfirm`)}
+          onConfirm={onClearQuery}
+        >
+          <Button
+            aria-label={t("queryEditor.clear")}
+            intent="tertiary"
+            size="sm"
+            excludeFromTabOrder
+          >
+            <Icon icon={faTrash} />
+          </Button>
+        </ConfirmMenu>
+        <Tooltip>{t("queryEditor.clear")}</Tooltip>
+      </TooltipTrigger>
     </div>
   );
 };

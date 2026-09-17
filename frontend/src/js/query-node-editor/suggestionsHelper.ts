@@ -3,7 +3,7 @@ import Mustache from "mustache";
 import type { RawFilterSuggestion, SelectOptionT } from "../api/types";
 import { exists } from "../common/helpers/exists";
 
-export const isRawFilterSuggestion = (
+const isRawFilterSuggestion = (
   option: SelectOptionT | RawFilterSuggestion,
 ): option is RawFilterSuggestion => {
   return (

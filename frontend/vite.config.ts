@@ -12,12 +12,7 @@ export default defineConfig({
     assetsInlineLimit: 0,
   },
   envPrefix: "REACT_APP_",
-  plugins: [
-    tailwindcss(),
-    react({
-      jsxImportSource: "@emotion/react",
-    }),
-  ],
+  plugins: [tailwindcss(), react()],
   test: {
     environment: "node",
     include: ["src/**/*.{test,spec}.{ts,tsx}"],

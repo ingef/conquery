@@ -15,6 +15,11 @@
     "clazz": "DatasetQueryResource"
   },
   {
+    "method": "PUT",
+    "path": "/datasets/{dataset}/queries",
+    "clazz": "DatasetQueryResource"
+  },
+  {
     "method": "GET",
     "path": "/datasets/{dataset}/entity-preview",
     "clazz": "DatasetResource"

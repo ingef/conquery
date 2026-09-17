@@ -20,7 +20,7 @@ import { successPayload } from "../common/actions/genericActions";
 import type { TreesT } from "../concept-trees/reducer";
 import { type NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
 import { useLoadQuery } from "../previous-queries/list/actions";
-import type { ModeT } from "../ui-components/InputRange";
+import type { ModeT } from "../ui-components/NumberRangeField";
 
 import { expandNode } from "./expandNode";
 import type { StandardQueryStateT } from "./queryReducer";

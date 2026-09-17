@@ -1,26 +1,20 @@
-import styled from "@emotion/styled";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { Group, Panel } from "react-resizable-panels";
 import { ResizeHandle } from "../common/ResizeHandle";
 import { useCollapsiblePanel } from "../common/useCollapsiblePanel";
 import { History } from "../entity-history/History";
+import InfoPane from "../info-pane/InfoPane";
+import InfoPaneCollapsed from "../info-pane/InfoPaneCollapsed";
 import Preview from "../preview/Preview";
-import ActivateTooltip from "../tooltip/ActivateTooltip";
-import Tooltip from "../tooltip/Tooltip";
 import DndProvider from "./DndProvider";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
 import type { StateT } from "./reducers";
 
-const Root = styled("div")`
-  width: 100%;
-  height: 100%;
-  position: relative;
-`;
-
 const Content = () => {
-  const displayTooltip = useSelector<StateT, boolean>(
-    (state) => state.tooltip.displayTooltip,
+  const isInfoPaneOpen = useSelector<StateT, boolean>(
+    (state) => state.infoPane.isOpen,
   );
 
   const isPreviewOpen = useSelector<StateT, boolean>(
@@ -31,23 +25,25 @@ const Content = () => {
     (state) => state.entityHistory.isOpen,
   );
 
-  const tooltipPanelRef = useCollapsiblePanel(!displayTooltip);
+  const infoPaneRef = useCollapsiblePanel(!isInfoPaneOpen);
+  // read once, a changing default resets the group's layout
+  const [infoPaneDefaultSize] = useState(() => (isInfoPaneOpen ? 200 : 30));
 
   return (
     <DndProvider>
-      <Root>
+      <div className="relative h-full w-full">
         <Group orientation="horizontal">
           <Panel
-            panelRef={tooltipPanelRef}
+            panelRef={infoPaneRef}
             collapsible
             collapsedSize={30}
             minSize={200}
             maxSize={600}
-            defaultSize={displayTooltip ? 200 : 30}
+            defaultSize={infoPaneDefaultSize}
           >
-            {displayTooltip ? <Tooltip /> : <ActivateTooltip />}
+            {isInfoPaneOpen ? <InfoPane /> : <InfoPaneCollapsed />}
           </Panel>
-          <ResizeHandle disabled={!displayTooltip} />
+          <ResizeHandle disabled={!isInfoPaneOpen} />
           <Panel minSize={350} defaultSize={600}>
             <LeftPane />
           </Panel>
@@ -58,7 +54,7 @@ const Content = () => {
         </Group>
         {isHistoryOpen && <History />}
         {isPreviewOpen && <Preview />}
-      </Root>
+      </div>
     </DndProvider>
   );
 };

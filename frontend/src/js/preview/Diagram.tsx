@@ -1,4 +1,3 @@
-import { type Theme, useTheme } from "@emotion/react";
 import type { ChartData, ChartOptions } from "chart.js";
 import { addMonths, format } from "date-fns";
 import { useMemo } from "react";
@@ -11,6 +10,7 @@ import type {
 } from "../api/types";
 import { parseDate, parseStdDate } from "../common/helpers/dateHelper";
 import { hexToRgbA } from "../entity-history/TimeStratifiedChart";
+import { getCssVarColor } from "./getThemeColor";
 import {
   formatNumber,
   previewStatsIsBarStats,
@@ -27,14 +27,14 @@ type DiagramProps = {
 };
 function transformBarStatsToData(
   stats: BarStatistics,
-  theme: Theme,
+  color: string,
 ): ChartData<"bar"> {
   return {
     labels: stats.entries.map((entry) => entry.label),
     datasets: [
       {
         data: stats.entries.map((entry) => entry.value),
-        backgroundColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
+        backgroundColor: color,
         borderWidth: 1,
       },
     ],
@@ -43,7 +43,7 @@ function transformBarStatsToData(
 
 function transformDateStatsToData(
   stats: DateStatistics,
-  theme: Theme,
+  color: string,
 ): ChartData<"line"> {
   const labels: string[] = [];
   const values: number[] = [];
@@ -58,7 +58,7 @@ function transformDateStatsToData(
       datasets: [
         {
           data: values,
-          borderColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
+          borderColor: color,
           borderWidth: 1,
           fill: false,
         },
@@ -81,7 +81,7 @@ function transformDateStatsToData(
     datasets: [
       {
         data: values,
-        borderColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
+        borderColor: color,
         borderWidth: 1,
         fill: false,
       },
@@ -96,15 +96,15 @@ export default function Diagram({
   height,
   width,
 }: DiagramProps) {
-  const theme = useTheme();
   const data = useMemo(() => {
+    const color = `rgba(${hexToRgbA(getCssVarColor("--color-primary-500"))}, 1)`;
     if (previewStatsIsBarStats(stat)) {
-      return transformBarStatsToData(stat, theme);
+      return transformBarStatsToData(stat, color);
     }
     if (previewStatsIsDateStats(stat)) {
-      return transformDateStatsToData(stat, theme);
+      return transformDateStatsToData(stat, color);
     }
-  }, [stat, theme]);
+  }, [stat]);
   const { t } = useTranslation();
   const { shouldTickRender } = useDateTickHandler(stat);
 

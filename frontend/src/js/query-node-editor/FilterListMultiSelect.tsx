@@ -1,4 +1,4 @@
-import { type FC, useState } from "react";
+import { useState } from "react";
 
 import { usePostFilterValuesResolve } from "../api/api";
 import type {
@@ -37,7 +37,21 @@ const getPageToLoad = (
     : prevPageLoaded + 1;
 };
 
-interface PropsT {
+const FilterListMultiSelect = ({
+  filterId,
+  value,
+  onChange,
+  label,
+  tooltip,
+  indexPrefix,
+  options,
+  disabled,
+  allowDropFile,
+  creatable,
+
+  total,
+  onLoad,
+}: {
   filterId: FilterT["id"];
 
   label: string;
@@ -58,22 +72,6 @@ interface PropsT {
 
   value: SelectOptionT[];
   onChange: (value: SelectOptionT[]) => void;
-}
-
-const FilterListMultiSelect: FC<PropsT> = ({
-  filterId,
-  value,
-  onChange,
-  label,
-  tooltip,
-  indexPrefix,
-  options,
-  disabled,
-  allowDropFile,
-  creatable,
-
-  total,
-  onLoad,
 }) => {
   const [resolved, setResolved] = useState<PostFilterResolveResponseT | null>(
     null,

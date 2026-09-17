@@ -1,20 +1,17 @@
-import styled from "@emotion/styled";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-
+import { tv } from "tailwind-variants";
 import {
   usePostPrefixForSuggestions,
   usePostResolveEntities,
 } from "../api/api";
 import { transformFilterValueToApi } from "../api/apiHelper";
-import type { ConceptT, TableT } from "../api/types";
+import type { TableT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import PrimaryButton from "../button/PrimaryButton";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { useDatasetId } from "../dataset/selectors";
-import FaIcon from "../icon/FaIcon";
 import { isMultiSelectFilter, resetFilters } from "../model/filter";
 import { nodeIsElement } from "../model/node";
 import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
@@ -23,6 +20,8 @@ import type {
   BigMultiSelectFilterWithValueType,
   MultiSelectFilterWithValueType,
 } from "../standard-query-editor/types";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { useDefaultStatusOptions } from "./useDefaultStatusOptions";
@@ -32,21 +31,19 @@ export const SearchEntites = ({
 }: {
   onLoad: (payload: LoadingPayload) => void;
 }) => {
-  const searchConcept = useSelector<StateT, ConceptT | undefined>((state) => {
-    const searchConceptId = state.entityHistory.defaultParams.searchConcept;
+  const searchConceptTable = useSelector<StateT, TableT | undefined>(
+    (state) => {
+      const { searchConcept, searchConnector } =
+        state.entityHistory.defaultParams;
+      const concept = searchConcept ? getConceptById(searchConcept) : undefined;
 
-    return searchConceptId ? getConceptById(searchConceptId) : undefined;
-  });
+      if (!concept || !nodeIsElement(concept)) return undefined;
 
-  if (
-    !searchConcept ||
-    !nodeIsElement(searchConcept) ||
-    searchConcept.tables?.length !== 1
-  ) {
-    return null;
-  }
+      return concept.tables?.find((t) => t.connectorId === searchConnector);
+    },
+  );
 
-  const searchConceptTable = searchConcept.tables[0];
+  if (!searchConceptTable) return null;
 
   return <SearchEntitiesComponent table={searchConceptTable} onLoad={onLoad} />;
 };
@@ -206,29 +203,18 @@ const useSubmitSearch = ({
   };
 };
 
-const Root = styled("div")`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  padding: 10px 12px;
-
-  > div {
-    width: 100%;
-  }
-`;
-
-const SxPrimaryButton = styled(PrimaryButton)`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-`;
+const root = tv({
+  base: [
+    "flex flex-col items-center",
+    "gap-[14px]",
+    "px-3 py-[10px]",
+    "[&>div]:w-full",
+  ],
+});
 
 const noop = () => {};
 
-export const SearchEntitiesComponent = ({
+const SearchEntitiesComponent = ({
   table,
   onLoad,
 }: {
@@ -247,7 +233,7 @@ export const SearchEntitiesComponent = ({
   if (searchFilters.length === 0) return null;
 
   return (
-    <Root>
+    <div className={root()}>
       <TableFilters
         filters={searchFilters}
         excludeTable={false}
@@ -255,13 +241,16 @@ export const SearchEntitiesComponent = ({
         onSwitchFilterMode={noop}
         onLoadFilterSuggestions={loadFilterSuggestions}
       />
-      <SxPrimaryButton
-        onClick={onSubmitSearch}
-        disabled={!hasFiltersSet || loading}
-      >
-        {loading && <FaIcon white icon={faSpinner} />}
-        {t("history.searchEntitiesButton")}
-      </SxPrimaryButton>
-    </Root>
+      <div className="grid">
+        <Button
+          intent="primary"
+          onPress={onSubmitSearch}
+          isDisabled={!hasFiltersSet || loading}
+        >
+          {loading && <Icon icon={faSpinner} className="text-white" />}
+          {t("history.searchEntitiesButton")}
+        </Button>
+      </div>
+    </div>
   );
 };

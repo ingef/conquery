@@ -1,58 +1,39 @@
-import styled from "@emotion/styled";
 import { faCaretDown, faDownload } from "@fortawesome/free-solid-svg-icons";
-import { memo, useEffect, useMemo, useState } from "react";
-
+import { memo, useContext, useEffect, useMemo, useState } from "react";
+import { MenuTrigger, Button as RacButton } from "react-aria-components";
+import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel } from "../api/types";
-import DownloadButton from "../button/DownloadButton";
-import IconButton from "../button/IconButton";
-import WithTooltip from "../tooltip/WithTooltip";
+import { AuthTokenContext } from "../authorization/AuthTokenProvider";
+import { Icon } from "../ui-components/Icon";
+import { Menu, MenuItem } from "../ui-components/Menu";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { getUserSettings, storeUserSettings } from "../user/userSettings";
+import { getFileIcon } from "./DownloadButton";
 
-const Frame = styled("div")<{ noborder?: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: ${({ noborder, theme }) =>
-    noborder ? "none" : `1px solid ${theme.col.gray}`};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  transition: opacity ${({ theme }) => theme.transitionTime};
-`;
+// a split button: the chosen format downloads, the caret opens the list
+const frame = tv({
+  base: ["inline-flex items-stretch", "h-[30px]", "rounded", "overflow-hidden"],
+  variants: {
+    bordered: { true: "border border-gray-500" },
+  },
+});
 
-const List = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  padding: 8px;
-  overflow-y: auto;
-  max-height: 60vh;
-`;
-
-const SxDownloadButton = styled(DownloadButton)`
-  button {
-    width: 100%;
-    padding: 8px 14px;
-  }
-`;
-const SxIconButton = styled(IconButton)`
-  padding: 9px 8px;
-`;
-
-const Separator = styled("div")`
-  width: 1px;
-  height: 33px;
-  background-color: ${({ theme }) => theme.col.gray};
-`;
-
-const popperOptions = {
-  modifiers: [
-    {
-      name: "preventOverflow",
-      options: {
-        padding: 20,
-      },
-    },
+const part = tv({
+  base: [
+    "inline-flex items-center",
+    "gap-[10px]",
+    "h-full",
+    "text-sm font-medium text-gray-800 whitespace-nowrap",
+    "cursor-pointer",
+    "hover:bg-gray-50",
   ],
-};
+  variants: {
+    caret: { true: "px-2", false: "px-[14px]" },
+  },
+});
+
+const separator = tv({ base: ["w-px self-stretch", "bg-gray-500"] });
 
 interface FileChoice {
   label: string;
@@ -92,6 +73,8 @@ const DownloadResultsDropdownButton = ({
   tiny?: boolean;
   tooltip?: string;
 }) => {
+  const { t } = useTranslation();
+  const { authToken } = useContext(AuthTokenContext);
   const [fileChoice, setFileChoice] = useState<FileChoice>(() => {
     const initial = getInitialEndingChoice(resultUrls);
     return { label: initial.label, ending: getEnding(initial.url) };
@@ -112,50 +95,61 @@ const DownloadResultsDropdownButton = ({
     return truncate(fileChoice.label);
   }, [fileChoice]);
 
-  const dropdown = useMemo(() => {
-    return (
-      <List>
-        {resultUrls.map((resultUrl) => {
-          const ending = getEnding(resultUrl.url);
-
-          return (
-            <SxDownloadButton
-              key={resultUrl.url}
-              resultUrl={resultUrl}
-              onClick={() => setFileChoice({ label: resultUrl.label, ending })}
-              bgHover
-              showColoredIcon
-            >
-              {truncate(resultUrl.label)}
-            </SxDownloadButton>
-          );
-        })}
-      </List>
-    );
-  }, [resultUrls]);
-
   return (
-    <Frame noborder={tiny}>
+    <div className={frame({ bordered: !tiny })}>
       {!tiny && (
         <>
-          <SxDownloadButton bgHover resultUrl={urlChoice} showColoredIcon>
-            {truncChosenLabel}
-          </SxDownloadButton>
-          <Separator />
+          <a
+            href={`${urlChoice.url}?access_token=${encodeURIComponent(authToken)}`}
+          >
+            <RacButton className={part({ caret: false })}>
+              <Icon
+                icon={getFileIcon(urlChoice.url).icon}
+                style={{ color: getFileIcon(urlChoice.url).color }}
+              />
+              {truncChosenLabel}
+            </RacButton>
+          </a>
+          <div className={separator()} />
         </>
       )}
-      <WithTooltip text={tooltip} hideOnClick>
-        <WithTooltip
-          html={dropdown}
-          interactive
-          arrow={false}
-          trigger="click"
-          popperOptions={popperOptions}
-        >
-          <SxIconButton bgHover icon={tiny ? faDownload : faCaretDown} />
-        </WithTooltip>
-      </WithTooltip>
-    </Frame>
+      <TooltipTrigger>
+        <MenuTrigger>
+          <RacButton aria-label={tooltip} className={part({ caret: true })}>
+            <Icon icon={tiny ? faDownload : faCaretDown} />
+          </RacButton>
+          <Menu
+            aria-label={t("previousQuery.downloadResults")}
+            onAction={(key) => {
+              const chosen = resultUrls.find(({ url }) => url === key);
+              if (chosen) {
+                setFileChoice({
+                  label: chosen.label,
+                  ending: getEnding(chosen.url),
+                });
+              }
+            }}
+          >
+            {resultUrls.map((resultUrl) => {
+              const { icon, color } = getFileIcon(resultUrl.url);
+
+              return (
+                <MenuItem
+                  key={resultUrl.url}
+                  id={resultUrl.url}
+                  href={`${resultUrl.url}?access_token=${encodeURIComponent(authToken)}`}
+                  textValue={resultUrl.label}
+                >
+                  <Icon icon={icon} style={{ color }} />
+                  {truncate(resultUrl.label)}
+                </MenuItem>
+              );
+            })}
+          </Menu>
+        </MenuTrigger>
+        <Tooltip>{tooltip}</Tooltip>
+      </TooltipTrigger>
+    </div>
   );
 };
 

@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { memo } from "react";
 
 import type {
@@ -14,12 +13,6 @@ import { Quarter } from "./Quarter";
 import type { EventsByQuarterWithGroups } from "./util/findEventGroups";
 import type { ColumnBuckets } from "./util/useColumnInformation";
 import YearHead from "./YearHead";
-
-const YearGroup = styled("div")`
-  display: flex;
-  flex-direction: column;
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
 
 const Year = ({
   year,
@@ -70,7 +63,7 @@ const Year = ({
         onClick={() => toggleOpenYear(year)}
         timeStratifiedInfos={timeStratifiedInfos}
       />
-      <YearGroup key={year}>
+      <div className="flex flex-col rounded" key={year}>
         {quarterwiseData.map(({ quarter, groupedEvents, differences }) => {
           const totalEventsPerQuarter = groupedEvents.reduce(
             (s, evts) => s + evts.length,
@@ -99,7 +92,7 @@ const Year = ({
             />
           );
         })}
-      </YearGroup>
+      </div>
     </>
   );
 };

@@ -1,16 +1,7 @@
-import styled from "@emotion/styled";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
-import InputCheckbox from "../ui-components/InputCheckbox";
-
-const Container = styled("div")`
-  margin: 15px 10px;
-`;
-const Row = styled("div")`
-  max-width: 300px;
-  margin-bottom: 10px;
-`;
+import { CheckboxField } from "../ui-components/CheckboxField";
 
 interface Props {
   excludeTimestamps?: boolean;
@@ -28,30 +19,30 @@ const CommonNodeSettings = ({
   const { t } = useTranslation();
 
   return (
-    <Container>
+    <div className="mx-[10px] my-[15px]">
       {onToggleTimestamps && (
-        <Row>
-          <InputCheckbox
-            label={t("queryNodeEditor.excludeTimestamps")}
+        <div className="mb-[10px] max-w-[300px]">
+          <CheckboxField
             tooltip={t("help.excludeTimestamps")}
-            tooltipLazy
-            value={excludeTimestamps}
+            isSelected={excludeTimestamps}
             onChange={onToggleTimestamps}
-          />
-        </Row>
+          >
+            {t("queryNodeEditor.excludeTimestamps")}
+          </CheckboxField>
+        </div>
       )}
       {onToggleSecondaryIdExclude && (
-        <Row>
-          <InputCheckbox
-            label={t("queryNodeEditor.excludeFromSecondaryId")}
+        <div className="mb-[10px] max-w-[300px]">
+          <CheckboxField
             tooltip={t("help.excludeFromSecondaryId")}
-            tooltipLazy
-            value={excludeFromSecondaryId}
+            isSelected={excludeFromSecondaryId}
             onChange={onToggleSecondaryIdExclude}
-          />
-        </Row>
+          >
+            {t("queryNodeEditor.excludeFromSecondaryId")}
+          </CheckboxField>
+        </div>
       )}
-    </Container>
+    </div>
   );
 };
 

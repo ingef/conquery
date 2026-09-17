@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faCheckCircle,
   faDownload,
@@ -9,99 +8,44 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { format } from "date-fns";
 import { saveAs } from "file-saver";
-import { type FC, useEffect, useState } from "react";
+import type { TFunction } from "i18next";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-import tw from "tailwind-styled-components";
+import { tv } from "tailwind-variants";
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
-import IconButton from "../../button/IconButton";
-import PrimaryButton from "../../button/PrimaryButton";
-import { TransparentButton } from "../../button/TransparentButton";
 import { parseCSV, toCSV } from "../../file/csv";
-import FaIcon from "../../icon/FaIcon";
 import { useActiveLang } from "../../localization/useActiveLang";
 import ScrollableList from "../../scrollable-list/ScrollableList";
-import WithTooltip from "../../tooltip/WithTooltip";
-import InputSelect from "../../ui-components/InputSelect/InputSelect";
+import { Button } from "../../ui-components/Button";
+import { ComboBoxField } from "../../ui-components/ComboBoxField";
+import { Icon } from "../../ui-components/Icon";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 
-const Row = styled("div")`
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-bottom: 15px;
-`;
+const td = tv({
+  base: "min-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap text-xs",
+});
 
-const Td = tw("td")`
-  text-xs
-  text-ellipsis
-  overflow-hidden
-  whitespace-nowrap
-  min-w-[150px]
-`;
-const Th = styled("th")`
-  font-size: ${({ theme }) => theme.font.xs};
-  vertical-align: top;
-  width: 150px;
-`;
+const th = tv({
+  base: ["w-[150px]", "align-top", "text-xs"],
+});
 
-const Padded = styled("span")`
-  padding: 0 6px;
-`;
-const SxPadded = styled(Padded)`
-  display: inline-block;
-  margin-top: 10px;
-`;
+const msg = tv({
+  base: ["flex items-center", "mt-[10px] mb-2 first-of-type:mt-0", "text-sm"],
+});
 
-const SxInputSelect = styled(InputSelect)`
-  width: 150px;
-  text-align: left;
-  display: inline-block;
-  margin-left: 15px;
-`;
+const partialUploadResults = tv({
+  base: ["mt-[15px]", "p-[15px]", "shadow-[0_0_5px_0_rgba(0,0,0,0.1)]"],
+});
 
-const Msg = styled("p")`
-  margin: 10px 0 8px;
-  &:first-of-type {
-    margin-top: 0;
-  }
-  font-size: ${({ theme }) => theme.font.sm};
-  display: flex;
-  align-items: center;
-`;
-
-const PartialUploadResults = styled("div")`
-  box-shadow: 0 0 5px 0 rgb(0, 0, 0, 0.1);
-  padding: 15px;
-  margin-top: 15px;
-`;
-
-const BigIcon = styled(FaIcon)`
-  font-size: ${({ theme }) => theme.font.lg};
-  margin-right: 7px;
-`;
-const ErrorIcon = styled(BigIcon)`
-  color: ${({ theme }) => theme.col.red};
-`;
-const SuccessIcon = styled(BigIcon)`
-  color: ${({ theme }) => theme.col.green};
-`;
-const Buttons = styled("div")`
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  margin-top: 12px;
-`;
-
-const SxPrimaryButton = styled(PrimaryButton)`
-  margin-left: 10px;
-`;
-const SxTransparentButton = styled(TransparentButton)`
-  margin-left: 10px;
-`;
-
-const DownloadUnresolvedButton = styled(TransparentButton)`
-  margin-right: auto;
-`;
+const bigIcon = tv({
+  base: ["mr-[7px]", "text-xl"],
+  variants: {
+    kind: {
+      error: "text-red",
+      success: "text-green",
+    },
+  },
+});
 
 export interface QueryToUploadT {
   format: string[];
@@ -127,7 +71,133 @@ type UploadColumnType =
   | "EXTRA" // (user supplied additional data per entity)
   | "IGNORE"; // (ignore this column)
 
-const CSVColumnPicker: FC<PropsT> = ({
+const getSelectOptions = (
+  config: PropsT["config"],
+  locale: ReturnType<typeof useActiveLang>,
+  t: TFunction,
+): { label: string; value: string }[] => [
+  { label: t("csvColumnPicker.ignore"), value: "IGNORE" },
+  ...config.ids.map(({ name, label }) => ({
+    label: label[locale] || t("common.missingLabel"),
+    value: name,
+  })),
+  { label: t("csvColumnPicker.dateSet"), value: "DATE_SET" },
+  { label: t("csvColumnPicker.startDate"), value: "START_DATE" },
+  { label: t("csvColumnPicker.endDate"), value: "END_DATE" },
+  { label: t("csvColumnPicker.extra"), value: "EXTRA" },
+];
+
+// Parses the file whenever it or the delimiter changes and resets the column mapping to IGNORE
+const useParsedCSV = (
+  file: File,
+  delimiter: string,
+  setCSVHeader: (header: UploadColumnType[]) => void,
+) => {
+  const [csv, setCSV] = useState<string[][]>([]);
+  const [csvLoading, setCSVLoading] = useState(false);
+
+  useEffect(() => {
+    async function parse() {
+      try {
+        setCSVLoading(true);
+        const result = await parseCSV(file, delimiter);
+        setCSVLoading(false);
+
+        if (result.data.length === 0) return;
+
+        setCSV(result.data);
+        setCSVHeader(new Array(result.data[0].length).fill("IGNORE"));
+      } catch {
+        setCSVLoading(false);
+      }
+    }
+
+    parse();
+  }, [file, delimiter, setCSVHeader]);
+
+  return { csv, csvLoading };
+};
+
+const CSVPreviewTable = ({
+  csv,
+  csvLoading,
+  csvHeader,
+  selectOptions,
+  onHeaderChange,
+}: {
+  csv: string[][];
+  csvLoading: boolean;
+  csvHeader: UploadColumnType[];
+  selectOptions: { label: string; value: string }[];
+  onHeaderChange: (header: UploadColumnType[]) => void;
+}) => {
+  const { t } = useTranslation();
+  return (
+    <table className="table-fixed [&_td]:px-1 [&_th]:px-1">
+      <thead>
+        {csvLoading && (
+          <tr>
+            <th>{t("csvColumnPicker.loading")}</th>
+          </tr>
+        )}
+        {csv.length > 0 &&
+          csv.slice(0, 1).map((row, j) => (
+            <tr key={j}>
+              {row.map((cell, i) => (
+                <th key={cell + i} className={th()}>
+                  <ComboBoxField
+                    aria-label={t("csvColumnPicker.columnType", {
+                      index: i + 1,
+                    })}
+                    options={selectOptions}
+                    value={
+                      selectOptions.find((o) => o.value === csvHeader[i]) ||
+                      selectOptions[0]
+                    }
+                    onChange={(value) => {
+                      if (value) {
+                        onHeaderChange([
+                          ...csvHeader.slice(0, i),
+                          value.value as UploadColumnType,
+                          ...csvHeader.slice(i + 1),
+                        ]);
+                      }
+                    }}
+                  />
+                  <span className="mt-[10px] inline-block px-[6px]">
+                    {cell}
+                  </span>
+                </th>
+              ))}
+            </tr>
+          ))}
+      </thead>
+      <tbody>
+        {csv.length > 0 &&
+          csv.slice(1, 6).map((row, j) => (
+            <tr key={j}>
+              {row.map((cell, i) => (
+                <td key={cell + i} className={td()}>
+                  <span className="px-[6px]">{cell}</span>
+                </td>
+              ))}
+            </tr>
+          ))}
+        {csv.length > 6 && (
+          <tr>
+            {new Array(csv[0].length).fill(null).map((_, j) => (
+              <td key={j} className={td()}>
+                <span className="px-[6px]">...</span>
+              </td>
+            ))}
+          </tr>
+        )}
+      </tbody>
+    </table>
+  );
+};
+
+const CSVColumnPicker = ({
   file,
   loading,
   config,
@@ -135,84 +205,20 @@ const CSVColumnPicker: FC<PropsT> = ({
   onUpload,
   onReset,
   onCancel,
-}) => {
+}: PropsT) => {
   const { t } = useTranslation();
   const locale = useActiveLang();
-  const [csv, setCSV] = useState<string[][]>([]);
   const [delimiter, setDelimiter] = useState<string>(";");
   const [csvHeader, setCSVHeader] = useState<UploadColumnType[]>([]);
-  const [csvLoading, setCSVLoading] = useState(false);
+  const { csv, csvLoading } = useParsedCSV(file, delimiter, setCSVHeader);
 
-  const SELECT_OPTIONS: { label: string; value: string }[] = [
-    { label: t("csvColumnPicker.ignore"), value: "IGNORE" },
-    ...config.ids.map(({ name, label }) => {
-      const labelWithFallback: string =
-        label[locale] || t("common.missingLabel");
-
-      return {
-        label: labelWithFallback,
-        value: name,
-      };
-    }),
-    { label: t("csvColumnPicker.dateSet"), value: "DATE_SET" },
-    { label: t("csvColumnPicker.startDate"), value: "START_DATE" },
-    { label: t("csvColumnPicker.endDate"), value: "END_DATE" },
-    { label: t("csvColumnPicker.extra"), value: "EXTRA" },
-  ];
+  const SELECT_OPTIONS = getSelectOptions(config, locale, t);
 
   const DELIMITER_OPTIONS = [
     { label: `${t("csvColumnPicker.semicolon")} ( ; )`, value: ";" },
     { label: `${t("csvColumnPicker.comma")} ( , )`, value: "," },
     { label: `${t("csvColumnPicker.colon")} ( : )`, value: ":" },
   ];
-
-  useEffect(() => {
-    async function parse() {
-      try {
-        setCSVLoading(true);
-
-        const result = await parseCSV(file, delimiter);
-
-        setCSVLoading(false);
-
-        if (result.data.length > 0) {
-          setCSV(result.data);
-
-          const firstRow = result.data[0];
-
-          const initialCSVHeader = new Array(firstRow.length).fill("IGNORE");
-
-          // NOTE: IT WAS A PREVIOUS REQUIREMENT TO INITIALIZE THE HEADER WITH CERTAIN
-          //       DEFAULT VALUES DEPENDING ON THE NUMBER OF COLUMNS IN THE CSV.
-          //       SINCE WE'LL WANT TO IMPROVE THE INITIALIZATION MECHANISM SOON,
-          //       I'M LEAVING THE CODE HERE FOR THE MOMENT:
-          // External queries (uploaded lists) usually contain three or four columns.
-          // The first two columns are IDs, which will be concatenated
-          // The other two columns are date ranges
-          // const initialIdName =
-          //   config.ids.length > 0 ? config.ids[0].name : "IGNORE";
-          // if (firstRow.length >= 4) {
-          //   initialCSVHeader[0] = initialIdName;
-          //   initialCSVHeader[1] = initialIdName;
-          //   initialCSVHeader[2] = "START_DATE";
-          //   initialCSVHeader[3] = "END_DATE";
-          // } else if (firstRow.length === 3) {
-          //   initialCSVHeader = [initialIdName, initialIdName, "DATE_SET"];
-          // } else if (firstRow.length === 2) {
-          //   initialCSVHeader = [initialIdName, "DATE_SET"];
-          // } else {
-          //   initialCSVHeader = [initialIdName];
-          // }
-
-          setCSVHeader(initialCSVHeader);
-        }
-      } catch {
-        setCSVLoading(false);
-      }
-    }
-
-    parse();
-  }, [file, delimiter]);
 
   function uploadQuery() {
     onUpload({
@@ -247,106 +253,73 @@ const CSVColumnPicker: FC<PropsT> = ({
 
   return (
     <div>
-      <Row>
+      <div className="mb-[15px] flex items-end justify-between">
         <div className="flex items-center gap-3">
           <div className="flex flex-col text-sm">
             <code className="font-bold">{file.name}</code>
             <code>{csv.length} Zeilen</code>
           </div>
-          <WithTooltip text={t("common.clear")}>
-            <IconButton frame icon={faTrash} onClick={onReset} />
-          </WithTooltip>
+          <TooltipTrigger>
+            <Button
+              aria-label={t("common.clear")}
+              intent="secondary"
+              onPress={onReset}
+            >
+              <Icon icon={faTrash} />
+            </Button>
+            <Tooltip>{t("common.clear")}</Tooltip>
+          </TooltipTrigger>
         </div>
         {csv.length > 0 && (
-          <SxInputSelect
-            label={t("csvColumnPicker.delimiter")}
-            onChange={(val) => {
-              if (val) setDelimiter(val.value as string);
-            }}
-            value={
-              DELIMITER_OPTIONS.find((option) => option.value === delimiter) ||
-              null
-            }
-            options={DELIMITER_OPTIONS}
-          />
+          <div className="ml-[15px] inline-block w-[150px] text-left">
+            <ComboBoxField
+              label={t("csvColumnPicker.delimiter")}
+              onChange={(val) => {
+                if (val) setDelimiter(val.value as string);
+              }}
+              value={
+                DELIMITER_OPTIONS.find(
+                  (option) => option.value === delimiter,
+                ) || null
+              }
+              options={DELIMITER_OPTIONS}
+            />
+          </div>
         )}
-      </Row>
+      </div>
       <div className="overflow-hidden rounded-sm py-3 px-2 border w-full">
         <div className="overflow-x-auto">
-          <table className="table-fixed [&_td]:px-1 [&_th]:px-1">
-            <thead>
-              {csvLoading && (
-                <tr>
-                  <th>{t("csvColumnPicker.loading")}</th>
-                </tr>
-              )}
-              {csv.length > 0 &&
-                csv.slice(0, 1).map((row, j) => (
-                  <tr key={j}>
-                    {row.map((cell, i) => (
-                      <Th key={cell + i}>
-                        <InputSelect
-                          smallMenu
-                          options={SELECT_OPTIONS}
-                          value={
-                            SELECT_OPTIONS.find(
-                              (o) => o.value === csvHeader[i],
-                            ) || SELECT_OPTIONS[0]
-                          }
-                          onChange={(value) => {
-                            if (value) {
-                              setCSVHeader([
-                                ...csvHeader.slice(0, i),
-                                value.value as UploadColumnType,
-                                ...csvHeader.slice(i + 1),
-                              ]);
-                            }
-                          }}
-                        />
-                        <SxPadded>{cell}</SxPadded>
-                      </Th>
-                    ))}
-                  </tr>
-                ))}
-            </thead>
-            <tbody>
-              {csv.length > 0 &&
-                csv.slice(1, 6).map((row, j) => (
-                  <tr key={j}>
-                    {row.map((cell, i) => (
-                      <Td key={cell + i}>
-                        <Padded>{cell}</Padded>
-                      </Td>
-                    ))}
-                  </tr>
-                ))}
-              {csv.length > 6 && (
-                <tr>
-                  {new Array(csv[0].length).fill(null).map((_, j) => (
-                    <Td key={j}>
-                      <Padded>...</Padded>
-                    </Td>
-                  ))}
-                </tr>
-              )}
-            </tbody>
-          </table>
+          <CSVPreviewTable
+            csv={csv}
+            csvLoading={csvLoading}
+            csvHeader={csvHeader}
+            selectOptions={SELECT_OPTIONS}
+            onHeaderChange={setCSVHeader}
+          />
         </div>
       </div>
       {uploadResult && (
-        <PartialUploadResults>
-          <Msg>
-            {uploadResult.resolved > 0 && <SuccessIcon icon={faCheckCircle} />}
+        <div className={partialUploadResults()}>
+          <p className={msg()}>
+            {uploadResult.resolved > 0 && (
+              <Icon
+                icon={faCheckCircle}
+                className={bigIcon({ kind: "success" })}
+              />
+            )}
             {t("csvColumnPicker.resolved", { count: uploadResult.resolved })}
-          </Msg>
+          </p>
           {uploadResult.unreadableDate.length > 0 && (
             <>
-              <Msg>
-                <ErrorIcon icon={faExclamationCircle} />
+              <p className={msg()}>
+                <Icon
+                  icon={faExclamationCircle}
+                  className={bigIcon({ kind: "error" })}
+                />
                 {t("csvColumnPicker.unreadableDate", {
                   count: uploadResult.unreadableDate.length,
                 })}
-              </Msg>
+              </p>
               <ScrollableList
                 maxVisibleItems={3}
                 fullWidth
@@ -360,12 +333,15 @@ const CSVColumnPicker: FC<PropsT> = ({
           )}
           {uploadResult.unresolvedId.length > 0 && (
             <>
-              <Msg>
-                <ErrorIcon icon={faExclamationCircle} />
+              <p className={msg()}>
+                <Icon
+                  icon={faExclamationCircle}
+                  className={bigIcon({ kind: "error" })}
+                />
                 {t("csvColumnPicker.unresolvedId", {
                   count: uploadResult.unresolvedId.length,
                 })}
-              </Msg>
+              </p>
               <ScrollableList
                 maxVisibleItems={3}
                 fullWidth
@@ -376,46 +352,56 @@ const CSVColumnPicker: FC<PropsT> = ({
               />
             </>
           )}
-        </PartialUploadResults>
+        </div>
       )}
-      <Buttons>
+      <div className="mt-3 flex items-end justify-end gap-[10px]">
         {uploadResult &&
           (uploadResult.unreadableDate.length > 0 ||
             uploadResult.unresolvedId.length > 0) && (
-            <DownloadUnresolvedButton onClick={downloadUnresolved}>
-              <FaIcon icon={faDownload} />{" "}
-              {t("uploadQueryResultsModal.downloadUnresolved", {
-                count:
-                  uploadResult.unreadableDate.length +
-                  uploadResult.unresolvedId.length,
-              })}
-            </DownloadUnresolvedButton>
+            <div className="mr-auto">
+              <Button intent="secondary" onPress={downloadUnresolved}>
+                <Icon icon={faDownload} />
+                {t("uploadQueryResultsModal.downloadUnresolved", {
+                  count:
+                    uploadResult.unreadableDate.length +
+                    uploadResult.unresolvedId.length,
+                })}
+              </Button>
+            </div>
           )}
         {uploadResult && (
-          <SxPrimaryButton disabled={uploadDisabled} onClick={uploadQuery}>
+          <Button
+            intent="primary"
+            isDisabled={uploadDisabled}
+            onPress={uploadQuery}
+          >
             {loading ? (
-              <FaIcon white icon={faSpinner} />
+              <Icon icon={faSpinner} className="text-white" />
             ) : (
-              <FaIcon white left icon={faUpload} />
+              <Icon icon={faUpload} className="mr-[10px] text-white" />
             )}{" "}
             {t("uploadQueryResultsModal.uploadAgain")}
-          </SxPrimaryButton>
+          </Button>
         )}
         {uploadResult ? (
-          <SxTransparentButton disabled={loading} onClick={onCancel}>
+          <Button intent="secondary" isDisabled={loading} onPress={onCancel}>
             {t("common.done")}
-          </SxTransparentButton>
+          </Button>
         ) : (
-          <SxPrimaryButton disabled={uploadDisabled} onClick={uploadQuery}>
+          <Button
+            intent="primary"
+            isDisabled={uploadDisabled}
+            onPress={uploadQuery}
+          >
             {loading ? (
-              <FaIcon white icon={faSpinner} />
+              <Icon icon={faSpinner} className="text-white" />
             ) : (
-              <FaIcon left white icon={faUpload} />
+              <Icon icon={faUpload} className="mr-[10px] text-white" />
             )}{" "}
             {t("uploadQueryResultsModal.upload")}
-          </SxPrimaryButton>
+          </Button>
         )}
-      </Buttons>
+      </div>
     </div>
   );
 };

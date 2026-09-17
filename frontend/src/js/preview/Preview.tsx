@@ -1,14 +1,13 @@
-import styled from "@emotion/styled";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-
+import { tv } from "tailwind-variants";
 import type { PreviewStatistics, SecondaryId } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { TransparentButton } from "../button/TransparentButton";
-import FaIcon from "../icon/FaIcon";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
 import { closePreview } from "./actions";
 import Charts from "./Charts";
 import DiagramModal from "./DiagramModal";
@@ -18,62 +17,49 @@ import ScrollBox from "./ScrollBox";
 import SelectBox from "./SelectBox";
 import Table from "./Table";
 
-const FullScreen = styled("div")`
-  height: 100%;
-  width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  background-color: ${({ theme }) => theme.col.bgAlt};
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-`;
+const fullScreen = tv({
+  base: [
+    "fixed top-0 left-0",
+    "z-2",
+    "flex flex-col",
+    "gap-[15px]",
+    "h-full w-full",
+    "bg-bg-100",
+  ],
+});
 
-const Headline = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 30px;
-`;
+const headline = tv({
+  base: ["flex flex-row items-center", "gap-[30px]"],
+});
 
-const SxScrollBox = styled(ScrollBox)`
-  padding: 60px 20px 20px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
+const scrollBox = tv({
+  base: ["flex flex-col", "gap-5", "pt-[60px] px-5 pb-5"],
+});
 
-const SxCharts = styled(Charts)`
-  width: 100%;
-  background-color: white;
-  padding: 10px;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
-`;
+const charts = tv({
+  base: [
+    "w-full",
+    "bg-white",
+    "p-[10px]",
+    "shadow-[0_0_5px_0_rgba(0,0,0,0.2)]",
+  ],
+});
 
-const SxChartLoadingBlocker = styled("div")`
-  width: 100%;
-  background-color: white;
-  padding: 10px;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
-  align-items: center;
-  height: 65vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
+const chartLoadingBlocker = tv({
+  base: [
+    "flex items-center justify-center",
+    "h-[65vh] w-full",
+    "bg-white",
+    "p-[10px]",
+    "shadow-[0_0_5px_0_rgba(0,0,0,0.2)]",
+  ],
+});
 
-const SxFaIcon = styled(FaIcon)`
-  width: 30px;
-  height: 30px;
-`;
+const spinnerIcon = tv({ base: "size-[30px]" });
 
-const SxSelectBox = styled(SelectBox)`
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
-  background-color: white;
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
+const selectBox = tv({
+  base: ["rounded", "bg-white", "shadow-[0_0_5px_0_rgba(0,0,0,0.2)]"],
+});
 
 export default function Preview() {
   const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
@@ -88,7 +74,7 @@ export default function Preview() {
   const onClose = () => dispatch(closePreview());
   const statistics = preview.statisticsData;
   const idLabel = useMemo(() => {
-    const primaryIdLabel = t("tooltip.entitiesFound", { count: 2 });
+    const primaryIdLabel = t("common.entitiesFound", { count: 2 });
     if (preview.queryData?.secondaryId) {
       const secondaryIdLabel = loadedSecondaryIds.find(
         (x) => x.id === preview.queryData?.secondaryId,
@@ -104,14 +90,15 @@ export default function Preview() {
   });
 
   return (
-    <FullScreen>
-      <SxScrollBox>
-        <Headline>
-          <TransparentButton small onClick={onClose}>
+    <div className={fullScreen()}>
+      <ScrollBox className={scrollBox()}>
+        <div className={headline()}>
+          <Button intent="secondary" onPress={onClose}>
             {t("common.back")}
-          </TransparentButton>
+          </Button>
           Ergebnisvorschau
-          <SxSelectBox
+          <SelectBox
+            className={selectBox()}
             items={statistics?.statistics ?? ([] as PreviewStatistics[])}
             onChange={(res) => {
               const stat = statistics?.statistics.find(
@@ -123,9 +110,10 @@ export default function Preview() {
             setIsOpen={setSelectBoxOpen}
           />
           <HeadlineStats statistics={statistics} idLabel={idLabel} />
-        </Headline>
+        </div>
         {statistics ? (
-          <SxCharts
+          <Charts
+            className={charts()}
             statistics={statistics.statistics}
             showPopup={(statistic: PreviewStatistics) => {
               setPopOver(statistic);
@@ -134,9 +122,9 @@ export default function Preview() {
             setPage={setPage}
           />
         ) : (
-          <SxChartLoadingBlocker>
-            <SxFaIcon icon={faSpinner} />
-          </SxChartLoadingBlocker>
+          <div className={chartLoadingBlocker()}>
+            <Icon icon={faSpinner} className={spinnerIcon()} />
+          </div>
         )}
         {popOver && (
           <DiagramModal statistic={popOver} onClose={() => setPopOver(null)} />
@@ -150,7 +138,7 @@ export default function Preview() {
               queryData={preview.queryData}
             />
           )}
-      </SxScrollBox>
-    </FullScreen>
+      </ScrollBox>
+    </div>
   );
 }

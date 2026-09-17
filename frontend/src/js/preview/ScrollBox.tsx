@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
 import {
   type HTMLAttributes,
@@ -7,29 +6,32 @@ import {
   useRef,
   useState,
 } from "react";
-import IconButton from "../button/IconButton";
+import { Button as RacButton } from "react-aria-components";
+import { tv } from "tailwind-variants";
+import { Icon } from "../ui-components/Icon";
 
-const Root = styled("div")`
-  overflow: auto;
-`;
-const ScrollTopButton = styled(IconButton)`
-  position: absolute;
-  right: 30px;
-  bottom: 30px;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  justify-content: center;
-  border-radius: 50%;
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  background: white;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
-  z-index: 3;
-`;
+const root = tv({ base: "overflow-auto" });
+
+const scrollTopButton = tv({
+  base: [
+    "absolute right-[30px] bottom-[30px]",
+    "z-3",
+    "flex justify-center",
+    "h-[50px] w-[50px]",
+    "items-center",
+    "rounded-full",
+    "border border-gray-500",
+    "bg-white hover:bg-gray-50",
+    "text-gray-800",
+    "cursor-pointer",
+    "shadow-[0_0_5px_0_rgba(0,0,0,0.2)]",
+  ],
+});
 
 export default function ScrollBox({
   threshold = 0,
   children,
+  className,
   ...props
 }: PropsWithChildren<{ threshold?: number }> & HTMLAttributes<HTMLDivElement>) {
   const scrollBoxRef = useRef<HTMLDivElement>(null);
@@ -49,17 +51,18 @@ export default function ScrollBox({
   }, [threshold]);
 
   return (
-    <Root ref={scrollBoxRef} {...props}>
+    <div ref={scrollBoxRef} className={root({ className })} {...props}>
       {showButton && (
-        <ScrollTopButton
-          icon={faArrowUp}
-          bgHover={true}
-          onClick={() =>
+        <RacButton
+          className={scrollTopButton()}
+          onPress={() =>
             scrollBoxRef.current?.scrollTo({ top: 0, behavior: "smooth" })
           }
-        />
+        >
+          <Icon icon={faArrowUp} />
+        </RacButton>
       )}
       {children}
-    </Root>
+    </div>
   );
 }

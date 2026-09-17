@@ -1,17 +1,17 @@
-import styled from "@emotion/styled";
 import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect } from "react";
+import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-
+import { tv } from "tailwind-variants";
 import type { StateT } from "../../app/reducers";
-import IconButton from "../../button/IconButton";
 import { DNDType } from "../../common/constants/dndTypes";
-import { useResizeObserver } from "../../common/helpers/useResizeObserver";
 import type { DragItemFormConfig } from "../../external-forms/types";
 import type { DragItemQuery } from "../../standard-query-editor/types";
-import WithTooltip from "../../tooltip/WithTooltip";
+import { Button } from "../../ui-components/Button";
 import Dropzone from "../../ui-components/Dropzone";
+import { Icon } from "../../ui-components/Icon";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import {
   removeFolderFromFilter,
   setFolderFilter,
@@ -35,96 +35,41 @@ const DROP_TYPES = [
   DNDType.PREVIOUS_SECONDARY_ID_QUERY,
 ];
 
-const Root = styled("div")`
-  flex-shrink: 0;
-  height: 100%;
-  overflow: hidden;
-  border-right: none;
-  display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-`;
+const root = tv({
+  base: ["flex flex-col items-start", "shrink-0", "h-full", "overflow-hidden"],
+});
 
-const SxIconButton = styled(IconButton)`
-  background-color: ${({ theme }) => theme.col.bg};
-  padding: 2px 8px;
-  opacity: 1;
-  border-radius: 0;
+// shown while the surrounding folder dropzone (group/folder) is hovered;
+// invisible rather than hidden, so it keeps its layout and its tooltip stays anchored
+const deleteButton = tv({
+  base: [
+    "absolute top-0 right-0",
+    "invisible group-hover/folder:visible",
+    "bg-bg-50",
+  ],
+});
 
-  position: absolute;
-  right: 0px;
-  top: 0px;
-  display: none;
-`;
+const folderDropzone = tv({
+  base: [
+    "group/folder",
+    "relative",
+    "justify-start",
+    "mb-[2px]",
+    "cursor-pointer",
+    "hover:bg-gray-50",
+  ],
+});
 
-const AddFolderIconButton = styled(IconButton)`
-  text-align: left;
-  padding: 4px 6px;
-`;
+const scrollContainer = tv({
+  base: [
+    "flex flex-col items-start",
+    "grow",
+    "w-full",
+    "overflow-y-auto overflow-x-hidden",
+  ],
+});
 
-const Row = styled("div")`
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 12px;
-  min-width: 100px;
-  width: 100%;
-`;
-
-const SxDropzone = styled(Dropzone)`
-  justify-content: flex-start;
-  margin-bottom: 2px;
-  position: relative;
-  cursor: pointer;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.col.grayVeryLight};
-    .folder-delete-button {
-      display: block;
-    }
-  }
-`;
-
-const SxPreviousQueriesFolder = styled(Folder)`
-  margin-bottom: 5px;
-`;
-
-const ScrollContainer = styled("div")`
-  overflow-y: auto;
-  overflow-x: hidden;
-  flex-grow: 1;
-  width: 100%;
-
-  display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-`;
-
-const NARROW_WIDTH = 120;
-const useIsParentNarrow = () => {
-  // TODO: Once https://caniuse.com/css-container-queries ships, use those instead
-  const parentRef = useRef<HTMLDivElement | null>(null);
-  const [parentWidth, setParentWidth] = useState<number>(0);
-  const isNarrow = parentWidth < NARROW_WIDTH;
-  useResizeObserver(
-    useCallback((entry: ResizeObserverEntry) => {
-      if (entry) {
-        setParentWidth(entry.contentRect.width);
-      }
-    }, []),
-    parentRef.current,
-  );
-
-  return {
-    isNarrow,
-    parentRef,
-  };
-};
-
-interface Props {
-  className?: string;
-}
-
-const Folders: FC<Props> = ({ className }) => {
+const Folders = ({ className }: { className?: string }) => {
   const folders = useFolders();
   const localFolders = useSelector<StateT, string[]>(
     (state) => state.previousQueries.localFolders,
@@ -188,11 +133,6 @@ const Folders: FC<Props> = ({ className }) => {
     }
   };
 
-  const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
-  const [showAddFolderModal, setShowAddFolderModal] = useState<boolean>(false);
-
-  const { isNarrow, parentRef } = useIsParentNarrow();
-
   useEffect(
     function resetFolderFilterWhenFolderNotVisible() {
       const isSomeActiveFolderInvisible = folderFilter.some(
@@ -207,40 +147,24 @@ const Folders: FC<Props> = ({ className }) => {
   );
 
   return (
-    <Root className={className}>
-      {folderToDelete && (
-        <DeleteFolderModal
-          folder={folderToDelete}
-          onClose={() => setFolderToDelete(null)}
-          onDeleteSuccess={() => {
-            setFolderToDelete(null);
-            dispatch(setFolderFilter([]));
-          }}
-        />
-      )}
-      <Row ref={parentRef}>
-        <AddFolderIconButton
-          icon={faPlus}
-          frame
-          tight
-          onClick={() => setShowAddFolderModal(true)}
-        >
-          {isNarrow ? t("folders.addShort") : t("folders.add")}
-        </AddFolderIconButton>
-      </Row>
-      {showAddFolderModal && (
-        <AddFolderModal
-          onClose={() => setShowAddFolderModal(false)}
-          isValidName={(v) => v.length > 0 && !folders.includes(v)}
-          onSubmit={(v) => {
-            if (v.length > 0) {
-              setShowAddFolderModal(false);
-              dispatch(addFolder({ folderName: v }));
-            }
-          }}
-        />
-      )}
-      <SxPreviousQueriesFolder
+    <div className={root({ className })}>
+      <div className="@container mb-3 flex w-full min-w-[100px] items-start">
+        <DialogTrigger>
+          <Button intent="tertiary" size="sm">
+            <Icon icon={faPlus} />
+            <span className="@max-[120px]:hidden">{t("folders.add")}</span>
+            <span className="@min-[120px]:hidden">{t("folders.addShort")}</span>
+          </Button>
+          <AddFolderModal
+            isValidName={(v) => v.length > 0 && !folders.includes(v)}
+            onSubmit={(v) => {
+              if (v.length > 0) dispatch(addFolder({ folderName: v }));
+            }}
+          />
+        </DialogTrigger>
+      </div>
+      <Folder
+        className="mb-[5px]"
         key="all-queries"
         folder={t("folders.allQueries")}
         active={folderFilter.length === 0 && !noFoldersActive}
@@ -248,7 +172,8 @@ const Folders: FC<Props> = ({ className }) => {
         resultCount={searchResult ? searchResult.__all__ : null}
         resultWords={[]}
       />
-      <SxPreviousQueriesFolder
+      <Folder
+        className="mb-[5px]"
         key="no-folder"
         special
         folder={t("folders.noFolders")}
@@ -257,10 +182,11 @@ const Folders: FC<Props> = ({ className }) => {
         resultCount={searchResult ? searchResult.__without_folder__ : null}
         resultWords={[]}
       />
-      <ScrollContainer>
+      <div className={scrollContainer()}>
         {folders.map((folder, i) => {
           return (
-            <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
+            <Dropzone
+              className={folderDropzone()}
               key={`${folder}-${i}`}
               naked
               bare
@@ -289,23 +215,31 @@ const Folders: FC<Props> = ({ className }) => {
                     resultCount={searchResult ? searchResult[folder] : null}
                     resultWords={searchResultWords}
                   />
-                  <WithTooltip text={t("common.delete")}>
-                    <SxIconButton
-                      className="folder-delete-button"
-                      icon={faTimes}
-                      onClick={(e) => {
-                        setFolderToDelete(folder);
-                        e.stopPropagation();
-                      }}
-                    />
-                  </WithTooltip>
+                  <TooltipTrigger>
+                    <DialogTrigger>
+                      <div className={deleteButton()}>
+                        <Button
+                          size="sm"
+                          aria-label={t("common.delete")}
+                          intent="tertiary"
+                        >
+                          <Icon icon={faTimes} />
+                        </Button>
+                      </div>
+                      <DeleteFolderModal
+                        folder={folder}
+                        onDeleteSuccess={() => dispatch(setFolderFilter([]))}
+                      />
+                    </DialogTrigger>
+                    <Tooltip>{t("common.delete")}</Tooltip>
+                  </TooltipTrigger>
                 </>
               )}
-            </SxDropzone>
+            </Dropzone>
           );
         })}
-      </ScrollContainer>
-    </Root>
+      </div>
+    </div>
   );
 };
 export default Folders;

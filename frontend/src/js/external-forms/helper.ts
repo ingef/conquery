@@ -83,6 +83,7 @@ export function getInitialValue(
   | number
   | boolean
   | undefined
+  | null
   | Array<unknown>
   | { min: null; max: null }
   | SelectOptionT {
@@ -111,6 +112,8 @@ export function getInitialValue(
       return undefined;
     case "CONCEPT_LIST":
       return [];
+    case "DATE":
+      return field.defaultValue ?? null;
     case "DATE_RANGE":
       return {
         min: null,

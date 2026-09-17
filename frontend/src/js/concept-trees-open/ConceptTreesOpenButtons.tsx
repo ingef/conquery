@@ -1,33 +1,21 @@
-import styled from "@emotion/styled";
 import { faFolderMinus, faHome } from "@fortawesome/free-solid-svg-icons";
-import { type FC, memo, useCallback, useRef } from "react";
+import { memo, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-
+import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
 import { clearSearchQuery } from "../concept-trees/actions";
 import { useRootConceptIds } from "../concept-trees/useRootConceptIds";
-import WithTooltip from "../tooltip/WithTooltip";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { closeAllConceptOpen, resetAllConceptOpen } from "./actions";
 import type { ConceptTreesOpenStateT } from "./reducer";
 
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
-  gap: 5px;
-`;
+const row = tv({ base: ["flex items-center", "gap-[5px]"] });
 
-const SxIconButton = styled(IconButton)`
-  padding: 9px 6px;
-`;
-
-interface PropsT {
-  className?: string;
-}
-
-const ConceptTreesOpenButtons: FC<PropsT> = ({ className }) => {
+const ConceptTreesOpenButtons = ({ className }: { className?: string }) => {
   const dispatch = useDispatch();
 
   const conceptTreesOpen = useSelector<StateT, ConceptTreesOpenStateT>(
@@ -82,19 +70,29 @@ const ConceptTreesOpenButtonsView = memo(
     const { t } = useTranslation();
 
     return (
-      <Row className={className}>
-        <WithTooltip text={t("conceptTreesOpen.resetAll")}>
-          <SxIconButton frame icon={faHome} onClick={onResetAllConceptOpen} />
-        </WithTooltip>
-        <WithTooltip text={t("conceptTreesOpen.closeAll")}>
-          <SxIconButton
-            disabled={isCloseAllDisabled}
-            frame
-            icon={faFolderMinus}
-            onClick={onCloseAllConceptOpen}
-          />
-        </WithTooltip>
-      </Row>
+      <div className={row({ className })}>
+        <TooltipTrigger>
+          <Button
+            aria-label={t("conceptTreesOpen.resetAll")}
+            intent="secondary"
+            onPress={onResetAllConceptOpen}
+          >
+            <Icon icon={faHome} />
+          </Button>
+          <Tooltip>{t("conceptTreesOpen.resetAll")}</Tooltip>
+        </TooltipTrigger>
+        <TooltipTrigger>
+          <Button
+            aria-label={t("conceptTreesOpen.closeAll")}
+            intent="secondary"
+            isDisabled={isCloseAllDisabled}
+            onPress={onCloseAllConceptOpen}
+          >
+            <Icon icon={faFolderMinus} />
+          </Button>
+          <Tooltip>{t("conceptTreesOpen.closeAll")}</Tooltip>
+        </TooltipTrigger>
+      </div>
     );
   },
 );

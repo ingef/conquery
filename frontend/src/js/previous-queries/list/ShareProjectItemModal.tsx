@@ -1,15 +1,14 @@
-import styled from "@emotion/styled";
 import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-
 import type { SelectOptionT, UserGroupT } from "../../api/types";
 import type { StateT } from "../../app/reducers";
-import IconButton from "../../button/IconButton";
-import Modal from "../../modal/Modal";
-import WithTooltip from "../../tooltip/WithTooltip";
+import { Button } from "../../ui-components/Button";
+import { Icon } from "../../ui-components/Icon";
 import InputMultiSelect from "../../ui-components/InputMultiSelect/InputMultiSelect";
+import { Modal, ModalBody, ModalHeader } from "../../ui-components/Modal";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import {
   useLoadFormConfig,
   useLoadQuery,
@@ -18,17 +17,6 @@ import {
 } from "./actions";
 import { isFormConfig } from "./helpers";
 import type { ProjectItemT } from "./ProjectItem";
-
-const Row = styled("div")`
-  width: 100%;
-  display: flex;
-  align-items: flex-end;
-`;
-
-const SxIconButton = styled(IconButton)`
-  padding: 7px 10px;
-  margin-left: 3px;
-`;
 
 const getInitialUserGroupsValue = (
   userGroups: UserGroupT[],
@@ -140,34 +128,45 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
 
   return (
     <Modal
-      onClose={onClose}
-      headline={t("sharePreviousQueryModal.headline")}
-      subtitle={item.label}
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          onShareClicked();
-        }}
-      >
-        <Row>
-          <InputMultiSelect
-            autoFocus
-            value={userGroupsValue}
-            onChange={onSetUserGroupsValue}
-            label={groupsLabel}
-            options={userGroupOptions}
-          />
-          <WithTooltip text={shareLabel}>
-            <SxIconButton
-              type="submit"
-              frame
-              disabled={buttonDisabled}
-              icon={loading ? faSpinner : faCheck}
+      <ModalHeader subtitle={item.label}>
+        {t("sharePreviousQueryModal.headline")}
+      </ModalHeader>
+      <ModalBody>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            onShareClicked();
+          }}
+        >
+          <div className="flex w-full items-end">
+            <InputMultiSelect
+              autoFocus
+              value={userGroupsValue}
+              onChange={onSetUserGroupsValue}
+              label={groupsLabel}
+              options={userGroupOptions}
             />
-          </WithTooltip>
-        </Row>
-      </form>
+            <div className="ml-[3px]">
+              <TooltipTrigger>
+                <Button
+                  aria-label={shareLabel}
+                  intent="secondary"
+                  type="submit"
+                  isDisabled={buttonDisabled}
+                >
+                  <Icon icon={loading ? faSpinner : faCheck} />
+                </Button>
+                <Tooltip>{shareLabel}</Tooltip>
+              </TooltipTrigger>
+            </div>
+          </div>
+        </form>
+      </ModalBody>
     </Modal>
   );
 };

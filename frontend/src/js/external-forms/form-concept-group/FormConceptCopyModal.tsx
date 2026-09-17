@@ -1,51 +1,41 @@
-import styled from "@emotion/styled";
 import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-
+import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../../api/types";
-import PrimaryButton from "../../button/PrimaryButton";
-import { TransparentButton } from "../../button/TransparentButton";
 import { exists } from "../../common/helpers/exists";
 import { useActiveLang } from "../../localization/useActiveLang";
-import Modal from "../../modal/Modal";
-import InputCheckbox from "../../ui-components/InputCheckbox";
-import InputSelect from "../../ui-components/InputSelect/InputSelect";
+import { Button } from "../../ui-components/Button";
+import { CheckboxField } from "../../ui-components/CheckboxField";
+import { ComboBoxField } from "../../ui-components/ComboBoxField";
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "../../ui-components/Modal";
 import { useVisibleConceptListFields } from "../stateSelectors";
 
 import type { FormConceptGroupT } from "./formConceptGroupState";
 
-const Buttons = styled("div")`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin-top: 20px;
-`;
+const selectAll = tv({ base: "mt-[10px] ml-2" });
 
-const Options = styled("div")`
-  padding: 8px 0 0 28px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  max-height: 345px;
-`;
-
-const SelectAllCheckbox = styled(InputCheckbox)`
-  margin: 10px 0 0 8px;
-`;
-
-const SxInputCheckbox = styled(InputCheckbox)`
-  margin: 5px 0;
-`;
+const options = tv({
+  base: [
+    "flex flex-col gap-1",
+    "pt-2 pl-[28px]",
+    "max-h-[345px]",
+    "overflow-y-auto",
+    "[-webkit-overflow-scrolling:touch]",
+  ],
+});
 
 const FormConceptCopyModal = ({
   targetFieldname,
   onAccept,
-  onClose,
 }: {
   targetFieldname: string;
   onAccept: (selectedNodes: FormConceptGroupT[]) => void;
-  onClose: () => void;
 }) => {
   const { t } = useTranslation();
   const activeLang = useActiveLang();
@@ -132,7 +122,7 @@ const FormConceptCopyModal = ({
     setValuesChecked(nextValues);
   }
 
-  function onSubmit() {
+  function onSubmit(close: () => void) {
     const selectedNodes = Object.keys(valuesChecked)
       .filter((index) => valuesChecked[index])
       .map(
@@ -140,44 +130,59 @@ const FormConceptCopyModal = ({
       );
 
     onAccept(selectedNodes);
-    onClose();
+    close();
   }
 
   return (
-    <Modal onClose={onClose} headline={t("externalForms.copyModal.headline")}>
-      <InputSelect
-        label={t("externalForms.copyModal.selectLabel")}
-        options={conceptListFieldOptions}
-        onChange={(val) => {
-          if (val) setSelectedOption(val);
-        }}
-        value={selectedOption}
-      />
-      <SelectAllCheckbox
-        label={t("externalForms.copyModal.selectAll")}
-        value={allConceptsSelected}
-        onChange={onToggleAllConcepts}
-      />
-      <Options>
-        {Object.keys(valuesChecked).map((idx) =>
-          idxHasConcepts(idx) ? (
-            <SxInputCheckbox
-              key={idx}
-              label={getLabelFromIdx(idx)}
-              value={valuesChecked[idx]}
-              onChange={(checked: boolean) => onToggleConcept(idx, checked)}
+    <Modal>
+      {({ close }) => (
+        <>
+          <ModalHeader>{t("externalForms.copyModal.headline")}</ModalHeader>
+          <ModalBody>
+            <ComboBoxField
+              label={t("externalForms.copyModal.selectLabel")}
+              options={conceptListFieldOptions}
+              onChange={(val) => {
+                if (val) setSelectedOption(val);
+              }}
+              value={selectedOption}
             />
-          ) : null,
-        )}
-      </Options>
-      <Buttons>
-        <TransparentButton onClick={onClose}>
-          {t("common.cancel")}
-        </TransparentButton>
-        <PrimaryButton onClick={onSubmit} disabled={isAcceptDisabled}>
-          {t("externalForms.copyModal.accept")}
-        </PrimaryButton>
-      </Buttons>
+            <div className={selectAll()}>
+              <CheckboxField
+                isSelected={allConceptsSelected}
+                onChange={onToggleAllConcepts}
+              >
+                {t("externalForms.copyModal.selectAll")}
+              </CheckboxField>
+            </div>
+            <div className={options()}>
+              {Object.keys(valuesChecked).map((idx) =>
+                idxHasConcepts(idx) ? (
+                  <CheckboxField
+                    key={idx}
+                    isSelected={valuesChecked[idx]}
+                    onChange={(checked: boolean) =>
+                      onToggleConcept(idx, checked)
+                    }
+                  >
+                    {getLabelFromIdx(idx)}
+                  </CheckboxField>
+                ) : null,
+              )}
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button slot="close">{t("common.cancel")}</Button>
+            <Button
+              intent="primary"
+              onPress={() => onSubmit(close)}
+              isDisabled={isAcceptDisabled}
+            >
+              {t("externalForms.copyModal.accept")}
+            </Button>
+          </ModalFooter>
+        </>
+      )}
     </Modal>
   );
 };

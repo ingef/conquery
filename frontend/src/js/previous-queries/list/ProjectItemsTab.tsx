@@ -1,16 +1,15 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
+import { faFolderOpen } from "@fortawesome/free-regular-svg-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { Group, Panel } from "react-resizable-panels";
+import { tv } from "tailwind-variants";
 import type { DatasetT } from "../../api/types";
 import type { StateT } from "../../app/reducers";
-import { usePrevious } from "../../common/helpers/usePrevious";
 import { ResizeHandle } from "../../common/ResizeHandle";
 import { useCollapsiblePanel } from "../../common/useCollapsiblePanel";
 import { selectFormConfigs } from "../../external-forms/form-configs/selectors";
-import EmptyList from "../../list/EmptyList";
+import { EmptyState } from "../../ui-components/EmptyState";
 import { canUploadResult } from "../../user/selectors";
 import ProjectItemsFilter from "../filter/ProjectItemsFilter";
 import type { ProjectItemsFilterStateT } from "../filter/reducer";
@@ -27,65 +26,24 @@ import { ProjectItems } from "./ProjectItems";
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 import { selectPreviousQueries } from "./selector";
 
-const ScrollContainer = styled("div")`
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
+const FOLDERS_SHARE = "25";
 
-const Row = styled("div")`
-  display: flex;
-  align-items: flex-start;
-  margin: 8px 10px 0;
-`;
+const foldersAndQueries = tv({
+  base: [
+    "flex items-start",
+    "grow",
+    "mt-2 mr-2 mb-0 ml-[10px]",
+    "overflow-hidden",
+    "relative",
+  ],
+});
 
-const FoldersAndQueries = styled(Row)`
-  flex-grow: 1;
-  margin: 8px 8px 0 10px;
-  overflow: hidden;
-  position: relative;
-`;
-const SxProjectItemsSearchBox = styled(ProjectItemsSearchBox)`
-  flex-grow: 1;
-`;
-
-const Filters = styled("div")`
-  display: flex;
-  align-items: flex-start;
-  margin: 8px 0;
-`;
-const SxProjectItemsFilter = styled(ProjectItemsFilter)`
-  display: flex;
-  align-items: flex-start;
-`;
-
-const SxProjectItemsTypeFilter = styled(ProjectItemsTypeFilter)`
-  display: flex;
-  align-items: flex-start;
-  margin-right: 20px;
-  padding-right: 10px;
-`;
-
-const SxUploadQueryResults = styled(UploadQueryResults)`
-  margin-left: 5px;
-`;
-
-const SxFolders = styled(Folders)`
-  padding: 8px 8px 8px 0;
-`;
-
-const Expand = styled("div")<{ areFoldersOpen?: boolean }>`
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding-right: 2px;
-  ${({ areFoldersOpen }) =>
-    areFoldersOpen &&
-    css`
-      padding-left: 8px;
-    `}
-`;
+const expand = tv({
+  base: ["flex flex-col", "grow", "h-full", "pr-[2px]"],
+  variants: {
+    areFoldersOpen: { true: "pl-2" },
+  },
+});
 
 interface PropsT {
   datasetId: DatasetT["id"] | null;
@@ -99,28 +57,27 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
     (state) => state.previousQueriesFolderFilter.areFoldersOpen,
   );
 
-  useLeftPaneSize({ areFoldersOpen });
-
   const dispatch = useDispatch();
   const onToggleFoldersOpen = () => dispatch(toggleFoldersOpen());
 
   const { items, loading } = useProjectItems({ datasetId });
 
-  const foldersPanelRef = useCollapsiblePanel(!areFoldersOpen);
+  const foldersPanelRef = useCollapsiblePanel(!areFoldersOpen, FOLDERS_SHARE);
+  // read once, a changing default resets the group's layout
+  const [defaultSize] = useState(() => (areFoldersOpen ? FOLDERS_SHARE : 0));
 
   return (
-    <>
-      <Row>
+    // the list takes the height left over by the search row
+    <div className="flex flex-col">
+      <div className="mx-[10px] mt-2 flex items-start gap-[5px]">
         <FoldersToggleButton
           active={areFoldersOpen}
           onClick={onToggleFoldersOpen}
         />
-        <SxProjectItemsSearchBox />
-        {hasPermissionToUpload && (
-          <SxUploadQueryResults datasetId={datasetId} />
-        )}
-      </Row>
-      <FoldersAndQueries>
+        <ProjectItemsSearchBox className="grow" />
+        {hasPermissionToUpload && <UploadQueryResults datasetId={datasetId} />}
+      </div>
+      <div className={foldersAndQueries()}>
         <Group orientation="horizontal">
           <Panel
             key="left"
@@ -128,62 +85,36 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
             collapsible
             collapsedSize={0}
             minSize="10"
-            defaultSize={areFoldersOpen ? "25" : 0}
+            defaultSize={defaultSize}
           >
-            <SxFolders />
+            <Folders className="py-2 pr-2 pl-0" />
           </Panel>
           <ResizeHandle
             disabled={!areFoldersOpen}
             style={areFoldersOpen ? undefined : { display: "none" }}
           />
           <Panel key="right">
-            <Expand areFoldersOpen={areFoldersOpen}>
-              <Filters>
-                <SxProjectItemsTypeFilter />
-                <SxProjectItemsFilter />
-              </Filters>
-              <ScrollContainer>
-                {items.length === 0 && !loading && (
-                  <EmptyList
-                    emptyMessage={t("previousQueries.noQueriesFound")}
-                  />
-                )}
-              </ScrollContainer>
-              <ProjectItems items={items} datasetId={datasetId} />
-            </Expand>
+            <div className={expand({ areFoldersOpen })}>
+              <div className="my-2 flex items-start gap-5">
+                <ProjectItemsTypeFilter />
+                <ProjectItemsFilter />
+              </div>
+              {items.length === 0 && !loading ? (
+                <EmptyState icon={faFolderOpen}>
+                  {t("previousQueries.noQueriesFound")}
+                </EmptyState>
+              ) : (
+                <ProjectItems items={items} datasetId={datasetId} />
+              )}
+            </div>
           </Panel>
         </Group>
-      </FoldersAndQueries>
-    </>
+      </div>
+    </div>
   );
 };
 
 export default ProjectItemsTab;
-
-const useLeftPaneSize = ({ areFoldersOpen }: { areFoldersOpen?: boolean }) => {
-  const wereFoldersOpen = usePrevious(areFoldersOpen);
-
-  const [leftPaneSize, setLeftPaneSize] = useState<number | string>(0);
-  const [storedPaneSize, setStoredPaneSize] = useState<number | string>(0);
-
-  useEffect(() => {
-    if (areFoldersOpen === wereFoldersOpen) {
-      return;
-    }
-
-    if (!areFoldersOpen) {
-      setStoredPaneSize(leftPaneSize);
-      setLeftPaneSize(0);
-    } else {
-      setLeftPaneSize(storedPaneSize || "25%");
-    }
-  }, [leftPaneSize, storedPaneSize, areFoldersOpen, wereFoldersOpen]);
-
-  return {
-    leftPaneSize,
-    setLeftPaneSize,
-  };
-};
 
 interface FilterAndFetchConfig {
   datasetId: DatasetT["id"] | null;

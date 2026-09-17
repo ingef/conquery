@@ -17,7 +17,7 @@ import {
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
 import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
-import type { ModeT } from "../../ui-components/InputRange";
+import type { ModeT } from "../../ui-components/NumberRangeField";
 
 export const EditorV2QueryNodeEditor = ({
   node,

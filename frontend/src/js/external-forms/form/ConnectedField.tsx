@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import type { ReactNode } from "react";
 import {
   type Control,
@@ -6,6 +5,7 @@ import {
   useController,
 } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 import { exists } from "../../common/helpers/exists";
 import type { Field, Tabs } from "../config-types";
 import { getErrorForField } from "../validators";
@@ -34,38 +34,48 @@ import type { DynamicFormValues } from "./Form";
 // };
 
 type Props<T> = T & {
-  children: (props: ControllerRenderProps<DynamicFormValues>) => ReactNode;
+  children: (
+    props: ControllerRenderProps<DynamicFormValues> & { errorMessage?: string },
+  ) => ReactNode;
   control: Control<DynamicFormValues>;
   formField: Field | Tabs;
   defaultValue?: unknown;
   noContainer?: boolean;
   noLabel?: boolean;
+  /** the field shows the error below its input itself */
+  errorInField?: boolean;
 };
-const FieldContainer = styled("div")<{
-  noLabel?: boolean;
-  hasError?: boolean;
-  red?: boolean;
-}>`
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  padding: ${({ noLabel }) => (noLabel ? "7px 10px" : "2px 10px 7px")};
-  background-color: white;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid
-    ${({ theme, hasError, red }) =>
-      hasError
-        ? red
-          ? theme.col.red
-          : theme.col.blueGrayDark
-        : theme.col.grayLight};
-`;
+const fieldContainer = tv({
+  base: [
+    "flex flex-col",
+    "gap-[5px]",
+    "bg-white",
+    "rounded",
+    "border border-gray-100",
+  ],
+  variants: {
+    noLabel: {
+      true: "px-[10px] py-[7px]",
+      false: "pt-[2px] px-[10px] pb-[7px]",
+    },
+    hasError: { true: "", false: "" },
+    red: { true: "", false: "" },
+  },
+  compoundVariants: [
+    { hasError: true, red: false, class: "border-primary-500" },
+    { hasError: true, red: true, class: "border-red" },
+  ],
+});
 
-const ErrorContainer = styled("div")<{ red?: boolean }>`
-  color: ${({ theme, red }) => (red ? theme.col.red : theme.col.blueGrayDark)};
-  font-weight: 700;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
+const errorContainer = tv({
+  base: ["font-bold", "text-sm"],
+  variants: {
+    red: {
+      true: "text-red",
+      false: "text-primary-500",
+    },
+  },
+});
 
 export const setValueConfig = {
   shouldValidate: true,
@@ -80,6 +90,7 @@ export const ConnectedField = <T extends object>({
   defaultValue,
   noContainer,
   noLabel,
+  errorInField,
   ...props
 }: Props<T>) => {
   const { t } = useTranslation();
@@ -96,21 +107,26 @@ export const ConnectedField = <T extends object>({
   // TODO: REFINE COLORS
   // const color = useColorByField(formField.type);
 
+  const errorMessage = fieldState.error?.message;
   const requiredMsg = t("externalForms.formValidation.isRequired");
-  const isRedError = fieldState.error?.message !== requiredMsg;
+  const isRedError = errorMessage !== requiredMsg;
 
   return noContainer ? (
-    <div>{children({ ...field, ...props })}</div>
+    <div>{children({ ...field, ...props, errorMessage })}</div>
   ) : (
-    <FieldContainer
-      noLabel={noLabel}
-      hasError={exists(fieldState.error)}
-      red={isRedError}
+    <div
+      className={fieldContainer({
+        noLabel: !!noLabel,
+        hasError: exists(fieldState.error),
+        red: isRedError,
+      })}
     >
-      {children({ ...field, ...props })}
-      <ErrorContainer red={isRedError}>
-        {fieldState.error?.message}
-      </ErrorContainer>
-    </FieldContainer>
+      {children({ ...field, ...props, errorMessage })}
+      {!errorInField && (
+        <div className={errorContainer({ red: isRedError })}>
+          {errorMessage}
+        </div>
+      )}
+    </div>
   );
 };

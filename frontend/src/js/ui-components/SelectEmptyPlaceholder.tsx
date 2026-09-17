@@ -1,19 +1,19 @@
-import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
-const Container = styled("div")`
-  width: 100%;
-  padding: 6px 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ theme }) => theme.col.gray};
-  font-size: ${({ theme }) => theme.font.sm};
-`;
+const container = tv({
+  base: [
+    "flex items-center justify-center",
+    "w-full",
+    "py-[6px]",
+    "text-sm",
+    "text-gray-500",
+  ],
+});
 
 const SelectEmptyPlaceholder = () => {
   const { t } = useTranslation();
-  return <Container>{t("inputSelect.empty")}</Container>;
+  return <div className={container()}>{t("inputSelect.empty")}</div>;
 };
 
 export default SelectEmptyPlaceholder;

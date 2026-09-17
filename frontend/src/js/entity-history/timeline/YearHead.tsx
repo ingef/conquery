@@ -1,7 +1,7 @@
-import styled from "@emotion/styled";
 import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
 import { Fragment, memo } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type {
   ColumnDescriptionSemanticConceptColumn,
@@ -9,68 +9,116 @@ import type {
 } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
-import FaIcon from "../../icon/FaIcon";
-import WithTooltip from "../../tooltip/WithTooltip";
+import { Icon } from "../../ui-components/Icon";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+} from "../../ui-components/Tooltip";
 import { ConceptBubble } from "../ConceptBubble";
 
 import { SmallHeading } from "./SmallHeading";
 import { formatCurrency, isConceptColumn, isMoneyColumn } from "./util/util";
 
-const Root = styled("div")`
-  font-size: ${({ theme }) => theme.font.xs};
-  padding: 0 10px 0 0;
-`;
-const StickyWrap = styled("div")`
-  position: sticky;
-  top: 0;
-  left: 0;
-  padding: 6px 10px;
-  cursor: pointer;
-  display: grid;
-  grid-template-columns: 16px 1fr;
-  gap: 8px 0;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid transparent;
-  &:hover {
-    border: 1px solid ${({ theme }) => theme.col.blueGray};
+const stickyWrap = tv({
+  base: [
+    "sticky top-0 left-0",
+    "px-[10px] py-[6px]",
+    "cursor-pointer",
+    "grid grid-cols-[16px_1fr]",
+    "gap-x-0 gap-y-2",
+    "rounded",
+    "border border-transparent hover:border-primary-200",
+  ],
+});
+
+const infoGrid = tv({
+  base: [
+    "grid grid-cols-[auto_minmax(min-content,25px)]",
+    "gap-x-[10px] gap-y-0",
+  ],
+});
+
+const conceptRow = tv({
+  base: ["col-span-2", "flex flex-wrap items-center", "gap-1"],
+});
+
+// named valueCell: `value` is shadowed by destructured data entries below
+const valueCell = tv({
+  base: ["text-sm", "font-normal", "justify-self-end", "w-full", "text-right"],
+});
+
+const labelText = tv({
+  base: [
+    "text-sm",
+    "max-w-full",
+    "whitespace-nowrap",
+    "overflow-hidden",
+    "text-ellipsis",
+  ],
+});
+
+type YearValue = TimeStratifiedInfo["years"][number]["values"][string];
+type Column = TimeStratifiedInfo["columns"][number];
+
+const byNumericThenAlphabeticLabel = (
+  c1: { label: string },
+  c2: { label: string },
+) => {
+  const n1 = Number(c1.label);
+  const n2 = Number(c2.label);
+  if (!Number.isNaN(n1) && !Number.isNaN(n2)) {
+    return n1 - n2;
   }
-`;
+  return c1.label.localeCompare(c2.label);
+};
 
-const Col = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-`;
+const formatValue = (column: Column, value: YearValue) => {
+  if (typeof value === "number") {
+    return isMoneyColumn(column) ? formatCurrency(value) : Math.round(value);
+  }
+  if (Array.isArray(value)) {
+    return value.join(", ");
+  }
+  return value;
+};
 
-const Grid = styled("div")`
-  display: grid;
-  grid-template-columns: auto minmax(min-content, 25px);
-  gap: 0px 10px;
-`;
+const ConceptValues = ({
+  label,
+  column,
+  values,
+}: {
+  label: string;
+  column: Column;
+  values: string[];
+}) => {
+  const semantic = column.semantics.find(
+    (s): s is ColumnDescriptionSemanticConceptColumn =>
+      s.type === "CONCEPT_COLUMN",
+  );
+  const concepts = values
+    .map((v) => getConceptById(v, semantic!.concept))
+    .filter(exists)
+    .sort(byNumericThenAlphabeticLabel);
 
-const ConceptRow = styled("div")`
-  grid-column: span 2;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-`;
-
-const Value = styled("div")`
-  font-size: ${({ theme }) => theme.font.sm};
-  font-weight: 400;
-  justify-self: end;
-  width: 100%;
-  text-align: right;
-`;
-
-const Label = styled("div")`
-  font-size: ${({ theme }) => theme.font.sm};
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
+  return (
+    <>
+      <div className={labelText()} style={{ gridColumn: "span 2" }}>
+        {label}
+      </div>
+      <div className={conceptRow()}>
+        {concepts.map((concept) => (
+          <TooltipTrigger key={concept.label}>
+            <TooltipTarget as={ConceptBubble} excludeFromTabOrder>
+              {concept.label}
+            </TooltipTarget>
+            <Tooltip>{concept.description}</Tooltip>
+          </TooltipTrigger>
+        ))}
+      </div>
+    </>
+  );
+};
 
 const TimeStratifiedInfos = ({
   year,
@@ -96,10 +144,10 @@ const TimeStratifiedInfos = ({
     );
 
   return (
-    <Col>
+    <div className="flex flex-col gap-[6px]">
       {infos.map(({ info, yearInfo }) => {
         return (
-          <Grid key={info.label}>
+          <div className={infoGrid()} key={info.label}>
             {Object.entries(yearInfo.values)
               .sort(
                 ([l1], [l2]) =>
@@ -113,73 +161,33 @@ const TimeStratifiedInfos = ({
                   return null;
                 }
 
-                if (isConceptColumn(column)) {
-                  const semantic = column.semantics.find(
-                    (s): s is ColumnDescriptionSemanticConceptColumn =>
-                      s.type === "CONCEPT_COLUMN",
+                // TODO: Potentially support single-value concepts
+                if (isConceptColumn(column) && Array.isArray(value)) {
+                  return (
+                    <ConceptValues
+                      key={label}
+                      label={label}
+                      column={column}
+                      values={value}
+                    />
                   );
-
-                  if (Array.isArray(value)) {
-                    const concepts = value
-                      .map((v) => getConceptById(v, semantic!.concept))
-                      .filter(exists)
-                      .sort((c1, c2) => {
-                        const n1 = Number(c1.label);
-                        const n2 = Number(c2.label);
-                        if (!Number.isNaN(n1) && !Number.isNaN(n2)) {
-                          return n1 - n2;
-                        }
-                        return c1.label.localeCompare(c2.label);
-                      });
-
-                    return (
-                      <Fragment key={label}>
-                        <Label
-                          style={{
-                            gridColumn: "span 2",
-                          }}
-                        >
-                          {label}
-                        </Label>
-                        <ConceptRow>
-                          {concepts.map((concept) => (
-                            <WithTooltip
-                              key={concept.label}
-                              text={concept.description}
-                            >
-                              <ConceptBubble>{concept.label}</ConceptBubble>
-                            </WithTooltip>
-                          ))}
-                        </ConceptRow>
-                      </Fragment>
-                    );
-                  }
-
-                  // TOOD: Potentially support single-value concepts
                 }
 
-                let valueFormatted: string | number | string[] = value;
-                if (typeof value === "number") {
-                  valueFormatted = isMoneyColumn(column)
-                    ? formatCurrency(value)
-                    : Math.round(value);
-                } else if (Array.isArray(value)) {
-                  valueFormatted = value.join(", ");
-                }
+                const valueFormatted = formatValue(column, value);
 
                 return (
                   <Fragment key={label}>
-                    <Label>{label}</Label>
-                    <Value title={String(valueFormatted)}>
+                    <div className={labelText()}>{label}</div>
+                    <div className={valueCell()} title={String(valueFormatted)}>
                       {valueFormatted}
-                    </Value>
+                    </div>
                   </Fragment>
                 );
               })}
-          </Grid>
+          </div>
         );
       })}
-    </Col>
+    </div>
   );
 };
 
@@ -199,9 +207,14 @@ const YearHead = ({
   const { t } = useTranslation();
 
   return (
-    <Root>
-      <StickyWrap onClick={onClick}>
-        <FaIcon large gray icon={isOpen ? faCaretDown : faCaretRight} />
+    <div className="pr-[10px] text-xs">
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: TODO make this a button */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO make this a button */}
+      <div className={stickyWrap()} onClick={onClick}>
+        <Icon
+          icon={isOpen ? faCaretDown : faCaretRight}
+          className="text-gray-500"
+        />
         <div>
           <SmallHeading>{year}</SmallHeading>
           <div>
@@ -213,8 +226,8 @@ const YearHead = ({
           year={year}
           timeStratifiedInfos={timeStratifiedInfos}
         />
-      </StickyWrap>
-    </Root>
+      </div>
+    </div>
   );
 };
 

@@ -1,6 +1,7 @@
-import styled from "@emotion/styled";
 import { type DOMAttributes, memo } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
+import { useAppTheme } from "../../app-theme-context";
 
 import type { TreeChildrenTime } from "../types";
 import {
@@ -10,36 +11,13 @@ import {
   useTranslatedOperator,
 } from "../util";
 
-const Container = styled("div")`
-  margin: 0 auto;
-  display: inline-flex;
-  flex-direction: column;
-  user-select: none;
-`;
+const container = tv({
+  base: ["mx-auto", "inline-flex flex-col", "select-none"],
+});
 
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
-
-const ConceptName = styled("span")`
-  font-weight: bold;
-  color: ${({ theme }) => theme.col.blueGrayDark};
-`;
-const Timestamp = styled("span")`
-  font-weight: bold;
-  color: ${({ theme }) => theme.col.palette[0]};
-`;
-const Interval = styled("span")`
-  font-weight: bold;
-  color: ${({ theme }) => theme.col.palette[1]};
-`;
-const Operator = styled("span")`
-  font-weight: bold;
-  color: ${({ theme }) => theme.col.palette.at(-2)};
-`;
+const row = tv({
+  base: ["flex items-center", "gap-[5px]", "text-sm"],
+});
 
 export const TimeConnection = memo(
   ({
@@ -50,6 +28,7 @@ export const TimeConnection = memo(
     onDoubleClick: DOMAttributes<HTMLElement>["onDoubleClick"];
   }) => {
     const { t } = useTranslation();
+    const { palette } = useAppTheme();
     const getNodeLabel = useGetNodeLabel();
     const getTranslatedTimestamp = useGetTranslatedTimestamp();
 
@@ -61,22 +40,33 @@ export const TimeConnection = memo(
     const interval = useTranslatedInterval(conditions.interval);
 
     return (
-      <Container onDoubleClick={onDoubleClick}>
-        <Row>
-          <Timestamp>{aTimestamp}</Timestamp>
+      // biome-ignore lint/a11y/noStaticElementInteractions: TODO double-click opens the time modal, emotion had hidden this
+      <div className={container()} onDoubleClick={onDoubleClick}>
+        <div className={row()}>
+          <span className="font-bold" style={{ color: palette[0] }}>
+            {aTimestamp}
+          </span>
           <span>{t("editorV2.dateRangeFrom")}</span>
-          <ConceptName>{a}</ConceptName>
-        </Row>
-        <Row>
-          {conditions.operator !== "WHILE" && <Interval>{interval}</Interval>}
-          <Operator>{operator}</Operator>
-        </Row>
-        <Row>
-          <Timestamp>{bTimestamp}</Timestamp>
+          <span className="font-bold text-primary-500">{a}</span>
+        </div>
+        <div className={row()}>
+          {conditions.operator !== "WHILE" && (
+            <span className="font-bold" style={{ color: palette[1] }}>
+              {interval}
+            </span>
+          )}
+          <span className="font-bold" style={{ color: palette.at(-2) }}>
+            {operator}
+          </span>
+        </div>
+        <div className={row()}>
+          <span className="font-bold" style={{ color: palette[0] }}>
+            {bTimestamp}
+          </span>
           <span>{t("editorV2.dateRangeFrom")}</span>
-          <ConceptName>{b}</ConceptName>
-        </Row>
-      </Container>
+          <span className="font-bold text-primary-500">{b}</span>
+        </div>
+      </div>
     );
   },
 );

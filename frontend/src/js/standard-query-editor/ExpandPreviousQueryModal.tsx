@@ -1,56 +1,46 @@
-import styled from "@emotion/styled";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "../ui-components/Button";
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "../ui-components/Modal";
 
-import PrimaryButton from "../button/PrimaryButton";
-import { TransparentButton } from "../button/TransparentButton";
-import Modal from "../modal/Modal";
-
-const Description = styled.p`
-  max-width: 400px;
-  margin: 0 0 20px;
-`;
-
-const Buttons = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-interface Props {
-  className?: string;
-  onClose: () => void;
-  onAccept: () => void;
-}
-
-const ExpandPreviousQueryModal: FC<Props> = ({
+const ExpandPreviousQueryModal = ({
   onClose,
   onAccept,
-  className,
+}: {
+  onClose: () => void;
+  onAccept: () => void;
 }) => {
   const { t } = useTranslation();
 
   return (
     <Modal
-      className={className}
-      onClose={onClose}
-      headline={t("expandPreviousQueryModal.headline")}
+      size="sm"
+      isOpen
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
+      <ModalHeader>{t("expandPreviousQueryModal.headline")}</ModalHeader>
       <form
+        className="flex flex-col gap-5"
         onSubmit={(e) => {
           e.preventDefault();
           onAccept();
         }}
       >
-        <Description>{t("expandPreviousQueryModal.description")}</Description>
-        <Buttons>
-          <TransparentButton onClick={onClose} type="button">
-            {t("common.cancel")}
-          </TransparentButton>
-          <PrimaryButton autoFocus onClick={onAccept} type="submit">
+        <ModalBody>
+          <p>{t("expandPreviousQueryModal.description")}</p>
+        </ModalBody>
+        <ModalFooter>
+          <Button slot="close">{t("common.cancel")}</Button>
+          <Button intent="primary" autoFocus type="submit">
             {t("expandPreviousQueryModal.submit")}
-          </PrimaryButton>
-        </Buttons>
+          </Button>
+        </ModalFooter>
       </form>
     </Modal>
   );

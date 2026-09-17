@@ -1,20 +1,16 @@
-import styled from "@emotion/styled";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PreviousQueryT } from "../previous-queries/list/reducer";
-import WithTooltip from "../tooltip/WithTooltip";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+  tooltipDelay,
+} from "../ui-components/Tooltip";
 
 import QueryEditorDropzone from "./QueryEditorDropzone";
 import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
-
-const PaddedTop = styled("div")`
-  padding-top: 70px;
-`;
-
-const SxWithTooltip = styled(WithTooltip)`
-  display: block !important;
-`;
 
 interface Props {
   onDropFile: (file: File, andIdx?: number) => Promise<unknown>;
@@ -32,17 +28,20 @@ const QueryAndDropzone = ({
   const { t } = useTranslation();
 
   return (
-    <PaddedTop>
-      <SxWithTooltip text={t("help.editorDropzoneAnd")} lazy>
-        <QueryEditorDropzone
-          isAnd
-          onDropNode={onDropAndNode}
-          onDropFile={onDropFile}
-          onImportLines={onImportLines}
-          onLoadPreviousQuery={onLoadQuery}
-        />
-      </SxWithTooltip>
-    </PaddedTop>
+    <div className="pt-[70px]">
+      <TooltipTrigger delay={tooltipDelay.long}>
+        <TooltipTarget as="div" excludeFromTabOrder>
+          <QueryEditorDropzone
+            isAnd
+            onDropNode={onDropAndNode}
+            onDropFile={onDropFile}
+            onImportLines={onImportLines}
+            onLoadPreviousQuery={onLoadQuery}
+          />
+        </TooltipTarget>
+        <Tooltip>{t("help.editorDropzoneAnd")}</Tooltip>
+      </TooltipTrigger>
+    </div>
   );
 };
 

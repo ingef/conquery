@@ -1,8 +1,8 @@
-import styled from "@emotion/styled";
 import { useHotkeys } from "react-hotkeys-hook";
+import { tv } from "tailwind-variants";
 
 import { exists } from "../common/helpers/exists";
-import WithTooltip from "../tooltip/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import QueryResults from "./QueryResults";
 import QueryRunnerButton from "./QueryRunnerButton";
@@ -11,30 +11,19 @@ import QueryRunningProgress from "./QueryRunningProgress";
 import { QueryRunningSpinner } from "./QueryRunningSpinner";
 import type { QueryRunnerStateT } from "./reducer";
 
-const Root = styled("div")`
-  flex-shrink: 0;
-  padding: 10px 20px 10px 10px;
-  border-top: 1px solid ${({ theme }) => theme.col.grayLight};
-  background-color: ${({ theme }) => theme.col.bg};
-  display: flex;
-  align-items: center;
-  width: 100%;
-`;
-
-const Left = styled("div")`
-  flex-grow: 1;
-`;
-const Right = styled("div")`
-  flex-grow: 2;
-  padding-left: 20px;
-`;
-
-const LoadingGroup = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-`;
+// one row of controls, as high as its content. The results keep their width
+// in a narrow pane and run out of the row on the right; the row clips them
+// itself so the pane container never gets scrollable overflow
+const root = tv({
+  base: [
+    "grid grid-cols-[auto_1fr] items-center",
+    "gap-x-5",
+    "overflow-hidden",
+    "py-[10px] pr-5 pl-[10px]",
+    "border-t border-gray-100",
+    "bg-bg-50",
+  ],
+});
 
 const QueryRunner = ({
   queryRunner,
@@ -63,23 +52,20 @@ const QueryRunner = ({
   }, [disabled, btnAction]);
 
   return (
-    <Root data-test-id="query-runner">
-      <Left>
-        <WithTooltip text={buttonTooltip}>
-          <QueryRunnerButton
-            onClick={btnAction}
-            isStartStopLoading={isStartStopLoading}
-            isQueryRunning={isQueryRunning}
-            disabled={disabled}
-          />
-        </WithTooltip>
-      </Left>
-      <Right>
-        <LoadingGroup>
-          {exists(progress) && <QueryRunningProgress progress={progress} />}
-          {isQueryRunning && <QueryRunningSpinner />}
-          {!!queryRunner && <QueryRunnerInfo queryRunner={queryRunner} />}
-        </LoadingGroup>
+    <div className={root()} data-test-id="query-runner">
+      <TooltipTrigger>
+        <QueryRunnerButton
+          onClick={btnAction}
+          isStartStopLoading={isStartStopLoading}
+          isQueryRunning={isQueryRunning}
+          disabled={disabled}
+        />
+        <Tooltip>{buttonTooltip}</Tooltip>
+      </TooltipTrigger>
+      <div className="flex items-center justify-end gap-[10px]">
+        {exists(progress) && <QueryRunningProgress progress={progress} />}
+        {isQueryRunning && <QueryRunningSpinner />}
+        {!!queryRunner && <QueryRunnerInfo queryRunner={queryRunner} />}
         {!!queryRunner &&
           !!queryRunner.queryResult &&
           !queryRunner.queryResult.error &&
@@ -93,10 +79,11 @@ const QueryRunner = ({
               resultUrls={queryRunner.queryResult.resultUrls}
               resultColumns={queryRunner.queryResult.resultColumns}
               queryType={queryRunner.queryResult.queryType}
+              previewAvailable={queryRunner.queryResult.previewAvailable}
             />
           )}
-      </Right>
-    </Root>
+      </div>
+    </div>
   );
 };
 

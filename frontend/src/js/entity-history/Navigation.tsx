@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faArrowDown,
   faArrowUp,
@@ -16,12 +15,17 @@ import {
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-
+import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
-import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
-import WithTooltip from "../tooltip/WithTooltip";
+import { Button } from "../ui-components/Button";
+import { ConfirmMenu } from "../ui-components/ConfirmMenu";
+import { Icon } from "../ui-components/Icon";
+import {
+  Tooltip,
+  TooltipTrigger,
+  tooltipDelay,
+} from "../ui-components/Tooltip";
 import { closeHistory, resetHistory, useUpdateHistorySession } from "./actions";
 import { EntityIdsList } from "./EntityIdsList";
 import type { EntityIdsStatus } from "./History";
@@ -34,60 +38,28 @@ import type { EntityId } from "./reducer";
 import { SearchEntites } from "./SearchEntities";
 import { saveHistory } from "./saveAndLoad";
 
-const Root = styled("div")`
-  display: grid;
-  gap: 10px;
-  overflow: hidden;
-  background-color: ${({ theme }) => theme.col.bg};
-`;
+const root = tv({
+  base: ["grid", "gap-[10px]", "overflow-hidden", "bg-bg-50"],
+});
 
-const Row = styled("div")`
-  margin: 0 10px 0 20px;
-  display: flex;
-  gap: 10px;
-`;
+const row = tv({
+  base: ["flex", "gap-[10px]", "mr-[10px] ml-5"],
+});
 
-const EntityIdNav = styled("div")`
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding: 0 10px 0 20px;
-`;
-const TopActions = styled("div")`
-  display: flex;
-`;
+const entityIdNav = tv({
+  base: ["flex flex-col", "overflow-hidden", "pr-[10px] pl-5"],
+});
 
-const SxNavigationHeader = styled(NavigationHeader)`
-  margin: 0 10px 0 20px;
-`;
-
-const SxLoadHistoryDropzone = styled(LoadHistoryDropzone)`
-  height: 100%;
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 2px;
-  display: block;
-  color: inherit;
-`;
-const BottomActions = styled("div")`
-  display: flex;
-`;
-
-const ContainedIconButton = styled(IconButton)`
-  flex-grow: 1;
-  justify-content: center;
-`;
-
-const SxIconButton = styled(IconButton)`
-  width: 100%;
-  justify-content: center;
-`;
-
-const ButtonWithTooltip = styled(WithTooltip)`
-  color: black;
-  flex-shrink: 0;
-  width: 100%;
-`;
+const loadHistoryDropzone = tv({
+  base: [
+    "block",
+    "h-full",
+    "grow",
+    "overflow-y-auto",
+    "p-[2px]",
+    "text-inherit",
+  ],
+});
 
 export const Navigation = memo(
   ({
@@ -158,54 +130,64 @@ export const Navigation = memo(
     const empty = ids.length === 0;
 
     return (
-      <Root
-        className={className}
+      <div
+        className={root({ className })}
         style={{
           gridTemplateRows: empty ? "auto 1fr" : "auto auto 1fr",
         }}
       >
-        <Row>
-          <WithTooltip text={backButtonWarning}>
-            <ContainedIconButton
-              frame
-              icon={faChevronLeft}
-              onClick={onCloseHistory}
-            >
-              {t("common.back")}
-            </ContainedIconButton>
-          </WithTooltip>
+        <div className={row()}>
+          <div className="grid grow">
+            <TooltipTrigger>
+              <Button intent="secondary" onPress={onCloseHistory}>
+                <Icon icon={faChevronLeft} />
+                {t("common.back")}
+              </Button>
+              <Tooltip>{backButtonWarning}</Tooltip>
+            </TooltipTrigger>
+          </div>
           {!empty && (
-            <ConfirmableTooltip
-              onConfirm={onReset}
-              placement="bottom"
-              confirmationText={t("history.settings.resetConfirm")}
-            >
-              <ContainedIconButton frame icon={faTrash}>
-                {t("history.settings.reset")}
-              </ContainedIconButton>
-            </ConfirmableTooltip>
+            <div className="grid grow">
+              <ConfirmMenu
+                onConfirm={onReset}
+                confirmationText={t("history.settings.resetConfirm")}
+              >
+                <Button intent="secondary">
+                  <Icon icon={faTrash} />
+                  {t("history.settings.reset")}
+                </Button>
+              </ConfirmMenu>
+            </div>
           )}
-        </Row>
+        </div>
         {!empty && (
-          <SxNavigationHeader
+          <NavigationHeader
+            className="mr-[10px] ml-5"
             markedCount={markedCount}
             idsCount={entityIds.length}
             entityStatusOptions={entityStatusOptions}
             setEntityStatusOptions={setEntityStatusOptions}
           />
         )}
-        <EntityIdNav>
+        <div className={entityIdNav()}>
           {!empty && (
-            <TopActions>
-              <ButtonWithTooltip
-                text={`${t("history.prevButtonLabel")} (shift + ⬆)`}
-                lazy
-              >
-                <SxIconButton icon={faArrowUp} onClick={goToPrev} />
-              </ButtonWithTooltip>
-            </TopActions>
+            <div className="grid">
+              <TooltipTrigger delay={tooltipDelay.long}>
+                <Button
+                  aria-label={`${t("history.prevButtonLabel")} (shift + ⬆)`}
+                  intent="tertiary"
+                  onPress={goToPrev}
+                >
+                  <Icon icon={faArrowUp} />
+                </Button>
+                <Tooltip>{`${t("history.prevButtonLabel")} (shift + ⬆)`}</Tooltip>
+              </TooltipTrigger>
+            </div>
           )}
-          <SxLoadHistoryDropzone onLoadFromFile={onLoadFromFile}>
+          <LoadHistoryDropzone
+            className={loadHistoryDropzone()}
+            onLoadFromFile={onLoadFromFile}
+          >
             {entityIds.length === 0 && (
               <SearchEntites onLoad={onLoadFromFile} />
             )}
@@ -217,33 +199,34 @@ export const Navigation = memo(
               entityIdsStatus={entityIdsStatus}
               loadingId={loadingId}
             />
-          </SxLoadHistoryDropzone>
+          </LoadHistoryDropzone>
           {!empty && (
             <>
-              <BottomActions>
-                <ButtonWithTooltip
-                  text={`${t("history.nextButtonLabel")} (shift + ⬇)`}
-                  lazy
-                >
-                  <SxIconButton icon={faArrowDown} onClick={goToNext} />
-                </ButtonWithTooltip>
-              </BottomActions>
-              <BottomActions style={{ marginTop: "10px" }}>
-                <ButtonWithTooltip text={t("history.downloadButtonLabel")}>
-                  <SxIconButton
-                    style={{ backgroundColor: "white" }}
-                    frame
-                    icon={faDownload}
-                    onClick={onDownload}
+              <div className="grid">
+                <TooltipTrigger delay={tooltipDelay.long}>
+                  <Button
+                    aria-label={`${t("history.nextButtonLabel")} (shift + ⬇)`}
+                    intent="tertiary"
+                    onPress={goToNext}
                   >
+                    <Icon icon={faArrowDown} />
+                  </Button>
+                  <Tooltip>{`${t("history.nextButtonLabel")} (shift + ⬇)`}</Tooltip>
+                </TooltipTrigger>
+              </div>
+              <div className="mt-[10px] grid">
+                <TooltipTrigger>
+                  <Button intent="secondary" onPress={onDownload}>
+                    <Icon icon={faDownload} />
                     CSV
-                  </SxIconButton>
-                </ButtonWithTooltip>
-              </BottomActions>
+                  </Button>
+                  <Tooltip>{t("history.downloadButtonLabel")}</Tooltip>
+                </TooltipTrigger>
+              </div>
             </>
           )}
-        </EntityIdNav>
-      </Root>
+        </div>
+      </div>
     );
   },
 );

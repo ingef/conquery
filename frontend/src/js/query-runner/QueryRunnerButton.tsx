@@ -1,52 +1,51 @@
-import styled from "@emotion/styled";
 import { faPlay, faSpinner, faStop } from "@fortawesome/free-solid-svg-icons";
-import { forwardRef } from "react";
+import type { Ref } from "react";
+import { Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
+import { Icon } from "../ui-components/Icon";
 
-import BasicButton from "../button/BasicButton";
-import FaIcon from "../icon/FaIcon";
+const left = tv({
+  base: [
+    "self-stretch",
+    "flex items-center",
+    "px-[15px]",
+    "transition-[color,background-color] duration-100",
+  ],
+  variants: {
+    running: {
+      true: ["bg-white", "border-r border-primary-500"],
+      false: "bg-primary-500",
+    },
+  },
+});
 
-const Root = styled("div")`
-  display: flex;
-`;
+const runnerLabel = tv({
+  base: [
+    "px-[15px]",
+    "bg-white group-hover/runner:bg-gray-50",
+    "text-gray-800 font-medium",
+    "self-stretch",
+    "flex items-center",
+    "whitespace-nowrap",
+    "transition-[background-color] duration-100",
+  ],
+});
 
-const Left = styled("span")<{ running?: boolean }>`
-  transition: ${({ theme }) =>
-    `color ${theme.transitionTime}, background-color ${theme.transitionTime}`};
-  padding: 0 15px;
-  background-color: ${({ theme, running }) =>
-    running ? "white" : theme.col.blueGrayDark};
-  border-right: ${({ theme, running }) =>
-    running ? `1px solid ${theme.col.blueGrayDark}` : "transparent"};
-`;
-
-const Label = styled("span")`
-  transition: background-color ${({ theme }) => theme.transitionTime};
-  padding: 0 15px;
-  color: ${({ theme }) => theme.col.black};
-  background-color: white;
-  line-height: 2.5;
-  white-space: nowrap;
-`;
-
-const StyledBasicButton = styled(BasicButton)`
-  outline: none;
-  border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  overflow: hidden;
-  padding: 0;
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.sm};
-  line-height: 2.5;
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  &:hover {
-    .query-runner-label {
-      background-color: ${({ theme }) => theme.col.grayVeryLight};
-    }
-  }
-`;
+// two-tone: the icon part is filled, the label part stays white
+const button = tv({
+  base: [
+    "group/runner",
+    "inline-flex items-center",
+    "h-[30px]",
+    "overflow-hidden",
+    "rounded",
+    "border border-primary-500",
+    "text-sm",
+    "cursor-pointer",
+    "disabled:cursor-not-allowed disabled:opacity-40",
+  ],
+});
 
 function getIcon(loading: boolean, running: boolean) {
   return loading ? faSpinner : running ? faStop : faPlay;
@@ -60,31 +59,36 @@ interface Props {
 }
 
 // A button that is prefixed by an icon
-const QueryRunnerButton = forwardRef<HTMLDivElement, Props>(
-  ({ onClick, isStartStopLoading, isQueryRunning, disabled }, ref) => {
-    const { t } = useTranslation();
-    const label = isQueryRunning
-      ? t("queryRunner.stop")
-      : t("queryRunner.start");
+const QueryRunnerButton = ({
+  ref,
+  onClick,
+  isStartStopLoading,
+  isQueryRunning,
+  disabled,
+}: Props & { ref?: Ref<HTMLDivElement> }) => {
+  const { t } = useTranslation();
+  const label = isQueryRunning ? t("queryRunner.stop") : t("queryRunner.start");
 
-    const icon = getIcon(isStartStopLoading, isQueryRunning);
+  const icon = getIcon(isStartStopLoading, isQueryRunning);
 
-    return (
-      <Root ref={ref}>
-        <StyledBasicButton
-          type="button"
-          onClick={onClick}
-          disabled={disabled}
-          data-test-id="query-runner-button"
-        >
-          <Left running={isQueryRunning}>
-            <FaIcon white={!isQueryRunning} icon={icon} />
-          </Left>
-          <Label className="query-runner-label">{label}</Label>
-        </StyledBasicButton>
-      </Root>
-    );
-  },
-);
+  return (
+    <div className="flex" ref={ref}>
+      <RacButton
+        className={button()}
+        onPress={onClick}
+        isDisabled={disabled}
+        data-test-id="query-runner-button"
+      >
+        <span className={left({ running: isQueryRunning })}>
+          <Icon
+            icon={icon}
+            className={[!isQueryRunning ? "text-white" : undefined]}
+          />
+        </span>
+        <span className={runnerLabel()}>{label}</span>
+      </RacButton>
+    </div>
+  );
+};
 
 export default QueryRunnerButton;

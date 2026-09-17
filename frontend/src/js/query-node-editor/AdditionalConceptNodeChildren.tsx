@@ -1,6 +1,6 @@
-import styled from "@emotion/styled";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { ConceptBaseT, ConceptIdT } from "../api/types";
 import { Heading4 } from "../headings/Headings";
@@ -10,23 +10,17 @@ import ConceptDropzone from "./ConceptDropzone";
 import ConceptEntry from "./ConceptEntry";
 import { HeadingBetween } from "./HeadingBetween";
 
-const Padded = styled("div")`
-  padding: 0 15px 15px;
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-`;
-const Scrollable = styled("div")`
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  height: 100%;
-`;
-const Heading4Highlighted = styled(Heading4)`
-  color: ${({ theme }) => theme.col.blueGrayDark};
-  font-weight: 700;
-  margin: 10px 0 5px;
-`;
+const padded = tv({
+  base: ["flex flex-col", "h-full", "overflow-hidden", "px-[15px] pb-[15px]"],
+});
+
+const scrollable = tv({
+  base: ["h-full", "overflow-y-auto", "[-webkit-overflow-scrolling:touch]"],
+});
+
+const heading = tv({
+  base: ["text-primary-500", "font-bold", "mt-[10px] mb-[5px]"],
+});
 
 const AdditionalConceptNodeChildren = ({
   node,
@@ -46,12 +40,12 @@ const AdditionalConceptNodeChildren = ({
   return (
     <>
       <HeadingBetween>{t("queryNodeEditor.dropMoreConcepts")}</HeadingBetween>
-      <Padded>
-        <Heading4Highlighted>{rootConcept.label}</Heading4Highlighted>
+      <div className={padded()}>
+        <Heading4 className={heading()}>{rootConcept.label}</Heading4>
         <div>
           <ConceptDropzone node={node} onDropConcept={onDropConcept} />
         </div>
-        <Scrollable>
+        <div className={scrollable()}>
           {sortedNodeIds.map((conceptId) => (
             <ConceptEntry
               key={conceptId}
@@ -61,8 +55,8 @@ const AdditionalConceptNodeChildren = ({
               onRemoveConcept={onRemoveConcept}
             />
           ))}
-        </Scrollable>
-      </Padded>
+        </div>
+      </div>
     </>
   );
 };

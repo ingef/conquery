@@ -1,6 +1,7 @@
 import type { TFunction } from "i18next";
 
 import { isEmpty } from "../common/helpers/commonHelper";
+import { parseStdDate } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
 import { isValidSelect } from "../model/select";
 
@@ -13,20 +14,33 @@ import type {
 } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 
-export const validateRequired = (
-  t: TFunction,
-  value: unknown,
-): string | null => {
+const validateRequired = (t: TFunction, value: unknown): string | null => {
   return isEmpty(value) ? t("externalForms.formValidation.isRequired") : null;
 };
 
-export const validatePositive = (t: TFunction, value: number) => {
+const validatePositive = (t: TFunction, value: number) => {
   return isEmpty(value) || value > 0
     ? null
     : t("externalForms.formValidation.mustBePositiveNumber");
 };
 
-export const validateDateRange = (
+const validateDate = (t: TFunction, value: string | null) => {
+  // May be empty
+  if (!value) return null;
+
+  return parseStdDate(value) ? null : t("common.dateInvalid");
+};
+
+const validateDateRequired = (
+  t: TFunction,
+  value: string | null,
+): string | null => {
+  if (!value) return t("externalForms.formValidation.isRequired");
+
+  return validateDate(t, value);
+};
+
+const validateDateRange = (
   t: TFunction,
   value: { min: string; max: string },
 ) => {
@@ -42,7 +56,7 @@ export const validateDateRange = (
   return null;
 };
 
-export const validateDateRangeRequired = (
+const validateDateRangeRequired = (
   t: TFunction,
   value: {
     min: string;
@@ -55,7 +69,7 @@ export const validateDateRangeRequired = (
   return validateDateRange(t, value);
 };
 
-export const validateConceptGroupFilled = (
+const validateConceptGroupFilled = (
   t: TFunction,
   group: { concepts: [] }[],
 ): string | null => {
@@ -125,6 +139,8 @@ const DEFAULT_VALIDATION_BY_TYPE: Record<
   GROUP: null,
   // MULTI_SELECT: null,
   // @ts-ignore TODO: Refactor using generics to try and tie the `field` to its `value`
+  DATE: validateDate,
+  // @ts-ignore TODO: Refactor using generics to try and tie the `field` to its `value`
   DATE_RANGE: validateDateRange,
   DISCLOSURE_LIST: null,
 };
@@ -133,6 +149,8 @@ function getNotEmptyValidation(fieldType: string) {
   switch (fieldType) {
     case "CONCEPT_LIST":
       return validateConceptGroupFilled;
+    case "DATE":
+      return validateDateRequired;
     case "DATE_RANGE":
       return validateDateRangeRequired;
     default:

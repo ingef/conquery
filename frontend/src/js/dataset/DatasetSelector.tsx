@@ -1,31 +1,28 @@
-import styled from "@emotion/styled";
-import { type FC, memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
+import { tv } from "tailwind-variants";
 
 import type { DatasetT, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
-import WithTooltip from "../tooltip/WithTooltip";
-import InputSelect from "../ui-components/InputSelect/InputSelect";
+import { ComboBoxField } from "../ui-components/ComboBoxField";
+import {
+  Tooltip,
+  TooltipTarget,
+  TooltipTrigger,
+  tooltipDelay,
+} from "../ui-components/Tooltip";
 
 import { useSelectDataset } from "./actions";
 
-const Root = styled("div")`
-  color: ${({ theme }) => theme.col.black};
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-`;
+const root = tv({
+  base: ["flex items-center justify-end", "text-gray-800"],
+});
 
-const Headline = styled("span")`
-  font-size: ${({ theme }) => theme.col.grayLight};
-  padding-right: 12px;
-`;
-
-const SxInputSelect = styled(InputSelect)`
-  min-width: 300px;
-`;
+/* the old styles set `font-size: #dadada` (a color) — invalid, so the
+   font size was always inherited; only the padding was real */
+const headline = tv({ base: "pr-3" });
 
 const useIsDatasetSelectDisabled = () => {
   const isHistoryOpen = useSelector<StateT, boolean>(
@@ -40,7 +37,7 @@ const useIsDatasetSelectDisabled = () => {
   }, [isHistoryOpen, isPreviewOpen]);
 };
 
-const DatasetSelector: FC = () => {
+const DatasetSelector = () => {
   const selectedDatasetId = useSelector<StateT, string | null>(
     (state) => state.datasets.selectedDatasetId,
   );
@@ -54,11 +51,9 @@ const DatasetSelector: FC = () => {
   const selectDataset = useSelectDataset();
 
   const onChange = useCallback(
-    (value: SelectOptionT | null) =>
-      exists(value)
-        ? selectDataset(value.value as string)
-        : selectDataset(null),
-
+    (value: SelectOptionT | null) => {
+      if (exists(value)) selectDataset(value.value as string);
+    },
     [selectDataset],
   );
 
@@ -104,25 +99,33 @@ const DatasetSelectorUI = memo(
     const { t } = useTranslation();
 
     return (
-      <WithTooltip
-        text={
-          disabled ? t("datasetSelector.disabled") : t("help.datasetSelector")
-        }
-        lazy
-      >
-        <Root data-test-id="dataset-selector">
-          <Headline>{t("datasetSelector.label")}</Headline>
-          <SxInputSelect
-            value={selected || null}
-            onChange={onChange}
-            placeholder={
-              error ? t("datasetSelector.error") : t("inputSelect.placeholder")
-            }
-            disabled={disabled || exists(error)}
-            options={options}
-          />
-        </Root>
-      </WithTooltip>
+      <TooltipTrigger delay={tooltipDelay.long}>
+        <TooltipTarget
+          as="div"
+          excludeFromTabOrder
+          className={root()}
+          data-test-id="dataset-selector"
+        >
+          <span className={headline()}>{t("datasetSelector.label")}</span>
+          <div className="min-w-[300px]">
+            <ComboBoxField
+              aria-label={t("datasetSelector.label")}
+              value={selected || null}
+              onChange={onChange}
+              placeholder={
+                error
+                  ? t("datasetSelector.error")
+                  : t("inputSelect.placeholder")
+              }
+              isDisabled={disabled || exists(error)}
+              options={options}
+            />
+          </div>
+        </TooltipTarget>
+        <Tooltip>
+          {disabled ? t("datasetSelector.disabled") : t("help.datasetSelector")}
+        </Tooltip>
+      </TooltipTrigger>
     );
   },
 );

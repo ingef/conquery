@@ -36,6 +36,9 @@ frontend:
   lang: de
   # defines if a local login should be presented (for backend basic-auth-realm only)
   disableLogin: true
+  # defines if the extended query editor should be available
+  editorV2:
+    enabled: true
   # use external authentication (oauth/openid idp provider)
   idp:
     enabled: true

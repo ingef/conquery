@@ -1,32 +1,31 @@
-import styled from "@emotion/styled";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { Icon } from "../../ui-components/Icon";
+import { ToggleButton } from "../../ui-components/ToggleButton";
 
-import IconButton from "../../button/IconButton";
-import WithTooltip from "../../tooltip/WithTooltip";
+import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 
-const FoldersButton = styled(IconButton)`
-  padding: 9px 6px;
-  margin-right: 5px;
-`;
-
-interface Props {
-  className?: string;
+const FoldersToggleButton = ({
+  active,
+  onClick,
+}: {
   active?: boolean;
   onClick: () => void;
-}
-
-const FoldersToggleButton: FC<Props> = ({ className, active, onClick }) => {
+}) => {
   const { t } = useTranslation();
 
   return (
-    <WithTooltip
-      text={t("previousQueriesFolderButton.tooltip")}
-      className={className}
-    >
-      <FoldersButton onClick={onClick} icon={faFolder} active={active} frame />
-    </WithTooltip>
+    <TooltipTrigger>
+      <ToggleButton
+        aria-label={t("previousQueriesFolderButton.tooltip")}
+        intent="secondary"
+        onChange={onClick}
+        isSelected={active}
+      >
+        <Icon icon={faFolder} />
+      </ToggleButton>
+      <Tooltip>{t("previousQueriesFolderButton.tooltip")}</Tooltip>
+    </TooltipTrigger>
   );
 };
 export default FoldersToggleButton;

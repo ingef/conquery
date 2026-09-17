@@ -1,47 +1,25 @@
-import styled from "@emotion/styled";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import { exists } from "../../common/helpers/exists";
-import Modal from "../../modal/Modal";
-import BaseInput from "../../ui-components/BaseInput";
-import InputSelect from "../../ui-components/InputSelect/InputSelect";
+import { ComboBoxField } from "../../ui-components/ComboBoxField";
+import { Modal, ModalBody, ModalHeader } from "../../ui-components/Modal";
+import { NumberField } from "../../ui-components/NumberField";
 import type { TimeOperator, TimeTimestamp, TreeChildrenTime } from "../types";
 import { useGetNodeLabel } from "../util";
 
-const Content = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  min-width: 350px;
-`;
+const content = tv({
+  base: ["flex flex-col", "gap-[15px]"],
+});
 
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
-  gap: 15px;
-`;
+const row = tv({
+  base: ["flex items-center", "gap-[15px]"],
+});
 
-const SxBaseInput = styled(BaseInput)`
-  width: 100px;
-`;
-
-const SxInputSelect = styled(InputSelect)<{ disabled?: boolean }>`
-  min-width: 150px;
-  flex-basis: 0;
-  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
-`;
-
-const DateRangeFrom = styled("span")`
-  white-space: nowrap;
-`;
-
-const ConceptName = styled("span")`
-  white-space: nowrap;
-  font-weight: bold;
-  color: ${({ theme }) => theme.col.blueGrayDark};
-  flex-grow: 1;
-`;
+const conceptName = tv({
+  base: ["grow", "whitespace-nowrap", "font-bold", "text-primary-500"],
+});
 
 export const TimeConnectionModal = memo(
   ({
@@ -117,93 +95,117 @@ export const TimeConnectionModal = memo(
     }, [interval]);
 
     return (
-      <Modal onClose={onClose} headline={t("editorV2.editTimeConnection")}>
-        <Content>
-          <Row>
-            <SxInputSelect
-              options={TIMESTAMP_OPTIONS}
-              value={TIMESTAMP_OPTIONS.find((o) => o.value === aTimestamp)!}
-              onChange={(opt) => {
-                if (opt) {
-                  setATimestamp(opt.value as TimeTimestamp);
-                }
-              }}
-            />
-            <DateRangeFrom>{t("editorV2.dateRangeFrom")}</DateRangeFrom>
-            <ConceptName>{a}</ConceptName>
-          </Row>
-          <Row>
-            <SxBaseInput
-              inputType="number"
-              placeholder={operator === "WHILE" ? "0" : "1"}
-              inputProps={{
-                min: 0,
-              }}
-              value={exists(interval) ? interval.min : null}
-              disabled={!interval || operator === "WHILE"}
-              onChange={(val) => {
-                setTheInterval({
-                  min: val as number,
-                  max: interval ? interval.max : null,
-                });
-              }}
-            />
-            <span>–</span>
-            <SxBaseInput
-              inputType="number"
-              placeholder={operator === "WHILE" ? "0" : "∞"}
-              inputProps={{
-                min: 0,
-              }}
-              value={exists(interval) ? interval.max : null}
-              disabled={!interval || operator === "WHILE"}
-              onChange={(val) => {
-                setTheInterval({
-                  max: val as number | null,
-                  min: interval ? interval.min : null,
-                });
-              }}
-            />
-            <SxInputSelect
-              options={INTERVAL_OPTIONS}
-              value={!interval ? INTERVAL_OPTIONS[0] : INTERVAL_OPTIONS[1]}
-              disabled={operator === "WHILE"}
-              onChange={(opt) => {
-                if (opt?.value === "ANY") {
-                  setTheInterval(undefined);
-                } else {
-                  setTheInterval({ min: 1, max: null });
-                }
-              }}
-            />
-            <SxInputSelect
-              options={OPERATOR_OPTIONS}
-              value={OPERATOR_OPTIONS.find((o) => o.value === operator)!}
-              onChange={(opt) => {
-                if (opt) {
-                  setOperator(opt.value as TimeOperator);
-                  if (opt.value === "WHILE") {
-                    // Timeout to avoid race condition on effect update above
-                    setTimeout(() => setTheInterval(undefined), 10);
-                  }
-                }
-              }}
-            />
-          </Row>
-          <Row>
-            <SxInputSelect
-              options={TIMESTAMP_OPTIONS}
-              value={TIMESTAMP_OPTIONS.find((o) => o.value === bTimestamp)!}
-              onChange={(opt) => {
-                if (opt) {
-                  setBTimestamp(opt.value as TimeTimestamp);
-                }
-              }}
-            />
-            <DateRangeFrom>{t("editorV2.dateRangeFrom")}</DateRangeFrom>
-            <ConceptName>{b}</ConceptName>
-          </Row>
-        </Content>
+      <Modal
+        isOpen
+        onOpenChange={(isOpen) => {
+          if (!isOpen) onClose();
+        }}
+      >
+        <ModalHeader>{t("editorV2.editTimeConnection")}</ModalHeader>
+        <ModalBody>
+          <div className={content()}>
+            <div className={row()}>
+              <div className="min-w-[150px] basis-0">
+                <ComboBoxField
+                  aria-label={t("editorV2.timestamp")}
+                  options={TIMESTAMP_OPTIONS}
+                  value={TIMESTAMP_OPTIONS.find((o) => o.value === aTimestamp)!}
+                  onChange={(opt) => {
+                    if (opt) {
+                      setATimestamp(opt.value as TimeTimestamp);
+                    }
+                  }}
+                />
+              </div>
+              <span className="whitespace-nowrap">
+                {t("editorV2.dateRangeFrom")}
+              </span>
+              <span className={conceptName()}>{a}</span>
+            </div>
+            <div className={row()}>
+              <div className="w-[100px]">
+                <NumberField
+                  aria-label={t("editorV2.intervalMin")}
+                  placeholder={operator === "WHILE" ? "0" : "1"}
+                  minValue={0}
+                  value={exists(interval) ? interval.min : null}
+                  isDisabled={!interval || operator === "WHILE"}
+                  onChange={(val) => {
+                    setTheInterval({
+                      min: val,
+                      max: interval ? interval.max : null,
+                    });
+                  }}
+                />
+              </div>
+              <span>–</span>
+              <div className="w-[100px]">
+                <NumberField
+                  aria-label={t("editorV2.intervalMax")}
+                  placeholder={operator === "WHILE" ? "0" : "∞"}
+                  minValue={0}
+                  value={exists(interval) ? interval.max : null}
+                  isDisabled={!interval || operator === "WHILE"}
+                  onChange={(val) => {
+                    setTheInterval({
+                      max: val,
+                      min: interval ? interval.min : null,
+                    });
+                  }}
+                />
+              </div>
+              <div className="min-w-[150px] basis-0">
+                <ComboBoxField
+                  aria-label={t("editorV2.interval")}
+                  options={INTERVAL_OPTIONS}
+                  value={!interval ? INTERVAL_OPTIONS[0] : INTERVAL_OPTIONS[1]}
+                  isDisabled={operator === "WHILE"}
+                  onChange={(opt) => {
+                    if (opt?.value === "ANY") {
+                      setTheInterval(undefined);
+                    } else if (opt) {
+                      setTheInterval({ min: 1, max: null });
+                    }
+                  }}
+                />
+              </div>
+              <div className="min-w-[150px] basis-0">
+                <ComboBoxField
+                  aria-label={t("editorV2.operator")}
+                  options={OPERATOR_OPTIONS}
+                  value={OPERATOR_OPTIONS.find((o) => o.value === operator)!}
+                  onChange={(opt) => {
+                    if (opt) {
+                      setOperator(opt.value as TimeOperator);
+                      if (opt.value === "WHILE") {
+                        // Timeout to avoid race condition on effect update above
+                        setTimeout(() => setTheInterval(undefined), 10);
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+            <div className={row()}>
+              <div className="min-w-[150px] basis-0">
+                <ComboBoxField
+                  aria-label={t("editorV2.timestamp")}
+                  options={TIMESTAMP_OPTIONS}
+                  value={TIMESTAMP_OPTIONS.find((o) => o.value === bTimestamp)!}
+                  onChange={(opt) => {
+                    if (opt) {
+                      setBTimestamp(opt.value as TimeTimestamp);
+                    }
+                  }}
+                />
+              </div>
+              <span className="whitespace-nowrap">
+                {t("editorV2.dateRangeFrom")}
+              </span>
+              <span className={conceptName()}>{b}</span>
+            </div>
+          </div>
+        </ModalBody>
       </Modal>
     );
   },

@@ -116,7 +116,7 @@ async function getCachedResponse(cacheConfig: CustomCacheConfig) {
       );
 }
 
-export async function fetchJsonUnauthorized(
+async function fetchJsonUnauthorized(
   request?: Partial<AxiosRequestConfig>,
   cacheConfig: CustomCacheConfig = {},
   rawBody: boolean = false,

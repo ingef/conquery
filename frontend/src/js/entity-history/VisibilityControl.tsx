@@ -1,20 +1,9 @@
-import styled from "@emotion/styled";
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-
-import IconButton from "../button/IconButton";
-import WithTooltip from "../tooltip/WithTooltip";
-
-const Root = styled("div")`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const SxIconButton = styled(IconButton)`
-  padding: 8px 10px;
-`;
+import { Icon } from "../ui-components/Icon";
+import { ToggleButton } from "../ui-components/ToggleButton";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const VisibilityControl = ({
   blurred,
@@ -26,14 +15,18 @@ const VisibilityControl = ({
   const { t } = useTranslation();
 
   return (
-    <Root>
-      <WithTooltip text={t("history.blurred")}>
-        <SxIconButton
-          onClick={toggleBlurred}
-          icon={blurred ? faEyeSlash : faEye}
-        />
-      </WithTooltip>
-    </Root>
+    <div className="flex flex-col items-center">
+      <TooltipTrigger>
+        <ToggleButton
+          aria-label={t("history.blurred")}
+          isSelected={!!blurred}
+          onChange={toggleBlurred}
+        >
+          <Icon icon={blurred ? faEyeSlash : faEye} />
+        </ToggleButton>
+        <Tooltip placement="right">{t("history.blurred")}</Tooltip>
+      </TooltipTrigger>
+    </div>
   );
 };
 

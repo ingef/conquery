@@ -1,20 +1,20 @@
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectedDateColumnT } from "../standard-query-editor/types";
-import InputSelect from "../ui-components/InputSelect/InputSelect";
+import { ComboBoxField } from "../ui-components/ComboBoxField";
 
-interface PropsT {
+const DateColumnSelect = ({
+  dateColumn,
+  onSelectDateColumn,
+}: {
   dateColumn: SelectedDateColumnT;
   onSelectDateColumn: (dateColumn: string) => void;
-}
-
-const DateColumnSelect: FC<PropsT> = ({ dateColumn, onSelectDateColumn }) => {
+}) => {
   const { t } = useTranslation();
 
   return (
     <div>
-      <InputSelect
+      <ComboBoxField
         label={t("queryNodeEditor.dateColumn")}
         options={dateColumn.options}
         tooltip={dateColumn.tooltip ?? undefined}

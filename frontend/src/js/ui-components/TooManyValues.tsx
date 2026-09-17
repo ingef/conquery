@@ -1,43 +1,41 @@
-import styled from "@emotion/styled";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
+import { Button } from "./Button";
+import { Icon } from "./Icon";
 
-import IconButton from "../button/IconButton";
+const root = tv({
+  base: [
+    "flex flex-row items-center",
+    "px-[10px] py-[3px]",
+    "border border-gray-500",
+    "rounded",
+  ],
+});
 
-const Root = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 3px 10px;
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
+const text = tv({ base: ["m-0", "leading-none"] });
 
-const Text = styled("p")`
-  margin: 0;
-  line-height: 1;
-`;
-
-interface Props {
+const TooManyValues = ({
+  count,
+  onClear,
+}: {
   count: number;
   onClear: () => void;
-}
-
-const TooManyValues: FC<Props> = ({ count, onClear }) => {
+}) => {
   const { t } = useTranslation();
 
   return (
-    <Root>
-      <Text>{t("queryNodeEditor.tooManyValues", { count })}</Text>
-      <IconButton
-        icon={faTimes}
-        tiny
-        title={t("common.clearValue")}
+    <div className={root()}>
+      <p className={text()}>{t("queryNodeEditor.tooManyValues", { count })}</p>
+      <Button
+        intent="tertiary"
+        size="sm"
         aria-label={t("common.clearValue")}
-        onClick={onClear}
-      />
-    </Root>
+        onPress={onClear}
+      >
+        <Icon icon={faTimes} />
+      </Button>
+    </div>
   );
 };
 

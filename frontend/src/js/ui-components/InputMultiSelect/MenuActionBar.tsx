@@ -1,23 +1,19 @@
-import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
-
-import { TransparentButton } from "../../button/TransparentButton";
+import { tv } from "tailwind-variants";
 import { exists } from "../../common/helpers/exists";
+import { Button } from "../Button";
 
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 5px 10px;
-  border-bottom: 1px solid #ccc;
-`;
+const row = tv({
+  base: [
+    "flex items-center justify-between",
+    "px-[10px] py-[5px]",
+    "border-b border-[#ccc]",
+  ],
+});
 
-const InfoText = styled("p")`
-  margin: 0;
-  color: ${({ theme }) => theme.col.gray};
-  font-size: ${({ theme }) => theme.font.xs};
-  margin-right: 10px;
-`;
+const infoText = tv({
+  base: ["m-0 mr-[10px]", "text-gray-500", "text-xs"],
+});
 
 interface Props {
   optionsCount: number;
@@ -29,21 +25,22 @@ const MenuActionBar = ({ optionsCount, total, onInsertAllClick }: Props) => {
   const { t } = useTranslation();
 
   return (
-    <Row>
-      <InfoText>
+    <div className={row()}>
+      <p className={infoText()}>
         {t("inputMultiSelect.options", { count: optionsCount })}
         {exists(total) &&
           total !== optionsCount &&
           t("inputMultiSelect.ofTotal", { count: total })}
-      </InfoText>
-      <TransparentButton
-        tiny
-        disabled={optionsCount === 0}
-        onClick={onInsertAllClick}
+      </p>
+      <Button
+        intent="secondary"
+        size="sm"
+        isDisabled={optionsCount === 0}
+        onPress={onInsertAllClick}
       >
         {t("inputMultiSelect.insertAll")}
-      </TransparentButton>
-    </Row>
+      </Button>
+    </div>
   );
 };
 

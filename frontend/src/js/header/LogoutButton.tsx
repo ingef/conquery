@@ -1,20 +1,15 @@
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { useKeycloak } from "@react-keycloak-fork/web";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-
 import { deleteStoredAuthToken } from "../authorization/helper";
-import IconButton from "../button/IconButton";
 import { clearIndexedDBCache } from "../common/helpers/indexedDBCache";
 import { isIDPEnabled } from "../environment";
-import WithTooltip from "../tooltip/WithTooltip";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
-interface PropsT {
-  className?: string;
-}
-
-const LogoutButton: FC<PropsT> = ({ className }) => {
+const LogoutButton = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { keycloak } = useKeycloak();
@@ -40,9 +35,16 @@ const LogoutButton: FC<PropsT> = ({ className }) => {
   };
 
   return (
-    <WithTooltip className={className} text={t("common.logout")}>
-      <IconButton small frame icon={faSignOutAlt} onClick={onLogout} />
-    </WithTooltip>
+    <TooltipTrigger>
+      <Button
+        aria-label={t("common.logout")}
+        intent="secondary"
+        onPress={onLogout}
+      >
+        <Icon icon={faSignOutAlt} />
+      </Button>
+      <Tooltip>{t("common.logout")}</Tooltip>
+    </TooltipTrigger>
   );
 };
 

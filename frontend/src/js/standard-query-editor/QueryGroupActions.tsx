@@ -1,49 +1,22 @@
-import styled from "@emotion/styled";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { faBan, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
+import { ToggleButton } from "../ui-components/ToggleButton";
 
-import IconButton from "../button/IconButton";
-import WithTooltip from "../tooltip/WithTooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  tooltipDelay,
+} from "../ui-components/Tooltip";
 
-const Actions = styled("div")`
-  margin: 0 0 6px;
-  text-align: left;
-  height: 18px; // To provide enough space when only --right is available
-`;
-
-const Right = styled("div")`
-  position: absolute;
-  right: 7px;
-  top: 5px;
-`;
-
-const StyledIconButton = styled(IconButton)`
-  margin-right: 5px;
-  padding: 0 3px;
-
-  text-decoration: ${({ active }) => (active ? "underline" : "initial")};
-`;
-
-const RedIconButton = styled(IconButton)`
-  margin-right: 5px;
-  padding: 0 3px;
-
-  color: ${({ active, theme }) => (active ? theme.col.red : theme.col.black)};
-  svg {
-    color: ${({ active, theme }) => (active ? theme.col.red : theme.col.black)};
-  }
-
-  &:hover {
-    opacity: 0.7;
-    color: ${({ active, theme }) => (active ? theme.col.red : theme.col.black)};
-    svg {
-      color: ${({ active, theme }) =>
-        active ? theme.col.red : theme.col.black};
-    }
-  }
-`;
+// h-[18px]: to provide enough space when only the right side is rendered
+const actions = tv({
+  base: ["mb-[6px]", "h-[18px]", "text-left"],
+});
 
 interface PropsT {
   excludeActive: boolean;
@@ -63,36 +36,48 @@ const QueryGroupActions = ({
   const { t } = useTranslation();
 
   return (
-    <Actions>
-      <div>
-        <WithTooltip text={t("help.queryEditorExclude")} lazy>
-          <RedIconButton
-            red
-            tight
-            active={excludeActive}
-            icon={faBan}
-            onClick={onExcludeClick}
+    <div className={actions()}>
+      <div className="flex items-center gap-[5px]">
+        <TooltipTrigger delay={tooltipDelay.long}>
+          <ToggleButton
+            intent="tertiary"
+            size="sm"
+            highlight="danger"
+            isSelected={excludeActive}
+            onChange={onExcludeClick}
           >
+            <Icon icon={faBan} />
             {t("queryEditor.exclude")}
-          </RedIconButton>
-        </WithTooltip>
-        <WithTooltip text={t("help.queryEditorDate")} lazy>
-          <StyledIconButton
-            active={dateActive}
-            tight
-            icon={faCalendar}
-            onClick={onDateClick}
+          </ToggleButton>
+          <Tooltip>{t("help.queryEditorExclude")}</Tooltip>
+        </TooltipTrigger>
+        <TooltipTrigger delay={tooltipDelay.long}>
+          <ToggleButton
+            intent="tertiary"
+            size="sm"
+            isSelected={dateActive}
+            onChange={onDateClick}
           >
+            <Icon icon={faCalendar} />
             {t("queryEditor.date")}
-          </StyledIconButton>
-        </WithTooltip>
+          </ToggleButton>
+          <Tooltip>{t("help.queryEditorDate")}</Tooltip>
+        </TooltipTrigger>
       </div>
-      <Right>
-        <WithTooltip text={t("queryEditor.removeColumn")}>
-          <IconButton tiny icon={faTimes} onClick={onDeleteGroup} />
-        </WithTooltip>
-      </Right>
-    </Actions>
+      <div className="absolute top-[5px] right-[7px]">
+        <TooltipTrigger>
+          <Button
+            aria-label={t("queryEditor.removeColumn")}
+            intent="tertiary"
+            size="sm"
+            onPress={onDeleteGroup}
+          >
+            <Icon icon={faTimes} />
+          </Button>
+          <Tooltip>{t("queryEditor.removeColumn")}</Tooltip>
+        </TooltipTrigger>
+      </div>
+    </div>
   );
 };
 

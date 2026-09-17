@@ -1,65 +1,60 @@
-import styled from "@emotion/styled";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-
-import PrimaryButton from "../../button/PrimaryButton";
-import { TransparentButton } from "../../button/TransparentButton";
-import Modal from "../../modal/Modal";
-import InputPlain from "../../ui-components/InputPlain/InputPlain";
-
-const Buttons = styled("div")`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 20px;
-`;
-
-const SxPrimaryButton = styled(PrimaryButton)`
-  margin-left: 20px;
-`;
-
-const Content = styled("div")`
-  max-width: 500px;
-`;
+import { Button } from "../../ui-components/Button";
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "../../ui-components/Modal";
+import { TextField } from "../../ui-components/TextField";
 
 interface Props {
-  onClose: () => void;
   onSubmit: (folderName: string) => void;
   isValidName: (folderName: string) => boolean;
 }
 
-const AddFolderModal = ({ onClose, onSubmit, isValidName }: Props) => {
+const AddFolderModal = ({ onSubmit, isValidName }: Props) => {
   const { t } = useTranslation();
   const [folderName, setFolderName] = useState<string>("");
 
   return (
-    <Modal onClose={onClose} headline={t("addFolderModal.headline")}>
-      <Content>
-        <p>{t("addFolderModal.description")}</p>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSubmit(folderName);
-          }}
-        >
-          <InputPlain
-            label={t("addFolderModal.inputLabel")}
-            value={folderName}
-            inputType="text"
-            onChange={(value) => setFolderName((value as string | null) || "")}
-            inputProps={{ autoFocus: true }}
-          />
-          <Buttons>
-            <TransparentButton onClick={onClose}>
-              {t("common.cancel")}
-            </TransparentButton>
-            <SxPrimaryButton type="submit" disabled={!isValidName(folderName)}>
-              {t("common.create")}
-            </SxPrimaryButton>
-          </Buttons>
-        </form>
-      </Content>
+    <Modal>
+      {({ close }) => (
+        <>
+          <ModalHeader>{t("addFolderModal.headline")}</ModalHeader>
+          <form
+            className="flex flex-col gap-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              onSubmit(folderName);
+              close();
+            }}
+          >
+            <ModalBody>
+              <div className="flex flex-col gap-5">
+                <p>{t("addFolderModal.description")}</p>
+                <TextField
+                  label={t("addFolderModal.inputLabel")}
+                  value={folderName}
+                  onChange={setFolderName}
+                  autoFocus
+                />
+              </div>
+            </ModalBody>
+            <ModalFooter>
+              <Button slot="close">{t("common.cancel")}</Button>
+              <Button
+                intent="primary"
+                type="submit"
+                isDisabled={!isValidName(folderName)}
+              >
+                {t("common.create")}
+              </Button>
+            </ModalFooter>
+          </form>
+        </>
+      )}
     </Modal>
   );
 };

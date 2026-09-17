@@ -1,15 +1,8 @@
 name: "Test Frontend"
 
+# Called from ci.yml, which decides based on the changed paths whether this runs.
 on:
-  push:
-    branches:
-      # Always run on protected branches
-      - master
-      - develop
-      - release
-  pull_request:
-    paths:
-      - "frontend/**"
+  workflow_call:
 
 jobs:
   test:
@@ -34,6 +27,9 @@ jobs:
       - name: lint and check format
         working-directory: ./frontend
         run: pnpm biome ci
+      - name: find unused files, exports and dependencies
+        working-directory: ./frontend
+        run: pnpm knip
       - name: test
         working-directory: ./frontend
         run: pnpm test

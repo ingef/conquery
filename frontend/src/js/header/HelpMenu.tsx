@@ -1,89 +1,65 @@
-import styled from "@emotion/styled";
 import {
   faBook,
   faInfoCircle,
   faPaperPlane,
   faQuestion,
 } from "@fortawesome/free-solid-svg-icons";
-import { useMemo } from "react";
+import { MenuTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-
 import { useAbout } from "../app/About";
-import IconButton from "../button/IconButton";
-import WithTooltip from "../tooltip/WithTooltip";
-
-const List = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px;
-`;
-
-const SxIconButton = styled(IconButton)`
-  padding: 7px 12px;
-`;
-
-const DropdownItemButton = styled(IconButton)`
-  width: 100%;
-`;
+import { Button } from "../ui-components/Button";
+import { Icon } from "../ui-components/Icon";
+import { Menu, MenuItem } from "../ui-components/Menu";
 
 interface Props {
   contactEmail?: string;
   manualUrl?: string;
 }
 
-// Skidding makes Dropdown align the right edge with the button,
-// might need to adjust this when adding more content.
-const dropdownOffset: [number, number] = [-47, 5]; // [skidding, distance] / default [0, 10]
-
 export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
   const { t } = useTranslation();
   const { setOpen } = useAbout();
 
-  const Dropdown = useMemo(
-    () => (
-      <List>
-        <a
+  return (
+    <MenuTrigger>
+      <Button
+        intent="secondary"
+        aria-label={t("common.help")}
+        data-test-id="help-menu"
+      >
+        <Icon icon={faQuestion} />
+      </Button>
+      <Menu
+        aria-label={t("common.help")}
+        placement="bottom end"
+        onAction={(key) => {
+          if (key === "version") setOpen(true);
+        }}
+      >
+        <MenuItem
+          id="contact"
           href={`mailto:${contactEmail}`}
           rel="noopener noreferrer"
           data-test-id="help-email"
         >
-          <DropdownItemButton bgHover fixedIconWidth={14} icon={faPaperPlane}>
-            {t("common.contact")}
-          </DropdownItemButton>
-        </a>
-        <a
+          <Icon icon={faPaperPlane} />
+          {t("common.contact")}
+        </MenuItem>
+        <MenuItem
+          id="manual"
           href={manualUrl}
           target="_blank"
           rel="noopener noreferrer"
           data-test-id="help-manual"
         >
-          <DropdownItemButton bgHover fixedIconWidth={14} icon={faBook}>
-            {t("common.manual")}
-          </DropdownItemButton>
-        </a>
-        <DropdownItemButton
-          bgHover
-          fixedIconWidth={14}
-          icon={faInfoCircle}
-          onClick={() => setOpen(true)}
-        >
+          <Icon icon={faBook} />
+          {t("common.manual")}
+        </MenuItem>
+        <MenuItem id="version">
+          <Icon icon={faInfoCircle} />
           {t("common.version")}
-        </DropdownItemButton>
-      </List>
-    ),
-    [t, manualUrl, contactEmail, setOpen],
-  );
-  return (
-    <WithTooltip
-      interactive
-      trigger="click"
-      arrow={false}
-      html={Dropdown}
-      offset={dropdownOffset}
-      hideOnClick
-    >
-      <SxIconButton icon={faQuestion} frame data-test-id="help-menu" />
-    </WithTooltip>
+        </MenuItem>
+      </Menu>
+    </MenuTrigger>
   );
 };

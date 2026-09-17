@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import {
   faChevronDown,
   faSpinner,
@@ -13,9 +12,10 @@ import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import { getFileRows } from "../../common/helpers/fileHelper";
 import { useDebounce } from "../../common/helpers/useDebounce";
-import FaIcon from "../../icon/FaIcon";
-import InfoTooltip from "../../tooltip/InfoTooltip";
 import DropzoneWithFileInput from "../DropzoneWithFileInput";
+import { Icon } from "../Icon";
+import EmptyPlaceholder from "../SelectEmptyPlaceholder";
+import TooManyValues from "../TooManyValues";
 import {
   Control,
   DropdownToggleButton,
@@ -27,11 +27,9 @@ import {
   ResetButton,
   SelectContainer,
   VerticalSeparator,
-} from "../InputSelect/InputSelectComponents";
-import Labeled from "../Labeled";
-import EmptyPlaceholder from "../SelectEmptyPlaceholder";
-import TooManyValues from "../TooManyValues";
+} from "./InputSelectComponents";
 
+import { Labeled } from "./Labeled";
 import ListItem from "./ListItem";
 import LoadMoreSentinel from "./LoadMoreSentinel";
 import MenuActionBar from "./MenuActionBar";
@@ -52,10 +50,6 @@ const getSentinelInsertIndex = (optionsLength: number) => {
 
   return optionsLength - SENTINEL_INSERT_INDEX_FROM_BOTTOM;
 };
-
-const SxFaIcon = styled(FaIcon)`
-  margin: 3px 6px;
-`;
 
 interface Props {
   label?: string;
@@ -99,6 +93,9 @@ const InputMultiSelect = ({
   onLoadAndInsertAll,
 }: Props) => {
   const { t } = useTranslation();
+  const defaultPlaceholder = onResolve
+    ? t("inputMultiSelect.dndPlaceholder")
+    : t("inputSelect.placeholder");
 
   useResolvableSelect({
     defaultValue,
@@ -309,11 +306,7 @@ const InputMultiSelect = ({
             placeholder={
               selectedItems.length > 0
                 ? undefined
-                : placeholder
-                  ? placeholder
-                  : onResolve
-                    ? t("inputMultiSelect.dndPlaceholder")
-                    : t("inputSelect.placeholder")
+                : (placeholder ?? defaultPlaceholder)
             }
             onClick={(e) => {
               inputProps.onClick?.(e);
@@ -324,24 +317,23 @@ const InputMultiSelect = ({
             }}
           />
         </ItemsInputContainer>
-        {loading && <SxFaIcon icon={faSpinner} />}
+        {loading && <Icon icon={faSpinner} className="mx-[6px] my-[3px]" />}
         {!loading && (inputValue.length > 0 || selectedItems.length > 0) && (
           <ResetButton
-            icon={faTimes}
-            disabled={disabled}
-            onClick={() => {
+            isDisabled={disabled}
+            onPress={() => {
               setInputValue("");
               resetMultiSelectState();
               resetComboboxState();
             }}
-          />
+          >
+            <Icon icon={faTimes} />
+          </ResetButton>
         )}
         <VerticalSeparator />
-        <DropdownToggleButton
-          disabled={disabled}
-          {...getToggleButtonProps()}
-          icon={faChevronDown}
-        />
+        <DropdownToggleButton isDisabled={disabled} {...getToggleButtonProps()}>
+          <Icon icon={faChevronDown} />
+        </DropdownToggleButton>
       </Control>
       {isOpen ? (
         <MenuContainer ref={menuContainerRef}>
@@ -441,13 +433,8 @@ const InputMultiSelect = ({
       ref={(el) => {
         clickOutsideRef.current = el;
       }}
-      htmlFor="" // Important to override getLabelProps with this to avoid click events everywhere
-      label={
-        <>
-          {label}
-          {tooltip && <InfoTooltip text={tooltip} />}
-        </>
-      }
+      label={label}
+      tooltip={tooltip}
       indexPrefix={indexPrefix}
     >
       {children}

@@ -1,93 +1,99 @@
-import { css } from "@emotion/react";
-import styled from "@emotion/styled";
-import type { FC } from "react";
+import { Children, isValidElement, type ReactNode, type Ref } from "react";
+import {
+  ToggleButton as RacToggleButton,
+  type ToggleButtonProps as RacToggleButtonProps,
+} from "react-aria-components";
+import { tv } from "tailwind-variants";
 
-import WithTooltip from "../tooltip/WithTooltip";
+import { buttonStyle } from "./Button";
+import { Icon } from "./Icon";
+import { useToggleButtonGroup } from "./ToggleButtonGroup";
 
-const Root = styled("div")`
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-`;
+// quiet while off, so the selected state stands out: gray text that darkens
+// on hover; while selected, bold in the highlight color
+const toggleStyle = tv({
+  extend: buttonStyle,
+  base: "data-selected:font-bold",
+  variants: {
+    intent: {
+      secondary: "text-gray-500 not-data-selected:hover:text-gray-800",
+      tertiary: "text-gray-500 not-data-selected:hover:text-gray-800",
+    },
+    highlight: {
+      primary: "data-selected:text-primary-500",
+      danger: "data-selected:text-red",
+    },
+  },
+});
 
-const Option = styled("span")<{
-  active?: boolean;
-  isFirst?: boolean;
-  isLast?: boolean;
-}>`
-  font-size: ${({ theme }) => theme.font.xs};
-  display: inline-block;
-  padding: 4px 8px;
-  cursor: pointer;
-  transition:
-    color ${({ theme }) => theme.transitionTime},
-    background-color ${({ theme }) => theme.transitionTime};
-  color: ${({ theme, active }) => (active ? theme.col.black : theme.col.gray)};
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  background-color: ${({ theme, active }) =>
-    active ? "white" : theme.col.grayVeryLight};
-
-  margin-left: -1px;
-  margin-bottom: 2px;
-
-  &:hover {
-    background-color: ${({ theme, active }) =>
-      active ? "white" : theme.col.bg};
-  }
-
-  ${({ isFirst }) =>
-    isFirst &&
-    css`
-      margin-left: 0;
-      border-top-left-radius: 2px;
-      border-bottom-left-radius: 2px;
-    `}
-  ${({ isLast }) =>
-    isLast &&
-    css`
-      border-top-right-radius: 2px;
-      border-bottom-right-radius: 2px;
-    `}
-`;
-
-interface OptionsT {
-  label: string;
-  value: string;
-  description?: string;
+interface CommonProps
+  extends Omit<RacToggleButtonProps, "className" | "style" | "children"> {
+  size?: "sm" | "md" | "lg";
+  children?: ReactNode;
+  ref?: Ref<HTMLButtonElement>;
 }
 
-interface PropsT {
-  className?: string;
-  options: OptionsT[];
-  value: string;
-  onChange: (value: string) => void;
+export interface ToggleButtonProps extends CommonProps {
+  /** Button's intents that can be switched on and off */
+  intent?: "secondary" | "tertiary";
+  /** how it shows while selected: the primary color, or red for a warning state */
+  highlight?: "primary" | "danger";
 }
 
-const ToggleButton: FC<PropsT> = ({
-  options,
-  value: inputValue,
-  onChange,
-  className,
-}) => {
+// bold text is wider than regular text: a label repeats itself in bold in a
+// zero-height pseudo-element, so the button keeps its bold width while off
+const reserveBoldWidth = (children: ReactNode) =>
+  Children.map(children, (child) =>
+    typeof child === "string" || typeof child === "number" ? (
+      <span
+        data-text={child}
+        className="after:invisible after:block after:h-0 after:overflow-hidden after:font-bold after:content-[attr(data-text)]"
+      >
+        {child}
+      </span>
+    ) : (
+      child
+    ),
+  );
+
+const isIconOnly = (children: ReactNode) => {
+  const items = Children.toArray(children);
   return (
-    <Root className={className}>
-      {options.map(({ value, label, description }, i) => (
-        <WithTooltip key={value} text={description}>
-          <Option
-            isFirst={i === 0}
-            isLast={i === options.length - 1}
-            active={inputValue === value}
-            onClick={() => {
-              if (value !== inputValue) onChange(value);
-            }}
-          >
-            {label}
-          </Option>
-        </WithTooltip>
-      ))}
-    </Root>
+    items.length > 0 &&
+    items.every((child) => isValidElement(child) && child.type === Icon)
   );
 };
 
-export default ToggleButton;
+/**
+ * A button whose look reflects a state that is on or off, in Button's look.
+ * react-aria's ToggleButton underneath: `isSelected` / `onChange`, and it
+ * works as a tooltip trigger. Inside a ToggleButtonGroup it is keyed by `id`
+ * and takes the group's size unless it has its own. Pressing may flip the
+ * state or open an editor for it.
+ *
+ *   <ToggleButton isSelected={pinned} onChange={setPinned} aria-label="Pin">
+ *     <Icon icon={faThumbtack} />
+ *   </ToggleButton>
+ */
+export const ToggleButton = ({
+  intent = "tertiary",
+  size,
+  highlight = "primary",
+  children,
+  ...props
+}: ToggleButtonProps) => {
+  const group = useToggleButtonGroup();
+  return (
+    <RacToggleButton
+      className={toggleStyle({
+        intent,
+        size: size ?? group?.size,
+        highlight,
+        iconOnly: isIconOnly(children),
+      })}
+      {...props}
+    >
+      {reserveBoldWidth(children)}
+    </RacToggleButton>
+  );
+};

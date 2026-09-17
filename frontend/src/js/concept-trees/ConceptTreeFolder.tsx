@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { useMemo } from "react";
 
 import type { ConceptIdT, ConceptT } from "../api/types";
@@ -9,10 +8,6 @@ import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
 import { getConceptById } from "./globalTreeStoreHelper";
 import type { LoadedConcept, SearchT, TreesT } from "./reducer";
 import { isNodeInSearchResult } from "./selectors";
-
-const Root = styled("div")`
-  font-size: ${({ theme }) => theme.font.sm};
-`;
 
 const sumMatchingEntities = (children: string[], initSum: number) => {
   return children.reduce((sum, treeId) => {
@@ -102,7 +97,7 @@ const ConceptTreeFolder = ({
   const isOpen = open || search.allOpen;
 
   return (
-    <Root>
+    <div className="text-sm">
       <ConceptTreeNodeTextContainer
         node={{
           label: tree.label,
@@ -163,7 +158,7 @@ const ConceptTreeFolder = ({
             );
           }
         })}
-    </Root>
+    </div>
   );
 };
 

@@ -1,21 +1,18 @@
-import { keyframes } from "@emotion/react";
-import styled from "@emotion/styled";
+import { tv } from "tailwind-variants";
 
-const spin = keyframes`
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-`;
+import { useAppTheme } from "../app-theme-context";
 
-export const QueryRunningSpinner = styled("div")`
-  height: 30px;
-  width: 30px;
-  background-image: url("${({ theme }) => theme.img.spinner}");
-  background-repeat: no-repeat;
-  background-size: 30px;
+const spinner = tv({
+  base: ["h-[30px] w-[30px]", "bg-no-repeat", "bg-size-[30px]", "animate-spin"],
+});
 
-  animation: ${spin} 1s linear 0s infinite;
-`;
+export const QueryRunningSpinner = ({ className }: { className?: string }) => {
+  const { img } = useAppTheme();
+
+  return (
+    <div
+      className={spinner({ className })}
+      style={{ backgroundImage: `url("${img.spinner}")` }}
+    />
+  );
+};

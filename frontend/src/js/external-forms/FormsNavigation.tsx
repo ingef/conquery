@@ -1,44 +1,29 @@
-import styled from "@emotion/styled";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-
+import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
 import { useActiveLang } from "../localization/useActiveLang";
-import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
-import WithTooltip from "../tooltip/WithTooltip";
-import InputSelect from "../ui-components/InputSelect/InputSelect";
+import { Button } from "../ui-components/Button";
+import { ComboBoxField } from "../ui-components/ComboBoxField";
+import { ConfirmMenu } from "../ui-components/ConfirmMenu";
+import { Icon } from "../ui-components/Icon";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { setExternalForm } from "./actions";
 import type { Form } from "./config-types";
 import { selectActiveFormType, selectAvailableForms } from "./stateSelectors";
 
-const Root = styled("div")`
-  flex-shrink: 0;
-  padding: 8px 20px 10px 10px;
-  box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.3);
-  box-sizing: border-box;
-  background-color: ${({ theme }) => theme.col.bg};
-  position: relative;
-  z-index: 2;
-`;
-
-const Row = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-`;
-
-const SxInputSelect = styled(InputSelect)`
-  flex-grow: 1;
-`;
-
-const SxIconButton = styled(IconButton)`
-  flex-shrink: 0;
-  margin-left: 10px;
-  padding: 7px 10px;
-`;
+const root = tv({
+  base: [
+    "relative",
+    "z-2",
+    "box-border",
+    "pt-2 pr-5 pb-[10px] pl-[10px]",
+    "bg-bg-50",
+    "shadow-[0_0_3px_0_rgba(0,0,0,0.3)]",
+  ],
+});
 
 const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
   const language = useActiveLang();
@@ -69,32 +54,42 @@ const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
     .sort((a, b) => (a.label < b.label ? -1 : 1));
 
   return (
-    <Root>
-      <Row>
-        <SxInputSelect
-          dataTestId="form-select"
-          label={t("externalForms.forms")}
-          options={options}
-          value={options.find((o) => o.value === activeForm) || null}
-          onChange={(value) => {
-            if (value) {
-              onChangeToForm(value.value as string);
-              // we intentionally only change the form
-              // but we don't reset field state,
-              // so values are kept when switching forms
-            }
-          }}
-        />
-        <ConfirmableTooltip
-          onConfirm={onReset}
-          confirmationText={t("externalForms.common.clearConfirm")}
-        >
-          <WithTooltip text={t("externalForms.common.clear")}>
-            <SxIconButton frame icon={faTrash} />
-          </WithTooltip>
-        </ConfirmableTooltip>
-      </Row>
-    </Root>
+    <div className={root()}>
+      <div className="flex flex-row items-end">
+        <div className="grow">
+          <ComboBoxField
+            data-test-id="form-select"
+            label={t("externalForms.forms")}
+            options={options}
+            value={options.find((o) => o.value === activeForm) || null}
+            onChange={(value) => {
+              if (value) {
+                onChangeToForm(value.value as string);
+                // we intentionally only change the form
+                // but we don't reset field state,
+                // so values are kept when switching forms
+              }
+            }}
+          />
+        </div>
+        <div className="ml-[10px]">
+          <TooltipTrigger>
+            <ConfirmMenu
+              onConfirm={onReset}
+              confirmationText={t("externalForms.common.clearConfirm")}
+            >
+              <Button
+                aria-label={t("externalForms.common.clear")}
+                intent="secondary"
+              >
+                <Icon icon={faTrash} />
+              </Button>
+            </ConfirmMenu>
+            <Tooltip>{t("externalForms.common.clear")}</Tooltip>
+          </TooltipTrigger>
+        </div>
+      </div>
+    </div>
   );
 };
 

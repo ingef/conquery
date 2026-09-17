@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -11,15 +10,8 @@ import ProjectItemsTab from "../previous-queries/list/ProjectItemsTab";
 
 import type { StateT } from "./reducers";
 
-const SxConceptTreeSearchBox = styled(ConceptTreeSearchBox)`
-  margin: 8px 10px 5px;
-`;
-
 const LeftPane = () => {
   const { t } = useTranslation();
-  const activeTab = useSelector<StateT, string>(
-    (state) => state.panes.left.activeTab,
-  );
   const selectedDatasetId = useSelector<StateT, DatasetT["id"] | null>(
     (state) => state.datasets.selectedDatasetId,
   );
@@ -38,25 +30,25 @@ const LeftPane = () => {
           label: t("leftPane.conceptTrees"),
           key: "conceptTrees",
           tooltip: t("help.tabConceptTrees"),
+          // the list takes the height left over by the search box
+          content: (
+            <div className="flex flex-col">
+              {areTreesAvailable && (
+                <ConceptTreeSearchBox className="mx-[10px] mt-2 mb-[5px]" />
+              )}
+              <ConceptTreeList datasetId={selectedDatasetId} />
+            </div>
+          ),
         },
         {
           label: t("leftPane.previousQueries"),
           key: "previousQueries",
           tooltip: t("help.tabPreviousQueries"),
-          // TODO: Re-implement
-          // loading: previousQueriesLoading,
+          content: <ProjectItemsTab datasetId={selectedDatasetId} />,
         },
       ]}
       dataTestId="left-pane"
-    >
-      {activeTab === "conceptTrees" && areTreesAvailable && (
-        <SxConceptTreeSearchBox />
-      )}
-      <ConceptTreeList datasetId={selectedDatasetId} />
-      {activeTab === "previousQueries" && (
-        <ProjectItemsTab datasetId={selectedDatasetId} />
-      )}
-    </Pane>
+    />
   );
 };
 

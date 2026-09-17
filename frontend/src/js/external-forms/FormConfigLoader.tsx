@@ -1,9 +1,8 @@
-import styled from "@emotion/styled";
-import { type FC, memo, type ReactNode, useEffect, useState } from "react";
+import { memo, type ReactNode, useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-
+import { tv } from "tailwind-variants";
 import { useGetFormConfig } from "../api/api";
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
@@ -20,16 +19,13 @@ import { collectAllFormFields, getUniqueFieldname } from "./helper";
 import { selectActiveFormType, selectFormConfig } from "./stateSelectors";
 import type { DragItemFormConfig } from "./types";
 
-const Root = styled("div")`
-  display: flex;
-  align-items: center;
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
+const root = tv({
+  base: ["flex items-center", "rounded"],
+});
 
-const SxDropzone = styled(Dropzone)`
-  padding: 10px 20px 20px 10px;
-  color: ${({ theme }) => theme.col.black};
-`;
+const dropzone = tv({
+  base: ["pt-[10px] pr-5 pb-5 pl-[10px]", "text-gray-800"],
+});
 
 const DROP_TYPES = [DNDType.FORM_CONFIG];
 
@@ -80,16 +76,14 @@ const transformLoadedFieldValue = (
   }
 };
 
-interface Props {
-  datasetOptions: SelectOptionT[];
-  className?: string;
-  children: () => ReactNode;
-}
-
-const FormConfigLoader: FC<Props> = ({
+const FormConfigLoader = ({
   className,
   children,
   datasetOptions,
+}: {
+  datasetOptions: SelectOptionT[];
+  className?: string;
+  children: () => ReactNode;
 }) => {
   const { t } = useTranslation();
   const activeLang = useActiveLang();
@@ -185,16 +179,17 @@ const FormConfigLoader: FC<Props> = ({
   }
 
   return (
-    <Root className={className}>
-      <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemFormConfig>>> */
+    <div className={root({ className })}>
+      <Dropzone
+        className={dropzone()}
         onDrop={(item) => onLoad(item as DragItemFormConfig)}
         acceptedDropTypes={DROP_TYPES}
         naked
         transparent
       >
         {children}
-      </SxDropzone>
-    </Root>
+      </Dropzone>
+    </div>
   );
 };
 

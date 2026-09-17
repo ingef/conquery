@@ -1,34 +1,36 @@
-import styled from "@emotion/styled";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
-import IconButton from "../button/IconButton";
-import { Highlighter } from "../common/components/Highlighter";
+import { tv } from "tailwind-variants";
 import HighlightableLabel from "../highlightable-label/HighlightableLabel";
-import WithTooltip from "../tooltip/WithTooltip";
-
+import { Button } from "./Button";
 import EditableTextForm from "./EditableTextForm";
+import { Highlighter } from "./Highlighter";
+import { Icon } from "./Icon";
+import { Tooltip, TooltipTrigger } from "./Tooltip";
 
-const SxIconButton = styled(IconButton)`
-  margin-right: ${({ large }) => (large ? "10px" : "8px")};
-  padding: 2px 0;
-`;
+// a flex wrapper, so the button does not sit on a text baseline and grow the row
+const editButton = tv({
+  base: "flex shrink-0",
+  variants: {
+    large: {
+      true: "mr-[10px]",
+      false: "mr-2",
+    },
+  },
+});
 
-const Text = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`;
+const text = tv({
+  base: "flex flex-row items-center",
+});
 
-const SxHighlightableLabel = styled(HighlightableLabel)`
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-`;
+const label = tv({
+  base: ["overflow-hidden", "text-ellipsis", "whitespace-nowrap"],
+});
 
 const EditableText = ({
   className,
   loading,
   editing,
-  text,
+  text: textValue,
   tooltip,
   large,
   saveOnClickoutside,
@@ -55,31 +57,38 @@ const EditableText = ({
     <EditableTextForm
       className={className}
       loading={loading}
-      text={text}
+      text={textValue}
       selectTextOnMount={selectTextOnMount}
       saveOnClickoutside={saveOnClickoutside}
       onSubmit={onSubmit}
       onCancel={onToggleEdit}
     />
   ) : (
-    <Text className={className}>
-      <WithTooltip text={tooltip}>
-        <SxIconButton
-          bare
-          icon={faPen}
-          onClick={onToggleEdit}
-          small
-          large={large}
-        />
-      </WithTooltip>
-      <SxHighlightableLabel isHighlighted={isHighlighted}>
+    <div className={text({ className })}>
+      <span className={editButton({ large: !!large })}>
+        <TooltipTrigger>
+          <Button
+            aria-label={tooltip}
+            intent="tertiary"
+            size={large ? "md" : "sm"}
+            onPress={onToggleEdit}
+          >
+            <Icon icon={faPen} />
+          </Button>
+          <Tooltip>{tooltip}</Tooltip>
+        </TooltipTrigger>
+      </span>
+      <HighlightableLabel className={label()} isHighlighted={isHighlighted}>
         {highlightedWords && highlightedWords.length > 0 ? (
-          <Highlighter searchWords={highlightedWords} textToHighlight={text} />
+          <Highlighter
+            searchWords={highlightedWords}
+            textToHighlight={textValue}
+          />
         ) : (
-          text
+          textValue
         )}
-      </SxHighlightableLabel>
-    </Text>
+      </HighlightableLabel>
+    </div>
   );
 };
 

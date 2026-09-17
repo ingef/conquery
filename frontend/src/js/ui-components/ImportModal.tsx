@@ -1,51 +1,31 @@
-import styled from "@emotion/styled";
 import { faFile, faPaste } from "@fortawesome/free-solid-svg-icons";
-import {
-  type ChangeEvent,
-  type MouseEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { NativeTypes } from "react-dnd-html5-backend";
-import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-
-import IconButton from "../button/IconButton";
-import PrimaryButton from "../button/PrimaryButton";
+import { tv } from "tailwind-variants";
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
-import Modal from "../modal/Modal";
-
+import { Button } from "./Button";
 import DropzoneWithFileInput, {
   type DragItemFile,
 } from "./DropzoneWithFileInput";
+import { Icon } from "./Icon";
+import {
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  type ModalProps,
+} from "./Modal";
 
-const Content = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
+const content = tv({
+  base: ["flex flex-col", "gap-5"],
+});
 
-const Row = styled("div")`
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-`;
+const textarea = tv({
+  base: ["font-mono", "w-full"],
+});
 
-const Textarea = styled("textarea")`
-  font-family: monospace;
-  width: 100%;
-`;
-
-const HiddenFileInput = styled("input")`
-  display: none;
-`;
-
-const Subtitle = styled(`p`)`
-  margin: 0;
-  max-width: 600px;
-`;
+const subtitle = tv({ base: "m-0" });
 
 const acceptedDropTypes = [NativeTypes.FILE];
 
@@ -71,12 +51,11 @@ const useCanReadClipboard = () => {
 export const ImportModal = ({
   placeholder,
   description,
-  onClose,
   onSubmit,
-}: {
+  ...modalProps
+}: Pick<ModalProps, "isOpen" | "onOpenChange"> & {
   description?: string;
   placeholder?: string;
-  onClose: () => void;
   onSubmit: (lines: string[], filename?: string) => void;
 }) => {
   const { t } = useTranslation();
@@ -86,18 +65,14 @@ export const ImportModal = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const onSubmitClick = (
-    e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>,
-  ) => {
-    e.stopPropagation();
-
+  const onSubmitClick = (close: () => void) => {
     const lines = textInput
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
 
     onSubmit(lines, droppedFilename);
-    onClose();
+    close();
   };
 
   const onOpenFileDialog = () => {
@@ -155,64 +130,76 @@ export const ImportModal = ({
     }
   };
 
-  return createPortal(
-    <Modal
-      headline={t("importModal.headline")}
-      subtitle={t("importModal.subtitle")}
-      onClose={onClose}
-    >
-      <Content>
-        {description && (
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: description is our own i18n text
-          <Subtitle dangerouslySetInnerHTML={{ __html: description }} />
-        )}
-        <DropzoneWithFileInput
-          onDrop={onDrop}
-          acceptedDropTypes={acceptedDropTypes}
-          disableClick
-          accept="text/plain,text/csv"
-        >
-          {() => (
-            <Textarea
-              rows={15}
-              value={textInput}
-              onChange={onChange}
-              placeholder={placeholder}
-            />
-          )}
-        </DropzoneWithFileInput>
-        <Row>
-          <IconButton icon={faFile} onClick={onOpenFileDialog}>
-            {t("common.openFileDialog")}
-          </IconButton>
-          {canReadClipboard && (
-            <IconButton icon={faPaste} onClick={onPasteClick}>
-              {t("importModal.paste")}
-            </IconButton>
-          )}
-          <PrimaryButton
-            disabled={textInput.length === 0}
-            onClick={onSubmitClick}
-          >
-            {t("importModal.submit")}
-          </PrimaryButton>
-        </Row>
-        <HiddenFileInput
-          type="file"
-          ref={fileInputRef}
-          accept="text/plain,text/csv"
-          onChange={(e) => {
-            if (e.target.files) {
-              onSelectFile(e.target.files[0]);
-            }
+  return (
+    <Modal size="lg" {...modalProps}>
+      {({ close }) => (
+        <>
+          <ModalHeader subtitle={t("importModal.subtitle")}>
+            {t("importModal.headline")}
+          </ModalHeader>
+          <ModalBody>
+            <div className={content()}>
+              {description && (
+                <p
+                  className={subtitle()}
+                  // biome-ignore lint/security/noDangerouslySetInnerHtml: description is our own i18n text
+                  dangerouslySetInnerHTML={{ __html: description }}
+                />
+              )}
+              <DropzoneWithFileInput
+                onDrop={onDrop}
+                acceptedDropTypes={acceptedDropTypes}
+                disableClick
+                accept="text/plain,text/csv"
+              >
+                {() => (
+                  <textarea
+                    className={textarea()}
+                    rows={15}
+                    value={textInput}
+                    onChange={onChange}
+                    placeholder={placeholder}
+                  />
+                )}
+              </DropzoneWithFileInput>
+              <input
+                className="hidden"
+                type="file"
+                ref={fileInputRef}
+                accept="text/plain,text/csv"
+                onChange={(e) => {
+                  if (e.target.files) {
+                    onSelectFile(e.target.files[0]);
+                  }
 
-            if (fileInputRef.current) {
-              fileInputRef.current.value = "";
-            }
-          }}
-        />
-      </Content>
-    </Modal>,
-    document.getElementById("root")!,
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                  }
+                }}
+              />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button intent="tertiary" onPress={onOpenFileDialog}>
+              <Icon icon={faFile} />
+              {t("common.openFileDialog")}
+            </Button>
+            {canReadClipboard && (
+              <Button intent="tertiary" onPress={onPasteClick}>
+                <Icon icon={faPaste} />
+                {t("importModal.paste")}
+              </Button>
+            )}
+            <Button
+              intent="primary"
+              isDisabled={textInput.length === 0}
+              onPress={() => onSubmitClick(close)}
+            >
+              {t("importModal.submit")}
+            </Button>
+          </ModalFooter>
+        </>
+      )}
+    </Modal>
   );
 };

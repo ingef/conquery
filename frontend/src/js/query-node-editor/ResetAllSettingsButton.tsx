@@ -1,42 +1,39 @@
-import styled from "@emotion/styled";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import { type FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "../ui-components/Button";
+import { ConfirmMenu } from "../ui-components/ConfirmMenu";
+import { Icon } from "../ui-components/Icon";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
-import IconButton from "../button/IconButton";
-import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
-import WithTooltip from "../tooltip/WithTooltip";
-
-const SxWithTooltip = styled(WithTooltip)`
-  white-space: nowrap;
-`;
-
-interface Props {
+const ResetAllSettingsButton = ({
+  compact,
+  onClick,
+}: {
   compact?: boolean;
   onClick: () => void;
-}
-
-const ResetAllSettingsButton: FC<Props> = ({ compact, onClick }) => {
+}) => {
   const { t } = useTranslation();
   const text = t("queryNodeEditor.clearAllSettings");
   const confirmationText = t("queryNodeEditor.clearAllSettingsConfirm");
 
-  const button = useMemo(() => {
-    return compact ? (
-      <SxWithTooltip text={text}>
-        <IconButton icon={faTrash} active />
-      </SxWithTooltip>
-    ) : (
-      <IconButton icon={faTrash} active>
-        {text}
-      </IconButton>
-    );
-  }, [compact, text]);
+  const trigger = (
+    <Button intent="tertiary">
+      <Icon icon={faTrash} />
+      {compact ? null : text}
+    </Button>
+  );
 
-  return (
-    <ConfirmableTooltip onConfirm={onClick} confirmationText={confirmationText}>
-      {button}
-    </ConfirmableTooltip>
+  return compact ? (
+    <TooltipTrigger>
+      <ConfirmMenu onConfirm={onClick} confirmationText={confirmationText}>
+        {trigger}
+      </ConfirmMenu>
+      <Tooltip className="whitespace-nowrap">{text}</Tooltip>
+    </TooltipTrigger>
+  ) : (
+    <ConfirmMenu onConfirm={onClick} confirmationText={confirmationText}>
+      {trigger}
+    </ConfirmMenu>
   );
 };
 

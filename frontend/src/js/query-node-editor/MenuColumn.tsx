@@ -1,6 +1,5 @@
-import styled from "@emotion/styled";
-import type { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { tv } from "tailwind-variants";
 
 import type { ConceptIdT } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
@@ -15,36 +14,49 @@ import AdditionalConceptNodeChildren from "./AdditionalConceptNodeChildren";
 import { HeadingBetween } from "./HeadingBetween";
 import MenuColumnItem from "./MenuColumnItem";
 
-const FixedColumn = styled("div")<{ isEmpty?: boolean }>`
-  display: flex;
-  flex-direction: column;
-  width: ${({ isEmpty }) => (isEmpty ? "200px" : "270px")};
-  overflow: hidden;
-  flex-shrink: 0;
-  flex-grow: 1;
-  height: 100%;
+const fixedColumn = tv({
+  base: [
+    "flex flex-col",
+    "shrink-0 grow",
+    "h-full",
+    "overflow-hidden",
+    "first-of-type:border-r first-of-type:border-r-gray-100",
+  ],
+  variants: {
+    isEmpty: {
+      true: "w-[200px]",
+      false: "w-[270px]",
+    },
+  },
+});
 
-  &:first-of-type {
-    border-right: 1px solid ${({ theme }) => theme.col.grayLight};
-  }
-`;
+const dimmedNote = tv({
+  base: ["p-[15px]", "text-gray-100", "font-normal"],
+});
 
-const DimmedNote = styled(Heading3)`
-  color: ${({ theme }) => theme.col.grayLight};
-  padding: 15px;
-  font-weight: 400;
-`;
+const commonSettingsLabel = tv({
+  base: [
+    "px-[15px] pt-[15px] pb-0",
+    "m-0",
+    "cursor-pointer",
+    "hover:underline",
+  ],
+});
 
-const CommonSettingsLabel = styled(Heading3)`
-  padding: 15px 15px 0;
-  margin: 0;
-  cursor: pointer;
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-interface PropsT {
+const MenuColumn = ({
+  className,
+  node,
+  selectedTableIdx,
+  showTables,
+  blocklistedTables,
+  allowlistedTables,
+  onCommonSettingsClick,
+  onDropConcept,
+  onRemoveConcept,
+  onToggleTable,
+  onSelectTable,
+  onResetTable,
+}: {
   className?: string;
 
   node: StandardQueryNodeT;
@@ -59,21 +71,6 @@ interface PropsT {
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
   onSelectTable: (tableIdx: number) => void;
   onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
-}
-
-const MenuColumn: FC<PropsT> = ({
-  className,
-  node,
-  selectedTableIdx,
-  showTables,
-  blocklistedTables,
-  allowlistedTables,
-  onCommonSettingsClick,
-  onDropConcept,
-  onRemoveConcept,
-  onToggleTable,
-  onSelectTable,
-  onResetTable,
 }) => {
   const { t } = useTranslation();
   const isOnlyOneTableIncluded =
@@ -90,15 +87,20 @@ const MenuColumn: FC<PropsT> = ({
       (!rootConcept?.children || rootConcept.children.length === 0));
 
   return (
-    <FixedColumn className={className} isEmpty={isEmpty}>
+    <div className={fixedColumn({ isEmpty, className })}>
       {isEmpty && (
-        <DimmedNote>{t("queryNodeEditor.emptyMenuColumn")}</DimmedNote>
+        <Heading3 className={dimmedNote()}>
+          {t("queryNodeEditor.emptyMenuColumn")}
+        </Heading3>
       )}
       {nodeIsConceptQueryNode(node) && showTables && (
         <>
-          <CommonSettingsLabel onClick={onCommonSettingsClick}>
+          <Heading3
+            className={commonSettingsLabel()}
+            onClick={onCommonSettingsClick}
+          >
             {t("queryNodeEditor.properties")}
-          </CommonSettingsLabel>
+          </Heading3>
           <HeadingBetween>
             {t("queryNodeEditor.conceptNodeTables")}
           </HeadingBetween>
@@ -133,7 +135,7 @@ const MenuColumn: FC<PropsT> = ({
             onRemoveConcept={onRemoveConcept}
           />
         )}
-    </FixedColumn>
+    </div>
   );
 };
 

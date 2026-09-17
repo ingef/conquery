@@ -93,6 +93,13 @@ pnpm fix     # same, but writes formatting and safe fixes
 ```
 CI runs `biome ci`, which is the read-only equivalent of `pnpm check`.
 
+**Unused code**
+
+[knip](https://knip.dev) reports unused files, exports and dependencies, with its defaults and no config file. CI runs it too:
+```
+pnpm knip
+```
+
 ## Glossary
 
 Depending on the use-case, we're still calling the same concepts differently sometimes. Here is an explanation.
@@ -109,8 +116,8 @@ Depending on the use-case, we're still calling the same concepts differently som
 - **Query Node / Element** – one node in the query editor, either a concept or a previous query
 - **Previous Query / Stored Query** – a previous query that has been saved in the backend database for future use (as itself or within other queries)
 - **Dataset / Database** – data set that is used to ask queries against
-- **Tooltip** – small area (below), that contains additional information on hovering over certain elements
-- **Additional Infos** – data (key-value pairs) that are part of concept nodes and can be displayed inside the tooltip
+- **Info Pane** – collapsible area on the left, that contains additional information on hovering over certain elements
+- **Additional Infos** – data (key-value pairs) that are part of concept nodes and can be displayed inside the info pane
 
 ## Technical Explanations (mini ADRs – "architectural decision records")
 
