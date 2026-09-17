@@ -1,4 +1,4 @@
-import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { ChevronDownIcon } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import {
   type Key,
@@ -21,7 +21,6 @@ import {
   useFocusFirstOption,
 } from "./ComboBoxParts";
 import { FieldError } from "./FieldError";
-import { Icon } from "./Icon";
 import { Input, InputButton } from "./Input";
 import { type FieldLabelProps, Label } from "./Label";
 import { Popover } from "./Popover";
@@ -126,7 +125,7 @@ export const ComboBoxField = ({
             onPointerDown={openOnPress(stateRef)}
             addonRight={
               <InputButton data-test-id="selection-dropdown">
-                <Icon icon={faChevronDown} />
+                <ChevronDownIcon />
               </InputButton>
             }
           />

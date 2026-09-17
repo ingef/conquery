@@ -1,6 +1,4 @@
 @import "tailwindcss";
-/* into a layer so tailwind utilities can size icons */
-@import "@fortawesome/fontawesome-svg-core/styles.css" layer(base);
 
 @theme {
   --color-primary-50: #dadedb;
@@ -42,6 +40,11 @@
   /* the absolutely positioned app header; the panes start below it */
   --spacing-header: 40px;
 
+  /* every icon, see ui-components/Icon. The stroke is in lucide's 24 unit
+     grid like its strokeWidth prop, so it grows with a larger icon */
+  --icon-size: 16px;
+  --icon-stroke-width: 3;
+
   --animate-spin-fast: spin 0.5s linear infinite;
   --animate-blink: blink 1s linear infinite;
   --animate-fade-in: fade-in 0.1s ease-out;
@@ -76,6 +79,26 @@
 
   p {
     line-height: 1.5;
+  }
+
+  /* in the base layer, so a size-* or stroke-* utility on one icon wins */
+  .lucide {
+    display: inline-block;
+    flex-shrink: 0;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    stroke-width: var(--icon-stroke-width);
+    vertical-align: -0.125em;
+  }
+
+  /* the "on" look of an icon that shows a state: a tint, the icon's lines stay readable */
+  .lucide[data-filled="true"] {
+    fill: currentColor;
+    fill-opacity: 0.3;
+  }
+
+  .lucide-loader-circle {
+    animation: var(--animate-spin-fast);
   }
 
   button,

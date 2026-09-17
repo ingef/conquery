@@ -1,8 +1,4 @@
-import {
-  faChevronDown,
-  faSpinner,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
+import { ChevronDownIcon, LoaderCircleIcon, XIcon } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import {
   ButtonContext,
@@ -42,7 +38,6 @@ import {
 } from "./ComboBoxParts";
 import DropzoneWithFileInput from "./DropzoneWithFileInput";
 import { FieldError } from "./FieldError";
-import { Icon } from "./Icon";
 import { InputAddons, InputButton, inputControl, inputFrame } from "./Input";
 import { type FieldLabelProps, Label } from "./Label";
 import { Popover } from "./Popover";
@@ -277,7 +272,7 @@ export const ComboBoxMultiField = ({
                           >
                             <OptionLabel option={item} />
                             <Button slot="remove" intent="tertiary" size="sm">
-                              <Icon icon={faTimes} />
+                              <XIcon />
                             </Button>
                           </Tag>
                         )}
@@ -303,7 +298,7 @@ export const ComboBoxMultiField = ({
               />
             </div>
             <InputAddons>
-              {loading && <Icon icon={faSpinner} />}
+              {loading && <LoaderCircleIcon />}
               {!loading && (query || value.length > 0) && (
                 // the combobox hands its open behavior to every Button inside; this one clears
                 <ButtonContext.Provider value={null}>
@@ -312,12 +307,12 @@ export const ComboBoxMultiField = ({
                     isDisabled={isDisabled}
                     onPress={clear}
                   >
-                    <Icon icon={faTimes} />
+                    <XIcon />
                   </InputButton>
                 </ButtonContext.Provider>
               )}
               <InputButton>
-                <Icon icon={faChevronDown} />
+                <ChevronDownIcon />
               </InputButton>
             </InputAddons>
           </Group>
@@ -363,7 +358,7 @@ export const ComboBoxMultiField = ({
                   onLoadMore={() => onLoadMore(query)}
                 >
                   <div className={loadingRow()}>
-                    <Icon icon={faSpinner} />
+                    <LoaderCircleIcon />
                   </div>
                 </ListBoxLoadMoreItem>
               )}

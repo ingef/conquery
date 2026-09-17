@@ -1,4 +1,4 @@
-import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { CheckIcon, LoaderCircleIcon } from "lucide-react";
 import { type FormEvent, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -7,7 +7,6 @@ import { usePostLogin } from "../api/api";
 import { useAppTheme } from "../app-theme-context";
 import ErrorMessage from "../error-message/ErrorMessage";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import { TextField } from "../ui-components/TextField";
 
 import { AuthTokenContext } from "./AuthTokenProvider";
@@ -114,10 +113,7 @@ const LoginPage = () => {
               size="lg"
               type="submit"
             >
-              <Icon
-                icon={loading ? faSpinner : faCheck}
-                className="text-white"
-              />
+              {loading ? <LoaderCircleIcon /> : <CheckIcon />}
               {t("login.submit")}
             </Button>
           </div>

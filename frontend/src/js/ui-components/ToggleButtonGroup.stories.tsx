@@ -1,14 +1,13 @@
-import {
-  faBullseye,
-  faCircle,
-  faCircleDot,
-  faEuroSign,
-  faFolder,
-  faInfo,
-} from "@fortawesome/free-solid-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
+import {
+  CircleDotIcon,
+  CircleIcon,
+  EuroIcon,
+  FolderIcon,
+  InfoIcon,
+  TargetIcon,
+} from "lucide-react";
 
-import { Icon } from "./Icon";
 import { ToggleButton } from "./ToggleButton";
 import { ToggleButtonGroup } from "./ToggleButtonGroup";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
@@ -41,9 +40,9 @@ const regions = [
 ];
 
 const detailLevels = [
-  { id: "summary", icon: faCircle, label: "Summary" },
-  { id: "detail", icon: faCircleDot, label: "Detail" },
-  { id: "full", icon: faBullseye, label: "Everything" },
+  { id: "summary", icon: CircleIcon, label: "Summary" },
+  { id: "detail", icon: CircleDotIcon, label: "Detail" },
+  { id: "full", icon: TargetIcon, label: "Everything" },
 ];
 
 /** exactly one button selected, in every size */
@@ -121,15 +120,15 @@ export const MultipleSelection: Story = {
       aria-label="Content"
     >
       <ToggleButton id="money">
-        <Icon icon={faEuroSign} />
+        <EuroIcon />
         money
       </ToggleButton>
       <ToggleButton id="concept">
-        <Icon icon={faFolder} />
+        <FolderIcon />
         concepts
       </ToggleButton>
       <ToggleButton id="rest">
-        <Icon icon={faInfo} />
+        <InfoIcon />
         other
       </ToggleButton>
     </ToggleButtonGroup>
@@ -146,10 +145,10 @@ export const VerticalIcons: Story = {
       defaultSelectedKeys={["summary"]}
       aria-label="Detail level"
     >
-      {detailLevels.map(({ id, icon, label }) => (
+      {detailLevels.map(({ id, icon: LevelIcon, label }) => (
         <TooltipTrigger key={id}>
           <ToggleButton id={id} aria-label={label}>
-            <Icon icon={icon} />
+            <LevelIcon />
           </ToggleButton>
           <Tooltip placement="right">{label}</Tooltip>
         </TooltipTrigger>

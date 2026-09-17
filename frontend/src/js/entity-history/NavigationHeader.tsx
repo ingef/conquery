@@ -1,4 +1,4 @@
-import { faSliders } from "@fortawesome/free-solid-svg-icons";
+import { SlidersHorizontalIcon } from "lucide-react";
 import { type Dispatch, memo, type SetStateAction } from "react";
 import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -8,7 +8,6 @@ import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { Heading3 } from "../headings/Headings";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import ProgressBar from "../ui-components/ProgressBar";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
@@ -85,7 +84,7 @@ export const NavigationHeader = memo(
                 aria-label={t("history.settings.headline")}
                 intent="tertiary"
               >
-                <Icon icon={faSliders} />
+                <SlidersHorizontalIcon />
               </Button>
               <SettingsModal
                 setEntityStatusOptions={setEntityStatusOptions}

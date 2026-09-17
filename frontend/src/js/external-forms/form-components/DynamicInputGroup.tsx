@@ -1,9 +1,8 @@
-import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { PlusIcon, XIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { Button } from "../../ui-components/Button";
-import { Icon } from "../../ui-components/Icon";
 
 interface PropsT {
   className?: string;
@@ -60,7 +59,7 @@ const DynamicInputGroup = ({
                 aria-label={t("common.delete")}
                 onPress={() => onRemoveClick(idx)}
               >
-                <Icon icon={faTimes} />
+                <XIcon />
               </Button>
             </div>
           )}
@@ -73,7 +72,7 @@ const DynamicInputGroup = ({
           aria-label={t("common.add")}
           onPress={onAddClick}
         >
-          <Icon icon={faPlus} />
+          <PlusIcon />
         </Button>
       )}
     </div>

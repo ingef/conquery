@@ -1,4 +1,4 @@
-import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { CheckIcon, LoaderCircleIcon } from "lucide-react";
 import { type FormEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -6,7 +6,6 @@ import type { SelectOptionT } from "../api/types";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import { Button } from "./Button";
 import { ComboBoxMultiField } from "./ComboBoxMultiField";
-import { Icon } from "./Icon";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 const form = tv({
@@ -69,7 +68,7 @@ const EditableTagsForm = ({
             type="submit"
             isDisabled={!!loading}
           >
-            <Icon icon={loading ? faSpinner : faCheck} />
+            {loading ? <LoaderCircleIcon /> : <CheckIcon />}
           </Button>
           <Tooltip>{t("common.save")}</Tooltip>
         </TooltipTrigger>

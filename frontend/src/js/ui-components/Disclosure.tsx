@@ -1,4 +1,4 @@
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { ChevronRightIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import {
   Heading,
@@ -11,7 +11,6 @@ import {
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
-import { Icon } from "./Icon";
 import InfoTooltip from "./InfoTooltip";
 
 const root = tv({
@@ -89,7 +88,7 @@ export const DisclosureTitle = ({
   <div className={title()}>
     <Heading className={heading()}>
       <RacButton slot="trigger" className={trigger()}>
-        <Icon icon={faChevronRight} className={chevron()} />
+        <ChevronRightIcon className={chevron()} />
         {children}
       </RacButton>
     </Heading>

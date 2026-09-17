@@ -1,4 +1,4 @@
-import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { CheckIcon, LoaderCircleIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -6,7 +6,6 @@ import type { SelectOptionT, UserGroupT } from "../../api/types";
 import type { StateT } from "../../app/reducers";
 import { Button } from "../../ui-components/Button";
 import { ComboBoxMultiField } from "../../ui-components/ComboBoxMultiField";
-import { Icon } from "../../ui-components/Icon";
 import { Modal, ModalBody, ModalHeader } from "../../ui-components/Modal";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import {
@@ -159,7 +158,7 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
                   type="submit"
                   isDisabled={buttonDisabled}
                 >
-                  <Icon icon={loading ? faSpinner : faCheck} />
+                  {loading ? <LoaderCircleIcon /> : <CheckIcon />}
                 </Button>
                 <Tooltip>{shareLabel}</Tooltip>
               </TooltipTrigger>

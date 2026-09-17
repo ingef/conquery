@@ -1,7 +1,4 @@
-import {
-  faChevronLeft,
-  faChevronRight,
-} from "@fortawesome/free-solid-svg-icons";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useState } from "react";
 import type { ReactDatePickerCustomHeaderProps } from "react-datepicker";
 import { useTranslation } from "react-i18next";
@@ -9,7 +6,6 @@ import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../../api/types";
 import { useMonthName, useMonthNames } from "../../common/helpers/dateHelper";
 import { Button } from "../Button";
-import { Icon } from "../Icon";
 import { ToggleButton } from "../ToggleButton";
 
 const root = tv({
@@ -163,7 +159,7 @@ export const CustomHeader = ({
         onPress={decreaseMonth}
         isDisabled={prevMonthButtonDisabled}
       >
-        <Icon icon={faChevronLeft} />
+        <ChevronLeftIcon />
       </Button>
       <YearMonthSelect
         date={date}
@@ -176,7 +172,7 @@ export const CustomHeader = ({
         onPress={increaseMonth}
         isDisabled={nextMonthButtonDisabled}
       >
-        <Icon icon={faChevronRight} />
+        <ChevronRightIcon />
       </Button>
     </div>
   );

@@ -1,13 +1,9 @@
-import {
-  faChartColumn,
-  faDiagramProject,
-} from "@fortawesome/free-solid-svg-icons";
+import { ChartColumnIcon, WorkflowIcon } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../../app/reducers";
-import { Icon } from "../../ui-components/Icon";
 import { ToggleButton } from "../../ui-components/ToggleButton";
 import { ToggleButtonGroup } from "../../ui-components/ToggleButtonGroup";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
@@ -29,12 +25,12 @@ const ProjectItemsTypeFilter = () => {
       { value: "all", label: t("projectItemsFilter.all") },
       {
         value: "queries",
-        label: <Icon icon={faDiagramProject} />,
+        label: <WorkflowIcon />,
         tooltip: t("projectItemsTypeFilter.queries"),
       },
       {
         value: "configs",
-        label: <Icon icon={faChartColumn} />,
+        label: <ChartColumnIcon />,
         tooltip: t("projectItemsTypeFilter.configs"),
       },
     ],

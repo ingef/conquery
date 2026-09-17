@@ -21,16 +21,26 @@ const headline = tv({
     "relative",
     "flex items-center",
     "gap-[10px]",
-    "leading-none",
     "text-gray-800",
     // wins over the size margins: :first-child raises specificity
     "first:mt-0",
   ],
   variants: {
+    // leading follows the font size, the class merger drops one that precedes it
     size: {
-      h1: ["text-xl", "font-normal", "mt-5 mb-[5px] ml-0"],
-      h2: ["text-base", "font-normal", "mt-[10px] mb-[3px] ml-[10px]"],
-      h3: ["text-sm", "font-bold", "mt-[10px] mb-[3px] ml-[10px]"],
+      h1: ["text-xl", "leading-none", "font-normal", "mt-5 mb-[5px] ml-0"],
+      h2: [
+        "text-base",
+        "leading-none",
+        "font-normal",
+        "mt-[10px] mb-[3px] ml-[10px]",
+      ],
+      h3: [
+        "text-sm",
+        "leading-none",
+        "font-bold",
+        "mt-[10px] mb-[3px] ml-[10px]",
+      ],
     },
   },
   defaultVariants: { size: "h1" },

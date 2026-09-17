@@ -1,5 +1,5 @@
-import { faCalendarMinus } from "@fortawesome/free-regular-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
+import { CalendarMinusIcon } from "lucide-react";
 import { type DOMAttributes, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -15,7 +15,6 @@ import Dropzone, {
   type DropzoneProps,
   type PossibleDroppableObject,
 } from "../ui-components/Dropzone";
-import { Icon } from "../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -107,8 +106,8 @@ const InvisibleDropzone = (
 
 const previousQueryLabel = tv({
   base: [
-    "leading-[1.2]",
     "text-xs",
+    "leading-[1.2]",
     "uppercase",
     "font-bold",
     "text-primary-500",
@@ -117,8 +116,8 @@ const previousQueryLabel = tv({
 
 const rootNode = tv({
   base: [
-    "leading-none",
     "text-xs",
+    "leading-none",
     "uppercase",
     "font-bold",
     "text-primary-500",
@@ -301,10 +300,7 @@ export function TreeNode({
                 )}
                 {tree.dates?.excluded && (
                   <div className={dates()}>
-                    <Icon
-                      icon={faCalendarMinus}
-                      className="mr-[10px] text-red"
-                    />
+                    <CalendarMinusIcon className="mr-[10px] text-red" />
                     {t("editorV2.datesExcluded")}
                   </div>
                 )}

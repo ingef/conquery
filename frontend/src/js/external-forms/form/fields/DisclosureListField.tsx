@@ -1,4 +1,4 @@
-import { faAdd, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { PlusIcon, XIcon } from "lucide-react";
 import { type ComponentProps, useCallback, useEffect, useState } from "react";
 import type { Key } from "react-aria-components";
 import { useFieldArray } from "react-hook-form";
@@ -12,7 +12,6 @@ import {
   DisclosurePanel,
   DisclosureTitle,
 } from "../../../ui-components/Disclosure";
-import { Icon } from "../../../ui-components/Icon";
 import type { DisclosureListField as DisclosureListFieldT } from "../../config-types";
 import {
   getFieldKey,
@@ -55,7 +54,7 @@ const DisclosureField = ({
               aria-label={t("common.delete")}
               onPress={() => remove(index)}
             >
-              <Icon icon={faTimes} />
+              <XIcon />
             </Button>
           )
         }
@@ -213,7 +212,7 @@ export const DisclosureListField = ({
               );
             }}
           >
-            <Icon icon={faAdd} />
+            <PlusIcon />
             {field.createNewLabel ? field.createNewLabel[locale] : undefined}
           </Button>
         </div>

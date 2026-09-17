@@ -11,15 +11,13 @@ import {
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
-import { Icon } from "./Icon";
-
 export const buttonStyle = tv({
   base: [
     "inline-flex items-center justify-center",
     "shrink-0",
     "rounded",
     "border",
-    "leading-none font-medium whitespace-nowrap",
+    "font-medium whitespace-nowrap",
     "cursor-pointer",
     "transition-[color,background-color,border-color,opacity] duration-100",
     "disabled:cursor-not-allowed disabled:opacity-40",
@@ -45,11 +43,12 @@ export const buttonStyle = tv({
         "hover:text-gray-800 hover:underline",
       ],
     },
-    // every size is a fixed height, so text and icon-only buttons line up
+    // every size is a fixed height, so text and icon-only buttons line up;
+    // leading follows the font size, the class merger drops one that precedes it
     size: {
-      sm: "h-6 px-2 gap-2 text-xs",
-      md: "h-[30px] px-[15px] gap-2 text-sm",
-      lg: "h-9 px-[18px] gap-3 text-base",
+      sm: "h-6 px-2 gap-2 text-xs leading-none",
+      md: "h-[30px] px-[15px] gap-2 text-sm leading-none",
+      lg: "h-9 px-[18px] gap-3 text-base leading-none",
     },
     // an icon-only button is a square
     iconOnly: { true: "px-0" },
@@ -62,7 +61,7 @@ export const buttonStyle = tv({
     {
       intent: "link",
       class:
-        "h-auto px-0 gap-1 leading-[inherit] text-[length:inherit] align-baseline",
+        "h-auto px-0 gap-1 text-[length:inherit] leading-[inherit] align-baseline",
     },
     {
       danger: true,
@@ -96,12 +95,13 @@ export type ButtonProps = CommonProps &
     | { intent: "primary" | "link"; danger?: never }
   );
 
-const isIconOnly = (children: ReactNode) => {
+// lucide icons are forwardRef components, an object type; ours are functions
+const isIcon = (child: ReactNode) =>
+  isValidElement(child) && typeof child.type === "object";
+
+export const isIconOnly = (children: ReactNode) => {
   const items = Children.toArray(children);
-  return (
-    items.length > 0 &&
-    items.every((child) => isValidElement(child) && child.type === Icon)
-  );
+  return items.length > 0 && items.every(isIcon);
 };
 
 /**
@@ -111,8 +111,8 @@ const isIconOnly = (children: ReactNode) => {
  *
  * An icon goes in as a child and takes the button's text color:
  *
- *   <Button intent="primary" onPress={save}><Icon icon={faCheck} />Save</Button>
- *   <Button intent="tertiary" aria-label="Delete"><Icon icon={faTrash} /></Button>
+ *   <Button intent="primary" onPress={save}><CheckIcon />Save</Button>
+ *   <Button intent="tertiary" aria-label="Delete"><TrashIcon /></Button>
  *
  * A button whose only children are icons is square; give it an `aria-label`.
  * `link` is for a button that reads as a text link and sits in flowing text.

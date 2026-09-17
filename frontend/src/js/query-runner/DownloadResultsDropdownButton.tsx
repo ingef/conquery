@@ -1,11 +1,10 @@
-import { faCaretDown, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { ChevronDownIcon, DownloadIcon } from "lucide-react";
 import { memo, useContext, useEffect, useMemo, useState } from "react";
 import { MenuTrigger, Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
-import { Icon } from "../ui-components/Icon";
 import { Menu, MenuItem } from "../ui-components/Menu";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { getUserSettings, storeUserSettings } from "../user/userSettings";
@@ -91,6 +90,9 @@ const DownloadResultsDropdownButton = ({
     return getResultUrl(resultUrls, fileChoice);
   }, [resultUrls, fileChoice]);
 
+  const choice = getFileIcon(urlChoice.url);
+  const ChoiceIcon = choice.icon;
+
   const truncChosenLabel = useMemo(() => {
     return truncate(fileChoice.label);
   }, [fileChoice]);
@@ -103,10 +105,7 @@ const DownloadResultsDropdownButton = ({
             href={`${urlChoice.url}?access_token=${encodeURIComponent(authToken)}`}
           >
             <RacButton className={part({ caret: false })}>
-              <Icon
-                icon={getFileIcon(urlChoice.url).icon}
-                style={{ color: getFileIcon(urlChoice.url).color }}
-              />
+              <ChoiceIcon style={{ color: choice.color }} />
               {truncChosenLabel}
             </RacButton>
           </a>
@@ -116,7 +115,7 @@ const DownloadResultsDropdownButton = ({
       <TooltipTrigger>
         <MenuTrigger>
           <RacButton aria-label={tooltip} className={part({ caret: true })}>
-            <Icon icon={tiny ? faDownload : faCaretDown} />
+            {tiny ? <DownloadIcon /> : <ChevronDownIcon />}
           </RacButton>
           <Menu
             aria-label={t("previousQuery.downloadResults")}
@@ -131,7 +130,7 @@ const DownloadResultsDropdownButton = ({
             }}
           >
             {resultUrls.map((resultUrl) => {
-              const { icon, color } = getFileIcon(resultUrl.url);
+              const { icon: FileTypeIcon, color } = getFileIcon(resultUrl.url);
 
               return (
                 <MenuItem
@@ -140,7 +139,7 @@ const DownloadResultsDropdownButton = ({
                   href={`${resultUrl.url}?access_token=${encodeURIComponent(authToken)}`}
                   textValue={resultUrl.label}
                 >
-                  <Icon icon={icon} style={{ color }} />
+                  <FileTypeIcon style={{ color }} />
                   {truncate(resultUrl.label)}
                 </MenuItem>
               );

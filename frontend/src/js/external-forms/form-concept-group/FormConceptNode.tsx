@@ -1,7 +1,4 @@
-import {
-  faCompressArrowsAlt,
-  faExpandArrowsAlt,
-} from "@fortawesome/free-solid-svg-icons";
+import { Maximize2Icon, Minimize2Icon } from "lucide-react";
 import { useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
@@ -12,7 +9,6 @@ import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import { Button } from "../../ui-components/Button";
 import { HoverNavigatable } from "../../ui-components/HoverNavigatable";
-import { Icon } from "../../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -39,26 +35,26 @@ const node = tv({
 });
 
 const labelText = tv({
-  base: ["m-0", "[word-break:break-word]", "leading-[1.2]", "text-base"],
+  base: ["m-0", "[word-break:break-word]", "text-base", "leading-[1.2]"],
 });
 
 const descriptionText = tv({
   base: [
     "mt-[3px]",
     "[word-break:break-word]",
-    "leading-[1.2]",
     "uppercase",
     "text-xs",
+    "leading-[1.2]",
   ],
 });
 
 const rootNode = tv({
   base: [
     "mb-1",
-    "leading-none",
     "uppercase",
     "font-bold",
     "text-xs",
+    "leading-none",
     "text-primary-500",
     "[word-break:break-word]",
   ],
@@ -168,9 +164,7 @@ const FormConceptNode = ({
                   expand.onClick();
                 }}
               >
-                <Icon
-                  icon={expand.active ? faCompressArrowsAlt : faExpandArrowsAlt}
-                />
+                {expand.active ? <Minimize2Icon /> : <Maximize2Icon />}
               </Button>
               <Tooltip>{t("externalForms.common.concept.expand")}</Tooltip>
             </TooltipTrigger>

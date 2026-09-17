@@ -1,4 +1,4 @@
-import { faUndo } from "@fortawesome/free-solid-svg-icons";
+import { RotateCcwIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { DateRangeT } from "../../api/types";
@@ -6,7 +6,6 @@ import type { DateStringMinMax } from "../../common/helpers/dateHelper";
 import { Button } from "../../ui-components/Button";
 import { CheckboxField } from "../../ui-components/CheckboxField";
 import { DateRangeField } from "../../ui-components/DateRangeField";
-import { Icon } from "../../ui-components/Icon";
 import {
   Modal,
   ModalBody,
@@ -41,7 +40,7 @@ export const DateModal = ({
     return hasActiveDate ? (
       <span className="ml-5">
         <Button intent="link" onPress={onResetDates}>
-          <Icon icon={faUndo} />
+          <RotateCcwIcon />
           {t("queryNodeEditor.reset")}
         </Button>
       </span>

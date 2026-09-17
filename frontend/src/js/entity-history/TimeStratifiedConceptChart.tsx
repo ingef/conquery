@@ -1,4 +1,4 @@
-import { faBan } from "@fortawesome/free-solid-svg-icons";
+import { BanIcon } from "lucide-react";
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -8,7 +8,6 @@ import type {
   TimeStratifiedInfo,
 } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
-import { Icon } from "../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -90,7 +89,7 @@ export const TimeStratifiedConceptChart = ({
     return (
       <div className={container()}>
         <p className={emptyMsg()}>
-          <Icon icon={faBan} className="text-gray-500" />
+          <BanIcon className="text-gray-500" />
           {t("history.noData")}
         </p>
       </div>

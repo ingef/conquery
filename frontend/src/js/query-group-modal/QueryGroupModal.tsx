@@ -1,4 +1,4 @@
-import { faUndo } from "@fortawesome/free-solid-svg-icons";
+import { RotateCcwIcon } from "lucide-react";
 import { Fragment, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,7 +9,6 @@ import type { StandardQueryStateT } from "../standard-query-editor/queryReducer"
 import type { QueryGroupType } from "../standard-query-editor/types";
 import { Button } from "../ui-components/Button";
 import { DateRangeField } from "../ui-components/DateRangeField";
-import { Icon } from "../ui-components/Icon";
 import {
   Modal,
   ModalBody,
@@ -84,7 +83,7 @@ const QueryGroupModal = ({
     return hasActiveDate ? (
       <span className="ml-5">
         <Button intent="link" onPress={onResetAllDates}>
-          <Icon icon={faUndo} />
+          <RotateCcwIcon />
           {t("queryNodeEditor.reset")}
         </Button>
       </span>

@@ -1,7 +1,4 @@
-import {
-  faThumbtack,
-  type IconDefinition,
-} from "@fortawesome/free-solid-svg-icons";
+import { PinIcon } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
@@ -10,8 +7,9 @@ import remarkFlexibleMarkers from "remark-flexible-markers";
 import remarkGfm from "remark-gfm";
 import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
+import { NodeIcon } from "../concept-trees/NodeIcon";
+import type { NodeIconT } from "../model/node";
 import { Highlighter } from "../ui-components/Highlighter";
-import { Icon } from "../ui-components/Icon";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import InfoPaneCollapsed from "./InfoPaneCollapsed";
@@ -55,8 +53,8 @@ const pinnedLabel = tv({
     "flex flex-row items-start",
     "gap-[5px]",
     "m-0",
-    "leading-[1.2]",
     "text-sm",
+    "leading-[1.2]",
   ],
 });
 
@@ -103,7 +101,7 @@ const ConceptLabel = ({
   tackIcon,
 }: {
   label?: string;
-  conceptIcon?: IconDefinition;
+  conceptIcon?: NodeIconT;
   tackIcon?: ReactNode;
 }) => {
   const wordsRaw = useSelector<StateT, string[] | null>(
@@ -114,7 +112,7 @@ const ConceptLabel = ({
 
   return (
     <p className={pinnedLabel()}>
-      {conceptIcon && <Icon icon={conceptIcon} className={typeIcon()} />}
+      {conceptIcon && <NodeIcon icon={conceptIcon} className={typeIcon()} />}
       <span className="grow">
         {label ? (
           <HighlightedText words={words} text={label} />
@@ -194,7 +192,7 @@ const InfoPane = () => {
                   isSelected
                   onChange={onToggleAdditionalInfos}
                 >
-                  <Icon icon={faThumbtack} />
+                  <PinIcon />
                 </ToggleButton>
               )
             }
