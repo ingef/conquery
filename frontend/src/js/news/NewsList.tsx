@@ -32,9 +32,13 @@ const root = tv({
   ],
 });
 
-// in the item's left padding, level with the date, so nothing moves when it fades
+// in the item's left padding, centered on the date line, so nothing moves when it fades
 const unreadMarker = tv({
-  base: ["absolute top-[22px] left-[6px]", "transition-opacity duration-500"],
+  base: [
+    "absolute top-1/2 -left-[14px]",
+    "-translate-y-1/2",
+    "transition-opacity duration-500",
+  ],
   variants: {
     isUnread: { false: "opacity-0" },
   },
@@ -82,10 +86,10 @@ const NewsListItem = ({
 
   return (
     <li className={root()}>
-      <span className={unreadMarker({ isUnread })}>
-        <UnreadDot />
-      </span>
-      <p className="text-xs text-gray-500">
+      <p className="relative text-xs text-gray-500">
+        <span className={unreadMarker({ isUnread })}>
+          <UnreadDot />
+        </span>
         <time dateTime={date}>{dateFormatter.format(parseISO(date))}</time>
         {isUnread && <span className="sr-only">{t("news.unread")}</span>}
       </p>
