@@ -1,11 +1,14 @@
 package com.bakdata.conquery.mode.local;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -21,75 +24,108 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.map.HashedMap;
+import org.jooq.exception.DataAccessException;
 
 @Slf4j
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class UpdateMatchingStatsSqlJob extends Job {
 
-	@ToString.Exclude
-	private final List<Concept<?>> concepts;
-	private final Dataset dataset;
+    @ToString.Exclude
+    private final List<Concept<?>> concepts;
+    private final Dataset dataset;
 
-	@ToString.Exclude
-	private final SqlMatchingStats matchingStats;
+    @ToString.Exclude
+    private final SqlMatchingStats matchingStats;
+    @ToString.Exclude
+    private final Map<ConceptId, MatchingStatsJob> jobsByConcept = new HashMap<>();
 
 
-	@Override
-	public void execute() throws Exception {
+    @Override
+    public void execute() throws Exception {
 
-		log.info("BEGIN collecting SQL matching stats for {}", dataset);
+        log.info("BEGIN collecting SQL matching stats for {}", dataset);
 
-		Stopwatch stopwatch = Stopwatch.createStarted();
+        Stopwatch stopwatch = Stopwatch.createStarted();
 
-		ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(getMatchingStats().getMatchingStatsWorkers()));
+        ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(getMatchingStats().getMatchingStatsWorkers()));
 
-		Map<ConceptId, ListenableFuture<?>> jobsByConcept = new HashedMap<>();
-		Collection<ListenableFuture<?>> jobs = jobsByConcept.values();
+        try {
+            for (Concept<?> concept : concepts) {
+                if (isCancelled()) {
+                    break;
+                }
 
-		for (Concept<?> concept : concepts) {
-			if (concept instanceof TreeConcept) {
-				ListenableFuture<?> job = matchingStats.collectMatchingStatsForConcept((TreeConcept) concept, executorService, getMatchingStats().getMatchingStatsRetries());
+                if (!(concept instanceof TreeConcept treeConcept)) {
+                    continue;
+                }
 
-				job.addListener(
-						() -> {
-							if (job.state().equals(Future.State.FAILED)) {
-								log.warn("FAILED to collect SQL matching stats for {}", concept, job.exceptionNow());
-							}
-						}, MoreExecutors.directExecutor());
+                MatchingStatsJob job = submitMatchingStatsJob(treeConcept, executorService, getMatchingStats().getMatchingStatsRetries());
+                jobsByConcept.put(concept.getId(), job);
+            }
 
-				jobsByConcept.put(concept.getId(), job);
-			}
-		}
+            while (!jobsByConcept.isEmpty() && !isCancelled()) {
+                for (MatchingStatsJob job : new ArrayList<>(jobsByConcept.values())) {
+                    if (isCancelled()) {
+                        break;
+                    }
 
-		while (jobs.stream().anyMatch(job -> job.state().equals(Future.State.RUNNING))) {
-			if (isCancelled()) {
-				for (ListenableFuture<?> job : jobs) {
-					job.cancel(true);
-				}
-			}
+                    try {
+                        job.future().get(30, TimeUnit.SECONDS);
 
-			for (ListenableFuture<?> someJob : jobs) {
-				if (someJob.isDone()) {
-					continue;
-				}
+                        jobsByConcept.remove(job.concept().getId());
+                    } catch (TimeoutException ignored) {
+                        // Check the remaining jobs and cancellation state periodically.
+                    } catch (CancellationException e) {
+                        jobsByConcept.remove(job.concept().getId());
+                    } catch (ExecutionException e) {
+                        Throwable cause = e.getCause();
 
-				try {
-					someJob.get(30, TimeUnit.SECONDS);
-				} catch (Exception e) {
-					// intentionally left blank
-				}
+                        if (cause instanceof DataAccessException && job.remainingRetries() > 0) {
+                            log.debug("Failed to connect to database for concept {}. Retrying with {} retries remaining.", job.concept().getId(), job.remainingRetries() - 1, (Exception) (log.isTraceEnabled() ? cause : null));
 
-				log.debug("WAITING for {} matching stats to finish.", jobs.stream().filter(job -> job.state().equals(Future.State.RUNNING)).count());
-			}
-		}
+                            MatchingStatsJob retry = submitMatchingStatsJob(job.concept(), executorService, job.remainingRetries() - 1);
+                            jobsByConcept.put(job.concept().getId(), retry);
+                        } else {
+                            log.warn("FAILED to collect SQL matching stats for {}", job.concept(), cause);
+                            jobsByConcept.remove(job.concept().getId(), job);
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw e;
+                    }
 
-		log.debug("DONE collecting SQL matching stats for {} within {}", dataset, stopwatch);
-	}
+                    log.debug("WAITING for {} matching stats to finish.", jobsByConcept.size());
+                }
+            }
+        } finally {
+            jobsByConcept.values().forEach(job -> job.future().cancel(true));
+            executorService.shutdownNow();
+        }
 
-	@Override
-	public String getLabel() {
-		return "Collect matching stats for %s (%s concepts)".formatted(dataset.getName(), concepts.size());
-	}
+        log.debug("DONE collecting SQL matching stats for {} within {}", dataset, stopwatch);
+    }
+
+    @Override
+    public void cancel() {
+        jobsByConcept.values().forEach(job -> {
+            if (!job.future().isDone()) {
+                job.future.cancel(true);
+            }
+        });
+        super.cancel();
+    }
+
+    private MatchingStatsJob submitMatchingStatsJob(TreeConcept concept, ListeningExecutorService executorService, int remainingRetries) {
+        ListenableFuture<?> future = executorService.submit(() -> matchingStats.collectMatchingStatsForConcept(concept));
+        return new MatchingStatsJob(concept, future, remainingRetries);
+    }
+
+    @Override
+    public String getLabel() {
+        return "Collect matching stats for %s (%s concepts)".formatted(dataset.getName(), concepts.size());
+    }
+
+    private record MatchingStatsJob(TreeConcept concept, ListenableFuture<?> future, int remainingRetries) {
+    }
 }

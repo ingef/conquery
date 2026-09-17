@@ -21,8 +21,6 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptIdMapping;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Stopwatch;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -206,22 +204,11 @@ public class SqlMatchingStats {
 		return fields;
 	}
 
-	public ListenableFuture<?> collectMatchingStatsForConcept(TreeConcept concept, ListeningExecutorService executorService, int tries) {
-		return executorService.submit(() -> {
-			dslContext.connection(cfg -> {
-				try {
-					SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
-					Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = readStats(concept, matchingStatsStatement);
-					assignStats(matchingStats);
-
-				} catch (DataAccessException e) {
-					log.debug("Failed to connect to database for concept {}. Retrying.", concept.getId(), (Exception) (log.isTraceEnabled() || tries == 0 ? e : null));
-
-					if (tries > 0) {
-						collectMatchingStatsForConcept(concept, executorService, tries - 1);
-					}
-				}
-			});
+	public void collectMatchingStatsForConcept(TreeConcept concept) {
+		dslContext.connection(cfg -> {
+			SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
+			Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = readStats(concept, matchingStatsStatement);
+			assignStats(matchingStats);
 		});
 	}
 
