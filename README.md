@@ -81,9 +81,7 @@ configurations, such as:
 
 ### Java source hygiene
 
-Spotless keeps Java imports deterministic, with static imports first and the same package ordering applied to static
-and normal imports. Wildcard imports are currently allowed. It also removes unused imports, trims trailing whitespace,
-ensures a final newline, and uses Unix line endings. It does not run a Java code formatter.
+We currently use minimal spotless rules, which are checked in the CI.
 
 Apply or check these rules from the repository root:
 
@@ -97,9 +95,6 @@ Install the repository's pre-push check once per clone:
 ```bash
 mvn spotless:install-git-pre-push-hook
 ```
-
-The hook applies corrections and aborts the push so they can be reviewed and committed. CI remains the authoritative
-check.
 
 ### Testing
 

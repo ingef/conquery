@@ -9,6 +9,9 @@ on:
   pull_request:
     paths:
       - "**/*.java"
+      - ".gitattributes"
+      - ".github/workflows/check_java_formatting.yml"
+      - "pom.xml"
 
 jobs:
   source-hygiene:
