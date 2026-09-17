@@ -5,7 +5,6 @@ import type { ReactNode } from "react";
 
 import type { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../previous-queries/list/reducer";
-import type { ModeT } from "../ui-components/NumberRangeField";
 
 export interface DatasetT {
   id: string;
@@ -44,14 +43,12 @@ interface FilterBaseT {
 export interface RangeFilterValueT {
   min?: number;
   max?: number;
-  exact?: number;
 }
 export interface RangeFilterT extends FilterBaseT {
   type: "INTEGER_RANGE" | "REAL_RANGE" | "MONEY_RANGE";
   value: RangeFilterValueT | null;
   defaultValue?: RangeFilterValueT;
   unit?: string;
-  mode?: ModeT; // Usually not sent, then default "range" is assumed
   precision?: number;
   // null when unset, the backend serializes every field
   min?: number | null;

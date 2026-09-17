@@ -39,7 +39,6 @@ import {
   setFilterValue,
   setSelects,
   setTableSelects,
-  switchFilterMode,
   toggleExcludeGroup,
   toggleSecondaryIdExclude,
   toggleTable,
@@ -397,26 +396,6 @@ const setNodeSelects = (
         !!value.find((selectedValue) => selectedValue.value === select.id),
     })),
   });
-};
-
-const switchNodeFilterMode = (
-  state: StandardQueryStateT,
-  {
-    andIdx,
-    orIdx,
-    tableIdx,
-    filterIdx,
-    mode,
-  }: ActionType<typeof switchFilterMode>["payload"],
-) => {
-  return setNodeFilterProperties(
-    state,
-    { andIdx, orIdx, tableIdx, filterIdx },
-    {
-      mode,
-      value: null,
-    },
-  );
 };
 
 const resetNodeAllSettings = (
@@ -790,8 +769,6 @@ const query = (
       return resetNodeAllSettings(state, action.payload);
     case getType(resetTable):
       return resetNodeTable(state, action.payload);
-    case getType(switchFilterMode):
-      return switchNodeFilterMode(state, action.payload);
     case getType(toggleTimestamps):
       return onToggleTimestamps(state, action.payload);
     case getType(toggleSecondaryIdExclude):

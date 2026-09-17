@@ -1,5 +1,6 @@
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
-import { type ReactNode, useRef } from "react";
+import { type ReactNode, useId, useRef } from "react";
+import { Group } from "react-aria-components";
 import type ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -74,6 +75,7 @@ export const DateRangeField = ({
   onChange: (value: DateStringMinMax) => void;
 }) => {
   const { t } = useTranslation();
+  const labelId = useId();
 
   const onSetDate = (date: DateStringMinMax) => {
     onChange(date);
@@ -128,9 +130,10 @@ export const DateRangeField = ({
   const isMaxValid = exists(value.max && parseDate(max, displayDateFormat));
 
   return (
-    <div>
+    <Group aria-labelledby={label ? labelId : undefined}>
       {label && (
         <Label
+          id={labelId}
           elementType="span"
           indexPrefix={indexPrefix}
           isDisabled={isDisabled}
@@ -155,9 +158,9 @@ export const DateRangeField = ({
           {labelSuffix}
         </Label>
       )}
-      <div className="flex gap-[10px]">
+      <div className="flex items-start gap-[5px]">
         <DateField
-          label={t("inputDateRange.from")}
+          aria-label={t("inputDateRange.from")}
           isDisabled={isDisabled}
           value={min}
           dateFormat={displayDateFormat}
@@ -172,9 +175,15 @@ export const DateRangeField = ({
           onBlur={(e) => applyDate("min", e.target.value, displayDateFormat)}
           autoFocus={autoFocus}
         />
+        <span
+          aria-hidden
+          className="flex h-[30px] items-center text-sm text-gray-500"
+        >
+          –
+        </span>
         <DateField
           ref={maxRef}
-          label={t("inputDateRange.to")}
+          aria-label={t("inputDateRange.to")}
           isDisabled={isDisabled}
           value={max}
           dateFormat={displayDateFormat}
@@ -188,6 +197,6 @@ export const DateRangeField = ({
           onBlur={(e) => applyDate("max", e.target.value, displayDateFormat)}
         />
       </div>
-    </div>
+    </Group>
   );
 };

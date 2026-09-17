@@ -192,9 +192,6 @@
     }
   },
   "inputRange": {
-    "range": "Range",
-    "exact": "Equals",
-    "exactLabel": "Exact",
     "minLabel": "Min",
     "maxLabel": "Max"
   },
