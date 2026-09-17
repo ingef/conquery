@@ -1,4 +1,4 @@
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { LoaderCircleIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
@@ -7,7 +7,6 @@ import { tv } from "tailwind-variants";
 import type { PreviewStatistics, SecondaryId } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import { closePreview } from "./actions";
 import Charts from "./Charts";
 import DiagramModal from "./DiagramModal";
@@ -123,7 +122,7 @@ export default function Preview() {
           />
         ) : (
           <div className={chartLoadingBlocker()}>
-            <Icon icon={faSpinner} className={spinnerIcon()} />
+            <LoaderCircleIcon className={spinnerIcon()} />
           </div>
         )}
         {popOver && (

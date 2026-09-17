@@ -1,12 +1,11 @@
-import { Children, isValidElement, type ReactNode, type Ref } from "react";
+import { Children, type ReactNode, type Ref } from "react";
 import {
   ToggleButton as RacToggleButton,
   type ToggleButtonProps as RacToggleButtonProps,
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
-import { buttonStyle } from "./Button";
-import { Icon } from "./Icon";
+import { buttonStyle, isIconOnly } from "./Button";
 import { useToggleButtonGroup } from "./ToggleButtonGroup";
 
 // quiet while off, so the selected state stands out: gray text that darkens
@@ -56,14 +55,6 @@ const reserveBoldWidth = (children: ReactNode) =>
     ),
   );
 
-const isIconOnly = (children: ReactNode) => {
-  const items = Children.toArray(children);
-  return (
-    items.length > 0 &&
-    items.every((child) => isValidElement(child) && child.type === Icon)
-  );
-};
-
 /**
  * A button whose look reflects a state that is on or off, in Button's look.
  * react-aria's ToggleButton underneath: `isSelected` / `onChange`, and it
@@ -72,7 +63,7 @@ const isIconOnly = (children: ReactNode) => {
  * state or open an editor for it.
  *
  *   <ToggleButton isSelected={pinned} onChange={setPinned} aria-label="Pin">
- *     <Icon icon={faThumbtack} />
+ *     <PinIcon />
  *   </ToggleButton>
  */
 export const ToggleButton = ({

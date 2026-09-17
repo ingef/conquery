@@ -1,8 +1,8 @@
-import type { IconDefinition } from "@fortawesome/free-solid-svg-icons";
 import { type ActionType, getType } from "typesafe-actions";
 
 import type { DateRangeT } from "../api/types";
 import type { Action } from "../app/actions";
+import type { NodeIconT } from "../model/node";
 
 import {
   displayAdditionalInfos,
@@ -23,8 +23,8 @@ export type AdditionalInfosType = {
   dateRange?: DateRangeT;
   infos?: InfoType[];
   isStructNode?: boolean;
-  icon?: IconDefinition;
-  rootIcon?: IconDefinition;
+  icon?: NodeIconT;
+  rootIcon?: NodeIconT;
   rootLabel?: string;
 };
 

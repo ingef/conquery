@@ -1,4 +1,4 @@
-import { faCopy } from "@fortawesome/free-regular-svg-icons";
+import { CopyIcon } from "lucide-react";
 import {
   createContext,
   Fragment,
@@ -12,7 +12,6 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useSelector } from "react-redux";
 import type { GetFrontendConfigResponseT } from "../api/types";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import {
   Modal,
   ModalBody,
@@ -98,7 +97,7 @@ export const About = memo(() => {
       </ModalBody>
       <ModalFooter>
         <Button intent="secondary" onPress={copyVersionToClipboard}>
-          <Icon icon={faCopy} />
+          <CopyIcon />
           Copy version info
         </Button>
       </ModalFooter>

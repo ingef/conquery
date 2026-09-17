@@ -1,12 +1,10 @@
-import { faCheckSquare, faSquare } from "@fortawesome/free-regular-svg-icons";
-import { faFilter } from "@fortawesome/free-solid-svg-icons";
+import { FunnelIcon, SquareCheckIcon, SquareIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { NodeResetConfig } from "../model/node";
 import { tableHasFilterValues, tableIsDisabled } from "../model/table";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
@@ -82,10 +80,11 @@ const MenuColumnItem = ({
           }}
           size="sm"
         >
-          <Icon
-            icon={includable ? faSquare : faCheckSquare}
-            className="size-5"
-          />
+          {includable ? (
+            <SquareIcon className="size-5" />
+          ) : (
+            <SquareCheckIcon className="size-5" />
+          )}
         </Button>
         <span className="pl-[10px] leading-[20px]">{table.label}</span>
       </div>
@@ -105,7 +104,7 @@ const MenuColumnItem = ({
               onResetTable({ useDefaults: false });
             }}
           >
-            <Icon icon={faFilter} />
+            <FunnelIcon />
           </ToggleButton>
           <Tooltip>{t("queryNodeEditor.clearSettings")}</Tooltip>
         </TooltipTrigger>

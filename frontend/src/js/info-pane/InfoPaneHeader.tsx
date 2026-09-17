@@ -1,10 +1,9 @@
-import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
+import { ChevronLeftIcon } from "lucide-react";
 import { memo } from "react";
 import { Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { tv } from "tailwind-variants";
-import { Icon } from "../ui-components/Icon";
 import { toggleInfoPane } from "./actions";
 
 const header = tv({
@@ -44,7 +43,7 @@ export const InfoPaneHeader = memo(() => {
   return (
     <>
       <RacButton className={toggleButton()} onPress={onToggleInfoPane}>
-        <Icon icon={faAngleLeft} />
+        <ChevronLeftIcon />
       </RacButton>
       <h2 className={header()}>{t("infoPane.headline")}</h2>
     </>

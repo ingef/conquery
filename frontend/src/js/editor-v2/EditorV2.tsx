@@ -1,14 +1,14 @@
-import { faCalendar, faTrashCan } from "@fortawesome/free-regular-svg-icons";
-import {
-  faBan,
-  faCircleNodes,
-  faEdit,
-  faExpandArrowsAlt,
-  faHourglass,
-  faRefresh,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
+import {
+  BanIcon,
+  CalendarIcon,
+  HourglassIcon,
+  Maximize2Icon,
+  RefreshCwIcon,
+  SquarePenIcon,
+  TrashIcon,
+  WaypointsIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
@@ -23,7 +23,6 @@ import type {
 import { Button } from "../ui-components/Button";
 import { ConfirmMenu } from "../ui-components/ConfirmMenu";
 import Dropzone from "../ui-components/Dropzone";
-import { Icon } from "../ui-components/Icon";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { EDITOR_DROP_TYPES, HOTKEYS } from "./config";
@@ -303,7 +302,7 @@ export function EditorV2({
                       onOpenQueryNodeEditor();
                     }}
                   >
-                    <Icon icon={faEdit} />
+                    <SquarePenIcon />
                     {t("editorV2.edit")}
                   </ToggleButton>
                 </KeyboardShortcutTooltip>
@@ -317,7 +316,7 @@ export function EditorV2({
                       onOpen();
                     }}
                   >
-                    <Icon icon={faCalendar} />
+                    <CalendarIcon />
                     {t("editorV2.dates")}
                   </ToggleButton>
                 </KeyboardShortcutTooltip>
@@ -330,7 +329,7 @@ export function EditorV2({
                     isSelected={!!selectedNode.negation}
                     onChange={onNegateClick}
                   >
-                    <Icon icon={faBan} />
+                    <BanIcon />
                     {t("editorV2.negate")}
                   </ToggleButton>
                 </KeyboardShortcutTooltip>
@@ -346,7 +345,7 @@ export function EditorV2({
                       onRotateConnector();
                     }}
                   >
-                    <Icon icon={faCircleNodes} />
+                    <WaypointsIcon />
                     <Connector>{connection}</Connector>
                   </Button>
                 </KeyboardShortcutTooltip>
@@ -361,7 +360,7 @@ export function EditorV2({
                       onOpenTimeModal();
                     }}
                   >
-                    <Icon icon={faHourglass} />
+                    <HourglassIcon />
                     <span>{t("editorV2.timeConnection")}</span>
                   </Button>
                 </KeyboardShortcutTooltip>
@@ -374,7 +373,7 @@ export function EditorV2({
                       onExpand();
                     }}
                   >
-                    <Icon icon={faExpandArrowsAlt} />
+                    <Maximize2Icon />
                     {t("editorV2.expand")}
                   </Button>
                 </KeyboardShortcutTooltip>
@@ -390,7 +389,7 @@ export function EditorV2({
                       onFlip();
                     }}
                   >
-                    <Icon icon={faRefresh} />
+                    <RefreshCwIcon />
                     {t("editorV2.flip")}
                   </Button>
                 </KeyboardShortcutTooltip>
@@ -405,7 +404,7 @@ export function EditorV2({
                       onDelete();
                     }}
                   >
-                    <Icon icon={faTrashCan} />
+                    <TrashIcon />
                     {t("editorV2.delete")}
                   </Button>
                 </KeyboardShortcutTooltip>
@@ -417,7 +416,7 @@ export function EditorV2({
                     confirmationText={t("editorV2.clearConfirm")}
                   >
                     <Button aria-label={t("editorV2.clear")} intent="tertiary">
-                      <Icon icon={faTrash} />
+                      <TrashIcon />
                     </Button>
                   </ConfirmMenu>
                   <Tooltip>{t("editorV2.clear")}</Tooltip>

@@ -137,6 +137,7 @@ Depending on the use-case, we're still calling the same concepts differently som
 - Styling is [Tailwind CSS](https://tailwindcss.com/) v4. Theme tokens (colors, fonts, spacing) are `@theme` variables in `src/index.css`; downstream apps override them with their own `:root` custom properties.
 - Class lists with variants use [tailwind-variants](https://www.tailwind-variants.org/) (`tv()`); a static list that fits one line stays inline in `className`.
 - Base components (buttons, fields, menus, tooltips, modals, tabs) live in `src/js/ui-components` and are built on [react-aria-components](https://react-spectrum.adobe.com/react-aria/). They take no `className`; layout is the parent's job.
+- Icons are [Lucide](https://lucide.dev/) components, rendered directly (`<TrashIcon />`). Size and stroke width are app-wide (`--icon-size`, `--icon-stroke-width` in `src/index.css`); only a picture-like icon gets a `size-*` class. An icon that shows an "on" state takes `data-filled`.
 
 ### State
 

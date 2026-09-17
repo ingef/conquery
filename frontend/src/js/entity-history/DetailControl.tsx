@@ -1,13 +1,12 @@
-import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
-  faBullseye,
-  faCircle,
-  faCircleDot,
-} from "@fortawesome/free-solid-svg-icons";
+  CircleDotIcon,
+  CircleIcon,
+  type LucideIcon,
+  TargetIcon,
+} from "lucide-react";
 import { type Dispatch, memo, type SetStateAction, useMemo } from "react";
 import type { Key } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import { Icon } from "../ui-components/Icon";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { ToggleButtonGroup } from "../ui-components/ToggleButtonGroup";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
@@ -26,22 +25,22 @@ const useButtonConfig = () => {
   const { t } = useTranslation();
   return useMemo(
     (): {
-      icon: IconProp;
+      icon: LucideIcon;
       value: string;
       tooltip: string;
     }[] => [
       {
-        icon: faCircle,
+        icon: CircleIcon,
         value: "summary",
         tooltip: t("history.detail.summary"),
       },
       {
-        icon: faCircleDot,
+        icon: CircleDotIcon,
         value: "detail",
         tooltip: t("history.detail.detail"),
       },
       {
-        icon: faBullseye,
+        icon: TargetIcon,
         value: "full",
         tooltip: t("history.detail.full"),
       },
@@ -63,10 +62,10 @@ export const DetailControl = memo(({ detailLevel, setDetailLevel }: Props) => {
         if (key !== undefined && isDetailLevel(key)) setDetailLevel(key);
       }}
     >
-      {navOptions.map(({ value, icon, tooltip }) => (
+      {navOptions.map(({ value, icon: LevelIcon, tooltip }) => (
         <TooltipTrigger key={value}>
           <ToggleButton id={value} aria-label={tooltip}>
-            <Icon icon={icon} />
+            <LevelIcon />
           </ToggleButton>
           <Tooltip placement="right">{tooltip}</Tooltip>
         </TooltipTrigger>

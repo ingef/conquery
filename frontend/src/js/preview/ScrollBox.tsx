@@ -1,4 +1,4 @@
-import { faArrowUp } from "@fortawesome/free-solid-svg-icons";
+import { ArrowUpIcon } from "lucide-react";
 import {
   type HTMLAttributes,
   type PropsWithChildren,
@@ -8,7 +8,6 @@ import {
 } from "react";
 import { Button as RacButton } from "react-aria-components";
 import { tv } from "tailwind-variants";
-import { Icon } from "../ui-components/Icon";
 
 const root = tv({ base: "overflow-auto" });
 
@@ -59,7 +58,7 @@ export default function ScrollBox({
             scrollBoxRef.current?.scrollTo({ top: 0, behavior: "smooth" })
           }
         >
-          <Icon icon={faArrowUp} />
+          <ArrowUpIcon />
         </RacButton>
       )}
       {children}

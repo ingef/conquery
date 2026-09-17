@@ -1,9 +1,9 @@
 import {
-  faArrowsLeftRightToLine,
-  faHashtag,
-  faMicroscope,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
+  HashIcon,
+  MicroscopeIcon,
+  UnfoldHorizontalIcon,
+  UserIcon,
+} from "lucide-react";
 import type { HTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
@@ -11,7 +11,6 @@ import type { DateRangeT } from "../api/types";
 import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 import { formatDate, parseDate } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
-import { Icon } from "../ui-components/Icon";
 
 const dateText = tv({
   base: [
@@ -93,7 +92,7 @@ const MatchingStats = (props: Props) => {
     <div {...rest}>
       {idLabel && (
         <>
-          <Icon icon={faMicroscope} className={icon()} />
+          <MicroscopeIcon className={icon()} />
           <div className="shrink-0">
             <p className={dateText()}>{idLabel}</p>
             <p className={text({ zero: isZero })}>
@@ -102,7 +101,7 @@ const MatchingStats = (props: Props) => {
           </div>
         </>
       )}
-      <Icon icon={faHashtag} className={icon()} />
+      <HashIcon className={icon()} />
       <div className="shrink-0">
         <p className={numberText({ zero: isZero })}>
           {exists(matchingEntries) ? (
@@ -122,7 +121,7 @@ const MatchingStats = (props: Props) => {
           )}
         </p>
       </div>
-      <Icon icon={faUser} className={icon()} />
+      <UserIcon className={icon()} />
       <div className="shrink-0">
         <p className={numberText({ zero: isZeroEntities })}>
           {exists(matchingEntities) ? (
@@ -142,7 +141,7 @@ const MatchingStats = (props: Props) => {
           )}
         </p>
       </div>
-      <Icon icon={faArrowsLeftRightToLine} className={icon()} />
+      <UnfoldHorizontalIcon className={icon()} />
       <div className="shrink-0">
         <p className={dateText()}>
           {fromDate}

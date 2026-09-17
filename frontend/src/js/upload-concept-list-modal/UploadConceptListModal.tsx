@@ -1,8 +1,8 @@
 import {
-  faCheckCircle,
-  faExclamationCircle,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
+  CircleAlertIcon,
+  CircleCheckIcon,
+  LoaderCircleIcon,
+} from "lucide-react";
 import {
   type FormEvent,
   memo,
@@ -33,7 +33,6 @@ import ScrollableList from "../scrollable-list/ScrollableList";
 import { Button } from "../ui-components/Button";
 import { CheckboxField } from "../ui-components/CheckboxField";
 import { ComboBoxField } from "../ui-components/ComboBoxField";
-import { Icon } from "../ui-components/Icon";
 import {
   Modal,
   ModalBody,
@@ -501,23 +500,17 @@ const UploadConceptListModal = ({
         <div className="mt-[15px] grid gap-5">
           {error && (
             <div className="flex items-center">
-              <Icon
-                icon={faExclamationCircle}
-                className={bigIcon({ kind: "error" })}
-              />
+              <CircleAlertIcon className={bigIcon({ kind: "error" })} />
               {t("uploadConceptListModal.error")}
             </div>
           )}
-          {loading && <Icon icon={faSpinner} className="text-center" />}
+          {loading && <LoaderCircleIcon className="text-center" />}
           {(!!resolvedConcepts || !!resolvedFilters) && (
             <>
               {hasUnresolvedItems && (
                 <div>
                   <p className="m-0">
-                    <Icon
-                      icon={faExclamationCircle}
-                      className={bigIcon({ kind: "error" })}
-                    />
+                    <CircleAlertIcon className={bigIcon({ kind: "error" })} />
                     <span>
                       {t("uploadConceptListModal.unknownCodes", {
                         count: unresolvedItemsCount,
@@ -544,8 +537,7 @@ const UploadConceptListModal = ({
                 <div>
                   {hasResolvedItems && (
                     <>
-                      <Icon
-                        icon={faCheckCircle}
+                      <CircleCheckIcon
                         className={bigIcon({ kind: "success" })}
                       />
                       {t("uploadConceptListModal.resolvedCodes", {

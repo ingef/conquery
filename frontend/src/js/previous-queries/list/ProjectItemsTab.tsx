@@ -1,4 +1,4 @@
-import { faFolderOpen } from "@fortawesome/free-regular-svg-icons";
+import { FolderOpenIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -100,7 +100,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
                 <ProjectItemsFilter />
               </div>
               {items.length === 0 && !loading ? (
-                <EmptyState icon={faFolderOpen}>
+                <EmptyState icon={FolderOpenIcon}>
                   {t("previousQueries.noQueriesFound")}
                 </EmptyState>
               ) : (

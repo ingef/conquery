@@ -1,15 +1,11 @@
-import {
-  faCalendar,
-  faFolder as faFolderRegular,
-  faUser as faUserRegular,
-} from "@fortawesome/free-regular-svg-icons";
-import {
-  faFolder,
-  faMicroscope,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
 import { parseISO } from "date-fns";
 import type { TFunction } from "i18next";
+import {
+  CalendarIcon,
+  FolderIcon,
+  MicroscopeIcon,
+  UserIcon,
+} from "lucide-react";
 import { type Ref, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -24,7 +20,6 @@ import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
 import { Button } from "../../ui-components/Button";
 import { Highlighter } from "../../ui-components/Highlighter";
-import { Icon } from "../../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -146,7 +141,7 @@ const ShareButton = ({
         data-test-id="share"
         onPress={onClick}
       >
-        <Icon icon={isShared ? faUser : faUserRegular} />
+        <UserIcon data-filled={isShared} />
       </Button>
       <Tooltip>
         {
@@ -272,9 +267,7 @@ const ProjectItem = ({
                 onPress={onIndicateEditFolders}
                 isDisabled={!mayEdit}
               >
-                <Icon
-                  icon={folders.length === 0 ? faFolderRegular : faFolder}
-                />
+                <FolderIcon data-filled={folders.length > 0} />
               </Button>
               <Tooltip>{<FoldersTooltip folders={folders} />}</Tooltip>
             </TooltipTrigger>
@@ -287,7 +280,7 @@ const ProjectItem = ({
                     aria-label={t("previousQuery.hasNoDates")}
                     excludeFromTabOrder
                   >
-                    <Icon icon={faCalendar} className="opacity-70 text-red" />
+                    <CalendarIcon className="opacity-70 text-red" />
                   </TooltipTarget>
                   <Tooltip>{t("previousQuery.hasNoDates")}</Tooltip>
                 </TooltipTrigger>
@@ -304,7 +297,7 @@ const ProjectItem = ({
                   size="sm"
                   onPress={() => {}}
                 >
-                  <Icon icon={faMicroscope} />
+                  <MicroscopeIcon />
                 </Button>
                 <Tooltip>{`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}</Tooltip>
               </TooltipTrigger>

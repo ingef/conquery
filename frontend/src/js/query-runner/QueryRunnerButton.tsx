@@ -1,9 +1,8 @@
-import { faPlay, faSpinner, faStop } from "@fortawesome/free-solid-svg-icons";
+import { LoaderCircleIcon, PlayIcon, SquareIcon } from "lucide-react";
 import type { Ref } from "react";
 import { Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
-import { Icon } from "../ui-components/Icon";
 
 const left = tv({
   base: [
@@ -15,7 +14,7 @@ const left = tv({
   variants: {
     running: {
       true: ["bg-white", "border-r border-primary-500"],
-      false: "bg-primary-500",
+      false: "bg-primary-500 text-white",
     },
   },
 });
@@ -47,9 +46,17 @@ const button = tv({
   ],
 });
 
-function getIcon(loading: boolean, running: boolean) {
-  return loading ? faSpinner : running ? faStop : faPlay;
-}
+const RunnerIcon = ({
+  loading,
+  running,
+}: {
+  loading: boolean;
+  running: boolean;
+}) => {
+  if (loading) return <LoaderCircleIcon />;
+
+  return running ? <SquareIcon className="fill-current" /> : <PlayIcon />;
+};
 
 interface Props {
   isStartStopLoading: boolean;
@@ -69,8 +76,6 @@ const QueryRunnerButton = ({
   const { t } = useTranslation();
   const label = isQueryRunning ? t("queryRunner.stop") : t("queryRunner.start");
 
-  const icon = getIcon(isStartStopLoading, isQueryRunning);
-
   return (
     <div className="flex" ref={ref}>
       <RacButton
@@ -80,10 +85,7 @@ const QueryRunnerButton = ({
         data-test-id="query-runner-button"
       >
         <span className={left({ running: isQueryRunning })}>
-          <Icon
-            icon={icon}
-            className={[!isQueryRunning ? "text-white" : undefined]}
-          />
+          <RunnerIcon loading={isStartStopLoading} running={isQueryRunning} />
         </span>
         <span className={runnerLabel()}>{label}</span>
       </RacButton>

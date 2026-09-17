@@ -1,4 +1,4 @@
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { CheckIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { tv } from "tailwind-variants";
@@ -9,7 +9,6 @@ import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import { QueryResultHistoryButton } from "../entity-history/QueryResultHistoryButton";
 import PreviewButton from "../preview/PreviewButton";
-import { Icon } from "../ui-components/Icon";
 import { canViewEntityPreview, canViewQueryPreview } from "../user/selectors";
 import DownloadResultsDropdownButton from "./DownloadResultsDropdownButton";
 
@@ -49,7 +48,7 @@ const QueryResults = ({
     <div className={root()}>
       {isEmpty(resultCount) ? (
         <p className={text()}>
-          <Icon icon={faCheck} className="mr-[10px]" />
+          <CheckIcon className="mr-[10px]" />
           {t("queryRunner.endSuccess")}
         </p>
       ) : (

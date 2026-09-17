@@ -1,10 +1,9 @@
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { XIcon } from "lucide-react";
 import { memo, type Ref } from "react";
 import ReactMarkdown from "react-markdown";
 import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../../api/types";
 import { Button } from "../Button";
-import { Icon } from "../Icon";
 
 const container = tv({
   base: [
@@ -59,7 +58,7 @@ const SelectedItem = ({
           removeSelectedItem(item);
         }}
       >
-        <Icon icon={faTimes} />
+        <XIcon />
       </Button>
     </div>
   );

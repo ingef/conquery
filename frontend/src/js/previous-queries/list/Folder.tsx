@@ -1,9 +1,7 @@
-import { faFolder as faFolderRegular } from "@fortawesome/free-regular-svg-icons";
-import { faFolder } from "@fortawesome/free-solid-svg-icons";
+import { FolderIcon } from "lucide-react";
 import { tv } from "tailwind-variants";
 import { exists } from "../../common/helpers/exists";
 import { Highlighter } from "../../ui-components/Highlighter";
-import { Icon } from "../../ui-components/Icon";
 
 const root = tv({
   base: [
@@ -62,10 +60,7 @@ const Folder = ({
       className={root({ active, special, className })}
       title={folder}
     >
-      <Icon
-        icon={special ? faFolderRegular : faFolder}
-        className="mr-2 text-primary-500"
-      />
+      <FolderIcon data-filled={!special} className="mr-2 text-primary-500" />
       {exists(count) && <span className={resultCount()}>{count}</span>}
       <div className="shrink-0 text-gray-800">
         {!empty && resultWords.length > 0 ? (
