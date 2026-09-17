@@ -24,10 +24,10 @@ const resultCount = tv({
   base: [
     "shrink-0",
     "inline-flex items-center justify-center",
-    "leading-none",
     "py-[2px]",
     "mr-[5px]",
     "text-xs",
+    "leading-none",
     "rounded",
     "text-primary-500",
     "font-bold",
