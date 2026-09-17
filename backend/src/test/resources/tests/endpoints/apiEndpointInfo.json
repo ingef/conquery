@@ -95,6 +95,11 @@
     "clazz": "DatasetQueryResource"
   },
   {
+    "method": "GET",
+    "path": "/datasets/{dataset}/queries/default-tags",
+    "clazz": "DatasetQueryResource"
+  },
+  {
     "method": "PATCH",
     "path": "/queries/{query}",
     "clazz": "QueryResource"
