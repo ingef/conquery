@@ -78,7 +78,9 @@ export const ComboBoxStateBridge = ({
 }: {
   stateRef: ComboBoxStateRef;
 }) => {
-  stateRef.current = useContext(ComboBoxStateContext);
+  const state = useContext(ComboBoxStateContext);
+  // the combobox renders its children once more in a hidden pass without the state
+  if (state) stateRef.current = state;
   return null;
 };
 
@@ -86,7 +88,10 @@ export const ComboBoxStateBridge = ({
 export const openOnPress =
   (stateRef: ComboBoxStateRef) => (e: PointerEvent<HTMLInputElement>) => {
     const state = stateRef.current;
-    if (e.button === 0 && state && !state.isOpen) state.open(null, "manual");
+    if (e.button !== 0 || e.currentTarget.disabled || !state || state.isOpen) {
+      return;
+    }
+    state.open(null, "manual");
   };
 
 /** while typing, the first option that can be picked is focused, so Enter picks it */

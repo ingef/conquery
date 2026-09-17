@@ -139,7 +139,11 @@ const DropzoneWithFileInput = <
           />
           {showImportButton && onImportLines && (
             <div className={importButton({ outside: !!importButtonOutside })}>
-              <Button intent="link" onPress={() => setImportModalOpen(true)}>
+              <Button
+                intent="link"
+                excludeFromTabOrder
+                onPress={() => setImportModalOpen(true)}
+              >
                 {t("common.import")}
               </Button>
             </div>
