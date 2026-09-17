@@ -28,7 +28,7 @@ export const OnAButton: Story = {
       <Button intent="secondary" aria-label="News, 2 unread">
         <MegaphoneIcon />
       </Button>
-      <span className="absolute top-[5px] right-[5px] rounded-full ring-2 ring-white group-hover:ring-gray-50">
+      <span className="absolute top-[3px] right-[3px] rounded-full ring-2 ring-white group-hover:ring-gray-50">
         <UnreadDot />
       </span>
     </span>
