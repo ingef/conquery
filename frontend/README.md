@@ -5,6 +5,7 @@
 - vite
 - typescript
 - react / redux
+- tailwind css / react-aria-components
 - simple express.js server for a mock api
 - keycloak server for authentication, local setup using docker-compose
 
@@ -126,10 +127,9 @@ Depending on the use-case, we're still calling the same concepts differently som
 
 ### Styles
 
-- Currently, we're mostly using Emotion for theming and styles.
-- The plan is to slowly migrate to [Tailwind CSS](https://tailwindcss.com/) and [tailwind-styled-components](https://github.com/MathiasGilson/Tailwind-Styled-Component).
-- New styles should be written using tailwind.
-- Reasoning: Theming with Emotion is verbose, Emotion's "styled" is less TypeScript compatible in some edge cases like generic component props (see usage of Dropzone). But the main reason for migrating to tailwind, of course, is that tailwind means a lot less boilerplate code. It also allows for more consistent styling and offers a great dev UX.
+- Styling is [Tailwind CSS](https://tailwindcss.com/) v4. Theme tokens (colors, fonts, spacing) are `@theme` variables in `src/index.css`; downstream apps override them with their own `:root` custom properties.
+- Class lists with variants use [tailwind-variants](https://www.tailwind-variants.org/) (`tv()`); a static list that fits one line stays inline in `className`.
+- Base components (buttons, fields, menus, tooltips, modals, tabs) live in `src/js/ui-components` and are built on [react-aria-components](https://react-spectrum.adobe.com/react-aria/). They take no `className`; layout is the parent's job.
 
 ### State
 
