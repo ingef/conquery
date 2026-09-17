@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.config.auth;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.auth.ProtoRole;
 import com.bakdata.conquery.apiv1.auth.ProtoUser;

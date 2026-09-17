@@ -1,8 +1,8 @@
 package com.bakdata.conquery.apiv1.query.concept.filter;
 
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Set;
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;

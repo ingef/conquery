@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.auth.web;
 
 import static com.bakdata.conquery.models.auth.web.AuthCookieFilter.PRIORITY;
 
+import java.io.IOException;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Priorities;
@@ -14,7 +15,6 @@ import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.UriBuilder;
-import java.io.IOException;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.google.common.base.Strings;

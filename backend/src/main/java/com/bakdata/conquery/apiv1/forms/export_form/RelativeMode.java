@@ -1,8 +1,8 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
+import java.util.function.Consumer;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import java.util.function.Consumer;
 
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;

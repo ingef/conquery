@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.auth.web.csrf;
 
+import java.io.IOException;
+import java.util.Optional;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.core.Cookie;
-import java.io.IOException;
-import java.util.Optional;
 
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
 import lombok.extern.slf4j.Slf4j;

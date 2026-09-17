@@ -1,11 +1,11 @@
 package com.bakdata.conquery.io.jetty;
 
+import java.io.IOException;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.Response;
-import java.io.IOException;
 
 import com.google.common.net.HttpHeaders;
 import org.eclipse.jetty.http.HttpMethod;

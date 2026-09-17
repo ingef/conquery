@@ -2,12 +2,12 @@ package com.bakdata.conquery.io.result.parquet;
 
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 
+import java.util.Locale;
+import java.util.OptionalLong;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
-import java.util.Locale;
-import java.util.OptionalLong;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;

@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.stores.root.StringStore;

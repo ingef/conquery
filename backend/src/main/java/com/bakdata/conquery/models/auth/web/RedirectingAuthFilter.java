@@ -1,5 +1,10 @@
 package com.bakdata.conquery.models.auth.web;
 
+import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -11,11 +16,6 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.Response;
-import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
 
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;

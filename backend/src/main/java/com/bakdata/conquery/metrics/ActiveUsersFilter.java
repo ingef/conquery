@@ -1,16 +1,16 @@
 package com.bakdata.conquery.metrics;
 
+import java.security.Principal;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Optional;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.PreMatching;
-import java.security.Principal;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Optional;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;

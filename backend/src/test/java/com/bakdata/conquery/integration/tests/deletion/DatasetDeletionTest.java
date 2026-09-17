@@ -4,8 +4,8 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondar
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import jakarta.ws.rs.WebApplicationException;
 import java.util.stream.Stream;
+import jakarta.ws.rs.WebApplicationException;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;

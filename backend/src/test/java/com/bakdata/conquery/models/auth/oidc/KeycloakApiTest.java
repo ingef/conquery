@@ -2,9 +2,9 @@ package com.bakdata.conquery.models.auth.oidc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import jakarta.ws.rs.client.ClientBuilder;
 import java.util.Map;
 import java.util.Set;
+import jakarta.ws.rs.client.ClientBuilder;
 
 import com.bakdata.conquery.models.auth.oidc.keycloak.KeycloakApi;
 import com.bakdata.conquery.models.auth.oidc.keycloak.KeycloakGroup;

@@ -1,9 +1,9 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
-import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import jakarta.validation.Valid;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.query.CQElement;

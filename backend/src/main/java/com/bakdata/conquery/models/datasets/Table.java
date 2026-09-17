@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.datasets;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 

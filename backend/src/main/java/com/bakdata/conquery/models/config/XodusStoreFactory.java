@@ -2,10 +2,6 @@ package com.bakdata.conquery.models.config;
 
 import static com.bakdata.conquery.io.storage.StoreMappings.*;
 
-import jakarta.validation.Valid;
-import jakarta.validation.Validator;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -21,6 +17,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import jakarta.validation.Valid;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.cps.CPSType;

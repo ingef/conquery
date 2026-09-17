@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.auth.oidc;
 
-import jakarta.validation.Validator;
 import java.security.PublicKey;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;

@@ -1,8 +1,8 @@
 package com.bakdata.conquery.util.validation;
 
+import java.util.UUID;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import java.util.UUID;
 
 public class UUID4Validator implements ConstraintValidator<ValidUUID4 , UUID> {
 

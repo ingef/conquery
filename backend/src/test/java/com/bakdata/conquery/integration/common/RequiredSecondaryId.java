@@ -1,8 +1,8 @@
 package com.bakdata.conquery.integration.common;
 
-import jakarta.validation.constraints.NotEmpty;
 import java.io.IOException;
 import java.util.Objects;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;

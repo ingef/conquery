@@ -1,10 +1,10 @@
 package com.bakdata.conquery.models.auth.basic;
 
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.HttpHeaders;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Random;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.HttpHeaders;
 import javax.annotation.Nullable;
 
 import com.auth0.jwt.JWT;

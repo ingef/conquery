@@ -2,10 +2,10 @@ package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.net.URI;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.net.URI;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;

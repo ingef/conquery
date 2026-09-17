@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.events;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.IntFunction;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
 import com.bakdata.conquery.models.common.daterange.CDateRange;

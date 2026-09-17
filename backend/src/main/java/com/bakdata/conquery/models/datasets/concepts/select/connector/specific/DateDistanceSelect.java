@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
-import jakarta.validation.constraints.NotNull;
 import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;

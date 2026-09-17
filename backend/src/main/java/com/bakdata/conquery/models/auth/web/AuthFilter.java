@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.auth.web;
 
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotAuthorizedException;
@@ -7,9 +10,6 @@ import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.SecurityContext;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticator;

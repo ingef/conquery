@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.forms.frontendconfiguration;
 
-import jakarta.inject.Inject;
-import jakarta.validation.Validator;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;

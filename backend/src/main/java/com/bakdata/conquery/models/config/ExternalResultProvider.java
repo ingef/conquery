@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.config;
 
-import jakarta.ws.rs.core.UriBuilder;
 import java.util.Collection;
 import java.util.Collections;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.commands.ManagerNode;

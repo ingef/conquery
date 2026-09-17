@@ -4,6 +4,9 @@ import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
 import static com.bakdata.conquery.io.result.ResultUtil.determineCharset;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.OptionalLong;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
@@ -15,9 +18,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.OptionalLong;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.csv.ResultCsvProcessor;

@@ -1,5 +1,7 @@
 package com.bakdata.conquery.resources.admin.ui;
 
+import java.net.URI;
+import java.util.Objects;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -9,8 +11,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
-import java.net.URI;
-import java.util.Objects;
 
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.web.csrf.CsrfTokenSetFilter;

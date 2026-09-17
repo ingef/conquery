@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.config;
 
-import jakarta.validation.Valid;
 import java.util.Map;
+import jakarta.validation.Valid;
 
 import com.bakdata.conquery.mode.local.ConnectionManager;
 import com.bakdata.conquery.mode.local.ManagedConnection;

@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
-import jakarta.ws.rs.core.UriBuilder;
 import java.net.URI;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.models.auth.basic.AccessTokenCreator;
 import com.bakdata.conquery.models.config.auth.IntrospectionDelegatingRealmFactory;

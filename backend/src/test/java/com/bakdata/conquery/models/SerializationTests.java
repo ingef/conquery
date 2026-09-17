@@ -3,7 +3,6 @@ package com.bakdata.conquery.models;
 import static com.bakdata.conquery.util.SerialisationObjectsUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import jakarta.validation.Validator;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -16,6 +15,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Stream;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;

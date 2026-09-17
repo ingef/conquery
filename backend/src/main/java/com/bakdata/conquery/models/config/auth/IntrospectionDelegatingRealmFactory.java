@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.config.auth;
 
-import jakarta.ws.rs.client.Client;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
+import jakarta.ws.rs.client.Client;
 
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;

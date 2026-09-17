@@ -1,8 +1,8 @@
 package com.bakdata.conquery.integration.json;
 
+import java.util.List;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import java.util.List;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.IntegrationUtils;

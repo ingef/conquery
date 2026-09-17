@@ -2,12 +2,12 @@ package com.bakdata.conquery.integration.json;
 
 import static com.bakdata.conquery.integration.common.LoadingUtil.*;
 
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;

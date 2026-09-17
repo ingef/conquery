@@ -1,10 +1,10 @@
 package com.bakdata.conquery.integration.json;
 
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;

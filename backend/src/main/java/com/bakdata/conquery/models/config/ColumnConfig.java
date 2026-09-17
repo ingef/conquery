@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.config;
 
-import jakarta.validation.constraints.NotEmpty;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;

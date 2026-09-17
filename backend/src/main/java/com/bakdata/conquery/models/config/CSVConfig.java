@@ -1,10 +1,10 @@
 package com.bakdata.conquery.models.config;
 
-import jakarta.validation.constraints.NotNull;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import jakarta.validation.constraints.NotNull;
 
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParser;

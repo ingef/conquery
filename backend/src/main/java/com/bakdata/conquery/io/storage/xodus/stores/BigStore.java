@@ -1,7 +1,5 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
-import jakarta.validation.Validator;
-import jakarta.validation.constraints.NotEmpty;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -17,6 +15,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;

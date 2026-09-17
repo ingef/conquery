@@ -1,7 +1,5 @@
 package com.bakdata.conquery.resources.api;
 
-import jakarta.inject.Inject;
-import jakarta.validation.Validator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -13,6 +11,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import jakarta.inject.Inject;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.frontend.FrontendList;

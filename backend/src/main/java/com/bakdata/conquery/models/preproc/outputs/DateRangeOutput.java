@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;

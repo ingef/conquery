@@ -2,9 +2,9 @@ package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import jakarta.validation.Validator;
 import java.util.List;
 import java.util.stream.Stream;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.commands.ManagerNode;

@@ -2,12 +2,12 @@ package com.bakdata.conquery.mode.cluster;
 
 import static com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil.*;
 
-import jakarta.validation.constraints.NotEmpty;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil;

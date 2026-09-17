@@ -3,11 +3,11 @@ package com.bakdata.conquery.command;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.Response;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.ShardCommand;

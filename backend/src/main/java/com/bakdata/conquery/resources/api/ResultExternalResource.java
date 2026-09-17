@@ -4,6 +4,8 @@ package com.bakdata.conquery.resources.api;
 import static com.bakdata.conquery.resources.ResourceConstants.FILENAME;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HeaderParam;
@@ -12,8 +14,6 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import com.bakdata.conquery.io.result.external.ExternalResultProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;

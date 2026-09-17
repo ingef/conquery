@@ -1,12 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import jakarta.inject.Inject;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Validator;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.*;

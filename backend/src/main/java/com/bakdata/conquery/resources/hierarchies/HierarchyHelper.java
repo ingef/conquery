@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.hierarchies;
 
+import java.lang.reflect.Method;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HEAD;
@@ -8,7 +9,6 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.UriBuilder;
-import java.lang.reflect.Method;
 
 import lombok.experimental.UtilityClass;
 

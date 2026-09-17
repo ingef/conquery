@@ -2,12 +2,12 @@ package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import jakarta.ws.rs.core.UriBuilder;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
+import jakarta.ws.rs.core.UriBuilder;
 
 import c10n.C10N;
 import com.bakdata.conquery.integration.common.IntegrationUtils;

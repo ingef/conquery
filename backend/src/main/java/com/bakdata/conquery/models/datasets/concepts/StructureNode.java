@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Stream;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.KeyValue;
 import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;

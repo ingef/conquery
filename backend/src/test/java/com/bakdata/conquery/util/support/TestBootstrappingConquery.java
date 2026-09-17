@@ -1,9 +1,9 @@
 package com.bakdata.conquery.util.support;
 
-import jakarta.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.time.Clock;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.integration.sql.dialect.MockClock;

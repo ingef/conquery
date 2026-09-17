@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.identifiable;
 
-import jakarta.validation.Valid;
 import java.util.Collection;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -9,6 +8,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
+import jakarta.validation.Valid;
 
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.google.common.collect.ForwardingMap;

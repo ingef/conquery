@@ -1,10 +1,10 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import jakarta.validation.constraints.NotEmpty;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;

@@ -2,10 +2,10 @@ package com.bakdata.conquery.resources.admin;
 
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
-import jakarta.servlet.ServletRegistration;
-import jakarta.validation.Validator;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import jakarta.servlet.ServletRegistration;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.freemarker.Freemarker;

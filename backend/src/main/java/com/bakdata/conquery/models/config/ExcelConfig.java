@@ -1,10 +1,10 @@
 package com.bakdata.conquery.models.config;
 
+import java.util.Collections;
+import java.util.Map;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.util.Collections;
-import java.util.Map;
 
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.google.common.collect.ImmutableMap;

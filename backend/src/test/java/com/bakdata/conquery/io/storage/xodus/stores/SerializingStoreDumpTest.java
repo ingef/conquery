@@ -3,10 +3,10 @@ package com.bakdata.conquery.io.storage.xodus.stores;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-import jakarta.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Executors;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;

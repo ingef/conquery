@@ -1,9 +1,9 @@
 package com.bakdata.conquery.io.jetty;
 
+import java.util.NoSuchElementException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
-import java.util.NoSuchElementException;
 
 import lombok.extern.slf4j.Slf4j;
 

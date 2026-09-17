@@ -2,13 +2,13 @@ package com.bakdata.conquery.io.result.json;
 
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
 
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.jackson.Jackson;

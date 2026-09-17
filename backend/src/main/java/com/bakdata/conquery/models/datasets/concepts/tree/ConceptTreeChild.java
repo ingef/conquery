@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.tree;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;

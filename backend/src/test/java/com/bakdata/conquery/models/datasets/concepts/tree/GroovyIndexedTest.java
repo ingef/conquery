@@ -2,13 +2,13 @@ package com.bakdata.conquery.models.datasets.concepts.tree;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import jakarta.validation.Validator;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;

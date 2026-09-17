@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.config.auth;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.RequestHelper;
 import com.bakdata.conquery.io.cps.CPSType;

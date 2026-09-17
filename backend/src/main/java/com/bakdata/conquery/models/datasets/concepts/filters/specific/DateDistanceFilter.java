@@ -1,10 +1,10 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;

@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.config;
 
-import jakarta.validation.constraints.Min;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import jakarta.validation.constraints.Min;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.dropwizard.util.Duration;

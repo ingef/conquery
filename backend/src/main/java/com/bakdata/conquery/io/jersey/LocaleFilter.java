@@ -1,11 +1,11 @@
 package com.bakdata.conquery.io.jersey;
 
+import java.io.IOException;
+import java.util.Locale;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.core.Context;
-import java.io.IOException;
-import java.util.Locale;
 
 import com.bakdata.conquery.models.i18n.I18n;
 

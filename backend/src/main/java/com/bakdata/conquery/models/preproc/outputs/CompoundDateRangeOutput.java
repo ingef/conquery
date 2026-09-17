@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
+import java.util.Arrays;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import java.util.Arrays;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;

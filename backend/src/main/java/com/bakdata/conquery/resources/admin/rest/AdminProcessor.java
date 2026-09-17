@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import jakarta.validation.Validator;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +12,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.jackson.Jackson;

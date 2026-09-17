@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.tree;
 
-import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.validation.Valid;
 import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.models.datasets.Table;

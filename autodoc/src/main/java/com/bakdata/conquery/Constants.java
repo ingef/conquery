@@ -1,5 +1,12 @@
 package com.bakdata.conquery;
 
+import java.net.InetAddress;
+import java.nio.charset.Charset;
+import java.time.ZonedDateTime;
+import java.util.Currency;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -8,13 +15,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
-import java.net.InetAddress;
-import java.nio.charset.Charset;
-import java.time.ZonedDateTime;
-import java.util.Currency;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.IdLabel;

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.commands;
 
-import jakarta.validation.ValidationException;
-import jakarta.validation.Validator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -17,6 +15,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
+import jakarta.validation.ValidationException;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Jackson;

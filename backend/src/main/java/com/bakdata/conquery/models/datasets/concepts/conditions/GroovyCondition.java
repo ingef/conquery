@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.conditions;
 
-import jakarta.validation.constraints.NotEmpty;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.stream.Stream;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;

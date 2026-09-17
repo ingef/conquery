@@ -1,11 +1,11 @@
 package com.bakdata.conquery.apiv1.query;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;

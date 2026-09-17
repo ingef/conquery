@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import jakarta.validation.constraints.NotNull;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;

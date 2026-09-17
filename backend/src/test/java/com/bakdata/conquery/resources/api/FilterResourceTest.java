@@ -4,11 +4,11 @@ import static com.bakdata.conquery.resources.api.FilterResource.MAX_AUTOCOMPLETE
 import static com.bakdata.conquery.resources.api.FilterResource.MAX_AUTOCOMPLETE_TEXT_LENGTH;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Optional;
+import java.util.OptionalInt;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-import java.util.Optional;
-import java.util.OptionalInt;
 
 import org.junit.jupiter.api.Test;
 

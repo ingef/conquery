@@ -3,8 +3,6 @@ package com.bakdata.conquery.api;
 import static com.bakdata.conquery.models.execution.ExecutionState.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import jakarta.validation.Validator;
-import jakarta.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -14,6 +12,8 @@ import java.util.List;
 import java.util.OptionalLong;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;

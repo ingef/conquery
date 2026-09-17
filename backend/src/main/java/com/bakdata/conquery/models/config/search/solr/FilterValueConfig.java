@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.config.search.solr;
 
+import java.util.Collections;
+import java.util.Map;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import java.util.Collections;
-import java.util.Map;
 import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.models.datasets.Column;

@@ -1,9 +1,9 @@
 package com.bakdata.conquery.apiv1;
 
+import java.net.URI;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.MultivaluedMap;
-import java.net.URI;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;

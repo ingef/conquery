@@ -1,7 +1,7 @@
 package com.bakdata.conquery;
 
-import jakarta.validation.Validator;
 import java.time.Clock;
+import jakarta.validation.Validator;
 
 import ch.qos.logback.classic.Level;
 import com.bakdata.conquery.commands.DistributedStandaloneCommand;

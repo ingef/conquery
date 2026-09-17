@@ -1,10 +1,10 @@
 package com.bakdata.conquery.util.support;
 
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.integration.json.TestDataImporter;

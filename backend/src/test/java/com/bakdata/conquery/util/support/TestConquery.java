@@ -4,9 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import jakarta.validation.Validator;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +13,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.DistributedStandaloneCommand;
 import com.bakdata.conquery.commands.ShardNode;

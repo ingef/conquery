@@ -1,10 +1,10 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;

@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
-import jakarta.ws.rs.client.Client;
 import java.net.URI;
+import jakarta.ws.rs.client.Client;
 
 import com.bakdata.conquery.models.auth.OIDCMockServer;
 import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;

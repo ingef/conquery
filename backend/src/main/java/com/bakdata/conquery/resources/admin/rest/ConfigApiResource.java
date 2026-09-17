@@ -1,8 +1,8 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import jakarta.inject.Inject;
 import java.util.Iterator;
 import java.util.List;
+import jakarta.inject.Inject;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.models.api.openapi.ConfigApi;

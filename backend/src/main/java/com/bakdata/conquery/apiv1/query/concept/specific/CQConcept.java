@@ -1,10 +1,10 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
+import java.util.*;
+import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import java.util.*;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.CQElement;

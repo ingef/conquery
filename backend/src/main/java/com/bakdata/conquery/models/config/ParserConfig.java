@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.config;
 
-import jakarta.validation.constraints.NotNull;
 import java.util.*;
+import jakarta.validation.constraints.NotNull;
 
 import lombok.Data;
 import lombok.Setter;

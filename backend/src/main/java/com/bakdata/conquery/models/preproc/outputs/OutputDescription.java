@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
-import jakarta.validation.constraints.NotEmpty;
 import java.util.InputMismatchException;
 import java.util.StringJoiner;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;

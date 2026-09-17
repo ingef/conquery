@@ -3,10 +3,10 @@ package com.bakdata.conquery.integration.tests;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import java.util.stream.Stream;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jetty.IllegalArgumentExceptionMapper;
 import com.bakdata.conquery.io.jetty.JsonValidationExceptionMapper;

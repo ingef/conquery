@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.query.filter.event;
 
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.Range;

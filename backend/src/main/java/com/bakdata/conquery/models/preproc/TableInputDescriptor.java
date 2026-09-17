@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.preproc;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.stream.Stream;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.events.MajorTypeId;

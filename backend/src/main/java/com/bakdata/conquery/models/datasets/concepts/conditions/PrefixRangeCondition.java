@@ -3,8 +3,8 @@ package com.bakdata.conquery.models.datasets.concepts.conditions;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
-import jakarta.validation.constraints.NotEmpty;
 import java.util.Map;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;

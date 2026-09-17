@@ -3,14 +3,14 @@ package com.bakdata.conquery.integration.tests;
 import static com.bakdata.conquery.integration.common.IntegrationUtils.getPostQueryURI;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.net.URI;
+import java.util.Locale;
+import java.util.Map;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
-import java.net.URI;
-import java.util.Locale;
-import java.util.Map;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.integration.IntegrationTest;

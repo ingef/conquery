@@ -1,7 +1,7 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
-import jakarta.ws.rs.core.MediaType;
 import java.io.IOException;
+import jakarta.ws.rs.core.MediaType;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;

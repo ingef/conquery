@@ -2,6 +2,11 @@ package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Stream;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -11,11 +16,6 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.QueryProcessor;
@@ -34,8 +34,6 @@ import com.bakdata.conquery.util.validation.ValidUUID4;
 import io.dropwizard.auth.Auth;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 @Path("datasets/{" + DATASET + "}/queries")
 @Data

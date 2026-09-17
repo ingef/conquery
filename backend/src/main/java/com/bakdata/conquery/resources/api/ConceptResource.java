@@ -2,6 +2,8 @@ package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.Consumes;
@@ -14,8 +16,6 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.EntityTag;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendList;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;

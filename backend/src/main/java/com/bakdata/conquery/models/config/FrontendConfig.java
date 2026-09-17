@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.config;
 
+import java.net.URI;
+import java.net.URL;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import java.net.URI;
-import java.net.URL;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;

@@ -1,9 +1,9 @@
 package com.bakdata.conquery.util.validation;
 
-import jakarta.validation.ConstraintValidatorContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import jakarta.validation.ConstraintValidatorContext;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;

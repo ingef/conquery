@@ -1,10 +1,10 @@
 package com.bakdata.conquery.models.auth.basic;
 
-import jakarta.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Executors;
+import jakarta.validation.Validator;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;

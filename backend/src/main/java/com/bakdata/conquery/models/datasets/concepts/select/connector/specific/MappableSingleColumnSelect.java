@@ -4,9 +4,9 @@ import static com.bakdata.conquery.models.types.ResultType.Primitive.STRING;
 import static com.bakdata.conquery.models.types.ResultType.resolveResultType;
 import static org.jooq.impl.DSL.*;
 
-import jakarta.validation.Valid;
 import java.util.Collections;
 import java.util.Set;
+import jakarta.validation.Valid;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;

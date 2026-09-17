@@ -3,13 +3,13 @@ package com.bakdata.conquery.mode.local;
 import static com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil.*;
 import static org.jooq.impl.DSL.*;
 
-import jakarta.validation.constraints.NotEmpty;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import jakarta.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolver;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.EntityResolverUtil;

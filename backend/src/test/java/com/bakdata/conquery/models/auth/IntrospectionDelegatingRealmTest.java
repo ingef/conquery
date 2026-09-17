@@ -9,11 +9,11 @@ import static org.mockserver.model.HttpResponse.response;
 import static org.mockserver.model.Parameter.param;
 import static org.mockserver.model.ParameterBody.params;
 
-import jakarta.validation.Validator;
 import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import jakarta.validation.Validator;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;

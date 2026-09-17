@@ -1,5 +1,9 @@
 package com.bakdata.conquery.models.auth.web.csrf;
 
+import java.io.IOException;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.Random;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
@@ -7,10 +11,6 @@ import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.NewCookie;
-import java.io.IOException;
-import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.Random;
 
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
 import com.google.common.base.Stopwatch;

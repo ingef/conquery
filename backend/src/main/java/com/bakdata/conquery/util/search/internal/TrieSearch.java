@@ -1,6 +1,5 @@
 package com.bakdata.conquery.util.search.internal;
 
-import jakarta.validation.constraints.Min;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,6 +17,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import jakarta.validation.constraints.Min;
 
 import com.bakdata.conquery.util.search.Search;
 import com.google.common.base.Strings;
