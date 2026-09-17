@@ -30,7 +30,7 @@ RUN ./scripts/build_backend_version.sh `cat git_describe.txt`
 
 
 # Runner
-FROM eclipse-temurin:21-jre-alpine AS runner
+FROM eclipse-temurin:25-jre-alpine AS runner
 
 ## Apache POI needs some extra libs to auto-size columns
 RUN apk add --no-cache fontconfig ttf-dejavu
