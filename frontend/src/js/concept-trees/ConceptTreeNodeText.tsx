@@ -1,13 +1,10 @@
-import {
-  faCaretDown,
-  faCaretRight,
-  type IconDefinition,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
 import type { Ref } from "react";
 import { tv } from "tailwind-variants";
+import type { NodeIconT } from "../model/node";
 import { Highlighter } from "../ui-components/Highlighter";
-
 import { Icon } from "../ui-components/Icon";
+import { NodeIcon } from "./NodeIcon";
 
 // Root with transparent background.
 // relative: needed to fix a drag & drop issue in Safari
@@ -89,7 +86,7 @@ const ConceptTreeNodeText = ({
 
   label: string;
   depth: number;
-  icon: IconDefinition;
+  icon: NodeIconT;
 
   className?: string;
   description?: string;
@@ -124,7 +121,7 @@ const ConceptTreeNodeText = ({
               />
             </span>
             <span className={folderIconContainer()}>
-              <Icon
+              <NodeIcon
                 icon={icon}
                 className={[
                   "text-primary-500",
@@ -136,7 +133,7 @@ const ConceptTreeNodeText = ({
         )}
         {!hasChildren && (
           <span className={dashIconContainer()}>
-            <Icon
+            <NodeIcon
               icon={icon}
               className={[
                 "text-primary-500",

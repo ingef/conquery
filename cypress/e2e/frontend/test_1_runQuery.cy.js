@@ -155,7 +155,7 @@ describe("Reference list", () => {
         cy.get('@queryEditor').find('[data-test-id="query-group"]').contains("My List")
 
         // Clear editor
-        cy.get('@queryEditor').find('svg[data-icon="trash"]').click()
+        cy.get('@queryEditor').find('[data-test-id="clear-query"]').click()
         cy.get('[data-test-id="confirm"]').click()
         cy.get('@queryEditor').find('[data-test-id="text-initial"]')
     })

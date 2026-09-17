@@ -22,6 +22,7 @@ const QueryClearButton = ({ className }: { className?: string }) => {
         >
           <Button
             aria-label={t("queryEditor.clear")}
+            data-test-id="clear-query"
             intent="tertiary"
             size="sm"
             excludeFromTabOrder

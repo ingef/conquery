@@ -1,8 +1,4 @@
-import {
-  faEllipsisH,
-  faRedo,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
+import { faRedo, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import type { ConceptIdT, ConceptT } from "../api/types";
@@ -83,7 +79,7 @@ const ConceptTree = ({
     return (
       <ConceptTreeNodeText
         disabled
-        icon={faEllipsisH}
+        icon="pending"
         label={label}
         depth={depth}
       />
