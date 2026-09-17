@@ -20,7 +20,6 @@ import type {
   FilterWithValueType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-import type { ModeT } from "../ui-components/NumberRangeField";
 
 import ContentColumn from "./ContentColumn";
 import MenuColumn from "./MenuColumn";
@@ -92,11 +91,6 @@ interface QueryNodeEditorPropsT {
     tableIdx: number,
     filterIdx: number,
     value: FilterWithValueType["value"],
-  ) => void;
-  onSwitchFilterMode: (
-    tableIdx: number,
-    filterIdx: number,
-    mode: ModeT,
   ) => void;
   onLoadFilterSuggestions: (
     params: PostPrefixForSuggestionsParams,
@@ -213,7 +207,6 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
               onLoadFilterSuggestions={props.onLoadFilterSuggestions}
               onSetDateColumn={props.onSetDateColumn}
               onSetFilterValue={props.onSetFilterValue}
-              onSwitchFilterMode={props.onSwitchFilterMode}
             />
           </div>
         </div>

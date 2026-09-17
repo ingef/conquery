@@ -212,8 +212,6 @@ const root = tv({
   ],
 });
 
-const noop = () => {};
-
 const SearchEntitiesComponent = ({
   table,
   onLoad,
@@ -238,7 +236,6 @@ const SearchEntitiesComponent = ({
         filters={searchFilters}
         excludeTable={false}
         onSetFilterValue={setFilterValue}
-        onSwitchFilterMode={noop}
         onLoadFilterSuggestions={loadFilterSuggestions}
       />
       <div className="grid">

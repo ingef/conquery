@@ -15,18 +15,41 @@ export default {
 
 type Story = StoryObj<typeof DateRangeField>;
 
+const empty: DateStringMinMax = { min: null, max: null };
+
 // each example keeps its own range and shows what is stored
 const Stateful = ({
-  defaultValue = { min: null, max: null },
+  defaultValue = empty,
+  withReset,
   ...props
-}: Omit<ComponentProps<typeof DateRangeField>, "value" | "onChange"> & {
+}: Omit<
+  ComponentProps<typeof DateRangeField>,
+  "value" | "onChange" | "labelSuffix"
+> & {
   defaultValue?: DateStringMinMax;
+  withReset?: boolean;
 }) => {
   const [value, setValue] = useState<DateStringMinMax>(defaultValue);
+  const hasDate = !!(value.min || value.max);
 
   return (
     <div className="flex flex-col">
-      <DateRangeField value={value} onChange={setValue} {...props} />
+      <DateRangeField
+        value={value}
+        onChange={setValue}
+        labelSuffix={
+          withReset &&
+          hasDate && (
+            <span className="ml-5">
+              <Button intent="link" onPress={() => setValue(empty)}>
+                <Icon icon={faUndo} />
+                Reset
+              </Button>
+            </span>
+          )
+        }
+        {...props}
+      />
       <span className="mt-10 text-xs text-gray-400">
         value: {JSON.stringify(value)}
       </span>
@@ -43,19 +66,12 @@ export const Default: Story = {
   ),
 };
 
-// the app puts a reset link after the label once a date is set
+// the app puts a reset link after the label while a date is set
 export const WithLabelSuffix: Story = {
   render: () => (
     <Stateful
       label="Period"
-      labelSuffix={
-        <span className="ml-5">
-          <Button intent="link">
-            <Icon icon={faUndo} />
-            Reset
-          </Button>
-        </span>
-      }
+      withReset
       defaultValue={{ min: "2024-01-01", max: "2024-03-31" }}
     />
   ),

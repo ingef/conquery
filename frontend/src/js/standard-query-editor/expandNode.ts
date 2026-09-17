@@ -13,7 +13,6 @@ import type {
   TableConfigT,
 } from "../api/types";
 import { DNDType } from "../common/constants/dndTypes";
-import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 import type { TreesT } from "../concept-trees/reducer";
@@ -56,23 +55,10 @@ const isMultiSelectFilterConfig = (
 const mergeRangeFilter = (
   savedFilter: RangeFilterWithValueType,
   matchingFilter: RangeFilterConfig,
-): RangeFilterWithValueType => {
-  const filterDetails =
-    matchingFilter.value &&
-    !isEmpty(matchingFilter.value.min) &&
-    !isEmpty(matchingFilter.value.max) &&
-    matchingFilter.value.min === matchingFilter.value.max
-      ? {
-          mode: "exact" as const,
-          value: { exact: matchingFilter.value.min },
-        }
-      : { mode: "range" as const, value: matchingFilter.value };
-
-  return {
-    ...(savedFilter as RangeFilterWithValueType),
-    ...filterDetails,
-  };
-};
+): RangeFilterWithValueType => ({
+  ...savedFilter,
+  value: matchingFilter.value,
+});
 
 const mergeMultiSelectFilter = ({
   savedFilter,

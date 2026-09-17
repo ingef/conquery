@@ -11,10 +11,7 @@ import type {
 import type { StateT } from "../app/reducers";
 import type { FilterWithValueType } from "../standard-query-editor/types";
 import { ComboBoxField } from "../ui-components/ComboBoxField";
-import {
-  type ModeT,
-  NumberRangeField,
-} from "../ui-components/NumberRangeField";
+import { NumberRangeField } from "../ui-components/NumberRangeField";
 
 import FilterListMultiSelect from "./FilterListMultiSelect";
 
@@ -23,7 +20,6 @@ const container = tv({ base: "mb-[10px]" });
 export interface BaseTableFilterProps {
   className?: string;
   excludeTable?: boolean;
-  onSwitchFilterMode: (filterIdx: number, mode: ModeT) => void;
   onSetFilterValue: (
     filterIdx: number,
     value: FilterWithValueType["value"],
@@ -50,7 +46,6 @@ const TableFilter = ({
   className,
   onLoadFilterSuggestions,
   onSetFilterValue,
-  onSwitchFilterMode,
 }: TableFilterProps) => {
   const currencyConfig = useSelector<StateT, CurrencyConfigT>(
     (state) => state.startup.config.currency,
@@ -128,11 +123,8 @@ const TableFilter = ({
             unit={filter.unit}
             label={filter.label}
             tooltip={filter.tooltip}
-            mode={filter.mode || "range"}
             stepSize={1}
             isDisabled={!!excludeTable}
-            onSwitchMode={(mode) => onSwitchFilterMode(filterIdx, mode)}
-            placeholder="-"
           />
         );
       case "REAL_RANGE":
@@ -147,11 +139,8 @@ const TableFilter = ({
             unit={filter.unit}
             label={filter.label}
             tooltip={filter.tooltip}
-            mode={filter.mode || "range"}
             stepSize={filter.precision || 0.1}
             isDisabled={!!excludeTable}
-            onSwitchMode={(mode) => onSwitchFilterMode(filterIdx, mode)}
-            placeholder="-"
           />
         );
       case "MONEY_RANGE":
@@ -166,10 +155,7 @@ const TableFilter = ({
             unit={filter.unit}
             label={filter.label}
             tooltip={filter.tooltip}
-            mode={filter.mode || "range"}
             isDisabled={!!excludeTable}
-            onSwitchMode={(mode) => onSwitchFilterMode(filterIdx, mode)}
-            placeholder="-"
             currencyConfig={currencyConfig}
           />
         );
