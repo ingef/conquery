@@ -1,11 +1,13 @@
 package com.bakdata.conquery.sql.conquery;
 
+import java.sql.Connection;
 import java.sql.Date;
 import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -137,7 +139,7 @@ public class SqlMatchingStats {
 	}
 
 	@NotNull
-	private Map<ConceptElementId<?>, MatchingStats.Entry> readStats(TreeConcept concept, SelectJoinStep<? extends Record> selectJoinStep) {
+	private Map<ConceptElementId<?>, MatchingStats.Entry> readStats(TreeConcept concept, Connection connection, SelectJoinStep<? extends Record> selectJoinStep) {
 		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = new HashMap<>();
 
 		Stopwatch stopwatch = Stopwatch.createStarted();
@@ -145,10 +147,9 @@ public class SqlMatchingStats {
 		log.info("BEGIN fetching matching stats for {}", concept.getId());
 		log.trace("{}", selectJoinStep);
 
-		try (Cursor<? extends Record> cursor = selectJoinStep.fetchSize(fetchBatchSize).fetchLazy()) {
-
-			for (Record record : cursor) {
-
+		selectJoinStep.attach(dslContext.configuration().derive(connection));
+		try (Stream<? extends Record> records = selectJoinStep.fetchSize(fetchBatchSize).fetchStream()) {
+			records.forEach(record -> {
 				Integer rawId = record.get(CONCEPT_ID_FIELD);
 				ConceptElement<?> resolvedId;
 				if (rawId == null) {
@@ -164,7 +165,7 @@ public class SqlMatchingStats {
 				CDateRange span = CDateRange.of(min != null ? min.toLocalDate() : null, max != null ? max.toLocalDate() : null);
 
 				assignStatsToPath(resolvedId, matchingStats, entity, span);
-			}
+			});
 		}
 
 		log.debug("DONE fetching matching stats for {} within {}", concept.getId(), stopwatch);
@@ -205,9 +206,9 @@ public class SqlMatchingStats {
 	}
 
 	public void collectMatchingStatsForConcept(TreeConcept concept) {
-		dslContext.connection(cfg -> {
+		dslContext.connection(connection -> {
 			SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
-			Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = readStats(concept, matchingStatsStatement);
+			Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = readStats(concept, connection, matchingStatsStatement);
 			assignStats(matchingStats);
 		});
 	}
