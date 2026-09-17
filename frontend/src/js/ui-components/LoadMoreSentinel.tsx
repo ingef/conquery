@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react";
 import { tv } from "tailwind-variants";
 
-import { useIntersectionObserver } from "../../common/useIntersectionObserver";
+import { useIntersectionObserver } from "../common/useIntersectionObserver";
 
 const sentinel = tv({
   base: ["block", "w-px h-px", "bg-transparent", "pointer-events-none"],

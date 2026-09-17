@@ -8,12 +8,15 @@ import type {
   SelectOptionT,
 } from "../api/types";
 import { exists } from "../common/helpers/exists";
-import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
+import { ComboBoxMultiField } from "../ui-components/ComboBoxMultiField";
+import { withoutDuplicates } from "../ui-components/ComboBoxParts";
 import { filterSuggestionToSelectOption } from "./suggestionsHelper";
 import UploadFilterListModal from "./UploadFilterListModal";
 
 const PAGE_SIZE = 25;
+// the backend's caps
 const MAX_AUTOCOMPLETE_TEXT_LENGTH = 500;
+const MAX_AUTOCOMPLETE_PAGE_SIZE = 500;
 
 const getPageToLoad = (
   prevPageLoaded: number | null,
@@ -45,7 +48,7 @@ const FilterListMultiSelect = ({
   tooltip,
   indexPrefix,
   options,
-  disabled,
+  isDisabled,
   allowDropFile,
   creatable,
 
@@ -57,7 +60,7 @@ const FilterListMultiSelect = ({
   label: string;
   indexPrefix?: number;
   options: SelectOptionT[];
-  disabled?: boolean;
+  isDisabled?: boolean;
   tooltip?: string;
   allowDropFile?: boolean;
   creatable?: boolean;
@@ -110,12 +113,18 @@ const FilterListMultiSelect = ({
 
     setLoading(true);
     try {
-      const suggestions = await onLoad(prefix, 0, total, { returnOnly: true });
-      const options = suggestions?.values.map(filterSuggestionToSelectOption);
-
-      if (options) {
-        onChange(options);
+      const all: SelectOptionT[] = [];
+      for (let page = 0; page * MAX_AUTOCOMPLETE_PAGE_SIZE < total; page++) {
+        const suggestions = await onLoad(
+          prefix,
+          page,
+          MAX_AUTOCOMPLETE_PAGE_SIZE,
+          { returnOnly: true },
+        );
+        if (!suggestions) break;
+        all.push(...suggestions.values.map(filterSuggestionToSelectOption));
       }
+      onChange(withoutDuplicates(value, all));
     } catch (e) {
       // fail silently
       console.error(e);
@@ -181,7 +190,7 @@ const FilterListMultiSelect = ({
           onClose={() => setIsModalOpen(false)}
         />
       )}
-      <InputMultiSelect
+      <ComboBoxMultiField
         value={value}
         onChange={onChange}
         label={label}
@@ -189,7 +198,7 @@ const FilterListMultiSelect = ({
         options={options}
         total={total}
         loading={loading}
-        disabled={disabled}
+        isDisabled={isDisabled}
         indexPrefix={indexPrefix}
         creatable={creatable}
         maxInputLength={onLoad ? MAX_AUTOCOMPLETE_TEXT_LENGTH : undefined}
