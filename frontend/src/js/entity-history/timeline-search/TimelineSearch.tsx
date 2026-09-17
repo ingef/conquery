@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDebounce } from "../../common/helpers/useDebounce";
-import BaseInput from "../../ui-components/BaseInput";
+import { TextField } from "../../ui-components/TextField";
 import { useTimelineSearch } from "./timelineSearchState";
 
 export const TimelineSearch = ({ matches }: { matches: number }) => {
@@ -14,12 +14,11 @@ export const TimelineSearch = ({ matches }: { matches: number }) => {
 
   return (
     <div className="w-full flex flex-col pl-3 pr-5 py-3 gap-1">
-      <BaseInput
-        inputType="text"
+      <TextField
+        aria-label={t("history.search")}
         placeholder={t("history.search")}
         value={term}
-        onChange={(value) => setTerm(value as string)}
-        className="w-full"
+        onChange={setTerm}
       />
       {searchTerm && (
         <span className="text-xs text-gray-500">

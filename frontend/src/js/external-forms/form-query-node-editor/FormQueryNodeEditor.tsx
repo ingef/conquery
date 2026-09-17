@@ -10,7 +10,7 @@ import type { NodeResetConfig } from "../../model/node";
 import { tableIsEditable } from "../../model/table";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
-import type { ModeT } from "../../ui-components/InputRange";
+import type { ModeT } from "../../ui-components/NumberRangeField";
 import type { EditedFormQueryNodePosition } from "../form-concept-group/FormConceptGroup";
 
 interface PropsT {

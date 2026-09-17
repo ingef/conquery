@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../../ui-components/Button";
-import InputPlain from "../../ui-components/InputPlain/InputPlain";
 import {
   Modal,
   ModalBody,
   ModalFooter,
   ModalHeader,
 } from "../../ui-components/Modal";
+import { TextField } from "../../ui-components/TextField";
 
 interface Props {
   onSubmit: (folderName: string) => void;
@@ -34,14 +34,11 @@ const AddFolderModal = ({ onSubmit, isValidName }: Props) => {
             <ModalBody>
               <div className="flex flex-col gap-5">
                 <p>{t("addFolderModal.description")}</p>
-                <InputPlain
+                <TextField
                   label={t("addFolderModal.inputLabel")}
                   value={folderName}
-                  inputType="text"
-                  onChange={(value) =>
-                    setFolderName((value as string | null) || "")
-                  }
-                  inputProps={{ autoFocus: true }}
+                  onChange={setFolderName}
+                  autoFocus
                 />
               </div>
             </ModalBody>

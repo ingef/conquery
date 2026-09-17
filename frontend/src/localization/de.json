@@ -202,6 +202,7 @@
     "from": "Von",
     "to": "Bis",
     "placeholder": "Datum wählen",
+    "openCalendar": "Kalender öffnen",
     "today": "Heute",
     "dateFormat": "dd.MM.yyyy",
     "tooltip": {
@@ -345,6 +346,7 @@
   "csvColumnPicker": {
     "loading": "Lese Daten ...",
     "delimiter": "Trennzeichen",
+    "columnType": "Typ von Spalte {{index}}",
     "semicolon": "Semikolon",
     "colon": "Doppelpunkt",
     "comma": "Komma",
@@ -563,6 +565,11 @@
     "connector": "Verknüpfung",
     "timeConnection": "Zeitverknüpfung",
     "editTimeConnection": "Zeitverknüpfung bearbeiten",
+    "timestamp": "Zeitpunkt",
+    "interval": "Abstand",
+    "intervalMin": "Mindestabstand in Tagen",
+    "intervalMax": "Höchstabstand in Tagen",
+    "operator": "Zeitliche Beziehung",
     "delete": "Löschen",
     "expand": "Expandieren",
     "edit": "Details",

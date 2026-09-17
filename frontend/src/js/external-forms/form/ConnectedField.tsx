@@ -34,12 +34,16 @@ import type { DynamicFormValues } from "./Form";
 // };
 
 type Props<T> = T & {
-  children: (props: ControllerRenderProps<DynamicFormValues>) => ReactNode;
+  children: (
+    props: ControllerRenderProps<DynamicFormValues> & { errorMessage?: string },
+  ) => ReactNode;
   control: Control<DynamicFormValues>;
   formField: Field | Tabs;
   defaultValue?: unknown;
   noContainer?: boolean;
   noLabel?: boolean;
+  /** the field shows the error below its input itself */
+  errorInField?: boolean;
 };
 const fieldContainer = tv({
   base: [
@@ -86,6 +90,7 @@ export const ConnectedField = <T extends object>({
   defaultValue,
   noContainer,
   noLabel,
+  errorInField,
   ...props
 }: Props<T>) => {
   const { t } = useTranslation();
@@ -102,11 +107,12 @@ export const ConnectedField = <T extends object>({
   // TODO: REFINE COLORS
   // const color = useColorByField(formField.type);
 
+  const errorMessage = fieldState.error?.message;
   const requiredMsg = t("externalForms.formValidation.isRequired");
-  const isRedError = fieldState.error?.message !== requiredMsg;
+  const isRedError = errorMessage !== requiredMsg;
 
   return noContainer ? (
-    <div>{children({ ...field, ...props })}</div>
+    <div>{children({ ...field, ...props, errorMessage })}</div>
   ) : (
     <div
       className={fieldContainer({
@@ -115,10 +121,12 @@ export const ConnectedField = <T extends object>({
         red: isRedError,
       })}
     >
-      {children({ ...field, ...props })}
-      <div className={errorContainer({ red: isRedError })}>
-        {fieldState.error?.message}
-      </div>
+      {children({ ...field, ...props, errorMessage })}
+      {!errorInField && (
+        <div className={errorContainer({ red: isRedError })}>
+          {errorMessage}
+        </div>
+      )}
     </div>
   );
 };

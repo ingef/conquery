@@ -20,7 +20,7 @@ import type {
   FilterWithValueType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-import type { ModeT } from "../ui-components/InputRange";
+import type { ModeT } from "../ui-components/NumberRangeField";
 
 import ContentColumn from "./ContentColumn";
 import MenuColumn from "./MenuColumn";

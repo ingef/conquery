@@ -8,8 +8,8 @@ import { nodeIsConceptQueryNode } from "../model/node";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type { QueryGroupType } from "../standard-query-editor/types";
 import { Button } from "../ui-components/Button";
+import { DateRangeField } from "../ui-components/DateRangeField";
 import { Icon } from "../ui-components/Icon";
-import InputDateRange from "../ui-components/InputDateRange";
 import {
   Modal,
   ModalBody,
@@ -116,9 +116,7 @@ const QueryGroupModal = ({
             </Fragment>
           ))}
         </div>
-        <InputDateRange
-          large
-          inline
+        <DateRangeField
           autoFocus
           label={t("queryGroupModal.dateRange")}
           labelSuffix={labelSuffix}

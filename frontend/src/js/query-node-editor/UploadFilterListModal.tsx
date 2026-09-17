@@ -9,7 +9,7 @@ import { tv } from "tailwind-variants";
 import type { PostFilterResolveResponseT } from "../api/types";
 import ScrollableList from "../scrollable-list/ScrollableList";
 import { Button } from "../ui-components/Button";
-import { Checkbox } from "../ui-components/Checkbox";
+import { CheckboxField } from "../ui-components/CheckboxField";
 import { Icon } from "../ui-components/Icon";
 import {
   Modal,
@@ -133,12 +133,12 @@ const UploadFilterListModal = ({
               </p>
             )}
             {(resolved.unknownCodes?.length || 0) > 0 && (
-              <Checkbox
+              <CheckboxField
                 isSelected={includeUnresolved}
                 onChange={setIncludeUnresolved}
               >
                 {t("uploadConceptListModal.includeUnresolved")}
-              </Checkbox>
+              </CheckboxField>
             )}
           </div>
         </div>

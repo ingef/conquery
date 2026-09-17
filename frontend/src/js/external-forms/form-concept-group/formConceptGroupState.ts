@@ -21,7 +21,7 @@ import type {
   SelectedSelectorT,
   TableWithFilterValueT,
 } from "../../standard-query-editor/types";
-import type { ModeT } from "../../ui-components/InputRange";
+import type { ModeT } from "../../ui-components/NumberRangeField";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 import {
   initSelectsWithDefaults,

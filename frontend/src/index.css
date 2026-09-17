@@ -161,8 +161,8 @@
    (e.g. the form) can neither clip nor misplace it */
 #datepicker-portal {
   .react-datepicker-popper {
-    /* above the app header (z-3) and panel contents */
-    z-index: 10;
+    /* above modals, like the popovers and tooltips */
+    z-index: 9999;
   }
   .react-datepicker-popper[data-placement^="bottom"] {
     padding-top: 4px;

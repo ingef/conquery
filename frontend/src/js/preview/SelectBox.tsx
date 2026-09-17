@@ -3,7 +3,7 @@ import { type SetStateAction, useMemo, useRef, useState } from "react";
 import { tv } from "tailwind-variants";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import { Icon } from "../ui-components/Icon";
-import { Input } from "../ui-components/InputSelect/InputSelectComponents";
+import { Input } from "../ui-components/InputMultiSelect/InputSelectComponents";
 
 export interface SelectItem {
   label: string;

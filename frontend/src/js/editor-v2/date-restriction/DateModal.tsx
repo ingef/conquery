@@ -4,9 +4,9 @@ import { useTranslation } from "react-i18next";
 import type { DateRangeT } from "../../api/types";
 import type { DateStringMinMax } from "../../common/helpers/dateHelper";
 import { Button } from "../../ui-components/Button";
-import { Checkbox } from "../../ui-components/Checkbox";
+import { CheckboxField } from "../../ui-components/CheckboxField";
+import { DateRangeField } from "../../ui-components/DateRangeField";
 import { Icon } from "../../ui-components/Icon";
-import InputDateRange from "../../ui-components/InputDateRange";
 import {
   Modal,
   ModalBody,
@@ -71,9 +71,7 @@ export const DateModal = ({
       <ModalBody>
         <div className="flex flex-col gap-8">
           <div>{headline}</div>
-          <InputDateRange
-            large
-            inline
+          <DateRangeField
             autoFocus
             label={t("queryGroupModal.dateRange")}
             labelSuffix={labelSuffix}
@@ -83,12 +81,12 @@ export const DateModal = ({
               max: maxDate,
             }}
           />
-          <Checkbox
+          <CheckboxField
             isSelected={excludeFromDates}
             onChange={setExcludeFromDates}
           >
             {t("queryNodeEditor.excludeTimestamps")}
-          </Checkbox>
+          </CheckboxField>
         </div>
       </ModalBody>
       <ModalFooter>

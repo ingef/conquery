@@ -31,16 +31,16 @@ import type { StateT } from "../app/reducers";
 import { nodeIsElement } from "../model/node";
 import ScrollableList from "../scrollable-list/ScrollableList";
 import { Button } from "../ui-components/Button";
-import { Checkbox } from "../ui-components/Checkbox";
+import { CheckboxField } from "../ui-components/CheckboxField";
+import { ComboBoxField } from "../ui-components/ComboBoxField";
 import { Icon } from "../ui-components/Icon";
-import InputPlain from "../ui-components/InputPlain/InputPlain";
-import InputSelect from "../ui-components/InputSelect/InputSelect";
 import {
   Modal,
   ModalBody,
   ModalFooter,
   ModalHeader,
 } from "../ui-components/Modal";
+import { TextField } from "../ui-components/TextField";
 import { DropdownOption } from "./DropdownOption";
 import type { UploadConceptListModalStateT } from "./reducer";
 
@@ -489,8 +489,7 @@ const UploadConceptListModal = ({
     >
       <ModalHeader>{t("uploadConceptListModal.headline")}</ModalHeader>
       <ModalBody>
-        <InputSelect
-          className="w-full"
+        <ComboBoxField
           label={t("uploadConceptListModal.selectConceptRootNode")}
           value={
             selectOptions.find(({ value }) => value === selectedValue) || null
@@ -554,19 +553,16 @@ const UploadConceptListModal = ({
                       })}
                     </>
                   )}
-                  <InputPlain
+                  <TextField
                     label={t("uploadConceptListModal.label")}
-                    fullWidth
-                    inputProps={{
-                      autoFocus: true,
-                    }}
+                    autoFocus
                     value={label}
-                    onChange={(value) => setLabel(value as string)}
+                    onChange={setLabel}
                   />
                 </div>
                 {(resolvedFilters?.unknownCodes?.length || 0) > 0 && (
-                  <Checkbox
-                    infoTooltip={
+                  <CheckboxField
+                    tooltip={
                       mustIncludeUnresolved
                         ? t(
                             "uploadConceptListModal.includeUnresolvedTooltipDisabled",
@@ -578,7 +574,7 @@ const UploadConceptListModal = ({
                     onChange={setIncludeUnresolved}
                   >
                     {t("uploadConceptListModal.includeUnresolved")}
-                  </Checkbox>
+                  </CheckboxField>
                 )}
                 <ModalFooter>
                   <Button intent="primary" type="submit" data-test-id="insert">
