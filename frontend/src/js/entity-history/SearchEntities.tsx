@@ -214,7 +214,7 @@ const root = tv({
 
 const noop = () => {};
 
-export const SearchEntitiesComponent = ({
+const SearchEntitiesComponent = ({
   table,
   onLoad,
 }: {

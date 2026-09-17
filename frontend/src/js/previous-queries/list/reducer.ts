@@ -19,7 +19,7 @@ import {
   removeFolder,
 } from "./actions";
 
-export interface BaseFormConfigT {
+interface BaseFormConfigT {
   formType: string;
   values: Record<string, unknown>;
   label: string;

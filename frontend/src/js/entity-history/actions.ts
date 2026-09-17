@@ -116,8 +116,7 @@ export const loadHistoryData = createAsyncAction(
 
 // HARD-CODED values that make sense with our particular data.
 // TODO: Make this configurable / get a preferred id kind list from backend
-export const PREFERRED_ID_KINDS = ["EGK", "PID"];
-export const DEFAULT_ID_KIND = "EGK";
+const PREFERRED_ID_KINDS = ["EGK", "PID"];
 
 function getPreferredIdColumns(columns: ColumnDescription[]) {
   const findColumnIdxWithIdKind = (kind: string) =>

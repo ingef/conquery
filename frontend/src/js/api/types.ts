@@ -34,7 +34,7 @@ export interface CurrencyConfigT {
   decimalScale: number;
 }
 
-export interface FilterBaseT {
+interface FilterBaseT {
   id: string;
   label: string;
   description?: string;
@@ -59,7 +59,7 @@ export interface RangeFilterT extends FilterBaseT {
 }
 
 export type MultiSelectFilterValueT = SelectOptionT[];
-export interface MultiSelectFilterBaseT extends FilterBaseT {
+interface MultiSelectFilterBaseT extends FilterBaseT {
   unit?: string;
   options: SelectOptionT[];
   total?: number; // Not coming via the API yet, but may come soon, will be set when loading more options via autocomplete
@@ -119,7 +119,7 @@ export interface TableT {
   supportedSecondaryIds?: string[];
 }
 
-export type SelectorResultDataType =
+type SelectorResultDataType =
   | "NUMERIC"
   | "INTEGER"
   | "MONEY"
@@ -136,7 +136,7 @@ export interface SelectorResultType {
     type: Omit<SelectorResultDataType, "LIST">;
   };
 }
-export type SelectorIdT = string;
+type SelectorIdT = string;
 export interface SelectorT {
   id: SelectorIdT;
   label: string;
@@ -166,7 +166,7 @@ export interface ConceptBaseT {
   excludeFromTimeAggregation?: boolean; // To default-exclude some concepts from time aggregation
 }
 
-export type ConceptStructT = ConceptBaseT;
+type ConceptStructT = ConceptBaseT;
 
 export interface ConceptElementT extends ConceptBaseT {
   parent?: ConceptIdT; // If not set, it's nested under a struct node
@@ -189,7 +189,7 @@ export interface FilterConfigT {
   value: RangeFilterValueT | SelectFilterValueT | string | string[];
 }
 
-export interface DateColumnConfigT {
+interface DateColumnConfigT {
   value: string;
 }
 
@@ -241,7 +241,7 @@ interface BaseQueryT {
   type: "CONCEPT_QUERY";
 }
 
-export interface ExternalResolvedQueryT extends BaseQueryT {
+interface ExternalResolvedQueryT extends BaseQueryT {
   // TODO: Add whatever other fields are here
   root: {
     type: "EXTERNAL_RESOLVED";
@@ -252,10 +252,10 @@ export interface AndQueryT extends BaseQueryT {
   secondaryId?: string;
   root: AndNodeT;
 }
-export interface NegationQueryT extends BaseQueryT {
+interface NegationQueryT extends BaseQueryT {
   root: NegationNodeT;
 }
-export interface DateRestrictionQueryT extends BaseQueryT {
+interface DateRestrictionQueryT extends BaseQueryT {
   root: DateRestrictionNodeT;
 }
 export type QueryT =
@@ -278,7 +278,7 @@ export type QueryNodeT =
 // ---------------------------------------
 export type GetDatasetsResponseT = DatasetT[];
 
-export interface TranslatableString {
+interface TranslatableString {
   de: string;
   en?: string;
 }
@@ -324,7 +324,7 @@ export interface PostQueriesResponseT {
   id: QueryIdT;
 }
 
-export type ColumnDescriptionKind =
+type ColumnDescriptionKind =
   | "INTEGER"
   | "NUMERIC"
   | "BOOLEAN"
@@ -335,7 +335,7 @@ export type ColumnDescriptionKind =
   | "LIST[DATE_RANGE]"
   | "LIST[STRING]";
 
-export interface ColumnDescriptionSemanticColumn {
+interface ColumnDescriptionSemanticColumn {
   type: "COLUMN";
   column: string;
 }
@@ -374,7 +374,7 @@ interface ColumnDescriptionSemanticHidden {
   type: "HIDDEN";
 }
 
-export type ColumnDescriptionSemantic =
+type ColumnDescriptionSemantic =
   | ColumnDescriptionSemanticId
   | ColumnDescriptionSemanticSecondaryId
   | ColumnDescriptionSemanticSelect
@@ -422,7 +422,7 @@ export interface GetQueryResponseDoneT {
   previewAvailable: boolean; // Whether /queries/{id}/statistics can be requested (not the case for most forms)
 }
 
-export interface GetQueryRunningResponseT {
+interface GetQueryRunningResponseT {
   status: "RUNNING";
   progress: number | null;
 }
@@ -438,7 +438,7 @@ export interface ErrorResponseT {
   code: string; // Previously used to translate to localized messages, now unused
 }
 
-export type GetQueryResponseStatusT =
+type GetQueryResponseStatusT =
   | GetQueryRunningResponseT
   | GetQueryResponseDoneT
   | GetQueryErrorResponseT;
@@ -552,14 +552,14 @@ export interface EntityInfo {
   semantics: ColumnDescriptionSemantic[];
 }
 
-export interface TimeStratifiedInfoQuarter {
+interface TimeStratifiedInfoQuarter {
   quarter: number;
   values: {
     [label: string]: string;
   };
 }
 
-export interface TimeStratifiedInfoYear {
+interface TimeStratifiedInfoYear {
   year: number;
   values: {
     [label: string]: number | string[];
@@ -590,7 +590,7 @@ export type PostResolveEntitiesResponse = {
   [idKind: string]: string; // idKind is the key, the value is the resolved ID
 }[];
 
-export type BaseStatistics = {
+type BaseStatistics = {
   label: string;
   description?: string;
   count: number;

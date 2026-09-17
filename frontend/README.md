@@ -93,6 +93,13 @@ pnpm fix     # same, but writes formatting and safe fixes
 ```
 CI runs `biome ci`, which is the read-only equivalent of `pnpm check`.
 
+**Unused code**
+
+[knip](https://knip.dev) reports unused files, exports and dependencies, with its defaults and no config file. CI runs it too:
+```
+pnpm knip
+```
+
 ## Glossary
 
 Depending on the use-case, we're still calling the same concepts differently sometimes. Here is an explanation.

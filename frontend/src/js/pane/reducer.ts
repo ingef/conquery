@@ -4,7 +4,7 @@ import type { Action } from "../app/actions";
 
 import { clickPaneTab } from "./actions";
 
-export type LeftPaneTab = "conceptTrees" | "previousQueries" | "formConfigs";
+type LeftPaneTab = "conceptTrees" | "previousQueries" | "formConfigs";
 export interface PanesStateT {
   left: { activeTab: LeftPaneTab };
   right: { activeTab: string };

@@ -8,7 +8,6 @@ function runtimeVar(variable: string): string | null {
 }
 
 // Needs to be explicit import.meta.env.XXX
-const isProductionEnv = runtimeVar("NODE_ENV") || import.meta.env.NODE_ENV;
 const languageEnv =
   runtimeVar("REACT_APP_LANG") || import.meta.env.REACT_APP_LANG;
 const apiUrlEnv =
@@ -31,7 +30,6 @@ const idpClientIdEnv =
   runtimeVar("REACT_APP_IDP_CLIENT_ID") ||
   import.meta.env.REACT_APP_IDP_CLIENT_ID;
 
-export const isProduction = isProductionEnv === "production" || true;
 export const language = languageEnv === "de" ? "de" : "en";
 export const apiUrl = apiUrlEnv || "";
 export const isLoginDisabled = disableLoginEnv === "true";

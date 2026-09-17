@@ -27,6 +27,9 @@ jobs:
       - name: lint and check format
         working-directory: ./frontend
         run: pnpm biome ci
+      - name: find unused files, exports and dependencies
+        working-directory: ./frontend
+        run: pnpm knip
       - name: test
         working-directory: ./frontend
         run: pnpm test
