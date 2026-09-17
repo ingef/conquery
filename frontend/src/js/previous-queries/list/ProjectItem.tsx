@@ -54,9 +54,9 @@ const root = tv({
 const topInfos = tv({
   base: [
     "flex items-center justify-between",
-    "leading-5",
     "text-gray-500",
     "text-xs",
+    "leading-5",
   ],
 });
 

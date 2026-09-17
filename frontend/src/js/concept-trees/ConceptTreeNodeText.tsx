@@ -11,8 +11,9 @@ import { Icon } from "../ui-components/Icon";
 
 // Root with transparent background.
 // relative: needed to fix a drag & drop issue in Safari
+// isolate: keeps other layers out of Chrome's drag image of the row
 const root = tv({
-  base: ["relative", "flex", "cursor-pointer", "my-[2px]", "pr-[15px]"],
+  base: ["relative isolate", "flex", "cursor-pointer", "my-[2px]", "pr-[15px]"],
 });
 
 const text = tv({
@@ -59,8 +60,8 @@ const resultsNumber = tv({
     "shrink-0",
     "px-1 py-[2px]",
     "mr-[5px]",
-    "leading-none",
     "text-xs",
+    "leading-none",
     "rounded",
     "text-primary-500",
     "font-bold",

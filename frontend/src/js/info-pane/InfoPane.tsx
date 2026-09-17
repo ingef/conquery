@@ -55,8 +55,8 @@ const pinnedLabel = tv({
     "flex flex-row items-start",
     "gap-[5px]",
     "m-0",
-    "leading-[1.2]",
     "text-sm",
+    "leading-[1.2]",
   ],
 });
 

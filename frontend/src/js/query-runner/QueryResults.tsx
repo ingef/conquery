@@ -18,11 +18,11 @@ const root = tv({
 });
 
 const text = tv({
-  base: ["m-0", "leading-none", "text-sm"],
+  base: ["m-0", "text-sm", "leading-none"],
 });
 
 const lgText = tv({
-  base: ["m-0", "leading-none", "text-xl", "whitespace-nowrap"],
+  base: ["m-0", "text-xl", "leading-none", "whitespace-nowrap"],
 });
 
 const QueryResults = ({
