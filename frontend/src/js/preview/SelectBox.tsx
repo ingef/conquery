@@ -2,7 +2,6 @@ import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { type SetStateAction, useMemo, useRef, useState } from "react";
 import { tv } from "tailwind-variants";
 import { useClickOutside } from "../common/helpers/useClickOutside";
-import { Icon } from "../ui-components/Icon";
 import { Input } from "../ui-components/InputMultiSelect/InputSelectComponents";
 
 export interface SelectItem {
@@ -89,10 +88,11 @@ export default function SelectBox<T extends SelectItem>({
           spellCheck={false}
         />
         <div className="mr-[5px]">
-          <Icon
-            icon={isOpen ? ChevronUpIcon : ChevronDownIcon}
-            className={arrow()}
-          />
+          {isOpen ? (
+            <ChevronUpIcon className={arrow()} />
+          ) : (
+            <ChevronDownIcon className={arrow()} />
+          )}
         </div>
       </div>
       <div className={list()} ref={clickOutsideRef}>

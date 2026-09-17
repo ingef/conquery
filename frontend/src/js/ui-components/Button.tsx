@@ -11,8 +11,6 @@ import {
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
-import { Icon } from "./Icon";
-
 export const buttonStyle = tv({
   base: [
     "inline-flex items-center justify-center",
@@ -97,12 +95,13 @@ export type ButtonProps = CommonProps &
     | { intent: "primary" | "link"; danger?: never }
   );
 
-const isIconOnly = (children: ReactNode) => {
+// lucide icons are forwardRef components, an object type; ours are functions
+const isIcon = (child: ReactNode) =>
+  isValidElement(child) && typeof child.type === "object";
+
+export const isIconOnly = (children: ReactNode) => {
   const items = Children.toArray(children);
-  return (
-    items.length > 0 &&
-    items.every((child) => isValidElement(child) && child.type === Icon)
-  );
+  return items.length > 0 && items.every(isIcon);
 };
 
 /**
@@ -112,8 +111,8 @@ const isIconOnly = (children: ReactNode) => {
  *
  * An icon goes in as a child and takes the button's text color:
  *
- *   <Button intent="primary" onPress={save}><Icon icon={CheckIcon} />Save</Button>
- *   <Button intent="tertiary" aria-label="Delete"><Icon icon={TrashIcon} /></Button>
+ *   <Button intent="primary" onPress={save}><CheckIcon />Save</Button>
+ *   <Button intent="tertiary" aria-label="Delete"><TrashIcon /></Button>
  *
  * A button whose only children are icons is square; give it an `aria-label`.
  * `link` is for a button that reads as a text link and sits in flowing text.

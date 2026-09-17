@@ -23,7 +23,6 @@ import type {
 import { Button } from "../ui-components/Button";
 import { ConfirmMenu } from "../ui-components/ConfirmMenu";
 import Dropzone from "../ui-components/Dropzone";
-import { Icon } from "../ui-components/Icon";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 import { EDITOR_DROP_TYPES, HOTKEYS } from "./config";
@@ -303,7 +302,7 @@ export function EditorV2({
                       onOpenQueryNodeEditor();
                     }}
                   >
-                    <Icon icon={SquarePenIcon} />
+                    <SquarePenIcon />
                     {t("editorV2.edit")}
                   </ToggleButton>
                 </KeyboardShortcutTooltip>
@@ -317,7 +316,7 @@ export function EditorV2({
                       onOpen();
                     }}
                   >
-                    <Icon icon={CalendarIcon} />
+                    <CalendarIcon />
                     {t("editorV2.dates")}
                   </ToggleButton>
                 </KeyboardShortcutTooltip>
@@ -330,7 +329,7 @@ export function EditorV2({
                     isSelected={!!selectedNode.negation}
                     onChange={onNegateClick}
                   >
-                    <Icon icon={BanIcon} />
+                    <BanIcon />
                     {t("editorV2.negate")}
                   </ToggleButton>
                 </KeyboardShortcutTooltip>
@@ -346,7 +345,7 @@ export function EditorV2({
                       onRotateConnector();
                     }}
                   >
-                    <Icon icon={WaypointsIcon} />
+                    <WaypointsIcon />
                     <Connector>{connection}</Connector>
                   </Button>
                 </KeyboardShortcutTooltip>
@@ -361,7 +360,7 @@ export function EditorV2({
                       onOpenTimeModal();
                     }}
                   >
-                    <Icon icon={HourglassIcon} />
+                    <HourglassIcon />
                     <span>{t("editorV2.timeConnection")}</span>
                   </Button>
                 </KeyboardShortcutTooltip>
@@ -374,7 +373,7 @@ export function EditorV2({
                       onExpand();
                     }}
                   >
-                    <Icon icon={Maximize2Icon} />
+                    <Maximize2Icon />
                     {t("editorV2.expand")}
                   </Button>
                 </KeyboardShortcutTooltip>
@@ -390,7 +389,7 @@ export function EditorV2({
                       onFlip();
                     }}
                   >
-                    <Icon icon={RefreshCwIcon} />
+                    <RefreshCwIcon />
                     {t("editorV2.flip")}
                   </Button>
                 </KeyboardShortcutTooltip>
@@ -405,7 +404,7 @@ export function EditorV2({
                       onDelete();
                     }}
                   >
-                    <Icon icon={TrashIcon} />
+                    <TrashIcon />
                     {t("editorV2.delete")}
                   </Button>
                 </KeyboardShortcutTooltip>
@@ -417,7 +416,7 @@ export function EditorV2({
                     confirmationText={t("editorV2.clearConfirm")}
                   >
                     <Button aria-label={t("editorV2.clear")} intent="tertiary">
-                      <Icon icon={TrashIcon} />
+                      <TrashIcon />
                     </Button>
                   </ConfirmMenu>
                   <Tooltip>{t("editorV2.clear")}</Tooltip>

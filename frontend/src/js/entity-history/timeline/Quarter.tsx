@@ -8,7 +8,6 @@ import type {
   ConceptIdT,
   CurrencyConfigT,
 } from "../../api/types";
-import { Icon } from "../../ui-components/Icon";
 import type { ContentFilterValue } from "../ContentControl";
 import type { DetailLevel } from "../DetailControl";
 import type { EntityEvent } from "../reducer";
@@ -109,10 +108,11 @@ export const Quarter = memo(
             className={inlineGrid()}
             onClick={() => toggleOpenQuarter(year, quarter)}
           >
-            <Icon
-              icon={isOpen ? ChevronDownIcon : ChevronRightIcon}
-              className="text-gray-500"
-            />
+            {isOpen ? (
+              <ChevronDownIcon className="text-gray-500" />
+            ) : (
+              <ChevronRightIcon className="text-gray-500" />
+            )}
             <SmallHeading className="leading-none">Q{quarter} </SmallHeading>
             <span>
               – {totalEventsPerQuarter}{" "}

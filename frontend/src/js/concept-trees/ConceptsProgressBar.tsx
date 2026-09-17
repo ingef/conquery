@@ -1,6 +1,5 @@
 import { LoaderCircleIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Icon } from "../ui-components/Icon";
 import ProgressBar from "../ui-components/ProgressBar";
 
 import type { TreesT } from "./reducer";
@@ -20,7 +19,7 @@ const ConceptsProgressBar = ({ trees }: PropsT) => {
   return (
     <div className="m-[10px]">
       <div className="flex items-center">
-        <Icon icon={LoaderCircleIcon} />
+        <LoaderCircleIcon />
         <p className="mx-[10px]">
           {t("conceptTreeList.loading")} {doneCount} / {treeIds.length}
         </p>

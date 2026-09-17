@@ -2,7 +2,6 @@ import { ChevronRightIcon, HouseIcon } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const InteractionControl = ({
@@ -22,7 +21,7 @@ const InteractionControl = ({
           aria-label={t("history.closeAll")}
           onPress={onCloseAll}
         >
-          <Icon icon={HouseIcon} />
+          <HouseIcon />
         </Button>
         <Tooltip placement="right">{t("history.closeAll")}</Tooltip>
       </TooltipTrigger>
@@ -32,7 +31,7 @@ const InteractionControl = ({
           aria-label={t("history.openAll")}
           onPress={onOpenAll}
         >
-          <Icon icon={ChevronRightIcon} />
+          <ChevronRightIcon />
         </Button>
         <Tooltip placement="right">{t("history.openAll")}</Tooltip>
       </TooltipTrigger>

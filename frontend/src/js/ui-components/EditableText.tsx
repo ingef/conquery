@@ -4,7 +4,6 @@ import HighlightableLabel from "../highlightable-label/HighlightableLabel";
 import { Button } from "./Button";
 import EditableTextForm from "./EditableTextForm";
 import { Highlighter } from "./Highlighter";
-import { Icon } from "./Icon";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 // a flex wrapper, so the button does not sit on a text baseline and grow the row
@@ -73,7 +72,7 @@ const EditableText = ({
             size={large ? "md" : "sm"}
             onPress={onToggleEdit}
           >
-            <Icon icon={PencilIcon} />
+            <PencilIcon />
           </Button>
           <Tooltip>{tooltip}</Tooltip>
         </TooltipTrigger>

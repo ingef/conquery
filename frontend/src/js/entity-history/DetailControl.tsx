@@ -7,7 +7,6 @@ import {
 import { type Dispatch, memo, type SetStateAction, useMemo } from "react";
 import type { Key } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import { Icon } from "../ui-components/Icon";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { ToggleButtonGroup } from "../ui-components/ToggleButtonGroup";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
@@ -63,10 +62,10 @@ export const DetailControl = memo(({ detailLevel, setDetailLevel }: Props) => {
         if (key !== undefined && isDetailLevel(key)) setDetailLevel(key);
       }}
     >
-      {navOptions.map(({ value, icon, tooltip }) => (
+      {navOptions.map(({ value, icon: LevelIcon, tooltip }) => (
         <TooltipTrigger key={value}>
           <ToggleButton id={value} aria-label={tooltip}>
-            <Icon icon={icon} />
+            <LevelIcon />
           </ToggleButton>
           <Tooltip placement="right">{tooltip}</Tooltip>
         </TooltipTrigger>

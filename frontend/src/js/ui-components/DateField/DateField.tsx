@@ -13,7 +13,6 @@ import { tv } from "tailwind-variants";
 import { formatDate, parseDate } from "../../common/helpers/dateHelper";
 import { exists } from "../../common/helpers/exists";
 import { FieldError } from "../FieldError";
-import { Icon } from "../Icon";
 import { Input, InputButton } from "../Input";
 import { type FieldLabelProps, Label } from "../Label";
 import { CustomHeader } from "./CustomHeader";
@@ -111,7 +110,7 @@ export const DateField = ({
                   isDisabled={isDisabled}
                   onPress={() => datePickerRef.current?.setOpen(true)}
                 >
-                  <Icon icon={CalendarIcon} />
+                  <CalendarIcon />
                 </InputButton>
               }
             />

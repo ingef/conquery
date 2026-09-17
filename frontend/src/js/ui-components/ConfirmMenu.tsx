@@ -3,8 +3,6 @@ import type { ReactNode } from "react";
 import { MenuTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 
-import { Icon } from "./Icon";
-
 import { Menu, MenuItem } from "./Menu";
 
 /**
@@ -13,7 +11,7 @@ import { Menu, MenuItem } from "./Menu";
  */
 export const ConfirmMenu = ({
   children,
-  confirmationIcon,
+  confirmationIcon: ConfirmationIcon = CheckIcon,
   confirmationText,
   placement,
   onConfirm,
@@ -34,7 +32,7 @@ export const ConfirmMenu = ({
       {children}
       <Menu aria-label={label} placement={placement} onAction={onConfirm}>
         <MenuItem id="confirm" danger={red} data-test-id="confirm">
-          <Icon icon={confirmationIcon || CheckIcon} />
+          <ConfirmationIcon />
           {label}
         </MenuItem>
       </Menu>

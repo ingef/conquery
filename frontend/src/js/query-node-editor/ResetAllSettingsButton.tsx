@@ -2,7 +2,6 @@ import { TrashIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../ui-components/Button";
 import { ConfirmMenu } from "../ui-components/ConfirmMenu";
-import { Icon } from "../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const ResetAllSettingsButton = ({
@@ -18,7 +17,7 @@ const ResetAllSettingsButton = ({
 
   const trigger = (
     <Button intent="tertiary">
-      <Icon icon={TrashIcon} />
+      <TrashIcon />
       {compact ? null : text}
     </Button>
   );

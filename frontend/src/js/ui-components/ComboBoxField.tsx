@@ -13,7 +13,6 @@ import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../api/types";
 import { exists } from "../common/helpers/exists";
 import { FieldError } from "./FieldError";
-import { Icon } from "./Icon";
 import { Input, InputButton, type InputProps } from "./Input";
 import { optionMatchesQuery } from "./InputMultiSelect/optionMatchesQuery";
 import { type FieldLabelProps, Label } from "./Label";
@@ -152,7 +151,7 @@ export const ComboBoxField = ({
             isInvalid={isInvalid}
             addonRight={
               <InputButton data-test-id="selection-dropdown">
-                <Icon icon={ChevronDownIcon} />
+                <ChevronDownIcon />
               </InputButton>
             }
           />

@@ -8,7 +8,6 @@ import {
 import { MenuTrigger } from "react-aria-components";
 import { Button } from "./Button";
 import { ConfirmMenu } from "./ConfirmMenu";
-import { Icon } from "./Icon";
 import { Menu, MenuItem } from "./Menu";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
@@ -24,21 +23,21 @@ export const Default: Story = {
   render: () => (
     <MenuTrigger>
       <Button intent="secondary">
-        <Icon icon={EllipsisVerticalIcon} />
+        <EllipsisVerticalIcon />
       </Button>
       <Menu aria-label="Actions" onAction={(key) => console.log(key)}>
         <MenuItem id="contact" href="mailto:someone@example.com">
-          <Icon icon={SendIcon} />A link item
+          <SendIcon />A link item
         </MenuItem>
         <MenuItem id="manual">
-          <Icon icon={BookIcon} />
+          <BookIcon />
           An action item
         </MenuItem>
         <MenuItem id="disabled" isDisabled>
-          <Icon icon={TrashIcon} />A disabled item
+          <TrashIcon />A disabled item
         </MenuItem>
         <MenuItem id="delete" danger>
-          <Icon icon={TrashIcon} />A dangerous item
+          <TrashIcon />A dangerous item
         </MenuItem>
       </Menu>
     </MenuTrigger>
@@ -58,7 +57,7 @@ export const Confirm: Story = {
         onConfirm={() => {}}
       >
         <Button intent="secondary">
-          <Icon icon={TrashIcon} />
+          <TrashIcon />
         </Button>
       </ConfirmMenu>
     </div>
@@ -70,7 +69,7 @@ export const WithTooltipOnTrigger: Story = {
     <TooltipTrigger>
       <ConfirmMenu confirmationText="Really delete?" onConfirm={() => {}}>
         <Button intent="secondary">
-          <Icon icon={TrashIcon} />
+          <TrashIcon />
         </Button>
       </ConfirmMenu>
       <Tooltip>Delete</Tooltip>

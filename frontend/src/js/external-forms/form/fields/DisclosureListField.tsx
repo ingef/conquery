@@ -12,7 +12,6 @@ import {
   DisclosurePanel,
   DisclosureTitle,
 } from "../../../ui-components/Disclosure";
-import { Icon } from "../../../ui-components/Icon";
 import type { DisclosureListField as DisclosureListFieldT } from "../../config-types";
 import {
   getFieldKey,
@@ -55,7 +54,7 @@ const DisclosureField = ({
               aria-label={t("common.delete")}
               onPress={() => remove(index)}
             >
-              <Icon icon={XIcon} />
+              <XIcon />
             </Button>
           )
         }
@@ -213,7 +212,7 @@ export const DisclosureListField = ({
               );
             }}
           >
-            <Icon icon={PlusIcon} />
+            <PlusIcon />
             {field.createNewLabel ? field.createNewLabel[locale] : undefined}
           </Button>
         </div>

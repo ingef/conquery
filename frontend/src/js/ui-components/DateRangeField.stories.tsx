@@ -5,7 +5,6 @@ import { type ComponentProps, useState } from "react";
 import type { DateStringMinMax } from "../common/helpers/dateHelper";
 import { Button } from "./Button";
 import { DateRangeField } from "./DateRangeField";
-import { Icon } from "./Icon";
 
 export default {
   title: "FormComponents/DateRangeField",
@@ -42,7 +41,7 @@ const Stateful = ({
           hasDate && (
             <span className="ml-5">
               <Button intent="link" onPress={() => setValue(empty)}>
-                <Icon icon={RotateCcwIcon} />
+                <RotateCcwIcon />
                 Reset
               </Button>
             </span>

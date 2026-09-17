@@ -7,7 +7,6 @@ import { usePostLogin } from "../api/api";
 import { useAppTheme } from "../app-theme-context";
 import ErrorMessage from "../error-message/ErrorMessage";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import { TextField } from "../ui-components/TextField";
 
 import { AuthTokenContext } from "./AuthTokenProvider";
@@ -114,10 +113,7 @@ const LoginPage = () => {
               size="lg"
               type="submit"
             >
-              <Icon
-                icon={loading ? LoaderCircleIcon : CheckIcon}
-                className="text-white"
-              />
+              {loading ? <LoaderCircleIcon /> : <CheckIcon />}
               {t("login.submit")}
             </Button>
           </div>

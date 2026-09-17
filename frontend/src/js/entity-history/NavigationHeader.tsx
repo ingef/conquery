@@ -8,7 +8,6 @@ import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { Heading3 } from "../headings/Headings";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import ProgressBar from "../ui-components/ProgressBar";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
@@ -85,7 +84,7 @@ export const NavigationHeader = memo(
                 aria-label={t("history.settings.headline")}
                 intent="tertiary"
               >
-                <Icon icon={SlidersHorizontalIcon} />
+                <SlidersHorizontalIcon />
               </Button>
               <SettingsModal
                 setEntityStatusOptions={setEntityStatusOptions}

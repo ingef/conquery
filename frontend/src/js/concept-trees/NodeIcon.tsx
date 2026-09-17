@@ -5,10 +5,8 @@ import {
   type LucideIcon,
   MinusIcon,
 } from "lucide-react";
-import type { ClassValue } from "tailwind-variants";
 
 import type { NodeIconT } from "../model/node";
-import { Icon } from "../ui-components/Icon";
 
 const icons: Record<NodeIconT, LucideIcon> = {
   leaf: MinusIcon,
@@ -27,11 +25,11 @@ export const NodeIcon = ({
   className,
 }: {
   icon: NodeIconT;
-  className?: ClassValue;
-}) => (
-  <Icon
-    icon={icons[icon]}
-    filled={filled.includes(icon)}
-    className={className}
-  />
-);
+  className?: string;
+}) => {
+  const NodeTypeIcon = icons[icon];
+
+  return (
+    <NodeTypeIcon data-filled={filled.includes(icon)} className={className} />
+  );
+};

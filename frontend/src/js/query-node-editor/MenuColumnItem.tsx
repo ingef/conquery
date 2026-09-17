@@ -5,7 +5,6 @@ import type { NodeResetConfig } from "../model/node";
 import { tableHasFilterValues, tableIsDisabled } from "../model/table";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
@@ -81,10 +80,11 @@ const MenuColumnItem = ({
           }}
           size="sm"
         >
-          <Icon
-            icon={includable ? SquareIcon : SquareCheckIcon}
-            className="size-5"
-          />
+          {includable ? (
+            <SquareIcon className="size-5" />
+          ) : (
+            <SquareCheckIcon className="size-5" />
+          )}
         </Button>
         <span className="pl-[10px] leading-[20px]">{table.label}</span>
       </div>
@@ -104,7 +104,7 @@ const MenuColumnItem = ({
               onResetTable({ useDefaults: false });
             }}
           >
-            <Icon icon={FunnelIcon} />
+            <FunnelIcon />
           </ToggleButton>
           <Tooltip>{t("queryNodeEditor.clearSettings")}</Tooltip>
         </TooltipTrigger>

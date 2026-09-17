@@ -1,7 +1,6 @@
 import { SearchIcon } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { Icon } from "../../ui-components/Icon";
 import { ToggleButton } from "../../ui-components/ToggleButton";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import { useTimelineSearch } from "./timelineSearchState";
@@ -19,7 +18,7 @@ const SearchControl = () => {
           isSelected={searchVisible}
           onChange={setSearchVisible}
         >
-          <Icon icon={SearchIcon} />
+          <SearchIcon />
         </ToggleButton>
         <Tooltip placement="right">{t("history.search")}</Tooltip>
       </TooltipTrigger>

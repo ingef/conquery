@@ -1,7 +1,6 @@
 import { LoaderCircleIcon } from "lucide-react";
 import { useMemo } from "react";
 import { tv } from "tailwind-variants";
-import { Icon } from "../ui-components/Icon";
 import { IncrementalList } from "../ui-components/IncrementalList";
 import type { useUpdateHistorySession } from "./actions";
 import type { EntityIdsStatus } from "./History";
@@ -90,7 +89,7 @@ export const EntityIdsList = ({
           <span className="font-light text-gray-500">({entityId.kind})</span>
         </div>
         {loadingId === entityId.id && (
-          <Icon icon={LoaderCircleIcon} className="mx-[6px] my-[3px]" />
+          <LoaderCircleIcon className="mx-[6px] my-[3px]" />
         )}
         <div className="ml-auto flex items-center gap-[2px]">
           {entityIdsStatus[entityId.id] &&

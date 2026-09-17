@@ -20,7 +20,6 @@ import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
 import { Button } from "../../ui-components/Button";
 import { Highlighter } from "../../ui-components/Highlighter";
-import { Icon } from "../../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -142,7 +141,7 @@ const ShareButton = ({
         data-test-id="share"
         onPress={onClick}
       >
-        <Icon icon={UserIcon} filled={isShared} />
+        <UserIcon data-filled={isShared} />
       </Button>
       <Tooltip>
         {
@@ -268,7 +267,7 @@ const ProjectItem = ({
                 onPress={onIndicateEditFolders}
                 isDisabled={!mayEdit}
               >
-                <Icon icon={FolderIcon} filled={folders.length > 0} />
+                <FolderIcon data-filled={folders.length > 0} />
               </Button>
               <Tooltip>{<FoldersTooltip folders={folders} />}</Tooltip>
             </TooltipTrigger>
@@ -281,7 +280,7 @@ const ProjectItem = ({
                     aria-label={t("previousQuery.hasNoDates")}
                     excludeFromTabOrder
                   >
-                    <Icon icon={CalendarIcon} className="opacity-70 text-red" />
+                    <CalendarIcon className="opacity-70 text-red" />
                   </TooltipTarget>
                   <Tooltip>{t("previousQuery.hasNoDates")}</Tooltip>
                 </TooltipTrigger>
@@ -298,7 +297,7 @@ const ProjectItem = ({
                   size="sm"
                   onPress={() => {}}
                 >
-                  <Icon icon={MicroscopeIcon} />
+                  <MicroscopeIcon />
                 </Button>
                 <Tooltip>{`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}</Tooltip>
               </TooltipTrigger>

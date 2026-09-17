@@ -1,7 +1,6 @@
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { Icon } from "../ui-components/Icon";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
@@ -22,7 +21,7 @@ const VisibilityControl = ({
           isSelected={!!blurred}
           onChange={toggleBlurred}
         >
-          <Icon icon={blurred ? EyeOffIcon : EyeIcon} />
+          {blurred ? <EyeOffIcon /> : <EyeIcon />}
         </ToggleButton>
         <Tooltip placement="right">{t("history.blurred")}</Tooltip>
       </TooltipTrigger>

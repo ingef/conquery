@@ -7,7 +7,6 @@ import { useActiveLang } from "../localization/useActiveLang";
 import { Button } from "../ui-components/Button";
 import { ComboBoxField } from "../ui-components/ComboBoxField";
 import { ConfirmMenu } from "../ui-components/ConfirmMenu";
-import { Icon } from "../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import { setExternalForm } from "./actions";
@@ -82,7 +81,7 @@ const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
                 aria-label={t("externalForms.common.clear")}
                 intent="secondary"
               >
-                <Icon icon={TrashIcon} />
+                <TrashIcon />
               </Button>
             </ConfirmMenu>
             <Tooltip>{t("externalForms.common.clear")}</Tooltip>

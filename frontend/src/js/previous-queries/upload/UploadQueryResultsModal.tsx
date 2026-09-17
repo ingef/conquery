@@ -5,7 +5,6 @@ import { tv } from "tailwind-variants";
 
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
 import DropzoneWithFileInput from "../../ui-components/DropzoneWithFileInput";
-import { Icon } from "../../ui-components/Icon";
 import InfoTooltip from "../../ui-components/InfoTooltip";
 import { Modal, ModalBody, ModalHeader } from "../../ui-components/Modal";
 
@@ -55,7 +54,7 @@ const UploadQueryResultsModal = ({
           <ModalBody>
             {fullUploadSuccess ? (
               <div className="my-[25px]">
-                <Icon icon={CircleCheckIcon} className={successIcon()} />
+                <CircleCheckIcon className={successIcon()} />
                 <p className="m-0">
                   {t("uploadQueryResultsModal.uploadSucceeded", {
                     count: uploadResult?.resolved || 0,

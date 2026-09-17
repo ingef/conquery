@@ -12,27 +12,26 @@ import {
 } from "lucide-react";
 import { Button } from "./Button";
 
-import { Icon } from "./Icon";
-
+/** Lucide icons, rendered directly. Size, stroke width, the filled look and
+ * the spinner's animation are app-wide settings in index.css. */
 export default {
-  title: "UiComponents/Icon",
-  component: Icon,
+  title: "UiComponents/Icons",
   parameters: { layout: "centered" },
-} as Meta<typeof Icon>;
+} as Meta;
 
-type Story = StoryObj<typeof Icon>;
+type Story = StoryObj;
 
 export const InText: Story = {
   render: () => (
     <ul className="flex flex-col gap-1 text-sm">
       <li>
-        <Icon icon={EllipsisVerticalIcon} /> icons sit on the text line
+        <EllipsisVerticalIcon /> icons sit on the text line
       </li>
       <li>
-        <Icon icon={UserIcon} /> in lists and menus
+        <UserIcon /> in lists and menus
       </li>
       <li>
-        <Icon icon={UnfoldHorizontalIcon} /> one size, one stroke width
+        <UnfoldHorizontalIcon /> one size, one stroke width
       </li>
     </ul>
   ),
@@ -42,11 +41,11 @@ export const Picture: Story = {
   render: () => (
     <div className="flex items-end gap-6 text-xs">
       <div className="flex flex-col items-center gap-1">
-        <Icon icon={CheckIcon} />
+        <CheckIcon />
         default
       </div>
       <div className="flex flex-col items-center gap-1">
-        <Icon icon={CheckIcon} className="size-10 text-green" />
+        <CheckIcon className="size-10 text-green" />
         size-10, a picture
       </div>
     </div>
@@ -57,7 +56,7 @@ const stateIcons = [FolderIcon, FolderOpenIcon, UserIcon, SquareIcon];
 
 const looks = [
   { label: "off", className: undefined, filled: false },
-  { label: "filled", className: undefined, filled: true },
+  { label: "data-filled", className: undefined, filled: true },
   { label: "tinted fill", className: "fill-current/25", filled: false },
   { label: "stroke-4", className: "stroke-4", filled: false },
 ];
@@ -68,11 +67,10 @@ export const State: Story = {
       {looks.map((look) => (
         <div key={look.label} className="contents">
           <span className="text-gray-800">{look.label}</span>
-          {stateIcons.map((icon) => (
-            <Icon
-              key={icon.displayName}
-              icon={icon}
-              filled={look.filled}
+          {stateIcons.map((StateIcon) => (
+            <StateIcon
+              key={StateIcon.displayName}
+              data-filled={look.filled}
               className={look.className}
             />
           ))}
@@ -86,16 +84,16 @@ export const InheritsColor: Story = {
   render: () => (
     <div className="flex items-center gap-6 text-sm">
       <span className="text-gray-500">
-        <Icon icon={UserIcon} /> muted text
+        <UserIcon /> muted text
       </span>
       <span className="text-red">
-        <Icon icon={TrashIcon} /> danger text
+        <TrashIcon /> danger text
       </span>
       <Button intent="primary">
-        <Icon icon={CheckIcon} /> inside a button
+        <CheckIcon /> inside a button
       </Button>
       <Button intent="secondary" danger>
-        <Icon icon={TrashIcon} />
+        <TrashIcon />
         red icon button
       </Button>
     </div>
@@ -103,5 +101,5 @@ export const InheritsColor: Story = {
 };
 
 export const Spinner: Story = {
-  render: () => <Icon icon={LoaderCircleIcon} />,
+  render: () => <LoaderCircleIcon />,
 };

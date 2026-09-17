@@ -2,8 +2,6 @@ import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { tv } from "tailwind-variants";
 
-import { Icon } from "./Icon";
-
 const root = tv({
   base: [
     "flex flex-col items-center justify-center",
@@ -17,14 +15,14 @@ const root = tv({
 
 /** an icon with a short message below, for an area without content */
 export const EmptyState = ({
-  icon,
+  icon: StateIcon,
   children,
 }: {
   icon: LucideIcon;
   children: ReactNode;
 }) => (
   <div className={root()}>
-    <Icon icon={icon} className="size-10 text-gray-100" />
+    <StateIcon className="size-10 text-gray-100" />
     <p>{children}</p>
   </div>
 );

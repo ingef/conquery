@@ -5,7 +5,6 @@ import type { ConceptIdT, ConceptT } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import AdditionalInfoHoverable from "../info-pane/AdditionalInfoHoverable";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 
 const concept = tv({
   base: [
@@ -64,7 +63,7 @@ const ConceptEntry = ({
           aria-label={t("common.delete")}
           onPress={() => onRemoveConcept(conceptId)}
         >
-          <Icon icon={TrashIcon} />
+          <TrashIcon />
         </Button>
       )}
     </div>

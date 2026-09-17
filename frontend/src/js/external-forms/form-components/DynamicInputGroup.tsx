@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { Button } from "../../ui-components/Button";
-import { Icon } from "../../ui-components/Icon";
 
 interface PropsT {
   className?: string;
@@ -60,7 +59,7 @@ const DynamicInputGroup = ({
                 aria-label={t("common.delete")}
                 onPress={() => onRemoveClick(idx)}
               >
-                <Icon icon={XIcon} />
+                <XIcon />
               </Button>
             </div>
           )}
@@ -73,7 +72,7 @@ const DynamicInputGroup = ({
           aria-label={t("common.add")}
           onPress={onAddClick}
         >
-          <Icon icon={PlusIcon} />
+          <PlusIcon />
         </Button>
       )}
     </div>

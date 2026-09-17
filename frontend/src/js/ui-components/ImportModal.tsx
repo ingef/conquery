@@ -8,7 +8,6 @@ import { Button } from "./Button";
 import DropzoneWithFileInput, {
   type DragItemFile,
 } from "./DropzoneWithFileInput";
-import { Icon } from "./Icon";
 import {
   Modal,
   ModalBody,
@@ -181,12 +180,12 @@ export const ImportModal = ({
           </ModalBody>
           <ModalFooter>
             <Button intent="tertiary" onPress={onOpenFileDialog}>
-              <Icon icon={FileIcon} />
+              <FileIcon />
               {t("common.openFileDialog")}
             </Button>
             {canReadClipboard && (
               <Button intent="tertiary" onPress={onPasteClick}>
-                <Icon icon={ClipboardPasteIcon} />
+                <ClipboardPasteIcon />
                 {t("importModal.paste")}
               </Button>
             )}

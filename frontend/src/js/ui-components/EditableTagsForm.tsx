@@ -5,7 +5,6 @@ import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../api/types";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import { Button } from "./Button";
-import { Icon } from "./Icon";
 import InputMultiSelect from "./InputMultiSelect/InputMultiSelect";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
@@ -74,7 +73,7 @@ const EditableTagsForm = ({
             type="submit"
             isDisabled={!!loading}
           >
-            <Icon icon={loading ? LoaderCircleIcon : CheckIcon} />
+            {loading ? <LoaderCircleIcon /> : <CheckIcon />}
           </Button>
           <Tooltip>{t("common.save")}</Tooltip>
         </TooltipTrigger>

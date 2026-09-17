@@ -7,7 +7,6 @@ import { tv } from "tailwind-variants";
 import type { PreviewStatistics, SecondaryId } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import { closePreview } from "./actions";
 import Charts from "./Charts";
 import DiagramModal from "./DiagramModal";
@@ -123,7 +122,7 @@ export default function Preview() {
           />
         ) : (
           <div className={chartLoadingBlocker()}>
-            <Icon icon={LoaderCircleIcon} className={spinnerIcon()} />
+            <LoaderCircleIcon className={spinnerIcon()} />
           </div>
         )}
         {popOver && (

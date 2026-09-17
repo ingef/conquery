@@ -9,7 +9,6 @@ import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import { Button } from "../../ui-components/Button";
 import { HoverNavigatable } from "../../ui-components/HoverNavigatable";
-import { Icon } from "../../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -165,7 +164,7 @@ const FormConceptNode = ({
                   expand.onClick();
                 }}
               >
-                <Icon icon={expand.active ? Minimize2Icon : Maximize2Icon} />
+                {expand.active ? <Minimize2Icon /> : <Maximize2Icon />}
               </Button>
               <Tooltip>{t("externalForms.common.concept.expand")}</Tooltip>
             </TooltipTrigger>

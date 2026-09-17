@@ -11,7 +11,6 @@ import {
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
-import { Icon } from "./Icon";
 import InfoTooltip from "./InfoTooltip";
 
 const root = tv({
@@ -89,7 +88,7 @@ export const DisclosureTitle = ({
   <div className={title()}>
     <Heading className={heading()}>
       <RacButton slot="trigger" className={trigger()}>
-        <Icon icon={ChevronRightIcon} className={chevron()} />
+        <ChevronRightIcon className={chevron()} />
         {children}
       </RacButton>
     </Heading>

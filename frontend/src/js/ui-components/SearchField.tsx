@@ -5,7 +5,6 @@ import {
   type SearchFieldProps as RacSearchFieldProps,
 } from "react-aria-components";
 
-import { Icon } from "./Icon";
 import { Input, InputButton } from "./Input";
 import { type FieldLabelProps, Label } from "./Label";
 
@@ -47,11 +46,11 @@ export const SearchField = ({
                     isDisabled={isDisabled}
                     onPress={() => onSubmit?.(state.value)}
                   >
-                    <Icon icon={SearchIcon} />
+                    <SearchIcon />
                   </InputButton>
                 </ButtonContext.Provider>
                 <InputButton>
-                  <Icon icon={XIcon} />
+                  <XIcon />
                 </InputButton>
               </>
             )

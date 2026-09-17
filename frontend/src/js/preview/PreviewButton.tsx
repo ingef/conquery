@@ -1,11 +1,10 @@
 import { LoaderCircleIcon, SearchIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../app/reducers";
 import { Button, type ButtonProps } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import { openPreview, useLoadPreviewData } from "./actions";
 
 const PreviewButton = (props: ButtonProps) => {
@@ -18,10 +17,6 @@ const PreviewButton = (props: ButtonProps) => {
   );
 
   const [isLoading, setLoading] = useState(false);
-  const icon = useMemo(
-    () => (isLoading ? LoaderCircleIcon : SearchIcon),
-    [isLoading],
-  );
 
   return (
     <Button
@@ -38,7 +33,7 @@ const PreviewButton = (props: ButtonProps) => {
       }}
       {...props}
     >
-      <Icon icon={icon} />
+      {isLoading ? <LoaderCircleIcon /> : <SearchIcon />}
       {t("preview.preview")}
     </Button>
   );

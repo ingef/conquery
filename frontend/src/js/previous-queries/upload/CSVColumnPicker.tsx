@@ -18,7 +18,6 @@ import { useActiveLang } from "../../localization/useActiveLang";
 import ScrollableList from "../../scrollable-list/ScrollableList";
 import { Button } from "../../ui-components/Button";
 import { ComboBoxField } from "../../ui-components/ComboBoxField";
-import { Icon } from "../../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 
 const td = tv({
@@ -265,7 +264,7 @@ const CSVColumnPicker = ({
               intent="secondary"
               onPress={onReset}
             >
-              <Icon icon={TrashIcon} />
+              <TrashIcon />
             </Button>
             <Tooltip>{t("common.clear")}</Tooltip>
           </TooltipTrigger>
@@ -302,20 +301,14 @@ const CSVColumnPicker = ({
         <div className={partialUploadResults()}>
           <p className={msg()}>
             {uploadResult.resolved > 0 && (
-              <Icon
-                icon={CircleCheckIcon}
-                className={bigIcon({ kind: "success" })}
-              />
+              <CircleCheckIcon className={bigIcon({ kind: "success" })} />
             )}
             {t("csvColumnPicker.resolved", { count: uploadResult.resolved })}
           </p>
           {uploadResult.unreadableDate.length > 0 && (
             <>
               <p className={msg()}>
-                <Icon
-                  icon={CircleAlertIcon}
-                  className={bigIcon({ kind: "error" })}
-                />
+                <CircleAlertIcon className={bigIcon({ kind: "error" })} />
                 {t("csvColumnPicker.unreadableDate", {
                   count: uploadResult.unreadableDate.length,
                 })}
@@ -334,10 +327,7 @@ const CSVColumnPicker = ({
           {uploadResult.unresolvedId.length > 0 && (
             <>
               <p className={msg()}>
-                <Icon
-                  icon={CircleAlertIcon}
-                  className={bigIcon({ kind: "error" })}
-                />
+                <CircleAlertIcon className={bigIcon({ kind: "error" })} />
                 {t("csvColumnPicker.unresolvedId", {
                   count: uploadResult.unresolvedId.length,
                 })}
@@ -360,7 +350,7 @@ const CSVColumnPicker = ({
             uploadResult.unresolvedId.length > 0) && (
             <div className="mr-auto">
               <Button intent="secondary" onPress={downloadUnresolved}>
-                <Icon icon={DownloadIcon} />
+                <DownloadIcon />
                 {t("uploadQueryResultsModal.downloadUnresolved", {
                   count:
                     uploadResult.unreadableDate.length +
@@ -376,9 +366,9 @@ const CSVColumnPicker = ({
             onPress={uploadQuery}
           >
             {loading ? (
-              <Icon icon={LoaderCircleIcon} className="text-white" />
+              <LoaderCircleIcon className="text-white" />
             ) : (
-              <Icon icon={UploadIcon} className="mr-[10px] text-white" />
+              <UploadIcon className="mr-[10px] text-white" />
             )}{" "}
             {t("uploadQueryResultsModal.uploadAgain")}
           </Button>
@@ -394,9 +384,9 @@ const CSVColumnPicker = ({
             onPress={uploadQuery}
           >
             {loading ? (
-              <Icon icon={LoaderCircleIcon} className="text-white" />
+              <LoaderCircleIcon className="text-white" />
             ) : (
-              <Icon icon={UploadIcon} className="mr-[10px] text-white" />
+              <UploadIcon className="mr-[10px] text-white" />
             )}{" "}
             {t("uploadQueryResultsModal.upload")}
           </Button>

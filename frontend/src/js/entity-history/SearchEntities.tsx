@@ -21,7 +21,6 @@ import type {
   MultiSelectFilterWithValueType,
 } from "../standard-query-editor/types";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { useDefaultStatusOptions } from "./useDefaultStatusOptions";
@@ -244,7 +243,7 @@ const SearchEntitiesComponent = ({
           onPress={onSubmitSearch}
           isDisabled={!hasFiltersSet || loading}
         >
-          {loading && <Icon icon={LoaderCircleIcon} className="text-white" />}
+          {loading && <LoaderCircleIcon className="text-white" />}
           {t("history.searchEntitiesButton")}
         </Button>
       </div>

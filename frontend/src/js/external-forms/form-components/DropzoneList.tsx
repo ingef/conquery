@@ -11,7 +11,6 @@ import type {
 import DropzoneWithFileInput, {
   type DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
-import { Icon } from "../../ui-components/Icon";
 import { Label } from "../../ui-components/Label";
 
 import DropzoneBetweenElements from "./DropzoneBetweenElements";
@@ -102,7 +101,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>({
                     aria-label={t("common.delete")}
                     onPress={() => onDelete(i)}
                   >
-                    <Icon icon={XIcon} />
+                    <XIcon />
                   </Button>
                 </div>
                 {item}

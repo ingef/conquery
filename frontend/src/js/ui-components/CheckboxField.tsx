@@ -8,7 +8,6 @@ import { tv } from "tailwind-variants";
 
 import { exists } from "../common/helpers/exists";
 import { FieldError } from "./FieldError";
-import { Icon } from "./Icon";
 import InfoTooltip from "./InfoTooltip";
 
 // the clickable label. Block-level: as an inline box it would sit on the
@@ -95,7 +94,7 @@ export const CheckboxField = ({
         <>
           <span className={frame()}>
             <span className={box()}>
-              {isSelected && <Icon icon={CheckIcon} className="size-3.5" />}
+              {isSelected && <CheckIcon className="size-3.5" />}
             </span>
           </span>
           <span className={label()}>

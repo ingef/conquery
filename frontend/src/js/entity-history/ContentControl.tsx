@@ -6,7 +6,6 @@ import {
 } from "lucide-react";
 import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Icon } from "../ui-components/Icon";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { ToggleButtonGroup } from "../ui-components/ToggleButtonGroup";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
@@ -66,10 +65,10 @@ const ContentControl = ({ value, onChange }: Props) => {
         })
       }
     >
-      {options.map((option) => (
+      {options.map(({ icon: OptionIcon, ...option }) => (
         <TooltipTrigger key={option.key}>
           <ToggleButton id={option.key} aria-label={option.tooltip}>
-            <Icon icon={option.icon} />
+            <OptionIcon />
           </ToggleButton>
           <Tooltip placement="right">{option.tooltip}</Tooltip>
         </TooltipTrigger>

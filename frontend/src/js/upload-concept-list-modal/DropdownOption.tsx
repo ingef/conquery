@@ -3,7 +3,6 @@ import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { exists } from "../common/helpers/exists";
-import { Icon } from "../ui-components/Icon";
 import { IndexPrefix } from "../ui-components/IndexPrefix";
 
 const container = tv({
@@ -53,13 +52,7 @@ export const DropdownOption = memo(
           {hasDifferentFilterLabel ? (
             <IndexPrefix className={indexPrefix()}># {filterIdx}</IndexPrefix>
           ) : (
-            <Icon
-              icon={FolderIcon}
-              className={[
-                !hasDifferentFilterLabel ? "text-primary-500" : undefined,
-                hasDifferentFilterLabel ? "text-gray-500" : undefined,
-              ]}
-            />
+            <FolderIcon className="text-primary-500" />
           )}
         </div>
         <span className={text({ bold: !hasDifferentFilterLabel })}>

@@ -13,7 +13,6 @@ import { tv } from "tailwind-variants";
 import type { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import { getEnding } from "./DownloadResultsDropdownButton";
 
 const link = tv({ base: "leading-none" });
@@ -64,14 +63,12 @@ const DownloadButton = ({
   const href = `${resultUrl.url}?access_token=${encodeURIComponent(authToken)}`;
 
   const { icon, color } = getFileIcon(resultUrl.url);
+  const FileTypeIcon = simpleIcon ? DownloadIcon : icon;
 
   return (
     <a href={href} className={link({ className })} ref={ref}>
       <Button intent="link">
-        <Icon
-          icon={simpleIcon ? DownloadIcon : icon}
-          style={{ color: showColoredIcon ? color : undefined }}
-        />
+        <FileTypeIcon style={{ color: showColoredIcon ? color : undefined }} />
         {children}
       </Button>
     </a>

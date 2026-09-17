@@ -10,7 +10,6 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { Button } from "../ui-components/Button";
 
-import { Icon } from "../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -58,7 +57,7 @@ const QueryNodeActions = (props: Props) => {
             props.onDeleteNode(props.andIdx, props.orIdx);
           }}
         >
-          <Icon icon={XIcon} />
+          <XIcon />
         </Button>
         <Tooltip>{t("queryEditor.removeNode")}</Tooltip>
       </TooltipTrigger>
@@ -73,7 +72,7 @@ const QueryNodeActions = (props: Props) => {
               props.onToggleTimestamps(props.andIdx, props.orIdx);
             }}
           >
-            <Icon icon={CalendarIcon} />
+            <CalendarIcon />
           </Button>
           <Tooltip>{t("queryNodeEditor.excludingTimestamps")}</Tooltip>
         </TooltipTrigger>
@@ -85,7 +84,7 @@ const QueryNodeActions = (props: Props) => {
             aria-label={t("queryEditor.loadingPreviousQuery")}
             excludeFromTabOrder
           >
-            <Icon icon={LoaderCircleIcon} className="mt-[7px] mb-1 mx-[6px]" />
+            <LoaderCircleIcon className="mt-[7px] mb-1 mx-[6px]" />
           </TooltipTarget>
           <Tooltip>{t("queryEditor.loadingPreviousQuery")}</Tooltip>
         </TooltipTrigger>
@@ -99,7 +98,7 @@ const QueryNodeActions = (props: Props) => {
               props.onExpandClick();
             }}
           >
-            <Icon icon={Maximize2Icon} />
+            <Maximize2Icon />
           </Button>
           <Tooltip>{t("queryEditor.expand")}</Tooltip>
         </TooltipTrigger>
@@ -120,7 +119,7 @@ const QueryNodeActions = (props: Props) => {
                 props.onToggleSecondaryIdExclude(props.andIdx, props.orIdx);
               }}
             >
-              <Icon icon={MicroscopeIcon} />
+              <MicroscopeIcon />
             </Button>
             {props.excludeFromSecondaryId && <div className={crossedOut()} />}
           </div>

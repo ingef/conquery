@@ -6,7 +6,6 @@ import { deleteStoredAuthToken } from "../authorization/helper";
 import { clearIndexedDBCache } from "../common/helpers/indexedDBCache";
 import { isIDPEnabled } from "../environment";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 const LogoutButton = () => {
@@ -41,7 +40,7 @@ const LogoutButton = () => {
         intent="secondary"
         onPress={onLogout}
       >
-        <Icon icon={LogOutIcon} />
+        <LogOutIcon />
       </Button>
       <Tooltip>{t("common.logout")}</Tooltip>
     </TooltipTrigger>

@@ -8,7 +8,6 @@ import type {
   TimeStratifiedInfo,
 } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
-import { Icon } from "../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -90,7 +89,7 @@ export const TimeStratifiedConceptChart = ({
     return (
       <div className={container()}>
         <p className={emptyMsg()}>
-          <Icon icon={BanIcon} className="text-gray-500" />
+          <BanIcon className="text-gray-500" />
           {t("history.noData")}
         </p>
       </div>

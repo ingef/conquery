@@ -2,7 +2,6 @@ import { ChevronRightIcon } from "lucide-react";
 import { Button as RacButton } from "react-aria-components";
 import { useDispatch } from "react-redux";
 import { tv } from "tailwind-variants";
-import { Icon } from "../ui-components/Icon";
 
 import { toggleInfoPane } from "./actions";
 
@@ -26,7 +25,7 @@ const InfoPaneCollapsed = () => {
   return (
     <div className="relative h-full">
       <RacButton className={button()} onPress={onToggleInfoPane}>
-        <Icon icon={ChevronRightIcon} />
+        <ChevronRightIcon />
       </RacButton>
     </div>
   );

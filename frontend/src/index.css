@@ -91,6 +91,15 @@
     vertical-align: -0.125em;
   }
 
+  /* the "on" look of an icon that shows a state */
+  .lucide[data-filled="true"] {
+    fill: currentColor;
+  }
+
+  .lucide-loader-circle {
+    animation: var(--animate-spin-fast);
+  }
+
   button,
   select,
   input,

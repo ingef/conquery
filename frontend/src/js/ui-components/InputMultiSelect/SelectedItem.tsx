@@ -4,7 +4,6 @@ import ReactMarkdown from "react-markdown";
 import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../../api/types";
 import { Button } from "../Button";
-import { Icon } from "../Icon";
 
 const container = tv({
   base: [
@@ -59,7 +58,7 @@ const SelectedItem = ({
           removeSelectedItem(item);
         }}
       >
-        <Icon icon={XIcon} />
+        <XIcon />
       </Button>
     </div>
   );

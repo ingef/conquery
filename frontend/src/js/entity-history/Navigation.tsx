@@ -20,7 +20,6 @@ import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { Button } from "../ui-components/Button";
 import { ConfirmMenu } from "../ui-components/ConfirmMenu";
-import { Icon } from "../ui-components/Icon";
 import {
   Tooltip,
   TooltipTrigger,
@@ -140,7 +139,7 @@ export const Navigation = memo(
           <div className="grid grow">
             <TooltipTrigger>
               <Button intent="secondary" onPress={onCloseHistory}>
-                <Icon icon={ChevronLeftIcon} />
+                <ChevronLeftIcon />
                 {t("common.back")}
               </Button>
               <Tooltip>{backButtonWarning}</Tooltip>
@@ -153,7 +152,7 @@ export const Navigation = memo(
                 confirmationText={t("history.settings.resetConfirm")}
               >
                 <Button intent="secondary">
-                  <Icon icon={TrashIcon} />
+                  <TrashIcon />
                   {t("history.settings.reset")}
                 </Button>
               </ConfirmMenu>
@@ -178,7 +177,7 @@ export const Navigation = memo(
                   intent="tertiary"
                   onPress={goToPrev}
                 >
-                  <Icon icon={ArrowUpIcon} />
+                  <ArrowUpIcon />
                 </Button>
                 <Tooltip>{`${t("history.prevButtonLabel")} (shift + ⬆)`}</Tooltip>
               </TooltipTrigger>
@@ -209,7 +208,7 @@ export const Navigation = memo(
                     intent="tertiary"
                     onPress={goToNext}
                   >
-                    <Icon icon={ArrowDownIcon} />
+                    <ArrowDownIcon />
                   </Button>
                   <Tooltip>{`${t("history.nextButtonLabel")} (shift + ⬇)`}</Tooltip>
                 </TooltipTrigger>
@@ -217,7 +216,7 @@ export const Navigation = memo(
               <div className="mt-[10px] grid">
                 <TooltipTrigger>
                   <Button intent="secondary" onPress={onDownload}>
-                    <Icon icon={DownloadIcon} />
+                    <DownloadIcon />
                     CSV
                   </Button>
                   <Tooltip>{t("history.downloadButtonLabel")}</Tooltip>

@@ -10,7 +10,6 @@ import type { PostFilterResolveResponseT } from "../api/types";
 import ScrollableList from "../scrollable-list/ScrollableList";
 import { Button } from "../ui-components/Button";
 import { CheckboxField } from "../ui-components/CheckboxField";
-import { Icon } from "../ui-components/Icon";
 import {
   Modal,
   ModalBody,
@@ -87,23 +86,17 @@ const UploadFilterListModal = ({
       <ModalHeader>{t("uploadFilterListModal.headline")}</ModalHeader>
       <ModalBody>
         <div className={root()}>
-          {loading && <Icon icon={LoaderCircleIcon} className="text-center" />}
+          {loading && <LoaderCircleIcon className="text-center" />}
           {error && (
             <p>
-              <Icon
-                icon={CircleAlertIcon}
-                className={bigIcon({ kind: "error" })}
-              />
+              <CircleAlertIcon className={bigIcon({ kind: "error" })} />
               {t("uploadConceptListModal.error")}
             </p>
           )}
           {hasUnresolvedItems && (
             <div className="flex flex-col gap-[5px]">
               <p className={msg()}>
-                <Icon
-                  icon={CircleAlertIcon}
-                  className={bigIcon({ kind: "error" })}
-                />
+                <CircleAlertIcon className={bigIcon({ kind: "error" })} />
                 <span
                   // biome-ignore lint/security/noDangerouslySetInnerHtml: i18n text with markup
                   dangerouslySetInnerHTML={{
@@ -123,10 +116,7 @@ const UploadFilterListModal = ({
           <div className="flex flex-col gap-[5px]">
             {hasResolvedItems && (
               <p className={msg()}>
-                <Icon
-                  icon={CircleCheckIcon}
-                  className={bigIcon({ kind: "success" })}
-                />
+                <CircleCheckIcon className={bigIcon({ kind: "success" })} />
                 {t("uploadConceptListModal.resolvedCodes", {
                   count: resolvedItemsCount,
                 })}

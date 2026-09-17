@@ -8,7 +8,6 @@ import {
   DisclosurePanel,
   DisclosureTitle,
 } from "./Disclosure";
-import { Icon } from "./Icon";
 
 export default {
   title: "UiComponents/Disclosure",
@@ -39,7 +38,7 @@ export const WithInfoAndActions: Story = {
           info="Regions the report covers."
           actions={
             <Button size="sm" intent="tertiary" aria-label="Remove">
-              <Icon icon={XIcon} />
+              <XIcon />
             </Button>
           }
         >

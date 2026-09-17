@@ -10,7 +10,6 @@ import type { StateT } from "../app/reducers";
 import { NodeIcon } from "../concept-trees/NodeIcon";
 import type { NodeIconT } from "../model/node";
 import { Highlighter } from "../ui-components/Highlighter";
-import { Icon } from "../ui-components/Icon";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import InfoPaneCollapsed from "./InfoPaneCollapsed";
@@ -193,7 +192,7 @@ const InfoPane = () => {
                   isSelected
                   onChange={onToggleAdditionalInfos}
                 >
-                  <Icon icon={PinIcon} />
+                  <PinIcon />
                 </ToggleButton>
               )
             }

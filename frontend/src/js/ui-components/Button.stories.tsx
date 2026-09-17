@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { PlusIcon, TrashIcon } from "lucide-react";
 
 import { Button } from "./Button";
-import { Icon } from "./Icon";
 
 export default {
   title: "UiComponents/Button",
@@ -36,7 +35,7 @@ export const LinkInText: Story = {
       A link button sits in flowing text, takes the text's size and line height,
       and wraps with it: <Button intent="link">import a list</Button> or{" "}
       <Button intent="link">
-        <Icon icon={PlusIcon} />
+        <PlusIcon />
         add one by hand
       </Button>
       .
@@ -48,11 +47,11 @@ export const Danger: Story = {
   render: () => (
     <div className="flex items-center gap-3">
       <Button intent="secondary" danger>
-        <Icon icon={TrashIcon} />
+        <TrashIcon />
         secondary
       </Button>
       <Button intent="tertiary" danger>
-        <Icon icon={TrashIcon} />
+        <TrashIcon />
         tertiary
       </Button>
     </div>
@@ -66,14 +65,14 @@ export const Sizes: Story = {
         <div key={size} className="flex items-center gap-3">
           <Button size={size}>{size}</Button>
           <Button size={size}>
-            <Icon icon={PlusIcon} />
+            <PlusIcon />
             with icon
           </Button>
           <Button size={size} aria-label="Delete">
-            <Icon icon={TrashIcon} />
+            <TrashIcon />
           </Button>
           <Button size={size} intent="tertiary" aria-label="Delete">
-            <Icon icon={TrashIcon} />
+            <TrashIcon />
           </Button>
         </div>
       ))}

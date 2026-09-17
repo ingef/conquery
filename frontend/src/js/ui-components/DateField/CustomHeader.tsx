@@ -6,7 +6,6 @@ import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../../api/types";
 import { useMonthName, useMonthNames } from "../../common/helpers/dateHelper";
 import { Button } from "../Button";
-import { Icon } from "../Icon";
 import { List, Menu } from "../InputMultiSelect/InputSelectComponents";
 import { ToggleButton } from "../ToggleButton";
 
@@ -152,7 +151,7 @@ export const CustomHeader = ({
         onPress={decreaseMonth}
         isDisabled={prevMonthButtonDisabled}
       >
-        <Icon icon={ChevronLeftIcon} />
+        <ChevronLeftIcon />
       </Button>
       <YearMonthSelect
         date={date}
@@ -165,7 +164,7 @@ export const CustomHeader = ({
         onPress={increaseMonth}
         isDisabled={nextMonthButtonDisabled}
       >
-        <Icon icon={ChevronRightIcon} />
+        <ChevronRightIcon />
       </Button>
     </div>
   );

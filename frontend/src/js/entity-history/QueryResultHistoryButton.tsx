@@ -5,7 +5,6 @@ import type { ColumnDescription } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import { openHistory, useNewHistorySession } from "./actions";
 
 export const QueryResultHistoryButton = ({
@@ -34,7 +33,7 @@ export const QueryResultHistoryButton = ({
         dispatch(openHistory());
       }}
     >
-      <Icon icon={isLoading ? LoaderCircleIcon : ListIcon} />
+      {isLoading ? <LoaderCircleIcon /> : <ListIcon />}
       {t("history.history")}
     </Button>
   );

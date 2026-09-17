@@ -4,7 +4,6 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { tv } from "tailwind-variants";
 import type { PreviewStatistics } from "../api/types";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 import Diagram from "./Diagram";
 
 const diagram = tv({
@@ -81,7 +80,7 @@ export default function Charts({
           onPress={() => updatePage(-1)}
           isDisabled={page === 0}
         >
-          <Icon icon={ArrowLeftIcon} />
+          <ArrowLeftIcon />
         </Button>
         <span>
           {t("preview.page")} {page + 1}/
@@ -93,7 +92,7 @@ export default function Charts({
           onPress={() => updatePage(1)}
           isDisabled={page === maxPage - 1}
         >
-          <Icon icon={ArrowRightIcon} />
+          <ArrowRightIcon />
         </Button>
       </div>
     </div>

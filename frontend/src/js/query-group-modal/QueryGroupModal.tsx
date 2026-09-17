@@ -9,7 +9,6 @@ import type { StandardQueryStateT } from "../standard-query-editor/queryReducer"
 import type { QueryGroupType } from "../standard-query-editor/types";
 import { Button } from "../ui-components/Button";
 import { DateRangeField } from "../ui-components/DateRangeField";
-import { Icon } from "../ui-components/Icon";
 import {
   Modal,
   ModalBody,
@@ -84,7 +83,7 @@ const QueryGroupModal = ({
     return hasActiveDate ? (
       <span className="ml-5">
         <Button intent="link" onPress={onResetAllDates}>
-          <Icon icon={RotateCcwIcon} />
+          <RotateCcwIcon />
           {t("queryNodeEditor.reset")}
         </Button>
       </span>

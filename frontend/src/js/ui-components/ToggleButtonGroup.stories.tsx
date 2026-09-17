@@ -8,7 +8,6 @@ import {
   TargetIcon,
 } from "lucide-react";
 
-import { Icon } from "./Icon";
 import { ToggleButton } from "./ToggleButton";
 import { ToggleButtonGroup } from "./ToggleButtonGroup";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
@@ -121,15 +120,15 @@ export const MultipleSelection: Story = {
       aria-label="Content"
     >
       <ToggleButton id="money">
-        <Icon icon={EuroIcon} />
+        <EuroIcon />
         money
       </ToggleButton>
       <ToggleButton id="concept">
-        <Icon icon={FolderIcon} />
+        <FolderIcon />
         concepts
       </ToggleButton>
       <ToggleButton id="rest">
-        <Icon icon={InfoIcon} />
+        <InfoIcon />
         other
       </ToggleButton>
     </ToggleButtonGroup>
@@ -146,10 +145,10 @@ export const VerticalIcons: Story = {
       defaultSelectedKeys={["summary"]}
       aria-label="Detail level"
     >
-      {detailLevels.map(({ id, icon, label }) => (
+      {detailLevels.map(({ id, icon: LevelIcon, label }) => (
         <TooltipTrigger key={id}>
           <ToggleButton id={id} aria-label={label}>
-            <Icon icon={icon} />
+            <LevelIcon />
           </ToggleButton>
           <Tooltip placement="right">{label}</Tooltip>
         </TooltipTrigger>

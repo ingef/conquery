@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import { Button } from "./Button";
-import { Icon } from "./Icon";
 import { Tooltip, TooltipTrigger } from "./Tooltip";
 
 const input = tv({
@@ -71,7 +70,7 @@ const EditableTextForm = ({
               type="submit"
               isDisabled={loading}
             >
-              <Icon icon={loading ? LoaderCircleIcon : CheckIcon} />
+              {loading ? <LoaderCircleIcon /> : <CheckIcon />}
             </Button>
             <Tooltip>{t("common.save")}</Tooltip>
           </TooltipTrigger>

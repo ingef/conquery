@@ -14,7 +14,6 @@ import {
 } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
 import { DateField } from "./DateField/DateField";
-import { Icon } from "./Icon";
 import InfoTooltip from "./InfoTooltip";
 import { Label } from "./Label";
 
@@ -138,7 +137,7 @@ export const DateRangeField = ({
           indexPrefix={indexPrefix}
           isDisabled={isDisabled}
         >
-          <Icon icon={CalendarIcon} className="mr-[10px] text-gray-500" />
+          <CalendarIcon className="mr-[10px] text-gray-500" />
           {label}
           <InfoTooltip
             excludeFromTabOrder

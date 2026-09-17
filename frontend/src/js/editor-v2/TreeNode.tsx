@@ -15,7 +15,6 @@ import Dropzone, {
   type DropzoneProps,
   type PossibleDroppableObject,
 } from "../ui-components/Dropzone";
-import { Icon } from "../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -301,10 +300,7 @@ export function TreeNode({
                 )}
                 {tree.dates?.excluded && (
                   <div className={dates()}>
-                    <Icon
-                      icon={CalendarMinusIcon}
-                      className="mr-[10px] text-red"
-                    />
+                    <CalendarMinusIcon className="mr-[10px] text-red" />
                     {t("editorV2.datesExcluded")}
                   </div>
                 )}
