@@ -1,8 +1,9 @@
 package com.bakdata.conquery.util.validation;
 
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+
+import com.bakdata.conquery.models.identifiable.ids.Id;
 
 public class ResolvableIdValidator implements ConstraintValidator<ResolvableId, Id<?,?>> {
 	@Override

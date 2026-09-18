@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
 import java.util.function.BiFunction;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -15,11 +13,9 @@ import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter

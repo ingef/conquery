@@ -2,9 +2,6 @@ package com.bakdata.conquery.apiv1.query.concept.filter;
 
 import java.math.BigDecimal;
 import java.util.Set;
-import javax.annotation.Nonnull;
-
-import com.bakdata.conquery.util.validation.ResolvableId;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -22,16 +19,10 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
-import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.OptBoolean;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Setter;
-import lombok.ToString;
+import com.bakdata.conquery.util.validation.ResolvableId;
+import com.fasterxml.jackson.annotation.*;
+import javax.annotation.Nonnull;
+import lombok.*;
 import org.jetbrains.annotations.TestOnly;
 import org.jooq.Condition;
 

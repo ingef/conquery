@@ -6,7 +6,6 @@ import static org.jooq.impl.DSL.*;
 
 import java.util.Collections;
 import java.util.Set;
-import javax.annotation.Nullable;
 import jakarta.validation.Valid;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -32,6 +31,7 @@ import com.bakdata.conquery.sql.conversion.model.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import javax.annotation.Nullable;
 import lombok.Getter;
 import org.jooq.Field;
 

@@ -2,15 +2,13 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.EnumSet;
 import java.util.List;
-
-import com.bakdata.conquery.models.common.ColumnUtils;
-import com.bakdata.conquery.util.validation.ResolvableId;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.ColumnUtils;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.concepts.filters.AggregationFilter;
@@ -20,6 +18,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.QuartersInYearAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;

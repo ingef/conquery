@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Set;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -18,15 +24,9 @@ import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Set;
 
 /**
  * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
