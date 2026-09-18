@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.Collection;
 import java.util.List;
 
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
@@ -27,7 +28,10 @@ public class ConnectorId extends NamespacedId<Connector> {
 
 	@Override
 	public Connector get() {
-		return getDomain().getStorage(getDataset()).getConcept(getConcept()).getConnectorByName(getConnector());
+
+		Concept<?> resolvedConcept = concept.get();
+		if (resolvedConcept == null) return null;
+		return resolvedConcept.getConnectorByName(getConnector());
 	}
 
 	@Override

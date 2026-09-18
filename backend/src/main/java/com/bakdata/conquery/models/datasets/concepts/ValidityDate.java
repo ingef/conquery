@@ -11,14 +11,11 @@ import com.bakdata.conquery.models.identifiable.LabeledNamespaceIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter
@@ -28,11 +25,15 @@ import lombok.extern.slf4j.Slf4j;
 public class ValidityDate extends LabeledNamespaceIdentifiable<ValidityDateId> implements DaterangeSelectOrFilter {
 
 	@Nullable
+	@ResolvableId
 	private ColumnId column;
 	@Nullable
+	@ResolvableId
 	private ColumnId startColumn;
 	@Nullable
+	@ResolvableId
 	private ColumnId endColumn;
+
 	@JsonBackReference
 	@ToString.Exclude
 	@EqualsAndHashCode.Exclude

@@ -1,6 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -19,6 +22,7 @@ import com.bakdata.conquery.models.query.filter.event.FlagColumnsFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.FlagSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -38,7 +42,10 @@ import lombok.ToString;
 @ToString
 public class FlagFilter extends EventFilter<Set<String>> {
 
-	private final Map<String, ColumnId> flags;
+	@Valid
+	@NotEmpty
+	@NotNull
+	private final Map<String, @ResolvableId ColumnId> flags;
 
 	@Override
 	protected void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
