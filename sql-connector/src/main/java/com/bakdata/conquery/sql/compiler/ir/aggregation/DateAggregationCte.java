@@ -1,7 +1,5 @@
 package com.bakdata.conquery.sql.compiler.ir.aggregation;
 
-import java.util.List;
-
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 
@@ -22,20 +20,10 @@ abstract class DateAggregationCte {
 		String predecessor = dateAggregationTables.getPredecessor(cteStep);
 		context = context.qualify(predecessor);
 
-		QueryStep.QueryStepBuilder builder = this.convertStep(context, predecessor);
-
-		if (cteStep != DateAggregationCteStep.NODE_NO_OVERLAP) {
-			builder = builder.cteName(dateAggregationTables.cteName(cteStep))
-							 .predecessors(List.of(previous));
-		}
-		if (cteStep != DateAggregationCteStep.INVERT && cteStep != DateAggregationCteStep.NODE_NO_OVERLAP) {
-			builder = builder.fromTable(QueryStep.toTableLike(predecessor));
-		}
-
-		return builder.build();
+		return this.convertStep(context, predecessor, previous);
 	}
 
-	protected abstract QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor);
+	protected abstract QueryStep convertStep(DateAggregationContext context, String predecessor, QueryStep previous);
 
 	public abstract DateAggregationCteStep getCteStep();
 

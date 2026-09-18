@@ -42,14 +42,12 @@ public class ConnectorCteCompiler {
 			if (!input.tables().isRequiredStep(cteStep)) {
 				continue;
 			}
-			QueryStep.QueryStepBuilder builder = compileConnectorStep(input, cteStep, previous)
-					.cteName(input.tables().cteName(cteStep));
-			previous = Optional.of(completeStep(builder, previous));
+			previous = Optional.of(compileConnectorStep(input, cteStep, previous));
 		}
 		return previous;
 	}
 
-	public static QueryStep.QueryStepBuilder compilePreprocessing(PreprocessingCteInput input) {
+	static QueryStep compilePreprocessing(PreprocessingCteInput input, String cteName) {
 		List<SqlSelect> preprocessingSelects = input.sqlSelects().stream()
 				.flatMap(selects -> selects.getPreprocessingSelects().stream())
 				.toList();
@@ -73,9 +71,12 @@ public class ConnectorCteCompiler {
 					.sqlSelects(preprocessingSelects)
 					.build();
 			return QueryStep.builder()
+					.cteName(cteName)
 					.selects(selects)
 					.fromTable(input.sourceTable())
-					.conditions(conditions);
+					.conditions(conditions)
+					.predecessors(List.of())
+					.build();
 		}
 
 		QueryStep stratificationTableCte = input.stratificationTable().orElseThrow();
@@ -101,14 +102,18 @@ public class ConnectorCteCompiler {
 				.build();
 
 		return QueryStep.builder()
+				.cteName(cteName)
 				.selects(selects)
 				.fromTable(joinedTable)
-				.conditions(conditions);
+				.conditions(conditions)
+				.predecessors(List.of())
+				.build();
 	}
 
-	public static QueryStep.QueryStepBuilder compileAggregationSelect(
+	static QueryStep compileAggregationSelect(
 			QueryStep predecessor,
-			List<ConnectorSqlSelects> sqlSelects
+			List<ConnectorSqlSelects> sqlSelects,
+			String cteName
 	) {
 		List<SqlSelect> aggregationSelects = sqlSelects.stream()
 				.flatMap(selects -> selects.getAggregationSelects().stream())
@@ -129,14 +134,19 @@ public class ConnectorCteCompiler {
 		).toList();
 
 		return QueryStep.builder()
+				.cteName(cteName)
 				.selects(selects)
-				.groupBy(groupByFields);
+				.fromTable(QueryStep.toTableLike(predecessor.getCteName()))
+				.groupBy(groupByFields)
+				.predecessors(List.of(predecessor))
+				.build();
 	}
 
-	public static QueryStep.QueryStepBuilder compileAggregationFilter(
+	static QueryStep compileAggregationFilter(
 			QueryStep predecessor,
 			List<ConnectorSqlSelects> sqlSelects,
-			List<SqlFilters> sqlFilters
+			List<SqlFilters> sqlFilters,
+			String cteName
 	) {
 		Selects predecessorSelects = predecessor.getQualifiedSelects();
 		List<SqlSelect> finalSelects = sqlSelects.stream()
@@ -156,11 +166,15 @@ public class ConnectorCteCompiler {
 				.toList();
 
 		return QueryStep.builder()
+				.cteName(cteName)
 				.selects(selects)
-				.conditions(conditions);
+				.fromTable(QueryStep.toTableLike(predecessor.getCteName()))
+				.conditions(conditions)
+				.predecessors(List.of(predecessor))
+				.build();
 	}
 
-	public static QueryStep.QueryStepBuilder compileJoinBranches(JoinBranchesCteInput input) {
+	static QueryStep compileJoinBranches(JoinBranchesCteInput input, String cteName) {
 		List<QueryStep> queriesToJoin = new ArrayList<>();
 		queriesToJoin.add(input.predecessor());
 
@@ -199,26 +213,29 @@ public class ConnectorCteCompiler {
 				.build();
 
 		return QueryStep.builder()
+				.cteName(cteName)
 				.selects(selects)
 				.fromTable(QueryStepJoiner.join(queriesToJoin, JoinMode.FULL_OUTER))
-				.predecessors(queriesToJoin);
+				.predecessors(queriesToJoin)
+				.build();
 	}
 
-	private static QueryStep.QueryStepBuilder compileConnectorStep(
+	private static QueryStep compileConnectorStep(
 			ConnectorCtePipelineInput input,
 			ConceptCteStep cteStep,
 			Optional<QueryStep> previous
 	) {
+		String cteName = input.tables().cteName(cteStep);
 		if (cteStep == ConceptCteStep.PREPROCESSING) {
 			// TODO this looks like it can be unwinded
-			return compilePreprocessing(input.preprocessing());
+			return compilePreprocessing(input.preprocessing(), cteName);
 		}
 
 		QueryStep predecessor = previous.orElseThrow(() -> new IllegalStateException(
 				"Connector CTE %s requires a predecessor".formatted(cteStep)
 		));
 		return switch (cteStep) {
-			case AGGREGATION_SELECT -> compileAggregationSelect(predecessor, input.preprocessing().sqlSelects());
+			case AGGREGATION_SELECT -> compileAggregationSelect(predecessor, input.preprocessing().sqlSelects(), cteName);
 			case JOIN_BRANCHES -> compileJoinBranches(new JoinBranchesCteInput(
 					predecessor,
 					input.preprocessing().validityDate(),
@@ -227,30 +244,15 @@ public class ConnectorCteCompiler {
 					input.excludedFromTimeAggregation(),
 					input.eventDateSelects(),
 					input.additionalPredecessors()
-			));
+			), cteName);
 			case AGGREGATION_FILTER -> compileAggregationFilter(
 					predecessor,
 					input.preprocessing().sqlSelects(),
-					input.preprocessing().sqlFilters()
+					input.preprocessing().sqlFilters(),
+					cteName
 			);
 			default -> throw new IllegalArgumentException("Not a connector pipeline step: %s".formatted(cteStep));
 		};
-	}
-
-	private static QueryStep completeStep(QueryStep.QueryStepBuilder builder, Optional<QueryStep> previous) {
-		if (previous.isEmpty()) {
-			return builder.predecessors(List.of()).build();
-		}
-
-		QueryStep partialStep = builder.build();
-		if (partialStep.getFromTables().isEmpty() && partialStep.getPredecessors().isEmpty()) {
-			QueryStep predecessor = previous.orElseThrow();
-			return builder
-					.fromTable(QueryStep.toTableLike(predecessor.getCteName()))
-					.predecessors(List.of(predecessor))
-					.build();
-		}
-		return partialStep;
 	}
 
 	private static SqlSelect qualifyUnlessUniversal(SqlSelect sqlSelect, String predecessorName) {

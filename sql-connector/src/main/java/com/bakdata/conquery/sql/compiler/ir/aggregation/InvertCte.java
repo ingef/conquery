@@ -38,7 +38,7 @@ class InvertCte extends DateAggregationCte {
 	}
 
 	@Override
-	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor) {
+	protected QueryStep convertStep(DateAggregationContext context, String predecessor, QueryStep previous) {
 
 		QueryStep rowNumberStep = context.getStep(DateAggregationCteStep.ROW_NUMBER);
 
@@ -51,8 +51,11 @@ class InvertCte extends DateAggregationCte {
 		TableOnConditionStep<Record> fromTable = selfJoinWithShiftedRows(leftIds, rightIds, rowNumberStep);
 
 		return QueryStep.builder()
+						.cteName(context.getDateAggregationTables().cteName(getCteStep()))
 						.selects(invertSelects)
-						.fromTable(fromTable);
+						.fromTable(fromTable)
+						.predecessors(List.of(previous))
+						.build();
 	}
 
 	private Selects getInvertSelects(QueryStep rowNumberStep, SqlIdColumns coalescedIds, DateAggregationContext context) {

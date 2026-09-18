@@ -16,7 +16,7 @@ class MergeCte extends DateAggregationCte {
 	}
 
 	@Override
-	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor) {
+	protected QueryStep convertStep(DateAggregationContext context, String predecessor, QueryStep previous) {
 
 		SqlAggregationAction aggregationAction = context.getSqlAggregationAction();
 		List<QueryStep> noOverlapSteps = aggregationAction.getNoOverlapSelects(context);
@@ -25,8 +25,12 @@ class MergeCte extends DateAggregationCte {
 		List<QueryStep> unionSteps = noOverlapSteps.stream().map(MergeCte::createUnionStep).collect(Collectors.toList());
 
 		return QueryStep.builder()
+						.cteName(context.getDateAggregationTables().cteName(getCteStep()))
 						.selects(overlapStep.getQualifiedSelects())
-						.union(unionSteps);
+						.fromTable(QueryStep.toTableLike(predecessor))
+						.union(unionSteps)
+						.predecessors(List.of(previous))
+						.build();
 	}
 
 	private static QueryStep createUnionStep(QueryStep noOverlapStep) {

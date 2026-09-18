@@ -23,7 +23,7 @@ class OverlapCte extends DateAggregationCte {
 	}
 
 	@Override
-	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor) {
+	protected QueryStep convertStep(DateAggregationContext context, String predecessor, QueryStep previous) {
 
 		DateAggregationDates dateAggregationDates = context.getDateAggregationDates();
 		List<Field<Date>> allStarts = dateAggregationDates.allStarts();
@@ -44,8 +44,12 @@ class OverlapCte extends DateAggregationCte {
 		Condition overlapConditions = allStartsNotNull.and(startBeforeEnd);
 
 		return QueryStep.builder()
+						.cteName(context.getDateAggregationTables().cteName(getCteStep()))
 						.selects(overlapSelects)
-						.conditions(List.of(overlapConditions));
+						.fromTable(QueryStep.toTableLike(predecessor))
+						.conditions(List.of(overlapConditions))
+						.predecessors(List.of(previous))
+						.build();
 	}
 
 }
