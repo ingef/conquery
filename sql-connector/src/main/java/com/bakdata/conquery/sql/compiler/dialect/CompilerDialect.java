@@ -51,6 +51,16 @@ public interface CompilerDialect {
 		);
 	}
 
+	/** Regex fragment matching any number of characters in this dialect. */
+	default String regexAnyCharacters() {
+		return ".*";
+	}
+
+	/** Test whether a string field matches the supplied regular expression. */
+	default Condition regexMatches(Field<String> field, String pattern) {
+		return field.likeRegex(pattern);
+	}
+
 	/** SQL expression for an already-resolved external entity ID. */
 	default Field<String> externalId(String id) {
 		return DSL.inline(id, SQLDataType.VARCHAR);

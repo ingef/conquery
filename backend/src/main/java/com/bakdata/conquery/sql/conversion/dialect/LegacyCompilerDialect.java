@@ -31,6 +31,7 @@ import com.bakdata.conquery.sql.conversion.query.FormConversionHelper;
 import com.bakdata.conquery.sql.conversion.query.RelativFormQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.SecondaryIdQueryConverter;
 import com.bakdata.conquery.sql.conversion.query.TableExportQueryConverter;
+import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -97,6 +98,16 @@ public interface LegacyCompilerDialect extends CompilerDialect {
 	@Override
 	default QueryStep unnestDateRange(ColumnDateRange dateRange, QueryStep predecessor, String cteName) {
 		return getFunctionProvider().unnestDaterange(dateRange, predecessor, cteName);
+	}
+
+	@Override
+	default String regexAnyCharacters() {
+		return getFunctionProvider().getAnyCharRegex();
+	}
+
+	@Override
+	default Condition regexMatches(Field<String> field, String pattern) {
+		return getFunctionProvider().likeRegex(field, pattern);
 	}
 
 	StratificationFunctions getStratificationFunctions();
