@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1.query.concept.filter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.CheckForNull;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -19,7 +20,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.validation.ValidationMethod;
-import javax.annotation.CheckForNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;

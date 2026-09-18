@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.List;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -18,7 +19,6 @@ import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountQuartersSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.util.validation.ResolvableId;
-import javax.annotation.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 

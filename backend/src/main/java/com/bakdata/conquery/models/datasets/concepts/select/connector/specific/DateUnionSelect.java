@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
 import java.util.List;
+import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
@@ -15,7 +16,6 @@ import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import javax.annotation.Nullable;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

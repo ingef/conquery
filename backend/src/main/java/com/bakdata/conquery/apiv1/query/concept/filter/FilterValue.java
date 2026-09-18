@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.query.concept.filter;
 
 import java.math.BigDecimal;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -21,7 +22,6 @@ import com.bakdata.conquery.sql.conversion.model.SqlIdColumns;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.*;
-import javax.annotation.Nonnull;
 import lombok.*;
 import org.jetbrains.annotations.TestOnly;
 import org.jooq.Condition;
