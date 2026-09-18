@@ -7,11 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.ColumnType;
 import com.bakdata.conquery.sql.compiler.conversion.Converter;
@@ -42,6 +45,15 @@ class ResolvedFilterConverterTest {
 	);
 	private static final ResolvedColumn NUMBER_COLUMN = new ResolvedColumn(
 			"score", TABLE, "score", ColumnType.DECIMAL, true
+	);
+	private static final ResolvedColumn DATE_COLUMN = new ResolvedColumn(
+			"start", TABLE, "start_date", ColumnType.DATE, true
+	);
+	private static final ResolvedColumn FLAG_A = new ResolvedColumn(
+			"flag-a", TABLE, "flag_a", ColumnType.BOOLEAN, false
+	);
+	private static final ResolvedColumn FLAG_B = new ResolvedColumn(
+			"flag-b", TABLE, "flag_b", ColumnType.BOOLEAN, false
 	);
 	private static final FilterConversionContext CONTEXT = new FilterConversionContext(
 			new TestDialect(),
@@ -82,6 +94,42 @@ class ResolvedFilterConverterTest {
 
 		assertEquals("\"analytics\".\"events\".\"score\" >= 10.5", render(result));
 		assertEmptySelects(result.getSelects());
+	}
+
+	@Test
+	void shouldConvertDateDistanceRangeThroughDialect() {
+		BuiltInFilters.DateDistanceRange filter = new BuiltInFilters.DateDistanceRange(
+				"age",
+				DATE_COLUMN,
+				ChronoUnit.YEARS,
+				LocalDate.of(2025, 2, 1),
+				NumberRange.closed(18, 65)
+		);
+
+		SqlFilters result = converter.convert(filter, CONTEXT);
+
+		assertEquals(
+				"(date_distance('years', \"analytics\".\"events\".\"start_date\", date '2025-02-01') >= 18 and date_distance('years', \"analytics\".\"events\".\"start_date\", date '2025-02-01') <= 65)",
+				render(result)
+		);
+	}
+
+	@Test
+	void shouldConvertSelectedFlags() {
+		BuiltInFilters.Flags filter = new BuiltInFilters.Flags(
+				"flags",
+				Map.of("A", FLAG_A, "B", FLAG_B),
+				Set.of("A", "B")
+		);
+
+		SqlFilters result = converter.convert(filter, CONTEXT);
+
+		assertTrue(
+				Set.of(
+						"(\"analytics\".\"events\".\"flag_a\" = true or \"analytics\".\"events\".\"flag_b\" = true)",
+						"(\"analytics\".\"events\".\"flag_b\" = true or \"analytics\".\"events\".\"flag_a\" = true)"
+				).contains(render(result))
+		);
 	}
 
 	@Test
@@ -137,6 +185,17 @@ class ResolvedFilterConverterTest {
 		@Override
 		public Field<Date> maximumDate() {
 			return field(name("maximum_date"), Date.class);
+		}
+
+		@Override
+		public Field<Integer> dateDistance(ChronoUnit unit, Field<Date> startDate, LocalDate endDate) {
+			return DSL.function(
+					"date_distance",
+					Integer.class,
+					DSL.inline(unit.name()),
+					startDate,
+					DSL.inline(Date.valueOf(endDate))
+			);
 		}
 
 		@Override
