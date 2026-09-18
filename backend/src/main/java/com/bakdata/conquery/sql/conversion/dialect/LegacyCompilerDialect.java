@@ -1,6 +1,8 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -108,6 +110,15 @@ public interface LegacyCompilerDialect extends CompilerDialect {
 	@Override
 	default Condition regexMatches(Field<String> field, String pattern) {
 		return getFunctionProvider().likeRegex(field, pattern);
+	}
+
+	@Override
+	default Field<Integer> dateDistance(ChronoUnit unit, Field<Date> startDate, LocalDate endDate) {
+		return getFunctionProvider().dateDistance(
+				unit,
+				startDate,
+				getFunctionProvider().toDateField(endDate.toString())
+		);
 	}
 
 	StratificationFunctions getStratificationFunctions();

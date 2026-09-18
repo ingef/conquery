@@ -1,12 +1,14 @@
 package com.bakdata.conquery.sql.compiler.conversion.operation;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.util.List;
 import java.util.function.BiFunction;
 
 import com.bakdata.conquery.sql.compiler.conversion.Converter;
 import com.bakdata.conquery.sql.compiler.ir.SchemaSql;
 import com.bakdata.conquery.sql.compiler.ir.condition.InclusiveRangeCondition;
+import com.bakdata.conquery.sql.compiler.ir.condition.FlagCondition;
 import com.bakdata.conquery.sql.compiler.ir.condition.StringValuesCondition;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereCondition;
@@ -27,7 +29,9 @@ final class BuiltInColumnFilterConverters {
 	static List<Converter<? extends ResolvedFilter, SqlFilters, FilterConversionContext>> create() {
 		return List.of(
 				converter(BuiltInFilters.StringValues.class, BuiltInColumnFilterConverters::convertStringValues),
-				converter(BuiltInFilters.NumericColumnRange.class, BuiltInColumnFilterConverters::convertNumericRange)
+				converter(BuiltInFilters.NumericColumnRange.class, BuiltInColumnFilterConverters::convertNumericRange),
+				converter(BuiltInFilters.DateDistanceRange.class, BuiltInColumnFilterConverters::convertDateDistanceRange),
+				converter(BuiltInFilters.Flags.class, BuiltInColumnFilterConverters::convertFlags)
 		);
 	}
 
@@ -48,6 +52,28 @@ final class BuiltInColumnFilterConverters {
 	) {
 		Field<BigDecimal> field = SchemaSql.field(filter.column(), BigDecimal.class);
 		return eventFilter(new InclusiveRangeCondition<>(field, filter.range()));
+	}
+
+	private static SqlFilters convertDateDistanceRange(
+			BuiltInFilters.DateDistanceRange filter,
+			FilterConversionContext context
+	) {
+		Field<Date> startDate = SchemaSql.field(filter.column(), Date.class);
+		Field<BigDecimal> distance = context.dialect()
+				.dateDistance(filter.unit(), startDate, filter.endDate())
+				.coerce(BigDecimal.class);
+		return eventFilter(new InclusiveRangeCondition<>(distance, filter.range()));
+	}
+
+	private static SqlFilters convertFlags(
+			BuiltInFilters.Flags filter,
+			FilterConversionContext context
+	) {
+		List<Field<Boolean>> selectedFlags = filter.selectedFlags().stream()
+				.map(filter.availableFlags().columns()::get)
+				.map(column -> SchemaSql.field(column, Boolean.class))
+				.toList();
+		return eventFilter(new FlagCondition(selectedFlags));
 	}
 
 	private static Field<String> substring(Field<String> field, SubstringRange range) {

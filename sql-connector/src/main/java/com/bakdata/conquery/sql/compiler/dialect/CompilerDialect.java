@@ -1,6 +1,8 @@
 package com.bakdata.conquery.sql.compiler.dialect;
 
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
@@ -59,6 +61,15 @@ public interface CompilerDialect {
 	/** Test whether a string field matches the supplied regular expression. */
 	default Condition regexMatches(Field<String> field, String pattern) {
 		return field.likeRegex(pattern);
+	}
+
+	/**
+	 * Calculate the distance between an inclusive start date and an inclusive end date in the requested unit.
+	 *
+	 * @throws UnsupportedOperationException when the dialect does not support date-distance operations
+	 */
+	default Field<Integer> dateDistance(ChronoUnit unit, Field<Date> startDate, LocalDate endDate) {
+		throw new UnsupportedOperationException("Date-distance calculation is not implemented by this dialect");
 	}
 
 	/** SQL expression for an already-resolved external entity ID. */
