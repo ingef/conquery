@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.compiler.ir.aggregation;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.compiler.ir.DateAggregationDates;
@@ -28,11 +29,11 @@ class RowNumberCte extends DateAggregationCte {
 	}
 
 	@Override
-	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor) {
+	protected QueryStep convertStep(DateAggregationContext context, String predecessor, QueryStep previous) {
 
 		SqlIdColumns ids = context.getIds();
 
-		ColumnDateRange aggregatedValidityDate = context.getDateAggregationDates().getValidityDates().get(0);
+		ColumnDateRange aggregatedValidityDate = context.getDateAggregationDates().getValidityDates().getFirst();
 		Field<Integer> rowNumber = DSL.rowNumber().over(DSL.partitionBy(ids.toFields()).orderBy(aggregatedValidityDate.getStart()))
 									  .as(ROW_NUMBER_FIELD_NAME);
 
@@ -46,7 +47,11 @@ class RowNumberCte extends DateAggregationCte {
 										  .build();
 
 		return QueryStep.builder()
-						.selects(rowNumberSelects);
+						.cteName(context.getDateAggregationTables().cteName(getCteStep()))
+						.selects(rowNumberSelects)
+						.fromTable(QueryStep.toTableLike(predecessor))
+						.predecessors(List.of(previous))
+						.build();
 	}
 
 }

@@ -23,7 +23,7 @@ class IntermediateTableCte extends DateAggregationCte {
 	}
 
 	@Override
-	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor) {
+	protected QueryStep convertStep(DateAggregationContext context, String predecessor, QueryStep previous) {
 
 
 		List<SqlSelect> intermediateTableSelects = context.getSqlAggregationAction().getIntermediateTableSelects(
@@ -49,8 +49,12 @@ class IntermediateTableCte extends DateAggregationCte {
 		Condition intermediateTableCondition = startIsNull.orNot(startBeforeEnd);
 
 		return QueryStep.builder()
+						.cteName(context.getDateAggregationTables().cteName(getCteStep()))
 						.selects(selects)
-						.conditions(List.of(intermediateTableCondition));
+						.fromTable(QueryStep.toTableLike(predecessor))
+						.conditions(List.of(intermediateTableCondition))
+						.predecessors(List.of(previous))
+						.build();
 	}
 
 }

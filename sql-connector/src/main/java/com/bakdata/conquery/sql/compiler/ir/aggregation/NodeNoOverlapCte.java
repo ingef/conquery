@@ -25,7 +25,7 @@ class NodeNoOverlapCte extends DateAggregationCte {
 	}
 
 	@Override
-	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context, String predecessor) {
+	protected QueryStep convertStep(DateAggregationContext context, String predecessor, QueryStep previous) {
 
 		// we create a no-overlap node for each query step we need to aggregate
 		DateAggregationDates dateAggregationDates = context.getDateAggregationDates();
@@ -33,20 +33,19 @@ class NodeNoOverlapCte extends DateAggregationCte {
 		QueryStep intermediateTableStep = context.getStep(DateAggregationCteStep.INTERMEDIATE_TABLE);
 
 		// first no-overlap step has intermediate table as predecessor
-		QueryStep.QueryStepBuilder noOverlapStep = createNoOverlapStep(validityDates.next(), context, intermediateTableStep);
+		QueryStep noOverlapStep = createNoOverlapStep(validityDates.next(), context, intermediateTableStep);
 
 		// each following step has it's predeceasing no-overlap as predecessor
 		while (validityDates.hasNext()) {
 			counter++;
-			QueryStep predeceasingNoOverlapStep = noOverlapStep.build();
-			context = context.withStep(getCteStep(), predeceasingNoOverlapStep);
-			noOverlapStep = createNoOverlapStep(validityDates.next(), context, predeceasingNoOverlapStep);
+			context = context.withStep(getCteStep(), noOverlapStep);
+			noOverlapStep = createNoOverlapStep(validityDates.next(), context, noOverlapStep);
 		}
 
 		return noOverlapStep;
 	}
 
-	private QueryStep.QueryStepBuilder createNoOverlapStep(
+	private QueryStep createNoOverlapStep(
 			ColumnDateRange validityDate,
 			DateAggregationContext context,
 			QueryStep predecessor
@@ -73,7 +72,8 @@ class NodeNoOverlapCte extends DateAggregationCte {
 						.selects(nodeNoOverlapSelects)
 						.fromTable(QueryStep.toTableLike(intermediateTableCteName))
 						.conditions(List.of(startNotNull))
-						.predecessors(List.of(predecessor));
+						.predecessors(List.of(predecessor))
+						.build();
 	}
 
 }

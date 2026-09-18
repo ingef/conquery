@@ -74,8 +74,10 @@ class ConnectorCteCompilerTest {
 	void shouldCompilePreprocessingAgainstConnectorTable() {
 		PreprocessingCteInput input = preprocessingInput(Optional.empty());
 
-		QueryStep result = ConnectorCteCompiler.compilePreprocessing(input).build();
+		QueryStep result = ConnectorCteCompiler.compilePreprocessing(input, "preprocessing");
 
+		assertEquals("preprocessing", result.getCteName());
+		assertTrue(result.getPredecessors().isEmpty());
 		assertEquals(List.of(name("score")), result.getSelects().getSqlSelects().stream()
 				.flatMap(sqlSelect -> sqlSelect.toFields().stream())
 				.map(Field::getQualifiedName)
@@ -102,7 +104,7 @@ class ConnectorCteCompilerTest {
 				.build();
 		PreprocessingCteInput input = preprocessingInput(Optional.of(stratificationTable));
 
-		QueryStep result = ConnectorCteCompiler.compilePreprocessing(input).build();
+		QueryStep result = ConnectorCteCompiler.compilePreprocessing(input, "preprocessing");
 
 		assertEquals(name("stratification", "person"), result.getSelects().getIds().getPrimaryColumn().getQualifiedName());
 		assertEquals(
@@ -121,9 +123,12 @@ class ConnectorCteCompilerTest {
 		FieldWrapper<Integer> aggregation = new FieldWrapper<>(field(name("aggregated"), Integer.class));
 		QueryStep result = ConnectorCteCompiler.compileAggregationSelect(
 				predecessor(),
-				List.of(ConnectorSqlSelects.builder().aggregationSelect(aggregation).build())
-		).build();
+				List.of(ConnectorSqlSelects.builder().aggregationSelect(aggregation).build()),
+				"aggregation"
+		);
 
+		assertEquals("aggregation", result.getCteName());
+		assertEquals(List.of(PREDECESSOR_NAME), result.getPredecessors().stream().map(QueryStep::getCteName).toList());
 		assertEquals(List.of(aggregation), result.getSelects().getSqlSelects());
 		assertEquals(
 				List.of(name(PREDECESSOR_NAME, "person"), name(PREDECESSOR_NAME, "stratification_start"), name(PREDECESSOR_NAME, "stratification_end")),
@@ -151,9 +156,12 @@ class ConnectorCteCompilerTest {
 		QueryStep result = ConnectorCteCompiler.compileAggregationFilter(
 				predecessor,
 				List.of(sqlSelects),
-				List.of(sqlFilter)
-		).build();
+				List.of(sqlFilter),
+				"filtered"
+		);
 
+		assertEquals("filtered", result.getCteName());
+		assertEquals(List.of(predecessor), result.getPredecessors());
 		List<SqlSelect> resultSelects = result.getSelects().getSqlSelects();
 		assertEquals(
 				name(PREDECESSOR_NAME, "metric"),
@@ -194,8 +202,9 @@ class ConnectorCteCompilerTest {
 				List.of(additionalPredecessor)
 		);
 
-		QueryStep result = ConnectorCteCompiler.compileJoinBranches(input).build();
+		QueryStep result = ConnectorCteCompiler.compileJoinBranches(input, "joined");
 
+		assertEquals("joined", result.getCteName());
 		assertEquals(List.of(PREDECESSOR_NAME, "additional"), result.getPredecessors().stream().map(QueryStep::getCteName).toList());
 		assertTrue(result.getSelects().getValidityDate().isEmpty());
 		assertEquals(
@@ -221,7 +230,7 @@ class ConnectorCteCompilerTest {
 				List.of()
 		);
 
-		QueryStep result = ConnectorCteCompiler.compileJoinBranches(input).build();
+		QueryStep result = ConnectorCteCompiler.compileJoinBranches(input, "joined");
 
 		assertEquals(
 				List.of(PREDECESSOR_NAME, "interval_complete", "interval_selects"),
@@ -252,7 +261,7 @@ class ConnectorCteCompilerTest {
 				List.of()
 		);
 
-		QueryStep result = ConnectorCteCompiler.compileJoinBranches(input).build();
+		QueryStep result = ConnectorCteCompiler.compileJoinBranches(input, "joined");
 
 		assertEquals(
 				List.of(PREDECESSOR_NAME, "interval_complete"),
