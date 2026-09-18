@@ -53,6 +53,11 @@ public final class BuiltInConditions {
 		}
 	}
 
+	/**
+	 * @deprecated Retained for direct SQL-conversion compatibility with the deprecated legacy prefix-range condition.
+	 * It is not supported by matching-statistics expression generation and must not be used for new conditions.
+	 */
+	@Deprecated
 	public record PrefixRange(
 			@NotNull @Valid @AllowedColumnTypes(ColumnType.STRING) ResolvedColumn column,
 			@NotBlank String minimum,
