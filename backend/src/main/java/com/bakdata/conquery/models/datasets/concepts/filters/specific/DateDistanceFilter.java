@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.query.filter.event.DateDistanceFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.DateDistanceSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import jakarta.validation.Valid;
@@ -38,6 +39,7 @@ public class DateDistanceFilter extends EventFilter<Range.LongRange> {
 
 	@Valid
 	@NotNull
+	@ResolvableId
 	private ColumnId column;
 
 	@NotNull

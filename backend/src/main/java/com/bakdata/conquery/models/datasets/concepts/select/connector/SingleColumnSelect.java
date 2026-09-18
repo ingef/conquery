@@ -4,6 +4,9 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -31,6 +34,7 @@ public abstract class SingleColumnSelect extends Select {
 
 	@NotNull
 	@NonNull
+	@ResolvableId
 	private ColumnId column;
 
 	/**
@@ -67,7 +71,11 @@ public abstract class SingleColumnSelect extends Select {
 	@ValidationMethod(message = "Column does not match required Type.")
 	public boolean isValidColumnType() {
 
-		MajorTypeId type = getColumn().resolve().getType();
+		Column resolved = getColumn().get();
+		if (resolved == null) {
+			return true;
+		}
+		MajorTypeId type = resolved.getType();
 		if (getAcceptedColumnTypes().contains(type)) {
 			return true;
 		}

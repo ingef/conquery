@@ -328,8 +328,9 @@ public class TableExportQuery extends Query {
 		final Map<ColumnId, List<ConceptId>> connectorColumns = new HashMap<>();
 		for (CQConcept con : concepts) {
 			for (CQTable cqTable : con.getTables()) {
-				Connector resolve = cqTable.getConnector().resolve();
-				if (resolve.getColumn() == null) {
+				Connector resolve = cqTable.getConnector().get();
+
+				if (resolve == null || resolve.getColumn() == null) {
 					continue;
 				}
 				connectorColumns.computeIfAbsent(resolve.getColumn(), ignored -> new ArrayList<>())

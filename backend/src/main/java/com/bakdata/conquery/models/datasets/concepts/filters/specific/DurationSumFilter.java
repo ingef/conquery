@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 
+import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.Valid;
 
@@ -42,13 +43,16 @@ public class DurationSumFilter extends AggregationFilter<Range.LongRange> implem
 
 	@Valid
 	@Nullable
-	private List<ColumnId> distinctBy;
+	private List<@ResolvableId ColumnId> distinctBy;
 	@JsonAlias("dateRangeColumn")
 	@Nullable
+	@ResolvableId
 	private ColumnId column;
 	@Nullable
+	@ResolvableId
 	private ColumnId startColumn;
 	@Nullable
+	@ResolvableId
 	private ColumnId endColumn;
 
 	@JsonIgnore

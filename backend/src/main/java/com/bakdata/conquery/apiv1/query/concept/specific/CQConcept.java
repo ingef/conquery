@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.*;
 import io.dropwizard.validation.ValidationMethod;
 import jakarta.validation.Valid;
@@ -50,7 +51,8 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	@JsonProperty("ids")
 	@NotEmpty
-	private List<ConceptElementId<?>> elements = Collections.emptyList();
+	@Valid
+	private List<@ResolvableId ConceptElementId<?>> elements = Collections.emptyList();
 
 	@Valid
 	@NotEmpty
@@ -59,7 +61,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	private List<CQTable> tables = Collections.emptyList();
 
 	@NotNull
-	private List<SelectId> selects = new ArrayList<>();
+	private List<@ResolvableId SelectId> selects = new ArrayList<>();
 
 	private boolean excludeFromTimeAggregation;
 
@@ -173,7 +175,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	@JsonIgnore
 	public ConceptId getConceptId() {
-		return elements.get(0).findConcept();
+		return elements.getFirst().findConcept();
 	}
 
 	@JsonIgnore

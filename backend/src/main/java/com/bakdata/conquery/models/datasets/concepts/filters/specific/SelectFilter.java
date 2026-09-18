@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.BiMap;
@@ -47,6 +48,7 @@ public abstract class SelectFilter<FE_TYPE> extends EventFilter<FE_TYPE> {
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
 	@Valid
 	@NotNull
+	@ResolvableId
 	private ColumnId column;
 	@CheckForNull
 	@Valid

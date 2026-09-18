@@ -15,6 +15,16 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Stream;
+
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.concepts.filters.EventFilter;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
+import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import jakarta.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
@@ -74,11 +84,6 @@ import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.NamespacedStorageProvider;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -325,8 +330,38 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void filterValueMoneyRange() throws JSONException, IOException {
+		// Concept filter setup
+		NamespaceStorage namespaceStorage = getNamespaceStorage();
+		final Dataset dataset = createDataset(namespaceStorage, getDatasetRegistry());
+		TreeConcept concept = createConcept(dataset, namespaceStorage);
+		ConceptTreeConnector connector = concept.getConnectors().getFirst();
+		EventFilter<FilterValue.CQMoneyRangeFilter> filter = new EventFilter<>() {
+			{
+				setName("filter");
+				setConnector(connector);
+			}
+
+
+			@Override
+			protected void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) {
+
+			}
+
+			@Override
+			public EventFilterNode<?> createFilterNode(FilterValue.CQMoneyRangeFilter o) {
+				return null;
+			}
+
+			@Override
+			public List<ColumnId> getRequiredColumns() {
+				return List.of();
+			}
+		};
+		connector.setFilters(List.of(filter));
+		namespaceStorage.updateConcept(concept);
+
 		FilterValue.CQMoneyRangeFilter filterValue =
-				new FilterValue.CQMoneyRangeFilter(FilterId.Parser.INSTANCE.parse("dataset.concept.connector.filter"), new Range.LongRange(2000L, 30000L));
+				new FilterValue.CQMoneyRangeFilter(filter.getId(), new Range.LongRange(2000L, 30000L));
 
 		filterValue.setConfig(getConfig());
 

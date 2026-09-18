@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.CheckForNull;
+
+import com.bakdata.conquery.util.validation.ResolvableId;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -34,13 +36,14 @@ public class CQTable {
 	private List<FilterValue<?>> filters = Collections.emptyList();
 
 	@NotNull
-	private List<ConnectorSelectId> selects = Collections.emptyList();
+	private List<@ResolvableId ConnectorSelectId> selects = Collections.emptyList();
 
 	@JsonBackReference
 	@EqualsAndHashCode.Exclude
 	private CQConcept concept;
 
 	@JsonProperty("id")
+	@ResolvableId
 	private ConnectorId connector;
 
 	private ValidityDateContainer dateColumn;

@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQua
 import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountQuartersSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
@@ -34,10 +35,13 @@ import static com.bakdata.conquery.models.events.MajorTypeId.DATE_RANGE;
 public class CountQuartersFilter extends AggregationFilter<Range.LongRange> implements DaterangeSelectOrFilter {
 
 	@Nullable
+	@ResolvableId
 	private ColumnId column;
 	@Nullable
+	@ResolvableId
 	private ColumnId startColumn;
 	@Nullable
+	@ResolvableId
 	private ColumnId endColumn;
 
 	@Override

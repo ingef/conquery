@@ -3,6 +3,8 @@ package com.bakdata.conquery.apiv1.query.concept.filter;
 import java.math.BigDecimal;
 import java.util.Set;
 import javax.annotation.Nonnull;
+
+import com.bakdata.conquery.util.validation.ResolvableId;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -45,6 +47,7 @@ public abstract class FilterValue<VALUE> {
 	@NotNull
 	@Nonnull
 	@ToString.Exclude
+	@ResolvableId
 	private FilterId filter;
 
 	@NotNull

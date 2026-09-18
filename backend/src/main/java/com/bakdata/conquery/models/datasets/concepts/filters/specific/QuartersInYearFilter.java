@@ -4,6 +4,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import com.bakdata.conquery.models.common.ColumnUtils;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -34,6 +35,7 @@ public class QuartersInYearFilter extends AggregationFilter<Range.LongRange> {
 
 	@Valid
 	@NotNull
+	@ResolvableId
 	private ColumnId column;
 
 	@Override

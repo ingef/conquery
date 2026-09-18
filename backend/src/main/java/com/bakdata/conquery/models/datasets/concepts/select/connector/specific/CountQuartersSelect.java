@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.conversion.model.aggregator.CountQuartersSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.ResultSetProcessor;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,10 +31,13 @@ import java.util.List;
 public class CountQuartersSelect extends Select implements DaterangeSelectOrFilter {
 
 	@Nullable
+	@ResolvableId
 	private ColumnId column;
 	@Nullable
+	@ResolvableId
 	private ColumnId startColumn;
 	@Nullable
+	@ResolvableId
 	private ColumnId endColumn;
 
 	@Override

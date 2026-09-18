@@ -27,6 +27,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Real
 import com.bakdata.conquery.models.query.queryplan.filter.AggregationFilterNode;
 import com.bakdata.conquery.sql.conversion.model.aggregator.SumSqlAggregator;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
+import com.bakdata.conquery.util.validation.ResolvableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import jakarta.validation.constraints.NotNull;
@@ -50,13 +51,15 @@ import java.util.List;
 @CPSType(id = "SUM", base = Filter.class)
 public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends AggregationFilter<RANGE> {
 
+	@NotNull
+	@ResolvableId
 	private ColumnId column;
 
 	@Nullable
 	private ColumnId subtractColumn;
 
 	@NotNull
-	private List<ColumnId> distinctByColumn = Collections.emptyList();
+	private List<@ResolvableId ColumnId> distinctByColumn = Collections.emptyList();
 
 	@Override
 	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {

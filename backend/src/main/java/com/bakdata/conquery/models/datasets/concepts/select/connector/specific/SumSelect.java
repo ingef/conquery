@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+
+import com.bakdata.conquery.util.validation.ResolvableId;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -42,11 +44,13 @@ import lombok.Setter;
 public class SumSelect extends Select {
 
 	@NotNull
-	private List<ColumnId> distinctByColumn = Collections.emptyList();
+	private List<@ResolvableId ColumnId> distinctByColumn = Collections.emptyList();
 
 	@NotNull
+	@ResolvableId
 	private ColumnId column;
 
+	@ResolvableId
 	private ColumnId subtractColumn;
 
 	public SumSelect(ColumnId column) {
@@ -131,13 +135,25 @@ public class SumSelect extends Select {
 	@ValidationMethod(message = "Column is not of Summable Type.")
 	@JsonIgnore
 	public boolean isSummableColumnType() {
-		return NUMBER_COMPATIBLE.contains(getColumn().resolve().getType());
+		Column resolved = getColumn().get();
+		if (resolved == null) {
+			return true;
+		}
+		return NUMBER_COMPATIBLE.contains(resolved.getType());
 	}
 
 	@ValidationMethod(message = "Columns are not of same Type.")
 	@JsonIgnore
 	public boolean isColumnsOfSameType() {
-		return getSubtractColumn() == null || getSubtractColumn().resolve().getType().equals(getColumn().resolve().getType());
+		if (getSubtractColumn() == null) return true;
+		Column resolvedSubstractColumn = getSubtractColumn().get();
+		Column resolvedColumn = getColumn().get();
+
+		if (resolvedSubstractColumn == null || resolvedColumn == null) {
+			return true;
+		}
+
+		return resolvedSubstractColumn.getType().equals(resolvedColumn.getType());
 	}
 
 

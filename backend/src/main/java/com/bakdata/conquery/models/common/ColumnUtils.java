@@ -10,7 +10,10 @@ import java.util.Set;
 @Slf4j
 public class ColumnUtils {
 	public static boolean assertValidColumnTypes(ColumnId column, Set<MajorTypeId> acceptedColumnTypes) {
-		final Column resolved = column.resolve();
+		final Column resolved = column.get();
+		if (resolved == null) {
+			return true;
+		}
 		return acceptedColumnTypes.contains(resolved.getType());
 	}
 }
