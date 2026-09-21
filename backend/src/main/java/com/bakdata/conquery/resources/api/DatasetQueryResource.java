@@ -94,7 +94,7 @@ public class DatasetQueryResource {
 	@GET
 	@Path("/default-tags")
 	public List<String> getDefaultTags(@Auth Subject subject) {
-		return config.getFrontend().getDefaultTags();
+		return config.getQueries().getDefaultTags();
 	}
 
 	/***

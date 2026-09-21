@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.config;
 
+import java.util.List;
+import jakarta.validation.constraints.NotNull;
+
 import com.bakdata.conquery.util.validation.ValidCaffeineSpec;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.util.Duration;
@@ -24,6 +27,12 @@ public class QueryConfig {
 	 * TODO Implement global limit of active secondaryId sub plans
 	 */
 	private int secondaryIdSubPlanRetention = 15;
+
+	/**
+	 * Tags that should be available as query folders even if no query uses them yet.
+	 */
+	@NotNull
+	private List<String> defaultTags = List.of();
 
 
 	/**
