@@ -1,12 +1,11 @@
 package com.bakdata.conquery.models.config;
 
 import java.util.List;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import com.bakdata.conquery.util.validation.ValidCaffeineSpec;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.util.Duration;
-import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -32,7 +31,7 @@ public class QueryConfig {
 	 * Tags that should be available as query folders even if no query uses them yet.
 	 */
 	@NotNull
-	private List<String> defaultTags = List.of();
+	private List<@NotBlank String> defaultTags = List.of();
 
 
 	/**
@@ -44,7 +43,7 @@ public class QueryConfig {
 	/**
 	 * See {@link com.bakdata.conquery.models.query.ExecutionManager#executionInfosL1} for an explanation
 	 */
-	@ValidCaffeineSpec(softValue=true)
+	@ValidCaffeineSpec(softValue = true)
 	private String L2CacheSpec = "softValues";
 
 }
