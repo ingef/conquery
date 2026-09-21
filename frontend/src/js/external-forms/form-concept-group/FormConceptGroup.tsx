@@ -57,7 +57,6 @@ import {
   setSelects,
   setTableSelects,
   setValueProperties,
-  switchFilterMode,
   toggleTable,
   updateFilterOptionsWithSuggestions,
 } from "./formConceptGroupState";
@@ -602,19 +601,6 @@ const FormConceptGroup = (props: Props) => {
                 conceptIdx,
                 tableIdx,
                 selectedSelects,
-              ),
-            );
-          }}
-          onSwitchFilterMode={(tableIdx, filterIdx, mode) => {
-            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
-            props.onChange(
-              switchFilterMode(
-                props.value,
-                valueIdx,
-                conceptIdx,
-                tableIdx,
-                filterIdx,
-                mode,
               ),
             );
           }}

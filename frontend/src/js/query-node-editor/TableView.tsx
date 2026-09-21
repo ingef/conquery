@@ -11,7 +11,6 @@ import type {
   ConceptQueryNodeType,
   FilterWithValueType,
 } from "../standard-query-editor/types";
-import type { ModeT } from "../ui-components/NumberRangeField";
 
 import ContentCell from "./ContentCell";
 import DateColumnSelect from "./DateColumnSelect";
@@ -28,7 +27,6 @@ const TableView = ({
   onSetDateColumn,
 
   onSetFilterValue,
-  onSwitchFilterMode,
   onLoadFilterSuggestions,
 }: {
   node: ConceptQueryNodeType;
@@ -42,11 +40,6 @@ const TableView = ({
     tableIdx: number,
     filterIdx: number,
     value: FilterWithValueType["value"],
-  ) => void;
-  onSwitchFilterMode: (
-    tableIdx: number,
-    filterIdx: number,
-    mode: ModeT,
   ) => void;
   onLoadFilterSuggestions: (
     params: PostPrefixForSuggestionsParams,
@@ -68,12 +61,6 @@ const TableView = ({
     (filterIdx: number, value: FilterWithValueType["value"]) =>
       onSetFilterValue(tableIdx, filterIdx, value),
     [tableIdx, onSetFilterValue],
-  );
-
-  const setFilterMode = useCallback(
-    (filterIdx: number, mode: ModeT) =>
-      onSwitchFilterMode(tableIdx, filterIdx, mode),
-    [tableIdx, onSwitchFilterMode],
   );
 
   const loadFilterSuggestions = useCallback(
@@ -135,7 +122,6 @@ const TableView = ({
             filters={table.filters}
             excludeTable={table.exclude}
             onSetFilterValue={setFilterValue}
-            onSwitchFilterMode={setFilterMode}
             onLoadFilterSuggestions={loadFilterSuggestions}
           />
         </ContentCell>

@@ -107,8 +107,8 @@ const InvisibleDropzone = (
 
 const previousQueryLabel = tv({
   base: [
-    "leading-[1.2]",
     "text-xs",
+    "leading-[1.2]",
     "uppercase",
     "font-bold",
     "text-primary-500",
@@ -117,8 +117,8 @@ const previousQueryLabel = tv({
 
 const rootNode = tv({
   base: [
-    "leading-none",
     "text-xs",
+    "leading-none",
     "uppercase",
     "font-bold",
     "text-primary-500",

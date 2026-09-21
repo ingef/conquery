@@ -19,7 +19,7 @@ export const buttonStyle = tv({
     "shrink-0",
     "rounded",
     "border",
-    "leading-none font-medium whitespace-nowrap",
+    "font-medium whitespace-nowrap",
     "cursor-pointer",
     "transition-[color,background-color,border-color,opacity] duration-100",
     "disabled:cursor-not-allowed disabled:opacity-40",
@@ -45,11 +45,12 @@ export const buttonStyle = tv({
         "hover:text-gray-800 hover:underline",
       ],
     },
-    // every size is a fixed height, so text and icon-only buttons line up
+    // every size is a fixed height, so text and icon-only buttons line up;
+    // leading follows the font size, the class merger drops one that precedes it
     size: {
-      sm: "h-6 px-2 gap-2 text-xs",
-      md: "h-[30px] px-[15px] gap-2 text-sm",
-      lg: "h-9 px-[18px] gap-3 text-base",
+      sm: "h-6 px-2 gap-2 text-xs leading-none",
+      md: "h-[30px] px-[15px] gap-2 text-sm leading-none",
+      lg: "h-9 px-[18px] gap-3 text-base leading-none",
     },
     // an icon-only button is a square
     iconOnly: { true: "px-0" },
@@ -62,7 +63,7 @@ export const buttonStyle = tv({
     {
       intent: "link",
       class:
-        "h-auto px-0 gap-1 leading-[inherit] text-[length:inherit] align-baseline",
+        "h-auto px-0 gap-1 text-[length:inherit] leading-[inherit] align-baseline",
     },
     {
       danger: true,

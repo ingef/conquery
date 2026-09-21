@@ -39,26 +39,26 @@ const node = tv({
 });
 
 const labelText = tv({
-  base: ["m-0", "[word-break:break-word]", "leading-[1.2]", "text-base"],
+  base: ["m-0", "[word-break:break-word]", "text-base", "leading-[1.2]"],
 });
 
 const descriptionText = tv({
   base: [
     "mt-[3px]",
     "[word-break:break-word]",
-    "leading-[1.2]",
     "uppercase",
     "text-xs",
+    "leading-[1.2]",
   ],
 });
 
 const rootNode = tv({
   base: [
     "mb-1",
-    "leading-none",
     "uppercase",
     "font-bold",
     "text-xs",
+    "leading-none",
     "text-primary-500",
     "[word-break:break-word]",
   ],
