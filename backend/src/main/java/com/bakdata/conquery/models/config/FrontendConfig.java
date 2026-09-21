@@ -73,6 +73,12 @@ public class FrontendConfig {
 	 */
 	private boolean alwaysAllowCreateValue = false;
 
+	/**
+	 * Tags that should be available as query folders even if no query uses them yet.
+	 */
+	@NotNull
+	private List<String> defaultTags = List.of();
+
 	@ValidationMethod(message = "Percentiles must be concrete and within 0 - 100")
 	@JsonIgnore
 	public boolean isValidPercentiles() {
