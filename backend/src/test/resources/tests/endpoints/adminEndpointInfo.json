@@ -95,6 +95,11 @@
     "clazz": "AdminDatasetResource"
   },
   {
+    "method": "GET",
+    "path": "/datasets/{dataset}/searchIndex/{searchIndexId}",
+    "clazz": "AdminDatasetResource"
+  },
+  {
     "method": "POST",
     "path": "/datasets/{dataset}/clear-index-cache",
     "clazz": "AdminDatasetResource"

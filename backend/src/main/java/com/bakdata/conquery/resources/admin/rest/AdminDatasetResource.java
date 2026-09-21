@@ -133,6 +133,12 @@ public class AdminDatasetResource {
 	}
 
 	@GET
+	@Path("searchIndex/{" + SEARCH_INDEX_ID + "}")
+	public SearchIndex getSearchIndex(@PathParam(SEARCH_INDEX_ID) SearchIndexId id) {
+		return processor.getSearchIndex(namespace, id);
+	}
+
+	@GET
 	@Path("searchIndex")
 	public List<SearchIndexId> listSearchIndexes() {
 		return processor.listSearchIndexes(namespace);

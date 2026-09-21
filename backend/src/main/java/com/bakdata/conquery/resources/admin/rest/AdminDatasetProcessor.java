@@ -441,4 +441,8 @@ public class AdminDatasetProcessor {
 	public List<SearchIndexId> listSearchIndexes(Namespace namespace) {
 		return namespace.getStorage().getSearchIndexIds().sorted(Comparator.comparing(SearchIndexId::getName)).toList();
 	}
+
+	public SearchIndex getSearchIndex(Namespace namespace, SearchIndexId id) {
+		return namespace.getStorage().getSearchIndex(id);
+	}
 }

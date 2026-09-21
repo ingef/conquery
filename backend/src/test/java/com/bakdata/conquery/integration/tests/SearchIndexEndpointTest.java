@@ -15,10 +15,8 @@ import jakarta.ws.rs.core.Response;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
-import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import lombok.extern.slf4j.Slf4j;
@@ -91,6 +89,21 @@ public class SearchIndexEndpointTest extends IntegrationTest.Simple implements P
 		}
 
 		{
+			// Get index1
+			FilterTemplate get1 = getSearchIndex(conquery, new SearchIndexId(conquery.getDataset(), "index1"), FilterTemplate.class);
+
+			final SearchIndex expected = new FilterTemplate(
+				URI.create("/test"),
+				"test",
+				"test",
+				"test"
+		);
+			expected.setName("index1");
+			expected.setDataset(conquery.getDataset());
+			assertThat(get1).isEqualTo(expected);
+		}
+
+		{
 			// Delete index1
 			Response delete = deleteSearchIndex(conquery, new SearchIndexId(conquery.getDataset(), "index1"));
 			assertThat(delete)
@@ -124,6 +137,20 @@ public class SearchIndexEndpointTest extends IntegrationTest.Simple implements P
 					   ));
 	}
 
+	private static <T extends SearchIndex> T getSearchIndex(StandaloneSupport conquery, SearchIndexId id, Class<T> clazz) {
+		final URI uri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminDatasetResource.class, "getSearchIndex")
+				.buildFromMap(Map.of(
+						DATASET, conquery.getDataset().getName(),
+						SEARCH_INDEX_ID, id
+				));
+
+
+		return conquery.getClient()
+				.target(uri)
+				.request()
+				.get(clazz);
+	}
+
 	private static List<SearchIndexId> fetchSearchIndexes(StandaloneSupport conquery) {
 		final URI uri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminDatasetResource.class, "listSearchIndexes")
 									   .buildFromMap(Map.of(
@@ -131,12 +158,10 @@ public class SearchIndexEndpointTest extends IntegrationTest.Simple implements P
 									   ));
 
 
-		final List<SearchIndexId> indexes = conquery.getClient()
+		return conquery.getClient()
 											  .target(uri)
 											  .request()
 											  .get(new GenericType<>(){});
-
-		return indexes;
 	}
 
 	private static Response deleteSearchIndex(StandaloneSupport conquery, SearchIndexId id) {
