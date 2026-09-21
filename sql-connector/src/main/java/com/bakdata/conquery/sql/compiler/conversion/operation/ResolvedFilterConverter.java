@@ -14,7 +14,7 @@ public final class ResolvedFilterConverter {
 	private final ConversionDispatcher<ResolvedFilter, SqlFilters, FilterConversionContext> dispatcher;
 
 	public ResolvedFilterConverter() {
-		this(List.of());
+		this(List.of(), new ResolvedAggregationConverter());
 	}
 
 	/**
@@ -25,9 +25,17 @@ public final class ResolvedFilterConverter {
 	public ResolvedFilterConverter(
 			List<? extends Converter<? extends ResolvedFilter, SqlFilters, FilterConversionContext>> extensions
 	) {
+		this(extensions, new ResolvedAggregationConverter());
+	}
+
+	public ResolvedFilterConverter(
+			List<? extends Converter<? extends ResolvedFilter, SqlFilters, FilterConversionContext>> extensions,
+			ResolvedAggregationConverter aggregationConverter
+	) {
 		List<Converter<? extends ResolvedFilter, SqlFilters, FilterConversionContext>> converters = new ArrayList<>(
 				BuiltInColumnFilterConverters.create()
 		);
+		converters.addAll(BuiltInAggregationFilterConverters.create(aggregationConverter));
 		converters.addAll(extensions);
 		this.dispatcher = new ConversionDispatcher<>(converters);
 	}

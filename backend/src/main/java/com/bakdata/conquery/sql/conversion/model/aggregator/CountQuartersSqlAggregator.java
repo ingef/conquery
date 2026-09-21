@@ -1,29 +1,20 @@
 package com.bakdata.conquery.sql.conversion.model.aggregator;
 
-import java.math.BigDecimal;
-import java.sql.Date;
-import java.time.temporal.ChronoUnit;
-
+import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
+import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.CountQuartersFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.CountQuartersSelect;
-import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.sql.compiler.ir.concept.CommonAggregationSelect;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.compiler.ir.SqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
-import com.bakdata.conquery.sql.compiler.dialect.Interval;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.forms.StratificationFunctions;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.LegacyInclusiveRangeCondition;
 import com.bakdata.conquery.sql.compiler.ir.concept.SqlFilters;
 import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import org.jooq.Condition;
@@ -34,90 +25,17 @@ import org.jooq.impl.DSL;
 //TODO(FK): this needs a rework. Current implementation makes a sum of the quarters and doesn't take overlapping events into account.
 public class CountQuartersSqlAggregator implements SelectConverter<CountQuartersSelect>, FilterConverter<CountQuartersFilter, Range.LongRange>, SqlAggregator {
 
-	private static CommonAggregationSelect<Integer> createSingleDateColumnAggregationSelect(
-			Column countColumn,
-			String alias,
-			SqlTables tables,
-			SqlFunctionProvider functionProvider) {
-
-		ExtractingSqlSelect<Date> rootSelect = new ExtractingSqlSelect<>(tables.getRootTable(), countColumn.getName(), Date.class);
-
-		Field<Date> qualifiedRootSelect = rootSelect.qualify(tables.cteName(ConceptCteStep.PREPROCESSING)).select();
-		FieldWrapper<Integer> countQuartersAggregation =
-				new FieldWrapper<>(DSL.nullif(DSL.countDistinct(functionProvider.yearQuarter(qualifiedRootSelect)), 0).as(alias), countColumn.getName());
-
-		return CommonAggregationSelect.<Integer>builder().rootSelect(rootSelect).groupBy(countQuartersAggregation).build();
-	}
-
-	private static CommonAggregationSelect<BigDecimal> createTwoDateColumnAggregationSelect(
-			Column startColumn,
-			Column endColumn,
-			String alias,
-			SqlTables tables,
-			SqlFunctionProvider functionProvider,
-			StratificationFunctions stratificationFunctions) {
-
-		Field<Date> startDate = DSL.field(DSL.name(tables.getRootTable(), startColumn.getName()), Date.class);
-		Field<Date> endDate = DSL.field(DSL.name(tables.getRootTable(), endColumn.getName()), Date.class);
-
-		Field<Date> quarterStart = stratificationFunctions.jumpToQuarterStart(startDate);
-		Field<Date> nextQuarterStart = stratificationFunctions.jumpToNextQuarterStart(endDate);
-
-		return sumQuarterCount(quarterStart, nextQuarterStart, alias, tables, functionProvider);
-	}
-
-	private static CommonAggregationSelect<BigDecimal> sumQuarterCount(
-			Field<Date> quarterStart,
-			Field<Date> nextQuarterStart,
-			String alias,
-			SqlTables tables,
-			SqlFunctionProvider functionProvider) {
-		Field<Integer> quarterCount = calcQuarterCount(quarterStart, nextQuarterStart, alias, functionProvider);
-		FieldWrapper<Integer> quarterCountWrapper = new FieldWrapper<>(quarterCount);
-
-		Field<Integer> qualifiedQuarterCount = quarterCountWrapper.qualify(tables.cteName(ConceptCteStep.PREPROCESSING)).select();
-		FieldWrapper<BigDecimal> quarterCountAggregation = new FieldWrapper<>(DSL.nullif(DSL.sum(qualifiedQuarterCount), BigDecimal.ZERO).as(alias));
-
-		return CommonAggregationSelect.<BigDecimal>builder().rootSelect(quarterCountWrapper).groupBy(quarterCountAggregation).build();
-	}
-
-	private static Field<Integer> calcQuarterCount(Field<Date> quarterStart, Field<Date> nextQuarterStart, String alias, SqlFunctionProvider functionProvider) {
-		return functionProvider.dateDistance(ChronoUnit.MONTHS, quarterStart, nextQuarterStart).divide(Interval.QUARTER_INTERVAL.getAmount()).as(alias);
-	}
-
-	private static CommonAggregationSelect<? extends Number> buildSqlSelect(
-			ColumnId column,
-			ColumnId startColumn,
-			ColumnId endColumn,
-			String alias,
-			SqlTables tables,
-			SqlFunctionProvider functionProvider,
-			StratificationFunctions stratificationFunctions) {
-
-		if (column == null) {
-			return createTwoDateColumnAggregationSelect(startColumn.resolve(), endColumn.resolve(), alias, tables, functionProvider, stratificationFunctions);
-		}
-
-		Column countColumn = column.resolve();
-
-        return createSingleDateColumnAggregationSelect(countColumn, alias, tables, functionProvider);
-	}
-
 	@Override
 	public ConnectorSqlSelects connectorSelect(CountQuartersSelect countQuartersSelect, SelectContext<ConnectorSqlTables> selectContext) {
 
-		CommonAggregationSelect<? extends Number> countAggregationSelect =
-				buildSqlSelect(countQuartersSelect.getColumn(),
-							   countQuartersSelect.getStartColumn(),
-							   countQuartersSelect.getEndColumn(),
-							   selectContext.getNameGenerator().legacyOperationName(countQuartersSelect.getName()),
-							   selectContext.getTables(),
-							   selectContext.getFunctionProvider(),
-							   selectContext.getCompilerDialect().getStratificationFunctions()
-				);
+		CommonAggregationSelect<?> countAggregationSelect =
+				ResolvedAggregationAdapter.convert(
+						new BuiltInAggregations.CountQuarters(EntitySchemaAdapter.from(countQuartersSelect)),
+						selectContext.getNameGenerator().legacyOperationName(countQuartersSelect.getName()),
+						selectContext.getIds(), selectContext.getTables(), selectContext);
 
 		String finalPredecessor = selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
-		ExtractingSqlSelect<? extends Number> finalSelect = countAggregationSelect.getGroupBy().qualify(finalPredecessor);
+		ExtractingSqlSelect<?> finalSelect = countAggregationSelect.getGroupBy().qualify(finalPredecessor);
 
 		return ConnectorSqlSelects.builder()
 								  .preprocessingSelects(countAggregationSelect.getRootSelects())
@@ -129,15 +47,11 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 	@Override
 	public SqlFilters convertToSqlFilter(CountQuartersFilter countQuartersFilter, FilterContext<Range.LongRange> filterContext) {
 
-		CommonAggregationSelect<? extends Number> countAggregationSelect =
-				buildSqlSelect(countQuartersFilter.getColumn(),
-							   countQuartersFilter.getStartColumn(),
-							   countQuartersFilter.getEndColumn(),
-							   filterContext.getNameGenerator().legacyOperationName(countQuartersFilter.getName()),
-							   filterContext.getTables(),
-							   filterContext.getFunctionProvider(),
-							   filterContext.getCompilerDialect().getStratificationFunctions()
-				);
+		CommonAggregationSelect<?> countAggregationSelect =
+				ResolvedAggregationAdapter.convert(
+						new BuiltInAggregations.CountQuarters(EntitySchemaAdapter.from(countQuartersFilter)),
+						filterContext.getNameGenerator().legacyOperationName(countQuartersFilter.getName()),
+						filterContext.getIds(), filterContext.getTables(), filterContext);
 
 		ConnectorSqlSelects selects = ConnectorSqlSelects.builder()
 														 .preprocessingSelects(countAggregationSelect.getRootSelects())
@@ -145,7 +59,7 @@ public class CountQuartersSqlAggregator implements SelectConverter<CountQuarters
 														 .build();
 
 		String predecessorTableName = filterContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
-		Field<? extends Number> qualifiedCountSelect = countAggregationSelect.getGroupBy().qualify(predecessorTableName).select();
+		Field<?> qualifiedCountSelect = countAggregationSelect.getGroupBy().qualify(predecessorTableName).select();
 		LegacyInclusiveRangeCondition countCondition = new LegacyInclusiveRangeCondition(qualifiedCountSelect, filterContext.getValue());
 		WhereClauses whereClauses = WhereClauses.builder().groupFilter(countCondition).build();
 

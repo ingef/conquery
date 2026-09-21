@@ -123,6 +123,36 @@ public interface LegacyCompilerDialect extends CompilerDialect {
 
 	StratificationFunctions getStratificationFunctions();
 
+	@Override
+	default Field<Integer> dateDistance(ChronoUnit unit, Field<Date> startDate, Field<Date> endDate) {
+		return getFunctionProvider().dateDistance(unit, startDate, endDate);
+	}
+
+	@Override
+	default Field<Date> addDays(Field<Date> date, Field<Integer> days) {
+		return getFunctionProvider().addDays(date, days);
+	}
+
+	@Override
+	default ColumnDateRange dateRange(Field<Date> start, Field<Date> inclusiveEnd) {
+		return getFunctionProvider().dateRange(start, inclusiveEnd);
+	}
+
+	@Override
+	default Field<String> yearQuarter(Field<Date> date) {
+		return getFunctionProvider().yearQuarter(date);
+	}
+
+	@Override
+	default Field<Date> quarterStart(Field<Date> date) {
+		return getStratificationFunctions().jumpToQuarterStart(date);
+	}
+
+	@Override
+	default Field<Date> nextQuarterStart(Field<Date> date) {
+		return getStratificationFunctions().jumpToNextQuarterStart(date);
+	}
+
 	SqlFunctionProvider getFunctionProvider();
 
 	List<NodeConverter<? extends Visitable>> getNodeConverters(DSLContext context);

@@ -120,20 +120,25 @@ public class ClickhouseFunctionProvider implements SqlFunctionProvider {
     }
 
     private ColumnDateRange ofStartAndEnd(String tableName, Column startColumn, Column endColumn) {
+        return dateRange(field(name(tableName, startColumn.getName()), Date.class), field(name(tableName, endColumn.getName()), Date.class));
+    }
+
+    @Override
+    public ColumnDateRange dateRange(Field<Date> start, Field<Date> inclusiveEnd) {
 
         // Since coalesce makes Clickhouse certain, that the field is not nullable, it will do silly stuff with it down the line:
         // missing values (for example in outer-joins) will be coerced to 0 = 01-01-1970, which is clearly not correct
         // Therefore we tag the values as Nullable again to make Clickhouse show some respect
 
         Field<Date> rangeStart = field("{0}::Nullable(Date32)", Date.class, coalesce(
-                        field(name(tableName, startColumn.getName()), Date.class),
+                        start,
                         getMinDateExpression()
                 )
         );
         // when aggregating date ranges, we want to treat the last day of the range as excluded,
         // so when using the date value of the end column, we add +1 day as end of the date range
         Field<Date> rangeEnd = field("{0}::Nullable(Date32)", Date.class, coalesce(
-                        addDays(field(name(tableName, endColumn.getName()), Date.class), inline(1)),
+                        addDays(inclusiveEnd, inline(1)),
                         getMaxDateExpression()
                 )
         );

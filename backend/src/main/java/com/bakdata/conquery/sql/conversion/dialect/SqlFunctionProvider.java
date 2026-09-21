@@ -142,6 +142,14 @@ public interface SqlFunctionProvider {
 
 	ColumnDateRange forArbitraryDateRange(DaterangeSelectOrFilter daterangeSelectOrFilter);
 
+	/** Converts inclusive date expressions while retaining the dialect's nullability semantics. */
+	default ColumnDateRange dateRange(Field<Date> start, Field<Date> inclusiveEnd) {
+		return ColumnDateRange.of(
+				coalesce(start, getMinDateExpression()),
+				coalesce(addDays(inclusiveEnd, inline(1)), getMaxDateExpression())
+		);
+	}
+
 	/**
 	 * Aggregate columnDateRange into dateSpans of the grouping.
 	 */

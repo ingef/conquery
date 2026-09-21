@@ -42,6 +42,27 @@ The `BuiltInFilters`, `BuiltInSelects`, `BuiltInConditions`, and `BuiltInAggrega
 operations understood by the standard compiler. They intentionally describe semantics rather than the configuration
 classes used by a particular query-producing application.
 
+## Aggregation compilation
+
+`ResolvedAggregationConverter` compiles count, sum, quarter-count, and duration-sum operations. It accepts additional
+converters for extension aggregation types. `ResolvedFilterConverter` uses this dispatcher for numeric
+`BuiltInFilters.AggregationRange` filters, including custom numeric aggregations.
+
+Ordinary aggregates are projected in the connector's aggregation CTE. Distinct sums and interval-packed duration sums
+are computed in separate predecessor CTEs; the range predicate reads their result after the branches are joined.
+An aggregation returned with an `additionalPredecessor` must already be computed in that predecessor.
+
+Sum subtraction preserves missing values when both operands are null. Distinct sums preserve the existing behavior and
+ignore the subtraction column. Numeric input expressions retain their existing integer, floating-point, or money types.
+Quarter counts preserve the legacy behavior: distinct
+year-quarter keys for single dates, and a sum of each event's quarter count for date pairs, including overlaps.
+Duration sums pack overlapping intervals first and exclude unbounded durations. Duration `distinctBy` is ignored,
+as in the existing backend SQL implementation. Physical date-range columns require dialect support for
+extracting half-open bounds through `CompilerDialect.dateRangeColumn`.
+
+Flag aggregation for output selects and integration of resolved operations into the legacy backend remain separate
+migration steps. Flag filters already compile as event predicates.
+
 ## Validation
 
 The resolved model uses Jakarta Bean Validation annotations. The application supplies a validation provider, normally

@@ -3,7 +3,10 @@ package com.bakdata.conquery.sql.conversion.model;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.datasets.ColumnType;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.DaterangeSelectOrFilter;
+import com.bakdata.conquery.sql.model.schema.DateColumns;
 import com.bakdata.conquery.sql.model.schema.EntitySchema;
 import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
 import com.bakdata.conquery.sql.model.schema.SqlTable;
@@ -33,5 +36,16 @@ public final class EntitySchemaAdapter {
 
 	public static SqlTable from(Table table) {
 		return SqlTable.of(table.getId().toString(), table.getName());
+	}
+
+	public static ResolvedColumn from(Column column) {
+		return new ResolvedColumn(column.getId().toString(), from(column.getTable()), column.getName(),
+				ColumnType.valueOf(column.getType().name()), true);
+	}
+
+	public static DateColumns from(DaterangeSelectOrFilter dates) {
+		return dates.isSingleColumnDaterange()
+				? new DateColumns.Single(from(dates.getColumn().resolve()))
+				: new DateColumns.Pair(from(dates.getStartColumn().resolve()), from(dates.getEndColumn().resolve()));
 	}
 }

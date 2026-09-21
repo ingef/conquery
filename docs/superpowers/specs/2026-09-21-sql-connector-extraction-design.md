@@ -4,13 +4,13 @@
 
 Finish extracting the existing SQL connector so the productive Dropwizard backend uses a framework-neutral module. The extraction must be transferable onto a separate branch based on `develop`, without Quarkus sources, configuration, plugins, or build prerequisites. Quarkus integration is subsequent work.
 
-Preserve existing behavior, including quirks. Preserve recognizable class names, method structure, SQL expressions, and algorithm organization wherever the dependency boundary permits. Do not combine extraction with bug fixes, new validation rules, dependency upgrades, or general cleanup.
+Preserve existing SQL behavior, including quirks. Preserve recognizable class names, method structure, SQL expressions, and algorithm organization wherever the dependency boundary permits. Do not combine extraction with bug fixes, dependency upgrades, or general cleanup. Strict validation at the resolved-model boundary is an explicit exception: retain and extend the readable, declarative Jakarta Bean Validation constraints, using Hibernate Validator as the validation provider.
 
 ## Current state
 
 The branch already contains `dataset-model`, resolved SQL input types, compiler contracts, query-step infrastructure, CTE composition, and condition/filter converters. The backend consumes extracted infrastructure, but `SqlCompiler` is only an interface: backend query conversion, aggregators, selects, forms, dialect implementations, and execution still contain substantive SQL responsibilities.
 
-Uncommitted aggregation conversion work is present and must be reviewed as part of the extraction. In particular, its distinct-sum path applies subtraction where the existing implementation ignores it. It also explicitly rejects duration `distinctBy`; compatibility must be checked against the existing path before accepting that rejection. Neither a cleaner implementation nor an existing new test establishes compatibility.
+Uncommitted aggregation conversion work is unfinished. Resume by reviewing and completing it; do not treat its current behavior or tests as an approved design. In particular, its distinct-sum path applies subtraction where the existing implementation ignores it. It also explicitly rejects duration `distinctBy`; determine whether this belongs in the strict boundary contract or must retain the existing behavior. Neither a cleaner implementation nor an existing new test establishes SQL compatibility.
 
 ## Approach
 
@@ -34,17 +34,17 @@ Preserve SQL operations for concept queries, logical nodes, external IDs, date r
 
 Preserve numeric types, null handling, range bounds, distinctness, subtraction, quarter counting, interval packing, aliases, projection order, and result interpretation. Table-export operations must retain their row-level semantics rather than accidentally adopting grouped-query semantics.
 
-New resolved-model validation must not reject a previously supported request or change when application errors are reported. Backend adapters must preserve defaults and resolution semantics. Known quirks receive characterization coverage rather than fixes in this change.
+Validate the complete resolved query graph at the boundary before compilation, using the existing `ResolvedQueryValidation` and declarative Jakarta Bean Validation constraints with Hibernate Validator. This boundary may strictly reject invalid resolved inputs, even if the previous path accepted them or failed later. Keep constraints readable and explicit; validation must not resolve identifiers, enrich data, or rewrite operations. Backend adapters must preserve defaults and resolution semantics and produce inputs conforming to this contract. For valid inputs, preserve existing SQL behavior; known SQL quirks receive characterization coverage rather than fixes in this change.
 
 Remove superseded SQL implementations only after the production backend delegates to the extracted implementation and compatibility checks pass. Completion must not leave two independently maintained implementations of the same SQL algorithm.
 
 ## Verification
 
 1. Establish the existing test baseline and characterize behavior-sensitive paths before replacing their implementation. Compare extracted output with the existing implementation, using equivalent resolved inputs and dialect settings.
-2. Run connector tests and affected backend tests. Exercise aggregations, selects, forms, and export paths; include nulls, duplicate events, distinct sum with subtraction, date boundaries, and duration distinctness.
-3. Use existing SQL integration fixtures for result-level verification on supported databases where infrastructure is available. SQL text checks alone do not establish result parity. Record unavailable integration infrastructure explicitly.
+2. Run connector tests and affected backend tests that do not require database instances. Exercise aggregations, selects, forms, and export paths; include nulls, duplicate events, distinct sum with subtraction, date boundaries, and duration distinctness. Test boundary constraint violations separately from SQL compatibility for valid inputs.
+3. HANA and ClickHouse integration suites cannot run in this environment. Prepare a reproducible handoff for the user to run the existing SQL integration fixtures on a suitable machine: identify the exact extraction revision, prerequisites, commands, and expected reports. Local SQL rendering/comparison and unit tests provide partial evidence, not a substitute for result-level verification on those databases. Track external results separately and investigate failures when returned; lack of local database infrastructure does not block implementation or local verification.
 4. Verify module dependencies and source imports contain no backend or framework implementation dependencies in the connector.
-5. Assemble the extraction in an isolated checkout based on the recorded local `develop` revision. Apply only extraction changes and required neutral module/build additions. Run the module and Dropwizard build/test checks with no Quarkus modules present. Do not infer portability solely from a selected-module build on the migration branch.
+5. Assemble the extraction in an isolated checkout based on the recorded local `develop` revision. Apply only extraction changes and required neutral module/build additions. Run the module and Dropwizard build/test checks that do not require database instances, with no Quarkus modules present. Include this extraction-only revision in the external integration-test handoff. Do not infer portability solely from a selected-module build on the migration branch.
 
 ## Review and portability
 
@@ -54,4 +54,4 @@ Keep Quarkus changes out of extraction commits. Shared-file edits, especially th
 
 ## Completion criteria
 
-The Dropwizard backend uses the extracted SQL implementation for its supported paths; application-specific adapters are the remaining backend boundary. Compatibility checks pass without intended behavior changes, code remains recognizable, and an extraction-only checkout based on `develop` builds without knowledge of Quarkus. Any unverified database checks are reported as limitations rather than claimed successes.
+The Dropwizard backend uses the extracted SQL implementation for its supported paths; application-specific adapters are the remaining backend boundary. Local compatibility and boundary-validation checks pass, SQL behavior for valid inputs remains unchanged, code remains recognizable, and an extraction-only checkout based on `develop` builds without knowledge of Quarkus. Local delivery includes the external integration-test handoff and explicitly identifies HANA/ClickHouse verification as pending until results are available. Full database compatibility is not claimed before those external checks pass.

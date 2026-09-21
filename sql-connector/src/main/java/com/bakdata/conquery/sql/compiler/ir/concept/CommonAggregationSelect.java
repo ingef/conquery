@@ -22,8 +22,10 @@ public class CommonAggregationSelect<T> {
 	@Singular
 	List<SingleColumnSqlSelect> rootSelects;
 
+	/** Aggregate expression whose alias identifies the result, including results computed in a separate CTE. */
 	FieldWrapper<T> groupBy;
 
+	/** When present, this CTE already computes groupBy; do not also add it to the main aggregation selects. */
 	QueryStep additionalPredecessor;
 
 	public Optional<QueryStep> getAdditionalPredecessor() {

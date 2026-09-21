@@ -4,6 +4,7 @@ import static org.jooq.impl.DSL.field;
 
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.LongRange;
@@ -13,13 +14,14 @@ import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.D
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
+import com.bakdata.conquery.sql.model.operation.BuiltInAggregations;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.compiler.ir.condition.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.model.filter.LegacyInclusiveRangeCondition;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.concept.SqlFilters;
-import com.bakdata.conquery.sql.conversion.model.select.DaterangeSelectUtil;
-import com.bakdata.conquery.sql.conversion.model.select.DaterangeSelectUtil.AggregationFunction;
 import com.bakdata.conquery.sql.conversion.model.select.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.select.SelectConverter;
 import org.jooq.Condition;
@@ -30,16 +32,28 @@ public class DurationSumSqlAggregator implements SelectConverter<DurationSumSele
 
 	@Override
 	public ConnectorSqlSelects connectorSelect(DurationSumSelect select, SelectContext<ConnectorSqlTables> selectContext) {
-		return DaterangeSelectUtil.createForSelect(select, durationSumSelectFunction(), selectContext);
+		String alias = selectContext.getNameGenerator().legacyOperationName(select.getName());
+		var aggregation = ResolvedAggregationAdapter.convert(
+				new BuiltInAggregations.DurationSum(EntitySchemaAdapter.from(select), List.of()),
+				alias, selectContext.getIds(), selectContext.getTables(), selectContext);
+		return ConnectorSqlSelects.builder()
+				.preprocessingSelects(aggregation.getRootSelects())
+				.additionalPredecessor(aggregation.getAdditionalPredecessor())
+				.finalSelect(aggregation.getGroupBy().qualify(selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_FILTER)))
+				.build();
 	}
 
 	@Override
 	public SqlFilters convertToSqlFilter(DurationSumFilter filter, FilterContext<LongRange> context) {
-		return DaterangeSelectUtil.createForFilter(
-				filter,
-				durationSumSelectFunction(),
-				(aggregationField -> new LegacyInclusiveRangeCondition(aggregationField, context.getValue())),
-				context);
+		String alias = context.getNameGenerator().legacyOperationName(filter.getName());
+		var aggregation = ResolvedAggregationAdapter.convert(
+				new BuiltInAggregations.DurationSum(EntitySchemaAdapter.from(filter), List.of()),
+				alias, context.getIds(), context.getTables(), context);
+		Field<?> field = aggregation.getGroupBy().qualify(context.getTables().getPredecessor(ConceptCteStep.AGGREGATION_FILTER)).select();
+		return new SqlFilters(ConnectorSqlSelects.builder()
+				.preprocessingSelects(aggregation.getRootSelects())
+				.additionalPredecessor(aggregation.getAdditionalPredecessor()).build(),
+				WhereClauses.builder().groupFilter(new LegacyInclusiveRangeCondition(field, context.getValue())).build());
 	}
 
 	@Override
@@ -68,10 +82,4 @@ public class DurationSumSqlAggregator implements SelectConverter<DurationSumSele
 		return new LegacyInclusiveRangeCondition(dateDistance, filterContext.getValue()).condition();
 	}
 
-	private static AggregationFunction durationSumSelectFunction() {
-		return (daterange, alias, functionProvider) -> {
-			ColumnDateRange asDualColumn = functionProvider.toDualColumn(daterange);
-			return DaterangeSelectUtil.createDurationSumSqlSelect(alias, asDualColumn, functionProvider);
-		};
-	}
 }

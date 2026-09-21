@@ -72,6 +72,44 @@ public interface CompilerDialect {
 		throw new UnsupportedOperationException("Date-distance calculation is not implemented by this dialect");
 	}
 
+	/** Distance between two date expressions; used with half-open bounds for duration sums. */
+	default Field<Integer> dateDistance(ChronoUnit unit, Field<Date> startDate, Field<Date> endDate) {
+		throw new UnsupportedOperationException("Date-distance calculation is not implemented by this dialect");
+	}
+
+	/** Shift a date by a number of days. */
+	default Field<Date> addDays(Field<Date> date, Field<Integer> days) {
+		return date.add(days);
+	}
+
+	/** Convert nullable, inclusive physical date bounds to the compiler's half-open range representation. */
+	default ColumnDateRange dateRange(Field<Date> start, Field<Date> inclusiveEnd) {
+		return ColumnDateRange.of(
+				DSL.coalesce(start, minimumDate()),
+				DSL.coalesce(addDays(inclusiveEnd, DSL.inline(1)), maximumDate())
+		);
+	}
+
+	/** Expand a physical range column into half-open date bounds. */
+	default ColumnDateRange dateRangeColumn(Field<?> range) {
+		throw new UnsupportedOperationException("Physical date-range columns are not implemented by this dialect");
+	}
+
+	/** A key identifying both the year and quarter of a date. */
+	default Field<String> yearQuarter(Field<Date> date) {
+		throw new UnsupportedOperationException("Year-quarter expressions are not implemented by this dialect");
+	}
+
+	/** First day of the quarter containing a date. */
+	default Field<Date> quarterStart(Field<Date> date) {
+		throw new UnsupportedOperationException("Quarter boundaries are not implemented by this dialect");
+	}
+
+	/** First day of the quarter following a date. */
+	default Field<Date> nextQuarterStart(Field<Date> date) {
+		throw new UnsupportedOperationException("Quarter boundaries are not implemented by this dialect");
+	}
+
 	/** SQL expression for an already-resolved external entity ID. */
 	default Field<String> externalId(String id) {
 		return DSL.inline(id, SQLDataType.VARCHAR);
