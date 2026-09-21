@@ -1,5 +1,5 @@
-import { faFolderOpen } from "@fortawesome/free-regular-svg-icons";
 import type { Meta, StoryObj } from "@storybook/react";
+import { FolderOpenIcon } from "lucide-react";
 
 import { EmptyState } from "./EmptyState";
 
@@ -12,6 +12,6 @@ type Story = StoryObj<typeof EmptyState>;
 
 export const EmptyList: Story = {
   render: () => (
-    <EmptyState icon={faFolderOpen}>No queries and forms found</EmptyState>
+    <EmptyState icon={FolderOpenIcon}>No queries and forms found</EmptyState>
   ),
 };

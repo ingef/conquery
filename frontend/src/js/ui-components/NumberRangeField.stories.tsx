@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { type ComponentProps, useState } from "react";
 
-import { type ModeT, NumberRangeField } from "./NumberRangeField";
+import { NumberRangeField } from "./NumberRangeField";
 
 export default {
   title: "FormComponents/NumberRangeField",
@@ -13,29 +13,18 @@ type Story = StoryObj<typeof NumberRangeField>;
 
 type Value = ComponentProps<typeof NumberRangeField>["value"];
 
-// each example keeps its own value and mode, and shows what is stored
+// each example keeps its own value and shows what is stored
 const Stateful = ({
   defaultValue = null,
   ...props
-}: Omit<
-  ComponentProps<typeof NumberRangeField>,
-  "value" | "onChange" | "mode" | "onSwitchMode" | "placeholder"
-> & {
+}: Omit<ComponentProps<typeof NumberRangeField>, "value" | "onChange"> & {
   defaultValue?: Value;
 }) => {
   const [value, setValue] = useState<Value>(defaultValue);
-  const [mode, setMode] = useState<ModeT>("range");
 
   return (
     <div className="flex w-72 flex-col">
-      <NumberRangeField
-        value={value}
-        onChange={setValue}
-        mode={mode}
-        onSwitchMode={setMode}
-        placeholder="-"
-        {...props}
-      />
+      <NumberRangeField value={value} onChange={setValue} {...props} />
       <span className="mt-10 text-xs text-gray-400">
         value: {JSON.stringify(value)}
       </span>
@@ -64,6 +53,39 @@ export const Real: Story = {
       limits={{ min: 0, max: 500 }}
       stepSize={0.1}
       defaultValue={{ min: 2.5, max: 10 }}
+    />
+  ),
+};
+
+/** one bound alone is an open range, equal bounds are an exact value */
+export const OpenAndExact: Story = {
+  render: () => (
+    <div className="flex flex-col gap-5">
+      <Stateful
+        label="At least 2"
+        unit="#"
+        stepSize={1}
+        defaultValue={{ min: 2, max: null }}
+      />
+      <Stateful
+        label="Exactly 2"
+        unit="#"
+        stepSize={1}
+        defaultValue={{ min: 2, max: 2 }}
+      />
+    </div>
+  ),
+};
+
+/** a bound past the other one snaps to it on blur */
+export const BoundsLimitEachOther: Story = {
+  render: () => (
+    <Stateful
+      label="Number of items"
+      unit="#"
+      tooltip="Type a min above 12 or a max below 3 and leave the field."
+      stepSize={1}
+      defaultValue={{ min: 3, max: 12 }}
     />
   ),
 };

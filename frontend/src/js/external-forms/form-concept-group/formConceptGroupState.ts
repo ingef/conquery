@@ -21,7 +21,6 @@ import type {
   SelectedSelectorT,
   TableWithFilterValueT,
 } from "../../standard-query-editor/types";
-import type { ModeT } from "../../ui-components/NumberRangeField";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 import {
   initSelectsWithDefaults,
@@ -482,20 +481,6 @@ export const resetAllSettings = (
     excludeTimestamps: false,
     selects: resetSelects(concept.selects, config),
     tables: resetTables(concept.tables, config),
-  });
-};
-
-export const switchFilterMode = (
-  value: FormConceptGroupT[],
-  valueIdx: number,
-  conceptIdx: number,
-  tableIdx: number,
-  filterIdx: number,
-  mode: ModeT,
-) => {
-  return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
-    mode: mode,
-    value: null,
   });
 };
 

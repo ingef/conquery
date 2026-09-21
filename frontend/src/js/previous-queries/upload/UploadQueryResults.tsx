@@ -1,4 +1,4 @@
-import { faUpload } from "@fortawesome/free-solid-svg-icons";
+import { UploadIcon } from "lucide-react";
 import { useState } from "react";
 import { DialogTrigger } from "react-aria-components";
 import { useTranslation } from "react-i18next";
@@ -12,7 +12,6 @@ import type {
 import type { StateT } from "../../app/reducers";
 import { setMessage } from "../../snack-message/actions";
 import { Button } from "../../ui-components/Button";
-import { Icon } from "../../ui-components/Icon";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
 import { useLoadQueries } from "../list/actions";
 
@@ -82,7 +81,7 @@ const UploadQueryResults = ({
             aria-label={t("uploadQueryResults.uploadResults")}
             intent="secondary"
           >
-            <Icon icon={faUpload} />
+            <UploadIcon />
           </Button>
           <UploadQueryResultsModal
             loading={loading}

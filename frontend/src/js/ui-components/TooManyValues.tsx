@@ -1,8 +1,7 @@
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { XIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { Button } from "./Button";
-import { Icon } from "./Icon";
 
 const root = tv({
   base: [
@@ -33,7 +32,7 @@ const TooManyValues = ({
         aria-label={t("common.clearValue")}
         onPress={onClear}
       >
-        <Icon icon={faTimes} />
+        <XIcon />
       </Button>
     </div>
   );

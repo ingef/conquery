@@ -1,8 +1,4 @@
-import {
-  faEuroSign,
-  faFingerprint,
-  faInfo,
-} from "@fortawesome/free-solid-svg-icons";
+import { EuroIcon, FingerprintPatternIcon, InfoIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { type InputAttributes, NumericFormat } from "react-number-format";
 import { tv } from "tailwind-variants";
@@ -13,7 +9,6 @@ import type {
 } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import { Highlighter } from "../../ui-components/Highlighter";
-import { Icon } from "../../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -74,7 +69,7 @@ const rawDataBadge = tv({
 });
 
 const bucketIcon = tv({
-  base: ["w-6", "mx-[5px] my-2"],
+  base: ["w-6", "mx-[5px] my-2", "text-primary-500"],
 });
 
 const bullet = tv({
@@ -149,10 +144,7 @@ const EventCard = ({
                 aria-label={moneyTooltip}
                 excludeFromTabOrder
               >
-                <Icon
-                  icon={faEuroSign}
-                  className={[bucketIcon(), "text-primary-500"]}
-                />
+                <EuroIcon className={bucketIcon()} />
               </TooltipTarget>
               <Tooltip>{moneyTooltip}</Tooltip>
             </TooltipTrigger>
@@ -195,10 +187,7 @@ const EventCard = ({
                 aria-label={restTooltip}
                 excludeFromTabOrder
               >
-                <Icon
-                  icon={faInfo}
-                  className={[bucketIcon(), "text-primary-500"]}
-                />
+                <InfoIcon className={bucketIcon()} />
               </TooltipTarget>
               <Tooltip>{restTooltip}</Tooltip>
             </TooltipTrigger>
@@ -229,10 +218,7 @@ const EventCard = ({
                 aria-label={groupableIdsTooltip}
                 excludeFromTabOrder
               >
-                <Icon
-                  icon={faFingerprint}
-                  className={[bucketIcon(), "text-primary-500"]}
-                />
+                <FingerprintPatternIcon className={bucketIcon()} />
               </TooltipTarget>
               <Tooltip>{groupableIdsTooltip}</Tooltip>
             </TooltipTrigger>

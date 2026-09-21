@@ -1,31 +1,17 @@
+import { useId } from "react";
+import { Group } from "react-aria-components";
 import { useTranslation } from "react-i18next";
-import { tv } from "tailwind-variants";
 
 import type { CurrencyConfigT } from "../api/types";
 import { exists } from "../common/helpers/exists";
 import { Label } from "./Label";
 import { NumberField } from "./NumberField";
-import { ToggleButton } from "./ToggleButton";
-import { ToggleButtonGroup } from "./ToggleButtonGroup";
-
-// pulled up under the mode switch
-const inputs = tv({
-  base: "-mt-[3px]",
-  variants: {
-    mode: {
-      range: "grid grid-cols-2 gap-[5px]",
-      exact: "",
-    },
-  },
-});
 
 interface ValueT {
   min?: number | null;
   max?: number | null;
-  exact?: number | null;
 }
 
-export type ModeT = "range" | "exact";
 interface PropsType {
   moneyRange?: boolean;
   label: string;
@@ -38,52 +24,35 @@ interface PropsType {
     max?: number | null;
   };
   isDisabled?: boolean;
-  mode: ModeT;
   stepSize?: number;
-  placeholder: string;
-  onSwitchMode: (mode: ModeT) => void;
   tooltip?: string;
   currencyConfig?: CurrencyConfigT;
 }
 
-function getMinMaxExact(value: ValueT | null) {
-  if (!value) return { min: null, max: null, exact: null };
-
-  return {
-    min: exists(value.min) ? value.min : null,
-    max: exists(value.max) ? value.max : null,
-    exact: exists(value.exact) ? value.exact : null,
-  };
-}
-
+/** Two bounds, each optional: one alone is an open range, equal bounds an exact value. */
 export const NumberRangeField = ({
   limits,
   stepSize,
   currencyConfig,
-  mode,
   moneyRange,
-  placeholder,
   isDisabled,
   label,
   indexPrefix,
   unit,
   tooltip,
-  onSwitchMode,
   value,
   onChange,
 }: PropsType) => {
   const { t } = useTranslation();
-  const val = getMinMaxExact(value);
-  const isRangeMode = mode === "range";
+  const labelId = useId();
+  const min = value?.min ?? null;
+  const max = value?.max ?? null;
 
   // money is stored in the smallest unit and shown in the major one
   const money = moneyRange && currencyConfig ? currencyConfig : null;
   const factor = money ? 10 ** money.decimalScale : 1;
 
   const numberProps = {
-    // an unset bound is null from the backend; react-aria clamps to Number(null)
-    minValue: limits?.min ?? undefined,
-    maxValue: limits?.max ?? undefined,
     step: stepSize,
     formatOptions: money
       ? {
@@ -92,9 +61,7 @@ export const NumberRangeField = ({
         }
       : undefined,
     unit: money?.unit,
-    placeholder,
     isDisabled,
-    labelSize: "sm" as const,
   };
 
   const toDisplay = (stored: number | null) =>
@@ -102,35 +69,20 @@ export const NumberRangeField = ({
   const toStored = (shown: number | null) =>
     exists(shown) ? Math.round(shown * factor) : null;
 
-  const onChangeValue = (
-    type: "exact" | "max" | "min",
-    shown: number | null,
-  ) => {
-    const nextValue = toStored(shown);
+  const onChangeBound = (bound: "min" | "max", shown: number | null) => {
+    const next = { min, max, [bound]: toStored(shown) };
 
-    if (type === "exact") {
-      onChange(nextValue === null ? null : { exact: nextValue });
-      return;
-    }
-
-    // Clearing the one bound that was still set clears the whole range
-    const otherBoundIsEmpty =
-      !!value && (type === "max" ? value.min === null : value.max === null);
-    if (nextValue === null && otherBoundIsEmpty) {
-      onChange(null);
-      return;
-    }
-
-    onChange({
-      min: value ? value.min : null,
-      max: value ? value.max : null,
-      [type]: nextValue,
-    });
+    onChange(next.min === null && next.max === null ? null : next);
   };
 
+  // an unset limit is null from the backend; react-aria clamps to Number(null)
+  const lowest = limits?.min ?? undefined;
+  const highest = limits?.max ?? undefined;
+
   return (
-    <div>
+    <Group aria-labelledby={labelId}>
       <Label
+        id={labelId}
         elementType="span"
         isDisabled={isDisabled}
         indexPrefix={indexPrefix}
@@ -139,44 +91,30 @@ export const NumberRangeField = ({
         {label}
         {unit && ` ( ${unit} )`}
       </Label>
-      <ToggleButtonGroup
-        size="sm"
-        selectionMode="single"
-        disallowEmptySelection
-        selectedKeys={[mode || "range"]}
-        onSelectionChange={(keys) => {
-          const [key] = keys;
-          if (key === "range" || key === "exact") onSwitchMode(key);
-        }}
-      >
-        <ToggleButton id="range">{t("inputRange.range")}</ToggleButton>
-        <ToggleButton id="exact">{t("inputRange.exact")}</ToggleButton>
-      </ToggleButtonGroup>
-      <div className={inputs({ mode })}>
-        {isRangeMode ? (
-          <>
-            <NumberField
-              {...numberProps}
-              label={t("inputRange.minLabel")}
-              value={toDisplay(val.min)}
-              onChange={(shown) => onChangeValue("min", shown)}
-            />
-            <NumberField
-              {...numberProps}
-              label={t("inputRange.maxLabel")}
-              value={toDisplay(val.max)}
-              onChange={(shown) => onChangeValue("max", shown)}
-            />
-          </>
-        ) : (
-          <NumberField
-            {...numberProps}
-            label={t("inputRange.exactLabel")}
-            value={toDisplay(val.exact)}
-            onChange={(shown) => onChangeValue("exact", shown)}
-          />
-        )}
+      {/* each bound limits the other, so min never exceeds max */}
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-[5px]">
+        <NumberField
+          {...numberProps}
+          aria-label={t("inputRange.minLabel")}
+          placeholder={t("inputRange.minLabel")}
+          minValue={lowest}
+          maxValue={toDisplay(max) ?? highest}
+          value={toDisplay(min)}
+          onChange={(shown) => onChangeBound("min", shown)}
+        />
+        <span aria-hidden className="text-sm text-gray-500">
+          –
+        </span>
+        <NumberField
+          {...numberProps}
+          aria-label={t("inputRange.maxLabel")}
+          placeholder={t("inputRange.maxLabel")}
+          minValue={toDisplay(min) ?? lowest}
+          maxValue={highest}
+          value={toDisplay(max)}
+          onChange={(shown) => onChangeBound("max", shown)}
+        />
       </div>
-    </div>
+    </Group>
   );
 };

@@ -17,7 +17,6 @@ import {
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
 import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
-import type { ModeT } from "../../ui-components/NumberRangeField";
 
 export const EditorV2QueryNodeEditor = ({
   node,
@@ -111,20 +110,6 @@ export const EditorV2QueryNodeEditor = ({
     [setFilterProperties],
   );
 
-  const onSwitchFilterMode = useCallback(
-    (tableIdx: number, filterIdx: number, mode: ModeT) => {
-      const tables = [...node.tables];
-      tables[tableIdx] = {
-        ...tables[tableIdx],
-        filters: tables[tableIdx].filters.map((filter, idx) =>
-          idx === filterIdx ? { ...filter, mode } : filter,
-        ),
-      };
-      onChange({ ...node, tables });
-    },
-    [node, onChange],
-  );
-
   const postPrefixForSuggestions = usePostPrefixForSuggestions();
   const onLoadFilterSuggestions = useCallback(
     async (
@@ -213,7 +198,6 @@ export const EditorV2QueryNodeEditor = ({
       onSelectSelects={onSelectSelects}
       onSelectTableSelects={onSelectTableSelects}
       onSetFilterValue={onSetFilterValue}
-      onSwitchFilterMode={onSwitchFilterMode}
       onResetTable={onResetTable}
       onResetAllSettings={onResetAllSettings}
       onSetDateColumn={onSetDateColumn}

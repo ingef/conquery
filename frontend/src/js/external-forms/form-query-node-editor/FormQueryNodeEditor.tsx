@@ -10,7 +10,6 @@ import type { NodeResetConfig } from "../../model/node";
 import { tableIsEditable } from "../../model/table";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
-import type { ModeT } from "../../ui-components/NumberRangeField";
 import type { EditedFormQueryNodePosition } from "../form-concept-group/FormConceptGroup";
 
 interface PropsT {
@@ -31,11 +30,6 @@ interface PropsT {
     tableIdx: number,
     filterIdx: number,
     filterValue: unknown,
-  ) => void;
-  onSwitchFilterMode: (
-    tableIdx: number,
-    filterIdx: number,
-    mode: ModeT,
   ) => void;
   onResetAllSettings: (config: NodeResetConfig) => void;
   onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
@@ -82,7 +76,6 @@ const FormQueryNodeEditor = (props: PropsT) => {
       onSelectSelects={props.onSelectSelects}
       onSelectTableSelects={props.onSelectTableSelects}
       onSetFilterValue={props.onSetFilterValue}
-      onSwitchFilterMode={props.onSwitchFilterMode}
       onResetTable={props.onResetTable}
       onResetAllSettings={props.onResetAllSettings}
       onSetDateColumn={props.onSetDateColumn}

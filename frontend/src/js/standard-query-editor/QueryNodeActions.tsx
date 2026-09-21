@@ -1,16 +1,15 @@
-import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import {
-  faExpandArrowsAlt,
-  faMicroscope,
-  faSpinner,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
+  CalendarIcon,
+  LoaderCircleIcon,
+  Maximize2Icon,
+  MicroscopeIcon,
+  XIcon,
+} from "lucide-react";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { Button } from "../ui-components/Button";
 
-import { Icon } from "../ui-components/Icon";
 import {
   Tooltip,
   TooltipTarget,
@@ -58,7 +57,7 @@ const QueryNodeActions = (props: Props) => {
             props.onDeleteNode(props.andIdx, props.orIdx);
           }}
         >
-          <Icon icon={faTimes} />
+          <XIcon />
         </Button>
         <Tooltip>{t("queryEditor.removeNode")}</Tooltip>
       </TooltipTrigger>
@@ -73,7 +72,7 @@ const QueryNodeActions = (props: Props) => {
               props.onToggleTimestamps(props.andIdx, props.orIdx);
             }}
           >
-            <Icon icon={faCalendar} />
+            <CalendarIcon />
           </Button>
           <Tooltip>{t("queryNodeEditor.excludingTimestamps")}</Tooltip>
         </TooltipTrigger>
@@ -85,7 +84,7 @@ const QueryNodeActions = (props: Props) => {
             aria-label={t("queryEditor.loadingPreviousQuery")}
             excludeFromTabOrder
           >
-            <Icon icon={faSpinner} className="mt-[7px] mb-1 mx-[6px]" />
+            <LoaderCircleIcon className="mt-[7px] mb-1 mx-[6px]" />
           </TooltipTarget>
           <Tooltip>{t("queryEditor.loadingPreviousQuery")}</Tooltip>
         </TooltipTrigger>
@@ -99,7 +98,7 @@ const QueryNodeActions = (props: Props) => {
               props.onExpandClick();
             }}
           >
-            <Icon icon={faExpandArrowsAlt} />
+            <Maximize2Icon />
           </Button>
           <Tooltip>{t("queryEditor.expand")}</Tooltip>
         </TooltipTrigger>
@@ -120,7 +119,7 @@ const QueryNodeActions = (props: Props) => {
                 props.onToggleSecondaryIdExclude(props.andIdx, props.orIdx);
               }}
             >
-              <Icon icon={faMicroscope} />
+              <MicroscopeIcon />
             </Button>
             {props.excludeFromSecondaryId && <div className={crossedOut()} />}
           </div>

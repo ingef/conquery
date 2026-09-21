@@ -1,4 +1,4 @@
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { LoaderCircleIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -21,7 +21,6 @@ import type {
   MultiSelectFilterWithValueType,
 } from "../standard-query-editor/types";
 import { Button } from "../ui-components/Button";
-import { Icon } from "../ui-components/Icon";
 
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { useDefaultStatusOptions } from "./useDefaultStatusOptions";
@@ -212,8 +211,6 @@ const root = tv({
   ],
 });
 
-const noop = () => {};
-
 const SearchEntitiesComponent = ({
   table,
   onLoad,
@@ -238,7 +235,6 @@ const SearchEntitiesComponent = ({
         filters={searchFilters}
         excludeTable={false}
         onSetFilterValue={setFilterValue}
-        onSwitchFilterMode={noop}
         onLoadFilterSuggestions={loadFilterSuggestions}
       />
       <div className="grid">
@@ -247,7 +243,7 @@ const SearchEntitiesComponent = ({
           onPress={onSubmitSearch}
           isDisabled={!hasFiltersSet || loading}
         >
-          {loading && <Icon icon={faSpinner} className="text-white" />}
+          {loading && <LoaderCircleIcon className="text-white" />}
           {t("history.searchEntitiesButton")}
         </Button>
       </div>

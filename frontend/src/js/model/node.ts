@@ -1,12 +1,3 @@
-import {
-  faFolderOpen as faFolderOpenRegular,
-  faFolder as faFolderRegular,
-} from "@fortawesome/free-regular-svg-icons";
-import {
-  faFolder,
-  faFolderOpen,
-  faMinus,
-} from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
 import type { ConceptElementT, ConceptT } from "../api/types";
@@ -119,24 +110,32 @@ export function nodeIsElement(node: ConceptT): node is ConceptElementT {
   return "tables" in node;
 }
 
+export type NodeIconT =
+  | "leaf"
+  | "folder"
+  | "folderOpen"
+  | "structFolder"
+  | "structFolderOpen"
+  | "pending";
+
 export function getNodeIcon(
   node: ConceptT,
   config?: {
     isStructNode?: boolean;
     open?: boolean;
   },
-) {
+): NodeIconT {
   const hasChildren = node.children && node.children?.length > 0;
 
   if (!hasChildren) {
-    return faMinus;
+    return "leaf";
   }
 
   if (config?.open) {
-    return config?.isStructNode ? faFolderOpenRegular : faFolderOpen;
+    return config?.isStructNode ? "structFolderOpen" : "folderOpen";
   }
 
-  return config?.isStructNode ? faFolderRegular : faFolder;
+  return config?.isStructNode ? "structFolder" : "folder";
 }
 
 const droppableObjectIsConceptTreeNode = (
