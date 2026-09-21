@@ -132,6 +132,12 @@ public class AdminDatasetResource {
 		processor.addSearchIndex(namespace, searchIndex);
 	}
 
+	@GET
+	@Path("searchIndex")
+	public List<SearchIndexId> listSearchIndexes() {
+		return processor.listSearchIndexes(namespace);
+	}
+
 	@POST
 	@Path("tables")
 	public void addTable(Table table) {
