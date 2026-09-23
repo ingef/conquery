@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import { Fragment } from "react";
 
 import { C1, C2, C3, H1, H2, H3, H4, H5 } from "./Typography";
 
@@ -10,7 +11,7 @@ export default {
 
 type Story = StoryObj<typeof C2>;
 
-export const Scale: Story = {
+export const Headings: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
       <H1>H1 – Population by region, 24 px</H1>
@@ -18,45 +19,39 @@ export const Scale: Story = {
       <H3>H3 – Population by region, 16 px</H3>
       <H4>H4 – Population by region, 14 px</H4>
       <H5>H5 – Population by region, 12 px</H5>
-      <C1>
-        C1 – The census counts every resident of a region once a decade, 16 px.
-      </C1>
-      <C2>
-        C2 – The census counts every resident of a region once a decade, 14 px.
-      </C2>
-      <C3>
-        C3 – The census counts every resident of a region once a decade, 12 px.
-      </C3>
     </div>
   ),
 };
 
-export const Tones: Story = {
-  render: () => (
-    <div className="flex flex-col gap-2">
-      <C2>default – inherits the color of its container</C2>
-      <C2 tone="muted">muted – secondary information</C2>
-      <C2 tone="danger">danger – errors and warnings</C2>
-      <C2 tone="success">success – a finished step</C2>
-      <C2 tone="primary">primary – the brand color, for selected things</C2>
-      <C2 strong>strong – weight 500, the only emphasis weight</C2>
-    </div>
-  ),
-};
+const tones = ["default", "muted", "danger", "success", "primary"] as const;
+const sizes = [
+  { Component: C1, name: "C1, 16 px" },
+  { Component: C2, name: "C2, 14 px" },
+  { Component: C3, name: "C3, 12 px" },
+];
 
-export const Inline: Story = {
+export const Content: Story = {
   render: () => (
-    <C2>
-      A sentence with{" "}
-      <C2 as="span" strong>
-        an emphasized part
-      </C2>
-      , a{" "}
-      <C2 as="span" tone="muted">
-        muted aside
-      </C2>{" "}
-      and <C3 as="span">a smaller note</C3> in one line.
-    </C2>
+    <div className="grid grid-cols-[auto_repeat(6,auto)] items-baseline gap-x-6 gap-y-3">
+      <span />
+      {tones.map((tone) => (
+        <C3 key={tone} tone="muted">
+          {tone}
+        </C3>
+      ))}
+      <C3 tone="muted">strong</C3>
+      {sizes.map(({ Component, name }) => (
+        <Fragment key={name}>
+          <C3 tone="muted">{name}</C3>
+          {tones.map((tone) => (
+            <Component key={tone} tone={tone}>
+              Population by region
+            </Component>
+          ))}
+          <Component strong>Population by region</Component>
+        </Fragment>
+      ))}
+    </div>
   ),
 };
 
