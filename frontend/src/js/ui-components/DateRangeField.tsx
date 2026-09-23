@@ -22,7 +22,6 @@ const customTooltip = tv({
   base: [
     "flex flex-col",
     "gap-2",
-    "px-[14px] py-2",
     "[&_table]:mt-[5px] [&_table]:w-full",
     "[&_table]:border [&_th]:border [&_td]:border",
     "[&_table]:border-gray-100 [&_th]:border-gray-100 [&_td]:border-gray-100",

@@ -12,8 +12,8 @@ const spacing = tv({
   variants: {
     size: {
       h1: "mt-5 mb-[5px]",
-      h2: "mt-[10px] mb-[3px] ml-[10px]",
-      h3: "mt-[10px] mb-[3px] ml-[10px]",
+      h2: "mt-[10px] mb-[3px]",
+      h3: "mt-[10px] mb-[3px]",
     },
   },
   defaultVariants: { size: "h1" },

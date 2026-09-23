@@ -17,7 +17,7 @@ const tooltip = tv({
     "rounded",
     "bg-white",
     "shadow-[0_0_8px_rgba(0,0,0,0.18)]",
-    "px-[14px] py-2",
+    "p-3",
     "text-left",
     textStyle({ size: 2, tone: "default" }),
     "data-entering:animate-fade-in",
