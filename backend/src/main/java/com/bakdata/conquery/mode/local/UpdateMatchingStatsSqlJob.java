@@ -44,48 +44,69 @@ public class UpdateMatchingStatsSqlJob extends Job {
 		Stopwatch stopwatch = Stopwatch.createStarted();
 
 		ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(getMatchingStats().getMatchingStatsWorkers()));
+		try {
+			Map<ConceptId, ListenableFuture<?>> jobsByConcept = new HashedMap<>();
+			Collection<ListenableFuture<?>> jobs = jobsByConcept.values();
 
-		Map<ConceptId, ListenableFuture<?>> jobsByConcept = new HashedMap<>();
-		Collection<ListenableFuture<?>> jobs = jobsByConcept.values();
+			for (Concept<?> concept : concepts) {
+				if (concept instanceof TreeConcept) {
+					ListenableFuture<?> job = matchingStats.collectMatchingStatsForConcept((TreeConcept) concept, executorService, getMatchingStats().getMatchingStatsRetries());
 
-		for (Concept<?> concept : concepts) {
-			if (concept instanceof TreeConcept) {
-				ListenableFuture<?> job = matchingStats.collectMatchingStatsForConcept((TreeConcept) concept, executorService, getMatchingStats().getMatchingStatsRetries());
+					job.addListener(
+							() -> {
+								if (job.state().equals(Future.State.FAILED)) {
+									log.warn("FAILED to collect SQL matching stats for {}", concept, job.exceptionNow());
+								}
+							}, MoreExecutors.directExecutor());
 
-				job.addListener(
-						() -> {
-							if (job.state().equals(Future.State.FAILED)) {
-								log.warn("FAILED to collect SQL matching stats for {}", concept, job.exceptionNow());
-							}
-						}, MoreExecutors.directExecutor());
-
-				jobsByConcept.put(concept.getId(), job);
-			}
-		}
-
-		while (jobs.stream().anyMatch(job -> job.state().equals(Future.State.RUNNING))) {
-			if (isCancelled()) {
-				for (ListenableFuture<?> job : jobs) {
-					job.cancel(true);
+					jobsByConcept.put(concept.getId(), job);
 				}
 			}
 
-			for (ListenableFuture<?> someJob : jobs) {
-				if (someJob.isDone()) {
-					continue;
+			while (jobs.stream().anyMatch(job -> job.state().equals(Future.State.RUNNING))) {
+				if (isCancelled()) {
+					for (ListenableFuture<?> job : jobs) {
+						job.cancel(true);
+					}
 				}
 
-				try {
-					someJob.get(30, TimeUnit.SECONDS);
-				} catch (Exception e) {
-					// intentionally left blank
-				}
+				for (ListenableFuture<?> someJob : jobs) {
+					if (someJob.isDone()) {
+						continue;
+					}
 
-				log.debug("WAITING for {} matching stats to finish.", jobs.stream().filter(job -> job.state().equals(Future.State.RUNNING)).count());
+					try {
+						someJob.get(30, TimeUnit.SECONDS);
+					} catch (InterruptedException e) {
+						jobs.forEach(job -> job.cancel(true));
+						throw e;
+					} catch (Exception e) {
+						// Failure is reported by the listener above.
+					}
+
+					log.debug("WAITING for {} matching stats to finish.", jobs.stream().filter(job -> job.state().equals(Future.State.RUNNING)).count());
+				}
 			}
+		} finally {
+			shutdownExecutor(executorService);
 		}
 
 		log.debug("DONE collecting SQL matching stats for {} within {}", dataset, stopwatch);
+	}
+
+	private static void shutdownExecutor(ListeningExecutorService executorService) throws InterruptedException {
+		executorService.shutdown();
+		try {
+			if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
+				executorService.shutdownNow();
+				if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
+					log.warn("Matching stats executor did not terminate");
+				}
+			}
+		} catch (InterruptedException e) {
+			executorService.shutdownNow();
+			throw e;
+		}
 	}
 
 	@Override
