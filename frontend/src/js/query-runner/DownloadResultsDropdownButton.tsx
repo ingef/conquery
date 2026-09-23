@@ -30,7 +30,7 @@ const part = tv({
     "hover:bg-gray-50",
   ],
   variants: {
-    caret: { true: "px-2", false: "px-[14px]" },
+    caret: { true: "px-2", false: "px-3" },
   },
 });
 

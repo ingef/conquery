@@ -10,7 +10,7 @@ const left = tv({
   base: [
     "self-stretch",
     "flex items-center",
-    "px-[15px]",
+    "px-3",
     "transition-[color,background-color] duration-100",
   ],
   variants: {
@@ -23,7 +23,7 @@ const left = tv({
 
 const runnerLabel = tv({
   base: [
-    "px-[15px]",
+    "px-3",
     "bg-white group-hover/runner:bg-gray-50",
     textStyle({ size: 2, strong: true, tone: "default" }),
     "self-stretch",

@@ -27,7 +27,7 @@ const menuItem = tv({
     "flex items-center",
     "gap-[10px]",
     "rounded",
-    "h-[30px] px-[15px]",
+    "h-[30px] px-3",
     textStyle({ size: 2, tone: "default" }),
     "whitespace-nowrap",
     "cursor-pointer",

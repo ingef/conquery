@@ -48,8 +48,8 @@ export const buttonStyle = tv({
     // every size is a fixed height, so text and icon-only buttons line up;
     size: {
       sm: [textStyle({ size: 3, strong: true }), "h-6 px-2 gap-2"],
-      md: [textStyle({ size: 2, strong: true }), "h-[30px] px-[15px] gap-2"],
-      lg: [textStyle({ size: 1, strong: true }), "h-9 px-[18px] gap-3"],
+      md: [textStyle({ size: 2, strong: true }), "h-[30px] px-3 gap-2"],
+      lg: [textStyle({ size: 1, strong: true }), "h-9 px-4 gap-3"],
     },
     // an icon-only button is a square
     iconOnly: { true: "px-0" },
