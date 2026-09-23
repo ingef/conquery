@@ -128,14 +128,20 @@ public class SqlMatchingStats {
 		return (Field<Date>[]) validityDates.toArray(Field[]::new);
 	}
 
-	private void assignStats(Map<ConceptElementId<?>, MatchingStats.Accumulator> matchingStats) {
-		for (Map.Entry<ConceptElementId<?>, MatchingStats.Accumulator> entry : matchingStats.entrySet()) {
-			ConceptElementId<?> conceptElementId = entry.getKey();
+	private void assignStats(TreeConcept concept, Map<ConceptElementId<?>, MatchingStats.Accumulator> matchingStats) {
+		assignStats(concept, matchingStats.get(concept.getId()));
+		concept.getAllChildren().forEach(element -> assignStats(element, matchingStats.get(element.getId())));
+	}
 
-			MatchingStats stats = new MatchingStats();
-			stats.putEntry(SQL_SOURCE_MATCHING_STATS_LABEL, entry.getValue().finish());
-			conceptElementId.resolve().setMatchingStats(stats);
+	private void assignStats(ConceptElement<?> element, MatchingStats.Accumulator accumulator) {
+		if (accumulator == null) {
+			element.setMatchingStats(null);
+			return;
 		}
+
+		MatchingStats stats = new MatchingStats();
+		stats.putEntry(SQL_SOURCE_MATCHING_STATS_LABEL, accumulator.finish());
+		element.setMatchingStats(stats);
 	}
 
 	@NotNull
@@ -214,7 +220,7 @@ public class SqlMatchingStats {
 					dslContext.connection(connection -> {
 						SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
 						Map<ConceptElementId<?>, MatchingStats.Accumulator> matchingStats = readStats(concept, matchingStatsStatement);
-						assignStats(matchingStats);
+						assignStats(concept, matchingStats);
 					});
 					return;
 				} catch (DataAccessException e) {
