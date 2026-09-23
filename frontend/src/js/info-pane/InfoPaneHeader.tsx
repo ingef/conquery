@@ -14,7 +14,8 @@ const header = tv({
     "shrink-0",
     "border-b border-gray-100",
     "bg-white",
-    "px-5",
+    // level with the tab labels, which sit above a 3 px underline
+    "px-5 pt-1",
   ],
 });
 
