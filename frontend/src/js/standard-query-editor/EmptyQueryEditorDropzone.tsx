@@ -58,7 +58,7 @@ export const EmptyQueryEditorDropzone = memo(() => {
         <div className={grid()}>
           <div className={row()}>
             <div className={iconInABox()}>
-              <FolderIcon className="text-primary-500" />
+              <FolderIcon data-filled className="text-primary-500" />
             </div>
             <div className={iconInABox()}>
               <MinusIcon className="text-primary-500" />
