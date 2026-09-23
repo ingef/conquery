@@ -17,7 +17,7 @@ const textArea = tv({
     "border border-gray-400",
     "bg-white",
     "py-[6px] px-[10px]",
-    "text-sm font-normal text-gray-800",
+    "text-sm text-gray-800",
     "outline-none",
     "placeholder:text-gray-400",
     "data-focus-visible:outline-2 data-focus-visible:outline-primary-500",

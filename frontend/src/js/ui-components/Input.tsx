@@ -16,7 +16,7 @@ const frame = tv({
     "rounded",
     "border border-gray-400",
     "bg-white",
-    "text-sm font-normal text-gray-800",
+    "text-sm text-gray-800",
     "data-focus-visible:outline-2 data-focus-visible:outline-primary-500",
     "data-disabled:opacity-50",
     "data-invalid:border-red",

@@ -12,7 +12,6 @@ const grid = tv({
 });
 
 const value = tv({
-  base: ["text-sm", "font-normal"],
   variants: {
     blurred: { true: "blur-[6px]" },
   },
@@ -29,7 +28,7 @@ const EntityInfos = ({
     <div className={grid()}>
       {infos.map((info) => (
         <Fragment key={info.label}>
-          <div className="text-sm">{info.label}</div>
+          <div>{info.label}</div>
           <div className={value({ blurred })}>{info.value}</div>
         </Fragment>
       ))}

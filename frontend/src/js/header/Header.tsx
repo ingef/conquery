@@ -4,6 +4,7 @@ import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import { useAppTheme } from "../app-theme-context";
 import DatasetSelector from "../dataset/DatasetSelector";
+import { textStyle } from "../ui-components/Typography";
 import { HeaderMenu } from "./HeaderMenu";
 
 // position absolute: fix, so content can expand to 100% and scroll
@@ -27,17 +28,8 @@ const logo = tv({
   base: ["h-header", "bg-no-repeat", "[background-position-y:50%]"],
 });
 
-// the second font-size of the old styles won, hence text-xs and not text-base
 const headline = tv({
-  base: [
-    "mr-auto",
-    "text-xs",
-    "leading-[2]",
-    "font-bold",
-    "uppercase",
-    "opacity-30",
-    "text-primary-500",
-  ],
+  base: ["mr-auto", textStyle({ size: 3, tone: "muted" })],
 });
 
 const Header = () => {

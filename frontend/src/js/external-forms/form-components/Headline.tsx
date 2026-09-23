@@ -1,74 +1,41 @@
-import type { ComponentProps } from "react";
+import type { ReactNode } from "react";
 import { tv } from "tailwind-variants";
 
-import type { Headline as HeadlineField } from "../config-types";
+import { exists } from "../../common/helpers/exists";
+import { H3, H4, H5 } from "../../ui-components/Typography";
 
-const HEADLINE_DOM = {
-  h1: "h3" as const,
-  h2: "h4" as const,
-  h3: "h5" as const,
-};
+// the config's h1/h2/h3 are the form's own levels; the app's outline starts at h3 inside the form pane
+const HEADING = { h1: H3, h2: H4, h3: H5 } as const;
 
-export const getHeadlineFieldAs = (headline: HeadlineField) => {
-  if (!headline.style?.size) return "h3";
-
-  // To convert the "simplified" headline type to the real DOM element type
-  return HEADLINE_DOM[headline.style.size];
-};
-
-const headline = tv({
-  base: [
-    "relative",
-    "flex items-center",
-    "gap-[10px]",
-    "text-gray-800",
-    // wins over the size margins: :first-child raises specificity
-    "first:mt-0",
-  ],
+const spacing = tv({
+  base: "first:mt-0",
   variants: {
-    // leading follows the font size, the class merger drops one that precedes it
     size: {
-      h1: ["text-xl", "leading-none", "font-normal", "mt-5 mb-[5px] ml-0"],
-      h2: [
-        "text-base",
-        "leading-none",
-        "font-normal",
-        "mt-[10px] mb-[3px] ml-[10px]",
-      ],
-      h3: [
-        "text-sm",
-        "leading-none",
-        "font-bold",
-        "mt-[10px] mb-[3px] ml-[10px]",
-      ],
+      h1: "mt-5 mb-[5px]",
+      h2: "mt-[10px] mb-[3px] ml-[10px]",
+      h3: "mt-[10px] mb-[3px] ml-[10px]",
     },
   },
   defaultVariants: { size: "h1" },
 });
 
 export const Headline = ({
-  as: Component = "h3",
-  size,
-  className,
-  ...props
-}: ComponentProps<"h3"> & {
-  as?: "h3" | "h4" | "h5";
+  size = "h1",
+  index,
+  children,
+}: {
   size?: "h1" | "h2" | "h3";
-}) => <Component className={headline({ size, className })} {...props} />;
-
-const headlineIndex = tv({
-  base: [
-    "flex items-center justify-center",
-    "px-[10px]",
-    "text-xl",
-    "border-r-[3px] border-gray-400",
-    "text-gray-400",
-  ],
-});
-
-export const HeadlineIndex = ({
-  className,
-  ...props
-}: ComponentProps<"span">) => (
-  <span className={headlineIndex({ className })} {...props} />
-);
+  /** the number of a top-level section */
+  index?: number;
+  children: ReactNode;
+}) => {
+  const Heading = HEADING[size];
+  return (
+    <div className={spacing({ size })}>
+      <Heading>
+        {exists(index) && <span className="mr-2 text-gray-400">{index}</span>}
+        {children}
+      </Heading>
+    </div>
+  );
+};

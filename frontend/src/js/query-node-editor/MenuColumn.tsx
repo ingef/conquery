@@ -3,13 +3,12 @@ import { tv } from "tailwind-variants";
 
 import type { ConceptIdT } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
-import { Heading3 } from "../headings/Headings";
 import { type NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
 import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-
+import { C2, H3 } from "../ui-components/Typography";
 import AdditionalConceptNodeChildren from "./AdditionalConceptNodeChildren";
 import { HeadingBetween } from "./HeadingBetween";
 import MenuColumnItem from "./MenuColumnItem";
@@ -30,17 +29,10 @@ const fixedColumn = tv({
   },
 });
 
-const dimmedNote = tv({
-  base: ["p-[15px]", "text-gray-100", "font-normal"],
-});
+const dimmedNote = tv({ base: "p-[15px]" });
 
 const commonSettingsLabel = tv({
-  base: [
-    "px-[15px] pt-[15px] pb-0",
-    "m-0",
-    "cursor-pointer",
-    "hover:underline",
-  ],
+  base: ["px-[15px] pt-[15px]", "cursor-pointer", "hover:underline"],
 });
 
 const MenuColumn = ({
@@ -89,18 +81,17 @@ const MenuColumn = ({
   return (
     <div className={fixedColumn({ isEmpty, className })}>
       {isEmpty && (
-        <Heading3 className={dimmedNote()}>
-          {t("queryNodeEditor.emptyMenuColumn")}
-        </Heading3>
+        <div className={dimmedNote()}>
+          <C2 tone="muted">{t("queryNodeEditor.emptyMenuColumn")}</C2>
+        </div>
       )}
       {nodeIsConceptQueryNode(node) && showTables && (
         <>
-          <Heading3
-            className={commonSettingsLabel()}
-            onClick={onCommonSettingsClick}
-          >
-            {t("queryNodeEditor.properties")}
-          </Heading3>
+          <div className={commonSettingsLabel()}>
+            <H3 onClick={onCommonSettingsClick}>
+              {t("queryNodeEditor.properties")}
+            </H3>
+          </div>
           <HeadingBetween>
             {t("queryNodeEditor.conceptNodeTables")}
           </HeadingBetween>

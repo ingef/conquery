@@ -9,6 +9,7 @@ import { tv } from "tailwind-variants";
 import { exists } from "../common/helpers/exists";
 import { FieldError } from "./FieldError";
 import InfoTooltip from "./InfoTooltip";
+import { textStyle } from "./Typography";
 
 // the clickable label. Block-level: as an inline box it would sit on the
 // parent's line box, whose height then depends on the parent's font and on
@@ -24,7 +25,7 @@ const button = tv({
     "flex items-start",
     "gap-1",
     "cursor-pointer select-none",
-    "text-sm font-medium",
+    textStyle({ size: 2 }),
     "data-disabled:cursor-not-allowed",
   ],
 });
@@ -50,7 +51,7 @@ const box = tv({
 
 // 5 px above and below a 20 px line: the first line centers on the box,
 // further lines flow below it
-const label = tv({ base: ["py-[5px]", "leading-5"] });
+const label = tv({ base: "py-[5px]" });
 
 // under the label text, past the box
 const error = tv({ base: "pl-[34px]" });

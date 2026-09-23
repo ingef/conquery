@@ -1,15 +1,15 @@
 import type { ComponentProps } from "react";
 import { tv } from "tailwind-variants";
 
+import { textStyle } from "../../ui-components/Typography";
+
+// the label above a value in the timeline's dense grids
 const tinyLabel = tv({
   base: [
     "mt-[5px]",
-    "text-[11px]",
-    "font-normal",
-    "text-gray-500",
-    "uppercase",
-    "whitespace-nowrap",
+    textStyle({ size: 3, tone: "muted" }),
     "leading-none",
+    "whitespace-nowrap",
   ],
 });
 

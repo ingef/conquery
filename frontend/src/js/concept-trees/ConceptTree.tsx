@@ -8,10 +8,10 @@ import ConceptTreeNodeText from "./ConceptTreeNodeText";
 import type { SearchT } from "./reducer";
 
 const message = tv({
-  base: ["my-[2px]", "text-sm", "leading-5"],
+  base: ["my-[2px]", "text-sm"],
   variants: {
     error: {
-      true: ["text-red", "font-normal"],
+      true: "text-red",
     },
   },
 });

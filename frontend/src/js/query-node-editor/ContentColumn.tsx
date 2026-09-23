@@ -8,23 +8,19 @@ import type {
   SelectOptionT,
   SelectorResultType,
 } from "../api/types";
-import { Heading3 } from "../headings/Headings";
 import { nodeIsConceptQueryNode } from "../model/node";
 import type {
   ConceptQueryNodeType,
   FilterWithValueType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-
+import { H3 } from "../ui-components/Typography";
 import CommonNodeSettings from "./CommonNodeSettings";
 import ContentCell from "./ContentCell";
 import NodeSelects from "./NodeSelects";
 import TableView from "./TableView";
 
-// mb-0 overrides the h3 base margin from index.css
-const sectionHeading = tv({
-  base: ["mx-[10px] mt-[10px] mb-0"],
-});
+const sectionHeading = tv({ base: "mx-[10px] mt-[10px]" });
 
 const contentCellGroup = tv({
   base: [
@@ -88,9 +84,9 @@ const ContentColumn = ({
   return (
     <div className="flex w-full flex-col">
       <ContentCell className={contentCellGroup()}>
-        <Heading3 className={sectionHeading()}>
-          {t("queryNodeEditor.properties")}
-        </Heading3>
+        <div className={sectionHeading()}>
+          <H3>{t("queryNodeEditor.properties")}</H3>
+        </div>
         {(onToggleSecondaryIdExclude || onToggleTimestamps) && (
           <CommonNodeSettings
             excludeFromSecondaryId={node.excludeFromSecondaryId}
@@ -121,7 +117,9 @@ const ContentColumn = ({
               itemsRef.current[idx] = instance;
             }}
           >
-            <Heading3 className={sectionHeading()}>{table.label}</Heading3>
+            <div className={sectionHeading()}>
+              <H3>{table.label}</H3>
+            </div>
             <TableView
               node={
                 node as ConceptQueryNodeType /* otherwise there won't be tables */

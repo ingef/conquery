@@ -54,7 +54,7 @@ const resultsNumber = tv({
     "leading-none",
     "rounded",
     "text-primary-500",
-    "font-bold",
+    "font-medium",
   ],
 });
 

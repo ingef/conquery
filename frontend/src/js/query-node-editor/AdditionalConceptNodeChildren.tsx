@@ -3,9 +3,8 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
 import type { ConceptBaseT, ConceptIdT } from "../api/types";
-import { Heading4 } from "../headings/Headings";
 import type { DragItemConceptTreeNode } from "../standard-query-editor/types";
-
+import { H4 } from "../ui-components/Typography";
 import ConceptDropzone from "./ConceptDropzone";
 import ConceptEntry from "./ConceptEntry";
 import { HeadingBetween } from "./HeadingBetween";
@@ -18,9 +17,7 @@ const scrollable = tv({
   base: ["h-full", "overflow-y-auto", "[-webkit-overflow-scrolling:touch]"],
 });
 
-const heading = tv({
-  base: ["text-primary-500", "font-bold", "mt-[10px] mb-[5px]"],
-});
+const heading = tv({ base: "mt-[10px] mb-[5px]" });
 
 const AdditionalConceptNodeChildren = ({
   node,
@@ -41,7 +38,9 @@ const AdditionalConceptNodeChildren = ({
     <>
       <HeadingBetween>{t("queryNodeEditor.dropMoreConcepts")}</HeadingBetween>
       <div className={padded()}>
-        <Heading4 className={heading()}>{rootConcept.label}</Heading4>
+        <div className={heading()}>
+          <H4>{rootConcept.label}</H4>
+        </div>
         <div>
           <ConceptDropzone node={node} onDropConcept={onDropConcept} />
         </div>

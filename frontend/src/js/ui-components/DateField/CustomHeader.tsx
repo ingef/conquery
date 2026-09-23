@@ -29,7 +29,7 @@ const optionList = tv({
 
 const monthYearLabel = tv({
   base: [
-    "font-bold",
+    "font-medium",
     "cursor-pointer",
     "transition-opacity duration-100",
     "opacity-75 hover:opacity-100",

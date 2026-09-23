@@ -8,11 +8,11 @@ import type {
   ConceptIdT,
   CurrencyConfigT,
 } from "../../api/types";
+import { H4 } from "../../ui-components/Typography";
 import type { ContentFilterValue } from "../ContentControl";
 import type { DetailLevel } from "../DetailControl";
 import type { EntityEvent } from "../reducer";
 import EventCard from "./EventCard";
-import { SmallHeading } from "./SmallHeading";
 import type { ColumnBuckets } from "./util/useColumnInformation";
 
 const eventTimeline = tv({
@@ -113,7 +113,7 @@ export const Quarter = memo(
             ) : (
               <ChevronRightIcon className="text-gray-500" />
             )}
-            <SmallHeading className="leading-none">Q{quarter} </SmallHeading>
+            <H4 as="span">Q{quarter} </H4>
             <span>
               – {totalEventsPerQuarter}{" "}
               {t("history.events", {

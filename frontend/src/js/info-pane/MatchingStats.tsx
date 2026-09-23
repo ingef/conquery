@@ -11,20 +11,19 @@ import type { DateRangeT } from "../api/types";
 import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 import { formatDate, parseDate } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
+import { headingStyle, textStyle } from "../ui-components/Typography";
 
 const dateText = tv({
   base: [
-    "m-0",
     "pr-2",
-    "font-bold",
-    "text-sm",
+    textStyle({ size: 2, strong: true }),
     "flex items-center",
     "whitespace-nowrap",
   ],
 });
 
 const text = tv({
-  base: ["m-0", "text-xs", "uppercase", "font-normal"],
+  base: textStyle({ size: 3 }),
   variants: {
     zero: {
       true: "text-red",
@@ -38,7 +37,7 @@ const icon = tv({
 });
 
 const numberText = tv({
-  base: ["font-bold", "m-0", "text-xl", "leading-none"],
+  base: [headingStyle({ level: 2 }), "leading-none"],
   variants: {
     zero: { true: "text-red" },
   },
@@ -53,7 +52,7 @@ const digits = tv({
 });
 
 const suffix = tv({
-  base: ["text-gray-500", "font-normal", "uppercase", "text-xs", "ml-[5px]"],
+  base: [textStyle({ size: 3, tone: "muted" }), "ml-[5px]"],
 });
 
 interface Props extends HTMLAttributes<HTMLDivElement> {

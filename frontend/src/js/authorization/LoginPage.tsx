@@ -8,6 +8,7 @@ import { useAppTheme } from "../app-theme-context";
 import ErrorMessage from "../error-message/ErrorMessage";
 import { Button } from "../ui-components/Button";
 import { TextField } from "../ui-components/TextField";
+import { H3 } from "../ui-components/Typography";
 
 import { AuthTokenContext } from "./AuthTokenProvider";
 
@@ -21,17 +22,6 @@ const wrap = tv({
 
 const logo = tv({
   base: ["h-9", "bg-no-repeat", "[background-position-y:50%]"],
-});
-
-const headline = tv({
-  base: [
-    "m-0",
-    "text-base",
-    "leading-[2]",
-    "font-light",
-    "uppercase",
-    "text-gray-500",
-  ],
 });
 
 const form = tv({
@@ -88,7 +78,9 @@ const LoginPage = () => {
             backgroundSize: img.logoBackgroundSize,
           }}
         />
-        <h2 className={headline()}>{t("login.headline")}</h2>
+        <H3 as="h2" tone="muted">
+          {t("login.headline")}
+        </H3>
         {!!error && (
           <ErrorMessage className="mx-[10px] mt-5" message={t("login.error")} />
         )}

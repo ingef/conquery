@@ -104,7 +104,6 @@ const input = tv({
     "border-0",
     "outline-none",
     "text-sm",
-    "font-normal",
     "disabled:cursor-not-allowed disabled:pointer-events-none",
     "disabled:placeholder:opacity-50",
   ],

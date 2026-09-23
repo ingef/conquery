@@ -93,7 +93,7 @@ const tab = tv({
       primary: [
         "mt-[6px] mr-[5px] px-3",
         "border-b-[3px] border-transparent",
-        "text-sm leading-[30px] font-bold uppercase tracking-wider",
+        "text-sm leading-[30px] font-medium",
         "text-gray-500",
         "not-data-selected:data-hovered:border-primary-200 not-data-selected:data-hovered:text-black",
         "data-selected:border-primary-500 data-selected:text-primary-500",

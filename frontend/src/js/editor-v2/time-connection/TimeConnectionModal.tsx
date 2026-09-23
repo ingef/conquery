@@ -18,7 +18,7 @@ const row = tv({
 });
 
 const conceptName = tv({
-  base: ["grow", "whitespace-nowrap", "font-bold", "text-primary-500"],
+  base: ["grow", "whitespace-nowrap", "font-medium", "text-primary-500"],
 });
 
 export const TimeConnectionModal = memo(

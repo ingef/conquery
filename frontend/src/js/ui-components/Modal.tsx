@@ -9,6 +9,8 @@ import {
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
+import { C2, headingStyle } from "./Typography";
+
 const overlay = tv({
   base: [
     "fixed inset-0 z-10",
@@ -51,9 +53,7 @@ const dialog = tv({
 
 const header = tv({ base: ["flex flex-col", "gap-[15px]"] });
 
-const heading = tv({
-  base: ["flex items-center", "text-lg font-normal text-gray-800"],
-});
+const heading = tv({ base: ["flex items-center", headingStyle({ level: 2 })] });
 
 const body = tv({ base: "min-w-0" });
 
@@ -129,7 +129,7 @@ export const ModalHeader = ({
     <Heading slot="title" className={heading()}>
       {children}
     </Heading>
-    {subtitle && <p>{subtitle}</p>}
+    {subtitle && <C2>{subtitle}</C2>}
   </header>
 );
 

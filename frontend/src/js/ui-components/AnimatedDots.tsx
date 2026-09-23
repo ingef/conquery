@@ -10,7 +10,7 @@ const dot = tv({
 
 export default function AnimatedDots() {
   return (
-    <span className="font-bold">
+    <span className="font-medium">
       <span className={dot()}>.</span>
       <span className={dot()}>.</span>
       <span className={dot()}>.</span>

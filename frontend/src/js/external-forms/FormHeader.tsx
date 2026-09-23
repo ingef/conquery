@@ -2,13 +2,10 @@ import { BookIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { Button } from "../ui-components/Button";
+import { C1 } from "../ui-components/Typography";
 
 const root = tv({
   base: ["flex flex-col", "w-full", "gap-[7px]"],
-});
-
-const description = tv({
-  base: ["mx-[10px]", "text-base"],
 });
 
 interface Props {
@@ -25,7 +22,9 @@ const FormHeader = ({
   const { t } = useTranslation();
   return (
     <div className={root({ className })}>
-      <p className={description()}>{descriptionText}</p>
+      <div className="mx-[10px]">
+        <C1>{descriptionText}</C1>
+      </div>
       {manualUrl && (
         <a href={manualUrl} target="_blank" rel="noreferrer" className="grid">
           <Button intent="secondary">

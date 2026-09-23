@@ -17,7 +17,6 @@ const connector = tv({
     "flex items-center justify-center",
     "px-[5px]",
     "rounded",
-    "uppercase",
     "text-sm",
     "text-black",
     "select-none",

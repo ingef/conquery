@@ -1,6 +1,8 @@
 import type { ComponentProps } from "react";
 import { tv } from "tailwind-variants";
 
+import { textStyle } from "./Typography";
+
 const indexPrefix = tv({
   base: [
     "inline-block",
@@ -9,7 +11,7 @@ const indexPrefix = tv({
     "p-[3px]",
     "rounded",
     "bg-primary-50",
-    "text-[11px]",
+    textStyle({ size: 3 }),
     "leading-none",
   ],
 });

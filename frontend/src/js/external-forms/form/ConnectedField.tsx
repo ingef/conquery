@@ -7,6 +7,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { exists } from "../../common/helpers/exists";
+import { C2 } from "../../ui-components/Typography";
 import type { Field, Tabs } from "../config-types";
 import { getErrorForField } from "../validators";
 import type { DynamicFormValues } from "./Form";
@@ -67,16 +68,6 @@ const fieldContainer = tv({
   ],
 });
 
-const errorContainer = tv({
-  base: ["font-bold", "text-sm"],
-  variants: {
-    red: {
-      true: "text-red",
-      false: "text-primary-500",
-    },
-  },
-});
-
 export const setValueConfig = {
   shouldValidate: true,
   shouldDirty: true,
@@ -123,9 +114,9 @@ export const ConnectedField = <T extends object>({
     >
       {children({ ...field, ...props, errorMessage })}
       {!errorInField && (
-        <div className={errorContainer({ red: isRedError })}>
+        <C2 tone={isRedError ? "danger" : "primary"} strong={isRedError}>
           {errorMessage}
-        </div>
+        </C2>
       )}
     </div>
   );

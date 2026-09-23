@@ -35,7 +35,7 @@ const listBoxItem = tv({
     "px-2 py-[3px]",
     "cursor-pointer",
     // explicit: through the portal an item would inherit body's styles
-    "text-base font-light text-gray-800",
+    "text-sm text-gray-800",
     "outline-none",
     "transition-[background-color] duration-100",
     "data-focused:bg-primary-50 data-selected:bg-primary-50",

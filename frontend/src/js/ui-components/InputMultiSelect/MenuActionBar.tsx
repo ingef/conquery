@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 import { exists } from "../../common/helpers/exists";
 import { Button } from "../Button";
+import { C3 } from "../Typography";
 
 const row = tv({
   base: [
@@ -9,10 +10,6 @@ const row = tv({
     "px-[10px] py-[5px]",
     "border-b border-[#ccc]",
   ],
-});
-
-const infoText = tv({
-  base: ["m-0 mr-[10px]", "text-gray-500", "text-xs"],
 });
 
 interface Props {
@@ -26,12 +23,12 @@ const MenuActionBar = ({ optionsCount, total, onInsertAllClick }: Props) => {
 
   return (
     <div className={row()}>
-      <p className={infoText()}>
+      <C3 tone="muted">
         {t("inputMultiSelect.options", { count: optionsCount })}
         {exists(total) &&
           total !== optionsCount &&
           t("inputMultiSelect.ofTotal", { count: total })}
-      </p>
+      </C3>
       <Button
         intent="secondary"
         size="sm"

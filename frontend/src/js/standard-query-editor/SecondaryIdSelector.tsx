@@ -11,13 +11,14 @@ import InfoTooltip from "../ui-components/InfoTooltip";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { ToggleButtonGroup } from "../ui-components/ToggleButtonGroup";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
+import { H4 } from "../ui-components/Typography";
 
 import { setSelectedSecondaryId } from "./actions";
 import type { StandardQueryStateT } from "./queryReducer";
 import type { SelectedSecondaryIdStateT } from "./selectedSecondaryIdReducer";
 
 const headline = tv({
-  base: ["m-0", "text-sm", "uppercase", "transition-[color] duration-100"],
+  base: ["flex items-center", "transition-[color] duration-100"],
   variants: {
     active: {
       true: "text-primary-500",
@@ -159,11 +160,13 @@ const SecondaryIdSelectorUI = memo(
 
     return (
       <div>
-        <h3 className={headline({ active: !!value })}>
+        <div className={headline({ active: !!value })}>
           <MicroscopeIcon className={headlineIcon({ active: !!value })} />
-          {t("queryEditor.secondaryId")}
+          <H4 as="h3" tone={value ? "default" : "muted"}>
+            {t("queryEditor.secondaryId")}
+          </H4>
           <InfoTooltip text={t("queryEditor.secondaryIdTooltip")} />
-        </h3>
+        </div>
         <ToggleButtonGroup
           wrap
           size="sm"

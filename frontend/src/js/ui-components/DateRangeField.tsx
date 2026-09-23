@@ -16,30 +16,19 @@ import { exists } from "../common/helpers/exists";
 import { DateField } from "./DateField/DateField";
 import InfoTooltip from "./InfoTooltip";
 import { Label } from "./Label";
+import { C2 } from "./Typography";
 
 const customTooltip = tv({
   base: [
     "flex flex-col",
     "gap-2",
     "px-[14px] py-2",
-    "text-base",
-    "font-normal",
     "[&_table]:mt-[5px] [&_table]:w-full",
     "[&_table]:border [&_th]:border [&_td]:border",
     "[&_table]:border-gray-100 [&_th]:border-gray-100 [&_td]:border-gray-100",
     "[&_table]:border-collapse [&_th]:border-collapse [&_td]:border-collapse",
     "[&_td]:px-[5px] [&_td]:py-[2px]",
-    "[&_td]:leading-[1.2]",
   ],
-});
-
-const tooltipTutorial = tv({
-  variants: {
-    hasMain: {
-      true: "text-sm",
-      false: "text-base",
-    },
-  },
 });
 
 function getDisplayDate(
@@ -143,9 +132,8 @@ export const DateRangeField = ({
             excludeFromTabOrder
             html={
               <div className={customTooltip()}>
-                {exists(tooltip) && <div className="text-base">{tooltip}</div>}
-                <div
-                  className={tooltipTutorial({ hasMain: exists(tooltip) })}
+                {exists(tooltip) && <C2>{tooltip}</C2>}
+                <C2
                   // biome-ignore lint/security/noDangerouslySetInnerHtml: i18n text with markup
                   dangerouslySetInnerHTML={{
                     __html: t("inputDateRange.tooltip.possiblePattern"),
@@ -174,10 +162,7 @@ export const DateRangeField = ({
           onBlur={(e) => applyDate("min", e.target.value, displayDateFormat)}
           autoFocus={autoFocus}
         />
-        <span
-          aria-hidden
-          className="flex h-[30px] items-center text-sm text-gray-500"
-        >
+        <span aria-hidden className="flex h-[30px] items-center text-gray-500">
           –
         </span>
         <DateField

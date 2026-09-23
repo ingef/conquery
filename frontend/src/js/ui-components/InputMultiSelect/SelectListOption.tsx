@@ -9,8 +9,7 @@ const container = tv({
     "px-2 py-[3px]",
     "cursor-pointer",
     "text-gray-800",
-    "text-base",
-    "font-light",
+    "text-sm",
     "transition-[background-color] duration-100",
     // to style react-markdown
     "[&_p]:m-0",

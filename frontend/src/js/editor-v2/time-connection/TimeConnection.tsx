@@ -43,28 +43,28 @@ export const TimeConnection = memo(
       // biome-ignore lint/a11y/noStaticElementInteractions: TODO double-click opens the time modal, emotion had hidden this
       <div className={container()} onDoubleClick={onDoubleClick}>
         <div className={row()}>
-          <span className="font-bold" style={{ color: palette[0] }}>
+          <span className="font-medium" style={{ color: palette[0] }}>
             {aTimestamp}
           </span>
           <span>{t("editorV2.dateRangeFrom")}</span>
-          <span className="font-bold text-primary-500">{a}</span>
+          <span className="font-medium text-primary-500">{a}</span>
         </div>
         <div className={row()}>
           {conditions.operator !== "WHILE" && (
-            <span className="font-bold" style={{ color: palette[1] }}>
+            <span className="font-medium" style={{ color: palette[1] }}>
               {interval}
             </span>
           )}
-          <span className="font-bold" style={{ color: palette.at(-2) }}>
+          <span className="font-medium" style={{ color: palette.at(-2) }}>
             {operator}
           </span>
         </div>
         <div className={row()}>
-          <span className="font-bold" style={{ color: palette[0] }}>
+          <span className="font-medium" style={{ color: palette[0] }}>
             {bTimestamp}
           </span>
           <span>{t("editorV2.dateRangeFrom")}</span>
-          <span className="font-bold text-primary-500">{b}</span>
+          <span className="font-medium text-primary-500">{b}</span>
         </div>
       </div>
     );

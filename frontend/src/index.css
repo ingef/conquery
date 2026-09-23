@@ -25,14 +25,7 @@
   --color-filetype-xlsx: #28a745;
   --color-filetype-json: #1f5f30;
 
-  /* Font size only, line-height stays inherited (as the old theme did it).
-     Only tailwind's own sizes, anything else is a literal like `text-[11px]` */
-  --text-xs--line-height: initial;
-  --text-sm--line-height: initial;
-  --text-base--line-height: initial;
-  --text-lg--line-height: initial;
-  --text-xl--line-height: initial;
-  --text-2xl--line-height: initial;
+  --font-sans: "Roboto", "Arial", sans-serif;
 
   /* bare `rounded` */
   --radius: 3px;
@@ -68,17 +61,14 @@
 
 @layer base {
   body {
-    font-family: "Roboto", "Arial", sans-serif;
-    font-weight: 300;
+    /* the content size, C2 in ui-components/Typography */
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
     background: var(--color-bg-50);
     color: var(--color-gray-800);
     min-height: 100vh;
     height: 100%;
     overflow: hidden;
-  }
-
-  p {
-    line-height: 1.5;
   }
 
   /* in the base layer, so a size-* or stroke-* utility on one icon wins */
@@ -99,13 +89,6 @@
 
   .lucide-loader-circle {
     animation: var(--animate-spin-fast);
-  }
-
-  button,
-  select,
-  input,
-  textarea {
-    font-family: "Roboto", "Arial", sans-serif;
   }
 
   a,
@@ -142,13 +125,6 @@
     &:hover {
       background-color: var(--color-gray-50);
     }
-  }
-
-  h3 {
-    font-size: var(--text-sm);
-    margin: 0 0 10px 0;
-    color: var(--color-primary-500);
-    line-height: 25px;
   }
 }
 

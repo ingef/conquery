@@ -4,18 +4,10 @@ import { tv } from "tailwind-variants";
 
 import { exists } from "../common/helpers/exists";
 import type { DragItemConceptTreeNode } from "../standard-query-editor/types";
-
-const sectionHeading = tv({
-  base: ["font-bold", "text-primary-500", "uppercase", "text-xs"],
-});
+import { H5 } from "../ui-components/Typography";
 
 const description = tv({
-  base: [
-    "flex items-center flex-wrap",
-    "gap-x-[5px] gap-y-0",
-    "text-xs",
-    "text-gray-800",
-  ],
+  base: ["flex items-center flex-wrap", "gap-x-[5px] gap-y-0", "text-xs"],
 });
 
 export const TreeNodeConcept = ({
@@ -50,9 +42,9 @@ export const TreeNodeConcept = ({
         <div className="mt-2 flex flex-col gap-[6px]">
           {selectedSelects.length > 0 && (
             <div>
-              <h4 className={sectionHeading()}>
+              <H5 as="h4" tone="muted">
                 {t("editorV2.outputSection")}
-              </h4>
+              </H5>
               <div className={description()}>
                 <Value value={selectedSelects} />
               </div>
@@ -60,12 +52,12 @@ export const TreeNodeConcept = ({
           )}
           {filtersWithValues.length > 0 && (
             <div>
-              <h4 className={sectionHeading()}>
+              <H5 as="h4" tone="muted">
                 {t("editorV2.filtersSection")}
-              </h4>
+              </H5>
               {filtersWithValues.map((f) => (
                 <div key={f.label} className={description()}>
-                  <span className="font-normal">{f.label}:</span>
+                  <span>{f.label}:</span>
                   <Value value={f.value} />
                 </div>
               ))}

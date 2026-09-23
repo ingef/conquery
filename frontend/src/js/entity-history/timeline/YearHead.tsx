@@ -14,9 +14,8 @@ import {
   TooltipTarget,
   TooltipTrigger,
 } from "../../ui-components/Tooltip";
+import { H4 } from "../../ui-components/Typography";
 import { ConceptBubble } from "../ConceptBubble";
-
-import { SmallHeading } from "./SmallHeading";
 import { formatCurrency, isConceptColumn, isMoneyColumn } from "./util/util";
 
 const stickyWrap = tv({
@@ -44,7 +43,7 @@ const conceptRow = tv({
 
 // named valueCell: `value` is shadowed by destructured data entries below
 const valueCell = tv({
-  base: ["text-sm", "font-normal", "justify-self-end", "w-full", "text-right"],
+  base: ["text-sm", "justify-self-end", "w-full", "text-right"],
 });
 
 const labelText = tv({
@@ -77,7 +76,7 @@ const formatValue = (column: Column, value: YearValue) => {
     return isMoneyColumn(column) ? formatCurrency(value) : Math.round(value);
   }
   if (Array.isArray(value)) {
-    return value.join(", ");
+    return value.join(",");
   }
   return value;
 };
@@ -216,7 +215,7 @@ const YearHead = ({
           <ChevronRightIcon className="text-gray-500" />
         )}
         <div>
-          <SmallHeading>{year}</SmallHeading>
+          <H4 as="span">{year}</H4>
           <div>
             {totalEvents}&nbsp;{t("history.events", { count: totalEvents })}
           </div>

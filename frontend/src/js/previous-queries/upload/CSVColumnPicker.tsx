@@ -29,7 +29,7 @@ const th = tv({
 });
 
 const msg = tv({
-  base: ["flex items-center", "mt-[10px] mb-2 first-of-type:mt-0", "text-sm"],
+  base: ["flex items-center", "mt-[10px] mb-2 first-of-type:mt-0"],
 });
 
 const partialUploadResults = tv({
@@ -37,7 +37,7 @@ const partialUploadResults = tv({
 });
 
 const bigIcon = tv({
-  base: ["mr-[7px]", "text-xl"],
+  base: "mr-[7px]",
   variants: {
     kind: {
       error: "text-red",
@@ -254,8 +254,8 @@ const CSVColumnPicker = ({
     <div>
       <div className="mb-[15px] flex items-end justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex flex-col text-sm">
-            <code className="font-bold">{file.name}</code>
+          <div className="flex flex-col">
+            <code>{file.name}</code>
             <code>{csv.length} Zeilen</code>
           </div>
           <TooltipTrigger>

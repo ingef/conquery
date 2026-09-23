@@ -9,6 +9,8 @@ import {
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
+import { textStyle } from "./Typography";
+
 const tooltip = tv({
   base: [
     "z-[9999]",
@@ -17,17 +19,14 @@ const tooltip = tv({
     "shadow-[0_0_8px_rgba(0,0,0,0.18)]",
     "px-[14px] py-2",
     "text-left",
-    "text-base",
-    "font-normal",
-    "text-gray-800",
+    textStyle({ size: 2, tone: "default" }),
     "data-entering:animate-fade-in",
     "data-exiting:animate-fade-out",
     // rich content
-    "[&_p]:text-sm [&_h3]:text-sm [&_li]:text-sm",
-    "[&_p]:leading-[1.3] [&_h3]:leading-[1.3] [&_h4]:leading-[1.3]",
+    "[&_h3]:font-medium [&_h4]:font-medium",
     "[&_p]:mt-2 [&_h3]:mt-2 [&_h4]:mt-2",
     "[&_ul]:my-[6px] [&_ul]:pl-4",
-    "[&_li]:leading-[1.3] [&_li]:mb-[5px]",
+    "[&_li]:mb-[5px]",
   ],
   variants: {
     size: {

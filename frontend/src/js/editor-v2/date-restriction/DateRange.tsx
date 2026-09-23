@@ -15,7 +15,7 @@ const root = tv({
 });
 
 const dateLabel = tv({
-  base: ["justify-self-end", "uppercase", "text-primary-500", "font-bold"],
+  base: ["justify-self-end", "text-primary-500", "font-medium"],
 });
 
 const getFormattedDate = (date: string | undefined, dateFormat: string) => {

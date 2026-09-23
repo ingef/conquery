@@ -9,6 +9,8 @@ import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
+import { C1, H2 } from "../ui-components/Typography";
+
 const textInitial = tv({
   base: [
     "grid",
@@ -16,17 +18,12 @@ const textInitial = tv({
     "gap-y-3 gap-x-5",
     "w-full",
     "p-[30px]",
-    "text-xl",
-    "font-normal",
+    "text-base",
   ],
 });
 
 const arrowRight = tv({
   base: ["[grid-area:arrow]", "size-10", "text-gray-100"],
-});
-
-const headline = tv({
-  base: ["[grid-area:headline]", "text-2xl", "leading-tight", "font-bold"],
 });
 
 const grid = tv({
@@ -51,10 +48,12 @@ export const EmptyQueryEditorDropzone = memo(() => {
 
   return (
     <div className={textInitial()} data-test-id="text-initial">
-      <h2 className={headline()}>{t("dropzone.explanation")}</h2>
+      <div className="[grid-area:headline]">
+        <H2>{t("dropzone.explanation")}</H2>
+      </div>
       <ArrowRightIcon className={arrowRight()} />
       <div className="[grid-area:description]">
-        <p>{t("dropzone.dropIntoThisArea")}</p>
+        <C1>{t("dropzone.dropIntoThisArea")}</C1>
         <div className={grid()}>
           <div className={row()}>
             <div className={iconInABox()}>

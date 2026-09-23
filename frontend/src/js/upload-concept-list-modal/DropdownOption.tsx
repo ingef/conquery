@@ -18,12 +18,12 @@ const container = tv({
 const text = tv({
   base: ["m-0", "text-gray-500"],
   variants: {
-    bold: { true: "text-gray-800 font-normal" },
+    bold: { true: "text-gray-800" },
   },
 });
 
 const indexPrefix = tv({
-  base: ["mr-0", "bg-primary-500", "text-white", "font-bold"],
+  base: ["mr-0", "bg-primary-500", "text-white", "font-medium"],
 });
 
 export const DropdownOption = memo(

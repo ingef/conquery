@@ -68,7 +68,7 @@ export const About = memo(() => {
     navigator.clipboard.writeText(
       `${backendVersions
         .map(({ name, version }) => `${name}: ${version}`)
-        .join(" ")} Frontend: ${frontendGitDescribe}`,
+        .join("")} Frontend: ${frontendGitDescribe}`,
     );
     setOpen(false);
   };
@@ -83,14 +83,14 @@ export const About = memo(() => {
           {backendVersions.map((version) => (
             <Fragment key={version.name}>
               <div>{version.name}</div>
-              <code className="font-bold">
+              <code>
                 {version.version || "-"}
                 {version.buildTime && ` – ${version.buildTime}`}
               </code>
             </Fragment>
           ))}
           <div>Frontend</div>
-          <code className="font-bold">
+          <code>
             {frontendGitDescribe} – {frontendTimestamp}
           </code>
         </div>

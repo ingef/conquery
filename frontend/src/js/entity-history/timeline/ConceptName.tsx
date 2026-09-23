@@ -33,10 +33,10 @@ const ConceptLabel = ({
     : conceptId;
 
   return (
-    <span className="font-normal">
+    <span>
       {searchTerm && searchTerm.length > 0 ? (
         <Highlighter
-          searchWords={searchTerm.split(" ")}
+          searchWords={searchTerm.split("")}
           textToHighlight={label}
         />
       ) : (
@@ -55,7 +55,7 @@ const RootConceptLabel = ({
 }) => {
   return searchTerm && searchTerm.length > 0 ? (
     <Highlighter
-      searchWords={searchTerm.split(" ")}
+      searchWords={searchTerm.split("")}
       textToHighlight={`${rootConcept.label} `}
     />
   ) : (
