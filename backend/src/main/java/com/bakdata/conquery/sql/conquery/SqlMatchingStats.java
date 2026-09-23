@@ -1,28 +1,22 @@
 package com.bakdata.conquery.sql.conquery;
 
 import java.sql.Date;
-import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CTConditionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptIdMapping;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.util.TablePrimaryColumnUtil;
 import com.google.common.base.Stopwatch;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -52,12 +46,21 @@ public class SqlMatchingStats {
 	private final int matchingStatsWorkers;
 	private final int matchingStatsRetries;
 
-	private static void assignStatsToPath(ConceptElement<?> element, Map<ConceptElementId<?>, MatchingStats.Accumulator> matchingStats, String entity, CDateRange span) {
+	private static void assignStatsToPath(
+			ConceptElement<?> element,
+			MatchingStats.Accumulator[] matchingStats,
+			String entity,
+			int minDate,
+			int maxDate
+	) {
 		while (element != null) {
-			ConceptElementId<?> id = element.getId();
-
-			matchingStats.computeIfAbsent(id, (ignored) -> new MatchingStats.Accumulator())
-					.addEvents(entity, 1, span);
+			int localId = element.getLocalId();
+			MatchingStats.Accumulator accumulator = matchingStats[localId];
+			if (accumulator == null) {
+				accumulator = new MatchingStats.Accumulator();
+				matchingStats[localId] = accumulator;
+			}
+			accumulator.addEvents(entity, 1, minDate, maxDate);
 			element = element.getParent();
 		}
 	}
@@ -128,9 +131,10 @@ public class SqlMatchingStats {
 		return (Field<Date>[]) validityDates.toArray(Field[]::new);
 	}
 
-	private void assignStats(TreeConcept concept, Map<ConceptElementId<?>, MatchingStats.Accumulator> matchingStats) {
-		assignStats(concept, matchingStats.get(concept.getId()));
-		concept.getAllChildren().forEach(element -> assignStats(element, matchingStats.get(element.getId())));
+	private void assignStats(TreeConcept concept, MatchingStats.Accumulator[] matchingStats) {
+		for (int localId = 0; localId < matchingStats.length; localId++) {
+			assignStats(concept.getElementByLocalId(localId), matchingStats[localId]);
+		}
 	}
 
 	private void assignStats(ConceptElement<?> element, MatchingStats.Accumulator accumulator) {
@@ -139,14 +143,12 @@ public class SqlMatchingStats {
 			return;
 		}
 
-		MatchingStats stats = new MatchingStats();
-		stats.putEntry(SQL_SOURCE_MATCHING_STATS_LABEL, accumulator.finish());
-		element.setMatchingStats(stats);
+		element.setMatchingStats(MatchingStats.singleEntry(SQL_SOURCE_MATCHING_STATS_LABEL, accumulator.finish()));
 	}
 
 	@NotNull
-	private Map<ConceptElementId<?>, MatchingStats.Accumulator> readStats(TreeConcept concept, SelectJoinStep<? extends Record> selectJoinStep) {
-		Map<ConceptElementId<?>, MatchingStats.Accumulator> matchingStats = new HashMap<>();
+	private MatchingStats.Accumulator[] readStats(TreeConcept concept, SelectJoinStep<? extends Record> selectJoinStep) {
+		MatchingStats.Accumulator[] matchingStats = new MatchingStats.Accumulator[concept.countElements()];
 
 		Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -169,9 +171,10 @@ public class SqlMatchingStats {
 				Date min = record.get(LB_FIELD);
 				Date max = record.get(UB_FIELD);
 
-				CDateRange span = CDateRange.of(min != null ? min.toLocalDate() : null, max != null ? max.toLocalDate() : null);
+				int minDate = min != null ? CDate.ofLocalDate(min.toLocalDate()) : Integer.MAX_VALUE;
+				int maxDate = max != null ? CDate.ofLocalDate(max.toLocalDate()) : Integer.MIN_VALUE;
 
-				assignStatsToPath(resolvedId, matchingStats, entity, span);
+				assignStatsToPath(resolvedId, matchingStats, entity, minDate, maxDate);
 			}
 		}
 
@@ -212,28 +215,26 @@ public class SqlMatchingStats {
 		return fields;
 	}
 
-	public ListenableFuture<?> collectMatchingStatsForConcept(TreeConcept concept, ListeningExecutorService executorService, int tries) {
-		return executorService.submit(() -> {
-			int remainingTries = tries;
-			while (true) {
-				try {
-					dslContext.connection(connection -> {
-						SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
-						Map<ConceptElementId<?>, MatchingStats.Accumulator> matchingStats = readStats(concept, matchingStatsStatement);
-						assignStats(concept, matchingStats);
-					});
-					return;
-				} catch (DataAccessException e) {
-					if (remainingTries == 0) {
-						log.debug("Failed to collect matching stats for concept {}. No retries remaining.", concept.getId(), e);
-						throw e;
-					}
-
-					log.debug("Failed to collect matching stats for concept {}. Retrying.", concept.getId(), (Exception) (log.isTraceEnabled() ? e : null));
-					remainingTries--;
+	public void collectMatchingStatsForConcept(TreeConcept concept, int tries) {
+		int remainingTries = tries;
+		while (true) {
+			try {
+				dslContext.connection(connection -> {
+					SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
+					MatchingStats.Accumulator[] matchingStats = readStats(concept, matchingStatsStatement);
+					assignStats(concept, matchingStats);
+				});
+				return;
+			} catch (DataAccessException e) {
+				if (remainingTries == 0) {
+					log.debug("Failed to collect matching stats for concept {}. No retries remaining.", concept.getId(), e);
+					throw e;
 				}
+
+				log.debug("Failed to collect matching stats for concept {}. Retrying.", concept.getId(), (Exception) (log.isTraceEnabled() ? e : null));
+				remainingTries--;
 			}
-		});
+		}
 	}
 
 	@NotNull

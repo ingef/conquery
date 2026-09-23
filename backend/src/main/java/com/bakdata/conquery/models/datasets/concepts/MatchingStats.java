@@ -28,6 +28,12 @@ public class MatchingStats {
 	@JsonIgnore
 	private long numberOfEntities = -1L;
 
+	public static MatchingStats singleEntry(String source, Entry entry) {
+		MatchingStats matchingStats = new MatchingStats();
+		matchingStats.entries = Map.of(source, entry);
+		return matchingStats;
+	}
+
 	public synchronized long countEvents() {
 		if (numberOfEvents == -1L) {
 			numberOfEvents = entries.values().stream().mapToLong(Entry::getNumberOfEvents).sum();
@@ -96,6 +102,15 @@ public class MatchingStats {
 		private int maxDate = Integer.MIN_VALUE;
 
 		public void addEvents(String entityForEvent, int events, CDateRange time) {
+			addEvents(
+					entityForEvent,
+					events,
+					time != null && time.hasLowerBound() ? time.getMinValue() : Integer.MAX_VALUE,
+					time != null && time.hasUpperBound() ? time.getMaxValue() : Integer.MIN_VALUE
+			);
+		}
+
+		public void addEvents(String entityForEvent, int events, int eventMinDate, int eventMaxDate) {
 			if (foundEntities == null) {
 				throw new IllegalStateException("Matching stats accumulator was already finished");
 			}
@@ -105,16 +120,12 @@ public class MatchingStats {
 				numberOfEntities++;
 			}
 
-			if (time == null) {
-				return;
+			if (eventMaxDate != Integer.MIN_VALUE) {
+				maxDate = Math.max(eventMaxDate, maxDate);
 			}
 
-			if (time.hasUpperBound()) {
-				maxDate = Math.max(time.getMaxValue(), maxDate);
-			}
-
-			if (time.hasLowerBound()) {
-				minDate = Math.min(time.getMinValue(), minDate);
+			if (eventMinDate != Integer.MAX_VALUE) {
+				minDate = Math.min(eventMinDate, minDate);
 			}
 		}
 
