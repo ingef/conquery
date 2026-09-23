@@ -19,7 +19,7 @@ const CommonNodeSettings = ({
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col gap-2 p-[10px]">
+    <div className="flex flex-col gap-2 p-2">
       {onToggleTimestamps && (
         <div className="max-w-[300px]">
           <CheckboxField

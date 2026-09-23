@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { tv } from "tailwind-variants";
 
@@ -26,9 +26,10 @@ import MenuColumn from "./MenuColumn";
 import NodeName from "./NodeName";
 import ResetAndClose from "./ResetAndClose";
 import { useAutoLabel } from "./useAutoLabel";
+import { useSectionSpy } from "./useSectionSpy";
 
 const root = tv({
-  base: ["absolute inset-0", "z-2", "p-[10px]", "bg-bg-50"],
+  base: ["absolute inset-0", "z-2", "p-2", "bg-bg-50"],
 });
 
 const contentWrap = tv({
@@ -65,7 +66,7 @@ const header = tv({
     "flex items-center justify-between",
     "gap-4",
     "h-10 shrink-0",
-    "pl-[15px] pr-[10px]",
+    "px-2",
     "border-b border-gray-100",
   ],
 });
@@ -107,15 +108,11 @@ interface QueryNodeEditorPropsT {
 const COMPACT_WIDTH = 600;
 
 const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
-  const [selectedTableIdx, setSelectedTableIdx] = useState<number | null>(null);
-
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const onSelectCommonSettings = () => {
-    setSelectedTableIdx(null);
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
+  const { activeSection, registerSection, scrollToSection, update } =
+    useSectionSpy(scrollContainerRef);
+  // sections come and go with the included sources
+  useEffect(update, [node, update]);
 
   // no container query: compact mode also swaps in a tooltip
   const parentRef = useRef<HTMLDivElement | null>(null);
@@ -180,26 +177,19 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             <MenuColumn
               className={menuColumn()}
               node={node}
-              selectedTableIdx={selectedTableIdx}
+              activeSection={activeSection}
               showTables={props.showTables}
               blocklistedTables={props.blocklistedTables}
               allowlistedTables={props.allowlistedTables}
-              onSelectCommonSettings={onSelectCommonSettings}
               onDropConcept={props.onDropConcept}
               onRemoveConcept={props.onRemoveConcept}
-              onToggleTable={(tableIdx, isExcluded) => {
-                if (isExcluded && selectedTableIdx === tableIdx) {
-                  setSelectedTableIdx(null);
-                }
-
-                props.onToggleTable(tableIdx, isExcluded);
-              }}
-              onSelectTable={setSelectedTableIdx}
+              onToggleTable={props.onToggleTable}
+              onSelectSection={scrollToSection}
               onResetTable={props.onResetTable}
             />
             <ContentColumn
               node={node}
-              selectedTableIdx={selectedTableIdx}
+              registerSection={registerSection}
               allowlistedSelects={props.allowlistedSelects}
               blocklistedSelects={props.blocklistedSelects}
               onToggleTimestamps={props.onToggleTimestamps}

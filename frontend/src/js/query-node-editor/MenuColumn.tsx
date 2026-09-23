@@ -12,6 +12,7 @@ import { GridList, GridListItem } from "../ui-components/GridList";
 import { C2, H4 } from "../ui-components/Typography";
 import AdditionalConceptNodeChildren from "./AdditionalConceptNodeChildren";
 import MenuColumnItem from "./MenuColumnItem";
+import { COMMON_SECTION } from "./useSectionSpy";
 
 const fixedColumn = tv({
   base: [
@@ -20,7 +21,7 @@ const fixedColumn = tv({
     "shrink-0 grow",
     "h-full",
     "overflow-hidden",
-    "p-[10px]",
+    "p-2",
     "first-of-type:border-r first-of-type:border-r-gray-100",
   ],
   variants: {
@@ -31,8 +32,6 @@ const fixedColumn = tv({
   },
 });
 
-const COMMON_SETTINGS = "common";
-
 /**
  * The node editor's navigation: the sections of the content column, with
  * the controls that apply to a whole source (include it, clear its filters)
@@ -41,30 +40,29 @@ const COMMON_SETTINGS = "common";
 const MenuColumn = ({
   className,
   node,
-  selectedTableIdx,
+  activeSection,
   showTables,
   blocklistedTables,
   allowlistedTables,
-  onSelectCommonSettings,
   onDropConcept,
   onRemoveConcept,
   onToggleTable,
-  onSelectTable,
+  onSelectSection,
   onResetTable,
 }: {
   className?: string;
 
   node: StandardQueryNodeT;
-  selectedTableIdx: number | null;
+  /** the section in view on the right, `COMMON_SECTION` or a table index */
+  activeSection: string;
   showTables: boolean;
   allowlistedTables?: string[];
   blocklistedTables?: string[];
 
-  onSelectCommonSettings: () => void;
   onDropConcept: (node: DragItemConceptTreeNode) => void;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
-  onSelectTable: (tableIdx: number) => void;
+  onSelectSection: (key: string) => void;
   onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
 }) => {
   const { t } = useTranslation();
@@ -89,27 +87,32 @@ const MenuColumn = ({
           <GridList
             aria-label={t("queryNodeEditor.sections")}
             selectionMode="single"
-            selectedKeys={selectedTableIdx === null ? [COMMON_SETTINGS] : []}
-            onSelectionChange={onSelectCommonSettings}
+            selectedKeys={
+              activeSection === COMMON_SECTION ? [COMMON_SECTION] : []
+            }
+            onSelectionChange={() => onSelectSection(COMMON_SECTION)}
           >
             <GridListItem
-              id={COMMON_SETTINGS}
+              id={COMMON_SECTION}
               textValue={t("queryNodeEditor.properties")}
             >
               <C2 truncate>{t("queryNodeEditor.properties")}</C2>
             </GridListItem>
           </GridList>
-          <H4>{t("queryNodeEditor.conceptNodeTables")}</H4>
+          <div className="px-2">
+            <H4>{t("queryNodeEditor.conceptNodeTables")}</H4>
+          </div>
           <GridList
             aria-label={t("queryNodeEditor.conceptNodeTables")}
             selectionMode="single"
             selectedKeys={
-              selectedTableIdx === null ? [] : [String(selectedTableIdx)]
+              activeSection === COMMON_SECTION ? [] : [activeSection]
             }
             onSelectionChange={(keys) => {
               if (keys === "all") return;
-              const tableIdx = Number([...keys][0]);
-              if (!node.tables[tableIdx]?.exclude) onSelectTable(tableIdx);
+              const key = String([...keys][0]);
+              // an excluded source has no section
+              if (!node.tables[Number(key)]?.exclude) onSelectSection(key);
             }}
           >
             {node.tables.map((table, tableIdx) => (
@@ -132,12 +135,14 @@ const MenuColumn = ({
       {nodeIsConceptQueryNode(node) &&
         rootConcept?.children &&
         rootConcept.children.length > 0 && (
-          <AdditionalConceptNodeChildren
-            node={node}
-            rootConcept={rootConcept}
-            onDropConcept={onDropConcept}
-            onRemoveConcept={onRemoveConcept}
-          />
+          <div className="flex min-h-0 grow flex-col gap-3 px-2">
+            <AdditionalConceptNodeChildren
+              node={node}
+              rootConcept={rootConcept}
+              onDropConcept={onDropConcept}
+              onRemoveConcept={onRemoveConcept}
+            />
+          </div>
         )}
     </div>
   );

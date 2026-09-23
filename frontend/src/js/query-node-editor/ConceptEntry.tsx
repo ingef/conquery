@@ -10,11 +10,10 @@ import { C2, C3 } from "../ui-components/Typography";
 const concept = tv({
   base: [
     "flex flex-row items-center",
-    "mt-[5px]",
     "rounded",
     "border border-gray-500",
     "bg-white",
-    "px-[15px] py-[5px]",
+    "px-2 py-1",
   ],
 });
 

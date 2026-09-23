@@ -28,7 +28,7 @@ const AdditionalConceptNodeChildren = ({
       <div className="flex min-h-0 grow flex-col gap-2">
         <C2 tone="muted">{rootConcept.label}</C2>
         <ConceptDropzone node={node} onDropConcept={onDropConcept} />
-        <div className="min-h-0 overflow-y-auto [-webkit-overflow-scrolling:touch]">
+        <div className="flex min-h-0 flex-col gap-1 overflow-y-auto [-webkit-overflow-scrolling:touch]">
           {sortedNodeIds.map((conceptId) => (
             <ConceptEntry
               key={conceptId}

@@ -8,10 +8,10 @@ const root = tv({
 });
 
 const content = tv({
-  base: ["grow", "px-[10px] py-[3px]"],
+  base: ["grow", "px-2 py-1"],
 });
 
-const headlineHeading = tv({ base: "mx-[10px] mt-[14px]" });
+const headlineHeading = tv({ base: "mx-2 mt-3" });
 
 interface PropsT {
   className?: string;

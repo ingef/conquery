@@ -11,8 +11,8 @@ const list = tv({ base: ["flex flex-col", "gap-2", "outline-none"] });
 const item = tv({
   base: [
     "flex items-center",
-    "gap-2",
-    "h-[30px] px-[10px]",
+    "gap-1",
+    "h-[30px] px-2",
     "rounded",
     "cursor-pointer",
     "outline-none",

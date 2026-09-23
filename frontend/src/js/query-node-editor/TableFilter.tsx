@@ -15,7 +15,7 @@ import { NumberRangeField } from "../ui-components/NumberRangeField";
 
 import FilterListMultiSelect from "./FilterListMultiSelect";
 
-const container = tv({ base: "mb-[10px]" });
+const container = tv({ base: "mb-2" });
 
 export interface BaseTableFilterProps {
   className?: string;
