@@ -5,6 +5,7 @@ import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteInput;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteCompiler;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorCteCompiler;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorCtePipelineAssembler;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorCtePipelineInput;
@@ -130,7 +131,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		Connector connector = cqTable.getConnector().resolve();
 		if (connector.getColumn() != null) {
-			conditions.add(ConditionUtil.wrap(field(CTConditionContext.forConnector(connector, functionProvider).getConnectorColumn(), String.class).isNotNull()));
+			conditions.add(new ConditionWrappingWhereCondition(field(CTConditionContext.forConnector(connector, functionProvider).getConnectorColumn(), String.class).isNotNull()));
 		}
 
 		ValidityDate validityDate = cqTable.findValidityDate();
