@@ -208,20 +208,25 @@ public class SqlMatchingStats {
 
 	public ListenableFuture<?> collectMatchingStatsForConcept(TreeConcept concept, ListeningExecutorService executorService, int tries) {
 		return executorService.submit(() -> {
-			dslContext.connection(cfg -> {
+			int remainingTries = tries;
+			while (true) {
 				try {
-					SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
-					Map<ConceptElementId<?>, MatchingStats.Accumulator> matchingStats = readStats(concept, matchingStatsStatement);
-					assignStats(matchingStats);
-
+					dslContext.connection(connection -> {
+						SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
+						Map<ConceptElementId<?>, MatchingStats.Accumulator> matchingStats = readStats(concept, matchingStatsStatement);
+						assignStats(matchingStats);
+					});
+					return;
 				} catch (DataAccessException e) {
-					log.debug("Failed to connect to database for concept {}. Retrying.", concept.getId(), (Exception) (log.isTraceEnabled() || tries == 0 ? e : null));
-
-					if (tries > 0) {
-						collectMatchingStatsForConcept(concept, executorService, tries - 1);
+					if (remainingTries == 0) {
+						log.debug("Failed to collect matching stats for concept {}. No retries remaining.", concept.getId(), e);
+						throw e;
 					}
+
+					log.debug("Failed to collect matching stats for concept {}. Retrying.", concept.getId(), (Exception) (log.isTraceEnabled() ? e : null));
+					remainingTries--;
 				}
-			});
+			}
 		});
 	}
 
