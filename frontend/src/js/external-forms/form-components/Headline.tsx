@@ -7,13 +7,13 @@ import { H3, H4, H5 } from "../../ui-components/Typography";
 // the config's h1/h2/h3 are the form's own levels; the app's outline starts at h3 inside the form pane
 const HEADING = { h1: H3, h2: H4, h3: H5 } as const;
 
+// no margins below the section level: inside a grid group they would offset the columns
 const spacing = tv({
-  base: "first:mt-0",
   variants: {
     size: {
-      h1: "mt-5 mb-[5px]",
-      h2: "mt-[10px] mb-[3px]",
-      h3: "mt-[10px] mb-[3px]",
+      h1: "mt-3",
+      h2: "",
+      h3: "",
     },
   },
   defaultVariants: { size: "h1" },
