@@ -184,6 +184,8 @@
   },
   "infoPane": {
     "headline": "Info",
+    "expand": "Info-Bereich einblenden",
+    "collapse": "Info-Bereich ausblenden",
     "placeholder": "Weitere Informationen zu Konzepten ...",
     "date": {
       "daterange": "Zeitraum",

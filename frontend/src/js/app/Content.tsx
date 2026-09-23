@@ -1,21 +1,29 @@
-import { useState } from "react";
 import { useSelector } from "react-redux";
 import { Group, Panel } from "react-resizable-panels";
 import { ResizeHandle } from "../common/ResizeHandle";
-import { useCollapsiblePanel } from "../common/useCollapsiblePanel";
 import { History } from "../entity-history/History";
 import InfoPane from "../info-pane/InfoPane";
-import InfoPaneCollapsed from "../info-pane/InfoPaneCollapsed";
+import { useInfoPanePanel } from "../info-pane/useInfoPanePanel";
 import Preview from "../preview/Preview";
 import DndProvider from "./DndProvider";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
 import type { StateT } from "./reducers";
 
+const INFO_PANE_MIN = 200;
+const INFO_PANE_MAX = 600;
+const LEFT_PANE_MIN = 350;
+const LEFT_PANE_DEFAULT = 600;
+const RIGHT_PANE_MIN = 250;
+const SEPARATOR_WIDTH = 1;
+const MIN_WIDTH_FOR_INFO_PANE =
+  INFO_PANE_MIN + LEFT_PANE_MIN + RIGHT_PANE_MIN + 2 * SEPARATOR_WIDTH;
+
 const Content = () => {
-  const isInfoPaneOpen = useSelector<StateT, boolean>(
-    (state) => state.infoPane.isOpen,
-  );
+  const infoPane = useInfoPanePanel({
+    openSize: INFO_PANE_MIN,
+    minGroupWidth: MIN_WIDTH_FOR_INFO_PANE,
+  });
 
   const isPreviewOpen = useSelector<StateT, boolean>(
     (state) => state.preview.isOpen,
@@ -25,30 +33,23 @@ const Content = () => {
     (state) => state.entityHistory.isOpen,
   );
 
-  const infoPaneRef = useCollapsiblePanel(!isInfoPaneOpen);
-  // read once, a changing default resets the group's layout
-  const [infoPaneDefaultSize] = useState(() => (isInfoPaneOpen ? 200 : 30));
-
   return (
     <DndProvider>
       <div className="relative h-full w-full">
-        <Group orientation="horizontal">
+        <Group orientation="horizontal" {...infoPane.groupProps}>
           <Panel
-            panelRef={infoPaneRef}
-            collapsible
-            collapsedSize={30}
-            minSize={200}
-            maxSize={600}
-            defaultSize={infoPaneDefaultSize}
+            {...infoPane.panelProps}
+            minSize={INFO_PANE_MIN}
+            maxSize={INFO_PANE_MAX}
           >
-            {isInfoPaneOpen ? <InfoPane /> : <InfoPaneCollapsed />}
+            {infoPane.isOpen && <InfoPane />}
           </Panel>
-          <ResizeHandle disabled={!isInfoPaneOpen} />
-          <Panel minSize={350} defaultSize={600}>
+          <ResizeHandle />
+          <Panel minSize={LEFT_PANE_MIN} defaultSize={LEFT_PANE_DEFAULT}>
             <LeftPane />
           </Panel>
           <ResizeHandle />
-          <Panel minSize={250}>
+          <Panel minSize={RIGHT_PANE_MIN}>
             <RightPane />
           </Panel>
         </Group>
