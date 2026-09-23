@@ -28,7 +28,7 @@ const container = tv({
 });
 
 const emptyMsg = tv({
-  base: ["flex items-center", "gap-[10px]", "my-10", "text-gray-500"],
+  base: ["flex items-center", "gap-[10px]", "my-10", "text-gray-600"],
 });
 
 const bubble = tv({

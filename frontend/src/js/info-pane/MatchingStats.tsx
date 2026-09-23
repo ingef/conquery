@@ -27,7 +27,7 @@ const text = tv({
   variants: {
     zero: {
       true: "text-red",
-      false: "text-gray-500",
+      false: "text-gray-600",
     },
   },
 });
@@ -45,7 +45,7 @@ const numberText = tv({
 
 const digits = tv({
   base: [
-    "after:text-gray-500",
+    "after:text-gray-600",
     "after:content-['.']",
     "last-of-type:after:content-['']",
   ],

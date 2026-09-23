@@ -25,7 +25,7 @@ const text = tv({
   variants: {
     // later wins when several are set
     disabled: {
-      true: "text-gray-500",
+      true: "text-gray-600",
       false: "hover:border-primary-200",
     },
     red: { true: "text-red" },

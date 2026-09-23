@@ -15,7 +15,7 @@ export const Steps: Story = {
     <div className="flex w-64 flex-col gap-3">
       {[0, 25, 50, 75, 100].map((donePercent) => (
         <div key={donePercent} className="flex items-center gap-3">
-          <span className="w-10 text-right text-xs text-gray-500">
+          <span className="w-10 text-right text-xs text-gray-600">
             {donePercent}%
           </span>
           <ProgressBar donePercent={donePercent} />

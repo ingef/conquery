@@ -7,7 +7,7 @@ const container = tv({
     "w-full",
     "py-[6px]",
     "text-sm",
-    "text-gray-500",
+    "text-gray-600",
   ],
 });
 

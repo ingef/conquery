@@ -28,7 +28,7 @@ const ContentCell = ({
   <div ref={ref} className={root({ className })}>
     {headline && (
       <div className={headlineHeading()}>
-        <H4 tone="muted">{headline}</H4>
+        <H4>{headline}</H4>
       </div>
     )}
     <div className={content()}>{children}</div>

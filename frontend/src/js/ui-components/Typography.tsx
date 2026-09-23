@@ -4,6 +4,7 @@ import { tv } from "tailwind-variants";
 /* The type scale: tailwind's sizes with their line-heights. Controls compose
    these presets, free text renders the H and C components below. */
 
+// no color of its own: a heading takes the color of its container
 export const headingStyle = tv({
   base: "font-medium",
   variants: {
@@ -14,13 +15,8 @@ export const headingStyle = tv({
       4: "text-sm",
       5: "text-xs",
     },
-    tone: {
-      default: "text-gray-800",
-      muted: "text-gray-500",
-    },
     truncate: { true: "truncate" },
   },
-  defaultVariants: { tone: "default" },
 });
 
 export const textStyle = tv({
@@ -33,14 +29,19 @@ export const textStyle = tv({
     // no default: text inherits the color of its container
     tone: {
       default: "text-gray-800",
-      muted: "text-gray-500",
+      muted: "text-gray-600",
       danger: "text-red",
       success: "text-green",
       primary: "text-primary-500",
     },
-    strong: { true: "font-medium" },
+    // explicit either way, so text inside a heading or a button is not medium by accident
+    strong: {
+      true: "font-medium",
+      false: "font-normal",
+    },
     truncate: { true: "truncate" },
   },
+  defaultVariants: { strong: false },
 });
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5;
@@ -49,18 +50,16 @@ export interface HeadingProps
   extends Omit<ComponentProps<"h1">, "className" | "style"> {
   /** the element, when the document outline differs from the look */
   as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "div" | "span";
-  tone?: "default" | "muted";
   truncate?: boolean;
 }
 
 const Heading = ({
   level,
   as: Tag = `h${level}`,
-  tone,
   truncate,
   ...props
 }: HeadingProps & { level: HeadingLevel }) => (
-  <Tag className={headingStyle({ level, tone, truncate })} {...props} />
+  <Tag className={headingStyle({ level, truncate })} {...props} />
 );
 
 /** 24 px */

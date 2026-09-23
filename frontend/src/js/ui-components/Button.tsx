@@ -39,7 +39,7 @@ export const buttonStyle = tv({
       // reads as a text link, see the compound variant for how it flows with text
       link: [
         "bg-transparent border-transparent",
-        "text-gray-500",
+        "text-gray-600",
         "hover:text-gray-800 hover:underline",
       ],
     },

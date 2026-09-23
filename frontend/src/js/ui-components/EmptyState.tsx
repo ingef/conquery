@@ -11,7 +11,7 @@ const root = tv({
     "gap-4",
     "px-5 py-10",
     "text-center",
-    "text-gray-500",
+    "text-gray-600",
   ],
 });
 

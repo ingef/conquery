@@ -12,7 +12,7 @@ const root = tv({
     "flex flex-col items-center justify-center",
     "p-5",
     "w-full",
-    "text-gray-500",
+    "text-gray-600",
   ],
 });
 

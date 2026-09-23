@@ -40,7 +40,6 @@ export const Tones: Story = {
       <C2 tone="success">success – a finished step</C2>
       <C2 tone="primary">primary – the brand color, for selected things</C2>
       <C2 strong>strong – weight 500, the only emphasis weight</C2>
-      <H3 tone="muted">A muted heading</H3>
     </div>
   ),
 };

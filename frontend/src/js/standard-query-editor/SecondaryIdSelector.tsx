@@ -22,7 +22,7 @@ const headline = tv({
   variants: {
     active: {
       true: "text-primary-500",
-      false: "text-gray-500",
+      false: "text-gray-600",
     },
   },
 });
@@ -32,7 +32,7 @@ const headlineIcon = tv({
   variants: {
     active: {
       true: "text-primary-500",
-      false: "text-gray-500",
+      false: "text-gray-600",
     },
   },
 });
@@ -162,9 +162,7 @@ const SecondaryIdSelectorUI = memo(
       <div>
         <div className={headline({ active: !!value })}>
           <MicroscopeIcon className={headlineIcon({ active: !!value })} />
-          <H4 as="h3" tone={value ? "default" : "muted"}>
-            {t("queryEditor.secondaryId")}
-          </H4>
+          <H4 as="h3">{t("queryEditor.secondaryId")}</H4>
           <InfoTooltip text={t("queryEditor.secondaryIdTooltip")} />
         </div>
         <ToggleButtonGroup

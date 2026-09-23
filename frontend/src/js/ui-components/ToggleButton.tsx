@@ -14,8 +14,8 @@ const toggleStyle = tv({
   extend: buttonStyle,
   variants: {
     intent: {
-      secondary: "text-gray-500 not-data-selected:hover:text-gray-800",
-      tertiary: "text-gray-500 not-data-selected:hover:text-gray-800",
+      secondary: "text-gray-600 not-data-selected:hover:text-gray-800",
+      tertiary: "text-gray-600 not-data-selected:hover:text-gray-800",
     },
     highlight: {
       primary: "data-selected:text-primary-500",

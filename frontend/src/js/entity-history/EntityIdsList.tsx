@@ -78,12 +78,12 @@ export const EntityIdsList = ({
         })}
         onClick={() => updateHistorySession({ entityId, years: [] })}
       >
-        <div className="shrink-0 text-gray-500" style={{ width: numberWidth }}>
+        <div className="shrink-0 text-gray-600" style={{ width: numberWidth }}>
           #{index + 1}
         </div>
         <div className="shrink-0">
           <span className={blurrable({ blurred })}>{entityId.id}</span>{" "}
-          <span className="text-gray-500">({entityId.kind})</span>
+          <span className="text-gray-600">({entityId.kind})</span>
         </div>
         {loadingId === entityId.id && (
           <LoaderCircleIcon className="mx-[6px] my-[3px]" />

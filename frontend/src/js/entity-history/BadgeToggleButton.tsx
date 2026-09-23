@@ -28,7 +28,7 @@ const superScript = tv({
     "pl-[3px]",
     "translate-x-px -translate-y-[2px]",
     "text-xs",
-    "text-gray-500",
+    "text-gray-600",
   ],
 });
 

@@ -49,7 +49,7 @@ const QueryNodeContent = ({
               </C3>
             )}
             <C2>{label}</C2>
-            {description && <C3 tone="muted">{description}</C3>}
+            {description && <C3>{description}</C3>}
           </>
         )}
       </TooltipTarget>

@@ -16,7 +16,7 @@ const container = tv({
 });
 
 const text = tv({
-  base: ["m-0", "text-gray-500"],
+  base: ["m-0", "text-gray-600"],
   variants: {
     bold: { true: "text-gray-800" },
   },

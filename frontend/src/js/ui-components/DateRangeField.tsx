@@ -162,7 +162,7 @@ export const DateRangeField = ({
           onBlur={(e) => applyDate("min", e.target.value, displayDateFormat)}
           autoFocus={autoFocus}
         />
-        <span aria-hidden className="flex h-[30px] items-center text-gray-500">
+        <span aria-hidden className="flex h-[30px] items-center text-gray-600">
           –
         </span>
         <DateField

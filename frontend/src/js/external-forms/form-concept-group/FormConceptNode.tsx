@@ -124,7 +124,7 @@ const FormConceptNode = ({
               )}
               <C2>{conceptNode?.label}</C2>
               {conceptNode && !!conceptNode.description && (
-                <C3 tone="muted">{conceptNode.description}</C3>
+                <C3>{conceptNode.description}</C3>
               )}
             </TooltipTarget>
             <Tooltip>{tooltipText}</Tooltip>

@@ -78,9 +78,7 @@ const LoginPage = () => {
             backgroundSize: img.logoBackgroundSize,
           }}
         />
-        <H3 as="h2" tone="muted">
-          {t("login.headline")}
-        </H3>
+        <H3 as="h2">{t("login.headline")}</H3>
         {!!error && (
           <ErrorMessage className="mx-[10px] mt-5" message={t("login.error")} />
         )}

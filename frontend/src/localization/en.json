@@ -150,8 +150,8 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "done": "Done",
-    "and": "AND",
-    "or": "OR",
+    "and": "and",
+    "or": "or",
     "clear": "Clear",
     "timeUnitDays": "days",
     "title": "Title",
@@ -551,9 +551,9 @@
     "pasted": "Imported"
   },
   "editorV2": {
-    "time": "TIME",
-    "and": "AND",
-    "or": "OR",
+    "time": "Time",
+    "and": "and",
+    "or": "or",
     "clear": "Reset editor",
     "clearConfirm": "Reset now",
     "flip": "Flip",

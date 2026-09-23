@@ -47,17 +47,17 @@ const root = tv({
 });
 
 const topInfos = tv({
-  base: ["flex items-center justify-between", "text-gray-500", "text-xs"],
+  base: ["flex items-center justify-between", "text-gray-600", "text-xs"],
 });
 
 const ownerName = tv({
-  base: ["shrink-0", "pl-[5px]", "text-gray-500", "text-xs"],
+  base: ["shrink-0", "pl-[5px]", "text-gray-600", "text-xs"],
 });
 
 const tooltipText = tv({ base: "flex flex-col items-start" });
 
 const labelRow = tv({
-  base: ["flex justify-between", "w-full", "leading-6"],
+  base: ["flex items-center justify-between", "w-full", "leading-6"],
 });
 
 const content = tv({

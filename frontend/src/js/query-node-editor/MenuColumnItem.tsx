@@ -22,7 +22,7 @@ const container = tv({
   ],
   variants: {
     disabled: {
-      true: "text-gray-500",
+      true: "text-gray-600",
       false: "text-gray-800",
     },
   },

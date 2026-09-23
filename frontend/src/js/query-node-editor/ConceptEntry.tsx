@@ -42,7 +42,7 @@ const ConceptEntry = ({
         ) : (
           <>
             <C2>{node.label}</C2>
-            {node.description && <C3 tone="muted">{node.description}</C3>}
+            {node.description && <C3>{node.description}</C3>}
           </>
         )}
       </div>

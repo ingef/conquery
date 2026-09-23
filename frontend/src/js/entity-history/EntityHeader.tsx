@@ -67,9 +67,9 @@ export const EntityHeader = ({
       <div className="flex items-center gap-[30px]">
         <div>
           <div className="flex gap-[5px]">
-            <H3 as="span" tone="muted">
-              #{currentEntityIndex + 1}
-            </H3>
+            <span className="text-gray-600">
+              <H3 as="span">#{currentEntityIndex + 1}</H3>
+            </span>
             <span className={entityId({ blurred })}>
               <H3 as="span">{currentEntityId.id}</H3>
             </span>

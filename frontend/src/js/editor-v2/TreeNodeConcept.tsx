@@ -42,9 +42,7 @@ export const TreeNodeConcept = ({
         <div className="mt-2 flex flex-col gap-[6px]">
           {selectedSelects.length > 0 && (
             <div>
-              <H5 as="h4" tone="muted">
-                {t("editorV2.outputSection")}
-              </H5>
+              <H5 as="h4">{t("editorV2.outputSection")}</H5>
               <div className={description()}>
                 <Value value={selectedSelects} />
               </div>
@@ -52,9 +50,7 @@ export const TreeNodeConcept = ({
           )}
           {filtersWithValues.length > 0 && (
             <div>
-              <H5 as="h4" tone="muted">
-                {t("editorV2.filtersSection")}
-              </H5>
+              <H5 as="h4">{t("editorV2.filtersSection")}</H5>
               {filtersWithValues.map((f) => (
                 <div key={f.label} className={description()}>
                   <span>{f.label}:</span>

@@ -83,7 +83,7 @@ export const State: Story = {
 export const InheritsColor: Story = {
   render: () => (
     <div className="flex items-center gap-6 text-sm">
-      <span className="text-gray-500">
+      <span className="text-gray-600">
         <UserIcon /> muted text
       </span>
       <span className="text-red">

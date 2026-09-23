@@ -47,7 +47,8 @@ const head = tv({
   ],
 });
 
-const typeIcon = tv({ base: ["mt-px", "mr-[6px]", "text-primary-500"] });
+// centered on the first 20 px line of the label
+const typeIcon = tv({ base: ["mt-[2px]", "mr-[6px]", "text-primary-500"] });
 
 const pinnedLabel = tv({
   base: ["flex flex-row items-start", "gap-[5px]", "m-0", "text-sm"],
@@ -109,7 +110,7 @@ const ConceptLabel = ({
           t("infoPane.placeholder")
         )}
       </span>
-      {tackIcon}
+      {tackIcon && <span className="-mt-[2px] shrink-0">{tackIcon}</span>}
     </p>
   );
 };
@@ -193,7 +194,7 @@ const InfoPane = () => {
           )}
           {description && (
             <div className={descriptionText()}>
-              <C3 tone="muted">
+              <C3>
                 <HighlightedText words={words} text={description} />
               </C3>
             </div>

@@ -45,7 +45,7 @@ const quarterHead = tv({
   variants: {
     empty: {
       true: "text-gray-100",
-      false: "text-gray-500",
+      false: "text-gray-600",
     },
   },
 });

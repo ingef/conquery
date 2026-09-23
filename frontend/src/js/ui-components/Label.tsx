@@ -17,7 +17,7 @@ const label = tv({
       sm: textStyle({ size: 3 }),
       md: textStyle({ size: 2 }),
     },
-    isDisabled: { true: "text-gray-500" },
+    isDisabled: { true: "text-gray-600" },
   },
   defaultVariants: { size: "md" },
 });
