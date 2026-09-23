@@ -407,7 +407,7 @@ public class QueryProcessor {
 	 */
 	public ManagedExecution createExecution(DatasetId dataset, QueryDescription queryContent, Subject subject, boolean system, Optional<UUID> maybeQueryId) {
 
-		log.info("Query posted on Dataset[{}] by User[{{}].", dataset, subject.getId());
+		log.info("Query posted on Dataset[{}] by User[{}].", dataset, subject.getId());
 
 
 		final Namespace namespace = datasetRegistry.get(dataset);
