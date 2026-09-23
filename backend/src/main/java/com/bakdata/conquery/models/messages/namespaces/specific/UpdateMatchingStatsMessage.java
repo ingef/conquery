@@ -175,7 +175,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 			Concept<?> concept = conceptId.resolve();
 
-			final Map<ConceptElementId<?>, MatchingStats.Entry>	matchingStats =	new HashMap<>(concept.countElements());
+			final Map<ConceptElementId<?>, MatchingStats.Accumulator> matchingStats = new HashMap<>(concept.countElements());
 
 			log.debug("BEGIN calculating for `{}`", conceptId);
 
@@ -204,8 +204,8 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 
 								if (!(concept instanceof TreeConcept) || localIds == null) {
-									matchingStats.computeIfAbsent(conceptId, (ignored) -> new MatchingStats.Entry())
-												 .addEvents(entity, 1, span);
+									matchingStats.computeIfAbsent(conceptId, (ignored) -> new MatchingStats.Accumulator())
+											 .addEvents(entity, 1, span);
 									continue;
 								}
 
@@ -216,8 +216,8 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 								ConceptElement<?> element = ((TreeConcept) concept).getElementByLocalIdPath(localIds);
 
 								while (element != null) {
-									matchingStats.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Entry())
-												 .addEvents(entity, 1, span);
+									matchingStats.computeIfAbsent(element.getId(), (ignored) -> new MatchingStats.Accumulator())
+											 .addEvents(entity, 1, span);
 									element = element.getParent();
 								}
 							}
@@ -232,7 +232,9 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 			log.trace("DONE calculating for `{}`", conceptId);
 
-			return matchingStats;
+			Map<ConceptElementId<?>, MatchingStats.Entry> entries = new HashMap<>(matchingStats.size());
+			matchingStats.forEach((element, accumulator) -> entries.put(element, accumulator.finish()));
+			return entries;
 		}
 
 	}

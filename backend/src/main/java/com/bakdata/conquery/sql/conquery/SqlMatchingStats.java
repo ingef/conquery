@@ -52,11 +52,11 @@ public class SqlMatchingStats {
 	private final int matchingStatsWorkers;
 	private final int matchingStatsRetries;
 
-	private static void assignStatsToPath(ConceptElement<?> element, Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats, String entity, CDateRange span) {
+	private static void assignStatsToPath(ConceptElement<?> element, Map<ConceptElementId<?>, MatchingStats.Accumulator> matchingStats, String entity, CDateRange span) {
 		while (element != null) {
 			ConceptElementId<?> id = element.getId();
 
-			matchingStats.computeIfAbsent(id, (ignored) -> new MatchingStats.Entry())
+			matchingStats.computeIfAbsent(id, (ignored) -> new MatchingStats.Accumulator())
 					.addEvents(entity, 1, span);
 			element = element.getParent();
 		}
@@ -128,19 +128,19 @@ public class SqlMatchingStats {
 		return (Field<Date>[]) validityDates.toArray(Field[]::new);
 	}
 
-	private void assignStats(Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats) {
-		for (Map.Entry<ConceptElementId<?>, MatchingStats.Entry> entry : matchingStats.entrySet()) {
+	private void assignStats(Map<ConceptElementId<?>, MatchingStats.Accumulator> matchingStats) {
+		for (Map.Entry<ConceptElementId<?>, MatchingStats.Accumulator> entry : matchingStats.entrySet()) {
 			ConceptElementId<?> conceptElementId = entry.getKey();
 
 			MatchingStats stats = new MatchingStats();
-			stats.putEntry(SQL_SOURCE_MATCHING_STATS_LABEL, entry.getValue());
+			stats.putEntry(SQL_SOURCE_MATCHING_STATS_LABEL, entry.getValue().finish());
 			conceptElementId.resolve().setMatchingStats(stats);
 		}
 	}
 
 	@NotNull
-	private Map<ConceptElementId<?>, MatchingStats.Entry> readStats(TreeConcept concept, SelectJoinStep<? extends Record> selectJoinStep) {
-		Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = new HashMap<>();
+	private Map<ConceptElementId<?>, MatchingStats.Accumulator> readStats(TreeConcept concept, SelectJoinStep<? extends Record> selectJoinStep) {
+		Map<ConceptElementId<?>, MatchingStats.Accumulator> matchingStats = new HashMap<>();
 
 		Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -211,7 +211,7 @@ public class SqlMatchingStats {
 			dslContext.connection(cfg -> {
 				try {
 					SelectJoinStep<? extends Record> matchingStatsStatement = createMatchingStatsStatement(concept);
-					Map<ConceptElementId<?>, MatchingStats.Entry> matchingStats = readStats(concept, matchingStatsStatement);
+					Map<ConceptElementId<?>, MatchingStats.Accumulator> matchingStats = readStats(concept, matchingStatsStatement);
 					assignStats(matchingStats);
 
 				} catch (DataAccessException e) {
