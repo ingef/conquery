@@ -1,15 +1,24 @@
 package com.bakdata.conquery.sql.compiler.dialect;
 
+import com.bakdata.conquery.sql.compiler.conversion.operation.DistinctSelectConverter;
+import com.bakdata.conquery.sql.compiler.conversion.operation.SelectConversionContext;
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Collection;
+import java.util.function.Function;
 
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.model.range.DateRange;
 import org.jooq.Condition;
+import org.jooq.DataType;
 import org.jooq.Field;
+import org.jooq.OrderField;
+import org.jooq.SortField;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
@@ -26,6 +35,40 @@ import org.jooq.impl.SQLDataType;
  * is migrated. Those adapters must not become dependencies of the framework-neutral compiler.</p>
  */
 public interface CompilerDialect {
+
+	default ColumnDateRange toDualColumn(ColumnDateRange range) {
+		return ColumnDateRange.of(range.getStart(), range.getEnd());
+	}
+
+	default Condition orAgg(Field<Boolean> field) {
+		throw new UnsupportedOperationException("Boolean aggregation is not implemented by this dialect");
+	}
+
+	default Field<?> arrayOut(List<Field<String>> fields) {
+		throw new UnsupportedOperationException("Array output is not implemented by this dialect");
+	}
+
+	default ConnectorSqlSelects distinctSelect(
+			BuiltInSelects.Values select,
+			SelectConversionContext context) {
+		return DistinctSelectConverter.connectorSelect(select, context);
+	}
+
+	default <T> Field<T> cast(Field<?> field, DataType<T> type) {
+		throw new UnsupportedOperationException("Casting is not implemented by this dialect");
+	}
+
+	default Field<String> stringAggregation(Field<String> field, Field<String> delimiter, List<Field<?>> orderByFields) {
+		throw new UnsupportedOperationException("String aggregation is not implemented by this dialect");
+	}
+
+	default Collection<? extends OrderField<?>> orderByValidityDates(Function<Field<?>, ? extends SortField<?>> ordering, List<Field<?>> validityDateFields) {
+		throw new UnsupportedOperationException("Validity-date ordering is not implemented by this dialect");
+	}
+
+	default <T> Field<T> random(Field<T> field) {
+		throw new UnsupportedOperationException("Random aggregation is not implemented by this dialect");
+	}
 
 	/** Expression used as the database-specific lower infinity sentinel for dates. */
 	Field<Date> minimumDate();

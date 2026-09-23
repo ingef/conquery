@@ -34,27 +34,10 @@ public class DateDistanceSqlAggregator implements SelectConverter<DateDistanceSe
 
 	@Override
 	public ConnectorSqlSelects connectorSelect(DateDistanceSelect select, SelectContext<ConnectorSqlTables> selectContext) {
-
-		Column column = select.getColumn().resolve();
-		String alias = selectContext.getNameGenerator().legacyOperationName(select.getName());
-		SqlTables tables = selectContext.getTables();
-
-		Field<Integer> dateDistanceCalculation = createDateDistanceCalculation(column, select.getTimeUnit(), tables, selectContext.getConversionContext());
-		FieldWrapper<Integer> dateDistanceSelect = new FieldWrapper<>(dateDistanceCalculation.as(alias));
-
-		Field<Integer> qualifiedDateDistance = dateDistanceSelect.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
-		FieldWrapper<Integer> minDateDistance = new FieldWrapper<>(DSL.min(qualifiedDateDistance).as(alias));
-
-		String finalPredecessor = tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER);
-		ExtractingSqlSelect<Integer> finalSelect = minDateDistance.qualify(finalPredecessor);
-
-		return ConnectorSqlSelects.builder()
-								  .preprocessingSelect(dateDistanceSelect)
-								  .aggregationSelect(minDateDistance)
-								  .finalSelect(finalSelect)
-								  .build();
+		return com.bakdata.conquery.sql.compiler.conversion.operation.DateDistanceSqlAggregator.connectorSelect(
+				com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter.from(select.getColumn().resolve()), select.getTimeUnit(),
+				getEndDate(selectContext.getConversionContext()), ResolvedSelectAdapter.context(select.getName(), selectContext));
 	}
-
 	@Override
 	public SqlFilters convertToSqlFilter(DateDistanceFilter filter, FilterContext<Range.LongRange> filterContext) {
 

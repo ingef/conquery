@@ -25,6 +25,7 @@ final class BuiltInAggregationConverters {
 		return List.of(
 				converter(BuiltInAggregations.Count.class, BuiltInAggregationConverters::convertCount),
 				converter(BuiltInAggregations.Sum.class, SumAggregationConverter::convert),
+				converter(BuiltInAggregations.Flags.class, FlagSqlAggregator::convert),
 				converter(BuiltInAggregations.CountQuarters.class, DateAggregationConverters::countQuarters),
 				converter(BuiltInAggregations.DurationSum.class, DateAggregationConverters::durationSum)
 		);

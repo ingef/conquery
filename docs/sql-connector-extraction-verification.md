@@ -31,7 +31,14 @@ Fixture paths in the table are relative to `backend/src/test/resources/tests/` o
 - Backend public-entry-point characterization: five aggregation tests and one dialect test passed after delegating sum, count, quarter count, and duration sum to the connector. The selected connector aggregation tests also passed (13 tests).
 - The ClickHouse nullable date-bound regression failed before the dialect bridge and passed afterward; preserving `Nullable(Date32)` prevents missing outer-join dates from becoming epoch dates.
 - Final connector run for the numeric aggregation extraction: 158 tests passed (`./mvnw.cmd -o -B -ntp -pl sql-connector -am test`). HANA/ClickHouse connections were not opened.
+- Output-select extraction: 174 connector tests passed. The selected backend compatibility suite passed 23 tests covering aggregation adapters, first/last/random/distinct selects, HANA and ClickHouse distinct rendering, date unions, frozen and stratified date distance, flags, event date/duration outputs, connector and concept exists projections, concept-value self-union, and concept-ID mapping.
+- Direct comparison with `origin/develop` confirmed that concept-value aggregation enumerates only the connector tables represented by the CQ query. Prepared mapping sources remain ordered so repeated resolved columns from different connectors cannot overwrite one another.
+- Direct comparison with `origin/develop` found that single `DATE_RANGE` columns are treated as the same inclusive physical start/end value by the existing quarter-count and duration SQL. Two backend regression tests failed before restoring that behavior and pass afterward.
+- Spotless verification is unavailable offline on this host because the Spotless Maven plugin is not present in the local repository. `git diff --check`, compilation, and the test suites above pass.
 
 ## Pending verification
 
-Extraction is still in progress. The remaining operation/dialect coverage, full extraction-only `develop` build, and HANA/ClickHouse result-level verification are pending. Database integration suites cannot run on this host; a final handoff will identify the tested extraction revision, commands, prerequisites, and required reports.
+Extraction is still in progress. The remaining operation/dialect coverage, moving concept-ID mapping-table preparation
+into the connector's reusable table-preparation lifecycle, the full extraction-only `develop` build, and HANA/ClickHouse
+result-level verification are pending. Database integration suites cannot run on this host; a final handoff will identify
+the tested extraction revision, commands, prerequisites, and required reports.

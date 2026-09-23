@@ -9,11 +9,8 @@ public class DateUnionSelectConverter implements SelectConverter<DateUnionSelect
 
 	@Override
 	public ConnectorSqlSelects connectorSelect(DateUnionSelect select, SelectContext<ConnectorSqlTables> selectContext) {
-		return DaterangeSelectUtil.createForSelect(
-				select,
-				(daterange, alias, functionProvider) -> new FieldWrapper<>(functionProvider.dateRangeAggregation(daterange).as(alias)),
-				selectContext
-		);
+		return ResolvedSelectAdapter.connectorSelect(new com.bakdata.conquery.sql.model.operation.BuiltInSelects.DateUnion(
+				select.getName(), com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter.from(select)), select.getName(), selectContext);
 	}
 
 }

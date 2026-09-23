@@ -97,6 +97,33 @@ class ConnectorCtePipelineAssemblerTest {
 		assertEquals(List.of(directPredecessor, filterPredecessor), input.additionalPredecessors());
 	}
 
+	@Test
+	void shouldKeepValueSelectBesideAggregationWithAdditionalPredecessor() {
+		FieldWrapper<String> valueSelect = new FieldWrapper<>(field(name("events", "value"), String.class));
+		FieldWrapper<Integer> aggregationInput = new FieldWrapper<>(field(name("events", "amount"), Integer.class));
+		QueryStep aggregationPredecessor = queryStep("distinct_sum");
+		ConnectorSqlSelects values = ConnectorSqlSelects.builder()
+				.preprocessingSelect(valueSelect)
+				.build();
+		ConnectorSqlSelects aggregation = ConnectorSqlSelects.builder()
+				.preprocessingSelect(aggregationInput)
+				.additionalPredecessor(Optional.of(aggregationPredecessor))
+				.build();
+
+		ConnectorCtePipelineInput input = ConnectorCtePipelineAssembler.assemble(
+				plan(),
+				table(name("events")),
+				new SqlIdColumns(field(name("person"), String.class)),
+				ColumnDateRange.of(field(name("start"), Date.class), field(name("end"), Date.class)),
+				List.of(values, aggregation),
+				List.of(),
+				Optional.empty()
+		);
+
+		assertEquals(List.of(values, aggregation), input.preprocessing().sqlSelects());
+		assertEquals(List.of(aggregationPredecessor), input.additionalPredecessors());
+	}
+
 	private static ConnectorCtePlan plan() {
 		SqlTables tables = new SqlTables(
 				"events",

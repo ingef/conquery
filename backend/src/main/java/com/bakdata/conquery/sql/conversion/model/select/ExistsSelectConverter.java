@@ -3,30 +3,18 @@ package com.bakdata.conquery.sql.conversion.model.select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.ExistsSelect;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.compiler.ir.select.ExistsSqlSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 
 public class ExistsSelectConverter implements SelectConverter<ExistsSelect> {
-
 	@Override
-	public ConnectorSqlSelects connectorSelect(ExistsSelect select, SelectContext<ConnectorSqlTables> selectContext) {
-		ExistsSqlSelect existsSqlSelect = createExistsSelect(select, selectContext);
-		return ConnectorSqlSelects.builder()
-								  .finalSelect(existsSqlSelect)
-								  .build();
+	public ConnectorSqlSelects connectorSelect(ExistsSelect select, SelectContext<ConnectorSqlTables> context) {
+		return ResolvedSelectAdapter.connectorSelect(new BuiltInSelects.Exists(select.getName()), select.getName(), context);
 	}
 
 	@Override
-	public ConceptSqlSelects conceptSelect(ExistsSelect select, SelectContext<ConceptSqlTables> selectContext) {
-		ExistsSqlSelect existsSqlSelect = createExistsSelect(select, selectContext);
-		return ConceptSqlSelects.builder()
-								.finalSelect(existsSqlSelect)
-								.build();
-	}
-
-	private static ExistsSqlSelect createExistsSelect(ExistsSelect select, SelectContext<?> selectContext) {
-		String alias = selectContext.getNameGenerator().legacyOperationName(select.getName());
-		return ExistsSqlSelect.withAlias(alias);
+	public ConceptSqlSelects conceptSelect(ExistsSelect select, SelectContext<ConceptSqlTables> context) {
+		return ResolvedSelectAdapter.conceptSelect(new BuiltInSelects.Exists(select.getName()), select.getName(), context);
 	}
 }

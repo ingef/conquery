@@ -1,5 +1,8 @@
 package com.bakdata.conquery.sql.conversion.dialect.clickhouse;
 
+import com.bakdata.conquery.sql.compiler.conversion.operation.SelectConversionContext;
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +26,13 @@ import org.jooq.SQLDialect;
 
 @Slf4j
 public class ClickhouseDialectBundle implements DialectBundle {
+
+	@Override
+	public ConnectorSqlSelects distinctSelect(
+			BuiltInSelects.Values select,
+			SelectConversionContext context) {
+		return com.bakdata.conquery.sql.compiler.conversion.operation.ClickhouseDistinctSelectConverter.connectorSelect(select, context);
+	}
 
 	private final SqlFunctionProvider functionProvider;
 

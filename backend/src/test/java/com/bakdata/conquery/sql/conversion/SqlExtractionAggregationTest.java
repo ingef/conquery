@@ -82,7 +82,7 @@ class SqlExtractionAggregationTest {
 				render(result.getAggregationSelects().getFirst().toFields().getFirst()));
 	}
 
-	private static SelectContext<ConnectorSqlTables> context() {
+	static SelectContext<ConnectorSqlTables> context() {
 		return context(new HanaDialectBundle());
 	}
 
@@ -96,6 +96,26 @@ class SqlExtractionAggregationTest {
 		assertEquals("nullif(sum(\"preprocessing\".\"quarters-1\"), 0) as \"quarters-1\"",
 				render(result.getAggregationSelects().getFirst().toFields().getFirst()));
 		assertTrue(result.getAdditionalPredecessor().isEmpty());
+	}
+
+	@Test
+	void shouldKeepSingleColumnQuarterSqlForDateRangeType() {
+		CountQuartersSelect select = new CountQuartersSelect();
+		select.setName("quarters");
+		select.setColumn(column("date", MajorTypeId.DATE_RANGE));
+		var result = new CountQuartersSqlAggregator().connectorSelect(select, context());
+		assertEquals(1, result.getPreprocessingSelects().size());
+		assertTrue(render(result.getAggregationSelects().getFirst().toFields().getFirst()).contains("count(distinct"));
+	}
+
+	@Test
+	void shouldKeepSingleColumnDurationSqlForDateRangeType() {
+		DurationSumSelect select = new DurationSumSelect();
+		select.setName("duration");
+		select.setColumn(column("date", MajorTypeId.DATE_RANGE));
+		var result = new DurationSumSqlAggregator().connectorSelect(select, context());
+		assertEquals(2, result.getPreprocessingSelects().size());
+		assertTrue(render(result.getPreprocessingSelects().getFirst().toFields().getFirst()).startsWith("coalesce(\"events\".\"date\","));
 	}
 
 	@Test
@@ -113,7 +133,7 @@ class SqlExtractionAggregationTest {
 		assertEquals("\"aggregation\".\"duration-1\"", render(result.getFinalSelects().getFirst().toFields().getFirst()));
 	}
 
-	private static SelectContext<ConnectorSqlTables> context(LegacyCompilerDialect dialect) {
+	static SelectContext<ConnectorSqlTables> context(LegacyCompilerDialect dialect) {
 		var conversion = ConversionContext.builder()
 				.compilerDialect(dialect).stratificationFunctions(dialect.getStratificationFunctions())
 				.nameGenerator(new SqlNameGenerator(127)).build();
@@ -126,7 +146,7 @@ class SqlExtractionAggregationTest {
 				Optional.empty(), new ConnectorSqlTables(null, plan), conversion);
 	}
 
-	private static ColumnId column(String name, MajorTypeId type) {
+	static ColumnId column(String name, MajorTypeId type) {
 		Table table = new Table();
 		table.setName("events");
 		table.setDataset(new DatasetId("test"));
@@ -143,7 +163,7 @@ class SqlExtractionAggregationTest {
 		};
 	}
 
-	private static String render(Field<?> field) {
+	static String render(Field<?> field) {
 		return DSL.using(SQLDialect.POSTGRES).renderInlined(DSL.select(field)).substring("select ".length()).toLowerCase(Locale.ROOT);
 	}
 }

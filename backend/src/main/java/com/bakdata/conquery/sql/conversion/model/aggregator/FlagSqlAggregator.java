@@ -71,60 +71,6 @@ import org.jooq.Field;
 public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterConverter<FlagFilter, Set<String>>, SqlAggregator {
 
 	/**
-	 * @return A mapping between a flags key and the corresponding {@link ExtractingSqlSelect} that will be created to reference the flag's column.
-	 */
-	private static Map<String, SingleColumnSqlSelect> createFlagRootSelectMap(FlagSelect flagSelect, String rootTable) {
-		return flagSelect.getFlags()
-						 .entrySet().stream()
-						 .collect(Collectors.toMap(
-								 Map.Entry::getKey,
-								 entry -> {
-									 Column column = entry.getValue().resolve();
-									 Field<Object> field = field(name(rootTable, column.getName()));
-									 return new FieldWrapper<>(field.as(column.getName()), column.getName()
-									 );
-								 }
-						 ));
-	}
-
-	private static FieldWrapper<?> createFlagSelect(
-			String alias,
-			SqlTables connectorTables,
-			SqlFunctionProvider functionProvider,
-			Map<String, SingleColumnSqlSelect> flagRootSelectMap
-	) {
-		Map<String, Field<Boolean>> flagFieldsMap = createRootSelectReferences(connectorTables, flagRootSelectMap);
-
-		// we first aggregate each flag column
-		List<Field<String>> flagAggregations = new ArrayList<>();
-		for (Map.Entry<String, Field<Boolean>> entry : flagFieldsMap.entrySet()) {
-			Field<Boolean> boolColumn = entry.getValue();
-			Condition anyTrue = functionProvider.orAgg(boolColumn);
-
-			String flagName = entry.getKey();
-			Field<String> flag = when(anyTrue, inline(flagName)).otherwise(""); // else null is implicit in SQL
-			flagAggregations.add(flag);
-		}
-
-		// and stuff them into 1 array field
-		Field<?> flagsArray = functionProvider.arrayOut(flagAggregations).as(alias);
-		// we also need the references for all flag columns for the flag aggregation of multiple columns
-		String[] requiredColumns = flagFieldsMap.values().stream().map(Field::getName).toArray(String[]::new);
-		return new FieldWrapper<>(flagsArray, requiredColumns);
-	}
-
-	private static Map<String, Field<Boolean>> createRootSelectReferences(
-			SqlTables connectorTables,
-			Map<String, SingleColumnSqlSelect> flagRootSelectMap
-	) {
-		return flagRootSelectMap.entrySet().stream()
-								.collect(Collectors.toMap(
-										Map.Entry::getKey,
-										entry -> (Field<Boolean>) entry.getValue().qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select()
-								));
-	}
-
-	/**
 	 * @return Columns names of a given flags map that match the selected flags of the filter value.
 	 */
 	private static List<Column> getRequiredColumns(Map<String, ColumnId> flags, Set<String> selectedFlags) {
@@ -136,24 +82,12 @@ public class FlagSqlAggregator implements SelectConverter<FlagSelect>, FilterCon
 
 	@Override
 	public ConnectorSqlSelects connectorSelect(FlagSelect flagSelect, SelectContext<ConnectorSqlTables> selectContext) {
-
-		SqlFunctionProvider functionProvider = selectContext.getConversionContext().getCompilerDialect().getFunctionProvider();
-		SqlTables connectorTables = selectContext.getTables();
-
-		Map<String, SingleColumnSqlSelect> rootSelects = createFlagRootSelectMap(flagSelect, connectorTables.getRootTable());
-
-		String alias = selectContext.getNameGenerator().legacyOperationName(flagSelect.getName());
-		FieldWrapper<?> flagAggregation = createFlagSelect(alias, connectorTables, functionProvider, rootSelects);
-
-		ExtractingSqlSelect<?> finalSelect = flagAggregation.qualify(connectorTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
-
-		return ConnectorSqlSelects.builder()
-								  .preprocessingSelects(rootSelects.values())
-								  .aggregationSelect(flagAggregation)
-								  .finalSelect(finalSelect)
-								  .build();
+		var flags = flagSelect.getFlags().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+				entry -> com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter.from(entry.getValue().resolve())));
+		return com.bakdata.conquery.sql.conversion.model.select.ResolvedSelectAdapter.connectorSelect(
+				new com.bakdata.conquery.sql.model.operation.BuiltInSelects.Aggregation(flagSelect.getName(),
+						new com.bakdata.conquery.sql.model.operation.BuiltInAggregations.Flags(flags)), flagSelect.getName(), selectContext);
 	}
-
 	@Override
 	public SqlFilters convertToSqlFilter(FlagFilter flagFilter, FilterContext<Set<String>> filterContext) {
 		SqlTables connectorTables = filterContext.getTables();

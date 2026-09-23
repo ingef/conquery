@@ -2,34 +2,16 @@ package com.bakdata.conquery.sql.conversion.model.select;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.RandomValueSelect;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
-import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
+
+
+
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
-import org.jooq.Field;
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 
 public class RandomValueSelectConverter implements SelectConverter<RandomValueSelect> {
 
 	@Override
 	public ConnectorSqlSelects connectorSelect(RandomValueSelect select, SelectContext<ConnectorSqlTables> selectContext) {
-
-		ConnectorSqlTables tables = selectContext.getTables();
-
-		String rootTableName = tables.getRootTable();
-		String columnName = select.getColumn().getColumn();
-		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(rootTableName, columnName, Object.class);
-
-		String alias = selectContext.getNameGenerator().legacyOperationName(select.getName());
-		Field<?> qualifiedRootSelect = rootSelect.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
-		Field<?> firstAggregation = selectContext.getFunctionProvider().random(qualifiedRootSelect).as(alias);
-		FieldWrapper<?> firstAggregationSqlSelect = new FieldWrapper<>(firstAggregation, columnName);
-
-		ExtractingSqlSelect<?> finalSelect = firstAggregationSqlSelect.qualify(tables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
-
-		return ConnectorSqlSelects.builder()
-								  .preprocessingSelect(rootSelect)
-								  .aggregationSelect(firstAggregationSqlSelect)
-								  .finalSelect(finalSelect)
-								  .build();
+		return ResolvedSelectAdapter.values(select, BuiltInSelects.ValueOperation.RANDOM, selectContext);
 	}
 }

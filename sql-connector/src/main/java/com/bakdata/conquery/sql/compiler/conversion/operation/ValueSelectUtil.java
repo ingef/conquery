@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.model.select;
+package com.bakdata.conquery.sql.compiler.conversion.operation;
 
 import static org.jooq.impl.DSL.*;
 
@@ -6,16 +6,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
+import com.bakdata.conquery.sql.model.range.SubstringRange;
+import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
+
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
 import com.bakdata.conquery.sql.compiler.ir.select.SingleColumnSqlSelect;
 import com.bakdata.conquery.sql.compiler.ir.select.SqlSelect;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+
+import com.bakdata.conquery.sql.compiler.dialect.CompilerDialect;
 import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
 import com.bakdata.conquery.sql.compiler.ir.CteStep;
 import com.bakdata.conquery.sql.compiler.ir.QueryStep;
@@ -23,7 +23,7 @@ import com.bakdata.conquery.sql.compiler.ir.Selects;
 import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
+
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.SelectConditionStep;
@@ -32,13 +32,13 @@ import org.jooq.SortField;
 class ValueSelectUtil {
 
 	public static ConnectorSqlSelects createValueSelect(
-			Column column,
+			ResolvedColumn column,
 			String alias,
 			Function<Field<?>, ? extends SortField<?>> ordering,
-			Range.IntegerRange substringRange, SelectContext<ConnectorSqlTables> selectContext) {
+			Optional<SubstringRange> substringRange, SelectConversionContext selectContext) {
 
 
-		SingleColumnSqlSelect rootSelect = MappableSingleColumnSelect.getSubstringSelect(column, substringRange, selectContext, alias);
+		SingleColumnSqlSelect rootSelect = SubstringSelect.getSubstringSelect(column, substringRange, selectContext.tables().getRootTable(), alias);
 
 		// create a CTE, that per row makes a window calculation to select for the rank of the validity date.
 		// Further down below, we select the values with rank=1, which is FIRST/LAST depending on sort order supplied by the creator.
@@ -46,12 +46,12 @@ class ValueSelectUtil {
 		QueryStep rowNumberStep =
 				buildRowNumberStep(rootSelect, ordering, alias, selectContext);
 
-		QueryStep rowFilterStep = buildRowFilterStep(rowNumberStep, alias, selectContext.getIds());
+		QueryStep rowFilterStep = buildRowFilterStep(rowNumberStep, alias, selectContext.ids());
 
 		SqlSelect finalSelect = rowFilterStep.getQualifiedSelects().getSqlSelects().getFirst();
 
 		FieldWrapper<SqlSelect> aggregationSelect =
-				new FieldWrapper<>(field(coalesce(finalSelect.qualify(ValueSelectCteStep.ROW_SELECT_STEP.cteName(alias)))).as(alias), column.getName());
+				new FieldWrapper<>(field(coalesce(finalSelect.qualify(ValueSelectCteStep.ROW_SELECT_STEP.cteName(alias)))).as(alias), column.physicalName());
 
 		return ConnectorSqlSelects.builder()
 								  .additionalPredecessor(Optional.of(rowFilterStep))
@@ -62,20 +62,20 @@ class ValueSelectUtil {
 
 	private static QueryStep buildRowNumberStep(
 			SingleColumnSqlSelect rootSelect, Function<Field<?>, ? extends SortField<?>> ordering, String alias,
-			SelectContext<ConnectorSqlTables> selectContext) {
+			SelectConversionContext selectContext) {
 
-		SqlFunctionProvider functionProvider = selectContext.getFunctionProvider();
+		CompilerDialect functionProvider = selectContext.dialect();
 
-		String predecessor = selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
+		String predecessor = selectContext.tables().getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
 		Field<?> qualifiedRootSelect = rootSelect.qualify(predecessor).select();
 
 		return QueryStep.builder()
 						.selects(Selects.builder()
-										.ids(selectContext.getIds().qualify(null))
+										.ids(selectContext.ids().qualify(null))
 										.sqlSelects(List.of(
 												new FieldWrapper<>(qualifiedRootSelect.as(alias), qualifiedRootSelect.getName()),
-												rowNumberField(predecessor, selectContext.getValidityDate(), ordering,
-															   selectContext.getIds(),
+												rowNumberField(predecessor, selectContext.validityDate(), ordering,
+															   selectContext.ids(),
 															   functionProvider
 												)
 										))
@@ -109,10 +109,10 @@ class ValueSelectUtil {
 						.build();
 	}
 
-	@NotNull
+
 	private static FieldWrapper<Integer> rowNumberField(
 			String predecessor, Optional<ColumnDateRange> validityDate, Function<Field<?>, ? extends SortField<?>> ordering,
-			SqlIdColumns idColumns, SqlFunctionProvider functionProvider) {
+			SqlIdColumns idColumns, CompilerDialect functionProvider) {
 
 		List<Field<?>> qualifiedIds = idColumns.qualify(predecessor).toFields();
 

@@ -1,72 +1,20 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import java.math.BigDecimal;
-import java.sql.Date;
-import java.time.temporal.ChronoUnit;
-
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDurationSumSelect;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
-import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.compiler.ir.select.ColumnDateRange;
-import com.google.common.base.Preconditions;
-import org.jooq.Condition;
-import org.jooq.Field;
-import org.jooq.impl.DSL;
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
 
 public class EventDurationSumSelectConverter implements SelectConverter<EventDurationSumSelect> {
-
 	@Override
-	public ConnectorSqlSelects connectorSelect(EventDurationSumSelect select, SelectContext<ConnectorSqlTables> selectContext) {
-
-		FieldWrapper<BigDecimal> stringAggregation = createEventDurationSumAggregation(select, selectContext);
-		ExtractingSqlSelect<?> finalSelect = stringAggregation.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.AGGREGATION_FILTER));
-
-		return ConnectorSqlSelects.builder()
-								  .eventDateSelect(stringAggregation)
-								  .finalSelect(finalSelect)
-								  .build();
+	public ConnectorSqlSelects connectorSelect(EventDurationSumSelect select, SelectContext<ConnectorSqlTables> context) {
+		return ResolvedSelectAdapter.connectorSelect(new BuiltInSelects.EventDurationSum(select.getName()), select.getName(), context);
 	}
 
 	@Override
-	public ConceptSqlSelects conceptSelect(EventDurationSumSelect select, SelectContext<ConceptSqlTables> selectContext) {
-
-		FieldWrapper<BigDecimal> stringAggregation = createEventDurationSumAggregation(select, selectContext);
-		ExtractingSqlSelect<?> finalSelect = stringAggregation.qualify(selectContext.getTables().getPredecessor(ConceptCteStep.UNIVERSAL_SELECTS));
-
-		return ConceptSqlSelects.builder()
-								.eventDateSelect(stringAggregation)
-								.finalSelect(finalSelect)
-								.build();
+	public ConceptSqlSelects conceptSelect(EventDurationSumSelect select, SelectContext<ConceptSqlTables> context) {
+		return ResolvedSelectAdapter.conceptSelect(new BuiltInSelects.EventDurationSum(select.getName()), select.getName(), context);
 	}
-
-	private FieldWrapper<BigDecimal> createEventDurationSumAggregation(EventDurationSumSelect select, SelectContext<?> selectContext) {
-
-		Preconditions.checkArgument(selectContext.getValidityDate().isPresent(), "Can't convert an EventDateUnionSelect without a validity date being present");
-		String predecessorCteName = selectContext.getTables().getPredecessor(ConceptCteStep.INTERVAL_PACKING_SELECTS);
-		ColumnDateRange qualified = selectContext.getValidityDate().get().qualify(predecessorCteName);
-		ColumnDateRange asDualColumn = selectContext.getFunctionProvider().toDualColumn(qualified);
-
-		SqlFunctionProvider functionProvider = selectContext.getFunctionProvider();
-		String alias = selectContext.getNameGenerator().legacyOperationName(select.getName());
-
-		Field<BigDecimal> durationSum = DSL.sum(
-												   DSL.when(containsInfinityDate(asDualColumn, functionProvider), DSL.inline(null, Integer.class))
-													  .otherwise(functionProvider.dateDistance(ChronoUnit.DAYS, asDualColumn.getStart(), asDualColumn.getEnd()))
-										   )
-										   .as(alias);
-		return new FieldWrapper<>(durationSum);
-	}
-
-	private static Condition containsInfinityDate(ColumnDateRange validityDate, SqlFunctionProvider functionProvider) {
-		Field<Date> negativeInfinity = functionProvider.getMinDateExpression();
-		Field<Date> positiveInfinity = functionProvider.getMaxDateExpression();
-		return validityDate.getStart().eq(negativeInfinity).or(validityDate.getEnd().eq(positiveInfinity));
-	}
-
 }

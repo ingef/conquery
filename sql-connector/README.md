@@ -60,8 +60,34 @@ Duration sums pack overlapping intervals first and exclude unbounded durations. 
 as in the existing backend SQL implementation. Physical date-range columns require dialect support for
 extracting half-open bounds through `CompilerDialect.dateRangeColumn`.
 
-Flag aggregation for output selects and integration of resolved operations into the legacy backend remain separate
-migration steps. Flag filters already compile as event predicates.
+The backend's sum, count, quarter-count, duration-sum, and flag-output adapters delegate to the shared converters.
+Flag filters compile separately as event predicates.
+
+## Output select extraction
+
+`ResolvedSelectConverter` handles aggregation, first/last/random/distinct values, date union/distance, flags,
+event-date union/duration, exists, and concept values. Callers provide the existing generated alias, table graph, IDs,
+optional validity date, resolved concept-column table mapping, and ordered prepared concept-value sources through
+`SelectConversionContext`.
+
+| Original backend responsibility | Shared implementation | Backend responsibility retained |
+| --- | --- | --- |
+| `ValueSelectUtil` | `compiler.conversion.operation.ValueSelectUtil` | First/last select DTO adaptation |
+| `RandomValueSelectConverter` SQL | Shared converter with the same name | Column resolution and alias allocation |
+| `DistinctSelectConverter` SQL | Shared converter with the same name | Select DTO adaptation |
+| `ClickhouseDistinctSelectConverter` SQL | Shared converter with the same name | Dialect selection |
+| `MappableSingleColumnSelect.getSubstringSelect` SQL | `SubstringSelect.getSubstringSelect` | Mapping, result readers, range adaptation |
+| `DaterangeSelectUtil` select SQL | Shared helper with the same name | Resolved date-column adaptation |
+| `DateDistanceSqlAggregator` select SQL | Shared helper with the same name | Frozen/per-row end-date resolution and filter/export SQL |
+| `FlagSqlAggregator` select SQL | Shared aggregation converter | Filter/export predicates |
+| Event date/duration select SQL | Shared converters with the original names | Application select metadata |
+| `ConceptColumnSelectConverter` SQL | Shared converter with the same name | Connector-column resolution and mapping-table preparation |
+
+First and last preserve the existing validity-date ordering and entity-ID fallback, without adding tie breakers.
+Random selects continue to ignore substring bounds. Distinct selects retain separate HANA and ClickHouse algorithms,
+including their existing ordering and empty/null handling. Substring bounds remain zero-based with an exclusive end.
+Concept-ID mapping tables are currently prepared by the backend and passed to the connector as ordered SQL-resolved
+sources. Their preparation belongs with the connector once the reusable table-preparation lifecycle is extracted.
 
 ## Validation
 

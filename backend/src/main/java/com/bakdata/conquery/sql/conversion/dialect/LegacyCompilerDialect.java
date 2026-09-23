@@ -1,5 +1,10 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
+import org.jooq.DataType;
+import org.jooq.SortField;
+import org.jooq.OrderField;
+import java.util.function.Function;
+import java.util.Collection;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -47,6 +52,42 @@ import org.jooq.Table;
  * connector. New connector code must not depend on this interface.</p>
  */
 public interface LegacyCompilerDialect extends CompilerDialect {
+
+	@Override
+	default ColumnDateRange toDualColumn(ColumnDateRange range) {
+		return getFunctionProvider().toDualColumn(range);
+	}
+
+	@Override
+	default Condition orAgg(Field<Boolean> field) {
+		return getFunctionProvider().orAgg(field);
+	}
+
+	@Override
+	default Field<?> arrayOut(List<Field<String>> fields) {
+		return getFunctionProvider().arrayOut(fields);
+	}
+
+	@Override
+	default <T> Field<T> cast(Field<?> field, DataType<T> type) {
+		return getFunctionProvider().cast(field, type);
+	}
+
+	@Override
+	default Field<String> stringAggregation(Field<String> field, Field<String> delimiter, List<Field<?>> orderByFields) {
+		return getFunctionProvider().stringAggregation(field, delimiter, orderByFields);
+	}
+
+	@Override
+	default Collection<? extends OrderField<?>> orderByValidityDates(
+			Function<Field<?>, ? extends SortField<?>> ordering, List<Field<?>> validityDateFields) {
+		return getFunctionProvider().orderByValidityDates(ordering, validityDateFields);
+	}
+
+	@Override
+	default <T> Field<T> random(Field<T> field) {
+		return getFunctionProvider().random(field);
+	}
 
 	@Override
 	default Field<Date> minimumDate() {
@@ -136,6 +177,13 @@ public interface LegacyCompilerDialect extends CompilerDialect {
 	@Override
 	default ColumnDateRange dateRange(Field<Date> start, Field<Date> inclusiveEnd) {
 		return getFunctionProvider().dateRange(start, inclusiveEnd);
+	}
+
+	@Override
+	default ColumnDateRange dateRangeColumn(Field<?> range) {
+		// Both existing SQL providers use a single physical column as inclusive start and end.
+		Field<Date> date = range.coerce(Date.class);
+		return dateRange(date, date);
 	}
 
 	@Override

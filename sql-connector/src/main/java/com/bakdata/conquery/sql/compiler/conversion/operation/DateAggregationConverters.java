@@ -30,7 +30,7 @@ final class DateAggregationConverters {
 	static CommonAggregationSelect<?> countQuarters(BuiltInAggregations.CountQuarters aggregation, AggregationConversionContext context) {
 		CompilerDialect dialect = context.dialect();
 		String source = context.tables().getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
-		if (aggregation.dates() instanceof DateColumns.Single single && single.column().type() == ColumnType.DATE) {
+		if (aggregation.dates() instanceof DateColumns.Single single) {
 			ExtractingSqlSelect<Date> root = new ExtractingSqlSelect<>(context.tables().getRootTable(), single.column().physicalName(), Date.class);
 			Field<Integer> count = DSL.nullif(DSL.countDistinct(dialect.yearQuarter(root.qualify(source).select())), 0);
 			return CommonAggregationSelect.<Integer>builder()
@@ -83,7 +83,7 @@ final class DateAggregationConverters {
 				.build();
 	}
 
-	private static ColumnDateRange dateRange(DateColumns dates, AggregationConversionContext context) {
+	static ColumnDateRange dateRange(DateColumns dates, AggregationConversionContext context) {
 		if (dates instanceof DateColumns.Single single && single.column().type() == ColumnType.DATE_RANGE) {
 			return context.dialect().dateRangeColumn(DSL.field(DSL.name(context.tables().getRootTable(), single.column().physicalName())));
 		}

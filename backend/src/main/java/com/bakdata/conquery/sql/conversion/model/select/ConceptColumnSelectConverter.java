@@ -1,184 +1,107 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.sql.compiler.conversion.operation.SelectConversionContext;
+import com.bakdata.conquery.sql.compiler.ir.SchemaSql;
+import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConceptSqlSelects;
 import com.bakdata.conquery.sql.compiler.ir.concept.ConnectorSqlSelects;
-import com.bakdata.conquery.sql.compiler.ir.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.compiler.ir.select.FieldWrapper;
-import com.bakdata.conquery.sql.compiler.ir.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptIdMapping;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptSqlTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConnectorSqlTables;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.compiler.ir.CteStep;
-import com.bakdata.conquery.sql.compiler.naming.SqlNameGenerator;
-import com.bakdata.conquery.sql.compiler.ir.QueryStep;
-import com.bakdata.conquery.sql.compiler.ir.Selects;
-import com.bakdata.conquery.sql.compiler.ir.SqlIdColumns;
-import com.bakdata.conquery.sql.execution.ResultSetProcessor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import com.bakdata.conquery.sql.conversion.model.EntitySchemaAdapter;
+import com.bakdata.conquery.sql.model.operation.BuiltInSelects;
+import com.bakdata.conquery.sql.model.schema.ResolvedColumn;
+import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.TableLike;
 import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
 
+/** Resolves concept connector columns and mapping-table sources before delegating SQL composition to the connector. */
 public class ConceptColumnSelectConverter implements SelectConverter<ConceptColumnSelect> {
 
-	@Getter
-	@RequiredArgsConstructor
-	private enum CONCEPT_COLUMN_STEPS implements CteStep {
-
-		UNIONED_COLUMNS("unioned_columns"),
-		STRING_AGG("concept_column_aggregated");
-
-		private final String suffix;
-	}
-
 	@Override
-	public ConnectorSqlSelects connectorSelect(ConceptColumnSelect select, SelectContext<ConnectorSqlTables> selectContext) {
-		Connector connector = selectContext.getTables().getConnector();
+	public ConnectorSqlSelects connectorSelect(ConceptColumnSelect select, SelectContext<ConnectorSqlTables> context) {
+		Connector connector = context.getTables().getConnector();
 		if (connector.getColumn() == null) {
 			return ConnectorSqlSelects.none();
 		}
-		if (select.isAsIds()) {
-			TreeConcept concept = (TreeConcept) select.getHolder().findConcept();
-			ConceptIdMapping mapping = new ConceptIdMapping(concept, selectContext.getFunctionProvider());
-			Field<Integer> resolvedId = DSL.coalesce(mapping.resolvedId(), DSL.inline(concept.getLocalId()))
-					.as(connector.getColumn().getColumn());
-			return ConnectorSqlSelects.builder()
-					.preprocessingSelect(new FieldWrapper<>(resolvedId))
-					.build();
-		}
-		ExtractingSqlSelect<Object> connectorColumn = new ExtractingSqlSelect<>(connector.resolveTableId().getTable(), connector.getColumn().getColumn(), Object.class);
-		return ConnectorSqlSelects.builder()
-								  .preprocessingSelect(connectorColumn)
-								  .build();
+		ResolvedColumn column = EntitySchemaAdapter.from(connector.getColumn().resolve());
+		BuiltInSelects.ConceptValues operation = new BuiltInSelects.ConceptValues(select.getName(), List.of(column));
+		return ResolvedSelectAdapter.connectorSelect(operation, select.getName(), context, preparedSources(select, List.of(connector), context));
 	}
 
 	@Override
-	public ConceptSqlSelects conceptSelect(ConceptColumnSelect select, SelectContext<ConceptSqlTables> selectContext) {
-
-		// we will do a union distinct on all Connector tables
-		List<? extends Connector> connectors;
-		if (isSingleConnector(selectContext.getTables())) {
-			// we union the Connector table with itself if there is only 1 Connector
-			Connector connector = selectContext.getTables().getConnectorTables().get(0).getConnector();
-			connectors = List.of(connector, connector);
-		}
-		else {
-			connectors = selectContext.getTables().getConnectorTables().stream().map(ConnectorSqlTables::getConnector).toList();
-		}
-
-		SqlNameGenerator nameGenerator = selectContext.getNameGenerator();
-		String alias = nameGenerator.legacyOperationName(select.getName());
-		QueryStep unionStep = createUnionConnectorConnectorsStep(connectors, select, alias, selectContext);
-
-		FieldWrapper<String> conceptColumnSelect = createConnectorColumnStringAgg(selectContext, unionStep, alias);
-		Selects unionStepSelects = unionStep.getQualifiedSelects();
-		Selects selects = Selects.builder()
-								 .ids(unionStepSelects.getIds())
-								 .sqlSelect(conceptColumnSelect)
-								 .build();
-
-		String stringAggCteName = nameGenerator.cteStepName(CONCEPT_COLUMN_STEPS.STRING_AGG, alias);
-		QueryStep stringAggStep = QueryStep.builder()
-										   .cteName(stringAggCteName)
-										   .selects(selects)
-										   .fromTable(QueryStep.toTableLike(unionStep.getCteName()))
-										   .groupBy(unionStepSelects.getIds().toFields())
-										   .predecessor(unionStep)
-										   .build();
-
-		ExtractingSqlSelect<String> finalSelect = conceptColumnSelect.qualify(stringAggStep.getCteName());
-
-		return ConceptSqlSelects.builder()
-								.additionalPredecessor(Optional.of(stringAggStep))
-								.finalSelect(finalSelect)
-								.build();
+	public ConceptSqlSelects conceptSelect(ConceptColumnSelect select, SelectContext<ConceptSqlTables> context) {
+		List<? extends Connector> connectors = context.getTables().getConnectorTables().stream()
+				.map(ConnectorSqlTables::getConnector)
+				.toList();
+		List<ResolvedColumn> columns = connectors.stream()
+				.map(Connector::getColumn)
+				.map(column -> EntitySchemaAdapter.from(column.resolve()))
+				.toList();
+		BuiltInSelects.ConceptValues operation = new BuiltInSelects.ConceptValues(select.getName(), columns);
+		return ResolvedSelectAdapter.conceptSelect(operation, select.getName(), context, preparedSources(select, connectors, context));
 	}
 
-	private static boolean isSingleConnector(ConceptSqlTables tables) {
-		return tables.getConnectorTables().size() == 1;
-	}
-
-	private static QueryStep createUnionConnectorConnectorsStep(
+	private static List<SelectConversionContext.ConceptColumnSource> preparedSources(
+			ConceptColumnSelect select,
 			List<? extends Connector> connectors,
-			ConceptColumnSelect select,
-			String alias,
-			SelectContext<ConceptSqlTables> selectContext
+			SelectContext<?> context
 	) {
-		List<QueryStep> unionSteps = connectors.stream().map(connector -> createConnectorColumnSelectQuery(connector, select, alias, selectContext)).toList();
-		String unionedColumnsCteName = selectContext.getNameGenerator().cteStepName(CONCEPT_COLUMN_STEPS.UNIONED_COLUMNS, alias);
-		return QueryStep.createUnionStep(unionSteps, unionedColumnsCteName, Collections.emptyList(), false); //TODO is false correct here?
+		if (!select.isAsIds()) {
+			return List.of();
+		}
+		return connectors.stream()
+				.map(connector -> preparedSource(connector, (TreeConcept) select.getHolder().findConcept(), context))
+				.toList();
 	}
 
-	private static QueryStep createConnectorColumnSelectQuery(
+	private static SelectConversionContext.ConceptColumnSource preparedSource(
 			Connector connector,
-			ConceptColumnSelect select,
-			String alias,
-			SelectContext<ConceptSqlTables> selectContext
+			TreeConcept concept,
+			SelectContext<?> context
 	) {
-		// a  ConceptColumn select uses all connectors a Concept has, even if they are not part of the CQConcept
-		// but if they are, we need to make sure we use the preprocessed and event-filtered table instead of the root table
-		Optional<ConnectorSqlTables> convertedConnector = selectContext.getTables()
-										.getConnectorTables()
-										.stream()
-										.filter(tables -> Objects.equals(tables.getRootTable(), connector.resolveTableId().getTable()))
-										.findFirst();
-		String tableName = convertedConnector
-				.map(tables -> tables.cteName(ConceptCteStep.PREPROCESSING))
-				.orElse(connector.resolveTableId().getTable());
+		ResolvedColumn column = EntitySchemaAdapter.from(connector.getColumn().resolve());
+		Optional<ConnectorSqlTables> convertedConnector = context.getTables() instanceof ConceptSqlTables tables
+				? tables.getConnectorTables().stream()
+						.filter(connectorTables -> connectorTables.getConnector() != null)
+						.filter(connectorTables -> connectorTables.getRootTable().equals(connector.resolveTableId().getTable()))
+						.findFirst()
+				: Optional.empty();
 
-		Table<Record> connectorTable = DSL.table(DSL.name(tableName));
-		SqlIdColumns ids = selectContext.getIds().qualify(connectorTable.getName());
-		Field<?> connectorColumn = DSL.field(DSL.name(connectorTable.getName(), connector.getColumn().resolve().getName()));
-		TableLike<? extends Record> sourceTable = connectorTable;
-		List<org.jooq.Condition> conditions = Collections.emptyList();
-
-		if (select.isAsIds() && convertedConnector.isEmpty()) {
-			TreeConcept concept = (TreeConcept) select.getHolder().findConcept();
-			ConceptIdMapping mapping = new ConceptIdMapping(concept, selectContext.getFunctionProvider());
-			sourceTable = selectContext.getFunctionProvider().leftJoin(
-					connectorTable,
-					mapping.table(),
-					List.of(mapping.joinCondition(connector))
+		if (convertedConnector.isPresent()) {
+			String tableName = convertedConnector.orElseThrow().cteName(ConceptCteStep.PREPROCESSING);
+			Table<Record> table = DSL.table(DSL.name(tableName));
+			return new SelectConversionContext.ConceptColumnSource(
+					tableName,
+					table,
+					DSL.field(DSL.name(tableName, column.physicalName())),
+					List.of()
 			);
-			connectorColumn = DSL.coalesce(mapping.resolvedId(), DSL.inline(concept.getLocalId()));
-			Field<Object> rawConceptColumn = DSL.field(DSL.name(connectorTable.getName(), connector.getColumn().resolve().getName()));
-			conditions = List.of(rawConceptColumn.isNotNull());
 		}
 
-		Field<String> casted = selectContext.getFunctionProvider().cast(connectorColumn, SQLDataType.VARCHAR).as(alias);
-		FieldWrapper<String> connectorSelect = new FieldWrapper<>(casted);
-
-		Selects selects = Selects.builder()
-								 .ids(ids)
-								 .sqlSelect(connectorSelect)
-								 .build();
-
-		return QueryStep.builder()
-						.selects(selects)
-						.fromTable(sourceTable)
-						.conditions(conditions)
-						.build();
-	}
-
-	private static FieldWrapper<String> createConnectorColumnStringAgg(SelectContext<ConceptSqlTables> selectContext, QueryStep unionStep, String alias) {
-		SqlFunctionProvider functionProvider = selectContext.getFunctionProvider();
-		Field<String> unionedColumn = DSL.field(DSL.name(unionStep.getCteName(), alias), String.class);
-		return new FieldWrapper<>(
-				functionProvider.stringAggregation(unionedColumn, DSL.toChar(ResultSetProcessor.UNIT_SEPARATOR), List.of(unionedColumn)).as(alias)
+		ConceptIdMapping mapping = new ConceptIdMapping(concept, context.getFunctionProvider());
+		Table<Record> connectorTable = SchemaSql.table(column.table());
+		TableLike<? extends Record> sourceTable = context.getFunctionProvider().leftJoin(
+				connectorTable,
+				mapping.table(),
+				List.of(mapping.joinCondition(connector))
+		);
+		Field<Integer> resolvedId = DSL.coalesce(mapping.resolvedId(), DSL.inline(concept.getLocalId()));
+		Condition rawValuePresent = SchemaSql.field(column, Object.class).isNotNull();
+		return new SelectConversionContext.ConceptColumnSource(
+				connectorTable.getName(),
+				sourceTable,
+				resolvedId,
+				List.of(rawValuePresent)
 		);
 	}
-
 }
