@@ -10,19 +10,19 @@ import { toggleInfoPane } from "./actions";
 const header = tv({
   base: [
     "flex items-center",
-    "h-[40px]",
+    "h-pane-header",
     "shrink-0",
     "border-b border-gray-100",
     "bg-white",
-    "px-5 pt-1",
+    "px-5",
   ],
 });
 
-// as tall as the header it sits in
+// as tall as the header it sits in, above the header's line
 const toggleButton = tv({
   base: [
     "absolute top-header right-0",
-    "h-[39px] w-[30px]",
+    "h-[37px] w-[30px]",
     "flex items-center justify-center",
     "text-gray-800",
     "cursor-pointer",

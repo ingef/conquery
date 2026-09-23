@@ -33,6 +33,8 @@
 
   /* the absolutely positioned app header; the panes start below it */
   --spacing-header: 40px;
+  /* the tab bar of a pane and the info pane's header: one line across the app */
+  --spacing-pane-header: 38px;
 
   /* every icon, see ui-components/Icon. The stroke is in lucide's 24 unit
      grid like its strokeWidth prop, so it grows with a larger icon */

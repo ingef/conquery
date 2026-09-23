@@ -72,7 +72,7 @@ const list = tv({
   variants: {
     variant: {
       // a line the tabs sit on
-      primary: ["px-5", "border-b border-gray-100"],
+      primary: ["h-pane-header items-end", "px-5", "border-b border-gray-100"],
       secondary: "pt-[3px] pl-[10px]",
     },
   },
@@ -91,7 +91,7 @@ const tab = tv({
   variants: {
     variant: {
       primary: [
-        "mt-[6px] mr-[5px] px-3",
+        "mr-[5px] px-3",
         "border-b-[3px] border-transparent",
         textStyle({ size: 1, strong: true }),
         "h-[30px]",
