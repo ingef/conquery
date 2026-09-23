@@ -7,26 +7,16 @@ import type { SecondaryId } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import { nodeIsConceptQueryNode } from "../model/node";
-import InfoTooltip from "../ui-components/InfoTooltip";
+import { Label } from "../ui-components/Label";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { ToggleButtonGroup } from "../ui-components/ToggleButtonGroup";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
-import { H4 } from "../ui-components/Typography";
 
 import { setSelectedSecondaryId } from "./actions";
 import type { StandardQueryStateT } from "./queryReducer";
 import type { SelectedSecondaryIdStateT } from "./selectedSecondaryIdReducer";
 
-const headline = tv({
-  base: ["flex items-center", "transition-[color] duration-100"],
-  variants: {
-    active: {
-      true: "text-primary-500",
-      false: "text-gray-600",
-    },
-  },
-});
-
+// the icon shows whether a non-standard id is selected
 const headlineIcon = tv({
   base: "mr-[10px] transition-[color] duration-100",
   variants: {
@@ -160,11 +150,10 @@ const SecondaryIdSelectorUI = memo(
 
     return (
       <div>
-        <div className={headline({ active: !!value })}>
+        <Label elementType="span" tooltip={t("queryEditor.secondaryIdTooltip")}>
           <MicroscopeIcon className={headlineIcon({ active: !!value })} />
-          <H4 as="h3">{t("queryEditor.secondaryId")}</H4>
-          <InfoTooltip text={t("queryEditor.secondaryIdTooltip")} />
-        </div>
+          {t("queryEditor.secondaryId")}
+        </Label>
         <ToggleButtonGroup
           wrap
           size="sm"
