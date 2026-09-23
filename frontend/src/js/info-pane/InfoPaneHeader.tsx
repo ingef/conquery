@@ -4,7 +4,7 @@ import { Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { tv } from "tailwind-variants";
-import { H4 } from "../ui-components/Typography";
+import { H3 } from "../ui-components/Typography";
 import { toggleInfoPane } from "./actions";
 
 const header = tv({
@@ -42,7 +42,7 @@ export const InfoPaneHeader = memo(() => {
         <ChevronLeftIcon />
       </RacButton>
       <div className={header()}>
-        <H4 as="h2">{t("infoPane.headline")}</H4>
+        <H3 as="h2">{t("infoPane.headline")}</H3>
       </div>
     </>
   );
