@@ -12,10 +12,10 @@ import { exists } from "../common/helpers/exists";
 import {
   ComboBoxStateBridge,
   type ComboBoxStateRef,
+  inputPointerHandlers,
   listBox,
   listBoxItem,
   OptionLabel,
-  openOnPress,
   optionMatchesQuery,
   optionText,
   useFocusFirstOption,
@@ -122,7 +122,7 @@ export const ComboBoxField = ({
             placeholder={placeholder}
             isDisabled={isDisabled}
             isInvalid={isInvalid}
-            onPointerDown={openOnPress(stateRef)}
+            {...inputPointerHandlers(stateRef)}
             addonRight={
               <InputButton data-test-id="selection-dropdown">
                 <ChevronDownIcon />

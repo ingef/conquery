@@ -57,7 +57,7 @@ public class UserErrorTest extends IntegrationTest.Simple implements Programmati
 						.describedAs(() -> response.readEntity(String.class))
 						.isEqualTo(HttpStatus.SC_NOT_FOUND);
 				assertThat(response.readEntity(HttpError.class))
-						.isEqualTo(new HttpError(404, "The id UserErrorTest.unknown_concept could not be resolved.", null));
+						.isEqualTo(new HttpError(404, "The id UserErrorTest.unknown_concept could not be resolved. Type: class com.bakdata.conquery.models.identifiable.ids.specific.ConceptId", null));
 			}
 		}
 

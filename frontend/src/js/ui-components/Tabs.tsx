@@ -120,10 +120,11 @@ const tab = tv({
 const tabTarget = tv({ base: "block" });
 
 // one cell the content fills; the content defines its own rows inside.
+// minmax(0,1fr) keeps nowrap content from widening the cell past the panel.
 // A force-mounted panel of an unselected tab is inert: hidden, state kept
 const panel = tv({
   base: [
-    "grid grid-rows-[minmax(0,1fr)]",
+    "grid grid-cols-[minmax(0,1fr)] grid-rows-[minmax(0,1fr)]",
     "grow",
     "min-h-0",
     "outline-none",

@@ -4,10 +4,7 @@ import { tv } from "tailwind-variants";
 import type { StateT } from "../app/reducers";
 import { useAppTheme } from "../app-theme-context";
 import DatasetSelector from "../dataset/DatasetSelector";
-import { HistoryButton } from "../entity-history/HistoryButton";
-import { canViewEntityPreview, useHideLogoutButton } from "../user/selectors";
-import { HelpMenu } from "./HelpMenu";
-import LogoutButton from "./LogoutButton";
+import { HeaderMenu } from "./HeaderMenu";
 
 // position absolute: fix, so content can expand to 100% and scroll
 const root = tv({
@@ -20,10 +17,6 @@ const root = tv({
     "bg-bg-50",
     "shadow-[0_0_1px_1px_rgba(0,0,0,0.3)]",
   ],
-});
-
-const right = tv({
-  base: ["flex flex-row items-center", "gap-[5px]"],
 });
 
 const overflowHidden = tv({
@@ -49,8 +42,6 @@ const headline = tv({
 
 const Header = () => {
   const { t } = useTranslation();
-  const canViewHistory = useSelector<StateT, boolean>(canViewEntityPreview);
-  const hideLogoutButton = useHideLogoutButton();
   const { manualUrl, contactEmail } = useSelector<
     StateT,
     StateT["startup"]["config"]
@@ -72,13 +63,9 @@ const Header = () => {
         <span className="mx-[5px] h-5" />
         <h1 className={headline()}>{t("headline")}</h1>
       </div>
-      <div className={right()}>
+      <div className="flex items-center gap-[5px]">
         <DatasetSelector />
-        {canViewHistory && <HistoryButton />}
-        {(manualUrl || contactEmail) && (
-          <HelpMenu manualUrl={manualUrl} contactEmail={contactEmail} />
-        )}
-        {!hideLogoutButton && <LogoutButton />}
+        <HeaderMenu manualUrl={manualUrl} contactEmail={contactEmail} />
       </div>
     </header>
   );

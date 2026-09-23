@@ -17,7 +17,7 @@ const root = tv({
     "grow shrink-0 basis-0",
     "mb-[10px]",
     "px-[10px]",
-    "overflow-y-auto",
+    "overflow-x-hidden overflow-y-auto",
     "whitespace-nowrap",
   ],
 });

@@ -5,7 +5,10 @@ import {
   useContext,
   useEffect,
 } from "react";
-import { ComboBoxStateContext } from "react-aria-components";
+import {
+  type ComboBoxState,
+  ComboBoxStateContext,
+} from "react-aria-components";
 import ReactMarkdown from "react-markdown";
 import { tv } from "tailwind-variants";
 
@@ -84,15 +87,52 @@ export const ComboBoxStateBridge = ({
   return null;
 };
 
-/** the list opens on focus; a press into the already focused input opens it again */
-export const openOnPress =
-  (stateRef: ComboBoxStateRef) => (e: PointerEvent<HTMLInputElement>) => {
+// Press the input, drag onto an option, release: react-aria selects on the option's
+// own pointerup and focuses it on hover, which works in Chrome. Firefox delivers a
+// mouse drag that starts in a text input only to that input, so the input does the
+// same by pointer position; where the option gets the events itself, nothing is under
+// the pointer here and these handlers stay idle
+const optionKeyUnder = (state: ComboBoxState<object>, e: PointerEvent) => {
+  const option = document
+    .elementFromPoint(e.clientX, e.clientY)
+    ?.closest<HTMLElement>('[role="option"][data-key]');
+  const key = [...state.collection.getKeys()].find(
+    (k) => String(k) === option?.dataset.key,
+  );
+
+  return key !== undefined && !state.selectionManager.isDisabled(key)
+    ? key
+    : null;
+};
+
+/**
+ * the input's pointer handling: the list opens on focus, a press into the
+ * already focused input opens it again, and a drag onto an option picks it
+ */
+export const inputPointerHandlers = (stateRef: ComboBoxStateRef) => ({
+  onPointerDown: (e: PointerEvent<HTMLInputElement>) => {
     const state = stateRef.current;
     if (e.button !== 0 || e.currentTarget.disabled || !state || state.isOpen) {
       return;
     }
     state.open(null, "manual");
-  };
+  },
+  onPointerMove: (e: PointerEvent<HTMLInputElement>) => {
+    const state = stateRef.current;
+    if (!state || e.pointerType !== "mouse" || e.buttons !== 1) return;
+    const key = optionKeyUnder(state, e);
+    if (key !== null && key !== state.selectionManager.focusedKey) {
+      state.selectionManager.setFocused(true);
+      state.selectionManager.setFocusedKey(key);
+    }
+  },
+  onPointerUp: (e: PointerEvent<HTMLInputElement>) => {
+    const state = stateRef.current;
+    if (!state || e.pointerType !== "mouse" || e.button !== 0) return;
+    const key = optionKeyUnder(state, e);
+    if (key !== null) state.selectionManager.select(key);
+  },
+});
 
 /** while typing, the first option that can be picked is focused, so Enter picks it */
 export const useFocusFirstOption = (

@@ -27,10 +27,10 @@ import { Button } from "./Button";
 import {
   ComboBoxStateBridge,
   type ComboBoxStateRef,
+  inputPointerHandlers,
   listBox,
   listBoxItem,
   OptionLabel,
-  openOnPress,
   optionMatchesQuery,
   optionText,
   useFocusFirstOption,
@@ -289,7 +289,7 @@ export const ComboBoxMultiField = ({
                     : (placeholder ?? defaultPlaceholder)
                 }
                 maxLength={maxInputLength}
-                onPointerDown={openOnPress(stateRef)}
+                {...inputPointerHandlers(stateRef)}
                 onKeyDown={(e) => {
                   if (e.key === "Backspace" && !query && value.length > 0) {
                     onChange(value.slice(0, -1));

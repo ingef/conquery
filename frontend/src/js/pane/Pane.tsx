@@ -15,6 +15,11 @@ const container = tv({
   base: ["relative", "flex flex-col", "min-h-0", "overflow-hidden"],
 });
 
+// sits in the tab row, before the tabs
+const beforeTabsBox = tv({
+  base: ["flex items-center", "pl-[10px]", "border-b border-gray-100"],
+});
+
 export interface PaneTab {
   key: string;
   label: string;
@@ -28,11 +33,12 @@ interface Props {
   left?: boolean;
   className?: string;
   dataTestId: string;
+  beforeTabs?: ReactNode;
 }
 
 // every tab's content stays mounted while another tab shows, so editors and
 // trees keep their state across a switch
-const Pane = ({ tabs, left, className, dataTestId }: Props) => {
+const Pane = ({ tabs, left, className, dataTestId, beforeTabs }: Props) => {
   const { t } = useTranslation();
   const paneType = left ? "left" : "right";
   const activeTab = useSelector<StateT, string>(
@@ -46,7 +52,8 @@ const Pane = ({ tabs, left, className, dataTestId }: Props) => {
         selectedKey={activeTab}
         onSelectionChange={(tab) => dispatch(clickPaneTab({ paneType, tab }))}
       >
-        <div className="bg-white">
+        <div className="grid grid-cols-[auto_minmax(0,1fr)] bg-white">
+          {beforeTabs && <div className={beforeTabsBox()}>{beforeTabs}</div>}
           <TabList
             aria-label={left ? t("leftPane.tabs") : t("rightPane.tabs")}
             data-test-id={dataTestId}

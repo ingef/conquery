@@ -138,7 +138,7 @@
     "add": "Add",
     "retry": "Try again",
     "version": "Version",
-    "help": "Help",
+    "menu": "Menu",
     "manual": "Manual",
     "contact": "Contact",
     "confirm": "Confirm",
@@ -184,6 +184,8 @@
   },
   "infoPane": {
     "headline": "Info",
+    "expand": "Show info pane",
+    "collapse": "Hide info pane",
     "placeholder": "More information on a concept ...",
     "date": {
       "daterange": "Date range",
