@@ -1,12 +1,16 @@
+import { ChevronRightIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import type { DatasetT } from "../api/types";
 import ConceptTreeList from "../concept-trees/ConceptTreeList";
 import ConceptTreeSearchBox from "../concept-trees/ConceptTreeSearchBox";
 import { useAreTreesAvailable } from "../concept-trees/selectors";
+import { toggleInfoPane } from "../info-pane/actions";
 import Pane from "../pane/Pane";
 import ProjectItemsTab from "../previous-queries/list/ProjectItemsTab";
+import { Button } from "../ui-components/Button";
+import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
 
 import type { StateT } from "./reducers";
 
@@ -16,6 +20,10 @@ const LeftPane = () => {
     (state) => state.datasets.selectedDatasetId,
   );
   const areTreesAvailable = useAreTreesAvailable();
+  const isInfoPaneOpen = useSelector<StateT, boolean>(
+    (state) => state.infoPane.isOpen,
+  );
+  const dispatch = useDispatch();
 
   // TODO: Re-implement
   // const previousQueriesLoading = useSelector<StateT, boolean>(
@@ -25,6 +33,20 @@ const LeftPane = () => {
   return (
     <Pane
       left
+      beforeTabs={
+        !isInfoPaneOpen && (
+          <TooltipTrigger>
+            <Button
+              intent="tertiary"
+              aria-label={t("infoPane.expand")}
+              onPress={() => dispatch(toggleInfoPane())}
+            >
+              <ChevronRightIcon />
+            </Button>
+            <Tooltip>{t("infoPane.expand")}</Tooltip>
+          </TooltipTrigger>
+        )
+      }
       tabs={[
         {
           label: t("leftPane.conceptTrees"),
