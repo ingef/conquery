@@ -38,8 +38,8 @@ export const inputControl = tv({
     "[&::-webkit-search-cancel-button]:hidden",
   ],
   variants: {
-    // shares its line with tags
-    inline: { true: "h-5 w-auto min-w-[60px] grow px-0" },
+    // shares its line with tags: no width of its own, it fills what the line leaves
+    inline: { true: "h-5 w-0 min-w-[60px] grow px-0" },
   },
 });
 
