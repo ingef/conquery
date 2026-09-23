@@ -10,7 +10,6 @@ import {
 } from "react-aria-components";
 import ReactMarkdown from "react-markdown";
 import { tv } from "tailwind-variants";
-
 import type { SelectOptionT } from "../api/types";
 import { exists } from "../common/helpers/exists";
 import { FieldError } from "./FieldError";
@@ -19,6 +18,7 @@ import { optionMatchesQuery } from "./InputMultiSelect/optionMatchesQuery";
 import { type FieldLabelProps, Label } from "./Label";
 import { Popover } from "./Popover";
 import SelectEmptyPlaceholder from "./SelectEmptyPlaceholder";
+import { textStyle } from "./Typography";
 
 const listBox = tv({
   base: [
@@ -34,8 +34,7 @@ const listBoxItem = tv({
     "mb-[2px]",
     "px-2 py-[3px]",
     "cursor-pointer",
-    // explicit: through the portal an item would inherit body's styles
-    "text-sm text-gray-800",
+    textStyle({ size: 2, tone: "default" }),
     "outline-none",
     "transition-[background-color] duration-100",
     "data-focused:bg-primary-50 data-selected:bg-primary-50",

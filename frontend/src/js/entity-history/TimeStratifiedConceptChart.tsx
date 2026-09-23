@@ -108,7 +108,7 @@ export const TimeStratifiedConceptChart = ({
       ))}
       {years.map((year, i) => (
         <Fragment key={year}>
-          <div>{year}</div>
+          <C2>{year}</C2>
           {allValues.map((val) => (
             <div
               key={val.label}

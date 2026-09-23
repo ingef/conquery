@@ -1,6 +1,8 @@
 import type { ComponentProps } from "react";
 import { tv } from "tailwind-variants";
 
+import { textStyle } from "../ui-components/Typography";
+
 const grid = tv({
   base: [
     "grow",
@@ -17,8 +19,7 @@ const connector = tv({
     "flex items-center justify-center",
     "px-[5px]",
     "rounded",
-    "text-sm",
-    "text-black",
+    textStyle({ size: 2, tone: "default" }),
     "select-none",
   ],
 });

@@ -5,10 +5,10 @@ import {
   TextArea,
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
-
 import { exists } from "../common/helpers/exists";
 import { FieldError } from "./FieldError";
 import { type FieldLabelProps, Label } from "./Label";
+import { textStyle } from "./Typography";
 
 const textArea = tv({
   base: [
@@ -17,7 +17,7 @@ const textArea = tv({
     "border border-gray-400",
     "bg-white",
     "py-[6px] px-[10px]",
-    "text-sm text-gray-800",
+    textStyle({ size: 2, tone: "default" }),
     "outline-none",
     "placeholder:text-gray-400",
     "data-focus-visible:outline-2 data-focus-visible:outline-primary-500",

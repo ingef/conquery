@@ -11,7 +11,7 @@ import { NodeIcon } from "../concept-trees/NodeIcon";
 import type { NodeIconT } from "../model/node";
 import { Highlighter } from "../ui-components/Highlighter";
 import { ToggleButton } from "../ui-components/ToggleButton";
-import { C3, H5 } from "../ui-components/Typography";
+import { C2, C3, H5 } from "../ui-components/Typography";
 import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import InfoPaneCollapsed from "./InfoPaneCollapsed";
 import { InfoPaneHeader } from "./InfoPaneHeader";
@@ -51,7 +51,7 @@ const head = tv({
 const typeIcon = tv({ base: ["mt-[2px]", "mr-[6px]", "text-primary-500"] });
 
 const pinnedLabel = tv({
-  base: ["flex flex-row items-start", "gap-[5px]", "m-0", "text-sm"],
+  base: ["flex flex-row items-start", "gap-[5px]"],
 });
 
 const descriptionText = tv({ base: "mt-[5px] mb-[2px]" });
@@ -104,11 +104,13 @@ const ConceptLabel = ({
     <p className={pinnedLabel()}>
       {conceptIcon && <NodeIcon icon={conceptIcon} className={typeIcon()} />}
       <span className="grow">
-        {label ? (
-          <HighlightedText words={words} text={label} />
-        ) : (
-          t("infoPane.placeholder")
-        )}
+        <C2 as="span">
+          {label ? (
+            <HighlightedText words={words} text={label} />
+          ) : (
+            t("infoPane.placeholder")
+          )}
+        </C2>
       </span>
       {tackIcon && <span className="-mt-[2px] shrink-0">{tackIcon}</span>}
     </p>

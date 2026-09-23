@@ -8,7 +8,7 @@ import type {
   ConceptIdT,
   CurrencyConfigT,
 } from "../../api/types";
-import { H4 } from "../../ui-components/Typography";
+import { C3, H4 } from "../../ui-components/Typography";
 import type { ContentFilterValue } from "../ContentControl";
 import type { DetailLevel } from "../DetailControl";
 import type { EntityEvent } from "../reducer";
@@ -33,15 +33,7 @@ const verticalLine = tv({
 });
 
 const quarterHead = tv({
-  base: [
-    "sticky top-0",
-    "z-2",
-    "bg-bg-100",
-    "-ml-[6px]",
-    "w-[calc(100%+8px)]",
-    "text-xs",
-    "leading-none",
-  ],
+  base: ["sticky top-0", "z-2", "bg-bg-100", "-ml-[6px]", "w-[calc(100%+8px)]"],
   variants: {
     empty: {
       true: "text-gray-100",
@@ -114,12 +106,12 @@ export const Quarter = memo(
               <ChevronRightIcon className="text-gray-500" />
             )}
             <H4 as="span">Q{quarter} </H4>
-            <span>
+            <C3 as="span">
               – {totalEventsPerQuarter}{" "}
               {t("history.events", {
                 count: totalEventsPerQuarter,
               })}
-            </span>
+            </C3>
             {detailLevel === "summary" && (
               <MemoizedBoxes totalEventsPerQuarter={totalEventsPerQuarter} />
             )}

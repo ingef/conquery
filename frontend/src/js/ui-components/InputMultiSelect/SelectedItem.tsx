@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import { tv } from "tailwind-variants";
 import type { SelectOptionT } from "../../api/types";
 import { Button } from "../Button";
+import { textStyle } from "../Typography";
 
 const container = tv({
   base: [
@@ -11,8 +12,7 @@ const container = tv({
     "rounded",
     "bg-gray-50",
     "px-[5px] py-0",
-    "text-sm",
-    "text-gray-800",
+    textStyle({ size: 2, tone: "default" }),
     "shadow-[0.5px_0.5px_1px_0_rgb(0_0_0/20%),inset_0_0_0_1px_#ccc]",
     // to style react-markdown
     "[&_p]:m-0",

@@ -5,14 +5,13 @@ import { textStyle } from "./Typography";
 
 const indexPrefix = tv({
   base: [
-    "inline-block",
+    "inline-flex items-center",
     "shrink-0",
+    "h-4 px-[3px]",
     "mr-[7px]",
-    "p-[3px]",
     "rounded",
     "bg-primary-50",
     textStyle({ size: 3 }),
-    "leading-none",
   ],
 });
 

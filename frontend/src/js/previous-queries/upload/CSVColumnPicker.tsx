@@ -19,13 +19,14 @@ import ScrollableList from "../../scrollable-list/ScrollableList";
 import { Button } from "../../ui-components/Button";
 import { ComboBoxField } from "../../ui-components/ComboBoxField";
 import { Tooltip, TooltipTrigger } from "../../ui-components/Tooltip";
+import { C2, C3 } from "../../ui-components/Typography";
 
 const td = tv({
-  base: "min-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap text-xs",
+  base: "min-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap",
 });
 
 const th = tv({
-  base: ["w-[150px]", "align-top", "text-xs"],
+  base: ["w-[150px]", "align-top"],
 });
 
 const msg = tv({
@@ -177,7 +178,9 @@ const CSVPreviewTable = ({
             <tr key={j}>
               {row.map((cell, i) => (
                 <td key={cell + i} className={td()}>
-                  <span className="px-[6px]">{cell}</span>
+                  <span className="px-[6px]">
+                    <C3 as="span">{cell}</C3>
+                  </span>
                 </td>
               ))}
             </tr>
@@ -186,7 +189,9 @@ const CSVPreviewTable = ({
           <tr>
             {new Array(csv[0].length).fill(null).map((_, j) => (
               <td key={j} className={td()}>
-                <span className="px-[6px]">...</span>
+                <span className="px-[6px]">
+                  <C3 as="span">...</C3>
+                </span>
               </td>
             ))}
           </tr>
@@ -255,8 +260,8 @@ const CSVColumnPicker = ({
       <div className="mb-[15px] flex items-end justify-between">
         <div className="flex items-center gap-3">
           <div className="flex flex-col">
-            <code>{file.name}</code>
-            <code>{csv.length} Zeilen</code>
+            <C2 as="code">{file.name}</C2>
+            <C2 as="code">{csv.length} Zeilen</C2>
           </div>
           <TooltipTrigger>
             <Button
@@ -299,20 +304,24 @@ const CSVColumnPicker = ({
       </div>
       {uploadResult && (
         <div className={partialUploadResults()}>
-          <p className={msg()}>
+          <div className={msg()}>
             {uploadResult.resolved > 0 && (
               <CircleCheckIcon className={bigIcon({ kind: "success" })} />
             )}
-            {t("csvColumnPicker.resolved", { count: uploadResult.resolved })}
-          </p>
+            <C2 as="span">
+              {t("csvColumnPicker.resolved", { count: uploadResult.resolved })}
+            </C2>
+          </div>
           {uploadResult.unreadableDate.length > 0 && (
             <>
-              <p className={msg()}>
+              <div className={msg()}>
                 <CircleAlertIcon className={bigIcon({ kind: "error" })} />
-                {t("csvColumnPicker.unreadableDate", {
-                  count: uploadResult.unreadableDate.length,
-                })}
-              </p>
+                <C2 as="span">
+                  {t("csvColumnPicker.unreadableDate", {
+                    count: uploadResult.unreadableDate.length,
+                  })}
+                </C2>
+              </div>
               <ScrollableList
                 maxVisibleItems={3}
                 fullWidth
@@ -326,12 +335,14 @@ const CSVColumnPicker = ({
           )}
           {uploadResult.unresolvedId.length > 0 && (
             <>
-              <p className={msg()}>
+              <div className={msg()}>
                 <CircleAlertIcon className={bigIcon({ kind: "error" })} />
-                {t("csvColumnPicker.unresolvedId", {
-                  count: uploadResult.unresolvedId.length,
-                })}
-              </p>
+                <C2 as="span">
+                  {t("csvColumnPicker.unresolvedId", {
+                    count: uploadResult.unresolvedId.length,
+                  })}
+                </C2>
+              </div>
               <ScrollableList
                 maxVisibleItems={3}
                 fullWidth

@@ -15,7 +15,7 @@ import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { Button } from "../ui-components/Button";
 import { getEnding } from "./DownloadResultsDropdownButton";
 
-const link = tv({ base: "leading-none" });
+const link = tv({ base: "inline-flex" });
 
 interface FileIcon {
   icon: LucideIcon;
@@ -48,6 +48,7 @@ interface Props {
   children?: ReactNode;
   simpleIcon?: boolean;
   showColoredIcon?: boolean;
+  size?: "sm" | "md" | "lg";
 }
 
 const DownloadButton = ({
@@ -57,6 +58,7 @@ const DownloadButton = ({
   className,
   children,
   showColoredIcon,
+  size,
 }: Props & { ref?: Ref<HTMLAnchorElement> }) => {
   const { authToken } = useContext(AuthTokenContext);
 
@@ -67,7 +69,7 @@ const DownloadButton = ({
 
   return (
     <a href={href} className={link({ className })} ref={ref}>
-      <Button intent="link">
+      <Button intent="link" size={size}>
         <FileTypeIcon style={{ color: showColoredIcon ? color : undefined }} />
         {children}
       </Button>

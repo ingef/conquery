@@ -18,7 +18,6 @@ const textInitial = tv({
     "gap-y-3 gap-x-5",
     "w-full",
     "p-[30px]",
-    "text-base",
   ],
 });
 
@@ -63,19 +62,19 @@ export const EmptyQueryEditorDropzone = memo(() => {
               <MinusIcon className="text-primary-500" />
             </div>
           </div>
-          {t("dropzone.aConcept")}
+          <C1 as="span">{t("dropzone.aConcept")}</C1>
           <div className={row()}>
             <div className={iconInABox()}>
               <WorkflowIcon className="text-primary-500" />
             </div>
           </div>
-          {t("dropzone.aQuery")}
+          <C1 as="span">{t("dropzone.aQuery")}</C1>
           <div className={row()}>
             <div className={iconInABox()}>
               <FileIcon className="text-primary-500" />
             </div>
           </div>
-          {t("dropzone.aConceptList")}
+          <C1 as="span">{t("dropzone.aConceptList")}</C1>
         </div>
       </div>
     </div>

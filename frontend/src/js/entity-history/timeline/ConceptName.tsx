@@ -4,6 +4,7 @@ import { tv } from "tailwind-variants";
 import type { ConceptIdT, ConceptT } from "../../api/types";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
 import { Highlighter } from "../../ui-components/Highlighter";
+import { C2 } from "../../ui-components/Typography";
 import { useTimelineSearch } from "../timeline-search/timelineSearchState";
 
 const conceptRoot = tv({
@@ -33,7 +34,7 @@ const ConceptLabel = ({
     : conceptId;
 
   return (
-    <span>
+    <C2 as="span">
       {searchTerm && searchTerm.length > 0 ? (
         <Highlighter
           searchWords={searchTerm.split("")}
@@ -42,7 +43,7 @@ const ConceptLabel = ({
       ) : (
         label
       )}
-    </span>
+    </C2>
   );
 };
 
@@ -53,13 +54,17 @@ const RootConceptLabel = ({
   rootConcept: ConceptT;
   searchTerm?: string;
 }) => {
-  return searchTerm && searchTerm.length > 0 ? (
-    <Highlighter
-      searchWords={searchTerm.split("")}
-      textToHighlight={`${rootConcept.label} `}
-    />
-  ) : (
-    `${rootConcept.label} `
+  return (
+    <C2 as="span">
+      {searchTerm && searchTerm.length > 0 ? (
+        <Highlighter
+          searchWords={searchTerm.split("")}
+          textToHighlight={`${rootConcept.label} `}
+        />
+      ) : (
+        `${rootConcept.label} `
+      )}
+    </C2>
   );
 };
 
@@ -70,7 +75,7 @@ const ConceptName = ({ className, title, rootConceptId, conceptId }: Props) => {
   if (!concept) {
     return (
       <span className={className} title={title}>
-        {conceptId}
+        <C2 as="span">{conceptId}</C2>
       </span>
     );
   }

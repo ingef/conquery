@@ -7,7 +7,7 @@ import type { TableWithFilterValueT } from "../standard-query-editor/types";
 import { Button } from "../ui-components/Button";
 import { ToggleButton } from "../ui-components/ToggleButton";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
-import { textStyle } from "../ui-components/Typography";
+import { C2 } from "../ui-components/Typography";
 
 const container = tv({
   base: [
@@ -15,7 +15,6 @@ const container = tv({
     "w-full",
     "bg-transparent",
     "px-[15px] py-2",
-    textStyle({ size: 2 }),
     "text-left",
     "cursor-pointer",
     "hover:underline",
@@ -85,7 +84,9 @@ const MenuColumnItem = ({
             <SquareCheckIcon className="size-5" />
           )}
         </Button>
-        <span className="pl-[10px]">{table.label}</span>
+        <span className="pl-[10px]">
+          <C2 as="span">{table.label}</C2>
+        </span>
       </div>
       {isFilterActive && (
         <TooltipTrigger>

@@ -25,6 +25,7 @@ import {
   TooltipTarget,
   TooltipTrigger,
 } from "../../ui-components/Tooltip";
+import { C3 } from "../../ui-components/Typography";
 import { useUpdateFormConfig, useUpdateQuery } from "./actions";
 import { DeleteProjectItemButton } from "./DeleteProjectItemButton";
 import { isFormConfig } from "./helpers";
@@ -47,17 +48,15 @@ const root = tv({
 });
 
 const topInfos = tv({
-  base: ["flex items-center justify-between", "text-gray-600", "text-xs"],
+  base: ["flex items-center justify-between", "text-gray-600"],
 });
 
-const ownerName = tv({
-  base: ["shrink-0", "pl-[5px]", "text-gray-600", "text-xs"],
-});
+const ownerName = tv({ base: ["shrink-0", "pl-[5px]"] });
 
 const tooltipText = tv({ base: "flex flex-col items-start" });
 
 const labelRow = tv({
-  base: ["flex items-center justify-between", "w-full", "leading-6"],
+  base: ["flex items-center justify-between", "w-full", "min-h-6"],
 });
 
 const content = tv({
@@ -75,7 +74,7 @@ const content = tv({
 });
 
 const downloadButton = tv({
-  base: ["whitespace-nowrap", "[&_button]:text-xs"],
+  base: "whitespace-nowrap",
 });
 
 const getTopLeftLabel = (
@@ -171,12 +170,18 @@ const ResultsLabel = ({
   resultUrl: ResultUrlWithLabel | null;
 }) => {
   const { t } = useTranslation();
-  if (!resultUrl) return <span className="whitespace-nowrap">{label}</span>;
+  if (!resultUrl)
+    return (
+      <span className="whitespace-nowrap">
+        <C3 as="span">{label}</C3>
+      </span>
+    );
   return (
     <TooltipTrigger>
       <DownloadButton
         className={downloadButton()}
         simpleIcon
+        size="sm"
         resultUrl={resultUrl}
       >
         {label}
@@ -283,7 +288,7 @@ const ProjectItem = ({
             </div>
           </div>
           <div className="ml-[5px] flex shrink-0 items-center gap-[10px]">
-            {executedAt}
+            <C3 as="span">{executedAt}</C3>
             {secondaryId && (
               <TooltipTrigger>
                 <Button
@@ -314,10 +319,12 @@ const ProjectItem = ({
             setIsEditing={setIsEditingLabel}
           />
           <div className={ownerName()}>
-            <HighlightedText
-              text={item.ownerName}
-              highlightedWords={highlightedWords}
-            />
+            <C3 tone="muted">
+              <HighlightedText
+                text={item.ownerName}
+                highlightedWords={highlightedWords}
+              />
+            </C3>
           </div>
         </div>
       </div>

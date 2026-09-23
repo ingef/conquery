@@ -4,6 +4,8 @@ import { Button as RacButton } from "react-aria-components";
 import { useTranslation } from "react-i18next";
 import { tv } from "tailwind-variants";
 
+import { textStyle } from "../ui-components/Typography";
+
 const left = tv({
   base: [
     "self-stretch",
@@ -23,7 +25,7 @@ const runnerLabel = tv({
   base: [
     "px-[15px]",
     "bg-white group-hover/runner:bg-gray-50",
-    "text-gray-800 font-medium",
+    textStyle({ size: 2, strong: true, tone: "default" }),
     "self-stretch",
     "flex items-center",
     "whitespace-nowrap",
@@ -40,7 +42,6 @@ const button = tv({
     "overflow-hidden",
     "rounded",
     "border border-primary-500",
-    "text-sm",
     "cursor-pointer",
     "disabled:cursor-not-allowed disabled:opacity-40",
   ],

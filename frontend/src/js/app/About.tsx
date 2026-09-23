@@ -18,6 +18,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from "../ui-components/Modal";
+import { C2 } from "../ui-components/Typography";
 import type { StateT } from "./reducers";
 
 const initialState = {
@@ -82,17 +83,17 @@ export const About = memo(() => {
         <div className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-1">
           {backendVersions.map((version) => (
             <Fragment key={version.name}>
-              <div>{version.name}</div>
-              <code>
+              <C2>{version.name}</C2>
+              <C2 as="code">
                 {version.version || "-"}
                 {version.buildTime && ` – ${version.buildTime}`}
-              </code>
+              </C2>
             </Fragment>
           ))}
-          <div>Frontend</div>
-          <code>
+          <C2>Frontend</C2>
+          <C2 as="code">
             {frontendGitDescribe} – {frontendTimestamp}
-          </code>
+          </C2>
         </div>
       </ModalBody>
       <ModalFooter>

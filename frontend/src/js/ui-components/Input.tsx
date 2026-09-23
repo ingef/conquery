@@ -8,6 +8,8 @@ import {
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
+import { textStyle } from "./Typography";
+
 const frame = tv({
   base: [
     "flex items-center",
@@ -16,7 +18,7 @@ const frame = tv({
     "rounded",
     "border border-gray-400",
     "bg-white",
-    "text-sm text-gray-800",
+    textStyle({ size: 2, tone: "default" }),
     "data-focus-visible:outline-2 data-focus-visible:outline-primary-500",
     "data-disabled:opacity-50",
     "data-invalid:border-red",

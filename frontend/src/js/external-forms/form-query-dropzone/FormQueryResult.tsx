@@ -37,7 +37,7 @@ const FormQueryResult = ({
           {error}
         </C2>
       ) : queryResult ? (
-        queryResult.label || queryResult.id
+        <C2 as="span">{queryResult.label || queryResult.id}</C2>
       ) : null}
       {onDelete && (
         <Button

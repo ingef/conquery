@@ -2,6 +2,8 @@ import type { ComponentProps } from "react";
 import { Button as RacButton } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
+import { textStyle } from "../Typography";
+
 import SelectListOption from "./SelectListOption";
 
 const control = tv({
@@ -103,7 +105,7 @@ const input = tv({
     "h-5",
     "border-0",
     "outline-none",
-    "text-sm",
+    textStyle({ size: 2 }),
     "disabled:cursor-not-allowed disabled:pointer-events-none",
     "disabled:placeholder:opacity-50",
   ],

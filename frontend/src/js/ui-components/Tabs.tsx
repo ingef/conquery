@@ -19,7 +19,6 @@ import {
   TabListStateContext,
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
-
 import { useHoverNavigate } from "./HoverNavigatable";
 import {
   Tooltip,
@@ -27,6 +26,7 @@ import {
   TooltipTrigger,
   tooltipDelay,
 } from "./Tooltip";
+import { textStyle } from "./Typography";
 
 type Variant = "primary" | "secondary";
 
@@ -93,7 +93,8 @@ const tab = tv({
       primary: [
         "mt-[6px] mr-[5px] px-3",
         "border-b-[3px] border-transparent",
-        "text-base leading-[30px] font-medium",
+        textStyle({ size: 1, strong: true }),
+        "h-[30px]",
         "text-gray-600",
         "not-data-selected:data-hovered:border-primary-200 not-data-selected:data-hovered:text-black",
         "data-selected:border-primary-500 data-selected:text-primary-500",
@@ -105,7 +106,7 @@ const tab = tv({
         "translate-y-px",
         "rounded-t",
         "border border-b-0 border-transparent",
-        "text-sm",
+        textStyle({ size: 2 }),
         "text-gray-600",
         "not-data-selected:data-hovered:border-gray-400",
         "data-selected:border-gray-500 data-selected:bg-bg-50 data-selected:text-gray-800",

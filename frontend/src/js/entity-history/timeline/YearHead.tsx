@@ -14,7 +14,7 @@ import {
   TooltipTarget,
   TooltipTrigger,
 } from "../../ui-components/Tooltip";
-import { H4 } from "../../ui-components/Typography";
+import { C2, C3, H4 } from "../../ui-components/Typography";
 import { ConceptBubble } from "../ConceptBubble";
 import { formatCurrency, isConceptColumn, isMoneyColumn } from "./util/util";
 
@@ -43,18 +43,10 @@ const conceptRow = tv({
 
 // named valueCell: `value` is shadowed by destructured data entries below
 const valueCell = tv({
-  base: ["text-sm", "justify-self-end", "w-full", "text-right"],
+  base: ["justify-self-end", "w-full", "text-right"],
 });
 
-const labelText = tv({
-  base: [
-    "text-sm",
-    "max-w-full",
-    "whitespace-nowrap",
-    "overflow-hidden",
-    "text-ellipsis",
-  ],
-});
+const labelText = tv({ base: "max-w-full" });
 
 type YearValue = TimeStratifiedInfo["years"][number]["values"][string];
 type Column = TimeStratifiedInfo["columns"][number];
@@ -102,7 +94,7 @@ const ConceptValues = ({
   return (
     <>
       <div className={labelText()} style={{ gridColumn: "span 2" }}>
-        {label}
+        <C2 truncate>{label}</C2>
       </div>
       <div className={conceptRow()}>
         {concepts.map((concept) => (
@@ -175,9 +167,11 @@ const TimeStratifiedInfos = ({
 
                 return (
                   <Fragment key={label}>
-                    <div className={labelText()}>{label}</div>
+                    <div className={labelText()}>
+                      <C2 truncate>{label}</C2>
+                    </div>
                     <div className={valueCell()} title={String(valueFormatted)}>
-                      {valueFormatted}
+                      <C2 as="span">{valueFormatted}</C2>
                     </div>
                   </Fragment>
                 );
@@ -205,7 +199,7 @@ const YearHead = ({
   const { t } = useTranslation();
 
   return (
-    <div className="pr-[10px] text-xs">
+    <div className="pr-[10px]">
       {/* biome-ignore lint/a11y/noStaticElementInteractions: TODO make this a button */}
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: TODO make this a button */}
       <div className={stickyWrap()} onClick={onClick}>
@@ -216,9 +210,9 @@ const YearHead = ({
         )}
         <div>
           <H4 as="span">{year}</H4>
-          <div>
+          <C3>
             {totalEvents}&nbsp;{t("history.events", { count: totalEvents })}
-          </div>
+          </C3>
         </div>
         <span />
         <TimeStratifiedInfos

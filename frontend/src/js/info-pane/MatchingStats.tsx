@@ -37,7 +37,7 @@ const icon = tv({
 });
 
 const numberText = tv({
-  base: [headingStyle({ level: 2 }), "leading-none"],
+  base: headingStyle({ level: 2 }),
   variants: {
     zero: { true: "text-red" },
   },

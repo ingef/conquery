@@ -104,7 +104,7 @@ const InvisibleDropzone = (
   );
 };
 
-const dates = tv({ base: ["text-right", "text-xs"] });
+const dates = tv({ base: "text-right" });
 
 export function TreeNode({
   tree,
@@ -278,7 +278,7 @@ export function TreeNode({
                 {tree.dates?.excluded && (
                   <div className={dates()}>
                     <CalendarMinusIcon className="mr-[10px] text-red" />
-                    {t("editorV2.datesExcluded")}
+                    <C3 as="span">{t("editorV2.datesExcluded")}</C3>
                   </div>
                 )}
                 {(!tree.children || tree.data) && (

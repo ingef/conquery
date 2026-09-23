@@ -27,8 +27,7 @@ const superScript = tv({
     "inline-block",
     "pl-[3px]",
     "translate-x-px -translate-y-[2px]",
-    "text-xs",
-    "text-gray-600",
+    textStyle({ size: 3, tone: "muted" }),
   ],
 });
 

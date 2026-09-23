@@ -7,6 +7,7 @@ import type { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { Menu, MenuItem } from "../ui-components/Menu";
 import { Tooltip, TooltipTrigger } from "../ui-components/Tooltip";
+import { textStyle } from "../ui-components/Typography";
 import { getUserSettings, storeUserSettings } from "../user/userSettings";
 import { getFileIcon } from "./DownloadButton";
 
@@ -23,7 +24,8 @@ const part = tv({
     "inline-flex items-center",
     "gap-[10px]",
     "h-full",
-    "text-sm font-medium text-gray-800 whitespace-nowrap",
+    textStyle({ size: 2, strong: true, tone: "default" }),
+    "whitespace-nowrap",
     "cursor-pointer",
     "hover:bg-gray-50",
   ],

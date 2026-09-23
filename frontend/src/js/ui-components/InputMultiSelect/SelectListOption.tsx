@@ -1,15 +1,14 @@
 import { type ComponentProps, memo, type Ref } from "react";
 import ReactMarkdown from "react-markdown";
 import { tv } from "tailwind-variants";
-
 import type { SelectOptionT } from "../../api/types";
+import { textStyle } from "../Typography";
 
 const container = tv({
   base: [
     "px-2 py-[3px]",
     "cursor-pointer",
-    "text-gray-800",
-    "text-sm",
+    textStyle({ size: 2, tone: "default" }),
     "transition-[background-color] duration-100",
     // to style react-markdown
     "[&_p]:m-0",
